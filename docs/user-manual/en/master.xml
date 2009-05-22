@@ -44,6 +44,7 @@
         <!ENTITY using-jms               SYSTEM "using-jms.xml">
         <!ENTITY using-server            SYSTEM "using-server.xml">
         <!ENTITY wildcard-syntax         SYSTEM "wildcard-syntax.xml">
+        <!ENTITY wildcard-routing         SYSTEM "wildcard-routing.xml">
         ]>
 <book lang="en">
    <bookinfo>
@@ -63,6 +64,7 @@
    &examples;
    &embedding-jbm;
    &security;
+   &wildcard-routing;
    &wildcard-syntax;
    &persistence;
    &send-guarantees;

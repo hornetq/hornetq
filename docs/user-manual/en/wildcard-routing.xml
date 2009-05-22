@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<chapter id="wildcard-routing">
+    <title>Routing Messages With Wild Cards</title>
+    <para>JBoss Messaging allows the routing of messages via wildcard addresses. If a consumer is
+        created with an address of say <literal>queue.*</literal> then it will receive any messages
+        sent to addresses that match this, for instance <literal>queue.newsQueue</literal> or
+            <literal>queue.mailQueue</literal>. </para>
+    <para>To enable this functionality set the property <literal>wild-card-routing-enabled</literal>
+        in the <literal>jbm-configuration.xml</literal> file to true. This is true by
+        default.</para>
+    <para>For more information on wild cards take a look at the <link linkend="wildcard-syntax"
+            >wildcard-syntax</link> chapter.</para>
+</chapter>

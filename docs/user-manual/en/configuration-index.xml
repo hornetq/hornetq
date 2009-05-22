@@ -25,13 +25,14 @@
                     </thead>
                     <tbody>
                         <row>
-                            <entry>clustered</entry>
+                            <entry><link linkend="clusters">clustered</link></entry>
                             <entry>Boolean</entry>
                             <entry>True means that the server is clustered</entry>
                             <entry>false</entry>
                         </row>
                         <row>
-                            <entry>file-deployment-enabled</entry>
+                            <entry><link linkend="using-server.configuration"
+                                    >file-deployment-enabled</link></entry>
                             <entry>Boolean</entry>
                             <entry>True means that the server will load configuration from the
                                 configuration files</entry>
@@ -62,25 +63,26 @@
                             <entry>-1</entry>
                         </row>
                         <row>
-                            <entry>security-enabled</entry>
+                            <entry><link linkend="security">security-enabled</link></entry>
                             <entry>Boolean</entry>
                             <entry>True means that security is enabled</entry>
                             <entry>true</entry>
                         </row>
                         <row>
-                            <entry>security-invalidation-interval</entry>
+                            <entry><link linkend="security"
+                                >security-invalidation-interval</link></entry>
                             <entry>Long</entry>
                             <entry>How long, in milli seconds, to wait before invalidating the
                                 security cache</entry>
                             <entry>10000</entry>
                         </row>
                         <row>
-                            <entry>wild-card-routing-enabled</entry>
+                            <entry><link linkend="wildcard-routing"
+                                >wild-card-routing-enabled</link></entry>
                             <entry>Boolean</entry>
                             <entry>True means that the server supports wild card routing</entry>
                             <entry>true</entry>
                         </row>
-
                         <row>
                             <entry><link linkend="management.core.configuration"
                                     >management-address</link></entry>
@@ -142,7 +144,8 @@
                             <entry>10</entry>
                         </row>
                         <row>
-                            <entry><link linkend="dead.connections">connection-scan-period</link></entry>
+                            <entry><link linkend="dead.connections"
+                                >connection-scan-period</link></entry>
                             <entry>Long</entry>
                             <entry>How often, in milli seconds, to scan for failed connections on
                                 the server </entry>
@@ -469,7 +472,8 @@
                         <row>
                             <entry>bridges.forwarding-address</entry>
                             <entry>String</entry>
-                            <entry>Address to forward to. If ommitted original destination is used.</entry>
+                            <entry>Address to forward to. If ommitted original destination is
+                                used.</entry>
                             <entry>null</entry>
                         </row>
                         <row>
@@ -505,13 +509,15 @@
                         <row>
                             <entry>bridges.failover-on-server-shutdown</entry>
                             <entry>Boolean</entry>
-                            <entry>Should failover be prompted if target server is cleanly shutdown?</entry>
+                            <entry>Should failover be prompted if target server is cleanly
+                                shutdown?</entry>
                             <entry>false</entry>
                         </row>
                         <row>
                             <entry>bridges.use-duplicate-detection</entry>
                             <entry>Boolean</entry>
-                            <entry>Should duplicate detection headers be inserted in forwarded messages?</entry>
+                            <entry>Should duplicate detection headers be inserted in forwarded
+                                messages?</entry>
                             <entry>true</entry>
                         </row>
                         <row>
@@ -524,7 +530,7 @@
                             <entry>bridges.connector-ref.connector-name (attribute)</entry>
                             <entry>String</entry>
                             <entry>Name of connector to use for live connection</entry>
-                            <entry></entry>
+                            <entry/>
                         </row>
                         <row>
                             <entry>bridges.connector-ref.backup-connector-name (attribute)</entry>
@@ -550,11 +556,12 @@
                             <entry>String</entry>
                             <entry>Name of address this cluster connection applies to</entry>
                             <entry/>
-                        </row>   
+                        </row>
                         <row>
                             <entry>cluster-connections.forward-when-no-consumers</entry>
                             <entry>Boolean</entry>
-                            <entry>Should messages be load balanced if there are no matching consumers on target?</entry>
+                            <entry>Should messages be load balanced if there are no matching
+                                consumers on target?</entry>
                             <entry>false</entry>
                         </row>
                         <row>
@@ -568,11 +575,12 @@
                             <entry>Long</entry>
                             <entry>Period in ms between successive retries</entry>
                             <entry>2000 ms</entry>
-                        </row>                        
+                        </row>
                         <row>
                             <entry>cluster-connections.use-duplicate-detection</entry>
                             <entry>Boolean</entry>
-                            <entry>Should duplicate detection headers be inserted in forwarded messages?</entry>
+                            <entry>Should duplicate detection headers be inserted in forwarded
+                                messages?</entry>
                             <entry>true</entry>
                         </row>
                         <row>
@@ -582,13 +590,15 @@
                             <entry>null</entry>
                         </row>
                         <row>
-                            <entry>cluster-connections.connector-ref.connector-name (attribute)</entry>
+                            <entry>cluster-connections.connector-ref.connector-name
+                                (attribute)</entry>
                             <entry>String</entry>
                             <entry>Name of connector to use for live connection</entry>
-                            <entry></entry>
+                            <entry/>
                         </row>
                         <row>
-                            <entry>cluster-connections.connector-ref.backup-connector-name (attribute)</entry>
+                            <entry>cluster-connections.connector-ref.backup-connector-name
+                                (attribute)</entry>
                             <entry>String</entry>
                             <entry>Optional name of connector to use for backup connection</entry>
                             <entry>null</entry>
@@ -612,7 +622,8 @@
         </section>
         <section>
             <title>jbm-jms.xml</title>
-            <para>This is the configuration file used by the server side JMS service to load JMS Queues, Topics and Connection Factories</para>
+            <para>This is the configuration file used by the server side JMS service to load JMS
+                Queues, Topics and Connection Factories</para>
             <table frame="topbot" border="2">
                 <title>JMS Server Configuration</title>
                 <tgroup cols="4">
@@ -634,7 +645,7 @@
                                     >connection-factory</link></entry>
                             <entry>ConnectionFactory</entry>
                             <entry>A list of connection factories to create and add to JNDI</entry>
-                            <entry></entry>
+                            <entry/>
                         </row>
                         <row>
                             <entry>connection-factory.client-id</entry>
@@ -645,11 +656,13 @@
                         <row>
                             <entry>connection-factory.ping-period</entry>
                             <entry>Long</entry>
-                            <entry>The period between ping packets being sent from client to server.</entry>
+                            <entry>The period between ping packets being sent from client to
+                                server.</entry>
                             <entry>5000 ms</entry>
                         </row>
                         <row>
-                            <entry><link linkend="dead.connections">connection-factory.connection-ttl</link></entry>
+                            <entry><link linkend="dead.connections"
+                                    >connection-factory.connection-ttl</link></entry>
                             <entry>long</entry>
                             <entry>The time to live for connections</entry>
                             <entry>5 * 60000 ms</entry>
@@ -662,28 +675,28 @@
                         </row>
                         <row>
                             <entry><link linkend="connection-ttl.session.multiplexing"
-                                >connection-factory.max-connections</link></entry>
+                                    >connection-factory.max-connections</link></entry>
                             <entry>int</entry>
                             <entry>The max number of connections per factory</entry>
                             <entry>8</entry>
                         </row>
                         <row>
                             <entry><link linkend="large-messages.core.config"
-                                >connection-factory.min-large-message-size</link></entry>
+                                    >connection-factory.min-large-message-size</link></entry>
                             <entry>int</entry>
                             <entry>The size, in bytes, before a message is treated as large </entry>
                             <entry>100 * 1024</entry>
                         </row>
                         <row>
                             <entry><link linkend="flow-control.core.api"
-                                >connection-factory.consumer-window-size</link></entry>
+                                    >connection-factory.consumer-window-size</link></entry>
                             <entry>int</entry>
                             <entry>The window size, in bytes, for consumer flow control</entry>
                             <entry>1024 * 1024</entry>
                         </row>
                         <row>
                             <entry><link linkend="flow-control.rate.core.api"
-                                >connection-factory.consumer-max-rate</link></entry>
+                                    >connection-factory.consumer-max-rate</link></entry>
                             <entry>int</entry>
                             <entry>The fastest rate a consumer may consume messages per
                                 second</entry>
@@ -697,31 +710,31 @@
                         </row>
                         <row>
                             <entry><link linkend="flow-control.producer.rate.core.api"
-                                >connection-factory.producer-max-rate</link></entry>
+                                    >connection-factory.producer-max-rate</link></entry>
                             <entry>int</entry>
                             <entry>The max messages per second that can be sent</entry>
                             <entry>-1</entry>
                         </row>
                         <row>
                             <entry><link linkend="send-guarantees.nontrans.acks"
-                                >connection-factory.block-on-acknowledge</link></entry>
+                                    >connection-factory.block-on-acknowledge</link></entry>
                             <entry>boolean</entry>
                             <entry>Whether or not we acknowledge messages synchronously</entry>
                             <entry>false</entry>
                         </row>
                         <row>
                             <entry><link linkend="non-transactional-sends"
-                                >connection-factory.block-on-non-persistent-send</link></entry>
+                                    >connection-factory.block-on-non-persistent-send</link></entry>
                             <entry>boolean</entry>
-                            <entry>Whether or not we send non persistent messages synchronously</entry>
+                            <entry>Whether or not we send non persistent messages
+                                synchronously</entry>
                             <entry>false</entry>
                         </row>
                         <row>
                             <entry><link linkend="non-transactional-sends"
-                                >connection-factory.block-on-persistent-send</link></entry>
+                                    >connection-factory.block-on-persistent-send</link></entry>
                             <entry>boolean</entry>
-                            <entry>Whether or not we send persistent messages
-                                synchronously</entry>
+                            <entry>Whether or not we send persistent messages synchronously</entry>
                             <entry>false</entry>
                         </row>
                         <row>
@@ -740,25 +753,27 @@
                         <row>
                             <entry>connection-factory.dups-ok-batch-size</entry>
                             <entry>int</entry>
-                            <entry>The batch size in bytes between acknowledgements when using DUPS_OK_ACKNOWLEDGE mode</entry>
+                            <entry>The batch size in bytes between acknowledgements when using
+                                DUPS_OK_ACKNOWLEDGE mode</entry>
                             <entry>1024 * 1024</entry>
                         </row>
                         <row>
                             <entry>connection-factory.transaction-batch-size</entry>
                             <entry>int</entry>
-                            <entry>The batch size in bytes between acknowledgements when using a transactional session</entry>
+                            <entry>The batch size in bytes between acknowledgements when using a
+                                transactional session</entry>
                             <entry>1024 * 1024</entry>
                         </row>
                         <row>
                             <entry><link linkend="clusters.client.loadbalancing"
-                                >connection-factory.connection-load-balancing-policy-class-name</link></entry>
+                                    >connection-factory.connection-load-balancing-policy-class-name</link></entry>
                             <entry>String</entry>
                             <entry>The name of the load balancing class</entry>
                             <entry>org.jboss.messaging.core.client.impl.RoundRobinConnectionLoadBalancingPolicy</entry>
                         </row>
                         <row>
                             <entry><link linkend="clusters-discovery.groups.clientside"
-                                >connection-factory.discovery-initial-wait-timeout</link></entry>
+                                    >connection-factory.discovery-initial-wait-timeout</link></entry>
                             <entry>long</entry>
                             <entry>The initail time to wait, in milliseconds, for discovery groups
                                 to wait for broadcasts</entry>
@@ -766,21 +781,21 @@
                         </row>
                         <row>
                             <entry><link linkend="thread-pooling.client.side"
-                                >connection-factory.use-global-pools</link></entry>
+                                    >connection-factory.use-global-pools</link></entry>
                             <entry>boolean</entry>
                             <entry>Use a global thread pool for threads</entry>
                             <entry>true</entry>
                         </row>
                         <row>
                             <entry><link linkend="thread-pooling.client.side"
-                                >connection-factory.scheduled-thread-pool-max-size</link></entry>
+                                    >connection-factory.scheduled-thread-pool-max-size</link></entry>
                             <entry>int</entry>
                             <entry>The size of the scheduled thread pool</entry>
                             <entry>2</entry>
                         </row>
                         <row>
                             <entry><link linkend="thread-pooling.client.side"
-                                >connection-factory.thread-pool-max-size</link></entry>
+                                    >connection-factory.thread-pool-max-size</link></entry>
                             <entry>int</entry>
                             <entry>The size of the thread pool</entry>
                             <entry>-1</entry>
@@ -806,7 +821,7 @@
                         </row>
                         <row>
                             <entry><link linkend="ha.client.automatic"
-                                >connection-factory.failover-on-server-shutdown</link></entry>
+                                    >connection-factory.failover-on-server-shutdown</link></entry>
                             <entry>boolean</entry>
                             <entry>whether or not to failover on server shutdown</entry>
                             <entry>false</entry>
@@ -816,19 +831,20 @@
                                 >queue</link></entry>
                             <entry>Queue</entry>
                             <entry>A queue to create and add to JNDI</entry>
-                            <entry></entry>
+                            <entry/>
                         </row>
                         <row>
                             <entry>queue.name (attribute)</entry>
                             <entry>String</entry>
                             <entry>Unique name of the queue</entry>
-                            <entry></entry>
+                            <entry/>
                         </row>
                         <row>
                             <entry>queue.entry</entry>
                             <entry>String</entry>
-                            <entry>Context where the queue will be bound in JNDI. There can be many.</entry>
-                            <entry></entry>
+                            <entry>Context where the queue will be bound in JNDI. There can be
+                                many.</entry>
+                            <entry/>
                         </row>
                         <row>
                             <entry>queue.durable</entry>
@@ -840,30 +856,31 @@
                             <entry>queue.filter</entry>
                             <entry>String</entry>
                             <entry>Optional filter expression for the queue</entry>
-                            <entry></entry>
+                            <entry/>
                         </row>
                         <row>
                             <entry><link linkend="using-jms.server.configuration"
                                 >topic</link></entry>
                             <entry>Topic</entry>
                             <entry>A topic to create and add to JNDI</entry>
-                            <entry></entry>
+                            <entry/>
                         </row>
                         <row>
                             <entry>topic.name (attribute)</entry>
                             <entry>String</entry>
                             <entry>Unique name of the topic</entry>
-                            <entry></entry>
+                            <entry/>
                         </row>
                         <row>
                             <entry>topic.entry</entry>
                             <entry>String</entry>
-                            <entry>Context where the topic will be bound in JNDI. There can be many.</entry>
-                            <entry></entry>
+                            <entry>Context where the topic will be bound in JNDI. There can be
+                                many.</entry>
+                            <entry/>
                         </row>
                     </tbody>
                 </tgroup>
             </table>
         </section>
-    </section>    
+    </section>
 </chapter>

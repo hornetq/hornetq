@@ -13,8 +13,8 @@
         <title>Starting and Stopping the standalone server</title>
         <para>In the distribution you will find a directory called <literal>bin</literal>.</para>
         <para><literal>cd</literal> into that directory and you'll find a unix/linux script called
-                <literal>run.sh</literal> and a windows batch file called
-            <literal>run.bat</literal></para>
+                <literal>run.sh</literal> and a windows batch file called <literal
+            >run.bat</literal></para>
         <para>To run on Unix/Linux type <literal>./run.sh</literal></para>
         <para>To run on Windows type <literal>run.bat</literal></para>
         <para>These scripts are very simple and basically just set-up the classpath and some JVM
@@ -79,11 +79,11 @@
         <para>For more information on configuring logging, please see the section <link
                 linkend="logging">configuring logging</link></para>
     </section>
-    <section>
+    <section id="using-server.configuration">
         <title>Configuration files</title>
-        <para>The configuration directory is specified on the classpath in the run scripts
-                <literal>run.sh</literal> and <literal>run.bat</literal> This directory can contain
-            the following files.</para>
+        <para>The configuration directory is specified on the classpath in the run scripts <literal
+                >run.sh</literal> and <literal>run.bat</literal> This directory can contain the
+            following files.</para>
         <itemizedlist>
             <listitem>
                 <para><literal>jbm-jboss-beans.xml</literal>. This is the JBoss Microcontainer beans
@@ -102,8 +102,8 @@
                 <para><literal>jbm-queues.xml</literal>. This file contains pre-defined queues,
                     queue settings and security settings. The file is optional - all this
                     configuration can also live in <literal>jbm-configuration.xml</literal>. In
-                    fact, the default configuration sets do not have a
-                        <literal>jbm.queues.xml</literal> file. The purpose of allowing queues to be
+                    fact, the default configuration sets do not have a <literal
+                        >jbm.queues.xml</literal> file. The purpose of allowing queues to be
                     configured in these files is to allow you to manage your queue configuration
                     over many files instead of being forced to maintain it in a single file. There
                     can be many <literal>jbm-queues.xml</literal> files on the classpath. All will
@@ -111,9 +111,9 @@
             </listitem>
             <listitem>
                 <para><literal>jbm-users.xml</literal> JBoss Messaging ships with a security manager
-                    impementation which obtains user credentials from the
-                        <literal>jbm-users.xml</literal> file. This file contains user, password and
-                    role information. For more information on security please see the section
+                    impementation which obtains user credentials from the <literal
+                        >jbm-users.xml</literal> file. This file contains user, password and role
+                    information. For more information on security please see the section
                     [LINK]</para>
             </listitem>
             <listitem>
@@ -132,6 +132,11 @@
                     handler is configured.</para>
             </listitem>
         </itemizedlist>
+        <note>
+            <para>The property <literal>file-deployment-enabled</literal> in the <literal
+                    >jbm-configuration.xml</literal> configuration when set to false mans that the
+                other configuration files are not loaded. This is true by default.</para>
+        </note>
     </section>
     <section id="server.microcontainer.configuration">
         <title>JBoss Microcontainer Beans File</title>
@@ -257,9 +262,9 @@ factoryMethod="getPlatformMBeanServer"/&gt;
     </section>
     <section id="usingserver.mainconfig">
         <title>The main configuration file.</title>
-        <para>The configuration for the JBoss Messaging core server is contained in
-                <literal>jbm-configuration.xml</literal>. This is what the FileConfiguration bean
-            uses to configure the messaging server.</para>
+        <para>The configuration for the JBoss Messaging core server is contained in <literal
+                >jbm-configuration.xml</literal>. This is what the FileConfiguration bean uses to
+            configure the messaging server.</para>
         <para>There are many attributes which you can configure JBoss Messaging. In most cases the
             defaults will do fine, in fact every attribute can be defaulted which means a file with
             a single empty <literal>configuration</literal> element is a valid configuration file.
