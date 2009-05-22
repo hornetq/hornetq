@@ -9,21 +9,22 @@
                >_JBM_GROUP_ID</literal> for JBoss Messaging Core API).</para>
       </listitem>
       <listitem>
-         <para>Messages in a message group will be all delivered to no more than one of the queue's
-            consumers. The consumer that receives the first message of a group will receive all the
-            messages that belong to this group.</para>
+         <para>Messages in a message group are always consumed by the same consumer, even if there
+            are many consumers on a queue. They pin all messages with the same group id to the same
+            consumer. If that consumer closes another consumer is chosen and will receive all
+            messages with the same group id.</para>
       </listitem>
-   </itemizedlist>
+   </itemizedlist>   
    <section>
       <title>Configuring Message Grouping</title>
       <para>Message grouping must be enabled in the address-setting configuration by using a
          specific <literal>distribution-policy-class</literal>:</para>
       <programlisting>
-          &lt;address-setting match="jms.queue.exampleQueue"&gt;
-             &lt;distribution-policy-class&gt;
-                org.jboss.messaging.core.server.impl.GroupingRoundRobinDistributor
-             &lt;/distribution-policy-class&gt;
-          &lt;/address-setting&gt;
+ &lt;address-setting match="jms.queue.exampleQueue"&gt;
+    &lt;distribution-policy-class&gt;
+       org.jboss.messaging.core.server.impl.GroupingRoundRobinDistributor
+    &lt;/distribution-policy-class&gt;
+ &lt;/address-setting&gt;
        </programlisting>
       <para>By default, <literal>distribution-policy-class</literal> is set to <literal
             >org.jboss.messaging.core.server.impl.RoundRobinDistributor</literal> and message groups
@@ -43,17 +44,17 @@
       <para>Within the same group, messages can also set a <literal>JMSXGroupSeq</literal>
          <literal>int</literal> property (starting at 1).</para>
       <programlisting>
-          // send 2 messages in the same group to ensure the same
-          // consumer will receive both
-          Message message = ...
-          message.setStringProperty("JMSXGroupID", "Group-0");
-          message.setIntProperty("JMSXGroupSeq", 1);
-          producer.send(message);
+ // send 2 messages in the same group to ensure the same
+ // consumer will receive both
+ Message message = ...
+ message.setStringProperty("JMSXGroupID", "Group-0");
+ message.setIntProperty("JMSXGroupSeq", 1);
+ producer.send(message);
 
-          message = ...
-          message.setStringProperty("JMSXGroupID", "Group-0");
-          message.setIntProperty("JMSXGroupSeq", 2);
-          producer.send(message);          
+ message = ...
+ message.setStringProperty("JMSXGroupID", "Group-0");
+ message.setIntProperty("JMSXGroupSeq", 2);
+ producer.send(message);          
        </programlisting>
    </section>
    <section>

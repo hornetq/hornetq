@@ -29,11 +29,11 @@
     <section>
         <title>Using Duplicate Detection for Message Sending</title>
         <para>Enabling duplicate message detection for sent messages is simple: you just need to set
-            a property on the message to a unique value. You can create the value however you like,
-            as long as it is unique. When the target server receives the message it will check if
-            that property is set, if it is, then it will check in its in memory cache if it has
-            already received a message with that value of the header. If it has received a message
-            with the same value before then it will ignore the message.</para>
+            a special property on the message to a unique value. You can create the value however
+            you like, as long as it is unique. When the target server receives the message it will
+            check if that property is set, if it is, then it will check in its in memory cache if it
+            has already received a message with that value of the header. If it has received a
+            message with the same value before then it will ignore the message.</para>
         <note>
             <para>Using duplicate detection to move messages between nodes can give you the same
                     <emphasis>once and only once</emphasis> delivery guarantees as if you were using
@@ -109,8 +109,8 @@ message.setStringProperty(HDR_DUPLICATE_DETECTION_ID.toString(), myUniqueID);
                 >use-duplicate-detection</parameter> to <literal>true</literal> when configuring a
             bridge in <literal>jbm-configuration.xml</literal>.</para>
         <para>The default value for this parameter is <literal>true</literal>.</para>
-        <para>For more information on core bridges and how to configure them see section
-            [LINK]</para>
+        <para>For more information on core bridges and how to configure them see the chapter on
+                <xref linkend="core-bridges">core bridges</xref>.</para>
     </section>
     <section>
         <title>Duplicate Detection and Cluster Connections</title>
@@ -121,14 +121,15 @@ message.setStringProperty(HDR_DUPLICATE_DETECTION_ID.toString(), myUniqueID);
                 <parameter>use-duplicate-detection</parameter> to <literal>true</literal> when
             configuring a cluster connection in <literal>jbm-configuration.xml</literal>.</para>
         <para>The default value for this parameter is <literal>true</literal>.</para>
-        <para>For more information on cluster connections and how to configure them see section
-            [LINK]</para>
+        <para>For more information on cluster connections and how to configure them see <xref
+                linkend="clusters">here</xref>.</para>
     </section>
     <section>
         <title>Duplicate Detection and Paging</title>
         <para>JBoss Messaging also uses duplicate detection when paging messages to storage. This is
             so when a message is depaged from storage and server failure occurs, we do not end up
             depaging the message more than once which could result in duplicate delivery.</para>
-        <para>For more information on paging and how to configure it see section [LINK]</para>
+        <para>For more information on paging and how to configure it please see <xref
+                linkend="paging">here</xref>.</para>
     </section>
 </chapter>

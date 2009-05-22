@@ -1,8 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <chapter id="appserver-integration">
     <title>Application Server Integration and JavaEE</title>
-    <para>JBM is fully integrated with the JBoss Application Server version 5.1. For details on
-        installing JBM in the Application Server refer to Quick Start guide.</para>
+    <para>JBoss Messaging can be easily installed in JBoss Application Server 5.1 or JBoss
+        Enterprise Application Platform 5.1 or later. For details on installing JBoss Messaging in
+        the JBoss Application Server refer to quick-start guide.</para>
+    <para>JBoss Messaging can also be integrated with any other JEE compliant application server by
+        using the JBoss Messaging JCA adapter.</para>
     <para>This section explains the basics behind configuring the different JEE components in the
         AS.</para>
     <section>
@@ -12,8 +15,8 @@
             consume messages from the JBM server and also how components such as EJB's or Servlet's
             can send messages.</para>
         <para>The JBM JCA adapter is deployed via the <literal>jms-ra.rar</literal> archive. The
-            configuration of the Adapter is found in this archive under
-                <literal>META-INF/ra.xml</literal>.</para>
+            configuration of the Adapter is found in this archive under <literal
+                >META-INF/ra.xml</literal>.</para>
         <para>The configuration will look something like the following:</para>
         <programlisting>&lt;resourceadapter>
       &lt;resourceadapter-class>org.jboss.messaging.ra.JBMResourceAdapter&lt;/resourceadapter
@@ -99,11 +102,11 @@
             </listitem>
             <listitem>
                 <para>The configuration for the outbound part of the adapter. This is used for
-                    creating JMS resources within EE components</para>
+                    creating JMS resources within EE components. </para>
             </listitem>
             <listitem>
                 <para>The configuration of the inbound part of the adapter. This is used for
-                    controlling the consumption of messages via MDB's.</para>
+                    controlling the consumption of messages via MDB's. </para>
             </listitem>
         </orderedlist>
         <section>
@@ -313,14 +316,18 @@
         </section>
         <section>
             <title>Adapter Outbound configuration</title>
-            <para>The outbound configuration should remain unchanged as they define Connection
-                Factories that are used by EE components. These Connection Factories can be defined
-                inside a configuration file that matches the name <literal>*-ds.xml</literal>.
-                You'll find a default <literal>jms-ds.xml</literal> configuration under the
-                    <literal>messaging.sar</literal> directory in the Jboss AS deployment. the
-                connection factories defined in the config file inherit their properties from the
-                main <literal>ra.xml</literal> config but can also be overridden, the following
-                example show how to define one.</para>
+            <para>The outbound configuration should remain unchanged as they define connection
+                factories that are used by JavaEE components. These Connection Factories can be
+                defined inside a configuration file that matches the name <literal
+                    >*-ds.xml</literal>. You'll find a default <literal>jms-ds.xml</literal>
+                configuration under the <literal>messaging.sar</literal> directory in the Jboss AS
+                deployment. The connection factories defined in the config file inherit their
+                properties from the main <literal>ra.xml</literal> config but can also be
+                overridden, the following example show how to define one.</para>
+            <para>Please note that this configuration only applies to install the JBM resource
+                adapter in the JBoss Application Server. If you are using another JEE application
+                server please refer to your application servers documentation for how to do
+                this.</para>
             <programlisting>&lt;tx-connection-factory>
       &lt;jndi-name>RemoteJmsXA&lt;/jndi-name>
       &lt;xa-transaction/>
@@ -395,17 +402,22 @@ public class MDBRemoteExample implements MessageListener
       }
    }
 }</programlisting>
-        <para>In this example we have configured the MDB to consume from the queue named
-                <literal>queue/testQueue</literal>. It is also possible to override properties for
-            the inbound resource adapter here is well. Here the MDB is configured to connect to a
+        <para>In this example we have configured the MDB to consume from the queue named <literal
+                >queue/testQueue</literal>. It is also possible to override properties for the
+            inbound resource adapter here is well. Here the MDB is configured to connect to a
             different server.</para>
         <para>It is also possible to define these properties in the <literal>web.xml</literal>
             deployment descriptor. Refer to the JBoss AS documentation on how to do this.</para>
     </section>
     <section>
-        <title>High Availability JNDI (HAJNDI)</title>
-        <para>When using JBM in a clustered environment you will need to use the HAJNDI. This will
-            round robin look ups for connection factories and give load balanced connections.</para>
+        <title>High Availability JNDI (HA-JNDI)</title>
+        <para>If you are using JNDI to look-up JMS queues, topics and connection factories from a
+            cluster of servers, it is likely you will want to use HA-JNDI so that your JNDI look-ups
+            will continue to work if one or more of the servers in the cluster fail.</para>
+        <para>HA-JNDI is a JBoss Application Server service which allows you to use JNDI from
+            clients without them having to know the exact JNDI connection details of every server in
+            the cluster. This service is only available if using a cluster of JBoss Application
+            Server instances.</para>
         <para>To use it use the following properties when connecting to JNDI.</para>
         <programlisting>Hashtable&lt;String, String> jndiParameters = new Hashtable&lt;String, String>();
 jndiParameters.put("java.naming.factory.initial", 
@@ -414,15 +426,44 @@ jndiParameters.put("java.naming.factory.url.pkgs=",
     "org.jboss.naming:org.jnp.interfaces");
 
 initialContext = new InitialContext(jndiParameters);</programlisting>
-        <para>For more information visit <ulink
+        <para>For more information on using HA-JNDI see the <ulink
                 url="http://www.jboss.org/file-access/default/members/jbossas/freezone/docs/Clustering_Guide/5/html/clustering-jndi.html"
-                >here</ulink></para>
+                >JBoss Application Server clustering documentation</ulink></para>
     </section>
     <section>
         <title>The JMS Bridge</title>
-        <para>The JMS bridge allows different JMS servers from different JMS providers to be
-            'bridged' together. A bridge will have a source destination from which it receives
-            messages and a target destination to which it sends messages.</para>
+        <para>JBoss Messaging includes a fully functional message bridge.</para>
+        <para>The function of the bridge is to consume messages from a source queue or topic, and
+            send them to a target queue or topic, typically on a different server.</para>
+        <para>The source and target servers do not have to be in the same cluster which makes
+            bridging suitable for reliably sending messages from one cluster to another, for
+            instance across a WAN, and where the connection may be unreliable.</para>
+        <para>A bridge is deployed inside a JBoss AS instance. The instance can be the same instance
+            as either the source or target server. Or could be on a third, separate JBoss AS
+            instance.</para>
+        <para>A bridge is deployed as an MBean inside JBoss AS. Deployment is trivial - just drop
+            the MBean descriptor into the deploy directory of a JBoss configuration which contains
+            JBoss Messaging.</para>
+        <para>An example in docs/example/bridge demonstrates a simple bridge being deployed in JBoss
+            AS, and moving messages from the source to the target destination</para>
+        <para>The bridge can also be used to bridge messages from other non JBoss Messaging JMS
+            servers, as long as they are JMS 1.1 compliant.<note>
+                <para>Don't confuse a JMS bridge with a core bridge. A JMS bridge can be used to
+                    bridge any two JMS 1.1 compliant JMS providers and uses the JMS API. A <xref
+                        linkend="core-bridges">core bridge</xref> is used to bridge any two JBoss
+                    Messaging instances and uses the core API. Always use a core bridge if you can
+                    in preference to a JMS bridge. The core bridge will typically provide better
+                    performance than a JMS bridge. Also the core bridge can provide <emphasis>once
+                        and only once</emphasis> delivery guarantees without using XA.</para>
+            </note></para>
+        <para>The bridge has built in resilience to failure so if the source or target server
+            connetion is lost, e.g. due to network failure, the bridge will retry connecting to the
+            source and/or target until they come back online. When it comes back online it will
+            resume operation as normal.</para>
+        <para>The bridge can be configured with an optional JMS selector, so it will only consume
+            messages matching that JMS selector</para>
+        <para>It can be configured to consume from a queue or a topic. When it consumes from a topic
+            it can be configured to consume using a non durable or durable subscription</para>
         <para>The bridge is deployed by the JBoss Micro Container via a beans configuration file.
             This would typically be deployed inside the JBoss Application Server and the following
             example shows an example of a beans file that bridges 2 JBM servers although here they
@@ -552,28 +593,29 @@ initialContext = new InitialContext(jndiParameters);</programlisting>
       &lt;/bean>
 
 &lt;/deployment></programlisting>
+        <para>TODO TODO - please copy the documentation on these params from the JBM 1.4 docs</para>
         <para>The main bean deployed is the <literal>JMSBridge</literal> bean. A description of each
             of its constructor parameters in order follows:</para>
         <itemizedlist>
             <listitem>
-                <para>Source Connection Factory Factory - This injects the
-                        <literal>SourceCFF</literal> bean that is the connection factory defined
-                    later in the beans file.</para>
+                <para>Source Connection Factory Factory - This injects the <literal
+                        >SourceCFF</literal> bean that is the connection factory defined later in
+                    the beans file.</para>
             </listitem>
             <listitem>
-                <para>Target Connection Factory Factory - This injects the
-                        <literal>TargetCFF</literal> bean that is the connection factory defined
-                    later in the beans file.</para>
+                <para>Target Connection Factory Factory - This injects the <literal
+                        >TargetCFF</literal> bean that is the connection factory defined later in
+                    the beans file.</para>
             </listitem>
             <listitem>
-                <para>Source Destination Factory Factory - This injects the
-                        <literal>SourceDestinationFactory</literal> bean that is used to create or
-                    lookup the sourcedestination.</para>
+                <para>Source Destination Factory Factory - This injects the <literal
+                        >SourceDestinationFactory</literal> bean that is used to create or lookup
+                    the sourcedestination.</para>
             </listitem>
             <listitem>
-                <para>Target Destination Factory Factory - This injects the
-                        <literal>TargetDestinationFactory</literal> bean that is used to create or
-                    lookup the target destination.</para>
+                <para>Target Destination Factory Factory - This injects the <literal
+                        >TargetDestinationFactory</literal> bean that is used to create or lookup
+                    the target destination.</para>
             </listitem>
             <listitem>
                 <para>Source User Name - the user name to use for the source connection.</para>
@@ -604,7 +646,7 @@ initialContext = new InitialContext(jndiParameters);</programlisting>
             </listitem>
             <listitem>
                 <para>Batch Time - The maximum time to wait before committing a transaction anyway
-                    (in MS).</para>
+                    (in milliseconds).</para>
             </listitem>
             <listitem>
                 <para>Subscription Name - The name of the subscription if using a durable subscriber
@@ -616,9 +658,9 @@ initialContext = new InitialContext(jndiParameters);</programlisting>
             </listitem>
             <listitem>
                 <para>Concatenate Message ID - If this is set the message ID from the received
-                    message will be concatenated as message header
-                        <literal>JBM_BRIDGE_MSG_ID_LIST</literal>. This is because it will change
-                    once the bridge forwards it. When passing through multiple bridges each ID is
+                    message will be concatenated as message header <literal
+                        >JBM_BRIDGE_MSG_ID_LIST</literal>. This is because it will change once the
+                    bridge forwards it. When passing through multiple bridges each ID is
                     concatenated to the list.</para>
                 <note>
                     <para>when you receive the message you can send back a response using the
@@ -635,15 +677,14 @@ initialContext = new InitialContext(jndiParameters);</programlisting>
             <para>In this example we have used the default provided by JBM that look up the
                 connection factory using JNDI. For other Application Servers or JMS providers a new
                 implementation may have to be provided. This can easily be done by implementing the
-                interface
-                <literal>org.jboss.messaging.jms.bridge.ConnectionFactoryFactory</literal>.</para>
+                interface <literal
+                >org.jboss.messaging.jms.bridge.ConnectionFactoryFactory</literal>.</para>
         </section>
         <section>
             <title>Source and Target Destination Factories</title>
             <para>Again, similarly, these are used to create or lookup up the destinations. To
-                provide a new implementation simple implement
-                    <literal>org.jboss.messaging.jms.bridge.DestinationFactory</literal>
-                interface.</para>
+                provide a new implementation simple implement <literal
+                    >org.jboss.messaging.jms.bridge.DestinationFactory</literal> interface.</para>
         </section>
         <section>
             <title>Quality Of Service</title>
@@ -696,9 +737,9 @@ initialContext = new InitialContext(jndiParameters);</programlisting>
             </section>
             <section>
                 <title>Example</title>
-                <para>The <literal>javaee/jms-bridge</literal> example shows how to configure and
-                    use a JMS Bridge to send messages to the source destination and consume them
-                    from the target destination.</para>
+                <para>The <xref linkend="jms-bridge-example">jms bridge example</xref> shows how to
+                    configure and use a JMS Bridge to send messages to the source destination and
+                    consume them from the target destination.</para>
             </section>
         </section>
     </section>
@@ -707,7 +748,7 @@ initialContext = new InitialContext(jndiParameters);</programlisting>
         <para><emphasis>XA recovery</emphasis> deals with system or application failures to ensure
             that of a transaction are applied consistently to all resources affected by the
             transaction, even if any of the application processes or the machine hosting them crash
-            or lose network connectivity. For more information on XA Recovery, refer to <ulink
+            or lose network connectivity. For more information on XA Recovery,please refer to <ulink
                 url="http://www.jboss.org/community/wiki/JBossTransactions">JBoss
                 Transactions</ulink>.</para>
         <para>When JBoss Messaging is integrated with JBoss AS, it can take advantage of JBoss
@@ -717,7 +758,7 @@ initialContext = new InitialContext(jndiParameters);</programlisting>
             (depending on the transaction outcome) when the server is restarted.</para>
         <section>
             <title>XA Recovery Configuration</title>
-            <para>To enable JBoss Messaging's XA Recovery, the following property must be added to
+            <para>To enable JBoss Messagings XA Recovery, the following property must be added to
                 the <literal>jta</literal> section of <literal>conf/jbossts-properties.xml</literal>
                 of JBoss AS profiles:</para>
             <programlisting>
@@ -730,15 +771,15 @@ initialContext = new InitialContext(jndiParameters);</programlisting>
    &lt;/properties&gt;
          </programlisting>
             <para>This informs the recovery manager that it can recovers JBoss Messaging XA
-                Resources using the <literal>XAConnectionFactory</literal> bound to
-                    <literal>java:/XAConnectionFactory</literal> in JNDI. A ConnectionFactory must
-                have been configured with this JNDI name in <literal>jbm-jms.xml</literal> (see
-                    <xref linkend="using-jms.server.configuration"/>).</para>
+                Resources using the <literal>XAConnectionFactory</literal> bound to <literal
+                    >java:/XAConnectionFactory</literal> in JNDI. A ConnectionFactory must have been
+                configured with this JNDI name in <literal>jbm-jms.xml</literal> (see <xref
+                    linkend="using-jms.server.configuration"/>).</para>
         </section>
         <section>
             <title>Example</title>
-            <para>The <literal>javaee/xarecovery</literal> example shows how to configure XA
-                Recovery and recover messages after a server crash.</para>
+            <para>The <xref linkend="xa-recovery-example">xa recovery example</xref> shows how to
+                configure XA Recovery and recover messages after a server crash.</para>
         </section>
     </section>
 </chapter>

@@ -1,22 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <chapter id="management">
    <title>Management</title>
-   <para>JBoss Messaging has a management API that allows a user to modify a server configuration,
-      create new resources (e.g. JMS queues and topics), inspect these resources (e.g. how many
-      messages are currently held in a queue) and interact with it (e.g. to remove messages from a
-      queue). All the operations allows a client to <emphasis>manage</emphasis> JBoss
-      Messaging.</para>
+   <para>JBoss Messaging has an extensive management API that allows a user to modify a server
+      configuration, create new resources (e.g. JMS queues and topics), inspect these resources
+      (e.g. how many messages are currently held in a queue) and interact with it (e.g. to remove
+      messages from a queue). All the operations allows a client to <emphasis>manage</emphasis>
+      JBoss Messaging. It also allows clients to subscribe to management notifications.</para>
    <para>There are 3 ways to manage JBoss Messaging:</para>
    <itemizedlist>
       <listitem>
          <para>Using JMX -- JMX is the standard way to manage Java applications</para>
       </listitem>
       <listitem>
-         <para>Using Core API -- management operations are sent to JBoss Messaging server using
-               <emphasis>Core messages</emphasis></para>
+         <para>Using the core API -- management operations are sent to JBoss Messaging server using
+               <emphasis>core messages</emphasis></para>
       </listitem>
       <listitem>
-         <para>Using JMS API -- management operations are sent to JBoss Messaging server using
+         <para>Using the JMS API -- management operations are sent to JBoss Messaging server using
                <emphasis>JMS messages</emphasis></para>
       </listitem>
    </itemizedlist>
@@ -42,24 +42,25 @@
                   >org.jboss.messaging.jms.server.management</literal> package</para>
          </listitem>
       </itemizedlist>
-      <para>The way to invoke a <emphasis>management operations</emphasis> depends whether JMX, Core
-         messages, or JMS Messages are used.</para>
+      <para>The way to invoke a <emphasis>management operations</emphasis> depends whether JMX, core
+         messages, or JMS messages are used.</para>
       <section>
          <title>Core Management API</title>
-         <para>JBoss Messaging defines a Core Management API to manage Core resources.</para>
+         <para>JBoss Messaging defines a core management API to manage core resources. For full
+            details of the API please consult the javadoc. In summary:</para>
          <section>
             <title>Core Server Management</title>
             <itemizedlist>
                <listitem>
-                  <para>Creating and destroying queues</para>
-                  <para>Core queues can be created (resp. destroyed) using the management operations
-                        <literal>createQueue()</literal> or <literal>deployQueue()</literal> (resp.
-                        <literal>destroyQueue()</literal>) on the <literal
+                  <para>Creating, deploying and destroying queues</para>
+                  <para>Core queues can be created or destroyed using the management operations
+                        <literal>createQueue()</literal> or <literal>deployQueue()</literal> or
+                        <literal>destroyQueue()</literal>)on the <literal
                         >MessagingServerControlMBean</literal> (with the ObjectName <literal
                         >org.jboss.messaging:module=Core,type=Server</literal> or the resource name
                         <literal>core.server</literal>)</para>
-                  <para><literal>deployQueue</literal> will fail if the queue already exists while
-                        <literal>createQueue</literal> will do nothing.</para>
+                  <para><literal>createQueue</literal> will fail if the queue already exists while
+                        <literal>deployQueue</literal> will do nothing.</para>
                </listitem>
                <listitem>
                   <para>Listing and closing remote connections</para>
@@ -74,20 +75,20 @@
                <listitem>
                   <para>Transaction heuristic operations</para>
                   <para>In case of a server crash, when the server restarts, it it possible that
-                     some transaction requires an manual intervention. The <literal
+                     some transaction requires manual intervention. The <literal
                         >listPreparedTransactions()</literal> method lists the transactions which
                      are in the prepared states (the transactions are represented as opaque Base64
-                     Strings.) To commit (resp. rollback) a given prepared transaction, the <literal
-                        >commitPreparedTransaction</literal>() (resp. <literal
-                        >rollbackPreparedTransaction()</literal>) method can be used to resolve
+                     Strings.) To commit or rollback a given prepared transaction, the <literal
+                        >commitPreparedTransaction</literal>() or <literal
+                        >rollbackPreparedTransaction()</literal> method can be used to resolve
                      heuristic transactions.</para>
                </listitem>
                <listitem>
                   <para>Enabling and resetting Message counters</para>
-                  <para>Message counters can be enabled (resp. disabled) using the <literal
-                        >enableMessageCounters()</literal> (resp. <literal
-                        >disableMessageCounters()</literal>) method. To reset message counters, it
-                     is possible to invoke <literal>resetAllMessageCounters()</literal> and <literal
+                  <para>Message counters can be enabled or disabled using the <literal
+                        >enableMessageCounters()</literal> or <literal
+                        >disableMessageCounters()</literal> method. To reset message counters, it is
+                     possible to invoke <literal>resetAllMessageCounters()</literal> and <literal
                         >resetAllMessageCounterHistories()</literal> methods.</para>
                </listitem>
                <listitem>
@@ -109,8 +110,8 @@
             <itemizedlist>
                <listitem>
                   <para>Modifying roles and permissions for an address</para>
-                  <para>You can add (resp. remove) roles associated to a queue using the <literal
-                        >addRole()</literal> (resp. <literal>removeRole()</literal>) method. You can
+                  <para>You can add or remove roles associated to a queue using the <literal
+                        >addRole()</literal> or. <literal>removeRole()</literal> methods. You can
                      list all the roles associated to the queue with the <literal
                         >getRoles()</literal> method</para>
                </listitem>
@@ -118,15 +119,15 @@
          </section>
          <section>
             <title>Core Queue Management</title>
-            <para>The bulk of the Core management API deals with Core queues. The <literal
+            <para>The bulk of the core management API deals with core queues. The <literal
                   >QueueControlMBean</literal> class defines the Core queue management operations
                (with the ObjectName <literal
                   >org.jboss.messaging:module=Core,type=Queue,address="&lt;the bound
                   address&gt;",name="&lt;the queue name&gt;"</literal> or the resource name <literal
                   >core.queue.&lt;the queue name&gt;</literal>).</para>
-            <para>Most of the management operations on the queues takes either a single message ID
-               (e.g. to remove a single message) or a filter (e.g. to expire all messages with a
-               given property.)</para>
+            <para>Most of the management operations on queues take either a single message ID (e.g.
+               to remove a single message) or a filter (e.g. to expire all messages with a given
+               property.)</para>
             <itemizedlist>
                <listitem>
                   <para>Expiring, sending to a dead letter address and moving messages</para>
@@ -188,77 +189,77 @@
          </section>
          <section>
             <title>Other Core Resources Management</title>
-            <para>JBoss Messaging allow to start and stop its remote resources (acceptors, diverts,
-               bridges, etc.) so that a server can be made off line for a given period of time
+            <para>JBoss Messaging allows to start and stop its remote resources (acceptors, diverts,
+               bridges, etc.) so that a server can be taken off line for a given period of time
                without stopping it completely (e.g. if other management operations must be performed
                such as resolving heuristic transactions). These resources are:</para>
             <itemizedlist>
                <listitem>
                   <para>Acceptors</para>
-                  <para>They can be started (resp. stopped) using the <literal>start()</literal>
-                     (resp. <literal>stop()</literal>) method on the <literal
+                  <para>They can be started or stopped using the <literal>start()</literal> or.
+                        <literal>stop()</literal> method on the <literal
                         >AcceptorControlMBean</literal> class (with the ObjectName <literal
                         >org.jboss.messaging:module=Core,type=Acceptor,name="&lt;the acceptor
                         name&gt;"</literal> or the resource name <literal>core.acceptor.&lt;the
-                        address name&gt;</literal>). Acceptor's parameters can be retrieved using
+                        address name&gt;</literal>). The acceptors parameters can be retrieved using
                      the <literal>AcceptorControlMBean</literal> attributes (see <xref
                         linkend="configuring-transports.acceptors"/>)</para>
                </listitem>
                <listitem>
                   <para>Diverts</para>
-                  <para>They can be started (resp. stopped) using the <literal>start()</literal>
-                     (resp. <literal>stop()</literal>) method on the <literal
+                  <para>They can be started or stopped using the <literal>start()</literal> or
+                        <literal>stop()</literal> method on the <literal
                         >DivertControlMBean</literal> class (with the ObjectName <literal
                         >org.jboss.messaging:module=Core,type=Divert,name=&lt;the divert
                         name&gt;</literal> or the resource name <literal>core.divert.&lt;the divert
-                        name&gt;</literal>). Divert's parameters can be retrieved using the <literal
+                        name&gt;</literal>). Diverts parameters can be retrieved using the <literal
                         >DivertControlMBean</literal> attributes (see <xref linkend="diverts"
                      />)</para>
                </listitem>
                <listitem>
                   <para>Bridges</para>
-                  <para>They can be started (resp. stopped) using the <literal>start()</literal>
-                     (resp. <literal>stop()</literal>) method on the <literal
+                  <para>They can be started or stopped using the <literal>start()</literal> (resp.
+                        <literal>stop()</literal>) method on the <literal
                         >BridgeControlMBean</literal> class (with the ObjectName <literal
                         >org.jboss.messaging:module=Core,type=Bridge,name="&lt;the bridge
                         name&gt;"</literal> or the resource name <literal>core.bridge.&lt;the bridge
-                        name&gt;</literal>). Bridge's parameters can be retrieved using the <literal
+                        name&gt;</literal>). Bridges parameters can be retrieved using the <literal
                         >BridgeControlMBean</literal> attributes (see <xref linkend="core-bridges"
                      />)</para>
                </listitem>
                <listitem>
                   <para>Broadcast groups</para>
-                  <para>They can be started (resp. stopped) using the <literal>start()</literal>
-                     (resp. <literal>stop()</literal>) method on the <literal
+                  <para>They can be started or stopped using the <literal>start()</literal> or
+                        <literal>stop()</literal> method on the <literal
                         >BroadcastGroupControlMBean</literal> class (with the ObjectName <literal
                         >org.jboss.messaging:module=Core,type=BroadcastGroup,name="&lt;the broadcast
                         group name&gt;"</literal> or the resource name <literal
                         >core.broadcastgroup.&lt;the broadcast group name&gt;</literal>). Broadcast
-                     group's parameters can be retrieved using the <literal
+                     groups parameters can be retrieved using the <literal
                         >BroadcastGroupControlMBean</literal> attributes (see <xref
                         linkend="clusters.broadcast-groups"/>)</para>
                </listitem>
                <listitem>
                   <para>Discovery groups</para>
-                  <para>They can be started (resp. stopped) using the <literal>start()</literal>
-                     (resp. <literal>stop()</literal>) method on the <literal
+                  <para>They can be started or stopped using the <literal>start()</literal> or
+                        <literal>stop()</literal> method on the <literal
                         >DiscoveryGroupControlMBean</literal> class (with the ObjectName <literal
                         >org.jboss.messaging:module=Core,type=DiscoveryGroup,name="&lt;the discovery
                         group name&gt;"</literal> or the resource name <literal
                         >core.discovery.&lt;the discovery group name&gt;</literal>). Discovery
-                     group's parameters can be retrieved using the <literal
+                     groups parameters can be retrieved using the <literal
                         >DiscoveryGroupControlMBean</literal> attributes (see <xref
                         linkend="clusters.discovery-groups"/>)</para>
                </listitem>
                <listitem>
                   <para>Cluster connections</para>
-                  <para>They can be started (resp. stopped) using the <literal>start()</literal>
-                     (resp. <literal>stop()</literal>) method on the <literal
+                  <para>They can be started or stopped using the <literal>start()</literal> or
+                        <literal>stop()</literal> method on the <literal
                         >ClusterConnectionControlMBean</literal> class (with the ObjectName <literal
                         >org.jboss.messaging:module=Core,type=ClusterConnection,name="&lt;the
                         cluster connection name&gt;"</literal> or the resource name <literal
                         >core.clusterconnection.&lt;the cluster connection name&gt;</literal>).
-                     Cluster connection's parameters can be retrieved using the <literal
+                     Cluster connections parameters can be retrieved using the <literal
                         >ClusterConnectionControlMBean</literal> attributes (see <xref
                         linkend="clusters.cluster-connections"/>)</para>
                </listitem>
@@ -268,7 +269,7 @@
       <section>
          <title>JMS Management API</title>
          <para>JBoss Messaging defines a JMS Management API to manage JMS <emphasis>administrated
-               objects</emphasis>.</para>
+               objects</emphasis> (i.e. JMS queues, topics and connection factories).</para>
          <section>
             <title>JMS Server Management</title>
             <para>JMS Resources (connection factories and destinations) can be created using the
@@ -278,28 +279,27 @@
             <itemizedlist>
                <listitem>
                   <para>Creating/destroying connection factories</para>
-                  <para>JMS connection factories can be created (resp. destroyed) using the <literal
-                        >createConnectionFactory()</literal> methods (resp. <literal
-                        >destroyConnectionFactory()</literal>) methods. These connection factories
+                  <para>JMS connection factories can be created or destroyed using the <literal
+                        >createConnectionFactory()</literal> methods or <literal
+                        >destroyConnectionFactory()</literal> methods. These connection factories
                      are bound to JNDI so that JMS clients can look them up</para>
                </listitem>
                <listitem>
                   <para>Creating/destroying queues</para>
-                  <para>JMS queues can be created (resp. destroyed) using the <literal
-                        >createQueue()</literal> methods (resp. <literal>destroyQueue()</literal>)
+                  <para>JMS queues can be created or destroyed using the <literal
+                        >createQueue()</literal> methods or <literal>destroyQueue()</literal>
                      methods. These queues are bound to JNDI so that JMS clients can look them
                      up</para>
                </listitem>
                <listitem>
                   <para>Creating/destroying topics</para>
-                  <para>JMS topics can be created (resp. destroyed) using the <literal
-                        >createTopic()</literal> methods (resp. <literal>destroyTopic()</literal>)
-                     methods. These topics are bound to JNDI so that JMS clients can look them
-                     up</para>
+                  <para>JMS topics can be created or destroyed using the <literal
+                        >createTopic()</literal> or <literal>destroyTopic()</literal> methods. These
+                     topics are bound to JNDI so that JMS clients can look them up</para>
                </listitem>
                <listitem>
                   <para>Listing and closing remote connections</para>
-                  <para>JMS Client's remote addresses can be retrieved using <literal
+                  <para>JMS Clients remote addresses can be retrieved using <literal
                         >listRemoteAddresses()</literal>. It is also possible to close the
                      connections associated with a remote address using the <literal
                         >closeConnectionsForAddress()</literal> method.</para>
@@ -330,14 +330,12 @@
          </section>
          <section>
             <title>JMS Queue Management</title>
-            <para>JMS Queues can be managed using the <literal>JMSQueueControlMBean</literal> class
+            <para>JMS queues can be managed using the <literal>JMSQueueControlMBean</literal> class
                (with the ObjectName <literal>org.jboss.messaging:module=JMS,type=Queue,name="&lt;the
                   queue name&gt;"</literal> or the resource name <literal>jms.queue.&lt;the queue
                   name&gt;</literal>). </para>
-            <para>
-               <literal>The management operations on a JMS queue are very similar to the operations
-                  on a Core queue.</literal>
-            </para>
+            <para><emphasis>The management operations on a JMS queue are very similar to the
+                  operations on a core queue. </emphasis></para>
             <itemizedlist>
                <listitem>
                   <para>Expiring, sending to a dead letter address and moving messages</para>
@@ -404,7 +402,7 @@
             <itemizedlist>
                <listitem>
                   <para>Listing subscriptions and messages</para>
-                  <para>JMS topic's subscriptions can be listed using the <literal
+                  <para>JMS topics subscriptions can be listed using the <literal
                         >listAllSubscriptions()</literal>, <literal
                         >listDurableSubscriptions()</literal>, <literal
                         >listNonDurableSubscriptions()</literal> methods. These methods return
@@ -419,7 +417,7 @@
                         >dropDurableSubscription()</literal> method.</para>
                </listitem>
                <listitem>
-                  <para>Counting subscription's messages</para>
+                  <para>Counting subscriptions messages</para>
                   <para>The <literal>countMessagesForSubscription()</literal> method can be used to
                      know the number of messages held for a given subscription (with an optional
                      message selector to know the number of messages matching the selector)</para>
@@ -457,8 +455,8 @@
                <literal>jmx-management-enabled</literal> to <literal>false</literal> in <literal
                >jbm-configuration.xml</literal>:</para>
          <programlisting>
-   &lt;!-- false to disable JMX management for JBoss Messaging --&gt;
-   &lt;jmx-management-enabled&gt;false&lt;/jmx-management-enabled&gt;            
+&lt;!-- false to disable JMX management for JBoss Messaging --&gt;
+&lt;jmx-management-enabled&gt;false&lt;/jmx-management-enabled&gt;            
          </programlisting>
          <para>If JMX is enabled, JBoss Messaging can be managed locally using <literal
                >jconsole</literal>. Remote connections to JMX are not enabled by default for
@@ -471,12 +469,11 @@
                MBeanServer</literal> to register its MBeans. This is configured in JBoss
             Microcontainer Beans file (see <xref linkend="server.microcontainer.configuration"
             />):</para>
-         <programlisting>
-   &lt;!-- MBeanServer --&gt;
-   &lt;bean name="MBeanServer" class="javax.management.MBeanServer"&gt;
-      &lt;constructor factoryClass="java.lang.management.ManagementFactory"
+         <programlisting>&lt;!-- MBeanServer --&gt;
+&lt;bean name="MBeanServer" class="javax.management.MBeanServer"&gt;
+   &lt;constructor factoryClass="java.lang.management.ManagementFactory"
                          factoryMethod="getPlatformMBeanServer" /&gt;
-   &lt;/bean&gt;            
+&lt;/bean&gt;            
          </programlisting>
       </section>
       <section>
@@ -507,7 +504,7 @@
          will handle it, extract the information, invoke the operation on the managed resources and
          send a <emphasis>management reply</emphasis> to the management message's reply-to address
          (specified by <literal>ClientMessageImpl.REPLYTO_HEADER_NAME</literal>). </para>
-      <para>A <literal>ClientConsumer</literal> can be used to consumed the management reply and
+      <para>A <literal>ClientConsumer</literal> can be used to consume the management reply and
          retrieve the result of the operation (if any) stored in the reply's body. For portability,
          results are returned as a <ulink url="http://json.org">JSON</ulink> String rather than Java
          Serialization (the <literal
@@ -517,27 +514,27 @@
          Core messages:</para>
       <orderedlist>
          <listitem>
-            <para>create a <literal>ClientRequestor</literal> to send messages to the management
+            <para>Create a <literal>ClientRequestor</literal> to send messages to the management
                address and receive replies</para>
          </listitem>
          <listitem>
-            <para>create a <literal>ClientMessage</literal></para>
+            <para>Create a <literal>ClientMessage</literal></para>
          </listitem>
          <listitem>
-            <para>use the helper class <literal
+            <para>Use the helper class <literal
                   >org.jboss.messaging.core.client.management.impl.ManagementHelper</literal> to
                fill the message with the management properties</para>
          </listitem>
          <listitem>
-            <para>send the message using the <literal>ClientRequestor</literal></para>
+            <para>Send the message using the <literal>ClientRequestor</literal></para>
          </listitem>
          <listitem>
-            <para>use the helper class <literal
+            <para>Use the helper class <literal
                   >org.jboss.messaging.core.client.management.impl.ManagementHelper</literal> to
                retrieve the operation result from the management reply</para>
          </listitem>
       </orderedlist>
-      <para>For example, to know the number of messages in the Core queue <literal
+      <para>For example, to find out the number of messages in the core queue <literal
             >exampleQueue</literal>:</para>
       <programlisting>
    ClientSession session = ...
@@ -550,14 +547,14 @@
       </programlisting>
       <para>Management operation name and parameters must conform to the Java interfaces defined in
          the <literal>management</literal> packages.</para>
-      <para>Name of the resources are built using the helper class <literal
+      <para>Names of the resources are built using the helper class <literal
             >org.jboss.messaging.core.management.ResourceNames</literal> and are straightforward
             (<literal>core.queue.exampleQueue</literal> for the Core Queue <literal
             >exampleQueue</literal>, <literal>jms.topic.exampleTopic</literal> for the JMS Topic
             <literal>exampleTopic</literal>, etc.).</para>
       <section id="management.core.configuration">
          <title>Configuring Core Management</title>
-         <para>the management address to send management messages is configured in <literal
+         <para>The management address to send management messages is configured in <literal
                >jbm-configuration.xml</literal>:</para>
          <programlisting>
    &lt;management-address&gt;jbm.management&lt;/management-address&gt;
@@ -577,9 +574,9 @@
    </section>
    <section id="management.jms">
       <title>Using Management Via JMS</title>
-      <para>Using JMS messages to manage JBoss Messaging is very similar to using Core API.</para>
-      <para>An important difference is that JMS requires a JMS Queue to send the messages to(instead
-         of an address for the Core API).</para>
+      <para>Using JMS messages to manage JBoss Messaging is very similar to using core API.</para>
+      <para>An important difference is that JMS requires a JMS queue to send the messages to
+         (instead of an address for the core API).</para>
       <para>The <emphasis>management queue</emphasis> is a special queue and needs to be
          instantiated directly by the client:</para>
       <programlisting>
@@ -625,8 +622,8 @@
       </programlisting>
       <section>
          <title>Configuring JMS Management</title>
-         <para>Whether JMS or Core API is used for management, the configuration steps are the same
-            (see <xref linkend="management.core.configuration"/>).</para>
+         <para>Whether JMS or the core API is used for management, the configuration steps are the
+            same (see <xref linkend="management.core.configuration"/>).</para>
       </section>
       <section>
          <title>Example</title>
@@ -636,7 +633,7 @@
       </section>
    </section>
    <section id="management.replication">
-      <title>Management Replication</title>
+      <title>Management Cluster Password</title>
       <para>JBoss Messaging allows <emphasis>replication</emphasis> of a live server to a backup
          server. This impacts management as resources created on the live server (e.g. a core
          address) must also be created on the backup server. Otherwise, when failover occurs, the
@@ -648,8 +645,8 @@
          resources and state. For example, you only need to manage the live server: if a queue is
          created on the live server, JBoss Messaging will ensure that the same resource will also be
          created on the backup server.</para>
-      <para>If Core messages or JMS messages are used to invoke management operations, replication
-         is handled automatically by JBoss Messaging.</para>
+      <para>If core or JMS messages are used to invoke management operations, replication is handled
+         automatically by JBoss Messaging.</para>
       <para>To allow this management replication with JMX, JBoss Messaging defines a
             <emphasis>management cluster password</emphasis>: this special password <emphasis>must
             be shared by all nodes</emphasis>. To configure it, change the value in <literal
@@ -658,7 +655,8 @@
    &lt;management-cluster-password&gt;CHANGE ME!!&lt;/management-cluster-password&gt;
       </programlisting>
       <para>By default, its value is <literal>CHANGE ME!!</literal>. It is strongly suggested to
-         change it to a safer value (this password is never sent on the network).</para>
+         change it to a safer value. If you don't change it from the default JBoss Messaging will
+         detect this and pester you with a warning on every start-up.</para>
       <para>JBoss Messaging internally uses Core messages to replicate management operations between
          the live and backup server when JMX is used. By default, there is a timeout of 5s (5000ms)
          to send a management request from the live server to the backup server and wait for a
@@ -706,13 +704,13 @@
          <para>JBoss Messaging defines a special <emphasis>management notification
                address</emphasis>. Core queues can be bound to this address so that clients will
             receive management notifications as Core messages</para>
-         <para>A Core client which wants to receive management notifications must create a Core
+         <para>A Core client which wants to receive management notifications must create a core
             queue bound to the management notification address. It can then receive the
             notifications from its queue.</para>
-         <para>Notifications messages are regular Core messages with additional properties
+         <para>Notifications messages are regular core messages with additional properties
             corresponding to the notification (its type, when it occurred, the resources which were
             concerned, etc.).</para>
-         <para>Since notifications are regular Core messages, it is possible to use message
+         <para>Since notifications are regular core messages, it is possible to use message
             selectors to filter out notifications and receives only a subset of all the
             notifications emitted by the server.</para>
          <section id="management.notifications.core.configuration">
@@ -774,7 +772,7 @@
    </section>
    <section id="management.message-counters">
       <title>Message Counters</title>
-      <para>Message counters can be used to have informations on queue <emphasis>over
+      <para>Message counters can be used to obtain information on queues <emphasis>over
             time</emphasis> as JBoss Messaging keeps a history on queue metrics.</para>
       <para>They can be used to show <emphasis>trends</emphasis> on queues. For example, using the
          management API, it would be possible to query the number of messages in a queue at regular
@@ -806,7 +804,6 @@
                   <literal>depthDelta</literal> is equal to <literal>-10</literal> this means that
                overall 10 messages have been removed from the queue (e.g. 2 messages were added and
                12 were removed)</para>
-            <para/>
          </listitem>
          <listitem>
             <para><literal>lastAddTimestamp</literal></para>
@@ -819,40 +816,40 @@
       </itemizedlist>
       <section id="configuring.message.counters">
          <title>Configuring Message Counters</title>
-         <para>By default, message counters are disabled as it has a negative effect on performance,
+         <para>By default, message counters are disabled as it might have a small negative effect on
             memory (the metrics are kept in memory) and CPU (the queues are sampled at regular
             interval).</para>
          <para>To enable message counters, you can set it to <literal>true</literal> in <literal
                >jbm-configuration.xml</literal>:</para>
          <programlisting>
-   &lt;message-counter-enabled&gt;true&lt;/message-counter-enabled&gt;
+&lt;message-counter-enabled&gt;true&lt;/message-counter-enabled&gt;
          </programlisting>
          <para>Message counters keeps a history of the queue metrics (10 days by default) and
             samples all the queues at regular interval (10 seconds by default). If message counters
             are enabled, these values should be configured to suit your messaging use case in
                <literal>jbm-configuration.xml</literal>:</para>
          <programlisting>
-   &lt;!-- keep history for a week --&gt;
-   &lt;message-counter-max-day-history&gt;7&lt;/message-counter-max-day-history&gt;            
-   &lt;!-- sample the queues every minute (60000ms) --&gt;
-   &lt;message-counter-sample-period&gt;60000&lt;/message-counter-sample-period&gt;
+&lt;!-- keep history for a week --&gt;
+&lt;message-counter-max-day-history&gt;7&lt;/message-counter-max-day-history&gt;            
+&lt;!-- sample the queues every minute (60000ms) --&gt;
+&lt;message-counter-sample-period&gt;60000&lt;/message-counter-sample-period&gt;
          </programlisting>
          <para>Message counters can be retrieved using the Management API. For example, to retrieve
             message counters on a JMS Queue using JMX:</para>
          <programlisting>
-            // retrieve a connection to JBoss Messaging's MBeanServer
-            MBeanServerConnection mbsc = ...
-            JMSQueueControlMBean queueControl = (JMSQueueControlMBean)MBeanServerInvocationHandler.newProxyInstance(mbsc,
-            on,
-            JMSQueueControlMBean.class,
-            false);
-            // message counters are retrieved as a JSON String                                                                                                      
-            String counters = queueControl.listMessageCounter();
-            // use the MessageCounterInfo helper class to manipulate message counters more easily
-            MessageCounterInfo messageCounter = MessageCounterInfo.fromJSON(counters);         
-            System.out.format("%s message(s) in the queue (since last sample: %s)\n",
-            counter.getDepth(),
-            counter.getDepthDelta());
+// retrieve a connection to JBoss Messaging's MBeanServer
+MBeanServerConnection mbsc = ...
+JMSQueueControlMBean queueControl = (JMSQueueControlMBean)MBeanServerInvocationHandler.newProxyInstance(mbsc,
+on,
+JMSQueueControlMBean.class,
+false);
+// message counters are retrieved as a JSON String                                                                                                      
+String counters = queueControl.listMessageCounter();
+// use the MessageCounterInfo helper class to manipulate message counters more easily
+MessageCounterInfo messageCounter = MessageCounterInfo.fromJSON(counters);         
+System.out.format("%s message(s) in the queue (since last sample: %s)\n",
+counter.getDepth(),
+counter.getDepthDelta());
          </programlisting>
       </section>
       <section>

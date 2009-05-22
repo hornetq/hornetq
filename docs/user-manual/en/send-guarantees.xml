@@ -51,14 +51,14 @@
             your network, rather than the bandwidth of your network. For better performance we
             recommend either batching many messages sends together in a transaction since with a
             transactional session, only the commit / rollback blocks not every send, or, using JBoss
-            Messaging's advanced <emphasis>asynchronous send acknowledgements</emphasis>
-            feature.</para>
+            Messaging's advanced <xref linkend="asynchronous-send-acknowledgements">asynchronous
+                send acknowledgements</xref> feature.</para>
         <para>If you are using JMS and you're using the JMS service on the server to load your JMS
             connection factory instances into JNDI then these parameters can be configured in
                 <literal>jbm-jms.xml</literal> using the elements <literal
                 >block-on-persistent-send</literal> and <literal
-                >block-on-non-persistent-send</literal>. If you're using JMS but not using JNDI
-            then you can set these values directly on the <literal>JBossConnectionFactory</literal>
+                >block-on-non-persistent-send</literal>. If you're using JMS but not using JNDI then
+            you can set these values directly on the <literal>JBossConnectionFactory</literal>
             instance using the appropriate setter methods.</para>
         <para>If you're using core you can set these values directly on the <literal
                 >ClientSessionFactory</literal> instance using the appropriate setter
@@ -79,10 +79,12 @@
             back to the client. This is configured with the parameter <literal
                 >BlockOnAcknowledge</literal>. If this is set to <literal>true</literal> then all
             calls to acknowledge on non transacted sessions will block until the acknowledge has
-            reached the server, and a response has been sent back. The default value is <literal
-                >false</literal></para>
+            reached the server, and a response has been sent back. You might want to set this to
+                <literal>true</literal> if you want to implement a strict <emphasis>at most
+                once</emphasis> delivery policy. The default value is <literal
+            >false</literal></para>
     </section>
-    <section>
+    <section id="asynchronous-send-acknowledgements">
         <title>Asynchronous Send Acknowledgements</title>
         <para>If you are using a non transacted session but want a guarantee that every message sent
             to the server has reached it, then, as discussed in section <xref
@@ -93,8 +95,8 @@
             sending is thus limited by the latency of the network, <emphasis>not</emphasis> limited
             by the network bandwidth.</para>
         <para>Let's do a little bit of maths to see how severe that is. We'll consider a standard
-            1Gib ethernet with a network round trip between the server and the client of 0.25
-            ms.</para>
+            1Gib ethernet network with a network round trip between the server and the client of
+            0.25 ms.</para>
         <para>With a RTT of 0.25 ms, the client can send <emphasis>at most</emphasis> 1000/ 0.25 =
             4000 messages per second if it blocks on each message send.</para>
         <para>If each message is &lt; 1500 bytes and a standard 1500 bytes MTU size is used on the
@@ -104,13 +106,13 @@
             limited by network RTT can have serious effect on performance.</para>
         <para>To remedy this, JBoss Messaging provides an advanced new feature called
                 <emphasis>asynchronous send acknowledgements</emphasis>. With this feature, JBoss
-            Messaging can be configured to send messages without blocking on one direction and
+            Messaging can be configured to send messages without blocking in one direction and
             asynchronously getting acknowledgement from the server that the messages were received
             in a separate stream. By de-coupling the send from the acknowledgement of the send, the
             system is not limited by the network RTT, but is limited by the network bandwidth.
-            Consequently much throughput can be achieved than is possible using a blocking approach,
-            while at the same time having absolute guarantees that messages have successfully
-            reached the server.</para>
+            Consequently better throughput can be achieved than is possible using a blocking
+            approach, while at the same time having absolute guarantees that messages have
+            successfully reached the server.</para>
         <section>
             <title>Asynchronous Send Acknowledgements</title>
             <para>To use the feature using the core API, you implement the interface <literal
@@ -122,8 +124,8 @@
                 informed at the client side by JBoss Messaging calling your handler's <literal
                     >sendAcknowledged(ClientMessage message)</literal> method, passing in a
                 reference to the message that was sent.</para>
-            <para>Please see the send acknowledgements example for a full working example
-                [LINK]</para>
+            <para>Please see the <xref linkend="asynchronous-send-acknowledgements-example">send
+                    acknowledgements exampl</xref>e for a full working example.</para>
         </section>
     </section>
 </chapter>

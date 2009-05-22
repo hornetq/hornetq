@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <chapter id="queue-attributes">
     <title>Queue Attributes</title>
-    <para>Queue attributes can be set in one of 2 ways. Either by configuring them via the
-        configuration file or when using the core API. This chapter will explain how to configure
-        each attribute and what effect the attribute has.</para>
+    <para>Queue attributes can be set in one of two ways. Either by configuring them using the
+        configuration file or by using the core API. This chapter will explain how to configure each
+        attribute and what effect the attribute has.</para>
     <section id="predefined.queues">
         <title>Predefined Queues</title>
         <para>Queues can be predefined via configuration at a core level or at a JMS level. Firstly
@@ -12,21 +12,22 @@
             configuration file.</para>
         <programlisting>&lt;queue name="selectorQueue">
       &lt;entry name="/queue/selectorQueue"/>
-      &lt;filter string="color='red'"/>
+      &lt;selector string="color='red'"/>
       &lt;durable>true&lt;/durable>
 &lt;/queue></programlisting>
         <para>This name attribute of queue defines the name of the queue. When we do this at a jms
-            level we follow a naming convention so the actual name of the queue will be
+            level we follow a naming convention so the actual name of the core queue will be
                 <literal>jms.queue.selectorQueue</literal>.</para>
         <para>The entry element configures the name that will be used to bind the queue to JNDI.
             This is a mandatory element and the queue can contain multiple of these to bind the same
             queue to different names.</para>
-        <para>The filter element defines what filter or message selector the predefined queue will
-            have. This is an optional element with a default of null when ommitted.</para>
+        <para>The selector element defines what JMS message selector the predefined queue will have.
+            Only messages that match the selector will be added to the queue. This is an optional
+            element with a default of null when ommitted.</para>
         <para>The durable element specifies whether the queue will be persisted. This again is
             optional and defaults to true if ommited.</para>
-        <para>Secondly a queue can be predefined at a core level in the
-                <literal>jbm-configuration.xml</literal> file. The following is an example.</para>
+        <para>Secondly a queue can be predefined at a core level in the <literal
+                >jbm-configuration.xml</literal> file. The following is an example.</para>
         <programlisting>&lt;queues>     
    	&lt;queue name="jms.queue.selectorQueue">
    	    &lt;address>jms.queue.selectorQueue&lt;/address>
@@ -47,17 +48,21 @@
             <listitem>
                 <para>There is no entry element.</para>
             </listitem>
+            <listitem>
+                <para>The filter uses the <xref linkend="filter-expressions">core filter
+                        syntax</xref>, <emphasis>not</emphasis> the JMS selector syntax.</para>
+            </listitem>
         </orderedlist>
     </section>
     <section>
         <title>Using the API</title>
         <para>Queues can also be created using the core API or the JMS management API.</para>
-        <para>For the core API queues can be created via the
-                <literal>org.jboss.messaging.core.client.ClientSession</literal> interface. There
-            are multiple <literal>createQueue</literal> methods that support setting all of the
-            afore mentioned attributes. There is one extra attribute that can be set via this API
-            which is <literal>temporary</literal>. setting this to true means that the queue will be
-            deleted once the session is disconnected.</para>
+        <para>For the core API queues can be created via the <literal
+                >org.jboss.messaging.core.client.ClientSession</literal> interface. There are
+            multiple <literal>createQueue</literal> methods that support setting all of the
+            previously mentioned attributes. There is one extra attribute that can be set via this
+            API which is <literal>temporary</literal>. setting this to true means that the queue
+            will be deleted once the session is disconnected.</para>
         <para>Take a look at the <xref linkend="management">management section</xref> for the API
             for creating queues.</para>
     </section>

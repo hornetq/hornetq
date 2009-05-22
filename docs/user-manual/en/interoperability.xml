@@ -3,13 +3,15 @@
     <title>Interoperability</title>
     <section>
         <title>Stomp and StompConnect</title>
-        <para>Stomp is a wire protocol that allows stomp clients from to communicate with Stomp
-            Brokers. Using StompConnect it is possible to turn JBM into a Stomp Broker and use any
-            of the available stomp clients. These include clients written in C, C++, c# and .net
-            etc. For more information on Stomp and StompConnect go to <ulink
-                url="http://stomp.codehaus.org/Home"/></para>
-        <para>To run Stomp first start the JBoss Messaging server and make sure that it is using
-            JNDI.</para>
+        <para><ulink url="http://stomp.codehaus.org/">Stomp</ulink> is a wire protocol that allows
+            Stomp clients to communicate with Stomp Brokers. <ulink
+                url="http://stomp.codehaus.org/StompConnect">StompConnect</ulink> is a server that
+            can act as a Stomp broker and proxy the Stomp protocol to the standard JMS API.
+            Consequenly, using StompConnect it is possible to turn JBM into a Stomp Broker and use
+            any of the available stomp clients. These include clients written in C, C++, c# and .net
+            etc.</para>
+        <para>To run StompConnect first start the JBoss Messaging server and make sure that it is
+            using JNDI.</para>
         <para>Stomp requires the file <literal>jndi.properties</literal> to be available on the
             classpath. This should look something like:</para>
         <programlisting>java.naming.factory.initial=org.jnp.interfaces.NamingContextFactory
@@ -18,5 +20,16 @@ java.naming.factory.url.pkgs=org.jboss.naming:org.jnp.interfaces</programlisting
         <para>Make sure this file is in the classpath along with the StompConnect jar and the JBoss
             Messaging jars and simply run <literal>java
             org.codehaus.stomp.jms.Main</literal>.</para>
+        <para>JBoss Messaging will shortly be implementing the Stomp protocol directly, so you won't
+            have to use StompConnect to be able to use JBoss Messaging with Stomp clients.</para>
     </section>
+    <section>
+        <title>AMQP</title>
+        <para>AMQP support coming soon!</para>
+    </section>
+    <section>
+        <title>REST</title>
+        <para>REST support coming soon!</para>
+    </section>
+    
 </chapter>

@@ -1,20 +1,25 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <chapter id="large-messages">
     <title>Large Messages</title>
-    <para>JBoss Messaging supports sending and receiving of arbitrarily large messages even when
-        larger than would fit in the client's or server's memory. The only limit is the disk
-        space.</para>
-    <para>Large messages are fragmented into smaller pieces and sent to the server individually. The
-        server persists these parts to disk and delivers them to a consumer in the same fashion. The
-        consumer then reconstructs the original message before final delivery. Flow control (<xref
-            linkend="flow-control"/>) is used on the transmission to prevent overusing the channel
-        or running out of memory during the transmission process, so it is possible to send and
-        receive very large messages without effecting any other messages being delivered. </para>
-    <para>For example, it is possible to send an 8GiB message even if you only had 50MiB of RAM on
-        either client and server. </para>
+    <para>JBoss Messaging supports sending and receiving of huge messages, even when the client and
+        server are running with limited memory. The only limit to the size of a message that can be
+        sent or consumed is the amount of disk space you have available. We have tested sending and
+        consuming messages up to 8 GiB in size with a client and server running in just 50MiB of
+        RAM!</para>
+    <para>To send a large message, the user can set an <literal>InputStream</literal> on a message
+        body, and when that message is sent, JBoss Messaging will read the <literal
+            >InputStream</literal>. A <literal>FileInputStream</literal> could be used for example
+        to send a huge message from a huge file on disk.</para>
+    <para>As the <literal>InputStream</literal> is read the data is sent to the server as a stream
+        of fragments. The server persists these fragments to disk as it receives them and when the
+        time comes to deliver them to a consumer they are read back of the disk, also in fragments
+        and sent down the wire. When the consumer receives a large message it initially receives
+        just the message with an empty body, it can then set an <literal>OutputStream</literal> on
+        the message to stream the huge message body to a file on disk or elsewhere. At no time is
+        the entire message body stored fully in memory, either on the client or the server.</para>
     <section id="large.message.configuring">
         <title>Configuring the server</title>
-        <para>Large messages are stored on a disk folder on the server side, as configured on the
+        <para>Large messages are stored on a disk directory on the server side, as configured on the
             main configuration file.</para>
         <para>The configuration property <literal>large-messages-directory</literal> specifies where
             large messages are stored.</para>
@@ -30,14 +35,15 @@
 
 &lt;/configuration</programlisting>
         <para>By default the large message directory is <literal>data/largemessages</literal></para>
+        <para>For the best performance we recommend large messages directory is stored on a
+            different physical volume to the message journal or paging directory.</para>
     </section>
     <section>
         <title>Setting the limits</title>
-        <para>The definition of what is a large message is done on the session factory. For example,
-            you may configure a factory on the http transport considering a message as large when
-            its size is greater than 10KiB and another one on the socket transport considering
-            messages greater than 200KiB.</para>
-        <para>By default the min large message size is 100KiB.</para>
+        <para>Any message large than a certain size is considered a large message. Large messages
+            will be split up and sent in fragments. This is determined by the parameter <literal
+                >min-large-message-size</literal></para>
+        <para>The default value  is 100KiB.</para>
         <section id="large-messages.core.config">
             <title>Using Core API</title>
             <para>If the JBoss Messaging Core API is used, the minimal large message size is
@@ -51,7 +57,7 @@ factory.setMinLargeMessageSize(25 * 1024);</programlisting>
         </section>
         <section>
             <title>Using JMS</title>
-            <para>If JNDI is used to look up the connection factory, the minimal large message size
+            <para>If JNDI is used to look up the connection factory, the minimum large message size
                 is specified in <literal>jbm-jms.xml</literal></para>
             <programlisting>...
 &lt;connection-factory name="ConnectionFactory">
@@ -64,9 +70,9 @@ factory.setMinLargeMessageSize(25 * 1024);</programlisting>
 &lt;min-large-message-size>250000&lt;/min-large-message-size>
 &lt;/connection-factory>
 ...</programlisting>
-            <para>If the connection factory is being instantiate directly, the minimal large message
-                size is specified by
-                    <literal>JBossConnectionFactory.setMinLargeMessageSize</literal>.</para>
+            <para>If the connection factory is being instantiated directly, the minimum large
+                message size is specified by <literal
+                    >JBossConnectionFactory.setMinLargeMessageSize</literal>.</para>
         </section>
     </section>
     <section>
@@ -76,22 +82,22 @@ factory.setMinLargeMessageSize(25 * 1024);</programlisting>
         <para>These streams are then used directly for sending (input streams) and receiving (output
             streams) messages.</para>
         <para>When receiving messages there are 2 ways to deal with the output stream you may choose
-            to block while the output stream is recovered using the method
-                <literal>ClientMessage.saveOutputStream</literal> or alternatively using the method
-                <literal>ClientMessage.setOutputstream</literal> which will asynchronously write the
-            message to the stream. If you choose the latter the consumer must be kept alive until
-            the message has been fully received.</para>
+            to block while the output stream is recovered using the method <literal
+                >ClientMessage.saveOutputStream</literal> or alternatively using the method <literal
+                >ClientMessage.setOutputstream</literal> which will asynchronously write the message
+            to the stream. If you choose the latter the consumer must be kept alive until the
+            message has been fully received.</para>
         <para>You can use any kind of stream you like. The most common use case is to send files
-            stored in your disk, but you could also send things like JDBC Blobs,
-                <literal>SocketInputStream</literal>, things you recovered from
-                <literal>HTTPRequests</literal> etc. Anything as long as it implements
-                <literal>java.io.InputStream</literal> for sending messages or
-                <literal>java.io.OutputStream</literal> for receiving them.</para>
+            stored in your disk, but you could also send things like JDBC Blobs, <literal
+                >SocketInputStream</literal>, things you recovered from <literal
+                >HTTPRequests</literal> etc. Anything as long as it implements <literal
+                >java.io.InputStream</literal> for sending messages or <literal
+                >java.io.OutputStream</literal> for receiving them.</para>
         <section>
             <title>Streaming over Core API</title>
-            <para>The following table shows a list of methods available at
-                    <literal>ClientMessage</literal> which are also available through JMS by the use
-                of object properties.</para>
+            <para>The following table shows a list of methods available at <literal
+                    >ClientMessage</literal> which are also available through JMS by the use of
+                object properties.</para>
             <table frame="topbot" id="large-messages.ClientMessageAPI">
                 <title>org.jboss.messaging.core.client.ClientMessage API</title>
                 <tgroup cols="3">
@@ -108,28 +114,27 @@ factory.setMinLargeMessageSize(25 * 1024);</programlisting>
                     <tbody>
                         <row>
                             <entry>setBodyInputStream(InputStream)</entry>
-                            <entry>Set the InputStream used on a message that will be sent over a
-                                producer</entry>
+                            <entry>Set the InputStream used to read a message body when sending
+                                it.</entry>
                             <entry>JMS_JBM_InputStream</entry>
                         </row>
                         <row>
                             <entry>setOutputStream(OutputStream)</entry>
-                            <entry>Set the OutputStream that will receive the content of a message
-                                received in a non blocking way</entry>
+                            <entry>Set the OutputStream that will receive the body of a message.
+                                This method does not block.</entry>
                             <entry>JMS_JBM_OutputStream</entry>
                         </row>
                         <row>
                             <entry>saveOutputStream(OutputStream)</entry>
-                            <entry>Save the content of the message to the
-                                    <literal>OutputStream</literal>. It will block until the entire
-                                content is transferred to the
-                                <literal>OutputStream</literal>.</entry>
+                            <entry>Save the body of the message to the <literal
+                                    >OutputStream</literal>. It will block until the entire content
+                                is transferred to the <literal>OutputStream</literal>.</entry>
                             <entry>JMS_JBM_SaveStream</entry>
                         </row>
                     </tbody>
                 </tgroup>
             </table>
-            <para> Set the output stream when receiving a core message: </para>
+            <para>To set the output stream when receiving a core message: </para>
             <programlisting>
 ...
 ClientMessage msg = consumer.receive(...);
@@ -191,17 +196,17 @@ messageReceived.setObjectProperty("JMS_JBM_SaveStream", bufferedOutput);
 // This won't wait the stream to finish. You need to keep the consumer active.
 messageReceived.setObjectProperty("JMS_JBM_InputStream", bufferedOutput);
             </programlisting>
-            <warning>
-                <para>When using JMS, Streaming Large Messages is only supported on
-                        <literal>StreamMessage</literal> and <literal>BytesMessage</literal>.</para>
-            </warning>
+            <note>
+                <para>When using JMS, Streaming large messages are only supported on <literal
+                        >StreamMessage</literal> and <literal>BytesMessage</literal>.</para>
+            </note>
         </section>
     </section>
     <section>
         <title>Streaming Alternative</title>
-        <para>If you choose not to use the <literal>InputStream</literal> or
-                <literal>OutputStream</literal> capability of JBoss Messaging You could still access
-            the data directly in an alternative fashion.</para>
+        <para>If you choose not to use the <literal>InputStream</literal> or <literal
+                >OutputStream</literal> capability of JBoss Messaging You could still access the
+            data directly in an alternative fashion.</para>
         <para>On the Core API just get the bytes of the body as you normally would.</para>
         <programlisting>ClientMessage msg = consumer.receive();
          
@@ -251,8 +256,8 @@ someOtherProducer.send(bm); // resending the message to another destination;    
     </section>
     <section id="large-messages.example">
         <title>Large message example</title>
-        <para>The <ulink url="../../../../examples/jms/large-message/readme.html"
-                    ><literal>large-message</literal> Example</ulink> shows how large message is
-            configured and used with JMS.</para>
+        <para>The <ulink url="../../../../examples/jms/large-message/readme.html"><literal
+                    >large-message</literal> Example</ulink> shows how large message is configured
+            and used with JMS.</para>
     </section>
 </chapter>

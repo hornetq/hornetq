@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <chapter id="intercepting-operations">
    <title>Intercepting Operations</title>
-   <para>JBoss Messaging supports <emphasis>interceptors</emphasis> to add behavior into the
-      messaging server.</para>
+   <para>JBoss Messaging supports <emphasis>interceptors</emphasis> to intercept packets entering
+      and leaving the server. Any supplied interceptors would be called for any packet entering or
+      leaving the server, this allows custom code to be executed, e.g. for auditing packets,
+      filtering or other reasons. Interceptors can change the packets they intercept.</para>
    <section>
       <title>Implementing The Interceptors</title>
       <para>A interceptor must implement the <literal>Interceptor interface</literal>:</para>

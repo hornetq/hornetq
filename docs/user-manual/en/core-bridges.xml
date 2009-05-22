@@ -14,18 +14,17 @@
         servers.</para>
     <para>Bridges can be configured provide <emphasis>once and only once</emphasis> delivery
         guarantees even in the event of the failure of the source or the target server. They do this
-        by using duplicate detection. [LINK]</para>
+        by using <xref linkend="duplicate-detection">duplicate detection</xref>.</para>
     <note>
         <para>Although they have similar function, don't confuse core bridges with JMS
             bridges!</para>
         <para>Core bridges are for linking a JBoss Messaging node with another JBoss Messaging node
             and do not use the JMS API. A JMS Bridge is used for linking any two JMS 1.1 compliant
-            JMS providers. So,a JMS Bridge could be used for bridging to or from a different JMS
+            JMS providers. So, a JMS Bridge could be used for bridging to or from different JMS
             compliant messaging system. It's always preferable to use a core bridge if you can. Core
-            bridges use duplicate detection [LINK] to provide <emphasis>once and only
-                once</emphasis> guarantees. To provide the same guarantee using a JMS bridge you
-            would have to use XA which has a higher overhead and is more complex to
-            configure.</para>
+            bridges use duplicate detection to provide <emphasis>once and only once</emphasis>
+            guarantees. To provide the same guarantee using a JMS bridge you would have to use XA
+            which has a higher overhead and is more complex to configure.</para>
     </note>
     <section>
         <title>Configuring Bridges</title>
@@ -48,8 +47,8 @@
         backup-connector-name="backup-remote-connector"/&gt;          
 &lt;/bridge&gt;                        
         </programlisting>
-        <para>Please also note that in order for bridges to be deployed on a server, the
-                <literal>clustered</literal> attribute needs to be set to <literal>true</literal> in
+        <para>Please also note that in order for bridges to be deployed on a server, the <literal
+                >clustered</literal> attribute needs to be set to <literal>true</literal> in
                 <literal>jbm-configuration.xml</literal>.</para>
         <para>In the above example we have shown all the parameters its possible to configure for a
             bridge. In practice you might use many of the defaults so it won't be necessary to
@@ -66,9 +65,9 @@
                 <para>The queue must already exist by the time the bridge is instantiated at
                     start-up.</para>
                 <note>
-                    <para>If you're using JMS then normally the JMS configuration
-                            <literal>jbm-jms.xml</literal>is loaded after the core configuration
-                        file <literal>jbm-configuration.xml</literal> is loaded. If you're bridge is
+                    <para>If you're using JMS then normally the JMS configuration <literal
+                            >jbm-jms.xml</literal> is loaded after the core configuration file
+                            <literal>jbm-configuration.xml</literal> is loaded. If your bridge is
                         consuming from a JMS queue then you'll need to make sure the JMS queue is
                         also deployed as a core queue in the core config. Take a look at the bridge
                         example for an example of how this is done.</para>
@@ -82,8 +81,9 @@
             <listitem>
                 <para><literal>filter-string</literal>. An optional filter string can be supplied.
                     If specified then only messages which match the filter expression specified in
-                    the filter string will be forwarded. The filter string follows the filter
-                    expression syntax as described in chapter [LINK].</para>
+                    the filter string will be forwarded. The filter string follows the JBoss
+                    Messaging <xref linkend="filter-expressions">filter expression
+                    syntax</xref>.</para>
             </listitem>
             <listitem>
                 <para><literal>transformer-class-name</literal>. An optional transformer-class-name
@@ -98,8 +98,8 @@
             <listitem>
                 <para><literal>retry-interval</literal>. This optional parameter determines the
                     period in milliseconds between subsequent reconnection attempts, if the
-                    connection to the target server has failed. The default value is
-                        <literal>2000</literal>milliseconds.</para>
+                    connection to the target server has failed. The default value is <literal
+                        >2000</literal>milliseconds.</para>
             </listitem>
             <listitem>
                 <para><literal>retry-interval-multiplier</literal>. This optional parameter
@@ -150,7 +150,8 @@
                     ignored.</para>
                 <para>This allows the bridge to provide a <emphasis>once and only once</emphasis>
                     delivery guarantee without using heavyweight methods such as XA.</para>
-                <para>For more information on duplicate detection see the chapter [LINK]</para>
+                <para>For more information on duplicate detection see <xref
+                        linkend="duplicate-detection">here</xref>.</para>
                 <para>The default value for this parameter is <literal>true</literal>.</para>
             </listitem>
             <listitem>
@@ -160,15 +161,15 @@
                 <para>A <emphasis>connector</emphasis> encapsulates knowledge of what transport to
                     use (TCP, SSL, HTTP etc) as well as the server connection parameters (host, port
                     etc). For more information about what connectors are and how to configure them
-                    please see the chapter [LINK].</para>
+                    please see <xref linkend="configuring-transports">here</xref>.</para>
                 <para>The <literal>connector-ref</literal> element can be configured with two
                     attributes:</para>
                 <itemizedlist>
                     <listitem>
                         <para><literal>connector-name</literal>. This references the name of a
-                            connector defined in the core configuration file
-                                <literal>jbm-configuration.xml</literal>. The bridge will use this
-                            connector to make its connection to the target server. This attribute is
+                            connector defined in the core configuration file <literal
+                                >jbm-configuration.xml</literal>. The bridge will use this connector
+                            to make its connection to the target server. This attribute is
                             mandatory.</para>
                     </listitem>
                     <listitem>
@@ -176,9 +177,9 @@
                             references the name of a connector defined in the core configuration
                             file <literal>jbm-configuration.xml</literal>. It represents the
                             connector that the bridge will fail-over onto if it detects the live
-                            server connection has failed. If this is specified and
-                                <literal>failover-on-server-shutdown</literal> is set to
-                                <literal>true</literal> then it will also attempt failover onto this
+                            server connection has failed. If this is specified and <literal
+                                >failover-on-server-shutdown</literal> is set to <literal
+                                >true</literal> then it will also attempt failover onto this
                             connector if the live target server is cleanly shut-down.</para>
                     </listitem>
                 </itemizedlist>

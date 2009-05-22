@@ -1,17 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <chapter id="using-core">
     <title>Using Core</title>
-    <para>JBoss Messaging core is a completely JMS agnostic messaging system with its own core
+    <para>JBoss Messaging core is a completely JMS-agnostic messaging system with its own core
         API.</para>
     <para>If you don't want to use JMS you can use the core API directly. The core API provides all
-        the functionality of JMS but without much of the complications. It also provides features
-        that are not normally available using JMS.</para>
+        the functionality of JMS but without much of the complexity. It also provides features that
+        are not normally available using JMS.</para>
     <section>
         <title>Core Messaging Concepts</title>
         <para>Some of the core messaging concepts are similar to JMS concepts, but core messaging
             concepts differ in some ways. In general the core messaging API is simpler than the JMS
             API, since we remove distinctions between queues, topics and subscriptions. We'll
-            discuss each of the major core messaging concepts in turn:</para>
+            discuss each of the major core messaging concepts in turn, but for to see the API in
+            detail please consult the javadoc.</para>
         <section>
             <title>Message</title>
             <para>A message is the unit of data which is sent between clients and servers.</para>
@@ -23,7 +24,7 @@
                 is being sent to. When the message arrives on the server it is routed to any queues
                 that are bound to the address. An address may have many queues bound to it or even
                 none.</para>
-            <para>Messages can either be durable or non durable. Durable messages in a durable queue
+            <para>Messages can be either durable or non durable. Durable messages in a durable queue
                 will survive a server crash or restart. Non durable messages will never survive a
                 server crash or restart.</para>
             <para>Messages can be specified with a priority value betwen 0 and 9. 0 represents the
@@ -61,25 +62,26 @@
             <para>Queues can also be temporary, meaning they are automatically deleted when the
                 client connection is closed, if they are not explicitly deleted before that.</para>
             <para>Queues can be bound with an optional filter expression. If a filter expression is
-                supplied then the server will only route messages who match that filter expression
+                supplied then the server will only route messages that match that filter expression
                 to any queues bound to the address.</para>
             <para>Many queues can be bound to a single address. A particular queue is only bound to
                 a maximum of one address.</para>
         </section>
         <section>
             <title>ClientSessionFactory</title>
-            <para>Clients use <literal>ClientSessionFactory</literal> instances to create
-                    <literal>ClientSession</literal> instances.
-                    <literal>ClientSessionFactory</literal> instances know how to connect to the
-                server to create sessions.</para>
+            <para>Clients use <literal>ClientSessionFactory</literal> instances to create <literal
+                    >ClientSession</literal> instances. <literal>ClientSessionFactory</literal>
+                instances know how to connect to the server to create sessions, and are configurable
+                with many settings.</para>
         </section>
         <section>
             <title>ClientSession</title>
             <para>A client uses a ClientSession for consuming and producing messages and for
                 grouping them in transactions. ClientSession instances can support both
-                transactional and non transactional semantics and also provide an
-                    <literal>XAResource</literal> interface so messaging operations can be performed
-                as part of a JTA transaction.</para>
+                transactional and non transactional semantics and also provide an <literal
+                    >XAResource</literal> interface so messaging operations can be performed as part
+                of a <ulink url="http://java.sun.com/javaee/technologies/jta/index.jsp">JTA</ulink>
+                transaction.</para>
             <para>ClientSession instances group ClientConsumers and ClientProducers.</para>
         </section>
         <section>
@@ -92,25 +94,28 @@
         </section>
         <section>
             <title>ClientProducer</title>
-            <para>Clients create <literal>ClientProducer</literal> instances on
-                    <literal>ClientSession</literal> instances so they can send messages.
-                ClientProducer instances can specify an address to which all sent messages are
-                routed, or they can have no specified address, and the address is specified at send
-                time for the message.</para>
+            <para>Clients create <literal>ClientProducer</literal> instances on <literal
+                    >ClientSession</literal> instances so they can send messages. ClientProducer
+                instances can specify an address to which all sent messages are routed, or they can
+                have no specified address, and the address is specified at send time for the
+                message.</para>
         </section>
     </section>
     <section>
         <title>A simple example of using Core</title>
         <para>Here's a very simple program using the core messaging API to send and receive a
             message:</para>
-        <programlisting>ClientSessionFactory nettyFactory =  new ClientSessionFactoryImpl(
-                      new TransportConfiguration(
-                              InVMConnectorFactory.class.getName()), null);
+        <programlisting>
+ClientSessionFactory nettyFactory =  new ClientSessionFactoryImpl(
+                                        new TransportConfiguration(
+                                           InVMConnectorFactory.class.getName()));
 
 ClientSession session = nettyFactory.createSession();
+
 session.createQueue("example", "example", true);
 
 ClientProducer producer = session.createProducer("example");
+
 ClientMessage message = session.createClientMessage(true);
 
 message.getBody().writeString("Hello");
@@ -122,6 +127,7 @@ session.start();
 ClientConsumer consumer = session.createConsumer("example");
 
 ClientMessage msgReceived = consumer.receive();
+
 System.out.println("message = " + msgReceived.getBody().readString());
 
 session.close();</programlisting>

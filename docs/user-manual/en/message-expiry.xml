@@ -1,38 +1,40 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <chapter id="message-expiry">
    <title>Message Expiry</title>
-   <para>Messages can be retained in the messaging system for a limited period of time before being
-      removed. JMS specification states that clients should not receive messages that have been
-      expired (but it does not guarantee this will not happen).</para>
+   <para>Messages can be set with an optional <emphasis>time to live</emphasis> when sending them.
+      Such messages will be retained in the messaging system until their <emphasis>time to
+         live</emphasis> is reached.</para>
    <para>JBoss Messaging's addresses can be assigned a expiry address so that, when messages are
-      expired, they are removed from the queue and sent to the expiry address. These
-         <emphasis>expired</emphasis> messages can later be consumed for further inspection.</para>
+      expired, they are removed from the queue and sent to the expiry address. Many different queues
+      cna be bound to an expiry address.  These <emphasis>expired</emphasis> messages can later be
+      consumed for further inspection.</para>
    <section>
       <title>Message Expiry</title>
-            <para>Using JBoss Messaging Core API, you can set an expiration time directly on the
-               message:</para>
-            <programlisting>
-      // message will expire in 5000ms from now
-      message.setExpiration(System.currentTimeMillis() + 5000);         
+      <para>Using JBoss Messaging Core API, you can set an expiration time directly on the
+         message:</para>
+      <programlisting>
+// message will expire in 5000ms from now
+message.setExpiration(System.currentTimeMillis() + 5000);         
               </programlisting>
       <para>JMS MessageProducer allows to set a TimeToLive for the messages it sent:</para>
       <programlisting>
 // messages sent by this producer will be retained for 5s (5000ms) before expiration           
 producer.setTimeToLive(5000);
         </programlisting>
-        <para>Expired messages which are consumed from an expiry address have the following properties:</para>
-        <itemizedlist>
+      <para>Expired messages which are consumed from an expiry address have the following
+         properties:</para>
+      <itemizedlist>
          <listitem>
             <para><literal>_JBM_ORIG_DESTINATION</literal></para>
             <para>a String property containing the <emphasis>original destination</emphasis> of the
-            expired message </para>
+               expired message </para>
          </listitem>
-        <listitem>
-           <para><literal>_JBM_ACTUAL_EXPIRY</literal></para>
-           <para>a Long property containing the <emphasis>actual expiration time</emphasis> of the expired message</para>
-        </listitem>
-        </itemizedlist>
-      
+         <listitem>
+            <para><literal>_JBM_ACTUAL_EXPIRY</literal></para>
+            <para>a Long property containing the <emphasis>actual expiration time</emphasis> of the
+               expired message</para>
+         </listitem>
+      </itemizedlist>
    </section>
    <section>
       <title>Configuring Expiry Addresses</title>
@@ -44,8 +46,8 @@ producer.setTimeToLive(5000);
 &lt;/address-setting&gt;
         </programlisting>
       <para>If messages are expired and no expiry address is specified, messages are simply removed
-         from the queue. Address wildcards can be used
-          to configure expiry address for a set of addresses (see <xref linkend="wildcard-syntax" />).</para>
+         from the queue. Address wildcards can be used to configure expiry address for a set of
+         addresses (see <xref linkend="wildcard-syntax"/>).</para>
    </section>
    <section id="configuring.expiry.reaper">
       <title>Configuring The Expiry Reaper Thread</title>
@@ -68,7 +70,7 @@ producer.setTimeToLive(5000);
    </section>
    <section>
       <title>Example</title>
-      <para>The <ulink url="../../../../examples/jms/expiry/readme.html"><literal>expiry</literal> example</ulink> shows
-         how message expiry is configured and used with JMS.</para>
+      <para>The <ulink url="../../../../examples/jms/expiry/readme.html"><literal>expiry</literal>
+            example</ulink> shows how message expiry is configured and used with JMS.</para>
    </section>
 </chapter>

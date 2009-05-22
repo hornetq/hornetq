@@ -14,19 +14,19 @@
         processed them it will send back a command confirmation to the client, and the client can
         then free up space in the buffer.</para>
     <para>If you are using JMS and you're using the JMS service on the server to load your JMS
-        connection factory instances into JNDI then this parameter can be configured in
-            <literal>jbm-jms.xml</literal> using the element <literal>send-window-size</literal> a.
-        If you're using JMS but not using JNDI then you can set these values directly on the
-            <literal>JBossConnectionFactory</literal> instance using the appropriate setter
-        method.</para>
-    <para>If you're using core you can set these values directly on the
-            <literal>ClientSessionFactory</literal> instance using the appropriate setter
-        method.</para>
-    <para>The send window is specified in bytes, and has a default value of
-        <literal>1MiB</literal>.</para>
+        connection factory instances into JNDI then this parameter can be configured in <literal
+            >jbm-jms.xml</literal> using the element <literal>send-window-size</literal> a. If
+        you're using JMS but not using JNDI then you can set these values directly on the <literal
+            >JBossConnectionFactory</literal> instance using the appropriate setter method.</para>
+    <para>If you're using core you can set these values directly on the <literal
+            >ClientSessionFactory</literal> instance using the appropriate setter method.</para>
+    <para>The send window is specified in bytes, and has a default value of <literal
+        >1MiB</literal>.</para>
     <para>When the send buffer becomes full, any attempts to send more commands from the client will
         block until the client receives a confirmation from the server and clears out the buffer.
         Because of the blocking, the command buffer performs a type of <literal>flow
             control</literal>, preventing the client from overwhelming the server with
         commands.</para>
+    <para>Setting this parameter to <literal>-1</literal> disables any flow control on
+        sending.</para>
 </chapter>

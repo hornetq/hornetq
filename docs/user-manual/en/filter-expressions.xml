@@ -3,8 +3,8 @@
     <title>Filter Expressions</title>
     <para>JBoss Messaging provides a powerful filter language based on a subset of the SQL 92
         expression syntax.</para>
-    <para>It is very similar to the syntax used for JMS selectors. For documentation on JMS selector
-        syntax please the JMS javadoc for <ulink
+    <para>It is the same as the syntax used for JMS selectors, but the predefined identifiers are
+        different. For documentation on JMS selector syntax please the JMS javadoc for <ulink
             url="http://java.sun.com/javaee/5/docs/api/javax/jms/Message.html"
             >javax.jms.Message</ulink>.</para>
     <para>Filter expressions are used in several places in JBossMessaging</para>
@@ -16,14 +16,18 @@
                 expression will enter the queue.</para>
         </listitem>
         <listitem>
-            <para>Core Bridges can be defined with an optional filter expression, only matching
-                messages will be bridged. See the section [LINK]</para>
+            <para>Core bridges can be defined with an optional filter expression, only matching
+                messages will be bridged. See the chapter on <xref linkend="core-bridges"
+                    >bridges</xref>.</para>
         </listitem>
         <listitem>
             <para>Diverts can be defined with an optional filter expression, only matching messages
-                will be diverted. See the section [LINK]</para>
+                will be diverted. See the chapter on <xref linkend="diverts">diverts</xref>.</para>
         </listitem>
-        <listitem><para>Filter are also used programmatically when creating consumers, queues and in several places in the management API.</para></listitem>
+        <listitem>
+            <para>Filter are also used programmatically when creating consumers, queues and in
+                several places in the <xref linkend="management">management</xref> API.</para>
+        </listitem>
     </itemizedlist>
     <para>There are some differences between JMS selector expressions and JBoss Messaging core
         filter expressions. Whereas JMS selector expressions operate on a JMS message, JBoss
@@ -38,18 +42,23 @@
                 E.g. <literal>JBMPriority = 3 AND animal = 'aardvark'</literal></para>
         </listitem>
         <listitem>
-            <para><literal>JBMExpiration</literal>. To refer to the expiration time of a message. The value is a long integer.</para>
+            <para><literal>JBMExpiration</literal>. To refer to the expiration time of a message.
+                The value is a long integer.</para>
         </listitem>
         <listitem>
-            <para><literal>JBMDurable</literal>. To refer to whether a message is durable or not. The value is a string with valid values:
-            <literal>DURABLE</literal> or <literal>NON_DURABLE</literal>.</para>
+            <para><literal>JBMDurable</literal>. To refer to whether a message is durable or not.
+                The value is a string with valid values: <literal>DURABLE</literal> or <literal
+                    >NON_DURABLE</literal>.</para>
         </listitem>
         <listitem>
-            <para><literal>JBMTimestamp</literal>. The timestamp of when the message was created. The value is a long integer.</para>
+            <para><literal>JBMTimestamp</literal>. The timestamp of when the message was created.
+                The value is a long integer.</para>
         </listitem>
         <listitem>
-            <para><literal>JBMSize</literal>. The size of a message in bytes. The value is an integer.</para>
+            <para><literal>JBMSize</literal>. The size of a message in bytes. The value is an
+                integer.</para>
         </listitem>
     </itemizedlist>
-    <para>Any other identifiers used in core filter expressions will be assumed to be properties of the message.</para>
+    <para>Any other identifiers used in core filter expressions will be assumed to be properties of
+        the message.</para>
 </chapter>

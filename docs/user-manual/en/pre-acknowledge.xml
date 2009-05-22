@@ -28,17 +28,21 @@
       price update message will arrive soon, overriding the previous price. </para>
    <section>
       <title>Using PRE_ACKNOWLEDGE</title>
-      <para>To use pre-acknowledgement mode, create a JMS Session with the
+      <para>To use pre-acknowledgement mode using the JMS API, create a JMS Session with the
             <literal>JBossSession.PRE_ACKNOWLEDGE</literal> constant.</para>
       <programlisting>
 // messages will be acknowledge on the server *before* being delivered to the client
 Session session = connection.createSession(false, JBossSession.PRE_ACKNOWLEDGE);
-       </programlisting>
+      </programlisting>
+      <para>Or you can set pre-acknowledge directly on the <literal>JBossConnectionFactory</literal>
+         instance using the setter method.</para>
+      <para>To use pre-acknowledgement mode using the core API you can set it directly on the
+            <literal>ClientSessionFactory</literal> instance using the setter method.</para>
    </section>
    <section>
       <title>Example</title>
-      <para>The <ulink url="../../../../examples/jms/pre-acknowledge/readme.html"
-               ><literal>pre-acknowledge</literal> example</ulink> shows how to use
-         pre-acknowledgement mode with with JMS.</para>
+      <para>The <ulink url="../../../../examples/jms/pre-acknowledge/readme.html"><literal
+               >pre-acknowledge</literal> example</ulink> shows how to use pre-acknowledgement mode
+         with with JMS.</para>
    </section>
 </chapter>

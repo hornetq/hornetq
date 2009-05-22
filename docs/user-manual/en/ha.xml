@@ -34,9 +34,9 @@
                 the live server with knowledge of its backup server. This is done by specifying a
                     <literal>backup-connector-ref</literal> element. This element references a
                 connector, also specified on the live server which contains knowledge of how to
-                connect to the backup server. Here's a snippet from
-                    <literal>jbm-configuration.xml</literal> showing a live server configured with a
-                backup server:</para>
+                connect to the backup server. Here's a snippet from <literal
+                    >jbm-configuration.xml</literal> showing a live server configured with a backup
+                server:</para>
             <programlisting>&lt;backup-connector-ref connector-name="backup-connector"/>
    
 &lt;!-- Connectors -->
@@ -73,12 +73,12 @@
             <para>Similarly when a client fails over from a live server <literal>L</literal>to a
                 backup server <literal>B</literal>, the server <literal>L</literal>becomes invalid
                 since, from that point on, the data on <literal>L</literal> and <literal>B</literal>
-                tmay diverge. After such a failure, at the next available opportunity the
-                    <literal>B</literal> server should be taken down, and its
-                    <literal>data</literal> directory copied back to the <literal>L</literal>
-                server. Live and backup servers can then be restarted. In this release of JBoss
-                Messaging we do not provide any automatic facility for re-assigning a backup node
-                with a live node while it is running.</para>
+                tmay diverge. After such a failure, at the next available opportunity the <literal
+                    >B</literal> server should be taken down, and its <literal>data</literal>
+                directory copied back to the <literal>L</literal> server. Live and backup servers
+                can then be restarted. In this release of JBoss Messaging we do not provide any
+                automatic facility for re-assigning a backup node with a live node while it is
+                running.</para>
             <para>For a backup server to function correctly it's also important that it has the same
                 set of bridges, predefined queues, cluster connections, broadcast groups and
                 discovery groups as defined on the live node. The easiest way to ensure this is just
@@ -95,8 +95,8 @@
                 activating delivery on itself. If all connections have not reattached with this
                 timeout then the queue will activate regardless.</para>
             <para>This param is defined in <literal>jbm-configuration.xml</literal> using the
-                setting <literal>queue-activation-timeout</literal>. It's default value is
-                    <literal>30000</literal> milliseconds.</para>
+                setting <literal>queue-activation-timeout</literal>. It's default value is <literal
+                    >30000</literal> milliseconds.</para>
         </section>
     </section>
     <section id="ha.client.automatic">
@@ -127,12 +127,13 @@
             configure this you can set the property <literal>FailoverOnServerShutdown</literal> to
             false either on the <literal>JBossConnectionFactory</literal> if you're using JMS or in
             the <literal>jbm-jms.xml</literal> file when you define the connection factory, or if
-            using core by setting the property directly on the
-                <literal>ClientSessionFactoryImpl</literal> instance after creation. The default
-            value for this property is <literal>false</literal>, this means that by default
-                <emphasis>JBoss Messaging clients will not failover to a backup server if the live
-                server is simply shutdown cleanly.</emphasis></para>
-        <para>For a fully functional example of automatic failover please see [LINK].</para>
+            using core by setting the property directly on the <literal
+                >ClientSessionFactoryImpl</literal> instance after creation. The default value for
+            this property is <literal>false</literal>, this means that by default <emphasis>JBoss
+                Messaging clients will not failover to a backup server if the live server is simply
+                shutdown cleanly.</emphasis></para>
+        <para>For a fully functional example of automatic failover please see <xref
+                linkend="automatic-failover">here</xref>.</para>
     </section>
     <section>
         <title>Application-level client failover</title>
@@ -146,17 +147,17 @@
             replication simply do not specify a <literal>backup-connector</literal> element for each
             live server.</para>
         <para>To implement application-level failover, if you're using JMS then you need to code an
-                <literal>ExceptionListener</literal> class on the JMS connection. The
-                <literal>ExceptionListener</literal> wil be called by JBoss Messaging in the event
-            that connection failure is detected. In your <literal>ExceptionListener</literal> you
-            would close your old JMS connections, potentially look up new connection factory
-            instances from JNDI and creating new connections. In this case you may well be using
-            HA-JNDI [link] to ensure that the new connection factory is looked up from a different
+                <literal>ExceptionListener</literal> class on the JMS connection. The <literal
+                >ExceptionListener</literal> wil be called by JBoss Messaging in the event that
+            connection failure is detected. In your <literal>ExceptionListener</literal> you would
+            close your old JMS connections, potentially look up new connection factory instances
+            from JNDI and creating new connections. In this case you may well be using HA-JNDI
+            [link] to ensure that the new connection factory is looked up from a different
             server.</para>
-        <para>For a working example of application-level failover please see example [LINK].</para>
+        <para>For a working example of application-level failover please see <xref
+                linkend="application-level-failover">this</xref> example.</para>
         <para>If you are using the core API, then the procedure is very similar - you would code a
                 <literal>FailureListener</literal> on your core <literal>ClientSession</literal>
             instances.</para>
-        <para>For a fully functional example of application-level failover please see [LINK].</para>
     </section>
 </chapter>

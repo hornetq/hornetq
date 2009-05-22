@@ -6,16 +6,16 @@
         <title>Tuning the journal</title>
         <itemizedlist>
             <listitem>
-                <para>Tune minimum number of journal files.</para>
+                <para>Tune minimum number of journal files. TODO</para>
             </listitem>
             <listitem>
-                <para>Tune journal file size.</para>
+                <para>Tune journal file size. TODO</para>
             </listitem>
             <listitem>
-                <para>Use AIO journal.</para>
+                <para>Use AIO journal. TODO</para>
             </listitem>
             <listitem>
-                <para>Tune AIO re-use cache.</para>
+                <para>Tune AIO re-use cache. TODO</para>
             </listitem>
         </itemizedlist>
     </section>
@@ -39,13 +39,13 @@
             </listitem>
             <listitem>
                 <para>Avoid <literal>ObjectMessage</literal>. <literal>ObjectMessage</literal> is
-                    convenient but it comes at a cost. The body of a ObjectMessage uses Java
-                    serialization to serialize it to bytes. The Java serialized form of even small
-                    objects is very verbose so takes up a lot of space on the wire, also Java
-                    serialization is slow compared to customer marshalling techniques. Only use
-                        <literal>ObjectMessage</literal> if you really can't use one of the other
-                    message types, i.e. if you really don't know the type of the payload until
-                    run-time.</para>
+                    convenient but it comes at a cost. The body of a <literal
+                        >ObjectMessage</literal> uses Java serialization to serialize it to bytes.
+                    The Java serialized form of even small objects is very verbose so takes up a lot
+                    of space on the wire, also Java serialization is slow compared to customer
+                    marshalling techniques. Only use <literal>ObjectMessage</literal> if you really
+                    can't use one of the other message types, i.e. if you really don't know the type
+                    of the payload until run-time.</para>
             </listitem>
             <listitem>
                 <para>Avoid <literal>AUTO_ACKNOWLEDGE</literal>. <literal>AUTO_ACKNOWLEDGE</literal>
@@ -73,13 +73,13 @@
                     server by the time the call to send() returns, don't set persistent messages to
                     be sent blocking, instead use asynchronous send acknowledgements to get your
                     acknowledgements of send back in a separate stream, see the chapter on <xref
-                        linkend="send-guarantees"/>send guarantees</para> for more information on
-                this.</listitem>
+                        linkend="send-guarantees">send guarantees</xref> for more information on
+                this.</para></listitem>
             <listitem>
                 <para>Use pre-acknowledge mode. With pre-acknowledge mode, messages are acknowledged
                         <literal>before</literal> they are sent to the client. This reduces the
                     amount of acknowledgment traffic on the wire. For more information on this see
-                    section on <xref linkend="pre-acknolwedge">pre acknowledge</xref>.</para>
+                    section on <xref linkend="pre-acknowledge">pre acknowledge</xref>.</para>
             </listitem>
             <listitem>
                 <para>Disabled security. You may get a small performance boost by disabling security

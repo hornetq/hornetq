@@ -1,15 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <chapter id="paging">
     <title>Paging</title>
-    <para>JBoss Messaging supports the paging of messages to disk when memory begins to fill up.
-        This stops the potential of the server running out of memory when receiving lots of
-        messages.</para>
-    <para>Once the amount of memory used by messages held by the server reaches a certain
-        configurable size, JBoss Messaging starts storing messages on disk. These messages are paged
-        back into memory as other messages are delivered and acknowledged by a consumer.</para>
-    <para>There are two page modes supported by JBoss Messaging. <link linkend="paging.global.mode"
-            >Global Paging Mode </link> and <link linkend="paging.address.mode">Address Paging Mode
-        </link></para>
+    <para>JBoss Messaging transparently supports huge queues containing millions of messages while
+        the server is running with limited memory.</para>
+    <para>In such a situation it's not possible to store all of the queues in memory at any one
+        time, so JBoss Messaging transparently <emphasis>pages</emphasis> messages into and out of
+        memory as they are needed, thus allowing massive queues with a low memory footprint.</para>
+    <para>JBoss Messaging will start paging messages to disk, when either a) the size of the queue
+        reaches a total configured maximum size or b) The total size of all queues reaches a
+        configured maximum size.</para>
+    <para>These two modes of operation are called <link linkend="paging.address.mode">Address Paging
+            Mode </link>
+        <link linkend="paging.global.mode">Global Paging Mode </link>.</para>
     <section>
         <title>Page Files</title>
         <para>Messages are stored per address on the file system. Each address has an individual
@@ -20,11 +22,11 @@
     </section>
     <section id="paging.global.mode">
         <title>Global Paging Mode</title>
-        <para>JBoss Messaging enters into Global Paging Mode when the total memory used by all
-            queues reaches a configured maximum value, determined by <literal><link
+        <para>JBoss Messaging goes into global paging mode when the total memory used by all queues
+            reaches a configured maximum value, determined by <literal><link
                     linkend="paging.main.config">paging-max-global-size-bytes</link></literal>. </para>
-        <para>These messages are depaged back into memory once enough memory
-                (<literal>global-page-size</literal>) has been freed up.</para>
+        <para>These messages are depaged back into memory once enough memory (<literal
+                >global-page-size</literal>) has been freed up.</para>
         <section id="paging.main.config">
             <title>Configuration</title>
             <para>Global paging parameters are specified on the main configuration file.</para>
@@ -124,9 +126,9 @@ xsi:schemaLocation="urn:jboss:messaging /schema/jbm-configuration.xsd">
                             </row>
                             <row>
                                 <entry><literal>drop-messages-when-full</literal></entry>
-                                <entry>if true, messages are dropped instead of paged when
-                                        <literal>used-memory</literal> is greater than
-                                        <literal>max-size</literal></entry>
+                                <entry>if true, messages are dropped instead of paged when <literal
+                                        >used-memory</literal> is greater than <literal
+                                        >max-size</literal></entry>
                                 <entry>false</entry>
                             </row>
                         </tbody>
@@ -137,7 +139,7 @@ xsi:schemaLocation="urn:jboss:messaging /schema/jbm-configuration.xsd">
     </section>
     <section>
         <title>Caution with Addresses with Multiple Queues</title>
-        <para>When a message is routed to an address that has multiple queues bound to it, i.e. a
+        <para>When a message is routed to an address that has multiple queues bound to it, e.g. a
             JMS subscription, there is only 1 copy of the message in memory. Each queue only deals
             with a reference to this. Because of this the memory is only freed up once all queues
             referencing the message have delivered it. This means that if not all queues deliver the
@@ -145,14 +147,14 @@ xsi:schemaLocation="urn:jboss:messaging /schema/jbm-configuration.xsd">
         <para>For example:</para>
         <itemizedlist>
             <listitem>
-                <para>An Address has 10 queues </para>
+                <para>An address has 10 queues </para>
             </listitem>
             <listitem>
-                <para>one of the queues does not deliver its messages (maybe because of a slow
+                <para>One of the queues does not deliver its messages (maybe because of a slow
                     consumer).</para>
             </listitem>
             <listitem>
-                <para> Messages continually arrive at the address and paging is started.</para>
+                <para>Messages continually arrive at the address and paging is started.</para>
             </listitem>
             <listitem>
                 <para>The other 9 queues are empty even though messages have been sent.</para>
@@ -165,6 +167,6 @@ xsi:schemaLocation="urn:jboss:messaging /schema/jbm-configuration.xsd">
     <section>
         <title>Paging Example</title>
         <para>The <ulink url="../../../../examples/jms/paging/readme.html"><literal>Paging</literal>
-                Example</ulink> shows how to JBoss Messaging avoids running out of memory.</para>
+                Example</ulink> shows how to use paging with JBoss Messaging.</para>
     </section>
 </chapter>

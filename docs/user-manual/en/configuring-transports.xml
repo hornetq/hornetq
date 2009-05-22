@@ -275,7 +275,7 @@ etc
                 </listitem>
                 <listitem>
                     <para><literal>jbm.remoting.netty.httpclientidlescanperiod</literal>. How often,
-                        in milliseconds,  to scan for idle clients</para>
+                        in milliseconds, to scan for idle clients</para>
                 </listitem>
                 <listitem>
                     <para><literal>jbm.remoting.netty.httpresponsetime</literal>. How long the
@@ -416,9 +416,5 @@ etc
                     >jbm.remoting.netty.servletpath</literal> on the connector config must match
                 this using the application context of the web app if there is one.</para>
         </section>
-    </section>
-    <section>
-        <title>Writing your own transport</title>
-        <para>TODO</para>
     </section>
 </chapter>

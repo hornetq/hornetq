@@ -10,14 +10,15 @@
             an active JBoss Messaging server which manages its own messages and handles its own
             connections. A server must be configured to be clustered, you will need to set the
                 <literal>clustered</literal> element in the <literal>jbm-configuration.xml</literal>
-            configuration file to true, this is false by default</para>
+            configuration file to <literal>true</literal>, this is <literal>false</literal> by
+            default.</para>
         <para>The cluster is formed by each node declaring <emphasis>cluster connections</emphasis>
             to other nodes in the core configuration file <literal>jbm-configuration.xml</literal>.
-            When a node forms a cluster connection to another node, internally it creates a core
-            bridge (LINK) connection between it and the other node, this is done transparently
-            behind the scenes - you don't have to declare an explicit bridge for each node. These
-            cluster connections allow messages to flow between the nodes of the cluster to balance
-            load.</para>
+            When a node forms a cluster connection to another node, internally it creates a <xref
+                linkend="core-bridges">core bridge</xref> connection between it and the other node,
+            this is done transparently behind the scenes - you don't have to declare an explicit
+            bridge for each node. These cluster connections allow messages to flow between the nodes
+            of the cluster to balance load.</para>
         <para>Nodes can be connected together to form a cluster in many different topologies, we
             will discuss a couple of the more common topologies later in this chapter.</para>
         <para>We'll also discuss client side load balancing, where we can balance client connections
@@ -55,7 +56,7 @@
             <para>A broadcast group is the means by which a server broadcasts connectors over the
                 network. A connector defines a way in which a client (or other server) can make
                 connections to the server. For more information on what a connector is please see
-                chapter [LINK].</para>
+                    <xref linkend="configuring-transports">here</xref>.</para>
             <para>The broadcast group takes a set of connector pairs, each connector pair contains
                 connection settings for a live and (optional) backup server and broadcasts them on
                 the network. It also defines the UDP address and port settings. </para>
@@ -98,9 +99,10 @@
                 </listitem>
                 <listitem>
                     <para><literal>group-address</literal>. This is the multicast address to which
-                        the data will be broadcast. It is a class D IP address in the range
-                        224.0.0.0 to 239.255.255.255, inclusive. The address 224.0.0.0 is reserved
-                        and is not available for use. This parameter is mandatory.</para>
+                        the data will be broadcast. It is a class D IP address in the range <literal
+                            >224.0.0.0</literal> to <literal>239.255.255.255</literal>, inclusive.
+                        The address <literal>224.0.0.0</literal> is reserved and is not available
+                        for use. This parameter is mandatory.</para>
                 </listitem>
                 <listitem>
                     <para><literal>group-port</literal>. This is the UDP port number used for
@@ -113,12 +115,12 @@
                 </listitem>
                 <listitem>
                     <para><literal>connector-ref</literal>. This specifies the connector and
-                        optional backup connector that will be broadcast. Please see section [LINK]
-                        for more information on connectors. The connector to be broadcast is
-                        specified by the <literal>connector-name</literal> attribute, and the backup
-                        connector to be broadcast is specified by the <literal
-                            >backup-connector</literal> attribute. The <literal
-                            >backup-connector</literal> attribute is optional.</para>
+                        optional backup connector that will be broadcast. Please see <xref
+                            linkend="configuring-transports">here</xref> for more information on
+                        connectors. The connector to be broadcast is specified by the <literal
+                            >connector-name</literal> attribute, and the backup connector to be
+                        broadcast is specified by the <literal>backup-connector</literal> attribute.
+                        The <literal>backup-connector</literal> attribute is optional.</para>
                 </listitem>
             </itemizedlist>
         </section>
@@ -211,8 +213,7 @@
                 <para>When this connection factory is downloaded from JNDI by a client application
                     and JMS connections are created from it, those connections will be load-balanced
                     across the list of servers that the discovery group maintains by listening on
-                    the multicast address specified in the discovery group configuration. For more
-                    information on client side connection load balancing please see [LINK].</para>
+                    the multicast address specified in the discovery group configuration.</para>
                 <para>If you're using JMS, but you're not using JNDI to lookup a connection factory
                     - you're instantiating the JMS connection factory directly then you can specify
                     the discovery group parameters directly when creating the JMS connection
@@ -265,8 +266,8 @@ Connection jmsConnection2 = jmsConnectionFactory.createConnection();</programlis
         <para>If cluster connections are defined between nodes of a cluster, then JBoss Messaging
             will load balance messages arriving from at a particular node from a client.</para>
         <para>Let's take a simple example of a cluster of four nodes A, B, C, and D arranged in a
-            symmetric cluster [LINK]. We have a queue called <literal>OrderQueue</literal> deployed
-            on each node of the cluster.</para>
+                <xref linkend="symmetric-cluster">symmetric cluster</xref>. We have a queue called
+                <literal>OrderQueue</literal> deployed on each node of the cluster.</para>
         <para>We have client Ca connected to node A, sending orders to the server. We have also have
             order processor clients Pa, Pb, Pc, and Pd connected to each of the nodes A, B, C, D. If
             no cluster connection was defined on node A, then as order messages arrive on node A
@@ -288,7 +289,7 @@ Connection jmsConnection2 = jmsConnectionFactory.createConnection();</programlis
             cluster connections in general.</para>
         <section id="clusters.cluster-connections">
             <title>Configuring Cluster Connections</title>
-            <para>Cluster Connections group servers into clusters so that messages can be load
+            <para>Cluster connections group servers into clusters so that messages can be load
                 balanced between the nodes of the cluster. Let's take a look at a typical cluster
                 connection. Cluster connections are always defined in <literal
                     >jbm-configuration.xml</literal> inside a <literal>cluster-connection</literal>
@@ -314,8 +315,8 @@ Connection jmsConnection2 = jmsConnectionFactory.createConnection();</programlis
                         messages sent to an address that starts with this value.</para>
                     <para>In this case, this cluster connection will load balance messages sent to
                         address that start with <literal>jms</literal>. This cluster connection,
-                        will, in effect apply to all JMS Queue and topic subscriptions since they
-                        map to core queues that start with the substring "jms"</para>
+                        will, in effect apply to all JMS queue and topic subscriptions since they
+                        map to core queues that start with the substring "jms".</para>
                     <para>The address can be any value and you can have many cluster connections
                         with different values of <literal>address</literal>, simultaneously
                         balancing messages for those addresses, potentially to different clusters of
@@ -350,7 +351,8 @@ Connection jmsConnection2 = jmsConnectionFactory.createConnection();</programlis
                         filtered out and ignored on receipt at the target node.</para>
                     <para>This parameter has the same meaning as <literal
                             >use-duplicate-detection</literal> on a bridge. For more information on
-                        duplicate detection please see chapter [LINK].</para>
+                        duplicate detection please <xref linkend="duplicate-detection"
+                        >here</xref>.</para>
                     <para>This parameter is optional and has a default value of <literal
                             >true</literal>.</para>
                 </listitem>
@@ -391,8 +393,7 @@ Connection jmsConnection2 = jmsConnectionFactory.createConnection();</programlis
                 <listitem>
                     <para><literal>discovery-group-ref</literal>. This parameter determines which
                         discovery group is used to obtain the list of other servers in the cluster
-                        that this cluster connection will make connections to. For more information
-                        on discovery groups please see section [LINK].</para>
+                        that this cluster connection will make connections to.</para>
                 </listitem>
             </itemizedlist>
         </section>
@@ -459,9 +460,7 @@ factory.setLoadBalancingPolicyClassName("com.acme.MyLoadBalancingPolicy");
                 <para>Specifying servers explicitly</para>
             </listitem>
             <listitem>
-                <para>Using discovery. Please see section [LINK] for an explanation on how to
-                    configure clients to use server discovery for discovering the list of servers to
-                    connect to.</para>
+                <para>Using discovery.</para>
             </listitem>
         </itemizedlist>
     </section>
@@ -501,7 +500,7 @@ factory.setLoadBalancingPolicyClassName("com.acme.MyLoadBalancingPolicy");
                     connector. The <literal>backup-connector-name</literal> is optional, and if
                     specified it also references a connector defined in <literal
                         >jbm-configuration.xml</literal>. For more information on connectors please
-                    see chapter [LINK].</para>
+                    see <xref linkend="configuring-transports">here</xref>.</para>
                 <para>The connection factory thus maintains a list of [connector, backup connector]
                     pairs, these pairs are then used by the client connection load balancing policy
                     on the client side when creating connections to the cluster.</para>
@@ -526,8 +525,7 @@ Connection jmsConnection2 = jmsConnectionFactory.createConnection();</programlis
                 <para>In the above snippet we create a list of pairs of <literal
                         >TransportConfiguration</literal> objects. Each <literal
                         >TransportConfiguration</literal> object contains knowledge of how to make a
-                    connection to a specific server. For more information on this please see the
-                    chapter on connectors [LINK].</para>
+                    connection to a specific server.</para>
                 <para>A <literal>JBossConnectionFactory</literal> instance is then created passing
                     the list of servers in the constructor. Any connections subsequently created by
                     this factory will create connections according to the client connection load
@@ -535,7 +533,7 @@ Connection jmsConnection2 = jmsConnectionFactory.createConnection();</programlis
             </section>
             <section>
                 <title>Specifying List of Servers using the Core API</title>
-                <para>If you're using the Core API you can also specify the list of servers directly
+                <para>If you're using the core API you can also specify the list of servers directly
                     when creating the <literal>ClientSessionFactory</literal> instance. Here's an
                     example:</para>
                 <programlisting>List&lt;Pair&lt;TransportConfiguration, TransportConfiguration>> serverList = 
@@ -557,7 +555,7 @@ ClientSession session2 = factory.createClientSession(...);</programlisting>
                         >TransportConfiguration</literal> objects. Each <literal
                         >TransportConfiguration</literal> object contains knowledge of how to make a
                     connection to a specific server. For more information on this please see the
-                    chapter on connectors [LINK].</para>
+                    chapter on <xref linkend="configuring-transports">connectors</xref>.</para>
                 <para>A <literal>ClientSessionFactoryImpl</literal> instance is then created passing
                     the list of servers in the constructor. Any sessions subsequently created by
                     this factory will create sessions according to the client connection load
@@ -613,7 +611,7 @@ ClientSession session2 = factory.createClientSession(...);</programlisting>
             disabled.</para>
         <para>Message redistribution can be configured on a per address basis, by specifying the
             redistribution delay in the address settings, for more information on configuring
-            address settings please see the chapter [LINK].</para>
+            address settings please see <xref linkend="queue-attributes">here</xref>.</para>
         <para>Here's an address settings snippet from <literal>jbm-configuration.xml</literal>
             showing how message redistribution is enabled for a set of queues:</para>
         <programlisting>&lt;address-settings>     
@@ -644,7 +642,7 @@ ClientSession session2 = factory.createClientSession(...);</programlisting>
         <title>Cluster topologies</title>
         <para>JBoss Messaging clusters can be connected together in many different topologies, let's
             consider the two most common ones here</para>
-        <section>
+        <section id="symmetric-cluster">
             <title>Symmetric cluster</title>
             <para>A symmetric cluster is probably the most common cluster topology, and you'll be
                 familiar with if you've had experience of JBoss Application Server
@@ -654,8 +652,8 @@ ClientSession session2 = factory.createClientSession(...);</programlisting>
                 hop away from every other node.</para>
             <para>To form a symmetric cluster every node in the cluster defines a cluster connection
                 with the attribute <literal>max-hops</literal> set to <literal>1</literal>.
-                Typically the cluster connection will use server discovery [LINK] in order to know
-                what other servers in the cluster it should connect to, although it is possible to
+                Typically the cluster connection will use server discovery in order to know what
+                other servers in the cluster it should connect to, although it is possible to
                 explicitly define each target server too in the cluster connection if, for example,
                 UDP is not available on your network.</para>
             <para>With a symmetric cluster each node knows about all the queues that exist on all
@@ -673,10 +671,9 @@ ClientSession session2 = factory.createClientSession(...);</programlisting>
                 sending order messages. Due to corporate policy, the order consumer clients need to
                 be hosted in a different network, and that network is only accessible via a third
                 network. In this setup node B acts as a mediator with no producers or consumers on
-                it. Any order messages arriving on node A will be forwarded to node B, which will in
-                turn forward them to node C where they can get consumed. Node A does not need to
-                directly connect to C, but all the nodes can still act as a part of the
-                cluster.</para>
+                it. Any messages arriving on node A will be forwarded to node B, which will in turn
+                forward them to node C where they can get consumed. Node A does not need to directly
+                connect to C, but all the nodes can still act as a part of the cluster.</para>
             <para>To set up a cluster in this way, node A would define a cluster connection that
                 connects to node B, and node B would define a cluster connection that connects to
                 node C. In this case we only want cluster connections in one direction since we're

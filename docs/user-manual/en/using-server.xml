@@ -140,7 +140,7 @@
                     >jbm-configuration.xml</literal> configuration when set to false mans that the
                 other configuration files are not loaded. This is true by default.</para>
         </note>
-        <para>It is also possible to use system property substitution in all the config files.  by
+        <para>It is also possible to use system property substitution in all the config files. by
             replacing a value with the name of a system property. Here is an example of this with a
             connector config:</para>
         <programlisting>&lt;connector name="netty">
@@ -243,7 +243,7 @@ factoryMethod="getPlatformMBeanServer"/&gt;
                 <para>MBeanServer</para>
                 <para>In order to provide a JMX management interface a JMS MBean server is necessary
                     in which to register the management objects. Normally this is just the default
-                    platform MBean Server available in the JVM instance. If you don't want to
+                    platform MBean server available in the JVM instance. If you don't want to
                     provide a JMX management interface this can be commented out or removed.</para>
             </listitem>
             <listitem>
@@ -264,8 +264,7 @@ factoryMethod="getPlatformMBeanServer"/&gt;
             </listitem>
             <listitem>
                 <para>MessagingServer</para>
-                <para>This is the JMS agnostic core server. It's where 99% of the magic
-                    happens</para>
+                <para>This is the core server. It's where 99% of the magic happens</para>
             </listitem>
             <listitem>
                 <para>JMSServerManager</para>
