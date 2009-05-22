@@ -16,8 +16,8 @@
       &lt;durable>true&lt;/durable>
 &lt;/queue></programlisting>
         <para>This name attribute of queue defines the name of the queue. When we do this at a jms
-            level we follow a naming convention so the actual name of the queue will be <literal
-                >jms.queue.selectorQueue</literal>.</para>
+            level we follow a naming convention so the actual name of the queue will be
+                <literal>jms.queue.selectorQueue</literal>.</para>
         <para>The entry element configures the name that will be used to bind the queue to JNDI.
             This is a mandatory element and the queue can contain multiple of these to bind the same
             queue to different names.</para>
@@ -25,8 +25,8 @@
             have. This is an optional element with a default of null when ommitted.</para>
         <para>The durable element specifies whether the queue will be persisted. This again is
             optional and defaults to true if ommited.</para>
-        <para>Secondly a queue can be predefined at a core level in the <literal
-                >jbm-configuration.xml</literal> file. The following is an example.</para>
+        <para>Secondly a queue can be predefined at a core level in the
+                <literal>jbm-configuration.xml</literal> file. The following is an example.</para>
         <programlisting>&lt;queues>     
    	&lt;queue name="jms.queue.selectorQueue">
    	    &lt;address>jms.queue.selectorQueue&lt;/address>
@@ -52,11 +52,11 @@
     <section>
         <title>Using the API</title>
         <para>Queues can also be created using the core API or the JMS management API.</para>
-        <para>For the core API queues can be created via the <literal
-                >org.jboss.messaging.core.client.ClientSession</literal> interface. There are
-            multiple <literal>createQueue</literal> methods that support setting all of the afore
-            mentioned attributes. There is one extra atrribute that can be set via this API which is
-                <literal>temporary</literal>. setting this to true means that the queue will be
+        <para>For the core API queues can be created via the
+                <literal>org.jboss.messaging.core.client.ClientSession</literal> interface. There
+            are multiple <literal>createQueue</literal> methods that support setting all of the
+            afore mentioned attributes. There is one extra attribute that can be set via this API
+            which is <literal>temporary</literal>. setting this to true means that the queue will be
             deleted once the session is disconnected.</para>
         <para>Take a look at the <xref linkend="management">management section</xref> for the API
             for creating queues.</para>
