@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <chapter id="architecture">
     <title>Architecture</title>
-    <para>In this section we will discuss the JBoss Messaging high level architecture and
-        concepts.</para>
+    <para>In this section we will give an overview of the JBoss Messaging high level
+        architecture.</para>
     <section>
         <title>Core Architecture</title>
         <para>JBoss Messaging core is designed simply as set of Plain Old Java Objects
@@ -11,7 +11,8 @@
             fact, JBoss Messaging core has <emphasis role="italic">zero</emphasis> dependencies on
             any jars other than the standard JDK classes!</para>
         <para>This allows JBoss Messaging to be easily embedded in your own project, or instantiated
-            in any dependency injection framework such as JBoss Microcontainer or Spring.</para>
+            in any dependency injection framework such as JBoss Microcontainer, Spring or Google
+            Guice.</para>
         <para>A JBoss Messaging server has its own high performance persistent journal, which it
             uses for message and other persistence.</para>
         <para>Using a high performance journal allows outrageous persistence message performance,
@@ -27,12 +28,12 @@
                         JMS.</para>
                 </listitem>
                 <listitem>
-                    <para>JMS client API. The standard JMS classes are available at the client
+                    <para>JMS client API. The standard JMS API is available at the client
                         side.</para>
                 </listitem>
             </orderedlist>
         </para>
-        <para>JMS semantics are implemented in a thin JMS facade layer on the client side.</para>
+        <para>JMS semantics are implemented by a thin JMS facade layer on the client side.</para>
         <para>The JBoss Messaging server does not speak JMS and in fact does not know anything about
             JMS, it's a protocol agnostic messaging server designed to be used with multiple
             different protocols.</para>
@@ -56,8 +57,8 @@
             application that requires messaging functionality internally but you don't want to
             expose that as a messaging server you can directly instantiate and embed messaging
             servers in your own application.</para>
-        <para>Here's a real code example demonstrating just how easy that is:</para>
-        <para><code> Server server = new MessagingServer(); </code></para>
+        <para>For more information on embedding JBoss Messaging see the chapter on <xref
+                linkend="embedding-jbm">embedding</xref>.</para>
     </section>
     <section>
         <title>JBoss Messaging integrated with a JEE application server</title>
@@ -65,22 +66,23 @@
             adaptor which enables it to be integrated easily into any JEE compliant application
             server or servlet engine.</para>
         <para>JEE application servers provide Message Driven Beans (MDBs), which are a special type
-            of Enterprise Java Beans (EJBs) which can process messages from sources such as JMS
+            of Enterprise Java Beans (EJBs) that can process messages from sources such as JMS
             systems or mail systems.</para>
         <para>Probably the most common use of an MDB is to consume messages from a JMS messaging
             system.</para>
         <para>According to the JEE specification, a JEE application server uses a JCA adapter to
             integrate with a JMS messaging system so it can consume messages for MDBs.</para>
-        <para>The JCA adapter is not only used by the JEE application server for <emphasis
+        <para>Howvever, the JCA adapter is not only used by the JEE application server for <emphasis
                 role="italic">consuming</emphasis> messages via MDBs, it is also used when sending
             message to the JMS messaging system e.g. from inside an EJB or servlet.</para>
         <para>When integrating with a JMS messaging system from inside a JEE application server it
-            is always recommended that this is done via the JCA adaptor.</para>
+            is always recommended that this is done via a JCA adaptor.</para>
         <para>The application server's JCA service provides extra functionality such as connection
             pooling and automatic transaction enlistment, which are desirable when using messaging,
             say, from inside an EJB. It is possible to talk to a JMS messaging system directly from
             an EJB, MDB or servlet without going through a JCA adapter, but this is not recommended
-            since you will not be able to take advantage of the JCA features.</para>
+            since you will not be able to take advantage of the JCA features, such as caching of JMS
+            sessions, which can result in poor performance.</para>
         <para>Figure 3.2 belows shows a JEE application server integrating with a JBoss Messaging
             server via the JBoss Messaging JCA adaptor. Note that all communication between EJB
             sessions or entity beans and Message Driven beans go through the adaptor and not
@@ -92,6 +94,8 @@
         <para>
             <graphic fileref="images/architecture2.jpg"/>
         </para>
+        <para>For more information on using the JCA adaptor, please see the chatper on <xref
+                linkend="appserver-integration">application server integration</xref>.</para>
     </section>
     <section>
         <title>JBoss Messaging stand-alone server</title>
@@ -99,24 +103,27 @@
             independent messaging server not dependent on a JEE application server.</para>
         <para>The standard stand-alone messaging server configuration comprises a core messaging
             server, a JMS service and a JNDI service.</para>
-        <para>The role of the JMS Service is to deploy any JMS Queues, Topics and ConnectionFactorys
-            from any server side jbm-jms.xml config files. It also provides a simple management API
-            for creating and destroying Queues, Topics and ConnectionFactorys which can be accessed
-            via JMX or the connection. It is a separate service to the JBoss Messaging core server,
-            since the core server is JMS agnostic. If you don't want to deploy any JMS Queues,
-            Topics and ConnectionFactorys via server side xml config and don't require a JMS
-            management API on the server side then you can disable this service.</para>
+        <para>The role of the JMS Service is to deploy any JMS Queues, Topics and ConnectionFactory
+            instances from any server side <literal>jbm-jms.xml</literal> config files. It also
+            provides a simple management API for creating and destroying Queues, Topics and
+            ConnectionFactory instances which can be accessed via JMX or the connection. It is a
+            separate service to the JBoss Messaging core server, since the core server is JMS
+            agnostic. If you don't want to deploy any JMS Queues, Topics and ConnectionFactory
+            instances via server side xml config and don't require a JMS management API on the
+            server side then you can disable this service.</para>
         <para>We also include a JNDI server since JNDI is a common requirement when using JMS to
-            lookup Queues, Topics and ConnectionFactorys. If you do not require JNDI then this
-            service can be disabled. JBoss Messaging allows you to programmatically create JMS and
-            Core objects directly on the client side as opposed to looking them up from JNDI, so a
-            JNDI server is not always a requirement.</para>
+            lookup Queues, Topics and ConnectionFactory instances. If you do not require JNDI then
+            this service can also be disabled. JBoss Messaging allows you to programmatically create
+            JMS and core objects directly on the client side as opposed to looking them up from
+            JNDI, so a JNDI server is not always a requirement.</para>
         <para>The stand-alone server configuration uses JBoss Microcontainer to instantiate and
             enforce dependencies between the components. JBoss Microcontainer is a very lightweight
             POJO bootstrapper.</para>
         <para>The stand-alone server architecture is shown in figure 3.3 below:</para>
         <para>
             <graphic fileref="images/architecture3.jpg"/>
+        </para>
+        <para>For more information on serve configuration files see the chapter <xref linkend="">using the server</xref>.
         </para>
     </section>
 </chapter>

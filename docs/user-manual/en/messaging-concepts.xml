@@ -5,40 +5,44 @@
             url="http://en.wikipedia.org/wiki/Message_oriented_middleware">Message Oriented
             Middleware</ulink> , we'll just call them messaging systems in the remainder of this
         book.</para>
-    <para>We'll first prevent a brief overview of what kind of things messaging systems do and and
+    <para>We'll first present a brief overview of what kind of things messaging systems do and and
         where they're useful, and the kind of concepts you'll hear about in the messaging
         world.</para>
     <para>If you're already familiar with what a messaging system is and what it's capable of, then
         you can skip this chapter.</para>
-    <para>Messaging systems allow you to loosely couple heteregenous systems together, whilst
-        typically providing reliability, transactions, and many other features.</para>
-    <para>Unlike systems based on a <ulink url="http://en.wikipedia.org/wiki/Remote_procedure_call"
-            >Remote Procedure Call</ulink> (RPC) pattern, messaging systems primarily use an
-        asynchronous message passing pattern with no tight relationship between requests and
-        responses. Most messaging systems also support a request-response mode but this is not a
-        primary feature of messaging systems.</para>
-    <para>Designing systems to be asynchronous from end-to-end allows you to really take advantage
-        of your hardware resources, minimising the amount of threads blocking on IO operations, and
-        to use your network bandwidth to its full capacity. With an RPC approach you have to wait
-        for a response for each request you make so are limited by the network round trip time, or
-            <emphasis role="italic">latency</emphasis> of your network. With an asynchronous system
-        you can pipeline flows of messages in different directions, so are limited by the network
-            <emphasis role="italic">bandwidth</emphasis> not the latency. This typically allows you
-        to create much higher performance applications.</para>
-    <para>Messaging systems decouple the senders of messages from the consumers of messages. The
-        senders and consumers of messages are completely independent and know nothing of each other.
-        This allows you to create flexible, loosely coupled systems.</para>
-    <para>Often, large enterprises use a messaging system to implement a message bus which loosely
-        couples heterogeneous systems together. Message buses often form the core of an <ulink
-            url="http://en.wikipedia.org/wiki/Enterprise_service_bus">Enterprise Service
-        Bus</ulink>. (ESB). Using a message bus to couple disparate systems can allow the system to
-        grow and adapt. It also allows more flexibility add new systems or retire old ones since
-        they don't have brittle dependencies on each other.</para>
+    <section>
+        <title>Messaging Concepts</title>
+        <para>Messaging systems allow you to loosely couple heteregenous systems together, whilst
+            typically providing reliability, transactions, and many other features.</para>
+        <para>Unlike systems based on a <ulink
+                url="http://en.wikipedia.org/wiki/Remote_procedure_call">Remote Procedure
+                Call</ulink> (RPC) pattern, messaging systems primarily use an asynchronous message
+            passing pattern with no tight relationship between requests and responses. Most
+            messaging systems also support a request-response mode but this is not a primary feature
+            of messaging systems.</para>
+        <para>Designing systems to be asynchronous from end-to-end allows you to really take
+            advantage of your hardware resources, minimising the amount of threads blocking on IO
+            operations, and to use your network bandwidth to its full capacity. With an RPC approach
+            you have to wait for a response for each request you make so are limited by the network
+            round trip time, or <emphasis role="italic">latency</emphasis> of your network. With an
+            asynchronous system you can pipeline flows of messages in different directions, so are
+            limited by the network <emphasis role="italic">bandwidth</emphasis> not the latency.
+            This typically allows you to create much higher performance applications.</para>
+        <para>Messaging systems decouple the senders of messages from the consumers of messages. The
+            senders and consumers of messages are completely independent and know nothing of each
+            other. This allows you to create flexible, loosely coupled systems.</para>
+        <para>Often, large enterprises use a messaging system to implement a message bus which
+            loosely couples heterogeneous systems together. Message buses often form the core of an
+                <ulink url="http://en.wikipedia.org/wiki/Enterprise_service_bus">Enterprise Service
+                Bus</ulink>. (ESB). Using a message bus to de-couple disparate systems can allow the
+            system to grow and adapt. It also allows more flexibility add new systems or retire old
+            ones since they don't have brittle dependencies on each other.</para>
+    </section>
     <section>
         <title>Messaging styles</title>
-        <para>Messaging systems normally support two main styles of asynchronous messaging;<ulink
-                url="http://en.wikipedia.org/wiki/Message_queue"> message queue</ulink> (also known
-            as <emphasis role="italic">point-to-point messaging</emphasis>) and <ulink
+        <para>Messaging systems normally support two main styles of asynchronous messaging;  <ulink
+                url="http://en.wikipedia.org/wiki/Message_queue"> message queue</ulink> messaging
+            (also known as <emphasis role="italic">point-to-point messaging</emphasis>) and <ulink
                 url="http://en.wikipedia.org/wiki/Publish_subscribe">publish subscribe</ulink>
             messaging. We'll summarise them briefly here:</para>
         <section>
@@ -62,7 +66,7 @@
                 to the order queue. There are many front end ordering systems which send orders to
                 the order queue. When a message arrives on the queue it is persisted - this ensures
                 that if the server crashes the order is not lost. There are many consumers on the
-                order queue - each representing an instance of an order processing component - this
+                order queue - each representing an instance of an order processing component - these
                 can be on different physical machines but consuming from the same queue. The
                 messaging system delivers each message to one and only one of the ordering
                 processing components. Different messages can be processed by order processors, but
@@ -79,8 +83,8 @@
         <section>
             <title>The Publish-Subscribe Pattern</title>
             <para>With publish-subscribe messaging many senders can send messages to an entity on
-                the server, often called a <emphasis role="italic">topic</emphasis>, e.g. in the JMS
-                world.</para>
+                the server, often called a <emphasis role="italic">topic</emphasis> (e.g. in the JMS
+                world).</para>
             <para>There can be many subscriptions on a topic, each subscription receives a copy of
                     <emphasis role="italic">each</emphasis> message sent to the topic. This differs
                 from the message queue pattern where each message is only consumed by a single
@@ -99,7 +103,7 @@
         <title>Delivery guarantees</title>
         <para>A key feature of most messaging systems is <emphasis role="italic">reliable
                 messaging</emphasis>. With reliable messaging the server gives a guarantee that the
-            message will be delivered once and only once to each consumer of a queue or each
+            message will be delivered once and only once to each consumer of a queue or each durable
             subscription of a topic, even in the event of system failure. This is crucial for many
             businesses, you don't want your orders fulfilled more than once or your orders to be
             lost.</para>
@@ -167,9 +171,9 @@
                 different programming languages.</para>
             <para>JBoss Messaging can be used by any STOMP client when using the <ulink
                     url="http://stomp.codehaus.org/StompConnect">StompConnect</ulink> broker which
-                translates STOMP protocol to the JMS API.</para>
+                translates the STOMP protocol to the JMS API.</para>
             <para>JBoss Messaging will be shortly implementing the STOMP protocol on the boker, thus
-                avoiding the usage of StompConnect.</para>
+                avoiding having to use StompConnect.</para>
         </section>
         <section>
             <title>AMQP</title>
@@ -183,9 +187,10 @@
             <title>REST</title>
             <para><ulink url="http://en.wikipedia.org/wiki/Representational_State_Transfer"
                     >REST</ulink> approaches to messaging are showing a lot interest recently. With
-                a REST approach messaging resources are manipulated as resources, typically using a
-                simple set of operations on those resources, e.g. PUT, POST, GET etc. REST
-                approaches to messaging often use HTTP as their underlying protocol.</para>
+                a REST approach messaging resources are manipulated as resources defined by a URI
+                and typically using a simple set of operations on those resources, e.g. PUT, POST,
+                GET etc. REST approaches to messaging often use HTTP as their underlying
+                protocol.</para>
             <para>The advantage of a REST approach with HTTP is in its simplicity and the fact the
                 internet is already tuned to deal with HTTP optimally.</para>
             <para>JBoss Messaging will shortly be implementing REST.</para>
@@ -193,8 +198,8 @@
     </section>
     <section>
         <title>High Availability</title>
-        <para>High Availability (HA) means that the system should remain operation after failure of
-            one or more of the servers. The degree of support for HA varies between various
+        <para>High Availability (HA) means that the system should remain operational after failure
+            of one or more of the servers. The degree of support for HA varies between various
             messaging systems.</para>
         <para>Some messaging systems require you to deal with server side failure by writing some
             client side code which gets called on event of server failure, and in which you are
@@ -203,6 +208,8 @@
             any special client side code to deal with failure. On failover JBoss Messaging will
             automatically fail over your client connections to another server, and your client
             sessions can continue as if nothing happened.</para>
+        <para>For more information on HA, please see the <xref linkend="ha">HA</xref>
+            section.</para>
     </section>
     <section>
         <title>Clusters</title>
@@ -211,52 +218,30 @@
             consuming messages to be spread over many servers. This allows your system to be able
             scale horizontally by adding new servers to the cluster.</para>
         <para>Degrees of support for clusters varies between messaging systems, with some systems
-            having fairly basic clusters where the cluster members being hardly aware of each
+            having fairly basic clusters with the cluster members being hardly aware of each
             other.</para>
         <para>JBoss Messaging provides very configurable state of the art clustering where messages
             can be intelligently load balanced between the servers in the cluster, according to the
             number of consumers on each node, and whether they are ready for messages.</para>
         <para>JBoss Messaging also has the ability to automatically redistribute messages between
             nodes of a cluster to prevent starvation on any particular node.</para>
-        <para>For full details on clustering please the clustering section.</para>
+        <para>For full details on clustering please the chapter on <xref linkend="clusters"
+                >clusters</xref>.</para>
     </section>
     <section>
         <title>Bridges and routing</title>
         <para>Some messaging systems allow isolated clusters or single nodes to be bridged together,
-            typically over unreliable connections like a Wide Area Network (WAN).</para>
+            typically over unreliable connections like a wide area network (WAN).</para>
         <para>A bridge normally consumes from a queue on one server and forwards messages to another
             queue on a different server. Bridges cope with unreliable connections, automatically
             reconnecting when the connections becomes available again.</para>
         <para>JBoss Messaging bridges can be configured with filter expressions to only forward
-            certain messages, and transformation can be hooked in.</para>
+            certain messages, and transformation can also be hooked in.</para>
         <para>JBoss Messaging also allows routing between queues to be configured in server side
             configuration. This allows complex routing networks to be set up forwarding or copying
             messages from one destination to another, forming a global network of interconnected
             brokers.</para>
-    </section>
-    <section>
-        <title>Other messaging system functionality</title>
-        <para>Here's a quick run through of other features and terms you might hear in the context
-            of messaging systems:</para>
-        <itemizedlist>
-            <listitem>
-                <para>Message expiry</para>
-                <para>You can set a Time to Live (TTL) on a message. If you do this then if the
-                    messaging system has not delivered the message by the time TTL comes then the
-                    message will be discarded or possibly sent to a configurable other
-                    destination.</para>
-            </listitem>
-            <listitem>
-                <para>Message redelivery</para>
-                <para>Messages that have been delivered to a consumer and ultimately cancelled, i.e.
-                    the consumer received the message but didn't acknowledge it before closing, can
-                    be redelivered with some pre configured semantics.</para>
-            </listitem>
-            <listitem>
-                <para>Message Scheduling</para>
-                <para>When sending a message it is possible to schedule when the message will
-                    actually get delivered to a consumer.</para>
-            </listitem>
-        </itemizedlist>
+        <para>See the relevant chapters for more information on <xref linkend="core-bridges"
+                >bridges</xref> and <xref linkend="diverts">diverts</xref>.</para>
     </section>
 </chapter>

@@ -4,11 +4,13 @@
     <para>Although JBoss Messaging provides a JMS agnostic messaging API, many users will be more
         comfortable using JMS.</para>
     <para>JMS is a very popular API standard for messaging, and most messaging systems provide a JMS
-        API. If you are completely new to JMS we suggest you following the Sun JMS tutorial [link] -
-        a full JMS tutorial is out of scope for this guide.</para>
+        API. If you are completely new to JMS we suggest you following the<ulink
+            url="http://java.sun.com/products/jms/tutorial/1_3_1-fcs/doc/jms_tutorialTOC.html"> Sun
+            JMS tutorial</ulink> - a full JMS tutorial is out of scope for this guide.</para>
     <para>JBoss Messaging also ships with a wide range of examples, many of which demonstrate JMS
         API usage. A good place to start would be to play around with the simple JMS Queue and Topic
-        example, but we also provide examples for many other parts of the JMS API.</para>
+        example, but we also provide examples for many other parts of the JMS API. A full
+        description of the examples is available <xref linkend="examples">here</xref>.</para>
     <para>In this section we'll go through the main steps in configuring the server for JMS and
         creating a simple JMS program. We'll also show how to configure and use JNDI, and also how
         to use JMS with JBoss Messaging without using any JNDI.</para>
@@ -16,9 +18,9 @@
         <title>A simple ordering system</title>
         <para>For this chapter we're going to use a very simple ordering system as our example. It's
             a somewhat contrived example because of its extreme simplicity, but it serves to
-            demonstrates the very basics of setting up and using JMS.</para>
-        <para>We will have a single JMS Queue <literal>OrderQueue</literal>, and we will have a
-            single <literal>MessageProducer</literal> sending an order message to the queue and a
+            demonstrate the very basics of setting up and using JMS.</para>
+        <para>We will have a single JMS Queue called <literal>OrderQueue</literal>, and we will have
+            a single <literal>MessageProducer</literal> sending an order message to the queue and a
             single <literal>MessageConsumer</literal> consuming the order message from the
             queue.</para>
         <para>The queue will be a <literal>durable</literal> queue, i.e. it will survive a server
@@ -69,10 +71,11 @@
         <title>JNDI configuration</title>
         <para>When using JNDI from the client side you need to specify a set of JNDI properties
             which tell the JNDI client where to locate the JNDI server, amongst other things. These
-            are often specified in a file jndi.properties on the client classpath, or you can
-            specify them directly when creating the JNDI initial context. A full JNDI tutorial is
-            outside the scope of this document, please see the Sun JNDI tutorial for more
-            information on how to use JNDI. [LINK]</para>
+            are often specified in a file called <literal>jndi.properties</literal> on the client
+            classpath, or you can specify them directly when creating the JNDI initial context. A
+            full JNDI tutorial is outside the scope of this document, please see the <ulink
+                url="http://java.sun.com/products/jndi/tutorial/TOC.html">Sun JNDI tutorial</ulink>
+            for more information on how to use JNDI.</para>
         <para>For talking to the JBoss JNDI Server, the jndi properties will look something like
             this:</para>
         <programlisting>
@@ -99,8 +102,8 @@ java.naming.factory.url.pkgs=org.jboss.naming:org.jnp.interfaces
         </programlisting>
         <note>
             <para>If you want your JNDI server to be available to non local clients make sure you
-                change it's bind address to something other than
-                <literal>localhost</literal>!</para>
+                change it's bind address to something other than <literal
+                >localhost</literal>!</para>
         </note>
     </section>
     <section>
@@ -142,10 +145,13 @@ System.out.println("Got order: " + receivedMessage.getText());
         <para>With JBoss Messaging you can do exactly that. JBoss Messaging supports the direct
             instantiation of JMS Queue, Topic and Connection Factory instances, so you don't have to
             use JNDI at all.</para>
-        <para>For a full working example of direct instantiation please see the JMS examples.</para>
+        <para>For a full working example of direct instantiation please see the JMS <xref
+                linkend="examples">examples</xref>.</para>
         <para>Here's our simple example, rewritten to not use JNDI at all:</para>
         <para>We create the JMS ConnectionFactory object directly, note we need to provide
-            connection params and specify which transport we are using:</para>
+            connection params and specify which transport we are using, for more information on
+            connectors please see the section on <xref linkend="configuring-transports">configuring
+                transports</xref>.</para>
         <programlisting>              
 TransportConfiguration transportConfiguration = 
                      new TransportConfiguration(NettyConnectorFactory.class.getName());                
