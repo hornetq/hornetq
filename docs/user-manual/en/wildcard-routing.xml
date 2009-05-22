@@ -9,5 +9,5 @@
         in the <literal>jbm-configuration.xml</literal> file to true. This is true by
         default.</para>
     <para>For more information on wild cards take a look at the <link linkend="wildcard-syntax"
-            >wildcard-syntax</link> chapter.</para>
+            >wildcard syntax</link> chapter.</para>
 </chapter>
