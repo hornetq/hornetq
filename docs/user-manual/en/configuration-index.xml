@@ -160,14 +160,16 @@
                             <entry>-1</entry>
                         </row>
                         <row>
-                            <entry>transaction-timeout</entry>
+                            <entry><link linkend="transaction-config"
+                                >transaction-timeout</link></entry>
                             <entry>Long</entry>
                             <entry>How long before a transaction can be removed from the resource
                                 manager after create time</entry>
                             <entry>60000</entry>
                         </row>
                         <row>
-                            <entry>transaction-timeout-scan-period</entry>
+                            <entry><link linkend="transaction-config"
+                                    >transaction-timeout-scan-period</link></entry>
                             <entry>Long</entry>
                             <entry>How often, in milli seconds, to scan for timeout
                                 transactions</entry>

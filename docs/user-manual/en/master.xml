@@ -17,6 +17,7 @@
         <!ENTITY flow-control            SYSTEM "flow-control.xml">
         <!ENTITY command-buffering       SYSTEM "command-buffering.xml">
         <!ENTITY ha                      SYSTEM "ha.xml">
+        <!ENTITY transaction-config      SYSTEM "transaction-config.xml">
         <!ENTITY intercepting-operations SYSTEM "intercepting-operations.xml">
         <!ENTITY interoperability        SYSTEM "interoperability.xml">
         <!ENTITY jms-core-mapping        SYSTEM "jms-core-mapping.xml">
@@ -70,6 +71,7 @@
    &send-guarantees;
    &connection-ttl;
    &management;
+   &transaction-config;
    &large-messages;
    &paging;
    &queue-attributes;

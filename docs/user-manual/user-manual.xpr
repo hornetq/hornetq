@@ -52,6 +52,7 @@
             <file name="en/security.xml"/>
             <file name="en/send-guarantees.xml"/>
             <file name="en/thread-pooling.xml"/>
+            <file name="en/transaction-config.xml"/>
             <file name="en/undelivered-messages.xml"/>
             <file name="en/using-core.xml"/>
             <file name="en/using-jms.xml"/>
