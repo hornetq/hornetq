@@ -7,7 +7,7 @@
     <section id="dead.connections">
         <title>Cleaning up Dead Connection Resources on the Server</title>
         <para>Before a JBoss Messaging client application exits it is considered good practice and
-            part of its contract that it should close its resources in a controlled manager, using a
+            part of its contract that it should close its resources in a controlled manner, using a
                 <literal>finally</literal> block.</para>
         <para>Here's an example of a well behaved core client application closing its session and
             session factory in a finally block:</para>
@@ -67,16 +67,16 @@ finally
             we don't want to clean up "dead" server side resources too soon or this will prevent any
             client from reconnecting, as it won't be able to find its old sessions on the
             server.</para>
-        <para>JBoss Messaging makes all of this configurable. For each <literal
-                >ClientSessionFactory</literal> we define a <emphasis>connection TTL</emphasis>.
-            Each connection also sends a periodic "ping" to the server, when the server receives the
-            "ping" it sends back "pong". Every time the server receives a ping, it marks the time it
-            received that last ping against the connection. If the server hasn't received a ping for
-            the time given by the TTL, then it will be automatically cleaned up and its server side
-            resources removed. Basically, the TTL determines how long the server will keep a
-            connection alive in the absence of a ping. Normally we configure the TTL to be much
-            larger than the connection ping period so we can allow for session reconnections at
-            significant times later.</para>
+        <para>JBoss Messaging makes all of this configurable. For each
+                <literal>ClientSessionFactory</literal> we define a <emphasis>connection
+                TTL</emphasis>. Each connection also sends a periodic "ping" to the server, when the
+            server receives the "ping" it sends back "pong". Every time the server receives a ping,
+            it marks the time it received that last ping against the connection. If the server
+            hasn't received a ping for the time given by the TTL, then it will be automatically
+            cleaned up and its server side resources removed. Basically, the TTL determines how long
+            the server will keep a connection alive in the absence of a ping. Normally we configure
+            the TTL to be much larger than the connection ping period so we can allow for session
+            reconnections at significant times later.</para>
         <para>The ping period is defined by the <literal>PingPeriod</literal> attribute on the
                 <literal>ClientSessionFactory</literal> instance.</para>
         <para>If you're using JMS it's defined by the <literal>PingPeriod</literal> attribute on a
@@ -101,8 +101,8 @@ finally
         <para>There's a thread on the server that periodically checks all the connections to see if
             they haven't been pinged for time TTL or over. The period between checking connection is
             determined by the parameter<literal>connection-scan-period</literal> in the file
-                <literal>jbm-configuration.xml</literal>. The default value is <literal
-                >1000</literal>ms.</para>
+                <literal>jbm-configuration.xml</literal>. The default value is
+                <literal>1000</literal>ms.</para>
     </section>
     <section>
         <title>Detecting failure from the client side.</title>
@@ -110,23 +110,23 @@ finally
             "dead" connection resources are cleaned up by the server. There's also another reason
             for pinging, and that's for the client to be able to detect that the server has
             failed.</para>
-        <para>Every <literal>pingPeriod</literal> milliseconds a ping is sent to the server, if, by
+        <para>Every <literal>ping period</literal> milliseconds a ping is sent to the server, if, by
             the time the client is ready to send the next ping to the server, the previous pong
             hasn't arrived then the client will consider the connection failed and will either
             initiate failover, or call any FailureListener instances (or ExceptionListeners if you
             are using JMS) depending on how it has been configured.</para>
-        <para/>
     </section>
     <section id="connection-ttl.session.multiplexing">
         <title>Session Multiplexing</title>
         <para>Each <literal>ClientSessionFactory</literal> creates connections on demand to the same
-            server as you create sessions. Each instance will create up to a maximum of <literal
-                >maxConnections</literal> connections to the same server. Subsequent sessions will
-            use one of the already created connections in a round-robin fashion.</para>
-        <para>To illustrate this, let's say <literal>maxConnections</literal> is set to <literal
-                >8</literal>. The first eight sessions that you create will have a new underlying
-            connection created for them, the next eight you create will use one of the previously
-            created connections.</para>
+            server as you create sessions. Each instance will create up to a maximum of
+                <literal>maxConnections</literal> connections to the same server. Subsequent
+            sessions will use one of the already created connections in a round-robin
+            fashion.</para>
+        <para>To illustrate this, let's say <literal>maxConnections</literal> is set to
+                <literal>8</literal>. The first eight sessions that you create will have a new
+            underlying connection created for them, the next eight you create will use one of the
+            previously created connections.</para>
         <para>The default value for <literal>maxConnections</literal> is <literal>8</literal>, if
             you prefer you can set it to a lower value so each factory maintains only one underlying
             connection. We choose a default value of <literal>8</literal> because on the server side
