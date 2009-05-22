@@ -48,10 +48,10 @@
         backup-connector-name="backup-remote-connector"/&gt;          
 &lt;/bridge&gt;                        
         </programlisting>
-        <para>Please also note that in order for bridges to be deployed on a server, the <literal
-                >clustered</literal> attribute needs to be set to <literal>true</literal> in
+        <para>Please also note that in order for bridges to be deployed on a server, the
+                <literal>clustered</literal> attribute needs to be set to <literal>true</literal> in
                 <literal>jbm-configuration.xml</literal>.</para>
-        <para>In the above example we should all the parameters its possible to configure for a
+        <para>In the above example we have shown all the parameters its possible to configure for a
             bridge. In practice you might use many of the defaults so it won't be necessary to
             specify them all explicitly.</para>
         <para>Let's take a look at all the parameters in turn:</para>
@@ -66,9 +66,9 @@
                 <para>The queue must already exist by the time the bridge is instantiated at
                     start-up.</para>
                 <note>
-                    <para>If you're using JMS then normally the JMS configuration <literal
-                            >jbm-jms.xml</literal>is loaded after the core configuration file
-                            <literal>jbm-configuration.xml</literal> is loaded. If you're bridge is
+                    <para>If you're using JMS then normally the JMS configuration
+                            <literal>jbm-jms.xml</literal>is loaded after the core configuration
+                        file <literal>jbm-configuration.xml</literal> is loaded. If you're bridge is
                         consuming from a JMS queue then you'll need to make sure the JMS queue is
                         also deployed as a core queue in the core config. Take a look at the bridge
                         example for an example of how this is done.</para>
@@ -98,8 +98,8 @@
             <listitem>
                 <para><literal>retry-interval</literal>. This optional parameter determines the
                     period in milliseconds between subsequent reconnection attempts, if the
-                    connection to the target server has failed. The default value is <literal
-                        >2000</literal>milliseconds.</para>
+                    connection to the target server has failed. The default value is
+                        <literal>2000</literal>milliseconds.</para>
             </listitem>
             <listitem>
                 <para><literal>retry-interval-multiplier</literal>. This optional parameter
@@ -166,9 +166,9 @@
                 <itemizedlist>
                     <listitem>
                         <para><literal>connector-name</literal>. This references the name of a
-                            connector defined in the core configuration file <literal
-                                >jbm-configuration.xml</literal>. The bridge will use this connector
-                            to make its connection to the target server. This attribute is
+                            connector defined in the core configuration file
+                                <literal>jbm-configuration.xml</literal>. The bridge will use this
+                            connector to make its connection to the target server. This attribute is
                             mandatory.</para>
                     </listitem>
                     <listitem>
@@ -176,9 +176,9 @@
                             references the name of a connector defined in the core configuration
                             file <literal>jbm-configuration.xml</literal>. It represents the
                             connector that the bridge will fail-over onto if it detects the live
-                            server connection has failed. If this is specified and <literal
-                                >failover-on-server-shutdown</literal> is set to <literal
-                                >true</literal> then it will also attempt failover onto this
+                            server connection has failed. If this is specified and
+                                <literal>failover-on-server-shutdown</literal> is set to
+                                <literal>true</literal> then it will also attempt failover onto this
                             connector if the live target server is cleanly shut-down.</para>
                     </listitem>
                 </itemizedlist>
