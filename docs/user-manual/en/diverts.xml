@@ -18,7 +18,7 @@
     <para>A divert will only divert a message to an address on the <emphasis>same server</emphasis>,
         however, if you want to divert to an address on a different server, a common pattern would
         be to divert to a local store-and-forward queue, then set up a bridge which consumes from
-        that queue and forweards to an address on a different server.</para>
+        that queue and forwards to an address on a different server.</para>
     <para>Diverts are therefore a very sophisticated concept, which when combined with bridges can
         be used to create interesting and complex routings. The set of diverts on a server can be
         thought of as a type of routing table for messages. Combining diverts with bridges allows
@@ -49,10 +49,10 @@
         </programlisting>
         <para>We define a divert called '<literal>prices-divert</literal>' that will divert any
             messages sent to the address '<literal>jms.topic.priceUpdates</literal>' (this
-            corresponds to any messages sent to a JMS Topic called '<literal
-            >priceUpdates</literal>'). to another local address '<literal
-                >jms.queue.priceForwarding</literal>' (this corresponds to a local JMS Queue called
-                '<literal>priceForwarding</literal>'</para>
+            corresponds to any messages sent to a JMS Topic called
+            '<literal>priceUpdates</literal>'). to another local address
+                '<literal>jms.queue.priceForwarding</literal>' (this corresponds to a local JMS
+            Queue called '<literal>priceForwarding</literal>'</para>
         <para>We also specify a message filter string so only messages with the message property
                 <literal>office</literal> with value <literal>New York</literal> will get diverted,
             all other messages will continue to be routed to the normal address. The filter string
@@ -82,10 +82,10 @@
     &lt;exclusive&gt;false&lt;/exclusive&gt;
 &lt;/divert&gt;                       
         </programlisting>
-        <para>The above divert example takes a copy of every message sent to the address '<literal
-                >jms.queue.orders</literal>' (Which corresponds to a JMS Queue called '<literal
-                >orders</literal>') and sends it to a local address called '<literal
-                >jms.topic.SpyTopic</literal>' (which corresponds to a JMS Topic called '<literal
-                >SpyTopic</literal>').</para>
+        <para>The above divert example takes a copy of every message sent to the address
+                '<literal>jms.queue.orders</literal>' (Which corresponds to a JMS Queue called
+                '<literal>orders</literal>') and sends it to a local address called
+                '<literal>jms.topic.SpyTopic</literal>' (which corresponds to a JMS Topic called
+                '<literal>SpyTopic</literal>').</para>
     </section>
 </chapter>
