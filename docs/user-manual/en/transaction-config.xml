@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<chapter id="transaction-config">
+    <title>Resource Manager Configuration</title>
+    <para>JBoss Messaging has its own Resource Manager for handling the lifespan of XA transactions.
+        When a transaction is started the resource manager is notified and keeps a record of the
+        transaction and its current state. It is possible in some cases for a transaction to be
+        started but the forgotten about. Maybe the client died and never came back. If this happens
+        then the transaction will just sit there indefinitely.</para>
+    <para>To cope with this JBoss Messaging can, if configured, scan for old transactions and
+        rollback any it finds. The default for this is 60000 milliseconds (1 minute), i.e. any
+        transactions older than 60 seconds are removed, however this can be changed by editing the
+            <literal>transaction-timeout</literal> property in <literal
+            >jbm-configuration.xml</literal>. The property <literal
+            >transaction-timeout-scan-period</literal> configures how often, in milliseconds, to
+        scan for old transactions.</para>
+</chapter>
