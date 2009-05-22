@@ -54,15 +54,15 @@
                 network. A connector defines a way in which a client (or other server) can make
                 connections to the server. For more information on what a connector is please see
                 chapter [LINK].</para>
-            <para>The broadcast group takes a set of connector pairs, each connector pair containing
+            <para>The broadcast group takes a set of connector pairs, each connector pair contains
                 connection settings for a live and (optional) backup server and broadcasts them on
                 the network. It also defines the UDP address and port settings. </para>
-            <para>Broadcast groups are defined in the server configuration file <literal
-                    >jbm-configuration.xml</literal>. There can be many broadcast groups per JBoss
-                Messaging server. All broadcast groups must be defined in a <literal
-                    >broadcast-groups</literal> element.</para>
-            <para>Let's take a look at an example broadcast group from <literal
-                    >jbm-configuration.xml</literal>:</para>
+            <para>Broadcast groups are defined in the server configuration file
+                    <literal>jbm-configuration.xml</literal>. There can be many broadcast groups per
+                JBoss Messaging server. All broadcast groups must be defined in a
+                    <literal>broadcast-groups</literal> element.</para>
+            <para>Let's take a look at an example broadcast group from
+                    <literal>jbm-configuration.xml</literal>:</para>
             <programlisting>&lt;broadcast-groups>
    &lt;broadcast-group name="my-broadcast-group">
       &lt;local-bind-port>54321&lt;/local-bind-port>
@@ -114,9 +114,9 @@
                         optional backup connector that will be broadcast. Please see section [LINK]
                         for more information on connectors. The connector to be broadcast is
                         specified by the <literal>connector-name</literal> attribute, and the backup
-                        connector to be broadcast is specified by the <literal
-                            >backup-connector</literal> attribute. The <literal
-                            >backup-connector</literal> attribute is optional.</para>
+                        connector to be broadcast is specified by the
+                            <literal>backup-connector</literal> attribute. The
+                            <literal>backup-connector</literal> attribute is optional.</para>
                 </listitem>
             </itemizedlist>
         </section>
@@ -177,10 +177,10 @@
                     <para><literal>refresh-timeout</literal>. This is the period the discovery group
                         waits after receiving the last broadcast from a particular server before
                         removing that servers connector pair entry from its list. You would normally
-                        set this to a value significantly higher than the <literal
-                            >broadcast-period</literal> on the broadcast group otherwise servers
-                        might intermittently disappear from the list even though they are still
-                        broadcasting due to slight differences in timing. This parameter is
+                        set this to a value significantly higher than the
+                            <literal>broadcast-period</literal> on the broadcast group otherwise
+                        servers might intermittently disappear from the list even though they are
+                        still broadcasting due to slight differences in timing. This parameter is
                         optional, the default value is <literal>10000</literal> milliseconds (10
                         seconds).</para>
                 </listitem>
@@ -233,13 +233,13 @@ Connection jmsConnection2 = jmsConnectionFactory.createConnection();</programlis
                     factory is used immediately after creation then it may not have had enough time
                     to received broadcasts from all the nodes in the cluster. On first usage, the
                     connection factory will make sure it waits this long since creation before
-                    creating the first connection. The default value for this parameter is <literal
-                        >2000</literal> milliseconds.</para>
+                    creating the first connection. The default value for this parameter is
+                        <literal>2000</literal> milliseconds.</para>
             </section>
             <section>
                 <title>Configuring client discovery using Core</title>
-                <para>If you're using the core API to directly instantiate <literal
-                        >ClientSessionFactory</literal> instances, then you can specify the
+                <para>If you're using the core API to directly instantiate
+                        <literal>ClientSessionFactory</literal> instances, then you can specify the
                     discovery group parameters directly when creating the session factory. Here's an
                     example:final String groupAddress = "231.7.7.7"; final int groupPort = 9876;
                     SessionFactory factory = new ClientSessionFactoryImpl(groupAddress, groupPort);
@@ -253,8 +253,8 @@ Connection jmsConnection2 = jmsConnectionFactory.createConnection();</programlis
                     is used immediately after creation then it may not have had enough time to
                     received broadcasts from all the nodes in the cluster. On first usage, the
                     session factory will make sure it waits this long since creation before creating
-                    the first session. The default value for this parameter is <literal
-                        >2000</literal> milliseconds.</para>
+                    the first session. The default value for this parameter is
+                        <literal>2000</literal> milliseconds.</para>
             </section>
         </section>
     </section>
@@ -270,7 +270,7 @@ Connection jmsConnection2 = jmsConnectionFactory.createConnection();</programlis
             no cluster connection was defined on node A, then as order messages arrive on node A
             they will all end up in the <literal>OrderQueue</literal> on node A, so will only get
             consumed by the order processor client attached to node A, Pa.</para>
-        <para>If we define a cluster connection on node A, then as order messages arrive on node A
+        <para>If we define a cluster connection on node A, then as ordered messages arrive on node A
             instead of all of them going into the local <literal>OrderQueue</literal> instance, they
             are distributed in a round-robin fashion between all the nodes of the cluster. The
             messages are forwarded from the receiving node to other nodes of the cluster. This is
@@ -288,10 +288,10 @@ Connection jmsConnection2 = jmsConnectionFactory.createConnection();</programlis
             <title>Configuring Cluster Connections</title>
             <para>Cluster Connections group servers into clusters so that messages can be load
                 balanced between the nodes of the cluster. Let's take a look at a typical cluster
-                connection. Cluster connections are always defined in <literal
-                    >jbm-configuration.xml</literal> inside a <literal>cluster-connection</literal>
-                element. There can be zero or more cluster connections defined per JBoss Messaging
-                server.</para>
+                connection. Cluster connections are always defined in
+                    <literal>jbm-configuration.xml</literal> inside a
+                    <literal>cluster-connection</literal> element. There can be zero or more cluster
+                connections defined per JBoss Messaging server.</para>
             <programlisting>
 &lt;cluster-connections&gt;
     &lt;cluster-connection name="my-cluster"&gt;
@@ -346,11 +346,11 @@ Connection jmsConnection2 = jmsConnectionFactory.createConnection();</programlis
                         of the bridge crashes and then recovers, messages might be resent from the
                         source node. By enabling duplicate detection any duplicate messages will be
                         filtered out and ignored on receipt at the target node.</para>
-                    <para>This parameter has the same meaning as <literal
-                            >use-duplicate-detection</literal> on a bridge. For more information on
-                        duplicate detection please see chapter [LINK].</para>
-                    <para>This parameter is optional and has a default value of <literal
-                            >true</literal>.</para>
+                    <para>This parameter has the same meaning as
+                            <literal>use-duplicate-detection</literal> on a bridge. For more
+                        information on duplicate detection please see chapter [LINK].</para>
+                    <para>This parameter is optional and has a default value of
+                            <literal>true</literal>.</para>
                 </listitem>
                 <listitem>
                     <para><literal>forward-when-no-consumers</literal>. This parameter determines
@@ -369,8 +369,8 @@ Connection jmsConnection2 = jmsConnectionFactory.createConnection();</programlis
                         are being forwarded has queues which have consumers, and if those consumers
                         have message filters (selectors) at least one of those selectors must match
                         the message.</para>
-                    <para>This parameter is optional, the default value is <literal
-                        >false</literal>.</para>
+                    <para>This parameter is optional, the default value is
+                        <literal>false</literal>.</para>
                 </listitem>
                 <listitem>
                     <para><literal>max-hops</literal>. When a cluster connection decides the set of
@@ -416,11 +416,11 @@ Connection jmsConnection2 = jmsConnectionFactory.createConnection();</programlis
                 <para>Random. With this policy each node is chosen randomly.</para>
             </listitem>
         </itemizedlist>
-        <para>You can also implement your own policy by implementing the interface <literal
-                >org.jboss.messaging.core.client.ConnectionLoadBalancingPolicy</literal></para>
+        <para>You can also implement your own policy by implementing the interface
+                <literal>org.jboss.messaging.core.client.ConnectionLoadBalancingPolicy</literal></para>
         <para>Specifying which load balancing policy to use differs whether you are using JMS or the
-            core API. If you don't specify a policy then the default will be used which is <literal
-                >org.jboss.messaging.core.client.impl.RoundRobinConnectionLoadBalancingPolicy</literal>.</para>
+            core API. If you don't specify a policy then the default will be used which is
+                <literal>org.jboss.messaging.core.client.impl.RoundRobinConnectionLoadBalancingPolicy</literal>.</para>
         <para>If you're using JMS, and you're using JNDI on the server to put your JMS connection
             factories into JNDI, then you can specify the load balancing policy directly in the
                 <literal>jbm-jms.xml</literal> configuration file on the server as follows:
@@ -434,12 +434,12 @@ Connection jmsConnection2 = jmsConnectionFactory.createConnection();</programlis
     org.jboss.messaging.core.client.impl.RandomConnectionLoadBalancingPolicy
     &lt;/connection-load-balancing-policy-class-name&gt;
 &lt;/connection-factory&gt;            
-        </programlisting>
-            The above example would deploy a JMS connection factory that uses the random connection
-            load balancing policy. </para>
+        </programlisting>The
+            above example would deploy a JMS connection factory that uses the random connection load
+            balancing policy. </para>
         <para>If you're using JMS but you're instantiating your connection factory directly on the
-            client side then you can set the load balancing policy using the setter on the <literal
-                >JBossConnectionFactory</literal> before using it:
+            client side then you can set the load balancing policy using the setter on the
+                <literal>JBossConnectionFactory</literal> before using it:
             <programlisting>
 ConnectionFactory jmsConnectionFactory = new JBossConnectionFactory(...);
 jmsConnectionFactory.setLoadBalancingPolicyClassName("com.acme.MyLoadBalancingPolicy");
@@ -454,7 +454,7 @@ factory.setLoadBalancingPolicyClassName("com.acme.MyLoadBalancingPolicy");
             two ways:</para>
         <itemizedlist>
             <listitem>
-                <para>Specifying servers explicitly TODO TODO</para>
+                <para>Specifying servers explicitly</para>
             </listitem>
             <listitem>
                 <para>Using discovery. Please see section [LINK] for an explanation on how to
@@ -462,7 +462,6 @@ factory.setLoadBalancingPolicyClassName("com.acme.MyLoadBalancingPolicy");
                     connect to.</para>
             </listitem>
         </itemizedlist>
-        <para/>
     </section>
     <section>
         <title>Specifying Members of a Cluster Explicitly</title>
@@ -478,8 +477,8 @@ factory.setLoadBalancingPolicyClassName("com.acme.MyLoadBalancingPolicy");
                 <title>Specifying List of Servers using JMS</title>
                 <para>If you're using JMS, and you're using the JMS Service to load your JMS
                     connection factory instances directly into JNDI on the server, then you can
-                    specify the list of servers in the server side configuration file <literal
-                        >jbm-jms.xml</literal>. Let's take a look at an example:</para>
+                    specify the list of servers in the server side configuration file
+                        <literal>jbm-jms.xml</literal>. Let's take a look at an example:</para>
                 <programlisting>&lt;connection-factory name="ConnectionFactory">
    &lt;connector-ref connector-name="my-connector1" 
         backup-connector-name="my-backup-connector1"/>
@@ -493,14 +492,14 @@ factory.setLoadBalancingPolicyClassName("com.acme.MyLoadBalancingPolicy");
 &lt;/connection-factory></programlisting>
                 <para>The <literal>connection-factory</literal> element can contain zero or more
                         <literal>connector-ref</literal> elements, each one of which specifies a
-                        <literal>connector-name</literal> attribute and an optional <literal
-                        >backup-connector-name</literal> attribute. The <literal
-                        >connector-name</literal> attribute references a connector defined in
-                        <literal>jbm-configuration.xml</literal> which will be used as a live
+                        <literal>connector-name</literal> attribute and an optional
+                        <literal>backup-connector-name</literal> attribute. The
+                        <literal>connector-name</literal> attribute references a connector defined
+                    in <literal>jbm-configuration.xml</literal> which will be used as a live
                     connector. The <literal>backup-connector-name</literal> is optional, and if
-                    specified it also references a connector defined in <literal
-                        >jbm-configuration.xml</literal>. For more information on connectors please
-                    see chapter [LINK].</para>
+                    specified it also references a connector defined in
+                        <literal>jbm-configuration.xml</literal>. For more information on connectors
+                    please see chapter [LINK].</para>
                 <para>The connection factory thus maintains a list of [connector, backup connector]
                     pairs, these pairs are then used by the client connection load balancing policy
                     on the client side when creating connections to the cluster.</para>
@@ -522,11 +521,11 @@ ConnectionFactory jmsConnectionFactory = new JBossConnectionFactory(serverList);
 Connection jmsConnection1 = jmsConnectionFactory.createConnection();
 
 Connection jmsConnection2 = jmsConnectionFactory.createConnection();</programlisting></para>
-                <para>In the above snippet we create a list of pairs of <literal
-                        >TransportConfiguration</literal> objects. Each <literal
-                        >TransportConfiguration</literal> object contains knowledge of how to make a
-                    connection to a specific server. For more information on this please see the
-                    chapter on connectors [LINK].</para>
+                <para>In the above snippet we create a list of pairs of
+                        <literal>TransportConfiguration</literal> objects. Each
+                        <literal>TransportConfiguration</literal> object contains knowledge of how
+                    to make a connection to a specific server. For more information on this please
+                    see the chapter on connectors [LINK].</para>
                 <para>A <literal>JBossConnectionFactory</literal> instance is then created passing
                     the list of servers in the constructor. Any connections subsequently created by
                     this factory will create connections according to the client connection load
@@ -552,11 +551,11 @@ ClientSessionFactory factory = new ClientSessionFactoryImpl(serverList);
 ClientSession sesison1 = factory.createClientSession(...);
 
 ClientSession session2 = factory.createClientSession(...);</programlisting>
-                <para>In the above snippet we create a list of pairs of <literal
-                        >TransportConfiguration</literal> objects. Each <literal
-                        >TransportConfiguration</literal> object contains knowledge of how to make a
-                    connection to a specific server. For more information on this please see the
-                    chapter on connectors [LINK].</para>
+                <para>In the above snippet we create a list of pairs of
+                        <literal>TransportConfiguration</literal> objects. Each
+                        <literal>TransportConfiguration</literal> object contains knowledge of how
+                    to make a connection to a specific server. For more information on this please
+                    see the chapter on connectors [LINK].</para>
                 <para>A <literal>ClientSessionFactoryImpl</literal> instance is then created passing
                     the list of servers in the constructor. Any sessions subsequently created by
                     this factory will create sessions according to the client connection load
@@ -583,11 +582,11 @@ ClientSession session2 = factory.createClientSession(...);</programlisting>
 &lt;/cluster-connections&gt;</programlisting>
             <para>The <literal>cluster-connection</literal> element can contain zero or more
                     <literal>connector-ref</literal> elements, each one of which specifies a
-                    <literal>connector-name</literal> attribute and an optional <literal
-                    >backup-connector-name</literal> attribute. The <literal
-                    >connector-name</literal> attribute references a connector defined in <literal
-                    >jbm-configuration.xml</literal> which will be used as a live connector. The
-                    <literal>backup-connector-name</literal> is optional, and if specified it also
+                    <literal>connector-name</literal> attribute and an optional
+                    <literal>backup-connector-name</literal> attribute. The
+                    <literal>connector-name</literal> attribute references a connector defined in
+                    <literal>jbm-configuration.xml</literal> which will be used as a live connector.
+                The <literal>backup-connector-name</literal> is optional, and if specified it also
                 references a connector defined in <literal>jbm-configuration.xml</literal>. For more
                 information on connectors please see chapter [LINK].</para>
         </section>
@@ -595,13 +594,14 @@ ClientSession session2 = factory.createClientSession(...);</programlisting>
     <section>
         <title>Message Redistribution</title>
         <para>Another important part of clustering is message redistribution. Earlier we learned how
-            server side message load balancing round robins messages across the cluster. If <literal
-                >forward-when-no-consumers</literal> is false, then messages won't be forwarded to
-            nodes which don't have matching consumers, this is great and ensures that messages don't
-            arrive on a queue which has no consumers to consume them, however there is a situation
-            it doesn't solve: What happens if the consumers on a queue close after the messages have
-            been sent to the node? If there are no consumers on the queue the message won't get
-            consumed and we have a <emphasis>starvation</emphasis> situation.</para>
+            server side message load balancing round robins messages across the cluster. If
+                <literal>forward-when-no-consumers</literal> is false, then messages won't be
+            forwarded to nodes which don't have matching consumers, this is great and ensures that
+            messages don't arrive on a queue which has no consumers to consume them, however there
+            is a situation it doesn't solve: What happens if the consumers on a queue close after
+            the messages have been sent to the node? If there are no consumers on the queue the
+            message won't get consumed and we have a <emphasis>starvation</emphasis>
+            situation.</para>
         <para>This is where message redistribution comes in. With message redistribution JBoss
             Messaging can be configured to automatically <emphasis>redistribute</emphasis> messages
             from queues which have no consumers back to other nodes in the cluster which do have
@@ -620,11 +620,11 @@ ClientSession session2 = factory.createClientSession(...);</programlisting>
       &lt;redistribution-delay>0&lt;/redistribution-delay>
    &lt;/address-setting>
  &lt;/address-settings></programlisting>
-        <para>The above <literal>address-settings</literal> block would set a <literal
-                >redistribution-delay</literal> of <literal>0</literal> for any queue which is bound
-            to an address that starts with "jms.". All JMS queues and topic subscriptions are bound
-            to addresses that start with "jms.", so the above would enable instant (no delay)
-            redistribution for all JMS queues and topic subscriptions.</para>
+        <para>The above <literal>address-settings</literal> block would set a
+                <literal>redistribution-delay</literal> of <literal>0</literal> for any queue which
+            is bound to an address that starts with "jms.". All JMS queues and topic subscriptions
+            are bound to addresses that start with "jms.", so the above would enable instant (no
+            delay) redistribution for all JMS queues and topic subscriptions.</para>
         <para>The attribute <literal>match</literal> can be an exact match or it can be a string
             that conforms to the JBoss Messaging wildcard syntax. <xref linkend="wildcard-syntax"
             /></para>
@@ -632,8 +632,8 @@ ClientSession session2 = factory.createClientSession(...);</programlisting>
             after the last consumer is closed on a queue before redistributing messages from that
             queue to other nodes of the cluster which do have matching consumers. A delay of zero
             means the messages will be immediately redistributed. A value of <literal>-1</literal>
-            signifies that messages will never be redistributed. The default value is <literal
-                >-1</literal>.</para>
+            signifies that messages will never be redistributed. The default value is
+                <literal>-1</literal>.</para>
         <para>It often makes sense to introduce a delay before redistributing as it's a common case
             that a consumer closes but another one quickly is created on the same queue, in such a
             case you probably don't want to redistribute immediately since the new consumer will
@@ -660,7 +660,6 @@ ClientSession session2 = factory.createClientSession(...);</programlisting>
             <para>With a symmetric cluster each node knows about all the queues that exist on all
                 the other nodes and what consumers they have. With this knowledge it can determine
                 how to load balance and redistribute messages around the nodes.</para>
-            <para>DIAGRAM</para>
         </section>
         <section>
             <title>Chain cluster</title>
@@ -681,12 +680,12 @@ ClientSession session2 = factory.createClientSession(...);</programlisting>
                 connects to node B, and node B would define a cluster connection that connects to
                 node C. In this case we only want cluster connections in one direction since we're
                 only moving messages from node A->B->C and never from C->B->A.</para>
-            <para>For this topology we would set <literal>max-hops</literal> to <literal
-                >2</literal>. With a value of <literal>2</literal> the knowledge of what queues and
-                consumers that exist on node C would be propagated from node C to node B to node A.
-                Node A would then know to distribute messages to node B when they arrive, even
-                though node B has no consumers itself, it would know that a further hop away is node
-                C which does have consumers.</para>
+            <para>For this topology we would set <literal>max-hops</literal> to
+                <literal>2</literal>. With a value of <literal>2</literal> the knowledge of what
+                queues and consumers that exist on node C would be propagated from node C to node B
+                to node A. Node A would then know to distribute messages to node B when they arrive,
+                even though node B has no consumers itself, it would know that a further hop away is
+                node C which does have consumers.</para>
         </section>
     </section>
 </chapter>
