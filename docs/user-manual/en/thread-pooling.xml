@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <chapter id="thread-pooling">
     <title>Thread management</title>
-    <para>This chapter describes how JBoss Messaging uses and pools thread and how you can manage
-        that.</para>
+    <para>This chapter describes how JBoss Messaging uses and pools threads and how you can manage
+        them.</para>
     <para>First we'll discuss how threads are managed and used on the server side, then we'll look
         at the client side.</para>
     <section>
@@ -16,34 +16,35 @@
         <section id="server.scheduled.thread.pool">
             <title>Server Scheduled Thread Pool</title>
             <para>The server scheduled thread pool is used for most activities on the server side
-                that require running periodically or with delays. It maps internally to a <literal
-                    >java.util.concurrent.ScheduledThreadPoolExecutor</literal> instance.</para>
-            <para>The maximum number of thread used by this pool is configure in <literal
-                    >jbm-configuration.xml</literal> with the <literal
-                    >scheduled-thread-pool-max-size</literal> parameter. The default value is
-                    <literal>5</literal> threads. A small number of threads is usually sufficient
-                for this pool.</para>
+                that require running periodically or with delays. It maps internally to a
+                    <literal>java.util.concurrent.ScheduledThreadPoolExecutor</literal>
+                instance.</para>
+            <para>The maximum number of thread used by this pool is configure in
+                    <literal>jbm-configuration.xml</literal> with the
+                    <literal>scheduled-thread-pool-max-size</literal> parameter. The default value
+                is <literal>5</literal> threads. A small number of threads is usually sufficient for
+                this pool.</para>
         </section>
         <section>
             <title>General Purpose Server Thread Pool</title>
             <para>This general purpose thread pool is used for most asynchronous actions on the
-                server side. It maps internally to a <literal
-                    >java.util.concurrent.ThreadPoolExecutor</literal> instance.</para>
-            <para>The maximum number of thread used by this pool is configure in <literal
-                    >jbm-configuration.xml</literal> with the <literal
-                    >thread-pool-max-size</literal> parameter.</para>
+                server side. It maps internally to a
+                    <literal>java.util.concurrent.ThreadPoolExecutor</literal> instance.</para>
+            <para>The maximum number of thread used by this pool is configure in
+                    <literal>jbm-configuration.xml</literal> with the
+                    <literal>thread-pool-max-size</literal> parameter.</para>
             <para>If a value of <literal>-1</literal> is used this signifies that the thread pool
-                has no upper bound and new threads will be created on demand if there are non
-                available in the pool to satisfy a request. If activity later subsides then threads
-                are timed-out and closed.</para>
+                has no upper bound and new threads will be created on demand if there are enough
+                threads available to satisfy a request. If activity later subsides then threads are
+                timed-out and closed.</para>
             <para>If a value of <literal>n</literal> where <literal>n</literal>is a positive integer
                 greater than zero is used this signifies that the thread pool is bounded. If more
                 requests come in and there are no free threads in the pool and the pool is full then
                 requests will block until a thread becomes available. It is recommended that a
                 bounded thread pool is used with caution since it can lead to dead-lock situations
                 if the upper bound is chosen to be too low.</para>
-            <para>The default value for <literal>thread-pool-max-size</literal> is <literal
-                    >-1</literal>, i.e. the thread pool is unbounded.</para>
+            <para>The default value for <literal>thread-pool-max-size</literal> is
+                    <literal>-1</literal>, i.e. the thread pool is unbounded.</para>
             <para>See the <ulink
                     url="http://java.sun.com/j2se/1.5.0/docs/api/java/util/concurrent/ThreadPoolExecutor.html"
                     >J2SE javadoc</ulink> for more information on unbounded (cached), and bounded
@@ -64,7 +65,7 @@
             <para>The thread poller is used by the native layer to receive and dispatch events. You
                 will find it on a thread dump with the prefix JBM-AIO-poller-pool. JBoss Messaging
                 uses one poller per opened file on the journal. (there is usually one) and they are
-                aways distributed thorugh a pool.</para>
+                aways distributed through a pool.</para>
             <para>The writing thread is a single thread used to invoke libaio. We do that to avoid
                 context switching on libaio what would cause performance issues. You will find this
                 thread on a thread dump with the prefix JBM-AIO-writer-pool.</para>
@@ -77,10 +78,10 @@
             classloader in that JVM instance.</para>
         <para>The static scheduled thread pool has a maximum size of <literal>2</literal> threads,
             and the general purpose thread pool has an unbounded maximum size.</para>
-        <para>If required JBoss Messaging can also be configured so that each <literal
-                >ClientSessionFactory</literal> instance does not use these static pools but instead
-            maintains its own scheduled and general purpose pool. Any sessions created from that
-                <literal>ClientSessionFactory</literal> will use those pools instead.</para>
+        <para>If required JBoss Messaging can also be configured so that each
+                <literal>ClientSessionFactory</literal> instance does not use these static pools but
+            instead maintains its own scheduled and general purpose pool. Any sessions created from
+            that <literal>ClientSessionFactory</literal> will use those pools instead.</para>
         <para>To configure a <literal>ClientSessionFactory</literal> instance to use its own pools,
             simply use the appropriate setter methods immediately after creation, for
             example:</para>
@@ -90,8 +91,8 @@ myFactory.setUseGlobalPools(false);
 myFactory.setScheduledThreadPoolMaxSize(10);
 myFactory.setThreadPoolMaxSize(-1);            
         </programlisting>
-        <para>If you're using the JMS API, you can set the same parameters directly on the <literal
-                >JBossConnectionFactory</literal> instance, for example:</para>
+        <para>If you're using the JMS API, you can set the same parameters directly on the
+                <literal>JBossConnectionFactory</literal> instance, for example:</para>
         <programlisting>
 JBossConnectionFactory myFactory = new JBossConnectionFactory(...);
 myFactory.setUseGlobalPools(false);
