@@ -4,17 +4,191 @@
     <para>In this chapter we'll discuss how to tune JBoss Messaging for optimum performance.</para>
     <section>
         <title>Tuning the journal</title>
-        <para></para>
+        <itemizedlist>
+            <listitem>
+                <para>Tune minimum number of journal files.</para>
+            </listitem>
+            <listitem>
+                <para>Tune journal file size.</para>
+            </listitem>
+            <listitem>
+                <para>Use AIO journal.</para>
+            </listitem>
+            <listitem>
+                <para>Tune AIO re-use cache.</para>
+            </listitem>
+        </itemizedlist>
     </section>
     <section>
         <title>Tuning JMS</title>
-        <para></para>
+        <para>There are a few areas where some tweaks can be done if you are using the JMS
+            API</para>
+        <itemizedlist>
+            <listitem>
+                <para>Disable message id. Use the <literal>setDisableMessageID()</literal> method on
+                    the <literal>MessageProducer</literal> class to disable message ids if you don't
+                    need them. This can free up some cycles in generating the GUID and it makes the
+                    message smaller on the wire too.</para>
+            </listitem>
+            <listitem>
+                <para> Disable message timestamp. Use the <literal
+                        >setDisableMessageTimeStamp()</literal> method on the <literal
+                        >MessageProducer</literal> class to disable message timestamps if you don't
+                    need them. This also can free up a few cycles and it makes the message smaller
+                    on the wire.</para>
+            </listitem>
+            <listitem>
+                <para>Avoid <literal>ObjectMessage</literal>. <literal>ObjectMessage</literal> is
+                    convenient but it comes at a cost. The body of a ObjectMessage uses Java
+                    serialization to serialize it to bytes. The Java serialized form of even small
+                    objects is very verbose so takes up a lot of space on the wire, also Java
+                    serialization is slow compared to customer marshalling techniques. Only use
+                        <literal>ObjectMessage</literal> if you really can't use one of the other
+                    message types, i.e. if you really don't know the type of the payload until
+                    run-time.</para>
+            </listitem>
+            <listitem>
+                <para>Avoid <literal>AUTO_ACKNOWLEDGE</literal>. <literal>AUTO_ACKNOWLEDGE</literal>
+                    mode requires an acknowledgement to be sent from the server for each message
+                    received on the client, this means more traffic on the network. If you can use
+                        <literal>DUPS_OK_ACKNOWLEDGE</literal> or use <literal
+                        >CLIENT_ACKNOWLEDGE</literal> or a transacted session and batch up many
+                    acknowledgements with one acknowledge/commit.</para>
+            </listitem>
+            <listitem>
+                <para>Avoid persistent messages. By default JMS messages are persistent. If you
+                    don't really need persistent message then set them to be non persistent.
+                    Persistent messages incur a lot more overhead in persisting them to
+                    storage.</para>
+            </listitem>
+        </itemizedlist>
+    </section>
+    <section>
+        <title>Other Tunings</title>
+        <para>There are various other places in JBoss Messaging where we can perform some
+            tuning:</para>
+        <itemizedlist>
+            <listitem><para>Use Asynchronous Send Acknowledgements. If you need to send persistent
+                    messages non transactionally and you need a guarantee that they have reached the
+                    server by the time the call to send() returns, don't set persistent messages to
+                    be sent blocking, instead use asynchronous send acknowledgements to get your
+                    acknowledgements of send back in a separate stream, see the chapter on <xref
+                        linkend="send-guarantees"/>send guarantees</para> for more information on
+                this.</listitem>
+            <listitem>
+                <para/>
+            </listitem>
+            <listitem>
+                <para>Use pre-acknowledge mode. With pre-acknowledge mode, messages are acknowledged
+                        <literal>before</literal> they are sent to the client. This reduces the
+                    amount of acknowledgment traffic on the wire. For more information on this see
+                    section on <xref linkend="pre-acknolwedge">pre acknowledge</xref>.</para>
+            </listitem>
+            <listitem>
+                <para>Disabled security. You may get a small performance boost by disabling security
+                    by setting the <literal>security-enabled</literal> parameter to <literal
+                        >false</literal> in <literal>jbm-configuration.xml</literal>.</para>
+            </listitem>
+            <listitem>
+                <para>Disable persistence. If you don't need message persistence, turn it off
+                    altogether by setting <literal>persistence-enabled</literal> to false in
+                        <literal>jbm-configuration.xml</literal>.</para>
+            </listitem>
+            <listitem>
+                <para>Sync transactions lazily. Setting <literal
+                        >journal-sync-transactional</literal> to <literal>false</literal> in
+                        <literal>jbm-configuration.xml</literal> can give you better transactional
+                    persistent performance at the expense of some possibility of loss of
+                    transactions on failure. See the chappter on <xref linkend="send-guarantees"
+                        >send guarantees</xref> for more information.</para>
+            </listitem>
+            <listitem>
+                <para>Use the core API not JMS. Using the JMS API you will have slightly lower
+                    performance than using the core API, since all JMS operations need to be
+                    translated into core operations before the server can handle them.</para>
+            </listitem>
+        </itemizedlist>
+    </section>
+    <section>
+        <title>Tuning Transport Settings</title>
+        <itemizedlist>
+            <listitem>
+                <para>Enable <ulink url="http://en.wikipedia.org/wiki/Nagle's_algorithm">Nagle's
+                        algorithm</ulink>. If you are sending many small messages, such that more
+                    than one can fit in a single IP packet. Then you may get a significant
+                    performance boost by enabling Nagle's algorithm. This is done by setting
+                        <literal>jbm.remoting.netty.tcpnodelay</literal> to false with the Netty
+                    transports. See the chapter on <xref linkend="configuring-transports"
+                        >configuring transports</xref> for more information on this. </para>
+            </listitem>
+            <listitem>
+                <para>TCP buffer sizes. If you have a fast network and fast machines you may get a
+                    performance boost by increasing the TCP send and receive buffer sizes. See the
+                    chapter on <xref linkend="configuring-transports">configuring transports</xref>
+                    for more information on this. </para>
+            </listitem>
+        </itemizedlist>
     </section>
     <section>
         <title>Tuning the VM</title>
-        <para></para>
+        <para>We highly recommend you use the latest Java 6 JVM, especially in the area of
+            networking many improvements have been made since Java 5. We test internally using the
+            Sun JVM, so some of these tunings won't apply to JDKs from other providers (e.g. IBM or
+            JRockit)</para>
+        <itemizedlist>
+            <listitem>
+                <para>Garbage collection.</para>
+            </listitem>
+            <listitem>
+                <para>Memory settings.</para>
+            </listitem>
+            <listitem>
+                <para>Other settings.</para>
+            </listitem>
+        </itemizedlist>
     </section>
-    
-    
-   
+    <section>
+        <title>Avoiding Anti-Patterns</title>
+        <itemizedlist>
+            <listitem>
+                <para>Re-use connections / sessions / consumers / producers. Probably the most
+                    common messaging anti-pattern we see is users who create a new
+                    connection/session/producer for every message they send or every message they
+                    consume. This is a terrible use of resources. These objects take time and
+                    resources to set up and may involve several network round trips. Always re-use
+                    them.</para>
+                <note>
+                    <para>Some popular libraries such as the Spring JMS Template are known to use
+                        these anti-patterns. If you're using Spring JMS Template and you're getting
+                        poor performance you know why. Don't blame JBoss Messaging!</para>
+                </note>
+            </listitem>
+            <listitem>
+                <para>Avoid fat messages. Verbose formats such as XML take up a lot of space on the
+                    wire and performance will suffer as result. Avoid XML in message bodies if you
+                    can.</para>
+            </listitem>
+            <listitem>
+                <para>Avoid many selectors on a queue. Another common anti-pattern is a single queue
+                    which has many consumers, each one with a distinct message selector. As messages
+                    come into the queue they will typically only match one of the consumers. This
+                    does not normally give good performance since as new consumers are added the
+                    entire queue has to be scanned for matching messages.</para>
+                <para>This anti-pattern can normally be avoided by instead using a topic with many
+                    durable subscriptions, each subscription defines a message selector. With topic
+                    subscriptions the selector expression is evaluated by JBoss Messaging before the
+                    message goes into the subscription, so no scanning is involved.</para>
+            </listitem>
+            <listitem>
+                <para>Don't create temporary queues for each request. This common anti-pattern
+                    involves the temporary queue request-response pattern. With the temporary queue
+                    request-response pattern a message is sent to a target and a reply-to header is
+                    set with the address of a local temporary queue. When the recipient receives the
+                    message they process it then send back a response to the address specified in
+                    the reply-to. A common mistake made with this pattern is to create a new
+                    temporary queue on each message sent. This will drastically reduce performance.
+                    Instead the temporary queue should be re-used for many requests.</para>
+            </listitem>
+        </itemizedlist>
+    </section>
 </chapter>
