@@ -137,6 +137,20 @@
                     >jbm-configuration.xml</literal> configuration when set to false mans that the
                 other configuration files are not loaded. This is true by default.</para>
         </note>
+        <para>It is also possible to use system property substitution in all the config files.  by
+            replacing a value with the name of a system property. Here is an example of this with a
+            connector config:</para>
+        <programlisting>&lt;connector name="netty">
+         &lt;factory-class>org.jboss.messaging.integration.transports.netty.NettyConnectorFactory&lt;/factory-class>
+         &lt;param key="jbm.remoting.netty.host"  value="${jbm.remoting.netty.host:localhost}" type="String"/>
+         &lt;param key="jbm.remoting.netty.port"  value="${jbm.remoting.netty.port:5445}" type="Integer"/>
+&lt;/connector></programlisting>
+        <para>here you can see we have replaced 2 values with system properties <literal
+                >jbm.remoting.netty.host</literal> and <literal>jbm.remoting.netty.port</literal>.
+            These values will be replaced by the value found in the system property if there is one,
+            if not they default back to localhost or 5445 respectively. It is also possible to not
+            supply a default. i.e. <literal>${jbm.remoting.netty.host}</literal>, however the system
+            property <emphasis>must</emphasis> be supplied in that case.</para>
     </section>
     <section id="server.microcontainer.configuration">
         <title>JBoss Microcontainer Beans File</title>
