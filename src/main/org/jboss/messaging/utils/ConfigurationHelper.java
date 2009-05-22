@@ -34,17 +34,16 @@ import org.jboss.messaging.core.logging.Logger;
 public class ConfigurationHelper
 {
    public static final Logger log = Logger.getLogger(ConfigurationHelper.class);
-   
-   public static String getStringProperty(final String propName, final String def,
-                                          final Map<String, Object> props)
+
+   public static String getStringProperty(final String propName, final String def, final Map<String, Object> props)
    {
       if (props == null)
       {
          return def;
       }
-      
+
       Object prop = props.get(propName);
-      
+
       if (prop == null)
       {
          return def;
@@ -59,11 +58,10 @@ public class ConfigurationHelper
          {
             return (String)prop;
          }
-      }      
+      }
    }
-   
-   public static int getIntProperty(final String propName, final int def,
-                                    final Map<String, Object> props)
+
+   public static int getIntProperty(final String propName, final int def, final Map<String, Object> props)
    {
       if (props == null)
       {
@@ -82,10 +80,9 @@ public class ConfigurationHelper
          {
             return Integer.valueOf((String)prop);
          }
-         else
-         if (prop instanceof Integer == false)
+         else if (prop instanceof Integer == false)
          {
-            log.warn("Property " + propName + " must be an Integer");
+            log.warn("Property " + propName + " must be an Integer, it is " + prop.getClass().getName());
 
             return def;
          }
@@ -93,17 +90,16 @@ public class ConfigurationHelper
          {
             return (Integer)prop;
          }
-      }      
+      }
    }
-   
-   public static long getLongProperty(final String propName, final long def,
-                                     final Map<String, Object> props)
+
+   public static long getLongProperty(final String propName, final long def, final Map<String, Object> props)
    {
       if (props == null)
       {
          return def;
       }
-      
+
       Object prop = props.get(propName);
 
       if (prop == null)
@@ -117,10 +113,9 @@ public class ConfigurationHelper
          {
             return Long.valueOf((String)prop);
          }
-         else
-         if (prop instanceof Long == false)
+         else if (prop instanceof Long == false)
          {
-            log.warn("Property " + propName + " must be an Long");
+            log.warn("Property " + propName + " must be an Long, it is " + prop.getClass().getName());
 
             return def;
          }
@@ -128,17 +123,16 @@ public class ConfigurationHelper
          {
             return (Long)prop;
          }
-      }      
+      }
    }
-   
-   public static boolean getBooleanProperty(final String propName, final boolean def,
-            final Map<String, Object> props)
+
+   public static boolean getBooleanProperty(final String propName, final boolean def, final Map<String, Object> props)
    {
       if (props == null)
       {
          return def;
       }
-      
+
       Object prop = props.get(propName);
 
       if (prop == null)
@@ -152,10 +146,9 @@ public class ConfigurationHelper
          {
             return Boolean.valueOf((String)prop);
          }
-         else
-         if (prop instanceof Boolean == false)
+         else if (prop instanceof Boolean == false)
          {
-            log.warn("Property " + propName + " must be a Boolean");
+            log.warn("Property " + propName + " must be a Boolean, it is " + prop.getClass().getName());
 
             return def;
          }
@@ -163,6 +156,6 @@ public class ConfigurationHelper
          {
             return (Boolean)prop;
          }
-      }      
+      }
    }
 }

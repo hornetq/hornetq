@@ -43,7 +43,11 @@ public class PerfParams implements Serializable
    private String queueName = "perfQueue";  
    private String address = "perfAddress";
    private int throttleRate;
-
+   private String host;
+   private int port;
+   private int tcpBufferSize;
+   private boolean tcpNoDelay;
+     
    public int getNoOfMessagesToSend()
    {
       return noOfMessagesToSend;
@@ -151,6 +155,46 @@ public class PerfParams implements Serializable
               (isSessionTransacted ? ", transaction batch size = " + batchSize : "") + ", drain queue = " + drainQueue +
               ", queue name = " + queueName + 
               ", Throttle rate = " + throttleRate;
+   }
+
+   public synchronized String getHost()
+   {
+      return host;
+   }
+
+   public synchronized void setHost(String host)
+   {
+      this.host = host;
+   }
+
+   public synchronized int getPort()
+   {
+      return port;
+   }
+
+   public synchronized void setPort(int port)
+   {
+      this.port = port;
+   }
+
+   public synchronized int getTcpBufferSize()
+   {
+      return tcpBufferSize;
+   }
+
+   public synchronized void setTcpBufferSize(int tcpBufferSize)
+   {
+      this.tcpBufferSize = tcpBufferSize;
+   }
+
+   public synchronized boolean isTcpNoDelay()
+   {
+      return tcpNoDelay;
+   }
+
+   public synchronized void setTcpNoDelay(boolean tcpNoDelay)
+   {
+      this.tcpNoDelay = tcpNoDelay;
    }
 
 

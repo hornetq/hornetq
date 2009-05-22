@@ -87,6 +87,10 @@ public abstract class PerfBase
       String queueName = props.getProperty("queue-name");
       String address = props.getProperty("address");
       int throttleRate = Integer.valueOf(props.getProperty("throttle-rate"));
+      String host = props.getProperty("host");
+      int port = Integer.valueOf(props.getProperty("port"));
+      int tcpBufferSize = Integer.valueOf(props.getProperty("tcp-buffer"));
+      boolean tcpNoDelay = Boolean.valueOf(props.getProperty("tcp-no-delay"));
 
       log.info("num-messages: " + noOfMessages);
       log.info("num-warmup-messages: " + noOfWarmupMessages);
@@ -97,6 +101,10 @@ public abstract class PerfBase
       log.info("drain-queue: " + drainQueue);
       log.info("address: " + address);
       log.info("throttle-rate: " + throttleRate);
+      log.info("host:" + host);
+      log.info("port: " + port);
+      log.info("tcp buffer: " + tcpBufferSize);
+      log.info("tcp no delay: " + tcpNoDelay);
 
       PerfParams perfParams = new PerfParams();
       perfParams.setNoOfMessagesToSend(noOfMessages);
@@ -109,6 +117,10 @@ public abstract class PerfBase
       perfParams.setQueueName(queueName);
       perfParams.setAddress(address);
       perfParams.setThrottleRate(throttleRate);
+      perfParams.setHost(host);
+      perfParams.setPort(port);
+      perfParams.setTcpBufferSize(tcpBufferSize);
+      perfParams.setTcpNoDelay(tcpNoDelay);
 
       return perfParams;
    }
@@ -130,9 +142,12 @@ public abstract class PerfBase
    {
       Map<String, Object> params = new HashMap<String, Object>();
 
-      params.put(TransportConstants.TCP_NODELAY_PROPNAME, false);
-      params.put(TransportConstants.TCP_SENDBUFFER_SIZE_PROPNAME, 1024 * 1024);
-      params.put(TransportConstants.TCP_RECEIVEBUFFER_SIZE_PROPNAME, 1024 * 1024);
+      params.put(TransportConstants.TCP_NODELAY_PROPNAME, perfParams.isTcpNoDelay());
+      params.put(TransportConstants.TCP_SENDBUFFER_SIZE_PROPNAME, perfParams.getTcpBufferSize());
+      params.put(TransportConstants.TCP_RECEIVEBUFFER_SIZE_PROPNAME, perfParams.getTcpBufferSize());
+      
+      params.put(TransportConstants.HOST_PROP_NAME, perfParams.getHost());
+      params.put(TransportConstants.PORT_PROP_NAME, perfParams.getPort());
 
       factory = new ClientSessionFactoryImpl(new TransportConfiguration(NettyConnectorFactory.class.getName(), params));
       factory.setPreAcknowledge(true);
