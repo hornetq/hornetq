@@ -46,7 +46,7 @@
          <jvmarg value="-XX:+UseParallelGC"/>
          <jvmarg value="-XX:+AggressiveOpts"/>
 		   <jvmarg value="-XX:+UseFastAccessorMethods"/>               
-         <classpath refid="runtime.classpath"/>
+         <classpath refid="client.classpath"/>
       </java>
    </target>
 
@@ -57,7 +57,7 @@
          <jvmarg value="-XX:+UseParallelGC"/>
          <jvmarg value="-XX:+AggressiveOpts"/>
 		   <jvmarg value="-XX:+UseFastAccessorMethods"/>         
-         <classpath refid="runtime.classpath"/>
+         <classpath refid="client.classpath"/>
       </java>
    </target>
 
@@ -70,7 +70,7 @@
          <jvmarg value="-XX:+AggressiveOpts"/>
 		   <jvmarg value="-XX:+UseFastAccessorMethods"/>         
          <arg line="jbm-jboss-beans.xml"/>
-         <classpath refid="runtime.classpath"/>
+         <classpath refid="server.classpath"/>
       </java>
    </target>
 
