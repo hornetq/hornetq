@@ -130,6 +130,10 @@
       <ant antfile="build-messaging.xml" target="jar-jms"/>
    </target>
    
+   <target name="jar-jms-api" depends="createthirdparty">
+      <ant antfile="build-messaging.xml" target="jar-jms-api"/>
+   </target>
+   
    <target name="jar-jms-client" depends="createthirdparty">
       <ant antfile="build-messaging.xml" target="jar-jms-client"/>
    </target> 

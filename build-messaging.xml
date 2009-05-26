@@ -58,6 +58,7 @@
 
    <property name="core.jar.name" value="jbm-core.jar"/>
    <property name="jms.jar.name" value="jbm-jms.jar"/>
+   <property name="jms.api.jar.name" value="jbm-jms-api.jar"/>
    <property name="jms.client.jar.name" value="jbm-jms-client.jar"/>
    <property name="transports.jar.name" value="jbm-transports.jar"/>
    <property name="security.jar.name" value="jbm-jboss-as-security.jar"/>
@@ -602,8 +603,16 @@
    <!-- ======================================================================================== -->
 
    <target name="jar"
-           depends="jar-core, jar-core-client, jar-jms, jar-jms-client, jar-transports, jar-security, jar-bootstrap, jar-logging, jar-ra, jar-mc">
+           depends="jar-core, jar-core-client, jar-jms, jar-jms-client, jar-transports, jar-security, jar-bootstrap, jar-logging, jar-ra, jar-mc, jar-jms-api">
    </target>
+   
+   <target name="jar-jms-api" depends="init">
+      <jar jarfile="${build.jars.dir}/${jms.api.jar.name}">
+         <zipfileset src="${jboss.jboss.javaee.lib}/jboss-javaee.jar">
+            <include name="javax/jms/**/*.class"/>
+         </zipfileset>	     
+      </jar>         
+   </target>   
    
    <target name="jar-mc" depends="init">
       <jar jarfile="${build.jars.dir}/${mc.jar.name}">
@@ -756,6 +765,7 @@
             <include name="${jms.client.jar.name}"/>
             <include name="${mc.jar.name}"/>
             <include name="${ra.rar.name}"/>
+            <include name="${jms.api.jar.name}"/>
          </fileset>
          <!--
          <fileset dir="${jboss.microcontainer.lib}">
@@ -763,12 +773,10 @@
             <include name="jboss-kernel.jar"/>
             <include name="jboss-dependency.jar"/>
             <include name="jboss-aop-mc-int.jar"/>
-         </fileset>
-         -->         
+         </fileset>                 
          <fileset dir="${jboss.jboss.javaee.lib}">
             <include name="jboss-javaee.jar"/>
-         </fileset>
-         <!--
+         </fileset>        
          <fileset dir="${jboss.jboss.common.logging.spi.lib}">
             <include name="jboss-common-logging-spi.jar"/>
          </fileset>
