@@ -86,7 +86,9 @@ public class SpawnedVMSupport
       classPath = classPath + pathSeparater + ".";
       // System.out.println("classPath = " + classPath);
       // I guess it'd be simpler to check if the OS is Windows...
-      if (System.getProperty("os.name").contains("Windows"))
+      
+      boolean  isWindows = System.getProperty("os.name").contains("Windows");
+      if (isWindows)
       {
          sb.append("-cp").append(" \"").append(classPath).append("\" ");
       }
@@ -94,8 +96,10 @@ public class SpawnedVMSupport
       {
          sb.append("-cp").append(" ").append(classPath).append(" ");
       }
+      
+      //FIXME - not good to assume path separator
       String libPath = "-Djava.library.path=" + System.getProperty("java.library.path", "./native/bin");
-      if (System.getProperty("os.name").contains("Windows"))
+      if (isWindows)
       {
          libPath = libPath.replaceAll("/", "\\\\");
          libPath = "\"" + libPath + "\"";
