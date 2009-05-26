@@ -791,8 +791,7 @@
                             <entry>5 * 60000 ms</entry>
                         </row>
                         <row>
-                            <entry><link linkend="call-timeout"
-                                    >connection-factory.call-timeout</link></entry>
+                            <entry>connection-factory.call-timeout</entry>
                             <entry>long</entry>
                             <entry>the time out, in milliseconds, for remote calls</entry>
                             <entry>30000 ms</entry>
