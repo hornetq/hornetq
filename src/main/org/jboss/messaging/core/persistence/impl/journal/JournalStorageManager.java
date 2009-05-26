@@ -93,7 +93,7 @@ public class JournalStorageManager implements StorageManager
 {
    private static final Logger log = Logger.getLogger(JournalStorageManager.class);
 
-   private static final long CHECKPOINT_BATCH_SIZE = 2 ^ 32;
+   private static final long CHECKPOINT_BATCH_SIZE = Integer.MAX_VALUE;
 
    // Bindings journal record type
 
@@ -1077,11 +1077,11 @@ public class JournalStorageManager implements StorageManager
       private volatile long nextID;
 
       public BatchingIDGenerator(final long start, final long checkpointSize)
-      {
+      {         
          this.counter = new AtomicLong(start);
 
          this.checkpointSize = checkpointSize;
-
+         
          nextID = start + checkpointSize;
       }
 
@@ -1109,9 +1109,9 @@ public class JournalStorageManager implements StorageManager
       }
 
       private synchronized void saveCheckPoint(final long id)
-      {
+      {        
          if (id >= nextID)
-         {
+         {            
             storeID(id);
 
             nextID += checkpointSize;
