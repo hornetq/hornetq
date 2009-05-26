@@ -28,9 +28,9 @@
          | |-- api
          | |-- quickstart-guide
          | |-- migration-guide
-         | |-- reference
          | `-- user-manual
          |-- examples
+         | |-- core
          | |-- javaee
          | `-- jms
          |-- lib
