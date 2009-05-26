@@ -770,7 +770,8 @@
                             <entry/>
                         </row>
                         <row>
-                            <entry>connection-factory.client-id</entry>
+                            <entry><link linkend="using-jms.clientid"
+                                    >connection-factory.client-id</link></entry>
                             <entry>String</entry>
                             <entry>The pre-configured client ID for the connection factory.</entry>
                             <entry>null</entry>
@@ -877,14 +878,16 @@
                             <entry>false</entry>
                         </row>
                         <row>
-                            <entry>connection-factory.dups-ok-batch-size</entry>
+                            <entry><link linkend="dups-ok-batch-size"
+                                    >connection-factory.dups-ok-batch-size</link></entry>
                             <entry>int</entry>
                             <entry>The batch size in bytes between acknowledgements when using
                                 DUPS_OK_ACKNOWLEDGE mode</entry>
                             <entry>1024 * 1024</entry>
                         </row>
                         <row>
-                            <entry>connection-factory.transaction-batch-size</entry>
+                            <entry><link linkend="using-jms.txbatchsize"
+                                    >connection-factory.transaction-batch-size</link></entry>
                             <entry>int</entry>
                             <entry>The batch size in bytes between acknowledgements when using a
                                 transactional session</entry>
