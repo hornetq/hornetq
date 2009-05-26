@@ -43,8 +43,7 @@ public interface Interceptor
    </section>
    <section>
       <title>Example</title>
-      <para>The <ulink url="../../../../examples/jms/interceptor/readme.html"><literal
-               >interceptor</literal> example</ulink> shows how to use interceptors to add
-         properties to a message on the server.</para>
+      <para>See <xref linkend="examples.interceptor" /> for an example which
+         shows how to use interceptors to add properties to a message on the server.</para>
    </section>
 </chapter>

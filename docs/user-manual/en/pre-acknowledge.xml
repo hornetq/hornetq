@@ -50,8 +50,7 @@ Session session = connection.createSession(false, JBossSession.PRE_ACKNOWLEDGE);
    </section>
    <section>
       <title>Example</title>
-      <para>The <ulink url="../../../../examples/jms/pre-acknowledge/readme.html"><literal
-               >pre-acknowledge</literal> example</ulink> shows how to use pre-acknowledgement mode
-         with with JMS.</para>
+      <para>See <xref linkend="examples.pre-acknowledge" /> for an example which 
+         shows how to use pre-acknowledgement mode with with JMS.</para>
    </section>
 </chapter>

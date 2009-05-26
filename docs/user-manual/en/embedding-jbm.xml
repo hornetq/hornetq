@@ -170,8 +170,7 @@ conn.close();</programlisting>
     </section>
     <section>
         <title>JMS Embedding Example</title>
-        <para>The <ulink url="../../../../examples/jms/embedded/readme.html"><literal>JMS
-                    Embedding</literal> Example</ulink> shows how to setup and run JBoss Messaging
-            embedded with JMS...</para>
+        <para>Please see <xref linkend="examples.embedded" /> for an example which shows how
+            to setup and run JBoss Messaging embedded with JMS.</para>
     </section>
 </chapter>

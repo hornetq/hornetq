@@ -478,8 +478,8 @@
       </section>
       <section>
          <title>Example</title>
-         <para>The <ulink url="../../../../examples/jms/jmx/readme.html"><literal>jmx</literal>
-               example</ulink> shows how to use a remote connection to JMX and MBean proxies to
+         <para>See <xref linkend="examples.jmx" /> for an example which 
+            shows how to use a remote connection to JMX and MBean proxies to
             manage JBoss Messaging.</para>
       </section>
    </section>
@@ -627,9 +627,8 @@
       </section>
       <section>
          <title>Example</title>
-         <para>The <ulink url="../../../../examples/jms/management/readme.html"><literal
-                  >management</literal> example</ulink> shows how to use JMS messages to manage
-            JBoss Messaging server.</para>
+         <para>See <xref linkend="examples.management" /> for an example which shows how to use 
+            JMS messages to manage JBoss Messaging server.</para>
       </section>
    </section>
    <section id="management.replication">
@@ -764,8 +763,8 @@
       </section>
       <section>
          <title>Example</title>
-         <para>The <ulink url="../../../../examples/jms/management-notifications/readme.html"
-                  ><literal>management-notifications</literal> example</ulink> shows how to use a
+         <para>See <xref linkend="examples.management-notifications" /> for an example which
+            shows how to use a
             JMS <literal>MessageListener</literal> to receive management notifications from JBoss
             Messaging server.</para>
       </section>
@@ -854,8 +853,8 @@ counter.getDepthDelta());
       </section>
       <section>
          <title>Example</title>
-         <para>The <ulink url="../../../../examples/jms/message-counters/readme.html"><literal
-                  >message-counters</literal> example</ulink> shows how to use message counters to
+         <para>See <xref linkend="examples.message-counters" /> for an example which 
+            shows how to use message counters to
             retrieve information on a JMS <literal>Queue</literal>.</para>
       </section>
    </section>

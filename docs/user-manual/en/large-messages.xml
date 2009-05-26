@@ -256,8 +256,7 @@ someOtherProducer.send(bm); // resending the message to another destination;    
     </section>
     <section id="large-messages.example">
         <title>Large message example</title>
-        <para>The <ulink url="../../../../examples/jms/large-message/readme.html"><literal
-                    >large-message</literal> Example</ulink> shows how large message is configured
-            and used with JMS.</para>
+        <para>Please see <xref linkend="examples.large-message" /> for an example which 
+            shows how large message is configured and used with JMS.</para>
     </section>
 </chapter>

@@ -32,7 +32,7 @@
             </listitem>
             <listitem>
                <para><literal>0</literal> to not buffer any messages. See <xref
-                     linkend="no-consumer-buffering-example" />
+                     linkend="examples.no-consumer-buffering" />
                   for working example of a consumer with no buffering.</para>
             </listitem>
             <listitem>
@@ -101,11 +101,7 @@
             <para>If the connection factory is directly instantiated, the consumer window size is
                specified by <literal>JBossConnectionFactory.setConsumerWindowSize()</literal>
                method.</para>
-         </section>
-         <section>
-            <title>Example</title>
-            <para>The <ulink url="../../../../examples/jms/no-consumer-buffering/readme.html">
-                  <literal>no-consumer-buffering</literal> example</ulink> shows how to configure
+            <para>Please see <xref linkend="examples.no-consumer-buffering" /> for an example which shows how to configure
                JBoss Messaging to prevent consumer buffering when dealing with slow
                consumers.</para>
          </section>
@@ -119,7 +115,7 @@
             consumption rate specified in units of messages per second. Setting this to <literal
                >-1</literal> disables rate limited flow control. The default value is <literal
                >-1</literal>.</para>
-         <para>Please see <xref linkend="consumer-rate-limiting-example" /> for a working example 
+         <para>Please see <xref linkend="examples.consumer-rate-limit" /> for a working example 
          of limiting consumer rate.</para>
          <section id="flow-control.rate.core.api">
             <title>Using Core API</title>
@@ -152,12 +148,8 @@
                   slow rate limit and a high window based limit the clients internal buffer would
                   soon fill up with messages.</para>
             </note>
-         </section>
-         <section>
-            <title>Example</title>
-            <para>The <ulink url="../../../../examples/jms/consumer-rate-limit/readme.html">
-                  <literal>consumer-rate-limit</literal> example</ulink> shows how to configure
-               JBoss Messaging to prevent consumer buffering when dealing with slow
+            <para>Please see <xref linkend="examples.consumer-rate-limit" /> for an example which shows
+               how to configure JBoss Messaging to prevent consumer buffering when dealing with slow
                consumers.</para>
          </section>
       </section>

@@ -48,8 +48,7 @@ System.out.format("Received message: %s\n", messageReceived.getText());
    </section>
    <section>
       <title>Example</title>
-      <para>The <ulink url="../../../../examples/jms/last-value-queue/readme.html"><literal
-               >last-value-queue</literal> example</ulink> shows how last value queues are
-         configured and used with JMS.</para>
+      <para>See <xref linkend="examples.last-value-queue" /> for an example which
+         shows how last value queues are configured and used with JMS.</para>
    </section>
 </chapter>

@@ -44,9 +44,8 @@
       </section>
       <section>
          <title>Example</title>
-         <para>The <ulink url="../../../../examples/jms/delayed-redelivery/readme.html"><literal
-                  >delayed-redelivery</literal> example</ulink> shows how delayed redelivery is
-            configured and used with JMS.</para>
+         <para>See <xref linkend="examples.delayed-redelivery" /> for an example which
+            shows how delayed redelivery is configured and used with JMS.</para>
       </section>
    </section>
    <section>
@@ -97,9 +96,8 @@
       </section>
       <section>
          <title>Example</title>
-         <para>The <ulink url="../../../../examples/jms/dead-letter/readme.html"><literal
-                  >dead-letter</literal> example</ulink> shows how dead letter is configured and
-            used with JMS.</para>
+         <para>See <xref linkend="examples.dead-letter" /> for an example which
+            shows how dead letter is configured and used with JMS.</para>
       </section>
    </section>
    <section id="configuring.delivery.count.persistence">
