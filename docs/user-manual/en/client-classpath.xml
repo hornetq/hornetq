@@ -2,8 +2,8 @@
 <chapter id="client-classpath">
     <title>The Client Classpath</title>
     <para>In this chapter we explain what jars you need on the Java classpath of a JBoss Messaging
-        client application. This depends on whether you're using just core, or JMS amongst other
-        things. We explain what jars are needed in each case.</para>
+        client application. This depends on various factors including whether you're using just
+        core, JMS, JNDI or Netty. We explain what jars are needed in each case.</para>
     <para>All the jars mentioned here can be found in the <literal>lib</literal> directory of the
         JBoss Messaging distribution. Be sure you only use the jars from the correct version of the
         release, you <emphasis>must not</emphasis> mix and match versions of jars from different
@@ -11,25 +11,25 @@
     <section>
         <title>Pure Core Client</title>
         <para>If you're using just a pure JBoss Messaging core client (i.e. no JMS) then you need
-                <literal>jbm-core-client.jar</literal> on your client classpath. If you're using a
-            Netty transport then you will also netty <literal>netty.jar</literal> and <literal
-                >jbm-transports.jar</literal>.</para>
+                <literal>jbm-core-client.jar</literal> on your client classpath.</para>
+        <para>If you're using a Netty transport then you will also netty <literal
+                >netty.jar</literal> and <literal>jbm-transports.jar</literal>.</para>
     </section>
     <section>
         <title>JMS Client</title>
         <para>If you're using JMS on the client side, then you will need <literal
                 >jbm-core-client.jar</literal>, <literal>jbm-jms-client.jar</literal> and <literal
-                >jboss-javaee.jar</literal>. Note that <literal>jboss-javaee.jar</literal> just
+                >jbm-jms-api.jar</literal>. Note that <literal>jbm-jms-api.jar</literal> just
             contains Java EE API interface classes needed for the <literal>javax.jms.*</literal>
             classes, so if you already have a jar with these interface classes on your classpath you
-            won't need <literal>jboss-javaee.jar</literal>.  If you're using a Netty transport then
-            you will also netty <literal>netty.jar</literal> and <literal
-                >jbm-transports.jar</literal>.</para>
+            won't need it.</para>
+        <para>If you're using a Netty transport then you will also netty <literal
+                >netty.jar</literal> and <literal>jbm-transports.jar</literal>.</para>
     </section>
     <section>
         <title>JNDI</title>
         <para>If you're looking up JNDI objects from the JNDI server co-located with the JBoss
             Messaging standalone server you'll also need the jar <literal>jnp-client.jar</literal>
-            and WHAT OTHER JARS for JNDI? TODO TODO</para>
+            jar on your client classpath as well as any other jars mentioned previously.</para>
     </section>
 </chapter>
