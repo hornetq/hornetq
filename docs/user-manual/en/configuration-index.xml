@@ -776,7 +776,8 @@
                             <entry>null</entry>
                         </row>
                         <row>
-                            <entry>connection-factory.ping-period</entry>
+                            <entry><link linkend="dead.connections"
+                                    >connection-factory.ping-period</link></entry>
                             <entry>Long</entry>
                             <entry>The period between ping packets being sent from client to
                                 server.</entry>
@@ -790,7 +791,8 @@
                             <entry>5 * 60000 ms</entry>
                         </row>
                         <row>
-                            <entry>connection-factory.call-timeout</entry>
+                            <entry><link linkend="call-timeout"
+                                    >connection-factory.call-timeout</link></entry>
                             <entry>long</entry>
                             <entry>the time out, in milliseconds, for remote calls</entry>
                             <entry>30000 ms</entry>
@@ -825,7 +827,8 @@
                             <entry>-1</entry>
                         </row>
                         <row>
-                            <entry>connection-factory.producer-window-size</entry>
+                            <entry><link linkend="command-buffering"
+                                    >connection-factory.producer-window-size</link></entry>
                             <entry>int</entry>
                             <entry>The window size for sending messages</entry>
                             <entry>1024 * 1024</entry>
@@ -860,13 +863,15 @@
                             <entry>false</entry>
                         </row>
                         <row>
-                            <entry>connection-factory.auto-group</entry>
+                            <entry><link linkend="message-grouping.jmsconfigure"
+                                    >connection-factory.auto-group</link></entry>
                             <entry>boolean</entry>
                             <entry>Whether or not we automatically use message grouping.</entry>
                             <entry>false</entry>
                         </row>
                         <row>
-                            <entry>connection-factory.pre-acknowledge</entry>
+                            <entry><link linkend="pre-acknowledge.configure"
+                                    >connection-factory.pre-acknowledge</link></entry>
                             <entry>boolean</entry>
                             <entry>Whether messages are pre acknowledged by the server before
                                 sending</entry>
@@ -923,20 +928,23 @@
                             <entry>-1</entry>
                         </row>
                         <row>
-                            <entry>connection-factory.retry-interval</entry>
+                            <entry><link linkend="client-reconnection"
+                                    >connection-factory.retry-interval</link></entry>
                             <entry>long</entry>
                             <entry>The time, in milliseconds, retry a connection after
                                 failing</entry>
                             <entry>2000</entry>
                         </row>
                         <row>
-                            <entry>connection-factory.retry-interval-multiplier</entry>
+                            <entry><link linkend="client-reconnection"
+                                    >connection-factory.retry-interval-multiplier</link></entry>
                             <entry>double</entry>
                             <entry>Used in the calculating the retry interval</entry>
                             <entry>1d</entry>
                         </row>
                         <row>
-                            <entry>connection-factory.reconnect-attempts</entry>
+                            <entry><link linkend="client-reconnection"
+                                    >connection-factory.reconnect-attempts</link></entry>
                             <entry>int</entry>
                             <entry>The number of attempts to make at reconnecting</entry>
                             <entry>0</entry>
@@ -956,26 +964,30 @@
                             <entry/>
                         </row>
                         <row>
-                            <entry>queue.name (attribute)</entry>
+                            <entry><link linkend="using-jms.server.configuration">queue.name
+                                    (attribute)</link></entry>
                             <entry>String</entry>
                             <entry>Unique name of the queue</entry>
                             <entry/>
                         </row>
                         <row>
-                            <entry>queue.entry</entry>
+                            <entry><link linkend="using-jms.server.configuration"
+                                >queue.entry</link></entry>
                             <entry>String</entry>
                             <entry>Context where the queue will be bound in JNDI. There can be
                                 many.</entry>
                             <entry/>
                         </row>
                         <row>
-                            <entry>queue.durable</entry>
+                            <entry><link linkend="using-jms.server.configuration"
+                                    >queue.durable</link></entry>
                             <entry>Boolean</entry>
                             <entry>Is the queue durable?</entry>
                             <entry>true</entry>
                         </row>
                         <row>
-                            <entry>queue.filter</entry>
+                            <entry><link linkend="using-jms.server.configuration"
+                                    >queue.filter</link></entry>
                             <entry>String</entry>
                             <entry>Optional filter expression for the queue</entry>
                             <entry/>
@@ -988,13 +1000,15 @@
                             <entry/>
                         </row>
                         <row>
-                            <entry>topic.name (attribute)</entry>
+                            <entry><link linkend="using-jms.server.configuration">topic.name
+                                    (attribute)</link></entry>
                             <entry>String</entry>
                             <entry>Unique name of the topic</entry>
                             <entry/>
                         </row>
                         <row>
-                            <entry>topic.entry</entry>
+                            <entry><link linkend="using-jms.server.configuration"
+                                >topic.entry</link></entry>
                             <entry>String</entry>
                             <entry>Context where the topic will be bound in JNDI. There can be
                                 many.</entry>

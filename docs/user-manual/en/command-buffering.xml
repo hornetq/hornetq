@@ -9,13 +9,13 @@
     <para>If the client has sent more commands than were received before failover it can replay any
         sent commands from its buffer so that the client and server can reconcile their
         states.</para>
-    <para>The size of this buffer is configured by the <literal>SendWindowSize</literal> parameter,
-        when the server has received <literal>SendWindowSize</literal> bytes of commands and
-        processed them it will send back a command confirmation to the client, and the client can
-        then free up space in the buffer.</para>
+    <para>The size of this buffer is configured by the <literal>ProducerWindowSize</literal>
+        parameter, when the server has received <literal>ProducerWindowSize</literal> bytes of
+        commands and processed them it will send back a command confirmation to the client, and the
+        client can then free up space in the buffer.</para>
     <para>If you are using JMS and you're using the JMS service on the server to load your JMS
         connection factory instances into JNDI then this parameter can be configured in <literal
-            >jbm-jms.xml</literal> using the element <literal>send-window-size</literal> a. If
+            >jbm-jms.xml</literal> using the element <literal>producer-window-size</literal> a. If
         you're using JMS but not using JNDI then you can set these values directly on the <literal
             >JBossConnectionFactory</literal> instance using the appropriate setter method.</para>
     <para>If you're using core you can set these values directly on the <literal

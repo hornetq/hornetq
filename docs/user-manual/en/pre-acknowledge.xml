@@ -26,10 +26,19 @@
    <para>An example of a use case for pre-acknowledgement is for stock price update messages. With
       these messages it might be reasonable to lose a message in event of crash, since the next
       price update message will arrive soon, overriding the previous price. </para>
-   <section>
+   <section id="pre-acknowledge.configure">
       <title>Using PRE_ACKNOWLEDGE</title>
-      <para>To use pre-acknowledgement mode using the JMS API, create a JMS Session with the
-            <literal>JBossSession.PRE_ACKNOWLEDGE</literal> constant.</para>
+      <para>This can be configured in the <literal>jbm-jms.xml</literal> file on the <literal
+            >connection factory</literal> like this:</para>
+      <programlisting>&lt;connection-factory name="ConnectionFactory">
+      &lt;connector-ref connector-name="netty-connector"/>
+      &lt;entries>
+         &lt;entry name="ConnectionFactory"/>
+      &lt;/entries>
+      &lt;pre-acknowledge>true&lt;/pre-acknowledge>
+&lt;/connection-factory></programlisting>
+      <para>Alternatively use pre-acknowledgement mode using the JMS API, create a JMS Session with
+         the <literal>JBossSession.PRE_ACKNOWLEDGE</literal> constant.</para>
       <programlisting>
 // messages will be acknowledge on the server *before* being delivered to the client
 Session session = connection.createSession(false, JBossSession.PRE_ACKNOWLEDGE);

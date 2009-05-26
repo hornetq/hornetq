@@ -14,7 +14,7 @@
             consumer. If that consumer closes another consumer is chosen and will receive all
             messages with the same group id.</para>
       </listitem>
-   </itemizedlist>   
+   </itemizedlist>
    <section id="message-grouping.configuring">
       <title>Configuring Message Grouping</title>
       <para>Message grouping must be enabled in the address-setting configuration by using a
@@ -35,9 +35,11 @@
       <title>Using Core API</title>
       <para>The property name used to identify the message group is <literal
             >"_JBM_GROUP_ID""</literal> (or the constant <literal
-         >MessageImpl.HDR_GROUP_ID</literal>).</para>
+         >MessageImpl.HDR_GROUP_ID</literal>). Alternatively, you can set <literal
+            >autogroup</literal> to true on the <literal>SessionFactory</literal> which will pick a
+         random unique id. </para>
    </section>
-   <section>
+   <section id="message-grouping.jmsconfigure">
       <title>Using JMS</title>
       <para>The property name used to identify the message group is <literal
          >JMSXGroupID</literal>.</para>
@@ -56,6 +58,16 @@
  message.setIntProperty("JMSXGroupSeq", 2);
  producer.send(message);          
        </programlisting>
+      <para>Alternatively, you can set <literal>autogroup</literal> to true on the <literal
+            >JBossConnectonFactory</literal> which will pick a random unique id.  This can also be
+         set in the <literal>jbm-jms.xml</literal> file like this:</para>
+      <programlisting>&lt;connection-factory name="ConnectionFactory">
+      &lt;connector-ref connector-name="netty-connector"/>
+      &lt;entries>
+         &lt;entry name="ConnectionFactory"/>
+      &lt;/entries>
+      &lt;autogroup>true&lt;/autogroup>
+&lt;/connection-factory></programlisting>
    </section>
    <section>
       <title>Example</title>
