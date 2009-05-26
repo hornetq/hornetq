@@ -28,7 +28,7 @@
 <!-- =========================================================================================== -->
 
 
-<project default="run" name="JBoss Messaging Embedded Example">
+<project default="run" name="JBoss Messaging Example with Micro Container">
 
    <import file="../../common/build.xml"/>
 
