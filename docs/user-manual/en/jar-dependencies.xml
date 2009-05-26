@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <chapter id="jar-dependencies">
-    <title>Jar Dependencies</title>
+    <title>Jar Dependencies and Client Classpath</title>
     <para>JBoss Messaging was designed to have as few dependencies on external jars as possible. In
         fact, JBoss Messaging core has zero dependencies on any jars other than the standard JDK
         classes!</para>
@@ -167,5 +167,27 @@
                 </tbody>
             </tgroup>
         </table>
+    </section>
+    <section>
+        <title>Client Classpath</title>
+        <para>In this section we explain what jars you need on the client classpath, this depends on
+            how you're using JBoss Messaging</para>
+        <para>!!!!!!!!!!! TODO - clebert please complete this</para>
+        <itemizedlist>
+            <listitem>
+                <para>Core. If you're just using the JBoss Messaging core client API, you just need
+                    xyz</para>
+            </listitem>
+            <listitem>
+                <para>JMS. If you're using JMS, you need XYZ. If you're using JNDI with JMS you need
+                    XYZ</para>
+            </listitem>
+            <listitem>
+                <para>If you're using netty you need XYZ</para>
+            </listitem>
+            <listitem>
+                <para>etc</para>
+            </listitem>
+        </itemizedlist>
     </section>
 </chapter>

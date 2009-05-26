@@ -40,7 +40,7 @@
                 JDK.</para>
         </listitem>
         <listitem>
-            <para>Linux Asynchronous IO (<ulink url="http://lse.sourceforge.net/io/aio.html"
+            <para id="aio-journal">Linux Asynchronous IO (<ulink url="http://lse.sourceforge.net/io/aio.html"
                     >AIO</ulink>).</para>
             <para>The second implementation uses a thin native code wrapper to talk to the Linux
                 asynchronous IO library (AIO). In a highly concurrent environment, AIO can provide

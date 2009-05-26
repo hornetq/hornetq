@@ -40,7 +40,7 @@
             are the place to do it.</para>
     </section>
     <section>
-        <title>Server runtime</title>
+        <title>Server classpath</title>
         <para>JBoss Messaging looks for its configuration files on the Java classpath.</para>
         <para>The scripts <literal>run.sh</literal> and <literal>run.bat</literal> specify the
             classpath when calling Java to run the server.</para>
@@ -70,13 +70,22 @@
             when starting up.</para>
     </section>
     <section>
+        <title>LD_LIBRARY_PATH</title>
+        <para>If you're using the <xref linkend="aio-journal">Asynchronous IO Journal</xref> on
+            Linux, then the environment variable <literal>LD_LIBRARY_PATH</literal> needs to be set
+            to the path that contains the shared library file that contains the native code for the
+            AIO abstraction layer. This is done automatically in the <literal>run.sh</literal>
+            script.</para>
+    </section>
+    <section>
         <title>System properties</title>
         <para>JBoss Messaging also takes a couple of Java system properties on the command line for
             configuring logging properties</para>
         <para>JBoss Messaging uses JDK logging to minimise dependencies on other logging systems.
             JDK logging can then be configured to delegate to some other framework, e.g. log4j if
             that's what you prefer.</para>
-        <para>For more information on configuring logging, please see <xref linkend="logging" />.</para>
+        <para>For more information on configuring logging, please see <xref linkend="logging"
+            />.</para>
     </section>
     <section id="using-server.configuration">
         <title>Configuration files</title>
@@ -90,13 +99,13 @@
                     dependencies to enforce between them. Remember that JBoss Messaging is just a
                     set of POJOs. In the stand-alone server, it's the JBoss Microcontainer which
                     instantiates these POJOs and enforces dependencies between them and other beans.
-                    Please see <xref linkend="usingserver.mainconfig"/> for more
-                    information on this file.</para>
+                    Please see <xref linkend="usingserver.mainconfig"/> for more information on this
+                    file.</para>
             </listitem>
             <listitem>
                 <para><literal>jbm-configuration.xml</literal>. This is the main JBoss Messaging
                     configuration file. All the parameters in this file are described in <xref
-                        linkend="configuration-index" />.</para>
+                        linkend="configuration-index"/>.</para>
             </listitem>
             <listitem>
                 <para><literal>jbm-queues.xml</literal>. This file contains pre-defined queues,
@@ -121,8 +130,8 @@
                     server side JMS service which mainly deploys JMS Queues, Topics and
                     ConnectionFactorys from this file into JNDI. If you're not using JMS, or you
                     don't need to deploy JMS objects on the server side, then you don't need this
-                    file. For more information on using JMS, please see <xref
-                        linkend="using-jms" />.</para>
+                    file. For more information on using JMS, please see <xref linkend="using-jms"
+                    />.</para>
             </listitem>
             <listitem>
                 <para><literal>logging.properties</literal> This is used to configure the logging
@@ -139,9 +148,9 @@
                     >jbm-configuration.xml</literal> configuration when set to false mans that the
                 other configuration files are not loaded. This is true by default.</para>
         </note>
-        <para>It is also possible to use system property substitution in all the configuration files. by
-            replacing a value with the name of a system property. Here is an example of this with a
-            connector configuration:</para>
+        <para>It is also possible to use system property substitution in all the configuration
+            files. by replacing a value with the name of a system property. Here is an example of
+            this with a connector configuration:</para>
         <programlisting>&lt;connector name="netty">
          &lt;factory-class>org.jboss.messaging.integration.transports.netty.NettyConnectorFactory&lt;/factory-class>
          &lt;param key="jbm.remoting.netty.host"  value="${jbm.remoting.netty.host:localhost}" type="String"/>
@@ -174,19 +183,19 @@
 
 &lt;!-- JNDI server. Disable this if you don't want JNDI --&gt;
 &lt;bean name="JNDIServer" class="org.jnp.server.Main"&gt;
-&lt;property name="namingInfo"&gt;
-&lt;inject bean="Naming"/&gt;
-&lt;/property&gt;
-&lt;property name="port"&gt;1099&lt;/property&gt;
-&lt;property name="bindAddress"&gt;localhost&lt;/property&gt;
-&lt;property name="rmiPort"&gt;1098&lt;/property&gt;
-&lt;property name="rmiBindAddress"&gt;localhost&lt;/property&gt;
+   &lt;property name="namingInfo"&gt;
+      &lt;inject bean="Naming"/&gt;
+   &lt;/property&gt;
+   &lt;property name="port"&gt;1099&lt;/property&gt;
+   &lt;property name="bindAddress"&gt;localhost&lt;/property&gt;
+   &lt;property name="rmiPort"&gt;1098&lt;/property&gt;
+   &lt;property name="rmiBindAddress"&gt;localhost&lt;/property&gt;
 &lt;/bean&gt;
 
 &lt;!-- MBean server --&gt;
 &lt;bean name="MBeanServer" class="javax.management.MBeanServer"&gt;
-&lt;constructor factoryClass="java.lang.management.ManagementFactory"
-factoryMethod="getPlatformMBeanServer"/&gt;
+   &lt;constructor factoryClass="java.lang.management.ManagementFactory"
+      factoryMethod="getPlatformMBeanServer"/&gt;
 &lt;/bean&gt; 
 
 &lt;!-- The core configuration --&gt;
@@ -196,35 +205,35 @@ factoryMethod="getPlatformMBeanServer"/&gt;
 &lt;!-- The security manager --&gt;
 &lt;bean name="JBMSecurityManager" 
       class="org.jboss.messaging.core.security.impl.JBMSecurityManagerImpl"&gt;
-&lt;start ignored="true"/&gt;
-&lt;stop ignored="true"/&gt;
+   &lt;start ignored="true"/&gt;
+   &lt;stop ignored="true"/&gt;
 &lt;/bean&gt;
 
 &lt;!-- The core server --&gt;
 &lt;bean name="MessagingServer" class="org.jboss.messaging.core.server.impl.MessagingServerImpl"&gt;
-&lt;start ignored="true"/&gt;
-&lt;stop ignored="true"/&gt;  
-&lt;constructor&gt;
-&lt;parameter&gt;
-&lt;inject bean="Configuration"/&gt;
-&lt;/parameter&gt;
-&lt;parameter&gt;
-&lt;inject bean="MBeanServer"/&gt;
-&lt;/parameter&gt;
-&lt;parameter&gt;
-&lt;inject bean="JBMSecurityManager"/&gt;
-&lt;/parameter&gt;        
-&lt;/constructor&gt;         
+   &lt;start ignored="true"/&gt;
+   &lt;stop ignored="true"/&gt;  
+   &lt;constructor&gt;
+      &lt;parameter&gt;
+         &lt;inject bean="Configuration"/&gt;
+      &lt;/parameter&gt;
+      &lt;parameter&gt;
+         &lt;inject bean="MBeanServer"/&gt;
+      &lt;/parameter&gt;
+      &lt;parameter&gt;
+         &lt;inject bean="JBMSecurityManager"/&gt;
+      &lt;/parameter&gt;        
+   &lt;/constructor&gt;         
 &lt;/bean&gt;
 
 &lt;!-- The JMS server --&gt;
 &lt;bean name="JMSServerManager" 
       class="org.jboss.messaging.jms.server.impl.JMSServerManagerImpl"&gt;
-&lt;constructor&gt;         
-&lt;parameter&gt;
-&lt;inject bean="MessagingServer"/&gt;
-&lt;/parameter&gt;         
-&lt;/constructor&gt;
+   &lt;constructor&gt;         
+      &lt;parameter&gt;
+         &lt;inject bean="MessagingServer"/&gt;
+      &lt;/parameter&gt;         
+   &lt;/constructor&gt;
 &lt;/bean&gt;
 
 &lt;/deployment&gt;</programlisting>
@@ -259,7 +268,8 @@ factoryMethod="getPlatformMBeanServer"/&gt;
                         <literal>jbm-users.xml</literal> file on disk. However it can be replaced by
                     a JAAS security manager, or when running inside JBoss Application Server it can
                     be configured to use the JBoss AS security manager for tight integration with
-                    JBoss AS security.</para>
+                    JBoss AS security. If you've disabled security altogether you can remove this
+                    too.</para>
             </listitem>
             <listitem>
                 <para>MessagingServer</para>
@@ -271,8 +281,8 @@ factoryMethod="getPlatformMBeanServer"/&gt;
                     instances from <literal>jbm-jms.xml</literal> files on the disk. It also
                     provides a simple management API for manipulating JMS Objects. On the whole it
                     just translates and delegates its work to the core server. If you don't need to
-                    deploy JMS Queues, Topics and ConnectionFactorys from server side configuration and
-                    don't require the JMS management interface this can be disabled.</para>
+                    deploy JMS Queues, Topics and ConnectionFactorys from server side configuration
+                    and don't require the JMS management interface this can be disabled.</para>
             </listitem>
         </itemizedlist>
     </section>
