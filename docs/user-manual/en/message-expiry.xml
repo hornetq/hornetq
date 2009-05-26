@@ -36,7 +36,7 @@ producer.setTimeToLive(5000);
          </listitem>
       </itemizedlist>
    </section>
-   <section>
+   <section id="message-expiry.configuring">
       <title>Configuring Expiry Addresses</title>
       <para>Expiry address are defined in the address-setting configuration:</para>
       <programlisting>

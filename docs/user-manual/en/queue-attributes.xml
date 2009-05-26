@@ -66,4 +66,44 @@
         <para>Take a look at the <xref linkend="management">management section</xref> for the API
             for creating queues.</para>
     </section>
+    <section id="queue-attributes.address-settings">
+        <title>Configuring Queues Via Address Settings</title>
+        <para>There are some attributes that are defined against a queue rather than a specific
+            queue. Here an example of an <literal>address-setting</literal> entry that would be
+            found in the <literal>jbm-configuration.xml</literal> file.</para>
+        <programlisting>&lt;address-settings>
+    &lt;address-setting match="jms.queue.exampleQueue">
+        &lt;dead-letter-address>jms.queue.deadLetterQueue&lt;/dead-letter-address>
+        &lt;max-delivery-attempts>3&lt;/max-delivery-attempts>
+        &lt;redelivery-delay>5000&lt;/redelivery-delay>
+        &lt;expiry-address>jms.queue.expiryQueue&lt;/expiry-address>
+        &lt;last-value-queue>true&lt;/last-value-queue>
+        &lt;distribution-policy-class>org.jboss.messaging.core.server.impl.GroupingRoundRobinDistributor&lt;/distribution-policy-class>
+        &lt;max-size-bytes>100000&lt;/max-size-bytes>
+        &lt;page-size-bytes>20000&lt;/page-size-bytes>
+        &lt;redistribution-delay>0&lt;/redistribution-delay>
+     &lt;/address-setting>
+&lt;/address-settings></programlisting>
+        <para>These are explained fully throughout the user manual, howvere here is a breif
+            description with a link to the appropriate chapter if available. </para>
+        <para><literal>max-delivery-attempts</literal> defines how many time a cancelled message can
+            be redelivered before sending to the <literal>dead-letter-address</literal>. A full
+            explanation can be found <link linkend="undelivered-messages.configuring"
+            >here</link>.</para>
+        <para><literal>redelivery-delay</literal> defines how long to wait before attempting
+            redelivery of a cancelled message. see <link linkend="undelivered-messages.delay"
+                >here</link>.</para>
+        <para><literal>expiry-address</literal> defines where to send a message that has expired.
+            see <link linkend="message-expiry.configuring">here</link>.</para>
+        <para><literal>last-value-queue</literal> defines whether a queue only uses last values or
+            not. see <link linkend="last-value-queues">here</link>.</para>
+        <para><literal>distribution-policy-class</literal> define the class to use for distribution
+            of messages by a queue to consumers. By default this is <literal
+                >org.jboss.messaging.core.server.impl.RoundRobinDistributor</literal>.</para>
+        <para><literal>max-size-bytes</literal> and <literal>page-size-bytes</literal> are used to
+            set paging on an address. This is explained <link linkend="paging">here</link>.</para>
+        <para><literal>redistribution-delay</literal> defines how long to wait when the last
+            consumer is closed on a queue before redistributing any messages. see <link
+                linkend="clusters.message-redistribution">here</link>.</para>
+    </section>
 </chapter>

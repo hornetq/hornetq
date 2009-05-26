@@ -15,7 +15,7 @@
             messages with the same group id.</para>
       </listitem>
    </itemizedlist>   
-   <section>
+   <section id="message-grouping.configuring">
       <title>Configuring Message Grouping</title>
       <para>Message grouping must be enabled in the address-setting configuration by using a
          specific <literal>distribution-policy-class</literal>:</para>

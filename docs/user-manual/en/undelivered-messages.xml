@@ -26,7 +26,7 @@
          rollback. Without a delayed redelivery, the system can get into a "thrashing" state, with
          delivery being attempted, the client rolling back, and delivery being re-attempted ad
          infinitum in quick succession, consuming valuable CPU and network resources.</para>
-      <section>
+      <section id="undelivered-messages.delay">
          <title>Configuring Delayed Redelivery</title>
          <para>Delayed redelivery is defined in the address-setting configuration:</para>
          <programlisting>
@@ -61,7 +61,7 @@
          have be unsuccessfully delivered for a given number of attempts, they are removed from the
          queue and sent to the dead letter address. These <emphasis>dead letter</emphasis> messages
          can later be consumed for further inspection.</para>
-      <section>
+      <section id="undelivered-messages.configuring">
          <title>Configuring Dead Letter Addresses</title>
          <para>Dead letter address is defined in the address-setting configuration:</para>
          <programlisting>

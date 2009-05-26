@@ -591,7 +591,7 @@ ClientSession session2 = factory.createClientSession(...);</programlisting>
                 information on connectors please see chapter [LINK].</para>
         </section>
     </section>
-    <section>
+    <section id="clusters.message-redistribution">
         <title>Message Redistribution</title>
         <para>Another important part of clustering is message redistribution. Earlier we learned how
             server side message load balancing round robins messages across the cluster. If <literal
