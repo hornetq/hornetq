@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<chapter id="client-classpath">
+    <title>The Client Classpath</title>
+    <para>In this chapter we explain what jars you need on the Java classpath of a JBoss Messaging
+        client application. This depends on whether you're using just core, or JMS amongst other
+        things. We explain what jars are needed in each case.</para>
+    <para>All the jars mentioned here can be found in the <literal>lib</literal> directory of the
+        JBoss Messaging distribution. Be sure you only use the jars from the correct version of the
+        release, you <emphasis>must not</emphasis> mix and match versions of jars from different
+        JBoss Messaging versions.</para>
+    <section>
+        <title>Pure Core Client</title>
+        <para>If you're using just a pure JBoss Messaging core client (i.e. no JMS) then you need
+                <literal>jbm-core-client.jar</literal> on your client classpath. If you're using a
+            Netty transport then you will netty <literal>netty.jar</literal> too.</para>
+    </section>
+    <section>
+        <title>JMS Client</title>
+        <para>If you're using JMS on the client side, then you will need <literal
+                >jbm-core-client.jar</literal>, <literal>jbm-jms-client.jar</literal>.</para>
+        <para>TODO - clebert please complete.</para>
+        <para>What about javaee.jar, what about jndi client stuff etc etc???</para>
+    </section>
+    <section/>
+</chapter>

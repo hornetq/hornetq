@@ -4,6 +4,7 @@
         <!ENTITY appserver-integration   SYSTEM "appserver-integration.xml">
         <!ENTITY architecture            SYSTEM "architecture.xml">
         <!ENTITY client-reconnection     SYSTEM "client-reconnection.xml">
+        <!ENTITY client-classpath        SYSTEM "client-classpath.xml">
         <!ENTITY clusters                SYSTEM "clusters.xml">
         <!ENTITY configuration-index     SYSTEM "configuration-index.xml">
         <!ENTITY configuring-transports  SYSTEM "configuring-transports.xml">
@@ -61,6 +62,7 @@
    &using-server;
    &using-jms;
    &using-core;
+   &client-classpath;
    &jms-core-mapping;
    &examples;
    &embedding-jbm;
