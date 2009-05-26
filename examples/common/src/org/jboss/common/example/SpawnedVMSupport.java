@@ -58,7 +58,7 @@ public class SpawnedVMSupport
    {
       String classPath = System.getProperty("java.class.path");
       
-      return spawnVM(classPath, vmargs, logOutput, success, failure, configDir, args);
+      return spawnVM(classPath, className, vmargs, logOutput, success, failure, configDir, args);
    }
 
    public static Process spawnVM(String classPath,
