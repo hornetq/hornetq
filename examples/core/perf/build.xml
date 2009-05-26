@@ -65,7 +65,8 @@
       <java classname="org.jboss.common.example.SpawnedJBMServer" fork="true" resultproperty="example-result">
          <jvmarg value="-Xms2048M"/>
 		   <jvmarg value="-Xmx2048M"/>
-         <jvmarg value="-XX:+UseParallelGC"/>
+         <jvmarg value="-XX:+UseParallelGC"/> 
+      	 <sysproperty key="java.library.path" value="${java.library.path}${path.separator}${aio.library.path}"/>
          <jvmarg value="-XX:+AggressiveOpts"/>
 		   <jvmarg value="-XX:+UseFastAccessorMethods"/>         
          <arg line="jbm-jboss-beans.xml"/>
