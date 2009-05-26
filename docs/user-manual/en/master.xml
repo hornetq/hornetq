@@ -42,7 +42,6 @@
         <!ENTITY thread-pooling          SYSTEM "thread-pooling.xml">
         <!ENTITY undelivered-messages    SYSTEM "undelivered-messages.xml">
         <!ENTITY using-core              SYSTEM "using-core.xml">
-        <!ENTITY jar-dependencies        SYSTEM "jar-dependencies.xml">
         <!ENTITY using-jms               SYSTEM "using-jms.xml">
         <!ENTITY using-server            SYSTEM "using-server.xml">
         <!ENTITY wildcard-syntax         SYSTEM "wildcard-syntax.xml">
@@ -100,7 +99,6 @@
    &interoperability;
    &perf-tuning;
    &configuration-index;
-   &jar-dependencies;
    &project-info;
    
 </book>
