@@ -21,7 +21,7 @@
             messaging systems also support a request-response mode but this is not a primary feature
             of messaging systems.</para>
         <para>Designing systems to be asynchronous from end-to-end allows you to really take
-            advantage of your hardware resources, minimising the amount of threads blocking on IO
+            advantage of your hardware resources, minimizing the amount of threads blocking on IO
             operations, and to use your network bandwidth to its full capacity. With an RPC approach
             you have to wait for a response for each request you make so are limited by the network
             round trip time, or <emphasis role="italic">latency</emphasis> of your network. With an
@@ -40,7 +40,7 @@
     </section>
     <section>
         <title>Messaging styles</title>
-        <para>Messaging systems normally support two main styles of asynchronous messaging;  <ulink
+        <para>Messaging systems normally support two main styles of asynchronous messaging:  <ulink
                 url="http://en.wikipedia.org/wiki/Message_queue"> message queue</ulink> messaging
             (also known as <emphasis role="italic">point-to-point messaging</emphasis>) and <ulink
                 url="http://en.wikipedia.org/wiki/Publish_subscribe">publish subscribe</ulink>
@@ -72,7 +72,7 @@
                 processing components. Different messages can be processed by order processors, but
                 a single order is only processed by one order processor - this ensures orders aren't
                 processed twice.</para>
-            <para>As an order processor receives a message, its fulfils the order, sends order
+            <para>As an order processor receives a message, it fulfills the order, sends order
                 information to the warehouse system and then updates the order database with the
                 order details. Once it's done that it acknowledges the message to tell the server
                 that the order message is done and can be forgotten about. Often the send to the
@@ -158,7 +158,7 @@
                 normally rich enough to expose all the extra features that most messaging systems
                 provide.</para>
             <para>JBoss Messaging provides its own core client API for clients to use if they wish
-                to have access to functionality over and above that accesible via the JMS
+                to have access to functionality over and above that accessible via the JMS
                 API.</para>
         </section>
         <section>
@@ -172,7 +172,7 @@
             <para>JBoss Messaging can be used by any STOMP client when using the <ulink
                     url="http://stomp.codehaus.org/StompConnect">StompConnect</ulink> broker which
                 translates the STOMP protocol to the JMS API.</para>
-            <para>JBoss Messaging will be shortly implementing the STOMP protocol on the boker, thus
+            <para>JBoss Messaging will be shortly implementing the STOMP protocol on the broker, thus
                 avoiding having to use StompConnect.</para>
         </section>
         <section>
@@ -208,8 +208,7 @@
             any special client side code to deal with failure. On failover JBoss Messaging will
             automatically fail over your client connections to another server, and your client
             sessions can continue as if nothing happened.</para>
-        <para>For more information on HA, please see the <xref linkend="ha">HA</xref>
-            section.</para>
+        <para>For more information on HA, please see <xref linkend="ha" />.</para>
     </section>
     <section>
         <title>Clusters</title>
@@ -225,8 +224,7 @@
             number of consumers on each node, and whether they are ready for messages.</para>
         <para>JBoss Messaging also has the ability to automatically redistribute messages between
             nodes of a cluster to prevent starvation on any particular node.</para>
-        <para>For full details on clustering please the chapter on <xref linkend="clusters"
-                >clusters</xref>.</para>
+        <para>For full details on clustering, please see <xref linkend="clusters"/>.</para>
     </section>
     <section>
         <title>Bridges and routing</title>
@@ -241,7 +239,7 @@
             configuration. This allows complex routing networks to be set up forwarding or copying
             messages from one destination to another, forming a global network of interconnected
             brokers.</para>
-        <para>See the relevant chapters for more information on <xref linkend="core-bridges"
-                >bridges</xref> and <xref linkend="diverts">diverts</xref>.</para>
+        <para>For more information please see <xref linkend="core-bridges"/>
+            and <xref linkend="diverts"/>.</para>
     </section>
 </chapter>

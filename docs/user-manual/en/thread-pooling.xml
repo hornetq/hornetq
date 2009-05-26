@@ -54,8 +54,8 @@
             <para>A single thread is also used on the server side to scan for expired messages in
                 queues. We cannot use either of the thread pools for this since this thread needs to
                 run at its own configurable priority.</para>
-            <para>For more information on configuring the reaper, please see the section on <xref
-                    linkend="message-expiry">message expiry</xref>.</para>
+            <para>For more information on configuring the reaper, please see <xref
+                    linkend="message-expiry"/>.</para>
         </section>
         <section>
             <title>Asychronous IO</title>
@@ -64,7 +64,7 @@
             <para>The thread poller is used by the native layer to receive and dispatch events. You
                 will find it on a thread dump with the prefix JBM-AIO-poller-pool. JBoss Messaging
                 uses one poller per opened file on the journal. (there is usually one) and they are
-                aways distributed through a pool.</para>
+                always distributed through a pool.</para>
             <para>The writing thread is a single thread used to invoke libaio. We do that to avoid
                 context switching on libaio what would cause performance issues. You will find this
                 thread on a thread dump with the prefix JBM-AIO-writer-pool.</para>

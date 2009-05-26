@@ -45,7 +45,7 @@
         <para>
             <graphic fileref="images/architecture1.jpg" align="center"/>
         </para>
-        <para>Figure 3.1 shows two user applications interacting with a JBoss Mesaging server. User
+        <para>Figure 3.1 shows two user applications interacting with a JBoss Messaging server. User
             Application 1 is using the JMS API, while User Application 2 is using the core client
             API directly.</para>
         <para>You can see from the diagram that the JMS API is implemented by a thin facade layer on
@@ -57,8 +57,8 @@
             application that requires messaging functionality internally but you don't want to
             expose that as a messaging server you can directly instantiate and embed messaging
             servers in your own application.</para>
-        <para>For more information on embedding JBoss Messaging see the chapter on <xref
-                linkend="embedding-jbm">embedding</xref>.</para>
+        <para>For more information on embedding JBoss Messaging, see <xref
+                linkend="embedding-jbm" />.</para>
     </section>
     <section>
         <title>JBoss Messaging integrated with a JEE application server</title>
@@ -72,7 +72,7 @@
             system.</para>
         <para>According to the JEE specification, a JEE application server uses a JCA adapter to
             integrate with a JMS messaging system so it can consume messages for MDBs.</para>
-        <para>Howvever, the JCA adapter is not only used by the JEE application server for <emphasis
+        <para>However, the JCA adapter is not only used by the JEE application server for <emphasis
                 role="italic">consuming</emphasis> messages via MDBs, it is also used when sending
             message to the JMS messaging system e.g. from inside an EJB or servlet.</para>
         <para>When integrating with a JMS messaging system from inside a JEE application server it
@@ -83,7 +83,7 @@
             an EJB, MDB or servlet without going through a JCA adapter, but this is not recommended
             since you will not be able to take advantage of the JCA features, such as caching of JMS
             sessions, which can result in poor performance.</para>
-        <para>Figure 3.2 belows shows a JEE application server integrating with a JBoss Messaging
+        <para>Figure 3.2 below shows a JEE application server integrating with a JBoss Messaging
             server via the JBoss Messaging JCA adaptor. Note that all communication between EJB
             sessions or entity beans and Message Driven beans go through the adaptor and not
             directly to JBoss Messaging.</para>
@@ -94,8 +94,8 @@
         <para>
             <graphic fileref="images/architecture2.jpg"/>
         </para>
-        <para>For more information on using the JCA adaptor, please see the chatper on <xref
-                linkend="appserver-integration">application server integration</xref>.</para>
+        <para>For more information on using the JCA adaptor, please see <xref
+                linkend="appserver-integration" />.</para>
     </section>
     <section>
         <title>JBoss Messaging stand-alone server</title>
@@ -104,12 +104,12 @@
         <para>The standard stand-alone messaging server configuration comprises a core messaging
             server, a JMS service and a JNDI service.</para>
         <para>The role of the JMS Service is to deploy any JMS Queues, Topics and ConnectionFactory
-            instances from any server side <literal>jbm-jms.xml</literal> config files. It also
+            instances from any server side <literal>jbm-jms.xml</literal> configuration files. It also
             provides a simple management API for creating and destroying Queues, Topics and
             ConnectionFactory instances which can be accessed via JMX or the connection. It is a
             separate service to the JBoss Messaging core server, since the core server is JMS
             agnostic. If you don't want to deploy any JMS Queues, Topics and ConnectionFactory
-            instances via server side xml config and don't require a JMS management API on the
+            instances via server side XML configuration and don't require a JMS management API on the
             server side then you can disable this service.</para>
         <para>We also include a JNDI server since JNDI is a common requirement when using JMS to
             lookup Queues, Topics and ConnectionFactory instances. If you do not require JNDI then
@@ -123,7 +123,7 @@
         <para>
             <graphic fileref="images/architecture3.jpg"/>
         </para>
-        <para>For more information on serve configuration files see the chapter <xref linkend="">using the server</xref>.
-        </para>
+        <para>For more information on server configuration files see <xref linkend="server.configuration" />.
+$        </para>
     </section>
 </chapter>

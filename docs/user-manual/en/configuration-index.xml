@@ -3,7 +3,7 @@
     <title>Configuration Reference</title>
     <para>This section is a quick index for looking up configuration. Click on the element name to
         go to the specific chapter.</para>
-    <section>
+    <section id="server.configuration">
         <title>Server Configuration</title>
         <section>
             <title>jbm-configuration.xml</title>
@@ -478,7 +478,7 @@
                             <entry><link linkend="core-bridges"
                                 >bridges.forwarding-address</link></entry>
                             <entry>String</entry>
-                            <entry>Address to forward to. If ommitted original destination is
+                            <entry>Address to forward to. If omitted original destination is
                                 used.</entry>
                             <entry>null</entry>
                         </row>
@@ -897,7 +897,7 @@
                             <entry><link linkend="clusters-discovery.groups.clientside"
                                     >connection-factory.discovery-initial-wait-timeout</link></entry>
                             <entry>long</entry>
-                            <entry>The initail time to wait, in milliseconds, for discovery groups
+                            <entry>The initial time to wait, in milliseconds, for discovery groups
                                 to wait for broadcasts</entry>
                             <entry>2000</entry>
                         </row>

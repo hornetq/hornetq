@@ -51,8 +51,8 @@
             your network, rather than the bandwidth of your network. For better performance we
             recommend either batching many messages sends together in a transaction since with a
             transactional session, only the commit / rollback blocks not every send, or, using JBoss
-            Messaging's advanced <xref linkend="asynchronous-send-acknowledgements">asynchronous
-                send acknowledgements</xref> feature.</para>
+            Messaging's advanced <emphasis>asynchronous send acknowledgements feature</emphasis>
+                described in <xref linkend="asynchronous-send-acknowledgements" />.</para>
         <para>If you are using JMS and you're using the JMS service on the server to load your JMS
             connection factory instances into JNDI then these parameters can be configured in
                 <literal>jbm-jms.xml</literal> using the elements <literal
@@ -87,7 +87,7 @@
     <section id="asynchronous-send-acknowledgements">
         <title>Asynchronous Send Acknowledgements</title>
         <para>If you are using a non transacted session but want a guarantee that every message sent
-            to the server has reached it, then, as discussed in section <xref
+            to the server has reached it, then, as discussed in <xref
                 linkend="non-transactional-sends"/>, you can configure JBoss Messaging to block the
             call to send until the server has received the message, persisted it and sent back a
             response. This works well but has a severe performance penalty - each call to send needs
@@ -124,8 +124,8 @@
                 informed at the client side by JBoss Messaging calling your handler's <literal
                     >sendAcknowledged(ClientMessage message)</literal> method, passing in a
                 reference to the message that was sent.</para>
-            <para>Please see the <xref linkend="asynchronous-send-acknowledgements-example">send
-                    acknowledgements exampl</xref>e for a full working example.</para>
+            <para>Please see <xref linkend="asynchronous-send-acknowledgements-example" />
+             for a full working example.</para>
         </section>
     </section>
 </chapter>

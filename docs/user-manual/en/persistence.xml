@@ -53,7 +53,7 @@
                 when AIO informs us that the data has been persisted.</para>
             <para>The AIO journal is only available when running Linux kernel 2.6 or later and after
                 having installed libaio (if it's not already installed). For instructions on how to
-                install libaio please see <xref linkend="installing-aio">here</xref>.</para>
+                install libaio please see <xref linkend="installing-aio" />.</para>
         </listitem>
     </itemizedlist>
     <para>The standard JBoss Messaging core server uses two instances of the journal:</para>
@@ -77,12 +77,11 @@
         </listitem>
     </itemizedlist>
     <para>For large messages, JBoss Messaging persists them outside the message journal. This is
-        discussed in the chapter on <xref linkend="large-messages">large messages</xref>.</para>
+        discussed in <xref linkend="large-messages" />.</para>
     <para>JBoss Messaging also pages messages to disk in low memory situations. This is discussed in
-        the chapter on <xref linkend="paging">paging</xref>.</para>
+        <xref linkend="paging" />.</para>
     <para>If no persistence is required at all, JBoss Messaging can also be configured not to
-        persist any data at all to storage as discussed <xref linkend="persistence.disabled"
-            >here</xref>.</para>
+        persist any data at all to storage as discussed in <xref linkend="persistence.enabled" />.</para>
     <section id="configuring.bindings.journal">
         <title>Configuring the bindings journal</title>
         <para>The bindings journal is configured using the following attributes in <literal
@@ -201,7 +200,7 @@
         <para>Using aptitude, (e.g. on Ubuntu or Debian system):
             <programlisting>sudo apt-get install libaio</programlisting></para>
     </section>
-    <section id="persistence.disabled">
+    <section id="persistence.enabled">
         <title>Configuring JBoss Messaging for Zero Persistence</title>
         <para> In some situations, zero persistence is sometimes required for a messaging system.
             Configuring JBoss Messaging to perform zero persistence is straightforward. Simply set

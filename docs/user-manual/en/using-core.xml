@@ -11,8 +11,8 @@
         <para>Some of the core messaging concepts are similar to JMS concepts, but core messaging
             concepts differ in some ways. In general the core messaging API is simpler than the JMS
             API, since we remove distinctions between queues, topics and subscriptions. We'll
-            discuss each of the major core messaging concepts in turn, but for to see the API in
-            detail please consult the javadoc.</para>
+            discuss each of the major core messaging concepts in turn, but to see the API in
+            detail, please consult the Javadoc.</para>
         <section>
             <title>Message</title>
             <para>A message is the unit of data which is sent between clients and servers.</para>
@@ -27,7 +27,7 @@
             <para>Messages can be either durable or non durable. Durable messages in a durable queue
                 will survive a server crash or restart. Non durable messages will never survive a
                 server crash or restart.</para>
-            <para>Messages can be specified with a priority value betwen 0 and 9. 0 represents the
+            <para>Messages can be specified with a priority value between 0 and 9. 0 represents the
                 highest priority and 9 represents the lowest. JBoss Messaging will attempt to
                 deliver higher priority messages before lower priority ones.</para>
             <para>Messages can be specified with an optional expiry time. JBoss Messaging will not

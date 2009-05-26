@@ -109,8 +109,8 @@ message.setStringProperty(HDR_DUPLICATE_DETECTION_ID.toString(), myUniqueID);
                 >use-duplicate-detection</parameter> to <literal>true</literal> when configuring a
             bridge in <literal>jbm-configuration.xml</literal>.</para>
         <para>The default value for this parameter is <literal>true</literal>.</para>
-        <para>For more information on core bridges and how to configure them see the chapter on
-                <xref linkend="core-bridges">core bridges</xref>.</para>
+        <para>For more information on core bridges and how to configure them, please see 
+                <xref linkend="core-bridges" />.</para>
     </section>
     <section>
         <title>Duplicate Detection and Cluster Connections</title>
@@ -121,15 +121,15 @@ message.setStringProperty(HDR_DUPLICATE_DETECTION_ID.toString(), myUniqueID);
                 <parameter>use-duplicate-detection</parameter> to <literal>true</literal> when
             configuring a cluster connection in <literal>jbm-configuration.xml</literal>.</para>
         <para>The default value for this parameter is <literal>true</literal>.</para>
-        <para>For more information on cluster connections and how to configure them see <xref
-                linkend="clusters">here</xref>.</para>
+        <para>For more information on cluster connections and how to configure them, please see <xref
+                linkend="clusters"/>.</para>
     </section>
     <section>
         <title>Duplicate Detection and Paging</title>
         <para>JBoss Messaging also uses duplicate detection when paging messages to storage. This is
             so when a message is depaged from storage and server failure occurs, we do not end up
             depaging the message more than once which could result in duplicate delivery.</para>
-        <para>For more information on paging and how to configure it please see <xref
-                linkend="paging">here</xref>.</para>
+        <para>For more information on paging and how to configure it, please see <xref
+                linkend="paging" />.</para>
     </section>
 </chapter>

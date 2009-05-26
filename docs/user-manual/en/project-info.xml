@@ -10,8 +10,8 @@
         url="http://www.jboss.org/index.html?module=bb&amp;op=viewforum&amp;f=153">development
         forum</ulink></para>
     <para>Pop in and chat to us in our <ulink url="irc://irc.freenode.net:6667/jbossmessaging">IRC channel</ulink></para>  
-    <para>JBoss Messaging svn TRUNK is <ulink url="http://anonsvn.jboss.org/repos/messaging/trunk">here</ulink></para>
+    <para>JBoss Messaging Subversion TRUNK is <ulink url="http://anonsvn.jboss.org/repos/messaging/trunk">here</ulink></para>
     <para>All our release tags are <ulink url="http://anonsvn.jboss.org/repos/messaging/tags">here</ulink></para>
-    <para>The JBoss Messaging permanent dev team is <ulink url="jbossfox.blogspot.com">Tim Fox</ulink>, Howard Gao, Jeff Mesnil, Clebert
+    <para>The JBoss Messaging permanent dev team is <ulink url="http://jbossfox.blogspot.com">Tim Fox</ulink>, Howard Gao, Jeff Mesnil, Clebert
         Suconic, and Andy Taylor</para>
 </chapter>

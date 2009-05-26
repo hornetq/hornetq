@@ -11,7 +11,7 @@
         <title>Role based security for addresses</title>
         <para>JBoss Messaging contains a flexible role-based security model for applying security to
             queues, based on their addresses.</para>
-        <para>As explained <xref linkend="using-core">here</xref> JBoss Messaging core consists
+        <para>As explained in <xref linkend="using-core" />, JBoss Messaging core consists
             mainly of sets of queues bound to addresses. A message is sent to an address and the
             server looks up the set of queues that are bound to that address, the server then routes
             the message to those set of queues.</para>
@@ -68,8 +68,8 @@
         </programlisting>
         <para>The '<literal>#</literal>' character signifies "any sequence of words". Words are
             delimited by the '<literal>.</literal>' character. For a full description of the
-            wildcard syntax please see the chapter on <xref linkend="wildcard-syntax">wildcard
-                syntax</xref>.. The above security block applies to any address that starts with the
+            wildcard syntax please see <xref linkend="wildcard-syntax"/>.
+             The above security block applies to any address that starts with the
             string "globalqueues.europe.":</para>
         <para>Only users who have the <literal>admin</literal> role can create or delete durable
             queues bound to an address that starts with the string "globalqueues.europe."</para>
@@ -84,8 +84,8 @@
         <para>The mapping between a user and what roles they have is handled by the security
             manager. JBoss Messaging ships with a user manager that reads user credentials from a
             file on disk, and can also plug into JAAS or JBoss Application Server security.</para>
-        <para>For more information on configuring the security manager please see <xref
-                linkend="change-security-manager">this</xref> section.</para>
+        <para>For more information on configuring the security manager, please see <xref
+                linkend="change-security-manager" />.</para>
         <para>There can be zero or more <literal>security-setting</literal> elements in each xml
             file. Where more than one match applies to a set of addresses the <emphasis>more
                 specific</emphasis> match takes precedence.</para>
@@ -119,8 +119,8 @@
         <para>When messaging clients are connected to servers, or servers are connected to other
             servers (e.g. via bridges) over an untrusted network then JBoss Messaging allows that
             traffic to be encrypted using the Secure Sockets Layer (SSL) transport.</para>
-        <para>For more information on configuring the SSL transport please see the chapter on <xref
-                linkend="configuring-transports">configuring transports</xref>.</para>
+        <para>For more information on configuring the SSL transport, please see <xref
+                linkend="configuring-transports" />.</para>
     </section>
     <section>
         <title>Basic user credentials</title>
@@ -252,7 +252,7 @@
             these actions as a user with a role that has <literal>admin</literal> permissions on the
             management addresses.</para>
         <para>This password should always be changed from its default after installation. Please see
-            the <xref linkend="management">management chapter</xref> for instructions on how to do
+            <xref linkend="management" /> for instructions on how to do
             this.</para>
     </section>
 </chapter>

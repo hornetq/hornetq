@@ -10,7 +10,7 @@
     <para>JBoss Messaging also ships with a wide range of examples, many of which demonstrate JMS
         API usage. A good place to start would be to play around with the simple JMS Queue and Topic
         example, but we also provide examples for many other parts of the JMS API. A full
-        description of the examples is available <xref linkend="examples">here</xref>.</para>
+        description of the examples is available in <xref linkend="examples" />.</para>
     <para>In this section we'll go through the main steps in configuring the server for JMS and
         creating a simple JMS program. We'll also show how to configure and use JNDI, and also how
         to use JMS with JBoss Messaging without using any JNDI.</para>
@@ -24,8 +24,8 @@
             single <literal>MessageConsumer</literal> consuming the order message from the
             queue.</para>
         <para>The queue will be a <literal>durable</literal> queue, i.e. it will survive a server
-            restart or crash. We also want to predeploy the queue, i.e. specifiy the queue in the
-            server JMS config so it's created automatically without us having to explicitly create
+            restart or crash. We also want to predeploy the queue, i.e. specify the queue in the
+            server JMS configuration so it's created automatically without us having to explicitly create
             it from the client.</para>
     </section>
     <section id="using-jms.server.configuration">
@@ -38,7 +38,7 @@
             configuration parameters. In most cases the defaults will be acceptable.</para>
         <para>We'll deploy a single JMS Queue and a single JMS Connection Factory instance on the
             server for this example but there are no limits to the number of Queues, Topics and
-            Connection Factory instances you can deploy from the file. Here's our config:</para>
+            Connection Factory instances you can deploy from the file. Here's our configuration:</para>
         <programlisting>
 &lt;configuration xmlns="urn:jboss:messaging" 
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -145,13 +145,12 @@ System.out.println("Got order: " + receivedMessage.getText());
         <para>With JBoss Messaging you can do exactly that. JBoss Messaging supports the direct
             instantiation of JMS Queue, Topic and Connection Factory instances, so you don't have to
             use JNDI at all.</para>
-        <para>For a full working example of direct instantiation please see the JMS <xref
-                linkend="examples">examples</xref>.</para>
+        <para>For a full working example of direct instantiation please see the JMS examples in <xref
+                linkend="examples" />.</para>
         <para>Here's our simple example, rewritten to not use JNDI at all:</para>
         <para>We create the JMS ConnectionFactory object directly, note we need to provide
-            connection params and specify which transport we are using, for more information on
-            connectors please see the section on <xref linkend="configuring-transports">configuring
-                transports</xref>.</para>
+            connection parameters and specify which transport we are using, for more information on
+            connectors please see <xref linkend="configuring-transports" />.</para>
         <programlisting>              
 TransportConfiguration transportConfiguration = 
                      new TransportConfiguration(NettyConnectorFactory.class.getName());                

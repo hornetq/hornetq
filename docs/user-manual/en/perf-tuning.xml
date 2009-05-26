@@ -72,14 +72,14 @@
                     messages non transactionally and you need a guarantee that they have reached the
                     server by the time the call to send() returns, don't set persistent messages to
                     be sent blocking, instead use asynchronous send acknowledgements to get your
-                    acknowledgements of send back in a separate stream, see the chapter on <xref
-                        linkend="send-guarantees">send guarantees</xref> for more information on
+                    acknowledgements of send back in a separate stream, see <xref
+                        linkend="send-guarantees" /> for more information on
                 this.</para></listitem>
             <listitem>
                 <para>Use pre-acknowledge mode. With pre-acknowledge mode, messages are acknowledged
                         <literal>before</literal> they are sent to the client. This reduces the
-                    amount of acknowledgment traffic on the wire. For more information on this see
-                    section on <xref linkend="pre-acknowledge">pre acknowledge</xref>.</para>
+                    amount of acknowledgment traffic on the wire. For more information on this, see
+                    <xref linkend="pre-acknowledge" />.</para>
             </listitem>
             <listitem>
                 <para>Disabled security. You may get a small performance boost by disabling security
@@ -96,8 +96,7 @@
                         >journal-sync-transactional</literal> to <literal>false</literal> in
                         <literal>jbm-configuration.xml</literal> can give you better transactional
                     persistent performance at the expense of some possibility of loss of
-                    transactions on failure. See the chappter on <xref linkend="send-guarantees"
-                        >send guarantees</xref> for more information.</para>
+                    transactions on failure. See <xref linkend="send-guarantees"/> for more information.</para>
             </listitem>
             <listitem>
                 <para>Use the core API not JMS. Using the JMS API you will have slightly lower
@@ -115,13 +114,12 @@
                     than one can fit in a single IP packet. Then you may get a significant
                     performance boost by enabling Nagle's algorithm. This is done by setting
                         <literal>jbm.remoting.netty.tcpnodelay</literal> to false with the Netty
-                    transports. See the chapter on <xref linkend="configuring-transports"
-                        >configuring transports</xref> for more information on this. </para>
+                    transports. See <xref linkend="configuring-transports" /> for more information on this. </para>
             </listitem>
             <listitem>
                 <para>TCP buffer sizes. If you have a fast network and fast machines you may get a
                     performance boost by increasing the TCP send and receive buffer sizes. See the
-                    chapter on <xref linkend="configuring-transports">configuring transports</xref>
+                     <xref linkend="configuring-transports" />
                     for more information on this. </para>
             </listitem>
         </itemizedlist>
@@ -140,7 +138,8 @@
             </listitem>
             <listitem>
                 <para>Memory settings. Give as much memory as you can to the server. JBoss Messaging
-                    can run in low memory by using <xref linkend="">paging</xref> but if it can run
+                    can run in low memory by using paging (described in <xref linkend="paging" />)
+                    but if it can run
                     with all queues in RAM this will improve performance. The amount of memory you
                     require will depend on the size and number of your queues and the size and
                     number of your messages. Use the JVM arguments <literal>-Xms</literal> and
@@ -148,13 +147,13 @@
                     them to the same high value.</para>
             </listitem>
             <listitem>
-                <para>Aggressive options. Different JVMs provide differents sets of JVM tuning
+                <para>Aggressive options. Different JVMs provide different sets of JVM tuning
                     parameters, for the Sun Hotspot JVM the full list of options is available <ulink
                         url="http://java.sun.com/javase/technologies/hotspot/vmoptions.jsp"
                         >here</ulink>. We recommend at least using <literal
                         >-XX:+AggressiveOpts</literal> and<literal>
                         -XX:+UseFastAccessorMethods</literal>. You may get some mileage with the
-                    other tuning params depending on your OS platform and application usage
+                    other tuning parameters depending on your OS platform and application usage
                     patterns.</para>
             </listitem>
         </itemizedlist>

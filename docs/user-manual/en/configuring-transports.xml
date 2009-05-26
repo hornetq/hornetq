@@ -41,7 +41,7 @@ org.jboss.messaging.integration.transports.netty.NettyAcceptorFactory
             the set of valid key-value pairs depends on the specific transport be used and are
             passed straight through to the underlying transport.</para>
         <para>Examples of key-value pairs for a particular transport would be, say, to configure the
-            ip address to bind to, or the port to listen at.</para>
+            IP address to bind to, or the port to listen at.</para>
         <para>Keys are always strings and values can be of type Long, Integer, String or
             Boolean.</para>
     </section>

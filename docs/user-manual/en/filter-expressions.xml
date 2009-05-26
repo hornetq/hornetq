@@ -17,16 +17,15 @@
         </listitem>
         <listitem>
             <para>Core bridges can be defined with an optional filter expression, only matching
-                messages will be bridged. See the chapter on <xref linkend="core-bridges"
-                    >bridges</xref>.</para>
+                messages will be bridged (see <xref linkend="core-bridges"/>).</para>
         </listitem>
         <listitem>
             <para>Diverts can be defined with an optional filter expression, only matching messages
-                will be diverted. See the chapter on <xref linkend="diverts">diverts</xref>.</para>
+                will be diverted (see <xref linkend="diverts" />).</para>
         </listitem>
         <listitem>
             <para>Filter are also used programmatically when creating consumers, queues and in
-                several places in the <xref linkend="management">management</xref> API.</para>
+                several places as described in <xref linkend="management"/>.</para>
         </listitem>
     </itemizedlist>
     <para>There are some differences between JMS selector expressions and JBoss Messaging core

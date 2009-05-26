@@ -27,7 +27,7 @@
         geographically distributed servers, creating your global messaging mesh.</para>
     <para>Diverts are defined as xml in the <literal>jbm-configuration.xml</literal> file. There can
         be zero or more diverts in the file.</para>
-    <para>Please see the <xref linkend="divert-example">divert example</xref> for a full working
+    <para>Please see <xref linkend="divert-example" /> for a full working
         example showing you how to configure and use diverts.</para>
     <para>Let's take a look at some divert examples:</para>
     <section>

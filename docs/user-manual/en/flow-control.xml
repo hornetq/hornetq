@@ -31,9 +31,9 @@
                <para><literal>-1</literal> for an <emphasis>unbounded</emphasis> buffer</para>
             </listitem>
             <listitem>
-               <para><literal>0</literal> to not buffer any messages. See the <xref
-                     linkend="no-consumer-buffering-example">no consumer buffering example</xref>
-                  for working example of this.</para>
+               <para><literal>0</literal> to not buffer any messages. See <xref
+                     linkend="no-consumer-buffering-example" />
+                  for working example of a consumer with no buffering.</para>
             </listitem>
             <listitem>
                <para><literal>&gt;0</literal> for a buffer with the given maximum size in
@@ -119,8 +119,8 @@
             consumption rate specified in units of messages per second. Setting this to <literal
                >-1</literal> disables rate limited flow control. The default value is <literal
                >-1</literal>.</para>
-         <para>Please see the <xref linkend="consumer-rate-limiting-example">consumer rate limiting
-               example</xref> for a working example of this.</para>
+         <para>Please see <xref linkend="consumer-rate-limiting-example" /> for a working example 
+         of limiting consumer rate.</para>
          <section id="flow-control.rate.core.api">
             <title>Using Core API</title>
             <para>If the JBoss Messaging core API is being used the rate can be set via the <literal
@@ -169,8 +169,8 @@
       <section>
          <title>Window based flow control</title>
          <para>JBoss Messaging clients maintain a buffer of commands that have been sent to the
-            server, thus provides a form of flow control. Please see the chapter on <xref
-               linkend="command-buffering">command buffering</xref> for more information on
+            server, thus provides a form of flow control. Please see <xref
+               linkend="command-buffering"/> for more information on
             this.</para>
       </section>
       <section>
@@ -182,8 +182,8 @@
             consumption rate specified in units of messages per second. Setting this to <literal
                >-1</literal> disables rate limited flow control. The default value is <literal
                >-1</literal>.</para>
-         <para>Please see the <xref linkend="producer-rate-limiting-example">producer rate limiting
-               example</xref> for a working example of this.</para>
+         <para>Please see the <xref linkend="producer-rate-limiting-example" /> 
+            for a working example of limiting producer rate.</para>
          <section id="flow-control.producer.rate.core.api">
             <title>Using Core API</title>
             <para>If the JBoss Messaging core API is being used the rate can be set via the <literal

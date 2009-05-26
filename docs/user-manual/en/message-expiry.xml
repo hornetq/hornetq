@@ -6,7 +6,7 @@
          live</emphasis> is reached.</para>
    <para>JBoss Messaging's addresses can be assigned a expiry address so that, when messages are
       expired, they are removed from the queue and sent to the expiry address. Many different queues
-      cna be bound to an expiry address.  These <emphasis>expired</emphasis> messages can later be
+      can be bound to an expiry address.  These <emphasis>expired</emphasis> messages can later be
       consumed for further inspection.</para>
    <section>
       <title>Message Expiry</title>

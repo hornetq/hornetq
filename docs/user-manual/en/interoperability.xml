@@ -7,7 +7,7 @@
             Stomp clients to communicate with Stomp Brokers. <ulink
                 url="http://stomp.codehaus.org/StompConnect">StompConnect</ulink> is a server that
             can act as a Stomp broker and proxy the Stomp protocol to the standard JMS API.
-            Consequenly, using StompConnect it is possible to turn JBM into a Stomp Broker and use
+            Consequently, using StompConnect it is possible to turn JBM into a Stomp Broker and use
             any of the available stomp clients. These include clients written in C, C++, c# and .net
             etc.</para>
         <para>To run StompConnect first start the JBoss Messaging server and make sure that it is

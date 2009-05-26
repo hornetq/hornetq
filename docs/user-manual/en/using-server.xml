@@ -76,8 +76,7 @@
         <para>JBoss Messaging uses JDK logging to minimise dependencies on other logging systems.
             JDK logging can then be configured to delegate to some other framework, e.g. log4j if
             that's what you prefer.</para>
-        <para>For more information on configuring logging, please see the section <link
-                linkend="logging">configuring logging</link></para>
+        <para>For more information on configuring logging, please see <xref linkend="logging" />.</para>
     </section>
     <section id="using-server.configuration">
         <title>Configuration files</title>
@@ -91,13 +90,13 @@
                     dependencies to enforce between them. Remember that JBoss Messaging is just a
                     set of POJOs. In the stand-alone server, it's the JBoss Microcontainer which
                     instantiates these POJOs and enforces dependencies between them and other beans.
-                    Please see the <xref linkend="usingserver.mainconfig"/> section for more
+                    Please see <xref linkend="usingserver.mainconfig"/> for more
                     information on this file.</para>
             </listitem>
             <listitem>
                 <para><literal>jbm-configuration.xml</literal>. This is the main JBoss Messaging
-                    configuration file. All the parameters in this file are described <xref
-                        linkend="configuration-index">here</xref>.</para>
+                    configuration file. All the parameters in this file are described in <xref
+                        linkend="configuration-index" />.</para>
             </listitem>
             <listitem>
                 <para><literal>jbm-queues.xml</literal>. This file contains pre-defined queues,
@@ -112,23 +111,23 @@
             </listitem>
             <listitem>
                 <para><literal>jbm-users.xml</literal> JBoss Messaging ships with a security manager
-                    impementation which obtains user credentials from the <literal
+                    implementation which obtains user credentials from the <literal
                         >jbm-users.xml</literal> file. This file contains user, password and role
-                    information. For more information on security please see the chapter on <xref
-                        linkend="security">security</xref>.</para>
+                    information. For more information on security ,please see <xref
+                        linkend="security"/>.</para>
             </listitem>
             <listitem>
                 <para><literal>jbm-jms.xml</literal> The distro configuration by default includes a
                     server side JMS service which mainly deploys JMS Queues, Topics and
                     ConnectionFactorys from this file into JNDI. If you're not using JMS, or you
                     don't need to deploy JMS objects on the server side, then you don't need this
-                    file. For more information on using JMS, please see the <xref
-                        linkend="using-jms">using JMS</xref> chapter.</para>
+                    file. For more information on using JMS, please see <xref
+                        linkend="using-jms" />.</para>
             </listitem>
             <listitem>
                 <para><literal>logging.properties</literal> This is used to configure the logging
-                    handlers used by the Java logger. For more information on configuring logging
-                    please see <xref linkend="logging">this chapter</xref>.</para>
+                    handlers used by the Java logger. For more information on configuring logging,
+                    please see <xref linkend="logging"/>.</para>
             </listitem>
             <listitem>
                 <para><literal>log4j.xml</literal> This is the Log4j configuration if the Log4j
@@ -140,9 +139,9 @@
                     >jbm-configuration.xml</literal> configuration when set to false mans that the
                 other configuration files are not loaded. This is true by default.</para>
         </note>
-        <para>It is also possible to use system property substitution in all the config files. by
+        <para>It is also possible to use system property substitution in all the configuration files. by
             replacing a value with the name of a system property. Here is an example of this with a
-            connector config:</para>
+            connector configuration:</para>
         <programlisting>&lt;connector name="netty">
          &lt;factory-class>org.jboss.messaging.integration.transports.netty.NettyConnectorFactory&lt;/factory-class>
          &lt;param key="jbm.remoting.netty.host"  value="${jbm.remoting.netty.host:localhost}" type="String"/>
@@ -272,7 +271,7 @@ factoryMethod="getPlatformMBeanServer"/&gt;
                     instances from <literal>jbm-jms.xml</literal> files on the disk. It also
                     provides a simple management API for manipulating JMS Objects. On the whole it
                     just translates and delegates its work to the core server. If you don't need to
-                    deploy JMS Queues, Topics and ConnectionFactorys from server side config and
+                    deploy JMS Queues, Topics and ConnectionFactorys from server side configuration and
                     don't require the JMS management interface this can be disabled.</para>
             </listitem>
         </itemizedlist>

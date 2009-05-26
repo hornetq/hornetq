@@ -9,12 +9,12 @@
         sent to a <emphasis>hierarchy</emphasis> of addresses, rather than the consumer having to
         specify a specific address.</para>
     <note>
-        <para>In JMS terminoligy this allows "topic hierarchies" to be created.</para>
+        <para>In JMS terminology this allows "topic hierarchies" to be created.</para>
     </note>
     <para>To enable this functionality set the property <literal>wild-card-routing-enabled</literal>
         in the <literal>jbm-configuration.xml</literal> file to <literal>true</literal>. This is
             <literal>true</literal> by default.</para>
-    <para>For more information on the wild card syntax take a look at the <link
-            linkend="wildcard-syntax">wildcard syntax</link> chapter, also see the <xref
-            linkend="topic-hierarchy-example">topic hierarchy example</xref>.</para>
+    <para>For more information on the wild card syntax take a look at <xref
+            linkend="wildcard-syntax" /> chapter, also see <xref
+            linkend="topic-hierarchy-example" />.</para>
 </chapter>

@@ -88,7 +88,7 @@ xsi:schemaLocation="urn:jboss:messaging /schema/jbm-configuration.xsd">
             mode.</para>
         <section>
             <title>Configuration</title>
-            <para>Address level config is done at the address settings.</para>
+            <para>Address level configuration is done at the address settings.</para>
             <programlisting>  &lt;address-settings>
       &lt;address-setting match="jms.someaddress">
          &lt;max-size-bytes>-1&lt;/max-size-bytes>

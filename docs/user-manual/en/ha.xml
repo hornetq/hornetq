@@ -73,7 +73,7 @@
             <para>Similarly when a client fails over from a live server <literal>L</literal>to a
                 backup server <literal>B</literal>, the server <literal>L</literal>becomes invalid
                 since, from that point on, the data on <literal>L</literal> and <literal>B</literal>
-                tmay diverge. After such a failure, at the next available opportunity the <literal
+                may diverge. After such a failure, at the next available opportunity the <literal
                     >B</literal> server should be taken down, and its <literal>data</literal>
                 directory copied back to the <literal>L</literal> server. Live and backup servers
                 can then be restarted. In this release of JBoss Messaging we do not provide any
@@ -121,7 +121,7 @@
             a number of different ways. They can be configured explicitly or probably the most
             common way of doing this is to use <emphasis>server discovery</emphasis> for the client
             to automatically discover the list. For full details on how to configure clients please
-            see the section on server discovery [LINK].</para>
+            see <xref linkend="clusters.server-discovery" />.</para>
         <para>Sometimes you want a client to failover onto a backup server even if the live server
             is just cleanly shutdown rather than having crashed or the connection failed. To
             configure this you can set the property <literal>FailoverOnServerShutdown</literal> to
@@ -132,8 +132,8 @@
             this property is <literal>false</literal>, this means that by default <emphasis>JBoss
                 Messaging clients will not failover to a backup server if the live server is simply
                 shutdown cleanly.</emphasis></para>
-        <para>For a fully functional example of automatic failover please see <xref
-                linkend="automatic-failover">here</xref>.</para>
+        <para>For a fully functional example of automatic failover, please see <xref
+                linkend="automatic-failover" />.</para>
     </section>
     <section>
         <title>Application-level client failover</title>
@@ -148,15 +148,15 @@
             live server.</para>
         <para>To implement application-level failover, if you're using JMS then you need to code an
                 <literal>ExceptionListener</literal> class on the JMS connection. The <literal
-                >ExceptionListener</literal> wil be called by JBoss Messaging in the event that
+                >ExceptionListener</literal> will be called by JBoss Messaging in the event that
             connection failure is detected. In your <literal>ExceptionListener</literal> you would
             close your old JMS connections, potentially look up new connection factory instances
             from JNDI and creating new connections. In this case you may well be using HA-JNDI
             [link] to ensure that the new connection factory is looked up from a different
             server.</para>
-        <para>For a working example of application-level failover please see <xref
-                linkend="application-level-failover">this</xref> example.</para>
-        <para>If you are using the core API, then the procedure is very similar - you would code a
+        <para>For a working example of application-level failover, please see <xref
+                linkend="application-level-failover" />.</para>
+        <para>If you are using the core API, then the procedure is very similar: you would code a
                 <literal>FailureListener</literal> on your core <literal>ClientSession</literal>
             instances.</para>
     </section>

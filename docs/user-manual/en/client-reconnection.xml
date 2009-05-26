@@ -6,7 +6,7 @@
         client successfully reconnects, and the server still has a record of the clients session
         (i.e. the server was not restarted) then the client will transparently re-attach to the
         session and it will be able to resume as if nothing had happened.</para>
-    <para>Client reconnnection is also used internally by components such as core bridges to allow
+    <para>Client reconnection is also used internally by components such as core bridges to allow
         them to reconnect to their target servers.</para>
     <para>Client reconnection is configured using the following parameters:</para>
     <itemizedlist>
@@ -54,10 +54,10 @@
 &lt;/connection-factory&gt;          
     </programlisting>
     <para>If you're using JMS, but instantiating your JMS connection factory directly, you can
-        specify the params using the appopriate setter methods on the <literal
+        specify the parameters using the appropriate setter methods on the <literal
             >JBossConnectionFactory</literal> immediately after creating it.</para>
     <para>If you're using the core API and instantiating the <literal>ClientSessionFactory</literal>
-        instance directly you can also specify the params using the appopriate setter methods on the
+        instance directly you can also specify the parameters using the appropriate setter methods on the
             <literal>ClientSessionFactory</literal> immediately after creating it.</para>
     <para>If your client does manage to reconnect but the session is no longer available on the
         server, for instance if the server has been restarted or it has timed out, then the client
