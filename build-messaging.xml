@@ -60,13 +60,14 @@
    <property name="jms.jar.name" value="jbm-jms.jar"/>
    <property name="jms.client.jar.name" value="jbm-jms-client.jar"/>
    <property name="transports.jar.name" value="jbm-transports.jar"/>
-   <property name="security.jar.name" value="jbm-jbossas-security.jar"/>
+   <property name="security.jar.name" value="jbm-jboss-as-security.jar"/>
    <property name="bootstrap.jar.name" value="jbm-bootstrap.jar"/>
    <property name="logging.jar.name" value="jbm-logging.jar"/>
    <property name="core.client.jar.name" value="jbm-core-client.jar"/>
    <property name="ra.jar.name" value="jbm-ra.jar"/>
    <property name="ra.rar.name" value="jbm-ra.rar"/>
    <property name="netty.jar.name" value="netty-3.1.0.BETA1.jar"/>
+   <property name="mc.jar.name" value="jboss-mc.jar"/>
 
    <!--source and build dirs-->
    <property name="build.dir" value="build"/>
@@ -78,7 +79,7 @@
    <property name="build.bootstrap.classes.dir" value="${build.dir}/classes/bootstrap"/>
    <property name="build.logging.classes.dir" value="${build.dir}/classes/logging"/>
    <property name="build.ra.classes.dir" value="${build.dir}/classes/ra"/>
-   <property name="build.jars.dir" value="${build.dir}/jars"/>
+   <property name="build.jars.dir" value="${build.dir}/jars"/>   
    <property name="build.src.dir" value="${build.dir}/src"/>
    <property name="src.dir" value="src"/>
    <property name="src.main.dir" value="${src.dir}/main"/>
@@ -601,9 +602,26 @@
    <!-- ======================================================================================== -->
 
    <target name="jar"
-           depends="jar-core, jar-core-client, jar-jms, jar-jms-client, jar-transports, jar-security, jar-bootstrap, jar-logging, jar-ra">
+           depends="jar-core, jar-core-client, jar-jms, jar-jms-client, jar-transports, jar-security, jar-bootstrap, jar-logging, jar-ra, jar-mc">
    </target>
    
+   <target name="jar-mc" depends="init">
+      <jar jarfile="${build.jars.dir}/${mc.jar.name}">
+         <zipfileset src="./thirdparty/jboss/jboss-common-logging-spi/lib/jboss-common-logging-spi.jar"/>
+	      <zipfileset src="./thirdparty/jboss/jboss-reflect/lib/jboss-reflect.jar"/>
+	      <zipfileset src="./thirdparty/jboss/jboss-common-logging-spi/lib/jboss-common-logging-spi.jar"/>
+	      <zipfileset src="./thirdparty/jboss/common-core/lib/jboss-common-core.jar"/>
+	      <zipfileset src="./thirdparty/jboss/jboss-mdr/lib/jboss-mdr.jar"/>
+	      <zipfileset src="./thirdparty/jboss/jbossxb/lib/jboss-xml-binding.jar"/>
+	      <zipfileset src="./thirdparty/sun-jaxb/lib/jaxb-api.jar"/>
+	      <zipfileset src="./thirdparty/jboss/aop/lib/jboss-aop.jar"/>
+	      <zipfileset src="./thirdparty/trove/lib/trove.jar"/>
+	      <zipfileset src="./thirdparty/javassist/lib/javassist.jar"/>
+         <zipfileset src="./thirdparty/jboss/microcontainer/lib/jboss-kernel.jar"/>
+         <zipfileset src="./thirdparty/jboss/microcontainer/lib/jboss-dependency.jar"/>
+      </jar>         
+   </target>   
+         
    <target name="jar-core" depends="compile-core">
 
       <jar jarfile="${build.jars.dir}/${core.jar.name}">
@@ -735,26 +753,22 @@
             <include name="${bootstrap.jar.name}"/>
             <include name="${logging.jar.name}"/>
             <include name="${core.client.jar.name}"/>
-            <include name="jbm-ra.rar"/>
+            <include name="${jms.client.jar.name}"/>
+            <include name="${mc.jar.name}"/>
+            <include name="${ra.rar.name}"/>
          </fileset>
+         <!--
          <fileset dir="${jboss.microcontainer.lib}">
             <include name="jboss-container.jar"/>
             <include name="jboss-kernel.jar"/>
             <include name="jboss-dependency.jar"/>
             <include name="jboss-aop-mc-int.jar"/>
          </fileset>
-         <fileset dir="${jboss.jboss.mdr.lib}">
-            <include name="jboss-mdr.jar"/>
-         </fileset>         
-         <fileset dir="${jboss.jboss.reflect.lib}">
-            <include name="jboss-reflect.jar"/>
-         </fileset>          
-         <fileset dir="${jboss.aop.lib}">
-            <include name="jboss-aop.jar"/>
-         </fileset>
+         -->         
          <fileset dir="${jboss.jboss.javaee.lib}">
             <include name="jboss-javaee.jar"/>
          </fileset>
+         <!--
          <fileset dir="${jboss.jboss.common.logging.spi.lib}">
             <include name="jboss-common-logging-spi.jar"/>
          </fileset>
@@ -802,9 +816,10 @@
          <fileset dir="${javassist.lib}">
             <include name="javassist.jar"/>
          </fileset>
+         -->
          <fileset dir="${jboss.jnpserver.lib}">
             <include name="jnpserver.jar"/>
-         </fileset>
+         </fileset>         
          <fileset dir="${netty.netty.lib}">
             <include name="${netty.jar.name}"/>
          </fileset>
@@ -971,8 +986,8 @@
          <param name="artifact.name" value="jbm-jms"/>
       </antcall>
 
-       <antcall target="artifact">
-         <param name="artifact.name" value="jbm-jbossas-security"/>     
+      <antcall target="artifact">
+         <param name="artifact.name" value="jbm-jboss-as-security"/>     
       </antcall>
 
       <antcall target="artifact">

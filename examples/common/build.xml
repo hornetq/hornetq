@@ -65,11 +65,7 @@
    <path id="compilation.classpath">
       <fileset dir="${jbm.jars.dir}">
          <include name="**/*.jar"/>
-      </fileset>
-      <fileset dir="${jars.dir}">
-         <include name="**/*.jar"/>
-         <exclude name="**/*-sources.jar"/>
-      </fileset>
+      </fileset>      
       <path refid="extra.classpath"/>
    </path>
 
@@ -79,6 +75,14 @@
       <pathelement location="${example.config.dir}"/>
       <pathelement location="${classes.dir}"/>
       <path refid="extra.classpath"/>
+      <fileset dir="${jars.dir}">
+         <include name="jboss/jboss-javaee/lib/jboss-javaee.jar"/>         
+      </fileset>
+      <fileset dir="${jars.dir}">
+         <include name="apache-log4j/lib/log4j.jar"/>       
+         <include name="jboss/jnpserver/lib/jnpserver.jar"/>         
+         <include name="netty/lib/netty-3.1.0.BETA1.jar"/>
+      </fileset>    
    </path>
  
    <target name="init">

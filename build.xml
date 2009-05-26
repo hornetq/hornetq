@@ -157,6 +157,11 @@
    <target name="jar-ra" depends="createthirdparty">
       <ant antfile="build-messaging.xml" target="jar-ra"/>
    </target>
+   
+   <target name="jar-mc" depends="createthirdparty">
+         <ant antfile="build-messaging.xml" target="jar-mc"/>
+   </target>
+      
    <!-- ======================================================================================== -->
    <!-- Distro Tasks                                                                           -->
    <!-- ======================================================================================== -->
