@@ -128,7 +128,11 @@
    
    <target name="jar-jms" depends="createthirdparty">
       <ant antfile="build-messaging.xml" target="jar-jms"/>
-   </target>  
+   </target>
+   
+   <target name="jar-jms-client" depends="createthirdparty">
+      <ant antfile="build-messaging.xml" target="jar-jms-client"/>
+   </target> 
    
    <target name="jar-transports" depends="createthirdparty">
       <ant antfile="build-messaging.xml" target="jar-transports"/>
@@ -146,8 +150,8 @@
       <ant antfile="build-messaging.xml" target="jar-logging"/>
    </target> 
 
-   <target name="jar-client" depends="createthirdparty">
-      <ant antfile="build-messaging.xml" target="jar-client"/>
+   <target name="jar-core-client" depends="createthirdparty">
+      <ant antfile="build-messaging.xml" target="jar-core-client"/>
    </target>
 
    <target name="jar-ra" depends="createthirdparty">

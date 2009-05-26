@@ -58,6 +58,7 @@
 
    <property name="core.jar.name" value="jbm-core.jar"/>
    <property name="jms.jar.name" value="jbm-jms.jar"/>
+   <property name="jms.client.jar.name" value="jbm-jms-client.jar"/>
    <property name="transports.jar.name" value="jbm-transports.jar"/>
    <property name="security.jar.name" value="jbm-jbossas-security.jar"/>
    <property name="bootstrap.jar.name" value="jbm-bootstrap.jar"/>
@@ -600,7 +601,7 @@
    <!-- ======================================================================================== -->
 
    <target name="jar"
-           depends="jar-core, jar-client, jar-jms, jar-transports, jar-security, jar-bootstrap, jar-logging, jar-ra">
+           depends="jar-core, jar-core-client, jar-jms, jar-jms-client, jar-transports, jar-security, jar-bootstrap, jar-logging, jar-ra">
    </target>
    
    <target name="jar-core" depends="compile-core">
@@ -629,7 +630,16 @@
       </jar>
 
    </target>
-
+   
+   <target name="jar-jms-client" depends="compile-jms">
+	   
+      <jar jarfile="${build.jars.dir}/${jms.client.jar.name}">         
+         <fileset dir="${build.jms.classes.dir}" includes="org/jboss/messaging/jms/*.class"/>
+	 <fileset dir="${build.jms.classes.dir}" includes="org/jboss/messaging/jms/client/*.class"/>
+      </jar>
+	   
+   </target>
+   
    <target name="jar-transports" depends="compile-transports">
 
       <jar jarfile="${build.jars.dir}/${transports.jar.name}">
@@ -662,7 +672,7 @@
 
    </target>
 
-   <target name="jar-client" depends="compile-core">
+   <target name="jar-core-client" depends="compile-core">
       <jar jarfile="${build.jars.dir}/${core.client.jar.name}">
          <fileset dir="${build.core.classes.dir}">
             <include name="version.properties"/>
@@ -689,7 +699,7 @@
 
    </target>
 
-   <target name="jar-ra" depends="jar-client, jar-jms, compile-ra">
+   <target name="jar-ra" depends="jar-core-client, jar-jms-client, compile-ra">
       <jar jarfile="${build.jars.dir}/${ra.jar.name}">
          <fileset dir="${build.ra.classes.dir}">
            <include name="org/jboss/messaging/ra/**/*.class"/>
@@ -707,7 +717,7 @@
    <!-- Distribution targets                                                                     -->
    <!-- ======================================================================================== -->
 
-   <target name="distro" depends="jar, jar-client, validate-configuration">
+   <target name="distro" depends="jar, jar-core-client, jar-jms-client, validate-configuration">
       
       <mkdir dir="${build.distro.dir}"/>
       <mkdir dir="${build.distro.lib.dir}"/>

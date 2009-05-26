@@ -12,14 +12,24 @@
         <title>Pure Core Client</title>
         <para>If you're using just a pure JBoss Messaging core client (i.e. no JMS) then you need
                 <literal>jbm-core-client.jar</literal> on your client classpath. If you're using a
-            Netty transport then you will netty <literal>netty.jar</literal> too.</para>
+            Netty transport then you will also netty <literal>netty.jar</literal> and <literal
+                >jbm-transports.jar</literal>.</para>
     </section>
     <section>
         <title>JMS Client</title>
         <para>If you're using JMS on the client side, then you will need <literal
-                >jbm-core-client.jar</literal>, <literal>jbm-jms-client.jar</literal>.</para>
-        <para>TODO - clebert please complete.</para>
-        <para>What about javaee.jar, what about jndi client stuff etc etc???</para>
+                >jbm-core-client.jar</literal>, <literal>jbm-jms-client.jar</literal> and <literal
+                >jboss-javaee.jar</literal>. Note that <literal>jboss-javaee.jar</literal> just
+            contains Java EE API interface classes needed for the <literal>javax.jms.*</literal>
+            classes, so if you already have a jar with these interface classes on your classpath you
+            won't need <literal>jboss-javaee.jar</literal>.  If you're using a Netty transport then
+            you will also netty <literal>netty.jar</literal> and <literal
+                >jbm-transports.jar</literal>.</para>
     </section>
-    <section/>
+    <section>
+        <title>JNDI</title>
+        <para>If you're looking up JNDI objects from the JNDI server co-located with the JBoss
+            Messaging standalone server you'll also need the jar <literal>jnp-client.jar</literal>
+            and WHAT OTHER JARS for JNDI? TODO TODO</para>
+    </section>
 </chapter>
