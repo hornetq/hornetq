@@ -28,8 +28,8 @@
 <!-- =========================================================================================== -->
 
 
-<project default="compile" name="jmsexample" basedir=".">
-   <dirname property="imported.basedir" file="${ant.file.jmsexample}"/>
+<project default="compile" name="example" basedir=".">
+   <dirname property="imported.basedir" file="${ant.file.example}"/>
    <property file="${imported.basedir}/config/ant.properties"/>
 
    <!--

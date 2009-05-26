@@ -15,7 +15,7 @@
 	<classpathentry kind="src" path="tests/joram-tests/src"/>
 	<classpathentry kind="src" path="tests/joram-tests/config"/>
 	<classpathentry kind="src" path="examples/core/embedded/src"/>
-	<classpathentry kind="src" path="examples/core/embedded-microcontainer/src"/>
+	<classpathentry kind="src" path="examples/core/microcontainer/src"/>
 	<classpathentry kind="src" path="examples/core/embedded-remote/src"/>
 	<classpathentry kind="src" path="examples/core/perf/src"/>
 	<classpathentry kind="src" path="examples/jms/application-layer-failover/src"/>
