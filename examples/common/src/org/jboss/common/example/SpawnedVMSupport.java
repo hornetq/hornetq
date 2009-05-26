@@ -48,19 +48,6 @@ public class SpawnedVMSupport
 
    // Static --------------------------------------------------------
 
-   public static Process spawnVM(final String className,
-                                 final String[] vmargs,
-                                 final boolean logOutput,
-                                 final String success,
-                                 final String failure,
-                                 final String configDir,
-                                 final String... args) throws Exception
-   {
-      String classPath = System.getProperty("java.class.path");
-      
-      return spawnVM(classPath, className, vmargs, logOutput, success, failure, configDir, args);
-   }
-
    public static Process spawnVM(String classPath,
                                  final String className,
                                  final String[] vmargs,

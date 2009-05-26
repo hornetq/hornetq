@@ -44,6 +44,8 @@ public abstract class JBMExample
 
    private boolean failure = false;
 
+   private String serverClasspath;
+
    public abstract boolean runExample() throws Exception;
    
    private boolean logServerOutput;
@@ -62,6 +64,7 @@ public abstract class JBMExample
    {
       String runServerProp = System.getProperty("jbm.example.runServer");
       String logServerOutputProp = System.getProperty("jbm.example.logserveroutput");
+      serverClasspath = System.getProperty("jbm.example.server.classpath");
       boolean runServer = runServerProp == null ? true : Boolean.valueOf(runServerProp);
       logServerOutput = logServerOutputProp == null?false:Boolean.valueOf(logServerOutputProp);
       log.info("jbm.example.runServer is " + runServer);
@@ -123,7 +126,7 @@ public abstract class JBMExample
 
    protected void run(String[] args)
    {
-      run(defaultArgs, args);
+      run( defaultArgs, args);
    }
 
    protected void killServer(int id) throws Exception
@@ -182,6 +185,7 @@ public abstract class JBMExample
       }
       log.info("and vm args: " + args.toString());
       servers[index] = SpawnedVMSupport.spawnVM(
+            serverClasspath,
             SpawnedJBMServer.class.getName(),
             allVMArgs,
             logServerOutput,

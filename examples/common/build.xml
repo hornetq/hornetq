@@ -69,22 +69,37 @@
       <path refid="extra.classpath"/>
    </path>
 
-   <path id="runtime.classpath">
+   <path id="client.classpath">
+      <path refid="compilation.classpath"/>
+      <pathelement location="${config.dir}"/>
+      <pathelement location="${example.config.dir}"/>
+      <pathelement location="${classes.dir}"/>
+      <fileset dir="${client.jars.dir}">
+         <include name="**/*client*.jar"/>
+      </fileset>
+      <fileset dir="${jars.dir}">
+         <include name="apache-log4j/lib/log4j.jar"/>
+         <include name="netty/lib/netty-3.1.0.BETA1.jar"/>
+      </fileset>
+   </path>
+
+   <path id="server.classpath">
       <path refid="compilation.classpath"/>
       <pathelement location="${config.dir}"/>
       <pathelement location="${example.config.dir}"/>
       <pathelement location="${classes.dir}"/>
       <path refid="extra.classpath"/>
       <fileset dir="${jars.dir}">
-         <include name="jboss/jboss-javaee/lib/jboss-javaee.jar"/>         
+         <include name="jboss/jboss-javaee/lib/jboss-javaee.jar"/>
       </fileset>
       <fileset dir="${jars.dir}">
-         <include name="apache-log4j/lib/log4j.jar"/>       
-         <include name="jboss/jnpserver/lib/jnpserver.jar"/>         
+         <include name="apache-log4j/lib/log4j.jar"/>
+         <include name="jboss/jnpserver/lib/jnpserver.jar"/>
          <include name="netty/lib/netty-3.1.0.BETA1.jar"/>
-      </fileset>    
+      </fileset>
    </path>
- 
+
+
    <target name="init">
       <mkdir dir="${build.dir}"/>
       <mkdir dir="${classes.dir}"/>
@@ -113,6 +128,8 @@
 
 
    <target name="runExample" depends="compile">
+
+      <property name="serverclasspath" refid="server.classpath"/>
  	   <property name="java-min-memory" value="512M"/>
  	   <property name="java-max-memory" value="2048M"/>
       <java classname="${example.classname}" fork="true" resultproperty="example-result">
@@ -130,8 +147,9 @@
          <jvmarg value="-Djbm.example.runServer=${jbm.example.runServer}"/>
          <jvmarg value="-Djbm.example.logserveroutput=${jbm.example.logserveroutput}"/>
          <!--<jvmarg line="-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=8000"/>-->
+         <jvmarg value="-Djbm.example.server.classpath=${serverclasspath}"/>
          <arg line="${jbm.example.beans.file}"/>
-         <classpath refid="runtime.classpath"/>
+         <classpath refid="client.classpath"/>
       </java>
       <!-- if the example exited with a result value != 0, we fail the build -->
       <fail message="Example ${example.classname} failed">

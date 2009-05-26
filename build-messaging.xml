@@ -60,6 +60,7 @@
    <property name="jms.jar.name" value="jbm-jms.jar"/>
    <property name="jms.api.jar.name" value="jbm-jms-api.jar"/>
    <property name="jms.client.jar.name" value="jbm-jms-client.jar"/>
+   <property name="jnp.client.jar.name" value="jnp-client.jar"/>
    <property name="transports.jar.name" value="jbm-transports.jar"/>
    <property name="security.jar.name" value="jbm-jboss-as-security.jar"/>
    <property name="bootstrap.jar.name" value="jbm-bootstrap.jar"/>
@@ -105,6 +106,7 @@
    <property name="build.distro.dir"
              value="${build.dir}/${build.artifact}"/>
    <property name="build.distro.lib.dir" value="${build.distro.dir}/lib"/>
+   <property name="build.distro.client.dir" value="${build.distro.dir}/client"/>
    <property name="build.distro.config.dir" value="${build.distro.dir}/config"/>
    <property name="build.distro.schema.dir" value="${build.distro.dir}/schemas"/>
    <property name="build.distro.bin.dir" value="${build.distro.dir}/bin"/>
@@ -603,7 +605,7 @@
    <!-- ======================================================================================== -->
 
    <target name="jar"
-           depends="jar-core, jar-core-client, jar-jms, jar-jms-client, jar-transports, jar-security, jar-bootstrap, jar-logging, jar-ra, jar-mc, jar-jms-api">
+           depends="jar-core, jar-core-client, jar-jms, jar-jms-client, jar-transports, jar-security, jar-bootstrap, jar-logging, jar-ra, jar-mc, jar-jms-api, jar-jnp-client">
    </target>
    
    <target name="jar-jms-api" depends="init">
@@ -612,7 +614,17 @@
             <include name="javax/jms/**/*.class"/>
          </zipfileset>	     
       </jar>         
-   </target>   
+   </target>
+
+   <target name="jar-jnp-client" depends="init">
+      <jar jarfile="${build.jars.dir}/${jnp.client.jar.name}">
+         <zipfileset src="${jboss.jnpserver.lib}/jnpserver.jar">
+            <include name="org/jnp/interfaces/**/*.class"/>
+            <include name="org/jboss/naming/**/*.class"/>
+            <include name="org/jnp/server/NamingServer_Stub.class"/>
+         </zipfileset>
+      </jar>
+   </target>
    
    <target name="jar-mc" depends="init">
       <jar jarfile="${build.jars.dir}/${mc.jar.name}">
@@ -748,6 +760,7 @@
       
       <mkdir dir="${build.distro.dir}"/>
       <mkdir dir="${build.distro.lib.dir}"/>
+      <mkdir dir="${build.distro.client.dir}"/>
       <mkdir dir="${build.distro.config.dir}"/>
       <mkdir dir="${build.distro.bin.dir}"/>
       <mkdir dir="${build.distro.api.dir}"/>
@@ -761,8 +774,6 @@
             <include name="${security.jar.name}"/>
             <include name="${bootstrap.jar.name}"/>
             <include name="${logging.jar.name}"/>
-            <include name="${core.client.jar.name}"/>
-            <include name="${jms.client.jar.name}"/>
             <include name="${mc.jar.name}"/>
             <include name="${ra.rar.name}"/>
             <include name="${jms.api.jar.name}"/>
@@ -832,7 +843,13 @@
             <include name="${netty.jar.name}"/>
          </fileset>
       </copy>
-
+      <copy todir="${build.distro.client.dir}">
+         <fileset dir="${build.jars.dir}">
+            <include name="${core.client.jar.name}"/>
+            <include name="${jms.client.jar.name}"/>
+            <include name="${jnp.client.jar.name}"/>
+         </fileset>
+      </copy>
       <copy todir="${build.distro.config.dir}">
          <fileset dir="${src.config.dir}">
             <include name="*.xml"/>
@@ -937,11 +954,6 @@
           <include name="**"/>
        </fileset>
     </copy>
-    <copy todir="${build.distro.dir}/docs/reference-guide">
-       <fileset dir="${reference-guide.build.dir}">
-          <include name="**"/>
-       </fileset>
-    </copy>
     <antcall target="javadoc"/>
     <copy todir="${build.distro.api.dir}/">
        <fileset dir="${build.api.dir}">
@@ -955,7 +967,6 @@
       <ant dir="./docs/user-manual" antfile="build.xml" target="all"/>
       <ant dir="./docs/quickstart-guide" antfile="build.xml" target="all"/>
       <ant dir="./docs/migration-guide" antfile="build.xml" target="all"/>
-      <ant dir="./docs/reference-guide" antfile="build.xml" target="all"/>
     </target>
 
    <target name="javadoc">
