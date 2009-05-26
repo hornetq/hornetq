@@ -30,6 +30,11 @@
      where the 10 'Group-0' group messages are to be sent. You can see that with message grouping enabled, all the 10 messages will be received by
      the first consumer. The second consumer will receive none. </p>
 
+     <p>Alternatively, JBoss Messaging's connection factories can be configured to <em>auto group</em> messages. By setting <code>autogroup</code> to </code>true</code> on the <code>JBossConnectonFactory</code>
+        (or setting <code>&lt;autogroup&gt;true&lt;/autogroup&gt;</code> in <code>jbm-jms.xml</code>'s connection factory settings), a random unique id
+        will be picked to create a message group. <em>Every messages</em> sent by a producer created from this connection factory will automatically
+        be part of this message group.</p>
+
      <br>
      <h2>Example step-by-step</h2>
      <p><i>To run the example, simply type <code>ant</code> from this directory</i></p>
