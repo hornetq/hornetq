@@ -340,7 +340,7 @@ Connection jmsConnection2 = jmsConnectionFactory.createConnection();</programlis
                         the same way as a bridge does.</para>
                     <para>This parameter determines the interval in milliseconds between retry
                         attempts. It has the same meaning as the <literal>retry-interval</literal>
-                        on a bridge [LINK].</para>
+                        on a bridge (as described in <xref linkend="core-bridges" />).</para>
                     <para>This parameter is optional and its default value is <literal>500</literal>
                         milliseconds.</para>
                 </listitem>
