@@ -7,7 +7,7 @@
       <entries>
          <entry name="ConnectionFactory"/>
          <entry name="XAConnectionFactory"/>
-      </entries>j
+      </entries>
    </connection-factory>
 
    <connection-factory name="ClusteredConnectionFactory">
