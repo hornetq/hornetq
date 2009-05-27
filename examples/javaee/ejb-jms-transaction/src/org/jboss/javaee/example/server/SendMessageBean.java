@@ -49,7 +49,7 @@ public class SendMessageBean implements SendMessageService
    public void createTable() throws Exception
    {
       InitialContext ic = new InitialContext();
-      DataSource ds = (DataSource)ic.lookup("java:/DefaultMessagingDS");
+      DataSource ds = (DataSource)ic.lookup("java:/DefaultDS");
       java.sql.Connection con = ds.getConnection();
       
       // check if the table exists:

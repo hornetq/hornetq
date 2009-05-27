@@ -31,12 +31,12 @@
          database documentation to configure it appropriately.</p>
      <p>To use MySQL with JBoss AS 5</p>
      <ul>
-         <li>remove HSQLDB configuration from default-with-jbm2 deployment</li>
-         <pre>
-             <code>rm $JBOSS_HOME/server/default-with-jbm2/deploy/hsqldb-ds.xml</code>
-         </pre>
-         <li>copy <a href="config/mysql-ds.xml">mysql-ds.xml</a> to <code>$JBOSS_HOME/server/default-with-jbm2/deploy/</code></li>
-         <li>copy MySQL JDBC jar to <code>$JBOSS_HOME/server/default-with-jbm2/lib/</code></li>
+        <li>copy MySQL JDBC jar to <code>$JBOSS_HOME/server/default-with-jbm2/lib/</code></li>
+     </ul>
+     <p>During the deployment, the example will:</p>
+     <ul>
+        <li>remove HSQLDB configuration (<code>hsqldb-ds.xml</code>) from the profile</li>
+        <li>copy <a href="config/mysql-ds.xml"><code>mysql-ds.xml</a></code> to to the profile</li>
      </ul>
      
      <p>MySQL is configured to connect to a <code>jbossdb</code> database using the <code>jboss</code>/<code>jboss</code> credentials

@@ -135,7 +135,7 @@
          </fileset>
       </copy>
       <exec dir="${jboss.home}/bin" executable="sh">
-         <arg line="run.sh -b 192.168.0.10 -c ${example.name}-example-profile"/>
+         <arg line="run.sh -c ${example.name}-example-profile"/>
       </exec>
    </target>
 

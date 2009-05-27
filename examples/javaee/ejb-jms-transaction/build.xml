@@ -29,6 +29,15 @@
 
    <import file="../common/build.xml"/>
 
+   <target name="copy-resources">
+      <property name="example-profile" value="${jboss.home}/server/${example.name}-example-profile"/>
+      <delete>
+   	     <fileset dir="${example-profile}/deploy/">
+	        <include name="hsqldb-ds.xml"/>
+         </fileset>
+      </delete>
+   </target>
+   
    <target name="run">
       <antcall target="runExample">
          <param name="example.classname" value="org.jboss.javaee.example.EJBClientExample"/>
