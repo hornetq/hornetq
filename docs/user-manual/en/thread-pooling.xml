@@ -58,10 +58,10 @@
                     linkend="message-expiry"/>.</para>
         </section>
         <section>
-            <title>Asychronous IO</title>
+            <title>Asynchronous IO</title>
             <para>Asynchronous IO has a thread pool for receiving and dispatching events out of the
                 native layer. You will find it on a thread dump with the prefix JBM-AIO-poller-pool.
-                JBoss Messaging uses one one thread per opened file on the journal (there is usually
+                JBoss Messaging uses one thread per opened file on the journal (there is usually
                 one).</para>
             <para>There is also a single thread used to invoke writes on libaio. We do that to avoid
                 context switching on libaio what would cause performance issues. You will find this

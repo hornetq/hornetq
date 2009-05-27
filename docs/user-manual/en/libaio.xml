@@ -7,7 +7,7 @@
         With <literal>libaio</literal> we submit writes to the operating system where they are
         processed asynchronously. Some time later the OS will call our code back when they have been
         processed.</para>
-    <para>The native library is distributed in two flavors:</para>
+    <para>These are the native library distributed by JBoss Messaging:</para>
     <itemizedlist>
         <listitem>
             <para>libJBMLibAIO32.so - x86 32 bits</para>
@@ -15,16 +15,21 @@
         <listitem>
             <para>libJBMLibAIO64.so - x86 64 bits</para>
         </listitem>
+        <listitem>
+            <para>libJBMLibAIO_ia64.so - Itanium 64 bits</para>
+        </listitem>
     </itemizedlist>
     <para>When using libaio, JBoss Messaging will aways try loading these files as long as they are
         on the <link linkend="using-server.library.path">library path</link>.</para>
     <section>
         <title>Compiling the native libraries</title>
-        <para>Case you are using Linux on a platform other than x86_32 and x86_64, e.g. IA64
-            (Itanium) or IBM POWER,  you may need to compile the native library, since we do not
+        <para>Case you are using Linux on a platform other than x86_32, x86_64 or IA64 (Itanium), 
+            (for example IBM POWER) you may need to compile the native library, since we do not
             distribute binaries for those platforms with the release.</para>
         <section>
             <title>Install requirements</title>
+            <note><para>At the moment the native layer is only available on Linux. If you are in a
+                platform other then Linux the native compilation will not work</para></note>
             <para>The native library uses <ulink url="http://en.wikipedia.org/wiki/Autoconf"
                     >autoconf</ulink> what makes the compilation process easy, however you need to
                 install extra packages as a requirement for compilation:</para>
