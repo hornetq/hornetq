@@ -15,6 +15,7 @@
             </folder>
             <file name="en/appserver-integration.xml"/>
             <file name="en/architecture.xml"/>
+            <file name="en/client-classpath.xml"/>
             <file name="en/client-reconnection.xml"/>
             <file name="en/clusters.xml"/>
             <file name="en/command-buffering.xml"/>
