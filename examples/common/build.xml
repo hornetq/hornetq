@@ -77,7 +77,7 @@
          <include name="**/*client*.jar"/>
       </fileset>
       <fileset dir="${jars.dir}">
-         <include name="netty/lib/netty-3.1.0.BETA1.jar"/>
+         <include name="netty/lib/netty-3.1.0.BETA3.jar"/>
       </fileset>
    </path>
 
@@ -88,7 +88,7 @@
       <pathelement location="${classes.dir}"/>
       <fileset dir="${jars.dir}">
          <include name="jboss/jnpserver/lib/jnpserver.jar"/>
-         <include name="netty/lib/netty-3.1.0.BETA1.jar"/>
+         <include name="netty/lib/netty-3.1.0.BETA3.jar"/>
       </fileset>
    </path>
 

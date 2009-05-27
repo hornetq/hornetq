@@ -68,7 +68,7 @@
    <property name="core.client.jar.name" value="jbm-core-client.jar"/>
    <property name="ra.jar.name" value="jbm-ra.jar"/>
    <property name="ra.rar.name" value="jbm-ra.rar"/>
-   <property name="netty.jar.name" value="netty-3.1.0.BETA1.jar"/>
+   <property name="netty.jar.name" value="netty-3.1.0.BETA3.jar"/>
    <property name="mc.jar.name" value="jboss-mc.jar"/>
 
    <!--source and build dirs-->

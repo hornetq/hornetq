@@ -133,7 +133,7 @@ public class EmbeddedRemoteExample
          System.exit(-1);
       }
       
-      process = SpawnedVMSupport.spawnVM(remoteClasspath, EmbeddedServer.class.getName(), new String[]{}, true, 
+      process = SpawnedVMSupport.spawnVM(remoteClasspath, EmbeddedServer.class.getName(), "", true, 
                                "STARTED::",
                                "FAILED::",
                                ".",
