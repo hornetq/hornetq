@@ -1,15 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <chapter id="logging">
     <title>Logging</title>
-    <para>JBM uses standard JDK logging, i.e. JUL, for all its logging. This means we have no
-        dependencies on any third party logging framework. Users can provide their own logging
+    <para>JBM uses standard <ulink url="http://java.sun.com/j2se/1.4.2/docs/guide/util/logging/">JDK
+            logging</ulink>, (a.k.a Java-Util-Logging: JUL), for all its logging. This means we have
+        no dependencies on any third party logging framework. Users can provide their own logging
         handler to use or alternatively use one of the handlers provided by JBM. There are 2 of
         these a Log4j handler and a JBoss logging handler.</para>
-    <para>The handlers are configured via the JUL logging.properties file. This default location for
-        this file is under the <literal>lib</literal> directory found in the Java home directory
-        however can be overridden. The standalone JBM server does this and the <literal
-            >logging.properties</literal> file can be found under the <literal>config</literal>
-            directory of the JBM installation. </para>
+    <para>The handlers are configured via the JUL <literal>logging.properties</literal> file. This
+        default location for this file is under the <literal>lib</literal> directory found in the
+        Java home directory but it can be overridden. The standalone JBM server does this and the
+            <literal>logging.properties</literal> file can be found under the <literal
+            >config</literal> directory of the JBM installation. </para>
     <para>To use the Log4j handler edit the <literal>logging.properties</literal> file and change
         the <literal>handlers</literal> property to:</para>
     <programlisting>handlers=org.jboss.messaging.integration.logging.Log4jLoggerHandler</programlisting>
