@@ -31,10 +31,10 @@
             <file name="en/ha.xml"/>
             <file name="en/intercepting-operations.xml"/>
             <file name="en/interoperability.xml"/>
-            <file name="en/jar-dependencies.xml"/>
             <file name="en/jms-core-mapping.xml"/>
             <file name="en/large-messages.xml"/>
             <file name="en/last-value-queues.xml"/>
+            <file name="en/libaio.xml"/>
             <file name="en/logging.xml"/>
             <file name="en/management.xml"/>
             <file name="en/master.xml"/>
