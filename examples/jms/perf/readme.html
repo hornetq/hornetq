@@ -1,0 +1,114 @@
+<html>
+   <head>
+      <title>JBoss Messaging Performance Example</title>
+      <link rel="stylesheet" type="text/css" href="../../common/common.css"/>
+   </head>
+   <body>
+      <h1>Performance Example</h1>
+      <br/>
+      <p>This example is used to measure performance on JBoss Messaging through different
+         scenarios.</p>
+      <p>To play with these difference scenarios, change server configurations and change properties
+         on perf.properties:</p>
+      <p>
+         <ul>
+            <li>num-messages - Number of messages generated and read on this scenario</li>
+            <li>message-size - Number of bytes written on the message body</li>
+            <li>durable - Boolean value if the message should be persisted on disk before delivery</li>
+            <li>transacted - Boolean value if the test should use transactions</li>
+            <li>batch-size - Number of elements per transactions</li>
+            <li>drain-queue - Boolean value if the test should read all elements on the queue before starting</li>
+            <li>queue-name - Name of the queue used on the test</li>
+            <li>address - Address used to send message</li>
+            <li>throttle-rate - TODO</li>
+         </ul>
+      </p>
+      <h2>Example step-by-step</h2>
+      <p>After configured server and perf.properties:</p>
+      <br/>
+      <ol>
+         <li>Start the server in one Window. Just call ant runServer:</li>
+         <pre><code>user@myserver:/jboss-messaging/examples/core/perf$ ant runServer
+Buildfile: build.xml
+
+init:
+
+compile:
+[echo] src.example.dir=/jboss-messaging/examples/core/perf/src
+
+runServer:
+[java] May 21, 2009 4:44:55 PM org.jboss.messaging.core.logging.Logger warn
+[java] WARNING: It has been detected that the cluster admin password which is used to replicate management operation from one node to the other has not had its password changed from the installation default. Please see the JBoss Messaging user guide for instructions on how to do this.
+[java] May 21, 2009 4:44:56 PM org.jboss.messaging.core.logging.Logger warn
+[java] WARNING: Property jbm.remoting.netty.tcpsendbuffersize must be an Integer
+[java] May 21, 2009 4:44:56 PM org.jboss.messaging.core.logging.Logger warn
+[java] WARNING: Property jbm.remoting.netty.tcpreceivebuffersize must be an Integer
+[java] May 21, 2009 4:44:56 PM org.jboss.messaging.core.logging.Logger info
+[java] INFO: JBoss Messaging Server version 2.0.0.BETA1-SNAPSHOT (Stilton, 101) started
+[java] STARTED::</code>
+        </pre>
+         <li>Start the listener. Just call ant runListener</li>
+         <pre><code>user@myserver:/jboss-messaging/examples/core/perf$ ant runListener
+Buildfile: build.xml
+
+init:
+
+compile:
+[echo] src.example.dir=/jboss-messaging/examples/core/perf/src
+
+runListener:
+[java] May 21, 2009 4:47:47 PM org.jboss.core.example.PerfBase getParams
+[java] INFO: num-messages: 1000000
+[java] May 21, 2009 4:47:47 PM org.jboss.core.example.PerfBase getParams
+[java] INFO: num-warmup-messages: 50000
+[java] May 21, 2009 4:47:47 PM org.jboss.core.example.PerfBase getParams
+[java] INFO: message-size: 0
+[java] May 21, 2009 4:47:47 PM org.jboss.core.example.PerfBase getParams
+[java] INFO: durable: false
+[java] May 21, 2009 4:47:47 PM org.jboss.core.example.PerfBase getParams
+[java] INFO: transacted: false
+[java] May 21, 2009 4:47:47 PM org.jboss.core.example.PerfBase getParams
+[java] INFO: batch-size: 1000
+[java] May 21, 2009 4:47:47 PM org.jboss.core.example.PerfBase getParams
+[java] INFO: drain-queue: true
+[java] May 21, 2009 4:47:47 PM org.jboss.core.example.PerfBase getParams
+[java] INFO: address: perfAddress
+[java] May 21, 2009 4:47:47 PM org.jboss.core.example.PerfBase getParams
+[java] INFO: throttle-rate: -1
+[java] May 21, 2009 4:47:48 PM org.jboss.core.example.PerfBase drainQueue
+[java] INFO: Draining queue
+[java] May 21, 2009 4:47:51 PM org.jboss.core.example.PerfBase drainQueue
+[java] INFO: Drained 0 messages
+[java] May 21, 2009 4:47:51 PM org.jboss.core.example.PerfBase runListener
+[java] INFO: READY!!!</code></pre>
+         <li>Start the sender. Just call ant runSender</li>
+         <pre><code>user@myserver:/jboss-messaging/examples/core/perf$ ant runSender
+Buildfile: build.xml
+
+init:
+
+compile:
+[echo] src.example.dir=/work/projects/trunk/examples/core/perf/src
+
+runSender:
+[java] May 21, 2009 4:51:16 PM org.jboss.core.example.PerfBase getParams
+[java] INFO: num-messages: 1000000
+[java] May 21, 2009 4:51:16 PM org.jboss.core.example.PerfBase getParams
+[java] INFO: num-warmup-messages: 50000
+[java] May 21, 2009 4:51:16 PM org.jboss.core.example.PerfBase getParams
+
+...
+
+[java] May 21, 2009 4:51:33 PM org.jboss.core.example.PerfBase sendMessages
+[java] INFO: sent 994000 messages in 10.60s
+[java] May 21, 2009 4:51:33 PM org.jboss.core.example.PerfBase sendMessages
+[java] INFO: sent 996000 messages in 10.61s
+[java] May 21, 2009 4:51:33 PM org.jboss.core.example.PerfBase sendMessages
+[java] INFO: sent 998000 messages in 10.61s
+[java] May 21, 2009 4:51:33 PM org.jboss.core.example.PerfBase sendMessages
+[java] INFO: sent 1000000 messages in 10.62s
+[java] May 21, 2009 4:51:33 PM org.jboss.core.example.PerfBase displayAverage
+[java] INFO: average: 94197.44 msg/s (1000000 messages in 10.62s)</code></pre>
+      </ol>
+   </body>
+</html>

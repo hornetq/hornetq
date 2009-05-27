@@ -49,6 +49,7 @@
 	<classpathentry kind="src" path="examples/jms/message-priority/src"/>
 	<classpathentry kind="src" path="examples/jms/no-consumer-buffering/src"/>
 	<classpathentry kind="src" path="examples/jms/paging/src"/>
+	<classpathentry kind="src" path="examples/jms/perf/src"/>
 	<classpathentry kind="src" path="examples/jms/pre-acknowledge/src"/>
 	<classpathentry kind="src" path="examples/jms/producer-rate-limit/src"/>
 	<classpathentry kind="src" path="examples/jms/queue/src"/>

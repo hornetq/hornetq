@@ -163,6 +163,7 @@
       <delete dir="./server5/logs" quiet="true" />
       <delete dir="./server5/data" quiet="true" />
       <delete dir="./ObjectStore" quiet="true" />
+      <delete dir="./data" quiet="true" />
       <!-- large-message creates huge .dat files -->
       <delete>
 	     <fileset dir=".">

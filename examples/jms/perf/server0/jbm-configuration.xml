@@ -1,0 +1,34 @@
+<configuration xmlns="urn:jboss:messaging"
+            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+            xsi:schemaLocation="urn:jboss:messaging /schema/jbm-configuration.xsd">
+
+   <connectors>
+      <connector name="netty-connector">
+         <factory-class>org.jboss.messaging.integration.transports.netty.NettyConnectorFactory</factory-class>    
+         <param key="jbm.remoting.netty.tcpnodelay" value="false" type="Boolean"/>
+         <param key="jbm.remoting.netty.tcpsendbuffersize" value="1048576" type="Integer"/>
+         <param key="jbm.remoting.netty.tcpreceivebuffersize" value="1048576" type="Integer"/>
+      </connector>
+   </connectors>
+   
+   <!-- Acceptors -->
+   <acceptors>
+      <acceptor name="netty-acceptor">
+         <factory-class>org.jboss.messaging.integration.transports.netty.NettyAcceptorFactory</factory-class>    
+         <param key="jbm.remoting.netty.tcpnodelay" value="false" type="Boolean"/>
+         <param key="jbm.remoting.netty.tcpsendbuffersize" value="1048576" type="Integer"/>
+         <param key="jbm.remoting.netty.tcpreceivebuffersize" value="1048576" type="Integer"/>
+      </acceptor>
+   </acceptors>
+   
+   <security-enabled>false</security-enabled>
+   
+   <persistence-enabled>false</persistence-enabled>
+   
+   <queues>
+	   <queue name="perfQueue">
+	   	<address>perfAddress</address>
+	   </queue>
+   </queues>
+
+</configuration>

@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE project [
+      <!ENTITY libraries SYSTEM "../../../thirdparty/libraries.ent">
+      ]>
+
+<!-- =========================================================================================== -->
+<!--                                                                                             -->
+<!-- JBoss, Home of Professional Open Source                                                     -->
+<!-- Copyright 2005, JBoss Inc., and individual contributors as indicated                        -->
+<!-- by the @authors tag. See the copyright.txt in the distribution for a                        -->
+<!-- full listing of individual contributors.                                                    -->
+<!--                                                                                             -->
+<!-- This is free software; you can redistribute it and/or modify it                             -->
+<!-- under the terms of the GNU Lesser General Public License as                                 -->
+<!-- published by the Free Software Foundation; either version 2.1 of                            -->
+<!-- the License, or (at your option) any later version.                                         -->
+<!--                                                                                             -->
+<!-- This software is distributed in the hope that it will be useful,                            -->
+<!-- but WITHOUT ANY WARRANTY; without even the implied warranty of                              -->
+<!-- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU                            -->
+<!-- Lesser General Public License for more details.                                             -->
+<!--                                                                                             -->
+<!-- You should have received a copy of the GNU Lesser General Public                            -->
+<!-- License along with this software; if not, write to the Free                                 -->
+<!-- Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA                          -->
+<!-- 02110-1301 USA, or see the FSF site: http://www.fsf.org.                                    -->
+<!--                                                                                             -->
+<!-- =========================================================================================== -->
+
+
+<project name="JBoss Messaging JMS Perf Example">
+
+   <import file="../../common/build.xml"/>
+
+   <path id="extra.classpath">
+       <path location="server0"/>
+   </path>
+   
+   <property name="perf.properties.file.name" value="perf.properties" />
+
+   <path id="the.classpath">         
+      <path refid="client.classpath"/>
+      <path location="."/>
+   </path>
+   
+   <target name="runSender" depends="compile">
+      <java classname="org.jboss.jms.example.PerfSender" fork="true" resultproperty="example-result">
+		   <jvmarg value="-Xms512M"/>
+		   <jvmarg value="-Xmx512M"/>
+         <jvmarg value="-XX:+UseParallelGC"/>
+         <jvmarg value="-XX:+AggressiveOpts"/>
+		   <jvmarg value="-XX:+UseFastAccessorMethods"/>
+         <jvmarg value="-Djava.util.logging.config.file=${config.dir}/logging.properties"/>
+         <arg line="${perf.properties.file.name}"/>
+         <classpath refid="the.classpath"/>
+      </java>
+   </target>
+
+   <target name="runListener" depends="compile">
+      <java classname="org.jboss.jms.example.PerfListener" fork="true" resultproperty="example-result">         
+         <jvmarg value="-Xms512M"/>
+		   <jvmarg value="-Xmx512M"/>
+         <jvmarg value="-XX:+UseParallelGC"/>
+         <jvmarg value="-XX:+AggressiveOpts"/>
+		   <jvmarg value="-XX:+UseFastAccessorMethods"/>
+         <jvmarg value="-Djava.util.logging.config.file=${config.dir}/logging.properties"/>  
+         <arg line="${perf.properties.file.name}"/>
+         <classpath refid="the.classpath"/>
+      </java>
+   </target>
+
+   <target name="runServer" depends="compile">
+      <java classname="org.jboss.common.example.SpawnedJBMServer" fork="true" resultproperty="example-result">
+         <jvmarg value="-Xms2048M"/>
+		   <jvmarg value="-Xmx2048M"/>
+         <jvmarg value="-XX:+UseParallelGC"/> 
+      	<sysproperty key="java.library.path" value="${java.library.path}${path.separator}${aio.library.path}"/>
+         <jvmarg value="-XX:+AggressiveOpts"/>
+		   <jvmarg value="-XX:+UseFastAccessorMethods"/>
+         <jvmarg value="-Djava.util.logging.config.file=${config.dir}/logging.properties"/>
+         <arg line="jbm-jboss-beans.xml"/>
+         <classpath refid="server.classpath"/>
+      </java>
+   </target>
+
+</project>

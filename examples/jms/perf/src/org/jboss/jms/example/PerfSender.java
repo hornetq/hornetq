@@ -19,23 +19,22 @@
    * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
    * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
    */
-package org.jboss.core.example;
+package org.jboss.jms.example;
 
 import java.util.logging.Logger;
 
-
 /**
  * 
- * A PerfListener
+ * A PerfSender
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  *
  */
-public class PerfListener extends PerfBase
+public class PerfSender extends PerfBase
 {
-   private static final Logger log = Logger.getLogger(PerfListener.class.getName());
-      
+   private static final Logger log = Logger.getLogger(PerfSender.class.getName());
+
    public static void main(String[] args)
    {
       try
@@ -43,8 +42,8 @@ public class PerfListener extends PerfBase
          String fileName = PerfBase.getPerfFileName(args);
          
          PerfParams params = getParams(fileName);
-
-         new PerfListener(params).run();
+         
+         new PerfSender(params).run();
       }
       catch (Exception e)
       {
@@ -52,14 +51,14 @@ public class PerfListener extends PerfBase
       }
    }
 
-   private PerfListener(final PerfParams perfParams)
+   private PerfSender(final PerfParams perfParams)
    {
       super(perfParams);
    }
 
    public void run() throws Exception
    {
-      runListener();
+      runSender();
    }
 
 }
