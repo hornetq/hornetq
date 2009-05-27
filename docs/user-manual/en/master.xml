@@ -46,6 +46,7 @@
         <!ENTITY using-server            SYSTEM "using-server.xml">
         <!ENTITY wildcard-syntax         SYSTEM "wildcard-syntax.xml">
         <!ENTITY wildcard-routing         SYSTEM "wildcard-routing.xml">
+        <!ENTITY libaio         SYSTEM "libaio.xml">
         ]>
 <book lang="en">
    <bookinfo>
@@ -99,6 +100,7 @@
    &interoperability;
    &perf-tuning;
    &configuration-index;
+   &libaio;
    &project-info;
    
 </book>

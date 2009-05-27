@@ -6,16 +6,30 @@
         <title>Tuning the journal</title>
         <itemizedlist>
             <listitem>
-                <para>Tune minimum number of journal files. TODO</para>
+                <para>Minimum number of journal files. Set <literal>journal-min-files</literal> to a
+                    number of files that would fit your average sustainable rate. If you see new
+                    files being created on the journal data directory too oftenly you need to
+                    increase the minimal number of files, this way the journal would reuse more
+                    files instead of create new data files.</para>
             </listitem>
             <listitem>
-                <para>Tune journal file size. TODO</para>
+                <para>Journal file size. The journal file size should be aligned to the capacity of
+                    a cylinder on the disk. The default value 10MiB should be enough on most
+                    systems.</para>
             </listitem>
             <listitem>
-                <para>Use AIO journal. TODO</para>
+                <para>Use AIO journal. If using Linux, try to keep your journal type as AIO.</para>
             </listitem>
             <listitem>
-                <para>Tune AIO re-use cache. TODO</para>
+                <para>AIO re-use cache. Keep <literal>journal-buffer-reuse-size</literal> to an
+                    average size of your records on the journal. The record is composed by the
+                    message body, properties and about 100 bytes per message.</para>
+            </listitem>
+            <listitem>
+                <para>Max IO. If using AIO, keep <literal>journal-max-aio</literal> accordingly to
+                    your disk capacity. If in a thread dump you see too many write requests waiting
+                    on <literal>AsynchronousFile.write</literal> you may be out of space on the
+                    Asynchronous IO queue. Increase the value on that case.</para>
             </listitem>
         </itemizedlist>
     </section>
@@ -68,18 +82,19 @@
         <para>There are various other places in JBoss Messaging where we can perform some
             tuning:</para>
         <itemizedlist>
-            <listitem><para>Use Asynchronous Send Acknowledgements. If you need to send persistent
+            <listitem>
+                <para>Use Asynchronous Send Acknowledgements. If you need to send persistent
                     messages non transactionally and you need a guarantee that they have reached the
                     server by the time the call to send() returns, don't set persistent messages to
                     be sent blocking, instead use asynchronous send acknowledgements to get your
                     acknowledgements of send back in a separate stream, see <xref
-                        linkend="send-guarantees" /> for more information on
-                this.</para></listitem>
+                        linkend="send-guarantees"/> for more information on this.</para>
+            </listitem>
             <listitem>
                 <para>Use pre-acknowledge mode. With pre-acknowledge mode, messages are acknowledged
                         <literal>before</literal> they are sent to the client. This reduces the
                     amount of acknowledgment traffic on the wire. For more information on this, see
-                    <xref linkend="pre-acknowledge" />.</para>
+                        <xref linkend="pre-acknowledge"/>.</para>
             </listitem>
             <listitem>
                 <para>Disabled security. You may get a small performance boost by disabling security
@@ -96,7 +111,8 @@
                         >journal-sync-transactional</literal> to <literal>false</literal> in
                         <literal>jbm-configuration.xml</literal> can give you better transactional
                     persistent performance at the expense of some possibility of loss of
-                    transactions on failure. See <xref linkend="send-guarantees"/> for more information.</para>
+                    transactions on failure. See <xref linkend="send-guarantees"/> for more
+                    information.</para>
             </listitem>
             <listitem>
                 <para>Use the core API not JMS. Using the JMS API you will have slightly lower
@@ -114,13 +130,14 @@
                     than one can fit in a single IP packet. Then you may get a significant
                     performance boost by enabling Nagle's algorithm. This is done by setting
                         <literal>jbm.remoting.netty.tcpnodelay</literal> to false with the Netty
-                    transports. See <xref linkend="configuring-transports" /> for more information on this. </para>
+                    transports. See <xref linkend="configuring-transports"/> for more information on
+                    this. </para>
             </listitem>
             <listitem>
                 <para>TCP buffer sizes. If you have a fast network and fast machines you may get a
                     performance boost by increasing the TCP send and receive buffer sizes. See the
-                     <xref linkend="configuring-transports" />
-                    for more information on this. </para>
+                        <xref linkend="configuring-transports"/> for more information on this.
+                </para>
             </listitem>
         </itemizedlist>
     </section>
@@ -138,13 +155,12 @@
             </listitem>
             <listitem>
                 <para>Memory settings. Give as much memory as you can to the server. JBoss Messaging
-                    can run in low memory by using paging (described in <xref linkend="paging" />)
-                    but if it can run
-                    with all queues in RAM this will improve performance. The amount of memory you
-                    require will depend on the size and number of your queues and the size and
-                    number of your messages. Use the JVM arguments <literal>-Xms</literal> and
-                        <literal>-Xmx</literal> to set server available RAM. We recommend setting
-                    them to the same high value.</para>
+                    can run in low memory by using paging (described in <xref linkend="paging"/>)
+                    but if it can run with all queues in RAM this will improve performance. The
+                    amount of memory you require will depend on the size and number of your queues
+                    and the size and number of your messages. Use the JVM arguments <literal
+                        >-Xms</literal> and <literal>-Xmx</literal> to set server available RAM. We
+                    recommend setting them to the same high value.</para>
             </listitem>
             <listitem>
                 <para>Aggressive options. Different JVMs provide different sets of JVM tuning

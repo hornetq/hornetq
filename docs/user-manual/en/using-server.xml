@@ -69,13 +69,13 @@
         <para>Just make sure the directory is on the classpath and JBoss Messaging will search there
             when starting up.</para>
     </section>
-    <section>
-        <title>LD_LIBRARY_PATH</title>
-        <para>If you're using the <xref linkend="aio-journal">Asynchronous IO Journal</xref> on
-            Linux, then the environment variable <literal>LD_LIBRARY_PATH</literal> needs to be set
-            to the path that contains the shared library file that contains the native code for the
-            AIO abstraction layer. This is done automatically in the <literal>run.sh</literal>
-            script.</para>
+    <section id="using-server.library.path">
+        <title>Library Path</title>
+        <para>If you're using the <link linkend="aio-journal">Asynchronous IO Journal</link> on
+            Linux, you need to specify <literal>java.library.path</literal> as a property on your
+            Java options. This is done automatically in the <literal>run.sh</literal> script.</para>
+        <para>If you don't specify <literal>java.library.path</literal> at your Java options then
+            the JVM will use the environment variable <literal>LD_LIBRARY_PATH</literal>.</para>
     </section>
     <section>
         <title>System properties</title>
@@ -108,15 +108,15 @@
                         linkend="configuration-index"/>.</para>
             </listitem>
             <listitem>
-                <para><literal>jbm-queues.xml</literal>. This file contains pre-defined queues,
-                    queue settings and security settings. The file is optional - all this
-                    configuration can also live in <literal>jbm-configuration.xml</literal>. In
-                    fact, the default configuration sets do not have a <literal
-                        >jbm.queues.xml</literal> file. The purpose of allowing queues to be
-                    configured in these files is to allow you to manage your queue configuration
-                    over many files instead of being forced to maintain it in a single file. There
-                    can be many <literal>jbm-queues.xml</literal> files on the classpath. All will
-                    be loaded if found.</para>
+                <para><literal>jbm-queues.xml</literal>. This file contains predefined queues, queue
+                    settings and security settings. The file is optional - all this configuration
+                    can also live in <literal>jbm-configuration.xml</literal>. In fact, the default
+                    configuration sets do not have a <literal>jbm.queues.xml</literal> file. The
+                    purpose of allowing queues to be configured in these files is to allow you to
+                    manage your queue configuration over many files instead of being forced to
+                    maintain it in a single file. There can be many <literal
+                        >jbm-queues.xml</literal> files on the classpath. All will be loaded if
+                    found.</para>
             </listitem>
             <listitem>
                 <para><literal>jbm-users.xml</literal> JBoss Messaging ships with a security manager

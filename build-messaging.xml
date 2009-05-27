@@ -106,6 +106,7 @@
    <property name="build.distro.dir"
              value="${build.dir}/${build.artifact}"/>
    <property name="build.distro.lib.dir" value="${build.distro.dir}/lib"/>
+   <property name="build.distro.native.dir" value="${build.distro.dir}/native-src"/>
    <property name="build.distro.client.dir" value="${build.distro.dir}/client"/>
    <property name="build.distro.config.dir" value="${build.distro.dir}/config"/>
    <property name="build.distro.schema.dir" value="${build.distro.dir}/schemas"/>
@@ -778,64 +779,6 @@
             <include name="${ra.rar.name}"/>
             <include name="${jms.api.jar.name}"/>
          </fileset>
-         <!--
-         <fileset dir="${jboss.microcontainer.lib}">
-            <include name="jboss-container.jar"/>
-            <include name="jboss-kernel.jar"/>
-            <include name="jboss-dependency.jar"/>
-            <include name="jboss-aop-mc-int.jar"/>
-         </fileset>                 
-         <fileset dir="${jboss.jboss.javaee.lib}">
-            <include name="jboss-javaee.jar"/>
-         </fileset>        
-         <fileset dir="${jboss.jboss.common.logging.spi.lib}">
-            <include name="jboss-common-logging-spi.jar"/>
-         </fileset>
-         <fileset dir="${jboss.jbossxb.lib}">
-            <include name="jboss-xml-binding.jar"/>
-         </fileset>
-         <fileset dir="${jboss.integration.lib}">
-            <include name="jboss-transaction-spi.jar"/>
-         </fileset>
-         <fileset dir="${jboss.jboss.security.spi.lib}">
-            <include name="jboss-security-spi.jar"/>
-         </fileset>
-         <fileset dir="${jboss.jboss.jaspi.api.lib}">
-            <include name="jboss-jaspi-api.jar"/>
-         </fileset>
-         <fileset dir="${jboss.jbosssx.client.lib}">
-            <include name="jbosssx-client.jar"/>
-         </fileset>
-         <fileset dir="${jboss.common.core.lib}">
-            <include name="jboss-common-core.jar"/>
-         </fileset>
-         <fileset dir="${apache.xerces.lib}">
-            <include name="xercesImpl.jar"/>
-         </fileset>
-         <fileset dir="${apache.logging.lib}">
-            <include name="commons-logging.jar"/>
-         </fileset>
-         <fileset dir="${sun.jaxb.lib}">
-            <include name="jaxb-api.jar"/>
-         </fileset>
-         <fileset dir="${jboss.jboss.common.logging.spi.lib}">
-            <include name="jboss-common-logging-spi.jar"/>
-         </fileset>
-         <fileset dir="${apache.log4j.lib}">
-            <include name="log4j.jar"/>
-         </fileset>
-         <fileset dir="${jboss.jbossts.lib}">
-            <include name="jbossjta.jar"/>
-            <include name="jbossts-common.jar"/>
-            <include name="jbossjta-integration.jar"/>
-         </fileset>
-         <fileset dir="${trove.lib}">
-            <include name="trove.jar"/>
-         </fileset>
-         <fileset dir="${javassist.lib}">
-            <include name="javassist.jar"/>
-         </fileset>
-         -->
          <fileset dir="${jboss.jnpserver.lib}">
             <include name="jnpserver.jar"/>
          </fileset>         
@@ -862,6 +805,9 @@
             <include name="messaging.truststore"/>
          </fileset>
       </copy>
+   	  <copy todir="${build.distro.native.dir}">
+   	     <fileset dir="./native" includes="**/*" excludes="**/*.so"/>
+   	  </copy>
       <copy todir="${build.distro.schema.dir}">
          <fileset dir="${src.schema.dir}">
             <include name="*.xsd"/>

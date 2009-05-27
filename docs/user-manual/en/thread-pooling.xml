@@ -59,13 +59,11 @@
         </section>
         <section>
             <title>Asychronous IO</title>
-            <para>Two threads are used on asynchronous IO files. One for polling events, and one for
-                writing data. </para>
-            <para>The thread poller is used by the native layer to receive and dispatch events. You
-                will find it on a thread dump with the prefix JBM-AIO-poller-pool. JBoss Messaging
-                uses one poller per opened file on the journal. (there is usually one) and they are
-                always distributed through a pool.</para>
-            <para>The writing thread is a single thread used to invoke libaio. We do that to avoid
+            <para>Asynchronous IO has a thread pool for receiving and dispatching events out of the
+                native layer. You will find it on a thread dump with the prefix JBM-AIO-poller-pool.
+                JBoss Messaging uses one one thread per opened file on the journal (there is usually
+                one).</para>
+            <para>There is also a single thread used to invoke writes on libaio. We do that to avoid
                 context switching on libaio what would cause performance issues. You will find this
                 thread on a thread dump with the prefix JBM-AIO-writer-pool.</para>
         </section>
@@ -84,25 +82,20 @@
         <para>To configure a <literal>ClientSessionFactory</literal> instance to use its own pools,
             simply use the appropriate setter methods immediately after creation, for
             example:</para>
-        <programlisting>
-ClientSessionFactory myFactory = new ClientSessionFactory(...);
+        <programlisting>ClientSessionFactory myFactory = new ClientSessionFactory(...);
 myFactory.setUseGlobalPools(false);
 myFactory.setScheduledThreadPoolMaxSize(10);
-myFactory.setThreadPoolMaxSize(-1);            
-        </programlisting>
+myFactory.setThreadPoolMaxSize(-1);   </programlisting>
         <para>If you're using the JMS API, you can set the same parameters directly on the <literal
                 >JBossConnectionFactory</literal> instance, for example:</para>
-        <programlisting>
-JBossConnectionFactory myFactory = new JBossConnectionFactory(...);
+        <programlisting>JBossConnectionFactory myFactory = new JBossConnectionFactory(...);
 myFactory.setUseGlobalPools(false);
 myFactory.setScheduledThreadPoolMaxSize(10);
-myFactory.setThreadPoolMaxSize(-1);                  
-        </programlisting>
+myFactory.setThreadPoolMaxSize(-1);        </programlisting>
         <para>If you're using JNDI to instantiate <literal>JBossConnectionFactory</literal>
             instances, you can also set these parameters in the <literal>jbm-jms.xml</literal> file
             where you describe your connection factory, for example:</para>
-        <programlisting>
-&lt;connection-factory name="ConnectionFactory"&gt;
+        <programlisting>&lt;connection-factory name="ConnectionFactory"&gt;
     &lt;connector-ref connector-name="netty"/&gt;
     &lt;entries&gt;
         &lt;entry name="ConnectionFactory"/&gt;
@@ -111,7 +104,6 @@ myFactory.setThreadPoolMaxSize(-1);
     &lt;use-global-pools&gt;false&lt;/use-global-pools&gt;
     &lt;scheduled-thread-pool-max-size&gt;10&lt;/scheduled-thread-pool-max-size&gt;
     &lt;thread-pool-max-size&gt;-1&lt;/thread-pool-max-size&gt;
-&lt;/connection-factory&gt;            
-        </programlisting>
+&lt;/connection-factory&gt;</programlisting>
     </section>
 </chapter>
