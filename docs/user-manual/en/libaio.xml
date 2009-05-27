@@ -30,7 +30,7 @@
             <title>Install requirements</title>
             <note>
                 <para>At the moment the native layer is only available on Linux. If you are in a
-                    platform other then Linux the native compilation will not work</para>
+                    platform other than Linux the native compilation will not work</para>
             </note>
             <para>The native library uses <ulink url="http://en.wikipedia.org/wiki/Autoconf"
                     >autoconf</ulink> what makes the compilation process easy, however you need to
