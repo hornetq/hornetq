@@ -201,7 +201,7 @@ public class JBMBootstrapServer extends BasicBootstrap
          File file = new File(arg);
          if(file.exists())
          {
-            url = file.toURL();
+            url = file.toURI().toURL();
          }
       }
       if (url == null)
