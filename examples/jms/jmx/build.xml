@@ -31,7 +31,7 @@
 <project default="run" name="JBoss Messaging JMX Example">
 
    <import file="../../common/build.xml"/>
-
+   <property file="ant.properties"/>
     <target name="run">
       <antcall target="runExample">
          <param name="example.classname" value="org.jboss.jms.example.JMXExample"/>

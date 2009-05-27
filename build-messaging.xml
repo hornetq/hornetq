@@ -312,7 +312,6 @@
       <path location="${build.jars.dir}/${transports.jar.name}"/>
       <path refid="jms.test.compilation.classpath"/>
       <path refid="sun.jaxb.classpath"/>
-      <path refid="apache.log4j.classpath"/>
       <path refid="cglib.classpath"/>
       <path refid="jboss.common.core.classpath"/>
       <path refid="jboss.aop.classpath"/>
@@ -854,8 +853,7 @@
       
       <!-- examples-ant.properties allow the examples to be run from the source or from the distribution -->
       <!-- by configuring the correct lib/config location                                                -->
-      <copy tofile="${build.distro.examples.dir}/jms/common/config/ant.properties" file="src/config/examples-ant.properties" overwrite="true" />
-      <copy tofile="${build.distro.examples.dir}/javaee/common/config/ant.properties" file="src/config/examples-ant.properties" overwrite="true" />
+      <copy tofile="${build.distro.examples.dir}/common/config/ant.properties" file="src/config/examples-ant.properties" overwrite="true" />
 
       <zip basedir="${build.dir}"
            destfile="${build.dir}/${build.artifact}.zip">

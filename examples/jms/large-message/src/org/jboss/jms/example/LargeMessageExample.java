@@ -21,13 +21,7 @@
    */
 package org.jboss.jms.example;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import org.jboss.common.example.JBMExample;
 
 import javax.jms.BytesMessage;
 import javax.jms.Connection;
@@ -37,8 +31,13 @@ import javax.jms.MessageProducer;
 import javax.jms.Queue;
 import javax.jms.Session;
 import javax.naming.InitialContext;
-
-import org.jboss.common.example.JBMExample;
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 
 /**
  * This example demonstrates the ability of JBoss Messaging to send and consume a very large message, much
@@ -51,14 +50,7 @@ public class LargeMessageExample extends JBMExample
 {
    public static void main(String[] args)
    {
-      // We limit the server to running in only 50MB of RAM
-      String[] serverArgs = new String[] { "-Xms50M",
-                                          "-Xmx50M",
-                                          "-XX:+UseParallelGC",
-                                          "-XX:+AggressiveOpts",
-                                          "-XX:+UseFastAccessorMethods" };
-
-      new LargeMessageExample().run(serverArgs, args);
+      new LargeMessageExample().run(args);
    }
 
    // The message we will send is size 256MB, even though we are only running in 50MB of RAM on both client and server.

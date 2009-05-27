@@ -58,7 +58,6 @@
    <property name="classes.dir" value="${build.dir}/classes"/>
    <property name="config.dir" value="${imported.basedir}/config"/>
    <property name="example.config.dir" value="config"/>
-
    <path id="extra.classpath">
    </path>
 
@@ -78,7 +77,6 @@
          <include name="**/*client*.jar"/>
       </fileset>
       <fileset dir="${jars.dir}">
-         <include name="apache-log4j/lib/log4j.jar"/>
          <include name="netty/lib/netty-3.1.0.BETA1.jar"/>
       </fileset>
    </path>
@@ -88,12 +86,7 @@
       <pathelement location="${config.dir}"/>
       <pathelement location="${example.config.dir}"/>
       <pathelement location="${classes.dir}"/>
-      <path refid="extra.classpath"/>
       <fileset dir="${jars.dir}">
-         <include name="jboss/jboss-javaee/lib/jboss-javaee.jar"/>
-      </fileset>
-      <fileset dir="${jars.dir}">
-         <include name="apache-log4j/lib/log4j.jar"/>
          <include name="jboss/jnpserver/lib/jnpserver.jar"/>
          <include name="netty/lib/netty-3.1.0.BETA1.jar"/>
       </fileset>
@@ -130,24 +123,10 @@
    <target name="runExample" depends="compile">
 
       <property name="serverclasspath" refid="server.classpath"/>
- 	   <property name="java-min-memory" value="512M"/>
- 	   <property name="java-max-memory" value="2048M"/>
+      <property file="${imported.basedir}/config/server.properties"/>
       <java classname="${example.classname}" fork="true" resultproperty="example-result">
-         <jvmarg value="-XX:+UseParallelGC"/>
-         <jvmarg value="-Xms${java-min-memory}"/>
-         <jvmarg value="-Xmx${java-max-memory}"/>
-         <jvmarg value="-XX:+AggressiveOpts"/>
-         <jvmarg value="-XX:+UseFastAccessorMethods"/>
-         <jvmarg value="-Dcom.sun.management.jmxremote"/>
-         <jvmarg value="-Djava.util.logging.config.file=${logging.properties}"/>
-         <jvmarg value="-Dorg.jboss.logging.Logger.pluginClass=org.jboss.messaging.integration.logging.JBMLoggerPlugin"/>
-         <!-- <jvmarg value="-Djava.library.path=${native.bin.dir}"/>-->
-         <jvmarg value="-Djava.naming.factory.initial=org.jnp.interfaces.NamingContextFactory"/>
-         <jvmarg value="-Djava.naming.factory.url.pkgs=org.jboss.naming:org.jnp.interfaces"/>
-         <jvmarg value="-Djbm.example.runServer=${jbm.example.runServer}"/>
-         <jvmarg value="-Djbm.example.logserveroutput=${jbm.example.logserveroutput}"/>
-         <!--<jvmarg line="-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=8000"/>-->
          <jvmarg value="-Djbm.example.server.classpath=${serverclasspath}"/>
+         <jvmarg value="-Djbm.example.server.args=${server.args}"/>
          <arg line="${jbm.example.beans.file}"/>
      	 <sysproperty key="java.library.path" value="${java.library.path}${path.separator}${aio.library.path}"/>
          <classpath refid="client.classpath"/>
@@ -194,7 +173,7 @@
     
    <target name="all" description="Run all the examples">
       <subant target="run" failonerror="true">
-         <fileset dir=".." includes="*/build.xml" excludes="common/build.xml"/>
+         <fileset dir=".." includes="jms/*/build.xml" excludes="common/build.xml"/>
       </subant>
    </target>
 

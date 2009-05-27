@@ -21,7 +21,10 @@
    */
 package org.jboss.jms.example;
 
-import java.util.HashMap;
+import org.jboss.common.example.JBMExample;
+import org.jboss.messaging.core.management.MessageCounterInfo;
+import org.jboss.messaging.core.management.ObjectNames;
+import org.jboss.messaging.jms.server.management.JMSQueueControlMBean;
 
 import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
@@ -38,11 +41,7 @@ import javax.management.remote.JMXConnector;
 import javax.management.remote.JMXConnectorFactory;
 import javax.management.remote.JMXServiceURL;
 import javax.naming.InitialContext;
-
-import org.jboss.common.example.JBMExample;
-import org.jboss.messaging.core.management.MessageCounterInfo;
-import org.jboss.messaging.core.management.ObjectNames;
-import org.jboss.messaging.jms.server.management.JMSQueueControlMBean;
+import java.util.HashMap;
 
 /**
  * An example showing how to use message counters to have information on a queue.
@@ -56,11 +55,7 @@ public class MessageCounterExample extends JBMExample
 
    public static void main(String[] args)
    {
-      String[] serverJMXArgs = new String[] { "-Dcom.sun.management.jmxremote",
-                                             "-Dcom.sun.management.jmxremote.port=3001",
-                                             "-Dcom.sun.management.jmxremote.ssl=false",
-                                             "-Dcom.sun.management.jmxremote.authenticate=false" };
-      new MessageCounterExample().run(serverJMXArgs, args);
+      new MessageCounterExample().run(args);
    }
 
    public boolean runExample() throws Exception

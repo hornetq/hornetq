@@ -21,6 +21,11 @@
    */
 package org.jboss.jms.example;
 
+import org.jboss.common.example.JBMExample;
+import org.jboss.messaging.jms.JBossQueue;
+import org.jboss.messaging.jms.JBossTopic;
+import org.jboss.messaging.jms.client.JBossConnectionFactory;
+
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.MessageConsumer;
@@ -29,11 +34,6 @@ import javax.jms.Queue;
 import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.jms.Topic;
-
-import org.jboss.common.example.JBMExample;
-import org.jboss.messaging.jms.JBossQueue;
-import org.jboss.messaging.jms.JBossTopic;
-import org.jboss.messaging.jms.client.JBossConnectionFactory;
 
 /**
  * This example demonstrates a cluster of three nodes set up in a symmetric topology - i.e. each node
@@ -62,7 +62,7 @@ public class SymmetricClusterExample extends JBMExample
                                            "-XX:+AggressiveOpts",
                                            "-XX:+UseFastAccessorMethods" };
       
-      new SymmetricClusterExample().run(serverArgs, args);
+      new SymmetricClusterExample().run(args);
    }
 
    public boolean runExample() throws Exception

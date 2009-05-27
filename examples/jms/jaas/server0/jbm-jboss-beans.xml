@@ -25,7 +25,7 @@
    <bean name="Configuration" class="org.jboss.messaging.core.config.impl.FileConfiguration"/>
 
    <!-- The security manager using JAAS -->
-   <bean name="JBMSecurityManager" class="org.jboss.messaging.integration.security.JAASSecurityManager">
+   <bean name="JBMSecurityManager" class="org.jboss.messaging.core.security.impl.JAASSecurityManager">
       <property name="configurationName">org.jboss.jms.example.ExampleLoginModule</property>
       <property name="configuration">
          <inject bean="ExampleConfiguration"/>

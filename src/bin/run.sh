@@ -1,5 +1,5 @@
 export JBM_HOME=..
-
+mkdir logs
 # By default, the server is started in the non-clustered standalone configuration
 
 if [ a"$1" = a ]; then CONFIG_DIR=$JBM_HOME/config/stand-alone/non-clustered; else CONFIG_DIR="$1"; fi

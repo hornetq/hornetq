@@ -50,7 +50,7 @@ public class SpawnedVMSupport
 
    public static Process spawnVM(String classPath,
                                  final String className,
-                                 final String[] vmargs,
+                                 final String vmargs,
                                  final boolean logOutput,
                                  final String success,
                                  final String failure,
@@ -60,21 +60,16 @@ public class SpawnedVMSupport
       StringBuffer sb = new StringBuffer();
 
       sb.append("java").append(' ');
-
-      for (String vmarg : vmargs)
+      String vmarg = vmargs;
+      if (System.getProperty("os.name").contains("Windows"))
       {
-         if (System.getProperty("os.name").contains("Windows"))
-         {
-            vmarg = vmarg.replaceAll("/", "\\\\");
-         }
-         sb.append(vmarg).append(' ');
+         vmarg = vmarg.replaceAll("/", "\\\\");
       }
+      sb.append(vmarg).append(" ");
       String pathSeparater = System.getProperty("path.separator");
       classPath = classPath + pathSeparater + ".";
-      // System.out.println("classPath = " + classPath);
-      // I guess it'd be simpler to check if the OS is Windows...
-      
-      boolean  isWindows = System.getProperty("os.name").contains("Windows");
+
+      boolean isWindows = System.getProperty("os.name").contains("Windows");
       if (isWindows)
       {
          sb.append("-cp").append(" \"").append(classPath).append("\" ");
@@ -83,7 +78,7 @@ public class SpawnedVMSupport
       {
          sb.append("-cp").append(" ").append(classPath).append(" ");
       }
-      
+
       //FIXME - not good to assume path separator
       String libPath = "-Djava.library.path=" + System.getProperty("java.library.path", "./native/bin");
       if (isWindows)
@@ -93,7 +88,6 @@ public class SpawnedVMSupport
       }
       sb.append("-Djava.library.path=").append(libPath).append(" ");
 
-      // sb.append("-Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=8000 ");
       sb.append(className).append(' ');
 
       for (String arg : args)
@@ -105,7 +99,7 @@ public class SpawnedVMSupport
 
       log.info("command line: " + commandLine);
 
-      Process process = Runtime.getRuntime().exec(commandLine, new String[] {}, new File(configDir));
+      Process process = Runtime.getRuntime().exec(commandLine, new String[]{}, new File(configDir));
 
       log.trace("process: " + process);
 
@@ -139,6 +133,13 @@ public class SpawnedVMSupport
 
       if (outputLogger.failed || errorLogger.failed)
       {
+         try
+         {
+            process.destroy();
+         }
+         catch (Throwable e)
+         {
+         }
          throw new RuntimeException("server failed to start");
       }
       return process;
@@ -207,11 +208,11 @@ public class SpawnedVMSupport
                {
                   if (sendToErr)
                   {
-                     System.err.println(className + " err:" + line);
+                     System.err.println("JBMServer err:" + line);
                   }
                   else
                   {
-                     System.out.println(className + " out:" + line);
+                     System.out.println("JBMServer out:" + line);
                   }
                }
             }

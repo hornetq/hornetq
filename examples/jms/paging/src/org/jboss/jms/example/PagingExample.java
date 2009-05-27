@@ -21,6 +21,8 @@
    */
 package org.jboss.jms.example;
 
+import org.jboss.common.example.JBMExample;
+
 import javax.jms.BytesMessage;
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
@@ -31,8 +33,6 @@ import javax.jms.Queue;
 import javax.jms.Session;
 import javax.naming.InitialContext;
 
-import org.jboss.common.example.JBMExample;
-
 /**
  * A simple JMS Queue example that creates a producer and consumer on a queue and sends then receives a message.
  *
@@ -42,13 +42,7 @@ public class PagingExample extends JBMExample
 {
    public static void main(String[] args)
    {
-      String[] serverArgs = new String[] { "-Xms50M",
-                                          "-Xmx50M",
-                                          "-XX:+UseParallelGC",
-                                          "-XX:+AggressiveOpts",
-                                          "-XX:+UseFastAccessorMethods" };
-
-      new PagingExample().run(serverArgs, args);
+      new PagingExample().run(args);
    }
 
    public boolean runExample() throws Exception

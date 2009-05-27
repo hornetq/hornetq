@@ -46,36 +46,28 @@ public abstract class JBMExample
 
    private String serverClasspath;
 
+   private String serverProps;
+
    public abstract boolean runExample() throws Exception;
    
    private boolean logServerOutput;
    
-   private String[] allVMArgs;
-   
    private String[] configs;
-   
-   private static final String[] defaultArgs = new String[] {"-Xms512M",
-                                                             "-Xmx512M",
-                                                             "-XX:+UseParallelGC",
-                                                             "-XX:+AggressiveOpts",
-                                                             "-XX:+UseFastAccessorMethods"};
       
-   protected void run(String[] serverVMArgs, String[] configs)
+   protected void run(String[] configs)
    {
       String runServerProp = System.getProperty("jbm.example.runServer");
       String logServerOutputProp = System.getProperty("jbm.example.logserveroutput");
       serverClasspath = System.getProperty("jbm.example.server.classpath");
       boolean runServer = runServerProp == null ? true : Boolean.valueOf(runServerProp);
       logServerOutput = logServerOutputProp == null?false:Boolean.valueOf(logServerOutputProp);
-      log.info("jbm.example.runServer is " + runServer);
-            
-      allVMArgs = new String[serverVMArgs == null ? 1 : serverVMArgs.length + 1];
-      if (serverVMArgs != null)
+      serverProps = System.getProperty("jbm.example.server.args");
+      if(System.getProperty("jbm.example.server.override.args") != null)
       {
-         System.arraycopy(serverVMArgs, 0, allVMArgs, 0, serverVMArgs.length);
-      }      
-      String logProps = System.getProperty("java.util.logging.config.file");
-      allVMArgs[allVMArgs.length - 1] = "-Djava.util.logging.config.file=" + logProps;
+         serverProps = System.getProperty("jbm.example.server..override.args");  
+      }
+      System.out.println("serverProps = " + serverProps);
+      log.info("jbm.example.runServer is " + runServer);
       
       this.configs = configs;
 
@@ -124,11 +116,6 @@ public abstract class JBMExample
       reportResultAndExit();      
    }
 
-   protected void run(String[] args)
-   {
-      run( defaultArgs, args);
-   }
-
    protected void killServer(int id) throws Exception
    {
       System.out.println("Killing server " + id);
@@ -173,21 +160,11 @@ public abstract class JBMExample
    protected void startServer(int index) throws Exception
    {
       String config = configs[index];
-      log.info("starting server with config '" + config + "' " + "logServerOutput " + logServerOutput);      
-      StringBuilder args = new StringBuilder();
-      for (int i = 0; i < allVMArgs.length; i++)
-      {
-         args.append(allVMArgs[i]);
-         if (i != allVMArgs.length - 1)
-         {
-            args.append(",");
-         }
-      }
-      log.info("and vm args: " + args.toString());
+      log.info("starting server with config '" + config + "' " + "logServerOutput " + logServerOutput);    
       servers[index] = SpawnedVMSupport.spawnVM(
             serverClasspath,
             SpawnedJBMServer.class.getName(),
-            allVMArgs,
+            serverProps,
             logServerOutput,
             "STARTED::",
             "FAILED::",

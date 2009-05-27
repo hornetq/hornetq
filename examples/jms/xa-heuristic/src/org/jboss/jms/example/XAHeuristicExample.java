@@ -21,8 +21,10 @@
    */
 package org.jboss.jms.example;
 
-import java.util.ArrayList;
-import java.util.HashMap;
+import org.jboss.common.example.JBMExample;
+import org.jboss.messaging.core.management.ObjectNames;
+import org.jboss.messaging.core.transaction.impl.XidImpl;
+import org.jboss.messaging.utils.UUIDGenerator;
 
 import javax.jms.JMSException;
 import javax.jms.Message;
@@ -43,11 +45,8 @@ import javax.management.remote.JMXServiceURL;
 import javax.naming.InitialContext;
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
-
-import org.jboss.common.example.JBMExample;
-import org.jboss.messaging.core.management.ObjectNames;
-import org.jboss.messaging.core.transaction.impl.XidImpl;
-import org.jboss.messaging.utils.UUIDGenerator;
+import java.util.ArrayList;
+import java.util.HashMap;
 
 /**
  * A simple JMS example showing how to administer un-finished transactions.
@@ -63,12 +62,7 @@ public class XAHeuristicExample extends JBMExample
 
    public static void main(String[] args)
    {
-      String[] serverJMXArgs = new String[] { "-Dcom.sun.management.jmxremote",
-                                             "-Dcom.sun.management.jmxremote.port=3001",
-                                             "-Dcom.sun.management.jmxremote.ssl=false",
-                                             "-Dcom.sun.management.jmxremote.authenticate=false"
-      };
-      new XAHeuristicExample().run(serverJMXArgs, args);
+      new XAHeuristicExample().run(args);
    }
 
    public boolean runExample() throws Exception

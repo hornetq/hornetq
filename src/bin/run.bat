@@ -8,7 +8,7 @@ REM export JVM_ARGS="-Xmx512M -Djava.util.logging.config.file=%CONFIG_DIR%\loggi
 for /R ..\lib %%A in (*.jar) do (
 SET CLASSPATH=!CLASSPATH!;%%A
 )
-
+mkdit logs
 echo ***********************************************************************************
 echo "java %JVM_ARGS% -classpath %CLASSPATH% org.jboss.messaging.integration.bootstrap.JBMBootstrapServer jbm-jboss-beans.xml"
 echo ***********************************************************************************

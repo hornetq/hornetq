@@ -21,8 +21,9 @@
    */
 package org.jboss.jms.example;
 
-import java.util.HashMap;
-import java.util.concurrent.atomic.AtomicReference;
+import org.jboss.common.example.JBMExample;
+import org.jboss.messaging.core.management.MessagingServerControlMBean;
+import org.jboss.messaging.core.management.ObjectNames;
 
 import javax.jms.ExceptionListener;
 import javax.jms.JMSException;
@@ -35,10 +36,8 @@ import javax.management.remote.JMXConnector;
 import javax.management.remote.JMXConnectorFactory;
 import javax.management.remote.JMXServiceURL;
 import javax.naming.InitialContext;
-
-import org.jboss.common.example.JBMExample;
-import org.jboss.messaging.core.management.MessagingServerControlMBean;
-import org.jboss.messaging.core.management.ObjectNames;
+import java.util.HashMap;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * An example that shows how to kick off a client connected to JBoss Messagingby using JMX.
@@ -51,11 +50,7 @@ public class ClientKickoffExample extends JBMExample
 
    public static void main(String[] args)
    {
-      String[] serverJMXArgs = new String[] { "-Dcom.sun.management.jmxremote",
-                                             "-Dcom.sun.management.jmxremote.port=3000",
-                                             "-Dcom.sun.management.jmxremote.ssl=false",
-                                             "-Dcom.sun.management.jmxremote.authenticate=false" };
-      new ClientKickoffExample().run(serverJMXArgs, args);
+      new ClientKickoffExample().run(args);
    }
 
    public boolean runExample() throws Exception

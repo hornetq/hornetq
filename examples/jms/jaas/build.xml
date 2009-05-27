@@ -31,7 +31,11 @@
 <project default="run" name="JBoss Messaging JAAS Queue Example">
 
    <import file="../../common/build.xml"/>
-
+   <path id="extra.classpath">
+      <fileset dir="${jars.dir}">
+         <include name="**/jbosssx-client.jar"/>
+      </fileset>
+   </path>
    <target name="run">
       <antcall target="runExample">
          <param name="example.classname" value="org.jboss.jms.example.JAASExample"/>

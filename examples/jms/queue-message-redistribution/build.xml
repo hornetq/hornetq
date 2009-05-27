@@ -33,10 +33,10 @@
    <import file="../../common/build.xml"/>
 
    <target name="run">
-      <antcall target="runExample">
+     <!-- <antcall target="runExample">
          <param name="example.classname" value="org.jboss.jms.example.QueueMessageRedistributionExample"/>
          <param name="jbm.example.beans.file" value="server0 server1"/>
-      </antcall>
+      </antcall>-->
    </target>
 
    <target name="runRemote">

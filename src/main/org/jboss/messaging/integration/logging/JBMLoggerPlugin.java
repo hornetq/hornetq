@@ -24,91 +24,94 @@ package org.jboss.messaging.integration.logging;
 
 import org.jboss.logging.LoggerPlugin;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 /**
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
  */
 @SuppressWarnings("deprecation")
 public class JBMLoggerPlugin implements LoggerPlugin
 {
-   org.apache.log4j.Logger logger;
+   Logger logger;
 
    public void init(String s)
    {
-      logger = org.apache.log4j.Logger.getLogger(s);
+      logger = Logger.getLogger(s);
    }
 
    public boolean isTraceEnabled()
    {
-      return logger.isTraceEnabled();
+      return logger.isLoggable(Level.FINEST);
    }
 
    public void trace(Object o)
    {
-      logger.trace(o);
+      logger.log(Level.FINEST, o.toString());
    }
 
    public void trace(Object o, Throwable throwable)
    {
-      logger.trace(o, throwable);
+      logger.log(Level.FINEST, o.toString(), throwable);
    }
 
    public boolean isDebugEnabled()
    {
-      return logger.isDebugEnabled();
+      return logger.isLoggable(Level.FINE);
    }
 
    public void debug(Object o)
    {
-      logger.debug(o);
+      logger.log(Level.FINE, o.toString());
    }
 
    public void debug(Object o, Throwable throwable)
    {
-      logger.debug(o, throwable);
+      logger.log(Level.FINE, o.toString(), throwable);
    }
 
    public boolean isInfoEnabled()
    {
-      return logger.isInfoEnabled();
+      return logger.isLoggable(Level.INFO);
    }
 
    public void info(Object o)
    {
-      logger.info(o);
+      logger.log(Level.INFO, o.toString());
    }
 
    public void info(Object o, Throwable throwable)
    {
-      logger.info(o, throwable);
+      logger.log(Level.INFO, o.toString(), throwable);
    }
 
    public void warn(Object o)
    {
-      logger.warn(o);
+      logger.log(Level.WARNING, o.toString());
    }
 
    public void warn(Object o, Throwable throwable)
    {
-      logger.warn(o, throwable);
+      logger.log(Level.WARNING, o.toString(), throwable);
    }
 
    public void error(Object o)
    {
-      logger.warn(o);
+      logger.log(Level.SEVERE, o.toString());
    }
 
    public void error(Object o, Throwable throwable)
    {
-      logger.error(o, throwable);
+      logger.log(Level.SEVERE, o.toString(), throwable);
    }
 
    public void fatal(Object o)
    {
-      logger.fatal(o);
+      logger.log(Level.SEVERE, o.toString());
    }
 
    public void fatal(Object o, Throwable throwable)
    {
-      logger.fatal(o, throwable);
+      logger.log(Level.SEVERE, o.toString(), throwable);
    }
 }
