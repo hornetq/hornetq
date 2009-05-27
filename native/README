@@ -34,6 +34,14 @@ COMPILED FILE
 The produced file will be under ./native/src/.libs/libJBMLibAIO.so
 
 
+PERF-DISK
+
+There is a script on this directory called perf-disk. This script will tell you how many bytes per second your disk is capable of.
+
+If you interrupt this script, you will see a file (/tmp/foo.dat) created on your disk, which is used to measure the performance.
+
+
+
 README IS A REQUIRED FILE
 
 This file exists here as required by autoconf, or else we would have a compilation error.
