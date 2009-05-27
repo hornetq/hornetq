@@ -71,7 +71,7 @@ public class DiscoveryTest extends UnitTestCase
       
       final String nodeID = randomString();
 
-      BroadcastGroup bg = new BroadcastGroupImpl(nodeID, randomString(), -1, groupAddress, groupPort, true);
+      BroadcastGroup bg = new BroadcastGroupImpl(nodeID, randomString(), null, -1, groupAddress, groupPort, true);
 
       bg.start();
 
@@ -120,7 +120,7 @@ public class DiscoveryTest extends UnitTestCase
       
       final String nodeID = randomString();
 
-      BroadcastGroup bg = new BroadcastGroupImpl(nodeID, randomString(), -1, groupAddress, groupPort, true);
+      BroadcastGroup bg = new BroadcastGroupImpl(nodeID, randomString(), null, -1, groupAddress, groupPort, true);
 
       bg.start();
 
@@ -191,7 +191,7 @@ public class DiscoveryTest extends UnitTestCase
       
       String nodeID = randomString();
 
-      BroadcastGroup bg = new BroadcastGroupImpl(nodeID, randomString(), -1, groupAddress, groupPort, true);
+      BroadcastGroup bg = new BroadcastGroupImpl(nodeID, randomString(), null, -1, groupAddress, groupPort, true);
 
       bg.start();
 
@@ -273,7 +273,7 @@ public class DiscoveryTest extends UnitTestCase
       final int groupPort = 6745;
       final int timeout = 500;
 
-      BroadcastGroup bg = new BroadcastGroupImpl(randomString(), randomString(), -1, groupAddress, groupPort, true);
+      BroadcastGroup bg = new BroadcastGroupImpl(randomString(), randomString(), null, -1, groupAddress, groupPort, true);
 
       bg.start();
 
@@ -309,7 +309,7 @@ public class DiscoveryTest extends UnitTestCase
       final int groupPort = 6745;
       final int timeout = 500;
 
-      BroadcastGroup bg = new BroadcastGroupImpl(randomString(), randomString(), -1, groupAddress, groupPort, true);
+      BroadcastGroup bg = new BroadcastGroupImpl(randomString(), randomString(), null, -1, groupAddress, groupPort, true);
 
       bg.start();
 
@@ -359,13 +359,13 @@ public class DiscoveryTest extends UnitTestCase
       
       String node3 = randomString();
 
-      BroadcastGroup bg1 = new BroadcastGroupImpl(node1, randomString(), -1, groupAddress1, groupPort1, true);
+      BroadcastGroup bg1 = new BroadcastGroupImpl(node1, randomString(), null, -1, groupAddress1, groupPort1, true);
       bg1.start();
 
-      BroadcastGroup bg2 = new BroadcastGroupImpl(node2, randomString(), -1, groupAddress2, groupPort2, true);
+      BroadcastGroup bg2 = new BroadcastGroupImpl(node2, randomString(), null, -1, groupAddress2, groupPort2, true);
       bg2.start();
 
-      BroadcastGroup bg3 = new BroadcastGroupImpl(node3, randomString(), -1, groupAddress3, groupPort3, true);
+      BroadcastGroup bg3 = new BroadcastGroupImpl(node3, randomString(), null, -1, groupAddress3, groupPort3, true);
       bg3.start();
 
       TransportConfiguration live1 = generateTC();
@@ -449,7 +449,7 @@ public class DiscoveryTest extends UnitTestCase
       
       String nodeID = randomString();
 
-      BroadcastGroup bg = new BroadcastGroupImpl(nodeID, randomString(), -1, groupAddress, groupPort, true);
+      BroadcastGroup bg = new BroadcastGroupImpl(nodeID, randomString(), null, -1, groupAddress, groupPort, true);
 
       bg.start();
 
@@ -491,7 +491,7 @@ public class DiscoveryTest extends UnitTestCase
       
       String nodeID = randomString();
 
-      BroadcastGroup bg = new BroadcastGroupImpl(nodeID, randomString(), -1, groupAddress, groupPort, true);
+      BroadcastGroup bg = new BroadcastGroupImpl(nodeID, randomString(), null, -1, groupAddress, groupPort, true);
 
       bg.start();
 
@@ -550,13 +550,13 @@ public class DiscoveryTest extends UnitTestCase
       String node2 = randomString();
       String node3 = randomString();
 
-      BroadcastGroup bg1 = new BroadcastGroupImpl(node1, randomString(), -1, groupAddress, groupPort, true);
+      BroadcastGroup bg1 = new BroadcastGroupImpl(node1, randomString(), null, -1, groupAddress, groupPort, true);
       bg1.start();
 
-      BroadcastGroup bg2 = new BroadcastGroupImpl(node2, randomString(), -1, groupAddress, groupPort, true);
+      BroadcastGroup bg2 = new BroadcastGroupImpl(node2, randomString(), null, -1, groupAddress, groupPort, true);
       bg2.start();
 
-      BroadcastGroup bg3 = new BroadcastGroupImpl(node3, randomString(), -1, groupAddress, groupPort, true);
+      BroadcastGroup bg3 = new BroadcastGroupImpl(node3, randomString(), null, -1, groupAddress, groupPort, true);
       bg3.start();
 
       TransportConfiguration live1 = generateTC();
@@ -794,7 +794,7 @@ public class DiscoveryTest extends UnitTestCase
       
       String nodeID = randomString();
 
-      BroadcastGroup bg = new BroadcastGroupImpl(nodeID, randomString(), -1, groupAddress, groupPort, true);
+      BroadcastGroup bg = new BroadcastGroupImpl(nodeID, randomString(), null, -1, groupAddress, groupPort, true);
 
       bg.start();
 

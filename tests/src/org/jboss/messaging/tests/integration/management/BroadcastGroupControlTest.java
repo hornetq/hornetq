@@ -61,6 +61,7 @@ public class BroadcastGroupControlTest extends ManagementTestBase
    public static BroadcastGroupConfiguration randomBroadcastGroupConfiguration(List<Pair<String, String>> connectorInfos)
    {
       return new BroadcastGroupConfiguration(randomString(),
+                                             null,
                                              1198,
                                              "231.7.7.7",
                                              1199,

@@ -46,6 +46,8 @@ public class BroadcastGroupConfiguration implements Serializable
   
    private final String name;
    
+   private final String localBindAddress;
+
    private final int localBindPort;
    
    private final String groupAddress;
@@ -55,8 +57,9 @@ public class BroadcastGroupConfiguration implements Serializable
    private final long broadcastPeriod;
    
    private final List<Pair<String, String>> connectorInfos;
-
+   
    public BroadcastGroupConfiguration(final String name,
+                                      final String localBindAddress,
                                       final int localBindPort,
                                       final String groupAddress,
                                       final int groupPort,
@@ -65,6 +68,7 @@ public class BroadcastGroupConfiguration implements Serializable
    {
       super();
       this.name = name;
+      this.localBindAddress = localBindAddress;
       this.localBindPort = localBindPort;
       this.groupAddress = groupAddress;
       this.groupPort = groupPort;
@@ -75,6 +79,11 @@ public class BroadcastGroupConfiguration implements Serializable
    public String getName()
    {
       return name;
+   }
+
+   public String getLocalBindAddress()
+   {
+      return localBindAddress;
    }
 
    public int getLocalBindPort()

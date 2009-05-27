@@ -916,6 +916,7 @@ public class JBossConnectionFactoryTest extends UnitTestCase
       final int localBindPort = 5432;
 
       BroadcastGroupConfiguration bcConfig1 = new BroadcastGroupConfiguration(bcGroupName,
+                                                                              null,
                                                                               localBindPort,
                                                                               groupAddress,
                                                                               groupPort,

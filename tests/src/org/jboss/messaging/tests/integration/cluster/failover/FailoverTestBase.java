@@ -241,6 +241,7 @@ public class FailoverTestBase extends ServiceTestBase
       final long broadcastPeriod = 250;
 
       BroadcastGroupConfiguration bcConfig1 = new BroadcastGroupConfiguration(bcGroupName,
+                                                                              null,
                                                                               localBindPort,
                                                                               groupAddress,
                                                                               groupPort,

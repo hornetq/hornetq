@@ -444,6 +444,8 @@ public class FileConfiguration extends ConfigurationImpl
    {
       String name = bgNode.getAttribute("name");
 
+      String localAddress = null;
+      
       int localBindPort = -1;
 
       String groupAddress = null;
@@ -460,7 +462,11 @@ public class FileConfiguration extends ConfigurationImpl
       {
          Node child = children.item(j);
 
-         if (child.getNodeName().equals("local-bind-port"))
+         if (child.getNodeName().equals("local-bind-address"))
+         {
+            localAddress = child.getTextContent().trim();
+         }
+         else if (child.getNodeName().equals("local-bind-port"))
          {
             localBindPort = org.jboss.messaging.utils.XMLUtil.parseInt(child);
          }
@@ -496,6 +502,7 @@ public class FileConfiguration extends ConfigurationImpl
       }
 
       BroadcastGroupConfiguration config = new BroadcastGroupConfiguration(name,
+                                                                           localAddress,
                                                                            localBindPort,
                                                                            groupAddress,
                                                                            groupPort,

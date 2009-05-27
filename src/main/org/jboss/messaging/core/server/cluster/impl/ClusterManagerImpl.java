@@ -25,13 +25,13 @@ package org.jboss.messaging.core.server.cluster.impl;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
 import java.net.InetAddress;
+import java.net.NetworkInterface;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.Executor;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 
@@ -45,18 +45,15 @@ import org.jboss.messaging.core.config.cluster.ClusterConnectionConfiguration;
 import org.jboss.messaging.core.config.cluster.DiscoveryGroupConfiguration;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.management.ManagementService;
-import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.Binding;
 import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.remoting.Channel;
 import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.core.server.Queue;
-import org.jboss.messaging.core.server.QueueFactory;
 import org.jboss.messaging.core.server.cluster.Bridge;
 import org.jboss.messaging.core.server.cluster.BroadcastGroup;
 import org.jboss.messaging.core.server.cluster.ClusterConnection;
 import org.jboss.messaging.core.server.cluster.ClusterManager;
-import org.jboss.messaging.core.server.cluster.MessageFlowRecord;
 import org.jboss.messaging.core.server.cluster.Transformer;
 import org.jboss.messaging.utils.Pair;
 import org.jboss.messaging.utils.SimpleString;
@@ -264,10 +261,17 @@ public class ClusterManagerImpl implements ClusterManager
          return;
       }
 
+      InetAddress localAddress = null;
+      if (config.getLocalBindAddress() != null)
+      {
+         localAddress = InetAddress.getByName(config.getLocalBindAddress());
+      }
+
       InetAddress groupAddress = InetAddress.getByName(config.getGroupAddress());
 
       BroadcastGroupImpl group = new BroadcastGroupImpl(nodeUUID.toString(),
                                                         config.getName(),
+                                                        localAddress,
                                                         config.getLocalBindPort(),
                                                         groupAddress,
                                                         config.getGroupPort(),

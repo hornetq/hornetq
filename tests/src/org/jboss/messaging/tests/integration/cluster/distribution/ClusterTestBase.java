@@ -1045,6 +1045,7 @@ public class ClusterTestBase extends ServiceTestBase
       }
 
       BroadcastGroupConfiguration bcConfig = new BroadcastGroupConfiguration("bg1",
+                                                                             null,
                                                                              -1,
                                                                              groupAddress,
                                                                              port,

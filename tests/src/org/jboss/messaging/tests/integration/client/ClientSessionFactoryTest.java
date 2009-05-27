@@ -864,6 +864,7 @@ public class ClientSessionFactoryTest extends ServiceTestBase
       final int localBindPort = 5432;
 
       BroadcastGroupConfiguration bcConfig1 = new BroadcastGroupConfiguration(bcGroupName,
+                                                                              null,
                                                                               localBindPort,
                                                                               groupAddress,
                                                                               groupPort,

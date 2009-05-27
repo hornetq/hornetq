@@ -53,6 +53,8 @@ public class BroadcastGroupImpl implements BroadcastGroup, Runnable
 
    private final String name;
 
+   private final InetAddress localAddress;
+
    private final int localPort;
 
    private final InetAddress groupAddress;
@@ -73,8 +75,12 @@ public class BroadcastGroupImpl implements BroadcastGroup, Runnable
    //on the network which would be an error
    private final String uniqueID;
 
+   /**
+    * Broadcast group is bound locally to the wildcard address
+    */
    public BroadcastGroupImpl(final String nodeID,
                              final String name,
+                             final InetAddress localAddress,
                              final int localPort,
                              final InetAddress groupAddress,
                              final int groupPort,
@@ -83,6 +89,8 @@ public class BroadcastGroupImpl implements BroadcastGroup, Runnable
       this.nodeID = nodeID;
 
       this.name = name;
+      
+      this.localAddress = localAddress;
 
       this.localPort = localPort;
 
@@ -102,10 +110,9 @@ public class BroadcastGroupImpl implements BroadcastGroup, Runnable
          return;
       }
 
-      // we configure only the port, the address must be bound to the wildcard address to receive broadcast packets
       if (localPort != -1)
       {
-         socket = new DatagramSocket(localPort);
+         socket = new DatagramSocket(localPort, localAddress);
       }
       else
       {

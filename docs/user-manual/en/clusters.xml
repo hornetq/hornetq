@@ -86,11 +86,12 @@
                         have a unique name. </para>
                 </listitem>
                 <listitem>
-                    <para><literal>local-bind-address</literal>. TODO. This is the local bind
+                    <para><literal>local-bind-address</literal>. This is the local bind
                         address that the datagram socket is bound to. If you have multiple network
                         interfaces on your server, you would specify which one you wish to use for
                         broadcasts by setting this property. If this property is not specified then
-                        TODO TODO</para>
+                        the socket will be bound to the wildcard address, an IP address chosen by 
+                        the kernel.</para>
                 </listitem>
                 <listitem>
                     <para><literal>local-bind-port</literal>. If you want to specify a local port to
