@@ -7,7 +7,7 @@
         With <literal>libaio</literal> we submit writes to the operating system where they are
         processed asynchronously. Some time later the OS will call our code back when they have been
         processed.</para>
-    <para>These are the native library distributed by JBoss Messaging:</para>
+    <para>These are the native libraries distributed by JBoss Messaging:</para>
     <itemizedlist>
         <listitem>
             <para>libJBMLibAIO32.so - x86 32 bits</para>
@@ -23,13 +23,15 @@
         on the <link linkend="using-server.library.path">library path</link>.</para>
     <section>
         <title>Compiling the native libraries</title>
-        <para>Case you are using Linux on a platform other than x86_32, x86_64 or IA64 (Itanium), 
+        <para>Case you are using Linux on a platform other than x86_32, x86_64 or IA64 (Itanium),
             (for example IBM POWER) you may need to compile the native library, since we do not
             distribute binaries for those platforms with the release.</para>
         <section>
             <title>Install requirements</title>
-            <note><para>At the moment the native layer is only available on Linux. If you are in a
-                platform other then Linux the native compilation will not work</para></note>
+            <note>
+                <para>At the moment the native layer is only available on Linux. If you are in a
+                    platform other then Linux the native compilation will not work</para>
+            </note>
             <para>The native library uses <ulink url="http://en.wikipedia.org/wiki/Autoconf"
                     >autoconf</ulink> what makes the compilation process easy, however you need to
                 install extra packages as a requirement for compilation:</para>
@@ -101,7 +103,7 @@ config.status: executing libtool commands
                     <literal>bin</literal> on the distribution or the place you have chosen on the
                     <link linkend="using-server.library.path">library path</link>.</para>
             <para>If you want to perform changes on the JBoss Messaging libaio code, you could just
-                call make directly at the <literal>native</literal> directory.</para>
+                call make directly at the <literal>native-src</literal> directory.</para>
         </section>
     </section>
 </chapter>
