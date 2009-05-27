@@ -99,7 +99,7 @@ public class AsynchronousFileImpl implements AsynchronousFile
 
    static
    {
-      String libraries[] = new String[] { "JBMLibAIO", "JBMLibAIO32", "JBMLibAIO64" };
+      String libraries[] = new String[] { "JBMLibAIO", "JBMLibAIO32", "JBMLibAIO64", "JBMLibAIO_ia64" };
 
       for (String library : libraries)
       {
