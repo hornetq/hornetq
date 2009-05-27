@@ -4,37 +4,40 @@
    <para>In the directory <literal>examples</literal> there are 2 sets of examples, these are </para>
    <itemizedlist>
       <listitem>
-         <para>JMS Examples</para>
+         <para>JMS Examples - these demonstrate functionality by sending and consuming JMS
+            messages.</para>
       </listitem>
       <listitem>
-         <para>Java EE Examples</para>
+         <para>Java EE Examples - these demonstrate app server integration, e.g. MDBs, EJBs,
+            Servlets etc</para>
       </listitem>
    </itemizedlist>
-   <para>All the examples are run using Ant.</para>
+   <para>All the examples are run using ant. You will need ant installed on your system and the ant
+         <literal>bin</literal> directory on your path.</para>
    <section id="examples.jms">
       <title>The JMS examples</title>
       <para>The JMS Examples all follow the same format. Each examples is contained in its own
          directory which contains the following.</para>
       <itemizedlist>
          <listitem>
-            <para>build.xml</para>
+            <para><literal>build.xml</literal></para>
             <para>This is the ant build file used to run the example</para>
          </listitem>
          <listitem>
-            <para>src directory</para>
+            <para><literal>src</literal> directory</para>
             <para>This contains the source code for the example</para>
          </listitem>
          <listitem>
-            <para>server0 config dir</para>
+            <para><literal>server0</literal> config directory</para>
             <para>This contains the configuration files needed to run the server for the example.
-               There may be multiple config directories server0, server1 etc for clustered examples
-               etc.</para>
+               There may be multiple config directories <literal>server0</literal>, <literal
+                  >server1</literal> etc for clustered examples etc.</para>
          </listitem>
       </itemizedlist>
-      <para>Each example will start 1 or more standalone servers and stop them after the example has
-         completed.</para>
+      <para>Each example will start one or more standalone servers and stop them after the example
+         has completed.</para>
       <para>As a quick start we'll run the queue example. For all other examples refer to the main
-         User Manual.</para>
+         user manual.</para>
       <para>Firstly open a Shell or a Command prompt and navigate to the <literal
             >examples/jms/queue</literal> directory.</para>
       <para>Type the command <literal>ant</literal> and you should see the following output:</para>

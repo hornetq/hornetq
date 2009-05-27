@@ -5,7 +5,8 @@
    <section id="installation.prerequisites">
       <title>Prerequisites</title>
       <note>
-         <para>JBoss Messaging only runs on Java 5 or later.</para>
+         <para>JBoss Messaging only runs on Java 5 or later. We highly recommend you use Java
+            6.</para>
       </note>
       <para>By default, JBoss Messaging server is run with 1GB of memory. If your computer has less
          memory, modify the value in <literal>bin/run.sh</literal> accordingly.</para>

@@ -3,9 +3,10 @@
     <title>Libaio Native Libraries</title>
     <para>JBoss Messaging distributes a native library, used as a bridge between JBoss Messaging and
         linux libaio.</para>
-    <para>libaio is a library, developed as part of the linux kernel project. With libaio we perform
-        writes directly on the operation system, and the kernel will send a callback events being a
-        much faster approach than traditional syncs used on committs.</para>
+    <para><literal>libaio</literal> is a library, developed as part of the linux kernel project.
+        With <literal>libaio</literal> we submit writes to the operating system where they are
+        processed asynchronously. Some time later the OS will call our code back when they have been
+        processed.</para>
     <para>The native library is distributed in two flavors:</para>
     <itemizedlist>
         <listitem>
@@ -19,8 +20,9 @@
         on the <link linkend="using-server.library.path">library path</link>.</para>
     <section>
         <title>Compiling the native libraries</title>
-        <para>Case you are using Linux on a platform other than x86_32 and x86_64 you may need to
-            compile the native library.</para>
+        <para>Case you are using Linux on a platform other than x86_32 and x86_64, e.g. IA64
+            (Itanium) or IBM POWER,  you may need to compile the native library, since we do not
+            distribute binaries for those platforms with the release.</para>
         <section>
             <title>Install requirements</title>
             <para>The native library uses <ulink url="http://en.wikipedia.org/wiki/Autoconf"
