@@ -4,9 +4,8 @@
     <para>JBoss Messaging distributes a native library, used as a bridge between JBoss Messaging and
         linux libaio.</para>
     <para>libaio is a library, developed as part of the linux kernel project. With libaio we perform
-        writes directly on the operation system, and the kernel will sends a callback event on which
-        we use to determine the transaction state. With this we can perform transactions at much
-        faster rates.</para>
+        writes directly on the operation system, and the kernel will send a callback events being a
+        much faster approach than traditional syncs used on committs.</para>
     <para>The native library is distributed in two flavors:</para>
     <itemizedlist>
         <listitem>
@@ -16,8 +15,8 @@
             <para>libJBMLibAIO64.so - x86 64 bits</para>
         </listitem>
     </itemizedlist>
-    <para>JBoss Messaging will aways try loading these files, as long as they are on the <link
-            linkend="using-server.library.path">library path</link>.</para>
+    <para>When using libaio, JBoss Messaging will aways try loading these files as long as they are
+        on the <link linkend="using-server.library.path">library path</link>.</para>
     <section>
         <title>Compiling the native libraries</title>
         <para>Case you are using Linux on a platform other than x86_32 and x86_64 you may need to
