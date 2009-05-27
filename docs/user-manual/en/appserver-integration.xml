@@ -19,8 +19,7 @@
                 >META-INF/ra.xml</literal>.</para>
         <para>The configuration will look something like the following:</para>
         <programlisting>&lt;resourceadapter>
-      &lt;resourceadapter-class>org.jboss.messaging.ra.JBMResourceAdapter&lt;/resourceadapter
-      -class>
+      &lt;resourceadapter-class>org.jboss.messaging.ra.JBMResourceAdapter&lt;/resourceadapter-class>
       &lt;config-property>
          &lt;description>The transport type&lt;/description>
          &lt;config-property-name>ConnectorClassName&lt;/config-property-name>
@@ -29,8 +28,7 @@
          actory&lt;/config-property-value>
       &lt;/config-property>
       &lt;config-property>
-         &lt;description>The transport configuration. These values must be in the form of key
-         =val;key=val;&lt;/description>
+         &lt;description>The transport configuration. These values must be in the form of key=val;key=val;&lt;/description>
          &lt;config-property-name>ConnectionParameters&lt;/config-property-name>
          &lt;config-property-type>java.lang.String&lt;/config-property-type>
          &lt;config-property-value>jbm.remoting.invm.serverid=0&lt;/config-property-value>
@@ -430,7 +428,7 @@ initialContext = new InitialContext(jndiParameters);</programlisting>
                 url="http://www.jboss.org/file-access/default/members/jbossas/freezone/docs/Clustering_Guide/5/html/clustering-jndi.html"
                 >JBoss Application Server clustering documentation</ulink></para>
     </section>
-    <section>
+    <section id="jms-bridge">
         <title>The JMS Bridge</title>
         <para>JBoss Messaging includes a fully functional message bridge.</para>
         <para>The function of the bridge is to consume messages from a source queue or topic, and
@@ -808,13 +806,12 @@ initialContext = new InitialContext(jndiParameters);</programlisting>
                 the <literal>jta</literal> section of <literal>conf/jbossts-properties.xml</literal>
                 of JBoss AS profiles:</para>
             <programlisting>
-   &lt;properties depends="arjuna" name="jta"&gt;
-      ...
+&lt;properties depends="arjuna" name="jta"&gt;
+   ...
                      
-      &lt;property name="com.arjuna.ats.jta.recovery.XAResourceRecovery.JBMESSAGING1"
-      value=
-"org.jboss.messaging.jms.server.recovery.MessagingXAResourceRecovery;java:/XAConnectionFactory"/&gt;
-   &lt;/properties&gt;
+   &lt;property name="com.arjuna.ats.jta.recovery.XAResourceRecovery.JBMESSAGING1"
+                value="org.jboss.messaging.jms.server.recovery.MessagingXAResourceRecovery;java:/XAConnectionFactory"/&gt;
+&lt;/properties&gt;
          </programlisting>
             <para>This informs the recovery manager that it can recovers JBoss Messaging XA
                 Resources using the <literal>XAConnectionFactory</literal> bound to <literal
