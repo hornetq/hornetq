@@ -68,7 +68,10 @@
          </fileset>
       </copy>
 
-      <exec dir="${jboss.home}/bin" command="./run.sh -c jca-config-example-profile2 -Djboss.service.binding.set=ports-01"/>
+      <exec dir="${jboss.home}/bin" executable="sh">
+         <arg line="run.sh -c jca-config-example-profile2 -Djboss.service.binding.set=ports-01"/>
+      </exec>
+
       <!-- copy 1st server resources  configuration -->
       <!--<copy file="./server/jms-remote-ds.xml" todir="${deploy.dir}" overwrite="yes"/>
    	  <copy file="./server/jbm-queues.xml" tofile="${deploy.dir}/messaging.sar/jbm-queues.xml" overwrite="yes"/>
