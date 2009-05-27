@@ -32,12 +32,11 @@
 
    <import file="../../common/build.xml"/>
 
-    <path id="extra.classpath">
-      <!--<fileset dir=".">
-         <include name="server0"/>
-      </fileset>-->
+   <path id="extra.classpath">
        <path location="server0"/>
    </path>
+   
+   <property name="perf.properties.file.name" value="perf.properties" />
 
    <target name="runSender" depends="compile">
       <java classname="org.jboss.core.example.PerfSender" fork="true" resultproperty="example-result">
@@ -45,18 +44,20 @@
 		   <jvmarg value="-Xmx512M"/>
          <jvmarg value="-XX:+UseParallelGC"/>
          <jvmarg value="-XX:+AggressiveOpts"/>
-		   <jvmarg value="-XX:+UseFastAccessorMethods"/>               
+		   <jvmarg value="-XX:+UseFastAccessorMethods"/>             
+         <arg line="${perf.properties.file.name}"/>
          <classpath refid="client.classpath"/>
       </java>
    </target>
 
    <target name="runListener" depends="compile">
-      <java classname="org.jboss.core.example.PerfListener" fork="true" resultproperty="example-result">
+      <java classname="org.jboss.core.example.PerfListener" fork="true" resultproperty="example-result">         
          <jvmarg value="-Xms512M"/>
 		   <jvmarg value="-Xmx512M"/>
          <jvmarg value="-XX:+UseParallelGC"/>
          <jvmarg value="-XX:+AggressiveOpts"/>
-		   <jvmarg value="-XX:+UseFastAccessorMethods"/>         
+		   <jvmarg value="-XX:+UseFastAccessorMethods"/>   
+         <arg line="${perf.properties.file.name}"/>
          <classpath refid="client.classpath"/>
       </java>
    </target>
@@ -66,7 +67,7 @@
          <jvmarg value="-Xms2048M"/>
 		   <jvmarg value="-Xmx2048M"/>
          <jvmarg value="-XX:+UseParallelGC"/> 
-      	 <sysproperty key="java.library.path" value="${java.library.path}${path.separator}${aio.library.path}"/>
+      	<sysproperty key="java.library.path" value="${java.library.path}${path.separator}${aio.library.path}"/>
          <jvmarg value="-XX:+AggressiveOpts"/>
 		   <jvmarg value="-XX:+UseFastAccessorMethods"/>         
          <arg line="jbm-jboss-beans.xml"/>

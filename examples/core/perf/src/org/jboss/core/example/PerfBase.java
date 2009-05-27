@@ -54,8 +54,28 @@ import org.jboss.messaging.utils.TokenBucketLimiterImpl;
 public abstract class PerfBase
 {
    private static final Logger log = Logger.getLogger(PerfSender.class.getName());
+   
+   private static final String DEFAULT_PERF_PROPERTIES_FILE_NAME = "perf.properties";
+   
+   protected static String getPerfFileName(String[] args)
+   {
+      String fileName;
+      
+      if (args.length > 0)
+      {
+         fileName = args[0];
+      }
+      else
+      {
+         fileName = DEFAULT_PERF_PROPERTIES_FILE_NAME;
+      }
+      
+      log.info("Using file name " + fileName);
+      
+      return fileName;
+   }
 
-   protected static PerfParams getParams() throws Exception
+   protected static PerfParams getParams(final String fileName) throws Exception
    {
       Properties props = null;
 
@@ -63,7 +83,7 @@ public abstract class PerfBase
 
       try
       {
-         is = new FileInputStream("perf.properties");
+         is = new FileInputStream(fileName);
 
          props = new Properties();
 

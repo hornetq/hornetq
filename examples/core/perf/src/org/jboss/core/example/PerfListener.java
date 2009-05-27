@@ -34,12 +34,14 @@ import java.util.logging.Logger;
 public class PerfListener extends PerfBase
 {
    private static final Logger log = Logger.getLogger(PerfListener.class.getName());
-
+      
    public static void main(String[] args)
    {
       try
       {
-         PerfParams params = getParams();
+         String fileName = PerfBase.getPerfFileName(args);
+         
+         PerfParams params = getParams(fileName);
 
          new PerfListener(params).run();
       }

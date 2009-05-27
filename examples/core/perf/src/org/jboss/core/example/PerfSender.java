@@ -39,8 +39,10 @@ public class PerfSender extends PerfBase
    {
       try
       {
-         PerfParams params = getParams();
-
+         String fileName = PerfBase.getPerfFileName(args);
+         
+         PerfParams params = getParams(fileName);
+         
          new PerfSender(params).run();
       }
       catch (Exception e)
