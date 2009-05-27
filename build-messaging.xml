@@ -806,7 +806,7 @@
          </fileset>
       </copy>
    	  <copy todir="${build.distro.native.dir}">
-   	     <fileset dir="./native" includes="**/*" excludes="**/*.so"/>
+   	     <fileset dir="./native" includes="**/*" excludes="**/bin/**"/>
    	  </copy>
       <copy todir="${build.distro.schema.dir}">
          <fileset dir="${src.schema.dir}">
