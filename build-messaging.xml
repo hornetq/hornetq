@@ -588,14 +588,14 @@
          <schema namespace="urn:jboss:messaging" 
                  file="${src.schema.dir}/jbm-configuration.xsd"/>
       </schemavalidate>
+      <schemavalidate file="${conf.dir}/jbm-jms.xml">
+         <schema namespace="urn:jboss:messaging" 
+                 file="${src.schema.dir}/jbm-jms.xsd"/>
+      </schemavalidate>
       <!--
       <schemavalidate file="${conf.dir}/jbm-queues.xml">
          <schema namespace="urn:jboss:messaging" 
-                 file="${src.schemas.dir}/jbm-queues.xsd"/>
-      </schemavalidate>
-      <schemavalidate file="${conf.dir}/jbm-jms.xml">
-         <schema namespace="urn:jboss:messaging" 
-                 file="${src.schemas.dir}/jbm-jms.xsd"/>
+                 file="${src.schema.dir}/jbm-queues.xsd"/>
       </schemavalidate>
       -->   
    </target>
