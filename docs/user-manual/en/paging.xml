@@ -37,7 +37,7 @@ xsi:schemaLocation="urn:jboss:messaging /schema/jbm-configuration.xsd">
 ...
 
 &lt;paging-max-global-size-bytes>20485760&lt;/paging-max-global-size-bytes>
-&lt;paging-global-watermark-size>1048576&lt;/paging-global-watermark-size>
+&lt;global-page-size>1048576&lt;/global-page-size>
 
 ...        </programlisting>
             <para>
@@ -166,7 +166,7 @@ xsi:schemaLocation="urn:jboss:messaging /schema/jbm-configuration.xsd">
     </section>
     <section>
         <title>Example</title>
-        <para>See <xref linkend="examples.paging" /> for an example which
-            shows how to use paging with JBoss Messaging.</para>
+        <para>See <xref linkend="examples.paging"/> for an example which shows how to use paging
+            with JBoss Messaging.</para>
     </section>
 </chapter>

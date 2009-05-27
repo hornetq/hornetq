@@ -99,8 +99,8 @@
    &ha;
    &interoperability;
    &perf-tuning;
-   &configuration-index;
    &libaio;
+   &configuration-index;
    &project-info;
    
 </book>
