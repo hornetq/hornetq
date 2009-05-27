@@ -29,6 +29,14 @@
 
    <import file="../common/build.xml"/>
 
+   <target name="copy-resources">
+      <property name="example-profile" value="${jboss.home}/server/${example.name}-example-profile"/>
+      <!-- this file contains the XA Recovery configuration -->
+      <copy todir="${example-profile}/conf" 
+            file="server/jbossts-properties.xml" 
+            overwrite="true"/>
+   </target>
+   
    <target name="run">
       <antcall target="runExample">
          <param name="example.classname" value="org.jboss.javaee.example.XARecoveryExample"/>
@@ -40,7 +48,7 @@
    <echo>Restart the server and recover</echo>
    <echo>==============================</echo>
       <exec dir="${jboss.home}/bin" executable="sh">
-         <arg line="run.sh -c ${example.name}-example-profile"/>
+         <arg line="run.sh -b 192.168.0.10 -c ${example.name}-example-profile"/>
       </exec>
 
    </target>

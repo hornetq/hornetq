@@ -124,7 +124,7 @@
       </jar>
    </target>
 
-   <target name="deploy" depends="validate-jboss, copy-profile, ear">
+   <target name="deploy" depends="validate-jboss, copy-profile, copy-resources, ear">
       <property name="example-profile" value="${jboss.home}/server/${example.name}-example-profile"/>
       <copy todir="${example-profile}/deploy/messaging.sar">
          <fileset dir="${example.server.dir}"/>
@@ -135,7 +135,7 @@
          </fileset>
       </copy>
       <exec dir="${jboss.home}/bin" executable="sh">
-         <arg line="run.sh -c ${example.name}-example-profile"/>
+         <arg line="run.sh -b 192.168.0.10 -c ${example.name}-example-profile"/>
       </exec>
    </target>
 
@@ -151,6 +151,11 @@
             <exclude name="**/*jbm-users.xml"/>
          </fileset>
       </copy>
+   </target>
+   
+   <!-- can be overriden if the example requires to copy resources after the
+        profile is created and before the server is started -->
+   <target name="copy-resources">        
    </target>
 
    <target name="profile.check">
