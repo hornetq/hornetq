@@ -1,0 +1,39 @@
+
+This is a simple tutorial on compiling libJBMLibAIO.so
+
+DEPENDENCIES
+
+Make sure you install these packages:
+
+- G++ (yum install gcc-c++ or aptitude install g++)
+- Gcc (yum insall gcc or aptitude install gcc)
+- autotools-dev (including libtool, automake, autoconf) (yum install autoconf libtool or aptitude install autotools-dev autoconf libtool)
+- Make (yum install make or aptitude install make)
+- libaio (0.3.106) (yum install libaio or aptitude install libaio)
+- libaio-dev (yum install libaio-devel or aptitude install libaio-dev)
+- JDK (full JDK)
+
+
+STEPS TO BUILD
+
+1. Make sure you have JAVA_HOME defined, and pointing to the root of your JDK:
+
+Example:
+ 
+ $> export JAVA_HOME=/usr/share/jdk1.5.0_13
+ 
+ 
+2. Call bootstrap. Bootstrap will call all the initial scripts you need
+ $>  ./bootstrap
+ 
+if you are missing any dependencies, autoconf would tell you what you're missing.
+ 
+
+COMPILED FILE
+
+The produced file will be under ./native/src/.libs/libJBMLibAIO.so
+
+
+README IS A REQUIRED FILE
+
+This file exists here as required by autoconf, or else we would have a compilation error.
