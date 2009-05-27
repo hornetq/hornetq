@@ -68,7 +68,7 @@
          <include name="**/*.jar"/>
       </fileset>
       <fileset dir="${jboss.home}/server/default-with-jbm2/lib">
-         <include name="netty-3.1.0.BETA1.jar"/>
+         <include name="netty-3.1.0.BETA3.jar"/>
       </fileset>
    </path>
 
