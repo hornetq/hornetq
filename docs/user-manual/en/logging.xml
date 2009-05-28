@@ -4,27 +4,36 @@
     <para>JBM uses standard <ulink url="http://java.sun.com/j2se/1.4.2/docs/guide/util/logging/">JDK
             logging</ulink>, (a.k.a Java-Util-Logging: JUL), for all its logging. This means we have
         no dependencies on any third party logging framework. Users can provide their own logging
-        handler to use or alternatively use one of the handlers provided by JBM. There are 2 of
-        these a Log4j handler and a JBoss logging handler.</para>
+        handler to use or alternatively use the log4j handler supplied by JBoss Messaging.</para>
     <para>The handlers are configured via the JUL <literal>logging.properties</literal> file. This
         default location for this file is under the <literal>lib</literal> directory found in the
-        Java home directory but it can be overridden. The standalone JBM server does this and the
-            <literal>logging.properties</literal> file can be found under the <literal
-            >config</literal> directory of the JBM installation. </para>
-    <para>To use the Log4j handler edit the <literal>logging.properties</literal> file and change
-        the <literal>handlers</literal> property to:</para>
-    <programlisting>handlers=org.jboss.messaging.integration.logging.Log4jLoggerHandler</programlisting>
-    <para>A log4j config file <literal>log4j.xml</literal> is provided for configuring Log4j. </para>
-    <para>To use the JBoss handler edit the <literal>logging.properties</literal> file and change
-        the <literal>handlers</literal> property to:</para>
-    <programlisting>handlers=org.jboss.messaging.integration.logging.JBossLoggerHandler</programlisting>
-    <para>If using the JBoss handler the property <literal
-            >org.jboss.logging.Logger.pluginClass</literal> must be set. By default this is set to
-            <literal>org.jboss.messaging.integration.logging.JBMLoggerPlugin</literal> in the
-        standalone server. Only change this property if you want to use your own plugin
-        class.</para>
-    <note>
-        <para>If running JBM within the JBoss Application Server logging will default to what ever
-            the AS is using. Refer to the AS docs for more info on how to configure logging.</para>
-    </note>
+        Java home directory but it can be overridden by setting the <literal
+            >java.util.logging.config.file</literal> system property to point to the appropriate
+        logging.properties file. The standalone JBM server does this and the <literal
+            >logging.properties</literal> file can be found under the <literal>config</literal>
+        directory of the JBM installation. </para>
+    <para>By default the standalone server is configured to use the standard console handler and a
+        file handler that logs to <literal>bin/logs/messaging.log</literal>.</para>
+    <para>Because some of the third party components used to bootstrap JBoss Messaging, i.e. the
+        Microcontainer, use the JBoss Logging framework we have supplied a plugin class that
+        redirects this to the JUL logger. This is set via a system property, <literal
+            >-Dorg.jboss.logging.Logger.pluginClass=org.jboss.messaging.integration.logging.JBMLoggerPlugin</literal>.
+        This is only needed when starting the standalone server and is set in the run script. This
+        is not a problem if you are embedding JBoss Messaging in your own code as the Microcontainer
+        won't be being used.</para>
+    <section>
+        <title>Log4j Configuration</title>
+        <para>JBoss Messaging supplies a JUL Log4j handler that can be used instead of the defaults.
+            To use this simply edit the logging.properties file as such:</para>
+        <programlisting>handlers=org.jboss.messaging.integration.logging.Log4jLoggerHandler</programlisting>
+        <para>You will also need to download the Log4j jars and place them in the <literal
+                >lib</literal> directory and also provide a log4j configuration and place it on the
+            appropriate config directory, i.e. <literal>config/common</literal>.</para>
+    </section>
+    <section>
+        <title>Logging With The JBoss Application Server</title>
+        <para>When JBoss Messaging is deployed within the Application Server then it will still use
+            JUL  however the logging is redirected to the default JBoss logger. For more information
+            on this refer to the JBoss documentation.</para>
+    </section>
 </chapter>
