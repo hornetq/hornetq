@@ -68,16 +68,27 @@
       <path refid="extra.classpath"/>
    </path>
 
+   <path id="client.compilation.classpath">
+      <fileset dir="${jbm.jars.dir}">
+         <include name="**/*client*.jar"/>
+         <include  name="**/jbm-jms-api.jar"/>
+      </fileset>
+      <path refid="extra.classpath"/>
+   </path>
+
    <path id="client.classpath">
-      <path refid="compilation.classpath"/>
+      <path refid="client.compilation.classpath"/>
       <pathelement location="${config.dir}"/>
       <pathelement location="${example.config.dir}"/>
       <pathelement location="${classes.dir}"/>
       <fileset dir="${client.jars.dir}">
          <include name="**/*client*.jar"/>
       </fileset>
+      <fileset dir="${jbm.jars.dir}">
+         <include  name="**/jbm-transports.jar"/>
+      </fileset>
       <fileset dir="${jars.dir}">
-         <include name="netty/lib/netty-3.1.0.BETA3.jar"/>
+         <include name="**/netty-3.1.0.BETA3.jar"/>
       </fileset>
    </path>
 
@@ -123,6 +134,8 @@
    <target name="runExample" depends="compile">
 
       <property name="serverclasspath" refid="server.classpath"/>
+      <property name="clientClasspath" refid="client.classpath"/>
+      <echo>client classpath = ${clientClasspath}</echo>
       <property file="${imported.basedir}/config/server.properties"/>
       <java classname="${example.classname}" fork="true" resultproperty="example-result">
          <jvmarg value="-Djbm.example.server.classpath=${serverclasspath}"/>

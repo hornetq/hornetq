@@ -21,9 +21,9 @@
    */
 package org.jboss.jms.example;
 
+import org.jboss.common.example.DummyXid;
 import org.jboss.common.example.JBMExample;
 import org.jboss.messaging.core.management.ObjectNames;
-import org.jboss.messaging.core.transaction.impl.XidImpl;
 import org.jboss.messaging.utils.UUIDGenerator;
 
 import javax.jms.JMSException;
@@ -107,7 +107,7 @@ public class XAHeuristicExample extends JBMExample
          TextMessage worldMessage = session.createTextMessage("world");
          
          //Step 12. create a transaction
-         Xid xid1 = new XidImpl("xa-example1".getBytes(), 1, UUIDGenerator.getInstance().generateStringUUID().getBytes());
+         Xid xid1 = new DummyXid("xa-example1".getBytes(), 1, UUIDGenerator.getInstance().generateStringUUID().getBytes());
          
          //Step 13. Get the JMS XAResource
          XAResource xaRes = xaSession.getXAResource();
@@ -130,7 +130,7 @@ public class XAHeuristicExample extends JBMExample
          checkNoMessageReceived();
          
          //Step 19. Create another transaction.
-         Xid xid2 = new XidImpl("xa-example2".getBytes(), 1, UUIDGenerator.getInstance().generateStringUUID().getBytes());
+         Xid xid2 = new DummyXid("xa-example2".getBytes(), 1, UUIDGenerator.getInstance().generateStringUUID().getBytes());
          
          //Step 20. Begin the transaction work
          xaRes.start(xid2, XAResource.TMNOFLAGS);
@@ -166,10 +166,10 @@ public class XAHeuristicExample extends JBMExample
          }
 
          //Step 28. Roll back the first transaction
-         mbsc.invoke(serverObject, "rollbackPreparedTransaction", new String[] {XidImpl.toBase64String(xid1)}, new String[]{"java.lang.String"});
+         mbsc.invoke(serverObject, "rollbackPreparedTransaction", new String[] {DummyXid.toBase64String(xid1)}, new String[]{"java.lang.String"});
          
          //Step 29. Commit the second one
-         mbsc.invoke(serverObject, "commitPreparedTransaction", new String[] {XidImpl.toBase64String(xid2)}, new String[]{"java.lang.String"});
+         mbsc.invoke(serverObject, "commitPreparedTransaction", new String[] {DummyXid.toBase64String(xid2)}, new String[]{"java.lang.String"});
          
          Thread.sleep(2000);
          

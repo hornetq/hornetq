@@ -31,19 +31,6 @@
 <project default="run" name="JBoss Messaging Embedded Example">
 
    <import file="../../common/build.xml"/>
-
-   <!-- We use a minimal classpath on this example -->
-   <path id="local.classpath">
-      <fileset dir="${jbm.jars.dir}">
-        <include name="jbm-core-client.jar"/>
-        <include name="jbm-transports.jar"/>
-      </fileset>
-   	  <fileset dir="${jars.dir}">
-        <include name="netty/lib/*jar"/>
-        <exclude name="**/*-sources.jar"/>
-   	  </fileset>
-      <pathelement location="${classes.dir}"/>	   	
-   </path>
 	
    <path id="remote.classpath">
     <fileset dir="${jbm.jars.dir}">
@@ -51,7 +38,7 @@
       <include name="jbm-transports.jar"/>
     </fileset>
  	  <fileset dir="${jars.dir}">
-      <include name="netty/lib/*jar"/>
+      <include name="**/netty*jar"/>
       <exclude name="**/*-sources.jar"/>
  	  </fileset>
     <pathelement location="${classes.dir}"/>	   	
@@ -60,14 +47,15 @@
    <target name="run" depends="compile">
    	
    	   <pathconvert refid="remote.classpath" property="remote-classpath"/>
-   	
-   	   <echo message="path = ${remote-classpath}"/>
+      <pathconvert refid="client.classpath" property="client-classpath"/>
+   	   <echo message="client path = ${client-classpath}"/>
+   	   <echo message="remote path = ${remote-classpath}"/>
 
 	   <java classname="org.jboss.core.example.EmbeddedRemoteExample" fork="true" resultproperty="example-result">
 	      <jvmarg value="-Xms50M"/>      
 	      <jvmarg value="-Xmx50M"/>
 	   	  <sysproperty key="remote-classpath" value="${remote-classpath}"/>
-	      <classpath refid="local.classpath"/>
+	      <classpath refid="client.classpath"/>
 	   </java>
        <fail message="EmbeddedRemoteExample failed">
           <condition>

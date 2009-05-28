@@ -21,7 +21,9 @@
    */
 package org.jboss.jms.example;
 
-import java.util.ArrayList;
+import org.jboss.common.example.DummyXid;
+import org.jboss.common.example.JBMExample;
+import org.jboss.messaging.utils.UUIDGenerator;
 
 import javax.jms.JMSException;
 import javax.jms.Message;
@@ -37,10 +39,7 @@ import javax.jms.XASession;
 import javax.naming.InitialContext;
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
-
-import org.jboss.common.example.JBMExample;
-import org.jboss.messaging.core.transaction.impl.XidImpl;
-import org.jboss.messaging.utils.UUIDGenerator;
+import java.util.ArrayList;
 
 /**
  * A simple JMS example showing the usage of XA support in JMS.
@@ -99,7 +98,7 @@ public class XASendExample extends JBMExample
          TextMessage worldMessage = session.createTextMessage("world");
          
          //Step 12. create a transaction
-         Xid xid1 = new XidImpl("xa-example1".getBytes(), 1, UUIDGenerator.getInstance().generateStringUUID().getBytes());
+         Xid xid1 = new DummyXid("xa-example1".getBytes(), 1, UUIDGenerator.getInstance().generateStringUUID().getBytes());
          
          //Step 13. Get the JMS XAResource
          XAResource xaRes = xaSession.getXAResource();
@@ -129,7 +128,7 @@ public class XASendExample extends JBMExample
          checkNoMessageReceived();
          
          //Step 21. Create another transaction
-         Xid xid2 = new XidImpl("xa-example2".getBytes(), 1, UUIDGenerator.getInstance().generateStringUUID().getBytes());
+         Xid xid2 = new DummyXid("xa-example2".getBytes(), 1, UUIDGenerator.getInstance().generateStringUUID().getBytes());
          
          //Step 22. Start the transaction
          xaRes.start(xid2, XAResource.TMNOFLAGS);

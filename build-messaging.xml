@@ -624,6 +624,9 @@
             <include name="org/jboss/naming/**/*.class"/>
             <include name="org/jnp/server/NamingServer_Stub.class"/>
          </zipfileset>
+         <zipfileset src="${jboss.jboss.common.logging.spi.lib}/jboss-common-logging-spi.jar">
+            <include name="org/jboss/logging/**/*.class"/>
+         </zipfileset>
       </jar>
    </target>
    
@@ -675,7 +678,10 @@
 	   
       <jar jarfile="${build.jars.dir}/${jms.client.jar.name}">         
          <fileset dir="${build.jms.classes.dir}" includes="org/jboss/messaging/jms/*.class"/>
-	 <fileset dir="${build.jms.classes.dir}" includes="org/jboss/messaging/jms/client/*.class"/>
+	      <fileset dir="${build.jms.classes.dir}" includes="org/jboss/messaging/jms/client/*.class"/>
+         <fileset dir="${build.jms.classes.dir}" includes="org/jboss/messaging/jms/referenceable/*.class"/>
+         <fileset dir="${build.jms.classes.dir}" includes="org/jboss/messaging/jms/server/management/*.class"/>
+         <fileset dir="${build.jms.classes.dir}" includes="org/jboss/messaging/jms/server/management/impl/JMSManagementHelper.class"/>
       </jar>
 	   
    </target>
@@ -717,6 +723,7 @@
          <fileset dir="${build.core.classes.dir}">
             <include name="version.properties"/>
             <include name="org/jboss/messaging/core/client/**/*.class"/>
+            <include name="org/jboss/messaging/core/filter/**/*.class"/>
             <include name="org/jboss/messaging/core/buffers/**/*.class"/>
             <include name="org/jboss/messaging/core/exception/**/*.class"/>
             <include name="org/jboss/messaging/core/logging/**/*.class"/>
