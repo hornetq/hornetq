@@ -24,6 +24,7 @@ package org.jboss.jms.example;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.util.Properties;
+import java.util.Random;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Logger;
@@ -56,6 +57,20 @@ public abstract class PerfBase
    private static final Logger log = Logger.getLogger(PerfSender.class.getName());
 
    private static final String DEFAULT_PERF_PROPERTIES_FILE_NAME = "perf.properties";
+   
+   private static byte[] randomByteArray(final int length)
+   {
+      byte[] bytes = new byte[length];
+      
+      Random random = new Random();
+      
+      for (int i = 0; i < length; i++)
+      {
+         bytes[i] = Integer.valueOf(random.nextInt()).byteValue();
+      }
+      
+      return bytes;      
+   }
 
    protected static String getPerfFileName(String[] args)
    {
@@ -326,7 +341,7 @@ public abstract class PerfBase
 
       BytesMessage message = session.createBytesMessage();
 
-      byte[] payload = new byte[messageSize];
+      byte[] payload = randomByteArray(messageSize);
 
       message.writeBytes(payload);
 

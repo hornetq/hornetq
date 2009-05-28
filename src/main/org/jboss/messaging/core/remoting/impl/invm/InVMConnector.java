@@ -206,8 +206,15 @@ public class InVMConnector implements Connector
       }
 
       public void connectionException(final Object connectionID, final MessagingException me)
-      {
-         listener.connectionException(connectionID, me);
+      {                  
+         // Execute on different thread to avoid deadlocks
+         new Thread()
+         {
+            public void run()
+            {
+               listener.connectionException(connectionID, me);       
+            }
+         }.start();
       }
 
    }
