@@ -878,7 +878,7 @@
                             <entry>false</entry>
                         </row>
                         <row>
-                            <entry><link linkend="dups-ok-batch-size"
+                            <entry><link linkend="using-jms.dupsokbatchsize"
                                     >connection-factory.dups-ok-batch-size</link></entry>
                             <entry>int</entry>
                             <entry>The batch size in bytes between acknowledgements when using
