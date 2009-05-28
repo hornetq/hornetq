@@ -69,6 +69,12 @@
 	   	  <sysproperty key="remote-classpath" value="${remote-classpath}"/>
 	      <classpath refid="local.classpath"/>
 	   </java>
-      
+       <fail message="EmbeddedRemoteExample failed">
+          <condition>
+             <not>
+                <equals arg1="${example-result}" arg2="0"/>
+             </not>
+          </condition>
+       </fail>
    </target>
 </project>

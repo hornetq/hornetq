@@ -47,6 +47,13 @@
 	      <jvmarg value="-Xmx50M"/>
 	      <classpath refid="local.classpath"/>
 	   </java>
-      
+       <fail message="EmbeddedExample">
+          <condition>
+             <not>
+                <equals arg1="${example-result}" arg2="0"/>
+             </not>
+          </condition>
+       </fail>
+
    </target>
 </project>
