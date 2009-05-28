@@ -20,13 +20,16 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-
 package org.jboss.jms.example;
 
 import java.security.Principal;
 import java.security.acl.Group;
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
 
 import javax.security.auth.Subject;
 import javax.security.auth.callback.CallbackHandler;
@@ -34,7 +37,6 @@ import javax.security.auth.login.LoginException;
 import javax.security.auth.spi.LoginModule;
 
 import org.jboss.messaging.core.security.impl.JAASSecurityManager;
-import org.jboss.security.SimpleGroup;
 
 /**
  * A ExampleLoginModule
@@ -43,64 +45,102 @@ import org.jboss.security.SimpleGroup;
  */
 public class ExampleLoginModule implements LoginModule
 {
-      private Map<String, ?> options;
 
-      private Subject subject;
+   private Map<String, ?> options;
 
-      public ExampleLoginModule()
+   private Subject subject;
+
+   public ExampleLoginModule()
+   {
+   }
+
+   public boolean abort() throws LoginException
+   {
+      return true;
+   }
+
+   public boolean commit() throws LoginException
+   {
+      return true;
+   }
+
+   public void initialize(Subject subject,
+                          CallbackHandler callbackHandler,
+                          Map<String, ?> sharedState,
+                          Map<String, ?> options)
+   {
+      this.subject = subject;
+      // the credentials are passed directly to the
+      // login module through the options user, pass, role
+      this.options = options;
+   }
+
+   public boolean login() throws LoginException
+   {
+      Iterator<char[]> iterator = subject.getPrivateCredentials(char[].class).iterator();
+      char[] passwordChars = iterator.next();
+      String password = new String(passwordChars);
+      Iterator<Principal> iterator2 = subject.getPrincipals().iterator();
+      String user = iterator2.next().getName();
+
+      boolean authenticated = user.equals(options.get("user")) && password.equals(options.get("pass"));
+
+      if (authenticated)
       {
+         Group roles = new SimpleGroup("Roles");
+         roles.addMember(new JAASSecurityManager.SimplePrincipal((String)options.get("role")));
+         subject.getPrincipals().add(roles);
+      }
+      System.out.format("JAAS authentication >>> user=%s, password=%s\n", user, password);
+      return authenticated;
+
+   }
+
+   public Subject getSubject()
+   {
+      return subject;
+   }
+
+   public boolean logout() throws LoginException
+   {
+      return true;
+   }
+
+   public class SimpleGroup implements Group
+   {
+      private final String name;
+
+      private Set<Principal> members = new HashSet<Principal>();
+
+      public SimpleGroup(String name)
+      {
+         this.name = name;
       }
 
-      public boolean abort() throws LoginException
+      public boolean addMember(Principal principal)
       {
-         return true;
+         return members.add(principal);
       }
 
-      public boolean commit() throws LoginException
+      public boolean isMember(Principal principal)
       {
-         return true;
+         return members.contains(principal);
       }
 
-      public void initialize(Subject subject,
-                             CallbackHandler callbackHandler,
-                             Map<String, ?> sharedState,
-                             Map<String, ?> options)
+      public Enumeration<? extends Principal> members()
       {
-         this.subject = subject;
-         // the credentials are passed directly to the
-         // login module through the options user, pass, role
-         this.options = options;
+         return Collections.enumeration(members);
       }
 
-      public boolean login() throws LoginException
+      public boolean removeMember(Principal principal)
       {
-         Iterator<char[]> iterator = subject.getPrivateCredentials(char[].class).iterator();
-         char[] passwordChars = iterator.next();
-         String password = new String(passwordChars);
-         Iterator<Principal> iterator2 = subject.getPrincipals().iterator();
-         String user = iterator2.next().getName();
-
-         boolean authenticated = user.equals(options.get("user")) && password.equals(options.get("pass"));
-         
-         if (authenticated)
-         {
-            Group roles = new SimpleGroup("Roles");
-            roles.addMember(new JAASSecurityManager.SimplePrincipal((String)options.get("role")));
-            subject.getPrincipals().add(roles);
-         }
-         System.out.format("JAAS authentication >>> user=%s, password=%s\n", user, password);
-         return authenticated;
-
-      }
-      
-      public Subject getSubject()
-      {
-         return subject;
+         return members.remove(principal);
       }
 
-      public boolean logout() throws LoginException
+      public String getName()
       {
-         return true;
+         return name;
       }
+   }
 
 }
