@@ -42,6 +42,9 @@
       <mkdir dir="build/jta"/>
       <get usetimestamp="true" src="http://repository.jboss.com/jboss/jbossts/4.6.0.CR1/lib/jbossjta.jar" dest="build/jta/jbossjta.jar"/>
       <get usetimestamp="true" src="http://repository.jboss.com/jboss/jbossts/4.6.0.CR1/lib/jbossts-common.jar" dest="build/jta/jbossts-common.jar"/>
+      <get usetimestamp="true" src="http://repository.jboss.com/jboss/jboss-javaee/5.0.1.GA/lib/jboss-javaee.jar" dest="build/jta/jboss-javaee.jar"/>
+      <get usetimestamp="true" src="http://repository.jboss.com/apache-log4j/1.2.14/lib/log4j.jar" dest="build/jta/log4j.jar"/>
+      <get usetimestamp="true" src="http://repository.jboss.com/apache-logging/1.1/lib/commons-logging.jar" dest="build/jta/commons-logging.jar"/>
    </target>
 
    <target name="run" depends="download-jta">
