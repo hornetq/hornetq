@@ -34,6 +34,9 @@
 
    <path id="extra.classpath">
        <path location="server0"/>
+       <fileset dir="extra-libs">
+          <include name="*.jar"/>
+       </fileset>
    </path>
    
    <property name="perf.properties.file.name" value="perf.properties" />
