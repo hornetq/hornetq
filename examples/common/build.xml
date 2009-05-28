@@ -64,7 +64,7 @@
    <path id="compilation.classpath">
       <fileset dir="${jbm.jars.dir}">
          <include name="**/*.jar"/>
-      </fileset>      
+      </fileset>
       <path refid="extra.classpath"/>
    </path>
 
@@ -127,17 +127,18 @@
       <java classname="${example.classname}" fork="true" resultproperty="example-result">
          <jvmarg value="-Djbm.example.server.classpath=${serverclasspath}"/>
          <jvmarg value="-Djbm.example.server.args=${server.args}"/>
+         <jvmarg value="-Djbm.example.logserveroutput=${jbm.example.logserveroutput}"/>
          <arg line="${jbm.example.beans.file}"/>
-     	 <sysproperty key="java.library.path" value="${java.library.path}${path.separator}${aio.library.path}"/>
+         <sysproperty key="java.library.path" value="${java.library.path}${path.separator}${aio.library.path}"/>
          <classpath refid="client.classpath"/>
       </java>
       <!-- if the example exited with a result value != 0, we fail the build -->
       <fail message="Example ${example.classname} failed">
-          <condition>
-              <not>
-                <equals arg1="${example-result}" arg2="0" />
-              </not>
-          </condition>
+         <condition>
+            <not>
+               <equals arg1="${example-result}" arg2="0"/>
+            </not>
+         </condition>
       </fail>
    </target>
 
@@ -148,33 +149,45 @@
    </target>
 
    <target name="clean">
-      <delete dir="./build" quiet="true" />
-      <delete dir="./logs" quiet="true" />
-      <delete dir="./server0/logs" quiet="true" />
-      <delete dir="./server0/data" quiet="true" />
-      <delete dir="./server1/logs" quiet="true" />
-      <delete dir="./server1/data" quiet="true" />
-      <delete dir="./server2/logs" quiet="true" />
-      <delete dir="./server2/data" quiet="true" />      
-      <delete dir="./server3/logs" quiet="true" />
-      <delete dir="./server3/data" quiet="true" />
-      <delete dir="./server4/logs" quiet="true" />
-      <delete dir="./server4/data" quiet="true" />
-      <delete dir="./server5/logs" quiet="true" />
-      <delete dir="./server5/data" quiet="true" />
-      <delete dir="./ObjectStore" quiet="true" />
-      <delete dir="./data" quiet="true" />
+      <delete dir="./build" quiet="true"/>
+      <delete dir="./logs" quiet="true"/>
+      <delete dir="./server0/logs" quiet="true"/>
+      <delete dir="./server0/data" quiet="true"/>
+      <delete dir="./server1/logs" quiet="true"/>
+      <delete dir="./server1/data" quiet="true"/>
+      <delete dir="./server2/logs" quiet="true"/>
+      <delete dir="./server2/data" quiet="true"/>
+      <delete dir="./server3/logs" quiet="true"/>
+      <delete dir="./server3/data" quiet="true"/>
+      <delete dir="./server4/logs" quiet="true"/>
+      <delete dir="./server4/data" quiet="true"/>
+      <delete dir="./server5/logs" quiet="true"/>
+      <delete dir="./server5/data" quiet="true"/>
+      <delete dir="./ObjectStore" quiet="true"/>
+      <delete dir="./data" quiet="true"/>
       <!-- large-message creates huge .dat files -->
       <delete>
-	     <fileset dir=".">
-	        <include name="*.dat"/>
-	     </fileset>
+         <fileset dir=".">
+            <include name="*.dat"/>
+         </fileset>
       </delete>
    </target>
-    
+
    <target name="all" description="Run all the examples">
       <subant target="run" failonerror="true">
-         <fileset dir=".." includes="jms/*/build.xml" excludes="common/build.xml"/>
+         <fileset dir="..">
+            <include name="core/*/build.xml"/>
+            <exclude name="common/build.xml"/>
+            <exclude name="core/perf/build.xml"/>
+         </fileset>
+      </subant>
+      <subant target="run" failonerror="true">
+         <fileset dir="..">
+            <include name="jms/*/build.xml"/>
+            <exclude name="common/build.xml"/>
+            <exclude name="jms/queue-message-redistribution/build.xml"/>
+            <exclude name="jms/management-notifications/build.xml"/>
+         </fileset>
       </subant>
    </target>
 

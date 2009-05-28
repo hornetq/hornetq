@@ -125,7 +125,7 @@ public class SpawnedVMSupport
                                                     latch);
       errorLogger.start();
 
-      if (!latch.await(30, TimeUnit.SECONDS))
+      if (!latch.await(60, TimeUnit.SECONDS))
       {
          process.destroy();
          throw new RuntimeException("Timed out waiting for server to start");
