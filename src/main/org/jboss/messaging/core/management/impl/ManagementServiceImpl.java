@@ -109,6 +109,8 @@ public class ManagementServiceImpl implements ManagementService
 
    private StorageManager storageManager;
 
+   private MessagingServer messagingServer;
+
    private HierarchicalRepository<Set<Role>> securityRepository;
 
    private HierarchicalRepository<AddressSettings> addressSettingsRepository;
@@ -183,7 +185,8 @@ public class ManagementServiceImpl implements ManagementService
       this.addressSettingsRepository = addressSettingsRepository;
       this.securityRepository = securityRepository;
       this.storageManager = storageManager;
-
+      this.messagingServer = messagingServer;
+      
       messagingServerControl = new MessagingServerControl(postOffice,
                                                           configuration,
                                                           resourceManager,
@@ -596,7 +599,11 @@ public class ManagementServiceImpl implements ManagementService
                   }
                }
 
-               // Now send message
+               // start sending notification *messages* only when the server if fully started
+               if (messagingServer != null && !messagingServer.isStarted())
+               {
+                  return;
+               }
 
                ServerMessage notificationMessage = new ServerMessageImpl(storageManager.generateUniqueID());
 
