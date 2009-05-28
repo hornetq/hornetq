@@ -321,7 +321,8 @@
       <path refid="apache.xerces.classpath"/>
       <path refid="apache.logging.classpath"/>
       <path refid="jboss.jnpserver.classpath"/>
-      <path refid="jboss.jboss.common.logging.log4j.classpath"/> 
+      <path refid="jboss.jboss.common.logging.log4j.classpath"/>
+      <path  refid="apache.log4j.classpath"/>
    </path>
     
    <path id="joram.test.execution.classpath">
@@ -1152,7 +1153,7 @@
    <target name="jms-tests" depends="jar, compile-jms-tests">
       <echo message=""/>
       <echo message="Running jms tests, fork=${junit.fork}, junit.batchtest.fork=${junit.batchtest.fork}"/>
-      <echo message="classpath is:${toString:unit.test.execution.classpath}"/>
+      <echo message="classpath is:${toString:jms.test.execution.classpath}"/>
       <echo message=""/>
       <mkdir dir="${test.output.dir}"/>
       <mkdir dir="${test.reports.dir}"/>

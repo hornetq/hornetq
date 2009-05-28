@@ -120,7 +120,7 @@
       <!--
          Dependencied required by the Bridge and JCA Adapter
       -->
-      <componentref name="jboss/jbossts" version="4.6.0.CR1"/>
+      <componentref name="jboss/jbossts" version="4.6.1.GA"/>
 
 
       <!--
