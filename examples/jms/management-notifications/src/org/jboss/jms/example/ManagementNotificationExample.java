@@ -32,12 +32,10 @@ import javax.jms.MessageListener;
 import javax.jms.MessageProducer;
 import javax.jms.Queue;
 import javax.jms.Session;
-import javax.jms.TextMessage;
 import javax.jms.Topic;
 import javax.naming.InitialContext;
 
 import org.jboss.common.example.JBMExample;
-import org.jboss.messaging.jms.JBossTopic;
 
 /**
  * An example that shows how to receive management notifications using JMS messages.
@@ -60,7 +58,7 @@ public class ManagementNotificationExample extends JBMExample
          // Step 1. Create an initial context to perform the JNDI lookup.
          initialContext = getContext(0);
 
-         // Step 2. Perfom a lookup on the queue
+         // Step 2. Perform a lookup on the queue
          Queue queue = (Queue) initialContext.lookup("/queue/exampleQueue");
          
          // Step 3. Perform a lookup on the Connection Factory
@@ -71,13 +69,12 @@ public class ManagementNotificationExample extends JBMExample
          Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
          MessageProducer producer = session.createProducer(queue);
 
-         // Step 5. create the JMS notification topic.
-         // It is a "special" topic and it is not looked up from JNDI but constructed directly
-         Topic notificationsTopic = new JBossTopic("example.notifications", "example.notifications");
+         // Step 5. Perform a lookup on the notifications queue
+         Queue notificationsQueue = (Queue) initialContext.lookup("/queue/notificationsQueue");
          
-         // Step 6. Create a JMS message consumer for the notification topic and set its message listener
+         // Step 6. Create a JMS message consumer for the notification queue and set its message listener
          // It will display all the properties of the JMS Message
-         MessageConsumer notificationConsumer = session.createConsumer(notificationsTopic);
+         MessageConsumer notificationConsumer = session.createConsumer(notificationsQueue);
          notificationConsumer.setMessageListener(new MessageListener()
          {
             public void onMessage(Message notif)

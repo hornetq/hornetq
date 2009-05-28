@@ -6,7 +6,7 @@
 
    <!--  create a default queue for the notification -->     
    <queues>
-      <queue name="example.notifications">
+      <queue name="jms.queue.notificationsQueue">
          <address>example.notifications</address>
       </queue>
    </queues>

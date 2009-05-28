@@ -25,10 +25,17 @@
      <p>We will also create a queue corresponding to the example's address to hold notifications</p>
      <pre>
          <code>&lt;queues&gt;
-            &lt;queue name="example.notifications"&gt;
+            &lt;queue name="jms.queue.notificationsQueue"&gt;
                &lt;address&gt;example.notifications&lt;/address&gt;
             &lt;/queue&gt;
          &lt;/queues&gt;</code>
+     </pre>
+     
+     <p>Since we want to lookup the notifications queue using JNDI, we also declare it in  <a href="server0/jbm-jms.xml">jbm-jms.xml</a>
+     <pre>
+         <code>&lt;queue name="notificationsQueue"&gt;
+            &lt;entry name="/queue/notificationsQueue"/&gt;
+         &lt;/queue&gt;</code>
      </pre>
      <p>The notification queue requires permission to create/delete temporary queues and consume messages.
          This is also configured in <a href="server0/jbm-configuration.xml">jbm-configuration.xml</a></p>
@@ -66,12 +73,12 @@
             MessageProducer producer = session.createProducer(queue);</code>
         </pre>
         
-        <li>We create the JMS management topic. This is a <em>special</em> topic which is not looked up from JNDI but instantiated directly</li>
+        <li>We look up the JMS queue used to receive the notifications from JNDI</li>
         <pre>
-            <code>Topic notificationsTopic = new JBossTopic("example.notifications", "example.notifications");</code>
+            <code>Queue notificationsQueue = (Queue) initialContext.lookup("/queue/notificationsQueue");</code>
         </pre>
 
-        <li>We create a MessageConsumer for the notification topic and set its MessageListener. When a notification is received, we will simply display all the message properties</li>
+        <li>We create a MessageConsumer for the notification queue and set its MessageListener. When a notification is received, we will simply display all the message properties</li>
         <pre>
            <code>MessageConsumer notificationConsumer = session.createConsumer(notificationsTopic);
            notificationConsumer.setMessageListener(new MessageListener()
