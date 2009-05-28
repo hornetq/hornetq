@@ -185,8 +185,7 @@
          <fileset dir="..">
             <include name="jms/*/build.xml"/>
             <exclude name="common/build.xml"/>
-            <exclude name="jms/queue-message-redistribution/build.xml"/>
-            <exclude name="jms/management-notifications/build.xml"/>
+            <exclude name="jms/perf/build.xml"/>
          </fileset>
       </subant>
    </target>
