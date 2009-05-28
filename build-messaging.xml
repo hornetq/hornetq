@@ -848,12 +848,15 @@
       </copy>
 
       <copy todir="${build.distro.config.dir}">
-         <fileset dir="${src.config.dir}"/>
+         <fileset dir="${src.config.dir}">
+            <exclude name="*examples-ant.properties"/>
+         </fileset>
       </copy>
       
       <!-- examples-ant.properties allow the examples to be run from the source or from the distribution -->
       <!-- by configuring the correct lib/config location                                                -->
       <copy tofile="${build.distro.examples.dir}/common/config/ant.properties" file="src/config/examples-ant.properties" overwrite="true" />
+      <copy tofile="${build.distro.examples.dir}/javaee/common/config/ant.properties" file="src/config/javaee-examples-ant.properties" overwrite="true" />
 
       <zip basedir="${build.dir}"
            destfile="${build.dir}/${build.artifact}.zip">
