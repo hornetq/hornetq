@@ -55,6 +55,7 @@
 	      <jvmarg value="-Xms50M"/>      
 	      <jvmarg value="-Xmx50M"/>
 	   	  <sysproperty key="remote-classpath" value="${remote-classpath}"/>
+          <sysproperty key="java.library.path" value="${java.library.path}${path.separator}${aio.library.path}"/>
 	      <classpath refid="client.classpath"/>
 	   </java>
        <fail message="EmbeddedRemoteExample failed">

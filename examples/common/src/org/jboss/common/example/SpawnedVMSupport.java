@@ -99,7 +99,7 @@ public class SpawnedVMSupport
 
       log.info("command line: " + commandLine);
 
-      Process process = Runtime.getRuntime().exec(commandLine, new String[]{}, new File(configDir));
+      Process process = Runtime.getRuntime().exec(commandLine, null, new File(configDir));
 
       log.trace("process: " + process);
 

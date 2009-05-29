@@ -82,6 +82,7 @@ public abstract class JBMExample
          {
             failure = true;
          }
+          System.out.println("example complete");
       }
       catch (Throwable e)
       {
@@ -188,16 +189,19 @@ public abstract class JBMExample
          stopServer(server);
       }
    }
-   
+
    private void stopServer(Process server) throws Exception
    {
-      if (server.getInputStream() != null)
+      if (!System.getProperty("os.name").contains("Windows"))
       {
-         server.getInputStream().close();
-      }
-      if (server.getErrorStream() != null)
-      {
-         server.getErrorStream().close();
+         if (server.getInputStream() != null)
+         {
+            server.getInputStream().close();
+         }
+         if (server.getErrorStream() != null)
+         {
+            server.getErrorStream().close();
+         }
       }
       server.destroy();
    }

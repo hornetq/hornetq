@@ -1393,6 +1393,7 @@
    <!-- ======================================================================================== -->
 
    <target name="runServer" depends="jar">
+      <mkdir dir="logs"/>
       <java classname="org.jboss.messaging.integration.bootstrap.JBMBootstrapServer" fork="true">
          <jvmarg value="-XX:+UseParallelGC"/>
          <jvmarg value="-Xms512M"/>
@@ -1410,6 +1411,7 @@
    </target>
 
    <target name="runClusteredServer" depends="jar">
+      <mkdir dir="logs"/>
       <java classname="org.jboss.messaging.integration.bootstrap.JBMBootstrapServer" fork="true">
          <jvmarg value="-XX:+UseParallelGC"/>
          <jvmarg value="-Xms512M"/>
