@@ -137,6 +137,7 @@ public abstract class PerfBase
       log.info("batch-size: " + batchSize);
       log.info("drain-queue: " + drainQueue);
       log.info("address: " + address);
+      log.info("queue name: " + queueName);
       log.info("throttle-rate: " + throttleRate);
       log.info("host:" + host);
       log.info("port: " + port);

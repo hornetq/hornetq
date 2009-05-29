@@ -4,11 +4,10 @@
     <para>The goal of JBoss Messaging is simple and uncompromising; to bring unrivalled levels of
         performance and reliability to messaging, and to be the fastest, best featured and most
         scalable multi-protocol messaging system.</para>
-    <para>Why use JBoss Messaging? Here are a few of the reasons:</para>
+    <para>Why use JBoss Messaging? Here are just a few of the reasons:</para>
     <itemizedlist>
         <listitem>
-            <para>100% open source software. We use the Apache Software License version 2.0 to limit
-                restrictions on use.</para>
+            <para>100% open source software.</para>
         </listitem>
         <listitem>
             <para>Written in Java. Runs on any platform with a J2SE 5.0 JDK, that's everything from
@@ -16,7 +15,8 @@
         </listitem>
         <listitem>
             <para>Superb performance. Our class beating high performance journal provides persistent
-                messaging performance at rates normally seen for non persistent messaging.</para>
+                messaging performance at rates normally seen for non persistent messaging, our non
+                persistent messaging performance rocks the boat too.</para>
         </listitem>
         <listitem>
             <para>Full feature set. All the features you'd expect in any serious messaging system,

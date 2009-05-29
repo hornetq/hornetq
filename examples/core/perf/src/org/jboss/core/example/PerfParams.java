@@ -40,8 +40,8 @@ public class PerfParams implements Serializable
    private boolean isSessionTransacted = false;
    private int batchSize = 5000;
    private boolean drainQueue = true;
-   private String queueName = "perfQueue";  
-   private String address = "perfAddress";
+   private String queueName;
+   private String address;
    private int throttleRate;
    private String host;
    private int port;

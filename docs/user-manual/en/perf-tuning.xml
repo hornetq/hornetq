@@ -139,6 +139,21 @@
                         <xref linkend="configuring-transports"/> for more information on this.
                 </para>
             </listitem>
+            <listitem>
+                <para>Increase limit on file handles on the server. If you expect a lot of
+                    concurrent connections on your servers, or if clients are rapidly opening and
+                    closing connections, you should make sure the user running the server has
+                    permission to create sufficient file handles.</para>
+                <para>This varies from operating system to operating system. On Linux systems you
+                    can increase the number of allowable open file handles in the file <literal
+                        >/etc/security/limits.conf</literal> e.g. add the lines
+                    <programlisting>
+serveruser     soft    nofile  20000
+serveruser     hard    nofile  20000                   
+                </programlisting>
+                    This would allow up to 20000 file handles to be open by the user<literal
+                        >serveruser</literal>. </para>
+            </listitem>
         </itemizedlist>
     </section>
     <section>

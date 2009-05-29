@@ -12,6 +12,15 @@
     <para>Pop in and chat to us in our <ulink url="irc://irc.freenode.net:6667/jbossmessaging">IRC channel</ulink></para>  
     <para>JBoss Messaging Subversion TRUNK is <ulink url="http://anonsvn.jboss.org/repos/messaging/trunk">here</ulink></para>
     <para>All our release tags are <ulink url="http://anonsvn.jboss.org/repos/messaging/tags">here</ulink></para>
-    <para>The JBoss Messaging permanent dev team is <ulink url="http://jbossfox.blogspot.com">Tim Fox</ulink>, Howard Gao, Jeff Mesnil, Clebert
-        Suconic, and Andy Taylor</para>
+    <para>Red Hat kindly employs developers to work full time on JBoss Messaging, the motley crew are:
+            <itemizedlist>
+                    <listitem><para> <ulink url="http://jbossfox.blogspot.com">Tim Fox</ulink> (project lead)</para></listitem>
+                    <listitem><para>Howard Gao</para></listitem>
+                    <listitem><para>Jeff Mesnil</para></listitem>
+                    <listitem><para>Clebert Suconic</para></listitem>
+                    <listitem><para>Andy Taylor</para></listitem>
+            </itemizedlist>
+            </para>
+            
+            
 </chapter>
