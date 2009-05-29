@@ -14,6 +14,16 @@ Make sure you install these packages:
 - JDK (full JDK)
 
 
+LIBAIO INFORMATION
+
+libaio is part of the kernel project. The library makes system calls on the kernel layer.
+
+This is the project information:
+
+Git Repository:  git://git.kernel.org/pub/scm/libs/libaio/libaio.git
+Mailing List:    linux-aio@kvack.org
+
+
 STEPS TO BUILD
 
 1. Make sure you have JAVA_HOME defined, and pointing to the root of your JDK:
