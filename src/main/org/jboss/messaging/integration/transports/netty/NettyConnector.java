@@ -397,6 +397,8 @@ public class NettyConnector implements Connector
       }
       else
       {
+         log.error("Failed to create netty connection", future.getCause());
+         
          return null;
       }
    }
