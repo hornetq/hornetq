@@ -40,6 +40,8 @@ public interface SequentialFile
    void open() throws Exception;
    
    boolean isOpen();
+   
+   void setBuffering(boolean buffering);
 
    /**
     * For certain operations (like loading) we don't need open the file with full maxIO
@@ -47,6 +49,8 @@ public interface SequentialFile
     * @throws Exception
     */
    void open(int maxIO) throws Exception;
+   
+   boolean fits(int size);
 
    int getAlignment() throws Exception;
 
@@ -58,9 +62,9 @@ public interface SequentialFile
 
    void delete() throws Exception;
 
-   int write(ByteBuffer bytes, IOCallback callback) throws Exception;
+   void write(ByteBuffer bytes, IOCallback callback) throws Exception;
 
-   int write(ByteBuffer bytes, boolean sync) throws Exception;
+   void write(ByteBuffer bytes, boolean sync) throws Exception;
 
    int read(ByteBuffer bytes, IOCallback callback) throws Exception;
 
@@ -76,6 +80,12 @@ public interface SequentialFile
 
    long size() throws Exception;
    
+   void flush();
+   
    void renameTo(String newFileName) throws Exception;
+
+   void lockBuffer();
+
+   void unlockBuffer();
 
 }

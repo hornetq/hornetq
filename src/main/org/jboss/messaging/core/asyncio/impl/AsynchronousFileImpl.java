@@ -138,6 +138,8 @@ public class AsynchronousFileImpl implements AsynchronousFile
    private int maxIO;
 
    private final Lock writeLock = new ReentrantReadWriteLock().writeLock();
+   
+   private final VariableLatch pendingWrites = new VariableLatch();
 
    private Semaphore writeSemaphore;
 
@@ -223,11 +225,16 @@ public class AsynchronousFileImpl implements AsynchronousFile
       try
       {
 
+         while (!pendingWrites.waitCompletion(60000))
+         {
+            log.warn("Couldn't get lock after 60 seconds on closing AsynchronousFileImpl::" + this.fileName);
+         }
+         
          while (!writeSemaphore.tryAcquire(maxIO, 60, TimeUnit.SECONDS))
          {
-            log.warn("Couldn't acquire lock after 60 seconds on AIO",
-                     new Exception("Warning: Couldn't acquire lock after 60 seconds on AIO"));
+            log.warn("Couldn't get lock after 60 seconds on closing AsynchronousFileImpl::" + this.fileName);
          }
+
          writeSemaphore = null;
          if (poller != null)
          {
@@ -263,7 +270,8 @@ public class AsynchronousFileImpl implements AsynchronousFile
       {
          startPoller();
       }
-      writeSemaphore.acquireUninterruptibly();
+      
+      pendingWrites.up();
 
       if (writeExecutor != null)
       {
@@ -271,6 +279,8 @@ public class AsynchronousFileImpl implements AsynchronousFile
          {
             public void run()
             {
+               writeSemaphore.acquireUninterruptibly();
+
                try
                {
                   write(handler, position, size, directByteBuffer, aioCallback);
@@ -288,6 +298,8 @@ public class AsynchronousFileImpl implements AsynchronousFile
       }
       else
       {
+         writeSemaphore.acquireUninterruptibly();
+
          try
          {
             write(handler, position, size, directByteBuffer, aioCallback);
@@ -314,6 +326,7 @@ public class AsynchronousFileImpl implements AsynchronousFile
       {
          startPoller();
       }
+      pendingWrites.up();
       writeSemaphore.acquireUninterruptibly();
       try
       {
@@ -323,12 +336,14 @@ public class AsynchronousFileImpl implements AsynchronousFile
       {
          // Release only if an exception happened
          writeSemaphore.release();
+         pendingWrites.down();
          throw e;
       }
       catch (RuntimeException e)
       {
          // Release only if an exception happened
          writeSemaphore.release();
+         pendingWrites.down();
          throw e;
       }
    }
@@ -399,6 +414,7 @@ public class AsynchronousFileImpl implements AsynchronousFile
    private void callbackDone(final AIOCallback callback, final ByteBuffer buffer)
    {
       writeSemaphore.release();
+      pendingWrites.down();
       callback.done();
       if (bufferCallback != null)
       {
@@ -412,6 +428,7 @@ public class AsynchronousFileImpl implements AsynchronousFile
    {
       log.warn("CallbackError: " + errorMessage);
       writeSemaphore.release();
+      pendingWrites.down();
       callback.onError(errorCode, errorMessage);
    }
 

@@ -45,14 +45,21 @@ public abstract class AbstractSequentialFactory implements SequentialFileFactory
    private static final Logger log = Logger.getLogger(AbstractSequentialFactory.class);
 
    protected final String journalDir;
-   
-   protected BufferCallback bufferCallback;
 
    public AbstractSequentialFactory(final String journalDir)
    {
       this.journalDir = journalDir;
    }
 
+   
+   public void controlBuffersLifeCycle(boolean value)
+   {
+   }
+   
+   public void stop()
+   {
+   }
+   
    /** 
     * Create the directory if it doesn't exist yet
     */
@@ -73,7 +80,7 @@ public abstract class AbstractSequentialFactory implements SequentialFileFactory
       FilenameFilter fnf = new FilenameFilter()
       {
          public boolean accept(final File file, final String name)
-         {        
+         {
             return name.endsWith("." + extension);
          }
       };
@@ -88,22 +95,4 @@ public abstract class AbstractSequentialFactory implements SequentialFileFactory
       return Arrays.asList(fileNames);
    }
 
-   /**
-    * @return the bufferCallback
-    */
-   public BufferCallback getBufferCallback()
-   {
-      return bufferCallback;
-   }
-
-   /**
-    * @param bufferCallback the bufferCallback to set
-    */
-   public void setBufferCallback(BufferCallback bufferCallback)
-   {
-      this.bufferCallback = bufferCallback;
-   }
-
-   
-   
 }

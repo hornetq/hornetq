@@ -49,13 +49,9 @@ public interface JournalFile
 
    boolean isCanReclaim();
 
-   void extendOffset(final int delta);
-
    long getOffset();
 
    int getOrderingID();
-
-   void setOffset(final long offset);
 
    SequentialFile getFile();
 }

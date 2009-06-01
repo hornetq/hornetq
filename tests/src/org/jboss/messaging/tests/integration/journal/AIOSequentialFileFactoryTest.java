@@ -24,11 +24,8 @@ package org.jboss.messaging.tests.integration.journal;
 
 import java.io.File;
 import java.nio.ByteBuffer;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import org.jboss.messaging.core.asyncio.impl.AsynchronousFileImpl;
-import org.jboss.messaging.core.journal.IOCallback;
 import org.jboss.messaging.core.journal.SequentialFile;
 import org.jboss.messaging.core.journal.SequentialFileFactory;
 import org.jboss.messaging.core.journal.impl.AIOSequentialFileFactory;
@@ -78,106 +75,6 @@ public class AIOSequentialFileFactoryTest extends SequentialFileFactoryTestBase
       assertEquals(512, buff.limit());
       file.close();
       factory.releaseBuffer(buff);
-   }
-
-   public void testBlockCallback() throws Exception
-   {
-      class BlockCallback implements IOCallback
-      {
-         AtomicInteger countDone = new AtomicInteger(0);
-
-         AtomicInteger countError = new AtomicInteger(0);
-
-         CountDownLatch blockLatch;
-
-         BlockCallback()
-         {
-            blockLatch = new CountDownLatch(1);
-         }
-
-         public void release()
-         {
-            blockLatch.countDown();
-         }
-
-         public void done()
-         {
-            try
-            {
-               blockLatch.await();
-            }
-            catch (InterruptedException e)
-            {
-               e.printStackTrace();
-            }
-
-            countDone.incrementAndGet();
-         }
-
-         public void onError(final int errorCode, final String errorMessage)
-         {
-            try
-            {
-               blockLatch.await();
-            }
-            catch (InterruptedException e)
-            {
-               e.printStackTrace();
-            }
-
-            countError.incrementAndGet();
-         }
-      }
-
-      BlockCallback callback = new BlockCallback();
-
-      final int NUMBER_OF_RECORDS = 500;
-
-      SequentialFile file = factory.createSequentialFile("callbackBlock.log", 1000);
-      file.open();
-      file.fill(0, 512 * NUMBER_OF_RECORDS, (byte)'a');
-
-      for (int i = 0; i < NUMBER_OF_RECORDS; i++)
-      {
-         ByteBuffer buffer = factory.newBuffer(512);
-
-         buffer.putInt(i + 10);
-
-         for (int j = buffer.position(); j < buffer.limit(); j++)
-         {
-            buffer.put((byte)'b');
-         }
-
-         file.write(buffer, callback);
-      }
-
-      callback.release();
-      file.close();
-      assertEquals(NUMBER_OF_RECORDS, callback.countDone.get());
-      assertEquals(0, callback.countError.get());
-
-      file.open();
-
-      ByteBuffer buffer = factory.newBuffer(512);
-
-      for (int i = 0; i < NUMBER_OF_RECORDS; i++)
-      {
-
-         file.read(buffer);
-         buffer.rewind();
-
-         int recordRead = buffer.getInt();
-
-         assertEquals(i + 10, recordRead);
-
-         for (int j = buffer.position(); j < buffer.limit(); j++)
-         {
-            assertEquals((byte)'b', buffer.get());
-         }
-
-      }
-
-      file.close();
    }
 
 }

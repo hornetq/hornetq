@@ -40,20 +40,18 @@ public class RealNIOJournalImplTest extends JournalImplTestUnit
 {
    private static final Logger log = Logger.getLogger(RealNIOJournalImplTest.class);
 
-   protected String journalDir = System.getProperty("user.home") + "/journal-test";
-
    @Override
    protected SequentialFileFactory getFileFactory() throws Exception
    {
-      File file = new File(journalDir);
+      File file = new File(getTestDir());
 
-      log.debug("deleting directory " + journalDir);
+      log.debug("deleting directory " + getTestDir());
 
       deleteDirectory(file);
 
       file.mkdir();
 
-      return new NIOSequentialFileFactory(journalDir);
+      return new NIOSequentialFileFactory(getTestDir());
    }
 
    @Override

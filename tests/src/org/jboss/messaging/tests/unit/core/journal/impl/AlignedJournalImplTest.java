@@ -102,16 +102,6 @@ public class AlignedJournalImplTest extends UnitTestCase
 
       try
       {
-         ByteBuffer buffer = ByteBuffer.allocateDirect(57);
-         file.write(buffer, true);
-         fail("Exception expected");
-      }
-      catch (Exception ignored)
-      {
-      }
-
-      try
-      {
          ByteBuffer buffer = ByteBuffer.allocateDirect(200);
          for (int i = 0; i < 200; i++)
          {
@@ -156,7 +146,7 @@ public class AlignedJournalImplTest extends UnitTestCase
 
       try
       {
-         journalImpl = new JournalImpl(2000, 2, true, true, factory, "tt", "tt", 1000, 0);
+         journalImpl = new JournalImpl(2000, 2, true, true, factory, "tt", "tt", 1000);
          fail("Supposed to throw an exception");
       }
       catch (Exception ignored)
@@ -331,7 +321,7 @@ public class AlignedJournalImplTest extends UnitTestCase
    {
       final int JOURNAL_SIZE = 10000;
 
-      setupJournal(JOURNAL_SIZE, 100);
+      setupJournal(JOURNAL_SIZE, 1);
 
       journalImpl.setAutoReclaim(false);
 
@@ -367,9 +357,9 @@ public class AlignedJournalImplTest extends UnitTestCase
 
       journalImpl.debugWait();
 
-      assertEquals(4, factory.listFiles("tt").size());
+      assertEquals(3, factory.listFiles("tt").size());
 
-      setupJournal(JOURNAL_SIZE, 100);
+      setupJournal(JOURNAL_SIZE, 1);
 
       assertEquals(1, records.size());
 
@@ -385,7 +375,7 @@ public class AlignedJournalImplTest extends UnitTestCase
 
       log.debug("_______________________________");
 
-      log.debug("Files size:" + factory.listFiles("tt").size());
+      log.debug("Files bufferSize:" + factory.listFiles("tt").size());
 
       assertEquals(2, factory.listFiles("tt").size());
 
@@ -604,7 +594,7 @@ public class AlignedJournalImplTest extends UnitTestCase
 
       buffer.rewind();
 
-      // Changing the check size, so reload will ignore this record
+      // Changing the check bufferSize, so reload will ignore this record
       file.position(100);
 
       file.write(buffer, true);
@@ -672,7 +662,7 @@ public class AlignedJournalImplTest extends UnitTestCase
 
       buffer.rewind();
 
-      // Changing the check size, so reload will ignore this record
+      // Changing the check bufferSize, so reload will ignore this record
       file.position(100);
 
       file.write(buffer, true);
@@ -1278,7 +1268,7 @@ public class AlignedJournalImplTest extends UnitTestCase
    {
 
       SequentialFileFactory factory = new FakeSequentialFileFactory(512, false);
-      JournalImpl impl = new JournalImpl(512 + 512 * 3, 20, true, false, factory, "jbm", "jbm", 1000, 0);
+      JournalImpl impl = new JournalImpl(512 + 512 * 3, 20, true, false, factory, "jbm", "jbm", 1000);
 
       impl.start();
 
@@ -1291,7 +1281,7 @@ public class AlignedJournalImplTest extends UnitTestCase
 
       impl.stop();
 
-      impl = new JournalImpl(512 + 1024 + 512, 20, true, false, factory, "jbm", "jbm", 1000, 0);
+      impl = new JournalImpl(512 + 1024 + 512, 20, true, false, factory, "jbm", "jbm", 1000);
       impl.start();
       impl.load(dummyLoader);
 
@@ -1306,7 +1296,7 @@ public class AlignedJournalImplTest extends UnitTestCase
 
       impl.stop();
 
-      impl = new JournalImpl(512 + 1024 + 512, 20, true, false, factory, "jbm", "jbm", 1000, 0);
+      impl = new JournalImpl(512 + 1024 + 512, 20, true, false, factory, "jbm", "jbm", 1000);
       impl.start();
 
       ArrayList<RecordInfo> info = new ArrayList<RecordInfo>();
@@ -1374,7 +1364,7 @@ public class AlignedJournalImplTest extends UnitTestCase
          journalImpl.stop();
       }
 
-      journalImpl = new JournalImpl(journalSize, numberOfMinimalFiles, true, true, factory, "tt", "tt", 1000, 0);
+      journalImpl = new JournalImpl(journalSize, numberOfMinimalFiles, true, true, factory, "tt", "tt", 1000);
 
       journalImpl.start();
 

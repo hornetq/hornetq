@@ -22,7 +22,6 @@
 
 package org.jboss.messaging.tests.unit.core.asyncio;
 
-import java.lang.ref.WeakReference;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.charset.Charset;
@@ -163,7 +162,6 @@ public class AsynchronousFileTest extends AIOTestBase
 
          long valueInitial = System.currentTimeMillis();
 
-         long lastTime = System.currentTimeMillis();
          int counter = 0;
          Iterator<CountDownCallback> iter2 = list2.iterator();
 
@@ -173,43 +171,12 @@ public class AsynchronousFileTest extends AIOTestBase
 
             controller.write(counter * size, size, buffer, tmp);
             controller.write(counter * size, size, buffer, tmp2);
-            if (++counter % 5000 == 0)
-            {
-               debug(5000 * 1000 / (System.currentTimeMillis() - lastTime) + " rec/sec (Async)");
-               lastTime = System.currentTimeMillis();
-            }
+            ++counter;
 
          }
 
-         long timeTotal = System.currentTimeMillis() - valueInitial;
-
-         debug("Asynchronous time = " + timeTotal +
-               " for " +
-               numberOfLines +
-               " registers " +
-               " size each line = " +
-               size +
-               " Records/Sec=" +
-               numberOfLines *
-               1000 /
-               timeTotal +
-               " (Assynchronous)");
-
          latchDone.await();
          latchDone2.await();
-
-         timeTotal = System.currentTimeMillis() - valueInitial;
-         debug("After completions time = " + timeTotal +
-               " for " +
-               numberOfLines +
-               " registers " +
-               " size each line = " +
-               size +
-               " Records/Sec=" +
-               numberOfLines *
-               1000 /
-               timeTotal +
-               " (Assynchronous)");
 
          for (CountDownCallback callback : list)
          {

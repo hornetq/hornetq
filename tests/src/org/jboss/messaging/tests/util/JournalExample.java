@@ -70,15 +70,14 @@ public class JournalExample
          SequentialFileFactory fileFactory = new AIOSequentialFileFactory("/tmp"); // any dir you want
          //SequentialFileFactory fileFactory = new NIOSequentialFileFactory("/tmp"); // any dir you want
          JournalImpl journalExample = new JournalImpl(
-                                                      10 * 1024 * 1024, // 10M.. we believe that's the usual cilinder size.. not an exact science here
+                                                      10 * 1024 * 1024, // 10M.. we believe that's the usual cilinder bufferSize.. not an exact science here
                                                       2, // number of files pre-allocated
                                                       true, // sync on commit
                                                       false, // no sync on non transactional
                                                       fileFactory, // AIO or NIO
                                                       "exjournal", // file name
                                                       "dat", // extension
-                                                       10000, // it's like a semaphore for callback on the AIO layer
-                                                      5 * 1024); // avg buffer size.. it will reuse any buffer smaller than this during record writes
+                                                       10000); // it's like a semaphore for callback on the AIO layer
          
          ArrayList<RecordInfo> committedRecords = new ArrayList<RecordInfo>();
          ArrayList<PreparedTransactionInfo> preparedTransactions = new ArrayList<PreparedTransactionInfo>();

@@ -43,16 +43,14 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.jboss.messaging.core.buffers.ChannelBuffer;
 import org.jboss.messaging.core.buffers.ChannelBuffers;
 import org.jboss.messaging.core.exception.MessagingException;
-import org.jboss.messaging.core.journal.BufferCallback;
 import org.jboss.messaging.core.journal.EncodingSupport;
 import org.jboss.messaging.core.journal.IOCallback;
 import org.jboss.messaging.core.journal.LoadManager;
@@ -197,22 +195,7 @@ public class JournalImpl implements TestableJournal
 
    private ExecutorService filesExecutor = null;
 
-   private final int reuseBufferSize;
-
-   /** Object that will control buffer's callback and getting buffers from the queue */
-   private final ReuseBuffersController buffersControl = new ReuseBuffersController();
-
-   /**
-    * Used to lock access while calculating the positioning of currentFile.
-    * That has to be done in single-thread, and it needs to be a very-fast operation
-    */
-   private final Semaphore positionLock = new Semaphore(1, true);
-
-   /**
-    * a WriteLock means, currentFile is being changed. When we get a writeLock we wait all the write operations to finish on that file before we can move to the next file
-    * a ReadLock means, currentFile is being used, do not change it until I'm done with it
-    */
-   private final ReadWriteLock rwlock = new ReentrantReadWriteLock();
+   private final Lock lock = new ReentrantReadWriteLock().writeLock();
 
    private volatile JournalFile currentFile;
 
@@ -229,8 +212,7 @@ public class JournalImpl implements TestableJournal
                       final SequentialFileFactory fileFactory,
                       final String filePrefix,
                       final String fileExtension,
-                      final int maxAIO,
-                      final int reuseBufferSize)
+                      final int maxAIO)
    {
       if (fileSize < MIN_FILE_SIZE)
       {
@@ -263,8 +245,6 @@ public class JournalImpl implements TestableJournal
          throw new IllegalStateException("maxAIO should aways be a positive number");
       }
 
-      this.reuseBufferSize = fileFactory.calculateBlockSize(reuseBufferSize);
-
       this.fileSize = fileSize;
 
       this.minFiles = minFiles;
@@ -274,8 +254,6 @@ public class JournalImpl implements TestableJournal
       this.syncNonTransactional = syncNonTransactional;
 
       this.fileFactory = fileFactory;
-      
-      this.fileFactory.setBufferCallback(this.buffersControl.callback);
 
       this.filePrefix = filePrefix;
 
@@ -291,7 +269,7 @@ public class JournalImpl implements TestableJournal
    {
       appendAddRecord(id, recordType, new ByteArrayEncoding(record));
    }
-   
+
    public void appendAddRecord(final long id, final byte recordType, final EncodingSupport record) throws Exception
    {
       appendAddRecord(id, recordType, record, syncNonTransactional);
@@ -308,7 +286,7 @@ public class JournalImpl implements TestableJournal
 
       int size = SIZE_ADD_RECORD + recordLength;
 
-      ChannelBuffer bb = ChannelBuffers.wrappedBuffer(newBuffer(size)); 
+      ChannelBuffer bb = ChannelBuffers.wrappedBuffer(newBuffer(size));
 
       bb.writeByte(ADD_RECORD);
       bb.writeInt(-1); // skip ID part
@@ -318,6 +296,7 @@ public class JournalImpl implements TestableJournal
       record.encode(bb);
       bb.writeInt(size);
 
+      lock.lock();
       try
       {
          JournalFile usedFile = appendRecord(bb.toByteBuffer(), sync, null);
@@ -326,14 +305,7 @@ public class JournalImpl implements TestableJournal
       }
       finally
       {
-         try
-         {
-            rwlock.readLock().unlock();
-         }
-         catch (Exception ignored)
-         {
-            // This could happen if the thread was interrupted
-         }
+         lock.unlock();
       }
    }
 
@@ -358,7 +330,7 @@ public class JournalImpl implements TestableJournal
 
       int size = SIZE_UPDATE_RECORD + record.getEncodeSize();
 
-      ChannelBuffer bb = ChannelBuffers.wrappedBuffer(newBuffer(size)); 
+      ChannelBuffer bb = ChannelBuffers.wrappedBuffer(newBuffer(size));
 
       bb.writeByte(UPDATE_RECORD);
       bb.writeInt(-1); // skip ID part
@@ -368,6 +340,7 @@ public class JournalImpl implements TestableJournal
       record.encode(bb);
       bb.writeInt(size);
 
+      lock.lock();
       try
       {
          JournalFile usedFile = appendRecord(bb.toByteBuffer(), syncNonTransactional, null);
@@ -376,14 +349,7 @@ public class JournalImpl implements TestableJournal
       }
       finally
       {
-         try
-         {
-            rwlock.readLock().unlock();
-         }
-         catch (Exception ignored)
-         {
-            // This could happen if the thread was interrupted
-         }
+         lock.unlock();
       }
    }
 
@@ -410,6 +376,7 @@ public class JournalImpl implements TestableJournal
       bb.putLong(id);
       bb.putInt(size);
 
+      lock.lock();
       try
       {
          JournalFile usedFile = appendRecord(bb, syncNonTransactional, null);
@@ -418,14 +385,7 @@ public class JournalImpl implements TestableJournal
       }
       finally
       {
-         try
-         {
-            rwlock.readLock().unlock();
-         }
-         catch (Exception ignored)
-         {
-            // This could happen if the thread was interrupted
-         }
+         lock.unlock();
       }
    }
 
@@ -444,12 +404,12 @@ public class JournalImpl implements TestableJournal
       {
          throw new IllegalStateException("Journal must be loaded first");
       }
-      
+
       int recordLength = record.getEncodeSize();
 
       int size = SIZE_ADD_RECORD_TX + recordLength;
 
-      ChannelBuffer bb = ChannelBuffers.wrappedBuffer(newBuffer(size)); 
+      ChannelBuffer bb = ChannelBuffers.wrappedBuffer(newBuffer(size));
 
       bb.writeByte(ADD_RECORD_TX);
       bb.writeInt(-1); // skip ID part
@@ -460,6 +420,7 @@ public class JournalImpl implements TestableJournal
       record.encode(bb);
       bb.writeInt(size);
 
+      lock.lock();
       try
       {
          JournalFile usedFile = appendRecord(bb.toByteBuffer(), false, getTransactionCallback(txID));
@@ -470,14 +431,7 @@ public class JournalImpl implements TestableJournal
       }
       finally
       {
-         try
-         {
-            rwlock.readLock().unlock();
-         }
-         catch (Exception ignored)
-         {
-            // This could happen if the thread was interrupted
-         }
+         lock.unlock();
       }
    }
 
@@ -501,7 +455,7 @@ public class JournalImpl implements TestableJournal
 
       int size = SIZE_UPDATE_RECORD_TX + record.getEncodeSize();
 
-      ChannelBuffer bb = ChannelBuffers.wrappedBuffer(newBuffer(size)); 
+      ChannelBuffer bb = ChannelBuffers.wrappedBuffer(newBuffer(size));
 
       bb.writeByte(UPDATE_RECORD_TX);
       bb.writeInt(-1); // skip ID part
@@ -512,6 +466,7 @@ public class JournalImpl implements TestableJournal
       record.encode(bb);
       bb.writeInt(size);
 
+      lock.lock();
       try
       {
          JournalFile usedFile = appendRecord(bb.toByteBuffer(), false, getTransactionCallback(txID));
@@ -522,14 +477,7 @@ public class JournalImpl implements TestableJournal
       }
       finally
       {
-         try
-         {
-            rwlock.readLock().unlock();
-         }
-         catch (Exception ignored)
-         {
-            // This could happen if the thread was interrupted
-         }
+         lock.unlock();
       }
    }
 
@@ -547,7 +495,7 @@ public class JournalImpl implements TestableJournal
 
       int size = SIZE_DELETE_RECORD_TX + (record != null ? record.getEncodeSize() : 0);
 
-      ChannelBuffer bb = ChannelBuffers.wrappedBuffer(newBuffer(size)); 
+      ChannelBuffer bb = ChannelBuffers.wrappedBuffer(newBuffer(size));
 
       bb.writeByte(DELETE_RECORD_TX);
       bb.writeInt(-1); // skip ID part
@@ -560,6 +508,7 @@ public class JournalImpl implements TestableJournal
       }
       bb.writeInt(size);
 
+      lock.lock();
       try
       {
          JournalFile usedFile = appendRecord(bb.toByteBuffer(), false, getTransactionCallback(txID));
@@ -570,14 +519,7 @@ public class JournalImpl implements TestableJournal
       }
       finally
       {
-         try
-         {
-            rwlock.readLock().unlock();
-         }
-         catch (Exception ignored)
-         {
-            // This could happen if the thread was interrupted
-         }
+         lock.unlock();
       }
    }
 
@@ -590,7 +532,7 @@ public class JournalImpl implements TestableJournal
 
       int size = SIZE_DELETE_RECORD_TX;
 
-      ChannelBuffer bb = ChannelBuffers.wrappedBuffer(newBuffer(size)); 
+      ChannelBuffer bb = ChannelBuffers.wrappedBuffer(newBuffer(size));
 
       bb.writeByte(DELETE_RECORD_TX);
       bb.writeInt(-1); // skip ID part
@@ -599,6 +541,7 @@ public class JournalImpl implements TestableJournal
       bb.writeInt(0);
       bb.writeInt(size);
 
+      lock.lock();
       try
       {
          JournalFile usedFile = appendRecord(bb.toByteBuffer(), false, getTransactionCallback(txID));
@@ -609,14 +552,7 @@ public class JournalImpl implements TestableJournal
       }
       finally
       {
-         try
-         {
-            rwlock.readLock().unlock();
-         }
-         catch (Exception ignored)
-         {
-            // This could happen if the thread was interrupted
-         }
+         lock.unlock();
       }
    }
 
@@ -646,6 +582,7 @@ public class JournalImpl implements TestableJournal
 
       TransactionCallback callback = getTransactionCallback(txID);
 
+      lock.lock();
       try
       {
          JournalFile usedFile = appendRecord(bb, syncTransactional, callback);
@@ -654,14 +591,7 @@ public class JournalImpl implements TestableJournal
       }
       finally
       {
-         try
-         {
-            rwlock.readLock().unlock();
-         }
-         catch (Exception ignored)
-         {
-            // This could happen if the thread was interrupted
-         }
+         lock.unlock();
       }
 
       // We should wait this outside of the lock, to increase throughput
@@ -706,6 +636,7 @@ public class JournalImpl implements TestableJournal
 
       TransactionCallback callback = getTransactionCallback(txID);
 
+      lock.lock();
       try
       {
          JournalFile usedFile = appendRecord(bb, syncTransactional, callback);
@@ -716,14 +647,7 @@ public class JournalImpl implements TestableJournal
       }
       finally
       {
-         try
-         {
-            rwlock.readLock().unlock();
-         }
-         catch (Exception ignored)
-         {
-            // This could happen if the thread was interrupted
-         }
+         lock.unlock();
       }
 
       // We should wait this outside of the lock, to increase throuput
@@ -759,6 +683,7 @@ public class JournalImpl implements TestableJournal
 
       TransactionCallback callback = getTransactionCallback(txID);
 
+      lock.lock();
       try
       {
          JournalFile usedFile = appendRecord(bb, syncTransactional, callback);
@@ -769,14 +694,7 @@ public class JournalImpl implements TestableJournal
       }
       finally
       {
-         try
-         {
-            rwlock.readLock().unlock();
-         }
-         catch (Exception ignored)
-         {
-            // This could happen if the thread was interrupted
-         }
+         lock.unlock();
       }
 
       // We should wait this outside of the lock, to increase throuput
@@ -830,6 +748,20 @@ public class JournalImpl implements TestableJournal
       return maxID;
    }
 
+   private boolean isInvalidSize(int bufferPos, int size)
+   {
+      if (size < 0)
+      {
+         return true;
+      }
+      else
+      {
+         final int position = bufferPos + size;
+         return position > fileSize || position < 0;
+
+      }
+   }
+
    /** 
     * <p>Load data accordingly to the record layouts</p>
     * 
@@ -872,14 +804,12 @@ public class JournalImpl implements TestableJournal
          throw new IllegalStateException("Journal must be in started state");
       }
 
-      // Disabling life cycle control on buffers, as we are reading the buffer 
-      buffersControl.disable();
-
+      fileFactory.controlBuffersLifeCycle(false);
 
       Map<Long, TransactionHolder> transactions = new LinkedHashMap<Long, TransactionHolder>();
 
       List<JournalFile> orderedFiles = orderFiles();
-   
+
       int lastDataPos = SIZE_HEADER;
 
       long maxID = -1;
@@ -906,9 +836,8 @@ public class JournalImpl implements TestableJournal
                                             file.getFile().getFileName());
          }
 
-         
          wholeFileBuffer.position(0);
-         
+
          // First long is the ordering timestamp, we just jump its position
          wholeFileBuffer.position(SIZE_HEADER);
 
@@ -928,8 +857,10 @@ public class JournalImpl implements TestableJournal
                continue;
             }
 
-            if (wholeFileBuffer.position() + SIZE_INT > fileSize)
+            if (isInvalidSize(wholeFileBuffer.position(), SIZE_INT))
             {
+               hasData = true;
+               wholeFileBuffer.position(pos + 1);
                // II - Ignore this record, lets keep looking
                continue;
             }
@@ -938,25 +869,14 @@ public class JournalImpl implements TestableJournal
             // This is what supports us from not re-filling the whole file
             int readFileId = wholeFileBuffer.getInt();
 
-            // IV - This record is from a previous file-usage. The file was
-            // reused and we need to ignore this record
-            if (readFileId != file.getOrderingID())
-            {
-               // If a file has damaged records, we make it a dataFile, and the
-               // next reclaiming will fix it
-               hasData = true;
-
-               wholeFileBuffer.position(pos + 1);
-
-               continue;
-            }
-
             long transactionID = 0;
 
             if (isTransaction(recordType))
             {
-               if (wholeFileBuffer.position() + SIZE_LONG > fileSize)
+               if (isInvalidSize(wholeFileBuffer.position(), SIZE_LONG))
                {
+                  wholeFileBuffer.position(pos + 1);
+                  hasData = true;
                   continue;
                }
 
@@ -967,8 +887,10 @@ public class JournalImpl implements TestableJournal
 
             if (!isCompleteTransaction(recordType))
             {
-               if (wholeFileBuffer.position() + SIZE_LONG > fileSize)
+               if (isInvalidSize(wholeFileBuffer.position(), SIZE_LONG))
                {
+                  wholeFileBuffer.position(pos + 1);
+                  hasData = true;
                   continue;
                }
 
@@ -993,19 +915,18 @@ public class JournalImpl implements TestableJournal
 
             if (isContainsBody(recordType))
             {
-               if (wholeFileBuffer.position() + SIZE_INT > fileSize)
+               if (isInvalidSize(wholeFileBuffer.position(), SIZE_INT))
                {
+                  wholeFileBuffer.position(pos + 1);
+                  hasData = true;
                   continue;
                }
 
                variableSize = wholeFileBuffer.getInt();
 
-               if (wholeFileBuffer.position() + variableSize > fileSize)
+               if (isInvalidSize(wholeFileBuffer.position(), variableSize))
                {
-                  log.warn("Record at position " + pos +
-                           " file:" +
-                           file.getFile().getFileName() +
-                           " is corrupted and it is being ignored");
+                  wholeFileBuffer.position(pos + 1);
                   continue;
                }
 
@@ -1036,17 +957,21 @@ public class JournalImpl implements TestableJournal
             // VI - this is completing V, We will validate the size at the end
             // of the record,
             // But we avoid buffer overflows by damaged data
-            if (pos + recordSize + variableSize + preparedTransactionExtraDataSize > fileSize)
+            if (isInvalidSize(pos, recordSize + variableSize + preparedTransactionExtraDataSize))
             {
                // Avoid a buffer overflow caused by damaged data... continue
                // scanning for more records...
-               log.warn("Record at position " + pos +
-                        " file:" +
-                        file.getFile().getFileName() +
-                        " is corrupted and it is being ignored");
+               log.debug("Record at position " + pos +
+                        " recordType = " + recordType +
+                        " file:" + file.getFile().getFileName() +
+                        " recordSize: " + recordSize + 
+                        " variableSize: " + variableSize +
+                        " preparedTransactionExtraDataSize: " + preparedTransactionExtraDataSize + 
+                        " is corrupted and it is being ignored (II)");
                // If a file has damaged records, we make it a dataFile, and the
                // next reclaiming will fix it
                hasData = true;
+               wholeFileBuffer.position(pos + 1);
 
                continue;
             }
@@ -1063,16 +988,29 @@ public class JournalImpl implements TestableJournal
             // checkSize by some sort of calculated hash)
             if (checkSize != variableSize + recordSize + preparedTransactionExtraDataSize)
             {
-               log.warn("Record at position " + pos +
+               log.debug("Record at position " + pos +
+                        " recordType = " +
+                        recordType +
                         " file:" +
                         file.getFile().getFileName() +
-                        " is corrupted and it is being ignored");
+                        " is corrupted and it is being ignored (III)");
 
                // If a file has damaged records, we make it a dataFile, and the
                // next reclaiming will fix it
                hasData = true;
 
                wholeFileBuffer.position(pos + SIZE_BYTE);
+
+               continue;
+            }
+
+            // This record is from a previous file-usage. The file was
+            // reused and we need to ignore this record
+            if (readFileId != file.getOrderingID())
+            {
+               // If a file has damaged records, we make it a dataFile, and the
+               // next reclaiming will fix it
+               hasData = true;
 
                continue;
             }
@@ -1202,7 +1140,8 @@ public class JournalImpl implements TestableJournal
                   wholeFileBuffer.get(extraData);
 
                   // Pair <FileID, NumberOfElements>
-                  Pair<Integer, Integer>[] recordedSummary = readTransactionalElementsSummary(variableSize, wholeFileBuffer);
+                  Pair<Integer, Integer>[] recordedSummary = readTransactionalElementsSummary(variableSize,
+                                                                                              wholeFileBuffer);
 
                   tx.prepared = true;
 
@@ -1225,7 +1164,8 @@ public class JournalImpl implements TestableJournal
                   }
                   else
                   {
-                     log.warn("Prepared transaction " + transactionID + " wasn't considered completed, it will be ignored");
+                     log.warn("Prepared transaction " + transactionID +
+                              " wasn't considered completed, it will be ignored");
                      tx.invalid = true;
                   }
 
@@ -1240,7 +1180,8 @@ public class JournalImpl implements TestableJournal
                   // We need to read it even if transaction was not found, or
                   // the reading checks would fail
                   // Pair <OrderId, NumberOfElements>
-                  Pair<Integer, Integer>[] recordedSummary = readTransactionalElementsSummary(variableSize, wholeFileBuffer);
+                  Pair<Integer, Integer>[] recordedSummary = readTransactionalElementsSummary(variableSize,
+                                                                                              wholeFileBuffer);
 
                   // The commit could be alone on its own journal-file and the
                   // whole transaction body was reclaimed but not the
@@ -1335,12 +1276,14 @@ public class JournalImpl implements TestableJournal
             // not doing what it was supposed to do
             if (checkSize != variableSize + recordSize + preparedTransactionExtraDataSize)
             {
-               throw new IllegalStateException("Internal error on loading file. Position doesn't match with checkSize, file = " + file.getFile() + ", pos = " + pos);
+               throw new IllegalStateException("Internal error on loading file. Position doesn't match with checkSize, file = " + file.getFile() +
+                                               ", pos = " +
+                                               pos);
             }
 
             lastDataPos = wholeFileBuffer.position();
          }
-         
+
          fileFactory.releaseBuffer(wholeFileBuffer);
 
          file.getFile().close();
@@ -1356,8 +1299,8 @@ public class JournalImpl implements TestableJournal
          }
       }
 
-      buffersControl.enable();
-      
+      fileFactory.controlBuffersLifeCycle(true);
+
       // Create any more files we need
 
       // FIXME - size() involves a scan
@@ -1379,7 +1322,7 @@ public class JournalImpl implements TestableJournal
       while (iter.hasNext())
       {
          currentFile = iter.next();
-         
+
          if (!iter.hasNext())
          {
             iter.remove();
@@ -1391,8 +1334,6 @@ public class JournalImpl implements TestableJournal
          currentFile.getFile().open();
 
          currentFile.getFile().position(currentFile.getFile().calculateBlockStart(lastDataPos));
-
-         currentFile.setOffset(currentFile.getFile().position());
       }
       else
       {
@@ -1653,14 +1594,13 @@ public class JournalImpl implements TestableJournal
    public synchronized void stop() throws Exception
    {
       trace("Stopping the journal");
-      
+
       if (state == STATE_STOPPED)
       {
          throw new IllegalStateException("Journal is already stopped");
       }
 
-      positionLock.acquire();
-      rwlock.writeLock().lock();
+      lock.lock();
 
       try
       {
@@ -1688,15 +1628,14 @@ public class JournalImpl implements TestableJournal
          freeFiles.clear();
 
          openedFiles.clear();
-         
-         buffersControl.clearPoll();
+
+         fileFactory.stop();
 
          state = STATE_STOPPED;
       }
       finally
       {
-         positionLock.release();
-         rwlock.writeLock().unlock();
+         lock.unlock();
       }
    }
 
@@ -1720,19 +1659,25 @@ public class JournalImpl implements TestableJournal
 
       SequentialFile sf = file.getFile();
 
+      sf.setBuffering(false);
+
       sf.open(1);
+      
+      sf.position(0);
 
       ByteBuffer bb = fileFactory.newBuffer(SIZE_INT);
-
+      
       bb.putInt(newOrderingID);
+      
+      bb.rewind();
 
-      int bytesWritten = sf.write(bb, true);
+      sf.write(bb, true);
+
+      sf.setBuffering(true);
 
       JournalFile jf = new JournalFileImpl(sf, newOrderingID);
 
-      sf.position(bytesWritten);
-
-      jf.setOffset(bytesWritten);
+      sf.position(bb.limit());
 
       sf.close();
 
@@ -1854,8 +1799,8 @@ public class JournalImpl implements TestableJournal
                  2 +
                  (transactionData != null ? transactionData.getEncodeSize() + SIZE_INT : 0);
 
-      ChannelBuffer bb = ChannelBuffers.wrappedBuffer(newBuffer(size)); 
-      
+      ChannelBuffer bb = ChannelBuffers.wrappedBuffer(newBuffer(size));
+
       bb.writeByte(recordType);
       bb.writeInt(-1); // skip ID part
       bb.writeLong(txID);
@@ -1942,27 +1887,20 @@ public class JournalImpl implements TestableJournal
       return recordSize;
    }
 
-   
    /** 
     * This method requires bufferControl disabled, or the reads are going to be invalid
     * */
    private List<JournalFile> orderFiles() throws Exception
    {
-      
-      if (buffersControl.enabled)
-      {
-         // Sanity check, this shouldn't happen unless someone made an invalid change on the code
-         throw new IllegalStateException("Buffer life cycle control needs to be disabled at this point!!!");
-      }
-      
+
       List<String> fileNames = fileFactory.listFiles(fileExtension);
 
       List<JournalFile> orderedFiles = new ArrayList<JournalFile>(fileNames.size());
-      
+
       for (String fileName : fileNames)
       {
          SequentialFile file = fileFactory.createSequentialFile(fileName, maxAIO);
- 
+
          file.open(1);
 
          ByteBuffer bb = fileFactory.newBuffer(SIZE_INT);
@@ -1970,9 +1908,9 @@ public class JournalImpl implements TestableJournal
          file.read(bb);
 
          int orderingID = bb.getInt();
-         
+
          fileFactory.releaseBuffer(bb);
-         
+
          bb = null;
 
          if (nextOrderingId.get() < orderingID)
@@ -1984,7 +1922,7 @@ public class JournalImpl implements TestableJournal
 
          file.close();
       }
-      
+
       // Now order them by ordering id - we can't use the file name for ordering
       // since we can re-use dataFiles
 
@@ -2010,7 +1948,7 @@ public class JournalImpl implements TestableJournal
     * */
    private JournalFile appendRecord(final ByteBuffer bb, final boolean sync, final TransactionCallback callback) throws Exception
    {
-      positionLock.acquire();
+      lock.lock();
 
       try
       {
@@ -2021,21 +1959,20 @@ public class JournalImpl implements TestableJournal
 
          int size = bb.limit();
 
-         if (size % currentFile.getFile().getAlignment() != 0)
-         {
-            throw new IllegalStateException("You can't write blocks in a size different than " + currentFile.getFile()
-                                                                                                            .getAlignment());
-         }
-
          // We take into account the fileID used on the Header
          if (size > fileSize - currentFile.getFile().calculateBlockStart(SIZE_HEADER))
          {
             throw new IllegalArgumentException("Record is too large to store " + size);
          }
 
-         if (currentFile == null || fileSize - currentFile.getOffset() < size)
+         // The buffer on the file can't be flushed or the currentFile could be affected
+         currentFile.getFile().lockBuffer();
+
+         if (!currentFile.getFile().fits(size))
          {
+            currentFile.getFile().unlockBuffer();
             moveNextFile();
+            currentFile.getFile().lockBuffer();
          }
 
          if (currentFile == null)
@@ -2043,41 +1980,37 @@ public class JournalImpl implements TestableJournal
             throw new IllegalStateException("Current file = null");
          }
 
-         currentFile.extendOffset(size);
+         bb.position(SIZE_BYTE);
 
-         // we must get the readLock before we release positionLock
-         // We don't want a race condition where currentFile is changed by
-         // another write as soon as we leave this block
-         rwlock.readLock().lock();
+         bb.putInt(currentFile.getOrderingID());
 
+         bb.rewind();
+
+         if (callback != null)
+         {
+            currentFile.getFile().write(bb, callback);
+
+            // TODO: Do we need to do this?
+            // it wouldn't scale, but it is probably useful in some usecases?
+            // It should be configurable at least
+            if (sync)
+            {
+               currentFile.getFile().flush();
+            }
+         }
+         else
+         {
+            currentFile.getFile().write(bb, sync);
+         }
+
+         return currentFile;
       }
       finally
       {
-         positionLock.release();
+         currentFile.getFile().unlockBuffer();
+         lock.unlock();
       }
 
-      bb.position(SIZE_BYTE);
-
-      bb.putInt(currentFile.getOrderingID());
-
-      bb.rewind();
-
-      if (callback != null)
-      {
-         // We are 100% sure currentFile won't change, since rwLock.readLock is
-         // locked
-         currentFile.getFile().write(bb, callback);
-         // callback.waitCompletion() should be done on the caller of this
-         // method, so we would have better performance
-      }
-      else
-      {
-         // We are 100% sure currentFile won't change, since rwLock.readLock is
-         // locked
-         currentFile.getFile().write(bb, sync);
-      }
-
-      return currentFile;
    }
 
    /**
@@ -2109,11 +2042,13 @@ public class JournalImpl implements TestableJournal
 
       bb.rewind();
 
-      int bytesWritten = sequentialFile.write(bb, true);
+      sequentialFile.setBuffering(false);
+
+      sequentialFile.write(bb, true);
+
+      sequentialFile.setBuffering(true);
 
       JournalFile info = new JournalFileImpl(sequentialFile, orderingID);
-
-      info.extendOffset(bytesWritten);
 
       if (!keepOpened)
       {
@@ -2128,8 +2063,6 @@ public class JournalImpl implements TestableJournal
       file.getFile().open();
 
       file.getFile().position(file.getFile().calculateBlockStart(SIZE_HEADER));
-
-      file.setOffset(file.getFile().calculateBlockStart(SIZE_HEADER));
    }
 
    private int generateOrderingID()
@@ -2140,7 +2073,7 @@ public class JournalImpl implements TestableJournal
    // You need to guarantee lock.acquire() before calling this method
    private void moveNextFile() throws InterruptedException
    {
-      rwlock.writeLock().lock();
+      lock.lock();
       try
       {
          closeFile(currentFile);
@@ -2149,7 +2082,7 @@ public class JournalImpl implements TestableJournal
       }
       finally
       {
-         rwlock.writeLock().unlock();
+         lock.unlock();
       }
    }
 
@@ -2312,7 +2245,7 @@ public class JournalImpl implements TestableJournal
 
    public ByteBuffer newBuffer(final int size)
    {
-      return buffersControl.newBuffer(size);
+      return ByteBuffer.allocate(size);
    }
 
    // Inner classes
@@ -2394,114 +2327,6 @@ public class JournalImpl implements TestableJournal
             for (JournalFile jf : updateFiles)
             {
                file.incNegCount(jf);
-            }
-         }
-      }
-   }
-
-   /** Class that will control buffer-reuse */
-   private class ReuseBuffersController
-   {
-      private volatile long bufferReuseLastTime = System.currentTimeMillis();
-
-      /** This queue is fed by {@link JournalImpl.ReuseBuffersController.LocalBufferCallback}} which is called directly by NIO or NIO.
-       * On the case of the AIO this is almost called by the native layer as soon as the buffer is not being used any more
-       * and ready to be reused or GCed */
-      private final ConcurrentLinkedQueue<ByteBuffer> reuseBuffersQueue = new ConcurrentLinkedQueue<ByteBuffer>();
-      
-      /** During reload we may disable/enable buffer reuse */
-      private boolean enabled = true;
-
-      final BufferCallback callback = new LocalBufferCallback();
-      
-      public void enable()
-      {
-         this.enabled = true;
-      }
-      
-      public void disable()
-      {
-         this.enabled = false;
-      }
-
-      public ByteBuffer newBuffer(final int size)
-      {
-         // if a new buffer wasn't requested in 10 seconds, we clear the queue
-         // This is being done this way as we don't need another Timeout Thread
-         // just to cleanup this
-         if (reuseBufferSize > 0 && System.currentTimeMillis() - bufferReuseLastTime > 10000)
-         {
-            trace("Clearing reuse buffers queue with " + reuseBuffersQueue.size() + " elements");
-
-            bufferReuseLastTime = System.currentTimeMillis();
-
-            clearPoll();
-         }
-
-         // if a buffer is bigger than the configured-size, we just create a new
-         // buffer.
-         if (size > reuseBufferSize)
-         {
-            return fileFactory.newBuffer(size);
-         }
-         else
-         {
-            // We need to allocate buffers following the rules of the storage
-            // being used (AIO/NIO)
-            int alignedSize = fileFactory.calculateBlockSize(size);
-
-            // Try getting a buffer from the queue...
-            ByteBuffer buffer = reuseBuffersQueue.poll();
-
-            if (buffer == null)
-            {
-               // if empty create a new one.
-               buffer = fileFactory.newBuffer(reuseBufferSize);
-
-               buffer.limit(alignedSize);
-            }
-            else
-            {
-               // set the limit of the buffer to the size being required
-               buffer.limit(alignedSize);
-
-               fileFactory.clearBuffer(buffer);
-            }
-            
-            buffer.rewind();
-
-            return buffer;
-         }
-      }
-
-      public void clearPoll()
-      {
-         ByteBuffer reusedBuffer;
-         
-         while ((reusedBuffer = reuseBuffersQueue.poll()) != null)
-         {
-            fileFactory.releaseBuffer(reusedBuffer);
-         }
-      }
-
-      private class LocalBufferCallback implements BufferCallback
-      {
-         public void bufferDone(final ByteBuffer buffer)
-         {
-            if (enabled)
-            {
-               bufferReuseLastTime = System.currentTimeMillis();
-   
-               // If a buffer has any other than the configured size, the buffer
-               // will be just sent to GC
-               if (buffer.capacity() == reuseBufferSize)
-               {
-                  reuseBuffersQueue.offer(buffer);
-               }
-               else
-               {
-                  fileFactory.releaseBuffer(buffer);
-               }
             }
          }
       }
@@ -2664,8 +2489,7 @@ public class JournalImpl implements TestableJournal
       }
 
    }
-   
-   
+
    private class ByteArrayEncoding implements EncodingSupport
    {
 
@@ -2693,8 +2517,7 @@ public class JournalImpl implements TestableJournal
          return data.length;
       }
    }
-   
-   
+
    // Used on Load
    private static class TransactionHolder
    {
@@ -2716,7 +2539,5 @@ public class JournalImpl implements TestableJournal
       public byte[] extraData;
 
    }
-
-
 
 }

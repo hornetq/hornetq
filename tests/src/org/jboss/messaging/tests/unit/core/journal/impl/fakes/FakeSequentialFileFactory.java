@@ -322,6 +322,10 @@ public class FakeSequentialFileFactory implements SequentialFileFactory
          return open;
       }
 
+      public void flush()
+      {
+      }
+
       public FakeSequentialFile(final String fileName)
       {
          this.fileName = fileName;
@@ -433,7 +437,7 @@ public class FakeSequentialFileFactory implements SequentialFileFactory
          return data.position();
       }
 
-      public synchronized int write(final ByteBuffer bytes, final IOCallback callback) throws Exception
+      public synchronized void write(final ByteBuffer bytes, final IOCallback callback) throws Exception
       {
          if (!open)
          {
@@ -442,9 +446,9 @@ public class FakeSequentialFileFactory implements SequentialFileFactory
 
          final int position = data == null ? 0 : data.position();
 
-         checkAlignment(position);
+         // checkAlignment(position);
 
-         checkAlignment(bytes.limit());
+         // checkAlignment(bytes.limit());
 
          checkAndResize(bytes.limit() + position);
 
@@ -463,8 +467,6 @@ public class FakeSequentialFileFactory implements SequentialFileFactory
          {
             action.run();
          }
-
-         return bytes.limit();
 
       }
 
@@ -488,9 +490,9 @@ public class FakeSequentialFileFactory implements SequentialFileFactory
          }
       }
 
-      public int write(final ByteBuffer bytes, final boolean sync) throws Exception
+      public void write(final ByteBuffer bytes, final boolean sync) throws Exception
       {
-         return write(bytes, null);
+         write(bytes, null);
       }
 
       private void checkAndResize(final int size)
@@ -564,6 +566,35 @@ public class FakeSequentialFileFactory implements SequentialFileFactory
          fileMap.put(newFileName, this);
       }
 
+      /* (non-Javadoc)
+       * @see org.jboss.messaging.core.journal.SequentialFile#fits(int)
+       */
+      public boolean fits(int size)
+      {
+         return data.position() + size <= data.limit();
+      }
+
+      /* (non-Javadoc)
+       * @see org.jboss.messaging.core.journal.SequentialFile#setBuffering(boolean)
+       */
+      public void setBuffering(boolean buffering)
+      {
+      }
+
+      /* (non-Javadoc)
+       * @see org.jboss.messaging.core.journal.SequentialFile#lockBuffer()
+       */
+      public void lockBuffer()
+      {
+      }
+
+      /* (non-Javadoc)
+       * @see org.jboss.messaging.core.journal.SequentialFile#unlockBuffer()
+       */
+      public void unlockBuffer()
+      {
+      }
+
    }
 
    /* (non-Javadoc)
@@ -586,7 +617,6 @@ public class FakeSequentialFileFactory implements SequentialFileFactory
     */
    public BufferCallback getBufferCallback()
    {
-      // TODO Auto-generated method stub
       return null;
    }
 
@@ -595,8 +625,20 @@ public class FakeSequentialFileFactory implements SequentialFileFactory
     */
    public void setBufferCallback(BufferCallback bufferCallback)
    {
-      // TODO Auto-generated method stub
-      
+   }
+
+   /* (non-Javadoc)
+    * @see org.jboss.messaging.core.journal.SequentialFileFactory#controlBuffersLifeCycle(boolean)
+    */
+   public void controlBuffersLifeCycle(boolean value)
+   {
+   }
+
+   /* (non-Javadoc)
+    * @see org.jboss.messaging.core.journal.SequentialFileFactory#stop()
+    */
+   public void stop()
+   {
    }
 
 }

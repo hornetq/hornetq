@@ -241,22 +241,12 @@ public class MultiThreadAsynchronousFileTest extends AIOTestBase
             {
                latchFinishThread.await();
             }
+
             for (CountDownCallback callback : list)
             {
                assertTrue(callback.doneCalled);
                assertFalse(callback.errorCalled);
             }
-
-            long endtime = System.currentTimeMillis();
-
-            debug(Thread.currentThread().getName() + " Rec/Sec= " +
-                      NUMBER_OF_LINES *
-                      1000 /
-                      (endtime - startTime) +
-                      " total time = " +
-                      (endtime - startTime) +
-                      " number of lines=" +
-                      NUMBER_OF_LINES);
 
             for (CountDownCallback callback : list)
             {

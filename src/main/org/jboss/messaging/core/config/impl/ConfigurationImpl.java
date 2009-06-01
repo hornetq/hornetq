@@ -95,7 +95,7 @@ public class ConfigurationImpl implements Configuration
 
    public static final int DEFAULT_JOURNAL_MIN_FILES = 2;
 
-   public static final int DEFAULT_JOURNAL_MAX_AIO = 5000;
+   public static final int DEFAULT_JOURNAL_MAX_AIO = 500;
 
    public static final int DEFAULT_JOURNAL_REUSE_BUFFER_SIZE = 1024;
 

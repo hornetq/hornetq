@@ -128,7 +128,7 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
    {
       try
       {
-         new JournalImpl(JournalImpl.MIN_FILE_SIZE - 1, 10, true, true, fileFactory, filePrefix, fileExtension, 1, 0);
+         new JournalImpl(JournalImpl.MIN_FILE_SIZE - 1, 10, true, true, fileFactory, filePrefix, fileExtension, 1);
 
          fail("Should throw exception");
       }
@@ -139,7 +139,7 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
 
       try
       {
-         new JournalImpl(10 * 1024, 1, true, true, fileFactory, filePrefix, fileExtension, 1, 0);
+         new JournalImpl(10 * 1024, 1, true, true, fileFactory, filePrefix, fileExtension, 1);
 
          fail("Should throw exception");
       }
@@ -150,7 +150,7 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
 
       try
       {
-         new JournalImpl(10 * 1024, 10, true, true, null, filePrefix, fileExtension, 1, 0);
+         new JournalImpl(10 * 1024, 10, true, true, null, filePrefix, fileExtension, 1);
 
          fail("Should throw exception");
       }
@@ -161,7 +161,7 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
 
       try
       {
-         new JournalImpl(10 * 1024, 10, true, true, fileFactory, null, fileExtension, 1, 0);
+         new JournalImpl(10 * 1024, 10, true, true, fileFactory, null, fileExtension, 1);
 
          fail("Should throw exception");
       }
@@ -172,7 +172,7 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
 
       try
       {
-         new JournalImpl(10 * 1024, 10, true, true, fileFactory, filePrefix, null, 1, 0);
+         new JournalImpl(10 * 1024, 10, true, true, fileFactory, filePrefix, null, 1);
 
          fail("Should throw exception");
       }
@@ -183,7 +183,7 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
 
       try
       {
-         new JournalImpl(10 * 1024, 10, true, true, fileFactory, filePrefix, null, 0, 0);
+         new JournalImpl(10 * 1024, 10, true, true, fileFactory, filePrefix, null, 0);
 
          fail("Should throw exception");
       }
@@ -1994,11 +1994,8 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
 
       List<String> files13 = fileFactory.listFiles(fileExtension);
 
-      assertEquals(4, files13.size());
-
       assertEquals(1, journal.getOpenedFilesCount());
 
-      assertEquals(2, journal.getDataFilesCount());
       assertEquals(0, journal.getFreeFilesCount());
       assertEquals(2, journal.getIDMapSize());
 
@@ -2008,10 +2005,7 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
 
       log.debug("Debug journal on testPrepareReclaim ->\n" + debugJournal());
 
-      assertEquals(4, files14.size());
-
       assertEquals(1, journal.getOpenedFilesCount());
-      assertEquals(2, journal.getDataFilesCount());
       assertEquals(0, journal.getFreeFilesCount());
       assertEquals(3, journal.getIDMapSize());
 

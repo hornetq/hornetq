@@ -75,8 +75,7 @@ public class ListJournal
                             new NIOSequentialFileFactory(fileConf.getJournalDirectory()),
                             "jbm-data",
                             "jbm",
-                            fileConf.getJournalMaxAIO(),
-                            fileConf.getJournalBufferReuseSize());
+                            fileConf.getJournalMaxAIO());
          
          
          ArrayList<RecordInfo> records = new ArrayList<RecordInfo>();

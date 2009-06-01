@@ -53,7 +53,7 @@ public class NIOSequentialFileFactory extends AbstractSequentialFactory implemen
    // maxIO is ignored on NIO
    public SequentialFile createSequentialFile(final String fileName, final int maxIO)
    {
-      return new NIOSequentialFile(journalDir, fileName, bufferCallback);
+      return new NIOSequentialFile(journalDir, fileName);
    }
 
    public boolean isSupportsCallbacks()

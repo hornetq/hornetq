@@ -45,9 +45,7 @@ public interface SequentialFileFactory
    
    void releaseBuffer(ByteBuffer buffer);
    
-   void setBufferCallback(BufferCallback bufferCallback);
-   
-   BufferCallback getBufferCallback();
+   void controlBuffersLifeCycle(boolean value);
 
    // To be used in tests only
    ByteBuffer wrapBuffer(byte[] bytes);
@@ -57,6 +55,8 @@ public interface SequentialFileFactory
    int calculateBlockSize(int bytes);
 
    void clearBuffer(ByteBuffer buffer);
+   
+   void stop();
    
    /** 
     * Create the directory if it doesn't exist yet
