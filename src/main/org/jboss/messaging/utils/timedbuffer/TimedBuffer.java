@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.messaging.core.asyncio.timedbuffer;
+package org.jboss.messaging.utils.timedbuffer;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;

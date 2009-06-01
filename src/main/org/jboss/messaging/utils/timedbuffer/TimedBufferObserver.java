@@ -21,7 +21,7 @@
  */
 
 
-package org.jboss.messaging.core.asyncio.timedbuffer;
+package org.jboss.messaging.utils.timedbuffer;
 
 import java.nio.ByteBuffer;
 import java.util.List;

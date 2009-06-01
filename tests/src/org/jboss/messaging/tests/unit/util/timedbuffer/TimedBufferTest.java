@@ -21,7 +21,7 @@
  */
 
 
-package org.jboss.messaging.tests.unit.core.asyncio.timedbuffer;
+package org.jboss.messaging.tests.unit.util.timedbuffer;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -29,9 +29,9 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.jboss.messaging.core.asyncio.AIOCallback;
-import org.jboss.messaging.core.asyncio.timedbuffer.TimedBuffer;
-import org.jboss.messaging.core.asyncio.timedbuffer.TimedBufferObserver;
 import org.jboss.messaging.tests.util.UnitTestCase;
+import org.jboss.messaging.utils.timedbuffer.TimedBuffer;
+import org.jboss.messaging.utils.timedbuffer.TimedBufferObserver;
 
 /**
  * A TimedBufferTest
@@ -79,7 +79,7 @@ public class TimedBufferTest extends UnitTestCase
          }
 
          /* (non-Javadoc)
-          * @see org.jboss.messaging.core.asyncio.timedbuffer.TimedBufferObserver#newBuffer(int, int)
+          * @see org.jboss.messaging.utils.timedbuffer.TimedBufferObserver#newBuffer(int, int)
           */
          public ByteBuffer newBuffer(int minSize, int maxSize)
          {
