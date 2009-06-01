@@ -265,7 +265,7 @@ public class MessagingServerImpl implements MessagingServer
       {
          return;
       }
-
+      
       initialisePart1();
 
       if (configuration.isBackup())
@@ -350,8 +350,14 @@ public class MessagingServerImpl implements MessagingServer
       postOffice.stop();
 
       // Need to shutdown pools before shutting down paging manager to make sure everything is written ok
-
-      scheduledPool.shutdown();
+     
+      List<Runnable> tasks = scheduledPool.shutdownNow();
+      
+      for (Runnable task: tasks)
+      {
+         log.debug("Waiting for " + task);
+      }
+            
       threadPool.shutdown();
       try
       {
@@ -365,6 +371,9 @@ public class MessagingServerImpl implements MessagingServer
          // Ignore
       }
 
+      scheduledPool = null;
+      threadPool = null;
+      
       pagingManager.stop();
 
       pagingManager = null;
