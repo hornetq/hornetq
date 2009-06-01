@@ -24,6 +24,7 @@ package org.jboss.messaging.integration.transports.netty;
 import static org.jboss.netty.channel.Channels.pipeline;
 import static org.jboss.netty.channel.Channels.write;
 
+import java.net.ConnectException;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.net.URI;
@@ -397,7 +398,12 @@ public class NettyConnector implements Connector
       }
       else
       {
-         log.error("Failed to create netty connection", future.getCause());
+         Throwable t = future.getCause();
+         
+         if (t != null && !(t instanceof ConnectException))
+         {
+            log.error("Failed to create netty connection", future.getCause());
+         }
          
          return null;
       }
