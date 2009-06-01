@@ -37,7 +37,7 @@ import org.jboss.messaging.core.settings.impl.AddressSettings;
  */
 public class MessageRedistributionTest extends ClusterTestBase
 {
-   private static final Logger log = Logger.getLogger(SymmetricClusterTest.class);
+   private static final Logger log = Logger.getLogger(MessageRedistributionTest.class);
 
    @Override
    protected void setUp() throws Exception

@@ -1050,7 +1050,8 @@ public class QueueImpl implements Queue
 
    private void internalAddRedistributor(final Executor executor, final Channel replicatingChannel)
    {
-      if (consumers.size() == 0)
+      // create the redistributor only once if there are no local consumers
+      if (consumers.size() == 0 && redistributor == null)
       {
          redistributor = new Redistributor(this,
                                            storageManager,
