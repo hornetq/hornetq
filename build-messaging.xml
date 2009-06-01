@@ -351,7 +351,7 @@
       <delete dir="${test.output.dir}"/>
       <delete dir="${test.jms.build.dir}"/>
       <delete dir="${test.joram.build.dir}"/>
-      <ant dir="${examples.dir}" target="clean" />
+      <ant antfile="${examples.dir}/build.xml" target="clean" inheritall="false"/>
    </target>
 
    <target name="init" depends="createthirdparty">
@@ -761,14 +761,16 @@
       </jar>
    </target>
 
-   <target name="jar-resources" depends="init">
+   <property name="build.examples.dir" value="${build.dir}/examples"/>
+   <target name="jar-resources" depends="clean,init">
       <jar jarfile="${build.jars.dir}/${resources.jar.name}">
-         <fileset dir="${examples.dir}">
-           <exclude name="build"/>
-           <exclude name="data"/>
+         <fileset dir=".">
+           <include name="examples/**"/>
+           <exclude name="**/build"/>
+           <exclude name="**/data"/>
          </fileset>
          <fileset dir="${src.config.dir}">
-           <include  name="jboss-as"/>
+           <include  name="jboss-as/**"/>
            <include name="ra.xml"/>
            <exclude  name="**/build.xml"/>
          </fileset>

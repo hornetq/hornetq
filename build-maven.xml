@@ -79,6 +79,13 @@
       </antcall>
    </target>
 
+   <target name="uploadJbmResources">
+      <antcall target="upload">
+         <param name="artifact.id" value="jbm-resources"/>
+         <param name="artifact.type" value="jar"/>
+      </antcall>
+   </target>
+
 
    <target name="upload">
       <exec executable="mvn">

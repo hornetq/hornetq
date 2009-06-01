@@ -166,6 +166,7 @@
       <delete dir="./logs" quiet="true"/>
       <delete dir="./server0/logs" quiet="true"/>
       <delete dir="./server0/data" quiet="true"/>
+      <delete dir="./server0/build" quiet="true"/>
       <delete dir="./server1/logs" quiet="true"/>
       <delete dir="./server1/data" quiet="true"/>
       <delete dir="./server2/logs" quiet="true"/>
