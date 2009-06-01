@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- =========================================================================================== -->
+<!--                                                                                             -->
+<!-- JBoss, Home of Professional Open Source                                                     -->
+<!-- Copyright 2005, JBoss Inc., and individual contributors as indicated                        -->
+<!-- by the @authors tag. See the copyright.txt in the distribution for a                        -->
+<!-- full listing of individual contributors.                                                    -->
+<!--                                                                                             -->
+<!-- This is free software; you can redistribute it and/or modify it                             -->
+<!-- under the terms of the GNU Lesser General Public License as                                 -->
+<!-- published by the Free Software Foundation; either version 2.1 of                            -->
+<!-- the License, or (at your option) any later version.                                         -->
+<!--                                                                                             -->
+<!-- This software is distributed in the hope that it will be useful,                            -->
+<!-- but WITHOUT ANY WARRANTY; without even the implied warranty of                              -->
+<!-- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU                            -->
+<!-- Lesser General Public License for more details.                                             -->
+<!--                                                                                             -->
+<!-- You should have received a copy of the GNU Lesser General Public                            -->
+<!-- License along with this software; if not, write to the Free                                 -->
+<!-- Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA                          -->
+<!-- 02110-1301 USA, or see the FSF site: http://www.fsf.org.                                    -->
+<!--                                                                                             -->
+<!-- $Id: build.xml 4036 2008-04-11 12:43:24Z ataylor $                                          -->
+<!-- =========================================================================================== -->
+
+<project default="upload" name="JBoss Messaging">
+   <property name="jbm.version" value="2.0.0.BETA1-SNAPSHOT"/>
+   <property name="build.dir" value="build"/>
+   <property name="jars.dir" value="${build.dir}/jars"/>
+
+   <target name="uploadJbmBootstrap">
+      <antcall target="upload">
+         <param name="artifact.id" value="jbm-bootstrap"/>
+         <param name="artifact.type" value="jar"/>
+      </antcall>
+   </target>
+
+   <target name="uploadJbmCore">
+      <antcall target="upload">
+         <param name="artifact.id" value="jbm-core"/>
+         <param name="artifact.type" value="jar"/>
+      </antcall>
+   </target>
+
+   <target name="uploadJbmLogging">
+      <antcall target="upload">
+         <param name="artifact.id" value="jbm-logging"/>
+         <param name="artifact.type" value="jar"/>
+      </antcall>
+   </target>
+
+   <target name="uploadJbmTransports">
+      <antcall target="upload">
+         <param name="artifact.id" value="jbm-transports"/>
+         <param name="artifact.type" value="jar"/>
+      </antcall>
+   </target>
+
+   <target name="uploadJbmCoreClient">
+      <antcall target="upload">
+         <param name="artifact.id" value="jbm-core-client"/>
+         <param name="artifact.type" value="jar"/>
+      </antcall>
+   </target>
+
+   <target name="uploadJbmJms">
+      <antcall target="upload">
+         <param name="artifact.id" value="jbm-jms"/>
+         <param name="artifact.type" value="jar"/>
+      </antcall>
+   </target>
+
+   <target name="uploadJbmJmsClient">
+      <antcall target="upload">
+         <param name="artifact.id" value="jbm-jms-client"/>
+         <param name="artifact.type" value="jar"/>
+      </antcall>
+   </target>
+
+
+   <target name="upload">
+      <exec executable="mvn">
+         <arg value="-s settings.xml"/>
+         <arg value="deploy:deploy-file"/>
+         <arg value="-DgroupId=org.jboss.messaging"/>
+         <arg value="-DartifactId=${artifact.id}"/>
+         <arg value="-Dversion=${jbm.version}"/>
+         <arg value="-Dpackaging=${artifact.type}"/>
+         <arg value="-DgeneratePom=true"/>
+         <arg value="-Dfile=${jars.dir}/${artifact.id}.${artifact.type}"/>
+         <arg value="-DrepositoryId=snapshots.jboss.org"/>
+         <arg value="-Durl=dav:https://snapshots.jboss.org/maven2"/>
+      </exec>
+   </target>
+
+</project>

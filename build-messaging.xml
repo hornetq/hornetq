@@ -70,6 +70,7 @@
    <property name="ra.rar.name" value="jbm-ra.rar"/>
    <property name="netty.jar.name" value="netty-3.1.0.BETA3.jar"/>
    <property name="mc.jar.name" value="jboss-mc.jar"/>
+   <property name="resources.jar.name" value="jbm-resources.jar"/>
 
    <!--source and build dirs-->
    <property name="build.dir" value="build"/>
@@ -757,6 +758,20 @@
          <fileset file="${build.jars.dir}/${ra.jar.name}"/>
          <fileset file="${build.jars.dir}/${core.client.jar.name}"/>
          <fileset file="${build.jars.dir}/${jms.jar.name}"/>
+      </jar>
+   </target>
+
+   <target name="jar-resources" depends="init">
+      <jar jarfile="${build.jars.dir}/${resources.jar.name}">
+         <fileset dir="${examples.dir}">
+           <exclude name="build"/>
+           <exclude name="data"/>
+         </fileset>
+         <fileset dir="${src.config.dir}">
+           <include  name="jboss-as"/>
+           <include name="ra.xml"/>
+           <exclude  name="**/build.xml"/>
+         </fileset>
       </jar>
    </target>
 
