@@ -455,7 +455,7 @@ public class QueueImpl implements Queue
 
       if (delay > 0)
       {
-         if (consumers.size() == 0 && messageReferences.size() > 0)
+         if (consumers.size() == 0)
          {
             DelayedAddRedistributor dar = new DelayedAddRedistributor(executor, replicatingChannel);
 
@@ -1050,7 +1050,7 @@ public class QueueImpl implements Queue
 
    private void internalAddRedistributor(final Executor executor, final Channel replicatingChannel)
    {
-      if (consumers.size() == 0 && messageReferences.size() > 0)
+      if (consumers.size() == 0)
       {
          redistributor = new Redistributor(this,
                                            storageManager,
