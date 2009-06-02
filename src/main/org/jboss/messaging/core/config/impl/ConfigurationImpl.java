@@ -96,8 +96,12 @@ public class ConfigurationImpl implements Configuration
    public static final int DEFAULT_JOURNAL_MIN_FILES = 2;
 
    public static final int DEFAULT_JOURNAL_MAX_AIO = 500;
-
-   public static final int DEFAULT_JOURNAL_REUSE_BUFFER_SIZE = 1024;
+   
+   public static final boolean DEFAULT_JOURNAL_AIO_FLUSH_SYNC = false;
+   
+   public static final int DEFAULT_JOURNAL_AIO_BUFFER_TIMEOUT = 1;
+   
+   public static final int DEFAULT_JOURNAL_AIO_BUFFER_SIZE = 1024 * 1024;
 
    public static final boolean DEFAULT_WILDCARD_ROUTING_ENABLED = true;
 
@@ -234,8 +238,12 @@ public class ConfigurationImpl implements Configuration
    protected int journalMinFiles = DEFAULT_JOURNAL_MIN_FILES;
 
    protected int journalMaxAIO = DEFAULT_JOURNAL_MAX_AIO;
-
-   protected int journalBufferReuseSize = DEFAULT_JOURNAL_REUSE_BUFFER_SIZE;
+   
+   protected boolean journalAIOFlushSync = DEFAULT_JOURNAL_AIO_FLUSH_SYNC;
+   
+   protected int journalAIOBufferTimeout = DEFAULT_JOURNAL_AIO_BUFFER_TIMEOUT;
+   
+   protected int journalAIOBufferSize = DEFAULT_JOURNAL_AIO_BUFFER_SIZE;
 
    protected boolean wildcardRoutingEnabled = DEFAULT_WILDCARD_ROUTING_ENABLED;
 
@@ -700,16 +708,37 @@ public class ConfigurationImpl implements Configuration
       jmxManagementEnabled = enabled;
    }
 
-   public void setJournalBufferReuseSize(final int reuseSize)
+
+   public void setAIOBufferTimeout(int timeout)
    {
-      journalBufferReuseSize = reuseSize;
+      this.journalAIOBufferTimeout = timeout;
+   }
+   
+   public int getAIOBufferTimeout()
+   {
+      return journalAIOBufferTimeout;
    }
 
-   public int getJournalBufferReuseSize()
+   public void setAIOFlushOnSync(boolean flush)
    {
-      return journalBufferReuseSize;
+      journalAIOFlushSync = flush;
    }
 
+   public boolean isAIOFlushOnSync()
+   {
+      return journalAIOFlushSync;
+   }
+
+   public int getAIOBufferSize()
+   {
+      return journalAIOBufferSize;
+   }
+
+   public void setAIOBufferSize(int size)
+   {
+      this.journalAIOBufferSize = size;
+   }
+   
    public long getPagingMaxGlobalSizeBytes()
    {
       return pagingMaxGlobalSize;

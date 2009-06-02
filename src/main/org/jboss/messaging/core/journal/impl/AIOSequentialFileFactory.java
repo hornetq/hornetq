@@ -28,6 +28,7 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
 import org.jboss.messaging.core.asyncio.impl.AsynchronousFileImpl;
+import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.journal.BufferCallback;
 import org.jboss.messaging.core.journal.SequentialFile;
 import org.jboss.messaging.core.logging.Logger;
@@ -69,17 +70,14 @@ public class AIOSequentialFileFactory extends AbstractSequentialFactory
    private final Executor pollerExecutor = Executors.newCachedThreadPool(new JBMThreadFactory("JBM-AIO-poller-pool" + System.identityHashCode(this), true));
 
    
-   // TODO make this configurable
    final int bufferSize;
    
-   // TODO make this configurable
    final int bufferTimeout;
-
+   
    public AIOSequentialFileFactory(final String journalDir)
    {
-      this(journalDir, 1024 * 1024, 1);
+      this(journalDir, ConfigurationImpl.DEFAULT_JOURNAL_AIO_BUFFER_SIZE, ConfigurationImpl.DEFAULT_JOURNAL_AIO_BUFFER_TIMEOUT);
    }
-
 
    public AIOSequentialFileFactory(final String journalDir, int bufferSize, int bufferTimeout)
    {

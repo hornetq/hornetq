@@ -158,7 +158,7 @@ public class JournalStorageManager implements StorageManager
 
       SequentialFileFactory bindingsFF = new NIOSequentialFileFactory(bindingsDir);
 
-      bindingsJournal = new JournalImpl(1024 * 1024, 2, true, true, bindingsFF, "jbm-bindings", "bindings", 1);
+      bindingsJournal = new JournalImpl(1024 * 1024, 2, true, true, false, bindingsFF, "jbm-bindings", "bindings", 1);
 
       String journalDir = config.getJournalDirectory();
 
@@ -181,7 +181,7 @@ public class JournalStorageManager implements StorageManager
          }
          else
          {
-            journalFF = new AIOSequentialFileFactory(journalDir);
+            journalFF = new AIOSequentialFileFactory(journalDir, config.getAIOBufferSize(), config.getAIOBufferTimeout());
             log.info("AIO loaded successfully");
          }
       }
@@ -199,6 +199,7 @@ public class JournalStorageManager implements StorageManager
                                        config.getJournalMinFiles(),
                                        config.isJournalSyncTransactional(),
                                        config.isJournalSyncNonTransactional(),
+                                       config.isAIOFlushOnSync(),
                                        journalFF,
                                        "jbm-data",
                                        "jbm",

@@ -189,8 +189,14 @@
 				<xsd:element name="journal-type" type="journalType"
 					maxOccurs="1" minOccurs="0">
 				</xsd:element>
-				<xsd:element name="journal-buffer-reuse-size"
+				<xsd:element name="journal-aio-buffer-timeout"
 					type="xsd:long" maxOccurs="1" minOccurs="0">
+				</xsd:element>
+				<xsd:element name="journal-aio-buffer-size"
+					type="xsd:long" maxOccurs="1" minOccurs="0">
+				</xsd:element>
+				<xsd:element name="journal-aio-flush-on-sync"
+					type="xsd:boolean" maxOccurs="1" minOccurs="0">
 				</xsd:element>
 				<xsd:element name="journal-sync-transactional"
 					type="xsd:boolean" maxOccurs="1" minOccurs="0">

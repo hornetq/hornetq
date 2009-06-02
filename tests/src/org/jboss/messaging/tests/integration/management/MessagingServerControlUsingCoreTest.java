@@ -417,6 +417,21 @@ public class MessagingServerControlUsingCoreTest extends MessagingServerControlT
             proxy.invokeOperation("setMessageCounterSamplePeriod", newPeriod);
          }
 
+         public int getAIOBufferSize()
+         {
+            return (Integer)proxy.retrieveAttributeValue("AIOBufferSize");
+         }
+
+         public int getAIOBufferTimeout()
+         {
+            return (Integer)proxy.retrieveAttributeValue("AIOBufferTimeout");
+         }
+
+         public boolean isAIOFlushOnSync()
+         {
+            return (Boolean)proxy.retrieveAttributeValue("AIOFlushOnSync");
+         }
+
       };
    }
    // Package protected ---------------------------------------------

@@ -91,9 +91,19 @@ public class ReplicationAwareMessagingServerControlWrapper extends ReplicationAw
       return localControl.getInterceptorClassNames();
    }
 
-   public int getJournalBufferReuseSize()
+   public int getAIOBufferSize()
    {
-      return localControl.getJournalBufferReuseSize();
+      return localControl.getAIOBufferSize();
+   }
+
+   public int getAIOBufferTimeout()
+   {
+      return localControl.getAIOBufferTimeout();
+   }
+
+   public boolean isAIOFlushOnSync()
+   {
+      return localControl.isAIOFlushOnSync();
    }
 
    public String getJournalDirectory()

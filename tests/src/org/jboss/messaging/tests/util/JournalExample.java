@@ -74,6 +74,7 @@ public class JournalExample
                                                       2, // number of files pre-allocated
                                                       true, // sync on commit
                                                       false, // no sync on non transactional
+                                                      false, // if aio, flush on sync
                                                       fileFactory, // AIO or NIO
                                                       "exjournal", // file name
                                                       "dat", // extension

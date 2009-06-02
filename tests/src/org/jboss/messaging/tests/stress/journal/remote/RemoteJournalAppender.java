@@ -143,7 +143,7 @@ public class RemoteJournalAppender
    public static JournalImpl createJournal(String journalType, String journalDir)
    {
       JournalImpl journal = new JournalImpl(10485760, 2, true,
-            false, getFactory(journalType, journalDir), "journaltst", "tst", 5000);
+            false, true, getFactory(journalType, journalDir), "journaltst", "tst", 5000);
       return journal;
    }
    

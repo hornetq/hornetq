@@ -174,6 +174,9 @@ public class JournalImpl implements TestableJournal
    private final boolean syncTransactional;
 
    private final boolean syncNonTransactional;
+   
+   // used on AIO
+   private final boolean flushOnSync;
 
    private final SequentialFileFactory fileFactory;
 
@@ -209,6 +212,7 @@ public class JournalImpl implements TestableJournal
                       final int minFiles,
                       final boolean syncTransactional,
                       final boolean syncNonTransactional,
+                      final boolean flushOnSync,
                       final SequentialFileFactory fileFactory,
                       final String filePrefix,
                       final String fileExtension,
@@ -252,6 +256,8 @@ public class JournalImpl implements TestableJournal
       this.syncTransactional = syncTransactional;
 
       this.syncNonTransactional = syncNonTransactional;
+      
+      this.flushOnSync = flushOnSync;
 
       this.fileFactory = fileFactory;
 
@@ -1990,10 +1996,7 @@ public class JournalImpl implements TestableJournal
          {
             currentFile.getFile().write(bb, callback);
 
-            // TODO: Do we need to do this?
-            // it wouldn't scale, but it is probably useful in some usecases?
-            // It should be configurable at least
-            if (sync)
+            if (flushOnSync && sync)
             {
                currentFile.getFile().flush();
             }

@@ -37,7 +37,9 @@
       <journal-directory>somedir2</journal-directory>
       <create-journal-dir>false</create-journal-dir>
       <journal-type>NIO</journal-type>
-      <journal-buffer-reuse-size>128</journal-buffer-reuse-size>
+      <journal-aio-flush-on-sync>true</journal-aio-flush-on-sync>
+      <journal-aio-buffer-timeout>1000</journal-aio-buffer-timeout>
+      <journal-aio-buffer-size>10000</journal-aio-buffer-size>
       <journal-sync-transactional>false</journal-sync-transactional>      
       <journal-sync-non-transactional>true</journal-sync-non-transactional>
       <journal-file-size>12345678</journal-file-size>

@@ -72,6 +72,7 @@ public class ListJournal
                             fileConf.getJournalMinFiles(),
                             true,
                             true,
+                            false,
                             new NIOSequentialFileFactory(fileConf.getJournalDirectory()),
                             "jbm-data",
                             "jbm",

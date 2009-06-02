@@ -156,9 +156,21 @@ public class MessagingServerControl implements MessagingServerControlMBean, Noti
       return configuration.getInterceptorClassNames().toArray(new String[configuration.getInterceptorClassNames().size()]);
    }
 
-   public int getJournalBufferReuseSize()
+   
+   
+   public int getAIOBufferSize()
    {
-      return configuration.getJournalBufferReuseSize();
+      return configuration.getAIOBufferSize();
+   }
+   
+   public int getAIOBufferTimeout()
+   {
+      return configuration.getAIOBufferTimeout();
+   }
+   
+   public boolean isAIOFlushOnSync()
+   {
+      return configuration.isAIOFlushOnSync();
    }
 
    public String getJournalDirectory()

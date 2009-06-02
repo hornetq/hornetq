@@ -89,8 +89,12 @@ public interface MessagingServerControlMBean
    public boolean isBackup();
 
    public long getConnectionScanPeriod();
-
-   public int getJournalBufferReuseSize();
+   
+   int getAIOBufferSize();
+   
+   int getAIOBufferTimeout();
+   
+   boolean isAIOFlushOnSync();
 
    public long getPagingMaxGlobalSizeBytes();
 

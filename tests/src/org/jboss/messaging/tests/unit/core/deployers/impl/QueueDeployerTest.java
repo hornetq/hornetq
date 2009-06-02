@@ -46,9 +46,9 @@ public class QueueDeployerTest extends UnitTestCase
    // Constants -----------------------------------------------------
 
    // Attributes ----------------------------------------------------
-   
+
    private FakeServerControl serverControl;
-   
+
    private QueueDeployer deployer;
 
    // Static --------------------------------------------------------
@@ -59,57 +59,55 @@ public class QueueDeployerTest extends UnitTestCase
 
    public void testParseQueueConfigurationFromAddressSettings() throws Exception
    {
-      String xml = "<configuration xmlns='urn:jboss:messaging'>"
-                 + "   <queues>"
-                 + "      <queue name='foo'>"
-                 + "         <address>bar</address>"
-                 + "         <filter string='speed > 88' />"
-                 + "         <durable>false</durable>" 
-                 + "      </queue>"
-                 + "   </queues>"
-                 + "</configuration>";
-      
+      String xml = "<configuration xmlns='urn:jboss:messaging'>" + "   <queues>"
+                   + "      <queue name='foo'>"
+                   + "         <address>bar</address>"
+                   + "         <filter string='speed > 88' />"
+                   + "         <durable>false</durable>"
+                   + "      </queue>"
+                   + "   </queues>"
+                   + "</configuration>";
+
       Element rootNode = org.jboss.messaging.utils.XMLUtil.stringToElement(xml);
       deployer.validate(rootNode);
       NodeList queueNodes = rootNode.getElementsByTagName("queue");
       assertEquals(1, queueNodes.getLength());
       deployer.deploy(queueNodes.item(0));
-      
+
       assertEquals(1, serverControl.configs.size());
-      
+
       QueueConfiguration queueConfiguration = serverControl.configs.get(0);
       assertEquals("foo", queueConfiguration.getName());
       assertEquals("bar", queueConfiguration.getAddress());
       assertEquals("speed > 88", queueConfiguration.getFilterString());
-      assertEquals(false, queueConfiguration.isDurable());      
+      assertEquals(false, queueConfiguration.isDurable());
    }
 
    public void testParseQueueConfigurationFromJBMConfiguration() throws Exception
    {
-      String xml = "<configuration xmlns='urn:jboss:messaging'> " 
-                 + "<queues>"
-                 + "   <queue name='foo'>"
-                 + "      <address>bar</address>"
-                 + "      <filter string='speed > 88' />"
-                 + "      <durable>false</durable>" 
-                 + "   </queue>"
-                 + "   <queue name='foo2'>"
-                 + "      <address>bar2</address>"
-                 + "      <filter string='speed > 88' />"
-                 + "      <durable>true</durable>" 
-                 + "   </queue>"
-                 + "</queues>"
-                 + "</configuration>";
-      
+      String xml = "<configuration xmlns='urn:jboss:messaging'> " + "<queues>"
+                   + "   <queue name='foo'>"
+                   + "      <address>bar</address>"
+                   + "      <filter string='speed > 88' />"
+                   + "      <durable>false</durable>"
+                   + "   </queue>"
+                   + "   <queue name='foo2'>"
+                   + "      <address>bar2</address>"
+                   + "      <filter string='speed > 88' />"
+                   + "      <durable>true</durable>"
+                   + "   </queue>"
+                   + "</queues>"
+                   + "</configuration>";
+
       Element rootNode = org.jboss.messaging.utils.XMLUtil.stringToElement(xml);
       deployer.validate(rootNode);
       NodeList queueNodes = rootNode.getElementsByTagName("queue");
       assertEquals(2, queueNodes.getLength());
-      
+
       deployer.deploy(queueNodes.item(0));
       deployer.deploy(queueNodes.item(1));
-      
-      assertEquals(2, serverControl.configs.size());   
+
+      assertEquals(2, serverControl.configs.size());
       assertEquals("foo", serverControl.configs.get(0).getName());
       assertEquals("foo2", serverControl.configs.get(1).getName());
    }
@@ -117,7 +115,7 @@ public class QueueDeployerTest extends UnitTestCase
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
-   
+
    protected void setUp() throws Exception
    {
       super.setUp();
@@ -136,403 +134,419 @@ public class QueueDeployerTest extends UnitTestCase
    // Private -------------------------------------------------------
 
    // Inner classes -------------------------------------------------
-   
+
    private class FakeServerControl implements MessagingServerControlMBean
    {
 
       public int getThreadPoolMaxSize()
       {
-         // TODO Auto-generated method stub
+
          return 0;
       }
 
       public boolean closeConnectionsForAddress(String ipAddress) throws Exception
       {
-         // TODO Auto-generated method stub
+
          return false;
       }
 
       public boolean commitPreparedTransaction(String transactionAsBase64) throws Exception
       {
-         // TODO Auto-generated method stub
+
          return false;
       }
 
       public void createQueue(String address, String name, String filter, boolean durable) throws Exception
       {
-         // TODO Auto-generated method stub
-         
+
       }
 
       public void createQueue(String address, String name) throws Exception
       {
-         // TODO Auto-generated method stub
-         
+
       }
-      
+
       List<QueueConfiguration> configs = new ArrayList<QueueConfiguration>();
 
       public void deployQueue(String address, String name, String filter, boolean durable) throws Exception
       {
          QueueConfiguration config = new QueueConfiguration(address, name, filter, durable);
-         
+
          configs.add(config);
       }
 
       public void deployQueue(String address, String name, String filterString) throws Exception
       {
-         // TODO Auto-generated method stub
-         
+
       }
 
       public void destroyQueue(String name) throws Exception
       {
-         // TODO Auto-generated method stub
-         
+
       }
 
       public void disableMessageCounters() throws Exception
       {
-         // TODO Auto-generated method stub
-         
+
       }
 
       public void enableMessageCounters() throws Exception
       {
-         // TODO Auto-generated method stub
-         
+
       }
 
       public String getBackupConnectorName()
       {
-         // TODO Auto-generated method stub
+
          return null;
       }
 
       public String getBindingsDirectory()
       {
-         // TODO Auto-generated method stub
+
          return null;
       }
 
       public Configuration getConfiguration()
       {
-         // TODO Auto-generated method stub
+
          return null;
       }
 
       public int getConnectionCount()
       {
-         // TODO Auto-generated method stub
+
          return 0;
       }
 
       public long getConnectionScanPeriod()
       {
-         // TODO Auto-generated method stub
+
          return 0;
       }
 
       public long getConnectionTTLOverride()
       {
-         // TODO Auto-generated method stub
+
          return 0;
       }
 
       public Object[] getConnectors() throws Exception
       {
-         // TODO Auto-generated method stub
+
          return null;
       }
 
       public int getIDCacheSize()
       {
-         // TODO Auto-generated method stub
+
          return 0;
       }
 
       public String[] getInterceptorClassNames()
       {
-         // TODO Auto-generated method stub
+
          return null;
       }
 
       public int getJournalBufferReuseSize()
       {
-         // TODO Auto-generated method stub
+
          return 0;
       }
 
       public String getJournalDirectory()
       {
-         // TODO Auto-generated method stub
+
          return null;
       }
 
       public int getJournalFileSize()
       {
-         // TODO Auto-generated method stub
+
          return 0;
       }
 
       public int getJournalMaxAIO()
       {
-         // TODO Auto-generated method stub
+
          return 0;
       }
 
       public int getJournalMinFiles()
       {
-         // TODO Auto-generated method stub
+
          return 0;
       }
 
       public String getJournalType()
       {
-         // TODO Auto-generated method stub
+
          return null;
       }
 
       public String getLargeMessagesDirectory()
       {
-         // TODO Auto-generated method stub
+
          return null;
       }
 
       public String getManagementAddress()
       {
-         // TODO Auto-generated method stub
+
          return null;
       }
 
       public String getManagementNotificationAddress()
       {
-         // TODO Auto-generated method stub
+
          return null;
       }
 
       public long getManagementRequestTimeout()
       {
-         // TODO Auto-generated method stub
+
          return 0;
       }
 
       public int getMessageCounterMaxDayCount()
       {
-         // TODO Auto-generated method stub
+
          return 0;
       }
 
       public long getMessageCounterSamplePeriod()
       {
-         // TODO Auto-generated method stub
+
          return 0;
       }
 
       public long getMessageExpiryScanPeriod()
       {
-         // TODO Auto-generated method stub
+
          return 0;
       }
 
       public long getMessageExpiryThreadPriority()
       {
-         // TODO Auto-generated method stub
+
          return 0;
       }
 
       public String getPagingDirectory()
       {
-         // TODO Auto-generated method stub
+
          return null;
       }
 
       public int getGlobalPageSize()
       {
-         // TODO Auto-generated method stub
+
          return 0;
       }
 
       public long getPagingMaxGlobalSizeBytes()
       {
-         // TODO Auto-generated method stub
+
          return 0;
       }
 
       public long getQueueActivationTimeout()
       {
-         // TODO Auto-generated method stub
+
          return 0;
       }
 
       public int getScheduledThreadPoolMaxSize()
       {
-         // TODO Auto-generated method stub
+
          return 0;
       }
 
       public long getSecurityInvalidationInterval()
       {
-         // TODO Auto-generated method stub
+
          return 0;
       }
 
       public long getTransactionTimeout()
       {
-         // TODO Auto-generated method stub
+
          return 0;
       }
 
       public long getTransactionTimeoutScanPeriod()
       {
-         // TODO Auto-generated method stub
+
          return 0;
       }
 
       public String getVersion()
       {
-         // TODO Auto-generated method stub
+
          return null;
       }
 
       public boolean isBackup()
       {
-         // TODO Auto-generated method stub
+
          return false;
       }
 
       public boolean isClustered()
       {
-         // TODO Auto-generated method stub
+
          return false;
       }
 
       public boolean isCreateBindingsDir()
       {
-         // TODO Auto-generated method stub
+
          return false;
       }
 
       public boolean isCreateJournalDir()
       {
-         // TODO Auto-generated method stub
+
          return false;
       }
 
       public boolean isJournalSyncNonTransactional()
       {
-         // TODO Auto-generated method stub
+
          return false;
       }
 
       public boolean isJournalSyncTransactional()
       {
-         // TODO Auto-generated method stub
+
          return false;
       }
 
       public boolean isMessageCounterEnabled()
       {
-         // TODO Auto-generated method stub
+
          return false;
       }
 
       public boolean isPersistDeliveryCountBeforeDelivery()
       {
-         // TODO Auto-generated method stub
+
          return false;
       }
 
       public boolean isPersistIDCache()
       {
-         // TODO Auto-generated method stub
+
          return false;
       }
 
       public boolean isSecurityEnabled()
       {
-         // TODO Auto-generated method stub
+
          return false;
       }
 
       public boolean isStarted()
       {
-         // TODO Auto-generated method stub
+
          return false;
       }
 
       public boolean isWildcardRoutingEnabled()
       {
-         // TODO Auto-generated method stub
+
          return false;
       }
 
       public String[] listConnectionIDs() throws Exception
       {
-         // TODO Auto-generated method stub
+
          return null;
       }
 
       public String[] listPreparedTransactions() throws Exception
       {
-         // TODO Auto-generated method stub
+
          return null;
       }
 
       public String[] listRemoteAddresses() throws Exception
       {
-         // TODO Auto-generated method stub
+
          return null;
       }
 
       public String[] listRemoteAddresses(String ipAddress) throws Exception
       {
-         // TODO Auto-generated method stub
+
          return null;
       }
 
       public String[] listSessions(String connectionID) throws Exception
       {
-         // TODO Auto-generated method stub
+
          return null;
       }
 
       public void resetAllMessageCounterHistories() throws Exception
       {
-         // TODO Auto-generated method stub
-         
+
       }
 
       public void resetAllMessageCounters() throws Exception
       {
-         // TODO Auto-generated method stub
-         
+
       }
 
       public boolean rollbackPreparedTransaction(String transactionAsBase64) throws Exception
       {
-         // TODO Auto-generated method stub
+
          return false;
       }
 
       public void sendQueueInfoToQueue(String queueName, String address) throws Exception
       {
-         // TODO Auto-generated method stub
-         
+
       }
 
       public void setMessageCounterMaxDayCount(int count) throws Exception
       {
-         // TODO Auto-generated method stub
-         
+
       }
 
       public void setMessageCounterSamplePeriod(long newPeriod) throws Exception
       {
-         // TODO Auto-generated method stub
-         
+
       }
-      
+
+      /* (non-Javadoc)
+       * @see org.jboss.messaging.core.management.MessagingServerControlMBean#getAIOBufferSize()
+       */
+      public int getAIOBufferSize()
+      {
+
+         return 0;
+      }
+
+      /* (non-Javadoc)
+       * @see org.jboss.messaging.core.management.MessagingServerControlMBean#getAIOBufferTimeout()
+       */
+      public int getAIOBufferTimeout()
+      {
+
+         return 0;
+      }
+
+      /* (non-Javadoc)
+       * @see org.jboss.messaging.core.management.MessagingServerControlMBean#getAIOFlushOnSync()
+       */
+      public boolean isAIOFlushOnSync()
+      {
+
+         return false;
+      }
+
    }
 
 }

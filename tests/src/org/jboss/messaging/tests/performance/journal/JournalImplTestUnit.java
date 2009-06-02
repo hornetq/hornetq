@@ -201,7 +201,7 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
    public void testSpeedTransactional() throws Exception
    {
       Journal journal =
-         new JournalImpl(10 * 1024 * 1024, 10, true, true, getFileFactory(),
+         new JournalImpl(10 * 1024 * 1024, 10, true, true, false, getFileFactory(),
                "jbm-data", "jbm", 5000);
       
       journal.start();
@@ -263,7 +263,7 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
       log.debug("num Files=" + numFiles);
 
       Journal journal =
-         new JournalImpl(10 * 1024 * 1024,  numFiles, true, true, getFileFactory(),
+         new JournalImpl(10 * 1024 * 1024,  numFiles, true, true, false, getFileFactory(),
                "jbm-data", "jbm", 5000);
       
       journal.start();
@@ -289,7 +289,7 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
       journal.stop();
       
       journal =
-         new JournalImpl(10 * 1024 * 1024,  numFiles, true, true, getFileFactory(),
+         new JournalImpl(10 * 1024 * 1024,  numFiles, true, true, false, getFileFactory(),
                "jbm-data", "jbm", 5000);
       
       journal.start();

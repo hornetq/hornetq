@@ -196,9 +196,17 @@ public interface Configuration extends Serializable, MessagingComponent
 
    void setJournalMaxAIO(int maxAIO);
 
-   void setJournalBufferReuseSize(int reuseSize);
-
-   int getJournalBufferReuseSize();
+   void setAIOBufferSize(int size);
+   
+   int getAIOBufferSize();
+   
+   void setAIOBufferTimeout(int timeout);
+   
+   int getAIOBufferTimeout();
+   
+   void setAIOFlushOnSync(boolean flush);
+   
+   boolean isAIOFlushOnSync();
 
    boolean isCreateBindingsDir();
 

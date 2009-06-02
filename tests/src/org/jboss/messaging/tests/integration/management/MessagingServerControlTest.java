@@ -98,7 +98,9 @@ public class MessagingServerControlTest extends ManagementTestBase
       assertEquals(conf.getJournalFileSize(), serverControl.getJournalFileSize());
       assertEquals(conf.getJournalMinFiles(), serverControl.getJournalMinFiles());
       assertEquals(conf.getJournalMaxAIO(), serverControl.getJournalMaxAIO());
-      assertEquals(conf.getJournalBufferReuseSize(), serverControl.getJournalBufferReuseSize());
+      assertEquals(conf.getAIOBufferSize(), serverControl.getAIOBufferSize());
+      assertEquals(conf.getAIOBufferTimeout(), serverControl.getAIOBufferTimeout());
+      assertEquals(conf.isAIOFlushOnSync(), serverControl.isAIOFlushOnSync());
       assertEquals(conf.isCreateBindingsDir(), serverControl.isCreateBindingsDir());
       assertEquals(conf.isCreateJournalDir(), serverControl.isCreateJournalDir());      
       assertEquals(conf.getPagingDirectory(), serverControl.getPagingDirectory());

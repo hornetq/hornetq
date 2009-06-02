@@ -357,7 +357,7 @@ public class JournalAsyncTest extends UnitTestCase
          journalImpl.stop();
       }
 
-      journalImpl = new JournalImpl(journalSize, numberOfMinimalFiles, true, true, factory, "tt", "tt", 1000);
+      journalImpl = new JournalImpl(journalSize, numberOfMinimalFiles, true, true, false, factory, "tt", "tt", 1000);
 
       journalImpl.start();
 
