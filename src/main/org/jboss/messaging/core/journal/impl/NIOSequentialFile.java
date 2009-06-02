@@ -96,6 +96,8 @@ public class NIOSequentialFile implements SequentialFile
       rfile = new RandomAccessFile(file, "rw");
 
       channel = rfile.getChannel();
+      
+      fileSize = channel.size();
    }
 
    public void open(final int currentMaxIO) throws Exception
