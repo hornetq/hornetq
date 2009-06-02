@@ -206,7 +206,7 @@ public class AIOSequentialFileFactory extends AbstractSequentialFactory
          // if a buffer is bigger than the configured-bufferSize, we just create a new
          // buffer.
          if (size > bufferSize)
-         {
+         {           
             return AsynchronousFileImpl.newBuffer(size);
          }
          else
@@ -223,10 +223,10 @@ public class AIOSequentialFileFactory extends AbstractSequentialFactory
                // if empty create a new one.
                buffer = AsynchronousFileImpl.newBuffer(bufferSize);
 
-               buffer.limit(alignedSize);
+               buffer.limit(alignedSize);               
             }
             else
-            {
+            {               
                clearBuffer(buffer);
 
                // set the limit of the buffer to the bufferSize being required

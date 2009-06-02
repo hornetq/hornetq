@@ -33,14 +33,14 @@ import java.util.concurrent.atomic.AtomicLong;
 import org.jboss.messaging.core.asyncio.AIOCallback;
 import org.jboss.messaging.core.asyncio.AsynchronousFile;
 import org.jboss.messaging.core.asyncio.impl.AsynchronousFileImpl;
+import org.jboss.messaging.core.asyncio.impl.TimedBuffer;
+import org.jboss.messaging.core.asyncio.impl.TimedBufferObserver;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.journal.BufferCallback;
 import org.jboss.messaging.core.journal.IOCallback;
 import org.jboss.messaging.core.journal.SequentialFile;
 import org.jboss.messaging.core.journal.SequentialFileFactory;
 import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.utils.timedbuffer.TimedBuffer;
-import org.jboss.messaging.utils.timedbuffer.TimedBufferObserver;
 
 /**
  * 

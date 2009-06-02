@@ -29,9 +29,9 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.jboss.messaging.core.asyncio.AIOCallback;
+import org.jboss.messaging.core.asyncio.impl.TimedBuffer;
+import org.jboss.messaging.core.asyncio.impl.TimedBufferObserver;
 import org.jboss.messaging.tests.util.UnitTestCase;
-import org.jboss.messaging.utils.timedbuffer.TimedBuffer;
-import org.jboss.messaging.utils.timedbuffer.TimedBufferObserver;
 
 /**
  * A TimedBufferTest

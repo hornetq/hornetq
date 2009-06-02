@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.messaging.utils.timedbuffer;
+package org.jboss.messaging.core.asyncio.impl;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -34,6 +34,7 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.jboss.messaging.core.asyncio.AIOCallback;
+import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.utils.JBMThreadFactory;
 
 /**
@@ -45,8 +46,9 @@ import org.jboss.messaging.utils.JBMThreadFactory;
  */
 public class TimedBuffer
 {
-
    // Constants -----------------------------------------------------
+   
+   private static final Logger log = Logger.getLogger(TimedBuffer.class);
 
    // Attributes ----------------------------------------------------
 
@@ -60,9 +62,9 @@ public class TimedBuffer
 
    private final int bufferSize;
 
-   private volatile ByteBuffer currentBuffer;
+   private final ByteBuffer currentBuffer;
 
-   private volatile List<AIOCallback> callbacks;
+   private final List<AIOCallback> callbacks;
 
    private volatile long timeLastWrite = 0;
 
@@ -76,11 +78,15 @@ public class TimedBuffer
 
    // Public --------------------------------------------------------
 
+   //private byte[] data;
+   
    public TimedBuffer(final TimedBufferObserver bufferObserver, final int size, final long timeout)
    {
       bufferSize = size;
       this.bufferObserver = bufferObserver;
-      this.timeout = timeout;
+      this.timeout = timeout;      
+      this.currentBuffer = ByteBuffer.wrap(new byte[bufferSize]);
+      this.callbacks = new ArrayList<AIOCallback>();
    }
 
    public int position()
@@ -109,10 +115,8 @@ public class TimedBuffer
             lock.unlock();
          }
       }
-
    }
-   
-   
+      
    public void lock()
    {
       lock.lock();
@@ -130,38 +134,28 @@ public class TimedBuffer
     */
    public synchronized boolean checkSize(final int sizeChecked)
    {
-      final boolean fits;
       if (sizeChecked > bufferSize)
       {
          flush();
-
-         // We transfer the bytes, as the bufferObserver has special alignment restrictions on the buffer addressing
-         currentBuffer = bufferObserver.newBuffer(sizeChecked, sizeChecked);
-
-         fits = currentBuffer != null;
+         
+         currentBuffer.rewind();
       }
       else
       {
          // We verify against the currentBuffer.capacity as the observer may return a smaller buffer
-         if (currentBuffer == null || currentBuffer.position() + sizeChecked > currentBuffer.limit())
+         if (currentBuffer.position() + sizeChecked > currentBuffer.limit())
          {
             flush();
-            newBuffer(sizeChecked);
+            
+            currentBuffer.rewind();
          }
-
-         fits = currentBuffer != null;
       }
 
-      return fits;
+      return true;
    }
 
    public synchronized void addBytes(final ByteBuffer bytes, final AIOCallback callback)
    {
-      if (currentBuffer == null)
-      {
-         newBuffer(0);
-      }
-
       currentBuffer.put(bytes);
       callbacks.add(callback);
 
@@ -182,9 +176,15 @@ public class TimedBuffer
    {
       if (currentBuffer != null)
       {
-         bufferObserver.flushBuffer(currentBuffer, callbacks);
-         currentBuffer = null;
-         callbacks = null;
+         ByteBuffer directBuffer = bufferObserver.newBuffer(currentBuffer.capacity(), currentBuffer.capacity());
+         
+         directBuffer.put(currentBuffer);
+         
+         bufferObserver.flushBuffer(directBuffer, callbacks);
+
+         currentBuffer.rewind();
+         
+         callbacks.clear();
       }
 
       if (futureTimerRunnable != null)
@@ -201,13 +201,7 @@ public class TimedBuffer
    // Protected -----------------------------------------------------
 
    // Private -------------------------------------------------------
-
-   private void newBuffer(final int minSize)
-   {
-      currentBuffer = bufferObserver.newBuffer(minSize, bufferSize);
-      callbacks = new ArrayList<AIOCallback>();
-   }
-
+      
    // Inner classes -------------------------------------------------
 
    class CheckTimer implements Runnable

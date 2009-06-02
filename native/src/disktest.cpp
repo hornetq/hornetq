@@ -130,15 +130,15 @@ int main(int arg, char * param[])
       for (long position = 0 ; position < fileSize; position += bufferSize)
       {
     	writes++;
-	struct iocb * iocb = new struct iocb();
-	::io_prep_pwrite(iocb, handle, preAllocBuffer, bufferSize, position);
-	iocb->data = (void *)position;
-
-	if (io_submit(aioContext, 1, &iocb) < 0)
-	{
-		fprintf (stderr, "Error on submitting AIO\n");
-		exit(-1);
-	}
+		struct iocb * iocb = new struct iocb();
+		::io_prep_pwrite(iocb, handle, preAllocBuffer, bufferSize, position);
+		iocb->data = (void *)position;
+	
+		if (io_submit(aioContext, 1, &iocb) < 0)
+		{
+			fprintf (stderr, "Error on submitting AIO\n");
+			exit(-1);
+		}
       }
 
       int writesReceived = 0;
