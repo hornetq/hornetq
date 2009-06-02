@@ -79,6 +79,20 @@
       </antcall>
    </target>
 
+   <target name="uploadJbmSecurity">
+      <antcall target="upload">
+         <param name="artifact.id" value="jbm-jboss-as-security"/>
+         <param name="artifact.type" value="jar"/>
+      </antcall>
+   </target>
+
+   <target name="uploadJbmRa">
+      <antcall target="upload">
+         <param name="artifact.id" value="jbm-ra"/>
+         <param name="artifact.type" value="jar"/>
+      </antcall>
+   </target>
+
    <target name="uploadJbmResources">
       <antcall target="upload">
          <param name="artifact.id" value="jbm-resources"/>
