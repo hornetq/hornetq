@@ -144,16 +144,15 @@ public class AIOSequentialFile implements SequentialFile
    {
       timedBuffer.unlock();
    }
-
-
    
    public synchronized void close() throws Exception
    {
       checkOpened();
       opened = false;
-      
-      
+            
       timedBuffer.flush();
+      
+      timedBuffer.close();
 
       final CountDownLatch donelatch = new CountDownLatch(1);
 
@@ -172,7 +171,7 @@ public class AIOSequentialFile implements SequentialFile
       }
 
       aioFile.close();
-      aioFile = null;
+      aioFile = null;           
    }
 
    public void delete() throws Exception

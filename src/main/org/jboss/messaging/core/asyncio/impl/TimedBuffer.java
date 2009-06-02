@@ -25,17 +25,13 @@ package org.jboss.messaging.core.asyncio.impl;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.TimeUnit;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.jboss.messaging.core.asyncio.AIOCallback;
 import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.utils.JBMThreadFactory;
 
 /**
  * A TimedBuffer
@@ -56,21 +52,19 @@ public class TimedBuffer
 
    private final CheckTimer timerRunnable = new CheckTimer();
 
-   private volatile ScheduledFuture<?> futureTimerRunnable;
-
    private final long timeout;
 
    private final int bufferSize;
 
    private final ByteBuffer currentBuffer;
 
-   private volatile List<AIOCallback> callbacks;
+   private List<AIOCallback> callbacks;
 
-   private volatile long timeLastWrite = 0;
+   private final Lock lock = new ReentrantReadWriteLock().writeLock();
 
-   private final ScheduledExecutorService schedule = ScheduledSingleton.getScheduledService();
+   private final Timer timer;
 
-   private Lock lock = new ReentrantReadWriteLock().writeLock();
+   private long lastFlushTime;
 
    // Static --------------------------------------------------------
 
@@ -78,44 +72,24 @@ public class TimedBuffer
 
    // Public --------------------------------------------------------
 
-   // private byte[] data;
-
    public TimedBuffer(final TimedBufferObserver bufferObserver, final int size, final long timeout)
    {
-      bufferSize = size;
+      bufferSize = size;      
       this.bufferObserver = bufferObserver;
       this.timeout = timeout;
       this.currentBuffer = ByteBuffer.wrap(new byte[bufferSize]);
       this.currentBuffer.limit(0);
       this.callbacks = new ArrayList<AIOCallback>();
+      this.timer = new Timer("jbm-timed-buffer", true);
+      
+      this.timer.schedule(timerRunnable, timeout, timeout);
    }
-
-   public int position()
+   
+   public synchronized void close()
    {
-      if (currentBuffer == null)
-      {
-         return 0;
-      }
-      else
-      {
-         return currentBuffer.position();
-      }
-   }
-
-   public void checkTimer()
-   {
-      if (System.currentTimeMillis() - timeLastWrite > timeout)
-      {
-         lock.lock();
-         try
-         {
-            flush();
-         }
-         finally
-         {
-            lock.unlock();
-         }
-      }
+      timerRunnable.cancel();
+      
+      timer.cancel();
    }
 
    public void lock()
@@ -141,13 +115,12 @@ public class TimedBuffer
                                          ") on the journal");
       }
 
-      
-      if (currentBuffer.limit() == 0 ||  currentBuffer.position() + sizeChecked > currentBuffer.limit())
+      if (currentBuffer.limit() == 0 || currentBuffer.position() + sizeChecked > currentBuffer.limit())
       {
          flush();
 
          final int remaining = bufferObserver.getRemainingBytes();
-         
+
          if (sizeChecked > remaining)
          {
             return false;
@@ -171,13 +144,6 @@ public class TimedBuffer
       currentBuffer.put(bytes);
       callbacks.add(callback);
 
-      if (futureTimerRunnable == null)
-      {
-         futureTimerRunnable = schedule.scheduleAtFixedRate(timerRunnable, timeout, timeout, TimeUnit.MILLISECONDS);
-      }
-
-      timeLastWrite = System.currentTimeMillis();
-
       if (currentBuffer.position() == currentBuffer.capacity())
       {
          flush();
@@ -191,22 +157,17 @@ public class TimedBuffer
          ByteBuffer directBuffer = bufferObserver.newBuffer(bufferSize, currentBuffer.position());
 
          currentBuffer.flip();
-         
+
          directBuffer.put(currentBuffer);
 
          bufferObserver.flushBuffer(directBuffer, callbacks);
-         
+
          callbacks = new ArrayList<AIOCallback>();
       }
 
-      if (futureTimerRunnable != null)
-      {
-         futureTimerRunnable.cancel(false);
-         futureTimerRunnable = null;
-      }
-
-      timeLastWrite = 0;
       currentBuffer.limit(0);
+
+      this.lastFlushTime = System.currentTimeMillis();
    }
 
    // Package protected ---------------------------------------------
@@ -214,32 +175,45 @@ public class TimedBuffer
    // Protected -----------------------------------------------------
 
    // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
-
-   class CheckTimer implements Runnable
+   
+   private void checkTimer()
    {
-      public void run()
+      if (System.currentTimeMillis() - lastFlushTime >= timeout)
       {
-         checkTimer();
+         lock.lock();
+         try
+         {
+            flush();
+         }
+         finally
+         {
+            lock.unlock();
+         }
       }
    }
 
-   // TODO: is there a better place to get this schedule service from?
-   static class ScheduledSingleton
+
+   // Inner classes -------------------------------------------------
+
+   class CheckTimer extends TimerTask
    {
-      private static ScheduledExecutorService scheduleService;
+      private boolean cancelled;
 
-      private static synchronized ScheduledExecutorService getScheduledService()
+      @Override
+      public synchronized void run()
       {
-         if (scheduleService == null)
+         if (!cancelled)
          {
-            ThreadFactory factory = new JBMThreadFactory("JBM-buffer-scheduled-control", true);
-
-            scheduleService = Executors.newScheduledThreadPool(2, factory);
+            checkTimer();
          }
+      }
 
-         return scheduleService;
+      @Override
+      public synchronized boolean cancel()
+      {
+         cancelled = true;
+
+         return super.cancel();
       }
    }
 
