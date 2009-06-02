@@ -324,11 +324,6 @@ public class AIOSequentialFile implements SequentialFile
 
          write(bytes, completion);
          
-         if (sync)
-         {
-            timedBuffer.flush();
-         }
-
          completion.waitLatch();
       }
       else
