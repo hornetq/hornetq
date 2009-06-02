@@ -26,7 +26,7 @@ int main(int arg, char * param[])
    char * directory;
    int numberOfFiles;
    int fileSize = 10 * 1024 * 1024;
-   int bufferSize = 1024 * 1024;
+   int bufferSize = 100 * 1024;
    void * preAllocBuffer = 0;
 
    int maxAIO = 500;
@@ -90,6 +90,17 @@ int main(int arg, char * param[])
 
 
    memset(preAllocBuffer, 1, bufferSize);
+   char * tst = (char *) preAllocBuffer;
+   tst[0] = 't';
+   tst[1] = 'e';
+   tst[2] = 's';
+   tst[3] = 't';
+   tst[4] = '{';
+   for (int i = 5; i < bufferSize - 2; i++)
+   {
+       tst[i] = 'a' + (i % 20);
+   }
+   tst[bufferSize-1] = '}';
 
    fprintf (stderr, "====================================================================================\n");
    fprintf (stderr, " Step 2: write libaio\n");
@@ -119,15 +130,15 @@ int main(int arg, char * param[])
       for (long position = 0 ; position < fileSize; position += bufferSize)
       {
     	writes++;
-		struct iocb * iocb = new struct iocb();
-		::io_prep_pwrite(iocb, handle, preAllocBuffer, bufferSize, position);
-		iocb->data = (void *)position;
+	struct iocb * iocb = new struct iocb();
+	::io_prep_pwrite(iocb, handle, preAllocBuffer, bufferSize, position);
+	iocb->data = (void *)position;
 
-		if (io_submit(aioContext, 1, &iocb) < 0)
-		{
-			fprintf (stderr, "Error on submitting AIO\n");
-			exit(-1);
-		}
+	if (io_submit(aioContext, 1, &iocb) < 0)
+	{
+		fprintf (stderr, "Error on submitting AIO\n");
+		exit(-1);
+	}
       }
 
       int writesReceived = 0;
