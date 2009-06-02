@@ -5,7 +5,21 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#include <unistd.h>
+#include <sys/time.h>
 
+long getTime()
+{
+   struct timeval time;
+   if (gettimeofday(&time, 0) < 0)
+   {
+	   fprintf (stderr, "Error on getting time\n");
+	   exit(-1);
+   }
+
+   return time.tv_sec * 1000 + time.tv_usec / 1000;
+
+}
 
 int main(int arg, char * param[])
 {
@@ -14,7 +28,9 @@ int main(int arg, char * param[])
    int fileSize = 10 * 1024 * 1024;
    int bufferSize = 1024 * 1024;
    void * preAllocBuffer = 0;
-   int i = 0;
+
+   int maxAIO = 500;
+
 
    if (arg != 3)
    {
@@ -24,8 +40,6 @@ int main(int arg, char * param[])
 
    directory = param[1];
    numberOfFiles = atoi(param[2]);
-   fileSize = atoi(param[3]);
-   bufferSize = atoi(param[4]);
 
    fprintf (stderr, "allocating file");
    if (posix_memalign(&preAllocBuffer, 512, bufferSize))
@@ -34,22 +48,133 @@ int main(int arg, char * param[])
        exit(-1);
    }
 
-   for (i = 0 ; i < numberOfFiles; i++)
+   memset(preAllocBuffer, 0, bufferSize);
+
+   fprintf (stderr, "====================================================================================\n");
+   fprintf (stderr, " Step 1: preAllocate files\n");
+   fprintf (stderr, "====================================================================================\n");
+
+
+   long start = getTime();
+
+   for (int i = 0 ; i < numberOfFiles; i++)
    {
-      fprintf (stderr, "I'm here\n");
       char file[1024];
       sprintf (file, "%s/file%d.dat", directory, i);
       fprintf (stderr, "creating file %s\n", file);
-      open (file, O_RDWR | O_CREAT | O_DIRECT, 0666);
+
+      long startfile = getTime();
+
+      int handle = open (file, O_RDWR | O_CREAT | O_DIRECT, 0666);
+
+      for (long size = 0; size < fileSize ; size += bufferSize)
+      {
+         if (write(handle, preAllocBuffer, bufferSize) < 0)
+         {
+            fprintf (stderr, "Error writing file %s\n", file);
+            exit(-1);
+         }
+      }
+
+      close(handle);
+
+      long endfile = getTime();
+
+      fprintf (stderr, "Total time to allocate file = %ld milliseconds, Bytes/millisecond = %ld\n", (endfile - startfile), (fileSize / (endfile - startfile)));
+
    }
 
+   long end = getTime();
 
-   
+   fprintf (stderr, "Total time on allocating = %ld, Bytes/millisecond = %ld \n", end - start, (numberOfFiles * fileSize  / (end - start)));
 
-   
 
-   
+   memset(preAllocBuffer, 1, bufferSize);
+
+   fprintf (stderr, "====================================================================================\n");
+   fprintf (stderr, " Step 2: write libaio\n");
+   fprintf (stderr, "====================================================================================\n");
+
+
+   long globalStartAIO = getTime();
+
+   for (int i = 0 ; i < numberOfFiles; i++)
+   {
+      char file[1024];
+      sprintf (file, "%s/file%d.dat", directory, i);
+      fprintf (stderr, "writing on file %s using AIO\n", file);
+
+      io_context_t aioContext;
+
+      io_queue_init(maxAIO, &aioContext);
+
+      struct io_event *events = (struct io_event *)malloc (maxAIO * sizeof (struct io_event));
+
+      int handle = open(file,  O_RDWR | O_CREAT | O_DIRECT, 0666);
+
+      int writes = 0; // total number of writes
+
+      long startAIO = getTime();
+
+      for (long position = 0 ; position < fileSize; position += bufferSize)
+      {
+    	writes++;
+		struct iocb * iocb = new struct iocb();
+		::io_prep_pwrite(iocb, handle, preAllocBuffer, bufferSize, position);
+		iocb->data = (void *)position;
+
+		if (io_submit(aioContext, 1, &iocb) < 0)
+		{
+			fprintf (stderr, "Error on submitting AIO\n");
+			exit(-1);
+		}
+      }
+
+      int writesReceived = 0;
+
+      while (writesReceived < writes)
+      {
+    	  int result = io_getevents(aioContext, 1, maxAIO, events, 0);
+
+    	  writesReceived += result;
+
+
+    	  for (int errCheck = 0 ; errCheck < result; errCheck++)
+    	  {
+    		  long result = events[i].res;
+    		  if (result < 0)
+    		  {
+    			  fprintf (stderr, "error on writing AIO\n");
+    			  exit(-1);
+    		  }
+    		  else
+    		  {
+    			  struct iocb * iocbp = events[errCheck].obj;
+    			  delete iocbp;
+    		  }
+    	  }
+      }
+
+      long endAIO = getTime();
+
+
+      fprintf (stderr, "Total time to write file = %ld milliseconds, Bytes/millisecond = %ld\n", (endAIO - startAIO), (fileSize / (endAIO - startAIO)));
+
+
+      free (events);
+      io_queue_release(aioContext);
+
+   }
+
+   long globalEndAIO = getTime();
+
+
+   fprintf (stderr, "Total time on write files = %ld, Bytes/millisecond = %ld \n", globalEndAIO - globalStartAIO, (numberOfFiles * fileSize  / (globalEndAIO - globalStartAIO)));
+
+
+
+
+   free(preAllocBuffer);
+
    return (0);
-
-   
 }
