@@ -62,7 +62,7 @@ public interface SequentialFile
 
    void delete() throws Exception;
 
-   void write(ByteBuffer bytes, IOCallback callback) throws Exception;
+   void write(ByteBuffer bytes, boolean sync, IOCallback callback) throws Exception;
 
    void write(ByteBuffer bytes, boolean sync) throws Exception;
 

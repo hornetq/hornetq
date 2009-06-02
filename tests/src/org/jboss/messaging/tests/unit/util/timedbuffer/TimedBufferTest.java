@@ -104,8 +104,9 @@ public class TimedBufferTest extends UnitTestCase
             record.put((byte)getSamplebyte(x++));
          }
          
+         timedBuffer.checkSize(10);
          record.rewind();
-         timedBuffer.addBytes(record, dummyCallback);
+         timedBuffer.addBytes(record, false, dummyCallback);
       }
       
       

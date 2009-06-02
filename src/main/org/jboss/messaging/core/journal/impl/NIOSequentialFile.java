@@ -195,13 +195,18 @@ public class NIOSequentialFile implements SequentialFile
       }
    }
 
-   public void write(final ByteBuffer bytes, final IOCallback callback) throws Exception
+   public void write(final ByteBuffer bytes, final boolean sync, final IOCallback callback) throws Exception
    {
       try
       {
          position.addAndGet(bytes.limit());
          
          channel.write(bytes);
+         
+         if (sync)
+         {
+            sync();
+         }
 
          if (callback != null)
          {

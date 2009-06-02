@@ -151,8 +151,6 @@ public class AIOSequentialFile implements SequentialFile
       opened = false;
             
       timedBuffer.flush();
-      
-      timedBuffer.close();
 
       final CountDownLatch donelatch = new CountDownLatch(1);
 
@@ -303,11 +301,11 @@ public class AIOSequentialFile implements SequentialFile
       return bytesRead;
    }
 
-   public void write(final ByteBuffer bytes, final IOCallback callback) throws Exception
+   public void write(final ByteBuffer bytes, final boolean sync, final IOCallback callback) throws Exception
    {
       if (buffering)
       {
-         timedBuffer.addBytes(bytes, callback);
+         timedBuffer.addBytes(bytes, sync, callback);
       }
       else
       {
@@ -321,13 +319,13 @@ public class AIOSequentialFile implements SequentialFile
       {
          IOCallback completion = SimpleWaitIOCallback.getInstance();
 
-         write(bytes, completion);
+         write(bytes, true, completion);
          
          completion.waitCompletion();
       }
       else
       {
-         write(bytes, DummyCallback.instance);
+         write(bytes, false, DummyCallback.instance);
       }
    }
 

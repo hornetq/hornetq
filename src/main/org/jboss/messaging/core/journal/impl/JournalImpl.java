@@ -1477,6 +1477,11 @@ public class JournalImpl implements TestableJournal
     *  It will call waitComplete on every transaction, so any assertions on the file system will be correct after this */
    public void debugWait() throws Exception
    {
+      if (currentFile != null)
+      {
+         currentFile.getFile().flush();
+      }
+      
       for (TransactionCallback callback : transactionCallbacks.values())
       {
          callback.waitCompletion();
@@ -2023,7 +2028,7 @@ public class JournalImpl implements TestableJournal
 
          if (callback != null)
          {
-            currentFile.getFile().write(bb, callback);
+            currentFile.getFile().write(bb, sync, callback);
 
             // This is defaulted to false. The user is telling us to not wait the buffer timeout when a commit or sync is called
             if (flushOnSync && sync)

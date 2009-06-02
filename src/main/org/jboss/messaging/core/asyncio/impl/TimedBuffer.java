@@ -25,13 +25,17 @@ package org.jboss.messaging.core.asyncio.impl;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Timer;
-import java.util.TimerTask;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.jboss.messaging.core.asyncio.AIOCallback;
 import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.utils.JBMThreadFactory;
 
 /**
  * A TimedBuffer
@@ -52,6 +56,8 @@ public class TimedBuffer
 
    private final CheckTimer timerRunnable = new CheckTimer();
 
+   private volatile ScheduledFuture<?> futureTimerRunnable;
+
    private final long timeout;
 
    private final int bufferSize;
@@ -62,9 +68,13 @@ public class TimedBuffer
 
    private final Lock lock = new ReentrantReadWriteLock().writeLock();
 
-   private final Timer timer;
+   private final ScheduledExecutorService schedule = ScheduledSingleton.getScheduledService();
 
-   private long lastFlushTime;
+   // used to measure inactivity. This buffer will be automatically flushed when more than timeout inactive
+   private volatile long timeLastAdd = 0;
+
+   // used to measure sync requests. When a sync is requested, it shouldn't take more than timeout to happen
+   private volatile long timeLastSync = 0;
 
    // Static --------------------------------------------------------
 
@@ -74,22 +84,12 @@ public class TimedBuffer
 
    public TimedBuffer(final TimedBufferObserver bufferObserver, final int size, final long timeout)
    {
-      bufferSize = size;      
+      bufferSize = size;
       this.bufferObserver = bufferObserver;
       this.timeout = timeout;
-      this.currentBuffer = ByteBuffer.wrap(new byte[bufferSize]);
-      this.currentBuffer.limit(0);
-      this.callbacks = new ArrayList<AIOCallback>();
-      this.timer = new Timer("jbm-timed-buffer", true);
-      
-      this.timer.schedule(timerRunnable, timeout, timeout);
-   }
-   
-   public synchronized void close()
-   {
-      timerRunnable.cancel();
-      
-      timer.cancel();
+      currentBuffer = ByteBuffer.wrap(new byte[bufferSize]);
+      currentBuffer.limit(0);
+      callbacks = new ArrayList<AIOCallback>();
    }
 
    public void lock()
@@ -102,8 +102,17 @@ public class TimedBuffer
       lock.unlock();
    }
 
+   /** used to determine that a sync happened, and we should schedule flush to not take more than timeout no matter the activity on the buffer */
+   public synchronized void sync()
+   {
+      if (timeLastSync == 0)
+      {
+         timeLastSync = System.currentTimeMillis();
+      }
+   }
+
    /**
-    * Verify if the size fits the buffer, if it fits we lock the buffer to avoid a flush until add is called
+    * Verify if the size fits the buffer
     * @param sizeChecked
     * @return
     */
@@ -139,11 +148,22 @@ public class TimedBuffer
 
    }
 
-   public synchronized void addBytes(final ByteBuffer bytes, final AIOCallback callback)
+   public synchronized void addBytes(final ByteBuffer bytes, final boolean sync, final AIOCallback callback)
    {
+      timeLastAdd = System.currentTimeMillis();
+      if (sync)
+      {
+         this.timeLastSync = timeLastAdd;
+      }
+
       currentBuffer.put(bytes);
       callbacks.add(callback);
 
+      if (futureTimerRunnable == null)
+      {
+         futureTimerRunnable = schedule.scheduleAtFixedRate(timerRunnable, timeout, timeout, TimeUnit.MILLISECONDS);
+      }
+      
       if (currentBuffer.position() == currentBuffer.capacity())
       {
          flush();
@@ -163,11 +183,19 @@ public class TimedBuffer
          bufferObserver.flushBuffer(directBuffer, callbacks);
 
          callbacks = new ArrayList<AIOCallback>();
+
       }
 
-      currentBuffer.limit(0);
+      if (futureTimerRunnable != null)
+      {
+         futureTimerRunnable.cancel(false);
+         futureTimerRunnable = null;
+      }
 
-      this.lastFlushTime = System.currentTimeMillis();
+      timeLastAdd = 0;
+      timeLastSync = 0;
+
+      currentBuffer.limit(0);
    }
 
    // Package protected ---------------------------------------------
@@ -175,10 +203,14 @@ public class TimedBuffer
    // Protected -----------------------------------------------------
 
    // Private -------------------------------------------------------
-   
+
    private void checkTimer()
    {
-      if (System.currentTimeMillis() - lastFlushTime >= timeout)
+      final long now = System.currentTimeMillis();
+
+      // if inactive for more than the timeout
+      // of if a sync happened at more than the the timeout ago
+      if (now - timeLastAdd >= timeout || timeLastSync != 0 && now - timeLastSync >= timeout)
       {
          lock.lock();
          try
@@ -192,28 +224,31 @@ public class TimedBuffer
       }
    }
 
-
    // Inner classes -------------------------------------------------
 
-   class CheckTimer extends TimerTask
+   class CheckTimer implements Runnable
    {
-      private boolean cancelled;
-
-      @Override
-      public synchronized void run()
+      public void run()
       {
-         if (!cancelled)
-         {
-            checkTimer();
-         }
+         checkTimer();
       }
+   }
 
-      @Override
-      public synchronized boolean cancel()
+   // TODO: is there a better place to get this schedule service from?
+   static class ScheduledSingleton
+   {
+      private static ScheduledExecutorService scheduleService;
+
+      private static synchronized ScheduledExecutorService getScheduledService()
       {
-         cancelled = true;
+         if (scheduleService == null)
+         {
+            ThreadFactory factory = new JBMThreadFactory("JBM-buffer-scheduled-control", true);
 
-         return super.cancel();
+            scheduleService = Executors.newSingleThreadScheduledExecutor(factory);
+         }
+
+         return scheduleService;
       }
    }
 
