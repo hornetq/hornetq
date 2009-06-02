@@ -5,14 +5,14 @@
    <section id="installation.prerequisites">
       <title>Prerequisites</title>
       <note>
-         <para>JBoss Messaging only runs on Java 5 or later. We highly recommend you use Java
+         <para>JBoss Messaging only runs on Java 5 or later. We highly recommend to use Java
             6.</para>
       </note>
       <para>By default, JBoss Messaging server is run with 1GB of memory. If your computer has less
          memory, modify the value in <literal>bin/run.sh</literal> accordingly.</para>
       <para>For persistence, JBoss Messaging uses its own fast journal file, which you can configure
-         to use libaio (which is the defualt if Linux) or Java NIO. In order to use the libaio
-         module on linux, it's required to install libaio.</para>
+         to use libaio (which is the default when running on Linux) or Java NIO. In order to use the libaio
+         module on Linux, it's required to install libaio.</para>
       <para>You can install libaio using the following steps:</para>
       <para>Using yum, (e.g. on Fedora or Red Hat Enterprise Linux):</para>
       <programlisting>sudo yum install libaio</programlisting>
@@ -34,7 +34,6 @@
          |-- docs
          | |-- api
          | |-- quickstart-guide
-         | |-- migration-guide
          | `-- user-manual
          |-- examples
          | |-- core
@@ -51,7 +50,7 @@
          </listitem>
          <listitem>
             <para><literal>config</literal> -- configuration files needed to configure JBoss
-               Messaging. This contains configurations to run JBoss Messaging either in standalone
+               Messaging. This contains configurations to run JBoss Messaging either in stand-alone
                or inside JBoss AS 5. Please refer to the reference guide for details on
                configuration. </para>
          </listitem>

@@ -3,7 +3,7 @@
    <title>Starting The Server</title>
    <section id="running.standalone">
       <title>Standalone JBoss Messaging</title>
-      <para>To run a standalone server, open up a shell or command prompt and navigate into the
+      <para>To run a stand-alone server, open up a shell or command prompt and navigate into the
             <literal>bin</literal> directory. Then execute <literal>./run.sh</literal> (or <literal
             >run.bat</literal> on Windows) and you should see the following output </para>
       <programlisting>

@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <chapter id="about">
    <title>About JBoss Messaging</title>
-    <para>The goal of JBoss Messaging is simple and uncompromising; to bring unrivalled levels of
-        performance and reliability to messaging, and to be the fastest, best featured and most
+    <para>The goal of JBoss Messaging is simple and uncompromising: to bring unrivaled levels of
+        performance and reliability to messaging, and to be the fastest, best featured, and most
         scalable multi-protocol messaging system.</para>
     <para>Why use JBoss Messaging? Here are a few of the reasons:</para>
     <itemizedlist>
@@ -24,11 +24,11 @@
         </listitem>
         <listitem>
             <para>Elegant POJO based design with minimal third party dependencies. Run JBoss
-                Messaging stand-alone, run it in integrated in your favourite JEE application
-                server, or run it embedded inside your own product.</para>
+                Messaging stand-alone, run it in integrated in your favourite Java EE Application
+                Server or IoC container, or run it embedded inside your own product.</para>
         </listitem>
         <listitem>
-            <para>Seamless high availabilty. We provide server replication and completely
+            <para>Seamless high availability. We provide server replication and completely
                 transparent client failover so you don't have to worry about coding your client
                 specially for an HA environment.</para>
         </listitem>
