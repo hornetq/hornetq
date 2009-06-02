@@ -295,11 +295,11 @@ public class AIOSequentialFile implements SequentialFile
 
    public int read(final ByteBuffer bytes) throws Exception
    {
-      WaitCompletion waitCompletion = new WaitCompletion();
+      IOCallback waitCompletion = SimpleWaitIOCallback.getInstance();
 
       int bytesRead = read(bytes, waitCompletion);
 
-      waitCompletion.waitLatch();
+      waitCompletion.waitCompletion();
 
       return bytesRead;
    }
@@ -320,11 +320,11 @@ public class AIOSequentialFile implements SequentialFile
    {
       if (sync)
       {
-         WaitCompletion completion = new WaitCompletion();
+         IOCallback completion = SimpleWaitIOCallback.getInstance();
 
          write(bytes, completion);
          
-         completion.waitLatch();
+         completion.waitCompletion();
       }
       else
       {
@@ -391,56 +391,8 @@ public class AIOSequentialFile implements SequentialFile
          throw new IllegalStateException("File not opened");
       }
    }
-
-   private static class DummyCallback implements IOCallback
-   {
-      static DummyCallback instance = new DummyCallback();
-
-      public void done()
-      {
-      }
-
-      public void onError(final int errorCode, final String errorMessage)
-      {
-         log.warn("Error on writing data!" + errorMessage + " code - " + errorCode, new Exception(errorMessage));
-      }
-   }
-
-   private static class WaitCompletion implements IOCallback
-   {
-      private final CountDownLatch latch = new CountDownLatch(1);
-
-      private volatile String errorMessage;
-
-      private volatile int errorCode = 0;
-
-      public void done()
-      {
-         latch.countDown();
-      }
-
-      public void onError(final int errorCode, final String errorMessage)
-      {
-         this.errorCode = errorCode;
-
-         this.errorMessage = errorMessage;
-
-         log.warn("Error Message " + errorMessage);
-
-         latch.countDown();
-      }
-
-      public void waitLatch() throws Exception
-      {
-         latch.await();
-         if (errorMessage != null)
-         {
-            throw new MessagingException(errorCode, errorMessage);
-         }
-         return;
-      }
-   }
-
+   
+   
    private static class DelegateCallback implements IOCallback
    {
       final List<AIOCallback> delegates;
@@ -479,6 +431,10 @@ public class AIOSequentialFile implements SequentialFile
             }
          }
       }
+
+      public void waitCompletion() throws Exception
+      {
+      }
    }
 
    class LocalBufferObserver implements TimedBufferObserver
@@ -498,19 +454,25 @@ public class AIOSequentialFile implements SequentialFile
          }
       }
 
-      public ByteBuffer newBuffer(int minSize, int size)
+      public ByteBuffer newBuffer(int size, int limit)
       {
          size = factory.calculateBlockSize(size);
-         
-         long availableSize = fileSize - position.get();
-         
-         if (availableSize == 0 || availableSize < minSize)
+         limit = factory.calculateBlockSize(limit);
+
+         ByteBuffer buffer = factory.newBuffer(size);
+         buffer.limit(limit);
+         return buffer;
+      }
+
+      public int getRemainingBytes()
+      {
+         if (fileSize - position.get() > Integer.MAX_VALUE)
          {
-            return null;
+            return Integer.MAX_VALUE;
          }
          else
          {
-            return factory.newBuffer((int)Math.min(size, availableSize));
+            return (int)(fileSize - position.get());
          }
       }
 

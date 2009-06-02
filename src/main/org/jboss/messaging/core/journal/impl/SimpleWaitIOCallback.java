@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source
- * Copyright 2005-2008, Red Hat Middleware LLC, and individual contributors
+ * Copyright 2005-2009, Red Hat Middleware LLC, and individual contributors
  * by the @authors tag. See the copyright.txt in the distribution for a
  * full listing of individual contributors.
  *
@@ -20,32 +20,37 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.messaging.tests.unit.core.journal.impl.fakes;
+package org.jboss.messaging.core.journal.impl;
 
 import java.util.concurrent.CountDownLatch;
 
+import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.journal.IOCallback;
+import org.jboss.messaging.core.logging.Logger;
 
 /**
- * 
- * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
+ * A SimpleWaitIOCallback
+ *
+ * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
+ *
  *
  */
-public class FakeCallback implements IOCallback
+public class SimpleWaitIOCallback implements IOCallback
 {
-   volatile String msg;
 
-   final CountDownLatch latch;
+   private static final Logger log = Logger.getLogger(SimpleWaitIOCallback.class);
 
-   public FakeCallback(final CountDownLatch latch)
+   private final CountDownLatch latch = new CountDownLatch(1);
+
+   private volatile String errorMessage;
+
+   private volatile int errorCode = 0;
+
+   public static IOCallback getInstance()
    {
-      this.latch = latch;
+      return new SimpleWaitIOCallback();
    }
 
-   public FakeCallback()
-   {
-      latch = new CountDownLatch(1);
-   }
 
    public void done()
    {
@@ -54,17 +59,22 @@ public class FakeCallback implements IOCallback
 
    public void onError(final int errorCode, final String errorMessage)
    {
-      latch.countDown();
-      msg = errorMessage;
-   }
+      this.errorCode = errorCode;
 
-   public void waitComplete() throws Exception
-   {
-      latch.await();
+      this.errorMessage = errorMessage;
+
+      log.warn("Error Message " + errorMessage);
+
+      latch.countDown();
    }
 
    public void waitCompletion() throws Exception
    {
+      latch.await();
+      if (errorMessage != null)
+      {
+         throw new MessagingException(errorCode, errorMessage);
+      }
+      return;
    }
-
 }

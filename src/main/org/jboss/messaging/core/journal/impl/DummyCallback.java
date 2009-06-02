@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source
- * Copyright 2005-2008, Red Hat Middleware LLC, and individual contributors
+ * Copyright 2005-2009, Red Hat Middleware LLC, and individual contributors
  * by the @authors tag. See the copyright.txt in the distribution for a
  * full listing of individual contributors.
  *
@@ -20,19 +20,41 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.messaging.core.journal;
 
-import org.jboss.messaging.core.asyncio.AIOCallback;
+package org.jboss.messaging.core.journal.impl;
+
+import org.jboss.messaging.core.journal.IOCallback;
+import org.jboss.messaging.core.logging.Logger;
 
 /**
- * 
- * This class is just a direct extention of AIOCallback.
- * Just to avoid the direct dependency of org.jboss.messaging.core.asynciio.AIOCallback from the journal.
- * 
- * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
+ * A DummyCallback
+ *
+ * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
+ *
  *
  */
-public interface IOCallback extends AIOCallback
+public  class DummyCallback implements IOCallback
 {
-   void waitCompletion() throws Exception;
+   static DummyCallback instance = new DummyCallback();
+   
+   private static final Logger log = Logger.getLogger(SimpleWaitIOCallback.class);
+   
+   public static IOCallback getInstance()
+   {
+      return instance;
+   }
+
+   public void done()
+   {
+   }
+
+   public void onError(final int errorCode, final String errorMessage)
+   {
+      log.warn("Error on writing data!" + errorMessage + " code - " + errorCode, new Exception(errorMessage));
+   }
+
+   public void waitCompletion() throws Exception
+   {
+   }
 }
+

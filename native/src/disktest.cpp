@@ -21,6 +21,10 @@ long getTime()
 
 }
 
+/**
+ * Authored by Clebert Suconic @ redhat . com
+ * Licensed under LGPL
+ */
 int main(int arg, char * param[])
 {
    char * directory;

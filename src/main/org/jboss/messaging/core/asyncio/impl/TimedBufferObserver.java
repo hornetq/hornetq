@@ -51,8 +51,11 @@ public interface TimedBufferObserver
    public void flushBuffer(ByteBuffer buffer, List<AIOCallback> callbacks);
    
    
-   /** Return a buffer, with any bufferSize up to bufferSize, as long as it fits the current file */
-   public ByteBuffer newBuffer(int minSize, int maxSize);
+   /** Return the number of remaining bytes that still fit on the observer (file) */
+   public int getRemainingBytes();
+   
+   
+   public ByteBuffer newBuffer(int size, int limit);
    
 
    // Package protected ---------------------------------------------

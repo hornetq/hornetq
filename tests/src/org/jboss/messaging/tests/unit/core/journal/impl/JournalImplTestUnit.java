@@ -119,6 +119,7 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
       // exceptions)
       for (int i = 0; i < 100; i++)
       {
+         System.out.println("i = " + i);
          journal.appendAddRecord(1, (byte)1, new SimpleEncoding(2, (byte)'a'));
       }
       stopJournal();

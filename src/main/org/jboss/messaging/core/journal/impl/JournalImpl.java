@@ -273,7 +273,7 @@ public class JournalImpl implements TestableJournal
 
    public void appendAddRecord(final long id, final byte recordType, final byte[] record) throws Exception
    {
-      appendAddRecord(id, recordType, new ByteArrayEncoding(record));
+      appendAddRecord(id, recordType, new ByteArrayEncoding(record), syncNonTransactional);
    }
 
    public void appendAddRecord(final long id, final byte recordType, final EncodingSupport record) throws Exception
@@ -301,17 +301,24 @@ public class JournalImpl implements TestableJournal
       bb.writeByte(recordType);
       record.encode(bb);
       bb.writeInt(size);
+      
+      IOCallback callback = getSyncCallback(sync);
 
       lock.lock();
       try
       {
-         JournalFile usedFile = appendRecord(bb.toByteBuffer(), sync, null);
+         JournalFile usedFile = appendRecord(bb.toByteBuffer(), sync, callback);
 
          posFilesMap.put(id, new PosFiles(usedFile));
       }
       finally
       {
          lock.unlock();
+      }
+      
+      if (callback != null)
+      {
+         callback.waitCompletion();
       }
    }
 
@@ -346,16 +353,24 @@ public class JournalImpl implements TestableJournal
       record.encode(bb);
       bb.writeInt(size);
 
+      
+      IOCallback callback = getSyncCallback(syncNonTransactional);
+      
       lock.lock();
       try
       {
-         JournalFile usedFile = appendRecord(bb.toByteBuffer(), syncNonTransactional, null);
+         JournalFile usedFile = appendRecord(bb.toByteBuffer(), syncNonTransactional, callback);
 
          posFiles.addUpdateFile(usedFile);
       }
       finally
       {
          lock.unlock();
+      }
+      
+      if (callback != null)
+      {
+         callback.waitCompletion();
       }
    }
 
@@ -381,17 +396,24 @@ public class JournalImpl implements TestableJournal
       bb.putInt(-1); // skip ID part
       bb.putLong(id);
       bb.putInt(size);
+      
+      IOCallback callback = getSyncCallback(syncNonTransactional);
 
       lock.lock();
       try
       {
-         JournalFile usedFile = appendRecord(bb, syncNonTransactional, null);
+         JournalFile usedFile = appendRecord(bb, syncNonTransactional, callback);
 
          posFiles.addDelete(usedFile);
       }
       finally
       {
          lock.unlock();
+      }
+      
+      if (callback != null)
+      {
+         callback.waitCompletion();
       }
    }
 
@@ -586,7 +608,7 @@ public class JournalImpl implements TestableJournal
 
       ByteBuffer bb = writeTransaction(PREPARE_RECORD, txID, tx, transactionData);
 
-      TransactionCallback callback = getTransactionCallback(txID);
+      IOCallback callback = getTransactionCallback(txID);
 
       lock.lock();
       try
@@ -640,7 +662,7 @@ public class JournalImpl implements TestableJournal
 
       ByteBuffer bb = writeTransaction(COMMIT_RECORD, txID, tx, null);
 
-      TransactionCallback callback = getTransactionCallback(txID);
+      IOCallback callback = getTransactionCallback(txID);
 
       lock.lock();
       try
@@ -687,7 +709,7 @@ public class JournalImpl implements TestableJournal
       bb.putLong(txID);
       bb.putInt(size);
 
-      TransactionCallback callback = getTransactionCallback(txID);
+      IOCallback callback = getTransactionCallback(txID);
 
       lock.lock();
       try
@@ -1952,7 +1974,7 @@ public class JournalImpl implements TestableJournal
     * Note: This method will perform rwlock.readLock.lock(); 
     *       The method caller should aways unlock that readLock
     * */
-   private JournalFile appendRecord(final ByteBuffer bb, final boolean sync, final TransactionCallback callback) throws Exception
+   private JournalFile appendRecord(final ByteBuffer bb, final boolean sync, final IOCallback callback) throws Exception
    {
       lock.lock();
 
@@ -1979,6 +2001,13 @@ public class JournalImpl implements TestableJournal
             currentFile.getFile().unlockBuffer();
             moveNextFile();
             currentFile.getFile().lockBuffer();
+            
+            // The same check needs to be done at the new file also
+            if (!currentFile.getFile().fits(size))
+            {
+               // Sanity check, this should never happen
+               throw new IllegalStateException("Invalid logic on buffer allocation");
+            }
          }
 
          if (currentFile == null)
@@ -1996,6 +2025,7 @@ public class JournalImpl implements TestableJournal
          {
             currentFile.getFile().write(bb, callback);
 
+            // This is defaulted to false. The user is telling us to not wait the buffer timeout when a commit or sync is called
             if (flushOnSync && sync)
             {
                currentFile.getFile().flush();
@@ -2212,8 +2242,30 @@ public class JournalImpl implements TestableJournal
 
       return tx;
    }
+   
+   
+   private IOCallback getSyncCallback(boolean sync)
+   {
+      if (fileFactory.isSupportsCallbacks())
+      {
+         if (sync)
+         {
+            return SimpleWaitIOCallback.getInstance();
+         }
+         else
+         {
+            return DummyCallback.getInstance();
+         }
+      }
+      else
+      {
+         return null;
+      }
+   }
 
-   private TransactionCallback getTransactionCallback(final long transactionId) throws MessagingException
+
+
+   private IOCallback getTransactionCallback(final long transactionId) throws MessagingException
    {
       if (fileFactory.isSupportsCallbacks() && syncTransactional)
       {

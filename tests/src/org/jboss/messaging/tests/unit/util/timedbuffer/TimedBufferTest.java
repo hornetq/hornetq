@@ -72,6 +72,7 @@ public class TimedBufferTest extends UnitTestCase
       final AtomicInteger flushTimes = new AtomicInteger(0);
       class TestObserver implements TimedBufferObserver
       {
+         //TODO: fix the test
          public void flushBuffer(ByteBuffer buffer, List<AIOCallback> callbacks)
          {
             buffers.add(buffer);
@@ -84,6 +85,11 @@ public class TimedBufferTest extends UnitTestCase
          public ByteBuffer newBuffer(int minSize, int maxSize)
          {
             return ByteBuffer.allocate(maxSize);
+         }
+
+         public int getRemainingBytes()
+         {
+            return 1024*1024;
          }
       }
       

@@ -47,7 +47,7 @@ import org.jboss.messaging.utils.JBMThreadFactory;
 public class TimedBuffer
 {
    // Constants -----------------------------------------------------
-   
+
    private static final Logger log = Logger.getLogger(TimedBuffer.class);
 
    // Attributes ----------------------------------------------------
@@ -64,12 +64,12 @@ public class TimedBuffer
 
    private final ByteBuffer currentBuffer;
 
-   private final List<AIOCallback> callbacks;
+   private volatile List<AIOCallback> callbacks;
 
    private volatile long timeLastWrite = 0;
 
    private final ScheduledExecutorService schedule = ScheduledSingleton.getScheduledService();
-   
+
    private Lock lock = new ReentrantReadWriteLock().writeLock();
 
    // Static --------------------------------------------------------
@@ -78,14 +78,15 @@ public class TimedBuffer
 
    // Public --------------------------------------------------------
 
-   //private byte[] data;
-   
+   // private byte[] data;
+
    public TimedBuffer(final TimedBufferObserver bufferObserver, final int size, final long timeout)
    {
       bufferSize = size;
       this.bufferObserver = bufferObserver;
-      this.timeout = timeout;      
+      this.timeout = timeout;
       this.currentBuffer = ByteBuffer.wrap(new byte[bufferSize]);
+      this.currentBuffer.limit(0);
       this.callbacks = new ArrayList<AIOCallback>();
    }
 
@@ -116,12 +117,12 @@ public class TimedBuffer
          }
       }
    }
-      
+
    public void lock()
    {
       lock.lock();
    }
-   
+
    public void unlock()
    {
       lock.unlock();
@@ -136,22 +137,33 @@ public class TimedBuffer
    {
       if (sizeChecked > bufferSize)
       {
+         throw new IllegalStateException("Can't write records bigger than the bufferSize(" + bufferSize +
+                                         ") on the journal");
+      }
+
+      
+      if (currentBuffer.limit() == 0 ||  currentBuffer.position() + sizeChecked > currentBuffer.limit())
+      {
          flush();
+
+         final int remaining = bufferObserver.getRemainingBytes();
          
-         currentBuffer.rewind();
+         if (sizeChecked > remaining)
+         {
+            return false;
+         }
+         else
+         {
+            currentBuffer.rewind();
+            currentBuffer.limit(Math.min(remaining, bufferSize));
+            return true;
+         }
       }
       else
       {
-         // We verify against the currentBuffer.capacity as the observer may return a smaller buffer
-         if (currentBuffer.position() + sizeChecked > currentBuffer.limit())
-         {
-            flush();
-            
-            currentBuffer.rewind();
-         }
+         return true;
       }
 
-      return true;
    }
 
    public synchronized void addBytes(final ByteBuffer bytes, final AIOCallback callback)
@@ -174,17 +186,17 @@ public class TimedBuffer
 
    public synchronized void flush()
    {
-      if (currentBuffer != null)
+      if (currentBuffer.limit() > 0)
       {
-         ByteBuffer directBuffer = bufferObserver.newBuffer(currentBuffer.capacity(), currentBuffer.capacity());
+         ByteBuffer directBuffer = bufferObserver.newBuffer(bufferSize, currentBuffer.position());
+
+         currentBuffer.flip();
          
          directBuffer.put(currentBuffer);
-         
-         bufferObserver.flushBuffer(directBuffer, callbacks);
 
-         currentBuffer.rewind();
+         bufferObserver.flushBuffer(directBuffer, callbacks);
          
-         callbacks.clear();
+         callbacks = new ArrayList<AIOCallback>();
       }
 
       if (futureTimerRunnable != null)
@@ -194,6 +206,7 @@ public class TimedBuffer
       }
 
       timeLastWrite = 0;
+      currentBuffer.limit(0);
    }
 
    // Package protected ---------------------------------------------
@@ -201,7 +214,7 @@ public class TimedBuffer
    // Protected -----------------------------------------------------
 
    // Private -------------------------------------------------------
-      
+
    // Inner classes -------------------------------------------------
 
    class CheckTimer implements Runnable

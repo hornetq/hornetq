@@ -88,7 +88,7 @@ JNIEXPORT void JNICALL Java_org_jboss_messaging_core_asyncio_impl_AsynchronousFi
 		
 		if (buffer == 0)
 		{
-			throwException(env, NATIVE_ERROR_INVALID_BUFFER, "Invalid Direct Buffer used");
+			throwException(env, NATIVE_ERROR_INVALID_BUFFER, "Invalid Buffer used, libaio requires NativeBuffer instead of Java ByteBuffer");
 			return;
 		}
 		
@@ -117,7 +117,7 @@ JNIEXPORT void JNICALL Java_org_jboss_messaging_core_asyncio_impl_AsynchronousFi
 	
 	if (buffer == 0)
 	{
-		throwException(env, NATIVE_ERROR_INVALID_BUFFER, "Invalid Direct Buffer used");
+		throwException(env, NATIVE_ERROR_INVALID_BUFFER, "Invalid Buffer used, libaio requires NativeBuffer instead of Java ByteBuffer");
 		return;
 	}
 	
@@ -176,7 +176,7 @@ JNIEXPORT void JNICALL Java_org_jboss_messaging_core_asyncio_impl_AsynchronousFi
 
 		if (buffer == 0)
 		{
-			throwException(env, NATIVE_ERROR_INVALID_BUFFER, "Invalid Direct Buffer used");
+			throwException(env, NATIVE_ERROR_INVALID_BUFFER, "Invalid Buffer used, libaio requires NativeBuffer instead of Java ByteBuffer");
 			return;
 		}
 		
