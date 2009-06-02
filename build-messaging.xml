@@ -98,8 +98,6 @@
    <property name="doc.examples.dir" value="examples"/>
    <property name="user-manual.build.dir" value="${doc.dir}/user-manual/build"/>
    <property name="quickstart-guide.build.dir" value="${doc.dir}/quickstart-guide/build"/>
-   <property name="migration-guide.build.dir" value="${doc.dir}/migration-guide/build"/>
-   <property name="reference-guide.build.dir" value="${doc.dir}/reference-guide/build"/>
    <property name="build.api.dir" value="${build.dir}/api"/>
    <property name="native.bin.dir" value="native/bin"/>
    <property name="examples.dir" value="examples"/>
@@ -921,11 +919,6 @@
           <include name="**"/>
        </fileset>
     </copy>
-    <copy todir="${build.distro.dir}/docs/migration-guide">
-       <fileset dir="${migration-guide.build.dir}">
-          <include name="**"/>
-       </fileset>
-    </copy>
     <antcall target="javadoc"/>
     <copy todir="${build.distro.api.dir}/">
        <fileset dir="${build.api.dir}">
@@ -938,7 +931,6 @@
    <target name="userdoc">
       <ant dir="./docs/user-manual" antfile="build.xml" target="all"/>
       <ant dir="./docs/quickstart-guide" antfile="build.xml" target="all"/>
-      <ant dir="./docs/migration-guide" antfile="build.xml" target="all"/>
     </target>
 
    <target name="javadoc">
