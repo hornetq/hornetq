@@ -38,35 +38,33 @@ public interface Journal extends MessagingComponent
 {
    // Non transactional operations
 
-   void appendAddRecord(long id, byte recordType, byte[] record) throws Exception;
+   void appendAddRecord(long id, byte recordType, byte[] record, boolean sync) throws Exception;
 
-   void appendAddRecord(long id, byte recordType, EncodingSupport record) throws Exception;
-   
    void appendAddRecord(long id, byte recordType, EncodingSupport record, boolean sync) throws Exception;
+   
+   void appendUpdateRecord(long id, byte recordType, byte[] record, boolean sync) throws Exception;
 
-   void appendUpdateRecord(long id, byte recordType, byte[] record) throws Exception;
+   void appendUpdateRecord(long id, byte recordType, EncodingSupport record, boolean sync) throws Exception;
 
-   void appendUpdateRecord(long id, byte recordType, EncodingSupport record) throws Exception;
-
-   void appendDeleteRecord(long id) throws Exception;
+   void appendDeleteRecord(long id, boolean sync) throws Exception;
 
    // Transactional operations
 
-   void appendAddRecordTransactional(long txID, long id, byte recordType, byte[] record) throws Exception;
+   void appendAddRecordTransactional(long txID, long id, byte recordType, byte[] record, boolean sync) throws Exception;
 
-   void appendAddRecordTransactional(long txID, long id, byte recordType, EncodingSupport record) throws Exception;
+   void appendAddRecordTransactional(long txID, long id, byte recordType, EncodingSupport record, boolean sync) throws Exception;
 
-   void appendUpdateRecordTransactional(long txID, long id, byte recordType, byte[] record) throws Exception;
+   void appendUpdateRecordTransactional(long txID, long id, byte recordType, byte[] record, boolean sync) throws Exception;
 
-   void appendUpdateRecordTransactional(long txID, long id, byte recordType, EncodingSupport record) throws Exception;
+   void appendUpdateRecordTransactional(long txID, long id, byte recordType, EncodingSupport record, boolean sync) throws Exception;
 
-   void appendDeleteRecordTransactional(long txID, long id, byte[] record) throws Exception;
+   void appendDeleteRecordTransactional(long txID, long id, byte[] record, boolean sync) throws Exception;
 
-   void appendDeleteRecordTransactional(long txID, long id, EncodingSupport record) throws Exception;
+   void appendDeleteRecordTransactional(long txID, long id, EncodingSupport record, boolean sync) throws Exception;
 
-   void appendDeleteRecordTransactional(long txID, long id) throws Exception;
+   void appendDeleteRecordTransactional(long txID, long id, boolean sync) throws Exception;
 
-   void appendCommitRecord(long txID) throws Exception;
+   void appendCommitRecord(long txID, boolean sync) throws Exception;
 
    /** 
     * 
@@ -79,9 +77,9 @@ public interface Journal extends MessagingComponent
     * @param transactionData - extra user data for the prepare
     * @throws Exception
     */
-   void appendPrepareRecord(long txID, EncodingSupport transactionData) throws Exception;
+   void appendPrepareRecord(long txID, EncodingSupport transactionData, boolean sync) throws Exception;
 
-   void appendRollbackRecord(long txID) throws Exception;
+   void appendRollbackRecord(long txID, boolean sync) throws Exception;
 
    // Load
 

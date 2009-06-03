@@ -50,9 +50,9 @@ public interface TestableJournal extends Journal
 
    int getMinFiles();
 
-   boolean isSyncTransactional();
+  // boolean isSyncTransactional();
 
-   boolean isSyncNonTransactional();
+  // boolean isSyncNonTransactional();
 
    String getFilePrefix();
 

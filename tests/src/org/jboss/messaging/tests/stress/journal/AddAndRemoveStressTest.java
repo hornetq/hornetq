@@ -24,7 +24,6 @@ package org.jboss.messaging.tests.stress.journal;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.concurrent.Executors;
 
 import org.jboss.messaging.core.journal.LoadManager;
 import org.jboss.messaging.core.journal.PreparedTransactionInfo;
@@ -82,7 +81,7 @@ public class AddAndRemoveStressTest extends UnitTestCase
    {
 
       SequentialFileFactory factory = new AIOSequentialFileFactory(getTestDir());
-      JournalImpl impl = new JournalImpl(10 * 1024 * 1024, NUMBER_OF_FILES_ON_JOURNAL, true, false, true, factory, "jbm", "jbm", 1000);
+      JournalImpl impl = new JournalImpl(10 * 1024 * 1024, NUMBER_OF_FILES_ON_JOURNAL, factory, "jbm", "jbm", 1000);
 
       impl.start();
 
@@ -94,13 +93,13 @@ public class AddAndRemoveStressTest extends UnitTestCase
          {
             System.out.println("Append " + i);
          }
-         impl.appendAddRecord(i, (byte)0, new SimpleEncoding(1024, (byte)'f'));
+         impl.appendAddRecord(i, (byte)0, new SimpleEncoding(1024, (byte)'f'), false);
       }
 
       impl.stop();
 
       factory = new AIOSequentialFileFactory(getTestDir());
-      impl = new JournalImpl(10 * 1024 * 1024, NUMBER_OF_FILES_ON_JOURNAL, true, false, true, factory, "jbm", "jbm", 1000);
+      impl = new JournalImpl(10 * 1024 * 1024, NUMBER_OF_FILES_ON_JOURNAL, factory, "jbm", "jbm", 1000);
 
       impl.start();
 
@@ -113,13 +112,13 @@ public class AddAndRemoveStressTest extends UnitTestCase
             System.out.println("Delete " + i);
          }
 
-         impl.appendDeleteRecord(i);
+         impl.appendDeleteRecord(i, false);
       }
 
       impl.stop();
 
       factory = new AIOSequentialFileFactory(getTestDir());
-      impl = new JournalImpl(10 * 1024 * 1024, NUMBER_OF_FILES_ON_JOURNAL, true, false, true, factory, "jbm", "jbm", 1000);
+      impl = new JournalImpl(10 * 1024 * 1024, NUMBER_OF_FILES_ON_JOURNAL, factory, "jbm", "jbm", 1000);
 
       impl.start();
 
@@ -146,7 +145,7 @@ public class AddAndRemoveStressTest extends UnitTestCase
    {
 
       SequentialFileFactory factory = new AIOSequentialFileFactory(getTestDir());
-      JournalImpl impl = new JournalImpl(10 * 1024 * 1024, NUMBER_OF_FILES_ON_JOURNAL, true, false, true, factory, "jbm", "jbm", 1000);
+      JournalImpl impl = new JournalImpl(10 * 1024 * 1024, NUMBER_OF_FILES_ON_JOURNAL, factory, "jbm", "jbm", 1000);
 
       impl.start();
 
@@ -158,14 +157,14 @@ public class AddAndRemoveStressTest extends UnitTestCase
          {
             System.out.println("Append " + i);
          }
-         impl.appendAddRecord(i, (byte)21, new SimpleEncoding(40, (byte)'f'));
-         impl.appendUpdateRecord(i, (byte)22, new SimpleEncoding(40, (byte)'g'));
+         impl.appendAddRecord(i, (byte)21, new SimpleEncoding(40, (byte)'f'), false);
+         impl.appendUpdateRecord(i, (byte)22, new SimpleEncoding(40, (byte)'g'), false);
       }
 
       impl.stop();
 
       factory = new AIOSequentialFileFactory(getTestDir());
-      impl = new JournalImpl(10 * 1024 * 1024, 10, true, false, true, factory, "jbm", "jbm", 1000);
+      impl = new JournalImpl(10 * 1024 * 1024, 10, factory, "jbm", "jbm", 1000);
 
       impl.start();
 
@@ -178,13 +177,13 @@ public class AddAndRemoveStressTest extends UnitTestCase
             System.out.println("Delete " + i);
          }
 
-         impl.appendDeleteRecord(i);
+         impl.appendDeleteRecord(i, false);
       }
 
       impl.stop();
 
       factory = new AIOSequentialFileFactory(getTestDir());
-      impl = new JournalImpl(10 * 1024 * 1024, NUMBER_OF_FILES_ON_JOURNAL, true, false, true, factory, "jbm", "jbm", 1000);
+      impl = new JournalImpl(10 * 1024 * 1024, NUMBER_OF_FILES_ON_JOURNAL, factory, "jbm", "jbm", 1000);
 
       impl.start();
 

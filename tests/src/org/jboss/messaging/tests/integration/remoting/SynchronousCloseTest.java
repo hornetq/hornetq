@@ -111,19 +111,11 @@ public class SynchronousCloseTest extends ServiceTestBase
 
       ClientSessionFactory sf = createSessionFactory();
 
-      for (int i = 0; i < 100; i++)
+      for (int i = 0; i < 2000; i++)
       {
          ClientSession session = sf.createSession(false, true, true);
 
-         assertEquals(1, server.getMessagingServerControl().listRemoteAddresses().length);
-
-         log.info("closing session");
          session.close();
-         log.info("closed session");
-
-         // Thread.sleep(10000);
-
-         assertEquals(0, server.getMessagingServerControl().listRemoteAddresses().length);
       }
 
       sf.close();

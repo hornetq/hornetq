@@ -171,13 +171,6 @@ public class JournalImpl implements TestableJournal
 
    private final int minFiles;
 
-   private final boolean syncTransactional;
-
-   private final boolean syncNonTransactional;
-   
-   // used on AIO
-   private final boolean flushOnSync;
-
    private final SequentialFileFactory fileFactory;
 
    public final String filePrefix;
@@ -210,9 +203,6 @@ public class JournalImpl implements TestableJournal
 
    public JournalImpl(final int fileSize,
                       final int minFiles,
-                      final boolean syncTransactional,
-                      final boolean syncNonTransactional,
-                      final boolean flushOnSync,
                       final SequentialFileFactory fileFactory,
                       final String filePrefix,
                       final String fileExtension,
@@ -253,12 +243,6 @@ public class JournalImpl implements TestableJournal
 
       this.minFiles = minFiles;
 
-      this.syncTransactional = syncTransactional;
-
-      this.syncNonTransactional = syncNonTransactional;
-      
-      this.flushOnSync = flushOnSync;
-
       this.fileFactory = fileFactory;
 
       this.filePrefix = filePrefix;
@@ -271,14 +255,9 @@ public class JournalImpl implements TestableJournal
    // Journal implementation
    // ----------------------------------------------------------------
 
-   public void appendAddRecord(final long id, final byte recordType, final byte[] record) throws Exception
+   public void appendAddRecord(final long id, final byte recordType, final byte[] record, final boolean sync) throws Exception
    {
-      appendAddRecord(id, recordType, new ByteArrayEncoding(record), syncNonTransactional);
-   }
-
-   public void appendAddRecord(final long id, final byte recordType, final EncodingSupport record) throws Exception
-   {
-      appendAddRecord(id, recordType, record, syncNonTransactional);
+      appendAddRecord(id, recordType, new ByteArrayEncoding(record), sync);
    }
 
    public void appendAddRecord(final long id, final byte recordType, final EncodingSupport record, final boolean sync) throws Exception
@@ -322,12 +301,12 @@ public class JournalImpl implements TestableJournal
       }
    }
 
-   public void appendUpdateRecord(final long id, final byte recordType, final byte[] record) throws Exception
+   public void appendUpdateRecord(final long id, final byte recordType, final byte[] record, final boolean sync) throws Exception
    {
-      appendUpdateRecord(id, recordType, new ByteArrayEncoding(record));
+      appendUpdateRecord(id, recordType, new ByteArrayEncoding(record), sync);
    }
 
-   public void appendUpdateRecord(final long id, final byte recordType, final EncodingSupport record) throws Exception
+   public void appendUpdateRecord(final long id, final byte recordType, final EncodingSupport record, final boolean sync) throws Exception
    {
       if (state != STATE_LOADED)
       {
@@ -354,12 +333,12 @@ public class JournalImpl implements TestableJournal
       bb.writeInt(size);
 
       
-      IOCallback callback = getSyncCallback(syncNonTransactional);
+      IOCallback callback = getSyncCallback(sync);
       
       lock.lock();
       try
       {
-         JournalFile usedFile = appendRecord(bb.toByteBuffer(), syncNonTransactional, callback);
+         JournalFile usedFile = appendRecord(bb.toByteBuffer(), sync, callback);
 
          posFiles.addUpdateFile(usedFile);
       }
@@ -374,7 +353,7 @@ public class JournalImpl implements TestableJournal
       }
    }
 
-   public void appendDeleteRecord(final long id) throws Exception
+   public void appendDeleteRecord(final long id, final boolean sync) throws Exception
    {
       if (state != STATE_LOADED)
       {
@@ -397,12 +376,12 @@ public class JournalImpl implements TestableJournal
       bb.putLong(id);
       bb.putInt(size);
       
-      IOCallback callback = getSyncCallback(syncNonTransactional);
+      IOCallback callback = getSyncCallback(sync);
 
       lock.lock();
       try
       {
-         JournalFile usedFile = appendRecord(bb, syncNonTransactional, callback);
+         JournalFile usedFile = appendRecord(bb, sync, callback);
 
          posFiles.addDelete(usedFile);
       }
@@ -417,16 +396,18 @@ public class JournalImpl implements TestableJournal
       }
    }
 
-   public void appendAddRecordTransactional(final long txID, final long id, final byte recordType, final byte[] record) throws Exception
+   public void appendAddRecordTransactional(final long txID, final long id, final byte recordType, final byte[] record,
+                                            final boolean sync) throws Exception
    {
-      appendAddRecordTransactional(txID, id, recordType, new ByteArrayEncoding(record));
+      appendAddRecordTransactional(txID, id, recordType, new ByteArrayEncoding(record), sync);
 
    }
 
    public void appendAddRecordTransactional(final long txID,
                                             final long id,
                                             final byte recordType,
-                                            final EncodingSupport record) throws Exception
+                                            final EncodingSupport record,
+                                            final boolean sync) throws Exception
    {
       if (state != STATE_LOADED)
       {
@@ -451,7 +432,7 @@ public class JournalImpl implements TestableJournal
       lock.lock();
       try
       {
-         JournalFile usedFile = appendRecord(bb.toByteBuffer(), false, getTransactionCallback(txID));
+         JournalFile usedFile = appendRecord(bb.toByteBuffer(), false, getTransactionCallback(txID, sync));
 
          JournalTransaction tx = getTransactionInfo(txID);
 
@@ -466,15 +447,17 @@ public class JournalImpl implements TestableJournal
    public void appendUpdateRecordTransactional(final long txID,
                                                final long id,
                                                final byte recordType,
-                                               final byte[] record) throws Exception
+                                               final byte[] record,
+                                               final boolean sync) throws Exception
    {
-      appendUpdateRecordTransactional(txID, id, recordType, new ByteArrayEncoding(record));
+      appendUpdateRecordTransactional(txID, id, recordType, new ByteArrayEncoding(record), sync);
    }
 
    public void appendUpdateRecordTransactional(final long txID,
                                                final long id,
                                                final byte recordType,
-                                               final EncodingSupport record) throws Exception
+                                               final EncodingSupport record,
+                                               final boolean sync) throws Exception
    {
       if (state != STATE_LOADED)
       {
@@ -497,7 +480,7 @@ public class JournalImpl implements TestableJournal
       lock.lock();
       try
       {
-         JournalFile usedFile = appendRecord(bb.toByteBuffer(), false, getTransactionCallback(txID));
+         JournalFile usedFile = appendRecord(bb.toByteBuffer(), false, getTransactionCallback(txID, sync));
 
          JournalTransaction tx = getTransactionInfo(txID);
 
@@ -509,12 +492,14 @@ public class JournalImpl implements TestableJournal
       }
    }
 
-   public void appendDeleteRecordTransactional(final long txID, final long id, final byte[] record) throws Exception
+   public void appendDeleteRecordTransactional(final long txID, final long id, final byte[] record,
+                                               final boolean sync) throws Exception
    {
-      appendDeleteRecordTransactional(txID, id, new ByteArrayEncoding(record));
+      appendDeleteRecordTransactional(txID, id, new ByteArrayEncoding(record), sync);
    }
 
-   public void appendDeleteRecordTransactional(final long txID, final long id, final EncodingSupport record) throws Exception
+   public void appendDeleteRecordTransactional(final long txID, final long id, final EncodingSupport record,
+                                               final boolean sync) throws Exception
    {
       if (state != STATE_LOADED)
       {
@@ -539,7 +524,7 @@ public class JournalImpl implements TestableJournal
       lock.lock();
       try
       {
-         JournalFile usedFile = appendRecord(bb.toByteBuffer(), false, getTransactionCallback(txID));
+         JournalFile usedFile = appendRecord(bb.toByteBuffer(), false, getTransactionCallback(txID, sync));
 
          JournalTransaction tx = getTransactionInfo(txID);
 
@@ -551,7 +536,8 @@ public class JournalImpl implements TestableJournal
       }
    }
 
-   public void appendDeleteRecordTransactional(final long txID, final long id) throws Exception
+   public void appendDeleteRecordTransactional(final long txID, final long id,
+                                               final boolean sync) throws Exception
    {
       if (state != STATE_LOADED)
       {
@@ -572,7 +558,7 @@ public class JournalImpl implements TestableJournal
       lock.lock();
       try
       {
-         JournalFile usedFile = appendRecord(bb.toByteBuffer(), false, getTransactionCallback(txID));
+         JournalFile usedFile = appendRecord(bb.toByteBuffer(), false, getTransactionCallback(txID, sync));
 
          JournalTransaction tx = getTransactionInfo(txID);
 
@@ -597,7 +583,7 @@ public class JournalImpl implements TestableJournal
     * @param transactionData - extra user data for the prepare
     * @throws Exception
     */
-   public void appendPrepareRecord(final long txID, final EncodingSupport transactionData) throws Exception
+   public void appendPrepareRecord(final long txID, final EncodingSupport transactionData, final boolean sync) throws Exception
    {
       if (state != STATE_LOADED)
       {
@@ -608,12 +594,12 @@ public class JournalImpl implements TestableJournal
 
       ByteBuffer bb = writeTransaction(PREPARE_RECORD, txID, tx, transactionData);
 
-      IOCallback callback = getTransactionCallback(txID);
+      IOCallback callback = getTransactionCallback(txID, sync);
 
       lock.lock();
       try
       {
-         JournalFile usedFile = appendRecord(bb, syncTransactional, callback);
+         JournalFile usedFile = appendRecord(bb, sync, callback);
 
          tx.prepare(usedFile);
       }
@@ -646,7 +632,7 @@ public class JournalImpl implements TestableJournal
     *
     * @see JournalImpl#writeTransaction(byte, long, org.jboss.messaging.core.journal.impl.JournalImpl.JournalTransaction, EncodingSupport)
     */
-   public void appendCommitRecord(final long txID) throws Exception
+   public void appendCommitRecord(final long txID, final boolean sync) throws Exception
    {
       if (state != STATE_LOADED)
       {
@@ -662,12 +648,12 @@ public class JournalImpl implements TestableJournal
 
       ByteBuffer bb = writeTransaction(COMMIT_RECORD, txID, tx, null);
 
-      IOCallback callback = getTransactionCallback(txID);
+      IOCallback callback = getTransactionCallback(txID, sync);
 
       lock.lock();
       try
       {
-         JournalFile usedFile = appendRecord(bb, syncTransactional, callback);
+         JournalFile usedFile = appendRecord(bb, sync, callback);
 
          transactionCallbacks.remove(txID);
 
@@ -686,7 +672,7 @@ public class JournalImpl implements TestableJournal
 
    }
 
-   public void appendRollbackRecord(final long txID) throws Exception
+   public void appendRollbackRecord(final long txID, final boolean sync) throws Exception
    {
       if (state != STATE_LOADED)
       {
@@ -709,12 +695,12 @@ public class JournalImpl implements TestableJournal
       bb.putLong(txID);
       bb.putInt(size);
 
-      IOCallback callback = getTransactionCallback(txID);
+      IOCallback callback = getTransactionCallback(txID, sync);
 
       lock.lock();
       try
       {
-         JournalFile usedFile = appendRecord(bb, syncTransactional, callback);
+         JournalFile usedFile = appendRecord(bb, sync, callback);
 
          transactionCallbacks.remove(txID);
 
@@ -1476,12 +1462,7 @@ public class JournalImpl implements TestableJournal
    /** Method for use on testcases.
     *  It will call waitComplete on every transaction, so any assertions on the file system will be correct after this */
    public void debugWait() throws Exception
-   {
-      if (currentFile != null)
-      {
-         currentFile.getFile().flush();
-      }
-      
+   {         
       for (TransactionCallback callback : transactionCallbacks.values())
       {
          callback.waitCompletion();
@@ -1570,16 +1551,6 @@ public class JournalImpl implements TestableJournal
    public int getMinFiles()
    {
       return minFiles;
-   }
-
-   public boolean isSyncTransactional()
-   {
-      return syncTransactional;
-   }
-
-   public boolean isSyncNonTransactional()
-   {
-      return syncNonTransactional;
    }
 
    public String getFilePrefix()
@@ -2029,12 +2000,6 @@ public class JournalImpl implements TestableJournal
          if (callback != null)
          {
             currentFile.getFile().write(bb, sync, callback);
-
-            // This is defaulted to false. The user is telling us to not wait the buffer timeout when a commit or sync is called
-            if (flushOnSync && sync)
-            {
-               currentFile.getFile().flush();
-            }
          }
          else
          {
@@ -2268,11 +2233,9 @@ public class JournalImpl implements TestableJournal
       }
    }
 
-
-
-   private IOCallback getTransactionCallback(final long transactionId) throws MessagingException
+   private IOCallback getTransactionCallback(final long transactionId, final boolean sync) throws MessagingException
    {
-      if (fileFactory.isSupportsCallbacks() && syncTransactional)
+      if (sync && fileFactory.isSupportsCallbacks())
       {
          TransactionCallback callback = transactionCallbacks.get(transactionId);
 

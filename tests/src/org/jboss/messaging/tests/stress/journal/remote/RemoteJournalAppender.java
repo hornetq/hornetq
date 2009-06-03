@@ -142,8 +142,7 @@ public class RemoteJournalAppender
 
    public static JournalImpl createJournal(String journalType, String journalDir)
    {
-      JournalImpl journal = new JournalImpl(10485760, 2, true,
-            false, true, getFactory(journalType, journalDir), "journaltst", "tst", 5000);
+      JournalImpl journal = new JournalImpl(10485760, 2, getFactory(journalType, journalDir), "journaltst", "tst", 5000);
       return journal;
    }
    
@@ -212,25 +211,25 @@ public class RemoteJournalAppender
                
                if (transactionSize != 0)
                {
-                  journal.appendAddRecordTransactional(transactionId, id, (byte)99, buffer.array());
+                  journal.appendAddRecordTransactional(transactionId, id, (byte)99, buffer.array(), false);
         
                   if (++transactionCounter == transactionSize)
                   {
                      System.out.println("Commit transaction " + transactionId);
-                     journal.appendCommitRecord(transactionId);
+                     journal.appendCommitRecord(transactionId, false);
                      transactionCounter = 0;
                      transactionId = nextID.incrementAndGet();
                   }
                }
                else
                {
-                  journal.appendAddRecord(id, (byte)99, buffer.array());
+                  journal.appendAddRecord(id, (byte)99, buffer.array(), false);
                }
             }
    
             if (transactionCounter != 0)
             {
-               journal.appendCommitRecord(transactionId);
+               journal.appendCommitRecord(transactionId, false);
             }
             
             if (transactionSize == 0)

@@ -152,11 +152,11 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
 
       for (int count = 0; count < NUMBER_OF_RECORDS; count++)
       {
-         journal.appendAddRecord(count, (byte)0, record);
+         journal.appendAddRecord(count, (byte)0, record, false);
          
          if (count >= NUMBER_OF_RECORDS / 2)
          {
-            journal.appendDeleteRecord(count - NUMBER_OF_RECORDS / 2);
+            journal.appendDeleteRecord(count - NUMBER_OF_RECORDS / 2, false);
          }
          
          if (count % 100 == 0)

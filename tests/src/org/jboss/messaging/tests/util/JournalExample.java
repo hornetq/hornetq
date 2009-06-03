@@ -1,4 +1,5 @@
 package org.jboss.messaging.tests.util;
+
 import java.util.ArrayList;
 
 import org.jboss.messaging.core.journal.PreparedTransactionInfo;
@@ -61,25 +62,21 @@ public class JournalExample
 
    // Inner classes -------------------------------------------------
 
-   
    public static void main(String arg[])
    {
       TimeAndCounterIDGenerator idgenerator = new TimeAndCounterIDGenerator();
       try
       {
          SequentialFileFactory fileFactory = new AIOSequentialFileFactory("/tmp"); // any dir you want
-         //SequentialFileFactory fileFactory = new NIOSequentialFileFactory("/tmp"); // any dir you want
-         JournalImpl journalExample = new JournalImpl(
-                                                      10 * 1024 * 1024, // 10M.. we believe that's the usual cilinder bufferSize.. not an exact science here
+         // SequentialFileFactory fileFactory = new NIOSequentialFileFactory("/tmp"); // any dir you want
+         JournalImpl journalExample = new JournalImpl(10 * 1024 * 1024, // 10M.. we believe that's the usual cilinder
+                                                                        // bufferSize.. not an exact science here
                                                       2, // number of files pre-allocated
-                                                      true, // sync on commit
-                                                      false, // no sync on non transactional
-                                                      false, // if aio, flush on sync
                                                       fileFactory, // AIO or NIO
                                                       "exjournal", // file name
                                                       "dat", // extension
-                                                       10000); // it's like a semaphore for callback on the AIO layer
-         
+                                                      10000); // it's like a semaphore for callback on the AIO layer
+
          ArrayList<RecordInfo> committedRecords = new ArrayList<RecordInfo>();
          ArrayList<PreparedTransactionInfo> preparedTransactions = new ArrayList<PreparedTransactionInfo>();
          journalExample.start();
@@ -87,31 +84,77 @@ public class JournalExample
          journalExample.load(committedRecords, preparedTransactions);
 
          System.out.println("Loaded Record List:");
-         
-         for (RecordInfo record: committedRecords)
+
+         for (RecordInfo record : committedRecords)
          {
-            System.out.println("Record id = " + record.id + " userType = " + record.userRecordType + " with " + record.data.length + " bytes is stored on the journal");
+            System.out.println("Record id = " + record.id +
+                               " userType = " +
+                               record.userRecordType +
+                               " with " +
+                               record.data.length +
+                               " bytes is stored on the journal");
          }
 
          System.out.println("Adding Records:");
-         
-         for (int i = 0 ; i < 10; i++)
+
+         for (int i = 0; i < 10; i++)
          {
-            journalExample.appendAddRecord(idgenerator.generateID(), (byte)1, new byte[] { 0, 1, 2, 0, 1, 2, 0, 1, 2, 0, 1, 2, 0, 1, 2, 0, 1, 2, 0, 1, 2} );
+            journalExample.appendAddRecord(idgenerator.generateID(), (byte)1, new byte[] { 0,
+                                                                                          1,
+                                                                                          2,
+                                                                                          0,
+                                                                                          1,
+                                                                                          2,
+                                                                                          0,
+                                                                                          1,
+                                                                                          2,
+                                                                                          0,
+                                                                                          1,
+                                                                                          2,
+                                                                                          0,
+                                                                                          1,
+                                                                                          2,
+                                                                                          0,
+                                                                                          1,
+                                                                                          2,
+                                                                                          0,
+                                                                                          1,
+                                                                                          2 }, false);
          }
-         
+
          long tx = idgenerator.generateID(); // some id generation system
-         
-         for (int i = 0 ; i < 100; i++)
+
+         for (int i = 0; i < 100; i++)
          {
-            journalExample.appendAddRecordTransactional(tx, idgenerator.generateID(), (byte)2, new byte[] { 0, 1, 2, 0, 1, 2, 0, 1, 2, 0, 1, 2, 0, 1, 2, 0, 1, 2, 0, 1, 2, 5});
+            journalExample.appendAddRecordTransactional(tx, idgenerator.generateID(), (byte)2, new byte[] { 0,
+                                                                                                           1,
+                                                                                                           2,
+                                                                                                           0,
+                                                                                                           1,
+                                                                                                           2,
+                                                                                                           0,
+                                                                                                           1,
+                                                                                                           2,
+                                                                                                           0,
+                                                                                                           1,
+                                                                                                           2,
+                                                                                                           0,
+                                                                                                           1,
+                                                                                                           2,
+                                                                                                           0,
+                                                                                                           1,
+                                                                                                           2,
+                                                                                                           0,
+                                                                                                           1,
+                                                                                                           2,
+                                                                                                           5 }, true);
          }
-         
+
          // After this is complete, you're sure the records are there
-         journalExample.appendCommitRecord(tx);
+         journalExample.appendCommitRecord(tx, true);
 
          System.out.println("Done!");
-         
+
          journalExample.stop();
       }
       catch (Exception e)
@@ -119,5 +162,5 @@ public class JournalExample
          e.printStackTrace();
       }
    }
-   
+
 }

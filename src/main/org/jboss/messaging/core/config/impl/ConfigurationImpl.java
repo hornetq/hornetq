@@ -97,9 +97,7 @@ public class ConfigurationImpl implements Configuration
 
    public static final int DEFAULT_JOURNAL_MAX_AIO = 500;
    
-   public static final boolean DEFAULT_JOURNAL_AIO_FLUSH_SYNC = false;
-   
-   public static final int DEFAULT_JOURNAL_AIO_BUFFER_TIMEOUT = 1;
+   public static final long DEFAULT_JOURNAL_AIO_BUFFER_TIMEOUT = 500;
    
    public static final int DEFAULT_JOURNAL_AIO_BUFFER_SIZE = 128 * 1024;
 
@@ -238,10 +236,8 @@ public class ConfigurationImpl implements Configuration
    protected int journalMinFiles = DEFAULT_JOURNAL_MIN_FILES;
 
    protected int journalMaxAIO = DEFAULT_JOURNAL_MAX_AIO;
-   
-   protected boolean journalAIOFlushSync = DEFAULT_JOURNAL_AIO_FLUSH_SYNC;
-   
-   protected int journalAIOBufferTimeout = DEFAULT_JOURNAL_AIO_BUFFER_TIMEOUT;
+     
+   protected long journalAIOBufferTimeout = DEFAULT_JOURNAL_AIO_BUFFER_TIMEOUT;
    
    protected int journalAIOBufferSize = DEFAULT_JOURNAL_AIO_BUFFER_SIZE;
 
@@ -708,25 +704,14 @@ public class ConfigurationImpl implements Configuration
       jmxManagementEnabled = enabled;
    }
 
-
-   public void setAIOBufferTimeout(int timeout)
+   public void setAIOBufferTimeout(long timeout)
    {
       this.journalAIOBufferTimeout = timeout;
    }
    
-   public int getAIOBufferTimeout()
+   public long getAIOBufferTimeout()
    {
       return journalAIOBufferTimeout;
-   }
-
-   public void setAIOFlushOnSync(boolean flush)
-   {
-      journalAIOFlushSync = flush;
-   }
-
-   public boolean isAIOFlushOnSync()
-   {
-      return journalAIOFlushSync;
    }
 
    public int getAIOBufferSize()

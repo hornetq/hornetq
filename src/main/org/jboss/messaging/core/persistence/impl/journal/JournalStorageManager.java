@@ -138,6 +138,10 @@ public class JournalStorageManager implements StorageManager
 
    private final Executor executor;
 
+   private final boolean syncTransactional;
+
+   private final boolean syncNonTransactional;
+
    public JournalStorageManager(final Configuration config, final Executor executor)
    {
       this.executor = executor;
@@ -158,7 +162,7 @@ public class JournalStorageManager implements StorageManager
 
       SequentialFileFactory bindingsFF = new NIOSequentialFileFactory(bindingsDir);
 
-      bindingsJournal = new JournalImpl(1024 * 1024, 2, true, true, false, bindingsFF, "jbm-bindings", "bindings", 1);
+      bindingsJournal = new JournalImpl(1024 * 1024, 2, bindingsFF, "jbm-bindings", "bindings", 1);
 
       String journalDir = config.getJournalDirectory();
 
@@ -166,6 +170,10 @@ public class JournalStorageManager implements StorageManager
       {
          throw new NullPointerException("journal-dir is null");
       }
+
+      syncNonTransactional = config.isJournalSyncNonTransactional();
+
+      syncTransactional = config.isJournalSyncTransactional();
 
       checkAndCreateDir(journalDir, config.isCreateJournalDir());
 
@@ -181,7 +189,9 @@ public class JournalStorageManager implements StorageManager
          }
          else
          {
-            journalFF = new AIOSequentialFileFactory(journalDir, config.getAIOBufferSize(), config.getAIOBufferTimeout());
+            journalFF = new AIOSequentialFileFactory(journalDir,
+                                                     config.getAIOBufferSize(),
+                                                     config.getAIOBufferTimeout());
             log.info("AIO loaded successfully");
          }
       }
@@ -196,10 +206,7 @@ public class JournalStorageManager implements StorageManager
       }
 
       messageJournal = new JournalImpl(config.getJournalFileSize(),
-                                       config.getJournalMinFiles(),
-                                       config.isJournalSyncTransactional(),
-                                       config.isJournalSyncNonTransactional(),
-                                       config.isAIOFlushOnSync(),
+                                       config.getJournalMinFiles(),                                      
                                        journalFF,
                                        "jbm-data",
                                        "jbm",
@@ -254,37 +261,40 @@ public class JournalStorageManager implements StorageManager
    // Non transactional operations
 
    public void storeMessage(final ServerMessage message) throws Exception
-   {  
+   {
       if (message.getMessageID() <= 0)
       {
          throw new MessagingException(MessagingException.ILLEGAL_STATE, "MessageId was not assigned to Message");
       }
 
+      // Note that we don't sync, the add reference that comes immediately after will sync
+
       if (message instanceof LargeServerMessage)
       {
          messageJournal.appendAddRecord(message.getMessageID(),
                                         ADD_LARGE_MESSAGE,
-                                        new LargeMessageEncoding((LargeServerMessage)message));
+                                        new LargeMessageEncoding((LargeServerMessage)message),
+                                        false);
       }
       else
       {
-         messageJournal.appendAddRecord(message.getMessageID(), ADD_MESSAGE, message);
+         messageJournal.appendAddRecord(message.getMessageID(), ADD_MESSAGE, message, false);
       }
    }
 
    public void storeReference(final long queueID, final long messageID) throws Exception
    {
-      messageJournal.appendUpdateRecord(messageID, ADD_REF, new RefEncoding(queueID));
+      messageJournal.appendUpdateRecord(messageID, ADD_REF, new RefEncoding(queueID), syncNonTransactional);
    }
 
    public void storeAcknowledge(final long queueID, final long messageID) throws Exception
    {
-      messageJournal.appendUpdateRecord(messageID, ACKNOWLEDGE_REF, new RefEncoding(queueID));
+      messageJournal.appendUpdateRecord(messageID, ACKNOWLEDGE_REF, new RefEncoding(queueID), syncNonTransactional);
    }
 
    public void deleteMessage(final long messageID) throws Exception
    {
-      messageJournal.appendDeleteRecord(messageID);
+      messageJournal.appendDeleteRecord(messageID, syncNonTransactional);
    }
 
    public void updateScheduledDeliveryTime(final MessageReference ref) throws Exception
@@ -292,26 +302,29 @@ public class JournalStorageManager implements StorageManager
       ScheduledDeliveryEncoding encoding = new ScheduledDeliveryEncoding(ref.getScheduledDeliveryTime(),
                                                                          ref.getQueue().getPersistenceID());
 
-      messageJournal.appendUpdateRecord(ref.getMessage().getMessageID(), SET_SCHEDULED_DELIVERY_TIME, encoding);
+      messageJournal.appendUpdateRecord(ref.getMessage().getMessageID(),
+                                        SET_SCHEDULED_DELIVERY_TIME,
+                                        encoding,
+                                        syncNonTransactional);
    }
 
    public void storeDuplicateID(final SimpleString address, final byte[] duplID, final long recordID) throws Exception
    {
       DuplicateIDEncoding encoding = new DuplicateIDEncoding(address, duplID);
 
-      messageJournal.appendAddRecord(recordID, DUPLICATE_ID, encoding);
+      messageJournal.appendAddRecord(recordID, DUPLICATE_ID, encoding, syncNonTransactional);
    }
 
    public void updateDuplicateID(final SimpleString address, final byte[] duplID, final long recordID) throws Exception
    {
       DuplicateIDEncoding encoding = new DuplicateIDEncoding(address, duplID);
 
-      messageJournal.appendUpdateRecord(recordID, DUPLICATE_ID, encoding);
+      messageJournal.appendUpdateRecord(recordID, DUPLICATE_ID, encoding, syncNonTransactional);
    }
 
    public void deleteDuplicateID(long recordID) throws Exception
    {
-      messageJournal.appendDeleteRecord(recordID);
+      messageJournal.appendDeleteRecord(recordID, syncNonTransactional);
    }
 
    // Transactional operations
@@ -328,11 +341,16 @@ public class JournalStorageManager implements StorageManager
          messageJournal.appendAddRecordTransactional(txID,
                                                      message.getMessageID(),
                                                      ADD_LARGE_MESSAGE,
-                                                     new LargeMessageEncoding(((LargeServerMessage)message)));
+                                                     new LargeMessageEncoding(((LargeServerMessage)message)),
+                                                     syncTransactional);
       }
       else
       {
-         messageJournal.appendAddRecordTransactional(txID, message.getMessageID(), ADD_MESSAGE, message);
+         messageJournal.appendAddRecordTransactional(txID,
+                                                     message.getMessageID(),
+                                                     ADD_MESSAGE,
+                                                     message,
+                                                     syncTransactional);
       }
 
    }
@@ -343,7 +361,7 @@ public class JournalStorageManager implements StorageManager
       {
          // Instead of updating the record, we delete the old one as that is
          // better for reclaiming
-         messageJournal.appendDeleteRecordTransactional(txID, pageTransaction.getRecordID());
+         messageJournal.appendDeleteRecordTransactional(txID, pageTransaction.getRecordID(), syncTransactional);
       }
 
       pageTransaction.setRecordID(generateUniqueID());
@@ -351,22 +369,31 @@ public class JournalStorageManager implements StorageManager
       messageJournal.appendAddRecordTransactional(txID,
                                                   pageTransaction.getRecordID(),
                                                   PAGE_TRANSACTION,
-                                                  pageTransaction);
+                                                  pageTransaction,
+                                                  syncTransactional);
    }
 
    public void storeReferenceTransactional(final long txID, final long queueID, final long messageID) throws Exception
    {
-      messageJournal.appendUpdateRecordTransactional(txID, messageID, ADD_REF, new RefEncoding(queueID));
+      messageJournal.appendUpdateRecordTransactional(txID,
+                                                     messageID,
+                                                     ADD_REF,
+                                                     new RefEncoding(queueID),
+                                                     syncTransactional);
    }
 
    public void storeAcknowledgeTransactional(final long txID, final long queueID, final long messageID) throws Exception
    {
-      messageJournal.appendUpdateRecordTransactional(txID, messageID, ACKNOWLEDGE_REF, new RefEncoding(queueID));
+      messageJournal.appendUpdateRecordTransactional(txID,
+                                                     messageID,
+                                                     ACKNOWLEDGE_REF,
+                                                     new RefEncoding(queueID),
+                                                     syncTransactional);
    }
 
    public void deletePageTransactional(final long txID, final long recordID) throws Exception
    {
-      messageJournal.appendDeleteRecordTransactional(txID, recordID);
+      messageJournal.appendDeleteRecordTransactional(txID, recordID, syncTransactional);
    }
 
    public void updateScheduledDeliveryTimeTransactional(final long txID, final MessageReference ref) throws Exception
@@ -377,27 +404,28 @@ public class JournalStorageManager implements StorageManager
       messageJournal.appendUpdateRecordTransactional(txID,
                                                      ref.getMessage().getMessageID(),
                                                      SET_SCHEDULED_DELIVERY_TIME,
-                                                     encoding);
+                                                     encoding,
+                                                     syncTransactional);
    }
 
    public void deleteMessageTransactional(final long txID, final long queueID, final long messageID) throws Exception
    {
-      messageJournal.appendDeleteRecordTransactional(txID, messageID, new DeleteEncoding(queueID));
+      messageJournal.appendDeleteRecordTransactional(txID, messageID, new DeleteEncoding(queueID), syncTransactional);
    }
 
    public void prepare(final long txID, final Xid xid) throws Exception
    {
-      messageJournal.appendPrepareRecord(txID, new XidEncoding(xid));
+      messageJournal.appendPrepareRecord(txID, new XidEncoding(xid), syncTransactional);
    }
 
    public void commit(final long txID) throws Exception
    {
-      messageJournal.appendCommitRecord(txID);
+      messageJournal.appendCommitRecord(txID, syncTransactional);
    }
 
    public void rollback(final long txID) throws Exception
    {
-      messageJournal.appendRollbackRecord(txID);
+      messageJournal.appendRollbackRecord(txID, syncTransactional);
    }
 
    public void storeDuplicateIDTransactional(final long txID,
@@ -407,7 +435,7 @@ public class JournalStorageManager implements StorageManager
    {
       DuplicateIDEncoding encoding = new DuplicateIDEncoding(address, duplID);
 
-      messageJournal.appendAddRecordTransactional(txID, recordID, DUPLICATE_ID, encoding);
+      messageJournal.appendAddRecordTransactional(txID, recordID, DUPLICATE_ID, encoding, syncTransactional);
    }
 
    public void updateDuplicateIDTransactional(final long txID,
@@ -417,12 +445,12 @@ public class JournalStorageManager implements StorageManager
    {
       DuplicateIDEncoding encoding = new DuplicateIDEncoding(address, duplID);
 
-      messageJournal.appendUpdateRecordTransactional(txID, recordID, DUPLICATE_ID, encoding);
+      messageJournal.appendUpdateRecordTransactional(txID, recordID, DUPLICATE_ID, encoding, syncTransactional);
    }
 
    public void deleteDuplicateIDTransactional(long txID, long recordID) throws Exception
    {
-      messageJournal.appendDeleteRecordTransactional(txID, recordID);
+      messageJournal.appendDeleteRecordTransactional(txID, recordID, syncTransactional);
    }
 
    // Other operations
@@ -432,7 +460,10 @@ public class JournalStorageManager implements StorageManager
       DeliveryCountUpdateEncoding updateInfo = new DeliveryCountUpdateEncoding(ref.getQueue().getPersistenceID(),
                                                                                ref.getDeliveryCount());
 
-      messageJournal.appendUpdateRecord(ref.getMessage().getMessageID(), UPDATE_DELIVERY_COUNT, updateInfo);
+      messageJournal.appendUpdateRecord(ref.getMessage().getMessageID(),
+                                        UPDATE_DELIVERY_COUNT,
+                                        updateInfo,
+                                        syncNonTransactional);
    }
 
    private static final class AddMessageRecord
@@ -873,12 +904,12 @@ public class JournalStorageManager implements StorageManager
 
       queue.setPersistenceID(id);
 
-      bindingsJournal.appendAddRecord(id, QUEUE_BINDING_RECORD, bindingEncoding);
+      bindingsJournal.appendAddRecord(id, QUEUE_BINDING_RECORD, bindingEncoding, true);
    }
 
    public void deleteQueueBinding(final long queueBindingID) throws Exception
    {
-      bindingsJournal.appendDeleteRecord(queueBindingID);
+      bindingsJournal.appendDeleteRecord(queueBindingID, true);
    }
 
    public void loadBindingJournal(final List<QueueBindingInfo> queueBindingInfos) throws Exception
@@ -1077,11 +1108,11 @@ public class JournalStorageManager implements StorageManager
       private volatile long nextID;
 
       public BatchingIDGenerator(final long start, final long checkpointSize)
-      {         
+      {
          this.counter = new AtomicLong(start);
 
          this.checkpointSize = checkpointSize;
-         
+
          nextID = start + checkpointSize;
       }
 
@@ -1109,9 +1140,9 @@ public class JournalStorageManager implements StorageManager
       }
 
       private synchronized void saveCheckPoint(final long id)
-      {        
+      {
          if (id >= nextID)
-         {            
+         {
             storeID(id);
 
             nextID += checkpointSize;

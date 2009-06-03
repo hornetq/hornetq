@@ -96,14 +96,9 @@ public class ReplicationAwareMessagingServerControlWrapper extends ReplicationAw
       return localControl.getAIOBufferSize();
    }
 
-   public int getAIOBufferTimeout()
+   public long getAIOBufferTimeout()
    {
       return localControl.getAIOBufferTimeout();
-   }
-
-   public boolean isAIOFlushOnSync()
-   {
-      return localControl.isAIOFlushOnSync();
    }
 
    public String getJournalDirectory()

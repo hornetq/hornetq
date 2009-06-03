@@ -200,14 +200,10 @@ public interface Configuration extends Serializable, MessagingComponent
    
    int getAIOBufferSize();
    
-   void setAIOBufferTimeout(int timeout);
+   void setAIOBufferTimeout(long timeout);
    
-   int getAIOBufferTimeout();
+   long getAIOBufferTimeout();
    
-   void setAIOFlushOnSync(boolean flush);
-   
-   boolean isAIOFlushOnSync();
-
    boolean isCreateBindingsDir();
 
    void setCreateBindingsDir(boolean create);

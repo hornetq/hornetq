@@ -20,7 +20,6 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-
 package org.jboss.messaging.tests.util;
 
 import java.util.ArrayList;
@@ -61,27 +60,21 @@ public class ListJournal
       try
       {
          FileConfiguration fileConf = new FileConfiguration();
-         
-         //fileConf.setConfigurationUrl(arg[0]);
-         
+
+         // fileConf.setConfigurationUrl(arg[0]);
+
          fileConf.start();
-         
-         
-         
+
          JournalImpl journal = new JournalImpl(fileConf.getJournalFileSize(),
-                            fileConf.getJournalMinFiles(),
-                            true,
-                            true,
-                            false,
-                            new NIOSequentialFileFactory(fileConf.getJournalDirectory()),
-                            "jbm-data",
-                            "jbm",
-                            fileConf.getJournalMaxAIO());
-         
-         
+                                               fileConf.getJournalMinFiles(),
+                                               new NIOSequentialFileFactory(fileConf.getJournalDirectory()),
+                                               "jbm-data",
+                                               "jbm",
+                                               fileConf.getJournalMaxAIO());
+
          ArrayList<RecordInfo> records = new ArrayList<RecordInfo>();
          ArrayList<PreparedTransactionInfo> prepared = new ArrayList<PreparedTransactionInfo>();
-         
+
          journal.start();
          journal.load(records, prepared);
 
@@ -89,23 +82,20 @@ public class ListJournal
          {
             System.out.println("There are " + prepared.size() + " prepared transactions on the journal");
          }
-         
-         
+
          System.out.println("Total of " + records.size() + " committed records");
 
-         for (RecordInfo record: records)
+         for (RecordInfo record : records)
          {
             System.out.println("user record: " + record);
          }
-         
+
          journal.checkAndReclaimFiles();
-         
+
          System.out.println("Data = " + journal.debug());
-         
+
          journal.stop();
-         
-         
-         
+
       }
       catch (Exception e)
       {
@@ -113,7 +103,7 @@ public class ListJournal
       }
 
    }
-   
+
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------

@@ -384,6 +384,8 @@ public abstract class PerfBase
             double duration = (1.0 * System.currentTimeMillis() - start) / 1000;
             log.info(String.format("sent %6d messages in %2.2fs", i, duration));
          }
+         
+       //  log.info("sent message " + i);
 
          if (tbl != null)
          {

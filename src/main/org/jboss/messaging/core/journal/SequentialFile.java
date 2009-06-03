@@ -80,8 +80,6 @@ public interface SequentialFile
 
    long size() throws Exception;
    
-   void flush();
-   
    void renameTo(String newFileName) throws Exception;
 
    void lockBuffer();

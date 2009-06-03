@@ -79,8 +79,7 @@ public class FileConfigurationTest extends ConfigurationImplTest
       assertEquals("somedir2", conf.getJournalDirectory());
       assertEquals(false, conf.isCreateJournalDir());
       assertEquals(JournalType.NIO, conf.getJournalType());
-      assertEquals(10000, conf.getAIOBufferSize());      
-      assertEquals(true, conf.isAIOFlushOnSync());      
+      assertEquals(10000, conf.getAIOBufferSize());        
       assertEquals(1000, conf.getAIOBufferTimeout());      
       assertEquals(false, conf.isJournalSyncTransactional());
       assertEquals(true, conf.isJournalSyncNonTransactional());

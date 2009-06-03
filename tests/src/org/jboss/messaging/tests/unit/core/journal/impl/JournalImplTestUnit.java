@@ -120,7 +120,7 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
       for (int i = 0; i < 100; i++)
       {
          System.out.println("i = " + i);
-         journal.appendAddRecord(1, (byte)1, new SimpleEncoding(2, (byte)'a'));
+         journal.appendAddRecord(1, (byte)1, new SimpleEncoding(2, (byte)'a'), false);
       }
       stopJournal();
    }
@@ -129,7 +129,7 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
    {
       try
       {
-         new JournalImpl(JournalImpl.MIN_FILE_SIZE - 1, 10, true, true, false, fileFactory, filePrefix, fileExtension, 1);
+         new JournalImpl(JournalImpl.MIN_FILE_SIZE - 1, 10, fileFactory, filePrefix, fileExtension, 1);
 
          fail("Should throw exception");
       }
@@ -140,7 +140,7 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
 
       try
       {
-         new JournalImpl(10 * 1024, 1, true, true, false, fileFactory, filePrefix, fileExtension, 1);
+         new JournalImpl(10 * 1024, 1, fileFactory, filePrefix, fileExtension, 1);
 
          fail("Should throw exception");
       }
@@ -151,7 +151,7 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
 
       try
       {
-         new JournalImpl(10 * 1024, 10, true, true, false, null, filePrefix, fileExtension, 1);
+         new JournalImpl(10 * 1024, 10, null, filePrefix, fileExtension, 1);
 
          fail("Should throw exception");
       }
@@ -162,7 +162,7 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
 
       try
       {
-         new JournalImpl(10 * 1024, 10, true, true, false, fileFactory, null, fileExtension, 1);
+         new JournalImpl(10 * 1024, 10, fileFactory, null, fileExtension, 1);
 
          fail("Should throw exception");
       }
@@ -173,7 +173,7 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
 
       try
       {
-         new JournalImpl(10 * 1024, 10, true, true, false, fileFactory, filePrefix, null, 1);
+         new JournalImpl(10 * 1024, 10, fileFactory, filePrefix, null, 1);
 
          fail("Should throw exception");
       }
@@ -184,7 +184,7 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
 
       try
       {
-         new JournalImpl(10 * 1024, 10, true, true, false, fileFactory, filePrefix, null, 0);
+         new JournalImpl(10 * 1024, 10, fileFactory, filePrefix, null, 0);
 
          fail("Should throw exception");
       }
@@ -2260,7 +2260,7 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
       {
          byte[] record = generateRecord(10 + (int)(1500 * Math.random()));
 
-         journal.appendAddRecord(i, (byte)0, record);
+         journal.appendAddRecord(i, (byte)0, record, false);
 
          records.add(new RecordInfo(i, (byte)0, record, false));
       }
@@ -2269,14 +2269,14 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
       {
          byte[] record = generateRecord(10 + (int)(1024 * Math.random()));
 
-         journal.appendUpdateRecord(i, (byte)0, record);
+         journal.appendUpdateRecord(i, (byte)0, record, false);
 
          records.add(new RecordInfo(i, (byte)0, record, true));
       }
 
       for (int i = 0; i < 100; i++)
       {
-         journal.appendDeleteRecord(i);
+         journal.appendDeleteRecord(i, false);
 
          removeRecordsForID(i);
       }

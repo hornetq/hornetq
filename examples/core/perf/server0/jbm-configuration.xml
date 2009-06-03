@@ -15,7 +15,13 @@
    
    <security-enabled>false</security-enabled>
    
-   <persistence-enabled>false</persistence-enabled>
+   <persistence-enabled>true</persistence-enabled>
+
+   <journal-sync-non-transactional>true</journal-sync-non-transactional>
+   <journal-type>ASYNCIO</journal-type>
+   <journal-aio-buffer-timeout>1</journal-aio-buffer-timeout>
+   <journal-min-files>10</journal-min-files>
+
    
    <queues>
 	   <queue name="perfQueue">

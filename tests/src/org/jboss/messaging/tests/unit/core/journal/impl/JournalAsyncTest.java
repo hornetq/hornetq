@@ -85,12 +85,12 @@ public class JournalAsyncTest extends UnitTestCase
             {
                for (int i = 0; i < 10; i++)
                {
-                  journalImpl.appendAddRecordTransactional(1l, i, (byte)1, new SimpleEncoding(1, (byte)0));
+                  journalImpl.appendAddRecordTransactional(1l, i, (byte)1, new SimpleEncoding(1, (byte)0), false);
                }
 
                latch.countDown();
                factory.setHoldCallbacks(false, null);
-               journalImpl.appendCommitRecord(1l);
+               journalImpl.appendCommitRecord(1l, false);
             }
             catch (Exception e)
             {
@@ -147,10 +147,10 @@ public class JournalAsyncTest extends UnitTestCase
             {
                for (int i = 0; i < 10; i++)
                {
-                  journalImpl.appendAddRecordTransactional(1l, i, (byte)1, new SimpleEncoding(1, (byte)0));
+                  journalImpl.appendAddRecordTransactional(1l, i, (byte)1, new SimpleEncoding(1, (byte)0), false);
                }
 
-               journalImpl.appendRollbackRecord(1l);
+               journalImpl.appendRollbackRecord(1l, false);
             }
             catch (Exception e)
             {
@@ -211,10 +211,10 @@ public class JournalAsyncTest extends UnitTestCase
             {
                for (int i = 0; i < 10; i++)
                {
-                  journalImpl.appendAddRecordTransactional(1l, i, (byte)1, new SimpleEncoding(1, (byte)0));
+                  journalImpl.appendAddRecordTransactional(1l, i, (byte)1, new SimpleEncoding(1, (byte)0), false);
                }
 
-               journalImpl.appendCommitRecord(1l);
+               journalImpl.appendCommitRecord(1l, false);
             }
             catch (Exception e)
             {
@@ -248,7 +248,7 @@ public class JournalAsyncTest extends UnitTestCase
 
       try
       {
-         journalImpl.appendRollbackRecord(1l);
+         journalImpl.appendRollbackRecord(1l, false);
          fail("Supposed to throw an exception");
       }
       catch (Exception e)
@@ -268,7 +268,7 @@ public class JournalAsyncTest extends UnitTestCase
       factory.setHoldCallbacks(true, null);
       factory.setGenerateErrors(true);
 
-      journalImpl.appendAddRecordTransactional(1l, 1, (byte)1, new SimpleEncoding(1, (byte)0));
+      journalImpl.appendAddRecordTransactional(1l, 1, (byte)1, new SimpleEncoding(1, (byte)0), false);
 
       factory.flushAllCallbacks();
 
@@ -277,7 +277,7 @@ public class JournalAsyncTest extends UnitTestCase
 
       try
       {
-         journalImpl.appendAddRecordTransactional(1l, 2, (byte)1, new SimpleEncoding(1, (byte)0));
+         journalImpl.appendAddRecordTransactional(1l, 2, (byte)1, new SimpleEncoding(1, (byte)0), false);
          fail("Exception expected"); // An exception already happened in one
          // of the elements on this transaction.
          // We can't accept any more elements on
@@ -298,7 +298,7 @@ public class JournalAsyncTest extends UnitTestCase
 
       try
       {
-         journalImpl.appendAddRecord(1l, (byte)0, new SimpleEncoding(1, (byte)0));
+         journalImpl.appendAddRecord(1l, (byte)0, new SimpleEncoding(1, (byte)0), false);
          fail("Exception expected");
       }
       catch (Exception ignored)
@@ -357,7 +357,7 @@ public class JournalAsyncTest extends UnitTestCase
          journalImpl.stop();
       }
 
-      journalImpl = new JournalImpl(journalSize, numberOfMinimalFiles, true, true, false, factory, "tt", "tt", 1000);
+      journalImpl = new JournalImpl(journalSize, numberOfMinimalFiles, factory, "tt", "tt", 1000);
 
       journalImpl.start();
 

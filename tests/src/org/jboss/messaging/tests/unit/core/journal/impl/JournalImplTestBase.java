@@ -22,7 +22,6 @@
 
 package org.jboss.messaging.tests.unit.core.journal.impl;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -69,8 +68,6 @@ public abstract class JournalImplTestBase extends UnitTestCase
 
    protected boolean sync;
    
-   protected boolean flushOnSync;
-
    protected String filePrefix = "jbm";
 
    protected String fileExtension = "jbm";
@@ -142,13 +139,12 @@ public abstract class JournalImplTestBase extends UnitTestCase
       minFiles = minFreeFiles;
       this.fileSize = fileSize;
       this.sync = sync;
-      this.flushOnSync = sync;
       maxAIO = 50;
    }
 
    public void createJournal() throws Exception
    {
-      journal = new JournalImpl(fileSize, minFiles, sync, sync, flushOnSync, fileFactory, filePrefix, fileExtension, maxAIO);
+      journal = new JournalImpl(fileSize, minFiles, fileFactory, filePrefix, fileExtension, maxAIO);
       journal.setAutoReclaim(false);
    }
 
@@ -230,7 +226,7 @@ public abstract class JournalImplTestBase extends UnitTestCase
       {
          byte[] record = generateRecord(size);
 
-         journal.appendAddRecord(element, (byte)0, record);
+         journal.appendAddRecord(element, (byte)0, record, sync);
 
          records.add(new RecordInfo(element, (byte)0, record, false));
       }
@@ -244,7 +240,7 @@ public abstract class JournalImplTestBase extends UnitTestCase
       {
          byte[] updateRecord = generateRecord(recordLength);
 
-         journal.appendUpdateRecord(element, (byte)0, updateRecord);
+         journal.appendUpdateRecord(element, (byte)0, updateRecord, sync);
 
          records.add(new RecordInfo(element, (byte)0, updateRecord, true));
       }
@@ -256,7 +252,7 @@ public abstract class JournalImplTestBase extends UnitTestCase
    {
       for (long element : arguments)
       {
-         journal.appendDeleteRecord(element);
+         journal.appendDeleteRecord(element, sync);
 
          removeRecordsForID(element);
       }
@@ -274,7 +270,7 @@ public abstract class JournalImplTestBase extends UnitTestCase
          // SIZE_BYTE
          byte[] record = generateRecord(recordLength - JournalImpl.SIZE_ADD_RECORD_TX);
 
-         journal.appendAddRecordTransactional(txID, element, (byte)0, record);
+         journal.appendAddRecordTransactional(txID, element, (byte)0, record, sync);
 
          tx.records.add(new RecordInfo(element, (byte)0, record, false));
 
@@ -291,7 +287,7 @@ public abstract class JournalImplTestBase extends UnitTestCase
       {
          byte[] updateRecord = generateRecord(recordLength - JournalImpl.SIZE_UPDATE_RECORD_TX);
 
-         journal.appendUpdateRecordTransactional(txID, element, (byte)0, updateRecord);
+         journal.appendUpdateRecordTransactional(txID, element, (byte)0, updateRecord, sync);
 
          tx.records.add(new RecordInfo(element, (byte)0, updateRecord, true));
       }
@@ -304,7 +300,7 @@ public abstract class JournalImplTestBase extends UnitTestCase
 
       for (long element : arguments)
       {
-         journal.appendDeleteRecordTransactional(txID, element);
+         journal.appendDeleteRecordTransactional(txID, element, sync);
 
          tx.deletes.add(new RecordInfo(element, (byte)0, null, true));
       }
@@ -325,7 +321,7 @@ public abstract class JournalImplTestBase extends UnitTestCase
       {
          throw new IllegalStateException("Transaction is already prepared");
       }
-      journal.appendPrepareRecord(txID, xid);
+      journal.appendPrepareRecord(txID, xid, sync);
 
       tx.prepared = true;
 
@@ -341,7 +337,7 @@ public abstract class JournalImplTestBase extends UnitTestCase
          throw new IllegalStateException("Cannot find tx " + txID);
       }
 
-      journal.appendCommitRecord(txID);
+      journal.appendCommitRecord(txID, sync);
 
       commitTx(txID);
 
@@ -357,7 +353,7 @@ public abstract class JournalImplTestBase extends UnitTestCase
          throw new IllegalStateException("Cannot find tx " + txID);
       }
 
-      journal.appendRollbackRecord(txID);
+      journal.appendRollbackRecord(txID, sync);
 
       journal.debugWait();
    }

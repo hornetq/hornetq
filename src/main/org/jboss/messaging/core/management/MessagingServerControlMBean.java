@@ -92,10 +92,8 @@ public interface MessagingServerControlMBean
    
    int getAIOBufferSize();
    
-   int getAIOBufferTimeout();
+   long getAIOBufferTimeout();
    
-   boolean isAIOFlushOnSync();
-
    public long getPagingMaxGlobalSizeBytes();
 
    public String getPagingDirectory();

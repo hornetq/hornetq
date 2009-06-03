@@ -35,7 +35,6 @@ import org.jboss.messaging.core.asyncio.AsynchronousFile;
 import org.jboss.messaging.core.asyncio.impl.AsynchronousFileImpl;
 import org.jboss.messaging.core.asyncio.impl.TimedBuffer;
 import org.jboss.messaging.core.asyncio.impl.TimedBufferObserver;
-import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.journal.BufferCallback;
 import org.jboss.messaging.core.journal.IOCallback;
 import org.jboss.messaging.core.journal.SequentialFile;
@@ -71,7 +70,7 @@ public class AIOSequentialFile implements SequentialFile
 
    private final TimedBuffer timedBuffer;
 
-   private BufferCallback bufferCallback;
+   private final BufferCallback bufferCallback;
    
    private boolean buffering = true;
 
@@ -86,7 +85,7 @@ public class AIOSequentialFile implements SequentialFile
 
    public AIOSequentialFile(final SequentialFileFactory factory,
                             final int bufferSize,
-                            final int bufferTimeoutMilliseconds,
+                            final long bufferTimeoutMilliseconds,
                             final String journalDir,
                             final String fileName,
                             final int maxIO,
@@ -130,11 +129,6 @@ public class AIOSequentialFile implements SequentialFile
       return timedBuffer.checkSize(size);
    }
    
-   public void flush()
-   {
-      timedBuffer.flush();
-   }
-
    public void lockBuffer()
    {
       timedBuffer.lock();
@@ -151,7 +145,8 @@ public class AIOSequentialFile implements SequentialFile
       opened = false;
             
       timedBuffer.flush();
-
+      timedBuffer.stop();
+      
       final CountDownLatch donelatch = new CountDownLatch(1);
 
       executor.execute(new Runnable()
@@ -238,8 +233,8 @@ public class AIOSequentialFile implements SequentialFile
    }
 
    public void open() throws Exception
-   {
-      open(maxIO);
+   {            
+      open(maxIO);            
    }
 
    /* (non-Javadoc)
@@ -253,13 +248,13 @@ public class AIOSequentialFile implements SequentialFile
 
    public synchronized void open(final int currentMaxIO) throws Exception
    {
+      timedBuffer.start();
       opened = true;
       aioFile = newFile();
       aioFile.open(journalDir + "/" + fileName, currentMaxIO);
       position.set(0);
       aioFile.setBufferCallback(bufferCallback);
       this.fileSize = aioFile.size();
-
    }
 
    public void setBufferCallback(final BufferCallback callback)

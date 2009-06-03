@@ -73,21 +73,6 @@ public class RealAIOJournalImplTest extends JournalImplTestUnit
       return new AIOSequentialFileFactory(getTestDir());
    }
 
-   public void testAddSync() throws Exception
-   {
-      setup(10, 10 * 1024, true);
-      this.flushOnSync = false;
-      createJournal();
-      startJournal();
-      load();
-
-      for (int i = 0; i < 1000; i++)
-      {
-         journal.appendAddRecord(i, (byte)1, new byte[] { 10, 12 });
-      }
-
-      stopJournal();
-   }
 
    @Override
    protected int getAlignment()

@@ -532,9 +532,8 @@ public class QueueDeployerTest extends UnitTestCase
       /* (non-Javadoc)
        * @see org.jboss.messaging.core.management.MessagingServerControlMBean#getAIOBufferTimeout()
        */
-      public int getAIOBufferTimeout()
+      public long getAIOBufferTimeout()
       {
-
          return 0;
       }
 

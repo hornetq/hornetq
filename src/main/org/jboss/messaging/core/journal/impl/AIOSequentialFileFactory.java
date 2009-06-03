@@ -42,15 +42,11 @@ import org.jboss.messaging.utils.JBMThreadFactory;
  *
  */
 public class AIOSequentialFileFactory extends AbstractSequentialFactory
-{
-   
-   
-
+{     
    private static final Logger log = Logger.getLogger(AIOSequentialFileFactory.class);
 
    private static final boolean trace = log.isTraceEnabled();
-   
-   
+      
    private final ReuseBuffersController buffersControl = new ReuseBuffersController();
 
    // This method exists just to make debug easier.
@@ -68,18 +64,17 @@ public class AIOSequentialFileFactory extends AbstractSequentialFactory
    
 
    private final Executor pollerExecutor = Executors.newCachedThreadPool(new JBMThreadFactory("JBM-AIO-poller-pool" + System.identityHashCode(this), true));
-
    
-   final int bufferSize;
+   private final int bufferSize;
    
-   final int bufferTimeout;
+   private final long bufferTimeout;
    
    public AIOSequentialFileFactory(final String journalDir)
    {
       this(journalDir, ConfigurationImpl.DEFAULT_JOURNAL_AIO_BUFFER_SIZE, ConfigurationImpl.DEFAULT_JOURNAL_AIO_BUFFER_TIMEOUT);
    }
 
-   public AIOSequentialFileFactory(final String journalDir, int bufferSize, int bufferTimeout)
+   public AIOSequentialFileFactory(final String journalDir, int bufferSize, long bufferTimeout)
    {
       super(journalDir);
       this.bufferSize = bufferSize;
