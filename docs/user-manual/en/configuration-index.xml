@@ -323,7 +323,7 @@
                                     >journal-file-size</link></entry>
                             <entry>Long</entry>
                             <entry>The size, in bytes, each journal file should be</entry>
-                            <entry>10485760</entry>
+                            <entry>128 * 1024</entry>
                         </row>
                         <row>
                             <entry><link linkend="configuring.message.journal"
