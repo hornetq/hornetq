@@ -772,6 +772,9 @@
            <include name="ra.xml"/>
            <exclude  name="**/build.xml"/>
          </fileset>
+         <fileset dir="${native.bin.dir}">
+           <include  name="**/*.so"/>
+         </fileset>
       </jar>
    </target>
 
