@@ -8,7 +8,7 @@
             <listitem>
                 <para>Minimum number of journal files. Set <literal>journal-min-files</literal> to a
                     number of files that would fit your average sustainable rate. If you see new
-                    files being created on the journal data directory too oftenly you need to
+                    files being created on the journal data directory too often you need to
                     increase the minimal number of files, this way the journal would reuse more
                     files instead of create new data files.</para>
             </listitem>
@@ -151,7 +151,7 @@
 serveruser     soft    nofile  20000
 serveruser     hard    nofile  20000                   
                 </programlisting>
-                    This would allow up to 20000 file handles to be open by the user<literal
+                    This would allow up to 20000 file handles to be open by the user <literal
                         >serveruser</literal>. </para>
             </listitem>
         </itemizedlist>
