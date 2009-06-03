@@ -30,7 +30,7 @@ int main(int arg, char * param[])
    char * directory;
    int numberOfFiles;
    int fileSize = 10 * 1024 * 1024;
-   int bufferSize = 100 * 1024;
+   int bufferSize = 128 * 1024;
    void * preAllocBuffer = 0;
 
    int maxAIO = 500;
