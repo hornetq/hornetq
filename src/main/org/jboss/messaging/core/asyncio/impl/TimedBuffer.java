@@ -102,15 +102,6 @@ public class TimedBuffer
       lock.unlock();
    }
 
-   /** used to determine that a sync happened, and we should schedule flush to not take more than timeout no matter the activity on the buffer */
-   public synchronized void sync()
-   {
-      if (timeLastSync == 0)
-      {
-         timeLastSync = System.currentTimeMillis();
-      }
-   }
-
    /**
     * Verify if the size fits the buffer
     * @param sizeChecked
@@ -151,9 +142,15 @@ public class TimedBuffer
    public synchronized void addBytes(final ByteBuffer bytes, final boolean sync, final AIOCallback callback)
    {
       timeLastAdd = System.currentTimeMillis();
+      
+      
       if (sync)
       {
-         this.timeLastSync = timeLastAdd;
+         // We should flush on the next timeout, no matter what other activity happens on the buffer
+         if (timeLastSync == 0)
+         {
+            timeLastSync = System.currentTimeMillis();
+         }
       }
 
       currentBuffer.put(bytes);
