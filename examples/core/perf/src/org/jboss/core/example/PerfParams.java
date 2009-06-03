@@ -49,7 +49,29 @@ public class PerfParams implements Serializable
    private boolean tcpNoDelay;
    private boolean preAck;
    private int sendWindow;
+   private boolean blockOnPersistent = true;
+   private boolean blockOnACK = true;
      
+   public boolean isBlockOnPersistent()
+   {
+      return blockOnPersistent;
+   }
+
+   public void setBlockOnPersistent(boolean blockOnPersistent)
+   {
+      this.blockOnPersistent = blockOnPersistent;
+   }
+
+   public boolean isBlockOnACK()
+   {
+      return blockOnACK;
+   }
+
+   public void setBlockOnACK(boolean blockOnACK)
+   {
+      this.blockOnACK = blockOnACK;
+   }
+
    public int getNoOfMessagesToSend()
    {
       return noOfMessagesToSend;
@@ -156,7 +178,7 @@ public class PerfParams implements Serializable
               durable + ", session transacted = " + isSessionTransacted +
               (isSessionTransacted ? ", transaction batch size = " + batchSize : "") + ", drain queue = " + drainQueue +
               ", queue name = " + queueName + 
-              ", Throttle rate = " + throttleRate;
+              ", Throttle rate = " + throttleRate + ", blockOnPersistent = " + blockOnPersistent + ". blockOnACK = " + blockOnACK;
    }
 
    public synchronized String getHost()

@@ -128,6 +128,8 @@ public abstract class PerfBase
       boolean tcpNoDelay = Boolean.valueOf(props.getProperty("tcp-no-delay"));
       boolean preAck = Boolean.valueOf(props.getProperty("pre-ack"));
       int sendWindowSize = Integer.valueOf(props.getProperty("send-window"));
+      boolean blockOnACK = Boolean.valueOf(props.getProperty("block-ack", "false"));
+      boolean blockOnPersistent = Boolean.valueOf(props.getProperty("block-persistent", "false"));
 
       log.info("num-messages: " + noOfMessages);
       log.info("num-warmup-messages: " + noOfWarmupMessages);
@@ -145,6 +147,8 @@ public abstract class PerfBase
       log.info("tcp no delay: " + tcpNoDelay);
       log.info("pre-ack: " + preAck);
       log.info("send-window: " + sendWindowSize);
+      log.info("block-ack:" + blockOnACK);
+      log.info("block-persistent:" + blockOnPersistent);
 
       PerfParams perfParams = new PerfParams();
       perfParams.setNoOfMessagesToSend(noOfMessages);
@@ -163,6 +167,8 @@ public abstract class PerfBase
       perfParams.setTcpNoDelay(tcpNoDelay);
       perfParams.setPreAck(preAck);
       perfParams.setSendWindow(sendWindowSize);
+      perfParams.setBlockOnACK(blockOnACK);
+      perfParams.setBlockOnPersistent(blockOnPersistent);
 
       return perfParams;
    }
@@ -196,6 +202,9 @@ public abstract class PerfBase
       factory.setProducerWindowSize(perfParams.getSendWindow());
 
       factory.setAckBatchSize(perfParams.getBatchSize());
+      
+      factory.setBlockOnAcknowledge(perfParams.isBlockOnACK());
+      factory.setBlockOnPersistentSend(perfParams.isBlockOnPersistent());
 
       session = factory.createSession(!transacted, !transacted);
    }
