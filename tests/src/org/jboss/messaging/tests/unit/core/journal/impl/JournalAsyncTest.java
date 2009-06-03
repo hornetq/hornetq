@@ -147,10 +147,10 @@ public class JournalAsyncTest extends UnitTestCase
             {
                for (int i = 0; i < 10; i++)
                {
-                  journalImpl.appendAddRecordTransactional(1l, i, (byte)1, new SimpleEncoding(1, (byte)0), false);
+                  journalImpl.appendAddRecordTransactional(1l, i, (byte)1, new SimpleEncoding(1, (byte)0), true);
                }
 
-               journalImpl.appendRollbackRecord(1l, false);
+               journalImpl.appendRollbackRecord(1l, true);
             }
             catch (Exception e)
             {
@@ -211,10 +211,10 @@ public class JournalAsyncTest extends UnitTestCase
             {
                for (int i = 0; i < 10; i++)
                {
-                  journalImpl.appendAddRecordTransactional(1l, i, (byte)1, new SimpleEncoding(1, (byte)0), false);
+                  journalImpl.appendAddRecordTransactional(1l, i, (byte)1, new SimpleEncoding(1, (byte)0), true);
                }
 
-               journalImpl.appendCommitRecord(1l, false);
+               journalImpl.appendCommitRecord(1l, true);
             }
             catch (Exception e)
             {
@@ -268,7 +268,7 @@ public class JournalAsyncTest extends UnitTestCase
       factory.setHoldCallbacks(true, null);
       factory.setGenerateErrors(true);
 
-      journalImpl.appendAddRecordTransactional(1l, 1, (byte)1, new SimpleEncoding(1, (byte)0), false);
+      journalImpl.appendAddRecordTransactional(1l, 1, (byte)1, new SimpleEncoding(1, (byte)0), true);
 
       factory.flushAllCallbacks();
 
@@ -277,7 +277,7 @@ public class JournalAsyncTest extends UnitTestCase
 
       try
       {
-         journalImpl.appendAddRecordTransactional(1l, 2, (byte)1, new SimpleEncoding(1, (byte)0), false);
+         journalImpl.appendAddRecordTransactional(1l, 2, (byte)1, new SimpleEncoding(1, (byte)0), true);
          fail("Exception expected"); // An exception already happened in one
          // of the elements on this transaction.
          // We can't accept any more elements on
@@ -298,7 +298,7 @@ public class JournalAsyncTest extends UnitTestCase
 
       try
       {
-         journalImpl.appendAddRecord(1l, (byte)0, new SimpleEncoding(1, (byte)0), false);
+         journalImpl.appendAddRecord(1l, (byte)0, new SimpleEncoding(1, (byte)0), true);
          fail("Exception expected");
       }
       catch (Exception ignored)

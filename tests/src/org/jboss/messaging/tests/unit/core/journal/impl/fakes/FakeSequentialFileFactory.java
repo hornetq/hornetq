@@ -641,4 +641,25 @@ public class FakeSequentialFileFactory implements SequentialFileFactory
    {
    }
 
+   /* (non-Javadoc)
+    * @see org.jboss.messaging.core.journal.SequentialFileFactory#activate(org.jboss.messaging.core.journal.SequentialFile)
+    */
+   public void activate(SequentialFile file)
+   {
+   }
+
+   /* (non-Javadoc)
+    * @see org.jboss.messaging.core.journal.SequentialFileFactory#start()
+    */
+   public void start()
+   {
+   }
+
+   /* (non-Javadoc)
+    * @see org.jboss.messaging.core.journal.SequentialFileFactory#deactivate(org.jboss.messaging.core.journal.SequentialFile)
+    */
+   public void deactivate(SequentialFile file)
+   {
+   }
+
 }

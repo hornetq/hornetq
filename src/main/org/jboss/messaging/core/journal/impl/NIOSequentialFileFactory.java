@@ -55,7 +55,7 @@ public class NIOSequentialFileFactory extends AbstractSequentialFactory implemen
    {
       return new NIOSequentialFile(journalDir, fileName);
    }
-
+   
    public boolean isSupportsCallbacks()
    {
       return false;
@@ -92,14 +92,6 @@ public class NIOSequentialFileFactory extends AbstractSequentialFactory implemen
    public int calculateBlockSize(final int bytes)
    {
       return bytes;
-   }
-
-   /* (non-Javadoc)
-    * @see org.jboss.messaging.core.journal.SequentialFileFactory#releaseBuffer(java.nio.ByteBuffer)
-    */
-   public void releaseBuffer(ByteBuffer buffer)
-   {
-      // nothing to be done here
    }
 
 }

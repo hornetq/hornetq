@@ -28,6 +28,7 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
 import org.jboss.messaging.core.asyncio.impl.AsynchronousFileImpl;
+import org.jboss.messaging.core.asyncio.impl.TimedBuffer;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.journal.BufferCallback;
 import org.jboss.messaging.core.journal.SequentialFile;
@@ -42,11 +43,11 @@ import org.jboss.messaging.utils.JBMThreadFactory;
  *
  */
 public class AIOSequentialFileFactory extends AbstractSequentialFactory
-{     
+{
    private static final Logger log = Logger.getLogger(AIOSequentialFileFactory.class);
 
    private static final boolean trace = log.isTraceEnabled();
-      
+
    private final ReuseBuffersController buffersControl = new ReuseBuffersController();
 
    // This method exists just to make debug easier.
@@ -60,30 +61,68 @@ public class AIOSequentialFileFactory extends AbstractSequentialFactory
    /** A single AIO write executor for every AIO File.
     *  This is used only for AIO & instant operations. We only need one executor-thread for the entire journal as we always have only one active file.
     *  And even if we had multiple files at a given moment, this should still be ok, as we control max-io in a semaphore, guaranteeing AIO calls don't block on disk calls */
-   private final Executor writeExecutor = Executors.newSingleThreadExecutor(new JBMThreadFactory("JBM-AIO-writer-pool" + System.identityHashCode(this), true));
-   
+   private final Executor writeExecutor = Executors.newSingleThreadExecutor(new JBMThreadFactory("JBM-AIO-writer-pool" + System.identityHashCode(this),
+                                                                                                 true));
 
-   private final Executor pollerExecutor = Executors.newCachedThreadPool(new JBMThreadFactory("JBM-AIO-poller-pool" + System.identityHashCode(this), true));
-   
+   private final Executor pollerExecutor = Executors.newCachedThreadPool(new JBMThreadFactory("JBM-AIO-poller-pool" + System.identityHashCode(this),
+                                                                                              true));
+
    private final int bufferSize;
-   
+
    private final long bufferTimeout;
-   
+
+   private final TimedBuffer timedBuffer;
+
    public AIOSequentialFileFactory(final String journalDir)
    {
-      this(journalDir, ConfigurationImpl.DEFAULT_JOURNAL_AIO_BUFFER_SIZE, ConfigurationImpl.DEFAULT_JOURNAL_AIO_BUFFER_TIMEOUT);
+      this(journalDir,
+           ConfigurationImpl.DEFAULT_JOURNAL_AIO_BUFFER_SIZE,
+           ConfigurationImpl.DEFAULT_JOURNAL_AIO_BUFFER_TIMEOUT,
+           ConfigurationImpl.DEFAULT_JOURNAL_AIO_FLUSH_SYNC);
    }
 
-   public AIOSequentialFileFactory(final String journalDir, int bufferSize, long bufferTimeout)
+   public AIOSequentialFileFactory(final String journalDir, int bufferSize, long bufferTimeout, boolean flushOnSync)
    {
       super(journalDir);
       this.bufferSize = bufferSize;
       this.bufferTimeout = bufferTimeout;
+      this.timedBuffer = new TimedBuffer(bufferSize, bufferTimeout, flushOnSync);
+   }
+
+   /* (non-Javadoc)
+    * @see org.jboss.messaging.core.journal.SequentialFileFactory#activate(org.jboss.messaging.core.journal.SequentialFile)
+    */
+   public void activate(SequentialFile file)
+   {
+      final AIOSequentialFile sequentialFile = (AIOSequentialFile)file;
+      timedBuffer.lock();
+      try
+      {
+         sequentialFile.setTimedBuffer(timedBuffer);
+      }
+      finally
+      {
+         timedBuffer.unlock();
+      }
+   }
+
+   public void deactivate(SequentialFile file)
+   {
+      timedBuffer.flush();
+      timedBuffer.setObserver(null);
    }
 
    public SequentialFile createSequentialFile(final String fileName, final int maxIO)
    {
-      return new AIOSequentialFile(this, bufferSize, bufferTimeout, journalDir, fileName, maxIO, buffersControl.callback, writeExecutor, pollerExecutor);
+      return new AIOSequentialFile(this,
+                                   bufferSize,
+                                   bufferTimeout,
+                                   journalDir,
+                                   fileName,
+                                   maxIO,
+                                   buffersControl.callback,
+                                   writeExecutor,
+                                   pollerExecutor);
    }
 
    public boolean isSupportsCallbacks()
@@ -95,7 +134,7 @@ public class AIOSequentialFileFactory extends AbstractSequentialFactory
    {
       return AsynchronousFileImpl.isLoaded();
    }
-   
+
    public void controlBuffersLifeCycle(boolean value)
    {
       if (value)
@@ -114,7 +153,7 @@ public class AIOSequentialFileFactory extends AbstractSequentialFactory
       {
          size = (size / 512 + 1) * 512;
       }
-      
+
       return buffersControl.newBuffer(size);
    }
 
@@ -152,13 +191,18 @@ public class AIOSequentialFileFactory extends AbstractSequentialFactory
    {
       AsynchronousFileImpl.destroyBuffer(buffer);
    }
-   
+
+   public void start()
+   {
+      timedBuffer.start();
+   }
+
    public void stop()
    {
       buffersControl.clearPoll();
+      timedBuffer.stop();
    }
-   
-   
+
    /** Class that will control buffer-reuse */
    private class ReuseBuffersController
    {
@@ -168,17 +212,17 @@ public class AIOSequentialFileFactory extends AbstractSequentialFactory
        * On the case of the AIO this is almost called by the native layer as soon as the buffer is not being used any more
        * and ready to be reused or GCed */
       private final ConcurrentLinkedQueue<ByteBuffer> reuseBuffersQueue = new ConcurrentLinkedQueue<ByteBuffer>();
-      
+
       /** During reload we may disable/enable buffer reuse */
       private boolean enabled = true;
 
       final BufferCallback callback = new LocalBufferCallback();
-      
+
       public void enable()
       {
          this.enabled = true;
       }
-      
+
       public void disable()
       {
          this.enabled = false;
@@ -191,7 +235,8 @@ public class AIOSequentialFileFactory extends AbstractSequentialFactory
          // just to cleanup this
          if (bufferSize > 0 && System.currentTimeMillis() - bufferReuseLastTime > 10000)
          {
-            if (trace) trace("Clearing reuse buffers queue with " + reuseBuffersQueue.size() + " elements");
+            if (trace)
+               trace("Clearing reuse buffers queue with " + reuseBuffersQueue.size() + " elements");
 
             bufferReuseLastTime = System.currentTimeMillis();
 
@@ -201,7 +246,7 @@ public class AIOSequentialFileFactory extends AbstractSequentialFactory
          // if a buffer is bigger than the configured-bufferSize, we just create a new
          // buffer.
          if (size > bufferSize)
-         {           
+         {
             return AsynchronousFileImpl.newBuffer(size);
          }
          else
@@ -218,16 +263,16 @@ public class AIOSequentialFileFactory extends AbstractSequentialFactory
                // if empty create a new one.
                buffer = AsynchronousFileImpl.newBuffer(bufferSize);
 
-               buffer.limit(alignedSize);               
+               buffer.limit(alignedSize);
             }
             else
-            {               
+            {
                clearBuffer(buffer);
 
                // set the limit of the buffer to the bufferSize being required
                buffer.limit(alignedSize);
             }
-            
+
             buffer.rewind();
 
             return buffer;
@@ -237,7 +282,7 @@ public class AIOSequentialFileFactory extends AbstractSequentialFactory
       public void clearPoll()
       {
          ByteBuffer reusedBuffer;
-         
+
          while ((reusedBuffer = reuseBuffersQueue.poll()) != null)
          {
             releaseBuffer(reusedBuffer);
@@ -251,7 +296,7 @@ public class AIOSequentialFileFactory extends AbstractSequentialFactory
             if (enabled)
             {
                bufferReuseLastTime = System.currentTimeMillis();
-   
+
                // If a buffer has any other than the configured bufferSize, the buffer
                // will be just sent to GC
                if (buffer.capacity() == bufferSize)
@@ -267,5 +312,4 @@ public class AIOSequentialFileFactory extends AbstractSequentialFactory
       }
    }
 
-   
 }

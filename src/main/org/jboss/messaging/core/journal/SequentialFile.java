@@ -40,8 +40,6 @@ public interface SequentialFile
    void open() throws Exception;
    
    boolean isOpen();
-   
-   void setBuffering(boolean buffering);
 
    /**
     * For certain operations (like loading) we don't need open the file with full maxIO

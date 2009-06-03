@@ -21,7 +21,7 @@
  */
 
 
-package org.jboss.messaging.tests.unit.util.timedbuffer;
+package org.jboss.messaging.tests.unit.core.asyncio;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -72,7 +72,6 @@ public class TimedBufferTest extends UnitTestCase
       final AtomicInteger flushTimes = new AtomicInteger(0);
       class TestObserver implements TimedBufferObserver
       {
-         //TODO: fix the test
          public void flushBuffer(ByteBuffer buffer, List<AIOCallback> callbacks)
          {
             buffers.add(buffer);
@@ -93,7 +92,9 @@ public class TimedBufferTest extends UnitTestCase
          }
       }
       
-      TimedBuffer timedBuffer = new TimedBuffer(new TestObserver(), 100, 3600 * 1000); // Any big timeout
+      TimedBuffer timedBuffer = new TimedBuffer(100, 3600 * 1000, false); // Any big timeout
+      
+      timedBuffer.setObserver(new TestObserver());
       
       int x = 0;
       for (int i = 0 ; i < 10; i++)

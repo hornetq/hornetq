@@ -1355,6 +1355,8 @@ public class JournalImpl implements TestableJournal
 
          openFile(currentFile);
       }
+      
+      fileFactory.activate(currentFile.getFile());
 
       pushOpenedFile();
 
@@ -1591,6 +1593,8 @@ public class JournalImpl implements TestableJournal
       }
 
       filesExecutor = Executors.newSingleThreadExecutor();
+      
+      fileFactory.start();
 
       state = STATE_STARTED;
    }
@@ -1663,8 +1667,6 @@ public class JournalImpl implements TestableJournal
 
       SequentialFile sf = file.getFile();
 
-      sf.setBuffering(false);
-
       sf.open(1);
       
       sf.position(0);
@@ -1676,8 +1678,6 @@ public class JournalImpl implements TestableJournal
       bb.rewind();
 
       sf.write(bb, true);
-
-      sf.setBuffering(true);
 
       JournalFile jf = new JournalFileImpl(sf, newOrderingID);
 
@@ -2045,11 +2045,7 @@ public class JournalImpl implements TestableJournal
 
       bb.rewind();
 
-      sequentialFile.setBuffering(false);
-
       sequentialFile.write(bb, true);
-
-      sequentialFile.setBuffering(true);
 
       JournalFile info = new JournalFileImpl(sequentialFile, orderingID);
 
@@ -2082,6 +2078,9 @@ public class JournalImpl implements TestableJournal
          closeFile(currentFile);
 
          currentFile = enqueueOpenFile();
+         
+         fileFactory.activate(currentFile.getFile());
+        
       }
       finally
       {
@@ -2177,6 +2176,7 @@ public class JournalImpl implements TestableJournal
 
    private void closeFile(final JournalFile file)
    {
+      fileFactory.deactivate(file.getFile());
       filesExecutor.execute(new Runnable()
       {
          public void run()

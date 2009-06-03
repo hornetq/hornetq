@@ -30,8 +30,6 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.jboss.messaging.core.asyncio.AIOCallback;
 import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.utils.TokenBucketLimiter;
-import org.jboss.messaging.utils.TokenBucketLimiterImpl;
 
 /**
  * A TimedBuffer
@@ -48,7 +46,7 @@ public class TimedBuffer
 
    // Attributes ----------------------------------------------------
 
-   private final TimedBufferObserver bufferObserver;
+   private TimedBufferObserver bufferObserver;
 
    private CheckTimer timerRunnable = new CheckTimer();
 
@@ -71,6 +69,8 @@ public class TimedBuffer
    private Thread timerThread;
    
    private boolean started;
+   
+   private final boolean flushOnSync;
 
    // Static --------------------------------------------------------
 
@@ -78,14 +78,14 @@ public class TimedBuffer
 
    // Public --------------------------------------------------------
 
-   public TimedBuffer(final TimedBufferObserver bufferObserver, final int size, final long timeout)
+   public TimedBuffer(final int size, final long timeout, final boolean flushOnSync)
    {
       bufferSize = size;
-      this.bufferObserver = bufferObserver;
       this.timeout = timeout;      
       currentBuffer = ByteBuffer.wrap(new byte[bufferSize]);
       currentBuffer.limit(0);
-      callbacks = new ArrayList<AIOCallback>();      
+      callbacks = new ArrayList<AIOCallback>();
+      this.flushOnSync = flushOnSync;
    }
    
    public synchronized void start()
@@ -125,6 +125,16 @@ public class TimedBuffer
       }
       
       started = false;
+   }
+
+   public synchronized void setObserver(TimedBufferObserver observer)
+   {
+      if (this.bufferObserver != null)
+      {
+         flush();
+      }
+      
+      this.bufferObserver = observer;
    }
 
    public void lock()
@@ -177,20 +187,27 @@ public class TimedBuffer
    {
       long now = System.nanoTime();
 
+      currentBuffer.put(bytes);
+      callbacks.add(callback);
+
       timeLastAdd = now;
 
       if (sync)
       {
-         // We should flush on the next timeout, no matter what other activity happens on the buffer
-         if (timeLastSync == 0)
+         if (flushOnSync)
          {
-            timeLastSync = now;
+            flush();
+         }
+         else
+         {
+            // We should flush on the next timeout, no matter what other activity happens on the buffer
+            if (timeLastSync == 0)
+            {
+               timeLastSync = now;
+            }
          }
       }
-
-      currentBuffer.put(bytes);
-      callbacks.add(callback);
-
+      
       if (currentBuffer.position() == currentBuffer.capacity())
       {
          flush();
@@ -235,7 +252,10 @@ public class TimedBuffer
          lock.lock();
          try
          {            
-            flush();
+            if (bufferObserver != null)
+            {
+               flush();
+            }
          }
          finally
          {

@@ -25,10 +25,12 @@ package org.jboss.messaging.core.journal.impl;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.List;
 
 import org.jboss.messaging.core.journal.BufferCallback;
+import org.jboss.messaging.core.journal.SequentialFile;
 import org.jboss.messaging.core.journal.SequentialFileFactory;
 import org.jboss.messaging.core.logging.Logger;
 
@@ -60,6 +62,22 @@ public abstract class AbstractSequentialFactory implements SequentialFileFactory
    {
    }
    
+   public void start()
+   {
+   }
+   
+   public void activate(SequentialFile file)
+   {
+   }
+   
+   public void releaseBuffer(ByteBuffer buffer)
+   {
+   }
+   
+   public void deactivate(SequentialFile file)
+   {
+   }
+
    /** 
     * Create the directory if it doesn't exist yet
     */
