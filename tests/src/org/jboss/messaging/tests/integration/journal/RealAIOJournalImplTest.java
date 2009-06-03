@@ -25,6 +25,7 @@ package org.jboss.messaging.tests.integration.journal;
 import java.io.File;
 
 import org.jboss.messaging.core.asyncio.impl.AsynchronousFileImpl;
+import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.journal.SequentialFileFactory;
 import org.jboss.messaging.core.journal.impl.AIOSequentialFileFactory;
 import org.jboss.messaging.core.logging.Logger;
@@ -70,6 +71,22 @@ public class RealAIOJournalImplTest extends JournalImplTestUnit
       file.mkdir();
 
       return new AIOSequentialFileFactory(getTestDir());
+   }
+
+   public void testAddSync() throws Exception
+   {
+      setup(10, 10 * 1024, true);
+      this.flushOnSync = false;
+      createJournal();
+      startJournal();
+      load();
+
+      for (int i = 0; i < 1000; i++)
+      {
+         journal.appendAddRecord(i, (byte)1, new byte[] { 10, 12 });
+      }
+
+      stopJournal();
    }
 
    @Override

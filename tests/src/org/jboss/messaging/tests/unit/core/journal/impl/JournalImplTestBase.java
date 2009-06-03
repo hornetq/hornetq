@@ -68,6 +68,8 @@ public abstract class JournalImplTestBase extends UnitTestCase
    protected int fileSize;
 
    protected boolean sync;
+   
+   protected boolean flushOnSync;
 
    protected String filePrefix = "jbm";
 
@@ -140,12 +142,13 @@ public abstract class JournalImplTestBase extends UnitTestCase
       minFiles = minFreeFiles;
       this.fileSize = fileSize;
       this.sync = sync;
+      this.flushOnSync = sync;
       maxAIO = 50;
    }
 
    public void createJournal() throws Exception
    {
-      journal = new JournalImpl(fileSize, minFiles, sync, sync, sync, fileFactory, filePrefix, fileExtension, maxAIO);
+      journal = new JournalImpl(fileSize, minFiles, sync, sync, flushOnSync, fileFactory, filePrefix, fileExtension, maxAIO);
       journal.setAutoReclaim(false);
    }
 
