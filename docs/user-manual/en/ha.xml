@@ -13,8 +13,7 @@
         <para>JBoss Messaging allows pairs of servers to be linked together as <emphasis>live -
                 backup</emphasis> pairs. In this release there is a single backup server for each
             live server. Backup servers are not operational until failover occurs. In later releases
-            we will be supporting replication onto multiple backup servers and active - active
-            replication where both live and backup servers operate as active servers.</para>
+            we will most likely support replication onto multiple backup servers.</para>
         <para>When a <emphasis>live - backup</emphasis> pair is configured, JBoss Messaging ensures
             that the live server state is replicated to the backup server. Replicated state includes
             session state, and also global state such as the set of queues and addresses on the
@@ -121,7 +120,7 @@
             a number of different ways. They can be configured explicitly or probably the most
             common way of doing this is to use <emphasis>server discovery</emphasis> for the client
             to automatically discover the list. For full details on how to configure clients please
-            see <xref linkend="clusters.server-discovery" />.</para>
+            see <xref linkend="clusters.server-discovery"/>.</para>
         <para>Sometimes you want a client to failover onto a backup server even if the live server
             is just cleanly shutdown rather than having crashed or the connection failed. To
             configure this you can set the property <literal>FailoverOnServerShutdown</literal> to
@@ -133,7 +132,7 @@
                 Messaging clients will not failover to a backup server if the live server is simply
                 shutdown cleanly.</emphasis></para>
         <para>For a fully functional example of automatic failover, please see <xref
-                linkend="automatic-failover" />.</para>
+                linkend="automatic-failover"/>.</para>
     </section>
     <section>
         <title>Application-level client failover</title>
@@ -155,7 +154,7 @@
             [link] to ensure that the new connection factory is looked up from a different
             server.</para>
         <para>For a working example of application-level failover, please see <xref
-                linkend="application-level-failover" />.</para>
+                linkend="application-level-failover"/>.</para>
         <para>If you are using the core API, then the procedure is very similar: you would code a
                 <literal>FailureListener</literal> on your core <literal>ClientSession</literal>
             instances.</para>
