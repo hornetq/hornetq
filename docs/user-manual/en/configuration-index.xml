@@ -27,14 +27,14 @@
                         <row>
                             <entry><link linkend="clusters">clustered</link></entry>
                             <entry>Boolean</entry>
-                            <entry>True means that the server is clustered</entry>
+                            <entry>true means that the server is clustered</entry>
                             <entry>false</entry>
                         </row>
                         <row>
                             <entry><link linkend="using-server.configuration"
                                     >file-deployment-enabled</link></entry>
                             <entry>Boolean</entry>
-                            <entry>True means that the server will load configuration from the
+                            <entry>true means that the server will load configuration from the
                                 configuration files</entry>
                             <entry>true</entry>
                         </row>
@@ -42,7 +42,7 @@
                             <entry><link linkend="persistence.enabled"
                                 >persistence-enabled</link></entry>
                             <entry>Boolean</entry>
-                            <entry>True means that the server will use the file based journal for
+                            <entry>true means that the server will use the file based journal for
                                 persistence.</entry>
                             <entry>true</entry>
                         </row>
@@ -50,7 +50,7 @@
                             <entry><link linkend="server.scheduled.thread.pool"
                                     >scheduled-thread-pool-max-size</link></entry>
                             <entry>Integer</entry>
-                            <entry>The number of threads that the main scheduled thread pool
+                            <entry>the number of threads that the main scheduled thread pool
                                 has.</entry>
                             <entry>5</entry>
                         </row>
@@ -58,21 +58,21 @@
                             <entry><link linkend="server.scheduled.thread.pool"
                                     >thread-pool-max-size</link></entry>
                             <entry>Integer</entry>
-                            <entry>The number of threads that the main thread pool has. -1 means no
+                            <entry>the number of threads that the main thread pool has. -1 means no
                                 limit</entry>
                             <entry>-1</entry>
                         </row>
                         <row>
                             <entry><link linkend="security">security-enabled</link></entry>
                             <entry>Boolean</entry>
-                            <entry>True means that security is enabled</entry>
+                            <entry>true means that security is enabled</entry>
                             <entry>true</entry>
                         </row>
                         <row>
                             <entry><link linkend="security"
                                 >security-invalidation-interval</link></entry>
                             <entry>Long</entry>
-                            <entry>How long, in milli seconds, to wait before invalidating the
+                            <entry>how long (in ms) to wait before invalidating the
                                 security cache</entry>
                             <entry>10000</entry>
                         </row>
@@ -80,22 +80,22 @@
                             <entry><link linkend="wildcard-routing"
                                 >wild-card-routing-enabled</link></entry>
                             <entry>Boolean</entry>
-                            <entry>True means that the server supports wild card routing</entry>
+                            <entry>true means that the server supports wild card routing</entry>
                             <entry>true</entry>
                         </row>
                         <row>
                             <entry><link linkend="management.core.configuration"
                                     >management-address</link></entry>
                             <entry>String</entry>
-                            <entry>The name of the management address to send management messages
-                                too.</entry>
+                            <entry>the name of the management address to send management messages
+                                to</entry>
                             <entry>jbm.management</entry>
                         </row>
                         <row>
                             <entry><link linkend="management.notifications.core.configuration"
                                     >management-notification-address</link></entry>
                             <entry>String</entry>
-                            <entry>The name of the address that consumers bind to to receive
+                            <entry>the name of the address that consumers bind to receive
                                 management notifications</entry>
                             <entry>jbm.notifications</entry>
                         </row>
@@ -103,7 +103,7 @@
                             <entry><link linkend="management.replication"
                                     >management-cluster-password</link></entry>
                             <entry>String</entry>
-                            <entry>The password used to for replicating management operations
+                            <entry>the password used to for replicating management operations
                                 between clustered nodes</entry>
                             <entry>CHANGE ME!!</entry>
                         </row>
@@ -111,7 +111,7 @@
                             <entry><link linkend="management.replication"
                                     >management-request-timeout</link></entry>
                             <entry>Long</entry>
-                            <entry>How long, in milli seconds, to wait for a reply to a management
+                            <entry>how long (in ms) to wait for a reply to a management
                                 request</entry>
                             <entry>5000</entry>
                         </row>
@@ -119,35 +119,35 @@
                             <entry><link linkend="management.jmx.configuration"
                                     >jmx-management-enabled</link></entry>
                             <entry>Boolean</entry>
-                            <entry>True means that the management API is available via JMX</entry>
+                            <entry>true means that the management API is available via JMX</entry>
                             <entry>true</entry>
                         </row>
                         <row>
                             <entry><link linkend="configuring.message.counters"
                                     >message-counter-enabled</link></entry>
                             <entry>Boolean</entry>
-                            <entry>True means that message counters are enabled</entry>
+                            <entry>true means that message counters are enabled</entry>
                             <entry>false</entry>
                         </row>
                         <row>
                             <entry><link linkend="configuring.message.counters"
                                     >message-counter-sample-period</link></entry>
                             <entry>Long</entry>
-                            <entry>The sample period to use for message counters</entry>
+                            <entry>the sample period (in ms) to use for message counters</entry>
                             <entry>10000</entry>
                         </row>
                         <row>
                             <entry><link linkend="configuring.message.counters"
                                     >message-counter-max-day-history</link></entry>
                             <entry>Integer</entry>
-                            <entry>How many days to keep message counter history</entry>
+                            <entry>how many days to keep message counter history</entry>
                             <entry>10</entry>
                         </row>
                         <row>
                             <entry><link linkend="dead.connections"
                                 >connection-scan-period</link></entry>
                             <entry>Long</entry>
-                            <entry>How often, in milli seconds, to scan for failed connections on
+                            <entry>how often (in ms) to scan for failed connections on
                                 the server </entry>
                             <entry>1000</entry>
                         </row>
@@ -155,7 +155,7 @@
                             <entry><link linkend="dead.connections"
                                 >connection-ttl-override</link></entry>
                             <entry>Long</entry>
-                            <entry>If set, this will override how long to keep a connection alive
+                            <entry>if set, this will override how long (in ms) to keep a connection alive
                                 without receiving a ping. </entry>
                             <entry>-1</entry>
                         </row>
@@ -163,7 +163,7 @@
                             <entry><link linkend="transaction-config"
                                 >transaction-timeout</link></entry>
                             <entry>Long</entry>
-                            <entry>How long before a transaction can be removed from the resource
+                            <entry>how long (in ms) before a transaction can be removed from the resource
                                 manager after create time</entry>
                             <entry>60000</entry>
                         </row>
@@ -171,7 +171,7 @@
                             <entry><link linkend="transaction-config"
                                     >transaction-timeout-scan-period</link></entry>
                             <entry>Long</entry>
-                            <entry>How often, in milli seconds, to scan for timeout
+                            <entry>how often (in ms) to scan for timeout
                                 transactions</entry>
                             <entry>1000</entry>
                         </row>
@@ -179,41 +179,41 @@
                             <entry><link linkend="configuring.expiry.reaper"
                                     >message-expiry-scan-period</link></entry>
                             <entry>Long</entry>
-                            <entry>How often, in milli seconds, to scan for expired messages</entry>
+                            <entry>how often (in ms) to scan for expired messages</entry>
                             <entry>30000</entry>
                         </row>
                         <row>
                             <entry><link linkend="configuring.expiry.reaper"
                                     >message-expiry-thread-priority</link></entry>
                             <entry>Integer</entry>
-                            <entry>The priority of the thread expiring messages</entry>
+                            <entry>the priority of the thread expiring messages</entry>
                             <entry>3</entry>
                         </row>
                         <row>
                             <entry><link linkend="duplicate.id.cache">id-cache-size</link></entry>
                             <entry>Integer</entry>
-                            <entry>The size of the cache for pre creating message id's</entry>
+                            <entry>the size of the cache for pre creating message id's</entry>
                             <entry>2000</entry>
                         </row>
                         <row>
                             <entry><link linkend="duplicate.id.cache"
                                 >persist-id-cache</link></entry>
                             <entry>Boolean</entry>
-                            <entry>True means that id's are persisted to the journal</entry>
+                            <entry>true means that id's are persisted to the journal</entry>
                             <entry>true</entry>
                         </row>
                         <row>
                             <entry><link linkend="queue.activation.timeout"
                                     >queue-activation-timeout</link></entry>
                             <entry>Long</entry>
-                            <entry>After failout occurs, this time specifies how long to wait for
-                                consumers to re attach before commencing delivery</entry>
+                            <entry>after failover occurs, this timeout specifies how long (in ms) to wait for
+                                consumers to re-attach before starting delivery</entry>
                             <entry>30000</entry>
                         </row>
                         <row>
                             <entry><link linkend="configuring.live.backup">backup</link></entry>
                             <entry>Boolean</entry>
-                            <entry>True means that this server is a back up to another node in the a
+                            <entry>true means that this server is a backup to another node in the 
                                 cluster</entry>
                             <entry>false</entry>
                         </row>
@@ -221,7 +221,7 @@
                             <entry><link linkend="configuring.delivery.count.persistence">
                                     persist-delivery-count-before-delivery</link></entry>
                             <entry>Boolean</entry>
-                            <entry>True means that the delivery count is persisted before delivery.
+                            <entry>true means that the delivery count is persisted before delivery.
                                 False means that this only happens after a message has been
                                 cancelled.</entry>
                             <entry>false</entry>
@@ -230,22 +230,21 @@
                             <entry><link linkend="configuring.live.backup"
                                     >backup-connector-ref</link></entry>
                             <entry>String</entry>
-                            <entry>The name of the remoting connector to use for the backup node
-                                when.</entry>
+                            <entry>the name of the remoting connector to connect to the backup node</entry>
                             <entry/>
                         </row>
                         <row>
                             <entry><link linkend="paging.main.config"
                                 >paging-directory</link></entry>
                             <entry>String</entry>
-                            <entry>The directory to store paged messages in</entry>
+                            <entry>the directory to store paged messages in</entry>
                             <entry>data/paging</entry>
                         </row>
                         <row>
                             <entry><link linkend="paging.main.config"
                                 >global-page-size</link></entry>
                             <entry>Long</entry>
-                            <entry>The standard size of a page-file. JBoss Messaging will only read
+                            <entry>the standard size (in bytes) of a page-file. JBoss Messaging will only read
                                 messages when there is enough space to read at least one page file,
                                 determined by this value.</entry>
                             <entry>10 * 1024 * 1024</entry>
@@ -255,21 +254,21 @@
                                     >paging-max-global-size-bytes</link></entry>
                             <entry>Long</entry>
                             <entry>JBoss Messaging enters into global page mode as soon as the total
-                                memory consumed by messages hits this value.</entry>
+                                memory consumed by messages hits this value (in bytes)</entry>
                             <entry>-1</entry>
                         </row>
                         <row>
                             <entry><link linkend="configuring.bindings.journal"
                                     >bindings-directory</link></entry>
                             <entry>String</entry>
-                            <entry>The directory to store the persisted bindings to</entry>
+                            <entry>the directory to store the persisted bindings to</entry>
                             <entry>data/bindings</entry>
                         </row>
                         <row>
                             <entry><link linkend="configuring.bindings.journal"
                                     >create-bindings-dir</link></entry>
                             <entry>Boolean</entry>
-                            <entry>True means that the server will create the bindings directory on
+                            <entry>true means that the server will create the bindings directory on
                                 start up</entry>
                             <entry>true</entry>
                         </row>
@@ -277,44 +276,44 @@
                             <entry><link linkend="configuring.message.journal"
                                     >journal-directory</link></entry>
                             <entry>String</entry>
-                            <entry>The directory to store the journal files in</entry>
+                            <entry>the directory to store the journal files in</entry>
                             <entry>data/journal</entry>
                         </row>
                         <row>
                             <entry><link linkend="configuring.message.journal"
                                     >create-journal-dir</link></entry>
                             <entry>Boolean</entry>
-                            <entry>True means that the journal directory will be created</entry>
+                            <entry>true means that the journal directory will be created</entry>
                             <entry>true</entry>
                         </row>
                         <row>
                             <entry><link linkend="configuring.message.journal"
                                 >journal-type</link></entry>
                             <entry>ASYNCIO|NIO</entry>
-                            <entry>What type of journal to use</entry>
+                            <entry>the type of journal to use</entry>
                             <entry>ASYNCIO</entry>
                         </row>
                         <row>
                             <entry><link linkend="configuring.message.journal"
                                     >journal-buffer-reuse-size</link></entry>
                             <entry>Long</entry>
-                            <entry>The journal will try and re use any buffers smaller than this
-                                size.</entry>
+                            <entry>the journal will try and re use any buffers smaller than this
+                                size (in bytes)</entry>
                             <entry>1024</entry>
                         </row>
                         <row>
                             <entry><link linkend="configuring.message.journal"
                                     >journal-sync-transactional</link></entry>
                             <entry>Boolean</entry>
-                            <entry>If true wait for transaction data to be synced to the journal
-                                before returning response to client.</entry>
+                            <entry>if true wait for transaction data to be synchronized to the journal
+                                before returning response to client</entry>
                             <entry>true</entry>
                         </row>
                         <row>
                             <entry><link linkend="configuring.message.journal"
                                     >journal-sync-non-transactional</link></entry>
                             <entry>Boolean</entry>
-                            <entry>If true wait for non transaction data to be synced to the journal
+                            <entry>if true wait for non transaction data to be synced to the journal
                                 before returning response to client.</entry>
                             <entry>false</entry>
                         </row>
@@ -322,21 +321,21 @@
                             <entry><link linkend="configuring.message.journal"
                                     >journal-file-size</link></entry>
                             <entry>Long</entry>
-                            <entry>The size, in bytes, each journal file should be</entry>
+                            <entry>the size (in bytes) of each journal file</entry>
                             <entry>128 * 1024</entry>
                         </row>
                         <row>
                             <entry><link linkend="configuring.message.journal"
                                     >journal-min-files</link></entry>
                             <entry>Integer</entry>
-                            <entry>How many journal files to pre create</entry>
+                            <entry>how many journal files to pre-create</entry>
                             <entry>2</entry>
                         </row>
                         <row>
                             <entry><link linkend="configuring.message.journal"
                                     >journal-max-aio</link></entry>
                             <entry>Integer</entry>
-                            <entry>The maximum number of write requests that can be in the AIO queue
+                            <entry>the maximum number of write requests that can be in the AIO queue
                                 at any one time</entry>
                             <entry>5000</entry>
                         </row>
@@ -344,183 +343,183 @@
                             <entry><link linkend="large.message.configuring"
                                     >large-messages-directory</link></entry>
                             <entry>String</entry>
-                            <entry>The directory to store large messages</entry>
+                            <entry>the directory to store large messages</entry>
                             <entry>data/largemessages</entry>
                         </row>
                         <row>
                             <entry><link linkend="understanding.connectors"
                                 >connectors</link></entry>
                             <entry>Connector</entry>
-                            <entry>A list of remoting connectors configurations to create</entry>
+                            <entry>a list of remoting connectors configurations to create</entry>
                             <entry/>
                         </row>
                         <row>
                             <entry><link linkend="configuring-transports.acceptors"
                                 >acceptors</link></entry>
                             <entry>Acceptor</entry>
-                            <entry>A list of remoting acceptors to create</entry>
+                            <entry>a list of remoting acceptors to create</entry>
                             <entry/>
                         </row>
                         <row>
                             <entry><link linkend="clusters.broadcast-groups"
                                 >broadcast-groups</link></entry>
                             <entry>BroadcastGroup</entry>
-                            <entry>A list of broadcast groups to create</entry>
+                            <entry>a list of broadcast groups to create</entry>
                             <entry/>
                         </row>
                         <row>
                             <entry><link linkend="clusters.discovery-groups"
                                 >discovery-groups</link></entry>
                             <entry>DiscoveryGroup</entry>
-                            <entry>A list of discovery groups to create</entry>
+                            <entry>a list of discovery groups to create</entry>
                             <entry/>
                         </row>
                         <row>
                             <entry><link linkend="diverts">diverts</link></entry>
                             <entry>Divert</entry>
-                            <entry>A list of diverts to use</entry>
+                            <entry>a list of diverts to use</entry>
                             <entry/>
                         </row>
                         <row>
                             <entry><link linkend="diverts">divert.name (attribute)</link></entry>
                             <entry>String</entry>
-                            <entry>A unique name for the divert - mandatory</entry>
+                            <entry>a unique name for the divert - mandatory</entry>
                             <entry/>
                         </row>
                         <row>
                             <entry><link linkend="diverts">divert.routing-name</link></entry>
                             <entry>String</entry>
-                            <entry>The routing name for the divert - mandatory</entry>
+                            <entry>the routing name for the divert - mandatory</entry>
                             <entry/>
                         </row>
                         <row>
                             <entry><link linkend="diverts">divert.address</link></entry>
                             <entry>String</entry>
-                            <entry>The address this divert will divert from - mandatory</entry>
+                            <entry>the address this divert will divert from - mandatory</entry>
                             <entry/>
                         </row>
                         <row>
                             <entry><link linkend="diverts">divert.forwarding-address</link></entry>
                             <entry>String</entry>
-                            <entry>The forwarding address for the divert - mandatory</entry>
+                            <entry>the forwarding address for the divert - mandatory</entry>
                             <entry/>
                         </row>
                         <row>
                             <entry><link linkend="diverts">divert.exclusive</link></entry>
-                            <entry>Booleab</entry>
-                            <entry>Is this divert exclusive?</entry>
+                            <entry>Boolean</entry>
+                            <entry>is this divert exclusive?</entry>
                             <entry>false</entry>
                         </row>
                         <row>
                             <entry><link linkend="diverts">divert.filter</link></entry>
                             <entry>String</entry>
-                            <entry>An optional core filter expression</entry>
+                            <entry>an optional core filter expression</entry>
                             <entry>null</entry>
                         </row>
                         <row>
                             <entry><link linkend="diverts"
                                 >divert.transformer-class-name</link></entry>
                             <entry>String</entry>
-                            <entry>An optional class name of a transformer</entry>
+                            <entry>an optional class name of a transformer</entry>
                             <entry/>
                         </row>
                         <row>
                             <entry><link linkend="predefined.queues">queues</link></entry>
                             <entry>Queue</entry>
-                            <entry>A list of pre configured queues to create</entry>
+                            <entry>a list of pre configured queues to create</entry>
                             <entry/>
                         </row>
                         <row>
                             <entry><link linkend="predefined.queues">queues.name
                                 (attribute)</link></entry>
                             <entry>String</entry>
-                            <entry>Unique name of this queue</entry>
+                            <entry>unique name of this queue</entry>
                             <entry/>
                         </row>
                         <row>
                             <entry><link linkend="predefined.queues">queues.address</link></entry>
                             <entry>String</entry>
-                            <entry>Address for this queue - mandatory</entry>
+                            <entry>address for this queue - mandatory</entry>
                             <entry/>
                         </row>
                         <row>
                             <entry><link linkend="predefined.queues">queues.filter</link></entry>
                             <entry>String</entry>
-                            <entry>Optional core filter expression for this queue</entry>
+                            <entry>optional core filter expression for this queue</entry>
                             <entry>null</entry>
                         </row>
                         <row>
                             <entry><link linkend="predefined.queues">queues.durable</link></entry>
                             <entry>Boolean</entry>
-                            <entry>Is this queue durable?</entry>
+                            <entry>is this queue durable?</entry>
                             <entry>true</entry>
                         </row>
                         <row>
                             <entry><link linkend="core-bridges">bridges</link></entry>
                             <entry>Bridge</entry>
-                            <entry>A list of bridges to create</entry>
+                            <entry>a list of bridges to create</entry>
                             <entry/>
                         </row>
                         <row>
                             <entry><link linkend="core-bridges">bridges.name
                                 (attribute)</link></entry>
                             <entry>String</entry>
-                            <entry>Unique name for this bridge</entry>
+                            <entry>unique name for this bridge</entry>
                             <entry/>
                         </row>
                         <row>
                             <entry><link linkend="core-bridges">bridges.queue-name</link></entry>
                             <entry>String</entry>
-                            <entry>Name of queue that this bridge consumes from - mandatory</entry>
+                            <entry>name of queue that this bridge consumes from - mandatory</entry>
                             <entry/>
                         </row>
                         <row>
                             <entry><link linkend="core-bridges"
                                 >bridges.forwarding-address</link></entry>
                             <entry>String</entry>
-                            <entry>Address to forward to. If omitted original destination is
-                                used.</entry>
+                            <entry>address to forward to. If omitted original destination is
+                                used</entry>
                             <entry>null</entry>
                         </row>
                         <row>
                             <entry><link linkend="core-bridges">bridges.filter</link></entry>
                             <entry>String</entry>
-                            <entry>Optional core filter expression</entry>
+                            <entry>optional core filter expression</entry>
                             <entry>null</entry>
                         </row>
                         <row>
                             <entry><link linkend="core-bridges"
                                     >bridges.transformer-class-name</link></entry>
                             <entry>String</entry>
-                            <entry>Optional name of transformer class</entry>
+                            <entry>optional name of transformer class</entry>
                             <entry>null</entry>
                         </row>
                         <row>
                             <entry><link linkend="core-bridges"
                                 >bridges.retry-interval</link></entry>
                             <entry>Long</entry>
-                            <entry>Period in ms between successive retries</entry>
+                            <entry>period (in ms) between successive retries</entry>
                             <entry>2000 ms</entry>
                         </row>
                         <row>
                             <entry><link linkend="core-bridges"
                                     >bridges.retry-interval-multiplier</link></entry>
                             <entry>Double</entry>
-                            <entry>Multiplier to apply to successive retry intervals</entry>
+                            <entry>multiplier to apply to successive retry intervals</entry>
                             <entry>1.0</entry>
                         </row>
                         <row>
                             <entry><link linkend="core-bridges"
                                 >bridges.reconnect-attempts</link></entry>
                             <entry>Integer</entry>
-                            <entry>Max. number of retry attempts, -1 signifies infinite</entry>
+                            <entry>maximum number of retry attempts, -1 signifies infinite</entry>
                             <entry>-1</entry>
                         </row>
                         <row>
                             <entry><link linkend="core-bridges"
                                     >bridges.failover-on-server-shutdown</link></entry>
                             <entry>Boolean</entry>
-                            <entry>Should failover be prompted if target server is cleanly
+                            <entry>should failover be prompted if target server is cleanly
                                 shutdown?</entry>
                             <entry>false</entry>
                         </row>
@@ -528,7 +527,7 @@
                             <entry><link linkend="core-bridges"
                                     >bridges.use-duplicate-detection</link></entry>
                             <entry>Boolean</entry>
-                            <entry>Should duplicate detection headers be inserted in forwarded
+                            <entry>should duplicate detection headers be inserted in forwarded
                                 messages?</entry>
                             <entry>true</entry>
                         </row>
@@ -536,14 +535,14 @@
                             <entry><link linkend="core-bridges"
                                 >bridges.discovery-group-ref</link></entry>
                             <entry>String</entry>
-                            <entry>Name of discovery group used by this bridge</entry>
+                            <entry>name of discovery group used by this bridge</entry>
                             <entry>null</entry>
                         </row>
                         <row>
                             <entry><link linkend="core-bridges">bridges.connector-ref.connector-name
                                     (attribute)</link></entry>
                             <entry>String</entry>
-                            <entry>Name of connector to use for live connection</entry>
+                            <entry>name of connector to use for live connection</entry>
                             <entry/>
                         </row>
                         <row>
@@ -551,35 +550,35 @@
                                     >bridges.connector-ref.backup-connector-name
                                 (attribute)</link></entry>
                             <entry>String</entry>
-                            <entry>Optional name of connector to use for backup connection</entry>
+                            <entry>optional name of connector to use for backup connection</entry>
                             <entry>null</entry>
                         </row>
                         <row>
                             <entry><link linkend="clusters.cluster-connections"
                                     >cluster-connections</link></entry>
                             <entry>ClusterConnection</entry>
-                            <entry>A list of cluster connections</entry>
+                            <entry>a list of cluster connections</entry>
                             <entry/>
                         </row>
                         <row>
                             <entry><link linkend="clusters.cluster-connections"
                                     >cluster-connections.name (attribute)</link></entry>
                             <entry>String</entry>
-                            <entry>Unique name for this cluster connection</entry>
+                            <entry>unique name for this cluster connection</entry>
                             <entry/>
                         </row>
                         <row>
                             <entry><link linkend="clusters.cluster-connections"
                                     >cluster-connections.address</link></entry>
                             <entry>String</entry>
-                            <entry>Name of address this cluster connection applies to</entry>
+                            <entry>name of address this cluster connection applies to</entry>
                             <entry/>
                         </row>
                         <row>
                             <entry><link linkend="clusters.cluster-connections"
                                     >cluster-connections.forward-when-no-consumers</link></entry>
                             <entry>Boolean</entry>
-                            <entry>Should messages be load balanced if there are no matching
+                            <entry>should messages be load balanced if there are no matching
                                 consumers on target?</entry>
                             <entry>false</entry>
                         </row>
@@ -587,21 +586,21 @@
                             <entry><link linkend="clusters.cluster-connections"
                                     >cluster-connections.max-hops</link></entry>
                             <entry>Integer</entry>
-                            <entry>Max number of hops cluster topology is propagated</entry>
+                            <entry>maximum number of hops cluster topology is propagated</entry>
                             <entry>1</entry>
                         </row>
                         <row>
                             <entry><link linkend="clusters.cluster-connections"
                                     >cluster-connections.retry-interval</link></entry>
                             <entry>Long</entry>
-                            <entry>Period in ms between successive retries</entry>
-                            <entry>2000 ms</entry>
+                            <entry>period (in ms) between successive retries</entry>
+                            <entry>2000</entry>
                         </row>
                         <row>
                             <entry><link linkend="clusters.cluster-connections"
                                     >cluster-connections.use-duplicate-detection</link></entry>
                             <entry>Boolean</entry>
-                            <entry>Should duplicate detection headers be inserted in forwarded
+                            <entry>should duplicate detection headers be inserted in forwarded
                                 messages?</entry>
                             <entry>true</entry>
                         </row>
@@ -609,7 +608,7 @@
                             <entry><link linkend="clusters.cluster-connections"
                                     >cluster-connections.discovery-group-ref</link></entry>
                             <entry>String</entry>
-                            <entry>Name of discovery group used by this bridge</entry>
+                            <entry>name of discovery group used by this bridge</entry>
                             <entry>null</entry>
                         </row>
                         <row>
@@ -617,7 +616,7 @@
                                     >cluster-connections.connector-ref.connector-name
                                     (attribute)</link></entry>
                             <entry>String</entry>
-                            <entry>Name of connector to use for live connection</entry>
+                            <entry>name of connector to use for live connection</entry>
                             <entry/>
                         </row>
                         <row>
@@ -625,22 +624,22 @@
                                     >cluster-connections.connector-ref.backup-connector-name
                                     (attribute)</link></entry>
                             <entry>String</entry>
-                            <entry>Optional name of connector to use for backup connection</entry>
+                            <entry>optional name of connector to use for backup connection</entry>
                             <entry>null</entry>
                         </row>
                         <row>
                             <entry><link linkend="security.settings.roles"
                                 >security-settings</link></entry>
                             <entry>SecuritySetting</entry>
-                            <entry>A list of security settings</entry>
+                            <entry>a list of security settings</entry>
                             <entry/>
                         </row>
                         <row>
                             <entry><link linkend="security.settings.roles">security-settings.match
                                     (attribute)</link></entry>
                             <entry>String</entry>
-                            <entry>The string to use for matching security against an
-                                address.</entry>
+                            <entry>the string to use for matching security against an
+                                address</entry>
                             <entry/>
                         </row>
                         <row>
@@ -654,14 +653,14 @@
                             <entry><link linkend="security.settings.roles"
                                     >security-settings.permission.type (attribute)</link></entry>
                             <entry>Permission Type</entry>
-                            <entry>The type of permission</entry>
+                            <entry>the type of permission</entry>
                             <entry/>
                         </row>
                         <row>
                             <entry><link linkend="security.settings.roles"
                                     >security-settings.permission.roles (attribute)</link></entry>
                             <entry>Roles</entry>
-                            <entry>A comma separated list of roles to apply the permission
+                            <entry>a comma-separated list of roles to apply the permission
                                 to</entry>
                             <entry/>
                         </row>
@@ -669,21 +668,21 @@
                             <entry><link linkend="queue-attributes.address-settings"
                                     >address-settings</link></entry>
                             <entry>AddressSetting</entry>
-                            <entry>A list of address settings</entry>
+                            <entry>a list of address settings</entry>
                             <entry/>
                         </row>
                         <row>
                             <entry><link linkend="undelivered-messages.configuring"
                                     >address-settings.dead-letter-address</link></entry>
                             <entry>String</entry>
-                            <entry>The address to send dead messages too</entry>
+                            <entry>the address to send dead messages too</entry>
                             <entry/>
                         </row>
                         <row>
                             <entry><link linkend="undelivered-messages.configuring"
                                     >address-settings.max-delivery-attempts</link></entry>
                             <entry>Integer</entry>
-                            <entry>How many times to attempt to deliver a message before sending to
+                            <entry>how many times to attempt to deliver a message before sending to
                                 dead letter address</entry>
                             <entry>10</entry>
                         </row>
@@ -691,14 +690,14 @@
                             <entry><link linkend="message-expiry.configuring"
                                     >address-settings.expiry-address</link></entry>
                             <entry>String</entry>
-                            <entry>The address to send expired messages too</entry>
+                            <entry>the address to send expired messages too</entry>
                             <entry/>
                         </row>
                         <row>
                             <entry><link linkend="undelivered-messages.delay"
                                     >address-settings.redelivery-delay</link></entry>
                             <entry>Long</entry>
-                            <entry>The time, in milliseconds, to wait before redelivering a
+                            <entry>the time (in ms) to wait before redelivering a
                                 cancelled message.</entry>
                             <entry>0</entry>
                         </row>
@@ -706,35 +705,35 @@
                             <entry><link linkend="last-value-queues"
                                     >address-settings.last-value-queue</link></entry>
                             <entry>boolean</entry>
-                            <entry>Whether to treat the queueas a last value queue</entry>
+                            <entry>whether to treat the queue as a last value queue</entry>
                             <entry>false</entry>
                         </row>
                         <row>
                             <entry><link linkend="queue-attributes.address-settings"
                                     >address-settings.distribution-policy-class</link></entry>
                             <entry>String</entry>
-                            <entry>The class to use for distributing messages to a consumer</entry>
+                            <entry>the class to use for distributing messages to a consumer</entry>
                             <entry>RoundRobinDistributor</entry>
                         </row>
                         <row>
                             <entry><link linkend="paging"
                                 >address-settings.page-size-bytes</link></entry>
                             <entry>Long</entry>
-                            <entry>The page size to use for an address</entry>
+                            <entry>the page size (in bytes) to use for an address</entry>
                             <entry>10 * 1024 * 1024</entry>
                         </row>
                         <row>
                             <entry><link linkend="paging"
                                 >address-settings.max-size-bytes</link></entry>
                             <entry>Long</entry>
-                            <entry>The max size to use in paging for an address</entry>
+                            <entry>the maximum size (in bytes) to use in paging for an address</entry>
                             <entry>-1</entry>
                         </row>
                         <row>
                             <entry><link linkend="clusters.message-redistribution"
                                     >address-settings.redistribution-delay</link></entry>
                             <entry>Long</entry>
-                            <entry>Howlongto wait after the last consumer is closed on a queue
+                            <entry>how long (in ms) to wait after the last consumer is closed on a queue
                                 before redistributing messages.</entry>
                             <entry>-1</entry>
                         </row>
@@ -766,130 +765,130 @@
                             <entry><link linkend="using-jms.server.configuration"
                                     >connection-factory</link></entry>
                             <entry>ConnectionFactory</entry>
-                            <entry>A list of connection factories to create and add to JNDI</entry>
+                            <entry>a list of connection factories to create and add to JNDI</entry>
                             <entry/>
                         </row>
                         <row>
                             <entry><link linkend="using-jms.clientid"
                                     >connection-factory.client-id</link></entry>
                             <entry>String</entry>
-                            <entry>The pre-configured client ID for the connection factory.</entry>
+                            <entry>the pre-configured client ID for the connection factory</entry>
                             <entry>null</entry>
                         </row>
                         <row>
                             <entry><link linkend="dead.connections"
                                     >connection-factory.ping-period</link></entry>
                             <entry>Long</entry>
-                            <entry>The period between ping packets being sent from client to
-                                server.</entry>
-                            <entry>5000 ms</entry>
+                            <entry>the period (in ms) between ping packets being sent from client to
+                                server</entry>
+                            <entry>5000</entry>
                         </row>
                         <row>
                             <entry><link linkend="dead.connections"
                                     >connection-factory.connection-ttl</link></entry>
-                            <entry>long</entry>
-                            <entry>The time to live for connections</entry>
-                            <entry>5 * 60000 ms</entry>
+                            <entry>Long</entry>
+                            <entry>the time to live (in ms) for connections</entry>
+                            <entry>5 * 60000</entry>
                         </row>
                         <row>
                             <entry>connection-factory.call-timeout</entry>
-                            <entry>long</entry>
-                            <entry>the time out, in milliseconds, for remote calls</entry>
-                            <entry>30000 ms</entry>
+                            <entry>Long</entry>
+                            <entry>the timeout (in ms) for remote calls</entry>
+                            <entry>30000</entry>
                         </row>
                         <row>
                             <entry><link linkend="connection-ttl.session.multiplexing"
                                     >connection-factory.max-connections</link></entry>
-                            <entry>int</entry>
-                            <entry>The max number of connections per factory</entry>
+                            <entry>Integer</entry>
+                            <entry>the maximum number of connections per factory</entry>
                             <entry>8</entry>
                         </row>
                         <row>
                             <entry><link linkend="large-messages.core.config"
                                     >connection-factory.min-large-message-size</link></entry>
-                            <entry>int</entry>
-                            <entry>The size, in bytes, before a message is treated as large </entry>
+                            <entry>Integer</entry>
+                            <entry>the size (in bytes) before a message is treated as large </entry>
                             <entry>100 * 1024</entry>
                         </row>
                         <row>
                             <entry><link linkend="flow-control.core.api"
                                     >connection-factory.consumer-window-size</link></entry>
-                            <entry>int</entry>
-                            <entry>The window size, in bytes, for consumer flow control</entry>
+                            <entry>Integer</entry>
+                            <entry>the window size (in bytes) for consumer flow control</entry>
                             <entry>1024 * 1024</entry>
                         </row>
                         <row>
                             <entry><link linkend="flow-control.rate.core.api"
                                     >connection-factory.consumer-max-rate</link></entry>
-                            <entry>int</entry>
-                            <entry>The fastest rate a consumer may consume messages per
+                            <entry>Integer</entry>
+                            <entry>the fastest rate a consumer may consume messages per
                                 second</entry>
                             <entry>-1</entry>
                         </row>
                         <row>
                             <entry><link linkend="command-buffering"
                                     >connection-factory.producer-window-size</link></entry>
-                            <entry>int</entry>
-                            <entry>The window size for sending messages</entry>
+                            <entry>Integer</entry>
+                            <entry>the window size (in bytes) for sending messages</entry>
                             <entry>1024 * 1024</entry>
                         </row>
                         <row>
                             <entry><link linkend="flow-control.producer.rate.core.api"
                                     >connection-factory.producer-max-rate</link></entry>
-                            <entry>int</entry>
-                            <entry>The max messages per second that can be sent</entry>
+                            <entry>Integer</entry>
+                            <entry>the maximum rate of messages per second that can be sent</entry>
                             <entry>-1</entry>
                         </row>
                         <row>
                             <entry><link linkend="send-guarantees.nontrans.acks"
                                     >connection-factory.block-on-acknowledge</link></entry>
-                            <entry>boolean</entry>
-                            <entry>Whether or not we acknowledge messages synchronously</entry>
+                            <entry>Boolean</entry>
+                            <entry>whether or not messages are acknowledged synchronously</entry>
                             <entry>false</entry>
                         </row>
                         <row>
                             <entry><link linkend="non-transactional-sends"
                                     >connection-factory.block-on-non-persistent-send</link></entry>
-                            <entry>boolean</entry>
-                            <entry>Whether or not we send non persistent messages
+                            <entry>Boolean</entry>
+                            <entry>whether or not non persistent messages are sent
                                 synchronously</entry>
                             <entry>false</entry>
                         </row>
                         <row>
                             <entry><link linkend="non-transactional-sends"
                                     >connection-factory.block-on-persistent-send</link></entry>
-                            <entry>boolean</entry>
-                            <entry>Whether or not we send persistent messages synchronously</entry>
+                            <entry>Boolean</entry>
+                            <entry>whether or not persistent messages are sent synchronously</entry>
                             <entry>false</entry>
                         </row>
                         <row>
                             <entry><link linkend="message-grouping.jmsconfigure"
                                     >connection-factory.auto-group</link></entry>
-                            <entry>boolean</entry>
-                            <entry>Whether or not we automatically use message grouping.</entry>
+                            <entry>Boolean</entry>
+                            <entry>whether or not message grouping is automatically used</entry>
                             <entry>false</entry>
                         </row>
                         <row>
                             <entry><link linkend="pre-acknowledge.configure"
                                     >connection-factory.pre-acknowledge</link></entry>
-                            <entry>boolean</entry>
-                            <entry>Whether messages are pre acknowledged by the server before
+                            <entry>Boolean</entry>
+                            <entry>whether messages are pre acknowledged by the server before
                                 sending</entry>
                             <entry>false</entry>
                         </row>
                         <row>
                             <entry><link linkend="using-jms.dupsokbatchsize"
                                     >connection-factory.dups-ok-batch-size</link></entry>
-                            <entry>int</entry>
-                            <entry>The batch size in bytes between acknowledgements when using
+                            <entry>Integer</entry>
+                            <entry>the batch size (in bytes) between acknowledgements when using
                                 DUPS_OK_ACKNOWLEDGE mode</entry>
                             <entry>1024 * 1024</entry>
                         </row>
                         <row>
                             <entry><link linkend="using-jms.txbatchsize"
                                     >connection-factory.transaction-batch-size</link></entry>
-                            <entry>int</entry>
-                            <entry>The batch size in bytes between acknowledgements when using a
+                            <entry>Integer</entry>
+                            <entry>the batch size (in bytes) between acknowledgements when using a
                                 transactional session</entry>
                             <entry>1024 * 1024</entry>
                         </row>
@@ -897,64 +896,64 @@
                             <entry><link linkend="clusters.client.loadbalancing"
                                     >connection-factory.connection-load-balancing-policy-class-name</link></entry>
                             <entry>String</entry>
-                            <entry>The name of the load balancing class</entry>
+                            <entry>the name of the load balancing class</entry>
                             <entry>org.jboss.messaging.core.client.impl.RoundRobinConnectionLoadBalancingPolicy</entry>
                         </row>
                         <row>
                             <entry><link linkend="clusters-discovery.groups.clientside"
                                     >connection-factory.discovery-initial-wait-timeout</link></entry>
-                            <entry>long</entry>
-                            <entry>The initial time to wait, in milliseconds, for discovery groups
+                            <entry>Long</entry>
+                            <entry>the initial time to wait (in ms) for discovery groups
                                 to wait for broadcasts</entry>
                             <entry>2000</entry>
                         </row>
                         <row>
                             <entry><link linkend="thread-pooling.client.side"
                                     >connection-factory.use-global-pools</link></entry>
-                            <entry>boolean</entry>
-                            <entry>Use a global thread pool for threads</entry>
+                            <entry>Boolean</entry>
+                            <entry>whether or not to use a global thread pool for threads</entry>
                             <entry>true</entry>
                         </row>
                         <row>
                             <entry><link linkend="thread-pooling.client.side"
                                     >connection-factory.scheduled-thread-pool-max-size</link></entry>
-                            <entry>int</entry>
-                            <entry>The size of the scheduled thread pool</entry>
+                            <entry>Integer</entry>
+                            <entry>the size of the scheduled thread pool</entry>
                             <entry>2</entry>
                         </row>
                         <row>
                             <entry><link linkend="thread-pooling.client.side"
                                     >connection-factory.thread-pool-max-size</link></entry>
-                            <entry>int</entry>
-                            <entry>The size of the thread pool</entry>
+                            <entry>Integer</entry>
+                            <entry>the size of the thread pool</entry>
                             <entry>-1</entry>
                         </row>
                         <row>
                             <entry><link linkend="client-reconnection"
                                     >connection-factory.retry-interval</link></entry>
-                            <entry>long</entry>
-                            <entry>The time, in milliseconds, retry a connection after
+                            <entry>Long</entry>
+                            <entry>the time (in ms) to retry a connection after
                                 failing</entry>
                             <entry>2000</entry>
                         </row>
                         <row>
                             <entry><link linkend="client-reconnection"
                                     >connection-factory.retry-interval-multiplier</link></entry>
-                            <entry>double</entry>
-                            <entry>Used in the calculating the retry interval</entry>
+                            <entry>Double</entry>
+                            <entry>multiplier to apply to successive retry intervals</entry>
                             <entry>1d</entry>
                         </row>
                         <row>
                             <entry><link linkend="client-reconnection"
                                     >connection-factory.reconnect-attempts</link></entry>
-                            <entry>int</entry>
-                            <entry>The number of attempts to make at reconnecting</entry>
+                            <entry>Integer</entry>
+                            <entry>maximum number of retry attempts, -1 signifies infinite</entry>
                             <entry>0</entry>
                         </row>
                         <row>
                             <entry><link linkend="ha.client.automatic"
                                     >connection-factory.failover-on-server-shutdown</link></entry>
-                            <entry>boolean</entry>
+                            <entry>Boolean</entry>
                             <entry>whether or not to failover on server shutdown</entry>
                             <entry>false</entry>
                         </row>
@@ -962,58 +961,58 @@
                             <entry><link linkend="using-jms.server.configuration"
                                 >queue</link></entry>
                             <entry>Queue</entry>
-                            <entry>A queue to create and add to JNDI</entry>
+                            <entry>a queue to create and add to JNDI</entry>
                             <entry/>
                         </row>
                         <row>
                             <entry><link linkend="using-jms.server.configuration">queue.name
                                     (attribute)</link></entry>
                             <entry>String</entry>
-                            <entry>Unique name of the queue</entry>
+                            <entry>unique name of the queue</entry>
                             <entry/>
                         </row>
                         <row>
                             <entry><link linkend="using-jms.server.configuration"
                                 >queue.entry</link></entry>
                             <entry>String</entry>
-                            <entry>Context where the queue will be bound in JNDI. There can be
-                                many.</entry>
+                            <entry>context where the queue will be bound in JNDI (there can be
+                                many)</entry>
                             <entry/>
                         </row>
                         <row>
                             <entry><link linkend="using-jms.server.configuration"
                                     >queue.durable</link></entry>
                             <entry>Boolean</entry>
-                            <entry>Is the queue durable?</entry>
+                            <entry>is the queue durable?</entry>
                             <entry>true</entry>
                         </row>
                         <row>
                             <entry><link linkend="using-jms.server.configuration"
                                     >queue.filter</link></entry>
                             <entry>String</entry>
-                            <entry>Optional filter expression for the queue</entry>
+                            <entry>optional filter expression for the queue</entry>
                             <entry/>
                         </row>
                         <row>
                             <entry><link linkend="using-jms.server.configuration"
                                 >topic</link></entry>
                             <entry>Topic</entry>
-                            <entry>A topic to create and add to JNDI</entry>
+                            <entry>a topic to create and add to JNDI</entry>
                             <entry/>
                         </row>
                         <row>
                             <entry><link linkend="using-jms.server.configuration">topic.name
                                     (attribute)</link></entry>
                             <entry>String</entry>
-                            <entry>Unique name of the topic</entry>
+                            <entry>unique name of the topic</entry>
                             <entry/>
                         </row>
                         <row>
                             <entry><link linkend="using-jms.server.configuration"
                                 >topic.entry</link></entry>
                             <entry>String</entry>
-                            <entry>Context where the topic will be bound in JNDI. There can be
-                                many.</entry>
+                            <entry>context where the topic will be bound in JNDI (there can be
+                                many)</entry>
                             <entry/>
                         </row>
                     </tbody>
