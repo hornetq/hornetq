@@ -268,28 +268,22 @@ public class ConnectionTest extends JMSTestCase
 
    }
    
-   /*
-    * See http://jira.jboss.com/jira/browse/JBMESSAGING-635
-    * 
-    * This needs to be run remotely to see the exception
-    */
-   
-   // This test is currently commented out until we fix netty issue https://jira.jboss.org/jira/browse/JBMESSAGING-1618   
-//   public void testConnectionListenerBug() throws Exception
-//   {
-//      for (int i = 0; i < 10000; i++)
-//      {
-//         //log.info("******************************************** it " + i);
-//         
-//         Connection conn = cf.createConnection();
-//         
-//         MyExceptionListener listener = new MyExceptionListener();
-//         
-//         conn.setExceptionListener(listener);
-//         
-//         conn.close();                 
-//      } 
-//   }
+   // This test is to check netty issue in https://jira.jboss.org/jira/browse/JBMESSAGING-1618   
+   public void testConnectionListenerBug() throws Exception
+   {
+      for (int i = 0; i < 10000; i++)
+      {
+         //log.info("******************************************** it " + i);
+         
+         Connection conn = cf.createConnection();
+         
+         MyExceptionListener listener = new MyExceptionListener();
+         
+         conn.setExceptionListener(listener);
+         
+         conn.close();                 
+      } 
+   }
 
    /**
     * This test is similar to a JORAM Test...

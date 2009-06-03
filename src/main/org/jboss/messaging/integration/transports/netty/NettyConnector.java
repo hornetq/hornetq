@@ -137,8 +137,9 @@ public class NettyConnector implements Connector
 
    private final String servletPath;
    
-   private final Executor threadPool;
+   private final VirtualExecutorService virtualExecutor;
 
+   
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
@@ -229,7 +230,7 @@ public class NettyConnector implements Connector
                                                                      TransportConstants.DEFAULT_TCP_RECEIVEBUFFER_SIZE,
                                                                      configuration);
       
-      this.threadPool = threadPool;
+      virtualExecutor = new VirtualExecutorService(threadPool); 
    }
 
    public synchronized void start()
@@ -241,17 +242,17 @@ public class NettyConnector implements Connector
       
       if (useNio)
       {    
-         channelFactory = new NioClientSocketChannelFactory(threadPool, threadPool);
+         channelFactory = new NioClientSocketChannelFactory(virtualExecutor, virtualExecutor);
       }
       else
       {
-         channelFactory = new OioClientSocketChannelFactory(threadPool);
+         channelFactory = new OioClientSocketChannelFactory(virtualExecutor);
       }
       // if we are a servlet wrap the socketChannelFactory
       if (useServlet)
       {
          ClientSocketChannelFactory proxyChannelFactory = channelFactory;
-         channelFactory = new HttpTunnelingClientSocketChannelFactory(proxyChannelFactory, threadPool);
+         channelFactory = new HttpTunnelingClientSocketChannelFactory(proxyChannelFactory, virtualExecutor);
       }
       bootstrap = new ClientBootstrap(channelFactory);
 
@@ -320,6 +321,7 @@ public class NettyConnector implements Connector
 
       bootstrap = null;
       channelGroup.close().awaitUninterruptibly();
+      channelFactory.releaseExternalResources();
       channelFactory = null;
 
       for (Connection connection : connections.values())
