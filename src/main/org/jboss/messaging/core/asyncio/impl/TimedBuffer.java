@@ -30,6 +30,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.jboss.messaging.core.asyncio.AIOCallback;
 import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.utils.VariableLatch;
 
 /**
  * A TimedBuffer
@@ -47,6 +48,11 @@ public class TimedBuffer
    // Attributes ----------------------------------------------------
 
    private TimedBufferObserver bufferObserver;
+   
+   
+   // This is used to pause and resume the timer
+   // This is a reusable Latch, that uses java.util.concurrent base classes
+   private final VariableLatch latchTimer = new VariableLatch();
 
    private CheckTimer timerRunnable = new CheckTimer();
 
@@ -86,6 +92,7 @@ public class TimedBuffer
       currentBuffer.limit(0);
       callbacks = new ArrayList<AIOCallback>();
       this.flushOnSync = flushOnSync;
+      latchTimer.up();
    }
    
    public synchronized void start()
@@ -110,6 +117,8 @@ public class TimedBuffer
       {
          return;
       }
+      
+      latchTimer.down();
       
       timerRunnable.close();
 
@@ -191,6 +200,8 @@ public class TimedBuffer
       callbacks.add(callback);
 
       timeLastAdd = now;
+      
+      latchTimer.down();
 
       if (sync)
       {
@@ -218,11 +229,13 @@ public class TimedBuffer
    {
       if (currentBuffer.limit() > 0)
       {
+         latchTimer.up();
+         
          ByteBuffer directBuffer = bufferObserver.newBuffer(bufferSize, currentBuffer.position());
 
-         currentBuffer.flip();
-
-         directBuffer.put(currentBuffer);
+         // Putting a byteArray on a native buffer is much faster, since it will do in a single native call.
+         // Using directBuffer.put(currentBuffer) would make several append calls for each byte
+         directBuffer.put(currentBuffer.array(), 0, currentBuffer.position());
 
          bufferObserver.flushBuffer(directBuffer, callbacks);
 
@@ -269,11 +282,19 @@ public class TimedBuffer
    private class CheckTimer implements Runnable
    {
       private volatile boolean closed = false;
-
+      
       public void run()
       {
          while (!closed)
-         {            
+         {
+            try
+            {
+               latchTimer.waitCompletion();
+            }
+            catch (InterruptedException ignored)
+            {
+            }
+
             checkTimer();
 
             //TODO - this yield is temporary

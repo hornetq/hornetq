@@ -2268,7 +2268,7 @@ public class JournalImpl implements TestableJournal
 
    public ByteBuffer newBuffer(final int size)
    {
-      return ByteBuffer.allocate(size);
+      return ByteBuffer.wrap(new byte[size]);
    }
 
    // Inner classes
