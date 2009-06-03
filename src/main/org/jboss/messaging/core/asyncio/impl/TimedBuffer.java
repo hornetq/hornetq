@@ -102,8 +102,6 @@ public class TimedBuffer
       timerThread.start();
       
       started = true;
-      
-      log.info("started timed buffer");
    }
 
    public synchronized void stop()
@@ -127,8 +125,6 @@ public class TimedBuffer
       }
       
       started = false;
-      
-      log.info("stopped timedbuffer");
    }
 
    public void lock()
@@ -238,8 +234,7 @@ public class TimedBuffer
       {
          lock.lock();
          try
-         {
-            // log.info("** flushing because of timer");
+         {            
             flush();
          }
          finally
@@ -255,25 +250,14 @@ public class TimedBuffer
    {
       private volatile boolean closed = false;
 
-      private TokenBucketLimiter limiter = new TokenBucketLimiterImpl(4000, false);
-
       public void run()
       {
          while (!closed)
-         {
-            // log.info(System.identityHashCode(this) + " firing");
+         {            
             checkTimer();
 
-            // try
-            // {
-            // Thread.sleep(1);
-            // }
-            // catch (InterruptedException ignore)
-            // {
-            // }
-
-            // limiter.limit();
-
+            //TODO - this yield is temporary
+            
             Thread.yield();
          }
       }
