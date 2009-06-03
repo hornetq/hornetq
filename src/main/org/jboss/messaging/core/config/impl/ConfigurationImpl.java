@@ -101,7 +101,7 @@ public class ConfigurationImpl implements Configuration
    
    public static final int DEFAULT_JOURNAL_AIO_BUFFER_TIMEOUT = 1;
    
-   public static final int DEFAULT_JOURNAL_AIO_BUFFER_SIZE = 1024 * 1024;
+   public static final int DEFAULT_JOURNAL_AIO_BUFFER_SIZE = 128 * 1024;
 
    public static final boolean DEFAULT_WILDCARD_ROUTING_ENABLED = true;
 
