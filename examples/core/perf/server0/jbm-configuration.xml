@@ -19,8 +19,7 @@
 
    <journal-sync-non-transactional>true</journal-sync-non-transactional>
    <journal-type>ASYNCIO</journal-type>
-   <journal-aio-buffer-timeout>1</journal-aio-buffer-timeout>
-   <journal-min-files>10</journal-min-files>
+   <journal-min-files>20</journal-min-files>
 
    
    <queues>
