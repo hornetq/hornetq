@@ -147,11 +147,6 @@ public class MessagingServerControl implements MessagingServerControlMBean, Noti
       return configuration.getBindingsDirectory();
    }
 
-   public long getConnectionScanPeriod()
-   {
-      return configuration.getConnectionScanPeriod();
-   }
-
    public String[] getInterceptorClassNames()
    {
       return configuration.getInterceptorClassNames().toArray(new String[configuration.getInterceptorClassNames().size()]);

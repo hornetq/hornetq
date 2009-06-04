@@ -146,11 +146,6 @@ public class MessagingServerControlUsingCoreTest extends MessagingServerControlT
             return (Integer)proxy.retrieveAttributeValue("ConnectionCount");
          }
 
-         public long getConnectionScanPeriod()
-         {
-            return (Long)proxy.retrieveAttributeValue("ConnectionScanPeriod", Long.class);
-         }
-
          public long getConnectionTTLOverride()
          {
             return (Long)proxy.retrieveAttributeValue("ConnectionTTLOverride", Long.class);

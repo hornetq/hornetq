@@ -219,12 +219,6 @@ public class QueueDeployerTest extends UnitTestCase
          return 0;
       }
 
-      public long getConnectionScanPeriod()
-      {
-
-         return 0;
-      }
-
       public long getConnectionTTLOverride()
       {
 

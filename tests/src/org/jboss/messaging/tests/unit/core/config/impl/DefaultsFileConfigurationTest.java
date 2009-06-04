@@ -59,9 +59,7 @@ public class DefaultsFileConfigurationTest extends ConfigurationImplTest
       assertEquals(ConfigurationImpl.DEFAULT_JMX_MANAGEMENT_ENABLED, conf.isJMXManagementEnabled());
 
       assertEquals(0, conf.getInterceptorClassNames().size());
-
-      assertEquals(ConfigurationImpl.DEFAULT_CONNECTION_SCAN_PERIOD, conf.getConnectionScanPeriod());
-      
+  
       assertEquals(ConfigurationImpl.DEFAULT_CONNECTION_TTL_OVERRIDE, conf.getConnectionTTLOverride());
 
       assertEquals(0, conf.getAcceptorConfigurations().size());

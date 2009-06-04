@@ -74,7 +74,7 @@ public class TimedBuffer
 
    private Thread timerThread;
    
-   private boolean started;
+   private volatile boolean started;
    
    private final boolean flushOnSync;
 
@@ -111,8 +111,8 @@ public class TimedBuffer
       started = true;
    }
 
-   public synchronized void stop()
-   {
+   public void stop()
+   {      
       if (!started)
       {
          return;

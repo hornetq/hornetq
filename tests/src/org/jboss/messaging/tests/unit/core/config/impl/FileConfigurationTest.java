@@ -60,7 +60,6 @@ public class FileConfigurationTest extends ConfigurationImplTest
       assertEquals(true, conf.isMessageCounterEnabled());
       assertEquals(5, conf.getMessageCounterMaxDayHistory());
       assertEquals(123456, conf.getMessageCounterSamplePeriod());
-      assertEquals(6543, conf.getConnectionScanPeriod());
       assertEquals(12345, conf.getConnectionTTLOverride());
       assertEquals(98765, conf.getTransactionTimeout());
       assertEquals(56789, conf.getTransactionTimeoutScanPeriod());

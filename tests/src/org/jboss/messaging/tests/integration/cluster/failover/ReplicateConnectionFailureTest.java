@@ -131,8 +131,7 @@ public class ReplicateConnectionFailureTest extends UnitTestCase
    {
       super.setUp();
       
-      Configuration backupConf = new ConfigurationImpl();
-      backupConf.setConnectionScanPeriod(100);
+      Configuration backupConf = new ConfigurationImpl();     
       backupConf.setSecurityEnabled(false);
       backupParams.put(TransportConstants.SERVER_ID_PROP_NAME, 1);
       backupConf.getAcceptorConfigurations()
@@ -142,8 +141,7 @@ public class ReplicateConnectionFailureTest extends UnitTestCase
       backupServer = Messaging.newMessagingServer(backupConf, false);
       backupServer.start();
 
-      Configuration liveConf = new ConfigurationImpl();
-      liveConf.setConnectionScanPeriod(100);
+      Configuration liveConf = new ConfigurationImpl();    
       liveConf.setSecurityEnabled(false);
       liveConf.getAcceptorConfigurations()
               .add(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory"));

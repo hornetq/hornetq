@@ -65,8 +65,6 @@ public class ConfigurationImpl implements Configuration
 
    public static final boolean DEFAULT_JMX_MANAGEMENT_ENABLED = true;
 
-   public static final long DEFAULT_CONNECTION_SCAN_PERIOD = 1000;
-
    public static final long DEFAULT_CONNECTION_TTL_OVERRIDE = -1;
 
    public static final String DEFAULT_BINDINGS_DIRECTORY = "data/bindings";
@@ -174,8 +172,6 @@ public class ConfigurationImpl implements Configuration
    protected boolean securityEnabled = DEFAULT_SECURITY_ENABLED;
 
    protected boolean jmxManagementEnabled = DEFAULT_JMX_MANAGEMENT_ENABLED;
-
-   protected long connectionScanPeriod = DEFAULT_CONNECTION_SCAN_PERIOD;
 
    protected long connectionTTLOverride = DEFAULT_CONNECTION_TTL_OVERRIDE;
 
@@ -386,16 +382,6 @@ public class ConfigurationImpl implements Configuration
    public void setSecurityInvalidationInterval(final long interval)
    {
       securityInvalidationInterval = interval;
-   }
-
-   public long getConnectionScanPeriod()
-   {
-      return connectionScanPeriod;
-   }
-
-   public void setConnectionScanPeriod(final long scanPeriod)
-   {
-      connectionScanPeriod = scanPeriod;
    }
 
    public long getConnectionTTLOverride()

@@ -100,10 +100,6 @@ public interface Configuration extends Serializable, MessagingComponent
 
    void setInterceptorClassNames(List<String> interceptors);
 
-   long getConnectionScanPeriod();
-
-   void setConnectionScanPeriod(long scanPeriod);
-
    long getConnectionTTLOverride();
 
    void setConnectionTTLOverride(long ttl);

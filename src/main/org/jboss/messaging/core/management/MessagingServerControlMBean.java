@@ -88,8 +88,6 @@ public interface MessagingServerControlMBean
 
    public boolean isBackup();
 
-   public long getConnectionScanPeriod();
-   
    int getAIOBufferSize();
    
    int getAIOBufferTimeout();

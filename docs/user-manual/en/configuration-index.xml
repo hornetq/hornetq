@@ -145,14 +145,6 @@
                         </row>
                         <row>
                             <entry><link linkend="dead.connections"
-                                >connection-scan-period</link></entry>
-                            <entry>Long</entry>
-                            <entry>how often (in ms) to scan for failed connections on
-                                the server </entry>
-                            <entry>1000</entry>
-                        </row>
-                        <row>
-                            <entry><link linkend="dead.connections"
                                 >connection-ttl-override</link></entry>
                             <entry>Long</entry>
                             <entry>if set, this will override how long (in ms) to keep a connection alive

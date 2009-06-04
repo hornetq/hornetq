@@ -56,8 +56,7 @@ public class ConfigurationImplTest extends UnitTestCase
       assertEquals(ConfigurationImpl.DEFAULT_QUEUE_ACTIVATION_TIMEOUT, conf.getQueueActivationTimeout());
       assertEquals(ConfigurationImpl.DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE, conf.getScheduledThreadPoolMaxSize());
       assertEquals(ConfigurationImpl.DEFAULT_SECURITY_INVALIDATION_INTERVAL, conf.getSecurityInvalidationInterval());
-      assertEquals(ConfigurationImpl.DEFAULT_SECURITY_ENABLED, conf.isSecurityEnabled());
-      assertEquals(ConfigurationImpl.DEFAULT_CONNECTION_SCAN_PERIOD, conf.getConnectionScanPeriod());
+      assertEquals(ConfigurationImpl.DEFAULT_SECURITY_ENABLED, conf.isSecurityEnabled());     
       assertEquals(ConfigurationImpl.DEFAULT_BINDINGS_DIRECTORY, conf.getBindingsDirectory());
       assertEquals(ConfigurationImpl.DEFAULT_CREATE_BINDINGS_DIR, conf.isCreateBindingsDir());
       assertEquals(ConfigurationImpl.DEFAULT_JOURNAL_DIR, conf.getJournalDirectory());
@@ -105,11 +104,7 @@ public class ConfigurationImplTest extends UnitTestCase
          b = randomBoolean();
          conf.setSecurityEnabled(b);
          assertEquals(b, conf.isSecurityEnabled());
-    
-         l = randomLong();
-         conf.setConnectionScanPeriod(l);
-         assertEquals(l, conf.getConnectionScanPeriod());
-                  
+     
          String s = randomString();
          conf.setBindingsDirectory(s);
          assertEquals(s, conf.getBindingsDirectory());
@@ -200,9 +195,6 @@ public class ConfigurationImplTest extends UnitTestCase
       b = randomBoolean();
       conf.setSecurityEnabled(b);
         
-      l = randomLong();
-      conf.setConnectionScanPeriod(l);
-      
       String s = randomString();
       conf.setBindingsDirectory(s);
 
