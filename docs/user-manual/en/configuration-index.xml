@@ -72,8 +72,8 @@
                             <entry><link linkend="security"
                                 >security-invalidation-interval</link></entry>
                             <entry>Long</entry>
-                            <entry>how long (in ms) to wait before invalidating the
-                                security cache</entry>
+                            <entry>how long (in ms) to wait before invalidating the security
+                                cache</entry>
                             <entry>10000</entry>
                         </row>
                         <row>
@@ -95,8 +95,8 @@
                             <entry><link linkend="management.notifications.core.configuration"
                                     >management-notification-address</link></entry>
                             <entry>String</entry>
-                            <entry>the name of the address that consumers bind to receive
-                                management notifications</entry>
+                            <entry>the name of the address that consumers bind to receive management
+                                notifications</entry>
                             <entry>jbm.notifications</entry>
                         </row>
                         <row>
@@ -147,24 +147,23 @@
                             <entry><link linkend="dead.connections"
                                 >connection-ttl-override</link></entry>
                             <entry>Long</entry>
-                            <entry>if set, this will override how long (in ms) to keep a connection alive
-                                without receiving a ping. </entry>
+                            <entry>if set, this will override how long (in ms) to keep a connection
+                                alive without receiving a ping. </entry>
                             <entry>-1</entry>
                         </row>
                         <row>
                             <entry><link linkend="transaction-config"
                                 >transaction-timeout</link></entry>
                             <entry>Long</entry>
-                            <entry>how long (in ms) before a transaction can be removed from the resource
-                                manager after create time</entry>
+                            <entry>how long (in ms) before a transaction can be removed from the
+                                resource manager after create time</entry>
                             <entry>60000</entry>
                         </row>
                         <row>
                             <entry><link linkend="transaction-config"
                                     >transaction-timeout-scan-period</link></entry>
                             <entry>Long</entry>
-                            <entry>how often (in ms) to scan for timeout
-                                transactions</entry>
+                            <entry>how often (in ms) to scan for timeout transactions</entry>
                             <entry>1000</entry>
                         </row>
                         <row>
@@ -198,14 +197,14 @@
                             <entry><link linkend="queue.activation.timeout"
                                     >queue-activation-timeout</link></entry>
                             <entry>Long</entry>
-                            <entry>after failover occurs, this timeout specifies how long (in ms) to wait for
-                                consumers to re-attach before starting delivery</entry>
+                            <entry>after failover occurs, this timeout specifies how long (in ms) to
+                                wait for consumers to re-attach before starting delivery</entry>
                             <entry>30000</entry>
                         </row>
                         <row>
                             <entry><link linkend="configuring.live.backup">backup</link></entry>
                             <entry>Boolean</entry>
-                            <entry>true means that this server is a backup to another node in the 
+                            <entry>true means that this server is a backup to another node in the
                                 cluster</entry>
                             <entry>false</entry>
                         </row>
@@ -222,7 +221,8 @@
                             <entry><link linkend="configuring.live.backup"
                                     >backup-connector-ref</link></entry>
                             <entry>String</entry>
-                            <entry>the name of the remoting connector to connect to the backup node</entry>
+                            <entry>the name of the remoting connector to connect to the backup
+                                node</entry>
                             <entry/>
                         </row>
                         <row>
@@ -236,9 +236,9 @@
                             <entry><link linkend="paging.main.config"
                                 >global-page-size</link></entry>
                             <entry>Long</entry>
-                            <entry>the standard size (in bytes) of a page-file. JBoss Messaging will only read
-                                messages when there is enough space to read at least one page file,
-                                determined by this value.</entry>
+                            <entry>the standard size (in bytes) of a page-file. JBoss Messaging will
+                                only read messages when there is enough space to read at least one
+                                page file, determined by this value.</entry>
                             <entry>10 * 1024 * 1024</entry>
                         </row>
                         <row>
@@ -287,21 +287,21 @@
                         </row>
                         <row>
                             <entry><link linkend="configuring.message.journal"
-                                >journal-aio-flush-on-sync</link></entry>
+                                    >journal-aio-flush-on-sync</link></entry>
                             <entry>Boolean</entry>
                             <entry>TODO</entry>
                             <entry>False</entry>
                         </row>
                         <row>
                             <entry><link linkend="configuring.message.journal"
-                                >journal-aio-buffer-timeout</link></entry>
+                                    >journal-aio-buffer-timeout</link></entry>
                             <entry>Long</entry>
                             <entry>TODO</entry>
                             <entry>20000</entry>
                         </row>
                         <row>
                             <entry><link linkend="configuring.message.journal"
-                                >journal-aio-buffer-size</link></entry>
+                                    >journal-aio-buffer-size</link></entry>
                             <entry>Long</entry>
                             <entry>TODO</entry>
                             <entry>128 MiB</entry>
@@ -310,8 +310,8 @@
                             <entry><link linkend="configuring.message.journal"
                                     >journal-sync-transactional</link></entry>
                             <entry>Boolean</entry>
-                            <entry>if true wait for transaction data to be synchronized to the journal
-                                before returning response to client</entry>
+                            <entry>if true wait for transaction data to be synchronized to the
+                                journal before returning response to client</entry>
                             <entry>true</entry>
                         </row>
                         <row>
@@ -702,8 +702,8 @@
                             <entry><link linkend="undelivered-messages.delay"
                                     >address-settings.redelivery-delay</link></entry>
                             <entry>Long</entry>
-                            <entry>the time (in ms) to wait before redelivering a
-                                cancelled message.</entry>
+                            <entry>the time (in ms) to wait before redelivering a cancelled
+                                message.</entry>
                             <entry>0</entry>
                         </row>
                         <row>
@@ -731,15 +731,16 @@
                             <entry><link linkend="paging"
                                 >address-settings.max-size-bytes</link></entry>
                             <entry>Long</entry>
-                            <entry>the maximum size (in bytes) to use in paging for an address</entry>
+                            <entry>the maximum size (in bytes) to use in paging for an
+                                address</entry>
                             <entry>-1</entry>
                         </row>
                         <row>
                             <entry><link linkend="clusters.message-redistribution"
                                     >address-settings.redistribution-delay</link></entry>
                             <entry>Long</entry>
-                            <entry>how long (in ms) to wait after the last consumer is closed on a queue
-                                before redistributing messages.</entry>
+                            <entry>how long (in ms) to wait after the last consumer is closed on a
+                                queue before redistributing messages.</entry>
                             <entry>-1</entry>
                         </row>
                     </tbody>
@@ -749,7 +750,7 @@
         <section>
             <title>jbm-jms.xml</title>
             <para>This is the configuration file used by the server side JMS service to load JMS
-                Queues, Topics and Connection Factories</para>
+                Queues, Topics and Connection Factories.</para>
             <table frame="topbot" border="2">
                 <title>JMS Server Configuration</title>
                 <tgroup cols="4">
@@ -782,9 +783,10 @@
                         </row>
                         <row>
                             <entry><link linkend="dead.connections"
-                                    >connection-factory.ping-period</link></entry>
+                                    >connection-factory.client-failure-check-period</link></entry>
                             <entry>Long</entry>
-                            <entry>the period (in ms) between ping packets being sent from client to
+                            <entry>the period (in ms) after which the client will consider the
+                                connection failed after not receiving packets from the
                                 server</entry>
                             <entry>5000</entry>
                         </row>
@@ -908,8 +910,8 @@
                             <entry><link linkend="clusters-discovery.groups.clientside"
                                     >connection-factory.discovery-initial-wait-timeout</link></entry>
                             <entry>Long</entry>
-                            <entry>the initial time to wait (in ms) for discovery groups
-                                to wait for broadcasts</entry>
+                            <entry>the initial time to wait (in ms) for discovery groups to wait for
+                                broadcasts</entry>
                             <entry>2000</entry>
                         </row>
                         <row>
@@ -937,8 +939,7 @@
                             <entry><link linkend="client-reconnection"
                                     >connection-factory.retry-interval</link></entry>
                             <entry>Long</entry>
-                            <entry>the time (in ms) to retry a connection after
-                                failing</entry>
+                            <entry>the time (in ms) to retry a connection after failing</entry>
                             <entry>2000</entry>
                         </row>
                         <row>

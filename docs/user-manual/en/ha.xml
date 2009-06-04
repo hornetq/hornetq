@@ -112,10 +112,10 @@
             automatic failover preserves all your normal JMS or core API semantics and allows your
             client code to continue 100% uninterrupted on event of connection failure and failover
             from a live to a backup server.</para>
-        <para>JBoss Messaging clients detect connection failure by using connection pinging on the
-            connection. If the client does not receive a pong response from the server in good time
-            after a ping is sent, it will assume the connection has failed and attempt
-            failover.</para>
+        <para>JBoss Messaging clients detect connection failure when it has not received packets
+            from the server within the time given by <literal>client-failure-check-period</literal>
+            as explained in section <xref linkend="connection-ttl"/>. If the client does not receive
+            data in good time, it will assume the connection has failed and attempt failover.</para>
         <para>JBoss Messaging clients can be configured with the list of live-backup server pairs in
             a number of different ways. They can be configured explicitly or probably the most
             common way of doing this is to use <emphasis>server discovery</emphasis> for the client
