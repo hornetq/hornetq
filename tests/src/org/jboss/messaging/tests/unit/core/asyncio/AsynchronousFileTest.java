@@ -957,8 +957,6 @@ public class AsynchronousFileTest extends AIOTestBase
       AsynchronousFileImpl.setNanoSleepInterval(1);
       AsynchronousFileImpl.nanoSleep();
       
-      Thread.currentThread().setPriority(Thread.MAX_PRIORITY);
-      
       long timeInterval = 1000000;
       long nloops = 1000;
       
