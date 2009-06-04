@@ -968,8 +968,7 @@ public class AsynchronousFileTest extends AIOTestBase
       
       for (long i = 0 ; i < nloops; i++)
       {
-         Thread.sleep(1);
-         //AsynchronousFileImpl.nanoSleep();
+         AsynchronousFileImpl.nanoSleep();
       }
       
       long end = System.currentTimeMillis();
