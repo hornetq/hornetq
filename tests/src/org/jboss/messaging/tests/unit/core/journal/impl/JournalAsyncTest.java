@@ -52,7 +52,7 @@ public class JournalAsyncTest extends UnitTestCase
 
    private FakeSequentialFileFactory factory;
 
-   JournalImpl journalImpl = null;
+   private JournalImpl journalImpl = null;
 
    private ArrayList<RecordInfo> records = null;
 
@@ -85,12 +85,12 @@ public class JournalAsyncTest extends UnitTestCase
             {
                for (int i = 0; i < 10; i++)
                {
-                  journalImpl.appendAddRecordTransactional(1l, i, (byte)1, new SimpleEncoding(1, (byte)0), false);
+                  journalImpl.appendAddRecordTransactional(1l, i, (byte)1, new SimpleEncoding(1, (byte)0), true);
                }
 
                latch.countDown();
                factory.setHoldCallbacks(false, null);
-               journalImpl.appendCommitRecord(1l, false);
+               journalImpl.appendCommitRecord(1l, true);
             }
             catch (Exception e)
             {
