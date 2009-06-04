@@ -21,11 +21,6 @@
                 <para>Use AIO journal. If using Linux, try to keep your journal type as AIO.</para>
             </listitem>
             <listitem>
-                <para>AIO re-use cache. Keep <literal>journal-buffer-reuse-size</literal> to an
-                    average size of your records on the journal. The record is composed by the
-                    message body, properties and about 100 bytes per message.</para>
-            </listitem>
-            <listitem>
                 <para>Max IO. If using AIO, keep <literal>journal-max-aio</literal> accordingly to
                     your disk capacity. If in a thread dump you see too many write requests waiting
                     on <literal>AsynchronousFile.write</literal> you may be out of space on the

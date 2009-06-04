@@ -177,13 +177,16 @@
                     journal.</para>
             </listitem>
             <listitem>
-                <para><literal>journal-buffer-reuse-size</literal></para>
-                <para>Creating direct byte buffers is an expensive operation, so the journal will
-                    attempt to re-use any buffers with a size less than this setting, in bytes. If
-                    this value is set to <literal>-1</literal> then the journal will not attempt to
-                    re-use any buffers. This setting only takes effect if the journal is <literal
-                        >AIO</literal>. The default value for this setting is <literal
-                        >1024</literal> bytes.</para>
+                <para><literal>journal-aio-flush-on-sync</literal></para>
+                <para>TODO.</para>
+            </listitem>
+            <listitem>
+                <para><literal>journal-aio-buffer-timeout</literal></para>
+                <para>TODO.</para>
+            </listitem>
+            <listitem>
+                <para><literal>journal-aio-buffer-size</literal></para>
+                <para>TODO.</para>
             </listitem>
         </itemizedlist>
     </section>

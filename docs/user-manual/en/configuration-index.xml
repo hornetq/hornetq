@@ -295,11 +295,24 @@
                         </row>
                         <row>
                             <entry><link linkend="configuring.message.journal"
-                                    >journal-buffer-reuse-size</link></entry>
+                                >journal-aio-flush-on-sync</link></entry>
+                            <entry>Boolean</entry>
+                            <entry>TODO</entry>
+                            <entry>False</entry>
+                        </row>
+                        <row>
+                            <entry><link linkend="configuring.message.journal"
+                                >journal-aio-buffer-timeout</link></entry>
                             <entry>Long</entry>
-                            <entry>the journal will try and re use any buffers smaller than this
-                                size (in bytes)</entry>
-                            <entry>1024</entry>
+                            <entry>TODO</entry>
+                            <entry>20000</entry>
+                        </row>
+                        <row>
+                            <entry><link linkend="configuring.message.journal"
+                                >journal-aio-buffer-size</link></entry>
+                            <entry>Long</entry>
+                            <entry>TODO</entry>
+                            <entry>128 MiB</entry>
                         </row>
                         <row>
                             <entry><link linkend="configuring.message.journal"
