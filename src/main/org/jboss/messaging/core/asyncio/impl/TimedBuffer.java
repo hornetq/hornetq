@@ -330,7 +330,7 @@ public class TimedBuffer
          if (USE_NATIVE_TIMERS)
          {
             // The time is passed on the constructor.
-            // I'm avoiding the the long on the calling stack, to avoid performance hits here
+            // I'm avoiding the long on the calling stack, to avoid performance hits here
             AsynchronousFileImpl.nanoSleep();
          }
          else
