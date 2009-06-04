@@ -29,6 +29,7 @@ import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
 import org.jboss.messaging.core.client.impl.ClientSessionFactoryInternal;
 import org.jboss.messaging.core.client.impl.ClientSessionImpl;
+import org.jboss.messaging.core.client.impl.ConnectionManagerImpl;
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
@@ -76,7 +77,7 @@ public class ReplicateConnectionFailureTest extends UnitTestCase
    {
       final long clientFailureCheckPeriod = 500;
 
-      ClientSessionFactoryInternal sf1 = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"));
+      ClientSessionFactoryImpl sf1 = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"));
                                                                       
       sf1.setClientFailureCheckPeriod(clientFailureCheckPeriod);
       sf1.setConnectionTTL((long)(clientFailureCheckPeriod * 1.5));      
@@ -106,7 +107,7 @@ public class ReplicateConnectionFailureTest extends UnitTestCase
 
       final RemotingConnectionImpl conn1 = (RemotingConnectionImpl)((ClientSessionImpl)session1).getConnection();
 
-      //conn1.stopPingingAfterOne();
+      ((ConnectionManagerImpl)sf1.getConnectionManagers()[0]).cancelPingerForConnectionID(conn1.getID());
 
       Thread.sleep(3 * clientFailureCheckPeriod);
 

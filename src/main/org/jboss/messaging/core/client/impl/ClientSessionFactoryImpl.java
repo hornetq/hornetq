@@ -871,6 +871,11 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
 
       updateConnectionManagerArray();
    }
+   
+   public ConnectionManager[] getConnectionManagers()
+   {
+      return connectionManagerArray;
+   }
 
    // Protected ------------------------------------------------------------------------------
 

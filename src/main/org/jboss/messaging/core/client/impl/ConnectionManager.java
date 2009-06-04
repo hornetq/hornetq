@@ -24,6 +24,7 @@ package org.jboss.messaging.core.client.impl;
 
 import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.exception.MessagingException;
+import org.jboss.messaging.core.remoting.RemotingConnection;
 
 /**
  * A ConnectionManager
@@ -60,4 +61,6 @@ public interface ConnectionManager
    int numSessions();
    
    void close();
+   
+   RemotingConnection getConnection(final int initialRefCount);
 }

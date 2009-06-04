@@ -97,9 +97,6 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
 
    private Map<Object, Pinger> pingRunnables = new ConcurrentHashMap<Object, Pinger>();
 
-   // For debug
-   public static boolean schedulePingersOneShot;
-
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
@@ -355,6 +352,13 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
 
    // Public --------------------------------------------------------
 
+   public void cancelPingerForConnectionID(final Object connectionID)
+   {
+      Pinger pinger = pingRunnables.get(connectionID);
+      
+      pinger.close();
+   }
+   
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
@@ -397,16 +401,7 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
       {
          Pinger pingRunnable = new Pinger(conn);
 
-         Future<?> pingFuture;
-
-         if (schedulePingersOneShot)
-         {
-            pingFuture = scheduledThreadPool.schedule(pingRunnable, 0, TimeUnit.MILLISECONDS);
-         }
-         else
-         {
-            pingFuture = scheduledThreadPool.scheduleAtFixedRate(pingRunnable, 0, pingPeriod, TimeUnit.MILLISECONDS);
-         }
+         Future<?> pingFuture = scheduledThreadPool.scheduleAtFixedRate(pingRunnable, 0, pingPeriod, TimeUnit.MILLISECONDS);         
 
          pingRunnable.setFuture(pingFuture);
 

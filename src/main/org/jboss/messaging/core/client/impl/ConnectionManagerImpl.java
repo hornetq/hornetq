@@ -146,7 +146,7 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
    private boolean inFailoverOrReconnect;
    
    private Connector connector;
-   
+        
    private Map<Object, FailedConnectionRunnable> failRunnables = new ConcurrentHashMap<Object, FailedConnectionRunnable>();
 
    private Map<Object, Pinger> pingRunnables = new ConcurrentHashMap<Object, Pinger>();
@@ -163,8 +163,6 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
 
       debugConns = new ConcurrentHashMap<TransportConfiguration, Set<RemotingConnection>>();
    }
-   
-   public static boolean schedulePingersOneShot = false;
    
    // Static
    // ---------------------------------------------------------------------------------------
@@ -458,6 +456,13 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
 
    // Public
    // ---------------------------------------------------------------------------------------
+   
+   public void cancelPingerForConnectionID(final Object connectionID)
+   {
+      Pinger pinger = pingRunnables.get(connectionID);
+      
+      pinger.close();
+   }
 
    // Protected
    // ------------------------------------------------------------------------------------
@@ -839,7 +844,7 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
       }
    }
 
-   private RemotingConnection getConnection(final int initialRefCount)
+   public RemotingConnection getConnection(final int initialRefCount)
    {
       RemotingConnection conn;
 
@@ -941,17 +946,8 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
          {
             Pinger pinger = new Pinger(conn);
             
-            Future<?> pingerFuture;
-            
-            if (schedulePingersOneShot)
-            {
-               pingerFuture = scheduledThreadPool.schedule(pinger, connectionTTL / 2, TimeUnit.MILLISECONDS);
-            }
-            else
-            {
-               pingerFuture = scheduledThreadPool.scheduleAtFixedRate(pinger, connectionTTL / 2, connectionTTL / 2, TimeUnit.MILLISECONDS);
-            }
-                        
+            Future<?> pingerFuture = scheduledThreadPool.scheduleAtFixedRate(pinger, connectionTTL / 2, connectionTTL / 2, TimeUnit.MILLISECONDS);
+                                   
             pinger.setFuture(pingerFuture);
             
             pingRunnables.put(conn.getID(), pinger);

@@ -22,24 +22,21 @@
 
 package org.jboss.messaging.tests.integration.remoting;
 
-import static org.jboss.messaging.core.remoting.server.impl.RemotingServiceImpl.schedulePingersOneShot;
-
 import java.util.Set;
 
 import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.ClientSessionFactory;
 import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
 import org.jboss.messaging.core.client.impl.ClientSessionFactoryInternal;
+import org.jboss.messaging.core.client.impl.ClientSessionInternal;
 import org.jboss.messaging.core.client.impl.ConnectionManagerImpl;
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.FailureListener;
-import org.jboss.messaging.core.remoting.Interceptor;
-import org.jboss.messaging.core.remoting.Packet;
 import org.jboss.messaging.core.remoting.RemotingConnection;
-import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
+import org.jboss.messaging.core.remoting.impl.RemotingConnectionImpl;
 import org.jboss.messaging.core.remoting.server.impl.RemotingServiceImpl;
 import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.tests.util.ServiceTestBase;
@@ -223,9 +220,6 @@ public class PingTest extends ServiceTestBase
 
       ClientSessionFactoryImpl csf = new ClientSessionFactoryImpl(transportConfig);
       
-      //We want to make sure only ping is sent
-      ConnectionManagerImpl.schedulePingersOneShot = true;
-      
       csf.setClientFailureCheckPeriod(PING_INTERVAL);
       csf.setConnectionTTL((long)(PING_INTERVAL * 1.5));
       
@@ -237,6 +231,12 @@ public class PingTest extends ServiceTestBase
 
       session.addFailureListener(clientListener);
 
+      RemotingConnectionImpl conn = (RemotingConnectionImpl)((ClientSessionInternal)session).getConnection();
+
+      // We need to get it to stop pinging
+      
+      ((ConnectionManagerImpl)csf.getConnectionManagers()[0]).cancelPingerForConnectionID(conn.getID());
+            
       RemotingConnection serverConn = null;
 
       while (serverConn == null)
@@ -281,51 +281,16 @@ public class PingTest extends ServiceTestBase
       assertNotNull(serverListener.getException());
 
       session.close();
-      
-      ConnectionManagerImpl.schedulePingersOneShot = false;
    }
 
    /*
    * Test the client triggering failure due to no pong received in time
    */
-   public void testClientFailureNoServerPing() throws Exception
-   {
-      Interceptor noPongInterceptor = new Interceptor()
-      {
-         boolean allowPing = true;
-         
-         public boolean intercept(Packet packet, RemotingConnection conn) throws MessagingException
-         {
-            log.info("In interceptor, packet is " + packet.getType());
-            if (packet.getType() == PacketImpl.PING)
-            {
-               if (allowPing)
-               {
-                  log.info("allow 1 ping");
-                  allowPing = false;
-                  return true;
-               }
-               else
-               {
-                  log.info("Ignoring Ping packet.. it will be dropped");
-                  return false;
-               }
-            }
-            else
-            {
-               return true;
-            }
-         }
-      };
-
-      server.getRemotingService().addInterceptor(noPongInterceptor);
-
+   public void testClientFailureNoPong() throws Exception
+   {      
       TransportConfiguration transportConfig = new TransportConfiguration("org.jboss.messaging.integration.transports.netty.NettyConnectorFactory");
 
       ClientSessionFactory csf = new ClientSessionFactoryImpl(transportConfig);
-      
-      //We want to make sure only one server->client ping is sent
-      RemotingServiceImpl.schedulePingersOneShot = true;
       
       csf.setClientFailureCheckPeriod(PING_INTERVAL);
       csf.setConnectionTTL((long)(PING_INTERVAL * 1.5));
@@ -353,25 +318,20 @@ public class PingTest extends ServiceTestBase
             Thread.sleep(10);
          }
       }
-
+      
       Listener serverListener = new Listener();
 
       serverConn.addFailureListener(serverListener);
-
+      
+      ((RemotingServiceImpl)server.getRemotingService()).cancelPingerForConnectionID(serverConn.getID());
+      
       Thread.sleep(3 * PING_INTERVAL);
       
       assertNotNull(clientListener.getException());
-
-      // We receive an exception on the server in this case too
-      assertNotNull(serverListener.getException());
-
+      
       assertEquals(0, server.getRemotingService().getConnections().size());
 
-      server.getRemotingService().removeInterceptor(noPongInterceptor);
-
       session.close();
-      
-      RemotingServiceImpl.schedulePingersOneShot = false;
    }
 
    // Package protected ---------------------------------------------

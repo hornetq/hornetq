@@ -31,6 +31,8 @@ import java.util.concurrent.TimeUnit;
 import javax.management.MBeanServer;
 
 import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
+import org.jboss.messaging.core.client.impl.ConnectionManager;
+import org.jboss.messaging.core.client.impl.ConnectionManagerImpl;
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.config.cluster.DivertConfiguration;
@@ -67,15 +69,11 @@ import org.jboss.messaging.core.remoting.Channel;
 import org.jboss.messaging.core.remoting.FailureListener;
 import org.jboss.messaging.core.remoting.Packet;
 import org.jboss.messaging.core.remoting.RemotingConnection;
-import org.jboss.messaging.core.remoting.impl.RemotingConnectionImpl;
 import org.jboss.messaging.core.remoting.impl.wireformat.CreateSessionResponseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.ReattachSessionResponseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.replication.ReplicateStartupInfoMessage;
 import org.jboss.messaging.core.remoting.server.RemotingService;
 import org.jboss.messaging.core.remoting.server.impl.RemotingServiceImpl;
-import org.jboss.messaging.core.remoting.spi.Connection;
-import org.jboss.messaging.core.remoting.spi.ConnectionLifeCycleListener;
-import org.jboss.messaging.core.remoting.spi.ConnectorFactory;
 import org.jboss.messaging.core.security.CheckType;
 import org.jboss.messaging.core.security.JBMSecurityManager;
 import org.jboss.messaging.core.security.Role;
@@ -187,15 +185,9 @@ public class MessagingServerImpl implements MessagingServer
 
    private final Map<String, ServerSession> sessions = new ConcurrentHashMap<String, ServerSession>();
 
-   private ConnectorFactory backupConnectorFactory;
-
-   private Map<String, Object> backupConnectorParams;
-
    private RemotingConnection replicatingConnection;
 
    private Channel replicatingChannel;
-
-   private Object replicatingChannelLock = new Object();
 
    private final Object initialiseLock = new Object();
 
@@ -342,6 +334,8 @@ public class MessagingServerImpl implements MessagingServer
 
          replicatingConnection = null;
          replicatingChannel = null;
+         
+         replicatingConnectionManager.close();
       }
 
       resourceManager.stop();
@@ -618,65 +612,7 @@ public class MessagingServerImpl implements MessagingServer
       }
    }
 
-   public Channel getReplicatingChannel()
-   {
-      synchronized (replicatingChannelLock)
-      {
-         if (replicatingChannel == null && backupConnectorFactory != null)
-         {
-            NoCacheConnectionLifeCycleListener listener = new NoCacheConnectionLifeCycleListener();
-
-            replicatingConnection = (RemotingConnectionImpl)RemotingConnectionImpl.createConnection(backupConnectorFactory,
-                                                                                                    backupConnectorParams,
-                                                                                                    ClientSessionFactoryImpl.DEFAULT_CALL_TIMEOUT,
-                                                                                                    threadPool,
-                                                                                                    listener);
-
-            if (replicatingConnection == null)
-            {
-               return null;
-            }
-
-            listener.conn = replicatingConnection;
-
-            replicatingChannel = replicatingConnection.getChannel(2, -1, false);
-
-            replicatingConnection.addFailureListener(new FailureListener()
-            {
-               public boolean connectionFailed(MessagingException me)
-               {
-                  replicatingChannel.executeOutstandingDelayedResults();
-
-                  return true;
-               }
-            });
-
-            // First time we get channel we send a message down it informing the backup of our node id -
-            // backup and live must have the same node id
-
-            Packet packet = new ReplicateStartupInfoMessage(uuid, storageManager.getCurrentUniqueID());
-
-            final Future future = new Future();
-
-            replicatingChannel.replicatePacket(packet, 1, new Runnable()
-            {
-               public void run()
-               {
-                  future.run();
-               }
-            });
-
-            boolean ok = future.await(10000);
-
-            if (!ok)
-            {
-               throw new IllegalStateException("Timed out waiting for response from backup for initialisation");
-            }
-         }
-      }
-
-      return replicatingChannel;
-   }
+   private ConnectionManager replicatingConnectionManager;
 
    public MessagingServerControl getMessagingServerControl()
    {
@@ -1087,6 +1023,11 @@ public class MessagingServerImpl implements MessagingServer
       }
    }
 
+   public Channel getReplicatingChannel()
+   {
+      return replicatingChannel;
+   }
+
    private boolean setupReplicatingConnection() throws Exception
    {
       String backupConnectorName = configuration.getBackupConnectorName();
@@ -1101,36 +1042,67 @@ public class MessagingServerImpl implements MessagingServer
          }
          else
          {
+            replicatingConnectionManager = new ConnectionManagerImpl(backupConnector,
+                                                                     null,
+                                                                     false,
+                                                                     1,
+                                                                     ClientSessionFactoryImpl.DEFAULT_CALL_TIMEOUT,
+                                                                     ClientSessionFactoryImpl.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
+                                                                     ClientSessionFactoryImpl.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD * 3,
+                                                                     0,
+                                                                     1.0d,
+                                                                     0,
+                                                                     threadPool,
+                                                                     scheduledPool);
 
-            ClassLoader loader = Thread.currentThread().getContextClassLoader();
-            try
-            {
-               Class<?> clz = loader.loadClass(backupConnector.getFactoryClassName());
-               backupConnectorFactory = (ConnectorFactory)clz.newInstance();
-            }
-            catch (Exception e)
-            {
-               throw new IllegalArgumentException("Error instantiating interceptor \"" + backupConnector.getFactoryClassName() +
-                                                           "\"",
-                                                  e);
-            }
+            replicatingConnection = replicatingConnectionManager.getConnection(1);
 
-            backupConnectorParams = backupConnector.getParams();
+            if (replicatingConnection != null)
+            {
+               replicatingChannel = replicatingConnection.getChannel(2, -1, false);
+
+               replicatingConnection.addFailureListener(new FailureListener()
+               {
+                  public boolean connectionFailed(MessagingException me)
+                  {
+                     replicatingChannel.executeOutstandingDelayedResults();
+
+                     return true;
+                  }
+               });
+
+               // First time we get channel we send a message down it informing the backup of our node id -
+               // backup and live must have the same node id
+
+               Packet packet = new ReplicateStartupInfoMessage(uuid, storageManager.getCurrentUniqueID());
+
+               final Future future = new Future();
+
+               replicatingChannel.replicatePacket(packet, 1, new Runnable()
+               {
+                  public void run()
+                  {
+                     future.run();
+                  }
+               });
+
+               boolean ok = future.await(10000);
+
+               if (!ok)
+               {
+                  throw new IllegalStateException("Timed out waiting for response from backup for initialisation");
+               }
+            }
+            else
+            {
+               log.warn("Backup server MUST be started before live server. Initialisation will proceed.");
+
+               return false; 
+            }
          }
       }
 
-      Channel replicatingChannel = getReplicatingChannel();
-
-      if (replicatingChannel == null && backupConnectorFactory != null)
-      {
-         log.warn("Backup server MUST be started before live server. Initialisation will proceed.");
-
-         return false;
-      }
-      else
-      {
-         return true;
-      }
+      return true;      
    }
 
    private void loadJournal() throws Exception
@@ -1447,40 +1419,6 @@ public class MessagingServerImpl implements MessagingServer
       public void run()
       {
          queue.activateNow(threadPool);
-      }
-   }
-
-   private class NoCacheConnectionLifeCycleListener implements ConnectionLifeCycleListener
-   {
-      private RemotingConnection conn;
-
-      public void connectionCreated(final Connection connection)
-      {
-      }
-
-      public void connectionDestroyed(final Object connectionID)
-      {
-         if (conn != null)
-         {
-            conn.destroy();
-         }
-      }
-
-      public void connectionException(final Object connectionID, final MessagingException me)
-      {
-         backupConnectorFactory = null;
-
-         if (conn != null)
-         {
-            // Execute on different thread to avoid deadlocks
-            threadPool.execute(new Runnable()
-            {
-               public void run()
-               {
-                  conn.fail(me);
-               }
-            });
-         }
       }
    }
 
