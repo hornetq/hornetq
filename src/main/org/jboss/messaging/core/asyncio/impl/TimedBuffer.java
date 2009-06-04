@@ -235,7 +235,6 @@ public class TimedBuffer
 
       if (currentBuffer.position() == currentBuffer.capacity())
       {
-         System.out.println("Flush by size");
          flush();
       }
    }
