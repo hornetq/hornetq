@@ -36,7 +36,7 @@ import org.jboss.messaging.utils.VariableLatch;
  * A TimedBuffer
  *
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
- *
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */
 public class TimedBuffer
@@ -48,6 +48,8 @@ public class TimedBuffer
    // Attributes ----------------------------------------------------
 
    private TimedBufferObserver bufferObserver;
+   
+   private static final boolean USE_NATIVE_TIMERS = false;
 
    // This is used to pause and resume the timer
    // This is a reusable Latch, that uses java.util.concurrent base classes
@@ -65,6 +67,8 @@ public class TimedBuffer
 
    // used to measure inactivity. This buffer will be automatically flushed when more than timeout inactive
    private volatile boolean active = false;
+   
+   private final long timeout;
 
    // used to measure sync requests. When a sync is requested, it shouldn't take more than timeout to happen
    private volatile boolean pendingSync = false;
@@ -85,12 +89,21 @@ public class TimedBuffer
    {
       bufferSize = size;
       // Setting the interval for nano-sleeps
-      AsynchronousFileImpl.setNanoSleepInterval((int)timeout);
+      
+      // We are keeping this disabled for now until we figure out what to do.
+      // I've found a few problems with nano-sleep depending on the version of the kernel:
+      // http://fixunix.com/unix/552033-problem-nanosleep.html
+      if (USE_NATIVE_TIMERS)
+      {
+         AsynchronousFileImpl.setNanoSleepInterval((int)timeout);
+      }
+      
       currentBuffer = ByteBuffer.wrap(new byte[bufferSize]);
       currentBuffer.limit(0);
       callbacks = new ArrayList<AIOCallback>();
       this.flushOnSync = flushOnSync;
       latchTimer.up();
+      this.timeout = timeout;
    }
 
    public synchronized void start()
@@ -110,7 +123,7 @@ public class TimedBuffer
    }
 
    public void stop()
-   {      
+   {
       if (!started)
       {
          return;
@@ -275,6 +288,7 @@ public class TimedBuffer
          }
       }
 
+      // Set the buffer as inactive.. we will flush the buffer next tick if nothing change this
       active = false;
    }
 
@@ -286,7 +300,11 @@ public class TimedBuffer
 
       public void run()
       {
-         Thread.currentThread().setPriority(Thread.MAX_PRIORITY);
+         if (USE_NATIVE_TIMERS)
+         {
+            Thread.currentThread().setPriority(Thread.MAX_PRIORITY);
+         }
+         
          while (!closed)
          {
             try
@@ -296,12 +314,33 @@ public class TimedBuffer
             catch (InterruptedException ignored)
             {
             }
+            
+            sleep();
 
             checkTimer();
 
+         }
+      }
+
+      /**
+       * 
+       */
+      private void sleep()
+      {
+         if (USE_NATIVE_TIMERS)
+         {
+            // Some linuxes don't have a good resolution on timers
             // The time is passed on the constructor.
             // I'm avoiding the the long on the calling stack, to avoid performance hits here
             AsynchronousFileImpl.nanoSleep();
+         }
+         else
+         {
+            long time = System.nanoTime() + timeout;
+            while (time > System.nanoTime())
+            {
+               Thread.yield();
+            }
          }
       }
 
