@@ -951,6 +951,36 @@ public class AsynchronousFileTest extends AIOTestBase
       controller.close();
 
    }
+   
+   public void testNanoSleep() throws Exception
+   {
+      AsynchronousFileImpl.setNanoSleepInterval(1);
+      AsynchronousFileImpl.nanoSleep();
+      
+      Thread.currentThread().setPriority(Thread.MAX_PRIORITY);
+      
+      long timeInterval = 1000000;
+      long nloops = 1000;
+      
+      AsynchronousFileImpl.setNanoSleepInterval((int)timeInterval);
+
+      long time = System.currentTimeMillis();
+      
+      for (long i = 0 ; i < nloops; i++)
+      {
+         Thread.sleep(1);
+         //AsynchronousFileImpl.nanoSleep();
+      }
+      
+      long end = System.currentTimeMillis();
+      
+      long expectedTime = (timeInterval * nloops / 1000000l);
+      
+      System.out.println("TotalTime = " +  (end - time) + " expected = " + expectedTime);
+      
+      assertTrue((end - time) >= expectedTime);
+      
+   }
 
    private void addString(final String str, final ByteBuffer buffer)
    {

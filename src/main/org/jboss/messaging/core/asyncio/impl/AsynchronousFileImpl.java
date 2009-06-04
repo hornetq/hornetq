@@ -55,7 +55,7 @@ public class AsynchronousFileImpl implements AsynchronousFile
 
    private static boolean loaded = false;
 
-   private static int EXPECTED_NATIVE_VERSION = 20;
+   private static int EXPECTED_NATIVE_VERSION = 21;
 
    public static void addMax(final int io)
    {
@@ -86,6 +86,8 @@ public class AsynchronousFileImpl implements AsynchronousFile
          }
          else
          {
+            // Initializing nanosleep
+            setNanoSleepInterval(1);
             return true;
          }
       }
@@ -493,6 +495,11 @@ public class AsynchronousFileImpl implements AsynchronousFile
    private static native void resetBuffer(ByteBuffer directByteBuffer, int size);
 
    public static native void destroyBuffer(ByteBuffer buffer);
+   
+   /** Instead of passing the nanoSeconds through the stack call every time, we set it statically inside the native method */
+   public static native void setNanoSleepInterval(int nanoseconds);
+   
+   public static native void nanoSleep();
 
    private static native ByteBuffer newNativeBuffer(long size);
 

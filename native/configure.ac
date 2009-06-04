@@ -11,7 +11,7 @@ AC_PREREQ(2.59)
 
 AC_JNI_INCLUDE_DIR
 AC_CONFIG_HEADERS([config.h:config.in])
-AC_CONFIG_SRCDIR([src/LibAIOController.cpp])
+AC_CONFIG_SRCDIR([src/JNI_AsynchronousFileImpl.cpp])
 
 # Check for libaio and libaio-devel
 libaio_fail=0

@@ -97,7 +97,7 @@ public class ConfigurationImpl implements Configuration
    
    public static final boolean DEFAULT_JOURNAL_AIO_FLUSH_SYNC = false;
    
-   public static final int DEFAULT_JOURNAL_AIO_BUFFER_TIMEOUT = 1;
+   public static final int DEFAULT_JOURNAL_AIO_BUFFER_TIMEOUT = 500000;
    
    public static final int DEFAULT_JOURNAL_AIO_BUFFER_SIZE = 128 * 1024;
 

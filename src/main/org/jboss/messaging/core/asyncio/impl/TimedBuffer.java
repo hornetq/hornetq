@@ -48,15 +48,12 @@ public class TimedBuffer
    // Attributes ----------------------------------------------------
 
    private TimedBufferObserver bufferObserver;
-   
-   
+
    // This is used to pause and resume the timer
    // This is a reusable Latch, that uses java.util.concurrent base classes
    private final VariableLatch latchTimer = new VariableLatch();
 
    private CheckTimer timerRunnable = new CheckTimer();
-
-   private final long timeout;
 
    private final int bufferSize;
 
@@ -67,15 +64,15 @@ public class TimedBuffer
    private final Lock lock = new ReentrantReadWriteLock().writeLock();
 
    // used to measure inactivity. This buffer will be automatically flushed when more than timeout inactive
-   private volatile long timeLastAdd = 0;
+   private volatile boolean active = false;
 
    // used to measure sync requests. When a sync is requested, it shouldn't take more than timeout to happen
-   private volatile long timeLastSync = 0;
+   private volatile boolean pendingSync = false;
 
    private Thread timerThread;
-   
+
    private volatile boolean started;
-   
+
    private final boolean flushOnSync;
 
    // Static --------------------------------------------------------
@@ -87,27 +84,28 @@ public class TimedBuffer
    public TimedBuffer(final int size, final long timeout, final boolean flushOnSync)
    {
       bufferSize = size;
-      this.timeout = timeout;      
+      // Setting the interval for nano-sleeps
+      AsynchronousFileImpl.setNanoSleepInterval((int)timeout);
       currentBuffer = ByteBuffer.wrap(new byte[bufferSize]);
       currentBuffer.limit(0);
       callbacks = new ArrayList<AIOCallback>();
       this.flushOnSync = flushOnSync;
       latchTimer.up();
    }
-   
+
    public synchronized void start()
    {
       if (started)
       {
          return;
       }
-      
+
       timerRunnable = new CheckTimer();
-      
+
       timerThread = new Thread(timerRunnable, "jbm-aio-timer");
 
       timerThread.start();
-      
+
       started = true;
    }
 
@@ -117,9 +115,9 @@ public class TimedBuffer
       {
          return;
       }
-      
+
       latchTimer.down();
-      
+
       timerRunnable.close();
 
       while (timerThread.isAlive())
@@ -132,7 +130,7 @@ public class TimedBuffer
          {
          }
       }
-      
+
       started = false;
    }
 
@@ -142,7 +140,7 @@ public class TimedBuffer
       {
          flush();
       }
-      
+
       this.bufferObserver = observer;
    }
 
@@ -194,14 +192,16 @@ public class TimedBuffer
 
    public synchronized void addBytes(final ByteBuffer bytes, final boolean sync, final AIOCallback callback)
    {
-      long now = System.nanoTime();
+      if (currentBuffer.position() == 0)
+      {
+         // Resume latch
+         latchTimer.down();
+      }
 
       currentBuffer.put(bytes);
       callbacks.add(callback);
 
-      timeLastAdd = now;
-      
-      latchTimer.down();
+      active = true;
 
       if (sync)
       {
@@ -212,15 +212,16 @@ public class TimedBuffer
          else
          {
             // We should flush on the next timeout, no matter what other activity happens on the buffer
-            if (timeLastSync == 0)
+            if (!pendingSync)
             {
-               timeLastSync = now;
+               pendingSync = true;
             }
          }
       }
-      
+
       if (currentBuffer.position() == currentBuffer.capacity())
       {
+         System.out.println("Flush by size");
          flush();
       }
    }
@@ -230,7 +231,7 @@ public class TimedBuffer
       if (currentBuffer.limit() > 0)
       {
          latchTimer.up();
-         
+
          ByteBuffer directBuffer = bufferObserver.newBuffer(bufferSize, currentBuffer.position());
 
          // Putting a byteArray on a native buffer is much faster, since it will do in a single native call.
@@ -241,8 +242,8 @@ public class TimedBuffer
 
          callbacks = new ArrayList<AIOCallback>();
 
-         timeLastAdd = 0;
-         timeLastSync = 0;
+         active = false;
+         pendingSync = false;
 
          currentBuffer.limit(0);
       }
@@ -256,15 +257,13 @@ public class TimedBuffer
 
    private void checkTimer()
    {
-      final long now = System.nanoTime();
-
       // if inactive for more than the timeout
       // of if a sync happened at more than the the timeout ago
-      if (timeLastAdd != 0 && now - timeLastAdd >= timeout || timeLastSync != 0 && now - timeLastSync >= timeout)
+      if (!active || pendingSync)
       {
          lock.lock();
          try
-         {            
+         {
             if (bufferObserver != null)
             {
                flush();
@@ -275,6 +274,8 @@ public class TimedBuffer
             lock.unlock();
          }
       }
+
+      active = false;
    }
 
    // Inner classes -------------------------------------------------
@@ -282,9 +283,10 @@ public class TimedBuffer
    private class CheckTimer implements Runnable
    {
       private volatile boolean closed = false;
-      
+
       public void run()
       {
+         Thread.currentThread().setPriority(Thread.MAX_PRIORITY);
          while (!closed)
          {
             try
@@ -297,9 +299,9 @@ public class TimedBuffer
 
             checkTimer();
 
-            //TODO - this yield is temporary
-            
-            Thread.yield();
+            // The time is passed on the constructor.
+            // I'm avoiding the the long on the calling stack, to avoid performance hits here
+            AsynchronousFileImpl.nanoSleep();
          }
       }
 
