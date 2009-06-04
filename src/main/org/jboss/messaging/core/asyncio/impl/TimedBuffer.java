@@ -49,6 +49,7 @@ public class TimedBuffer
 
    private TimedBufferObserver bufferObserver;
    
+   // Some kernels don't have good resolutions on timers.. I've set this to disabled.. we may decide later
    private static final boolean USE_NATIVE_TIMERS = false;
 
    // This is used to pause and resume the timer
@@ -329,7 +330,6 @@ public class TimedBuffer
       {
          if (USE_NATIVE_TIMERS)
          {
-            // Some linuxes don't have a good resolution on timers
             // The time is passed on the constructor.
             // I'm avoiding the the long on the calling stack, to avoid performance hits here
             AsynchronousFileImpl.nanoSleep();
