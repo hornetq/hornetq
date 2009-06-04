@@ -96,7 +96,7 @@ public class ReplicationAwareMessagingServerControlWrapper extends ReplicationAw
       return localControl.getAIOBufferSize();
    }
 
-   public long getAIOBufferTimeout()
+   public int getAIOBufferTimeout()
    {
       return localControl.getAIOBufferTimeout();
    }

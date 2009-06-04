@@ -92,7 +92,7 @@ public interface MessagingServerControlMBean
    
    int getAIOBufferSize();
    
-   long getAIOBufferTimeout();
+   int getAIOBufferTimeout();
    
    public long getPagingMaxGlobalSizeBytes();
 

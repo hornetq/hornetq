@@ -422,9 +422,9 @@ public class MessagingServerControlUsingCoreTest extends MessagingServerControlT
             return (Integer)proxy.retrieveAttributeValue("AIOBufferSize");
          }
 
-         public long getAIOBufferTimeout()
+         public int getAIOBufferTimeout()
          {
-            return (Long)proxy.retrieveAttributeValue("AIOBufferTimeout");
+            return (Integer)proxy.retrieveAttributeValue("AIOBufferTimeout");
          }
 
          public boolean isAIOFlushOnSync()

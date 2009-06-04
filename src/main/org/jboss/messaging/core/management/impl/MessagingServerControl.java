@@ -162,7 +162,7 @@ public class MessagingServerControl implements MessagingServerControlMBean, Noti
       return configuration.getAIOBufferSize();
    }
    
-   public long getAIOBufferTimeout()
+   public int getAIOBufferTimeout()
    {
       return configuration.getAIOBufferTimeout();
    }
