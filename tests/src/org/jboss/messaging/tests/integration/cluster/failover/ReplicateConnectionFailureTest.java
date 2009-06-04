@@ -74,12 +74,12 @@ public class ReplicateConnectionFailureTest extends UnitTestCase
 
    public void testFailConnection() throws Exception
    {
-      final long pingPeriod = 500;
+      final long clientFailureCheckPeriod = 500;
 
       ClientSessionFactoryInternal sf1 = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"));
                                                                       
-      sf1.setPingPeriod(pingPeriod);
-      sf1.setConnectionTTL((long)(pingPeriod * 1.5));      
+      sf1.setClientFailureCheckPeriod(clientFailureCheckPeriod);
+      sf1.setConnectionTTL((long)(clientFailureCheckPeriod * 1.5));      
       sf1.setProducerWindowSize(32 * 1024);
 
       assertEquals(0, liveServer.getRemotingService().getConnections().size());
@@ -106,9 +106,9 @@ public class ReplicateConnectionFailureTest extends UnitTestCase
 
       final RemotingConnectionImpl conn1 = (RemotingConnectionImpl)((ClientSessionImpl)session1).getConnection();
 
-      conn1.stopPingingAfterOne();
+      //conn1.stopPingingAfterOne();
 
-      Thread.sleep(3 * pingPeriod);
+      Thread.sleep(3 * clientFailureCheckPeriod);
 
       assertEquals(0, liveServer.getRemotingService().getConnections().size());
 

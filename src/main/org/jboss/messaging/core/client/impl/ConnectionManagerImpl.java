@@ -23,6 +23,7 @@
 package org.jboss.messaging.core.client.impl;
 
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.EARLY_RESPONSE;
+import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.PING;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -35,7 +36,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 
 import org.jboss.messaging.core.client.ClientSession;
@@ -48,9 +51,12 @@ import org.jboss.messaging.core.remoting.FailureListener;
 import org.jboss.messaging.core.remoting.Packet;
 import org.jboss.messaging.core.remoting.RemotingConnection;
 import org.jboss.messaging.core.remoting.impl.AbstractBufferHandler;
+import org.jboss.messaging.core.remoting.impl.Pinger;
 import org.jboss.messaging.core.remoting.impl.RemotingConnectionImpl;
 import org.jboss.messaging.core.remoting.impl.wireformat.CreateSessionMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.CreateSessionResponseMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
+import org.jboss.messaging.core.remoting.impl.wireformat.Ping;
 import org.jboss.messaging.core.remoting.spi.Connection;
 import org.jboss.messaging.core.remoting.spi.ConnectionLifeCycleListener;
 import org.jboss.messaging.core.remoting.spi.Connector;
@@ -99,7 +105,7 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
 
    private final long callTimeout;
 
-   private final long pingPeriod;
+   private final long clientFailureCheckPeriod;
 
    private final long connectionTTL;
 
@@ -114,9 +120,9 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
    private final Object failoverLock = new Object();
 
    private final ExecutorFactory orderedExecutorFactory;
-   
+
    private final ExecutorService threadPool;
-   
+
    private final ScheduledExecutorService scheduledThreadPool;
 
    private final Map<Object, ConnectionEntry> connections = Collections.synchronizedMap(new LinkedHashMap<Object, ConnectionEntry>());
@@ -138,6 +144,12 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
    private volatile boolean closed;
 
    private boolean inFailoverOrReconnect;
+   
+   private Connector connector;
+   
+   private Map<Object, FailedConnectionRunnable> failRunnables = new ConcurrentHashMap<Object, FailedConnectionRunnable>();
+
+   private Map<Object, Pinger> pingRunnables = new ConcurrentHashMap<Object, Pinger>();
 
    // debug
 
@@ -151,7 +163,9 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
 
       debugConns = new ConcurrentHashMap<TransportConfiguration, Set<RemotingConnection>>();
    }
-
+   
+   public static boolean schedulePingersOneShot = false;
+   
    // Static
    // ---------------------------------------------------------------------------------------
 
@@ -163,7 +177,7 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
                                 final boolean failoverOnServerShutdown,
                                 final int maxConnections,
                                 final long callTimeout,
-                                final long pingPeriod,
+                                final long clientFailureCheckPeriod,
                                 final long connectionTTL,
                                 final long retryInterval,
                                 final double retryIntervalMultiplier,
@@ -198,7 +212,7 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
 
       this.callTimeout = callTimeout;
 
-      this.pingPeriod = pingPeriod;
+      this.clientFailureCheckPeriod = clientFailureCheckPeriod;
 
       this.connectionTTL = connectionTTL;
 
@@ -207,14 +221,14 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
       this.retryIntervalMultiplier = retryIntervalMultiplier;
 
       this.reconnectAttempts = reconnectAttempts;
-      
-      this.scheduledThreadPool = scheduledThreadPool; 
-      
-      this.threadPool = threadPool;
-      
-      this.orderedExecutorFactory = new OrderedExecutorFactory(threadPool);
-   }
 
+      this.scheduledThreadPool = scheduledThreadPool;
+
+      this.threadPool = threadPool;
+
+      this.orderedExecutorFactory = new OrderedExecutorFactory(threadPool);      
+   }
+   
    // ConnectionLifeCycleListener implementation --------------------------------------------------
 
    public void connectionCreated(final Connection connection)
@@ -230,7 +244,7 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
    {
       failConnection(connectionID, me);
    }
-   
+
    // ConnectionManager implementation ------------------------------------------------------------------
 
    public ClientSession createSession(final String username,
@@ -324,7 +338,9 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
                {
                   CreateSessionResponseMessage response = (CreateSessionResponseMessage)pResponse;
 
-                  Channel sessionChannel = connection.getChannel(sessionChannelID, producerWindowSize, producerWindowSize != -1);
+                  Channel sessionChannel = connection.getChannel(sessionChannelID,
+                                                                 producerWindowSize,
+                                                                 producerWindowSize != -1);
 
                   ClientSessionInternal session = new ClientSessionImpl(this,
                                                                         name,
@@ -505,7 +521,7 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
          boolean attemptFailover = (backupConnectorFactory) != null && (failoverOnServerShutdown || me.getCode() != MessagingException.DISCONNECTED);
 
          boolean done = false;
-         
+
          if (attemptFailover || reconnectAttempts != 0)
          {
             lockAllChannel1s();
@@ -554,21 +570,23 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
             {
                oldConnections.add(entry.connection);
             }
-
+                       
+            closeScheduledRunnables();
+            
             connections.clear();
 
             refCount = 0;
 
             mapIterator = null;
-            
+
             try
             {
                connector.close();
             }
             catch (Exception ignore)
-            {               
+            {
             }
-            
+
             connector = null;
 
             if (attemptFailover)
@@ -619,6 +637,28 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
          inFailoverOrReconnect = false;
 
          return done;
+      }
+   }
+   
+   private void closeScheduledRunnables()
+   {
+      for (Object id: new HashSet<Object>(connections.keySet()))
+      {
+         connections.remove(id);
+   
+         FailedConnectionRunnable runnable = failRunnables.remove(id);
+   
+         if (runnable != null)
+         {
+            runnable.close();
+         }
+   
+         Pinger pingRunnable = pingRunnables.remove(id);
+   
+         if (pingRunnable != null)
+         {
+            pingRunnable.close();
+         }
       }
    }
 
@@ -767,20 +807,22 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
       if (refCount == 0)
       {
          // Close connections
-
+         
          Set<ConnectionEntry> copy = new HashSet<ConnectionEntry>(connections.values());
 
+         closeScheduledRunnables();
+         
          connections.clear();
 
          for (ConnectionEntry entry : copy)
-         {           
+         {
             try
-            {              
+            {
                entry.connection.destroy();
             }
             catch (Throwable ignore)
             {
-            }           
+            }
          }
 
          mapIterator = null;
@@ -792,12 +834,10 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
          catch (Throwable ignore)
          {
          }
-         
+
          connector = null;
       }
    }
-
-   private Connector connector;
 
    private RemotingConnection getConnection(final int initialRefCount)
    {
@@ -806,15 +846,15 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
       if (connections.size() < maxConnections)
       {
          // Create a new one
-        
+
          Connection tc = null;
 
          try
          {
             if (connector == null)
-            {               
+            {
                DelegatingBufferHandler handler = new DelegatingBufferHandler();
-               
+
                connector = connectorFactory.createConnector(transportParams, handler, this, threadPool);
 
                if (connector != null)
@@ -880,13 +920,50 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
             return null;
          }
 
-         conn = new RemotingConnectionImpl(tc, callTimeout, pingPeriod, connectionTTL, scheduledThreadPool, threadPool, null);
+         conn = new RemotingConnectionImpl(tc, callTimeout, null);
 
          conn.addFailureListener(new DelegatingFailureListener(conn.getID()));
 
-         connections.put(conn.getID(), new ConnectionEntry(conn, connector));         
+         connections.put(conn.getID(), new ConnectionEntry(conn, connector));
+                  
+         //Send the initial ping, we always do this it contains connectionTTL and clientFailureInterval - 
+         //the server needs this in order to do pinging and failure checking
          
-         conn.startPinger();
+         Ping ping = new Ping(clientFailureCheckPeriod, connectionTTL);
+         
+         Channel channel0 = conn.getChannel(0, -1, false);
+         
+         channel0.setHandler(new Channel0Handler(conn));
+         
+         channel0.send(ping);
+         
+         if (clientFailureCheckPeriod != -1)
+         {
+            Pinger pinger = new Pinger(conn);
+            
+            Future<?> pingerFuture;
+            
+            if (schedulePingersOneShot)
+            {
+               pingerFuture = scheduledThreadPool.schedule(pinger, connectionTTL / 2, TimeUnit.MILLISECONDS);
+            }
+            else
+            {
+               pingerFuture = scheduledThreadPool.scheduleAtFixedRate(pinger, connectionTTL / 2, connectionTTL / 2, TimeUnit.MILLISECONDS);
+            }
+                        
+            pinger.setFuture(pingerFuture);
+            
+            pingRunnables.put(conn.getID(), pinger);
+            
+            FailedConnectionRunnable fcRunnable = new FailedConnectionRunnable(conn);
+            
+            Future<?> fcFuture = scheduledThreadPool.scheduleAtFixedRate(fcRunnable, clientFailureCheckPeriod, clientFailureCheckPeriod, TimeUnit.MILLISECONDS);
+            
+            fcRunnable.setFuture(fcFuture);
+            
+            failRunnables.put(conn.getID(), fcRunnable);            
+         }
 
          if (debug)
          {
@@ -911,7 +988,44 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
 
       return conn;
    }
+   
+   private class Channel0Handler implements ChannelHandler
+   {
+      private final RemotingConnection conn;
+      
+      private Channel0Handler(final RemotingConnection conn)
+      {
+         this.conn = conn;
+      }
+      
+      public void handlePacket(final Packet packet)
+      {
+         final byte type = packet.getType();
 
+         if (type == PING)
+         {
+            //Do nothing
+         }
+         else if (type == PacketImpl.DISCONNECT)
+         {
+            threadPool.execute(new Runnable()
+            {
+               // Must be executed on new thread since cannot block the netty thread for a long time and fail can
+               // cause reconnect loop
+               public void run()
+               {
+                  conn.fail(new MessagingException(MessagingException.DISCONNECTED,
+                                              "The connection was closed by the server"));
+               }
+            });
+         }
+         else
+         {
+            throw new IllegalArgumentException("Invalid packet: " + packet);
+         }
+      }
+   }
+      
    private void returnConnection(final Object connectionID)
    {
       ConnectionEntry entry = connections.get(connectionID);
@@ -1005,6 +1119,59 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
          conn.fail(me);
       }
    }
+   
+   private class FailedConnectionRunnable implements Runnable
+   {
+      private boolean closed;
+
+      private RemotingConnection conn;
+
+      private Future<?> future;
+
+      FailedConnectionRunnable(final RemotingConnection conn)
+      {
+         this.conn = conn;
+      }
+
+      public synchronized void setFuture(final Future<?> future)
+      {
+         this.future = future;
+      }
+
+      public synchronized void run()
+      {
+         if (closed)
+         {
+            return;
+         }
+
+         if (!conn.isDataReceived())
+         {
+            final MessagingException me = new MessagingException(MessagingException.CONNECTION_TIMEDOUT,
+                                                           "Did not receive ping on connection. It is likely a client has exited or crashed without " + "closing its connection, or the network between the server and client has failed. The connection will now be closed.");
+
+            threadPool.execute(new Runnable()
+            {
+               //Must be executed on different thread
+               public void run()
+               {
+                  conn.fail(me);
+               }
+            });
+         }
+         else
+         {            
+            conn.clearDataReceived();
+         }
+      }
+
+      public synchronized void close()
+      {
+         future.cancel(false);
+
+         closed = true;
+      }
+   }
 
    private static class ConnectionEntry
    {
@@ -1021,13 +1188,13 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
    }
 
    private class DelegatingBufferHandler extends AbstractBufferHandler
-   {     
+   {
       public void bufferReceived(final Object connectionID, final MessagingBuffer buffer)
       {
          ConnectionEntry entry = connections.get(connectionID);
-         
+
          if (entry != null)
-         {         
+         {
             entry.connection.bufferReceived(connectionID, buffer);
          }
       }

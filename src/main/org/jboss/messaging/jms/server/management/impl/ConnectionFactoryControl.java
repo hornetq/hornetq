@@ -74,9 +74,9 @@ public class ConnectionFactoryControl extends StandardMBean implements Connectio
       return cf.getClientID();
    }
 
-   public long getPingPeriod()
+   public long getClientFailureCheckPeriod()
    {
-      return cf.getPingPeriod();
+      return cf.getClientFailureCheckPeriod();
    }
 
    public long getCallTimeout()

@@ -10,7 +10,7 @@
          <entry name="java:/connectionfactories/acme/fullConfigurationConnectionFactory"/>
       </entries>
       <connector-ref connector-name="netty"/>
-      <ping-period>1234</ping-period>
+      <client-failure-check-period>1234</client-failure-check-period>
       <call-timeout>5678</call-timeout>
       <consumer-window-size>12345</consumer-window-size>
       <consumer-max-rate>6789</consumer-max-rate>

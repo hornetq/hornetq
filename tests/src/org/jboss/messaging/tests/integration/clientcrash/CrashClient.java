@@ -61,7 +61,7 @@ public class CrashClient
 
          ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.integration.transports.netty.NettyConnectorFactory"));
 
-         sf.setPingPeriod(ClientCrashTest.PING_PERIOD);
+         sf.setClientFailureCheckPeriod(ClientCrashTest.PING_PERIOD);
          sf.setConnectionTTL(ClientCrashTest.CONNECTION_TTL);
 
          ClientSession session = sf.createSession(false, true, true);

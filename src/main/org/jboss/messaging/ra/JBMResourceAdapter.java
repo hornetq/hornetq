@@ -428,33 +428,33 @@ public class JBMResourceAdapter implements ResourceAdapter
    }
 
    /**
-    * Get ping period
+    * Get client failure check period
     *
     * @return The value
     */
-   public Long getPingPeriod()
+   public Long getClientFailureCheckPeriod()
    {
       if (trace)
       {
-         log.trace("getPingPeriod()");
+         log.trace("getClientFailureCheckPeriod()");
       }
 
-      return raProperties.getPingPeriod();
+      return raProperties.getClientFailureCheckPeriod();
    }
 
    /**
-    * Set ping period
+    * Set client failure check period
     *
-    * @param pingPeriod The value
+    * @param clientFailureCheckPeriod The value
     */
-   public void setPingPeriod(final Long pingPeriod)
+   public void setClientFailureCheckPeriod(final Long clientFailureCheckPeriod)
    {
       if (trace)
       {
-         log.trace("setPingPeriod(" + pingPeriod + ")");
+         log.trace("setClientFailureCheckPeriod(" + clientFailureCheckPeriod + ")");
       }
 
-      raProperties.setPingPeriod(pingPeriod);
+      raProperties.setClientFailureCheckPeriod(clientFailureCheckPeriod);
    }
 
    /**
@@ -1319,9 +1319,9 @@ public class JBMResourceAdapter implements ResourceAdapter
          cf.setConnectionLoadBalancingPolicyClassName(getLoadBalancingPolicyClassName());
       }
 
-      if (getPingPeriod() != null)
+      if (getClientFailureCheckPeriod() != null)
       {
-         cf.setPingPeriod(getPingPeriod());
+         cf.setClientFailureCheckPeriod(getClientFailureCheckPeriod());
       }
 
       if (getConnectionTTL() != null)

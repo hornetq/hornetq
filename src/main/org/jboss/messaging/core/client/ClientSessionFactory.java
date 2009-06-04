@@ -59,9 +59,9 @@ public interface ClientSessionFactory
    
    void setStaticConnectors(List<Pair<TransportConfiguration, TransportConfiguration>> staticConnectors);
    
-   long getPingPeriod();
+   long getClientFailureCheckPeriod();
 
-   void setPingPeriod(long pingPeriod);
+   void setClientFailureCheckPeriod(long clientFailureCheckPeriod);
 
    long getConnectionTTL();
 

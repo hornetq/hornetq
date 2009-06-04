@@ -222,7 +222,7 @@ public class ObjectMessageTest extends MessageTestBase
       while (tokenString.hasMoreElements())
       {
          String value = tokenString.nextToken();
-         URL itemLocation = new File(value).toURL();
+         URL itemLocation = new File(value).toURI().toURL();
          if (!itemLocation.equals(classLocation) &&
                       itemLocation.toString().indexOf(pathIgnore) >= 0)
          {

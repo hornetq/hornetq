@@ -12,6 +12,9 @@
 
 package org.jboss.messaging.jms.server.impl;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.TransportConfiguration;
@@ -24,9 +27,6 @@ import org.jboss.messaging.utils.Pair;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
@@ -42,7 +42,7 @@ public class JMSServerDeployer extends XmlDeployer
 
    private static final String CLIENTID_ELEMENT = "client-id";
 
-   private static final String PING_PERIOD_ELEMENT = "ping-period";
+   private static final String CLIENT_FAILURE_CHECK_PERIOD = "client-failure-check-period";
 
    private static final String CONNECTION_TTL_ELEMENT = "connection-ttl";
 
@@ -164,7 +164,7 @@ public class JMSServerDeployer extends XmlDeployer
       {
          NodeList children = node.getChildNodes();
 
-         long pingPeriod = ClientSessionFactoryImpl.DEFAULT_PING_PERIOD;
+         long clientFailureCheckPeriod = ClientSessionFactoryImpl.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD;
          long connectionTTL = ClientSessionFactoryImpl.DEFAULT_CONNECTION_TTL;
          long callTimeout = ClientSessionFactoryImpl.DEFAULT_CALL_TIMEOUT;
          String clientID = null;
@@ -199,9 +199,9 @@ public class JMSServerDeployer extends XmlDeployer
          {
             Node child = children.item(j);
 
-            if (PING_PERIOD_ELEMENT.equals(child.getNodeName()))
+            if (CLIENT_FAILURE_CHECK_PERIOD.equals(child.getNodeName()))
             {
-               pingPeriod = org.jboss.messaging.utils.XMLUtil.parseLong(child);
+               clientFailureCheckPeriod = org.jboss.messaging.utils.XMLUtil.parseLong(child);
             }
             else if (CONNECTION_TTL_ELEMENT.equals(child.getNodeName()))
             {
@@ -374,7 +374,7 @@ public class JMSServerDeployer extends XmlDeployer
                                                      discoveryGroupConfiguration.getGroupPort(),
                                                      clientID,
                                                      discoveryGroupConfiguration.getRefreshTimeout(),
-                                                     pingPeriod,
+                                                     clientFailureCheckPeriod,
                                                      connectionTTL,
                                                      callTimeout,
                                                      maxConnections,
@@ -406,7 +406,7 @@ public class JMSServerDeployer extends XmlDeployer
             jmsServerControl.createConnectionFactory(name,
                                                      connectorConfigs,
                                                      clientID,
-                                                     pingPeriod,
+                                                     clientFailureCheckPeriod,
                                                      connectionTTL,
                                                      callTimeout,
                                                      maxConnections,

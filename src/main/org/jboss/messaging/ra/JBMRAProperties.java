@@ -62,7 +62,7 @@ public class JBMRAProperties implements Serializable
    private String connectionLoadBalancingPolicyClassName;
 
    /** */
-   private Long pingPeriod;
+   private Long clientFailureCheckPeriod;
 
    /** */
    private Long connectionTTL;
@@ -294,31 +294,31 @@ public class JBMRAProperties implements Serializable
    }
 
    /**
-    * Get ping period
+    * Get client failure check period
     * @return The value
     */
-   public Long getPingPeriod()
+   public Long getClientFailureCheckPeriod()
    {
       if (trace)
       {
-         log.trace("getPingPeriod()");
+         log.trace("getClientFailureCheckPeriod()");
       }
 
-      return pingPeriod;
+      return clientFailureCheckPeriod;
    }
 
    /**
-    * Set ping period
-    * @param pingPeriod The value
+    * Set client failure check period
+    * @param clientFailureCheckPeriod The value
     */
-   public void setPingPeriod(final Long pingPeriod)
+   public void setClientFailureCheckPeriod(final Long clientFailureCheckPeriod)
    {
       if (trace)
       {
-         log.trace("setPingPeriod(" + pingPeriod + ")");
+         log.trace("setClientFailureCheckPeriod(" + clientFailureCheckPeriod + ")");
       }
 
-      this.pingPeriod = pingPeriod;
+      this.clientFailureCheckPeriod = clientFailureCheckPeriod;
    }
 
    /**
@@ -1010,7 +1010,7 @@ public class JBMRAProperties implements Serializable
                 Util.compare(discoveryRefreshTimeout, you.getDiscoveryRefreshTimeout()) &&
                 Util.compare(discoveryInitialWaitTimeout, you.getDiscoveryInitialWaitTimeout()) &&
                 Util.compare(connectionLoadBalancingPolicyClassName, you.getConnectionLoadBalancingPolicyClassName()) &&
-                Util.compare(pingPeriod, you.getPingPeriod()) &&
+                Util.compare(clientFailureCheckPeriod, you.getClientFailureCheckPeriod()) &&
                 Util.compare(connectionTTL, you.getConnectionTTL()) &&
                 Util.compare(callTimeout, you.getCallTimeout()) &&
                 Util.compare(dupsOKBatchSize, you.getDupsOKBatchSize()) &&
@@ -1058,7 +1058,7 @@ public class JBMRAProperties implements Serializable
       hash += 31 * hash + (discoveryRefreshTimeout != null ? discoveryRefreshTimeout.hashCode() : 0);
       hash += 31 * hash + (discoveryInitialWaitTimeout != null ? discoveryInitialWaitTimeout.hashCode() : 0);
       hash += 31 * hash + (connectionLoadBalancingPolicyClassName != null ? connectionLoadBalancingPolicyClassName.hashCode() : 0);
-      hash += 31 * hash + (pingPeriod != null ? pingPeriod.hashCode() : 0);
+      hash += 31 * hash + (clientFailureCheckPeriod != null ? clientFailureCheckPeriod.hashCode() : 0);
       hash += 31 * hash + (connectionTTL != null ? connectionTTL.hashCode() : 0);
       hash += 31 * hash + (callTimeout != null ? callTimeout.hashCode() : 0);
       hash += 31 * hash + (dupsOKBatchSize != null ? dupsOKBatchSize.hashCode() : 0);

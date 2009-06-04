@@ -280,14 +280,14 @@ public class JBossConnectionFactory implements ConnectionFactory, QueueConnectio
       this.transactionBatchSize = transactionBatchSize;
    }
 
-   public synchronized long getPingPeriod()
+   public synchronized long getClientFailureCheckPeriod()
    {
-      return sessionFactory.getPingPeriod();
+      return sessionFactory.getClientFailureCheckPeriod();
    }
 
-   public synchronized void setPingPeriod(long pingPeriod)
+   public synchronized void setClientFailureCheckPeriod(long clientFailureCheckPeriod)
    {
-      sessionFactory.setPingPeriod(pingPeriod);
+      sessionFactory.setClientFailureCheckPeriod(clientFailureCheckPeriod);
    }
 
    public synchronized long getConnectionTTL()

@@ -131,7 +131,7 @@ public class PingStressTest extends ServiceTestBase
 
       final ClientSessionFactory csf1 = new ClientSessionFactoryImpl(transportConfig);
       
-      csf1.setPingPeriod(PING_INTERVAL);
+      csf1.setClientFailureCheckPeriod(PING_INTERVAL);
       csf1.setConnectionTTL((long)(PING_INTERVAL * 1.5));
       csf1.setCallTimeout(PING_INTERVAL * 10);
       
@@ -162,7 +162,7 @@ public class PingStressTest extends ServiceTestBase
 
                final ClientSessionFactory csf2 = new ClientSessionFactoryImpl(transportConfig);
                
-               csf2.setPingPeriod(PING_INTERVAL);
+               csf2.setClientFailureCheckPeriod(PING_INTERVAL);
                csf2.setConnectionTTL((long)(PING_INTERVAL * 1.5));
                csf2.setCallTimeout(PING_INTERVAL * 10);
 

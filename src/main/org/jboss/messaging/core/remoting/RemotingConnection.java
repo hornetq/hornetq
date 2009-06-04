@@ -49,10 +49,6 @@ public interface RemotingConnection extends BufferHandler
 
    void destroy();
 
-   boolean isExpired(long now);
-
-   void startPinger();
-
    void syncIDGeneratorSequence(long id);
 
    long getIDGeneratorSequence();
@@ -64,4 +60,12 @@ public interface RemotingConnection extends BufferHandler
    Connection getTransportConnection();
 
    void addClosingListener(CloseListener listener);
+      
+   boolean isDataReceived();
+   
+   boolean isDataSent();
+   
+   void clearDataSent();
+   
+   void clearDataReceived();
 }

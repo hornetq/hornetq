@@ -80,7 +80,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Executor;
-import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
@@ -106,7 +105,6 @@ import org.jboss.messaging.core.remoting.impl.wireformat.NullResponseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
 import org.jboss.messaging.core.remoting.impl.wireformat.PacketsConfirmedMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.Ping;
-import org.jboss.messaging.core.remoting.impl.wireformat.Pong;
 import org.jboss.messaging.core.remoting.impl.wireformat.ReattachSessionMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.ReattachSessionResponseMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.ReplicateCreateSessionMessage;
@@ -173,11 +171,8 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
 
    public static RemotingConnection createConnection(final ConnectorFactory connectorFactory,
                                                      final Map<String, Object> params,
-                                                     final long callTimeout,
-                                                     final long pingInterval,
-                                                     final long connectionTTL,
-                                                     final ScheduledExecutorService pingExecutor,
-                                                     final Executor threadPool, 
+                                                     final long callTimeout,                                          
+                                                     final Executor threadPool,
                                                      final ConnectionLifeCycleListener listener)
    {
       DelegatingBufferHandler handler = new DelegatingBufferHandler();
@@ -199,11 +194,7 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
       }
 
       RemotingConnection connection = new RemotingConnectionImpl(tc,
-                                                                 callTimeout,
-                                                                 pingInterval,
-                                                                 connectionTTL,
-                                                                 pingExecutor,
-                                                                 threadPool,
+                                                                 callTimeout,                                                                                                                     
                                                                  null);
 
       handler.conn = connection;
@@ -234,36 +225,15 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
 
    private final long blockingCallTimeout;
 
-   private Runnable pinger;
-
    private final List<Interceptor> interceptors;
 
    private ScheduledFuture<?> future;
 
-   private boolean firstTime = true;
-
-   private volatile boolean gotPong;
-
    private volatile boolean destroyed;
-
-   private volatile boolean stopPinging;
-
-   private volatile long expireTime = -1;
-
-   private final Channel pingChannel;
 
    private volatile boolean active;
 
    private final boolean client;
-
-   private final long pingPeriod;
-
-   // How long without a ping before the connection times out
-   private final long connectionTTL;
-
-   private final ScheduledExecutorService pingExecutor;
-   
-   private final Executor threadPool;
 
    // Channels 0-9 are reserved for the system
    // 0 is for pinging
@@ -275,12 +245,14 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
 
    private final Object transferLock = new Object();
 
-   private final ChannelHandler ppHandler = new PingPongHandler();
-
    private boolean frozen;
 
    private final Object failLock = new Object();
-
+   
+   private volatile boolean dataReceived;
+   
+   private volatile boolean dataSent;
+   
    // debug only stuff
 
    private boolean createdActive;
@@ -292,14 +264,14 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
     * Create a client side connection
     */
    public RemotingConnectionImpl(final Connection transportConnection,
-                                 final long blockingCallTimeout,
-                                 final long pingPeriod,
-                                 final long connectionTTL,
-                                 final ScheduledExecutorService pingExecutor,
-                                 final Executor threadPool,
+                                 final long blockingCallTimeout,                                                 
                                  final List<Interceptor> interceptors)
    {
-      this(transportConnection, blockingCallTimeout, pingPeriod, connectionTTL, pingExecutor, threadPool, interceptors, true, true);
+      this(transportConnection,
+           blockingCallTimeout,          
+           interceptors,
+           true,
+           true);
    }
 
    /*
@@ -307,20 +279,14 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
     */
    public RemotingConnectionImpl(final Connection transportConnection,
                                  final List<Interceptor> interceptors,
-                                 final boolean active,
-                                 final long connectionTTL,
-                                 final Executor threadPool)
+                                 final boolean active)
 
    {
-      this(transportConnection, -1, -1, connectionTTL, null, threadPool, interceptors, active, false);
+      this(transportConnection, -1, interceptors, active, false);
    }
 
    private RemotingConnectionImpl(final Connection transportConnection,
-                                  final long blockingCallTimeout,
-                                  final long pingPeriod,
-                                  final long connectionTTL,
-                                  final ScheduledExecutorService pingExecutor,
-                                  final Executor threadPool,
+                                  final long blockingCallTimeout,                                               
                                   final List<Interceptor> interceptors,
                                   final boolean active,
                                   final boolean client)
@@ -334,36 +300,9 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
 
       this.active = active;
 
-      this.pingPeriod = pingPeriod;
-
-      this.connectionTTL = connectionTTL;
-
-      this.pingExecutor = pingExecutor;
-      
-      this.threadPool = threadPool;
-
-      // Channel zero is reserved for pinging
-      pingChannel = getChannel(0, -1, false);
-
-      pingChannel.setHandler(ppHandler);
-
       this.client = client;
 
       this.createdActive = active;
-   }
-
-   public void startPinger()
-   {
-      if (pingPeriod != -1)
-      {
-         pinger = new Pinger();
-
-         future = pingExecutor.scheduleWithFixedDelay(pinger, 0, pingPeriod, TimeUnit.MILLISECONDS);
-      }
-      else
-      {
-         pinger = null;
-      }
    }
 
    // RemotingConnection implementation
@@ -495,20 +434,9 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
       callClosingListeners();
    }
 
-   public boolean isExpired(final long now)
-   {
-      return expireTime != -1 && now >= expireTime;
-   }
-
    public long generateChannelID()
    {
       return idGenerator.generateID();
-   }
-
-   /* For testing only */
-   public void stopPingingAfterOne()
-   {
-      stopPinging = true;
    }
 
    public synchronized void syncIDGeneratorSequence(final long id)
@@ -531,8 +459,10 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
 
    public void bufferReceived(final Object connectionID, final MessagingBuffer buffer)
    {
-      final Packet packet = decode(buffer);
+      dataReceived = true;
       
+      final Packet packet = decode(buffer);
+
       synchronized (transferLock)
       {
          if (!frozen)
@@ -623,8 +553,6 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
          future.cancel(false);
       }
 
-      pingChannel.close();
-
       // We close the underlying transport connection
       transportConnection.close();
 
@@ -653,7 +581,7 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
             break;
          }
          case DISCONNECT:
-         {           
+         {
             packet = new PacketImpl(DISCONNECT);
             break;
          }
@@ -994,7 +922,7 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
       private int responseActionCount;
 
       private boolean playedResponsesOnFailure;
-
+            
       public void setCommandConfirmationHandler(final CommandConfirmationHandler handler)
       {
          this.commandConfirmationHandler = handler;
@@ -1064,12 +992,12 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
             lock.unlock();
          }
       }
-      
+
       public void sendAndFlush(final Packet packet)
       {
          send(packet, true);
       }
-      
+
       public void send(final Packet packet)
       {
          send(packet, false);
@@ -1121,8 +1049,10 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
                }
 
                if (connection.active || packet.isWriteAlways())
-               {                
+               {
                   connection.transportConnection.write(buffer, flush);
+                                 
+                  connection.dataSent = true;
                }
             }
             finally
@@ -1192,7 +1122,8 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
 
                connection.transportConnection.write(buffer);
                
- 
+               connection.dataSent = true;
+
                long toWait = connection.blockingCallTimeout;
 
                long start = System.currentTimeMillis();
@@ -1200,7 +1131,7 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
                while (response == null && toWait > 0)
                {
                   try
-                  {                     
+                  {
                      sendCondition.await(toWait, TimeUnit.MILLISECONDS);
                   }
                   catch (InterruptedException e)
@@ -1211,7 +1142,7 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
                   {
                      break;
                   }
-                  
+
                   final long now = System.currentTimeMillis();
 
                   toWait -= now - start;
@@ -1248,16 +1179,16 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
       public void replicatePacket(final Packet packet, final long replicatedChannelID, final Runnable action)
       {
          packet.setChannelID(replicatedChannelID);
-         
+
          boolean runItNow = false;
 
          synchronized (replicationLock)
          {
             if (playedResponsesOnFailure && action != null)
-            {               
+            {
                // Already replicating channel failed, so just play the action now
-               
-               runItNow = true;               
+
+               runItNow = true;
             }
             else
             {
@@ -1273,11 +1204,13 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
                packet.encode(buffer);
 
                connection.transportConnection.write(buffer);
+               
+               connection.dataSent = true;
             }
          }
-         
-         //Execute outside lock
-         
+
+         // Execute outside lock
+
          if (runItNow)
          {
             action.run();
@@ -1300,7 +1233,7 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
       private void doExecuteOutstandingDelayedResults()
       {
          List<Runnable> toRun = new ArrayList<Runnable>();
-         
+
          synchronized (replicationLock)
          {
             // Execute all the response actions now
@@ -1322,14 +1255,13 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
             responseActionCount = 0;
 
             playedResponsesOnFailure = true;
-            
-            for (Runnable action: toRun)
+
+            for (Runnable action : toRun)
             {
                action.run();
             }
          }
-         
-         
+
       }
 
       public void setHandler(final ChannelHandler handler)
@@ -1606,7 +1538,7 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
                confirm(packet);
 
                lock.lock();
-               
+
                try
                {
                   sendCondition.signal();
@@ -1686,84 +1618,23 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
       }
    }
 
-   private class Pinger implements Runnable
+   public boolean isDataReceived()
    {
-      public synchronized void run()
-      {
-         if (!firstTime && !gotPong)
-         {
-            // Error - didn't get pong back
-            final MessagingException me = new MessagingException(MessagingException.NOT_CONNECTED,
-                                                                 "Did not receive pong from server");
-            future.cancel(true);
-            
-            //Need to call fail on a different thread otherwise can prevent other pings occurring
-            threadPool.execute(new Runnable()
-            {
-               public void run()
-               {
-                  fail(me); 
-               }
-            });                                  
-         }
-         else
-         {
-            gotPong = false;
-   
-            firstTime = false;
-   
-            // Send ping
-   
-            final Packet ping = new Ping(connectionTTL);
-   
-            pingChannel.send(ping);
-         }
-      }
+      return dataReceived;
    }
-
-   private class PingPongHandler implements ChannelHandler
+   
+   public void clearDataReceived()
    {
-      public void handlePacket(final Packet packet)
-      {
-         final byte type = packet.getType();
-
-         if (type == PONG)
-         {
-            gotPong = true;
-
-            if (stopPinging)
-            {
-               future.cancel(true);
-            }
-         }
-         else if (type == PING)
-         {
-            // connectionTTL if specified on the server overrides any value specified in the ping.
-
-            long connectionTTLToUse = connectionTTL != -1 ? connectionTTL : ((Ping)packet).getExpirePeriod();
-
-            expireTime = System.currentTimeMillis() + connectionTTLToUse;
-
-            // Parameter is placeholder for future
-            final Packet pong = new Pong(-1);
-
-            pingChannel.send(pong);
-         }
-         else if (type == PacketImpl.DISCONNECT)
-         {
-            threadPool.execute(new Runnable()
-            {
-               public void run()
-               {
-                  fail(new MessagingException(MessagingException.DISCONNECTED, "The connection was closed by the server")); 
-               }
-            });     
-            //fail(new MessagingException(MessagingException.DISCONNECTED, "The connection was closed by the server"));
-         }
-         else
-         {
-            throw new IllegalArgumentException("Invalid packet: " + packet);
-         }
-      }
+      dataReceived = false;
+   }
+   
+   public boolean isDataSent()
+   {      
+      return dataSent;
+   }
+   
+   public void clearDataSent()
+   {     
+      dataSent = false;
    }
 }

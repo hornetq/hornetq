@@ -58,11 +58,11 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
 
    public static final String DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME = "org.jboss.messaging.core.client.impl.RoundRobinConnectionLoadBalancingPolicy";
 
-   public static final long DEFAULT_PING_PERIOD = 5000;
+   public static final long DEFAULT_CLIENT_FAILURE_CHECK_PERIOD = 5000;
 
    // 5 minutes - normally this should be much higher than ping period, this allows clients to re-attach on live
    // or backup without fear of session having already been closed when connection times out.
-   public static final long DEFAULT_CONNECTION_TTL = 5 * 60000;
+   public static final long DEFAULT_CONNECTION_TTL = 10000;
 
    // Any message beyond this size is considered a large message (to be sent in chunks)
    public static final int DEFAULT_MIN_LARGE_MESSAGE_SIZE = 100 * 1024;
@@ -111,7 +111,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
 
    // Attributes
    // -----------------------------------------------------------------------------------
-
+  
    private final Map<Pair<TransportConfiguration, TransportConfiguration>, ConnectionManager> connectionManagerMap = new LinkedHashMap<Pair<TransportConfiguration, TransportConfiguration>, ConnectionManager>();
 
    private volatile boolean receivedBroadcast = false;
@@ -140,7 +140,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
    
    private long discoveryInitialWaitTimeout;
 
-   private long pingPeriod;
+   private long clientFailureCheckPeriod;
 
    private long connectionTTL;
 
@@ -271,7 +271,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
                                                              failoverOnServerShutdown,
                                                              maxConnections,
                                                              callTimeout,
-                                                             pingPeriod,
+                                                             clientFailureCheckPeriod,
                                                              connectionTTL,
                                                              retryInterval,
                                                              retryIntervalMultiplier,
@@ -300,7 +300,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
    {
       discoveryRefreshTimeout = DEFAULT_DISCOVERY_REFRESH_TIMEOUT;
 
-      pingPeriod = DEFAULT_PING_PERIOD;
+      clientFailureCheckPeriod = DEFAULT_CLIENT_FAILURE_CHECK_PERIOD;
 
       connectionTTL = DEFAULT_CONNECTION_TTL;
 
@@ -395,15 +395,15 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
       this.staticConnectors = staticConnectors;
    }
 
-   public synchronized long getPingPeriod()
+   public synchronized long getClientFailureCheckPeriod()
    {
-      return pingPeriod;
+      return clientFailureCheckPeriod;
    }
 
-   public synchronized void setPingPeriod(long pingPeriod)
+   public synchronized void setClientFailureCheckPeriod(long clientFailureCheckPeriod)
    {
       checkWrite();
-      this.pingPeriod = pingPeriod;
+      this.clientFailureCheckPeriod = clientFailureCheckPeriod;
    }
 
    public synchronized long getConnectionTTL()
@@ -816,7 +816,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
          }
       }
    }
-
+   
    // DiscoveryListener implementation --------------------------------------------------------
 
    public synchronized void connectorsChanged()
@@ -857,7 +857,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
                                                                             failoverOnServerShutdown,
                                                                             maxConnections,
                                                                             callTimeout,
-                                                                            pingPeriod,
+                                                                            clientFailureCheckPeriod,
                                                                             connectionTTL,
                                                                             retryInterval,
                                                                             retryIntervalMultiplier,

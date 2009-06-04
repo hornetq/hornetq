@@ -115,8 +115,8 @@
         <config-property-value></config-property-value>
       </config-property>
       <config-property>
-        <description>The ping period</description>
-        <config-property-name>PingPeriod</config-property-name>
+        <description>The client failure check period</description>
+        <config-property-name>ClientFailureCheckPeriod</config-property-name>
         <config-property-type>java.lang.Long</config-property-type>
         <config-property-value></config-property-value>
       </config-property>

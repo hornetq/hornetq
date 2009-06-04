@@ -315,7 +315,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
    public synchronized void createConnectionFactory(String name,
                                                     List<Pair<TransportConfiguration, TransportConfiguration>> connectorConfigs,
                                                     String clientID,
-                                                    long pingPeriod,
+                                                    long clientFailureCheckPeriod,
                                                     long connectionTTL,
                                                     long callTimeout,
                                                     int maxConnections,
@@ -347,7 +347,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
       {
          cf = new JBossConnectionFactory(connectorConfigs);
          cf.setClientID(clientID);
-         cf.setPingPeriod(pingPeriod);
+         cf.setClientFailureCheckPeriod(clientFailureCheckPeriod);
          cf.setConnectionTTL(connectionTTL);
          cf.setCallTimeout(callTimeout);
          cf.setMaxConnections(maxConnections);
@@ -381,7 +381,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
                                                     int discoveryPort,
                                                     String clientID,
                                                     long discoveryRefreshTimeout,
-                                                    long pingPeriod,
+                                                    long clientFailureCheckPeriod,
                                                     long connectionTTL,
                                                     long callTimeout,
                                                     int maxConnections,
@@ -415,7 +415,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
          cf = new JBossConnectionFactory(discoveryAddress, discoveryPort);
          cf.setClientID(clientID);
          cf.setDiscoveryRefreshTimeout(discoveryRefreshTimeout);
-         cf.setPingPeriod(pingPeriod);
+         cf.setClientFailureCheckPeriod(clientFailureCheckPeriod);
          cf.setConnectionTTL(connectionTTL);
          cf.setCallTimeout(callTimeout);
          cf.setMaxConnections(maxConnections);

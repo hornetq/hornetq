@@ -18,7 +18,7 @@
  * License along with this software; if not, write to the Free
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
- */ 
+ */
 
 package org.jboss.messaging.tests.unit.jms.misc;
 
@@ -43,8 +43,9 @@ import org.jboss.messaging.tests.util.UnitTestCase;
  */
 public class ManifestTest extends UnitTestCase
 {
-      // Constants -----------------------------------------------------
-    Logger log = Logger.getLogger(ManifestTest.class);
+   // Constants -----------------------------------------------------
+   Logger log = Logger.getLogger(ManifestTest.class);
+
    // Static --------------------------------------------------------
 
    // Attributes ----------------------------------------------------
@@ -75,20 +76,20 @@ public class ManifestTest extends UnitTestCase
       {
          MessagingServer server = Messaging.newMessagingServer(new ConfigurationImpl());
 
-	      ConnectionMetaData meta = new JBossConnectionMetaData(server.getVersion());
+         ConnectionMetaData meta = new JBossConnectionMetaData(server.getVersion());
 
-	      // Compare the value from ConnectionMetaData and MANIFEST.MF
-	      Attributes attrs = manifest.getMainAttributes();
+         // Compare the value from ConnectionMetaData and MANIFEST.MF
+         Attributes attrs = manifest.getMainAttributes();
 
-	      assertEquals(meta.getProviderVersion(), attrs.getValue("JBossMessaging-Version"));
-	      assertEquals("https://svn.jboss.org/repos/messaging/trunk", attrs.getValue("JBossMessaging-SVN-URL"));
+         assertEquals(meta.getProviderVersion(), attrs.getValue("JBossMessaging-Version"));
+         assertEquals("https://svn.jboss.org/repos/messaging/trunk", attrs.getValue("JBossMessaging-SVN-URL"));
       }
       finally
       {
-      	if (conn != null)
-      	{
-      		conn.close();
-      	}
+         if (conn != null)
+         {
+            conn.close();
+         }
       }
    }
 

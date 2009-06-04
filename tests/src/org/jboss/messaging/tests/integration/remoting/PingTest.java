@@ -22,25 +22,7 @@
 
 package org.jboss.messaging.tests.integration.remoting;
 
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_AUTO_GROUP;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_ACKNOWLEDGE;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_PERSISTENT_SEND;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CALL_TIMEOUT;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CONNECTION_TTL;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_RECONNECT_ATTEMPTS;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CONSUMER_MAX_RATE;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CONSUMER_WINDOW_SIZE;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_MAX_CONNECTIONS;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_MIN_LARGE_MESSAGE_SIZE;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_PRE_ACKNOWLEDGE;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_PRODUCER_MAX_RATE;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL_MULTIPLIER;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_PRODUCER_WINDOW_SIZE;
+import static org.jboss.messaging.core.remoting.server.impl.RemotingServiceImpl.schedulePingersOneShot;
 
 import java.util.Set;
 
@@ -48,7 +30,7 @@ import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.ClientSessionFactory;
 import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
 import org.jboss.messaging.core.client.impl.ClientSessionFactoryInternal;
-import org.jboss.messaging.core.client.impl.ClientSessionInternal;
+import org.jboss.messaging.core.client.impl.ConnectionManagerImpl;
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.exception.MessagingException;
@@ -57,8 +39,8 @@ import org.jboss.messaging.core.remoting.FailureListener;
 import org.jboss.messaging.core.remoting.Interceptor;
 import org.jboss.messaging.core.remoting.Packet;
 import org.jboss.messaging.core.remoting.RemotingConnection;
-import org.jboss.messaging.core.remoting.impl.RemotingConnectionImpl;
 import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
+import org.jboss.messaging.core.remoting.server.impl.RemotingServiceImpl;
 import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.tests.util.ServiceTestBase;
 
@@ -129,7 +111,7 @@ public class PingTest extends ServiceTestBase
 
       ClientSessionFactory csf = new ClientSessionFactoryImpl(transportConfig);
       
-      csf.setPingPeriod(PING_INTERVAL);
+      csf.setClientFailureCheckPeriod(PING_INTERVAL);
       
       ClientSession session = csf.createSession(false, true, true);
 
@@ -185,7 +167,7 @@ public class PingTest extends ServiceTestBase
 
       ClientSessionFactory csf = new ClientSessionFactoryImpl(transportConfig);
       
-      csf.setPingPeriod(PING_INTERVAL);
+      csf.setClientFailureCheckPeriod(PING_INTERVAL);
 
       ClientSession session = csf.createSession(false, true, true);
 
@@ -239,9 +221,12 @@ public class PingTest extends ServiceTestBase
    {
       TransportConfiguration transportConfig = new TransportConfiguration("org.jboss.messaging.integration.transports.netty.NettyConnectorFactory");
 
-      ClientSessionFactory csf = new ClientSessionFactoryImpl(transportConfig);
+      ClientSessionFactoryImpl csf = new ClientSessionFactoryImpl(transportConfig);
       
-      csf.setPingPeriod(PING_INTERVAL);
+      //We want to make sure only ping is sent
+      ConnectionManagerImpl.schedulePingersOneShot = true;
+      
+      csf.setClientFailureCheckPeriod(PING_INTERVAL);
       csf.setConnectionTTL((long)(PING_INTERVAL * 1.5));
       
       Listener clientListener = new Listener();
@@ -251,11 +236,6 @@ public class PingTest extends ServiceTestBase
       assertEquals(1, ((ClientSessionFactoryInternal)csf).numConnections());
 
       session.addFailureListener(clientListener);
-
-      RemotingConnectionImpl conn = (RemotingConnectionImpl)((ClientSessionInternal)session).getConnection();
-
-      // We need to get it to send one ping then stop
-      conn.stopPingingAfterOne();
 
       RemotingConnection serverConn = null;
 
@@ -301,12 +281,14 @@ public class PingTest extends ServiceTestBase
       assertNotNull(serverListener.getException());
 
       session.close();
+      
+      ConnectionManagerImpl.schedulePingersOneShot = false;
    }
 
    /*
    * Test the client triggering failure due to no pong received in time
    */
-   public void testClientFailureNoPong() throws Exception
+   public void testClientFailureNoServerPing() throws Exception
    {
       Interceptor noPongInterceptor = new Interceptor()
       {
@@ -342,7 +324,10 @@ public class PingTest extends ServiceTestBase
 
       ClientSessionFactory csf = new ClientSessionFactoryImpl(transportConfig);
       
-      csf.setPingPeriod(PING_INTERVAL);
+      //We want to make sure only one server->client ping is sent
+      RemotingServiceImpl.schedulePingersOneShot = true;
+      
+      csf.setClientFailureCheckPeriod(PING_INTERVAL);
       csf.setConnectionTTL((long)(PING_INTERVAL * 1.5));
 
       ClientSession session = csf.createSession(false, true, true);
@@ -385,6 +370,8 @@ public class PingTest extends ServiceTestBase
       server.getRemotingService().removeInterceptor(noPongInterceptor);
 
       session.close();
+      
+      RemotingServiceImpl.schedulePingersOneShot = false;
    }
 
    // Package protected ---------------------------------------------

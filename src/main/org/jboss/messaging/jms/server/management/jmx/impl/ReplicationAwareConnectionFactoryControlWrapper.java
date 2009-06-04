@@ -106,9 +106,9 @@ public class ReplicationAwareConnectionFactoryControlWrapper extends Replication
       return localControl.getDupsOKBatchSize();
    }
 
-   public long getPingPeriod()
+   public long getClientFailureCheckPeriod()
    {
-      return localControl.getPingPeriod();
+      return localControl.getClientFailureCheckPeriod();
    }
 
    public boolean isBlockOnAcknowledge()

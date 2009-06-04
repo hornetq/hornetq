@@ -70,7 +70,7 @@ public class JMSUtil
       return cf.createConnection();
    }
    
-   public static Connection createConnection(String connectorFactory, long connectionTTL, long pingPeriod) throws JMSException
+   public static Connection createConnection(String connectorFactory, long connectionTTL, long clientFailureCheckPeriod) throws JMSException
    {
       JBossConnectionFactory cf = new JBossConnectionFactory(new TransportConfiguration(connectorFactory));
       
@@ -78,7 +78,7 @@ public class JMSUtil
       cf.setBlockOnPersistentSend(true);
       cf.setBlockOnAcknowledge(true);
       cf.setConnectionTTL(connectionTTL);
-      cf.setPingPeriod(pingPeriod);
+      cf.setClientFailureCheckPeriod(clientFailureCheckPeriod);
 
       return cf.createConnection();
    }

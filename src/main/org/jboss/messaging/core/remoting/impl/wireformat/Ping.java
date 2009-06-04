@@ -18,7 +18,7 @@
  * License along with this software; if not, write to the Free
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
- */ 
+ */
 
 package org.jboss.messaging.core.remoting.impl.wireformat;
 
@@ -38,19 +38,23 @@ public class Ping extends PacketImpl
 
    // Attributes ----------------------------------------------------
 
-   private long expirePeriod;
+   private long connectionTTL;
+
+   private long clientFailureCheckPeriod;
 
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   public Ping(final long expirePeriod)
+   public Ping(final long clientFailureCheckPeriod, final long connectionTTL)
    {
       super(PING);
 
-      this.expirePeriod = expirePeriod;
+      this.connectionTTL = connectionTTL;
+
+      this.clientFailureCheckPeriod = clientFailureCheckPeriod;
    }
-   
+
    public Ping()
    {
       super(PING);
@@ -58,48 +62,56 @@ public class Ping extends PacketImpl
 
    // Public --------------------------------------------------------
 
-   public long getExpirePeriod()
+   public long getConnectionTTL()
    {
-      return expirePeriod;
+      return connectionTTL;
    }
-   
+
+   public long getClientFailureCheckPeriod()
+   {
+      return clientFailureCheckPeriod;
+   }
+
    public int getRequiredBufferSize()
    {
-      return BASIC_PACKET_SIZE + DataConstants.SIZE_LONG;
+      return BASIC_PACKET_SIZE + 2 * DataConstants.SIZE_LONG;
    }
-   
 
    public void encodeBody(final MessagingBuffer buffer)
    {
-      buffer.writeLong(expirePeriod);
+      buffer.writeLong(connectionTTL);
+      buffer.writeLong(clientFailureCheckPeriod);
    }
-   
+
    public void decodeBody(final MessagingBuffer buffer)
    {
-      expirePeriod = buffer.readLong();
+      connectionTTL = buffer.readLong();
+      clientFailureCheckPeriod = buffer.readLong();
    }
 
    @Override
    public String toString()
    {
       StringBuffer buf = new StringBuffer(getParentString());
-      buf.append(", expirePeriod=" + expirePeriod);
+      buf.append(", connectionTTL=" + connectionTTL);
+      buf.append(", clientFailureCheckPeriod=" + clientFailureCheckPeriod);
       buf.append("]");
       return buf.toString();
    }
-   
+
    public boolean equals(Object other)
    {
       if (other instanceof Ping == false)
       {
          return false;
       }
-            
+
       Ping r = (Ping)other;
-      
-      return super.equals(other) && this.expirePeriod == r.expirePeriod;
+
+      return super.equals(other) && this.connectionTTL == r.connectionTTL &&
+             this.clientFailureCheckPeriod == r.clientFailureCheckPeriod;
    }
-   
+
    public final boolean isRequiresConfirmations()
    {
       return false;

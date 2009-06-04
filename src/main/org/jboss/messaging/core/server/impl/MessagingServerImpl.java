@@ -12,6 +12,24 @@
 
 package org.jboss.messaging.core.server.impl;
 
+import java.lang.management.ManagementFactory;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.Map.Entry;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.TimeUnit;
+
+import javax.management.MBeanServer;
+
 import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.TransportConfiguration;
@@ -90,24 +108,6 @@ import org.jboss.messaging.utils.SimpleString;
 import org.jboss.messaging.utils.UUID;
 import org.jboss.messaging.utils.UUIDGenerator;
 import org.jboss.messaging.utils.VersionLoader;
-
-import javax.management.MBeanServer;
-
-import java.lang.management.ManagementFactory;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.TimeUnit;
 
 /**
  * The messaging server implementation
@@ -208,24 +208,22 @@ public class MessagingServerImpl implements MessagingServer
    {
       this(null, null, null);
    }
-   
+
    public MessagingServerImpl(final Configuration configuration)
    {
       this(configuration, null, null);
    }
-   
-   public MessagingServerImpl(final Configuration configuration,
-                              MBeanServer mbeanServer)
+
+   public MessagingServerImpl(final Configuration configuration, MBeanServer mbeanServer)
    {
       this(configuration, mbeanServer, null);
    }
-   
-   public MessagingServerImpl(final Configuration configuration,                              
-                              final JBMSecurityManager securityManager)
+
+   public MessagingServerImpl(final Configuration configuration, final JBMSecurityManager securityManager)
    {
       this(configuration, null, securityManager);
    }
-   
+
    public MessagingServerImpl(Configuration configuration,
                               MBeanServer mbeanServer,
                               final JBMSecurityManager securityManager)
@@ -237,7 +235,7 @@ public class MessagingServerImpl implements MessagingServer
 
       if (mbeanServer == null)
       {
-         //Just use JVM mbean server
+         // Just use JVM mbean server
          mbeanServer = ManagementFactory.getPlatformMBeanServer();
       }
 
@@ -265,7 +263,7 @@ public class MessagingServerImpl implements MessagingServer
       {
          return;
       }
-      
+
       initialisePart1();
 
       if (configuration.isBackup())
@@ -316,7 +314,7 @@ public class MessagingServerImpl implements MessagingServer
          queueDeployer.stop();
 
          if (securityDeployer != null)
-         {            
+         {
             securityDeployer.stop();
          }
 
@@ -350,14 +348,14 @@ public class MessagingServerImpl implements MessagingServer
       postOffice.stop();
 
       // Need to shutdown pools before shutting down paging manager to make sure everything is written ok
-     
+
       List<Runnable> tasks = scheduledPool.shutdownNow();
-      
-      for (Runnable task: tasks)
+
+      for (Runnable task : tasks)
       {
          log.debug("Waiting for " + task);
       }
-            
+
       threadPool.shutdown();
       try
       {
@@ -373,7 +371,7 @@ public class MessagingServerImpl implements MessagingServer
 
       scheduledPool = null;
       threadPool = null;
-      
+
       pagingManager.stop();
 
       pagingManager = null;
@@ -631,9 +629,6 @@ public class MessagingServerImpl implements MessagingServer
             replicatingConnection = (RemotingConnectionImpl)RemotingConnectionImpl.createConnection(backupConnectorFactory,
                                                                                                     backupConnectorParams,
                                                                                                     ClientSessionFactoryImpl.DEFAULT_CALL_TIMEOUT,
-                                                                                                    ClientSessionFactoryImpl.DEFAULT_PING_PERIOD,
-                                                                                                    ClientSessionFactoryImpl.DEFAULT_CONNECTION_TTL,
-                                                                                                    scheduledPool,
                                                                                                     threadPool,
                                                                                                     listener);
 
@@ -655,8 +650,6 @@ public class MessagingServerImpl implements MessagingServer
                   return true;
                }
             });
-
-            replicatingConnection.startPinger();
 
             // First time we get channel we send a message down it informing the backup of our node id -
             // backup and live must have the same node id
@@ -748,8 +741,7 @@ public class MessagingServerImpl implements MessagingServer
       return createQueue(address, queueName, filterString, durable, temporary, false);
    }
 
-   public Queue
-   deployQueue(final SimpleString address,
+   public Queue deployQueue(final SimpleString address,
                             final SimpleString queueName,
                             final SimpleString filterString,
                             final boolean durable,
@@ -925,7 +917,7 @@ public class MessagingServerImpl implements MessagingServer
 
       managementService = new ManagementServiceImpl(mbeanServer, configuration);
 
-      remotingService = new RemotingServiceImpl(configuration, this, managementService, threadPool);
+      remotingService = new RemotingServiceImpl(configuration, this, managementService, threadPool, scheduledPool);
    }
 
    private void initialisePart2() throws Exception
@@ -1017,13 +1009,13 @@ public class MessagingServerImpl implements MessagingServer
          basicUserCredentialsDeployer = new BasicUserCredentialsDeployer(deploymentManager, securityManager);
 
          basicUserCredentialsDeployer.start();
-                 
+
          if (securityManager != null)
          {
             securityDeployer = new SecurityDeployer(deploymentManager, securityRepository);
-            
+
             securityDeployer.start();
-         }        
+         }
       }
 
       // Load the journal and populate queues, transactions and caches in memory

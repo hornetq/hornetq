@@ -13,6 +13,7 @@
 package org.jboss.messaging.core.remoting.server.impl;
 
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.DISCONNECT;
+import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.PING;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -20,10 +21,11 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.Timer;
-import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
+import java.util.concurrent.Future;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.TransportConfiguration;
@@ -33,11 +35,14 @@ import org.jboss.messaging.core.management.ManagementService;
 import org.jboss.messaging.core.remoting.Channel;
 import org.jboss.messaging.core.remoting.ChannelHandler;
 import org.jboss.messaging.core.remoting.Interceptor;
+import org.jboss.messaging.core.remoting.Packet;
 import org.jboss.messaging.core.remoting.RemotingConnection;
 import org.jboss.messaging.core.remoting.impl.AbstractBufferHandler;
+import org.jboss.messaging.core.remoting.impl.Pinger;
 import org.jboss.messaging.core.remoting.impl.RemotingConnectionImpl;
 import org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
+import org.jboss.messaging.core.remoting.impl.wireformat.Ping;
 import org.jboss.messaging.core.remoting.server.RemotingService;
 import org.jboss.messaging.core.remoting.spi.Acceptor;
 import org.jboss.messaging.core.remoting.spi.AcceptorFactory;
@@ -60,6 +65,8 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
 
    private static final Logger log = Logger.getLogger(RemotingServiceImpl.class);
 
+   private static final long INITIAL_PING_TIMEOUT = 10000;
+
    // Attributes ----------------------------------------------------
 
    private volatile boolean started = false;
@@ -72,28 +79,36 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
 
    private final Map<Object, RemotingConnection> connections = new ConcurrentHashMap<Object, RemotingConnection>();
 
-   private Timer failedConnectionTimer;
-
-   private TimerTask failedConnectionsTask;
-
    private final BufferHandler bufferHandler = new DelegatingBufferHandler();
-   
+
    private final Configuration config;
 
    private volatile MessagingServer server;
 
    private ManagementService managementService;
-   
+
    private volatile RemotingConnection serverSideReplicatingConnection;
-   
+
    private final Executor threadPool;
-   
+
+   private final ScheduledExecutorService scheduledThreadPool;
+
+   private Map<Object, FailedConnectionRunnable> connectionTTLRunnables = new ConcurrentHashMap<Object, FailedConnectionRunnable>();
+
+   private Map<Object, Pinger> pingRunnables = new ConcurrentHashMap<Object, Pinger>();
+
+   // For debug
+   public static boolean schedulePingersOneShot;
+
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   public RemotingServiceImpl(final Configuration config, final MessagingServer server, final ManagementService managementService,
-                              final Executor threadPool)
+   public RemotingServiceImpl(final Configuration config,
+                              final MessagingServer server,
+                              final ManagementService managementService,
+                              final Executor threadPool,
+                              final ScheduledExecutorService scheduledThreadPool)
    {
       transportConfigs = config.getAcceptorConfigurations();
 
@@ -115,6 +130,7 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
       this.server = server;
       this.managementService = managementService;
       this.threadPool = threadPool;
+      this.scheduledThreadPool = scheduledThreadPool;
    }
 
    // RemotingService implementation -------------------------------
@@ -131,6 +147,7 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
       if (config.isJMXManagementEnabled())
       {
          boolean invmAcceptorConfigured = false;
+
          for (TransportConfiguration config : transportConfigs)
          {
             if (InVMAcceptorFactory.class.getName().equals(config.getFactoryClassName()))
@@ -138,6 +155,7 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
                invmAcceptorConfigured = true;
             }
          }
+
          if (!invmAcceptorConfigured)
          {
             transportConfigs.add(new TransportConfiguration(InVMAcceptorFactory.class.getName(),
@@ -155,7 +173,7 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
             Class<?> clazz = loader.loadClass(info.getFactoryClassName());
 
             AcceptorFactory factory = (AcceptorFactory)clazz.newInstance();
-            
+
             Acceptor acceptor = factory.createAcceptor(info.getParams(), bufferHandler, this, threadPool);
 
             acceptors.add(acceptor);
@@ -176,51 +194,34 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
          a.start();
       }
 
-      failedConnectionTimer = new Timer(true);
-
-      failedConnectionsTask = new FailedConnectionsTask();
-      
-      failedConnectionTimer.schedule(failedConnectionsTask, config.getConnectionScanPeriod(), config.getConnectionScanPeriod());
-
       started = true;
    }
-   
+
    public synchronized void freeze()
    {
-      //Used in testing - prevents service taking any more connections
-      
+      // Used in testing - prevents service taking any more connections
+
       for (Acceptor acceptor : acceptors)
       {
          acceptor.pause();
       }
    }
-   
+
    public synchronized void stop() throws Exception
    {
       if (!started)
       {
          return;
       }
- 
-      if (failedConnectionTimer != null)
-      {
-         failedConnectionsTask.cancel();
 
-         failedConnectionsTask = null;
-
-         failedConnectionTimer.cancel();
-
-         failedConnectionTimer = null;
-      }
-          
-      //We need to stop them accepting first so no new connections are accepted after we send the disconnect message
+      // We need to stop them accepting first so no new connections are accepted after we send the disconnect message
       for (Acceptor acceptor : acceptors)
       {
          acceptor.pause();
       }
-      
-      for (RemotingConnection connection: connections.values())
-      {     
+
+      for (RemotingConnection connection : connections.values())
+      {
          connection.getChannel(0, -1, false).sendAndFlush(new PacketImpl(DISCONNECT));
       }
 
@@ -230,6 +231,16 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
       }
 
       acceptors.clear();
+
+      for (FailedConnectionRunnable runnable : connectionTTLRunnables.values())
+      {
+         runnable.close();
+      }
+
+      for (Pinger runnable : pingRunnables.values())
+      {
+         runnable.close();
+      }
 
       connections.clear();
 
@@ -248,21 +259,21 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
 
    public RemotingConnection removeConnection(final Object remotingConnectionID)
    {
-      return connections.remove(remotingConnectionID);
+      return closeConnection(remotingConnectionID);
    }
-   
+
    public synchronized Set<RemotingConnection> getConnections()
    {
       return new HashSet<RemotingConnection>(connections.values());
    }
-   
+
    public RemotingConnection getServerSideReplicatingConnection()
    {
       return serverSideReplicatingConnection;
    }
 
    // ConnectionLifeCycleListener implementation -----------------------------------
- 
+
    public void connectionCreated(final Connection connection)
    {
       if (server == null)
@@ -270,8 +281,7 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
          throw new IllegalStateException("Unable to create connection, server hasn't finished starting up");
       }
 
-      RemotingConnection rc = new RemotingConnectionImpl(connection, interceptors, !config.isBackup(), config.getConnectionTTLOverride(),
-                                                         threadPool);
+      RemotingConnection rc = new RemotingConnectionImpl(connection, interceptors, !config.isBackup());
 
       Channel channel1 = rc.getChannel(1, -1, false);
 
@@ -279,10 +289,23 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
 
       channel1.setHandler(handler);
 
+      Channel channel0 = rc.getChannel(0, -1, false);
+
+      Channel0Handler channel0Handler = new Channel0Handler(rc);
+
+      channel0.setHandler(channel0Handler);
+
       Object id = connection.getID();
 
-      connections.put(id, rc);    
-      
+      connections.put(id, rc);
+
+      InitialPingTimeout runnable = new InitialPingTimeout(rc, channel0Handler);
+
+      // We schedule an initial ping timeout. An inital ping is always sent from the client as the first thing it
+      // does after creating a connection, this contains the ping period and connection TTL, if it doesn't
+      // arrive the connection will get closed
+      scheduledThreadPool.schedule(runnable, INITIAL_PING_TIMEOUT, TimeUnit.MILLISECONDS);
+
       if (config.isBackup())
       {
          serverSideReplicatingConnection = rc;
@@ -290,34 +313,34 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
    }
 
    public void connectionDestroyed(final Object connectionID)
-   {         
+   {
       RemotingConnection conn = connections.get(connectionID);
-      
+
       if (conn != null)
       {
-         //if the connection has no failure listeners it means the sesssions etc were already closed so this is a clean
-         //shutdown, therefore we can destroy the connection
-         //otherwise client might have crashed/exited without closing connections so we leave them for connection TTL
-         
+         // if the connection has no failure listeners it means the sesssions etc were already closed so this is a clean
+         // shutdown, therefore we can destroy the connection
+         // otherwise client might have crashed/exited without closing connections so we leave them for connection TTL
+
          if (conn.getFailureListeners().isEmpty())
          {
-            connections.remove(connectionID);
-            
+            closeConnection(connectionID);
+
             conn.destroy();
          }
-      } 
+      }
    }
 
    public void connectionException(final Object connectionID, final MessagingException me)
-   {            
-      //We DO NOT call fail on connection exception, otherwise in event of real connection failure, the
-      //connection  will be failed, the session will be closed and won't be able to reconnect
-      
-      //E.g. if live server fails, then this handler wil be called on backup server for the server
-      //side replicating connection.
-      //If the connection fail() is called then the sessions on the backup will get closed.
-      
-      //Connections should only fail when TTL is exceeded
+   {
+      // We DO NOT call fail on connection exception, otherwise in event of real connection failure, the
+      // connection will be failed, the session will be closed and won't be able to reconnect
+
+      // E.g. if live server fails, then this handler wil be called on backup server for the server
+      // side replicating connection.
+      // If the connection fail() is called then the sessions on the backup will get closed.
+
+      // Connections should only fail when TTL is exceeded
    }
 
    public void addInterceptor(final Interceptor interceptor)
@@ -338,56 +361,199 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
 
    // Private -------------------------------------------------------
 
+   private void setupScheduledRunnables(final RemotingConnection conn,
+                                        final long clientFailureCheckPeriod,
+                                        final long connectionTTL)
+   {
+      if (connectionTTL <= 0 || clientFailureCheckPeriod <= 0)
+      {
+         log.warn("Invalid values of connectionTTL/clientFailureCheckPeriod");
+
+         closeConnection(conn.getID());
+
+         return;
+      }
+
+      long connectionTTLToUse = config.getConnectionTTLOverride() != -1 ? config.getConnectionTTLOverride()
+                                                                       : connectionTTL;
+
+      if (connectionTTLToUse != -1)
+      {
+         FailedConnectionRunnable runnable = new FailedConnectionRunnable(conn);
+
+         Future<?> connectionTTLFuture = scheduledThreadPool.scheduleAtFixedRate(runnable,
+                                                                                 connectionTTLToUse,
+                                                                                 connectionTTLToUse,
+                                                                                 TimeUnit.MILLISECONDS);
+
+         runnable.setFuture(connectionTTLFuture);
+
+         connectionTTLRunnables.put(conn.getID(), runnable);
+      }
+
+      long pingPeriod = clientFailureCheckPeriod == -1 ? -1 : clientFailureCheckPeriod / 2;
+
+      if (pingPeriod != -1)
+      {
+         Pinger pingRunnable = new Pinger(conn);
+
+         Future<?> pingFuture;
+
+         if (schedulePingersOneShot)
+         {
+            pingFuture = scheduledThreadPool.schedule(pingRunnable, 0, TimeUnit.MILLISECONDS);
+         }
+         else
+         {
+            pingFuture = scheduledThreadPool.scheduleAtFixedRate(pingRunnable, 0, pingPeriod, TimeUnit.MILLISECONDS);
+         }
+
+         pingRunnable.setFuture(pingFuture);
+
+         pingRunnables.put(conn.getID(), pingRunnable);
+      }
+   }
+
+   private RemotingConnection closeConnection(final Object connectionID)
+   {
+      RemotingConnection connection = connections.remove(connectionID);
+
+      FailedConnectionRunnable runnable = connectionTTLRunnables.remove(connectionID);
+
+      if (runnable != null)
+      {
+         runnable.close();
+      }
+
+      Pinger pingRunnable = pingRunnables.remove(connectionID);
+
+      if (pingRunnable != null)
+      {
+         pingRunnable.close();
+      }
+
+      return connection;
+   }
+
    // Inner classes -------------------------------------------------
 
-   private class FailedConnectionsTask extends TimerTask
+   private class Channel0Handler implements ChannelHandler
    {
-      private boolean cancelled;
+      private final RemotingConnection conn;
 
-      @Override
+      private volatile boolean gotInitialPing;
+
+      private Channel0Handler(final RemotingConnection conn)
+      {
+         this.conn = conn;
+      }
+
+      public void handlePacket(final Packet packet)
+      {
+         final byte type = packet.getType();
+
+         if (type == PING)
+         {
+            if (!gotInitialPing)
+            {
+               Ping ping = (Ping)packet;
+
+               setupScheduledRunnables(conn, ping.getClientFailureCheckPeriod(), ping.getConnectionTTL());
+
+               gotInitialPing = true;
+            }
+         }
+         else
+         {
+            throw new IllegalArgumentException("Invalid packet: " + packet);
+         }
+      }
+
+      private boolean isGotInitialPing()
+      {
+         return gotInitialPing;
+      }
+   }
+
+   private class InitialPingTimeout implements Runnable
+   {
+      private final RemotingConnection conn;
+
+      private final Channel0Handler handler;
+
+      private InitialPingTimeout(final RemotingConnection conn, final Channel0Handler handler)
+      {
+         this.conn = conn;
+
+         this.handler = handler;
+      }
+
+      public void run()
+      {
+         if (!handler.isGotInitialPing())
+         {
+            // Never received initial ping
+            log.warn("Did not receive initial ping for connection, it will be closed");
+
+            closeConnection(conn);
+
+            conn.destroy();
+         }
+      }
+   }
+
+   private class FailedConnectionRunnable implements Runnable
+   {
+      private boolean closed;
+
+      private RemotingConnection conn;
+
+      private Future<?> future;
+
+      FailedConnectionRunnable(final RemotingConnection conn)
+      {
+         this.conn = conn;
+      }
+
+      public synchronized void setFuture(final Future<?> future)
+      {
+         this.future = future;
+      }
+
       public synchronized void run()
       {
-         if (cancelled)
+         if (closed)
          {
             return;
          }
 
-         Set<RemotingConnection> failedConnections = new HashSet<RemotingConnection>();
-
-         long now = System.currentTimeMillis();
-
-         for (RemotingConnection conn : connections.values())
+         if (!conn.isDataReceived())
          {
-            if (conn.isExpired(now))
-            {
-               failedConnections.add(conn);
-            } 
-         }
+            removeConnection(conn.getID());
 
-         for (RemotingConnection conn : failedConnections)
-         {
-
-            connections.remove(conn.getID());
             MessagingException me = new MessagingException(MessagingException.CONNECTION_TIMEDOUT,
                                                            "Did not receive ping on connection. It is likely a client has exited or crashed without " + "closing its connection, or the network between the server and client has failed. The connection will now be closed.");
 
             conn.fail(me);
          }
+         else
+         {           
+            conn.clearDataReceived();
+         }
       }
 
-      @Override
-      public synchronized boolean cancel()
+      public synchronized void close()
       {
-         cancelled = true;
+         future.cancel(false);
 
-         return super.cancel();
+         closed = true;
       }
    }
 
    private class DelegatingBufferHandler extends AbstractBufferHandler
    {
       public void bufferReceived(final Object connectionID, final MessagingBuffer buffer)
-      {         
+      {
          RemotingConnection conn = connections.get(connectionID);
 
          if (conn != null)

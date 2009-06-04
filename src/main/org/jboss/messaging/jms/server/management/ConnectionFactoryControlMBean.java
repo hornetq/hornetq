@@ -39,7 +39,7 @@ public interface ConnectionFactoryControlMBean
 
    String getClientID();
    
-   long getPingPeriod();
+   long getClientFailureCheckPeriod();
    
    long getCallTimeout();
    

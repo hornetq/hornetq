@@ -198,7 +198,7 @@ public class JMSServerDeployerTest extends ServiceTestBase
       {
          JBossConnectionFactory cf = (JBossConnectionFactory)context.lookup(binding);
          assertNotNull(cf);
-         assertEquals(1234, cf.getPingPeriod());
+         assertEquals(1234, cf.getClientFailureCheckPeriod());
          assertEquals(5678, cf.getCallTimeout());
          assertEquals(12345, cf.getConsumerWindowSize());
          assertEquals(6789, cf.getConsumerMaxRate());

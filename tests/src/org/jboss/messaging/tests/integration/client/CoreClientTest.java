@@ -80,13 +80,14 @@ public class CoreClientTest extends UnitTestCase
       server.start();
       
       ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration(connectorFactoryClassName));
+      sf.setConsumerWindowSize(0);
 
       ClientSession session = sf.createSession(false, true, true);
       
       session.createQueue(QUEUE, QUEUE, null, false);
       
       ClientProducer producer = session.createProducer(QUEUE);     
-      
+       
       final int numMessages = 10000;
       
       for (int i = 0; i < numMessages; i++)

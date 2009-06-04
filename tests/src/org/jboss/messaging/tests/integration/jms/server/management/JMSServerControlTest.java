@@ -170,7 +170,7 @@ public class JMSServerControlTest extends ManagementTestBase
             TransportConfiguration tcLive = new TransportConfiguration(InVMConnectorFactory.class.getName());
 
             control.createConnectionFactory(cfName, tcLive.getFactoryClassName(), tcLive.getParams(), bindings);
-         }         
+         }
       });
    }
 
@@ -184,8 +184,12 @@ public class JMSServerControlTest extends ManagementTestBase
             String clientID = randomString();
             TransportConfiguration tcLive = new TransportConfiguration(InVMConnectorFactory.class.getName());
 
-            control.createConnectionFactory(cfName, tcLive.getFactoryClassName(), tcLive.getParams(), clientID, bindings);
-         }         
+            control.createConnectionFactory(cfName,
+                                            tcLive.getFactoryClassName(),
+                                            tcLive.getParams(),
+                                            clientID,
+                                            bindings);
+         }
       });
    }
 
@@ -199,16 +203,16 @@ public class JMSServerControlTest extends ManagementTestBase
             TransportConfiguration tcLive = new TransportConfiguration(InVMConnectorFactory.class.getName());
             TransportConfiguration tcBackup = new TransportConfiguration(InVMConnectorFactory.class.getName());
 
-            control.createConnectionFactory(cfName, 
+            control.createConnectionFactory(cfName,
                                             tcLive.getFactoryClassName(),
                                             tcLive.getParams(),
                                             tcBackup.getFactoryClassName(),
                                             tcBackup.getParams(),
                                             bindings);
-         }         
+         }
       });
    }
-   
+
    public void testCreateConnectionFactory_4() throws Exception
    {
       doCreateConnectionFactory(new ConnectionFactoryCreator()
@@ -220,17 +224,17 @@ public class JMSServerControlTest extends ManagementTestBase
             TransportConfiguration tcLive = new TransportConfiguration(InVMConnectorFactory.class.getName());
             TransportConfiguration tcBackup = new TransportConfiguration(InVMConnectorFactory.class.getName());
 
-            control.createConnectionFactory(cfName, 
+            control.createConnectionFactory(cfName,
                                             tcLive.getFactoryClassName(),
                                             tcLive.getParams(),
                                             tcBackup.getFactoryClassName(),
                                             tcBackup.getParams(),
                                             clientID,
                                             bindings);
-         }         
+         }
       });
    }
-   
+
    public void testCreateConnectionFactory_5() throws Exception
    {
       doCreateConnectionFactory(new ConnectionFactoryCreator()
@@ -241,16 +245,16 @@ public class JMSServerControlTest extends ManagementTestBase
             TransportConfiguration tcLive = new TransportConfiguration(InVMConnectorFactory.class.getName());
             TransportConfiguration tcBackup = new TransportConfiguration(InVMConnectorFactory.class.getName());
 
-            control.createConnectionFactory(cfName, 
-                                            new Object[] {tcLive.getFactoryClassName()},
-                                            new Object[] {tcLive.getParams()},
-                                            new Object[] {tcBackup.getFactoryClassName()},
-                                            new Object[] {tcBackup.getParams()},
+            control.createConnectionFactory(cfName,
+                                            new Object[] { tcLive.getFactoryClassName() },
+                                            new Object[] { tcLive.getParams() },
+                                            new Object[] { tcBackup.getFactoryClassName() },
+                                            new Object[] { tcBackup.getParams() },
                                             bindings);
-         }         
+         }
       });
    }
-      
+
    public void testCreateConnectionFactory_6() throws Exception
    {
       doCreateConnectionFactory(new ConnectionFactoryCreator()
@@ -262,17 +266,17 @@ public class JMSServerControlTest extends ManagementTestBase
             TransportConfiguration tcLive = new TransportConfiguration(InVMConnectorFactory.class.getName());
             TransportConfiguration tcBackup = new TransportConfiguration(InVMConnectorFactory.class.getName());
 
-            control.createConnectionFactory(cfName, 
-                                            new Object[] {tcLive.getFactoryClassName()},
-                                            new Object[] {tcLive.getParams()},
-                                            new Object[] {tcBackup.getFactoryClassName()},
-                                            new Map[] {tcBackup.getParams()},
+            control.createConnectionFactory(cfName,
+                                            new Object[] { tcLive.getFactoryClassName() },
+                                            new Object[] { tcLive.getParams() },
+                                            new Object[] { tcBackup.getFactoryClassName() },
+                                            new Map[] { tcBackup.getParams() },
                                             clientID,
                                             bindings);
-         }         
+         }
       });
    }
-   
+
    public void testCreateConnectionFactory_7() throws Exception
    {
       doCreateConnectionFactory(new ConnectionFactoryCreator()
@@ -284,13 +288,13 @@ public class JMSServerControlTest extends ManagementTestBase
             TransportConfiguration tcLive = new TransportConfiguration(InVMConnectorFactory.class.getName());
             TransportConfiguration tcBackup = new TransportConfiguration(InVMConnectorFactory.class.getName());
 
-            control.createConnectionFactory(cfName, 
-                                            new Object[] {tcLive.getFactoryClassName()},
-                                            new Object[] {tcLive.getParams()},
-                                            new Object[] {tcBackup.getFactoryClassName()},
-                                            new Object[] {tcBackup.getParams()},
+            control.createConnectionFactory(cfName,
+                                            new Object[] { tcLive.getFactoryClassName() },
+                                            new Object[] { tcLive.getParams() },
+                                            new Object[] { tcBackup.getFactoryClassName() },
+                                            new Object[] { tcBackup.getParams() },
                                             clientID,
-                                            ClientSessionFactoryImpl.DEFAULT_PING_PERIOD,
+                                            ClientSessionFactoryImpl.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
                                             ClientSessionFactoryImpl.DEFAULT_CONNECTION_TTL,
                                             ClientSessionFactoryImpl.DEFAULT_CALL_TIMEOUT,
                                             ClientSessionFactoryImpl.DEFAULT_MAX_CONNECTIONS,
@@ -315,13 +319,13 @@ public class JMSServerControlTest extends ManagementTestBase
                                             ClientSessionFactoryImpl.DEFAULT_RECONNECT_ATTEMPTS,
                                             ClientSessionFactoryImpl.DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN,
                                             bindings);
-         }         
+         }
       });
    }
 
    public void _testCreateConnectionFactoryWithDiscoveryGroup() throws Exception
    {
-      String[] cfJNDIBindings = new String[] {randomString(), randomString(), randomString()};
+      String[] cfJNDIBindings = new String[] { randomString(), randomString(), randomString() };
       String cfName = randomString();
       String clientID = randomString();
 
@@ -331,16 +335,12 @@ public class JMSServerControlTest extends ManagementTestBase
 
       for (String cfJNDIBinding : cfJNDIBindings)
       {
-         checkNoBinding(context, cfJNDIBinding);            
+         checkNoBinding(context, cfJNDIBinding);
       }
 
       JMSServerControlMBean control = createManagementControl();
 
-      control.createConnectionFactory(cfName, 
-                                      "231.7.7.7",
-                                      8765,
-                                      clientID,
-                                      cfJNDIBindings);
+      control.createConnectionFactory(cfName, "231.7.7.7", 8765, clientID, cfJNDIBindings);
 
       for (String cfJNDIBinding : cfJNDIBindings)
       {
@@ -351,15 +351,15 @@ public class JMSServerControlTest extends ManagementTestBase
          connection.close();
       }
    }
-   
+
    public void testDestroyConnectionFactory() throws Exception
    {
-      String[] cfJNDIBindings = new String[] {randomString(), randomString(), randomString()};
+      String[] cfJNDIBindings = new String[] { randomString(), randomString(), randomString() };
       String cfName = randomString();
 
       for (String cfJNDIBinding : cfJNDIBindings)
       {
-         checkNoBinding(context, cfJNDIBinding);            
+         checkNoBinding(context, cfJNDIBinding);
       }
 
       JMSServerControlMBean control = createManagementControl();
@@ -376,12 +376,12 @@ public class JMSServerControlTest extends ManagementTestBase
          Connection connection = cf.createConnection();
          connection.close();
       }
-      
+
       control.destroyConnectionFactory(cfName);
-      
+
       for (String cfJNDIBinding : cfJNDIBindings)
       {
-         checkNoBinding(context, cfJNDIBinding);            
+         checkNoBinding(context, cfJNDIBinding);
       }
 
    }
@@ -399,10 +399,10 @@ public class JMSServerControlTest extends ManagementTestBase
       conf.setSecurityEnabled(false);
       conf.setJMXManagementEnabled(true);
       conf.getAcceptorConfigurations().add(new TransportConfiguration(InVMAcceptorFactory.class.getName()));
-      MessagingServer server = Messaging.newMessagingServer(conf, mbeanServer, false);      
+      MessagingServer server = Messaging.newMessagingServer(conf, mbeanServer, false);
 
       context = new InVMContext();
-      serverManager = new JMSServerManagerImpl(server);      
+      serverManager = new JMSServerManagerImpl(server);
       serverManager.setContext(context);
       serverManager.start();
       serverManager.activated();
@@ -426,7 +426,7 @@ public class JMSServerControlTest extends ManagementTestBase
    private void doCreateConnectionFactory(ConnectionFactoryCreator creator) throws Exception
    {
       Object[] cfJNDIBindings = new Object[] { randomString(), randomString(), randomString() };
-            
+
       String cfName = randomString();
 
       for (Object cfJNDIBinding : cfJNDIBindings)
@@ -436,10 +436,10 @@ public class JMSServerControlTest extends ManagementTestBase
       checkNoResource(ObjectNames.getConnectionFactoryObjectName(cfName));
 
       JMSServerControlMBean control = createManagementControl();
-     creator.createConnectionFactory(control, cfJNDIBindings);
-      
+      creator.createConnectionFactory(control, cfJNDIBindings);
+
       TransportConfiguration tcLive = new TransportConfiguration(InVMConnectorFactory.class.getName());
-      
+
       control.createConnectionFactory(cfName, tcLive.getFactoryClassName(), tcLive.getParams(), cfJNDIBindings);
 
       for (Object cfJNDIBinding : cfJNDIBindings)
@@ -465,7 +465,7 @@ public class JMSServerControlTest extends ManagementTestBase
                                                discoveryPort,
                                                ConfigurationImpl.DEFAULT_BROADCAST_REFRESH_TIMEOUT));
       MessagingServer server = Messaging.newMessagingServer(conf, mbeanServer, false);
-      
+
       context = new InVMContext();
       JMSServerManagerImpl serverManager = new JMSServerManagerImpl(server);
       serverManager.setContext(context);
@@ -474,13 +474,12 @@ public class JMSServerControlTest extends ManagementTestBase
 
       return serverManager;
    }
-   
+
    // Inner classes -------------------------------------------------
 
-   interface ConnectionFactoryCreator{
+   interface ConnectionFactoryCreator
+   {
       void createConnectionFactory(JMSServerControlMBean control, Object[] bindings) throws Exception;
    }
-   
-
 
 }

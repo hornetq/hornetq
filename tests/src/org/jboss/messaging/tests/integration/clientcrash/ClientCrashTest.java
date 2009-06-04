@@ -132,7 +132,7 @@ public class ClientCrashTest extends ClientTestBase
 
       sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.integration.transports.netty.NettyConnectorFactory"));
       
-      sf.setPingPeriod(PING_PERIOD);
+      sf.setClientFailureCheckPeriod(PING_PERIOD);
       sf.setConnectionTTL(CONNECTION_TTL);
    }
 

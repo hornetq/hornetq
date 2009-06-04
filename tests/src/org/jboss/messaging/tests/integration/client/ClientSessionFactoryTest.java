@@ -77,7 +77,7 @@ public class ClientSessionFactoryTest extends ServiceTestBase
                              null,
                              0,
                              ClientSessionFactoryImpl.DEFAULT_DISCOVERY_REFRESH_TIMEOUT,
-                             ClientSessionFactoryImpl.DEFAULT_PING_PERIOD,
+                             ClientSessionFactoryImpl.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
                              ClientSessionFactoryImpl.DEFAULT_CONNECTION_TTL,
                              ClientSessionFactoryImpl.DEFAULT_CALL_TIMEOUT,
                              ClientSessionFactoryImpl.DEFAULT_MAX_CONNECTIONS,
@@ -137,7 +137,7 @@ public class ClientSessionFactoryTest extends ServiceTestBase
                              groupAddress,
                              groupPort,
                              ClientSessionFactoryImpl.DEFAULT_DISCOVERY_REFRESH_TIMEOUT,
-                             ClientSessionFactoryImpl.DEFAULT_PING_PERIOD,
+                             ClientSessionFactoryImpl.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
                              ClientSessionFactoryImpl.DEFAULT_CONNECTION_TTL,
                              ClientSessionFactoryImpl.DEFAULT_CALL_TIMEOUT,
                              ClientSessionFactoryImpl.DEFAULT_MAX_CONNECTIONS,
@@ -188,7 +188,7 @@ public class ClientSessionFactoryTest extends ServiceTestBase
                              null,
                              0,
                              ClientSessionFactoryImpl.DEFAULT_DISCOVERY_REFRESH_TIMEOUT,
-                             ClientSessionFactoryImpl.DEFAULT_PING_PERIOD,
+                             ClientSessionFactoryImpl.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
                              ClientSessionFactoryImpl.DEFAULT_CONNECTION_TTL,
                              ClientSessionFactoryImpl.DEFAULT_CALL_TIMEOUT,
                              ClientSessionFactoryImpl.DEFAULT_MAX_CONNECTIONS,
@@ -239,7 +239,7 @@ public class ClientSessionFactoryTest extends ServiceTestBase
                              null,
                              0,
                              ClientSessionFactoryImpl.DEFAULT_DISCOVERY_REFRESH_TIMEOUT,
-                             ClientSessionFactoryImpl.DEFAULT_PING_PERIOD,
+                             ClientSessionFactoryImpl.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
                              ClientSessionFactoryImpl.DEFAULT_CONNECTION_TTL,
                              ClientSessionFactoryImpl.DEFAULT_CALL_TIMEOUT,
                              ClientSessionFactoryImpl.DEFAULT_MAX_CONNECTIONS,
@@ -290,7 +290,7 @@ public class ClientSessionFactoryTest extends ServiceTestBase
                              null,
                              0,
                              ClientSessionFactoryImpl.DEFAULT_DISCOVERY_REFRESH_TIMEOUT,
-                             ClientSessionFactoryImpl.DEFAULT_PING_PERIOD,
+                             ClientSessionFactoryImpl.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
                              ClientSessionFactoryImpl.DEFAULT_CONNECTION_TTL,
                              ClientSessionFactoryImpl.DEFAULT_CALL_TIMEOUT,
                              ClientSessionFactoryImpl.DEFAULT_MAX_CONNECTIONS,
@@ -337,7 +337,7 @@ public class ClientSessionFactoryTest extends ServiceTestBase
       String discoveryAddress = randomString();
       int discoveryPort = RandomUtil.randomPositiveInt();
       long discoveryRefreshTimeout = RandomUtil.randomPositiveLong();
-      long pingPeriod = RandomUtil.randomPositiveLong();
+      long clientFailureCheckPeriod = RandomUtil.randomPositiveLong();
       long connectionTTL = RandomUtil.randomPositiveLong();
       long callTimeout = RandomUtil.randomPositiveLong();
       int maxConnections = RandomUtil.randomPositiveInt();
@@ -366,7 +366,7 @@ public class ClientSessionFactoryTest extends ServiceTestBase
       cf.setDiscoveryAddress(discoveryAddress);
       cf.setDiscoveryPort(discoveryPort);
       cf.setDiscoveryRefreshTimeout(discoveryRefreshTimeout);
-      cf.setPingPeriod(pingPeriod);
+      cf.setClientFailureCheckPeriod(clientFailureCheckPeriod);
       cf.setConnectionTTL(connectionTTL);
       cf.setCallTimeout(callTimeout);
       cf.setMaxConnections(maxConnections);
@@ -395,7 +395,7 @@ public class ClientSessionFactoryTest extends ServiceTestBase
       assertEquals(discoveryAddress, cf.getDiscoveryAddress());
       assertEquals(discoveryPort, cf.getDiscoveryPort());
       assertEquals(discoveryRefreshTimeout, cf.getDiscoveryRefreshTimeout());
-      assertEquals(pingPeriod, cf.getPingPeriod());
+      assertEquals(clientFailureCheckPeriod, cf.getClientFailureCheckPeriod());
       assertEquals(connectionTTL, cf.getConnectionTTL());
       assertEquals(callTimeout, cf.getCallTimeout());
       assertEquals(maxConnections, cf.getMaxConnections());
@@ -432,7 +432,7 @@ public class ClientSessionFactoryTest extends ServiceTestBase
       String discoveryAddress = randomString();
       int discoveryPort = RandomUtil.randomPositiveInt();
       long discoveryRefreshTimeout = RandomUtil.randomPositiveLong();
-      long pingPeriod = RandomUtil.randomPositiveLong();
+      long clientFailureCheckPeriod = RandomUtil.randomPositiveLong();
       long connectionTTL = RandomUtil.randomPositiveLong();
       long callTimeout = RandomUtil.randomPositiveLong();
       int maxConnections = RandomUtil.randomPositiveInt();
@@ -495,7 +495,7 @@ public class ClientSessionFactoryTest extends ServiceTestBase
       }
       try
       {
-         cf.setPingPeriod(pingPeriod);
+         cf.setClientFailureCheckPeriod(clientFailureCheckPeriod);
          fail("Should throw exception");
       }
       catch (IllegalStateException e)
@@ -714,7 +714,7 @@ public class ClientSessionFactoryTest extends ServiceTestBase
       cf.getDiscoveryAddress();
       cf.getDiscoveryPort();
       cf.getDiscoveryRefreshTimeout();
-      cf.getPingPeriod();
+      cf.getClientFailureCheckPeriod();
       cf.getConnectionTTL();
       cf.getCallTimeout();
       cf.getMaxConnections();
@@ -746,7 +746,7 @@ public class ClientSessionFactoryTest extends ServiceTestBase
                                     String discoveryAddress,
                                     int discoveryPort,
                                     long discoveryRefreshTimeout,
-                                    long pingPeriod,
+                                    long clientFailureCheckPeriod,
                                     long connectionTTL,
                                     long callTimeout,
                                     int maxConnections,
@@ -788,7 +788,7 @@ public class ClientSessionFactoryTest extends ServiceTestBase
       assertEquals(cf.getDiscoveryAddress(), discoveryAddress);
       assertEquals(cf.getDiscoveryPort(), discoveryPort);
       assertEquals(cf.getDiscoveryRefreshTimeout(), discoveryRefreshTimeout);
-      assertEquals(cf.getPingPeriod(), pingPeriod);
+      assertEquals(cf.getClientFailureCheckPeriod(), clientFailureCheckPeriod);
       assertEquals(cf.getConnectionTTL(), connectionTTL);
       assertEquals(cf.getCallTimeout(), callTimeout);
       assertEquals(cf.getMaxConnections(), maxConnections);

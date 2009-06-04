@@ -88,7 +88,7 @@ public class JBossConnectionFactoryTest extends UnitTestCase
                           0,
                           ClientSessionFactoryImpl.DEFAULT_DISCOVERY_REFRESH_TIMEOUT,
                           null,
-                          ClientSessionFactoryImpl.DEFAULT_PING_PERIOD,
+                          ClientSessionFactoryImpl.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
                           ClientSessionFactoryImpl.DEFAULT_CONNECTION_TTL,
                           ClientSessionFactoryImpl.DEFAULT_CALL_TIMEOUT,
                           ClientSessionFactoryImpl.DEFAULT_MAX_CONNECTIONS,
@@ -155,7 +155,7 @@ public class JBossConnectionFactoryTest extends UnitTestCase
                           groupPort,
                           ClientSessionFactoryImpl.DEFAULT_DISCOVERY_REFRESH_TIMEOUT,
                           null,
-                          ClientSessionFactoryImpl.DEFAULT_PING_PERIOD,
+                          ClientSessionFactoryImpl.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
                           ClientSessionFactoryImpl.DEFAULT_CONNECTION_TTL,
                           ClientSessionFactoryImpl.DEFAULT_CALL_TIMEOUT,
                           ClientSessionFactoryImpl.DEFAULT_MAX_CONNECTIONS,
@@ -203,7 +203,7 @@ public class JBossConnectionFactoryTest extends UnitTestCase
                           0,
                           ClientSessionFactoryImpl.DEFAULT_DISCOVERY_REFRESH_TIMEOUT,
                           null,
-                          ClientSessionFactoryImpl.DEFAULT_PING_PERIOD,
+                          ClientSessionFactoryImpl.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
                           ClientSessionFactoryImpl.DEFAULT_CONNECTION_TTL,
                           ClientSessionFactoryImpl.DEFAULT_CALL_TIMEOUT,
                           ClientSessionFactoryImpl.DEFAULT_MAX_CONNECTIONS,
@@ -252,7 +252,7 @@ public class JBossConnectionFactoryTest extends UnitTestCase
                           0,
                           ClientSessionFactoryImpl.DEFAULT_DISCOVERY_REFRESH_TIMEOUT,
                           null,
-                          ClientSessionFactoryImpl.DEFAULT_PING_PERIOD,
+                          ClientSessionFactoryImpl.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
                           ClientSessionFactoryImpl.DEFAULT_CONNECTION_TTL,
                           ClientSessionFactoryImpl.DEFAULT_CALL_TIMEOUT,
                           ClientSessionFactoryImpl.DEFAULT_MAX_CONNECTIONS,
@@ -301,7 +301,7 @@ public class JBossConnectionFactoryTest extends UnitTestCase
                           0,
                           ClientSessionFactoryImpl.DEFAULT_DISCOVERY_REFRESH_TIMEOUT,
                           null,
-                          ClientSessionFactoryImpl.DEFAULT_PING_PERIOD,
+                          ClientSessionFactoryImpl.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
                           ClientSessionFactoryImpl.DEFAULT_CONNECTION_TTL,
                           ClientSessionFactoryImpl.DEFAULT_CALL_TIMEOUT,
                           ClientSessionFactoryImpl.DEFAULT_MAX_CONNECTIONS,
@@ -347,7 +347,7 @@ public class JBossConnectionFactoryTest extends UnitTestCase
       String discoveryAddress = randomString();
       int discoveryPort = RandomUtil.randomPositiveInt();
       long discoveryRefreshTimeout = RandomUtil.randomPositiveLong();
-      long pingPeriod = RandomUtil.randomPositiveLong();
+      long clientFailureCheckPeriod = RandomUtil.randomPositiveLong();
       long connectionTTL = RandomUtil.randomPositiveLong();
       long callTimeout = RandomUtil.randomPositiveLong();
       int maxConnections = RandomUtil.randomPositiveInt();
@@ -376,7 +376,7 @@ public class JBossConnectionFactoryTest extends UnitTestCase
       cf.setDiscoveryAddress(discoveryAddress);
       cf.setDiscoveryPort(discoveryPort);
       cf.setDiscoveryRefreshTimeout(discoveryRefreshTimeout);
-      cf.setPingPeriod(pingPeriod);
+      cf.setClientFailureCheckPeriod(clientFailureCheckPeriod);
       cf.setConnectionTTL(connectionTTL);
       cf.setCallTimeout(callTimeout);
       cf.setMaxConnections(maxConnections);
@@ -405,7 +405,7 @@ public class JBossConnectionFactoryTest extends UnitTestCase
       assertEquals(discoveryAddress, cf.getDiscoveryAddress());
       assertEquals(discoveryPort, cf.getDiscoveryPort());
       assertEquals(discoveryRefreshTimeout, cf.getDiscoveryRefreshTimeout());
-      assertEquals(pingPeriod, cf.getPingPeriod());
+      assertEquals(clientFailureCheckPeriod, cf.getClientFailureCheckPeriod());
       assertEquals(connectionTTL, cf.getConnectionTTL());
       assertEquals(callTimeout, cf.getCallTimeout());
       assertEquals(maxConnections, cf.getMaxConnections());
@@ -443,7 +443,7 @@ public class JBossConnectionFactoryTest extends UnitTestCase
       int discoveryPort = RandomUtil.randomPositiveInt();
       long discoveryRefreshTimeout = RandomUtil.randomPositiveLong();
       String clientID = RandomUtil.randomString();
-      long pingPeriod = RandomUtil.randomPositiveLong();
+      long clientFailureCheckPeriod = RandomUtil.randomPositiveLong();
       long connectionTTL = RandomUtil.randomPositiveLong();
       long callTimeout = RandomUtil.randomPositiveLong();
       int maxConnections = RandomUtil.randomPositiveInt();
@@ -516,7 +516,7 @@ public class JBossConnectionFactoryTest extends UnitTestCase
       }
       try
       {
-         cf.setPingPeriod(pingPeriod);
+         cf.setClientFailureCheckPeriod(clientFailureCheckPeriod);
          fail("Should throw exception");
       }
       catch (IllegalStateException e)
@@ -745,7 +745,7 @@ public class JBossConnectionFactoryTest extends UnitTestCase
       cf.getDiscoveryPort();
       cf.getDiscoveryRefreshTimeout();
       cf.getClientID();
-      cf.getPingPeriod();
+      cf.getClientFailureCheckPeriod();
       cf.getConnectionTTL();
       cf.getCallTimeout();
       cf.getMaxConnections();
@@ -779,7 +779,7 @@ public class JBossConnectionFactoryTest extends UnitTestCase
                                     int discoveryPort,
                                     long discoveryRefreshTimeout,
                                     String clientID,
-                                    long pingPeriod,
+                                    long clientFailureCheckPeriod,
                                     long connectionTTL,
                                     long callTimeout,
                                     int maxConnections,
@@ -823,7 +823,7 @@ public class JBossConnectionFactoryTest extends UnitTestCase
       assertEquals(cf.getDiscoveryPort(), discoveryPort);
       assertEquals(cf.getDiscoveryRefreshTimeout(), discoveryRefreshTimeout);
       assertEquals(cf.getClientID(), clientID);
-      assertEquals(cf.getPingPeriod(), pingPeriod);
+      assertEquals(cf.getClientFailureCheckPeriod(), clientFailureCheckPeriod);
       assertEquals(cf.getConnectionTTL(), connectionTTL);
       assertEquals(cf.getCallTimeout(), callTimeout);
       assertEquals(cf.getMaxConnections(), maxConnections);
