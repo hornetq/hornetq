@@ -8,9 +8,9 @@
             <listitem>
                 <para>Minimum number of journal files. Set <literal>journal-min-files</literal> to a
                     number of files that would fit your average sustainable rate. If you see new
-                    files being created on the journal data directory too often you need to
-                    increase the minimal number of files, this way the journal would reuse more
-                    files instead of create new data files.</para>
+                    files being created on the journal data directory too often you need to increase
+                    the minimal number of files, this way the journal would reuse more files instead
+                    of create new data files.</para>
             </listitem>
             <listitem>
                 <para>Journal file size. The journal file size should be aligned to the capacity of
@@ -21,10 +21,16 @@
                 <para>Use AIO journal. If using Linux, try to keep your journal type as AIO.</para>
             </listitem>
             <listitem>
-                <para>Max IO. If using AIO, keep <literal>journal-max-aio</literal> accordingly to
-                    your disk capacity. If in a thread dump you see too many write requests waiting
-                    on <literal>AsynchronousFile.write</literal> you may be out of space on the
-                    Asynchronous IO queue. Increase the value on that case.</para>
+                <para><literal>journal-aio-flush-on-sync</literal>. If you don't have many producers
+                    in your system you may consider setting journal-aio-flush-on-sync to true. JBoss
+                    Messaging aways try to use most of the hardware resource considering the worst
+                    case where you have many producers. We try to concatenate multiple writes in
+                    single OS operations. However if that's not your case setting this option to
+                    true will give you a performance boost.</para>
+                <para>By the other hand when you have multiple producers, keeping <literal
+                        >journal-aio-flush-on-sync</literal> set to false will make your system to
+                    flush multiple syncs in a single OS call making your system to scale up much
+                    higher.</para>
             </listitem>
         </itemizedlist>
     </section>

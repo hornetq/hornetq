@@ -108,7 +108,7 @@
         <para>The message journal is configured using the following attributes in <literal
                 >jbm-configuration.xml</literal></para>
         <itemizedlist>
-            <listitem>
+            <listitem id="configuring.message.journal.journal-directory">
                 <para><literal>journal-directory</literal></para>
                 <para>This is the directory in which the message journal lives. The default value is
                         <literal>data/journal</literal>.</para>
@@ -121,14 +121,14 @@
                 <para>When the message journal is stored on a SAN we recommend each journal instance
                     that is stored on the SAN is given its own LUN (logical unit).</para>
             </listitem>
-            <listitem>
+            <listitem id="configuring.message.journal.create-journal-dir">
                 <para><literal>create-journal-dir</literal></para>
                 <para>If this is set to <literal>true</literal> then the journal directory will be
                     automatically created at the location specified in <literal
                         >journal-directory</literal> if it does not already exist. The default value
                     is <literal>true</literal></para>
             </listitem>
-            <listitem>
+            <listitem id="configuring.message.journal.journal-type">
                 <para><literal>journal-type</literal></para>
                 <para>Valid values are <literal>NIO</literal> or <literal>ASYNCIO</literal>.</para>
                 <para>Choosing <literal>NIO</literal> chooses the Java NIO journal. Choosing
@@ -137,25 +137,25 @@
                     libaio installed then JBoss Messaging will detect this and automatically fall
                     back to using <literal>NIO</literal>.</para>
             </listitem>
-            <listitem>
+            <listitem id="configuring.message.journal.journal-sync-transactional">
                 <para><literal>journal-sync-transactional</literal></para>
                 <para>If this is set to true then JBoss Messaging will wait for all transaction data
                     to be persisted to disk on a commit before sending a commit response OK back to
                     the client. The default value is <literal>true</literal>.</para>
             </listitem>
-            <listitem>
+            <listitem id="configuring.message.journal.journal-sync-non-transactional">
                 <para><literal>journal-sync-non-transactional</literal></para>
                 <para>If this is set to true then JBoss Messaging will wait for any non
                     transactional data to be persisted to disk on a send before sending the response
                     back to the client. The default value for this is <literal
                     >false</literal>.</para>
             </listitem>
-            <listitem>
+            <listitem id="configuring.message.journal.journal-file-size">
                 <para><literal>journal-file-size</literal></para>
                 <para>The size of each journal file in bytes. The default value for this is <literal
                         >10485760</literal> bytes (10MiB).</para>
             </listitem>
-            <listitem>
+            <listitem id="configuring.message.journal.journal-min-files">
                 <para><literal>journal-min-files</literal></para>
                 <para>The minimum number of files the journal will maintain. When JBoss Messaging
                     starts and there is no initial message data, JBoss Messaging will pre-create
@@ -167,7 +167,7 @@
                 <para>Depending on how much data you expect your queues to contain at steady state
                     you should tune this number of files to match that total amount of data.</para>
             </listitem>
-            <listitem>
+            <listitem id="configuring.message.journal.journal-max-aio">
                 <para><literal>journal-max-aio</literal></para>
                 <para>When using an AIO journal, write requests are queued up before being submitted
                     to AIO for execution. Then when AIO has completed them it calls JBoss Messaging
@@ -176,17 +176,31 @@
                     block until space is freed up. This parameter has no meaning when using the NIO
                     journal.</para>
             </listitem>
-            <listitem>
-                <para><literal>journal-aio-flush-on-sync</literal></para>
-                <para>TODO.</para>
-            </listitem>
-            <listitem>
+            <listitem id="configuring.message.journal.journal-aio-buffer-timeout">
                 <para><literal>journal-aio-buffer-timeout</literal></para>
-                <para>TODO.</para>
+                <para>Flush period on the internal AIO timed buffer, configured in nanoSeconds. For
+                    performance reasons we buffer data before submiting it to the kernel writes,
+                    however we need flush in order to complete transactions. If the system is
+                    inactive for more than <literal>journal-aio-buffer-timeout</literal> we flush
+                    the buffer and complete the transactions. Also, if there are pending
+                    transactions we guarantee the data is flushed up to <literal
+                        >journal-aio-buffer-timeout</literal>.</para>
             </listitem>
-            <listitem>
+            <listitem id="configuring.message.journal.journal-aio-flush-on-sync">
+                <para><literal>journal-aio-flush-on-sync</literal></para>
+                <para>If this is set to true, the internal buffers are flushed right away when a
+                    transaction arrives.</para>
+                <para>JBoss Messaging was made to scale up to hundreds of producers. We try to use
+                    most of the hardware resources by scheduling multiple writes and scheduling
+                    multiple writes in a single OS call.</para>
+                <para>However in some use cases it may be better to not wait any data and just flush
+                    and write to the OS right away. For example if you have a single producer during
+                    several small transactions. On this case it would be better to aways
+                    flush-on-sync.</para>
+            </listitem>
+            <listitem id="configuring.message.journal.journal-aio-buffer-size">
                 <para><literal>journal-aio-buffer-size</literal></para>
-                <para>TODO.</para>
+                <para>The size of the timed buffer on AIO. The default value is 128MiB.</para>
             </listitem>
         </itemizedlist>
     </section>

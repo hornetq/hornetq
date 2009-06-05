@@ -265,49 +265,54 @@
                             <entry>true</entry>
                         </row>
                         <row>
-                            <entry><link linkend="configuring.message.journal"
+                            <entry><link linkend="configuring.message.journal.journal-directory"
                                     >journal-directory</link></entry>
                             <entry>String</entry>
                             <entry>the directory to store the journal files in</entry>
                             <entry>data/journal</entry>
                         </row>
                         <row>
-                            <entry><link linkend="configuring.message.journal"
+                            <entry><link linkend="configuring.message.journal.create-journal-dir"
                                     >create-journal-dir</link></entry>
                             <entry>Boolean</entry>
                             <entry>true means that the journal directory will be created</entry>
                             <entry>true</entry>
                         </row>
                         <row>
-                            <entry><link linkend="configuring.message.journal"
-                                >journal-type</link></entry>
+                            <entry><link linkend="configuring.message.journal.journal-type"
+                                    >journal-type</link></entry>
                             <entry>ASYNCIO|NIO</entry>
                             <entry>the type of journal to use</entry>
                             <entry>ASYNCIO</entry>
                         </row>
                         <row>
-                            <entry><link linkend="configuring.message.journal"
+                            <entry><link
+                                    linkend="configuring.message.journal.journal-aio-buffer-timeout"
+                                    >journal-aio-buffer-timeout</link></entry>
+                            <entry>Long</entry>
+                            <entry>The timeout used to flush internal buffers.</entry>
+                            <entry>500000</entry>
+                        </row>
+                        <row>
+                            <entry><link
+                                    linkend="configuring.message.journal.journal-aio-flush-on-sync"
                                     >journal-aio-flush-on-sync</link></entry>
                             <entry>Boolean</entry>
-                            <entry>TODO</entry>
+                            <entry>If true, transactions will ignore timeouts and be persisted
+                                immediately</entry>
                             <entry>False</entry>
                         </row>
                         <row>
-                            <entry><link linkend="configuring.message.journal"
-                                    >journal-aio-buffer-timeout</link></entry>
-                            <entry>Long</entry>
-                            <entry>TODO</entry>
-                            <entry>20000</entry>
-                        </row>
-                        <row>
-                            <entry><link linkend="configuring.message.journal"
+                            <entry><link
+                                    linkend="configuring.message.journal.journal-aio-buffer-size"
                                     >journal-aio-buffer-size</link></entry>
                             <entry>Long</entry>
-                            <entry>TODO</entry>
+                            <entry>The size of the internal buffer on AIO.</entry>
                             <entry>128 MiB</entry>
                         </row>
                         <row>
-                            <entry><link linkend="configuring.message.journal"
+                            <entry><link
+                                    linkend="configuring.message.journal.journal-sync-transactional"
                                     >journal-sync-transactional</link></entry>
                             <entry>Boolean</entry>
                             <entry>if true wait for transaction data to be synchronized to the
@@ -315,7 +320,8 @@
                             <entry>true</entry>
                         </row>
                         <row>
-                            <entry><link linkend="configuring.message.journal"
+                            <entry><link
+                                    linkend="configuring.message.journal.journal-sync-non-transactional"
                                     >journal-sync-non-transactional</link></entry>
                             <entry>Boolean</entry>
                             <entry>if true wait for non transaction data to be synced to the journal
@@ -323,21 +329,21 @@
                             <entry>false</entry>
                         </row>
                         <row>
-                            <entry><link linkend="configuring.message.journal"
+                            <entry><link linkend="configuring.message.journal.journal-file-size"
                                     >journal-file-size</link></entry>
                             <entry>Long</entry>
                             <entry>the size (in bytes) of each journal file</entry>
                             <entry>128 * 1024</entry>
                         </row>
                         <row>
-                            <entry><link linkend="configuring.message.journal"
+                            <entry><link linkend="configuring.message.journal.journal-min-files"
                                     >journal-min-files</link></entry>
                             <entry>Integer</entry>
                             <entry>how many journal files to pre-create</entry>
                             <entry>2</entry>
                         </row>
                         <row>
-                            <entry><link linkend="configuring.message.journal"
+                            <entry><link linkend="configuring.message.journal.journal-max-aio"
                                     >journal-max-aio</link></entry>
                             <entry>Integer</entry>
                             <entry>the maximum number of write requests that can be in the AIO queue
