@@ -21,6 +21,7 @@
    <journal-type>ASYNCIO</journal-type>
    <journal-min-files>20</journal-min-files>
    <journal-aio-buffer-timeout>20000</journal-aio-buffer-timeout>
+   <log-journal-write-rate>true</log-journal-write-rate>
 
    
    <queues>

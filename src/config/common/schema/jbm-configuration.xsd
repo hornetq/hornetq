@@ -201,6 +201,9 @@
 				<xsd:element name="journal-sync-non-transactional"
 					type="xsd:boolean" maxOccurs="1" minOccurs="0">
 				</xsd:element>
+				<xsd:element name="log-journal-write-rate"
+					 type="xsd:boolean" maxOccurs="1" minOccurs="0">
+				</xsd:element>
 				<xsd:element name="journal-file-size" type="xsd:unsignedLong"
 					maxOccurs="1" minOccurs="0">
 				</xsd:element>

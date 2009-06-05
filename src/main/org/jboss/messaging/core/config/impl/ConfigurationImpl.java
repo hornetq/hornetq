@@ -100,6 +100,8 @@ public class ConfigurationImpl implements Configuration
    public static final int DEFAULT_JOURNAL_AIO_BUFFER_TIMEOUT = 500000;
    
    public static final int DEFAULT_JOURNAL_AIO_BUFFER_SIZE = 128 * 1024;
+   
+   public static final boolean DEFAULT_JOURNAL_LOG_WRITE_RATE = false;
 
    public static final boolean DEFAULT_WILDCARD_ROUTING_ENABLED = true;
 
@@ -240,6 +242,8 @@ public class ConfigurationImpl implements Configuration
    protected int journalAIOBufferTimeout = DEFAULT_JOURNAL_AIO_BUFFER_TIMEOUT;
    
    protected int journalAIOBufferSize = DEFAULT_JOURNAL_AIO_BUFFER_SIZE;
+   
+   protected boolean logJournalWriteRate = DEFAULT_JOURNAL_LOG_WRITE_RATE;
 
    protected boolean wildcardRoutingEnabled = DEFAULT_WILDCARD_ROUTING_ENABLED;
 
@@ -602,6 +606,16 @@ public class ConfigurationImpl implements Configuration
    public void setJournalMinFiles(final int files)
    {
       journalMinFiles = files;
+   }
+      
+   public boolean isLogJournalWriteRate()
+   {
+      return logJournalWriteRate;
+   }
+
+   public void setLogJournalWriteRate(boolean logJournalWriteRate)
+   {
+      this.logJournalWriteRate = logJournalWriteRate;
    }
 
    public boolean isCreateBindingsDir()

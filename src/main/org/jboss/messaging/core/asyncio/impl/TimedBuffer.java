@@ -25,6 +25,8 @@ package org.jboss.messaging.core.asyncio.impl;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
@@ -79,6 +81,52 @@ public class TimedBuffer
    private volatile boolean started;
 
    private final boolean flushOnSync;
+   
+   // for logging write rates
+   
+   private final boolean logRates;
+   
+   private volatile long bytesFlushed;
+   
+   private Timer logRatesTimer;
+   
+   private TimerTask logRatesTimerTask;
+   
+   private long lastExecution;
+   
+   private class LogRatesTimerTask extends TimerTask
+   {
+      private boolean closed;
+      
+      @Override
+      public synchronized void run()
+      {
+         if (!closed)
+         {
+            long now = System.currentTimeMillis();
+            
+            if (lastExecution != 0)
+            {                             
+               double rate = 1000 * ((double)bytesFlushed) / ( now  - lastExecution);
+               
+               log.info("Write rate = " + rate + " bytes / sec");                                      
+            }
+            else
+            {
+               lastExecution = now;
+            }
+            
+            bytesFlushed = 0;
+         }
+      }
+      
+      public synchronized boolean cancel()
+      {
+         closed = true;
+         
+         return super.cancel();
+      }
+   }
 
    // Static --------------------------------------------------------
 
@@ -86,9 +134,14 @@ public class TimedBuffer
 
    // Public --------------------------------------------------------
 
-   public TimedBuffer(final int size, final long timeout, final boolean flushOnSync)
+   public TimedBuffer(final int size, final long timeout, final boolean flushOnSync, final boolean logRates)
    {
       bufferSize = size;
+      this.logRates = logRates;
+      if (logRates)
+      {
+         this.logRatesTimer = new Timer(true);
+      }
       // Setting the interval for nano-sleeps
       
       // We are keeping this disabled for now until we figure out what to do.
@@ -119,6 +172,13 @@ public class TimedBuffer
       timerThread = new Thread(timerRunnable, "jbm-aio-timer");
 
       timerThread.start();
+      
+      if (logRates)
+      {
+         logRatesTimerTask = new LogRatesTimerTask();
+         
+         logRatesTimer.scheduleAtFixedRate(logRatesTimerTask, 2000, 2000);
+      }
 
       started = true;
    }
@@ -137,6 +197,11 @@ public class TimedBuffer
       latchTimer.down();
 
       timerRunnable.close();
+      
+      if (logRates)
+      {
+         logRatesTimerTask.cancel();
+      }
 
       while (timerThread.isAlive())
       {
@@ -261,6 +326,11 @@ public class TimedBuffer
 
          active = false;
          pendingSync = false;
+         
+         if (logRates)
+         {
+            bytesFlushed += currentBuffer.position();
+         }
 
          currentBuffer.limit(0);
       }

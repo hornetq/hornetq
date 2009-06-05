@@ -92,7 +92,7 @@ public class TimedBufferTest extends UnitTestCase
          }
       }
       
-      TimedBuffer timedBuffer = new TimedBuffer(100, 3600 * 1000, false); // Any big timeout
+      TimedBuffer timedBuffer = new TimedBuffer(100, 3600 * 1000, false, false); // Any big timeout
       
       timedBuffer.setObserver(new TestObserver());
       

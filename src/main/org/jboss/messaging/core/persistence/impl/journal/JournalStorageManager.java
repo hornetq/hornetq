@@ -192,7 +192,8 @@ public class JournalStorageManager implements StorageManager
             journalFF = new AIOSequentialFileFactory(journalDir,
                                                      config.getAIOBufferSize(),
                                                      config.getAIOBufferTimeout(),
-                                                     config.isAIOFlushOnSync());
+                                                     config.isAIOFlushOnSync(),
+                                                     config.isLogJournalWriteRate());
             log.info("AIO loaded successfully");
          }
       }

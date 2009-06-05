@@ -157,7 +157,7 @@ public interface Configuration extends Serializable, MessagingComponent
    boolean isPersistIDCache();
 
    void setPersistIDCache(boolean persist);
-
+   
    // Journal related attributes ------------------------------------------------------------
 
    String getBindingsDirectory();
@@ -211,6 +211,11 @@ public interface Configuration extends Serializable, MessagingComponent
    boolean isCreateJournalDir();
 
    void setCreateJournalDir(boolean create);
+   
+   boolean isLogJournalWriteRate();
+   
+   void setLogJournalWriteRate(boolean rate);
+
 
    // Paging Properties --------------------------------------------------------------------
 

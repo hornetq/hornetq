@@ -78,15 +78,20 @@ public class AIOSequentialFileFactory extends AbstractSequentialFactory
       this(journalDir,
            ConfigurationImpl.DEFAULT_JOURNAL_AIO_BUFFER_SIZE,
            ConfigurationImpl.DEFAULT_JOURNAL_AIO_BUFFER_TIMEOUT,
-           ConfigurationImpl.DEFAULT_JOURNAL_AIO_FLUSH_SYNC);
+           ConfigurationImpl.DEFAULT_JOURNAL_AIO_FLUSH_SYNC,
+           false);
    }
 
-   public AIOSequentialFileFactory(final String journalDir, int bufferSize, long bufferTimeout, boolean flushOnSync)
+   public AIOSequentialFileFactory(final String journalDir,
+                                   int bufferSize,
+                                   long bufferTimeout,
+                                   boolean flushOnSync,
+                                   boolean logRates)
    {
       super(journalDir);
       this.bufferSize = bufferSize;
       this.bufferTimeout = bufferTimeout;
-      this.timedBuffer = new TimedBuffer(bufferSize, bufferTimeout, flushOnSync);
+      this.timedBuffer = new TimedBuffer(bufferSize, bufferTimeout, flushOnSync, logRates);
    }
 
    /* (non-Javadoc)
