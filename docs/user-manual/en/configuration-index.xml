@@ -308,7 +308,7 @@
                                     >journal-aio-buffer-size</link></entry>
                             <entry>Long</entry>
                             <entry>The size of the internal buffer on AIO.</entry>
-                            <entry>128 MiB</entry>
+                            <entry>128 KiB</entry>
                         </row>
                         <row>
                             <entry><link

@@ -189,18 +189,20 @@
             <listitem id="configuring.message.journal.journal-aio-flush-on-sync">
                 <para><literal>journal-aio-flush-on-sync</literal></para>
                 <para>If this is set to true, the internal buffers are flushed right away when a
-                    transaction arrives.</para>
+                    sync request is performed. Sync requests are performed on transactions if
+                        <literal>journal-sync-transactional</literal> is true, or on sending regular
+                    messages if <literal>journalsync-non-transactional</literal> is true.</para>
                 <para>JBoss Messaging was made to scale up to hundreds of producers. We try to use
-                    most of the hardware resources by scheduling multiple writes and scheduling
-                    multiple writes in a single OS call.</para>
+                    most of the hardware resources by scheduling multiple writes and syncs in a
+                    single OS call.</para>
                 <para>However in some use cases it may be better to not wait any data and just flush
-                    and write to the OS right away. For example if you have a single producer writing
-                    small transactions. On this case it would be better to aways
+                    and write to the OS right away. For example if you have a single producer
+                    writing small transactions. On this case it would be better to aways
                     flush-on-sync.</para>
             </listitem>
             <listitem id="configuring.message.journal.journal-aio-buffer-size">
                 <para><literal>journal-aio-buffer-size</literal></para>
-                <para>The size of the timed buffer on AIO. The default value is 128MiB.</para>
+                <para>The size of the timed buffer on AIO. The default value is 128KiB.</para>
             </listitem>
         </itemizedlist>
     </section>
