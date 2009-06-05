@@ -112,14 +112,15 @@ public class CoreClientOverHttpTest extends UnitTestCase
       server.start();
 
       ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration(NETTY_CONNECTOR_FACTORY, params));
-
+      sf.setConnectionTTL(500);
+      
       ClientSession session = sf.createSession(false, true, true);
 
       session.createQueue(QUEUE, QUEUE, null, false);
 
       ClientProducer producer = session.createProducer(QUEUE);
 
-      Thread.sleep(server.getConfiguration().getConnectionScanPeriod() * 5);
+      Thread.sleep(500 * 5);
 
       session.close();
 
