@@ -54,7 +54,7 @@ public class PingTest extends ServiceTestBase
 
    private static final Logger log = Logger.getLogger(PingTest.class);
 
-   private static final long PING_INTERVAL = 500;
+   private static final long CLIENT_FAILURE_CHECK_PERIOD = 500;
 
    // Attributes ----------------------------------------------------
 
@@ -108,7 +108,7 @@ public class PingTest extends ServiceTestBase
 
       ClientSessionFactory csf = new ClientSessionFactoryImpl(transportConfig);
       
-      csf.setClientFailureCheckPeriod(PING_INTERVAL);
+      csf.setClientFailureCheckPeriod(CLIENT_FAILURE_CHECK_PERIOD);
       
       ClientSession session = csf.createSession(false, true, true);
 
@@ -138,7 +138,7 @@ public class PingTest extends ServiceTestBase
 
       serverConn.addFailureListener(serverListener);
 
-      Thread.sleep(PING_INTERVAL * 3);
+      Thread.sleep(CLIENT_FAILURE_CHECK_PERIOD * 3);
 
       assertNull(clientListener.getException());
 
@@ -164,7 +164,7 @@ public class PingTest extends ServiceTestBase
 
       ClientSessionFactory csf = new ClientSessionFactoryImpl(transportConfig);
       
-      csf.setClientFailureCheckPeriod(PING_INTERVAL);
+      csf.setClientFailureCheckPeriod(CLIENT_FAILURE_CHECK_PERIOD);
 
       ClientSession session = csf.createSession(false, true, true);
 
@@ -194,7 +194,7 @@ public class PingTest extends ServiceTestBase
 
       serverConn.addFailureListener(serverListener);
 
-      Thread.sleep(PING_INTERVAL * 3);
+      Thread.sleep(CLIENT_FAILURE_CHECK_PERIOD * 3);
 
       assertNull(clientListener.getException());
 
@@ -220,8 +220,8 @@ public class PingTest extends ServiceTestBase
 
       ClientSessionFactoryImpl csf = new ClientSessionFactoryImpl(transportConfig);
       
-      csf.setClientFailureCheckPeriod(PING_INTERVAL);
-      csf.setConnectionTTL((long)(PING_INTERVAL * 1.5));
+      csf.setClientFailureCheckPeriod(CLIENT_FAILURE_CHECK_PERIOD);
+      csf.setConnectionTTL((long)(CLIENT_FAILURE_CHECK_PERIOD * 1.5));
       
       Listener clientListener = new Listener();
 
@@ -266,10 +266,10 @@ public class PingTest extends ServiceTestBase
             break;
          }
 
-         Thread.sleep(PING_INTERVAL);
+         Thread.sleep(CLIENT_FAILURE_CHECK_PERIOD);
       }
       
-      Thread.sleep(3 * PING_INTERVAL);
+      Thread.sleep(3 * CLIENT_FAILURE_CHECK_PERIOD);
 
       assertTrue(server.getRemotingService().getConnections().isEmpty());
 
@@ -292,8 +292,8 @@ public class PingTest extends ServiceTestBase
 
       ClientSessionFactory csf = new ClientSessionFactoryImpl(transportConfig);
       
-      csf.setClientFailureCheckPeriod(PING_INTERVAL);
-      csf.setConnectionTTL((long)(PING_INTERVAL * 1.5));
+      csf.setClientFailureCheckPeriod(CLIENT_FAILURE_CHECK_PERIOD);
+      csf.setConnectionTTL((long)(CLIENT_FAILURE_CHECK_PERIOD * 1.5));
 
       ClientSession session = csf.createSession(false, true, true);
 
@@ -325,7 +325,7 @@ public class PingTest extends ServiceTestBase
       
       ((RemotingServiceImpl)server.getRemotingService()).cancelPingerForConnectionID(serverConn.getID());
       
-      Thread.sleep(3 * PING_INTERVAL);
+      Thread.sleep(4 * CLIENT_FAILURE_CHECK_PERIOD);
       
       assertNotNull(clientListener.getException());
       
