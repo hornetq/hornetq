@@ -64,8 +64,11 @@ public class Pinger implements Runnable
          return;
       }
       
-      if (!conn.isDataSent())
-      {
+      //TODO - for now we *always* sent the ping otherwise, if we have large GC pauses
+      //can end up with pings not arriving at client in time
+      
+//      if (!conn.isDataSent())
+//      {
          // We only send a ping if no data has been sent since last ping
 
          Ping ping = new Ping();
@@ -73,7 +76,7 @@ public class Pinger implements Runnable
          Channel channel0 = conn.getChannel(0, -1, false);
          
          channel0.send(ping);
-      }
+    //  }
 
       conn.clearDataSent();
    }

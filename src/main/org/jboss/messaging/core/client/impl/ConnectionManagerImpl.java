@@ -1180,7 +1180,7 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
          if (!conn.isDataReceived())
          {
             final MessagingException me = new MessagingException(MessagingException.CONNECTION_TIMEDOUT,
-                                                                 "Did not receive ping on connection. It is likely a client has exited or crashed without " + "closing its connection, or the network between the server and client has failed. The connection will now be closed.");
+                                                                 "Did not receive data from server (or ping).");
 
             threadPool.execute(new Runnable()
             {

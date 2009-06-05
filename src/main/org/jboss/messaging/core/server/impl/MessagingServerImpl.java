@@ -192,6 +192,9 @@ public class MessagingServerImpl implements MessagingServer
    private final Object initialiseLock = new Object();
 
    private boolean initialised;
+   
+   private ConnectionManager replicatingConnectionManager;
+
 
    // Constructors
    // ---------------------------------------------------------------------------------
@@ -334,7 +337,7 @@ public class MessagingServerImpl implements MessagingServer
 
          replicatingConnection = null;
          replicatingChannel = null;
-
+         
          replicatingConnectionManager.close();
       }
 
@@ -353,7 +356,6 @@ public class MessagingServerImpl implements MessagingServer
       threadPool.shutdown();
       try
       {
-         log.info("*** waiting for pool to terminate");
          if (!threadPool.awaitTermination(30000, TimeUnit.MILLISECONDS))
          {
             log.warn("Timed out waiting for pool to terminate");
@@ -612,8 +614,6 @@ public class MessagingServerImpl implements MessagingServer
          log.info("Backup server is now operational");
       }
    }
-
-   private ConnectionManager replicatingConnectionManager;
 
    public MessagingServerControl getMessagingServerControl()
    {
@@ -1099,12 +1099,12 @@ public class MessagingServerImpl implements MessagingServer
             {
                log.warn("Backup server MUST be started before live server. Initialisation will proceed.");
 
-               return false;
+               return false; 
             }
          }
       }
 
-      return true;
+      return true;      
    }
 
    private void loadJournal() throws Exception
