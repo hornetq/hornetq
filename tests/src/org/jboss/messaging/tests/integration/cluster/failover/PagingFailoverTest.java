@@ -57,7 +57,7 @@ public class PagingFailoverTest extends FailoverTestBase
 
    private final Logger log = Logger.getLogger(PagingFailoverTest.class);
   
-   final int RECEIVE_TIMEOUT = 50000;
+   final int RECEIVE_TIMEOUT = 2000;
 
    // Attributes ----------------------------------------------------
 
