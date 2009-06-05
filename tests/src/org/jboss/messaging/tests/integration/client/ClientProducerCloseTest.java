@@ -90,14 +90,18 @@ public class ClientProducerCloseTest extends ServiceTestBase
       server = Messaging.newMessagingServer(config, false);
       server.start();
 
-      ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration(InVMConnectorFactory.class.getName()));
+      sf = new ClientSessionFactoryImpl(new TransportConfiguration(InVMConnectorFactory.class.getName()));
       session = sf.createSession(false, true, true);
    }
+   
+   private ClientSessionFactory sf;
 
    @Override
    protected void tearDown() throws Exception
    {
       session.close();
+            
+      sf.close();
 
       server.stop();
 

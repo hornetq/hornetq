@@ -146,14 +146,14 @@ public class String64KLimitTest extends UnitTestCase
    {
       SimpleString address = randomSimpleString();
       SimpleString queue = randomSimpleString();
-      
+
       session.createQueue(address, queue, false);
 
       ClientProducer producer = session.createProducer(address);
       ClientConsumer consumer = session.createConsumer(queue);
 
       session.start();
-      
+
       String s1 = genString(16 * 1024);
 
       String s2 = genString(32 * 1024);
@@ -198,12 +198,14 @@ public class String64KLimitTest extends UnitTestCase
       ClientMessage rm2 = consumer.receive(1000);
 
       assertNotNull(rm2);
-     
+
       assertEquals(s1, rm1.getBody().readUTF());
       assertEquals(s2, rm2.getBody().readUTF());
    }
 
    // Protected -----------------------------------------------------
+
+   private ClientSessionFactory sf;
 
    @Override
    protected void setUp() throws Exception
@@ -215,14 +217,16 @@ public class String64KLimitTest extends UnitTestCase
       server = Messaging.newMessagingServer(config, false);
       server.start();
 
-      ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration(InVMConnectorFactory.class.getName()));
-      session = sf.createSession(false, true, true);
+      sf = new ClientSessionFactoryImpl(new TransportConfiguration(InVMConnectorFactory.class.getName()));      
+      session = sf.createSession();
    }
 
    @Override
    protected void tearDown() throws Exception
    {
       session.close();
+
+      sf.close();
 
       server.stop();
 

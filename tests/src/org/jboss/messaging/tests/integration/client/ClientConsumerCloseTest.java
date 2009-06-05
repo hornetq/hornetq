@@ -115,11 +115,13 @@ public class ClientConsumerCloseTest extends ServiceTestBase
       SimpleString address = randomSimpleString();
       queue = randomSimpleString();
 
-      ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration(InVMConnectorFactory.class.getName()));
+      sf = new ClientSessionFactoryImpl(new TransportConfiguration(InVMConnectorFactory.class.getName()));
       session = sf.createSession(false, true, true);
       session.createQueue(address, queue, false);
 
    }
+   
+   private ClientSessionFactory sf;
 
    @Override
    protected void tearDown() throws Exception
@@ -127,6 +129,8 @@ public class ClientConsumerCloseTest extends ServiceTestBase
       session.deleteQueue(queue);
       
       session.close();
+      
+      sf.close();
       
       server.stop();
 

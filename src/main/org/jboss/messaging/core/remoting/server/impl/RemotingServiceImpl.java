@@ -384,7 +384,7 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
       if (connectionTTLToUse != -1)
       {
          FailedConnectionRunnable runnable = new FailedConnectionRunnable(conn);
-
+       
          Future<?> connectionTTLFuture = scheduledThreadPool.scheduleAtFixedRate(runnable,
                                                                                  connectionTTLToUse,
                                                                                  connectionTTLToUse,
@@ -521,7 +521,7 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
          {
             return;
          }
-
+         
          if (!conn.isDataReceived())
          {
             removeConnection(conn.getID());

@@ -71,7 +71,7 @@ public class Pinger implements Runnable
          Ping ping = new Ping();
 
          Channel channel0 = conn.getChannel(0, -1, false);
-
+         
          channel0.send(ping);
       }
 

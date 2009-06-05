@@ -65,297 +65,294 @@ public class ClientQueueBrowserTest extends ServiceTestBase
 
       super.tearDown();
    }
+   
+   private ClientSessionFactory sf;
 
    public void testSimpleConsumerBrowser() throws Exception
+   {
+      sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"));
+
+      sf.setBlockOnNonPersistentSend(true);
+
+      ClientSession session = sf.createSession(false, true, true);
+
+      session.createQueue(QUEUE, QUEUE, null, false);
+
+      ClientProducer producer = session.createProducer(QUEUE);
+
+      final int numMessages = 100;
+
+      for (int i = 0; i < numMessages; i++)
       {
-         ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"));
-
-         sf.setBlockOnNonPersistentSend(true);
-
-         ClientSession session = sf.createSession(false, true, true);
-
-         session.createQueue(QUEUE, QUEUE, null, false);
-
-         ClientProducer producer = session.createProducer(QUEUE);
-
-         final int numMessages = 100;
-
-         for (int i = 0; i < numMessages; i++)
-         {
-            ClientMessage message = createTextMessage("m" + i, session);
-            producer.send(message);
-         }
-
-         ClientConsumer consumer = session.createConsumer(QUEUE, null, true);
-
-         for (int i = 0; i < numMessages; i++)
-         {
-            ClientMessage message2 = consumer.receive(1000);
-
-            assertEquals("m" + i, message2.getBody().readString());
-         }
-
-         consumer.close();
-
-         consumer = session.createConsumer(QUEUE, null, true);
-
-         for (int i = 0; i < numMessages; i++)
-         {
-            ClientMessage message2 = consumer.receive(1000);
-
-            assertEquals("m" + i, message2.getBody().readString());
-         }
-
-         consumer.close();
-
-         session.close();
-
+         ClientMessage message = createTextMessage("m" + i, session);
+         producer.send(message);
       }
 
+      ClientConsumer consumer = session.createConsumer(QUEUE, null, true);
 
-      public void testConsumerBrowserWithSelector() throws Exception
+      for (int i = 0; i < numMessages; i++)
       {
+         ClientMessage message2 = consumer.receive(1000);
 
-         ClientSessionFactory sf = createInVMFactory();
-
-         ClientSession session = sf.createSession(false, true, true);
-
-         session.createQueue(QUEUE, QUEUE, null, false);
-
-         ClientProducer producer = session.createProducer(QUEUE);
-
-         final int numMessages = 100;
-
-         for (int i = 0; i < numMessages; i++)
-         {
-            ClientMessage message = createTextMessage("m" + i, session);
-            message.putIntProperty(new SimpleString("x"), i);
-            producer.send(message);
-         }
-
-         ClientConsumer consumer = session.createConsumer(QUEUE, new SimpleString("x >= 50"), true);
-
-         for (int i = 50; i < numMessages; i++)
-         {
-            ClientMessage message2 = consumer.receive(1000);
-
-            assertEquals("m" + i, message2.getBody().readString());
-         }
-
-         consumer.close();
-
-         consumer = session.createConsumer(QUEUE, null, true);
-
-         for (int i = 0; i < numMessages; i++)
-         {
-            ClientMessage message2 = consumer.receive(1000);
-
-            assertEquals("m" + i, message2.getBody().readString());
-         }
-
-         consumer.close();
-
-         session.close();
-
+         assertEquals("m" + i, message2.getBody().readString());
       }
 
-      public void testConsumerBrowserWithStringSelector() throws Exception
+      consumer.close();
+
+      consumer = session.createConsumer(QUEUE, null, true);
+
+      for (int i = 0; i < numMessages; i++)
       {
+         ClientMessage message2 = consumer.receive(1000);
 
-         ClientSessionFactory sf = createInVMFactory();
-
-         ClientSession session = sf.createSession(false, true, true);
-
-         session.createQueue(QUEUE, QUEUE, null, false);
-
-         ClientProducer producer = session.createProducer(QUEUE);
-
-         final int numMessages = 100;
-
-         for (int i = 0; i < numMessages; i++)
-         {
-            ClientMessage message = createTextMessage("m" + i, session);
-            if (i % 2 == 0)
-            {
-               message.putStringProperty(new SimpleString("color"), new SimpleString("RED"));
-            }
-            producer.send(message);
-         }
-
-         ClientConsumer consumer = session.createConsumer(QUEUE, new SimpleString("color = 'RED'"), true);
-
-         for (int i = 0; i < numMessages; i += 2)
-         {
-            ClientMessage message2 = consumer.receive(1000);
-
-            assertEquals("m" + i, message2.getBody().readString());
-         }
-
-         session.close();
-
+         assertEquals("m" + i, message2.getBody().readString());
       }
 
-      public void testConsumerMultipleBrowser() throws Exception
+      consumer.close();
+
+      session.close();
+
+   }
+
+   public void testConsumerBrowserWithSelector() throws Exception
+   {
+
+      ClientSessionFactory sf = createInVMFactory();
+
+      ClientSession session = sf.createSession(false, true, true);
+
+      session.createQueue(QUEUE, QUEUE, null, false);
+
+      ClientProducer producer = session.createProducer(QUEUE);
+
+      final int numMessages = 100;
+
+      for (int i = 0; i < numMessages; i++)
       {
-
-         ClientSessionFactory sf = createInVMFactory();
-
-         ClientSession session = sf.createSession(false, true, true);
-
-         session.createQueue(QUEUE, QUEUE, null, false);
-
-         ClientProducer producer = session.createProducer(QUEUE);
-
-         final int numMessages = 100;
-
-         for (int i = 0; i < numMessages; i++)
-         {
-            ClientMessage message = createTextMessage("m" + i, session);
-            producer.send(message);
-         }
-
-         ClientConsumer consumer = session.createConsumer(QUEUE, null, true);
-         ClientConsumer consumer2 = session.createConsumer(QUEUE, null, true);
-         ClientConsumer consumer3 = session.createConsumer(QUEUE, null, true);
-
-         for (int i = 0; i < numMessages; i++)
-         {
-            ClientMessage message2 = consumer.receive(1000);
-            assertEquals("m" + i, message2.getBody().readString());
-            message2 = consumer2.receive(1000);
-            assertEquals("m" + i, message2.getBody().readString());
-            message2 = consumer3.receive(1000);
-            assertEquals("m" + i, message2.getBody().readString());
-         }
-
-         session.close();
-
+         ClientMessage message = createTextMessage("m" + i, session);
+         message.putIntProperty(new SimpleString("x"), i);
+         producer.send(message);
       }
 
-      public void testConsumerMultipleBrowserWithSelector() throws Exception
+      ClientConsumer consumer = session.createConsumer(QUEUE, new SimpleString("x >= 50"), true);
+
+      for (int i = 50; i < numMessages; i++)
       {
+         ClientMessage message2 = consumer.receive(1000);
 
-         ClientSessionFactory sf = createInVMFactory();
-
-         ClientSession session = sf.createSession(false, true, true);
-
-         session.createQueue(QUEUE, QUEUE, null, false);
-
-         ClientProducer producer = session.createProducer(QUEUE);
-
-         final int numMessages = 100;
-
-         for (int i = 0; i < numMessages; i++)
-         {
-            ClientMessage message = createTextMessage("m" + i, session);
-            message.putIntProperty(new SimpleString("x"), i);
-            producer.send(message);
-         }
-
-         ClientConsumer consumer = session.createConsumer(QUEUE, new SimpleString("x < 50"), true);
-         ClientConsumer consumer2 = session.createConsumer(QUEUE, new SimpleString("x >= 50"), true);
-         ClientConsumer consumer3 = session.createConsumer(QUEUE, null, true);
-
-         for (int i = 0; i < 50; i++)
-         {
-            ClientMessage message2 = consumer.receive(1000);
-            assertEquals("m" + i, message2.getBody().readString());
-         }
-         for (int i = 50; i < numMessages; i++)
-         {
-            ClientMessage message2 = consumer2.receive(1000);
-            assertEquals("m" + i, message2.getBody().readString());
-         }
-         for (int i = 0; i < numMessages; i++)
-         {
-            ClientMessage message2 = consumer3.receive(1000);
-            assertEquals("m" + i, message2.getBody().readString());
-         }
-
-         session.close();
-
+         assertEquals("m" + i, message2.getBody().readString());
       }
 
-      public void testConsumerBrowserMessages() throws Exception
+      consumer.close();
+
+      consumer = session.createConsumer(QUEUE, null, true);
+
+      for (int i = 0; i < numMessages; i++)
       {
-         testConsumerBrowserMessagesArentAcked(false);
+         ClientMessage message2 = consumer.receive(1000);
+
+         assertEquals("m" + i, message2.getBody().readString());
       }
 
-      public void testConsumerBrowserMessagesPreACK() throws Exception
+      consumer.close();
+
+      session.close();
+
+   }
+
+   public void testConsumerBrowserWithStringSelector() throws Exception
+   {
+
+      ClientSessionFactory sf = createInVMFactory();
+
+      ClientSession session = sf.createSession(false, true, true);
+
+      session.createQueue(QUEUE, QUEUE, null, false);
+
+      ClientProducer producer = session.createProducer(QUEUE);
+
+      final int numMessages = 100;
+
+      for (int i = 0; i < numMessages; i++)
       {
-         testConsumerBrowserMessagesArentAcked(false);
+         ClientMessage message = createTextMessage("m" + i, session);
+         if (i % 2 == 0)
+         {
+            message.putStringProperty(new SimpleString("color"), new SimpleString("RED"));
+         }
+         producer.send(message);
       }
 
-      private void testConsumerBrowserMessagesArentAcked(boolean preACK) throws Exception
+      ClientConsumer consumer = session.createConsumer(QUEUE, new SimpleString("color = 'RED'"), true);
+
+      for (int i = 0; i < numMessages; i += 2)
       {
-         ClientSessionFactory sf = createInVMFactory();
+         ClientMessage message2 = consumer.receive(1000);
 
-         ClientSession session = sf.createSession(null, null, false, true, true, preACK, 0);
-
-         session.createQueue(QUEUE, QUEUE, null, false);
-
-         ClientProducer producer = session.createProducer(QUEUE);
-
-         final int numMessages = 100;
-
-         for (int i = 0; i < numMessages; i++)
-         {
-            ClientMessage message = createTextMessage("m" + i, session);
-            producer.send(message);
-         }
-
-         ClientConsumer consumer = session.createConsumer(QUEUE, null, true);
-
-         for (int i = 0; i < numMessages; i++)
-         {
-            ClientMessage message2 = consumer.receive(1000);
-
-            assertEquals("m" + i, message2.getBody().readString());
-         }
-         // assert that all the messages are there and none have been acked
-         assertEquals(0,
-                      ((Queue)server.getPostOffice().getBinding(QUEUE).getBindable()).getDeliveringCount());
-         assertEquals(100,
-                      ((Queue)server.getPostOffice().getBinding(QUEUE).getBindable()).getMessageCount());
-
-         session.close();
+         assertEquals("m" + i, message2.getBody().readString());
       }
 
-      public void testConsumerBrowserMessageAckDoesNothing() throws Exception
+      session.close();
+
+   }
+
+   public void testConsumerMultipleBrowser() throws Exception
+   {
+
+      ClientSessionFactory sf = createInVMFactory();
+
+      ClientSession session = sf.createSession(false, true, true);
+
+      session.createQueue(QUEUE, QUEUE, null, false);
+
+      ClientProducer producer = session.createProducer(QUEUE);
+
+      final int numMessages = 100;
+
+      for (int i = 0; i < numMessages; i++)
       {
-         ClientSessionFactory sf = createInVMFactory();
-
-         ClientSession session = sf.createSession(false, true, true);
-
-         session.createQueue(QUEUE, QUEUE, null, false);
-
-         ClientProducer producer = session.createProducer(QUEUE);
-
-         final int numMessages = 100;
-
-         for (int i = 0; i < numMessages; i++)
-         {
-            ClientMessage message = createTextMessage("m" + i, session);
-            producer.send(message);
-         }
-
-         ClientConsumer consumer = session.createConsumer(QUEUE, null, true);
-
-         for (int i = 0; i < numMessages; i++)
-         {
-            ClientMessage message2 = consumer.receive(1000);
-
-            message2.acknowledge();
-
-            assertEquals("m" + i, message2.getBody().readString());
-         }
-         // assert that all the messages are there and none have been acked
-         assertEquals(0,
-                      ((Queue)server.getPostOffice().getBinding(QUEUE).getBindable()).getDeliveringCount());
-         assertEquals(100,
-                      ((Queue)server.getPostOffice().getBinding(QUEUE).getBindable()).getMessageCount());
-
-         session.close();
+         ClientMessage message = createTextMessage("m" + i, session);
+         producer.send(message);
       }
-    
+
+      ClientConsumer consumer = session.createConsumer(QUEUE, null, true);
+      ClientConsumer consumer2 = session.createConsumer(QUEUE, null, true);
+      ClientConsumer consumer3 = session.createConsumer(QUEUE, null, true);
+
+      for (int i = 0; i < numMessages; i++)
+      {
+         ClientMessage message2 = consumer.receive(1000);
+         assertEquals("m" + i, message2.getBody().readString());
+         message2 = consumer2.receive(1000);
+         assertEquals("m" + i, message2.getBody().readString());
+         message2 = consumer3.receive(1000);
+         assertEquals("m" + i, message2.getBody().readString());
+      }
+
+      session.close();
+
+   }
+
+   public void testConsumerMultipleBrowserWithSelector() throws Exception
+   {
+
+      ClientSessionFactory sf = createInVMFactory();
+
+      ClientSession session = sf.createSession(false, true, true);
+
+      session.createQueue(QUEUE, QUEUE, null, false);
+
+      ClientProducer producer = session.createProducer(QUEUE);
+
+      final int numMessages = 100;
+
+      for (int i = 0; i < numMessages; i++)
+      {
+         ClientMessage message = createTextMessage("m" + i, session);
+         message.putIntProperty(new SimpleString("x"), i);
+         producer.send(message);
+      }
+
+      ClientConsumer consumer = session.createConsumer(QUEUE, new SimpleString("x < 50"), true);
+      ClientConsumer consumer2 = session.createConsumer(QUEUE, new SimpleString("x >= 50"), true);
+      ClientConsumer consumer3 = session.createConsumer(QUEUE, null, true);
+
+      for (int i = 0; i < 50; i++)
+      {
+         ClientMessage message2 = consumer.receive(1000);
+         assertEquals("m" + i, message2.getBody().readString());
+      }
+      for (int i = 50; i < numMessages; i++)
+      {
+         ClientMessage message2 = consumer2.receive(1000);
+         assertEquals("m" + i, message2.getBody().readString());
+      }
+      for (int i = 0; i < numMessages; i++)
+      {
+         ClientMessage message2 = consumer3.receive(1000);
+         assertEquals("m" + i, message2.getBody().readString());
+      }
+
+      session.close();
+
+   }
+
+   public void testConsumerBrowserMessages() throws Exception
+   {
+      testConsumerBrowserMessagesArentAcked(false);
+   }
+
+   public void testConsumerBrowserMessagesPreACK() throws Exception
+   {
+      testConsumerBrowserMessagesArentAcked(false);
+   }
+
+   private void testConsumerBrowserMessagesArentAcked(boolean preACK) throws Exception
+   {
+      ClientSessionFactory sf = createInVMFactory();
+
+      ClientSession session = sf.createSession(null, null, false, true, true, preACK, 0);
+
+      session.createQueue(QUEUE, QUEUE, null, false);
+
+      ClientProducer producer = session.createProducer(QUEUE);
+
+      final int numMessages = 100;
+
+      for (int i = 0; i < numMessages; i++)
+      {
+         ClientMessage message = createTextMessage("m" + i, session);
+         producer.send(message);
+      }
+
+      ClientConsumer consumer = session.createConsumer(QUEUE, null, true);
+
+      for (int i = 0; i < numMessages; i++)
+      {
+         ClientMessage message2 = consumer.receive(1000);
+
+         assertEquals("m" + i, message2.getBody().readString());
+      }
+      // assert that all the messages are there and none have been acked
+      assertEquals(0, ((Queue)server.getPostOffice().getBinding(QUEUE).getBindable()).getDeliveringCount());
+      assertEquals(100, ((Queue)server.getPostOffice().getBinding(QUEUE).getBindable()).getMessageCount());
+
+      session.close();
+   }
+
+   public void testConsumerBrowserMessageAckDoesNothing() throws Exception
+   {
+      ClientSessionFactory sf = createInVMFactory();
+
+      ClientSession session = sf.createSession(false, true, true);
+
+      session.createQueue(QUEUE, QUEUE, null, false);
+
+      ClientProducer producer = session.createProducer(QUEUE);
+
+      final int numMessages = 100;
+
+      for (int i = 0; i < numMessages; i++)
+      {
+         ClientMessage message = createTextMessage("m" + i, session);
+         producer.send(message);
+      }
+
+      ClientConsumer consumer = session.createConsumer(QUEUE, null, true);
+
+      for (int i = 0; i < numMessages; i++)
+      {
+         ClientMessage message2 = consumer.receive(1000);
+
+         message2.acknowledge();
+
+         assertEquals("m" + i, message2.getBody().readString());
+      }
+      // assert that all the messages are there and none have been acked
+      assertEquals(0, ((Queue)server.getPostOffice().getBinding(QUEUE).getBindable()).getDeliveringCount());
+      assertEquals(100, ((Queue)server.getPostOffice().getBinding(QUEUE).getBindable()).getMessageCount());
+
+      session.close();
+   }
+
 }

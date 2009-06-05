@@ -459,10 +459,10 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
 
    public void bufferReceived(final Object connectionID, final MessagingBuffer buffer)
    {
-      dataReceived = true;
+      dataReceived = true;           
       
       final Packet packet = decode(buffer);
-
+      
       synchronized (transferLock)
       {
          if (!frozen)
@@ -946,7 +946,7 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
             resendCache = new ConcurrentLinkedQueue<Packet>();
 
             if (block)
-            {
+            {              
                sendSemaphore = new Semaphore(windowSize, true);
             }
             else
@@ -1018,7 +1018,7 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
             if (sendSemaphore != null && packet.getType() != PACKETS_CONFIRMED)
             {
                try
-               {
+               {                  
                   sendSemaphore.acquire(size);
                }
                catch (InterruptedException e)
@@ -1049,7 +1049,7 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
                }
 
                if (connection.active || packet.isWriteAlways())
-               {
+               {                  
                   connection.transportConnection.write(buffer, flush);
                                  
                   connection.dataSent = true;
@@ -1379,7 +1379,7 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
             lastReceivedCommandID++;
 
             receivedBytes += packet.getPacketSize();
-
+            
             if (receivedBytes >= confWindowSize)
             {
                receivedBytes = 0;
@@ -1567,7 +1567,7 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
       }
 
       private void clearUpTo(final int lastReceivedCommandID)
-      {
+      {        
          final int numberToClear = 1 + lastReceivedCommandID - firstStoredCommandID;
 
          if (numberToClear == -1)

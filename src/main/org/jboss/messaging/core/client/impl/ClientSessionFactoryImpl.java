@@ -61,8 +61,8 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
    public static final long DEFAULT_CLIENT_FAILURE_CHECK_PERIOD = 5000;
 
    // 5 minutes - normally this should be much higher than ping period, this allows clients to re-attach on live
-   // or backup without fear of session having already been closed when connection times out.
-   public static final long DEFAULT_CONNECTION_TTL = 10000;
+   // or backup without fear of session having already been closed when connection having timed out.
+   public static final long DEFAULT_CONNECTION_TTL = 5 * 60 * 1000;
 
    // Any message beyond this size is considered a large message (to be sent in chunks)
    public static final int DEFAULT_MIN_LARGE_MESSAGE_SIZE = 100 * 1024;
@@ -107,7 +107,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
 
    public static final int DEFAULT_THREAD_POOL_MAX_SIZE = -1;
 
-   public static final int DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE = 2;
+   public static final int DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE = 5;
 
    // Attributes
    // -----------------------------------------------------------------------------------
@@ -183,7 +183,9 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
    private double retryIntervalMultiplier;
 
    private int reconnectAttempts;
-
+   
+   private volatile boolean closed;
+   
    private boolean failoverOnServerShutdown;
 
    private static ExecutorService globalThreadPool;
@@ -768,6 +770,11 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
 
    public void close()
    {
+      if (closed)
+      {
+         return;
+      }
+      
       if (discoveryGroup != null)
       {
          try
@@ -815,6 +822,8 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
          {
          }
       }
+      
+      closed = true;
    }
    
    // DiscoveryListener implementation --------------------------------------------------------
@@ -876,15 +885,16 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
    {
       return connectionManagerArray;
    }
-
+   
    // Protected ------------------------------------------------------------------------------
 
+   @Override
    protected void finalize() throws Throwable
    {
-      if (discoveryGroup != null)
-      {
-         discoveryGroup.stop();
-      }
+      //In case user forgets to close it explicitly
+      close();
+      
+      super.finalize();
    }
 
    // Private --------------------------------------------------------------------------------
@@ -905,6 +915,11 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
                                                final boolean preAcknowledge,
                                                final int ackBatchSize) throws MessagingException
    {
+      if (closed)
+      {
+         throw new IllegalStateException("Cannot create session, factory is closed (maybe it has been garbage collected)");
+      }
+      
       if (!readOnly)
       {
          try
