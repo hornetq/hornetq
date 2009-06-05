@@ -129,7 +129,11 @@ public class TimedBuffer
       {
          return;
       }
-
+      
+      this.flush();
+      
+      this.bufferObserver = null;
+      
       latchTimer.down();
 
       timerRunnable.close();

@@ -1619,6 +1619,8 @@ public class JournalImpl implements TestableJournal
             log.warn("Couldn't stop journal executor after 60 seconds");
          }
 
+         fileFactory.stop();
+
          if (currentFile != null)
          {
             currentFile.getFile().close();
@@ -1636,8 +1638,6 @@ public class JournalImpl implements TestableJournal
          freeFiles.clear();
 
          openedFiles.clear();
-
-         fileFactory.stop();
 
          state = STATE_STOPPED;
       }
