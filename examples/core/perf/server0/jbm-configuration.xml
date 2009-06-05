@@ -17,7 +17,7 @@
    
    <persistence-enabled>true</persistence-enabled>
 
-   <journal-sync-non-transactional>true</journal-sync-non-transactional>
+   <journal-sync-non-transactional>false</journal-sync-non-transactional>
    <journal-type>ASYNCIO</journal-type>
    <journal-min-files>20</journal-min-files>
    <journal-aio-buffer-timeout>20000</journal-aio-buffer-timeout>

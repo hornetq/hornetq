@@ -93,41 +93,7 @@ public class TimedBuffer
    private TimerTask logRatesTimerTask;
    
    private long lastExecution;
-   
-   private class LogRatesTimerTask extends TimerTask
-   {
-      private boolean closed;
       
-      @Override
-      public synchronized void run()
-      {
-         if (!closed)
-         {
-            long now = System.currentTimeMillis();
-            
-            if (lastExecution != 0)
-            {                             
-               double rate = 1000 * ((double)bytesFlushed) / ( now  - lastExecution);
-               
-               log.info("Write rate = " + rate + " bytes / sec");                                      
-            }
-            else
-            {
-               lastExecution = now;
-            }
-            
-            bytesFlushed = 0;
-         }
-      }
-      
-      public synchronized boolean cancel()
-      {
-         closed = true;
-         
-         return super.cancel();
-      }
-   }
-
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
@@ -280,7 +246,7 @@ public class TimedBuffer
          // Resume latch
          latchTimer.down();
       }
-
+      
       currentBuffer.put(bytes);
       callbacks.add(callback);
 
@@ -313,12 +279,22 @@ public class TimedBuffer
       if (currentBuffer.limit() > 0)
       {
          latchTimer.up();
+         
+         int pos = currentBuffer.position();
+         
+         if (logRates)
+         {
+            bytesFlushed += pos;                     
+         }
 
-         ByteBuffer directBuffer = bufferObserver.newBuffer(bufferSize, currentBuffer.position());
+         ByteBuffer directBuffer = bufferObserver.newBuffer(bufferSize, pos);
 
          // Putting a byteArray on a native buffer is much faster, since it will do in a single native call.
          // Using directBuffer.put(currentBuffer) would make several append calls for each byte
-         directBuffer.put(currentBuffer.array(), 0, currentBuffer.position());
+         
+         //TODO we could optimise this further by making currentBuffer a simple byte[] and using System.arrayCopy to add bytes to it
+         //then we wouldn't need the array() call
+         directBuffer.put(currentBuffer.array(), 0, pos);
 
          bufferObserver.flushBuffer(directBuffer, callbacks);
 
@@ -326,12 +302,7 @@ public class TimedBuffer
 
          active = false;
          pendingSync = false;
-         
-         if (logRates)
-         {
-            bytesFlushed += currentBuffer.position();
-         }
-
+                  
          currentBuffer.limit(0);
       }
    }
@@ -368,6 +339,38 @@ public class TimedBuffer
 
    // Inner classes -------------------------------------------------
 
+   private class LogRatesTimerTask extends TimerTask
+   {
+      private boolean closed;
+      
+      @Override
+      public synchronized void run()
+      {
+         if (!closed)
+         {
+            long now = System.currentTimeMillis();
+            
+            if (lastExecution != 0)
+            {                             
+               double rate = 1000 * ((double)bytesFlushed) / ( now  - lastExecution);
+               
+               log.info("Write rate = " + rate + " bytes / sec");                                      
+            }
+
+            lastExecution = now;
+            
+            bytesFlushed = 0;
+         }
+      }
+      
+      public synchronized boolean cancel()
+      {
+         closed = true;
+         
+         return super.cancel();
+      }
+   }
+   
    private class CheckTimer implements Runnable
    {
       private volatile boolean closed = false;
