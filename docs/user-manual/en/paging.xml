@@ -10,8 +10,7 @@
         reaches a total configured maximum size or b) The total size of all queues reaches a
         configured maximum size.</para>
     <para>These two modes of operation are called <link linkend="paging.address.mode">Address Paging
-            Mode </link>
-        <link linkend="paging.global.mode">Global Paging Mode </link>.</para>
+            Mode </link> and <link linkend="paging.global.mode">Global Paging Mode </link>.</para>
     <section>
         <title>Page Files</title>
         <para>Messages are stored per address on the file system. Each address has an individual
