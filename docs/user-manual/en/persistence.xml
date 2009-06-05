@@ -194,8 +194,8 @@
                     most of the hardware resources by scheduling multiple writes and scheduling
                     multiple writes in a single OS call.</para>
                 <para>However in some use cases it may be better to not wait any data and just flush
-                    and write to the OS right away. For example if you have a single producer during
-                    several small transactions. On this case it would be better to aways
+                    and write to the OS right away. For example if you have a single producer writing
+                    small transactions. On this case it would be better to aways
                     flush-on-sync.</para>
             </listitem>
             <listitem id="configuring.message.journal.journal-aio-buffer-size">
