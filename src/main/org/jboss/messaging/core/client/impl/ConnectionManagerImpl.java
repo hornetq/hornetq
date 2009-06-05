@@ -459,17 +459,6 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
    public void close()
    {
       closed = true;
-
-      synchronized (createSessionLock)
-      {
-         synchronized (failoverLock)
-         {
-            // Close any remaining connections
-            refCount = 0;
-            
-            checkCloseConnections();
-         }
-      }
    }
       
 
