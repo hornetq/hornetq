@@ -42,6 +42,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 
 import org.jboss.messaging.core.client.ClientSession;
+import org.jboss.messaging.core.client.ClientSessionFactory;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
@@ -89,6 +90,9 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
    // Attributes
    // -----------------------------------------------------------------------------------
 
+   //We need to keep the reference to prevent the factory getting gc'd before the sessions are finished being used
+   private final ClientSessionFactory factory;
+      
    private final TransportConfiguration connectorConfig;
 
    private final TransportConfiguration backupConfig;
@@ -170,7 +174,8 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
    // Constructors
    // ---------------------------------------------------------------------------------
 
-   public ConnectionManagerImpl(final TransportConfiguration connectorConfig,
+   public ConnectionManagerImpl(final ClientSessionFactory factory,
+                                final TransportConfiguration connectorConfig,
                                 final TransportConfiguration backupConfig,
                                 final boolean failoverOnServerShutdown,
                                 final int maxConnections,
@@ -183,6 +188,8 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
                                 final ExecutorService threadPool,
                                 final ScheduledExecutorService scheduledThreadPool)
    {
+      this.factory = factory;
+      
       this.connectorConfig = connectorConfig;
 
       this.backupConfig = backupConfig;
@@ -476,14 +483,14 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
       pinger.close();
    }
    
-//   @Override
-//   protected void finalize() throws Throwable
-//   {
-//      //In case user forgets to close it explicitly
-//      close();
-//      
-//      super.finalize();
-//   }
+   @Override
+   protected void finalize() throws Throwable
+   {
+      //In case user forgets to close it explicitly
+      close();
+      
+      super.finalize();
+   }
 
    // Protected
    // ------------------------------------------------------------------------------------

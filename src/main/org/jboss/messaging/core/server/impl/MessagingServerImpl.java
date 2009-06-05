@@ -334,7 +334,7 @@ public class MessagingServerImpl implements MessagingServer
 
          replicatingConnection = null;
          replicatingChannel = null;
-         
+
          replicatingConnectionManager.close();
       }
 
@@ -353,6 +353,7 @@ public class MessagingServerImpl implements MessagingServer
       threadPool.shutdown();
       try
       {
+         log.info("*** waiting for pool to terminate");
          if (!threadPool.awaitTermination(30000, TimeUnit.MILLISECONDS))
          {
             log.warn("Timed out waiting for pool to terminate");
@@ -1042,7 +1043,8 @@ public class MessagingServerImpl implements MessagingServer
          }
          else
          {
-            replicatingConnectionManager = new ConnectionManagerImpl(backupConnector,
+            replicatingConnectionManager = new ConnectionManagerImpl(null,
+                                                                     backupConnector,
                                                                      null,
                                                                      false,
                                                                      1,
@@ -1097,12 +1099,12 @@ public class MessagingServerImpl implements MessagingServer
             {
                log.warn("Backup server MUST be started before live server. Initialisation will proceed.");
 
-               return false; 
+               return false;
             }
          }
       }
 
-      return true;      
+      return true;
    }
 
    private void loadJournal() throws Exception

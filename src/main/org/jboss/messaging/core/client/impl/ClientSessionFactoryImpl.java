@@ -111,7 +111,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
 
    // Attributes
    // -----------------------------------------------------------------------------------
-  
+
    private final Map<Pair<TransportConfiguration, TransportConfiguration>, ConnectionManager> connectionManagerMap = new LinkedHashMap<Pair<TransportConfiguration, TransportConfiguration>, ConnectionManager>();
 
    private volatile boolean receivedBroadcast = false;
@@ -137,7 +137,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
    private int discoveryPort;
 
    private long discoveryRefreshTimeout;
-   
+
    private long discoveryInitialWaitTimeout;
 
    private long clientFailureCheckPeriod;
@@ -183,9 +183,9 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
    private double retryIntervalMultiplier;
 
    private int reconnectAttempts;
-   
+
    private volatile boolean closed;
-   
+
    private boolean failoverOnServerShutdown;
 
    private static ExecutorService globalThreadPool;
@@ -268,7 +268,8 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
       {
          for (Pair<TransportConfiguration, TransportConfiguration> pair : staticConnectors)
          {
-            ConnectionManager cm = new ConnectionManagerImpl(pair.a,
+            ConnectionManager cm = new ConnectionManagerImpl(this,
+                                                             pair.a,
                                                              pair.b,
                                                              failoverOnServerShutdown,
                                                              maxConnections,
@@ -710,25 +711,31 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
                                    preAcknowledge,
                                    ackBatchSize);
    }
-   
+
    public ClientSession createXASession() throws MessagingException
    {
       return createSessionInternal(null, null, true, false, false, preAcknowledge, this.ackBatchSize);
    }
-   
+
    public ClientSession createTransactedSession() throws MessagingException
    {
       return createSessionInternal(null, null, false, false, false, preAcknowledge, this.ackBatchSize);
    }
-   
+
    public ClientSession createSession() throws MessagingException
    {
       return createSessionInternal(null, null, false, true, true, preAcknowledge, this.ackBatchSize);
    }
-   
+
    public ClientSession createSession(final boolean autoCommitSends, final boolean autoCommitAcks) throws MessagingException
    {
-      return createSessionInternal(null, null, false, autoCommitSends, autoCommitAcks, preAcknowledge, this.ackBatchSize);
+      return createSessionInternal(null,
+                                   null,
+                                   false,
+                                   autoCommitSends,
+                                   autoCommitAcks,
+                                   preAcknowledge,
+                                   this.ackBatchSize);
    }
 
    public ClientSession createSession(final boolean xa, final boolean autoCommitSends, final boolean autoCommitAcks) throws MessagingException
@@ -774,7 +781,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
       {
          return;
       }
-      
+
       if (discoveryGroup != null)
       {
          try
@@ -822,10 +829,10 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
          {
          }
       }
-      
+
       closed = true;
    }
-   
+
    // DiscoveryListener implementation --------------------------------------------------------
 
    public synchronized void connectorsChanged()
@@ -861,7 +868,8 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
          {
             // Create a new ConnectionManager
 
-            ConnectionManager connectionManager = new ConnectionManagerImpl(connectorPair.a,
+            ConnectionManager connectionManager = new ConnectionManagerImpl(this,
+                                                                            connectorPair.a,
                                                                             connectorPair.b,
                                                                             failoverOnServerShutdown,
                                                                             maxConnections,
@@ -880,20 +888,20 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
 
       updateConnectionManagerArray();
    }
-   
+
    public ConnectionManager[] getConnectionManagers()
    {
       return connectionManagerArray;
    }
-   
+
    // Protected ------------------------------------------------------------------------------
 
    @Override
    protected void finalize() throws Throwable
    {
-      //In case user forgets to close it explicitly
+      // In case user forgets to close it explicitly
       close();
-      
+
       super.finalize();
    }
 
@@ -919,7 +927,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
       {
          throw new IllegalStateException("Cannot create session, factory is closed (maybe it has been garbage collected)");
       }
-      
+
       if (!readOnly)
       {
          try
@@ -951,22 +959,24 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
 
          ConnectionManager connectionManager = connectionManagerArray[pos];
 
-         return connectionManager.createSession(username,
-                                                password,
-                                                xa,
-                                                autoCommitSends,
-                                                autoCommitAcks,
-                                                preAcknowledge,
-                                                ackBatchSize,
-                                                minLargeMessageSize,
-                                                blockOnAcknowledge,
-                                                autoGroup,
-                                                producerWindowSize,
-                                                consumerWindowSize,
-                                                producerMaxRate,
-                                                consumerMaxRate,
-                                                blockOnNonPersistentSend,
-                                                blockOnPersistentSend);
+         ClientSession session = connectionManager.createSession(username,
+                                                                 password,
+                                                                 xa,
+                                                                 autoCommitSends,
+                                                                 autoCommitAcks,
+                                                                 preAcknowledge,
+                                                                 ackBatchSize,
+                                                                 minLargeMessageSize,
+                                                                 blockOnAcknowledge,
+                                                                 autoGroup,
+                                                                 producerWindowSize,
+                                                                 consumerWindowSize,
+                                                                 producerMaxRate,
+                                                                 consumerMaxRate,
+                                                                 blockOnNonPersistentSend,
+                                                                 blockOnPersistentSend);
+
+         return session;
       }
    }
 
