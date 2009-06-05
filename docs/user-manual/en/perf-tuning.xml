@@ -8,9 +8,9 @@
             <listitem>
                 <para>Minimum number of journal files. Set <literal>journal-min-files</literal> to a
                     number of files that would fit your average sustainable rate. If you see new
-                    files being created on the journal data directory too often you need to increase
-                    the minimal number of files, this way the journal would reuse more files instead
-                    of create new data files.</para>
+                    files being created on the journal data directory too often, i.e. lots of data
+                    is being persisted, you need to increase the minimal number of files, this way
+                    the journal would reuse more files instead of creating new data files.</para>
             </listitem>
             <listitem>
                 <para>Journal file size. The journal file size should be aligned to the capacity of
@@ -23,14 +23,14 @@
             <listitem>
                 <para><literal>journal-aio-flush-on-sync</literal>. If you don't have many producers
                     in your system you may consider setting journal-aio-flush-on-sync to true. JBoss
-                    Messaging aways try to use most of the hardware resource considering the worst
-                    case where you have many producers. We try to concatenate multiple writes in
-                    single OS operations. However if that's not your case setting this option to
-                    true will give you a performance boost.</para>
-                <para>By the other hand when you have multiple producers, keeping <literal
-                        >journal-aio-flush-on-sync</literal> set to false will make your system to
-                    flush multiple syncs in a single OS call making your system to scale up much
-                    higher.</para>
+                    Messaging by default is optimized by the case where you have many producers. We
+                    try to concatenate multiple writes in single OS operations. However if that's
+                    not your case setting this option to true will give you a performance
+                    boost.</para>
+                <para>On the other hand when you have multiple producers, keeping <literal
+                        >journal-aio-flush-on-sync</literal> set to false. This will make your
+                    system flush multiple syncs in a single OS call making your system scale much
+                    better.</para>
             </listitem>
         </itemizedlist>
     </section>
@@ -42,15 +42,14 @@
             <listitem>
                 <para>Disable message id. Use the <literal>setDisableMessageID()</literal> method on
                     the <literal>MessageProducer</literal> class to disable message ids if you don't
-                    need them. This can free up some cycles in generating the GUID and it makes the
-                    message smaller on the wire too.</para>
+                    need them. This decreases the size of the message and also avoids the overhead
+                    of creating a unique ID.</para>
             </listitem>
             <listitem>
                 <para> Disable message timestamp. Use the <literal
                         >setDisableMessageTimeStamp()</literal> method on the <literal
                         >MessageProducer</literal> class to disable message timestamps if you don't
-                    need them. This also can free up a few cycles and it makes the message smaller
-                    on the wire.</para>
+                    need them. Again this makes the message smaller.</para>
             </listitem>
             <listitem>
                 <para>Avoid <literal>ObjectMessage</literal>. <literal>ObjectMessage</literal> is
@@ -65,14 +64,14 @@
             <listitem>
                 <para>Avoid <literal>AUTO_ACKNOWLEDGE</literal>. <literal>AUTO_ACKNOWLEDGE</literal>
                     mode requires an acknowledgement to be sent from the server for each message
-                    received on the client, this means more traffic on the network. If you can use
+                    received on the client, this means more traffic on the network. If you can, use
                         <literal>DUPS_OK_ACKNOWLEDGE</literal> or use <literal
                         >CLIENT_ACKNOWLEDGE</literal> or a transacted session and batch up many
                     acknowledgements with one acknowledge/commit.</para>
             </listitem>
             <listitem>
                 <para>Avoid persistent messages. By default JMS messages are persistent. If you
-                    don't really need persistent message then set them to be non persistent.
+                    don't really need persistent messages then set them to be non persistent.
                     Persistent messages incur a lot more overhead in persisting them to
                     storage.</para>
             </listitem>
@@ -98,7 +97,7 @@
                         <xref linkend="pre-acknowledge"/>.</para>
             </listitem>
             <listitem>
-                <para>Disabled security. You may get a small performance boost by disabling security
+                <para>Disable security. You may get a small performance boost by disabling security
                     by setting the <literal>security-enabled</literal> parameter to <literal
                         >false</literal> in <literal>jbm-configuration.xml</literal>.</para>
             </listitem>
@@ -128,11 +127,10 @@
             <listitem>
                 <para>Enable <ulink url="http://en.wikipedia.org/wiki/Nagle's_algorithm">Nagle's
                         algorithm</ulink>. If you are sending many small messages, such that more
-                    than one can fit in a single IP packet. Then you may get a significant
-                    performance boost by enabling Nagle's algorithm. This is done by setting
-                        <literal>jbm.remoting.netty.tcpnodelay</literal> to false with the Netty
-                    transports. See <xref linkend="configuring-transports"/> for more information on
-                    this. </para>
+                    than one can fit in a single IP packet thus providing better performance. This
+                    is done by setting <literal>jbm.remoting.netty.tcpnodelay</literal> to false
+                    with the Netty transports. See <xref linkend="configuring-transports"/> for more
+                    information on this. </para>
             </listitem>
             <listitem>
                 <para>TCP buffer sizes. If you have a fast network and fast machines you may get a
@@ -197,9 +195,8 @@ serveruser     hard    nofile  20000
                 <para>Re-use connections / sessions / consumers / producers. Probably the most
                     common messaging anti-pattern we see is users who create a new
                     connection/session/producer for every message they send or every message they
-                    consume. This is a terrible use of resources. These objects take time and
-                    resources to set up and may involve several network round trips. Always re-use
-                    them.</para>
+                    consume. This is a poor use of resources. These objects take time to create and
+                    may involve several network round trips. Always re-use them.</para>
                 <note>
                     <para>Some popular libraries such as the Spring JMS Template are known to use
                         these anti-patterns. If you're using Spring JMS Template and you're getting
