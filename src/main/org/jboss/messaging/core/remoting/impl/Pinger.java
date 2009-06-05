@@ -64,8 +64,12 @@ public class Pinger implements Runnable
          return;
       }
       
-      //TODO - for now we *always* sent the ping otherwise, if we have large GC pauses
-      //can end up with pings not arriving at client in time
+      //TODO - for now we *always* sent the ping otherwise.
+      //Checking dataSent does not work, for the following reason:
+      //If a packet is sent just after the last ping, then no ping will be sent the next time.
+      //Which means the amount of time between pings can approach 2 * ( 0.5 * client failure check period) = failure check period
+      //so, due to time taken to actually travel across network + scheduling difference the client failure checker
+      //can easily time out.
       
 //      if (!conn.isDataSent())
 //      {
