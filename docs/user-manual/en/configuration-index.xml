@@ -290,8 +290,8 @@
                                     linkend="configuring.message.journal.journal-aio-buffer-timeout"
                                     >journal-aio-buffer-timeout</link></entry>
                             <entry>Long</entry>
-                            <entry>The timeout used to flush internal buffers.</entry>
-                            <entry>500000</entry>
+                            <entry>The timeout (in nanoseconds) used to flush internal buffers.</entry>
+                            <entry>20000</entry>
                         </row>
                         <row>
                             <entry><link
