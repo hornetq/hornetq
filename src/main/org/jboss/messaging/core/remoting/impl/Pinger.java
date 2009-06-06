@@ -41,23 +41,23 @@ public class Pinger implements Runnable
 {
    private static final Logger log = Logger.getLogger(Pinger.class);
    
-   private boolean closed;
+   private volatile boolean closed;
 
    private RemotingConnection conn;
 
-   private Future<?> future;
+   private volatile Future<?> future;
 
    public Pinger(final RemotingConnection conn)
    {
       this.conn = conn;
    }
 
-   public synchronized void setFuture(final Future<?> future)
+   public void setFuture(final Future<?> future)
    {
       this.future = future;
    }
 
-   public synchronized void run()
+   public void run()
    {
       if (closed)
       {
@@ -85,7 +85,7 @@ public class Pinger implements Runnable
       conn.clearDataSent();
    }
 
-   public synchronized void close()
+   public void close()
    {
       future.cancel(false);
 

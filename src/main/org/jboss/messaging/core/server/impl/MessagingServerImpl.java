@@ -527,7 +527,7 @@ public class MessagingServerImpl implements MessagingServer
                                                      final int sendWindowSize) throws Exception
    {
       checkActivate(connection);
-
+      
       return doCreateSession(name,
                              channelID,
                              replicatedChannelID,

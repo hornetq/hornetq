@@ -269,6 +269,7 @@ public class ConnectionTest extends JMSTestCase
    }
    
    // This test is to check netty issue in https://jira.jboss.org/jira/browse/JBMESSAGING-1618   
+   
    public void testConnectionListenerBug() throws Exception
    {
       for (int i = 0; i < 10000; i++)
