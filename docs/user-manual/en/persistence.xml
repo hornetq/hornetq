@@ -175,16 +175,17 @@
                     in the AIO queue at any one time. If the queue becomes full then writes will
                     block until space is freed up. This parameter has no meaning when using the NIO
                     journal.</para>
+                <para>The default value for this is <literal>500</literal>. 
+                </para>
             </listitem>
             <listitem id="configuring.message.journal.journal-aio-buffer-timeout">
                 <para><literal>journal-aio-buffer-timeout</literal></para>
-                <para>Flush period on the internal AIO timed buffer, configured in nanoSeconds. For
-                    performance reasons we buffer data before submiting it to the kernel writes,
-                    however we need flush in order to complete transactions. If the system is
-                    inactive for more than <literal>journal-aio-buffer-timeout</literal> we flush
-                    the buffer and complete the transactions. Also, if there are pending
-                    transactions we guarantee the data is flushed up to <literal
-                        >journal-aio-buffer-timeout</literal>.</para>
+                <para>Flush period on the internal AIO timed buffer, configured in nano seconds. For
+                    performance reasons we buffer data before submitting it to the kernel in a single batch.
+                    This parameter determines the maximum amount of time to wait before flushing the buffer, if it does not get full
+                    by itself in that time.</para>
+                <para>The default value for this paramater is <literal>20000</literal> nano seconds (i.e. 20 microseconds). 
+                </para>
             </listitem>
             <listitem id="configuring.message.journal.journal-aio-flush-on-sync">
                 <para><literal>journal-aio-flush-on-sync</literal></para>
@@ -197,12 +198,14 @@
                     single OS call.</para>
                 <para>However in some use cases it may be better to not wait any data and just flush
                     and write to the OS right away. For example if you have a single producer
-                    writing small transactions. On this case it would be better to aways
+                    writing small transactions. On this case it would be better to always
                     flush-on-sync.</para>
+                <para>The default value for this parameter is <literal>false</literal>. 
+                </para>
             </listitem>
             <listitem id="configuring.message.journal.journal-aio-buffer-size">
                 <para><literal>journal-aio-buffer-size</literal></para>
-                <para>The size of the timed buffer on AIO. The default value is 128KiB.</para>
+                <para>The size of the timed buffer on AIO. The default value is <literal>128KiB</literal>.</para>
             </listitem>
         </itemizedlist>
     </section>
