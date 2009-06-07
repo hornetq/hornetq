@@ -1576,6 +1576,11 @@ public class JournalImpl implements TestableJournal
       moveNextFile();
       debugWait();
    }
+   
+   public void perfBlast(final int pages) throws Exception
+   {
+      new PerfBlast(pages).start();
+   }
 
    // MessagingComponent implementation
    // ---------------------------------------------------
@@ -1945,6 +1950,7 @@ public class JournalImpl implements TestableJournal
 
       return orderedFiles;
    }
+            
 
    /** 
     * Note: This method will perform rwlock.readLock.lock(); 
@@ -2563,4 +2569,41 @@ public class JournalImpl implements TestableJournal
 
    }
 
+   private class PerfBlast extends Thread
+   {
+      private final int pages;
+      
+      private PerfBlast(final int pages)
+      {
+         this.pages = pages;         
+      }
+      
+      public void run()
+      {             
+         try
+         {            
+            lock.lock();
+         
+            byte[] bytes = new byte[128 * 1024];
+            
+            for (int i = 0; i < pages; i++)
+            {
+               ByteBuffer bb = ByteBuffer.wrap(bytes);
+               
+               bb.limit(bytes.length);
+               
+               bb.position(0);
+               
+               appendRecord(bb, false, null);
+            }
+            
+            lock.unlock();
+         }
+         catch (Exception e)
+         {
+            log.error("Failed to perf blast", e);
+         }
+      }
+   }
+   
 }

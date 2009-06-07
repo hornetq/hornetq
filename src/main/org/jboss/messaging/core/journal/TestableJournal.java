@@ -70,5 +70,7 @@ public interface TestableJournal extends Journal
    void setAutoReclaim(boolean autoReclaim);
 
    boolean isAutoReclaim();
+   
+   
 
 }

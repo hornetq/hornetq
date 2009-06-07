@@ -215,6 +215,10 @@ public interface Configuration extends Serializable, MessagingComponent
    boolean isLogJournalWriteRate();
    
    void setLogJournalWriteRate(boolean rate);
+   
+   int getJournalPerfBlastPages();
+   
+   void setJournalPerfBlastPages(int pages);
 
 
    // Paging Properties --------------------------------------------------------------------

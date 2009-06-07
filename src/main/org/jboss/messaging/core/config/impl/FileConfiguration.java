@@ -306,6 +306,8 @@ public class FileConfiguration extends ConfigurationImpl
       journalMaxAIO = getInteger(e, "journal-max-aio", journalMaxAIO);
       
       logJournalWriteRate = getBoolean(e, "log-journal-write-rate", DEFAULT_JOURNAL_LOG_WRITE_RATE);
+      
+      journalPerfBlastPages = getInteger(e, "perf-blast-pages", DEFAULT_JOURNAL_PERF_BLAST_PAGES);
 
       wildcardRoutingEnabled = getBoolean(e, "wild-card-routing-enabled", wildcardRoutingEnabled);
 

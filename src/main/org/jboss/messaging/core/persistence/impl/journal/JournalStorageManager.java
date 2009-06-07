@@ -141,6 +141,8 @@ public class JournalStorageManager implements StorageManager
    private final boolean syncTransactional;
 
    private final boolean syncNonTransactional;
+   
+   private final int perfBlastPages;
 
    public JournalStorageManager(final Configuration config, final Executor executor)
    {
@@ -219,6 +221,8 @@ public class JournalStorageManager implements StorageManager
       checkAndCreateDir(largeMessagesDirectory, config.isCreateJournalDir());
 
       largeMessagesFactory = new NIOSequentialFileFactory(config.getLargeMessagesDirectory());
+      
+      perfBlastPages = config.getJournalPerfBlastPages();
    }
 
    public UUID getPersistentID()
@@ -700,6 +704,11 @@ public class JournalStorageManager implements StorageManager
       }
 
       loadPreparedTransactions(pagingManager, resourceManager, queues, preparedTransactions, duplicateIDMap);
+      
+      if (perfBlastPages != -1)
+      {
+         messageJournal.perfBlast(perfBlastPages);
+      }
    }
 
    private void loadPreparedTransactions(final PagingManager pagingManager,
@@ -982,7 +991,7 @@ public class JournalStorageManager implements StorageManager
       bindingsJournal.start();
 
       messageJournal.start();
-
+      
       started = true;
    }
 

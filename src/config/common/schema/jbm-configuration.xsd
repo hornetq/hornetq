@@ -213,6 +213,9 @@
 				<xsd:element name="journal-max-aio" type="xsd:positiveInteger"
 					maxOccurs="1" minOccurs="0">
 				</xsd:element>
+				<xsd:element name="perf-blast-pages" type="xsd:positiveInteger"
+				        maxOccurs="1" minOccurs="0">
+				</xsd:element>
 				<xsd:element name="large-messages-directory"
 					type="xsd:string" maxOccurs="1" minOccurs="0">
 				</xsd:element>

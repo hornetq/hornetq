@@ -102,6 +102,8 @@ public class ConfigurationImpl implements Configuration
    public static final int DEFAULT_JOURNAL_AIO_BUFFER_SIZE = 128 * 1024;
    
    public static final boolean DEFAULT_JOURNAL_LOG_WRITE_RATE = false;
+   
+   public static final int DEFAULT_JOURNAL_PERF_BLAST_PAGES = -1;
 
    public static final boolean DEFAULT_WILDCARD_ROUTING_ENABLED = true;
 
@@ -244,6 +246,8 @@ public class ConfigurationImpl implements Configuration
    protected int journalAIOBufferSize = DEFAULT_JOURNAL_AIO_BUFFER_SIZE;
    
    protected boolean logJournalWriteRate = DEFAULT_JOURNAL_LOG_WRITE_RATE;
+   
+   protected int journalPerfBlastPages = DEFAULT_JOURNAL_PERF_BLAST_PAGES;
 
    protected boolean wildcardRoutingEnabled = DEFAULT_WILDCARD_ROUTING_ENABLED;
 
@@ -616,6 +620,16 @@ public class ConfigurationImpl implements Configuration
    public void setLogJournalWriteRate(boolean logJournalWriteRate)
    {
       this.logJournalWriteRate = logJournalWriteRate;
+   }
+     
+   public int getJournalPerfBlastPages()
+   {
+      return journalPerfBlastPages;
+   }
+
+   public void setJournalPerfBlastPages(int journalPerfBlastPages)
+   {
+      this.journalPerfBlastPages = journalPerfBlastPages;
    }
 
    public boolean isCreateBindingsDir()
