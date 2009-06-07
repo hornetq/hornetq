@@ -369,7 +369,7 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
                                         final long clientFailureCheckPeriod,
                                         final long connectionTTL)
    {
-      if (connectionTTL <= 0 || clientFailureCheckPeriod <= 0)
+      if ((connectionTTL <= 0 || clientFailureCheckPeriod <= 0) && connectionTTL != -1 && clientFailureCheckPeriod != -1)
       {
          log.warn("Invalid values of connectionTTL/clientFailureCheckPeriod");
 

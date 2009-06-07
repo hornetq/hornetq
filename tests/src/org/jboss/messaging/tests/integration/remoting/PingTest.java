@@ -107,9 +107,10 @@ public class PingTest extends ServiceTestBase
       TransportConfiguration transportConfig = new TransportConfiguration("org.jboss.messaging.integration.transports.netty.NettyConnectorFactory");
 
       ClientSessionFactory csf = new ClientSessionFactoryImpl(transportConfig);
-      
+
       csf.setClientFailureCheckPeriod(CLIENT_FAILURE_CHECK_PERIOD);
-      
+      csf.setConnectionTTL(CLIENT_FAILURE_CHECK_PERIOD * 2);
+
       ClientSession session = csf.createSession(false, true, true);
 
       assertEquals(1, ((ClientSessionFactoryInternal)csf).numConnections());
@@ -138,17 +139,13 @@ public class PingTest extends ServiceTestBase
 
       serverConn.addFailureListener(serverListener);
 
-      Thread.sleep(CLIENT_FAILURE_CHECK_PERIOD * 3);
+      Thread.sleep(CLIENT_FAILURE_CHECK_PERIOD * 10);
 
       assertNull(clientListener.getException());
 
       assertNull(serverListener.getException());
 
-      RemotingConnection serverConn2 = server
-                                                       .getRemotingService()
-                                                       .getConnections()
-                                                       .iterator()
-                                                       .next();
+      RemotingConnection serverConn2 = server.getRemotingService().getConnections().iterator().next();
 
       assertTrue(serverConn == serverConn2);
 
@@ -163,8 +160,8 @@ public class PingTest extends ServiceTestBase
       TransportConfiguration transportConfig = new TransportConfiguration("org.jboss.messaging.integration.transports.netty.NettyConnectorFactory");
 
       ClientSessionFactory csf = new ClientSessionFactoryImpl(transportConfig);
-      
-      csf.setClientFailureCheckPeriod(CLIENT_FAILURE_CHECK_PERIOD);
+      csf.setClientFailureCheckPeriod(-1);
+      csf.setConnectionTTL(-1);
 
       ClientSession session = csf.createSession(false, true, true);
 
@@ -194,17 +191,13 @@ public class PingTest extends ServiceTestBase
 
       serverConn.addFailureListener(serverListener);
 
-      Thread.sleep(CLIENT_FAILURE_CHECK_PERIOD * 3);
+      Thread.sleep(ClientSessionFactoryImpl.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD);
 
       assertNull(clientListener.getException());
 
       assertNull(serverListener.getException());
 
-      RemotingConnection serverConn2 = server
-                                                       .getRemotingService()
-                                                       .getConnections()
-                                                       .iterator()
-                                                       .next();
+      RemotingConnection serverConn2 = server.getRemotingService().getConnections().iterator().next();
 
       assertTrue(serverConn == serverConn2);
 
@@ -219,10 +212,10 @@ public class PingTest extends ServiceTestBase
       TransportConfiguration transportConfig = new TransportConfiguration("org.jboss.messaging.integration.transports.netty.NettyConnectorFactory");
 
       ClientSessionFactoryImpl csf = new ClientSessionFactoryImpl(transportConfig);
-      
+
       csf.setClientFailureCheckPeriod(CLIENT_FAILURE_CHECK_PERIOD);
-      csf.setConnectionTTL((long)(CLIENT_FAILURE_CHECK_PERIOD * 1.5));
-      
+      csf.setConnectionTTL(CLIENT_FAILURE_CHECK_PERIOD * 2);
+
       Listener clientListener = new Listener();
 
       ClientSession session = csf.createSession(false, true, true);
@@ -234,9 +227,9 @@ public class PingTest extends ServiceTestBase
       RemotingConnectionImpl conn = (RemotingConnectionImpl)((ClientSessionInternal)session).getConnection();
 
       // We need to get it to stop pinging
-      
+
       ((ConnectionManagerImpl)csf.getConnectionManagers()[0]).cancelPingerForConnectionID(conn.getID());
-            
+
       RemotingConnection serverConn = null;
 
       while (serverConn == null)
@@ -258,7 +251,7 @@ public class PingTest extends ServiceTestBase
 
       serverConn.addFailureListener(serverListener);
 
-      for (int i = 0; i < 40; i++)
+      for (int i = 0; i < 1000; i++)
       {
          // a few tries to avoid a possible race caused by GCs or similar issues
          if (server.getRemotingService().getConnections().isEmpty() && clientListener.getException() != null)
@@ -266,10 +259,8 @@ public class PingTest extends ServiceTestBase
             break;
          }
 
-         Thread.sleep(CLIENT_FAILURE_CHECK_PERIOD);
+         Thread.sleep(10);
       }
-      
-      Thread.sleep(3 * CLIENT_FAILURE_CHECK_PERIOD);
 
       assertTrue(server.getRemotingService().getConnections().isEmpty());
 
@@ -284,16 +275,16 @@ public class PingTest extends ServiceTestBase
    }
 
    /*
-   * Test the client triggering failure due to no pong received in time
+   * Test the client triggering failure due to no ping from server received in time
    */
-   public void testClientFailureNoPong() throws Exception
-   {      
+   public void testClientFailureNoServerPing() throws Exception
+   {
       TransportConfiguration transportConfig = new TransportConfiguration("org.jboss.messaging.integration.transports.netty.NettyConnectorFactory");
 
       ClientSessionFactory csf = new ClientSessionFactoryImpl(transportConfig);
-      
+
       csf.setClientFailureCheckPeriod(CLIENT_FAILURE_CHECK_PERIOD);
-      csf.setConnectionTTL((long)(CLIENT_FAILURE_CHECK_PERIOD * 1.5));
+      csf.setConnectionTTL(CLIENT_FAILURE_CHECK_PERIOD * 2);
 
       ClientSession session = csf.createSession(false, true, true);
 
@@ -318,20 +309,34 @@ public class PingTest extends ServiceTestBase
             Thread.sleep(10);
          }
       }
-      
+
       Listener serverListener = new Listener();
 
       serverConn.addFailureListener(serverListener);
-      
+
       ((RemotingServiceImpl)server.getRemotingService()).cancelPingerForConnectionID(serverConn.getID());
-      
-      Thread.sleep(4 * CLIENT_FAILURE_CHECK_PERIOD);
-      
+
+      for (int i = 0; i < 1000; i++)
+      {
+         // a few tries to avoid a possible race caused by GCs or similar issues
+         if (server.getRemotingService().getConnections().isEmpty() && clientListener.getException() != null)
+         {
+            break;
+         }
+
+         Thread.sleep(10);
+      }
+            
       assertNotNull(clientListener.getException());
-      
-      assertEquals(0, server.getRemotingService().getConnections().size());
+      //Server connection will be closed too, when client closes client side connection after failure is detected
+      assertTrue(server.getRemotingService().getConnections().isEmpty());
 
       session.close();
+
+      tearDown();
+
+      setUp();
+
    }
 
    // Package protected ---------------------------------------------
