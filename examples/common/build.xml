@@ -135,7 +135,7 @@
 
       <property name="serverclasspath" refid="server.classpath"/>
       <property name="clientClasspath" refid="client.classpath"/>
-      <echo>client classpath = ${clientClasspath}</echo>
+      <!--<echo>client classpath = ${clientClasspath}</echo>-->
       <property file="${imported.basedir}/config/server.properties"/>
       <java classname="${example.classname}" fork="true" resultproperty="example-result">
          <jvmarg value="-Djbm.example.server.classpath=${serverclasspath}"/>

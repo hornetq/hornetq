@@ -97,7 +97,7 @@ public class SpawnedVMSupport
 
       String commandLine = sb.toString();
 
-      log.info("command line: " + commandLine);
+      log.trace("command line: " + commandLine);
 
       Process process = Runtime.getRuntime().exec(commandLine, null, new File(configDir));
 
