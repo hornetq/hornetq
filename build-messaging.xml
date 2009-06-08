@@ -806,11 +806,9 @@
          </fileset>
          <fileset dir="${jboss.jnpserver.lib}">
             <include name="jnpserver.jar"/>
-         </fileset>         
-         <fileset dir="${netty.netty.lib}">
-            <include name="${netty.jar.name}"/>
-         </fileset>
+         </fileset> 
       </copy>
+      <copy file="${netty.netty.lib}/${netty.jar.name}" tofile="${build.distro.lib.dir}/netty.jar"/>
       <copy todir="${build.distro.client.dir}">
          <fileset dir="${build.jars.dir}">
             <include name="${core.client.jar.name}"/>
@@ -824,10 +822,6 @@
             <include name="jndi.properties"/>
             <include name="logging.properties"/>
             <exclude name="common/version.properties" />
-         </fileset>
-         <fileset dir="${test.dir}/config">
-            <include name="messaging.keystore"/>
-            <include name="messaging.truststore"/>
          </fileset>
       </copy>
    	  <copy todir="${build.distro.native.dir}">
@@ -871,6 +865,7 @@
             <exclude name="**/logs/**"/>
             <exclude name="**/*.dat"/>
             <exclude name="**/*.svn"/>
+            <exclude name="**/*.iml"/>
             <exclude name="**/*.*~"/>
          </fileset>
       </copy>

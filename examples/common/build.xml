@@ -88,7 +88,7 @@
          <include  name="**/jbm-transports.jar"/>
       </fileset>
       <fileset dir="${jars.dir}">
-         <include name="**/netty-3.1.0.BETA3.jar"/>
+         <include name="**/netty*.jar"/>
       </fileset>
    </path>
 
@@ -99,7 +99,7 @@
       <pathelement location="${classes.dir}"/>
       <fileset dir="${jars.dir}">
          <include name="jboss/jnpserver/lib/jnpserver.jar"/>
-         <include name="netty/lib/netty-3.1.0.BETA3.jar"/>
+         <include name="netty/lib/netty*.jar"/>
       </fileset>
    </path>
 
