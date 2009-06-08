@@ -1050,7 +1050,7 @@ public class MessagingServerImpl implements MessagingServer
                                                                      1,
                                                                      ClientSessionFactoryImpl.DEFAULT_CALL_TIMEOUT,
                                                                      ClientSessionFactoryImpl.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
-                                                                     ClientSessionFactoryImpl.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD * 3,
+                                                                     ClientSessionFactoryImpl.DEFAULT_CONNECTION_TTL,
                                                                      0,
                                                                      1.0d,
                                                                      0,
