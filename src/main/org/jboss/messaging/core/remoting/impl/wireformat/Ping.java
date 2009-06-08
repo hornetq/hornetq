@@ -62,6 +62,11 @@ public class Ping extends PacketImpl
 
    // Public --------------------------------------------------------
 
+   public boolean isWriteAlways()
+   {
+      return true;
+   }
+   
    public long getConnectionTTL()
    {
       return connectionTTL;

@@ -22,7 +22,6 @@ import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.EXCEP
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.NULL_RESPONSE;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.PACKETS_CONFIRMED;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.PING;
-import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.PONG;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.REATTACH_SESSION;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.REATTACH_SESSION_RESP;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.REPLICATE_ACKNOWLEDGE;
@@ -588,11 +587,6 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
          case PING:
          {
             packet = new Ping();
-            break;
-         }
-         case PONG:
-         {
-            packet = new PacketImpl(PacketImpl.PONG);
             break;
          }
          case DISCONNECT:
