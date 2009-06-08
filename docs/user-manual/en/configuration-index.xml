@@ -143,7 +143,7 @@
                             <entry>Integer</entry>
                             <entry>the maximum number of write requests that can be in the AIO queue
                                 at any one time</entry>
-                            <entry>5000</entry>
+                            <entry>500</entry>
                         </row>
                         <row>
                             <entry><link linkend="configuring.message.journal.journal-min-files"
