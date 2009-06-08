@@ -267,6 +267,10 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
       this.replicatingChannel = replicatingChannel;
 
       this.backup = backup;
+      
+      remotingConnection.addFailureListener(this);
+
+      remotingConnection.addCloseListener(this);
    }
 
    // ServerSession implementation ----------------------------------------------------------------------------
@@ -352,6 +356,8 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
       }
 
       remotingConnection.removeFailureListener(this);
+      
+      remotingConnection.removeCloseListener(this);
    }
 
    public void promptDelivery(final Queue queue)
@@ -1114,6 +1120,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
       }
 
       remotingConnection.removeFailureListener(this);
+      remotingConnection.removeCloseListener(this);
 
       // Note. We do not destroy the replicating connection here. In the case the live server has really crashed
       // then the connection will get cleaned up anyway when the server ping timeout kicks in.
@@ -1129,6 +1136,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
       remotingConnection = newConnection;
 
       remotingConnection.addFailureListener(this);
+      remotingConnection.addCloseListener(this);
 
       int serverLastReceivedCommandID = channel.getLastReceivedCommandID();
 
@@ -1401,6 +1409,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
                {
                   try
                   {
+                     log.info("Removing binding for name " + name);
                      Binding b = postOffice.removeBinding(name);
                   }
                   catch (Exception e)

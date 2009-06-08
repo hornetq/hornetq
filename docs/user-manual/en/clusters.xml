@@ -1,8 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <chapter id="clusters">
-    <title>Clusters</title>
-    <para>In this chapter we discuss the concepts behind JBoss Messaging clusters, and how to
-        configure them.</para>
+    <title>Clusters</title>    
     <section>
         <title>Clusters Overview</title>
         <para>JBoss Messaging clusters allow groups of JBoss Messaging servers to be grouped

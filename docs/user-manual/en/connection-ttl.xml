@@ -81,8 +81,9 @@ finally
             instance, or if you're deploying JMS connection factory instances direct into JNDI on
             the server side, you can specify it in the xml config, using the parameter <literal
                 >connection-ttl</literal>.</para>
-        <para>The default value for connection ttl is <literal>300000</literal>ms, i.e. 5
-            minutes.</para>
+        <para>The default value for connection ttl is <literal>300000</literal>ms, i.e. 5 minutes. A
+            value of <literal>-1</literal> for <literal>ConnectionTTL</literal> means the server
+            will never time out the connection on the server side.</para>
         <para>If you do not wish clients to be able to specify their own connection TTL, you can
             override all values used by a global value set on the server side. This can be done by
             specifying the <literal>connection-ttl-override</literal> attribute in the server side
@@ -111,8 +112,10 @@ finally
             specify it in the <literal>jbm-jms.xml </literal> configuration file, using the
             parameter <literal>client-failure-check-period</literal>.</para>
         <para>The default value for client failure check period is <literal>5000</literal>ms, i.e. 5
-            seconds. Typically this is much lower than connection TTL to allow clients to reconnect
-            in case of transitory failure.</para>
+            seconds. A value of <literal>-1</literal> means the client will never fail the
+            connection on the client side if no data is received from the server. Typically this is
+            much lower than connection TTL to allow clients to reconnect in case of transitory
+            failure.</para>
     </section>
     <section id="connection-ttl.session.multiplexing">
         <title>Session Multiplexing</title>

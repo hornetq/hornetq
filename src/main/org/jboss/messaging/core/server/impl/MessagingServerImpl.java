@@ -1378,10 +1378,6 @@ public class MessagingServerImpl implements MessagingServer
 
       channel.setHandler(handler);
 
-      connection.addFailureListener(session);
-
-      connection.addClosingListener(session);
-
       return new CreateSessionResponseMessage(version.getIncrementingVersion());
    }
 

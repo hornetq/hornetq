@@ -125,7 +125,7 @@ public class TemporaryQueueTest extends ServiceTestBase
       RemotingConnectionImpl conn = (RemotingConnectionImpl) server.getRemotingService().getConnections().iterator().next();
 
       final CountDownLatch latch = new CountDownLatch(1);
-      conn.addClosingListener(new CloseListener()
+      conn.addCloseListener(new CloseListener()
       {
          public void connectionClosed()
          {
@@ -193,7 +193,7 @@ public class TemporaryQueueTest extends ServiceTestBase
                                                      .iterator()
                                                      .next();
       final CountDownLatch latch = new CountDownLatch(1);
-      remotingConnection.addClosingListener(new CloseListener()
+      remotingConnection.addCloseListener(new CloseListener()
       {
          public void connectionClosed()
          {

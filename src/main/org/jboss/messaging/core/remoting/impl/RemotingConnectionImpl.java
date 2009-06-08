@@ -313,11 +313,6 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
       return this.transportConnection;
    }
 
-   public void addClosingListener(CloseListener listener)
-   {
-      closeListeners.add(listener);
-   }
-
    public List<FailureListener> getFailureListeners()
    {
       return new ArrayList<FailureListener>(failureListeners);
@@ -372,6 +367,26 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
       }
 
       return failureListeners.remove(listener);
+   }
+   
+   public void addCloseListener(CloseListener listener)
+   {
+      if (listener == null)
+      {
+         throw new IllegalStateException("CloseListener cannot be null");
+      }
+      
+      closeListeners.add(listener);
+   }
+   
+   public boolean removeCloseListener(final CloseListener listener)
+   {
+      if (listener == null)
+      {
+         throw new IllegalStateException("CloseListener cannot be null");
+      }
+
+      return closeListeners.remove(listener);
    }
 
    public MessagingBuffer createBuffer(final int size)

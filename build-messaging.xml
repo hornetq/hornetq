@@ -782,7 +782,7 @@
    <!-- Distribution targets                                                                     -->
    <!-- ======================================================================================== -->
 
-   <target name="distro" depends="jar, jar-core-client, jar-jms-client, validate-configuration">
+   <target name="distro" depends="clean, jar, jar-core-client, jar-jms-client, validate-configuration">
       
       <mkdir dir="${build.distro.dir}"/>
       <mkdir dir="${build.distro.lib.dir}"/>
@@ -871,6 +871,7 @@
             <exclude name="**/logs/**"/>
             <exclude name="**/*.dat"/>
             <exclude name="**/*.svn"/>
+            <exclude name="**/*.*~"/>
          </fileset>
       </copy>
 

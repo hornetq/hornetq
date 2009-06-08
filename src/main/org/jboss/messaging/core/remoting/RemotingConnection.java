@@ -38,6 +38,10 @@ public interface RemotingConnection extends BufferHandler
    void addFailureListener(FailureListener listener);
 
    boolean removeFailureListener(FailureListener listener);
+   
+   void addCloseListener(CloseListener listener);
+      
+   boolean removeCloseListener(CloseListener listener);
 
    List<FailureListener> getFailureListeners();
 
@@ -58,9 +62,7 @@ public interface RemotingConnection extends BufferHandler
    void freeze();
   
    Connection getTransportConnection();
-
-   void addClosingListener(CloseListener listener);
-      
+   
    boolean isDataReceived();
    
    boolean isDataSent();
