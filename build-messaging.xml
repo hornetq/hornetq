@@ -848,6 +848,12 @@
          </fileset>
       </copy>
 
+      <copy todir="${build.distro.dir}/docs/">
+         <fileset dir="${doc.dir}">
+            <include name="README.html"/>
+         </fileset>
+      </copy>
+
       <antcall target="dist-doc"/>
    	
       <copy todir="${build.distro.licenses.dir}/">
