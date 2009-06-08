@@ -22,7 +22,7 @@
    <journal-min-files>20</journal-min-files>
    <journal-aio-buffer-timeout>20000</journal-aio-buffer-timeout>
    <log-journal-write-rate>true</log-journal-write-rate>
-   <perf-blast-pages>5000</perf-blast-pages>
+   <!-- <perf-blast-pages>5000</perf-blast-pages> -->
 
    
    <queues>
