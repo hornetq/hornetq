@@ -870,6 +870,7 @@
             <exclude name="**/data**"/>
             <exclude name="**/logs/**"/>
             <exclude name="**/*.dat"/>
+            <exclude name="**/*.svn"/>
          </fileset>
       </copy>
 
