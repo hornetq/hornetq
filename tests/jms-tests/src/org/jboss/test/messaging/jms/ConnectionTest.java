@@ -37,7 +37,6 @@ import junit.framework.TestCase;
 
 import org.jboss.messaging.core.logging.Logger;
 
-
 /**
  * Connection tests. Contains all connection tests, except tests relating to closing a connection,
  * which go to ConnectionClosedTest.
@@ -69,10 +68,9 @@ public class ConnectionTest extends JMSTestCase
       for (int i = 0; i < 100; i++)
       {
          Connection conn = cf.createConnection();
-         conn.close();        
+         conn.close();
       }
-   }     
-   
+   }
 
    //
    // Note: All tests related to closing a Connection should go to ConnectionClosedTest
@@ -83,9 +81,9 @@ public class ConnectionTest extends JMSTestCase
       Connection connection = cf.createConnection();
       String clientID = connection.getClientID();
 
-      //We don't currently set client ids on the server, so this should be null.
-      //In the future we may provide conection factories that set a specific client id
-      //so this may change
+      // We don't currently set client ids on the server, so this should be null.
+      // In the future we may provide conection factories that set a specific client id
+      // so this may change
       assertNull(clientID);
 
       connection.close();
@@ -106,12 +104,12 @@ public class ConnectionTest extends JMSTestCase
 
    public void testSetClientAfterStart() throws Exception
    {
-   	Connection connection = null;
+      Connection connection = null;
       try
       {
          connection = cf.createConnection();
 
-         //we startthe connection
+         // we startthe connection
          connection.start();
 
          // an attempt to set the client ID now should throw a IllegalStateException
@@ -131,20 +129,20 @@ public class ConnectionTest extends JMSTestCase
       }
       finally
       {
-      	if (connection != null)
-      	{
-      		connection.close();
-      	}
+         if (connection != null)
+         {
+            connection.close();
+         }
       }
-      
+
    }
 
    public void testSetClientIDFail() throws Exception
    {
       final String clientID = "my-test-client-id";
 
-      //Setting a client id must be the first thing done to the connection
-      //otherwise a javax.jms.IllegalStateException must be thrown
+      // Setting a client id must be the first thing done to the connection
+      // otherwise a javax.jms.IllegalStateException must be thrown
 
       Connection connection = cf.createConnection();
       connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
@@ -159,7 +157,6 @@ public class ConnectionTest extends JMSTestCase
       }
 
       connection.close();
-
 
       connection = cf.createConnection();
       connection.getClientID();
@@ -204,7 +201,7 @@ public class ConnectionTest extends JMSTestCase
 
       ConnectionMetaData metaData = (ConnectionMetaData)connection.getMetaData();
 
-      //TODO - need to check whether these are same as current version
+      // TODO - need to check whether these are same as current version
       metaData.getJMSMajorVersion();
       metaData.getJMSMinorVersion();
       metaData.getJMSProviderName();
@@ -213,10 +210,9 @@ public class ConnectionTest extends JMSTestCase
       metaData.getProviderMajorVersion();
       metaData.getProviderMinorVersion();
       metaData.getProviderVersion();
-      
+
       connection.close();
    }
-
 
    /**
     * Test creation of QueueSession
@@ -267,23 +263,21 @@ public class ConnectionTest extends JMSTestCase
       conn.close();
 
    }
-   
-   // This test is to check netty issue in https://jira.jboss.org/jira/browse/JBMESSAGING-1618   
-   
+
+   // This test is to check netty issue in https://jira.jboss.org/jira/browse/JBMESSAGING-1618
+
    public void testConnectionListenerBug() throws Exception
    {
-      for (int i = 0; i < 10000; i++)
+      for (int i = 0; i < 1000; i++)
       {
-         //log.info("******************************************** it " + i);
-         
          Connection conn = cf.createConnection();
-         
+
          MyExceptionListener listener = new MyExceptionListener();
-         
+
          conn.setExceptionListener(listener);
-         
-         conn.close();                 
-      } 
+
+         conn.close();
+      }
    }
 
    /**
@@ -298,8 +292,11 @@ public class ConnectionTest extends JMSTestCase
 
       try
       {
-         queueConnection.createDurableConnectionConsumer((Topic)topic1, "subscriptionName", "",
-            (ServerSessionPool) null, 1);
+         queueConnection.createDurableConnectionConsumer((Topic)topic1,
+                                                         "subscriptionName",
+                                                         "",
+                                                         (ServerSessionPool)null,
+                                                         1);
          fail("Should throw a javax.jms.IllegalStateException");
       }
       catch (javax.jms.IllegalStateException e)
@@ -307,7 +304,7 @@ public class ConnectionTest extends JMSTestCase
       }
       catch (java.lang.IllegalStateException e)
       {
-         fail ("Should throw a javax.jms.IllegalStateException");
+         fail("Should throw a javax.jms.IllegalStateException");
       }
       catch (JMSException e)
       {
@@ -317,7 +314,7 @@ public class ConnectionTest extends JMSTestCase
       {
          queueConnection.close();
       }
-   }     
+   }
 
    // Package protected ---------------------------------------------
 
