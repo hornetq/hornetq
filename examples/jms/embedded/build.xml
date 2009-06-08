@@ -40,7 +40,8 @@
 	  </fileset>
 	 	
 	  <fileset dir="${jars.dir}">
-	       <include name="jboss/jboss-javaee/lib/jboss-javaee.jar"/>
+	     <include name="**/jboss-javaee.jar"/>
+        <include name="**/jbm-jms-api.jar"/>
 	  </fileset>
 
    	  <pathelement location="${classes.dir}"/>	   	
