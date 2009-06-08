@@ -356,8 +356,6 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
       }
 
       remotingConnection.removeFailureListener(this);
-      
-      remotingConnection.removeCloseListener(this);
    }
 
    public void promptDelivery(final Queue queue)
@@ -1408,9 +1406,11 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
                public void run()
                {
                   try
-                  {
-                     log.info("Removing binding for name " + name);
-                     Binding b = postOffice.removeBinding(name);
+                  {                     
+                     if (postOffice.getBinding(name) != null)
+                     {
+                        postOffice.removeBinding(name);
+                     }
                   }
                   catch (Exception e)
                   {
