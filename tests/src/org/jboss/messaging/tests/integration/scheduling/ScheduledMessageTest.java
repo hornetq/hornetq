@@ -629,6 +629,8 @@ public class ScheduledMessageTest extends ServiceTestBase
 
    private void scheduledDelivery(boolean tx) throws Exception
    {
+      forceGC();
+
       Xid xid = new XidImpl("xa1".getBytes(), 1, UUIDGenerator.getInstance().generateStringUUID().getBytes());
 
       ClientSessionFactory sessionFactory = createInVMFactory();
@@ -697,7 +699,6 @@ public class ScheduledMessageTest extends ServiceTestBase
       }
 
       //First the non scheduled messages should be received
-      forceGC();
 
       if (tx)
       {
