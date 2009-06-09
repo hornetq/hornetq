@@ -26,9 +26,12 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Executors;
 
-import org.easymock.EasyMock;
+import org.jboss.messaging.core.exception.MessagingException;
+import org.jboss.messaging.core.remoting.impl.AbstractBufferHandler;
 import org.jboss.messaging.core.remoting.spi.BufferHandler;
+import org.jboss.messaging.core.remoting.spi.Connection;
 import org.jboss.messaging.core.remoting.spi.ConnectionLifeCycleListener;
+import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
 import org.jboss.messaging.integration.transports.netty.NettyConnector;
 import org.jboss.messaging.tests.util.UnitTestCase;
 
@@ -53,21 +56,59 @@ public class NettyConnectorTest extends UnitTestCase
      
    public void testStartStop() throws Exception
    {
-      BufferHandler handler = EasyMock.createStrictMock(BufferHandler.class);
+      BufferHandler handler = new AbstractBufferHandler()
+      {
+         public void bufferReceived(Object connectionID, MessagingBuffer buffer)
+         {
+         }
+      };
       Map<String, Object> params = new HashMap<String, Object>();
-      ConnectionLifeCycleListener listener = EasyMock.createStrictMock(ConnectionLifeCycleListener.class);
-
+      ConnectionLifeCycleListener listener = new ConnectionLifeCycleListener()
+      {
+         public void connectionException(Object connectionID, MessagingException me)
+         {
+         }
+         
+         public void connectionDestroyed(Object connectionID)
+         {
+         }
+         
+         public void connectionCreated(Connection connection)
+         {
+         }
+      };
+      
       NettyConnector connector = new NettyConnector(params, handler, listener, Executors.newCachedThreadPool());
       
       connector.start();
+      assertTrue(connector.isStarted());
       connector.close();
+      assertFalse(connector.isStarted());
    }
    
    public void testNullParams() throws Exception
    {
-      BufferHandler handler = EasyMock.createStrictMock(BufferHandler.class);
+      BufferHandler handler = new AbstractBufferHandler()
+      {
+         public void bufferReceived(Object connectionID, MessagingBuffer buffer)
+         {
+         }
+      };
       Map<String, Object> params = new HashMap<String, Object>();
-      ConnectionLifeCycleListener listener = EasyMock.createStrictMock(ConnectionLifeCycleListener.class);
+      ConnectionLifeCycleListener listener = new ConnectionLifeCycleListener()
+      {
+         public void connectionException(Object connectionID, MessagingException me)
+         {
+         }
+         
+         public void connectionDestroyed(Object connectionID)
+         {
+         }
+         
+         public void connectionCreated(Connection connection)
+         {
+         }
+      };
 
       try
       {

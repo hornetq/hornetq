@@ -23,11 +23,14 @@
 package org.jboss.messaging.tests.unit.core.server.impl;
 
 
-import org.easymock.EasyMock;
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+
 import org.jboss.messaging.core.filter.Filter;
-import org.jboss.messaging.core.paging.PagingManager;
-import org.jboss.messaging.core.paging.PagingStore;
-import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.server.Consumer;
 import org.jboss.messaging.core.server.Distributor;
 import org.jboss.messaging.core.server.HandleStatus;
@@ -38,15 +41,9 @@ import org.jboss.messaging.core.server.impl.QueueImpl;
 import org.jboss.messaging.core.server.impl.RoundRobinDistributor;
 import org.jboss.messaging.tests.unit.core.server.impl.fakes.FakeConsumer;
 import org.jboss.messaging.tests.unit.core.server.impl.fakes.FakeFilter;
+import org.jboss.messaging.tests.unit.core.server.impl.fakes.FakePostOffice;
 import org.jboss.messaging.tests.util.UnitTestCase;
 import org.jboss.messaging.utils.SimpleString;
-
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
 
 /**
  * A QueueTest
@@ -439,7 +436,7 @@ public class QueueImplTest extends UnitTestCase
 
    public void testChangeConsumersAndDeliver() throws Exception
    {
-      Queue queue = new QueueImpl(1, address1, queue1, null, false, true, scheduledExecutor, createMockPostOffice(), null, null);
+      Queue queue = new QueueImpl(1, address1, queue1, null, false, true, scheduledExecutor, new FakePostOffice(), null, null);
 
       final int numMessages = 10;
 
@@ -850,7 +847,7 @@ public class QueueImplTest extends UnitTestCase
 
    public void testConsumeWithFiltersAddAndRemoveConsumer() throws Exception
    {
-      Queue queue = new QueueImpl(1, address1, queue1, null, false, true, scheduledExecutor, createMockPostOffice(), null, null);
+      Queue queue = new QueueImpl(1, address1, queue1, null, false, true, scheduledExecutor, new FakePostOffice(), null, null);
 
       Filter filter = new FakeFilter("fruit", "orange");
 
@@ -923,7 +920,7 @@ public class QueueImplTest extends UnitTestCase
 
    private void testConsumerWithFilters(boolean direct) throws Exception
    {
-      Queue queue = new QueueImpl(1, address1, queue1, null, false, true, scheduledExecutor, createMockPostOffice(), null, null);
+      Queue queue = new QueueImpl(1, address1, queue1, null, false, true, scheduledExecutor, new FakePostOffice(), null, null);
 
       Filter filter = new FakeFilter("fruit", "orange");
 
@@ -1011,7 +1008,7 @@ public class QueueImplTest extends UnitTestCase
 
    public void testMessageOrder() throws Exception
    {
-      Consumer consumer = EasyMock.createStrictMock(Consumer.class);
+      FakeConsumer consumer = new FakeConsumer();
       Queue queue = new QueueImpl(1, address1, queue1, null, false, true, scheduledExecutor, null, null, null);
       MessageReference messageReference = generateReference(queue, 1);
       MessageReference messageReference2 = generateReference(queue, 2);
@@ -1019,13 +1016,15 @@ public class QueueImplTest extends UnitTestCase
       queue.addFirst(messageReference);
       queue.addLast(messageReference2);
       queue.addFirst(messageReference3);
-      EasyMock.expect(consumer.handle(messageReference3)).andReturn(HandleStatus.HANDLED);
-      EasyMock.expect(consumer.handle(messageReference)).andReturn(HandleStatus.HANDLED);
-      EasyMock.expect(consumer.handle(messageReference2)).andReturn(HandleStatus.HANDLED);
-      EasyMock.replay(consumer);
+      
+      assertEquals(0, consumer.getReferences().size());
       queue.addConsumer(consumer);
       queue.deliverNow();
-      EasyMock.verify(consumer);
+      
+      assertEquals(3, consumer.getReferences().size());
+      assertEquals(messageReference3, consumer.getReferences().get(0));
+      assertEquals(messageReference, consumer.getReferences().get(1));
+      assertEquals(messageReference2, consumer.getReferences().get(2));
    }
 
    public void testMessagesAdded() throws Exception
@@ -1067,23 +1066,6 @@ public class QueueImplTest extends UnitTestCase
 
    }
 
-
-   /**
-    * @return
-    */
-   private PostOffice createMockPostOffice() throws Exception
-   {
-      PagingStore niceStore = EasyMock.createNiceMock(PagingStore.class);
-      PagingManager niceManager = EasyMock.createNiceMock(PagingManager.class);
-      PostOffice nicePostOffice = EasyMock.createNiceMock(PostOffice.class);
-      EasyMock.expect(nicePostOffice.getPagingManager()).andStubReturn(niceManager);
-      EasyMock.expect(niceManager.getPageStore((SimpleString)EasyMock.anyObject())).andStubReturn(niceStore);
-      EasyMock.replay(niceManager, nicePostOffice, niceStore);
-      return nicePostOffice;
-   }
-
-   
-   // Inner classes ---------------------------------------------------------------
 
    class AddtoQueueRunner implements Runnable
    {

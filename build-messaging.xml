@@ -212,8 +212,6 @@
       <path refid="jboss.jboss.reflect.classpath"/>
       <path refid="jboss.jboss.common.logging.spi.classpath"/>
       <path refid="jboss.jboss.mdr.classpath"/>
-      <path refid="easymock.easymock.classpath"/>
-      <path refid="easymock.classextension.classpath"/>
       <path location="${build.jars.dir}/${ra.jar.name}"/>
       <path location="${build.jars.dir}/${jms.jar.name}"/>
       <path location="${build.jars.dir}/${transports.jar.name}"/>
@@ -232,7 +230,6 @@
       <path refid="jboss.jboss.reflect.classpath"/>
       <path refid="jboss.jboss.common.logging.spi.classpath"/>
       <path refid="jboss.jboss.mdr.classpath"/>
-      <path refid="easymock.easymock.classpath"/>
       <path location="${build.jars.dir}/${core.jar.name}"/>
       <path location="${build.jars.dir}/${jms.jar.name}"/>
       <path location="${build.jars.dir}/${transports.jar.name}"/>
@@ -253,7 +250,6 @@
       <path location="${build.jars.dir}/jboss-${module.name}.jar"/>
       <path refid="junit.junit.classpath"/>
       <path refid="jboss.profiler.jvmti.classpath"/>
-      <path refid="easymock.easymock.classpath"/>
       <path refid="jboss.jbossxb.classpath"/>
    </path>
 
@@ -273,7 +269,6 @@
       <path refid="test.compilation.classpath"/>
       <path refid="sun.jaxb.classpath"/>
       <path refid="apache.log4j.classpath"/>
-      <path refid="cglib.classpath"/>
       <path refid="jboss.common.core.classpath"/>
       <path refid="jboss.aop.classpath"/>
       <path refid="trove.trove.classpath"/>
@@ -292,7 +287,6 @@
       <pathelement location="${src.schema.dir}"/>
       <path refid="test.compilation.classpath"/>
       <path refid="apache.log4j.classpath"/>
-      <path refid="cglib.classpath"/>
       <path refid="jboss.common.core.classpath"/>
       <path refid="jboss.aop.classpath"/>
       <path refid="trove.trove.classpath"/>
@@ -311,7 +305,6 @@
       <path location="${build.jars.dir}/${transports.jar.name}"/>
       <path refid="jms.test.compilation.classpath"/>
       <path refid="sun.jaxb.classpath"/>
-      <path refid="cglib.classpath"/>
       <path refid="jboss.common.core.classpath"/>
       <path refid="jboss.aop.classpath"/>
       <path refid="trove.trove.classpath"/>

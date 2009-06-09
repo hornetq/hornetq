@@ -28,8 +28,6 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-import org.easymock.EasyMock;
-import org.easymock.IAnswer;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.server.Consumer;
 import org.jboss.messaging.core.server.HandleStatus;
@@ -244,27 +242,24 @@ public class QueueImplTest extends UnitTestCase
 
    public void testDeliveryScheduled() throws Exception
    {
-      Consumer consumer = EasyMock.createStrictMock(Consumer.class);
-      Queue queue = new QueueImpl(1, new SimpleString("address1"), queue1, null, false, true, scheduledExecutor, null, null, null);
-      MessageReference messageReference = generateReference(queue, 1);
       final CountDownLatch countDownLatch = new CountDownLatch(1);
-      EasyMock.expect(consumer.handle(messageReference)).andAnswer(new IAnswer<HandleStatus>()
+      Consumer consumer = new FakeConsumer()
       {
-         public HandleStatus answer() throws Throwable
+         @Override
+         public synchronized HandleStatus handle(MessageReference reference)
          {
             countDownLatch.countDown();
             return HandleStatus.HANDLED;
          }
-      });
-      EasyMock.replay(consumer);
+      };
+      Queue queue = new QueueImpl(1, new SimpleString("address1"), queue1, null, false, true, scheduledExecutor, null, null, null);
+      MessageReference messageReference = generateReference(queue, 1);
       queue.addConsumer(consumer);
       messageReference.setScheduledDeliveryTime(System.currentTimeMillis() + 2000);
       queue.addFirst(messageReference);
 
-      countDownLatch.await(3000, TimeUnit.MILLISECONDS);
-
-      EasyMock.verify(consumer);
-
+      boolean gotLatch = countDownLatch.await(3000, TimeUnit.MILLISECONDS);
+      assertTrue(gotLatch);
    }
 
 }

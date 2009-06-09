@@ -54,8 +54,6 @@ import org.jboss.messaging.core.paging.impl.TestSupportPageStore;
 import org.jboss.messaging.core.persistence.QueueBindingInfo;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.Binding;
-import org.jboss.messaging.core.postoffice.Bindings;
-import org.jboss.messaging.core.postoffice.DuplicateIDCache;
 import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
 import org.jboss.messaging.core.server.LargeServerMessage;
@@ -66,8 +64,8 @@ import org.jboss.messaging.core.server.impl.ServerMessageImpl;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.core.settings.impl.AddressSettings;
 import org.jboss.messaging.core.transaction.ResourceManager;
-import org.jboss.messaging.core.transaction.Transaction;
 import org.jboss.messaging.tests.unit.core.journal.impl.fakes.FakeSequentialFileFactory;
+import org.jboss.messaging.tests.unit.core.server.impl.fakes.FakePostOffice;
 import org.jboss.messaging.tests.util.RandomUtil;
 import org.jboss.messaging.tests.util.UnitTestCase;
 import org.jboss.messaging.utils.Pair;
@@ -1097,132 +1095,6 @@ public class PagingStoreImplTest extends UnitTestCase
        */
       public void stop() throws Exception
       {
-      }
-
-   }
-
-   class FakePostOffice implements PostOffice
-   {
-
-      public Object getNotificationLock()
-      {
-         return null;
-      }
-
-      public Bindings getMatchingBindings(SimpleString address)
-      {
-         return null;
-      }
-
-      /* (non-Javadoc)
-       * @see org.jboss.messaging.core.postoffice.PostOffice#activate()
-       */
-      public List<Queue> activate()
-      {
-         return null;
-      }
-
-      /* (non-Javadoc)
-       * @see org.jboss.messaging.core.postoffice.PostOffice#addBinding(org.jboss.messaging.core.postoffice.Binding)
-       */
-      public void addBinding(final Binding binding) throws Exception
-      {
-      }
-
-      /* (non-Javadoc)
-       * @see org.jboss.messaging.core.postoffice.PostOffice#getBinding(org.jboss.messaging.utils.SimpleString)
-       */
-      public Binding getBinding(final SimpleString uniqueName)
-      {
-         return null;
-      }
-
-      /* (non-Javadoc)
-       * @see org.jboss.messaging.core.postoffice.PostOffice#getBindingsForAddress(org.jboss.messaging.utils.SimpleString)
-       */
-      public Bindings getBindingsForAddress(final SimpleString address) throws Exception
-      {
-         return null;
-      }
-
-      /* (non-Javadoc)
-       * @see org.jboss.messaging.core.postoffice.PostOffice#getDuplicateIDCache(org.jboss.messaging.utils.SimpleString)
-       */
-      public DuplicateIDCache getDuplicateIDCache(final SimpleString address)
-      {
-         return null;
-      }
-
-      /* (non-Javadoc)
-       * @see org.jboss.messaging.core.postoffice.PostOffice#getPagingManager()
-       */
-      public PagingManager getPagingManager()
-      {
-         return null;
-      }
-
-      /* (non-Javadoc)
-       * @see org.jboss.messaging.core.postoffice.PostOffice#redistribute(org.jboss.messaging.core.server.ServerMessage, org.jboss.messaging.utils.SimpleString, org.jboss.messaging.core.transaction.Transaction)
-       */
-      public boolean redistribute(final ServerMessage message, final Queue queue, final Transaction tx) throws Exception
-      {
-         return false;
-      }
-
-      /* (non-Javadoc)
-       * @see org.jboss.messaging.core.postoffice.PostOffice#removeBinding(org.jboss.messaging.utils.SimpleString)
-       */
-      public Binding removeBinding(final SimpleString uniqueName) throws Exception
-      {
-         return null;
-      }
-
-      /* (non-Javadoc)
-       * @see org.jboss.messaging.core.postoffice.PostOffice#route(org.jboss.messaging.core.server.ServerMessage)
-       */
-      public void route(final ServerMessage message) throws Exception
-      {
-
-      }
-
-      /* (non-Javadoc)
-       * @see org.jboss.messaging.core.postoffice.PostOffice#route(org.jboss.messaging.core.server.ServerMessage, org.jboss.messaging.core.transaction.Transaction)
-       */
-      public void route(final ServerMessage message, final Transaction tx) throws Exception
-      {
-
-      }
-
-      /* (non-Javadoc)
-       * @see org.jboss.messaging.core.postoffice.PostOffice#sendQueueInfoToQueue(org.jboss.messaging.utils.SimpleString, org.jboss.messaging.utils.SimpleString)
-       */
-      public void sendQueueInfoToQueue(final SimpleString queueName, final SimpleString address) throws Exception
-      {
-
-      }
-
-      /* (non-Javadoc)
-       * @see org.jboss.messaging.core.server.MessagingComponent#isStarted()
-       */
-      public boolean isStarted()
-      {
-         return false;
-      }
-
-      /* (non-Javadoc)
-       * @see org.jboss.messaging.core.server.MessagingComponent#start()
-       */
-      public void start() throws Exception
-      {
-
-      }
-
-      /* (non-Javadoc)
-       * @see org.jboss.messaging.core.server.MessagingComponent#stop()
-       */
-      public void stop() throws Exception
-      {
-
       }
 
    }

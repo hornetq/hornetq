@@ -25,10 +25,13 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Executors;
 
-import org.easymock.EasyMock;
+import org.jboss.messaging.core.exception.MessagingException;
+import org.jboss.messaging.core.remoting.impl.AbstractBufferHandler;
 import org.jboss.messaging.core.remoting.spi.Acceptor;
 import org.jboss.messaging.core.remoting.spi.BufferHandler;
+import org.jboss.messaging.core.remoting.spi.Connection;
 import org.jboss.messaging.core.remoting.spi.ConnectionLifeCycleListener;
+import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
 import org.jboss.messaging.integration.transports.netty.NettyAcceptor;
 import org.jboss.messaging.integration.transports.netty.NettyAcceptorFactory;
 import org.jboss.messaging.tests.util.UnitTestCase;
@@ -47,8 +50,29 @@ public class NettyAcceptorFactoryTest extends UnitTestCase
       NettyAcceptorFactory factory = new NettyAcceptorFactory();
 
       Map<String, Object> params = new HashMap<String, Object>();
-      BufferHandler handler = EasyMock.createStrictMock(BufferHandler.class);
-      ConnectionLifeCycleListener listener = EasyMock.createStrictMock(ConnectionLifeCycleListener.class);
+      BufferHandler handler = new AbstractBufferHandler()
+      {
+         
+         public void bufferReceived(Object connectionID, MessagingBuffer buffer)
+         {
+         }
+      };
+      
+      ConnectionLifeCycleListener listener = new ConnectionLifeCycleListener()
+      {
+         
+         public void connectionException(Object connectionID, MessagingException me)
+         {
+         }
+         
+         public void connectionDestroyed(Object connectionID)
+         {
+         }
+         
+         public void connectionCreated(Connection connection)
+         {
+         }
+      };
            
       Acceptor acceptor = factory.createAcceptor(params, handler, listener, Executors.newCachedThreadPool());
 

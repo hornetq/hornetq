@@ -150,14 +150,6 @@
 
       <componentref name="apache-logging" version="1.1.0.jboss"/>
 
-
-      <!--
-         required by the timing tests.
-      -->
-      <componentref name="easymock" version="2.3"/>
-      <!-- the extension is used to mock some concrete classes -->
-      <componentref name="easymock-classextension" version="2.3"/>
-
    </build>
 
    <synchronizeinfo/>
