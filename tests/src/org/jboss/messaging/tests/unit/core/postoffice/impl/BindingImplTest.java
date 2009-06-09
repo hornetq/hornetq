@@ -774,7 +774,7 @@ public class BindingImplTest extends UnitTestCase
        */
       public boolean containsProperty(String key)
       {
-         // TODO Auto-generated method stub
+         
          return false;
       }
 
@@ -783,7 +783,7 @@ public class BindingImplTest extends UnitTestCase
        */
       public Object getProperty(String key)
       {
-         // TODO Auto-generated method stub
+         
          return null;
       }
 
@@ -792,7 +792,7 @@ public class BindingImplTest extends UnitTestCase
        */
       public void putBooleanProperty(String key, boolean value)
       {
-         // TODO Auto-generated method stub
+         
          
       }
 
@@ -801,7 +801,7 @@ public class BindingImplTest extends UnitTestCase
        */
       public void putByteProperty(String key, byte value)
       {
-         // TODO Auto-generated method stub
+         
          
       }
 
@@ -810,7 +810,7 @@ public class BindingImplTest extends UnitTestCase
        */
       public void putBytesProperty(String key, byte[] value)
       {
-         // TODO Auto-generated method stub
+         
          
       }
 
@@ -819,7 +819,7 @@ public class BindingImplTest extends UnitTestCase
        */
       public void putDoubleProperty(String key, double value)
       {
-         // TODO Auto-generated method stub
+         
          
       }
 
@@ -828,7 +828,7 @@ public class BindingImplTest extends UnitTestCase
        */
       public void putFloatProperty(String key, float value)
       {
-         // TODO Auto-generated method stub
+         
          
       }
 
@@ -837,7 +837,7 @@ public class BindingImplTest extends UnitTestCase
        */
       public void putIntProperty(String key, int value)
       {
-         // TODO Auto-generated method stub
+         
          
       }
 
@@ -846,7 +846,7 @@ public class BindingImplTest extends UnitTestCase
        */
       public void putLongProperty(String key, long value)
       {
-         // TODO Auto-generated method stub
+         
          
       }
 
@@ -855,7 +855,7 @@ public class BindingImplTest extends UnitTestCase
        */
       public void putShortProperty(String key, short value)
       {
-         // TODO Auto-generated method stub
+         
          
       }
 
@@ -864,7 +864,7 @@ public class BindingImplTest extends UnitTestCase
        */
       public void putStringProperty(String key, String value)
       {
-         // TODO Auto-generated method stub
+         
          
       }
 
@@ -873,7 +873,7 @@ public class BindingImplTest extends UnitTestCase
        */
       public Object removeProperty(String key)
       {
-         // TODO Auto-generated method stub
+         
          return null;
       }
 
