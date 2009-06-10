@@ -55,6 +55,7 @@ public class FileConfigurationTest extends ConfigurationImplTest
       assertEquals(new SimpleString("Giraffe"), conf.getManagementAddress());
       assertEquals(91, conf.getManagementRequestTimeout());
       assertEquals(new SimpleString("Whatever"), conf.getManagementNotificationAddress());
+      assertEquals("Frog", conf.getManagementClusterUser());
       assertEquals("Wombat", conf.getManagementClusterPassword());
       assertEquals(false, conf.isJMXManagementEnabled());
       assertEquals(true, conf.isMessageCounterEnabled());

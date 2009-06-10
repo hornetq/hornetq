@@ -84,6 +84,8 @@ public class DefaultsFileConfigurationTest extends ConfigurationImplTest
       
       assertEquals(ConfigurationImpl.DEFAULT_MANAGEMENT_NOTIFICATION_ADDRESS, conf.getManagementNotificationAddress());
       
+      assertEquals(ConfigurationImpl.DEFAULT_MANAGEMENT_CLUSTER_USER, conf.getManagementClusterUser());
+
       assertEquals(ConfigurationImpl.DEFAULT_MANAGEMENT_CLUSTER_PASSWORD, conf.getManagementClusterPassword());
 
       assertEquals(ConfigurationImpl.DEFAULT_MANAGEMENT_REQUEST_TIMEOUT, conf.getManagementRequestTimeout());

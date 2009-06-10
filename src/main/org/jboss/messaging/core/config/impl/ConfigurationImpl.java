@@ -121,6 +121,8 @@ public class ConfigurationImpl implements Configuration
 
    public static final SimpleString DEFAULT_MANAGEMENT_NOTIFICATION_ADDRESS = new SimpleString("jbm.notifications");
 
+   public static final String DEFAULT_MANAGEMENT_CLUSTER_USER = "JBM.MANAGEMENT.ADMIN.USER";
+
    public static final String DEFAULT_MANAGEMENT_CLUSTER_PASSWORD = "CHANGE ME!!";
 
    public static final long DEFAULT_MANAGEMENT_REQUEST_TIMEOUT = 5000;
@@ -264,6 +266,8 @@ public class ConfigurationImpl implements Configuration
    protected SimpleString managementAddress = DEFAULT_MANAGEMENT_ADDRESS;
 
    protected SimpleString managementNotificationAddress = DEFAULT_MANAGEMENT_NOTIFICATION_ADDRESS;
+
+   protected String managementClusterUser = DEFAULT_MANAGEMENT_CLUSTER_USER;
 
    protected String managementClusterPassword = DEFAULT_MANAGEMENT_CLUSTER_PASSWORD;
 
@@ -822,6 +826,11 @@ public class ConfigurationImpl implements Configuration
    public void setManagementNotificationAddress(final SimpleString address)
    {
       managementNotificationAddress = address;
+   }
+
+   public String getManagementClusterUser()
+   {
+      return managementClusterUser;
    }
 
    public String getManagementClusterPassword()

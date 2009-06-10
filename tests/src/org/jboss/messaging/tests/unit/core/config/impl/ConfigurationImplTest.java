@@ -73,6 +73,9 @@ public class ConfigurationImplTest extends UnitTestCase
       assertEquals(ConfigurationImpl.DEFAULT_MESSAGE_EXPIRY_THREAD_PRIORITY, conf.getMessageExpiryThreadPriority());
       assertEquals(ConfigurationImpl.DEFAULT_TRANSACTION_TIMEOUT_SCAN_PERIOD, conf.getTransactionTimeoutScanPeriod());
       assertEquals(ConfigurationImpl.DEFAULT_MANAGEMENT_ADDRESS, conf.getManagementAddress());
+      assertEquals(ConfigurationImpl.DEFAULT_MANAGEMENT_NOTIFICATION_ADDRESS, conf.getManagementNotificationAddress());
+      assertEquals(ConfigurationImpl.DEFAULT_MANAGEMENT_CLUSTER_USER, conf.getManagementClusterUser());
+      assertEquals(ConfigurationImpl.DEFAULT_MANAGEMENT_CLUSTER_PASSWORD, conf.getManagementClusterPassword());
       assertEquals(ConfigurationImpl.DEFAULT_PERSISTENCE_ENABLED, conf.isPersistenceEnabled());
       assertEquals(ConfigurationImpl.DEFAULT_FILE_DEPLOYMENT_ENABLED, conf.isFileDeploymentEnabled());
    }

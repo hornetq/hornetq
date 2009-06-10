@@ -25,7 +25,6 @@ package org.jboss.messaging.tests.integration.management;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory;
-import org.jboss.messaging.core.security.impl.SecurityStoreImpl;
 import org.jboss.messaging.core.server.Messaging;
 import org.jboss.messaging.core.server.MessagingServer;
 
@@ -51,13 +50,13 @@ public class SecurityManagementWithModifiedConfigurationTest extends SecurityMan
 
    public void testSendManagementMessageWithModifiedClusterAdminUser() throws Exception
    {
-      doSendManagementMessage(SecurityStoreImpl.CLUSTER_ADMIN_USER, 
+      doSendManagementMessage(ConfigurationImpl.DEFAULT_MANAGEMENT_CLUSTER_USER, 
                               configuredClusterPassword, true);
    }
 
    public void testSendManagementMessageWithDefaultClusterAdminUser() throws Exception
    {
-      doSendManagementMessage(SecurityStoreImpl.CLUSTER_ADMIN_USER, 
+      doSendManagementMessage(ConfigurationImpl.DEFAULT_MANAGEMENT_CLUSTER_USER, 
                               ConfigurationImpl.DEFAULT_MANAGEMENT_CLUSTER_PASSWORD, false);
    }
 

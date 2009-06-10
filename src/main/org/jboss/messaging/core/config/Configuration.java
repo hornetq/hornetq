@@ -146,6 +146,8 @@ public interface Configuration extends Serializable, MessagingComponent
 
    SimpleString getManagementNotificationAddress();
 
+   String getManagementClusterUser();
+
    String getManagementClusterPassword();
 
    long getManagementRequestTimeout();

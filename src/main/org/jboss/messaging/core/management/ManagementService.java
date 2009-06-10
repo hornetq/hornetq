@@ -67,6 +67,8 @@ public interface ManagementService extends NotificationService, MessagingCompone
 
    MessageCounterManager getMessageCounterManager();
 
+   String getClusterUser();
+
    String getClusterPassword();
 
    SimpleString getManagementAddress();

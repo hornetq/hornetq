@@ -13,6 +13,7 @@
       <management-address>Giraffe</management-address>
       <management-notification-address>Whatever</management-notification-address>
       <management-request-timeout>91</management-request-timeout>
+      <management-cluster-user>Frog</management-cluster-user>
       <management-cluster-password>Wombat</management-cluster-password>
       <jmx-management-enabled>false</jmx-management-enabled>
       <message-counter-enabled>true</message-counter-enabled>

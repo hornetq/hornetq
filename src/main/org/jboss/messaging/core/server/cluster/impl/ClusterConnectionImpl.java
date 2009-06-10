@@ -454,6 +454,7 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
                                      useDuplicateDetection,
                                      managementService.getManagementAddress(),
                                      managementService.getManagementNotificationAddress(),
+                                     managementService.getClusterUser(),
                                      managementService.getClusterPassword(),
                                      record,
                                      replicatingChannel,

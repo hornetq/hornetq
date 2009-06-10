@@ -25,7 +25,6 @@ package org.jboss.messaging.core.server.cluster.impl;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
 import java.net.InetAddress;
-import java.net.NetworkInterface;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -444,6 +443,7 @@ public class ClusterManagerImpl implements ClusterManager
                                  config.isUseDuplicateDetection(),
                                  managementService.getManagementAddress(),
                                  managementService.getManagementNotificationAddress(),
+                                 managementService.getClusterUser(),
                                  managementService.getClusterPassword(),
                                  replicatingChannel,
                                  !backup,

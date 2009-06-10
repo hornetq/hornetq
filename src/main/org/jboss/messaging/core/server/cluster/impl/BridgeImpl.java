@@ -54,7 +54,6 @@ import org.jboss.messaging.core.remoting.FailureListener;
 import org.jboss.messaging.core.remoting.Packet;
 import org.jboss.messaging.core.remoting.RemotingConnection;
 import org.jboss.messaging.core.remoting.impl.wireformat.replication.ReplicateAcknowledgeMessage;
-import org.jboss.messaging.core.security.impl.SecurityStoreImpl;
 import org.jboss.messaging.core.server.HandleStatus;
 import org.jboss.messaging.core.server.MessageReference;
 import org.jboss.messaging.core.server.MessagingServer;
@@ -133,6 +132,8 @@ public class BridgeImpl implements Bridge, FailureListener, SendAcknowledgementH
 
    private final SimpleString managementNotificationAddress;
 
+   private final String clusterUser;
+
    private final String clusterPassword;
 
    private Channel replicatingChannel;
@@ -161,6 +162,7 @@ public class BridgeImpl implements Bridge, FailureListener, SendAcknowledgementH
                      final boolean useDuplicateDetection,
                      final SimpleString managementAddress,
                      final SimpleString managementNotificationAddress,
+                     final String clusterUser,
                      final String clusterPassword,
                      final Channel replicatingChannel,
                      final boolean activated,
@@ -182,6 +184,7 @@ public class BridgeImpl implements Bridge, FailureListener, SendAcknowledgementH
            useDuplicateDetection,
            managementAddress,
            managementNotificationAddress,
+           clusterUser,
            clusterPassword,
            null,
            replicatingChannel,
@@ -205,6 +208,7 @@ public class BridgeImpl implements Bridge, FailureListener, SendAcknowledgementH
                      final boolean useDuplicateDetection,
                      final SimpleString managementAddress,
                      final SimpleString managementNotificationAddress,
+                     final String clusterUser,
                      final String clusterPassword,
                      final MessageFlowRecord flowRecord,
                      final Channel replicatingChannel,
@@ -252,6 +256,8 @@ public class BridgeImpl implements Bridge, FailureListener, SendAcknowledgementH
       this.managementAddress = managementAddress;
 
       this.managementNotificationAddress = managementNotificationAddress;
+
+      this.clusterUser = clusterUser;
 
       this.clusterPassword = clusterPassword;
 
@@ -568,7 +574,7 @@ public class BridgeImpl implements Bridge, FailureListener, SendAcknowledgementH
          csf.setReconnectAttempts(reconnectAttempts);
 
          //Session is pre-acknowledge
-         session = (ClientSessionInternal)csf.createSession(SecurityStoreImpl.CLUSTER_ADMIN_USER,
+         session = (ClientSessionInternal)csf.createSession(clusterUser,
                                                             clusterPassword,
                                                             false,
                                                             true,

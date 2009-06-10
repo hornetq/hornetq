@@ -22,8 +22,6 @@
 
 package org.jboss.messaging.core.management.impl;
 
-import static org.jboss.messaging.core.security.impl.SecurityStoreImpl.CLUSTER_ADMIN_USER;
-
 import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.client.ClientRequestor;
 import org.jboss.messaging.core.client.ClientSession;
@@ -53,6 +51,8 @@ public class ReplicationOperationInvokerImpl implements ReplicationOperationInvo
 
    private final long timeout;
 
+   private final String clusterUser;
+
    private final String clusterPassword;
 
    private final SimpleString managementAddress;
@@ -69,11 +69,13 @@ public class ReplicationOperationInvokerImpl implements ReplicationOperationInvo
 
    // Constructors --------------------------------------------------
 
-   public ReplicationOperationInvokerImpl(final String clusterPassword,
+   public ReplicationOperationInvokerImpl(final String clusterUser,
+                                          final String clusterPassword,
                                           final SimpleString managementAddress,
                                           final long managementRequestTimeout)
    {
       this.timeout = managementRequestTimeout;
+      this.clusterUser = clusterUser;
       this.clusterPassword = clusterPassword;
       this.managementAddress = managementAddress;
    }
@@ -85,7 +87,7 @@ public class ReplicationOperationInvokerImpl implements ReplicationOperationInvo
       if (clientSession == null)
       {
          ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration(InVMConnectorFactory.class.getName()));
-         clientSession = sf.createSession(CLUSTER_ADMIN_USER, clusterPassword, false, true, true, false, 1);
+         clientSession = sf.createSession(clusterUser, clusterPassword, false, true, true, false, 1);
          requestor = new ClientRequestor(clientSession, managementAddress);
          clientSession.start();
       }

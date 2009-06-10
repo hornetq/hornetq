@@ -42,7 +42,6 @@ import org.jboss.messaging.core.client.management.impl.ManagementHelper;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.management.ResourceNames;
-import org.jboss.messaging.core.security.impl.SecurityStoreImpl;
 import org.jboss.messaging.integration.transports.netty.NettyConnectorFactory;
 import org.jboss.messaging.tests.util.SpawnedVMSupport;
 import org.objectweb.jtests.jms.admin.Admin;
@@ -83,7 +82,7 @@ public class JBossMessagingAdmin implements Admin
    public void start() throws Exception
    {
       ClientSessionFactoryImpl sf = new ClientSessionFactoryImpl(new TransportConfiguration(NettyConnectorFactory.class.getName()));
-      clientSession = sf.createSession(SecurityStoreImpl.CLUSTER_ADMIN_USER,
+      clientSession = sf.createSession(ConfigurationImpl.DEFAULT_MANAGEMENT_CLUSTER_USER,
                                        ConfigurationImpl.DEFAULT_MANAGEMENT_CLUSTER_PASSWORD,
                                        false,
                                        true,

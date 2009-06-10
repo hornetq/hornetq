@@ -22,20 +22,19 @@
 
 package org.jboss.messaging.tests.integration.management;
 
+import static org.jboss.messaging.core.config.impl.ConfigurationImpl.DEFAULT_MANAGEMENT_ADDRESS;
+
+import java.util.Set;
+
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
-import static org.jboss.messaging.core.config.impl.ConfigurationImpl.DEFAULT_MANAGEMENT_ADDRESS;
 import org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.jboss.messaging.core.security.Role;
 import org.jboss.messaging.core.security.impl.JBMSecurityManagerImpl;
-import org.jboss.messaging.core.security.impl.SecurityStoreImpl;
 import org.jboss.messaging.core.server.Messaging;
 import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
-
-import java.util.HashSet;
-import java.util.Set;
 
 /**
  * A SecurityManagementTest
@@ -70,7 +69,7 @@ public class SecurityManagementWithConfiguredAdminUserTest extends SecurityManag
     */
    public void testSendManagementMessageWithClusterAdminUser() throws Exception
    {
-      doSendManagementMessage(SecurityStoreImpl.CLUSTER_ADMIN_USER, 
+      doSendManagementMessage(ConfigurationImpl.DEFAULT_MANAGEMENT_CLUSTER_USER,
                               ConfigurationImpl.DEFAULT_MANAGEMENT_CLUSTER_PASSWORD, true);
    }
 
@@ -103,16 +102,17 @@ public class SecurityManagementWithConfiguredAdminUserTest extends SecurityManag
       HierarchicalRepository<Set<Role>> securityRepository = server.getSecurityRepository();
       JBMSecurityManagerImpl securityManager = (JBMSecurityManagerImpl)server.getSecurityManager();
       securityManager.addUser(validAdminUser, validAdminPassword);
-      securityManager.addUser(invalidAdminUser, invalidAdminPassword);
+      securityManager.addUser(invalidAdminUser, invalidAdminPassword);   
+
       securityManager.addRole(validAdminUser, "admin");
       securityManager.addRole(validAdminUser, "guest");
       securityManager.addRole(invalidAdminUser, "guest");
 
-      Set<Role> adminRole = new HashSet<Role>();
-      adminRole.add(new Role("admin", true, true, false, true, true, true, true));
+      Set<Role> adminRole = securityRepository.getMatch(DEFAULT_MANAGEMENT_ADDRESS.toString());
+      adminRole.add(new Role("admin", true, true, true, true, true, true, true));
       securityRepository.addMatch(DEFAULT_MANAGEMENT_ADDRESS.toString(), adminRole);
-      Set<Role> guestRole = new HashSet<Role>();
-      guestRole.add(new Role("guest", true, true, true, true, true, true, true));
+      Set<Role> guestRole = securityRepository.getMatch("*");
+      guestRole.add(new Role("guest", true, true, true, true, true, true, false));
       securityRepository.addMatch("*", guestRole);
       
       return server;

@@ -48,7 +48,7 @@ public class ClientRequestor
       queueSession = session;
 
       requestProducer = queueSession.createProducer(requestAddress);
-      replyQueue = new SimpleString(UUID.randomUUID().toString());
+      replyQueue = new SimpleString(requestAddress + "." + UUID.randomUUID().toString());
       queueSession.createTemporaryQueue(replyQueue, replyQueue);
       replyConsumer = queueSession.createConsumer(replyQueue);
    }

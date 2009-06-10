@@ -882,7 +882,6 @@ public class MessagingServerImpl implements MessagingServer
                                             securityManager,
                                             configuration.getSecurityInvalidationInterval(),
                                             configuration.isSecurityEnabled(),
-                                            configuration.getManagementClusterPassword(),
                                             managementService);
 
       queueFactory = new QueueFactoryImpl(scheduledPool, addressSettingsRepository, storageManager);

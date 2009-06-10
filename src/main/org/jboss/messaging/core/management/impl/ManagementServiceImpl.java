@@ -46,6 +46,7 @@ import org.jboss.messaging.core.config.cluster.BroadcastGroupConfiguration;
 import org.jboss.messaging.core.config.cluster.ClusterConnectionConfiguration;
 import org.jboss.messaging.core.config.cluster.DiscoveryGroupConfiguration;
 import org.jboss.messaging.core.config.cluster.DivertConfiguration;
+import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.management.AcceptorControlMBean;
 import org.jboss.messaging.core.management.BridgeControlMBean;
@@ -95,6 +96,8 @@ public class ManagementServiceImpl implements ManagementService
 {
    // Constants -----------------------------------------------------
 
+   public static final String CLUSTER_MANAGEMENT_ROLE = "cluster.management";
+   
    private static final Logger log = Logger.getLogger(ManagementServiceImpl.class);
 
    private final MBeanServer mbeanServer;
@@ -123,6 +126,8 @@ public class ManagementServiceImpl implements ManagementService
 
    private final SimpleString managementAddress;
 
+   private final String managementClusterUser;
+
    private final String managementClusterPassword;
 
    private final long managementRequestTimeout;
@@ -137,6 +142,19 @@ public class ManagementServiceImpl implements ManagementService
 
    private ReplicationOperationInvoker replicationInvoker;
 
+   // Static  --------------------------------------------------------
+   
+   private static void checkDefaultManagementClusterCredentials(String user, String password)
+   {
+      if (ConfigurationImpl.DEFAULT_MANAGEMENT_CLUSTER_USER.equals(user)
+               && ConfigurationImpl.DEFAULT_MANAGEMENT_CLUSTER_PASSWORD.equals(password))
+      {
+         log.warn("It has been detected that the cluster admin user and password which are used to " +
+                  "replicate management operation from one node to the other have not been changed from the installation default. " +
+                  "Please see the JBoss Messaging user guide for instructions on how to do this.");
+      }
+   }
+   
    // Constructor ----------------------------------------------------
 
    public ManagementServiceImpl(final MBeanServer mbeanServer, final Configuration configuration)
@@ -146,9 +164,12 @@ public class ManagementServiceImpl implements ManagementService
       this.messageCounterEnabled = configuration.isMessageCounterEnabled();
       this.managementAddress = configuration.getManagementAddress();
       this.managementNotificationAddress = configuration.getManagementNotificationAddress();
+      this.managementClusterUser = configuration.getManagementClusterUser();
       this.managementClusterPassword = configuration.getManagementClusterPassword();
       this.managementRequestTimeout = configuration.getManagementRequestTimeout();
 
+      checkDefaultManagementClusterCredentials(managementClusterUser, managementClusterPassword);
+      
       registry = new HashMap<String, Object>();
       broadcaster = new NotificationBroadcasterSupport();
       notificationsEnabled = true;
@@ -156,7 +177,8 @@ public class ManagementServiceImpl implements ManagementService
       messageCounterManager.setMaxDayCount(configuration.getMessageCounterMaxDayHistory());
       messageCounterManager.reschedule(configuration.getMessageCounterSamplePeriod());
 
-      replicationInvoker = new ReplicationOperationInvokerImpl(managementClusterPassword,
+      replicationInvoker = new ReplicationOperationInvokerImpl(managementClusterUser,
+                                                               managementClusterPassword,
                                                                managementAddress,
                                                                managementRequestTimeout);
    }
@@ -186,7 +208,14 @@ public class ManagementServiceImpl implements ManagementService
       this.securityRepository = securityRepository;
       this.storageManager = storageManager;
       this.messagingServer = messagingServer;
-      
+
+      messagingServer.getSecurityManager().addUser(managementClusterUser, managementClusterPassword);
+      messagingServer.getSecurityManager().addRole(managementClusterUser, CLUSTER_MANAGEMENT_ROLE);
+      Set<Role> roles = new HashSet<Role>();
+      roles.add(new Role(CLUSTER_MANAGEMENT_ROLE, true, true, true, true, true, true, true));
+      messagingServer.getSecurityRepository().addMatch(configuration.getManagementAddress().toString(), roles);
+      messagingServer.getSecurityRepository().addMatch(configuration.getManagementAddress() + ".*", roles);
+
       messagingServerControl = new MessagingServerControl(postOffice,
                                                           configuration,
                                                           resourceManager,
@@ -506,6 +535,11 @@ public class ManagementServiceImpl implements ManagementService
    public SimpleString getManagementNotificationAddress()
    {
       return managementNotificationAddress;
+   }
+
+   public String getClusterUser()
+   {
+      return managementClusterUser;
    }
 
    public String getClusterPassword()

@@ -22,14 +22,18 @@
 
 package org.jboss.messaging.core.security.impl;
 
+import static org.jboss.messaging.core.management.NotificationType.SECURITY_AUTHENTICATION_VIOLATION;
+
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+
 import org.jboss.messaging.core.client.management.impl.ManagementHelper;
-import static org.jboss.messaging.core.config.impl.ConfigurationImpl.DEFAULT_MANAGEMENT_CLUSTER_PASSWORD;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.management.Notification;
 import org.jboss.messaging.core.management.NotificationService;
 import org.jboss.messaging.core.management.NotificationType;
-import static org.jboss.messaging.core.management.NotificationType.SECURITY_AUTHENTICATION_VIOLATION;
 import org.jboss.messaging.core.security.CheckType;
 import org.jboss.messaging.core.security.JBMSecurityManager;
 import org.jboss.messaging.core.security.Role;
@@ -40,10 +44,6 @@ import org.jboss.messaging.core.settings.HierarchicalRepositoryChangeListener;
 import org.jboss.messaging.utils.ConcurrentHashSet;
 import org.jboss.messaging.utils.SimpleString;
 import org.jboss.messaging.utils.TypedProperties;
-
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 
 /**
  * The JBM SecurityStore implementation
@@ -67,8 +67,6 @@ public class SecurityStoreImpl implements SecurityStore, HierarchicalRepositoryC
 
    private static final Logger log = Logger.getLogger(SecurityStoreImpl.class);
 
-   public static final String CLUSTER_ADMIN_USER = "JBM.MANAGEMENT.ADMIN.USER";
-
    // Static --------------------------------------------------------
 
    // Attributes ----------------------------------------------------
@@ -87,8 +85,6 @@ public class SecurityStoreImpl implements SecurityStore, HierarchicalRepositoryC
    
    private final boolean securityEnabled;
    
-   private final String managementClusterPassword;
-
    private final NotificationService notificationService;
    
    // Constructors --------------------------------------------------
@@ -100,17 +96,13 @@ public class SecurityStoreImpl implements SecurityStore, HierarchicalRepositoryC
                             final JBMSecurityManager securityManager,
                             final long invalidationInterval,
                             final boolean securityEnabled,
-                            final String managementClusterPassword,
                             final NotificationService notificationService)
    {
       this.securityRepository = securityRepository;
       this.securityManager = securityManager;
    	this.invalidationInterval = invalidationInterval;   	
    	this.securityEnabled = securityEnabled;
-   	this.managementClusterPassword = managementClusterPassword;
    	this.notificationService = notificationService;
-   	
-      checkDefaultManagementClusterPassword(managementClusterPassword);      
    }
 
    // SecurityManager implementation --------------------------------
@@ -119,35 +111,20 @@ public class SecurityStoreImpl implements SecurityStore, HierarchicalRepositoryC
    {     
       if (securityEnabled)
       {
-         if (CLUSTER_ADMIN_USER.equals(user))
+         if (!securityManager.validateUser(user, password))
          {
-            if (trace) { log.trace("Authenticating cluster admin user"); }
-            
-            checkDefaultManagementClusterPassword(password);
-            
-            // The special user CLUSTER_ADMIN_USER is used for creating sessions that replicate management operation between nodes
-            if (!managementClusterPassword.equals(password))
+            if (notificationService != null)
             {
-               throw new MessagingException(MessagingException.SECURITY_EXCEPTION, "Unable to validate user: " + user);                 
+               TypedProperties props = new TypedProperties();
+
+               props.putStringProperty(ManagementHelper.HDR_USER, SimpleString.toSimpleString(user));
+
+               Notification notification = new Notification(null, SECURITY_AUTHENTICATION_VIOLATION, props);
+
+               notificationService.sendNotification(notification);
             }
-         }
-         else
-         {
-            if (!securityManager.validateUser(user, password))
-            {
-               if (notificationService != null)
-               {
-                  TypedProperties props = new TypedProperties();
 
-                  props.putStringProperty(ManagementHelper.HDR_USER, SimpleString.toSimpleString(user));
-
-                  Notification notification = new Notification(null, SECURITY_AUTHENTICATION_VIOLATION, props);
-
-                  notificationService.sendNotification(notification);
-               }
-
-               throw new MessagingException(MessagingException.SECURITY_EXCEPTION, "Unable to validate user: " + user);  
-            }
+            throw new MessagingException(MessagingException.SECURITY_EXCEPTION, "Unable to validate user: " + user);  
          }
       }
    }
@@ -168,15 +145,8 @@ public class SecurityStoreImpl implements SecurityStore, HierarchicalRepositoryC
          String saddress = address.toString();
          
          Set<Role> roles = securityRepository.getMatch(saddress);
-
          
-         if (CLUSTER_ADMIN_USER.equals(user))
-         {
-            // The special user CLUSTER_ADMIN_USER is used for creating sessions that replicate management operation between nodes
-            //It has automatic read/write access to all destinations
-            return;
-         } 
-         else if (!securityManager.validateUserAndRole(user, session.getPassword(), roles, checkType))
+         if (!securityManager.validateUserAndRole(user, session.getPassword(), roles, checkType))
          {
             if (notificationService != null)
             {
@@ -246,17 +216,6 @@ public class SecurityStoreImpl implements SecurityStore, HierarchicalRepositoryC
       return granted;
    }
    
-   private void checkDefaultManagementClusterPassword(String password)
-   {
-      // Sanity check
-      if (DEFAULT_MANAGEMENT_CLUSTER_PASSWORD.equals(password))
-      {
-         log.warn("It has been detected that the cluster admin password which is used to " +
-                  "replicate management operation from one node to the other has not had its password changed from the installation default. " +
-                  "Please see the JBoss Messaging user guide for instructions on how to do this.");
-      }
-   }
-
    // Inner class ---------------------------------------------------
 
 }

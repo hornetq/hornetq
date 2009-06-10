@@ -120,6 +120,10 @@ public class AddressControlUsingCoreTest extends ManagementTestBase
 
       CoreMessagingProxy proxy = createProxy(address);
       Object[] roles = (Object[])proxy.retrieveAttributeValue("Roles");
+      for (int i = 0; i < roles.length; i++)
+      {
+         System.out.println(((Object[])roles[i])[0]);
+      }
       assertEquals(0, roles.length);
 
       Set<Role> newRoles = new HashSet<Role>();

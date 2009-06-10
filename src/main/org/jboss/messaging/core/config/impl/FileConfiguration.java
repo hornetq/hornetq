@@ -69,6 +69,8 @@ public class FileConfiguration extends ConfigurationImpl
 
    private static final String CONFIGURATION_SCHEMA_URL = "schema/jbm-configuration.xsd";
 
+   // Static --------------------------------------------------------------------------
+   
    // Attributes ----------------------------------------------------------------------
 
    private String configurationUrl = DEFAULT_CONFIGURATION_URL;
@@ -137,7 +139,9 @@ public class FileConfiguration extends ConfigurationImpl
                                                                  "management-notification-address",
                                                                  managementNotificationAddress.toString()));
 
-      managementClusterPassword = getString(e, "management-cluster-password", managementClusterPassword.toString());
+      managementClusterPassword = getString(e, "management-cluster-password", managementClusterPassword);
+
+      managementClusterUser = getString(e, "management-cluster-user", managementClusterUser);
 
       managementRequestTimeout = getLong(e, "management-request-timeout", managementRequestTimeout);
 
