@@ -1,20 +1,17 @@
-<configuration xmlns="urn:jboss:messaging"
-            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<configuration xmlns="urn:jboss:messaging"            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
             xsi:schemaLocation="urn:jboss:messaging /schema/jbm-configuration.xsd">
 
    <!-- Connectors -->
    <connectors>
       <connector name="netty-connector">
-         <factory-class>org.jboss.messaging.integration.transports.netty.NettyConnectorFactory</factory-class>
-         <param key="jbm.remoting.netty.port" value="5445" type="Integer"/>
+         <factory-class>org.jboss.messaging.integration.transports.netty.NettyConnectorFactory</factory-class>         
       </connector>
    </connectors>
    
    <!-- Acceptors -->
    <acceptors>
       <acceptor name="netty-acceptor">
-         <factory-class>org.jboss.messaging.integration.transports.netty.NettyAcceptorFactory</factory-class>
-         <param key="jbm.remoting.netty.port" value="5445" type="Integer"/>
+         <factory-class>org.jboss.messaging.integration.transports.netty.NettyAcceptorFactory</factory-class>         
       </acceptor>
    </acceptors>
 

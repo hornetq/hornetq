@@ -8,6 +8,5 @@
          <entry name="ConnectionFactory"/>
       </entries>
    </connection-factory>
-   
-   <!-- the example does not use any queue -->
+      
 </configuration>
