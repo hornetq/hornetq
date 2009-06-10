@@ -24,6 +24,8 @@ package org.jboss.messaging.core.journal;
 
 import java.nio.ByteBuffer;
 
+import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
+
 /**
  * 
  * A SequentialFile
@@ -59,6 +61,10 @@ public interface SequentialFile
    void fill(int position, int size, byte fillCharacter) throws Exception;
 
    void delete() throws Exception;
+
+   void write(MessagingBuffer bytes, boolean sync, IOCallback callback) throws Exception;
+
+   void write(MessagingBuffer bytes, boolean sync) throws Exception;
 
    void write(ByteBuffer bytes, boolean sync, IOCallback callback) throws Exception;
 

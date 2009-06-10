@@ -31,6 +31,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import org.jboss.messaging.core.journal.IOCallback;
 import org.jboss.messaging.core.journal.SequentialFile;
 import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
 
 /**
  * 
@@ -181,6 +182,17 @@ public class NIOSequentialFile implements SequentialFile
          throw e;
       }
 
+   }
+
+   
+   public void write(final MessagingBuffer bytes, final boolean sync) throws Exception
+   {
+      write(ByteBuffer.wrap(bytes.array()), sync);
+   }
+
+   public void write(final MessagingBuffer bytes, final boolean sync, final IOCallback callback) throws Exception
+   {
+      write(ByteBuffer.wrap(bytes.array()), sync, callback);
    }
 
    public void write(final ByteBuffer bytes, final boolean sync) throws Exception

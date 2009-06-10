@@ -31,7 +31,9 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.jboss.messaging.core.asyncio.AIOCallback;
+import org.jboss.messaging.core.buffers.ChannelBuffers;
 import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
 import org.jboss.messaging.utils.VariableLatch;
 
 /**
@@ -52,7 +54,7 @@ public class TimedBuffer
    private TimedBufferObserver bufferObserver;
    
    // Some kernels don't have good resolutions on timers.. I've set this to disabled.. we may decide later
-   private static final boolean USE_NATIVE_TIMERS = false;
+   private static final boolean USE_NATIVE_TIMERS = true;
 
    // This is used to pause and resume the timer
    // This is a reusable Latch, that uses java.util.concurrent base classes
@@ -62,7 +64,9 @@ public class TimedBuffer
 
    private final int bufferSize;
 
-   private final ByteBuffer currentBuffer;
+   private final MessagingBuffer buffer;
+
+   private int bufferLimit = 0;
 
    private List<AIOCallback> callbacks;
 
@@ -70,7 +74,7 @@ public class TimedBuffer
 
    // used to measure inactivity. This buffer will be automatically flushed when more than timeout inactive
    private volatile boolean active = false;
-   
+
    private final long timeout;
 
    // used to measure sync requests. When a sync is requested, it shouldn't take more than timeout to happen
@@ -81,19 +85,19 @@ public class TimedBuffer
    private volatile boolean started;
 
    private final boolean flushOnSync;
-   
+
    // for logging write rates
-   
+
    private final boolean logRates;
-   
+
    private volatile long bytesFlushed;
-   
+
    private Timer logRatesTimer;
-   
+
    private TimerTask logRatesTimerTask;
-   
+
    private long lastExecution;
-      
+
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
@@ -109,7 +113,7 @@ public class TimedBuffer
          this.logRatesTimer = new Timer(true);
       }
       // Setting the interval for nano-sleeps
-      
+
       // We are keeping this disabled for now until we figure out what to do.
       // I've found a few problems with nano-sleep depending on the version of the kernel:
       // http://fixunix.com/unix/552033-problem-nanosleep.html
@@ -117,9 +121,11 @@ public class TimedBuffer
       {
          AsynchronousFileImpl.setNanoSleepInterval((int)timeout);
       }
-      
-      currentBuffer = ByteBuffer.wrap(new byte[bufferSize]);
-      currentBuffer.limit(0);
+
+      buffer = ChannelBuffers.buffer(bufferSize);
+      buffer.clear();
+      bufferLimit = 0;
+
       callbacks = new ArrayList<AIOCallback>();
       this.flushOnSync = flushOnSync;
       latchTimer.up();
@@ -138,11 +144,11 @@ public class TimedBuffer
       timerThread = new Thread(timerRunnable, "jbm-aio-timer");
 
       timerThread.start();
-      
+
       if (logRates)
       {
          logRatesTimerTask = new LogRatesTimerTask();
-         
+
          logRatesTimer.scheduleAtFixedRate(logRatesTimerTask, 2000, 2000);
       }
 
@@ -155,15 +161,15 @@ public class TimedBuffer
       {
          return;
       }
-      
+
       this.flush();
-      
+
       this.bufferObserver = null;
-      
+
       latchTimer.down();
 
       timerRunnable.close();
-      
+
       if (logRates)
       {
          logRatesTimerTask.cancel();
@@ -216,7 +222,7 @@ public class TimedBuffer
                                          ") on the journal");
       }
 
-      if (currentBuffer.limit() == 0 || currentBuffer.position() + sizeChecked > currentBuffer.limit())
+      if (bufferLimit == 0 || buffer.writerIndex() + sizeChecked > bufferLimit)
       {
          flush();
 
@@ -228,8 +234,8 @@ public class TimedBuffer
          }
          else
          {
-            currentBuffer.rewind();
-            currentBuffer.limit(Math.min(remaining, bufferSize));
+            buffer.clear();
+            bufferLimit = Math.min(remaining, bufferSize);
             return true;
          }
       }
@@ -239,15 +245,16 @@ public class TimedBuffer
       }
    }
 
-   public synchronized void addBytes(final ByteBuffer bytes, final boolean sync, final AIOCallback callback)
+   public synchronized void addBytes(final byte[] bytes, final boolean sync, final AIOCallback callback)
    {
-      if (currentBuffer.position() == 0)
+      if (buffer.writerIndex() == 0)
       {
          // Resume latch
          latchTimer.down();
       }
-      
-      currentBuffer.put(bytes);
+
+      buffer.writeBytes(bytes);
+
       callbacks.add(callback);
 
       active = true;
@@ -268,7 +275,7 @@ public class TimedBuffer
          }
       }
 
-      if (currentBuffer.position() == currentBuffer.capacity())
+      if (buffer.writerIndex() == bufferLimit)
       {
          flush();
       }
@@ -276,25 +283,23 @@ public class TimedBuffer
 
    public synchronized void flush()
    {
-      if (currentBuffer.limit() > 0)
+      if (buffer.writerIndex() > 0)
       {
          latchTimer.up();
-         
-         int pos = currentBuffer.position();
-         
+
+         int pos = buffer.writerIndex();
+
          if (logRates)
          {
-            bytesFlushed += pos;                     
+            bytesFlushed += pos;
          }
 
          ByteBuffer directBuffer = bufferObserver.newBuffer(bufferSize, pos);
 
          // Putting a byteArray on a native buffer is much faster, since it will do in a single native call.
-         // Using directBuffer.put(currentBuffer) would make several append calls for each byte
-         
-         //TODO we could optimise this further by making currentBuffer a simple byte[] and using System.arrayCopy to add bytes to it
-         //then we wouldn't need the array() call
-         directBuffer.put(currentBuffer.array(), 0, pos);
+         // Using directBuffer.put(buffer) would make several append calls for each byte
+
+         directBuffer.put(buffer.array(), 0, pos);
 
          bufferObserver.flushBuffer(directBuffer, callbacks);
 
@@ -302,8 +307,9 @@ public class TimedBuffer
 
          active = false;
          pendingSync = false;
-                  
-         currentBuffer.limit(0);
+
+         buffer.clear();
+         bufferLimit = 0;
       }
    }
 
@@ -342,35 +348,34 @@ public class TimedBuffer
    private class LogRatesTimerTask extends TimerTask
    {
       private boolean closed;
-      
+
       @Override
       public synchronized void run()
       {
          if (!closed)
          {
             long now = System.currentTimeMillis();
-            
+
             if (lastExecution != 0)
-            {                             
-               double rate = 1000 * ((double)bytesFlushed) / ( now  - lastExecution);
-               
-               log.info("Write rate = " + rate + " bytes / sec");                                      
+            {
+               double rate = 1000 * ((double)bytesFlushed) / (now - lastExecution);
+               log.info("Write rate = " + rate + " bytes / sec or " + (long)(rate / (1024 * 1024)) + " MiB / sec");
             }
 
             lastExecution = now;
-            
+
             bytesFlushed = 0;
          }
       }
-      
+
       public synchronized boolean cancel()
       {
          closed = true;
-         
+
          return super.cancel();
       }
    }
-   
+
    private class CheckTimer implements Runnable
    {
       private volatile boolean closed = false;
@@ -381,7 +386,7 @@ public class TimedBuffer
          {
             Thread.currentThread().setPriority(Thread.MAX_PRIORITY);
          }
-         
+
          while (!closed)
          {
             try
@@ -391,7 +396,7 @@ public class TimedBuffer
             catch (InterruptedException ignored)
             {
             }
-            
+
             sleep();
 
             checkTimer();

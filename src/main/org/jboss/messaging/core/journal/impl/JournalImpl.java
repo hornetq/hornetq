@@ -43,10 +43,9 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.jboss.messaging.core.buffers.ChannelBuffer;
 import org.jboss.messaging.core.buffers.ChannelBuffers;
@@ -191,7 +190,7 @@ public class JournalImpl implements TestableJournal
 
    private ExecutorService filesExecutor = null;
 
-   private final Lock lock = new ReentrantReadWriteLock().writeLock();
+   private final Semaphore lock = new Semaphore(1);
 
    private volatile JournalFile currentFile;
 
@@ -271,7 +270,7 @@ public class JournalImpl implements TestableJournal
 
       int size = SIZE_ADD_RECORD + recordLength;
 
-      ChannelBuffer bb = ChannelBuffers.wrappedBuffer(newBuffer(size));
+      ChannelBuffer bb = newBuffer(size);
 
       bb.writeByte(ADD_RECORD);
       bb.writeInt(-1); // skip ID part
@@ -283,16 +282,16 @@ public class JournalImpl implements TestableJournal
       
       IOCallback callback = getSyncCallback(sync);
 
-      lock.lock();
+      lock.acquire();
       try
       {
-         JournalFile usedFile = appendRecord(bb.toByteBuffer(), sync, callback);
+         JournalFile usedFile = appendRecord(bb, sync, callback);
 
          posFilesMap.put(id, new PosFiles(usedFile));
       }
       finally
       {
-         lock.unlock();
+         lock.release();
       }
       
       if (callback != null)
@@ -322,7 +321,7 @@ public class JournalImpl implements TestableJournal
 
       int size = SIZE_UPDATE_RECORD + record.getEncodeSize();
 
-      ChannelBuffer bb = ChannelBuffers.wrappedBuffer(newBuffer(size));
+      ChannelBuffer bb = newBuffer(size);
 
       bb.writeByte(UPDATE_RECORD);
       bb.writeInt(-1); // skip ID part
@@ -335,16 +334,16 @@ public class JournalImpl implements TestableJournal
       
       IOCallback callback = getSyncCallback(sync);
       
-      lock.lock();
+      lock.acquire();
       try
       {
-         JournalFile usedFile = appendRecord(bb.toByteBuffer(), sync, callback);
+         JournalFile usedFile = appendRecord(bb, sync, callback);
 
          posFiles.addUpdateFile(usedFile);
       }
       finally
       {
-         lock.unlock();
+         lock.release();
       }
       
       if (callback != null)
@@ -369,16 +368,16 @@ public class JournalImpl implements TestableJournal
 
       int size = SIZE_DELETE_RECORD;
 
-      ByteBuffer bb = newBuffer(size);
+      ChannelBuffer bb = newBuffer(size);
 
-      bb.put(DELETE_RECORD);
-      bb.putInt(-1); // skip ID part
-      bb.putLong(id);
-      bb.putInt(size);
+      bb.writeByte(DELETE_RECORD);
+      bb.writeInt(-1); // skip ID part
+      bb.writeLong(id);
+      bb.writeInt(size);
       
       IOCallback callback = getSyncCallback(sync);
 
-      lock.lock();
+      lock.acquire();
       try
       {
          JournalFile usedFile = appendRecord(bb, sync, callback);
@@ -387,7 +386,7 @@ public class JournalImpl implements TestableJournal
       }
       finally
       {
-         lock.unlock();
+         lock.release();
       }
       
       if (callback != null)
@@ -418,7 +417,7 @@ public class JournalImpl implements TestableJournal
 
       int size = SIZE_ADD_RECORD_TX + recordLength;
 
-      ChannelBuffer bb = ChannelBuffers.wrappedBuffer(newBuffer(size));
+      ChannelBuffer bb = newBuffer(size);
 
       bb.writeByte(ADD_RECORD_TX);
       bb.writeInt(-1); // skip ID part
@@ -429,10 +428,10 @@ public class JournalImpl implements TestableJournal
       record.encode(bb);
       bb.writeInt(size);
 
-      lock.lock();
+      lock.acquire();
       try
       {
-         JournalFile usedFile = appendRecord(bb.toByteBuffer(), false, getTransactionCallback(txID, sync));
+         JournalFile usedFile = appendRecord(bb, false, getTransactionCallback(txID, sync));
 
          JournalTransaction tx = getTransactionInfo(txID);
 
@@ -440,7 +439,7 @@ public class JournalImpl implements TestableJournal
       }
       finally
       {
-         lock.unlock();
+         lock.release();
       }
    }
 
@@ -466,7 +465,7 @@ public class JournalImpl implements TestableJournal
 
       int size = SIZE_UPDATE_RECORD_TX + record.getEncodeSize();
 
-      ChannelBuffer bb = ChannelBuffers.wrappedBuffer(newBuffer(size));
+      ChannelBuffer bb = newBuffer(size);
 
       bb.writeByte(UPDATE_RECORD_TX);
       bb.writeInt(-1); // skip ID part
@@ -477,10 +476,10 @@ public class JournalImpl implements TestableJournal
       record.encode(bb);
       bb.writeInt(size);
 
-      lock.lock();
+      lock.acquire();
       try
       {
-         JournalFile usedFile = appendRecord(bb.toByteBuffer(), false, getTransactionCallback(txID, sync));
+         JournalFile usedFile = appendRecord(bb, false, getTransactionCallback(txID, sync));
 
          JournalTransaction tx = getTransactionInfo(txID);
 
@@ -488,7 +487,7 @@ public class JournalImpl implements TestableJournal
       }
       finally
       {
-         lock.unlock();
+         lock.release();
       }
    }
 
@@ -508,7 +507,7 @@ public class JournalImpl implements TestableJournal
 
       int size = SIZE_DELETE_RECORD_TX + (record != null ? record.getEncodeSize() : 0);
 
-      ChannelBuffer bb = ChannelBuffers.wrappedBuffer(newBuffer(size));
+      ChannelBuffer bb = newBuffer(size);
 
       bb.writeByte(DELETE_RECORD_TX);
       bb.writeInt(-1); // skip ID part
@@ -521,10 +520,10 @@ public class JournalImpl implements TestableJournal
       }
       bb.writeInt(size);
 
-      lock.lock();
+      lock.acquire();
       try
       {
-         JournalFile usedFile = appendRecord(bb.toByteBuffer(), false, getTransactionCallback(txID, sync));
+         JournalFile usedFile = appendRecord(bb, false, getTransactionCallback(txID, sync));
 
          JournalTransaction tx = getTransactionInfo(txID);
 
@@ -532,7 +531,7 @@ public class JournalImpl implements TestableJournal
       }
       finally
       {
-         lock.unlock();
+         lock.release();
       }
    }
 
@@ -546,7 +545,7 @@ public class JournalImpl implements TestableJournal
 
       int size = SIZE_DELETE_RECORD_TX;
 
-      ChannelBuffer bb = ChannelBuffers.wrappedBuffer(newBuffer(size));
+      ChannelBuffer bb = newBuffer(size);
 
       bb.writeByte(DELETE_RECORD_TX);
       bb.writeInt(-1); // skip ID part
@@ -555,10 +554,10 @@ public class JournalImpl implements TestableJournal
       bb.writeInt(0);
       bb.writeInt(size);
 
-      lock.lock();
+      lock.acquire();
       try
       {
-         JournalFile usedFile = appendRecord(bb.toByteBuffer(), false, getTransactionCallback(txID, sync));
+         JournalFile usedFile = appendRecord(bb, false, getTransactionCallback(txID, sync));
 
          JournalTransaction tx = getTransactionInfo(txID);
 
@@ -566,7 +565,7 @@ public class JournalImpl implements TestableJournal
       }
       finally
       {
-         lock.unlock();
+         lock.release();
       }
    }
 
@@ -592,11 +591,11 @@ public class JournalImpl implements TestableJournal
 
       JournalTransaction tx = getTransactionInfo(txID);
 
-      ByteBuffer bb = writeTransaction(PREPARE_RECORD, txID, tx, transactionData);
+      ChannelBuffer bb = writeTransaction(PREPARE_RECORD, txID, tx, transactionData);
 
       IOCallback callback = getTransactionCallback(txID, sync);
 
-      lock.lock();
+      lock.acquire();
       try
       {
          JournalFile usedFile = appendRecord(bb, sync, callback);
@@ -605,7 +604,7 @@ public class JournalImpl implements TestableJournal
       }
       finally
       {
-         lock.unlock();
+         lock.release();
       }
 
       // We should wait this outside of the lock, to increase throughput
@@ -646,11 +645,11 @@ public class JournalImpl implements TestableJournal
          throw new IllegalStateException("Cannot find tx with id " + txID);
       }
 
-      ByteBuffer bb = writeTransaction(COMMIT_RECORD, txID, tx, null);
+      ChannelBuffer bb = writeTransaction(COMMIT_RECORD, txID, tx, null);
 
       IOCallback callback = getTransactionCallback(txID, sync);
 
-      lock.lock();
+      lock.acquire();
       try
       {
          JournalFile usedFile = appendRecord(bb, sync, callback);
@@ -661,7 +660,7 @@ public class JournalImpl implements TestableJournal
       }
       finally
       {
-         lock.unlock();
+         lock.release();
       }
 
       // We should wait this outside of the lock, to increase throuput
@@ -688,16 +687,16 @@ public class JournalImpl implements TestableJournal
 
       int size = SIZE_ROLLBACK_RECORD;
 
-      ByteBuffer bb = newBuffer(size);
+      ChannelBuffer bb = newBuffer(size);
 
-      bb.put(ROLLBACK_RECORD);
-      bb.putInt(-1); // skip ID part
-      bb.putLong(txID);
-      bb.putInt(size);
+      bb.writeByte(ROLLBACK_RECORD);
+      bb.writeInt(-1); // skip ID part
+      bb.writeLong(txID);
+      bb.writeInt(size);
 
       IOCallback callback = getTransactionCallback(txID, sync);
 
-      lock.lock();
+      lock.acquire();
       try
       {
          JournalFile usedFile = appendRecord(bb, sync, callback);
@@ -708,7 +707,7 @@ public class JournalImpl implements TestableJournal
       }
       finally
       {
-         lock.unlock();
+         lock.release();
       }
 
       // We should wait this outside of the lock, to increase throuput
@@ -1573,8 +1572,16 @@ public class JournalImpl implements TestableJournal
    // In some tests we need to force the journal to move to a next file
    public void forceMoveNextFile() throws Exception
    {
-      moveNextFile();
-      debugWait();
+      lock.acquire();
+      try
+      {
+         moveNextFile();
+         debugWait();
+      }
+      finally
+      {
+         lock.release();
+      }
    }
    
    public void perfBlast(final int pages) throws Exception
@@ -1613,7 +1620,7 @@ public class JournalImpl implements TestableJournal
          throw new IllegalStateException("Journal is already stopped");
       }
 
-      lock.lock();
+      lock.acquire();
 
       try
       {
@@ -1648,7 +1655,7 @@ public class JournalImpl implements TestableJournal
       }
       finally
       {
-         lock.unlock();
+         lock.release();
       }
    }
 
@@ -1798,7 +1805,7 @@ public class JournalImpl implements TestableJournal
     * @return
     * @throws Exception
     */
-   private ByteBuffer writeTransaction(final byte recordType,
+   private ChannelBuffer writeTransaction(final byte recordType,
                                        final long txID,
                                        final JournalTransaction tx,
                                        final EncodingSupport transactionData) throws Exception
@@ -1808,7 +1815,7 @@ public class JournalImpl implements TestableJournal
                  2 +
                  (transactionData != null ? transactionData.getEncodeSize() + SIZE_INT : 0);
 
-      ChannelBuffer bb = ChannelBuffers.wrappedBuffer(newBuffer(size));
+      ChannelBuffer bb = newBuffer(size);
 
       bb.writeByte(recordType);
       bb.writeInt(-1); // skip ID part
@@ -1834,7 +1841,7 @@ public class JournalImpl implements TestableJournal
 
       bb.writeInt(size);
 
-      return bb.toByteBuffer();
+      return bb;
    }
 
    private boolean isTransaction(final byte recordType)
@@ -1953,13 +1960,10 @@ public class JournalImpl implements TestableJournal
             
 
    /** 
-    * Note: This method will perform rwlock.readLock.lock(); 
-    *       The method caller should aways unlock that readLock
+    * Note: You should aways guarantee locking the semaphore lock.
     * */
-   private JournalFile appendRecord(final ByteBuffer bb, final boolean sync, final IOCallback callback) throws Exception
+   private JournalFile appendRecord(final MessagingBuffer bb, final boolean sync, final IOCallback callback) throws Exception
    {
-      lock.lock();
-
       try
       {
          if (state != STATE_LOADED)
@@ -1967,7 +1971,7 @@ public class JournalImpl implements TestableJournal
             throw new IllegalStateException("The journal was stopped");
          }
 
-         int size = bb.limit();
+         int size = bb.capacity();
 
          // We take into account the fileID used on the Header
          if (size > fileSize - currentFile.getFile().calculateBlockStart(SIZE_HEADER))
@@ -1997,11 +2001,9 @@ public class JournalImpl implements TestableJournal
             throw new IllegalStateException("Current file = null");
          }
 
-         bb.position(SIZE_BYTE);
+         bb.writerIndex(SIZE_BYTE);
 
-         bb.putInt(currentFile.getOrderingID());
-
-         bb.rewind();
+         bb.writeInt(currentFile.getOrderingID());
 
          if (callback != null)
          {
@@ -2017,7 +2019,6 @@ public class JournalImpl implements TestableJournal
       finally
       {
          currentFile.getFile().unlockBuffer();
-         lock.unlock();
       }
 
    }
@@ -2078,20 +2079,11 @@ public class JournalImpl implements TestableJournal
    // You need to guarantee lock.acquire() before calling this method
    private void moveNextFile() throws InterruptedException
    {
-      lock.lock();
-      try
-      {
-         closeFile(currentFile);
+      closeFile(currentFile);
 
-         currentFile = enqueueOpenFile();
-         
-         fileFactory.activate(currentFile.getFile());
-        
-      }
-      finally
-      {
-         lock.unlock();
-      }
+      currentFile = enqueueOpenFile();
+      
+      fileFactory.activate(currentFile.getFile());
    }
 
    /** 
@@ -2272,9 +2264,9 @@ public class JournalImpl implements TestableJournal
       }
    }
 
-   public ByteBuffer newBuffer(final int size)
+   public ChannelBuffer newBuffer(final int size)
    {
-      return ByteBuffer.wrap(new byte[size]);
+      return ChannelBuffers.buffer(size);
    }
 
    // Inner classes
@@ -2582,22 +2574,16 @@ public class JournalImpl implements TestableJournal
       {             
          try
          {            
-            lock.lock();
+            lock.acquire();
          
-            byte[] bytes = new byte[128 * 1024];
+            MessagingBuffer bb = newBuffer(128 * 1024);
             
             for (int i = 0; i < pages; i++)
             {
-               ByteBuffer bb = ByteBuffer.wrap(bytes);
-               
-               bb.limit(bytes.length);
-               
-               bb.position(0);
-               
                appendRecord(bb, false, null);
             }
             
-            lock.unlock();
+            lock.release();
          }
          catch (Exception e)
          {

@@ -99,15 +99,14 @@ public class TimedBufferTest extends UnitTestCase
       int x = 0;
       for (int i = 0 ; i < 10; i++)
       {
-         ByteBuffer record = ByteBuffer.allocate(10);
+         byte[] bytes = new byte[10];
          for (int j = 0 ; j < 10; j++)
          {
-            record.put((byte)getSamplebyte(x++));
+            bytes[j] = getSamplebyte(x++);
          }
          
          timedBuffer.checkSize(10);
-         record.rewind();
-         timedBuffer.addBytes(record, false, dummyCallback);
+         timedBuffer.addBytes(bytes, false, dummyCallback);
       }
       
       

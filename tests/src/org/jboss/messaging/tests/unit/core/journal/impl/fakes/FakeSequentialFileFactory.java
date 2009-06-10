@@ -33,6 +33,7 @@ import org.jboss.messaging.core.journal.IOCallback;
 import org.jboss.messaging.core.journal.SequentialFile;
 import org.jboss.messaging.core.journal.SequentialFileFactory;
 import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
 
 /**
  * 
@@ -593,6 +594,23 @@ public class FakeSequentialFileFactory implements SequentialFileFactory
        */
       public void unlockBuffer()
       {
+      }
+
+      /* (non-Javadoc)
+       * @see org.jboss.messaging.core.journal.SequentialFile#write(org.jboss.messaging.core.remoting.spi.MessagingBuffer, boolean, org.jboss.messaging.core.journal.IOCallback)
+       */
+      public void write(MessagingBuffer bytes, boolean sync, IOCallback callback) throws Exception
+      {
+         write(ByteBuffer.wrap(bytes.array()), sync, callback);
+         
+      }
+
+      /* (non-Javadoc)
+       * @see org.jboss.messaging.core.journal.SequentialFile#write(org.jboss.messaging.core.remoting.spi.MessagingBuffer, boolean)
+       */
+      public void write(MessagingBuffer bytes, boolean sync) throws Exception
+      {
+         write(ByteBuffer.wrap(bytes.array()), sync);
       }
 
    }

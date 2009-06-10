@@ -204,8 +204,13 @@ public class AIOSequentialFileFactory extends AbstractSequentialFactory
 
    public void stop()
    {
-      buffersControl.clearPoll();
+      buffersControl.stop();
       timedBuffer.stop();
+   }
+   
+   protected void finalize()
+   {
+      this.stop();
    }
 
    /** Class that will control buffer-reuse */
@@ -220,6 +225,8 @@ public class AIOSequentialFileFactory extends AbstractSequentialFactory
 
       /** During reload we may disable/enable buffer reuse */
       private boolean enabled = true;
+      
+      private boolean stopped = false;
 
       final BufferCallback callback = new LocalBufferCallback();
 
@@ -284,7 +291,13 @@ public class AIOSequentialFileFactory extends AbstractSequentialFactory
          }
       }
 
-      public void clearPoll()
+      public synchronized void stop()
+      {
+         stopped = true;
+         clearPoll();
+      }
+      
+      public synchronized void clearPoll()
       {
          ByteBuffer reusedBuffer;
 
@@ -298,19 +311,31 @@ public class AIOSequentialFileFactory extends AbstractSequentialFactory
       {
          public void bufferDone(final ByteBuffer buffer)
          {
-            if (enabled)
+            synchronized (ReuseBuffersController.this)
             {
-               bufferReuseLastTime = System.currentTimeMillis();
-
-               // If a buffer has any other than the configured bufferSize, the buffer
-               // will be just sent to GC
-               if (buffer.capacity() == bufferSize)
+               if (stopped)
                {
-                  reuseBuffersQueue.offer(buffer);
+                  System.out.println("Releasing buffer after stopped");
+                  releaseBuffer(buffer);
                }
                else
                {
-                  releaseBuffer(buffer);
+                  
+                  if (enabled)
+                  {
+                     bufferReuseLastTime = System.currentTimeMillis();
+      
+                     // If a buffer has any other than the configured bufferSize, the buffer
+                     // will be just sent to GC
+                     if (buffer.capacity() == bufferSize)
+                     {
+                        reuseBuffersQueue.offer(buffer);
+                     }
+                     else
+                     {
+                        releaseBuffer(buffer);
+                     }
+                  }
                }
             }
          }

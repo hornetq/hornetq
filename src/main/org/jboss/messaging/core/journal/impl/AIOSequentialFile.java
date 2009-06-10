@@ -40,6 +40,7 @@ import org.jboss.messaging.core.journal.IOCallback;
 import org.jboss.messaging.core.journal.SequentialFile;
 import org.jboss.messaging.core.journal.SequentialFileFactory;
 import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
 
 /**
  * 
@@ -301,11 +302,43 @@ public class AIOSequentialFile implements SequentialFile
       return bytesRead;
    }
 
+   public void write(final MessagingBuffer bytes, final boolean sync, final IOCallback callback) throws Exception
+   {
+      if (timedBuffer != null)
+      {
+         timedBuffer.addBytes(bytes.array(), sync, callback);
+      }
+      else
+      {
+         ByteBuffer buffer = factory.newBuffer(bytes.capacity());
+         buffer.put(bytes.array());
+         doWrite(buffer, callback);
+      }
+   }
+
+   public void write(final MessagingBuffer bytes, final boolean sync) throws Exception
+   {
+      if (sync)
+      {
+         IOCallback completion = SimpleWaitIOCallback.getInstance();
+
+         write(bytes, true, completion);
+
+         completion.waitCompletion();
+      }
+      else
+      {
+         write(bytes, false, DummyCallback.instance);
+      }
+   }
+   
+   
    public void write(final ByteBuffer bytes, final boolean sync, final IOCallback callback) throws Exception
    {
       if (timedBuffer != null)
       {
-         timedBuffer.addBytes(bytes, sync, callback);
+         // sanity check.. it shouldn't happen
+         throw new IllegalStateException("Illegal buffered usage. Can't use ByteBuffer write while buffer SequentialFile");
       }
       else
       {
@@ -328,6 +361,7 @@ public class AIOSequentialFile implements SequentialFile
          write(bytes, false, DummyCallback.instance);
       }
    }
+
 
    public void sync() throws Exception
    {
