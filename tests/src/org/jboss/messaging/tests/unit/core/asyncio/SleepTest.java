@@ -78,6 +78,20 @@ public class SleepTest extends TestCase
 
    // Protected -----------------------------------------------------
 
+   @Override
+   protected void setUp() throws Exception
+   {
+      super.setUp();
+
+      if (!AsynchronousFileImpl.isLoaded())
+      {
+         fail(String.format("libAIO is not loaded on %s %s %s",
+                            System.getProperty("os.name"),
+                            System.getProperty("os.arch"),
+                            System.getProperty("os.version")));
+      }
+   }
+   
    // Private -------------------------------------------------------
 
    // Inner classes -------------------------------------------------
