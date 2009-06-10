@@ -70,6 +70,7 @@ import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.remoting.server.RemotingService;
 import org.jboss.messaging.core.remoting.spi.Acceptor;
+import org.jboss.messaging.core.security.JBMSecurityManager;
 import org.jboss.messaging.core.security.Role;
 import org.jboss.messaging.core.server.Divert;
 import org.jboss.messaging.core.server.MessagingServer;
@@ -209,13 +210,17 @@ public class ManagementServiceImpl implements ManagementService
       this.storageManager = storageManager;
       this.messagingServer = messagingServer;
 
-      messagingServer.getSecurityManager().addUser(managementClusterUser, managementClusterPassword);
-      messagingServer.getSecurityManager().addRole(managementClusterUser, CLUSTER_MANAGEMENT_ROLE);
-      Set<Role> roles = new HashSet<Role>();
-      roles.add(new Role(CLUSTER_MANAGEMENT_ROLE, true, true, true, true, true, true, true));
-      messagingServer.getSecurityRepository().addMatch(configuration.getManagementAddress().toString(), roles);
-      messagingServer.getSecurityRepository().addMatch(configuration.getManagementAddress() + ".*", roles);
-
+      JBMSecurityManager sm = messagingServer.getSecurityManager();
+      if (sm != null)
+      {
+         sm.addUser(managementClusterUser, managementClusterPassword);
+         sm.addRole(managementClusterUser, CLUSTER_MANAGEMENT_ROLE);
+         Set<Role> roles = new HashSet<Role>();
+         roles.add(new Role(CLUSTER_MANAGEMENT_ROLE, true, true, true, true, true, true, true));
+         messagingServer.getSecurityRepository().addMatch(configuration.getManagementAddress().toString(), roles);
+         messagingServer.getSecurityRepository().addMatch(configuration.getManagementAddress() + ".*", roles);
+      }
+      
       messagingServerControl = new MessagingServerControlImpl(postOffice,
                                                           configuration,
                                                           resourceManager,
