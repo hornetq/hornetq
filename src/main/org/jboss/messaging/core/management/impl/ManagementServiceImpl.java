@@ -48,12 +48,12 @@ import org.jboss.messaging.core.config.cluster.DiscoveryGroupConfiguration;
 import org.jboss.messaging.core.config.cluster.DivertConfiguration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.management.AcceptorControlMBean;
-import org.jboss.messaging.core.management.BridgeControlMBean;
-import org.jboss.messaging.core.management.BroadcastGroupControlMBean;
-import org.jboss.messaging.core.management.ClusterConnectionControlMBean;
-import org.jboss.messaging.core.management.DiscoveryGroupControlMBean;
-import org.jboss.messaging.core.management.DivertControlMBean;
+import org.jboss.messaging.core.management.AcceptorControl;
+import org.jboss.messaging.core.management.BridgeControl;
+import org.jboss.messaging.core.management.BroadcastGroupControl;
+import org.jboss.messaging.core.management.ClusterConnectionControl;
+import org.jboss.messaging.core.management.DiscoveryGroupControl;
+import org.jboss.messaging.core.management.DivertControl;
 import org.jboss.messaging.core.management.ManagementService;
 import org.jboss.messaging.core.management.Notification;
 import org.jboss.messaging.core.management.NotificationListener;
@@ -118,7 +118,7 @@ public class ManagementServiceImpl implements ManagementService
 
    private HierarchicalRepository<AddressSettings> addressSettingsRepository;
 
-   private MessagingServerControl messagingServerControl;
+   private MessagingServerControlImpl messagingServerControl;
 
    private final MessageCounterManager messageCounterManager;
 
@@ -192,7 +192,7 @@ public class ManagementServiceImpl implements ManagementService
       return messageCounterManager;
    }
 
-   public MessagingServerControl registerServer(final PostOffice postOffice,
+   public MessagingServerControlImpl registerServer(final PostOffice postOffice,
                                                 final StorageManager storageManager,
                                                 final Configuration configuration,
                                                 final HierarchicalRepository<AddressSettings> addressSettingsRepository,
@@ -216,7 +216,7 @@ public class ManagementServiceImpl implements ManagementService
       messagingServer.getSecurityRepository().addMatch(configuration.getManagementAddress().toString(), roles);
       messagingServer.getSecurityRepository().addMatch(configuration.getManagementAddress() + ".*", roles);
 
-      messagingServerControl = new MessagingServerControl(postOffice,
+      messagingServerControl = new MessagingServerControlImpl(postOffice,
                                                           configuration,
                                                           resourceManager,
                                                           remotingService,
@@ -241,7 +241,7 @@ public class ManagementServiceImpl implements ManagementService
    public synchronized void registerAddress(final SimpleString address) throws Exception
    {
       ObjectName objectName = ObjectNames.getAddressObjectName(address);
-      AddressControl addressControl = new AddressControl(address, postOffice, securityRepository);
+      AddressControlImpl addressControl = new AddressControlImpl(address, postOffice, securityRepository);
 
       registerInJMX(objectName, new ReplicationAwareAddressControlWrapper(addressControl, replicationInvoker));
 
@@ -265,7 +265,7 @@ public class ManagementServiceImpl implements ManagementService
                                           final SimpleString address,
                                           final StorageManager storageManager) throws Exception
    {
-      QueueControl queueControl = new QueueControl(queue, address.toString(), postOffice, addressSettingsRepository);
+      QueueControlImpl queueControl = new QueueControlImpl(queue, address.toString(), postOffice, addressSettingsRepository);
       MessageCounter counter = new MessageCounter(queue.getName().toString(),
                                                   null,
                                                   queueControl,
@@ -295,8 +295,8 @@ public class ManagementServiceImpl implements ManagementService
    public synchronized void registerDivert(Divert divert, DivertConfiguration config) throws Exception
    {
       ObjectName objectName = ObjectNames.getDivertObjectName(divert.getUniqueName());
-      DivertControlMBean divertControl = new DivertControl(divert, config);
-      registerInJMX(objectName, new StandardMBean(divertControl, DivertControlMBean.class));
+      DivertControl divertControl = new DivertControlImpl(divert, config);
+      registerInJMX(objectName, new StandardMBean(divertControl, DivertControl.class));
       registerInRegistry(ResourceNames.CORE_DIVERT + config.getName(), divertControl);
 
       if (log.isDebugEnabled())
@@ -315,8 +315,8 @@ public class ManagementServiceImpl implements ManagementService
    public synchronized void registerAcceptor(final Acceptor acceptor, final TransportConfiguration configuration) throws Exception
    {
       ObjectName objectName = ObjectNames.getAcceptorObjectName(configuration.getName());
-      AcceptorControlMBean control = new AcceptorControl(acceptor, configuration);
-      registerInJMX(objectName, new StandardMBean(control, AcceptorControlMBean.class));
+      AcceptorControl control = new AcceptorControlImpl(acceptor, configuration);
+      registerInJMX(objectName, new StandardMBean(control, AcceptorControl.class));
       registerInRegistry(ResourceNames.CORE_ACCEPTOR + configuration.getName(), control);
    }
 
@@ -331,8 +331,8 @@ public class ManagementServiceImpl implements ManagementService
                                                    BroadcastGroupConfiguration configuration) throws Exception
    {
       ObjectName objectName = ObjectNames.getBroadcastGroupObjectName(configuration.getName());
-      BroadcastGroupControlMBean control = new BroadcastGroupControl(broadcastGroup, configuration);
-      registerInJMX(objectName, new StandardMBean(control, BroadcastGroupControlMBean.class));
+      BroadcastGroupControl control = new BroadcastGroupControlImpl(broadcastGroup, configuration);
+      registerInJMX(objectName, new StandardMBean(control, BroadcastGroupControl.class));
       registerInRegistry(ResourceNames.CORE_BROADCAST_GROUP + configuration.getName(), control);
    }
 
@@ -347,8 +347,8 @@ public class ManagementServiceImpl implements ManagementService
                                                    DiscoveryGroupConfiguration configuration) throws Exception
    {
       ObjectName objectName = ObjectNames.getDiscoveryGroupObjectName(configuration.getName());
-      DiscoveryGroupControlMBean control = new DiscoveryGroupControl(discoveryGroup, configuration);
-      registerInJMX(objectName, new StandardMBean(control, DiscoveryGroupControlMBean.class));
+      DiscoveryGroupControl control = new DiscoveryGroupControlImpl(discoveryGroup, configuration);
+      registerInJMX(objectName, new StandardMBean(control, DiscoveryGroupControl.class));
       registerInRegistry(ResourceNames.CORE_DISCOVERY_GROUP + configuration.getName(), control);
    }
 
@@ -362,8 +362,8 @@ public class ManagementServiceImpl implements ManagementService
    public synchronized void registerBridge(Bridge bridge, BridgeConfiguration configuration) throws Exception
    {
       ObjectName objectName = ObjectNames.getBridgeObjectName(configuration.getName());
-      BridgeControlMBean control = new BridgeControl(bridge, configuration);
-      registerInJMX(objectName, new StandardMBean(control, BridgeControlMBean.class));
+      BridgeControl control = new BridgeControlImpl(bridge, configuration);
+      registerInJMX(objectName, new StandardMBean(control, BridgeControl.class));
       registerInRegistry(ResourceNames.CORE_BRIDGE + configuration.getName(), control);
    }
 
@@ -378,8 +378,8 @@ public class ManagementServiceImpl implements ManagementService
                                             final ClusterConnectionConfiguration configuration) throws Exception
    {
       ObjectName objectName = ObjectNames.getClusterConnectionObjectName(configuration.getName());
-      ClusterConnectionControlMBean control = new ClusterConnectionControl(cluster, configuration);
-      registerInJMX(objectName, new StandardMBean(control, ClusterConnectionControlMBean.class));
+      ClusterConnectionControl control = new ClusterConnectionControlImpl(cluster, configuration);
+      registerInJMX(objectName, new StandardMBean(control, ClusterConnectionControl.class));
       registerInRegistry(ResourceNames.CORE_CLUSTER_CONNECTION + configuration.getName(), control);
    }
 

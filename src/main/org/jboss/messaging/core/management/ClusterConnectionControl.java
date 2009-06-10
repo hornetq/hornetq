@@ -24,22 +24,26 @@ package org.jboss.messaging.core.management;
 
 
 /**
- * A BroadcastGroupControlMBean
+ * A ClusterConnectionControlMBean
  *
  * @author <a href="jmesnil@redhat.com">Jeff Mesnil</a>
  *
  */
-public interface BroadcastGroupControlMBean extends MessagingComponentControlMBean
+public interface ClusterConnectionControl extends MessagingComponentControlMBean
 {
    String getName();
 
-   int getLocalBindPort();
+   String getAddress();
 
-   String getGroupAddress();
+   boolean isDuplicateDetection();
 
-   int getGroupPort();
+   boolean isForwardWhenNoConsumers();
 
-   long getBroadcastPeriod();
-   
-   Object[] getConnectorPairs();
+   int getMaxHops();
+
+   Object[] getStaticConnectorNamePairs();
+
+   String getDiscoveryGroupName();
+
+   long getRetryInterval();
 }

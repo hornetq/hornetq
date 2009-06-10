@@ -56,7 +56,7 @@
                   <para>Core queues can be created or destroyed using the management operations
                         <literal>createQueue()</literal> or <literal>deployQueue()</literal> or
                         <literal>destroyQueue()</literal>)on the <literal
-                        >MessagingServerControlMBean</literal> (with the ObjectName <literal
+                        >MessagingServerControl</literal> (with the ObjectName <literal
                         >org.jboss.messaging:module=Core,type=Server</literal> or the resource name
                         <literal>core.server</literal>)</para>
                   <para><literal>createQueue</literal> will fail if the queue already exists while
@@ -93,7 +93,7 @@
                </listitem>
                <listitem>
                   <para>Retrieving the server configuration and attributes</para>
-                  <para>The <literal>MessagingServerControlMBean</literal> exposes JBoss Messaging
+                  <para>The <literal>MessagingServerControl</literal> exposes JBoss Messaging
                      server configuration through all its attributes (e.g. <literal
                         >getVersion()</literal> method to retrieve the server's version,
                      etc.)</para>
@@ -102,7 +102,7 @@
          </section>
          <section>
             <title>Core Address Management</title>
-            <para>Core addresses can be managed using the <literal>AddressControlMBean</literal>
+            <para>Core addresses can be managed using the <literal>AddressControl</literal>
                class (with the ObjectName <literal
                   >org.jboss.messaging:module=Core,type=Address,name="&lt;the address
                   name&gt;"</literal> or the resource name <literal>core.address.&lt;the address
@@ -120,7 +120,7 @@
          <section>
             <title>Core Queue Management</title>
             <para>The bulk of the core management API deals with core queues. The <literal
-                  >QueueControlMBean</literal> class defines the Core queue management operations
+                  >QueueControl</literal> class defines the Core queue management operations
                (with the ObjectName <literal
                   >org.jboss.messaging:module=Core,type=Queue,address="&lt;the bound
                   address&gt;",name="&lt;the queue name&gt;"</literal> or the resource name <literal
@@ -180,7 +180,7 @@
                </listitem>
                <listitem>
                   <para>Retrieving the queue attributes</para>
-                  <para>The <literal>QueueControlMBean</literal> exposes Core queue settings through
+                  <para>The <literal>QueueControl</literal> exposes Core queue settings through
                      its attributes (e.g. <literal>getFilter()</literal> to retrieve the queue's
                      filter if it was created with one, <literal>isDurable()</literal> to know
                      wether the queue is durable or not, etc.)</para>
@@ -198,69 +198,69 @@
                   <para>Acceptors</para>
                   <para>They can be started or stopped using the <literal>start()</literal> or.
                         <literal>stop()</literal> method on the <literal
-                        >AcceptorControlMBean</literal> class (with the ObjectName <literal
+                        >AcceptorControl</literal> class (with the ObjectName <literal
                         >org.jboss.messaging:module=Core,type=Acceptor,name="&lt;the acceptor
                         name&gt;"</literal> or the resource name <literal>core.acceptor.&lt;the
                         address name&gt;</literal>). The acceptors parameters can be retrieved using
-                     the <literal>AcceptorControlMBean</literal> attributes (see <xref
+                     the <literal>AcceptorControl</literal> attributes (see <xref
                         linkend="configuring-transports.acceptors"/>)</para>
                </listitem>
                <listitem>
                   <para>Diverts</para>
                   <para>They can be started or stopped using the <literal>start()</literal> or
                         <literal>stop()</literal> method on the <literal
-                        >DivertControlMBean</literal> class (with the ObjectName <literal
+                        >DivertControl</literal> class (with the ObjectName <literal
                         >org.jboss.messaging:module=Core,type=Divert,name=&lt;the divert
                         name&gt;</literal> or the resource name <literal>core.divert.&lt;the divert
                         name&gt;</literal>). Diverts parameters can be retrieved using the <literal
-                        >DivertControlMBean</literal> attributes (see <xref linkend="diverts"
+                        >DivertControl</literal> attributes (see <xref linkend="diverts"
                      />)</para>
                </listitem>
                <listitem>
                   <para>Bridges</para>
                   <para>They can be started or stopped using the <literal>start()</literal> (resp.
                         <literal>stop()</literal>) method on the <literal
-                        >BridgeControlMBean</literal> class (with the ObjectName <literal
+                        >BridgeControl</literal> class (with the ObjectName <literal
                         >org.jboss.messaging:module=Core,type=Bridge,name="&lt;the bridge
                         name&gt;"</literal> or the resource name <literal>core.bridge.&lt;the bridge
                         name&gt;</literal>). Bridges parameters can be retrieved using the <literal
-                        >BridgeControlMBean</literal> attributes (see <xref linkend="core-bridges"
+                        >BridgeControl</literal> attributes (see <xref linkend="core-bridges"
                      />)</para>
                </listitem>
                <listitem>
                   <para>Broadcast groups</para>
                   <para>They can be started or stopped using the <literal>start()</literal> or
                         <literal>stop()</literal> method on the <literal
-                        >BroadcastGroupControlMBean</literal> class (with the ObjectName <literal
+                        >BroadcastGroupControl</literal> class (with the ObjectName <literal
                         >org.jboss.messaging:module=Core,type=BroadcastGroup,name="&lt;the broadcast
                         group name&gt;"</literal> or the resource name <literal
                         >core.broadcastgroup.&lt;the broadcast group name&gt;</literal>). Broadcast
                      groups parameters can be retrieved using the <literal
-                        >BroadcastGroupControlMBean</literal> attributes (see <xref
+                        >BroadcastGroupControl</literal> attributes (see <xref
                         linkend="clusters.broadcast-groups"/>)</para>
                </listitem>
                <listitem>
                   <para>Discovery groups</para>
                   <para>They can be started or stopped using the <literal>start()</literal> or
                         <literal>stop()</literal> method on the <literal
-                        >DiscoveryGroupControlMBean</literal> class (with the ObjectName <literal
+                        >DiscoveryGroupControl</literal> class (with the ObjectName <literal
                         >org.jboss.messaging:module=Core,type=DiscoveryGroup,name="&lt;the discovery
                         group name&gt;"</literal> or the resource name <literal
                         >core.discovery.&lt;the discovery group name&gt;</literal>). Discovery
                      groups parameters can be retrieved using the <literal
-                        >DiscoveryGroupControlMBean</literal> attributes (see <xref
+                        >DiscoveryGroupControl</literal> attributes (see <xref
                         linkend="clusters.discovery-groups"/>)</para>
                </listitem>
                <listitem>
                   <para>Cluster connections</para>
                   <para>They can be started or stopped using the <literal>start()</literal> or
                         <literal>stop()</literal> method on the <literal
-                        >ClusterConnectionControlMBean</literal> class (with the ObjectName <literal
+                        >ClusterConnectionControl</literal> class (with the ObjectName <literal
                         >org.jboss.messaging:module=Core,type=ClusterConnection,name="&lt;the
                         cluster connection name&gt;"</literal> or the resource name <literal
                         >core.clusterconnection.&lt;the cluster connection name&gt;</literal>).
                      Cluster connections parameters can be retrieved using the <literal
-                        >ClusterConnectionControlMBean</literal> attributes (see <xref
+                        >ClusterConnectionControl</literal> attributes (see <xref
                         linkend="clusters.cluster-connections"/>)</para>
                </listitem>
             </itemizedlist>
@@ -273,7 +273,7 @@
          <section>
             <title>JMS Server Management</title>
             <para>JMS Resources (connection factories and destinations) can be created using the
-                  <literal>JMSServerControlMBean</literal> class (with the ObjectName <literal
+                  <literal>JMSServerControl</literal> class (with the ObjectName <literal
                   >org.jboss.messaging:module=JMS,type=Server</literal> or the resource name
                   <literal>jms.server</literal>).</para>
             <itemizedlist>
@@ -312,14 +312,14 @@
          <section>
             <title>JMS ConnectionFactory Management</title>
             <para>JMS Connection Factories can be managed using the <literal
-                  >ConnectionFactoryControlMBean</literal> class (with the ObjectName <literal
+                  >ConnectionFactoryControl</literal> class (with the ObjectName <literal
                   >org.jboss.messaging:module=JMS,type=ConnectionFactory,name="&lt;the connection
                   factory name&gt;"</literal> or the resource name <literal
                   >jms.connectionfactory.&lt;the connection factory name&gt;</literal>).</para>
             <itemizedlist>
                <listitem>
                   <para>Retrieving connection factory attributes</para>
-                  <para>The <literal>ConnectionFactoryControlMBean</literal> exposes JMS
+                  <para>The <literal>ConnectionFactoryControl</literal> exposes JMS
                      ConnectionFactory configuration through its attributes (e.g. <literal
                         >getConsumerWindowSize()</literal> to retrieve the consumer window size for
                      flow control, <literal>isBlockOnNonPersistentSend()</literal> to know wether
@@ -330,7 +330,7 @@
          </section>
          <section>
             <title>JMS Queue Management</title>
-            <para>JMS queues can be managed using the <literal>JMSQueueControlMBean</literal> class
+            <para>JMS queues can be managed using the <literal>JMSQueueControl</literal> class
                (with the ObjectName <literal>org.jboss.messaging:module=JMS,type=Queue,name="&lt;the
                   queue name&gt;"</literal> or the resource name <literal>jms.queue.&lt;the queue
                   name&gt;</literal>). </para>
@@ -386,7 +386,7 @@
                </listitem>
                <listitem>
                   <para>Retrieving the queue attributes</para>
-                  <para>The <literal>JMSQueueControlMBean</literal> exposes JMS queue settings
+                  <para>The <literal>JMSQueueControl</literal> exposes JMS queue settings
                      through its attributes (e.g. <literal>isTemporary()</literal> to know wether
                      the queue is temporary or not, <literal>isDurable()</literal> to know wether
                      the queue is durable or not, etc.)</para>
@@ -395,7 +395,7 @@
          </section>
          <section>
             <title>JMS Topic Management</title>
-            <para>JMS Topics can be managed using the <literal>TopicControlMBean</literal> class
+            <para>JMS Topics can be managed using the <literal>TopicControl</literal> class
                (with the ObjectName <literal>org.jboss.messaging:module=JMS,type=Topic,name="&lt;the
                   topic name&gt;"</literal> or the resource name <literal>jms.topic.&lt;the topic
                   name&gt;</literal>).</para>
@@ -441,7 +441,7 @@
       </programlisting>
       <para>and the MBean is:</para>
       <programlisting>
-   org.jboss.messaging.jms.server.management.JMSQueueControlMBean   
+   org.jboss.messaging.jms.server.management.JMSQueueControl   
       </programlisting>
       <para>The MBean's <literal>ObjectName</literal> are built using the helper class <literal
             >org.jboss.messaging.core.management.ObjectNames</literal>. You can also use <literal
@@ -632,7 +632,7 @@
       </section>
    </section>
    <section id="management.replication">
-      <title>Management Cluster Password</title>
+      <title>Management Cluster Credentials</title>
       <para>JBoss Messaging allows <emphasis>replication</emphasis> of a live server to a backup
          server. This impacts management as resources created on the live server (e.g. a core
          address) must also be created on the backup server. Otherwise, when failover occurs, the
@@ -646,15 +646,16 @@
          created on the backup server.</para>
       <para>If core or JMS messages are used to invoke management operations, replication is handled
          automatically by JBoss Messaging.</para>
-      <para>To allow this management replication with JMX, JBoss Messaging defines a
-            <emphasis>management cluster password</emphasis>: this special password <emphasis>must
+      <para>To allow this management replication with JMX, JBoss Messaging defines 
+            <emphasis>management cluster credentials</emphasis>: this special user/password <emphasis>must
             be shared by all nodes</emphasis>. To configure it, change the value in <literal
             >jbm-configuration.xml</literal>:</para>
       <programlisting>
+   &lt;management-cluster-user&gt;JBM.MANAGEMENT.ADMIN.USER&lt;/management-cluster-user&gt;
    &lt;management-cluster-password&gt;CHANGE ME!!&lt;/management-cluster-password&gt;
       </programlisting>
-      <para>By default, its value is <literal>CHANGE ME!!</literal>. It is strongly suggested to
-         change it to a safer value. If you don't change it from the default JBoss Messaging will
+      <para>It is strongly suggested to
+         change these values from their default. If they are not changed from the default, JBoss Messaging will
          detect this and pester you with a warning on every start-up.</para>
       <para>JBoss Messaging internally uses Core messages to replicate management operations between
          the live and backup server when JMX is used. By default, there is a timeout of 5s (5000ms)
@@ -838,9 +839,9 @@
          <programlisting>
 // retrieve a connection to JBoss Messaging's MBeanServer
 MBeanServerConnection mbsc = ...
-JMSQueueControlMBean queueControl = (JMSQueueControlMBean)MBeanServerInvocationHandler.newProxyInstance(mbsc,
+JMSQueueControlMBean queueControl = (JMSQueueControl)MBeanServerInvocationHandler.newProxyInstance(mbsc,
 on,
-JMSQueueControlMBean.class,
+JMSQueueControl.class,
 false);
 // message counters are retrieved as a JSON String                                                                                                      
 String counters = queueControl.listMessageCounter();

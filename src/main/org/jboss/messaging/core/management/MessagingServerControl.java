@@ -30,7 +30,7 @@ import static javax.management.MBeanOperationInfo.INFO;
 /**
  * This interface describes the core management interface exposed by the server
  */
-public interface MessagingServerControlMBean
+public interface MessagingServerControl
 {
    // Attributes ----------------------------------------------------
 

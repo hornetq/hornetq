@@ -28,11 +28,11 @@ import javax.management.MBeanInfo;
 import javax.management.openmbean.CompositeData;
 import javax.management.openmbean.TabularData;
 
-import org.jboss.messaging.core.management.QueueControlMBean;
+import org.jboss.messaging.core.management.QueueControl;
 import org.jboss.messaging.core.management.ReplicationOperationInvoker;
 import org.jboss.messaging.core.management.ResourceNames;
 import org.jboss.messaging.core.management.impl.MBeanInfoHelper;
-import org.jboss.messaging.core.management.impl.QueueControl;
+import org.jboss.messaging.core.management.impl.QueueControlImpl;
 
 /**
  * A ReplicationAwareQueueControlWrapper
@@ -40,23 +40,23 @@ import org.jboss.messaging.core.management.impl.QueueControl;
  * @author <a href="jmesnil@redhat.com">Jeff Mesnil</a>
  *
  */
-public class ReplicationAwareQueueControlWrapper extends ReplicationAwareStandardMBeanWrapper implements QueueControlMBean
+public class ReplicationAwareQueueControlWrapper extends ReplicationAwareStandardMBeanWrapper implements QueueControl
 {
 
    // Constants -----------------------------------------------------
 
    // Attributes ----------------------------------------------------
 
-   private final QueueControl localQueueControl;
+   private final QueueControlImpl localQueueControl;
 
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   public ReplicationAwareQueueControlWrapper(final QueueControl localControl, 
+   public ReplicationAwareQueueControlWrapper(final QueueControlImpl localControl, 
                                               final ReplicationOperationInvoker replicationInvoker) throws Exception
    {
-      super(ResourceNames.CORE_QUEUE + localControl.getName(), QueueControlMBean.class, replicationInvoker);
+      super(ResourceNames.CORE_QUEUE + localControl.getName(), QueueControl.class, replicationInvoker);
 
       this.localQueueControl = localControl;
    }
@@ -258,7 +258,7 @@ public class ReplicationAwareQueueControlWrapper extends ReplicationAwareStandar
                            info.getDescription(),
                            info.getAttributes(),
                            info.getConstructors(),
-                           MBeanInfoHelper.getMBeanOperationsInfo(QueueControlMBean.class),
+                           MBeanInfoHelper.getMBeanOperationsInfo(QueueControl.class),
                            info.getNotifications());
    }
 

@@ -33,7 +33,7 @@ import java.util.Map;
  * @version <tt>$Revision$</tt>
  * 
  */
-public interface QueueControlMBean
+public interface QueueControl
 {
    // Attributes ----------------------------------------------------
 

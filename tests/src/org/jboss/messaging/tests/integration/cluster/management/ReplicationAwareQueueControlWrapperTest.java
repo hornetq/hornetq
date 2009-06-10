@@ -36,7 +36,7 @@ import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
 import org.jboss.messaging.core.client.impl.ClientSessionFactoryInternal;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.management.QueueControlMBean;
+import org.jboss.messaging.core.management.QueueControl;
 import org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory;
 import org.jboss.messaging.tests.util.RandomUtil;
 import org.jboss.messaging.utils.SimpleString;
@@ -69,8 +69,8 @@ public class ReplicationAwareQueueControlWrapperTest extends ReplicationAwareTes
       byte oldPriority = (byte)1;
       byte newPriority = (byte)8;
 
-      QueueControlMBean liveQueueControl = createQueueControl(address, address, liveMBeanServer);
-      QueueControlMBean backupQueueControl = createQueueControl(address, address, backupMBeanServer);
+      QueueControl liveQueueControl = createQueueControl(address, address, liveMBeanServer);
+      QueueControl backupQueueControl = createQueueControl(address, address, backupMBeanServer);
 
       assertFalse(liveQueueControl.isBackup());
       assertTrue(backupQueueControl.isBackup());
@@ -108,8 +108,8 @@ public class ReplicationAwareQueueControlWrapperTest extends ReplicationAwareTes
 
    public void testExpireMessage() throws Exception
    {
-      QueueControlMBean liveQueueControl = createQueueControl(address, address, liveMBeanServer);
-      QueueControlMBean backupQueueControl = createQueueControl(address, address, backupMBeanServer);
+      QueueControl liveQueueControl = createQueueControl(address, address, liveMBeanServer);
+      QueueControl backupQueueControl = createQueueControl(address, address, backupMBeanServer);
 
       assertFalse(liveQueueControl.isBackup());
       assertTrue(backupQueueControl.isBackup());
@@ -139,8 +139,8 @@ public class ReplicationAwareQueueControlWrapperTest extends ReplicationAwareTes
       long matchingValue = randomLong();
       long unmatchingValue = matchingValue + 1;
 
-      QueueControlMBean liveQueueControl = createQueueControl(address, address, liveMBeanServer);
-      QueueControlMBean backupQueueControl = createQueueControl(address, address, backupMBeanServer);
+      QueueControl liveQueueControl = createQueueControl(address, address, liveMBeanServer);
+      QueueControl backupQueueControl = createQueueControl(address, address, backupMBeanServer);
 
       assertFalse(liveQueueControl.isBackup());
       assertTrue(backupQueueControl.isBackup());
@@ -172,10 +172,10 @@ public class ReplicationAwareQueueControlWrapperTest extends ReplicationAwareTes
       session.createQueue(otherQueue, otherQueue, null, false);
       ClientProducer producer = session.createProducer(address);
 
-      QueueControlMBean liveQueueControl = createQueueControl(address, address, liveMBeanServer);
-      QueueControlMBean backupQueueControl = createQueueControl(address, address, backupMBeanServer);
-      QueueControlMBean liveOtherQueueControl = createQueueControl(otherQueue, otherQueue, liveMBeanServer);
-      QueueControlMBean backupOtherQueueControl = createQueueControl(otherQueue, otherQueue, backupMBeanServer);
+      QueueControl liveQueueControl = createQueueControl(address, address, liveMBeanServer);
+      QueueControl backupQueueControl = createQueueControl(address, address, backupMBeanServer);
+      QueueControl liveOtherQueueControl = createQueueControl(otherQueue, otherQueue, liveMBeanServer);
+      QueueControl backupOtherQueueControl = createQueueControl(otherQueue, otherQueue, backupMBeanServer);
 
       assertFalse(liveQueueControl.isBackup());
       assertTrue(backupQueueControl.isBackup());
@@ -216,10 +216,10 @@ public class ReplicationAwareQueueControlWrapperTest extends ReplicationAwareTes
 
       session.createQueue(otherQueue, otherQueue, null, false);
 
-      QueueControlMBean liveQueueControl = createQueueControl(address, address, liveMBeanServer);
-      QueueControlMBean backupQueueControl = createQueueControl(address, address, backupMBeanServer);
-      QueueControlMBean liveOtherQueueControl = createQueueControl(otherQueue, otherQueue, liveMBeanServer);
-      QueueControlMBean backupOtherQueueControl = createQueueControl(otherQueue, otherQueue, backupMBeanServer);
+      QueueControl liveQueueControl = createQueueControl(address, address, liveMBeanServer);
+      QueueControl backupQueueControl = createQueueControl(address, address, backupMBeanServer);
+      QueueControl liveOtherQueueControl = createQueueControl(otherQueue, otherQueue, liveMBeanServer);
+      QueueControl backupOtherQueueControl = createQueueControl(otherQueue, otherQueue, backupMBeanServer);
 
       // send on queue
       ClientProducer producer = session.createProducer(address);
@@ -254,10 +254,10 @@ public class ReplicationAwareQueueControlWrapperTest extends ReplicationAwareTes
 
       session.createQueue(otherQueue, otherQueue, null, false);
 
-      QueueControlMBean liveQueueControl = createQueueControl(address, address, liveMBeanServer);
-      QueueControlMBean backupQueueControl = createQueueControl(address, address, backupMBeanServer);
-      QueueControlMBean liveOtherQueueControl = createQueueControl(otherQueue, otherQueue, liveMBeanServer);
-      QueueControlMBean backupOtherQueueControl = createQueueControl(otherQueue, otherQueue, backupMBeanServer);
+      QueueControl liveQueueControl = createQueueControl(address, address, liveMBeanServer);
+      QueueControl backupQueueControl = createQueueControl(address, address, backupMBeanServer);
+      QueueControl liveOtherQueueControl = createQueueControl(otherQueue, otherQueue, liveMBeanServer);
+      QueueControl backupOtherQueueControl = createQueueControl(otherQueue, otherQueue, backupMBeanServer);
 
       assertFalse(liveQueueControl.isBackup());
       assertTrue(backupQueueControl.isBackup());
@@ -289,8 +289,8 @@ public class ReplicationAwareQueueControlWrapperTest extends ReplicationAwareTes
 
    public void testRemoveAllMessages() throws Exception
    {
-      QueueControlMBean liveQueueControl = createQueueControl(address, address, liveMBeanServer);
-      QueueControlMBean backupQueueControl = createQueueControl(address, address, backupMBeanServer);
+      QueueControl liveQueueControl = createQueueControl(address, address, liveMBeanServer);
+      QueueControl backupQueueControl = createQueueControl(address, address, backupMBeanServer);
 
       assertFalse(liveQueueControl.isBackup());
       assertTrue(backupQueueControl.isBackup());
@@ -318,8 +318,8 @@ public class ReplicationAwareQueueControlWrapperTest extends ReplicationAwareTes
       long matchingValue = randomLong();
       long unmatchingValue = matchingValue + 1;
 
-      QueueControlMBean liveQueueControl = createQueueControl(address, address, liveMBeanServer);
-      QueueControlMBean backupQueueControl = createQueueControl(address, address, backupMBeanServer);
+      QueueControl liveQueueControl = createQueueControl(address, address, liveMBeanServer);
+      QueueControl backupQueueControl = createQueueControl(address, address, backupMBeanServer);
 
       // send on queue
       ClientProducer producer = session.createProducer(address);
@@ -343,8 +343,8 @@ public class ReplicationAwareQueueControlWrapperTest extends ReplicationAwareTes
 
    public void testRemoveMessage() throws Exception
    {
-      QueueControlMBean liveQueueControl = createQueueControl(address, address, liveMBeanServer);
-      QueueControlMBean backupQueueControl = createQueueControl(address, address, backupMBeanServer);
+      QueueControl liveQueueControl = createQueueControl(address, address, liveMBeanServer);
+      QueueControl backupQueueControl = createQueueControl(address, address, backupMBeanServer);
 
       assertFalse(liveQueueControl.isBackup());
       assertTrue(backupQueueControl.isBackup());
@@ -370,8 +370,8 @@ public class ReplicationAwareQueueControlWrapperTest extends ReplicationAwareTes
 
    public void testSendMessageToDeadLetterAddress() throws Exception
    {
-      QueueControlMBean liveQueueControl = createQueueControl(address, address, liveMBeanServer);
-      QueueControlMBean backupQueueControl = createQueueControl(address, address, backupMBeanServer);
+      QueueControl liveQueueControl = createQueueControl(address, address, liveMBeanServer);
+      QueueControl backupQueueControl = createQueueControl(address, address, backupMBeanServer);
 
       assertFalse(liveQueueControl.isBackup());
       assertTrue(backupQueueControl.isBackup());
@@ -399,8 +399,8 @@ public class ReplicationAwareQueueControlWrapperTest extends ReplicationAwareTes
    {
       String deadLetterAddress = randomString();
 
-      QueueControlMBean liveQueueControl = createQueueControl(address, address, liveMBeanServer);
-      QueueControlMBean backupQueueControl = createQueueControl(address, address, backupMBeanServer);
+      QueueControl liveQueueControl = createQueueControl(address, address, liveMBeanServer);
+      QueueControl backupQueueControl = createQueueControl(address, address, backupMBeanServer);
 
       assertFalse(liveQueueControl.isBackup());
       assertTrue(backupQueueControl.isBackup());
@@ -418,8 +418,8 @@ public class ReplicationAwareQueueControlWrapperTest extends ReplicationAwareTes
    {
       String expiryAddress = randomString();
 
-      QueueControlMBean liveQueueControl = createQueueControl(address, address, liveMBeanServer);
-      QueueControlMBean backupQueueControl = createQueueControl(address, address, backupMBeanServer);
+      QueueControl liveQueueControl = createQueueControl(address, address, liveMBeanServer);
+      QueueControl backupQueueControl = createQueueControl(address, address, backupMBeanServer);
 
       assertFalse(liveQueueControl.isBackup());
       assertTrue(backupQueueControl.isBackup());

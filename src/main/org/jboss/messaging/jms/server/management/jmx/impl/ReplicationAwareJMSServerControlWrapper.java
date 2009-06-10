@@ -30,8 +30,8 @@ import org.jboss.messaging.core.management.ReplicationOperationInvoker;
 import org.jboss.messaging.core.management.ResourceNames;
 import org.jboss.messaging.core.management.impl.MBeanInfoHelper;
 import org.jboss.messaging.core.management.jmx.impl.ReplicationAwareStandardMBeanWrapper;
-import org.jboss.messaging.jms.server.management.JMSServerControlMBean;
-import org.jboss.messaging.jms.server.management.impl.JMSServerControl;
+import org.jboss.messaging.jms.server.management.JMSServerControl;
+import org.jboss.messaging.jms.server.management.impl.JMSServerControlImpl;
 
 /**
  * A ReplicationAwareJMSServerControlWrapper
@@ -40,23 +40,23 @@ import org.jboss.messaging.jms.server.management.impl.JMSServerControl;
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  */
 public class ReplicationAwareJMSServerControlWrapper extends ReplicationAwareStandardMBeanWrapper implements
-         JMSServerControlMBean
+         JMSServerControl
 {
 
    // Constants -----------------------------------------------------
 
    // Attributes ----------------------------------------------------
 
-   private final JMSServerControl localControl;
+   private final JMSServerControlImpl localControl;
 
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   public ReplicationAwareJMSServerControlWrapper(final JMSServerControl localControl,
+   public ReplicationAwareJMSServerControlWrapper(final JMSServerControlImpl localControl,
                                                   final ReplicationOperationInvoker replicationInvoker) throws Exception
    {
-      super(ResourceNames.JMS_SERVER, JMSServerControlMBean.class, replicationInvoker);
+      super(ResourceNames.JMS_SERVER, JMSServerControl.class, replicationInvoker);
       this.localControl = localControl;
    }
 
@@ -364,7 +364,7 @@ public class ReplicationAwareJMSServerControlWrapper extends ReplicationAwareSta
                            info.getDescription(),
                            info.getAttributes(),
                            info.getConstructors(),
-                           MBeanInfoHelper.getMBeanOperationsInfo(JMSServerControlMBean.class),
+                           MBeanInfoHelper.getMBeanOperationsInfo(JMSServerControl.class),
                            info.getNotifications());
    }
 

@@ -29,7 +29,7 @@ package org.jboss.messaging.core.management;
  * @version <tt>$Revision$</tt>
  * 
  */
-public interface AddressControlMBean
+public interface AddressControl
 {
    // Attributes ----------------------------------------------------
 

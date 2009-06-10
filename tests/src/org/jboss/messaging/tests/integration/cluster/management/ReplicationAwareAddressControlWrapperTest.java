@@ -26,7 +26,7 @@ import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
 import org.jboss.messaging.core.client.impl.ClientSessionFactoryInternal;
 import org.jboss.messaging.core.config.TransportConfiguration;
-import org.jboss.messaging.core.management.AddressControlMBean;
+import org.jboss.messaging.core.management.AddressControl;
 import org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory;
 import static org.jboss.messaging.tests.integration.management.ManagementControlHelper.createAddressControl;
 import static org.jboss.messaging.tests.util.RandomUtil.randomBoolean;
@@ -59,8 +59,8 @@ public class ReplicationAwareAddressControlWrapperTest extends ReplicationAwareT
 
    public void testAddRole() throws Exception
    {
-      AddressControlMBean liveAddressControl = createAddressControl(address, liveMBeanServer);
-      AddressControlMBean backupAddressControl = createAddressControl(address, backupMBeanServer);
+      AddressControl liveAddressControl = createAddressControl(address, liveMBeanServer);
+      AddressControl backupAddressControl = createAddressControl(address, backupMBeanServer);
 
       Object[] roles = liveAddressControl.getRoles();
       assertEquals(roles.length, backupAddressControl.getRoles().length);
@@ -75,8 +75,8 @@ public class ReplicationAwareAddressControlWrapperTest extends ReplicationAwareT
    {
       String roleName = randomString();
 
-      AddressControlMBean liveAddressControl = createAddressControl(address, liveMBeanServer);
-      AddressControlMBean backupAddressControl = createAddressControl(address, backupMBeanServer);
+      AddressControl liveAddressControl = createAddressControl(address, liveMBeanServer);
+      AddressControl backupAddressControl = createAddressControl(address, backupMBeanServer);
 
       Object[] roles = liveAddressControl.getRoles();
       assertEquals(roles.length, backupAddressControl.getRoles().length);

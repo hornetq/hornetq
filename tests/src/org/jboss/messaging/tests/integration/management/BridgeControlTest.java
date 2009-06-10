@@ -40,7 +40,7 @@ import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.config.cluster.BridgeConfiguration;
 import org.jboss.messaging.core.config.cluster.QueueConfiguration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
-import org.jboss.messaging.core.management.BridgeControlMBean;
+import org.jboss.messaging.core.management.BridgeControl;
 import org.jboss.messaging.core.management.ObjectNames;
 import org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory;
@@ -76,7 +76,7 @@ public class BridgeControlTest extends ManagementTestBase
    public void testAttributes() throws Exception
    {
       checkResource(ObjectNames.getBridgeObjectName(bridgeConfig.getName()));
-      BridgeControlMBean bridgeControl = createBridgeControl(bridgeConfig.getName(), mbeanServer);
+      BridgeControl bridgeControl = createBridgeControl(bridgeConfig.getName(), mbeanServer);
 
       assertEquals(bridgeConfig.getName(), bridgeControl.getName());
       assertEquals(bridgeConfig.getDiscoveryGroupName(), bridgeControl.getDiscoveryGroupName());
@@ -99,7 +99,7 @@ public class BridgeControlTest extends ManagementTestBase
    public void testStartStop() throws Exception
    {
       checkResource(ObjectNames.getBridgeObjectName(bridgeConfig.getName()));
-      BridgeControlMBean bridgeControl = createBridgeControl(bridgeConfig.getName(), mbeanServer);
+      BridgeControl bridgeControl = createBridgeControl(bridgeConfig.getName(), mbeanServer);
 
       // started by the server
       assertTrue(bridgeControl.isStarted());
@@ -177,7 +177,7 @@ public class BridgeControlTest extends ManagementTestBase
       super.tearDown();
    }
 
-   protected BridgeControlMBean createBridgeControl(String name, MBeanServer mbeanServer) throws Exception
+   protected BridgeControl createBridgeControl(String name, MBeanServer mbeanServer) throws Exception
    {
       return ManagementControlHelper.createBridgeControl(name, mbeanServer);
    }

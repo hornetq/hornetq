@@ -30,8 +30,8 @@ import org.jboss.messaging.core.management.ReplicationOperationInvoker;
 import org.jboss.messaging.core.management.ResourceNames;
 import org.jboss.messaging.core.management.impl.MBeanInfoHelper;
 import org.jboss.messaging.core.management.jmx.impl.ReplicationAwareStandardMBeanWrapper;
-import org.jboss.messaging.jms.server.management.ConnectionFactoryControlMBean;
-import org.jboss.messaging.jms.server.management.impl.ConnectionFactoryControl;
+import org.jboss.messaging.jms.server.management.ConnectionFactoryControl;
+import org.jboss.messaging.jms.server.management.impl.ConnectionFactoryControlImpl;
 
 /**
  * A ReplicationAwareConnectionFactoryControlWrapper
@@ -39,23 +39,23 @@ import org.jboss.messaging.jms.server.management.impl.ConnectionFactoryControl;
  * @author <a href="jmesnil@redhat.com">Jeff Mesnil</a>
  */
 public class ReplicationAwareConnectionFactoryControlWrapper extends ReplicationAwareStandardMBeanWrapper implements
-         ConnectionFactoryControlMBean
+         ConnectionFactoryControl
 {
 
    // Constants -----------------------------------------------------
 
    // Attributes ----------------------------------------------------
 
-   private final ConnectionFactoryControl localControl;
+   private final ConnectionFactoryControlImpl localControl;
 
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   public ReplicationAwareConnectionFactoryControlWrapper(final ConnectionFactoryControl localControl,
+   public ReplicationAwareConnectionFactoryControlWrapper(final ConnectionFactoryControlImpl localControl,
                                                           final ReplicationOperationInvoker replicationInvoker) throws Exception
    {
-      super(ResourceNames.JMS_CONNECTION_FACTORY + localControl.getName(), ConnectionFactoryControlMBean.class, replicationInvoker);
+      super(ResourceNames.JMS_CONNECTION_FACTORY + localControl.getName(), ConnectionFactoryControl.class, replicationInvoker);
       this.localControl = localControl;
    }
 
@@ -186,7 +186,7 @@ public class ReplicationAwareConnectionFactoryControlWrapper extends Replication
                            info.getDescription(),
                            info.getAttributes(),
                            info.getConstructors(),
-                           MBeanInfoHelper.getMBeanOperationsInfo(ConnectionFactoryControlMBean.class),
+                           MBeanInfoHelper.getMBeanOperationsInfo(ConnectionFactoryControl.class),
                            info.getNotifications());
    }
 

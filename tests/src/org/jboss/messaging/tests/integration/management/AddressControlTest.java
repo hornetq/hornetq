@@ -35,7 +35,7 @@ import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
-import org.jboss.messaging.core.management.AddressControlMBean;
+import org.jboss.messaging.core.management.AddressControl;
 import org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory;
 import org.jboss.messaging.core.security.CheckType;
@@ -74,7 +74,7 @@ public class AddressControlTest extends ManagementTestBase
 
       session.createQueue(address, queue, false);
 
-      AddressControlMBean addressControl = createManagementControl(address);
+      AddressControl addressControl = createManagementControl(address);
 
       assertEquals(address.toString(), addressControl.getAddress());
 
@@ -89,7 +89,7 @@ public class AddressControlTest extends ManagementTestBase
 
       session.createQueue(address, queue, true);
 
-      AddressControlMBean addressControl = createManagementControl(address);
+      AddressControl addressControl = createManagementControl(address);
       String[] queueNames = addressControl.getQueueNames();
       assertEquals(1, queueNames.length);
       assertEquals(queue.toString(), queueNames[0]);
@@ -122,7 +122,7 @@ public class AddressControlTest extends ManagementTestBase
 
       session.createQueue(address, queue, true);
 
-      AddressControlMBean addressControl = createManagementControl(address);
+      AddressControl addressControl = createManagementControl(address);
       Object[] tabularData = addressControl.getRoles();
       assertEquals(0, tabularData.length);
 
@@ -160,7 +160,7 @@ public class AddressControlTest extends ManagementTestBase
 
       session.createQueue(address, queue, true);
 
-      AddressControlMBean addressControl = createManagementControl(address);
+      AddressControl addressControl = createManagementControl(address);
       Object[] roles = addressControl.getRoles();
       assertEquals(0, roles.length);
 
@@ -203,7 +203,7 @@ public class AddressControlTest extends ManagementTestBase
 
       session.createQueue(address, queue, true);
 
-      AddressControlMBean addressControl = createManagementControl(address);
+      AddressControl addressControl = createManagementControl(address);
       Object[] tabularData = addressControl.getRoles();
       assertEquals(0, tabularData.length);
 
@@ -249,7 +249,7 @@ public class AddressControlTest extends ManagementTestBase
 
       session.createQueue(address, queue, true);
 
-      AddressControlMBean addressControl = createManagementControl(address);
+      AddressControl addressControl = createManagementControl(address);
       Object[] tabularData = addressControl.getRoles();
       assertEquals(0, tabularData.length);
 
@@ -281,7 +281,7 @@ public class AddressControlTest extends ManagementTestBase
 
       session.createQueue(address, queue, true);
 
-      AddressControlMBean addressControl = createManagementControl(address);
+      AddressControl addressControl = createManagementControl(address);
       Object[] tabularData = addressControl.getRoles();
       assertEquals(0, tabularData.length);
 
@@ -330,7 +330,7 @@ public class AddressControlTest extends ManagementTestBase
       super.tearDown();
    }
 
-   protected AddressControlMBean createManagementControl(SimpleString address) throws Exception
+   protected AddressControl createManagementControl(SimpleString address) throws Exception
    {
       return ManagementControlHelper.createAddressControl(address, mbeanServer);
    }

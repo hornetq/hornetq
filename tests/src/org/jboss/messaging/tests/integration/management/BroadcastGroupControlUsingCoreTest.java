@@ -26,7 +26,7 @@ import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.ClientSessionFactory;
 import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
 import org.jboss.messaging.core.config.TransportConfiguration;
-import org.jboss.messaging.core.management.BroadcastGroupControlMBean;
+import org.jboss.messaging.core.management.BroadcastGroupControl;
 import org.jboss.messaging.core.management.ResourceNames;
 import org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory;
 
@@ -53,13 +53,13 @@ public class BroadcastGroupControlUsingCoreTest extends BroadcastGroupControlTes
    // BroadcastGroupControlTest overrides --------------------------------
 
    @Override
-   protected BroadcastGroupControlMBean createManagementControl(final String name) throws Exception
+   protected BroadcastGroupControl createManagementControl(final String name) throws Exception
    {
       ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration(InVMConnectorFactory.class.getName()));
       session = sf.createSession(false, true, true);
       session.start();
 
-      return new BroadcastGroupControlMBean()
+      return new BroadcastGroupControl()
       {
          private final CoreMessagingProxy proxy = new CoreMessagingProxy(session,
                                                                          ResourceNames.CORE_BROADCAST_GROUP + name);

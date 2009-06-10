@@ -26,7 +26,7 @@ import java.util.Iterator;
 import java.util.Set;
 
 import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.management.AddressControlMBean;
+import org.jboss.messaging.core.management.AddressControl;
 import org.jboss.messaging.core.postoffice.Binding;
 import org.jboss.messaging.core.postoffice.Bindings;
 import org.jboss.messaging.core.postoffice.PostOffice;
@@ -41,12 +41,12 @@ import org.jboss.messaging.utils.SimpleString;
  * @version <tt>$Revision$</tt>
  * 
  */
-public class AddressControl implements AddressControlMBean
+public class AddressControlImpl implements AddressControl
 {
 
    // Constants -----------------------------------------------------
 
-   private static final Logger log = Logger.getLogger(AddressControl.class);
+   private static final Logger log = Logger.getLogger(AddressControlImpl.class);
 
    // Attributes ----------------------------------------------------
 
@@ -60,7 +60,7 @@ public class AddressControl implements AddressControlMBean
 
    // Constructors --------------------------------------------------
 
-   public AddressControl(final SimpleString address,
+   public AddressControlImpl(final SimpleString address,
                          final PostOffice postOffice,
                          final HierarchicalRepository<Set<Role>> securityRepository)
    {

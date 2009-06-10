@@ -30,8 +30,8 @@ import org.jboss.messaging.core.management.ReplicationOperationInvoker;
 import org.jboss.messaging.core.management.ResourceNames;
 import org.jboss.messaging.core.management.impl.MBeanInfoHelper;
 import org.jboss.messaging.core.management.jmx.impl.ReplicationAwareStandardMBeanWrapper;
-import org.jboss.messaging.jms.server.management.TopicControlMBean;
-import org.jboss.messaging.jms.server.management.impl.TopicControl;
+import org.jboss.messaging.jms.server.management.TopicControl;
+import org.jboss.messaging.jms.server.management.impl.TopicControlImpl;
 
 /**
  * A ReplicationAwareTopicControlWrapper
@@ -39,23 +39,23 @@ import org.jboss.messaging.jms.server.management.impl.TopicControl;
  * @author <a href="jmesnil@redhat.com">Jeff Mesnil</a>
  */
 public class ReplicationAwareTopicControlWrapper extends ReplicationAwareStandardMBeanWrapper implements
-         TopicControlMBean
+         TopicControl
 {
 
    // Constants -----------------------------------------------------
 
    // Attributes ----------------------------------------------------
 
-   private final TopicControl localControl;
+   private final TopicControlImpl localControl;
 
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   public ReplicationAwareTopicControlWrapper(final TopicControl localControl,
+   public ReplicationAwareTopicControlWrapper(final TopicControlImpl localControl,
                                               final ReplicationOperationInvoker replicationInvoker) throws Exception
    {
-      super(ResourceNames.JMS_TOPIC + localControl.getName(), TopicControlMBean.class, replicationInvoker);
+      super(ResourceNames.JMS_TOPIC + localControl.getName(), TopicControl.class, replicationInvoker);
       
       this.localControl = localControl;
    }
@@ -163,7 +163,7 @@ public class ReplicationAwareTopicControlWrapper extends ReplicationAwareStandar
                            info.getDescription(),
                            info.getAttributes(),
                            info.getConstructors(),
-                           MBeanInfoHelper.getMBeanOperationsInfo(TopicControlMBean.class),
+                           MBeanInfoHelper.getMBeanOperationsInfo(TopicControl.class),
                            info.getNotifications());
    }
 

@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source
- * Copyright 2008, Red Hat Middleware LLC, and individual contributors
+ * Copyright 2005-2008, Red Hat Middleware LLC, and individual contributors
  * by the @authors tag. See the copyright.txt in the distribution for a
  * full listing of individual contributors.
  *
@@ -22,26 +22,19 @@
 
 package org.jboss.messaging.core.management;
 
-
 /**
- * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
- * 
- * @version <tt>$Revision$</tt>
- * 
+ * A DiscoveryGroupControlMBean
+ *
+ * @author <a href="jmesnil@redhat.com">Jeff Mesnil</a>
+ *
  */
-public interface DivertControlMBean
+public interface DiscoveryGroupControl extends MessagingComponentControlMBean
 {
-   String getFilter();
+   String getName();
 
-   boolean isExclusive();
+   String getGroupAddress();
 
-   String getUniqueName();
+   int getGroupPort();
 
-   String getRoutingName();
-
-   String getAddress();
-
-   String getForwardingAddress();
-
-   String getTransformerClassName();
+   long getRefreshTimeout();
 }

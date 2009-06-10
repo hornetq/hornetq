@@ -27,10 +27,10 @@ import java.util.List;
 
 import javax.management.ObjectName;
 
-import org.jboss.messaging.core.management.AddressControlMBean;
+import org.jboss.messaging.core.management.AddressControl;
 import org.jboss.messaging.core.management.ManagementService;
 import org.jboss.messaging.core.management.ObjectNames;
-import org.jboss.messaging.core.management.QueueControlMBean;
+import org.jboss.messaging.core.management.QueueControl;
 import org.jboss.messaging.core.management.ResourceNames;
 import org.jboss.messaging.core.messagecounter.MessageCounter;
 import org.jboss.messaging.core.messagecounter.MessageCounterManager;
@@ -39,7 +39,7 @@ import org.jboss.messaging.jms.JBossTopic;
 import org.jboss.messaging.jms.client.JBossConnectionFactory;
 import org.jboss.messaging.jms.server.JMSServerManager;
 import org.jboss.messaging.jms.server.management.JMSManagementService;
-import org.jboss.messaging.jms.server.management.JMSServerControlMBean;
+import org.jboss.messaging.jms.server.management.JMSServerControl;
 import org.jboss.messaging.jms.server.management.jmx.impl.ReplicationAwareConnectionFactoryControlWrapper;
 import org.jboss.messaging.jms.server.management.jmx.impl.ReplicationAwareJMSQueueControlWrapper;
 import org.jboss.messaging.jms.server.management.jmx.impl.ReplicationAwareJMSServerControlWrapper;
@@ -70,11 +70,11 @@ public class JMSManagementServiceImpl implements JMSManagementService
 
    // JMSManagementRegistration implementation ----------------------
 
-   public synchronized JMSServerControlMBean registerJMSServer(final JMSServerManager server) throws Exception
+   public synchronized JMSServerControl registerJMSServer(final JMSServerManager server) throws Exception
    {
       ObjectName objectName = ObjectNames.getJMSServerObjectName();
-      JMSServerControl control = new JMSServerControl(server);
-      JMSServerControlMBean replicatingProxy = new ReplicationAwareJMSServerControlWrapper(control, 
+      JMSServerControlImpl control = new JMSServerControlImpl(server);
+      JMSServerControl replicatingProxy = new ReplicationAwareJMSServerControlWrapper(control, 
                                                                                       managementService.getReplicationOperationInvoker());
       managementService.registerInJMX(objectName,
                                       replicatingProxy);
@@ -92,7 +92,7 @@ public class JMSManagementServiceImpl implements JMSManagementService
    public synchronized void registerQueue(final JBossQueue queue,
                              final String jndiBinding) throws Exception
    {
-      QueueControlMBean coreQueueControl = (QueueControlMBean)managementService.getResource(ResourceNames.CORE_QUEUE + queue.getAddress());
+      QueueControl coreQueueControl = (QueueControl)managementService.getResource(ResourceNames.CORE_QUEUE + queue.getAddress());
       MessageCounterManager messageCounterManager = managementService.getMessageCounterManager();
       MessageCounter counter = new MessageCounter(queue.getName(),
                                                   null,
@@ -102,7 +102,7 @@ public class JMSManagementServiceImpl implements JMSManagementService
                                                   messageCounterManager.getMaxDayCount());
       messageCounterManager.registerMessageCounter(queue.getName(), counter);
       ObjectName objectName = ObjectNames.getJMSQueueObjectName(queue.getQueueName());
-      JMSQueueControl control = new JMSQueueControl(queue,
+      JMSQueueControlImpl control = new JMSQueueControlImpl(queue,
                                                     coreQueueControl,
                                                     jndiBinding,
                                                     counter);
@@ -123,8 +123,8 @@ public class JMSManagementServiceImpl implements JMSManagementService
                              final String jndiBinding) throws Exception
    {
       ObjectName objectName = ObjectNames.getJMSTopicObjectName(topic.getTopicName());
-      AddressControlMBean addressControl = (AddressControlMBean)managementService.getResource(ResourceNames.CORE_ADDRESS + topic.getAddress());
-      TopicControl control = new TopicControl(topic, addressControl, jndiBinding, managementService);
+      AddressControl addressControl = (AddressControl)managementService.getResource(ResourceNames.CORE_ADDRESS + topic.getAddress());
+      TopicControlImpl control = new TopicControlImpl(topic, addressControl, jndiBinding, managementService);
       managementService.registerInJMX(objectName, new ReplicationAwareTopicControlWrapper(control,
                                                                                           managementService.getReplicationOperationInvoker()));
       managementService.registerInRegistry(ResourceNames.JMS_TOPIC + topic.getTopicName(), control);
@@ -142,7 +142,7 @@ public class JMSManagementServiceImpl implements JMSManagementService
                                          final List<String> bindings) throws Exception
    {
       ObjectName objectName = ObjectNames.getConnectionFactoryObjectName(name);
-      ConnectionFactoryControl control = new ConnectionFactoryControl(connectionFactory, name, bindings);
+      ConnectionFactoryControlImpl control = new ConnectionFactoryControlImpl(connectionFactory, name, bindings);
       managementService.registerInJMX(objectName,
                                       new ReplicationAwareConnectionFactoryControlWrapper(control,
                                                                                           managementService.getReplicationOperationInvoker()));

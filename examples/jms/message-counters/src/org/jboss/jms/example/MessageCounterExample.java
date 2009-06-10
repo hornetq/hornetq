@@ -24,7 +24,7 @@ package org.jboss.jms.example;
 import org.jboss.common.example.JBMExample;
 import org.jboss.messaging.core.management.MessageCounterInfo;
 import org.jboss.messaging.core.management.ObjectNames;
-import org.jboss.messaging.jms.server.management.JMSQueueControlMBean;
+import org.jboss.messaging.jms.server.management.JMSQueueControl;
 
 import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
@@ -91,9 +91,9 @@ public class MessageCounterExample extends JBMExample
          ObjectName on = ObjectNames.getJMSQueueObjectName(queue.getQueueName());
          JMXConnector connector = JMXConnectorFactory.connect(new JMXServiceURL(JMX_URL), new HashMap());
          MBeanServerConnection mbsc = connector.getMBeanServerConnection();
-         JMSQueueControlMBean queueControl = (JMSQueueControlMBean)MBeanServerInvocationHandler.newProxyInstance(mbsc,
+         JMSQueueControl queueControl = (JMSQueueControl)MBeanServerInvocationHandler.newProxyInstance(mbsc,
                                                                                                                  on,
-                                                                                                                 JMSQueueControlMBean.class,
+                                                                                                                 JMSQueueControl.class,
                                                                                                                  false);
 
          // Step 8. List the message counters and convert them to MessageCounterInfo data structure.

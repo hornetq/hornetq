@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source
- * Copyright 2005-2008, Red Hat Middleware LLC, and individual contributors
+ * Copyright 2008, Red Hat Middleware LLC, and individual contributors
  * by the @authors tag. See the copyright.txt in the distribution for a
  * full listing of individual contributors.
  *
@@ -22,23 +22,26 @@
 
 package org.jboss.messaging.core.management;
 
-import java.util.Map;
 
 /**
- * A AcceptorMBean
- *
- * @author <a href="jmesnil@redhat.com">Jeff Mesnil</a>
- *
+ * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
+ * 
+ * @version <tt>$Revision$</tt>
+ * 
  */
-public interface AcceptorControlMBean extends MessagingComponentControlMBean
+public interface DivertControl
 {
-   void pause() throws Exception;
-   
-   void resume() throws Exception;
-   
-   String getName();
+   String getFilter();
 
-   String getFactoryClassName();
+   boolean isExclusive();
 
-   Map<String, Object> getParameters();
+   String getUniqueName();
+
+   String getRoutingName();
+
+   String getAddress();
+
+   String getForwardingAddress();
+
+   String getTransformerClassName();
 }

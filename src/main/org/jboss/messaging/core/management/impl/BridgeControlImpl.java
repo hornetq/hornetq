@@ -22,55 +22,80 @@
 
 package org.jboss.messaging.core.management.impl;
 
-import org.jboss.messaging.core.config.cluster.ClusterConnectionConfiguration;
-import org.jboss.messaging.core.management.ClusterConnectionControlMBean;
-import org.jboss.messaging.core.server.cluster.ClusterConnection;
-import org.jboss.messaging.utils.Pair;
+import org.jboss.messaging.core.config.cluster.BridgeConfiguration;
+import org.jboss.messaging.core.management.BridgeControl;
+import org.jboss.messaging.core.server.cluster.Bridge;
 
 /**
- * A ClusterConnectionControl
+ * A BridgeControl
  *
  * @author <a href="jmesnil@redhat.com">Jeff Mesnil</a>
+ * 
+ * Created 11 dec. 2008 17:09:04
  */
-public class ClusterConnectionControl implements ClusterConnectionControlMBean
+public class BridgeControlImpl implements BridgeControl
 {
 
    // Constants -----------------------------------------------------
 
    // Attributes ----------------------------------------------------
+ 
+   private final Bridge bridge;
 
-   private final ClusterConnection clusterConnection;
-
-   private final ClusterConnectionConfiguration configuration;
+   private final BridgeConfiguration configuration;
 
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   public ClusterConnectionControl(final ClusterConnection clusterConnection,
-                                   ClusterConnectionConfiguration configuration)
+   public BridgeControlImpl(final Bridge bridge, final BridgeConfiguration configuration)
    {
-      this.clusterConnection = clusterConnection;
+      this.bridge = bridge;
       this.configuration = configuration;
    }
 
-   // ClusterConnectionControlMBean implementation ---------------------------
+   // BridgeControlMBean implementation ---------------------------
 
-   public String getAddress()
+   public String[] getConnectorPair() throws Exception
    {
-      return configuration.getAddress();
+      String[] pair = new String[2];
+      
+      pair[0] = configuration.getConnectorPair().a;
+      pair[1] = configuration.getConnectorPair().b != null ? configuration.getConnectorPair().b : null;
+      
+      return pair;
    }
 
+   public String getForwardingAddress()
+   {
+      return configuration.getForwardingAddress();
+   }
+
+   public String getQueueName()
+   {
+      return configuration.getQueueName();
+   }
+   
    public String getDiscoveryGroupName()
    {
       return configuration.getDiscoveryGroupName();
    }
 
-   public int getMaxHops()
+   public String getFilterString()
    {
-      return configuration.getMaxHops();
+      return configuration.getFilterString();
    }
-   
+
+   public int getReconnectAttempts()
+   {
+      return configuration.getReconnectAttempts();
+   }
+
+   public boolean isFailoverOnServerShutdown()
+   {
+      return configuration.isFailoverOnServerShutdown();
+   }
+
    public String getName()
    {
       return configuration.getName();
@@ -81,47 +106,34 @@ public class ClusterConnectionControl implements ClusterConnectionControlMBean
       return configuration.getRetryInterval();
    }
 
-   public Object[] getStaticConnectorNamePairs()
+   public double getRetryIntervalMultiplier()
    {
-      Object[] ret = new Object[configuration.getStaticConnectorNamePairs().size()];
-      
-      int i = 0;
-      for (Pair<String, String> pair: configuration.getStaticConnectorNamePairs())
-      {
-         String[] opair = new String[2];
-         
-         opair[0] = pair.a;
-         opair[1] = pair.b != null ? pair.b : null;
-         
-         ret[i++] = opair;
-      }
-      
-      return ret;            
+      return configuration.getRetryIntervalMultiplier();
    }
 
-   public boolean isDuplicateDetection()
+   public String getTransformerClassName()
    {
-      return configuration.isDuplicateDetection();
-   }
-
-   public boolean isForwardWhenNoConsumers()
-   {
-      return configuration.isForwardWhenNoConsumers();
+      return configuration.getTransformerClassName();
    }
 
    public boolean isStarted()
    {
-      return clusterConnection.isStarted();
+      return bridge.isStarted();
+   }
+
+   public boolean isUseDuplicateDetection()
+   {
+      return configuration.isUseDuplicateDetection();
    }
 
    public void start() throws Exception
    {
-      clusterConnection.start();
+      bridge.start();
    }
 
    public void stop() throws Exception
    {
-      clusterConnection.stop();
+      bridge.stop();
    }
 
    // Public --------------------------------------------------------

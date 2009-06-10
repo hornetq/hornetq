@@ -22,118 +22,73 @@
 
 package org.jboss.messaging.core.management.impl;
 
-import org.jboss.messaging.core.config.cluster.BridgeConfiguration;
-import org.jboss.messaging.core.management.BridgeControlMBean;
-import org.jboss.messaging.core.server.cluster.Bridge;
+import org.jboss.messaging.core.cluster.DiscoveryGroup;
+import org.jboss.messaging.core.config.cluster.DiscoveryGroupConfiguration;
+import org.jboss.messaging.core.management.DiscoveryGroupControl;
 
 /**
- * A BridgeControl
+ * A AcceptorControl
  *
  * @author <a href="jmesnil@redhat.com">Jeff Mesnil</a>
  * 
  * Created 11 dec. 2008 17:09:04
  */
-public class BridgeControl implements BridgeControlMBean
+public class DiscoveryGroupControlImpl implements DiscoveryGroupControl
 {
 
    // Constants -----------------------------------------------------
 
    // Attributes ----------------------------------------------------
- 
-   private final Bridge bridge;
 
-   private final BridgeConfiguration configuration;
+   private final DiscoveryGroup discoveryGroup;
+
+   private final DiscoveryGroupConfiguration configuration;
 
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   public BridgeControl(final Bridge messageFlow, final BridgeConfiguration configuration)
+   public DiscoveryGroupControlImpl(final DiscoveryGroup acceptor, final DiscoveryGroupConfiguration configuration)
    {
-      this.bridge = messageFlow;
+      this.discoveryGroup = acceptor;
       this.configuration = configuration;
    }
 
-   // BridgeControlMBean implementation ---------------------------
-
-   public String[] getConnectorPair() throws Exception
-   {
-      String[] pair = new String[2];
-      
-      pair[0] = configuration.getConnectorPair().a;
-      pair[1] = configuration.getConnectorPair().b != null ? configuration.getConnectorPair().b : null;
-      
-      return pair;
-   }
-
-   public String getForwardingAddress()
-   {
-      return configuration.getForwardingAddress();
-   }
-
-   public String getQueueName()
-   {
-      return configuration.getQueueName();
-   }
-   
-   public String getDiscoveryGroupName()
-   {
-      return configuration.getDiscoveryGroupName();
-   }
-
-   public String getFilterString()
-   {
-      return configuration.getFilterString();
-   }
-
-   public int getReconnectAttempts()
-   {
-      return configuration.getReconnectAttempts();
-   }
-
-   public boolean isFailoverOnServerShutdown()
-   {
-      return configuration.isFailoverOnServerShutdown();
-   }
+   // DiscoveryGroupControlMBean implementation ---------------------------
 
    public String getName()
    {
       return configuration.getName();
    }
 
-   public long getRetryInterval()
+   public String getGroupAddress()
    {
-      return configuration.getRetryInterval();
+      return configuration.getGroupAddress();
    }
 
-   public double getRetryIntervalMultiplier()
+   public int getGroupPort()
    {
-      return configuration.getRetryIntervalMultiplier();
+      return configuration.getGroupPort();
    }
 
-   public String getTransformerClassName()
+   public long getRefreshTimeout()
    {
-      return configuration.getTransformerClassName();
+      return configuration.getRefreshTimeout();
    }
 
    public boolean isStarted()
    {
-      return bridge.isStarted();
-   }
-
-   public boolean isUseDuplicateDetection()
-   {
-      return configuration.isUseDuplicateDetection();
+      return discoveryGroup.isStarted();
    }
 
    public void start() throws Exception
    {
-      bridge.start();
+      discoveryGroup.start();
    }
 
    public void stop() throws Exception
    {
-      bridge.stop();
+      discoveryGroup.stop();
    }
 
    // Public --------------------------------------------------------

@@ -29,7 +29,7 @@ import static org.jboss.messaging.tests.util.RandomUtil.randomString;
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.cluster.DiscoveryGroupConfiguration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
-import org.jboss.messaging.core.management.DiscoveryGroupControlMBean;
+import org.jboss.messaging.core.management.DiscoveryGroupControl;
 import org.jboss.messaging.core.server.Messaging;
 import org.jboss.messaging.core.server.MessagingServer;
 
@@ -69,7 +69,7 @@ public class DiscoveryGroupControlTest extends ManagementTestBase
       service = Messaging.newMessagingServer(conf, mbeanServer, false);
       service.start();
 
-      DiscoveryGroupControlMBean discoveryGroupControl = createManagementControl(discoveryGroupConfig.getName());
+      DiscoveryGroupControl discoveryGroupControl = createManagementControl(discoveryGroupConfig.getName());
 
       assertEquals(discoveryGroupConfig.getName(), discoveryGroupControl.getName());
       assertEquals(discoveryGroupConfig.getGroupAddress(), discoveryGroupControl.getGroupAddress());
@@ -89,7 +89,7 @@ public class DiscoveryGroupControlTest extends ManagementTestBase
       service = Messaging.newMessagingServer(conf, mbeanServer, false);
       service.start();
 
-      DiscoveryGroupControlMBean discoveryGroupControl = createManagementControl(discoveryGroupConfig.getName());
+      DiscoveryGroupControl discoveryGroupControl = createManagementControl(discoveryGroupConfig.getName());
 
       // started by the server
       assertTrue(discoveryGroupControl.isStarted());
@@ -117,7 +117,7 @@ public class DiscoveryGroupControlTest extends ManagementTestBase
       super.tearDown();
    }
    
-   protected DiscoveryGroupControlMBean createManagementControl(String name) throws Exception
+   protected DiscoveryGroupControl createManagementControl(String name) throws Exception
    {
       return createDiscoveryGroupControl(name, mbeanServer);
    }

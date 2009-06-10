@@ -22,19 +22,18 @@
 
 package org.jboss.messaging.jms.server.management.impl;
 
-import java.util.HashMap;
 import java.util.Map;
 
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.management.MessageCounterInfo;
-import org.jboss.messaging.core.management.QueueControlMBean;
+import org.jboss.messaging.core.management.QueueControl;
 import org.jboss.messaging.core.messagecounter.MessageCounter;
 import org.jboss.messaging.core.messagecounter.impl.MessageCounterHelper;
 import org.jboss.messaging.jms.JBossQueue;
 import org.jboss.messaging.jms.client.JBossMessage;
 import org.jboss.messaging.jms.client.SelectorTranslator;
-import org.jboss.messaging.jms.server.management.JMSQueueControlMBean;
+import org.jboss.messaging.jms.server.management.JMSQueueControl;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -42,17 +41,17 @@ import org.jboss.messaging.jms.server.management.JMSQueueControlMBean;
  * @version <tt>$Revision$</tt>
  * 
  */
-public class JMSQueueControl implements JMSQueueControlMBean
+public class JMSQueueControlImpl implements JMSQueueControl
 {
    // Constants -----------------------------------------------------
 
-   private static final Logger log = Logger.getLogger(JMSQueueControl.class);
+   private static final Logger log = Logger.getLogger(JMSQueueControlImpl.class);
 
    // Attributes ----------------------------------------------------
 
    private final JBossQueue managedQueue;
 
-   private final QueueControlMBean coreQueueControl;
+   private final QueueControl coreQueueControl;
 
    private final String binding;
 
@@ -72,8 +71,8 @@ public class JMSQueueControl implements JMSQueueControlMBean
 
    // Constructors --------------------------------------------------
 
-   public JMSQueueControl(final JBossQueue managedQueue,
-                          final QueueControlMBean coreQueueControl,
+   public JMSQueueControlImpl(final JBossQueue managedQueue,
+                          final QueueControl coreQueueControl,
                           final String jndiBinding,
                           final MessageCounter counter)
    {

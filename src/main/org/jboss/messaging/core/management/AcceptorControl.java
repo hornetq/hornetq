@@ -22,28 +22,23 @@
 
 package org.jboss.messaging.core.management;
 
+import java.util.Map;
 
 /**
- * A ClusterConnectionControlMBean
+ * A AcceptorMBean
  *
  * @author <a href="jmesnil@redhat.com">Jeff Mesnil</a>
  *
  */
-public interface ClusterConnectionControlMBean extends MessagingComponentControlMBean
+public interface AcceptorControl extends MessagingComponentControlMBean
 {
+   void pause() throws Exception;
+   
+   void resume() throws Exception;
+   
    String getName();
 
-   String getAddress();
+   String getFactoryClassName();
 
-   boolean isDuplicateDetection();
-
-   boolean isForwardWhenNoConsumers();
-
-   int getMaxHops();
-
-   Object[] getStaticConnectorNamePairs();
-
-   String getDiscoveryGroupName();
-
-   long getRetryInterval();
+   Map<String, Object> getParameters();
 }

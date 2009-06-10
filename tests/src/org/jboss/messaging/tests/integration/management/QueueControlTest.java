@@ -43,8 +43,8 @@ import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.management.DayCounterInfo;
 import org.jboss.messaging.core.management.MessageCounterInfo;
-import org.jboss.messaging.core.management.MessagingServerControlMBean;
-import org.jboss.messaging.core.management.QueueControlMBean;
+import org.jboss.messaging.core.management.MessagingServerControl;
+import org.jboss.messaging.core.management.QueueControl;
 import org.jboss.messaging.core.message.impl.MessageImpl;
 import org.jboss.messaging.core.messagecounter.impl.MessageCounterManagerImpl;
 import org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory;
@@ -86,7 +86,7 @@ public class QueueControlTest extends ManagementTestBase
 
       session.createQueue(address, queue, filter, durable);
 
-      QueueControlMBean queueControl = createManagementControl(address, queue);
+      QueueControl queueControl = createManagementControl(address, queue);
       assertEquals(queue.toString(), queueControl.getName());
       assertEquals(address.toString(), queueControl.getAddress());
       assertEquals(filter.toString(), queueControl.getFilter());
@@ -104,7 +104,7 @@ public class QueueControlTest extends ManagementTestBase
 
       session.createQueue(address, queue, null, false);
 
-      QueueControlMBean queueControl = createManagementControl(address, queue);
+      QueueControl queueControl = createManagementControl(address, queue);
       assertEquals(queue.toString(), queueControl.getName());
       assertEquals(null, queueControl.getFilter());
 
@@ -119,7 +119,7 @@ public class QueueControlTest extends ManagementTestBase
 
       session.createQueue(address, queue, null, false);
 
-      QueueControlMBean queueControl = createManagementControl(address, queue);
+      QueueControl queueControl = createManagementControl(address, queue);
       assertNull(queueControl.getDeadLetterAddress());
 
       server.getAddressSettingsRepository().addMatch(address.toString(), new AddressSettings()
@@ -144,7 +144,7 @@ public class QueueControlTest extends ManagementTestBase
 
       session.createQueue(address, queue, null, false);
 
-      QueueControlMBean queueControl = createManagementControl(address, queue);
+      QueueControl queueControl = createManagementControl(address, queue);
       queueControl.setDeadLetterAddress(deadLetterAddress);
 
       assertEquals(deadLetterAddress, queueControl.getDeadLetterAddress());
@@ -160,7 +160,7 @@ public class QueueControlTest extends ManagementTestBase
 
       session.createQueue(address, queue, null, false);
 
-      QueueControlMBean queueControl = createManagementControl(address, queue);
+      QueueControl queueControl = createManagementControl(address, queue);
       assertNull(queueControl.getExpiryAddress());
 
       server.getAddressSettingsRepository().addMatch(address.toString(), new AddressSettings()
@@ -185,7 +185,7 @@ public class QueueControlTest extends ManagementTestBase
 
       session.createQueue(address, queue, null, false);
 
-      QueueControlMBean queueControl = createManagementControl(address, queue);
+      QueueControl queueControl = createManagementControl(address, queue);
       queueControl.setExpiryAddress(expiryAddress);
 
       assertEquals(expiryAddress, queueControl.getExpiryAddress());
@@ -200,7 +200,7 @@ public class QueueControlTest extends ManagementTestBase
 
       session.createQueue(address, queue, null, false);
 
-      QueueControlMBean queueControl = createManagementControl(address, queue);
+      QueueControl queueControl = createManagementControl(address, queue);
 
       assertEquals(0, queueControl.getConsumerCount());
 
@@ -220,7 +220,7 @@ public class QueueControlTest extends ManagementTestBase
 
       session.createQueue(address, queue, null, false);
 
-      QueueControlMBean queueControl = createManagementControl(address, queue);
+      QueueControl queueControl = createManagementControl(address, queue);
       assertEquals(0, queueControl.getMessageCount());
 
       ClientProducer producer = session.createProducer(address);
@@ -241,7 +241,7 @@ public class QueueControlTest extends ManagementTestBase
 
       session.createQueue(address, queue, null, false);
 
-      QueueControlMBean queueControl = createManagementControl(address, queue);
+      QueueControl queueControl = createManagementControl(address, queue);
       assertEquals(0, queueControl.getMessagesAdded());
 
       ClientProducer producer = session.createProducer(address);
@@ -265,7 +265,7 @@ public class QueueControlTest extends ManagementTestBase
 
       session.createQueue(address, queue, null, false);
 
-      QueueControlMBean queueControl = createManagementControl(address, queue);
+      QueueControl queueControl = createManagementControl(address, queue);
       assertEquals(0, queueControl.getScheduledCount());
 
       ClientProducer producer = session.createProducer(address);
@@ -292,7 +292,7 @@ public class QueueControlTest extends ManagementTestBase
       int intValue = randomInt();
       session.createQueue(address, queue, null, false);
 
-      QueueControlMBean queueControl = createManagementControl(address, queue);
+      QueueControl queueControl = createManagementControl(address, queue);
 
       ClientProducer producer = session.createProducer(address);
       ClientMessage message = session.createClientMessage(false);
@@ -327,7 +327,7 @@ public class QueueControlTest extends ManagementTestBase
       ClientProducer producer = session.createProducer(address);
       producer.send(session.createClientMessage(false));
 
-      QueueControlMBean queueControl = createManagementControl(address, queue);
+      QueueControl queueControl = createManagementControl(address, queue);
       assertEquals(0, queueControl.getDeliveringCount());
 
       ClientConsumer consumer = session.createConsumer(queue);
@@ -350,7 +350,7 @@ public class QueueControlTest extends ManagementTestBase
       int intValue = randomInt();
       session.createQueue(address, queue, null, false);
 
-      QueueControlMBean queueControl = createManagementControl(address, queue);
+      QueueControl queueControl = createManagementControl(address, queue);
 
       ClientProducer producer = session.createProducer(address);
       ClientMessage message = session.createClientMessage(false);
@@ -381,7 +381,7 @@ public class QueueControlTest extends ManagementTestBase
       SimpleString queue = randomSimpleString();
 
       session.createQueue(address, queue, null, false);
-      QueueControlMBean queueControl = createManagementControl(address, queue);
+      QueueControl queueControl = createManagementControl(address, queue);
 
       ClientProducer producer = session.createProducer(address);
       ClientMessage matchingMessage = session.createClientMessage(false);
@@ -430,7 +430,7 @@ public class QueueControlTest extends ManagementTestBase
       message.putLongProperty(key, value);
       producer.send(message);
 
-      QueueControlMBean queueControl = createManagementControl(address, queue);
+      QueueControl queueControl = createManagementControl(address, queue);
       assertEquals(1, queueControl.getMessageCount());
 
       // moved all messages to otherQueue
@@ -469,7 +469,7 @@ public class QueueControlTest extends ManagementTestBase
       message.putLongProperty(key, value);
       producer.send(message);
 
-      QueueControlMBean queueControl = createManagementControl(address, queue);
+      QueueControl queueControl = createManagementControl(address, queue);
       assertEquals(1, queueControl.getMessageCount());
 
       // moved all messages to unknown queue
@@ -520,7 +520,7 @@ public class QueueControlTest extends ManagementTestBase
       unmatchingMessage.putLongProperty(key, unmatchingValue);
       producer.send(unmatchingMessage);
 
-      QueueControlMBean queueControl = createManagementControl(address, queue);
+      QueueControl queueControl = createManagementControl(address, queue);
       assertEquals(2, queueControl.getMessageCount());
 
       // moved matching messages to otherQueue
@@ -564,8 +564,8 @@ public class QueueControlTest extends ManagementTestBase
       producer.send(session.createClientMessage(false));
       producer.send(session.createClientMessage(false));
 
-      QueueControlMBean queueControl = createManagementControl(address, queue);
-      QueueControlMBean otherQueueControl = createManagementControl(otherAddress, otherQueue);
+      QueueControl queueControl = createManagementControl(address, queue);
+      QueueControl otherQueueControl = createManagementControl(otherAddress, otherQueue);
       assertEquals(2, queueControl.getMessageCount());
       assertEquals(0, otherQueueControl.getMessageCount());
 
@@ -598,7 +598,7 @@ public class QueueControlTest extends ManagementTestBase
       // send 2 messages on queue
       producer.send(session.createClientMessage(false));
 
-      QueueControlMBean queueControl = createManagementControl(address, queue);
+      QueueControl queueControl = createManagementControl(address, queue);
       assertEquals(1, queueControl.getMessageCount());
 
       // the message IDs are set on the server
@@ -642,7 +642,7 @@ public class QueueControlTest extends ManagementTestBase
       producer.send(session.createClientMessage(false));
       producer.send(session.createClientMessage(false));
 
-      QueueControlMBean queueControl = createManagementControl(address, queue);
+      QueueControl queueControl = createManagementControl(address, queue);
       assertEquals(2, queueControl.getMessageCount());
 
       // delete all messages
@@ -684,7 +684,7 @@ public class QueueControlTest extends ManagementTestBase
       unmatchingMessage.putLongProperty(key, unmatchingValue);
       producer.send(unmatchingMessage);
 
-      QueueControlMBean queueControl = createManagementControl(address, queue);
+      QueueControl queueControl = createManagementControl(address, queue);
       assertEquals(2, queueControl.getMessageCount());
 
       // removed matching messages to otherQueue
@@ -720,7 +720,7 @@ public class QueueControlTest extends ManagementTestBase
       producer.send(session.createClientMessage(false));
       producer.send(session.createClientMessage(false));
 
-      QueueControlMBean queueControl = createManagementControl(address, queue);
+      QueueControl queueControl = createManagementControl(address, queue);
       assertEquals(2, queueControl.getMessageCount());
 
       // the message IDs are set on the server
@@ -760,7 +760,7 @@ public class QueueControlTest extends ManagementTestBase
       producer.send(unmatchingMessage);
       producer.send(matchingMessage);
 
-      QueueControlMBean queueControl = createManagementControl(address, queue);
+      QueueControl queueControl = createManagementControl(address, queue);
       assertEquals(3, queueControl.getMessageCount());
 
       assertEquals(2, queueControl.countMessages(key + " =" + matchingValue));
@@ -789,7 +789,7 @@ public class QueueControlTest extends ManagementTestBase
       unmatchingMessage.putLongProperty(key, unmatchingValue);
       producer.send(unmatchingMessage);
 
-      QueueControlMBean queueControl = createManagementControl(address, queue);
+      QueueControl queueControl = createManagementControl(address, queue);
       assertEquals(2, queueControl.getMessageCount());
 
       int expiredMessagesCount = queueControl.expireMessages(key + " =" + matchingValue);
@@ -827,8 +827,8 @@ public class QueueControlTest extends ManagementTestBase
       // send on queue
       producer.send(session.createClientMessage(false));
 
-      QueueControlMBean queueControl = createManagementControl(address, queue);
-      QueueControlMBean expiryQueueControl = createManagementControl(expiryAddress, expiryQueue);
+      QueueControl queueControl = createManagementControl(address, queue);
+      QueueControl expiryQueueControl = createManagementControl(expiryAddress, expiryQueue);
       assertEquals(1, queueControl.getMessageCount());
       assertEquals(0, expiryQueueControl.getMessageCount());
 
@@ -866,8 +866,8 @@ public class QueueControlTest extends ManagementTestBase
       producer.send(session.createClientMessage(false));
       producer.send(session.createClientMessage(false));
 
-      QueueControlMBean queueControl = createManagementControl(address, queue);
-      QueueControlMBean deadLetterQueueControl = createManagementControl(deadLetterAddress, deadLetterQueue);
+      QueueControl queueControl = createManagementControl(address, queue);
+      QueueControl deadLetterQueueControl = createManagementControl(deadLetterAddress, deadLetterQueue);
       assertEquals(2, queueControl.getMessageCount());
 
       // the message IDs are set on the server
@@ -908,7 +908,7 @@ public class QueueControlTest extends ManagementTestBase
       message.setPriority(originalPriority);
       producer.send(message);
 
-      QueueControlMBean queueControl = createManagementControl(address, queue);
+      QueueControl queueControl = createManagementControl(address, queue);
       assertEquals(1, queueControl.getMessageCount());
 
       // the message IDs are set on the server
@@ -941,7 +941,7 @@ public class QueueControlTest extends ManagementTestBase
       ClientMessage message = session.createClientMessage(false);
       producer.send(message);
 
-      QueueControlMBean queueControl = createManagementControl(address, queue);
+      QueueControl queueControl = createManagementControl(address, queue);
       assertEquals(1, queueControl.getMessageCount());
 
       // the message IDs are set on the server
@@ -973,9 +973,9 @@ public class QueueControlTest extends ManagementTestBase
       SimpleString queue = randomSimpleString();
 
       session.createQueue(address, queue, null, false);
-      QueueControlMBean queueControl = createManagementControl(address, queue);
+      QueueControl queueControl = createManagementControl(address, queue);
       
-      MessagingServerControlMBean serverControl = createMessagingServerControl(mbeanServer);
+      MessagingServerControl serverControl = createMessagingServerControl(mbeanServer);
       serverControl.enableMessageCounters();
       serverControl.setMessageCounterSamplePeriod(MessageCounterManagerImpl.MIN_SAMPLE_PERIOD);
 
@@ -1025,9 +1025,9 @@ public class QueueControlTest extends ManagementTestBase
       SimpleString queue = randomSimpleString();
 
       session.createQueue(address, queue, null, false);
-      QueueControlMBean queueControl = createManagementControl(address, queue);
+      QueueControl queueControl = createManagementControl(address, queue);
       
-      MessagingServerControlMBean serverControl = createMessagingServerControl(mbeanServer);
+      MessagingServerControl serverControl = createMessagingServerControl(mbeanServer);
       serverControl.enableMessageCounters();
       serverControl.setMessageCounterSamplePeriod(MessageCounterManagerImpl.MIN_SAMPLE_PERIOD);
 
@@ -1077,7 +1077,7 @@ public class QueueControlTest extends ManagementTestBase
       SimpleString queue = randomSimpleString();
 
       session.createQueue(address, queue, null, false);
-      QueueControlMBean queueControl = createManagementControl(address, queue);
+      QueueControl queueControl = createManagementControl(address, queue);
       
       String history = queueControl.listMessageCounterAsHTML();
       assertNotNull(history);
@@ -1092,9 +1092,9 @@ public class QueueControlTest extends ManagementTestBase
       SimpleString queue = randomSimpleString();
 
       session.createQueue(address, queue, null, false);
-      QueueControlMBean queueControl = createManagementControl(address, queue);
+      QueueControl queueControl = createManagementControl(address, queue);
       
-      MessagingServerControlMBean serverControl = createMessagingServerControl(mbeanServer);
+      MessagingServerControl serverControl = createMessagingServerControl(mbeanServer);
       serverControl.enableMessageCounters();
       serverControl.setMessageCounterSamplePeriod(counterPeriod);
 
@@ -1112,9 +1112,9 @@ public class QueueControlTest extends ManagementTestBase
       SimpleString queue = randomSimpleString();
 
       session.createQueue(address, queue, null, false);
-      QueueControlMBean queueControl = createManagementControl(address, queue);
+      QueueControl queueControl = createManagementControl(address, queue);
       
-      MessagingServerControlMBean serverControl = createMessagingServerControl(mbeanServer);
+      MessagingServerControl serverControl = createMessagingServerControl(mbeanServer);
       serverControl.enableMessageCounters();
       serverControl.setMessageCounterSamplePeriod(counterPeriod);
 
@@ -1157,9 +1157,9 @@ public class QueueControlTest extends ManagementTestBase
       super.tearDown();
    }
 
-   protected QueueControlMBean createManagementControl(SimpleString address, SimpleString queue) throws Exception
+   protected QueueControl createManagementControl(SimpleString address, SimpleString queue) throws Exception
    {
-      QueueControlMBean queueControl = createQueueControl(address, queue, mbeanServer);
+      QueueControl queueControl = createQueueControl(address, queue, mbeanServer);
       return queueControl;
    }
 

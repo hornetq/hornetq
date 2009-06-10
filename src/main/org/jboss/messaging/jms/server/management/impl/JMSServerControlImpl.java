@@ -22,26 +22,23 @@
 
 package org.jboss.messaging.jms.server.management.impl;
 
-import org.jboss.messaging.core.config.TransportConfiguration;
-import org.jboss.messaging.core.management.impl.MBeanInfoHelper;
-import org.jboss.messaging.jms.server.JMSServerManager;
-import org.jboss.messaging.jms.server.management.JMSServerControlMBean;
-import org.jboss.messaging.utils.Pair;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicLong;
 
 import javax.management.ListenerNotFoundException;
-import javax.management.MBeanInfo;
 import javax.management.MBeanNotificationInfo;
-import javax.management.NotCompliantMBeanException;
 import javax.management.Notification;
 import javax.management.NotificationBroadcasterSupport;
 import javax.management.NotificationEmitter;
 import javax.management.NotificationFilter;
 import javax.management.NotificationListener;
-import javax.management.StandardMBean;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicLong;
+
+import org.jboss.messaging.core.config.TransportConfiguration;
+import org.jboss.messaging.jms.server.JMSServerManager;
+import org.jboss.messaging.jms.server.management.JMSServerControl;
+import org.jboss.messaging.utils.Pair;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -50,7 +47,7 @@ import java.util.concurrent.atomic.AtomicLong;
  * @version <tt>$Revision$</tt>
  * 
  */
-public class JMSServerControl extends StandardMBean implements JMSServerControlMBean, NotificationEmitter
+public class JMSServerControlImpl implements JMSServerControl, NotificationEmitter
 {
 
    // Constants -----------------------------------------------------
@@ -77,9 +74,8 @@ public class JMSServerControl extends StandardMBean implements JMSServerControlM
 
    // Constructors --------------------------------------------------
 
-   public JMSServerControl(final JMSServerManager server) throws NotCompliantMBeanException
+   public JMSServerControlImpl(final JMSServerManager server)
    {
-      super(JMSServerControlMBean.class);
       this.server = server;
       broadcaster = new NotificationBroadcasterSupport();
    }
@@ -498,28 +494,6 @@ public class JMSServerControl extends StandardMBean implements JMSServerControlM
    public String[] listSessions(final String connectionID) throws Exception
    {
       return server.listSessions(connectionID);
-   }
-
-   // StandardMBean overrides
-   // ---------------------------------------------------
-
-   /*
-    * overrides getMBeanInfo to add operations info using annotations
-    * 
-    * @see Operation
-    * 
-    * @see Parameter
-    */
-   @Override
-   public MBeanInfo getMBeanInfo()
-   {
-      MBeanInfo info = super.getMBeanInfo();
-      return new MBeanInfo(info.getClassName(),
-                           info.getDescription(),
-                           info.getAttributes(),
-                           info.getConstructors(),
-                           MBeanInfoHelper.getMBeanOperationsInfo(JMSServerControlMBean.class),
-                           getNotificationInfo());
    }
 
    // Package protected ---------------------------------------------

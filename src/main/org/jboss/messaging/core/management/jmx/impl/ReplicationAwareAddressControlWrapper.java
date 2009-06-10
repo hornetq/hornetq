@@ -24,10 +24,10 @@ package org.jboss.messaging.core.management.jmx.impl;
 
 import javax.management.MBeanInfo;
 
-import org.jboss.messaging.core.management.AddressControlMBean;
+import org.jboss.messaging.core.management.AddressControl;
 import org.jboss.messaging.core.management.ReplicationOperationInvoker;
 import org.jboss.messaging.core.management.ResourceNames;
-import org.jboss.messaging.core.management.impl.AddressControl;
+import org.jboss.messaging.core.management.impl.AddressControlImpl;
 import org.jboss.messaging.core.management.impl.MBeanInfoHelper;
 
 /**
@@ -37,24 +37,24 @@ import org.jboss.messaging.core.management.impl.MBeanInfoHelper;
  *
  */
 public class ReplicationAwareAddressControlWrapper extends ReplicationAwareStandardMBeanWrapper implements
-         AddressControlMBean
+         AddressControl
 {
 
    // Constants -----------------------------------------------------
 
    // Attributes ----------------------------------------------------
 
-   private final AddressControl localAddressControl;
+   private final AddressControlImpl localAddressControl;
 
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   public ReplicationAwareAddressControlWrapper(final AddressControl localAddressControl,
+   public ReplicationAwareAddressControlWrapper(final AddressControlImpl localAddressControl,
                                                 final ReplicationOperationInvoker replicationInvoker) throws Exception
    {
       super(ResourceNames.CORE_ADDRESS + localAddressControl.getAddress(),
-            AddressControlMBean.class,
+            AddressControl.class,
             replicationInvoker);
 
       this.localAddressControl = localAddressControl;
@@ -112,7 +112,7 @@ public class ReplicationAwareAddressControlWrapper extends ReplicationAwareStand
                            info.getDescription(),
                            info.getAttributes(),
                            info.getConstructors(),
-                           MBeanInfoHelper.getMBeanOperationsInfo(AddressControlMBean.class),
+                           MBeanInfoHelper.getMBeanOperationsInfo(AddressControl.class),
                            info.getNotifications());
    }
 

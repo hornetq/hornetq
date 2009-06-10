@@ -31,8 +31,8 @@ import org.jboss.messaging.core.management.ReplicationOperationInvoker;
 import org.jboss.messaging.core.management.ResourceNames;
 import org.jboss.messaging.core.management.impl.MBeanInfoHelper;
 import org.jboss.messaging.core.management.jmx.impl.ReplicationAwareStandardMBeanWrapper;
-import org.jboss.messaging.jms.server.management.JMSQueueControlMBean;
-import org.jboss.messaging.jms.server.management.impl.JMSQueueControl;
+import org.jboss.messaging.jms.server.management.JMSQueueControl;
+import org.jboss.messaging.jms.server.management.impl.JMSQueueControlImpl;
 
 /**
  * A ReplicationAwareJMSQueueControlWrapper
@@ -40,7 +40,7 @@ import org.jboss.messaging.jms.server.management.impl.JMSQueueControl;
  * @author <a href="jmesnil@redhat.com">Jeff Mesnil</a>
  */
 public class ReplicationAwareJMSQueueControlWrapper extends ReplicationAwareStandardMBeanWrapper implements
-         JMSQueueControlMBean
+         JMSQueueControl
 {
 
    // Constants -----------------------------------------------------
@@ -49,16 +49,16 @@ public class ReplicationAwareJMSQueueControlWrapper extends ReplicationAwareStan
 
    // Attributes ----------------------------------------------------
 
-   private final JMSQueueControl localControl;
+   private final JMSQueueControlImpl localControl;
 
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   public ReplicationAwareJMSQueueControlWrapper(final JMSQueueControl localControl,
+   public ReplicationAwareJMSQueueControlWrapper(final JMSQueueControlImpl localControl,
                                                  final ReplicationOperationInvoker replicationInvoker) throws Exception
    {
-      super(ResourceNames.JMS_QUEUE + localControl.getName(), JMSQueueControlMBean.class, replicationInvoker);
+      super(ResourceNames.JMS_QUEUE + localControl.getName(), JMSQueueControl.class, replicationInvoker);
       this.localControl = localControl;
    }
 
@@ -229,7 +229,7 @@ public class ReplicationAwareJMSQueueControlWrapper extends ReplicationAwareStan
                            info.getDescription(),
                            info.getAttributes(),
                            info.getConstructors(),
-                           MBeanInfoHelper.getMBeanOperationsInfo(JMSQueueControlMBean.class),
+                           MBeanInfoHelper.getMBeanOperationsInfo(JMSQueueControl.class),
                            info.getNotifications());
    }
 

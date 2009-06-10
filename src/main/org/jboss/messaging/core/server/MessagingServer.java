@@ -20,7 +20,7 @@ import javax.management.MBeanServer;
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.deployers.DeploymentManager;
 import org.jboss.messaging.core.management.ManagementService;
-import org.jboss.messaging.core.management.impl.MessagingServerControl;
+import org.jboss.messaging.core.management.impl.MessagingServerControlImpl;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.remoting.Channel;
@@ -62,7 +62,7 @@ public interface MessagingServer extends MessagingComponent
 
    Version getVersion();
 
-   MessagingServerControl getMessagingServerControl();
+   MessagingServerControlImpl getMessagingServerControl();
    
    void registerActivateCallback(ActivateCallback callback);
    

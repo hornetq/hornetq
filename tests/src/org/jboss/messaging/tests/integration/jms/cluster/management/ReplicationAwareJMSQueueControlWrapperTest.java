@@ -26,7 +26,7 @@ import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory;
 import org.jboss.messaging.jms.JBossQueue;
 import org.jboss.messaging.jms.server.impl.JMSServerManagerImpl;
-import org.jboss.messaging.jms.server.management.JMSQueueControlMBean;
+import org.jboss.messaging.jms.server.management.JMSQueueControl;
 import org.jboss.messaging.tests.integration.cluster.management.ReplicationAwareTestBase;
 import org.jboss.messaging.tests.integration.jms.server.management.JMSUtil;
 import org.jboss.messaging.tests.integration.jms.server.management.NullInitialContext;
@@ -64,13 +64,13 @@ public class ReplicationAwareJMSQueueControlWrapperTest extends ReplicationAware
 
    private Session session;
 
-   private JMSQueueControlMBean liveQueueControl;
+   private JMSQueueControl liveQueueControl;
 
-   private JMSQueueControlMBean backupQueueControl;
+   private JMSQueueControl backupQueueControl;
 
-   private JMSQueueControlMBean liveOtherQueueControl;
+   private JMSQueueControl liveOtherQueueControl;
 
-   private JMSQueueControlMBean backupOtherQueueControl;
+   private JMSQueueControl backupOtherQueueControl;
 
 
    // Static --------------------------------------------------------

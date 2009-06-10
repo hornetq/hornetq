@@ -35,7 +35,7 @@ import org.jboss.messaging.core.settings.impl.AddressSettings;
 import org.jboss.messaging.jms.JBossQueue;
 import org.jboss.messaging.jms.client.JBossConnectionFactory;
 import org.jboss.messaging.jms.server.impl.JMSServerManagerImpl;
-import org.jboss.messaging.jms.server.management.JMSQueueControlMBean;
+import org.jboss.messaging.jms.server.management.JMSQueueControl;
 import org.jboss.messaging.tests.integration.management.ManagementControlHelper;
 import org.jboss.messaging.tests.integration.management.ManagementTestBase;
 import org.jboss.messaging.tests.unit.util.InVMContext;
@@ -471,7 +471,7 @@ public class JMSQueueControlUsingJMSTest extends ManagementTestBase
       conn.close();
 
       
-      JMSQueueControlMBean dlqControl = ManagementControlHelper.createJMSQueueControl(dlq, mbeanServer);
+      JMSQueueControl dlqControl = ManagementControlHelper.createJMSQueueControl(dlq, mbeanServer);
 
       assertEquals(2, proxy.retrieveAttributeValue("MessageCount"));
       assertEquals(0, dlqControl.getMessageCount());

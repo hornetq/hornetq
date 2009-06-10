@@ -32,7 +32,7 @@ import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.management.ObjectNames;
 import org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory;
 import org.jboss.messaging.jms.server.impl.JMSServerManagerImpl;
-import org.jboss.messaging.jms.server.management.JMSServerControlMBean;
+import org.jboss.messaging.jms.server.management.JMSServerControl;
 import org.jboss.messaging.tests.integration.cluster.management.ReplicationAwareTestBase;
 import org.jboss.messaging.tests.integration.jms.server.management.JMSUtil;
 import org.jboss.messaging.tests.integration.jms.server.management.NullInitialContext;
@@ -56,9 +56,9 @@ public class ReplicationAwareJMSServerControlWrapperTest extends ReplicationAwar
 
    private JMSServerManagerImpl backupServerManager;
 
-   private JMSServerControlMBean liveServerControl;
+   private JMSServerControl liveServerControl;
 
-   private JMSServerControlMBean backupServerControl;
+   private JMSServerControl backupServerControl;
 
    // Static --------------------------------------------------------
 

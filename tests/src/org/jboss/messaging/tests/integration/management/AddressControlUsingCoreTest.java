@@ -35,7 +35,7 @@ import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
-import org.jboss.messaging.core.management.AddressControlMBean;
+import org.jboss.messaging.core.management.AddressControl;
 import org.jboss.messaging.core.management.ResourceNames;
 import org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory;
@@ -319,7 +319,7 @@ public class AddressControlUsingCoreTest extends ManagementTestBase
       super.tearDown();
    }
 
-   protected AddressControlMBean createManagementControl(SimpleString address) throws Exception
+   protected AddressControl createManagementControl(SimpleString address) throws Exception
    {
       return ManagementControlHelper.createAddressControl(address, mbeanServer);
    }

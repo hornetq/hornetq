@@ -27,7 +27,7 @@ import org.jboss.messaging.core.client.ClientSessionFactory;
 import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.TransportConfiguration;
-import org.jboss.messaging.core.management.MessagingServerControlMBean;
+import org.jboss.messaging.core.management.MessagingServerControl;
 import org.jboss.messaging.core.management.ResourceNames;
 import org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory;
 
@@ -73,10 +73,10 @@ public class MessagingServerControlUsingCoreTest extends MessagingServerControlT
    }
 
    @Override
-   protected MessagingServerControlMBean createManagementControl() throws Exception
+   protected MessagingServerControl createManagementControl() throws Exception
    {
 
-      return new MessagingServerControlMBean()
+      return new MessagingServerControl()
       {
          private final CoreMessagingProxy proxy = new CoreMessagingProxy(session,
                                                                          ResourceNames.CORE_SERVER);

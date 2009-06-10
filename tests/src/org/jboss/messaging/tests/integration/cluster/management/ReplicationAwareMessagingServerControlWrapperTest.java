@@ -37,9 +37,9 @@ import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
 import org.jboss.messaging.core.client.impl.ClientSessionFactoryInternal;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.management.MessageCounterInfo;
-import org.jboss.messaging.core.management.MessagingServerControlMBean;
+import org.jboss.messaging.core.management.MessagingServerControl;
 import org.jboss.messaging.core.management.ObjectNames;
-import org.jboss.messaging.core.management.QueueControlMBean;
+import org.jboss.messaging.core.management.QueueControl;
 import org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory;
 import org.jboss.messaging.tests.util.RandomUtil;
 import org.jboss.messaging.utils.SimpleString;
@@ -70,7 +70,7 @@ public class ReplicationAwareMessagingServerControlWrapperTest extends Replicati
       SimpleString address = randomSimpleString();
       SimpleString name = randomSimpleString();
 
-      MessagingServerControlMBean liveServerControl = createMessagingServerControl(liveMBeanServer);
+      MessagingServerControl liveServerControl = createMessagingServerControl(liveMBeanServer);
       ObjectName queueON = ObjectNames.getQueueObjectName(address, name);
 
       assertResourceNotExists(liveMBeanServer, queueON);
@@ -87,7 +87,7 @@ public class ReplicationAwareMessagingServerControlWrapperTest extends Replicati
       SimpleString address = randomSimpleString();
       SimpleString name = randomSimpleString();
 
-      MessagingServerControlMBean liveServerControl = createMessagingServerControl(liveMBeanServer);
+      MessagingServerControl liveServerControl = createMessagingServerControl(liveMBeanServer);
       ObjectName queueON = ObjectNames.getQueueObjectName(address, name);
 
       assertResourceNotExists(liveMBeanServer, queueON);
@@ -108,8 +108,8 @@ public class ReplicationAwareMessagingServerControlWrapperTest extends Replicati
 
    public void testEnableMessageCounters() throws Exception
    {
-      MessagingServerControlMBean liveServerControl = createMessagingServerControl(liveMBeanServer);
-      MessagingServerControlMBean backupServerControl = createMessagingServerControl(backupMBeanServer);
+      MessagingServerControl liveServerControl = createMessagingServerControl(liveMBeanServer);
+      MessagingServerControl backupServerControl = createMessagingServerControl(backupMBeanServer);
 
       assertFalse(liveServerControl.isMessageCounterEnabled());
       assertFalse(backupServerControl.isMessageCounterEnabled());
@@ -122,8 +122,8 @@ public class ReplicationAwareMessagingServerControlWrapperTest extends Replicati
 
    public void testDisableMessageCounters() throws Exception
    {
-      MessagingServerControlMBean liveServerControl = createMessagingServerControl(liveMBeanServer);
-      MessagingServerControlMBean backupServerControl = createMessagingServerControl(backupMBeanServer);
+      MessagingServerControl liveServerControl = createMessagingServerControl(liveMBeanServer);
+      MessagingServerControl backupServerControl = createMessagingServerControl(backupMBeanServer);
 
       assertFalse(liveServerControl.isMessageCounterEnabled());
       assertFalse(backupServerControl.isMessageCounterEnabled());
@@ -143,12 +143,12 @@ public class ReplicationAwareMessagingServerControlWrapperTest extends Replicati
 
    public void testResetAllMessageCounters() throws Exception
    {
-      MessagingServerControlMBean liveServerControl = createMessagingServerControl(liveMBeanServer);
+      MessagingServerControl liveServerControl = createMessagingServerControl(liveMBeanServer);
       liveServerControl.enableMessageCounters();
       liveServerControl.setMessageCounterSamplePeriod(2000);
 
-      QueueControlMBean liveQueueControl = createQueueControl(address, address, liveMBeanServer);
-      QueueControlMBean backupQueueControl = createQueueControl(address, address, backupMBeanServer);
+      QueueControl liveQueueControl = createQueueControl(address, address, liveMBeanServer);
+      QueueControl backupQueueControl = createQueueControl(address, address, backupMBeanServer);
 
       // send on queue
       ClientProducer producer = session.createProducer(address);
@@ -182,8 +182,8 @@ public class ReplicationAwareMessagingServerControlWrapperTest extends Replicati
    {
       long newPeriod = randomPositiveLong();
 
-      MessagingServerControlMBean liveServerControl = createMessagingServerControl(liveMBeanServer);
-      MessagingServerControlMBean backupServerControl = createMessagingServerControl(backupMBeanServer);
+      MessagingServerControl liveServerControl = createMessagingServerControl(liveMBeanServer);
+      MessagingServerControl backupServerControl = createMessagingServerControl(backupMBeanServer);
 
       assertEquals(liveServerControl.getMessageCounterSamplePeriod(),
                    backupServerControl.getMessageCounterSamplePeriod());
@@ -198,8 +198,8 @@ public class ReplicationAwareMessagingServerControlWrapperTest extends Replicati
    {
       int newCount = RandomUtil.randomPositiveInt();
 
-      MessagingServerControlMBean liveServerControl = createMessagingServerControl(liveMBeanServer);
-      MessagingServerControlMBean backupServerControl = createMessagingServerControl(backupMBeanServer);
+      MessagingServerControl liveServerControl = createMessagingServerControl(liveMBeanServer);
+      MessagingServerControl backupServerControl = createMessagingServerControl(backupMBeanServer);
 
       assertEquals(liveServerControl.getMessageCounterMaxDayCount(), backupServerControl.getMessageCounterMaxDayCount());
 

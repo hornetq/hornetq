@@ -45,7 +45,7 @@ import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.management.DayCounterInfo;
 import org.jboss.messaging.core.management.MessageCounterInfo;
-import org.jboss.messaging.core.management.MessagingServerControlMBean;
+import org.jboss.messaging.core.management.MessagingServerControl;
 import org.jboss.messaging.core.management.ResourceNames;
 import org.jboss.messaging.core.message.impl.MessageImpl;
 import org.jboss.messaging.core.messagecounter.impl.MessageCounterManagerImpl;
@@ -1004,7 +1004,7 @@ public class QueueControlUsingCoreTest extends ManagementTestBase
       session.createQueue(address, queue, null, false);
       CoreMessagingProxy proxy = createProxy(queue);
 
-      MessagingServerControlMBean serverControl = createMessagingServerControl(mbeanServer);
+      MessagingServerControl serverControl = createMessagingServerControl(mbeanServer);
       serverControl.enableMessageCounters();
       serverControl.setMessageCounterSamplePeriod(MessageCounterManagerImpl.MIN_SAMPLE_PERIOD);
 
@@ -1055,7 +1055,7 @@ public class QueueControlUsingCoreTest extends ManagementTestBase
       session.createQueue(address, queue, null, false);
       CoreMessagingProxy proxy = createProxy(queue);
 
-      MessagingServerControlMBean serverControl = createMessagingServerControl(mbeanServer);
+      MessagingServerControl serverControl = createMessagingServerControl(mbeanServer);
       serverControl.enableMessageCounters();
       serverControl.setMessageCounterSamplePeriod(MessageCounterManagerImpl.MIN_SAMPLE_PERIOD);
 
@@ -1121,7 +1121,7 @@ public class QueueControlUsingCoreTest extends ManagementTestBase
       session.createQueue(address, queue, null, false);
       CoreMessagingProxy proxy = createProxy(queue);
 
-      MessagingServerControlMBean serverControl = createMessagingServerControl(mbeanServer);
+      MessagingServerControl serverControl = createMessagingServerControl(mbeanServer);
       serverControl.enableMessageCounters();
       serverControl.setMessageCounterSamplePeriod(counterPeriod);
 
@@ -1141,7 +1141,7 @@ public class QueueControlUsingCoreTest extends ManagementTestBase
       session.createQueue(address, queue, null, false);
       CoreMessagingProxy proxy = createProxy(queue);
 
-      MessagingServerControlMBean serverControl = createMessagingServerControl(mbeanServer);
+      MessagingServerControl serverControl = createMessagingServerControl(mbeanServer);
       serverControl.enableMessageCounters();
       serverControl.setMessageCounterSamplePeriod(counterPeriod);
 

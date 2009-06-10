@@ -30,7 +30,7 @@ import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.config.cluster.DivertConfiguration;
 import org.jboss.messaging.core.config.cluster.QueueConfiguration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
-import org.jboss.messaging.core.management.DivertControlMBean;
+import org.jboss.messaging.core.management.DivertControl;
 import org.jboss.messaging.core.management.ObjectNames;
 import org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory;
 import org.jboss.messaging.core.server.Messaging;
@@ -64,7 +64,7 @@ public class DivertControlTest extends ManagementTestBase
    {
       checkResource(ObjectNames.getDivertObjectName(new SimpleString(divertConfig.getName())));
       
-      DivertControlMBean divertControl = createManagementControl(divertConfig.getName());
+      DivertControl divertControl = createManagementControl(divertConfig.getName());
 
       assertEquals(divertConfig.getFilterString(), divertControl.getFilter());
 
@@ -126,7 +126,7 @@ public class DivertControlTest extends ManagementTestBase
       super.tearDown();
    }
 
-   protected DivertControlMBean createManagementControl(String name) throws Exception
+   protected DivertControl createManagementControl(String name) throws Exception
    {
       return ManagementControlHelper.createDivertControl(name, mbeanServer);
    }

@@ -22,7 +22,7 @@
 package org.jboss.jms.example;
 
 import org.jboss.common.example.JBMExample;
-import org.jboss.messaging.core.management.MessagingServerControlMBean;
+import org.jboss.messaging.core.management.MessagingServerControl;
 import org.jboss.messaging.core.management.ObjectNames;
 
 import javax.jms.ExceptionListener;
@@ -85,9 +85,9 @@ public class ClientKickoffExample extends JBMExample
          ObjectName on = ObjectNames.getMessagingServerObjectName();
          JMXConnector connector = JMXConnectorFactory.connect(new JMXServiceURL(JMX_URL), new HashMap<String, String>());
          MBeanServerConnection mbsc = connector.getMBeanServerConnection();
-         MessagingServerControlMBean serverControl = (MessagingServerControlMBean)MBeanServerInvocationHandler.newProxyInstance(mbsc,
+         MessagingServerControl serverControl = (MessagingServerControl)MBeanServerInvocationHandler.newProxyInstance(mbsc,
                                                                                                                                 on,
-                                                                                                                                MessagingServerControlMBean.class,
+                                                                                                                                MessagingServerControl.class,
                                                                                                                                 false);
 
          // Step 7. List the remote address connected to the server

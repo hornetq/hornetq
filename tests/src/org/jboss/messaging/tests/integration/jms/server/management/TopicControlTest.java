@@ -40,7 +40,7 @@ import org.jboss.messaging.core.server.Messaging;
 import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.jms.JBossTopic;
 import org.jboss.messaging.jms.server.impl.JMSServerManagerImpl;
-import org.jboss.messaging.jms.server.management.TopicControlMBean;
+import org.jboss.messaging.jms.server.management.TopicControl;
 import org.jboss.messaging.tests.integration.management.ManagementTestBase;
 
 /**
@@ -77,7 +77,7 @@ public class TopicControlTest extends ManagementTestBase
 
    public void testGetAttributes() throws Exception
    {
-      TopicControlMBean topicControl = createManagementControl();
+      TopicControl topicControl = createManagementControl();
 
       assertEquals(topic.getTopicName(), topicControl.getName());
       assertEquals(topic.getAddress(), topicControl.getAddress());
@@ -97,7 +97,7 @@ public class TopicControlTest extends ManagementTestBase
       Connection connection_3 = JMSUtil.createConnection(InVMConnectorFactory.class.getName());
       JMSUtil.createDurableSubscriber(connection_3, topic, clientID, subscriptionName + "2");
 
-      TopicControlMBean topicControl = createManagementControl();
+      TopicControl topicControl = createManagementControl();
       assertEquals(3, topicControl.getSubscriptionCount());
       assertEquals(1, topicControl.getNonDurableSubscriptionCount());
       assertEquals(2, topicControl.getDurableSubscriptionCount());
@@ -117,7 +117,7 @@ public class TopicControlTest extends ManagementTestBase
       Connection connection_3 = JMSUtil.createConnection(InVMConnectorFactory.class.getName());
       JMSUtil.createDurableSubscriber(connection_3, topic, clientID, subscriptionName + "2");
 
-      TopicControlMBean topicControl = createManagementControl();
+      TopicControl topicControl = createManagementControl();
 
       assertEquals(0, topicControl.getMessageCount());
       assertEquals(0, topicControl.getNonDurableMessageCount());
@@ -144,7 +144,7 @@ public class TopicControlTest extends ManagementTestBase
       Connection connection_3 = JMSUtil.createConnection(InVMConnectorFactory.class.getName());
       JMSUtil.createDurableSubscriber(connection_3, topic, clientID, subscriptionName + "2");
 
-      TopicControlMBean topicControl = createManagementControl();
+      TopicControl topicControl = createManagementControl();
       assertEquals(3, topicControl.listAllSubscriptions().length);
       assertEquals(1, topicControl.listNonDurableSubscriptions().length);
       assertEquals(2, topicControl.listDurableSubscriptions().length);
@@ -169,7 +169,7 @@ public class TopicControlTest extends ManagementTestBase
       JMSUtil.sendMessageWithProperty(session, topic, key, unmatchingValue);
       JMSUtil.sendMessageWithProperty(session, topic, key, matchingValue);
 
-      TopicControlMBean topicControl = createManagementControl();
+      TopicControl topicControl = createManagementControl();
 
       assertEquals(3, topicControl.getMessageCount());
 
@@ -184,7 +184,7 @@ public class TopicControlTest extends ManagementTestBase
    {
       String unknownSubscription = randomString();
 
-      TopicControlMBean topicControl = createManagementControl();
+      TopicControl topicControl = createManagementControl();
 
       try
       {
@@ -200,7 +200,7 @@ public class TopicControlTest extends ManagementTestBase
    {
       String unknownClientID = randomString();
 
-      TopicControlMBean topicControl = createManagementControl();
+      TopicControl topicControl = createManagementControl();
 
       try
       {
@@ -218,7 +218,7 @@ public class TopicControlTest extends ManagementTestBase
 
       JMSUtil.createDurableSubscriber(connection, topic, clientID, subscriptionName);
 
-      TopicControlMBean topicControl = createManagementControl();
+      TopicControl topicControl = createManagementControl();
       assertEquals(1, topicControl.getDurableSubscriptionCount());
 
       connection.close();
@@ -234,7 +234,7 @@ public class TopicControlTest extends ManagementTestBase
 
       JMSUtil.createDurableSubscriber(connection, topic, clientID, subscriptionName);
 
-      TopicControlMBean topicControl = createManagementControl();
+      TopicControl topicControl = createManagementControl();
       assertEquals(1, topicControl.getDurableSubscriptionCount());
 
       try
@@ -265,7 +265,7 @@ public class TopicControlTest extends ManagementTestBase
                                                                             clientID,
                                                                             subscriptionName + "2");
 
-      TopicControlMBean topicControl = createManagementControl();
+      TopicControl topicControl = createManagementControl();
       assertEquals(2, topicControl.getSubscriptionCount());
 
       durableSubscriber_1.close();
@@ -289,7 +289,7 @@ public class TopicControlTest extends ManagementTestBase
 
       JMSUtil.sendMessages(topic, 3);
 
-      TopicControlMBean topicControl = createManagementControl();
+      TopicControl topicControl = createManagementControl();
       assertEquals(3 * 2, topicControl.getMessageCount());
 
       int removedCount = topicControl.removeAllMessages();
@@ -308,7 +308,7 @@ public class TopicControlTest extends ManagementTestBase
 
       JMSUtil.sendMessages(topic, 3);
 
-      TopicControlMBean topicControl = createManagementControl();
+      TopicControl topicControl = createManagementControl();
       Map<String, Object>[] messages = topicControl.listMessagesForSubscription(JBossTopic.createQueueNameForDurableSubscription(clientID,
                                                                                                                                  subscriptionName));
       assertEquals(3, messages.length);
@@ -318,7 +318,7 @@ public class TopicControlTest extends ManagementTestBase
    {
       String unknownClientID = randomString();
 
-      TopicControlMBean topicControl = createManagementControl();
+      TopicControl topicControl = createManagementControl();
 
       try
       {
@@ -335,7 +335,7 @@ public class TopicControlTest extends ManagementTestBase
    {
       String unknownSubscription = randomString();
 
-      TopicControlMBean topicControl = createManagementControl();
+      TopicControl topicControl = createManagementControl();
 
       try
       {
@@ -386,7 +386,7 @@ public class TopicControlTest extends ManagementTestBase
       super.tearDown();
    }
 
-   protected TopicControlMBean createManagementControl() throws Exception
+   protected TopicControl createManagementControl() throws Exception
    {
       return createTopicControl(topic, mbeanServer);
    }

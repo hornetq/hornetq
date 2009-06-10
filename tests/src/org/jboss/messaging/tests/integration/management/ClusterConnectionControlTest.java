@@ -42,7 +42,7 @@ import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.config.cluster.ClusterConnectionConfiguration;
 import org.jboss.messaging.core.config.cluster.QueueConfiguration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
-import org.jboss.messaging.core.management.ClusterConnectionControlMBean;
+import org.jboss.messaging.core.management.ClusterConnectionControl;
 import org.jboss.messaging.core.management.ObjectNames;
 import org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory;
@@ -79,7 +79,7 @@ public class ClusterConnectionControlTest extends ManagementTestBase
    {
       checkResource(ObjectNames.getClusterConnectionObjectName(clusterConnectionConfig.getName()));
 
-      ClusterConnectionControlMBean clusterConnectionControl = createManagementControl(clusterConnectionConfig.getName());
+      ClusterConnectionControl clusterConnectionControl = createManagementControl(clusterConnectionConfig.getName());
 
       assertEquals(clusterConnectionConfig.getName(), clusterConnectionControl.getName());
       assertEquals(clusterConnectionConfig.getAddress(), clusterConnectionControl.getAddress());
@@ -102,7 +102,7 @@ public class ClusterConnectionControlTest extends ManagementTestBase
    public void testStartStop() throws Exception
    {
       checkResource(ObjectNames.getClusterConnectionObjectName(clusterConnectionConfig.getName()));
-      ClusterConnectionControlMBean clusterConnectionControl = createManagementControl(clusterConnectionConfig.getName());
+      ClusterConnectionControl clusterConnectionControl = createManagementControl(clusterConnectionConfig.getName());
 
       // started by the server
       assertTrue(clusterConnectionControl.isStarted());
@@ -178,7 +178,7 @@ public class ClusterConnectionControlTest extends ManagementTestBase
       super.tearDown();
    }
    
-   protected ClusterConnectionControlMBean createManagementControl(String name) throws Exception
+   protected ClusterConnectionControl createManagementControl(String name) throws Exception
    {
       return ManagementControlHelper.createClusterConnectionControl(name, mbeanServer);
    }

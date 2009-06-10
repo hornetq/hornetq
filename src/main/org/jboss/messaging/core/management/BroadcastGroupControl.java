@@ -22,19 +22,24 @@
 
 package org.jboss.messaging.core.management;
 
+
 /**
- * A DiscoveryGroupControlMBean
+ * A BroadcastGroupControlMBean
  *
  * @author <a href="jmesnil@redhat.com">Jeff Mesnil</a>
  *
  */
-public interface DiscoveryGroupControlMBean extends MessagingComponentControlMBean
+public interface BroadcastGroupControl extends MessagingComponentControlMBean
 {
    String getName();
+
+   int getLocalBindPort();
 
    String getGroupAddress();
 
    int getGroupPort();
 
-   long getRefreshTimeout();
+   long getBroadcastPeriod();
+   
+   Object[] getConnectorPairs();
 }

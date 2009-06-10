@@ -26,7 +26,7 @@ import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.ClientSessionFactory;
 import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
 import org.jboss.messaging.core.config.TransportConfiguration;
-import org.jboss.messaging.core.management.DiscoveryGroupControlMBean;
+import org.jboss.messaging.core.management.DiscoveryGroupControl;
 import org.jboss.messaging.core.management.ResourceNames;
 import org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory;
 
@@ -53,13 +53,13 @@ public class DiscoveryGroupControlUsingCoreTest extends DiscoveryGroupControlTes
    // DiscoveryGroupControlTest overrides --------------------------------
 
    @Override
-   protected DiscoveryGroupControlMBean createManagementControl(final String name) throws Exception
+   protected DiscoveryGroupControl createManagementControl(final String name) throws Exception
    {
       ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration(InVMConnectorFactory.class.getName()));
       session = sf.createSession(false, true, true);
       session.start();
 
-      return new DiscoveryGroupControlMBean()
+      return new DiscoveryGroupControl()
       {
          private final CoreMessagingProxy proxy = new CoreMessagingProxy(session,
                                                                          ResourceNames.CORE_DISCOVERY_GROUP + name);

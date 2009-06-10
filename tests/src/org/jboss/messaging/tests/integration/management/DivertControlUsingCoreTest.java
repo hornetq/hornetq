@@ -26,7 +26,7 @@ import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.ClientSessionFactory;
 import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
 import org.jboss.messaging.core.config.TransportConfiguration;
-import org.jboss.messaging.core.management.DivertControlMBean;
+import org.jboss.messaging.core.management.DivertControl;
 import org.jboss.messaging.core.management.ResourceNames;
 import org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory;
 
@@ -53,13 +53,13 @@ public class DivertControlUsingCoreTest extends DivertControlTest
    // DivertControlTest overrides --------------------------------
 
    @Override
-   protected DivertControlMBean createManagementControl(final String name) throws Exception
+   protected DivertControl createManagementControl(final String name) throws Exception
    {
       ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration(InVMConnectorFactory.class.getName()));
       session = sf.createSession(false, true, true);
       session.start();
 
-      return new DivertControlMBean()
+      return new DivertControl()
       {
          private final CoreMessagingProxy proxy = new CoreMessagingProxy(session,
                                                                          ResourceNames.CORE_DIVERT + name);

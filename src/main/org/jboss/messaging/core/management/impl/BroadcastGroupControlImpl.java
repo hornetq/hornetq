@@ -22,43 +22,67 @@
 
 package org.jboss.messaging.core.management.impl;
 
-import org.jboss.messaging.core.cluster.DiscoveryGroup;
-import org.jboss.messaging.core.config.cluster.DiscoveryGroupConfiguration;
-import org.jboss.messaging.core.management.DiscoveryGroupControlMBean;
+import org.jboss.messaging.core.config.cluster.BroadcastGroupConfiguration;
+import org.jboss.messaging.core.management.BroadcastGroupControl;
+import org.jboss.messaging.core.server.cluster.BroadcastGroup;
+import org.jboss.messaging.utils.Pair;
 
 /**
- * A AcceptorControl
+ * A BroadcastGroupControl
  *
  * @author <a href="jmesnil@redhat.com">Jeff Mesnil</a>
  * 
  * Created 11 dec. 2008 17:09:04
  */
-public class DiscoveryGroupControl implements DiscoveryGroupControlMBean
+public class BroadcastGroupControlImpl implements BroadcastGroupControl
 {
 
    // Constants -----------------------------------------------------
 
    // Attributes ----------------------------------------------------
 
-   private final DiscoveryGroup discoveryGroup;
+   private final BroadcastGroup broadcastGroup;
 
-   private final DiscoveryGroupConfiguration configuration;
+   private final BroadcastGroupConfiguration configuration;
 
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   public DiscoveryGroupControl(final DiscoveryGroup acceptor, final DiscoveryGroupConfiguration configuration)
+   public BroadcastGroupControlImpl(final BroadcastGroup broadcastGroup, final BroadcastGroupConfiguration configuration)
    {
-      this.discoveryGroup = acceptor;
+      this.broadcastGroup = broadcastGroup;
       this.configuration = configuration;
    }
 
-   // DiscoveryGroupControlMBean implementation ---------------------------
-
+   // BroadcastGroupControlMBean implementation ---------------------
+   
    public String getName()
    {
       return configuration.getName();
+   }
+
+   public long getBroadcastPeriod()
+   {
+      return configuration.getBroadcastPeriod();
+   }
+
+   public Object[] getConnectorPairs()
+   {
+      Object[] ret = new Object[configuration.getConnectorInfos().size()];
+      
+      int i = 0;
+      for (Pair<String, String> pair: configuration.getConnectorInfos())
+      {
+         String[] opair = new String[2];
+         
+         opair[0] = pair.a;
+         opair[1] = pair.b != null ? pair.b : null;
+         
+         ret[i++] = opair;
+      }
+      
+      return ret;      
    }
 
    public String getGroupAddress()
@@ -71,24 +95,26 @@ public class DiscoveryGroupControl implements DiscoveryGroupControlMBean
       return configuration.getGroupPort();
    }
 
-   public long getRefreshTimeout()
+   public int getLocalBindPort()
    {
-      return configuration.getRefreshTimeout();
+      return configuration.getLocalBindPort();
    }
+
+   // MessagingComponentControlMBean implementation -----------------
 
    public boolean isStarted()
    {
-      return discoveryGroup.isStarted();
+      return broadcastGroup.isStarted();
    }
 
    public void start() throws Exception
    {
-      discoveryGroup.start();
+      broadcastGroup.start();
    }
 
    public void stop() throws Exception
    {
-      discoveryGroup.stop();
+      broadcastGroup.stop();
    }
 
    // Public --------------------------------------------------------

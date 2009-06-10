@@ -33,7 +33,7 @@ import org.jboss.messaging.core.settings.impl.AddressSettings;
 import org.jboss.messaging.jms.JBossQueue;
 import org.jboss.messaging.jms.client.JBossConnectionFactory;
 import org.jboss.messaging.jms.server.impl.JMSServerManagerImpl;
-import org.jboss.messaging.jms.server.management.JMSQueueControlMBean;
+import org.jboss.messaging.jms.server.management.JMSQueueControl;
 import org.jboss.messaging.tests.integration.management.ManagementControlHelper;
 import static org.jboss.messaging.tests.integration.management.ManagementControlHelper.createJMSQueueControl;
 import org.jboss.messaging.tests.integration.management.ManagementTestBase;
@@ -85,7 +85,7 @@ public class JMSQueueControlTest extends ManagementTestBase
 
    public void testGetAttributes() throws Exception
    {
-      JMSQueueControlMBean queueControl = createManagementControl();
+      JMSQueueControl queueControl = createManagementControl();
 
       assertEquals(queue.getName(), queueControl.getName());
       assertEquals(queue.getAddress(), queueControl.getAddress());
@@ -94,7 +94,7 @@ public class JMSQueueControlTest extends ManagementTestBase
 
    public void testGetXXXCount() throws Exception
    {
-      JMSQueueControlMBean queueControl = createManagementControl();
+      JMSQueueControl queueControl = createManagementControl();
 
       assertEquals(0, queueControl.getMessageCount());
       assertEquals(0, queueControl.getConsumerCount());
@@ -126,7 +126,7 @@ public class JMSQueueControlTest extends ManagementTestBase
 
    public void testRemoveMessage() throws Exception
    {
-      JMSQueueControlMBean queueControl = createManagementControl();
+      JMSQueueControl queueControl = createManagementControl();
 
       assertEquals(0, queueControl.getMessageCount());
 
@@ -157,7 +157,7 @@ public class JMSQueueControlTest extends ManagementTestBase
    {
       String unknownMessageID = randomString();
 
-      JMSQueueControlMBean queueControl = createManagementControl();
+      JMSQueueControl queueControl = createManagementControl();
 
       assertEquals(0, queueControl.getMessageCount());
 
@@ -173,7 +173,7 @@ public class JMSQueueControlTest extends ManagementTestBase
 
    public void testRemoveAllMessages() throws Exception
    {
-      JMSQueueControlMBean queueControl = createManagementControl();
+      JMSQueueControl queueControl = createManagementControl();
 
       assertEquals(0, queueControl.getMessageCount());
 
@@ -196,7 +196,7 @@ public class JMSQueueControlTest extends ManagementTestBase
 
    public void testRemoveMatchingMessages() throws Exception
    {
-      JMSQueueControlMBean queueControl = createManagementControl();
+      JMSQueueControl queueControl = createManagementControl();
 
       assertEquals(0, queueControl.getMessageCount());
 
@@ -231,7 +231,7 @@ public class JMSQueueControlTest extends ManagementTestBase
 
    public void testChangeMessagePriority() throws Exception
    {
-      JMSQueueControlMBean queueControl = createManagementControl();
+      JMSQueueControl queueControl = createManagementControl();
 
       JMSUtil.sendMessages(queue, 1);
 
@@ -262,7 +262,7 @@ public class JMSQueueControlTest extends ManagementTestBase
    {
       byte invalidPriority = (byte)23;
 
-      JMSQueueControlMBean queueControl = createManagementControl();
+      JMSQueueControl queueControl = createManagementControl();
 
       String[] messageIDs = JMSUtil.sendMessages(queue, 1);
 
@@ -291,7 +291,7 @@ public class JMSQueueControlTest extends ManagementTestBase
    {
       String unkownMessageID = randomString();
 
-      JMSQueueControlMBean queueControl = createManagementControl();
+      JMSQueueControl queueControl = createManagementControl();
 
       try
       {
@@ -307,7 +307,7 @@ public class JMSQueueControlTest extends ManagementTestBase
    {
       final SimpleString expiryAddress = randomSimpleString();
 
-      JMSQueueControlMBean queueControl = createManagementControl();
+      JMSQueueControl queueControl = createManagementControl();
 
       assertNull(queueControl.getExpiryAddress());
 
@@ -327,7 +327,7 @@ public class JMSQueueControlTest extends ManagementTestBase
    {
       final String expiryAddress = randomString();
 
-      JMSQueueControlMBean queueControl = createManagementControl();
+      JMSQueueControl queueControl = createManagementControl();
 
       assertNull(queueControl.getExpiryAddress());
 
@@ -337,13 +337,13 @@ public class JMSQueueControlTest extends ManagementTestBase
 
    public void testExpireMessage() throws Exception
    {
-      JMSQueueControlMBean queueControl = createManagementControl();
+      JMSQueueControl queueControl = createManagementControl();
       String expiryQueueName = randomString();
       JBossQueue expiryQueue = new JBossQueue(expiryQueueName);
       serverManager.createQueue(expiryQueueName, expiryQueueName, null, true);
       queueControl.setExpiryAddress(expiryQueue.getAddress());
 
-      JMSQueueControlMBean expiryQueueControl = createJMSQueueControl(expiryQueue, mbeanServer);
+      JMSQueueControl expiryQueueControl = createJMSQueueControl(expiryQueue, mbeanServer);
 
       String[] messageIDs = JMSUtil.sendMessages(queue, 1);
 
@@ -370,7 +370,7 @@ public class JMSQueueControlTest extends ManagementTestBase
    {
       String unknownMessageID = randomString();
 
-      JMSQueueControlMBean queueControl = createManagementControl();
+      JMSQueueControl queueControl = createManagementControl();
 
       try
       {
@@ -398,7 +398,7 @@ public class JMSQueueControlTest extends ManagementTestBase
 
       connection.close();
 
-      JMSQueueControlMBean queueControl = createManagementControl();
+      JMSQueueControl queueControl = createManagementControl();
       assertEquals(2, queueControl.getMessageCount());
 
       int expiredMessagesCount = queueControl.expireMessages(filter);
@@ -415,7 +415,7 @@ public class JMSQueueControlTest extends ManagementTestBase
       long matchingValue = randomLong();
       long unmatchingValue = matchingValue + 1;
 
-      JMSQueueControlMBean queueControl = createManagementControl();
+      JMSQueueControl queueControl = createManagementControl();
 
       Connection connection = JMSUtil.createConnection(InVMConnectorFactory.class.getName());
       Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
@@ -436,7 +436,7 @@ public class JMSQueueControlTest extends ManagementTestBase
    {
       final SimpleString deadLetterAddress = randomSimpleString();
 
-      JMSQueueControlMBean queueControl = createManagementControl();
+      JMSQueueControl queueControl = createManagementControl();
 
       assertNull(queueControl.getDeadLetterAddress());
 
@@ -456,7 +456,7 @@ public class JMSQueueControlTest extends ManagementTestBase
    {
       final String deadLetterAddress = randomString();
 
-      JMSQueueControlMBean queueControl = createManagementControl();
+      JMSQueueControl queueControl = createManagementControl();
 
       assertNull(queueControl.getDeadLetterAddress());
 
@@ -481,8 +481,8 @@ public class JMSQueueControlTest extends ManagementTestBase
 
       conn.close();
 
-      JMSQueueControlMBean queueControl = createManagementControl();
-      JMSQueueControlMBean dlqControl = ManagementControlHelper.createJMSQueueControl(dlq, mbeanServer);
+      JMSQueueControl queueControl = createManagementControl();
+      JMSQueueControl dlqControl = ManagementControlHelper.createJMSQueueControl(dlq, mbeanServer);
 
       assertEquals(2, queueControl.getMessageCount());
       assertEquals(0, dlqControl.getMessageCount());
@@ -507,7 +507,7 @@ public class JMSQueueControlTest extends ManagementTestBase
    {
       String unknownMessageID = randomString();
 
-      JMSQueueControlMBean queueControl = createManagementControl();
+      JMSQueueControl queueControl = createManagementControl();
 
       try
       {
@@ -530,7 +530,7 @@ public class JMSQueueControlTest extends ManagementTestBase
       // send on queue
       JMSUtil.sendMessages(queue, 2);
 
-      JMSQueueControlMBean queueControl = createManagementControl();
+      JMSQueueControl queueControl = createManagementControl();
       assertEquals(2, queueControl.getMessageCount());
 
       // moved all messages to otherQueue
@@ -551,7 +551,7 @@ public class JMSQueueControlTest extends ManagementTestBase
    {
       String unknownQueue = randomString();
 
-      JMSQueueControlMBean queueControl = createManagementControl();
+      JMSQueueControl queueControl = createManagementControl();
 
       try
       {
@@ -580,7 +580,7 @@ public class JMSQueueControlTest extends ManagementTestBase
       JMSUtil.sendMessageWithProperty(session, queue, key, matchingValue);
       JMSUtil.sendMessageWithProperty(session, queue, key, unmatchingValue);
 
-      JMSQueueControlMBean queueControl = createManagementControl();
+      JMSQueueControl queueControl = createManagementControl();
       assertEquals(2, queueControl.getMessageCount());
 
       // moved matching messages to otherQueue
@@ -611,7 +611,7 @@ public class JMSQueueControlTest extends ManagementTestBase
 
       String[] messageIDs = JMSUtil.sendMessages(queue, 1);
       
-      JMSQueueControlMBean queueControl = createManagementControl();
+      JMSQueueControl queueControl = createManagementControl();
       assertEquals(1, queueControl.getMessageCount());
 
       boolean moved = queueControl.moveMessage(messageIDs[0], otherQueueName);
@@ -631,7 +631,7 @@ public class JMSQueueControlTest extends ManagementTestBase
 
       serverManager.createQueue(otherQueueName, otherQueueName, null, true);
 
-      JMSQueueControlMBean queueControl = createManagementControl();
+      JMSQueueControl queueControl = createManagementControl();
       assertEquals(0, queueControl.getMessageCount());
 
       try
@@ -652,7 +652,7 @@ public class JMSQueueControlTest extends ManagementTestBase
 
       String[] messageIDs = JMSUtil.sendMessages(queue, 1);
       
-      JMSQueueControlMBean queueControl = createManagementControl();
+      JMSQueueControl queueControl = createManagementControl();
       assertEquals(1, queueControl.getMessageCount());
 
       try
@@ -702,7 +702,7 @@ public class JMSQueueControlTest extends ManagementTestBase
       super.tearDown();
    }
 
-   protected JMSQueueControlMBean createManagementControl() throws Exception
+   protected JMSQueueControl createManagementControl() throws Exception
    {
       return createJMSQueueControl(queue, mbeanServer);
    }

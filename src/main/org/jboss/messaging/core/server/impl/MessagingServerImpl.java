@@ -51,7 +51,7 @@ import org.jboss.messaging.core.filter.impl.FilterImpl;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.management.ManagementService;
 import org.jboss.messaging.core.management.impl.ManagementServiceImpl;
-import org.jboss.messaging.core.management.impl.MessagingServerControl;
+import org.jboss.messaging.core.management.impl.MessagingServerControlImpl;
 import org.jboss.messaging.core.paging.PagingManager;
 import org.jboss.messaging.core.paging.impl.PagingManagerImpl;
 import org.jboss.messaging.core.paging.impl.PagingStoreFactoryNIO;
@@ -163,7 +163,7 @@ public class MessagingServerImpl implements MessagingServer
 
    private ResourceManager resourceManager;
 
-   private MessagingServerControl messagingServerControl;
+   private MessagingServerControlImpl messagingServerControl;
 
    private ClusterManager clusterManager;
 
@@ -615,7 +615,7 @@ public class MessagingServerImpl implements MessagingServer
       }
    }
 
-   public MessagingServerControl getMessagingServerControl()
+   public MessagingServerControlImpl getMessagingServerControl()
    {
       return messagingServerControl;
    }

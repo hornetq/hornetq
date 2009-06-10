@@ -23,7 +23,7 @@
 package org.jboss.messaging.core.management.impl;
 
 import org.jboss.messaging.core.config.cluster.DivertConfiguration;
-import org.jboss.messaging.core.management.DivertControlMBean;
+import org.jboss.messaging.core.management.DivertControl;
 import org.jboss.messaging.core.server.Divert;
 
 /**
@@ -33,7 +33,7 @@ import org.jboss.messaging.core.server.Divert;
  * 
  * Created 11 dec. 2008 17:09:04
  */
-public class DivertControl implements DivertControlMBean
+public class DivertControlImpl implements DivertControl
 {
 
    // Constants -----------------------------------------------------
@@ -50,7 +50,7 @@ public class DivertControl implements DivertControlMBean
 
    // DivertControlMBean implementation ---------------------------
 
-   public DivertControl(final Divert divert, final DivertConfiguration configuration)
+   public DivertControlImpl(final Divert divert, final DivertConfiguration configuration)
    {
       this.divert = divert;
       this.configuration = configuration;

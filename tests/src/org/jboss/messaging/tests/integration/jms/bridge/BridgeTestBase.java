@@ -39,8 +39,8 @@ import org.jboss.messaging.jms.client.JBossConnectionFactory;
 import org.jboss.messaging.jms.client.JBossMessage;
 import org.jboss.messaging.jms.server.JMSServerManager;
 import org.jboss.messaging.jms.server.impl.JMSServerManagerImpl;
-import org.jboss.messaging.jms.server.management.JMSQueueControlMBean;
-import org.jboss.messaging.jms.server.management.TopicControlMBean;
+import org.jboss.messaging.jms.server.management.JMSQueueControl;
+import org.jboss.messaging.jms.server.management.TopicControl;
 import org.jboss.messaging.tests.unit.util.InVMContext;
 import org.jboss.messaging.tests.util.UnitTestCase;
 
@@ -442,7 +442,7 @@ public abstract class BridgeTestBase extends UnitTestCase
       {
          managementService = server1.getManagementService();
       }
-      JMSQueueControlMBean queueControl = (JMSQueueControlMBean)managementService.getResource(ResourceNames.JMS_QUEUE + queue.getQueueName());
+      JMSQueueControl queueControl = (JMSQueueControl)managementService.getResource(ResourceNames.JMS_QUEUE + queue.getQueueName());
 
       Integer messageCount = queueControl.getMessageCount();
 
@@ -460,7 +460,7 @@ public abstract class BridgeTestBase extends UnitTestCase
       {
          managementService = server1.getManagementService();
       }
-      TopicControlMBean topicControl = (TopicControlMBean)managementService.getResource(ResourceNames.JMS_TOPIC + topic.getTopicName());
+      TopicControl topicControl = (TopicControl)managementService.getResource(ResourceNames.JMS_TOPIC + topic.getTopicName());
       assertEquals(0, topicControl.getSubscriptionCount());
 
    }
@@ -472,7 +472,7 @@ public abstract class BridgeTestBase extends UnitTestCase
       {
          managementService = server1.getManagementService();
       }
-      JMSQueueControlMBean queueControl = (JMSQueueControlMBean)managementService.getResource(ResourceNames.JMS_QUEUE + queueName);
+      JMSQueueControl queueControl = (JMSQueueControl)managementService.getResource(ResourceNames.JMS_QUEUE + queueName);
       queueControl.removeAllMessages();
    }
 

@@ -26,7 +26,7 @@ import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.ClientSessionFactory;
 import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
 import org.jboss.messaging.core.config.TransportConfiguration;
-import org.jboss.messaging.core.management.ClusterConnectionControlMBean;
+import org.jboss.messaging.core.management.ClusterConnectionControl;
 import org.jboss.messaging.core.management.ResourceNames;
 import org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory;
 
@@ -53,13 +53,13 @@ public class ClusterConnectionControlUsingCoreTest extends ClusterConnectionCont
    // ClusterConnectionControlTest overrides --------------------------------
 
    @Override
-   protected ClusterConnectionControlMBean createManagementControl(final String name) throws Exception
+   protected ClusterConnectionControl createManagementControl(final String name) throws Exception
    {
       ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration(InVMConnectorFactory.class.getName()));
       session = sf.createSession(false, true, true);
       session.start();
 
-      return new ClusterConnectionControlMBean()
+      return new ClusterConnectionControl()
       {
          private final CoreMessagingProxy proxy = new CoreMessagingProxy(session,
                                                                          ResourceNames.CORE_CLUSTER_CONNECTION + name);

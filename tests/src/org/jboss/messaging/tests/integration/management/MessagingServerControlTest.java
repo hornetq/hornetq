@@ -29,9 +29,9 @@ import java.util.HashMap;
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
-import org.jboss.messaging.core.management.MessagingServerControlMBean;
+import org.jboss.messaging.core.management.MessagingServerControl;
 import org.jboss.messaging.core.management.ObjectNames;
-import org.jboss.messaging.core.management.QueueControlMBean;
+import org.jboss.messaging.core.management.QueueControl;
 import org.jboss.messaging.core.messagecounter.impl.MessageCounterManagerImpl;
 import org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory;
 import org.jboss.messaging.core.server.Messaging;
@@ -69,7 +69,7 @@ public class MessagingServerControlTest extends ManagementTestBase
 
    public void testGetAttributes() throws Exception
    {
-      MessagingServerControlMBean serverControl = createManagementControl();
+      MessagingServerControl serverControl = createManagementControl();
 
       assertEquals(server.getVersion().getFullVersion(), serverControl.getVersion());
 
@@ -115,7 +115,7 @@ public class MessagingServerControlTest extends ManagementTestBase
 
    public void testGetConnectors() throws Exception
    {
-      MessagingServerControlMBean serverControl = createManagementControl();
+      MessagingServerControl serverControl = createManagementControl();
 
       Object[] connectorData = serverControl.getConnectors();
       assertNotNull(connectorData);
@@ -131,14 +131,14 @@ public class MessagingServerControlTest extends ManagementTestBase
       SimpleString address = RandomUtil.randomSimpleString();
       SimpleString name = RandomUtil.randomSimpleString();
 
-      MessagingServerControlMBean serverControl = createManagementControl();
+      MessagingServerControl serverControl = createManagementControl();
 
       checkNoResource(ObjectNames.getQueueObjectName(address, name));
 
       serverControl.createQueue(address.toString(), name.toString());
 
       checkResource(ObjectNames.getQueueObjectName(address, name));
-      QueueControlMBean queueControl = ManagementControlHelper.createQueueControl(address, name, mbeanServer);
+      QueueControl queueControl = ManagementControlHelper.createQueueControl(address, name, mbeanServer);
       assertEquals(address.toString(), queueControl.getAddress());
       assertEquals(name.toString(), queueControl.getName());
       assertNull(queueControl.getFilter());
@@ -157,14 +157,14 @@ public class MessagingServerControlTest extends ManagementTestBase
       String filter = "color = 'green'";
       boolean durable = true;
 
-      MessagingServerControlMBean serverControl = createManagementControl();
+      MessagingServerControl serverControl = createManagementControl();
 
       checkNoResource(ObjectNames.getQueueObjectName(address, name));
 
       serverControl.createQueue(address.toString(), name.toString(), filter, durable);
 
       checkResource(ObjectNames.getQueueObjectName(address, name));
-      QueueControlMBean queueControl = ManagementControlHelper.createQueueControl(address, name, mbeanServer);
+      QueueControl queueControl = ManagementControlHelper.createQueueControl(address, name, mbeanServer);
       assertEquals(address.toString(), queueControl.getAddress());
       assertEquals(name.toString(), queueControl.getName());
       assertEquals(filter, queueControl.getFilter());
@@ -183,14 +183,14 @@ public class MessagingServerControlTest extends ManagementTestBase
       String filter = null;
       boolean durable = true;
 
-      MessagingServerControlMBean serverControl = createManagementControl();
+      MessagingServerControl serverControl = createManagementControl();
 
       checkNoResource(ObjectNames.getQueueObjectName(address, name));
 
       serverControl.createQueue(address.toString(), name.toString(), filter, durable);
 
       checkResource(ObjectNames.getQueueObjectName(address, name));
-      QueueControlMBean queueControl = ManagementControlHelper.createQueueControl(address, name, mbeanServer);
+      QueueControl queueControl = ManagementControlHelper.createQueueControl(address, name, mbeanServer);
       assertEquals(address.toString(), queueControl.getAddress());
       assertEquals(name.toString(), queueControl.getName());
       assertNull(queueControl.getFilter());
@@ -204,7 +204,7 @@ public class MessagingServerControlTest extends ManagementTestBase
 
    public void testMessageCounterMaxDayCount() throws Exception
    {
-      MessagingServerControlMBean serverControl = createManagementControl();
+      MessagingServerControl serverControl = createManagementControl();
 
       assertEquals(MessageCounterManagerImpl.DEFAULT_MAX_DAY_COUNT, serverControl.getMessageCounterMaxDayCount());
 
@@ -236,7 +236,7 @@ public class MessagingServerControlTest extends ManagementTestBase
 
    public void testGetMessageCounterSamplePeriod() throws Exception
    {
-      MessagingServerControlMBean serverControl = createManagementControl();
+      MessagingServerControl serverControl = createManagementControl();
 
       assertEquals(MessageCounterManagerImpl.DEFAULT_SAMPLE_PERIOD, serverControl.getMessageCounterSamplePeriod());
 
@@ -307,7 +307,7 @@ public class MessagingServerControlTest extends ManagementTestBase
       super.tearDown();
    }
 
-   protected MessagingServerControlMBean createManagementControl() throws Exception
+   protected MessagingServerControl createManagementControl() throws Exception
    {
       return ManagementControlHelper.createMessagingServerControl(mbeanServer);
    }

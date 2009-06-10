@@ -25,10 +25,9 @@ package org.jboss.messaging.jms.server.management.impl;
 import java.util.List;
 
 import javax.management.NotCompliantMBeanException;
-import javax.management.StandardMBean;
 
 import org.jboss.messaging.jms.client.JBossConnectionFactory;
-import org.jboss.messaging.jms.server.management.ConnectionFactoryControlMBean;
+import org.jboss.messaging.jms.server.management.ConnectionFactoryControl;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -36,7 +35,7 @@ import org.jboss.messaging.jms.server.management.ConnectionFactoryControlMBean;
  * @version <tt>$Revision$</tt>
  * 
  */
-public class ConnectionFactoryControl extends StandardMBean implements ConnectionFactoryControlMBean
+public class ConnectionFactoryControlImpl implements ConnectionFactoryControl
 {
    // Constants -----------------------------------------------------
 
@@ -52,9 +51,8 @@ public class ConnectionFactoryControl extends StandardMBean implements Connectio
 
    // Constructors --------------------------------------------------
 
-   public ConnectionFactoryControl(final JBossConnectionFactory cf, final String name, final List<String> bindings) throws NotCompliantMBeanException
+   public ConnectionFactoryControlImpl(final JBossConnectionFactory cf, final String name, final List<String> bindings) throws NotCompliantMBeanException
    {
-      super(ConnectionFactoryControlMBean.class);
       this.cf = cf;
       this.name = name;
       this.bindings = bindings;

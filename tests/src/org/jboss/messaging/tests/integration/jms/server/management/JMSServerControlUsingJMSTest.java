@@ -35,7 +35,7 @@ import org.jboss.messaging.core.management.ResourceNames;
 import org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory;
 import org.jboss.messaging.jms.JBossQueue;
 import org.jboss.messaging.jms.client.JBossConnectionFactory;
-import org.jboss.messaging.jms.server.management.JMSServerControlMBean;
+import org.jboss.messaging.jms.server.management.JMSServerControl;
 
 /**
  * A JMSServerControlUsingCoreTest
@@ -79,13 +79,13 @@ public class JMSServerControlUsingJMSTest extends JMSServerControlTest
    }
 
    @Override
-   protected JMSServerControlMBean createManagementControl() throws Exception
+   protected JMSServerControl createManagementControl() throws Exception
    {
       JBossQueue managementQueue = new JBossQueue(DEFAULT_MANAGEMENT_ADDRESS.toString(),
                                                   DEFAULT_MANAGEMENT_ADDRESS.toString());
       final JMSMessagingProxy proxy = new JMSMessagingProxy(session, managementQueue, ResourceNames.JMS_SERVER);
 
-      return new JMSServerControlMBean()
+      return new JMSServerControl()
       {
          public void createConnectionFactory(String name,
                                              String discoveryAddress,

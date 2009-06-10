@@ -36,7 +36,7 @@ import org.jboss.messaging.core.management.Parameter;
  * @version <tt>$Revision$</tt>
  * 
  */
-public interface JMSQueueControlMBean extends DestinationControlMBean
+public interface JMSQueueControl extends DestinationControlMBean
 {
    // Attributes ----------------------------------------------------
 

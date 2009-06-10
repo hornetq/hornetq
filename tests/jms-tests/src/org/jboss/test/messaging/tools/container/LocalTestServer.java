@@ -68,8 +68,8 @@ import org.jboss.messaging.integration.bootstrap.JBMBootstrapServer;
 import org.jboss.messaging.jms.JBossQueue;
 import org.jboss.messaging.jms.JBossTopic;
 import org.jboss.messaging.jms.server.JMSServerManager;
-import org.jboss.messaging.jms.server.management.JMSQueueControlMBean;
-import org.jboss.messaging.jms.server.management.TopicControlMBean;
+import org.jboss.messaging.jms.server.management.JMSQueueControl;
+import org.jboss.messaging.jms.server.management.TopicControl;
 import org.jboss.messaging.utils.Pair;
 import org.jboss.messaging.utils.SimpleString;
 
@@ -417,7 +417,7 @@ public class LocalTestServer implements Server, Runnable
 
    public Integer getMessageCountForQueue(String queueName) throws Exception
    {
-      JMSQueueControlMBean queue = (JMSQueueControlMBean)getMessagingServer().getManagementService()
+      JMSQueueControl queue = (JMSQueueControl)getMessagingServer().getManagementService()
                                                                              .getResource(ResourceNames.JMS_QUEUE + queueName);
       if (queue != null)
       {
@@ -446,9 +446,9 @@ public class LocalTestServer implements Server, Runnable
    public List<String> listAllSubscribersForTopic(String s) throws Exception
    {
       ObjectName objectName = ObjectNames.getJMSTopicObjectName(s);
-      TopicControlMBean topic = (TopicControlMBean)MBeanServerInvocationHandler.newProxyInstance(ManagementFactory.getPlatformMBeanServer(),
+      TopicControl topic = (TopicControl)MBeanServerInvocationHandler.newProxyInstance(ManagementFactory.getPlatformMBeanServer(),
                                                                                                  objectName,
-                                                                                                 TopicControlMBean.class,
+                                                                                                 TopicControl.class,
                                                                                                  false);
       Object[] subInfos = topic.listAllSubscriptions();
       List<String> subs = new ArrayList<String>();

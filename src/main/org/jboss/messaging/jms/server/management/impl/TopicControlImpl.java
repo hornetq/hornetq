@@ -29,15 +29,15 @@ import java.util.Map;
 
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.management.AddressControlMBean;
+import org.jboss.messaging.core.management.AddressControl;
 import org.jboss.messaging.core.management.ManagementService;
-import org.jboss.messaging.core.management.MessagingServerControlMBean;
-import org.jboss.messaging.core.management.QueueControlMBean;
+import org.jboss.messaging.core.management.MessagingServerControl;
+import org.jboss.messaging.core.management.QueueControl;
 import org.jboss.messaging.core.management.ResourceNames;
 import org.jboss.messaging.jms.JBossTopic;
 import org.jboss.messaging.jms.client.JBossMessage;
 import org.jboss.messaging.jms.client.SelectorTranslator;
-import org.jboss.messaging.jms.server.management.TopicControlMBean;
+import org.jboss.messaging.jms.server.management.TopicControl;
 import org.jboss.messaging.utils.Pair;
 
 /**
@@ -46,11 +46,11 @@ import org.jboss.messaging.utils.Pair;
  * @version <tt>$Revision$</tt>
  * 
  */
-public class TopicControl implements TopicControlMBean
+public class TopicControlImpl implements TopicControl
 {
    // Constants -----------------------------------------------------
 
-   private static final Logger log = Logger.getLogger(TopicControl.class);
+   private static final Logger log = Logger.getLogger(TopicControlImpl.class);
 
    // Attributes ----------------------------------------------------
 
@@ -58,7 +58,7 @@ public class TopicControl implements TopicControlMBean
 
    private final String binding;
 
-   private AddressControlMBean addressControl;
+   private AddressControl addressControl;
 
    private ManagementService managementService;
 
@@ -71,8 +71,8 @@ public class TopicControl implements TopicControlMBean
 
    // Constructors --------------------------------------------------
 
-   public TopicControl(final JBossTopic topic,
-                       final AddressControlMBean addressControl,
+   public TopicControlImpl(final JBossTopic topic,
+                       final AddressControl addressControl,
                        final String jndiBinding,
                        final ManagementService managementService)
    {
@@ -151,7 +151,7 @@ public class TopicControl implements TopicControlMBean
 
    public Map<String, Object>[] listMessagesForSubscription(final String queueName) throws Exception
    {
-      QueueControlMBean coreQueueControl = (QueueControlMBean)managementService.getResource(ResourceNames.CORE_QUEUE + queueName);
+      QueueControl coreQueueControl = (QueueControl)managementService.getResource(ResourceNames.CORE_QUEUE + queueName);
       if (coreQueueControl == null)
       {
          throw new IllegalArgumentException("No subscriptions with name " + queueName);
@@ -173,7 +173,7 @@ public class TopicControl implements TopicControlMBean
    public int countMessagesForSubscription(final String clientID, final String subscriptionName, final String filterStr) throws Exception
    {
       String queueName = JBossTopic.createQueueNameForDurableSubscription(clientID, subscriptionName);
-      QueueControlMBean coreQueueControl = (QueueControlMBean)managementService.getResource(ResourceNames.CORE_QUEUE + queueName);
+      QueueControl coreQueueControl = (QueueControl)managementService.getResource(ResourceNames.CORE_QUEUE + queueName);
       if (coreQueueControl == null)
       {
          throw new IllegalArgumentException("No subscriptions with name " + queueName + " for clientID " + clientID);
@@ -188,7 +188,7 @@ public class TopicControl implements TopicControlMBean
       String[] queues = addressControl.getQueueNames();
       for (String queue : queues)
       {
-         QueueControlMBean coreQueueControl = (QueueControlMBean)managementService.getResource(ResourceNames.CORE_QUEUE + queue);
+         QueueControl coreQueueControl = (QueueControl)managementService.getResource(ResourceNames.CORE_QUEUE + queue);
          count += coreQueueControl.removeAllMessages();
       }
 
@@ -198,18 +198,18 @@ public class TopicControl implements TopicControlMBean
    public void dropDurableSubscription(String clientID, String subscriptionName) throws Exception
    {
       String queueName = JBossTopic.createQueueNameForDurableSubscription(clientID, subscriptionName);
-      QueueControlMBean coreQueueControl = (QueueControlMBean)managementService.getResource(ResourceNames.CORE_QUEUE + queueName);
+      QueueControl coreQueueControl = (QueueControl)managementService.getResource(ResourceNames.CORE_QUEUE + queueName);
       if (coreQueueControl == null)
       {
          throw new IllegalArgumentException("No subscriptions with name " + queueName + " for clientID " + clientID);
       }
-      MessagingServerControlMBean serverControl = (MessagingServerControlMBean)managementService.getResource(ResourceNames.CORE_SERVER);
+      MessagingServerControl serverControl = (MessagingServerControl)managementService.getResource(ResourceNames.CORE_SERVER);
       serverControl.destroyQueue(queueName);
    }
 
    public void dropAllSubscriptions() throws Exception
    {
-      MessagingServerControlMBean serverControl = (MessagingServerControlMBean)managementService.getResource(ResourceNames.CORE_SERVER);
+      MessagingServerControl serverControl = (MessagingServerControl)managementService.getResource(ResourceNames.CORE_SERVER);
       String[] queues = addressControl.getQueueNames();
       for (String queue : queues)
       {
@@ -225,10 +225,10 @@ public class TopicControl implements TopicControlMBean
 
    private Object[] listSubscribersInfos(final DurabilityType durability)
    {
-      List<QueueControlMBean> queues = getQueues(durability);
+      List<QueueControl> queues = getQueues(durability);
       List<Object[]> subInfos = new ArrayList<Object[]>(queues.size());
 
-      for (QueueControlMBean queue : queues)
+      for (QueueControl queue : queues)
       {
          String clientID = null;
          String subName = null;
@@ -256,24 +256,24 @@ public class TopicControl implements TopicControlMBean
 
    private int getMessageCount(final DurabilityType durability)
    {
-      List<QueueControlMBean> queues = getQueues(durability);
+      List<QueueControl> queues = getQueues(durability);
       int count = 0;
-      for (QueueControlMBean queue : queues)
+      for (QueueControl queue : queues)
       {
          count += queue.getMessageCount();
       }
       return count;
    }
 
-   private List<QueueControlMBean> getQueues(final DurabilityType durability)
+   private List<QueueControl> getQueues(final DurabilityType durability)
    {
       try
       {
-         List<QueueControlMBean> matchingQueues = new ArrayList<QueueControlMBean>();
+         List<QueueControl> matchingQueues = new ArrayList<QueueControl>();
          String[] queues = addressControl.getQueueNames();
          for (String queue : queues)
          {
-            QueueControlMBean coreQueueControl = (QueueControlMBean)managementService.getResource(ResourceNames.CORE_QUEUE + queue);
+            QueueControl coreQueueControl = (QueueControl)managementService.getResource(ResourceNames.CORE_QUEUE + queue);
 
             // Ignore the "special" subscription
             if (!coreQueueControl.getName().equals(addressControl.getAddress()))

@@ -25,7 +25,7 @@ package org.jboss.messaging.core.management.impl;
 import java.util.Map;
 
 import org.jboss.messaging.core.config.TransportConfiguration;
-import org.jboss.messaging.core.management.AcceptorControlMBean;
+import org.jboss.messaging.core.management.AcceptorControl;
 import org.jboss.messaging.core.remoting.spi.Acceptor;
 
 /**
@@ -35,7 +35,7 @@ import org.jboss.messaging.core.remoting.spi.Acceptor;
  * 
  * Created 11 dec. 2008 17:09:04
  */
-public class AcceptorControl implements AcceptorControlMBean
+public class AcceptorControlImpl implements AcceptorControl
 {
 
    // Constants -----------------------------------------------------
@@ -50,7 +50,7 @@ public class AcceptorControl implements AcceptorControlMBean
 
    // Constructors --------------------------------------------------
 
-   public AcceptorControl(final Acceptor acceptor, final TransportConfiguration configuration)
+   public AcceptorControlImpl(final Acceptor acceptor, final TransportConfiguration configuration)
    {
       this.acceptor = acceptor;
       this.configuration = configuration;

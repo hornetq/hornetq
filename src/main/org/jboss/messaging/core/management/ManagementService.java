@@ -34,7 +34,7 @@ import org.jboss.messaging.core.config.cluster.BroadcastGroupConfiguration;
 import org.jboss.messaging.core.config.cluster.ClusterConnectionConfiguration;
 import org.jboss.messaging.core.config.cluster.DiscoveryGroupConfiguration;
 import org.jboss.messaging.core.config.cluster.DivertConfiguration;
-import org.jboss.messaging.core.management.impl.MessagingServerControl;
+import org.jboss.messaging.core.management.impl.MessagingServerControlImpl;
 import org.jboss.messaging.core.messagecounter.MessageCounterManager;
 import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.PostOffice;
@@ -79,7 +79,7 @@ public interface ManagementService extends NotificationService, MessagingCompone
 
    // Resource Registration
 
-   MessagingServerControl registerServer(PostOffice postOffice,
+   MessagingServerControlImpl registerServer(PostOffice postOffice,
                                          StorageManager storageManager,
                                          Configuration configuration,
                                          HierarchicalRepository<AddressSettings> addressSettingsRepository,

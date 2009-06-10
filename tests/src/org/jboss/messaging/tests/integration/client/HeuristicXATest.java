@@ -36,7 +36,7 @@ import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.ClientSessionFactory;
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.management.MessagingServerControlMBean;
+import org.jboss.messaging.core.management.MessagingServerControl;
 import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.settings.impl.AddressSettings;
@@ -82,7 +82,7 @@ public class HeuristicXATest extends ServiceTestBase
       {
          server.start();
 
-         MessagingServerControlMBean jmxServer = ManagementControlHelper.createMessagingServerControl(mbeanServer);
+         MessagingServerControl jmxServer = ManagementControlHelper.createMessagingServerControl(mbeanServer);
 
          assertFalse(jmxServer.commitPreparedTransaction("Nananananana"));
       }
@@ -139,7 +139,7 @@ public class HeuristicXATest extends ServiceTestBase
 
          session.close();
 
-         MessagingServerControlMBean jmxServer = ManagementControlHelper.createMessagingServerControl(mbeanServer);
+         MessagingServerControl jmxServer = ManagementControlHelper.createMessagingServerControl(mbeanServer);
 
          String preparedTransactions[] = jmxServer.listPreparedTransactions();
 

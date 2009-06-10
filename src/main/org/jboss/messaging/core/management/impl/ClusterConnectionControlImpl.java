@@ -22,57 +22,71 @@
 
 package org.jboss.messaging.core.management.impl;
 
-import org.jboss.messaging.core.config.cluster.BroadcastGroupConfiguration;
-import org.jboss.messaging.core.management.BroadcastGroupControlMBean;
-import org.jboss.messaging.core.server.cluster.BroadcastGroup;
+import org.jboss.messaging.core.config.cluster.ClusterConnectionConfiguration;
+import org.jboss.messaging.core.management.ClusterConnectionControl;
+import org.jboss.messaging.core.server.cluster.ClusterConnection;
 import org.jboss.messaging.utils.Pair;
 
 /**
- * A BroadcastGroupControl
+ * A ClusterConnectionControl
  *
  * @author <a href="jmesnil@redhat.com">Jeff Mesnil</a>
- * 
- * Created 11 dec. 2008 17:09:04
  */
-public class BroadcastGroupControl implements BroadcastGroupControlMBean
+public class ClusterConnectionControlImpl implements ClusterConnectionControl
 {
 
    // Constants -----------------------------------------------------
 
    // Attributes ----------------------------------------------------
 
-   private final BroadcastGroup broadcastGroup;
+   private final ClusterConnection clusterConnection;
 
-   private final BroadcastGroupConfiguration configuration;
+   private final ClusterConnectionConfiguration configuration;
 
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   public BroadcastGroupControl(final BroadcastGroup acceptor, final BroadcastGroupConfiguration configuration)
+   public ClusterConnectionControlImpl(final ClusterConnection clusterConnection,
+                                   ClusterConnectionConfiguration configuration)
    {
-      this.broadcastGroup = acceptor;
+      this.clusterConnection = clusterConnection;
       this.configuration = configuration;
    }
 
-   // BroadcastGroupControlMBean implementation ---------------------
+   // ClusterConnectionControlMBean implementation ---------------------------
+
+   public String getAddress()
+   {
+      return configuration.getAddress();
+   }
+
+   public String getDiscoveryGroupName()
+   {
+      return configuration.getDiscoveryGroupName();
+   }
+
+   public int getMaxHops()
+   {
+      return configuration.getMaxHops();
+   }
    
    public String getName()
    {
       return configuration.getName();
    }
 
-   public long getBroadcastPeriod()
+   public long getRetryInterval()
    {
-      return configuration.getBroadcastPeriod();
+      return configuration.getRetryInterval();
    }
 
-   public Object[] getConnectorPairs()
+   public Object[] getStaticConnectorNamePairs()
    {
-      Object[] ret = new Object[configuration.getConnectorInfos().size()];
+      Object[] ret = new Object[configuration.getStaticConnectorNamePairs().size()];
       
       int i = 0;
-      for (Pair<String, String> pair: configuration.getConnectorInfos())
+      for (Pair<String, String> pair: configuration.getStaticConnectorNamePairs())
       {
          String[] opair = new String[2];
          
@@ -82,39 +96,32 @@ public class BroadcastGroupControl implements BroadcastGroupControlMBean
          ret[i++] = opair;
       }
       
-      return ret;      
+      return ret;            
    }
 
-   public String getGroupAddress()
+   public boolean isDuplicateDetection()
    {
-      return configuration.getGroupAddress();
+      return configuration.isDuplicateDetection();
    }
 
-   public int getGroupPort()
+   public boolean isForwardWhenNoConsumers()
    {
-      return configuration.getGroupPort();
+      return configuration.isForwardWhenNoConsumers();
    }
-
-   public int getLocalBindPort()
-   {
-      return configuration.getLocalBindPort();
-   }
-
-   // MessagingComponentControlMBean implementation -----------------
 
    public boolean isStarted()
    {
-      return broadcastGroup.isStarted();
+      return clusterConnection.isStarted();
    }
 
    public void start() throws Exception
    {
-      broadcastGroup.start();
+      clusterConnection.start();
    }
 
    public void stop() throws Exception
    {
-      broadcastGroup.stop();
+      clusterConnection.stop();
    }
 
    // Public --------------------------------------------------------

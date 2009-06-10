@@ -28,7 +28,7 @@ import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.ClientSessionFactory;
 import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
 import org.jboss.messaging.core.config.TransportConfiguration;
-import org.jboss.messaging.core.management.AcceptorControlMBean;
+import org.jboss.messaging.core.management.AcceptorControl;
 import org.jboss.messaging.core.management.ResourceNames;
 import org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory;
 
@@ -55,13 +55,13 @@ public class AcceptorControlUsingCoreTest extends AcceptorControlTest
    private ClientSession session;
 
    @Override
-   protected AcceptorControlMBean createManagementControl(final String name) throws Exception
+   protected AcceptorControl createManagementControl(final String name) throws Exception
    {
       ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration(InVMConnectorFactory.class.getName()));
       session = sf.createSession(false, true, true);
       session.start();
 
-      return new AcceptorControlMBean()
+      return new AcceptorControl()
       {
 
          private final CoreMessagingProxy proxy = new CoreMessagingProxy(session, ResourceNames.CORE_ACCEPTOR + name);

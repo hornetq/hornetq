@@ -31,7 +31,7 @@ import java.util.List;
  * @version <tt>$Revision$</tt>
  * 
  */
-public interface ConnectionFactoryControlMBean
+public interface ConnectionFactoryControl
 {   
    String getName();
    

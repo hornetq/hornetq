@@ -45,7 +45,7 @@ import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.management.MessagingServerControlMBean;
+import org.jboss.messaging.core.management.MessagingServerControl;
 import org.jboss.messaging.core.management.NotificationType;
 import org.jboss.messaging.core.messagecounter.MessageCounterManager;
 import org.jboss.messaging.core.messagecounter.impl.MessageCounterManagerImpl;
@@ -65,11 +65,11 @@ import org.jboss.messaging.utils.SimpleString;
  * @version <tt>$Revision$</tt>
  * 
  */
-public class MessagingServerControl implements MessagingServerControlMBean, NotificationEmitter
+public class MessagingServerControlImpl implements MessagingServerControl, NotificationEmitter
 {
    // Constants -----------------------------------------------------
 
-   private static final Logger log = Logger.getLogger(MessagingServerControl.class);
+   private static final Logger log = Logger.getLogger(MessagingServerControlImpl.class);
 
    private static DateFormat DATE_FORMAT = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.MEDIUM);
 
@@ -95,7 +95,7 @@ public class MessagingServerControl implements MessagingServerControlMBean, Noti
 
    // Constructors --------------------------------------------------
 
-   public MessagingServerControl(final PostOffice postOffice,
+   public MessagingServerControlImpl(final PostOffice postOffice,
                                  final Configuration configuration,
                                  final ResourceManager resourceManager,
                                  final RemotingService remotingService,

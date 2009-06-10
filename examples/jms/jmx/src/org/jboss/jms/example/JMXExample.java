@@ -23,7 +23,7 @@ package org.jboss.jms.example;
 
 import org.jboss.common.example.JBMExample;
 import org.jboss.messaging.core.management.ObjectNames;
-import org.jboss.messaging.jms.server.management.JMSQueueControlMBean;
+import org.jboss.messaging.jms.server.management.JMSQueueControl;
 
 import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
@@ -97,9 +97,9 @@ public class JMXExample extends JBMExample
          MBeanServerConnection mbsc = connector.getMBeanServerConnection();
 
          // Step 12. Create a JMSQueueControlMBean proxy to manage the queue on the server
-         JMSQueueControlMBean queueControl = (JMSQueueControlMBean)MBeanServerInvocationHandler.newProxyInstance(mbsc,
+         JMSQueueControl queueControl = (JMSQueueControl)MBeanServerInvocationHandler.newProxyInstance(mbsc,
                                                                                                                  on,
-                                                                                                                 JMSQueueControlMBean.class,
+                                                                                                                 JMSQueueControl.class,
                                                                                                                  false);
          // Step 13. Display the number of messages in the queue
          System.out.println(queueControl.getName() + " contains " + queueControl.getMessageCount() + " messages");

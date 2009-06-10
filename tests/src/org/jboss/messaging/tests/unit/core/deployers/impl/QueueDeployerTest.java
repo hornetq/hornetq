@@ -26,7 +26,7 @@ import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.cluster.QueueConfiguration;
 import org.jboss.messaging.core.deployers.DeploymentManager;
 import org.jboss.messaging.core.deployers.impl.QueueDeployer;
-import org.jboss.messaging.core.management.MessagingServerControlMBean;
+import org.jboss.messaging.core.management.MessagingServerControl;
 import org.jboss.messaging.tests.util.UnitTestCase;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -135,7 +135,7 @@ public class QueueDeployerTest extends UnitTestCase
 
    // Inner classes -------------------------------------------------
 
-   private class FakeServerControl implements MessagingServerControlMBean
+   private class FakeServerControl implements MessagingServerControl
    {
 
       public int getThreadPoolMaxSize()

@@ -42,7 +42,7 @@ import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.integration.transports.netty.NettyAcceptorFactory;
 import org.jboss.messaging.integration.transports.netty.NettyConnectorFactory;
 import org.jboss.messaging.jms.server.impl.JMSServerManagerImpl;
-import org.jboss.messaging.jms.server.management.JMSServerControlMBean;
+import org.jboss.messaging.jms.server.management.JMSServerControl;
 import org.jboss.messaging.tests.integration.management.ManagementControlHelper;
 import org.jboss.messaging.tests.integration.management.ManagementTestBase;
 import org.jboss.messaging.tests.unit.util.InVMContext;
@@ -148,7 +148,7 @@ public class JMSServerControl2Test extends ManagementTestBase
 
    // Protected -----------------------------------------------------
 
-   protected JMSServerControlMBean createManagementControl() throws Exception
+   protected JMSServerControl createManagementControl() throws Exception
    {
       return ManagementControlHelper.createJMSServerControl(mbeanServer);
    }
@@ -162,7 +162,7 @@ public class JMSServerControl2Test extends ManagementTestBase
       {
          server = startMessagingServer(acceptorFactory);
 
-         JMSServerControlMBean control = createManagementControl();
+         JMSServerControl control = createManagementControl();
 
          assertEquals(0, control.listConnectionIDs().length);
 
@@ -200,7 +200,7 @@ public class JMSServerControl2Test extends ManagementTestBase
       {
          server = startMessagingServer(acceptorFactory);
 
-         JMSServerControlMBean control = createManagementControl();
+         JMSServerControl control = createManagementControl();
 
          assertEquals(0, control.listConnectionIDs().length);
 
@@ -238,7 +238,7 @@ public class JMSServerControl2Test extends ManagementTestBase
       {
          server = startMessagingServer(acceptorFactory);
 
-         JMSServerControlMBean control = createManagementControl();
+         JMSServerControl control = createManagementControl();
 
          assertEquals(0, control.listRemoteAddresses().length);
 
@@ -277,7 +277,7 @@ public class JMSServerControl2Test extends ManagementTestBase
       {
          server = startMessagingServer(acceptorFactory);
 
-         JMSServerControlMBean control = createManagementControl();
+         JMSServerControl control = createManagementControl();
 
          assertEquals(0, server.getConnectionCount());
          assertEquals(0, control.listRemoteAddresses().length);
@@ -329,7 +329,7 @@ public class JMSServerControl2Test extends ManagementTestBase
       {
          server = startMessagingServer(acceptorFactory);
 
-         JMSServerControlMBean control = createManagementControl();
+         JMSServerControl control = createManagementControl();
 
          assertEquals(0, server.getConnectionCount());
          assertEquals(0, control.listRemoteAddresses().length);

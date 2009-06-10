@@ -44,7 +44,7 @@ import org.jboss.messaging.core.server.Messaging;
 import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.jms.server.JMSServerManager;
 import org.jboss.messaging.jms.server.impl.JMSServerManagerImpl;
-import org.jboss.messaging.jms.server.management.JMSServerControlMBean;
+import org.jboss.messaging.jms.server.management.JMSServerControl;
 import org.jboss.messaging.tests.integration.management.ManagementControlHelper;
 import org.jboss.messaging.tests.integration.management.ManagementTestBase;
 import org.jboss.messaging.tests.unit.util.InVMContext;
@@ -78,7 +78,7 @@ public class JMSServerControlTest extends ManagementTestBase
 
    public void testGetVersion() throws Exception
    {
-      JMSServerControlMBean control = createManagementControl();
+      JMSServerControl control = createManagementControl();
       String version = control.getVersion();
       assertEquals(serverManager.getVersion(), version);
    }
@@ -91,7 +91,7 @@ public class JMSServerControlTest extends ManagementTestBase
       checkNoBinding(context, queueJNDIBinding);
       checkNoResource(ObjectNames.getJMSQueueObjectName(queueName));
 
-      JMSServerControlMBean control = createManagementControl();
+      JMSServerControl control = createManagementControl();
       control.createQueue(queueName, queueJNDIBinding);
 
       Object o = checkBinding(context, queueJNDIBinding);
@@ -110,7 +110,7 @@ public class JMSServerControlTest extends ManagementTestBase
       checkNoBinding(context, queueJNDIBinding);
       checkNoResource(ObjectNames.getJMSQueueObjectName(queueName));
 
-      JMSServerControlMBean control = createManagementControl();
+      JMSServerControl control = createManagementControl();
       control.createQueue(queueName, queueJNDIBinding);
 
       checkBinding(context, queueJNDIBinding);
@@ -130,7 +130,7 @@ public class JMSServerControlTest extends ManagementTestBase
       checkNoBinding(context, topicJNDIBinding);
       checkNoResource(ObjectNames.getJMSTopicObjectName(topicName));
 
-      JMSServerControlMBean control = createManagementControl();
+      JMSServerControl control = createManagementControl();
       control.createTopic(topicName, topicJNDIBinding);
 
       Object o = checkBinding(context, topicJNDIBinding);
@@ -148,7 +148,7 @@ public class JMSServerControlTest extends ManagementTestBase
       checkNoBinding(context, topicJNDIBinding);
       checkNoResource(ObjectNames.getJMSTopicObjectName(topicName));
 
-      JMSServerControlMBean control = createManagementControl();
+      JMSServerControl control = createManagementControl();
       control.createTopic(topicName, topicJNDIBinding);
 
       checkBinding(context, topicJNDIBinding);
@@ -164,7 +164,7 @@ public class JMSServerControlTest extends ManagementTestBase
    {
       doCreateConnectionFactory(new ConnectionFactoryCreator()
       {
-         public void createConnectionFactory(JMSServerControlMBean control, Object[] bindings) throws Exception
+         public void createConnectionFactory(JMSServerControl control, Object[] bindings) throws Exception
          {
             String cfName = randomString();
             TransportConfiguration tcLive = new TransportConfiguration(InVMConnectorFactory.class.getName());
@@ -178,7 +178,7 @@ public class JMSServerControlTest extends ManagementTestBase
    {
       doCreateConnectionFactory(new ConnectionFactoryCreator()
       {
-         public void createConnectionFactory(JMSServerControlMBean control, Object[] bindings) throws Exception
+         public void createConnectionFactory(JMSServerControl control, Object[] bindings) throws Exception
          {
             String cfName = randomString();
             String clientID = randomString();
@@ -197,7 +197,7 @@ public class JMSServerControlTest extends ManagementTestBase
    {
       doCreateConnectionFactory(new ConnectionFactoryCreator()
       {
-         public void createConnectionFactory(JMSServerControlMBean control, Object[] bindings) throws Exception
+         public void createConnectionFactory(JMSServerControl control, Object[] bindings) throws Exception
          {
             String cfName = randomString();
             TransportConfiguration tcLive = new TransportConfiguration(InVMConnectorFactory.class.getName());
@@ -217,7 +217,7 @@ public class JMSServerControlTest extends ManagementTestBase
    {
       doCreateConnectionFactory(new ConnectionFactoryCreator()
       {
-         public void createConnectionFactory(JMSServerControlMBean control, Object[] bindings) throws Exception
+         public void createConnectionFactory(JMSServerControl control, Object[] bindings) throws Exception
          {
             String cfName = randomString();
             String clientID = randomString();
@@ -239,7 +239,7 @@ public class JMSServerControlTest extends ManagementTestBase
    {
       doCreateConnectionFactory(new ConnectionFactoryCreator()
       {
-         public void createConnectionFactory(JMSServerControlMBean control, Object[] bindings) throws Exception
+         public void createConnectionFactory(JMSServerControl control, Object[] bindings) throws Exception
          {
             String cfName = randomString();
             TransportConfiguration tcLive = new TransportConfiguration(InVMConnectorFactory.class.getName());
@@ -259,7 +259,7 @@ public class JMSServerControlTest extends ManagementTestBase
    {
       doCreateConnectionFactory(new ConnectionFactoryCreator()
       {
-         public void createConnectionFactory(JMSServerControlMBean control, Object[] bindings) throws Exception
+         public void createConnectionFactory(JMSServerControl control, Object[] bindings) throws Exception
          {
             String cfName = randomString();
             String clientID = randomString();
@@ -281,7 +281,7 @@ public class JMSServerControlTest extends ManagementTestBase
    {
       doCreateConnectionFactory(new ConnectionFactoryCreator()
       {
-         public void createConnectionFactory(JMSServerControlMBean control, Object[] bindings) throws Exception
+         public void createConnectionFactory(JMSServerControl control, Object[] bindings) throws Exception
          {
             String cfName = randomString();
             String clientID = randomString();
@@ -338,7 +338,7 @@ public class JMSServerControlTest extends ManagementTestBase
          checkNoBinding(context, cfJNDIBinding);
       }
 
-      JMSServerControlMBean control = createManagementControl();
+      JMSServerControl control = createManagementControl();
 
       control.createConnectionFactory(cfName, "231.7.7.7", 8765, clientID, cfJNDIBindings);
 
@@ -362,7 +362,7 @@ public class JMSServerControlTest extends ManagementTestBase
          checkNoBinding(context, cfJNDIBinding);
       }
 
-      JMSServerControlMBean control = createManagementControl();
+      JMSServerControl control = createManagementControl();
 
       TransportConfiguration tcLive = new TransportConfiguration(InVMConnectorFactory.class.getName());
 
@@ -416,7 +416,7 @@ public class JMSServerControlTest extends ManagementTestBase
       super.tearDown();
    }
 
-   protected JMSServerControlMBean createManagementControl() throws Exception
+   protected JMSServerControl createManagementControl() throws Exception
    {
       return ManagementControlHelper.createJMSServerControl(mbeanServer);
    }
@@ -435,7 +435,7 @@ public class JMSServerControlTest extends ManagementTestBase
       }
       checkNoResource(ObjectNames.getConnectionFactoryObjectName(cfName));
 
-      JMSServerControlMBean control = createManagementControl();
+      JMSServerControl control = createManagementControl();
       creator.createConnectionFactory(control, cfJNDIBindings);
 
       TransportConfiguration tcLive = new TransportConfiguration(InVMConnectorFactory.class.getName());
@@ -479,7 +479,7 @@ public class JMSServerControlTest extends ManagementTestBase
 
    interface ConnectionFactoryCreator
    {
-      void createConnectionFactory(JMSServerControlMBean control, Object[] bindings) throws Exception;
+      void createConnectionFactory(JMSServerControl control, Object[] bindings) throws Exception;
    }
 
 }

@@ -24,7 +24,7 @@ package org.jboss.messaging.core.deployers.impl;
 
 import org.jboss.messaging.core.config.cluster.QueueConfiguration;
 import org.jboss.messaging.core.deployers.DeploymentManager;
-import org.jboss.messaging.core.management.MessagingServerControlMBean;
+import org.jboss.messaging.core.management.MessagingServerControl;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
@@ -37,9 +37,9 @@ import org.w3c.dom.NodeList;
  */
 public class QueueDeployer extends XmlDeployer
 {
-   private final MessagingServerControlMBean serverControl;
+   private final MessagingServerControl serverControl;
 
-   public QueueDeployer(final DeploymentManager deploymentManager, final MessagingServerControlMBean serverControl)
+   public QueueDeployer(final DeploymentManager deploymentManager, final MessagingServerControl serverControl)
    {
       super(deploymentManager);
 

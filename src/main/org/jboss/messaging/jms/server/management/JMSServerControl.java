@@ -37,7 +37,7 @@ import org.jboss.messaging.core.management.Parameter;
  * @version <tt>$Revision$</tt>
  * 
  */
-public interface JMSServerControlMBean
+public interface JMSServerControl
 {
    // Attributes ----------------------------------------------------
 

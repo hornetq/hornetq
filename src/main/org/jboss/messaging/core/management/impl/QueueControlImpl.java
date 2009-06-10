@@ -29,7 +29,7 @@ import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.filter.Filter;
 import org.jboss.messaging.core.filter.impl.FilterImpl;
 import org.jboss.messaging.core.management.MessageCounterInfo;
-import org.jboss.messaging.core.management.QueueControlMBean;
+import org.jboss.messaging.core.management.QueueControl;
 import org.jboss.messaging.core.message.Message;
 import org.jboss.messaging.core.messagecounter.MessageCounter;
 import org.jboss.messaging.core.messagecounter.impl.MessageCounterHelper;
@@ -40,7 +40,6 @@ import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.core.settings.impl.AddressSettings;
 import org.jboss.messaging.utils.SimpleString;
-import org.jboss.messaging.utils.json.JSONObject;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -48,7 +47,7 @@ import org.jboss.messaging.utils.json.JSONObject;
  * @version <tt>$Revision$</tt>
  * 
  */
-public class QueueControl implements QueueControlMBean
+public class QueueControlImpl implements QueueControl
 {
 
    // Constants -----------------------------------------------------
@@ -69,7 +68,7 @@ public class QueueControl implements QueueControlMBean
 
    // Constructors --------------------------------------------------
 
-   public QueueControl(final Queue queue,
+   public QueueControlImpl(final Queue queue,
                        final String address,
                        final PostOffice postOffice,
                        final HierarchicalRepository<AddressSettings> addressSettingsRepository)

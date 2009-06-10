@@ -33,7 +33,7 @@ import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.management.AcceptorControlMBean;
+import org.jboss.messaging.core.management.AcceptorControl;
 import org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory;
 import org.jboss.messaging.core.server.Messaging;
@@ -79,7 +79,7 @@ public class AcceptorControlTest extends ManagementTestBase
       service = Messaging.newMessagingServer(conf, mbeanServer, false);
       service.start();
 
-      AcceptorControlMBean acceptorControl = createManagementControl(acceptorConfig.getName());
+      AcceptorControl acceptorControl = createManagementControl(acceptorConfig.getName());
 
       assertEquals(acceptorConfig.getName(), acceptorControl.getName());
       assertEquals(acceptorConfig.getFactoryClassName(), acceptorControl.getFactoryClassName());
@@ -97,7 +97,7 @@ public class AcceptorControlTest extends ManagementTestBase
       service = Messaging.newMessagingServer(conf, mbeanServer, false);
       service.start();
 
-      AcceptorControlMBean acceptorControl = createManagementControl(acceptorConfig.getName());
+      AcceptorControl acceptorControl = createManagementControl(acceptorConfig.getName());
 
       // started by the server
       assertTrue(acceptorControl.isStarted());
@@ -201,7 +201,7 @@ public class AcceptorControlTest extends ManagementTestBase
       super.tearDown();
    }
    
-   protected AcceptorControlMBean createManagementControl(String name) throws Exception
+   protected AcceptorControl createManagementControl(String name) throws Exception
    {
       return ManagementControlHelper.createAcceptorControl(name, mbeanServer);
    }

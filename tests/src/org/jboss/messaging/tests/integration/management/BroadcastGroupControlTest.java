@@ -32,7 +32,7 @@ import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.config.cluster.BroadcastGroupConfiguration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
-import org.jboss.messaging.core.management.BroadcastGroupControlMBean;
+import org.jboss.messaging.core.management.BroadcastGroupControl;
 import org.jboss.messaging.core.server.Messaging;
 import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.integration.transports.netty.NettyConnectorFactory;
@@ -94,7 +94,7 @@ public class BroadcastGroupControlTest extends ManagementTestBase
       service = Messaging.newMessagingServer(conf, mbeanServer, false);
       service.start();
 
-      BroadcastGroupControlMBean broadcastGroupControl = createManagementControl(broadcastGroupConfig.getName());
+      BroadcastGroupControl broadcastGroupControl = createManagementControl(broadcastGroupConfig.getName());
 
       assertEquals(broadcastGroupConfig.getName(), broadcastGroupControl.getName());
       assertEquals(broadcastGroupConfig.getGroupAddress(), broadcastGroupControl.getGroupAddress());
@@ -127,7 +127,7 @@ public class BroadcastGroupControlTest extends ManagementTestBase
       service = Messaging.newMessagingServer(conf, mbeanServer, false);
       service.start();
 
-      BroadcastGroupControlMBean broadcastGroupControl = createManagementControl(broadcastGroupConfig.getName());
+      BroadcastGroupControl broadcastGroupControl = createManagementControl(broadcastGroupConfig.getName());
 
       // started by the server
       assertTrue(broadcastGroupControl.isStarted());
@@ -154,7 +154,7 @@ public class BroadcastGroupControlTest extends ManagementTestBase
       super.tearDown();
    }
    
-   protected BroadcastGroupControlMBean createManagementControl(String name) throws Exception
+   protected BroadcastGroupControl createManagementControl(String name) throws Exception
    {
       return ManagementControlHelper.createBroadcastGroupControl(name, mbeanServer);
    }

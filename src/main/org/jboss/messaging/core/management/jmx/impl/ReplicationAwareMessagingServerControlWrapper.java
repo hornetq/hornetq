@@ -23,11 +23,11 @@
 package org.jboss.messaging.core.management.jmx.impl;
 
 import org.jboss.messaging.core.config.Configuration;
-import org.jboss.messaging.core.management.MessagingServerControlMBean;
+import org.jboss.messaging.core.management.MessagingServerControl;
 import org.jboss.messaging.core.management.ReplicationOperationInvoker;
 import org.jboss.messaging.core.management.ResourceNames;
 import org.jboss.messaging.core.management.impl.MBeanInfoHelper;
-import org.jboss.messaging.core.management.impl.MessagingServerControl;
+import org.jboss.messaging.core.management.impl.MessagingServerControlImpl;
 
 import javax.management.MBeanInfo;
 
@@ -38,23 +38,23 @@ import javax.management.MBeanInfo;
  *
  */
 public class ReplicationAwareMessagingServerControlWrapper extends ReplicationAwareStandardMBeanWrapper implements
-         MessagingServerControlMBean
+         MessagingServerControl
 {
 
    // Constants -----------------------------------------------------
 
    // Attributes ----------------------------------------------------
 
-   private final MessagingServerControl localControl;
+   private final MessagingServerControlImpl localControl;
 
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   public ReplicationAwareMessagingServerControlWrapper(final MessagingServerControl localControl,
+   public ReplicationAwareMessagingServerControlWrapper(final MessagingServerControlImpl localControl,
                                                         final ReplicationOperationInvoker replicationInvoker) throws Exception
    {
-      super(ResourceNames.CORE_SERVER, MessagingServerControlMBean.class, replicationInvoker);
+      super(ResourceNames.CORE_SERVER, MessagingServerControl.class, replicationInvoker);
 
       this.localControl = localControl;
    }
@@ -406,7 +406,7 @@ public class ReplicationAwareMessagingServerControlWrapper extends ReplicationAw
                            info.getDescription(),
                            info.getAttributes(),
                            info.getConstructors(),
-                           MBeanInfoHelper.getMBeanOperationsInfo(MessagingServerControlMBean.class),
+                           MBeanInfoHelper.getMBeanOperationsInfo(MessagingServerControl.class),
                            localControl.getNotificationInfo());
    }
 
