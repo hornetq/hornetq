@@ -84,12 +84,12 @@
            <code>TextMessage messageReceived = (TextMessage) messageConsumer.receive(5000);</code>
         </pre>
         
-        <li>We create a <a href="../../../docs/api/org/jboss/messaging/jms/server/management/JMSQueueControlMBean.html">JMSQueueControlMBean</a> proxy to manage the queue on the server</li>
+        <li>We create a <a href="../../../docs/api/org/jboss/messaging/jms/server/management/JMSQueueControl.html">JMSQueueControl</a> proxy to manage the queue on the server</li>
         <pre>
-            <code>JMSQueueControlMBean queueControl = (JMSQueueControlMBean)MBeanServerInvocationHandler.newProxyInstance(mbsc,
-                                                                                                        on,
-                                                                                                        JMSQueueControlMBean.class,
-                                                                                                        false);
+            <code>JMSQueueControl queueControl = (JMSQueueControl)MBeanServerInvocationHandler.newProxyInstance(mbsc,
+                                                                                              on,
+                                                                                              JMSQueueControl.class,
+                                                                                              false);
              </code>
         </pre>
                 

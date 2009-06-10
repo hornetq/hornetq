@@ -73,10 +73,10 @@
             <code>ObjectName on = ObjectNames.getJMSQueueObjectName(queue.getQueueName());
             JMXConnector connector = JMXConnectorFactory.connect(new JMXServiceURL(JMX_URL), new HashMap());
             MBeanServerConnection mbsc = connector.getMBeanServerConnection();
-            JMSQueueControlMBean queueControl = (JMSQueueControlMBean)MBeanServerInvocationHandler.newProxyInstance(mbsc,
-                                                                                                        on,
-                                                                                                        JMSQueueControlMBean.class,
-                                                                                                        false);</code>
+            JMSQueueControl queueControl = (JMSQueueControl)MBeanServerInvocationHandler.newProxyInstance(mbsc,
+                                                                                              on,
+                                                                                              JMSQueueControl.class,
+                                                                                              false);</code>
         </pre>
 
         <li>We retrieve the message counter and display them. MessageCounters are retrieved as <code>JSON Strings</code> for portability reason (wether

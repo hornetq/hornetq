@@ -96,11 +96,11 @@ public class JMXExample extends JBMExample
          // Step 11. Retrieve the MBeanServerConnection
          MBeanServerConnection mbsc = connector.getMBeanServerConnection();
 
-         // Step 12. Create a JMSQueueControlMBean proxy to manage the queue on the server
+         // Step 12. Create a JMSQueueControl proxy to manage the queue on the server
          JMSQueueControl queueControl = (JMSQueueControl)MBeanServerInvocationHandler.newProxyInstance(mbsc,
-                                                                                                                 on,
-                                                                                                                 JMSQueueControl.class,
-                                                                                                                 false);
+                                                                                                       on,
+                                                                                                       JMSQueueControl.class,
+                                                                                                       false);
          // Step 13. Display the number of messages in the queue
          System.out.println(queueControl.getName() + " contains " + queueControl.getMessageCount() + " messages");
 

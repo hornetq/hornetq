@@ -87,7 +87,7 @@ public class MessageCounterExample extends JBMExample
          System.out.println("Sleep a little bit to have the queue sampled...");
          Thread.sleep(3000);
 
-         // Step 7. Use JMX to retrieve the message counters using the JMSQueueControlMBean
+         // Step 7. Use JMX to retrieve the message counters using the JMSQueueControl
          ObjectName on = ObjectNames.getJMSQueueObjectName(queue.getQueueName());
          JMXConnector connector = JMXConnectorFactory.connect(new JMXServiceURL(JMX_URL), new HashMap());
          MBeanServerConnection mbsc = connector.getMBeanServerConnection();
