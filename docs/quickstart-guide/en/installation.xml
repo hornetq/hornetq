@@ -11,8 +11,9 @@
       <para>By default, JBoss Messaging server is run with 1GB of memory. If your computer has less
          memory, modify the value in <literal>bin/run.sh</literal> accordingly.</para>
       <para>For persistence, JBoss Messaging uses its own fast journal file, which you can configure
-         to use libaio (which is the default when running on Linux) or Java NIO. In order to use the libaio
-         module on Linux, it's required to install libaio.</para>
+         to use libaio (which is the default when running on Linux) or Java NIO. In order to use the
+         libaio module on Linux, it's required to install libaio.</para>
+      <para>If you're not running on Linux then you don't need to worry about this.</para>
       <para>You can install libaio using the following steps:</para>
       <para>Using yum, (e.g. on Fedora or Red Hat Enterprise Linux):</para>
       <programlisting>sudo yum install libaio</programlisting>
