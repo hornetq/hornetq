@@ -20,10 +20,12 @@
          <param key="jbm.remoting.netty.tcpreceivebuffersize" value="1048576" type="Integer"/>
       </acceptor>
    </acceptors>
+
+   <backup>true</backup>
    
    <security-enabled>false</security-enabled>
    
-   <persistence-enabled>false</persistence-enabled>
+   <persistence-enabled>true</persistence-enabled>
    
    <queues>
 	   <queue name="perfQueue">

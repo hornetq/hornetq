@@ -588,7 +588,7 @@ public class MessagingServerImpl implements MessagingServer
       {
          throw new IllegalArgumentException("node id is null");
       }
-
+      
       synchronized (initialiseLock)
       {
          if (initialised)
@@ -608,10 +608,8 @@ public class MessagingServerImpl implements MessagingServer
          {
             initialised = false;
 
-            throw new IllegalStateException("Live and backup unique ids different. You're probably trying to restart a live backup pair after a crash");
+            throw new IllegalStateException("Live and backup unique ids different (" + liveUniqueID + ":" + backupID + "). You're probably trying to restart a live backup pair after a crash");
          }
-
-         log.info("Backup server is now operational");
       }
    }
 
@@ -771,6 +769,8 @@ public class MessagingServerImpl implements MessagingServer
    {
       if (configuration.isBackup())
       {
+         log.info("A connection has been made to the backup server so it will be activated! This will result in the live server being considered failed.");
+         
          synchronized (this)
          {
             freezeBackupConnection();
@@ -961,10 +961,9 @@ public class MessagingServerImpl implements MessagingServer
       // to load those
       deployQueuesFromConfiguration();
 
-      // Deploy any predefined queues - on backup we don't start queue deployer - instead deployments
-      // are replicated from live
+      // Deploy any predefined queues
 
-      if (configuration.isFileDeploymentEnabled() && !configuration.isBackup())
+      if (configuration.isFileDeploymentEnabled())
       {
          queueDeployer = new QueueDeployer(deploymentManager, messagingServerControl);
 
@@ -1096,7 +1095,7 @@ public class MessagingServerImpl implements MessagingServer
             }
             else
             {
-               log.warn("Backup server MUST be started before live server. Initialisation will proceed.");
+               log.warn("Backup server MUST be started before live server. Initialisation will not proceed.");
 
                return false; 
             }
@@ -1158,15 +1157,15 @@ public class MessagingServerImpl implements MessagingServer
    }
 
    private void setNodeID() throws Exception
-   {
+   {      
       if (!configuration.isBackup())
-      {
+      {         
          if (uuid == null)
-         {
+         {            
             uuid = storageManager.getPersistentID();
-
+            
             if (uuid == null)
-            {
+            {               
                uuid = UUIDGenerator.getInstance().generateUUID();
 
                storageManager.setPersistentID(uuid);
@@ -1176,9 +1175,9 @@ public class MessagingServerImpl implements MessagingServer
          }
       }
       else
-      {
+      {         
          UUID currentUUID = storageManager.getPersistentID();
-
+         
          if (currentUUID != null)
          {
             if (!currentUUID.equals(uuid))

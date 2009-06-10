@@ -243,14 +243,14 @@ public class JournalStorageManager implements StorageManager
    }
 
    public long generateUniqueID()
-   {
+   {      
       long id = idGenerator.generateID();
 
       return id;
    }
 
    public long getCurrentUniqueID()
-   {
+   {      
       return idGenerator.getCurrentID();
    }
 
@@ -903,6 +903,7 @@ public class JournalStorageManager implements StorageManager
    public void addQueueBinding(final Binding binding) throws Exception
    {
       Queue queue = (Queue)binding.getBindable();
+      
       Filter filter = queue.getFilter();
 
       SimpleString filterString = filter == null ? null : filter.getFilterString();
@@ -972,7 +973,7 @@ public class JournalStorageManager implements StorageManager
             throw new IllegalStateException("Invalid record type " + rec);
          }
       }
-
+     
       idGenerator.setID(lastID + 1);
    }
 
