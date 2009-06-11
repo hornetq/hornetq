@@ -1134,6 +1134,7 @@
          <jvmarg value="-Djava.util.logging.config.file=src/config/stand-alone/non-clustered/logging.properties"/>
          <jvmarg
                value="-Dorg.jboss.logging.Logger.pluginClass=org.jboss.messaging.integration.logging.JBMLoggerPlugin"/>
+         <jvmarg value="-XX:+PrintClassHistogram"/>
          <jvmarg value="-Xmx1024M"/>
          <!--
          <jvmarg line="-Xmx512M -Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=5005"/>
