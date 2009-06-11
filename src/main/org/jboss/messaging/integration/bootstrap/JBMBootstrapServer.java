@@ -43,24 +43,28 @@ import java.util.concurrent.CopyOnWriteArrayList;
 /**
  * This is the method in which the JBM server can be deployed externall outside of jBoss. Alternatively a user can embed
  * by using the same code as in main
+ *
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
  */
 public class JBMBootstrapServer extends BasicBootstrap
 {
    private static Logger log = Logger.getLogger(JBMBootstrapServer.class);
+
    /**
     * The deployer
     */
    protected BeanXMLDeployer deployer;
+
    /**
     * The deployments
     */
    protected List<KernelDeployment> deployments = new CopyOnWriteArrayList<KernelDeployment>();
+
    /**
     * The arguments
     */
    protected String[] args;
-   
+
    private Properties properties;
 
    /**
@@ -74,20 +78,20 @@ public class JBMBootstrapServer extends BasicBootstrap
       log.info("Starting JBoss Messaging Server");
 
       final JBMBootstrapServer bootstrap = new JBMBootstrapServer(args);
-      
+
       bootstrap.run();
-      
+
       bootstrap.addShutdownHook();
    }
-   
+
    /**
     * Add a simple shutdown hook to stop the server.
     */
    public void addShutdownHook()
    {
-      String dirName = System.getProperty("jbm.bootsrap.bin.dir", ".");
-      final File file = new File(dirName + "/KILL_ME");
-      if(file.exists())
+      String dirName = System.getProperty("jbm.config.dir", ".");
+      final File file = new File(dirName + "/STOP_ME");
+      if (file.exists())
       {
          file.delete();
       }
@@ -97,7 +101,7 @@ public class JBMBootstrapServer extends BasicBootstrap
          @Override
          public void run()
          {
-            if(file.exists())
+            if (file.exists())
             {
                try
                {
@@ -124,7 +128,7 @@ public class JBMBootstrapServer extends BasicBootstrap
       catch (RuntimeException e)
       {
          log.error("Failed to start server", e);
-         
+
          throw e;
       }
    }
@@ -137,18 +141,18 @@ public class JBMBootstrapServer extends BasicBootstrap
     * @param args the arguments
     * @throws Exception for any error
     */
-   public JBMBootstrapServer(String ... args) throws Exception
+   public JBMBootstrapServer(String... args) throws Exception
    {
       super();
       this.args = args;
    }
 
-   public JBMBootstrapServer(KernelConfig kernelConfig, final String ... args) throws Exception
+   public JBMBootstrapServer(KernelConfig kernelConfig, final String... args) throws Exception
    {
       super(kernelConfig);
       this.args = args;
    }
-   
+
    public void bootstrap() throws Throwable
    {
       super.bootstrap();
@@ -162,7 +166,7 @@ public class JBMBootstrapServer extends BasicBootstrap
 
       deployer.validate();
    }
-   
+
    /**
     * Undeploy a deployment
     *
@@ -192,14 +196,14 @@ public class JBMBootstrapServer extends BasicBootstrap
          url = cl.getResource("META-INF/" + arg);
       }
       //try the system classpath
-      if(url == null)
+      if (url == null)
       {
          url = getClass().getClassLoader().getResource(arg);
       }
-      if(url == null)
+      if (url == null)
       {
          File file = new File(arg);
-         if(file.exists())
+         if (file.exists())
          {
             url = file.toURI().toURL();
          }
@@ -210,10 +214,9 @@ public class JBMBootstrapServer extends BasicBootstrap
       }
       return deploy(url);
    }
-   
+
    /**
     * Deploys a XML on the container
-    * 
     */
    public KernelDeployment deploy(final String name, final String xml) throws Throwable
    {
@@ -222,16 +225,15 @@ public class JBMBootstrapServer extends BasicBootstrap
       printOut.print(xml);
       printOut.flush();
       ByteArrayInputStream is = new ByteArrayInputStream(byteOut.toByteArray());
-    
+
       KernelDeployment deployment = deployer.deploy(name, is);
-      
+
       deployments.add(deployment);
-      
+
       return deployment;
    }
 
-   
-   
+
    /**
     * Deploy a url
     *
@@ -253,7 +255,14 @@ public class JBMBootstrapServer extends BasicBootstrap
       while (iterator.hasPrevious())
       {
          KernelDeployment deployment = iterator.previous();
-         try {undeploy(deployment);} catch (Throwable ignored){}
+         try
+         {
+            undeploy(deployment);
+         }
+         catch (Throwable t)
+         {
+            log.warn("Unable to undeploy: " + deployment.getName(), t);  
+         }
       }
    }
 
@@ -266,8 +275,8 @@ public class JBMBootstrapServer extends BasicBootstrap
    {
       properties = props;
    }
-   
-   
+
+
    protected class Shutdown extends Thread
    {
       public void run()

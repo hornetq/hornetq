@@ -9,10 +9,10 @@
       <property name="namingInfo">
          <inject bean="Naming"/>
       </property>
-      <property name="port">${jnp.port}</property>
-      <property name="bindAddress">localhost</property>
-      <property name="rmiPort">${jnp.rmiPort}</property>
-      <property name="rmiBindAddress">localhost</property>
+      <property name="port">${jnp.port:1099}</property>
+      <property name="bindAddress">${jnp.host:localhost}</property>
+      <property name="rmiPort">${jnp.rmiPort:1098}</property>
+      <property name="rmiBindAddress">${jnp.host:localhost}</property>
    </bean>
 
    <!-- MBean server -->
