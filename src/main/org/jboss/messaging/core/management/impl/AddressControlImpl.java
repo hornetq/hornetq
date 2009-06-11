@@ -34,6 +34,8 @@ import org.jboss.messaging.core.security.CheckType;
 import org.jboss.messaging.core.security.Role;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.utils.SimpleString;
+import org.jboss.messaging.utils.json.JSONArray;
+import org.jboss.messaging.utils.json.JSONObject;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -116,6 +118,19 @@ public class AddressControlImpl implements AddressControl
                                        CheckType.MANAGE.hasRole(role) };
       }
       return objRoles;
+   }
+   
+   public String getRolesAsJSON() throws Exception
+   {
+      JSONArray json = new JSONArray();
+      Set<Role> roles = securityRepository.getMatch(address.toString());
+
+      for (Role role : roles)
+      {
+         json.put(new JSONObject(role));
+      }
+      System.out.println(json.toString(2));
+      return json.toString();
    }
 
    public synchronized void addRole(final String name,

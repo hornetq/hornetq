@@ -42,4 +42,6 @@ public interface BroadcastGroupControl extends MessagingComponentControlMBean
    long getBroadcastPeriod();
    
    Object[] getConnectorPairs();
+
+   String getConnectorPairsAsJSON() throws Exception;
 }

@@ -101,15 +101,30 @@ public class ReplicationAwareTopicControlWrapper extends ReplicationAwareStandar
    {
       return localControl.listAllSubscriptions();
    }
+   
+   public String listAllSubscriptionsAsJSON() throws Exception
+   {
+      return localControl.listAllSubscriptionsAsJSON();
+   }
 
    public Object[] listDurableSubscriptions()
    {
       return localControl.listDurableSubscriptions();
    }
+   
+   public String listDurableSubscriptionsAsJSON() throws Exception
+   {
+      return localControl.listDurableSubscriptionsAsJSON();
+   }
 
    public Map<String, Object>[] listMessagesForSubscription(final String queueName) throws Exception
    {
       return localControl.listMessagesForSubscription(queueName);
+   }
+   
+   public String listMessagesForSubscriptionAsJSON(String queueName) throws Exception
+   {
+      return localControl.listMessagesForSubscriptionAsJSON(queueName);
    }
    
    public int countMessagesForSubscription(final String clientID, final String subscriptionName, final String filterStr) throws Exception
@@ -120,6 +135,11 @@ public class ReplicationAwareTopicControlWrapper extends ReplicationAwareStandar
    public Object[] listNonDurableSubscriptions()
    {
       return localControl.listNonDurableSubscriptions();
+   }
+   
+   public String listNonDurableSubscriptionsAsJSON() throws Exception
+   {
+      return localControl.listNonDurableSubscriptionsAsJSON();
    }
 
    public String getAddress()

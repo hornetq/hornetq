@@ -89,6 +89,11 @@ public class ClusterConnectionControlUsingCoreTest extends ClusterConnectionCont
             return (Object[])proxy.retrieveAttributeValue("StaticConnectorNamePairs");
          }
 
+         public String getStaticConnectorNamePairsAsJSON()
+         {
+            return (String)proxy.retrieveAttributeValue("StaticConnectorNamePairsAsJSON");
+         }
+
          public boolean isDuplicateDetection()
          {
             return (Boolean)proxy.retrieveAttributeValue("DuplicateDetection");

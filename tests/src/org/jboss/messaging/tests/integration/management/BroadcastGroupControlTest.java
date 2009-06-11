@@ -37,6 +37,8 @@ import org.jboss.messaging.core.server.Messaging;
 import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.integration.transports.netty.NettyConnectorFactory;
 import org.jboss.messaging.utils.Pair;
+import org.jboss.messaging.utils.json.JSONArray;
+import org.jboss.messaging.utils.json.JSONObject;
 
 /**
  * A AcceptorControlTest
@@ -107,6 +109,14 @@ public class BroadcastGroupControlTest extends ManagementTestBase
       Object[] connectorPairData = (Object[])connectorPairs[0];
       assertEquals(broadcastGroupConfig.getConnectorInfos().get(0).a, connectorPairData[0]);
       assertEquals(broadcastGroupConfig.getConnectorInfos().get(0).b, connectorPairData[1]);
+      
+      String jsonString = broadcastGroupControl.getConnectorPairsAsJSON();
+      assertNotNull(jsonString);
+      JSONArray array = new JSONArray(jsonString);
+      assertEquals(1, array.length());
+      JSONObject data = array.getJSONObject(0);
+      assertEquals(broadcastGroupConfig.getConnectorInfos().get(0).a, data.optString("a"));
+      assertEquals(broadcastGroupConfig.getConnectorInfos().get(0).b, data.optString("b", null));
       
       assertTrue(broadcastGroupControl.isStarted());
    }

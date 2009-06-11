@@ -73,6 +73,11 @@ public class BroadcastGroupControlUsingCoreTest extends BroadcastGroupControlTes
          {
             return (Object[])proxy.retrieveAttributeValue("ConnectorPairs");
          }
+         
+         public String getConnectorPairsAsJSON()
+         {
+            return (String)proxy.retrieveAttributeValue("ConnectorPairsAsJSON");
+         }
 
          public String getGroupAddress()
          {

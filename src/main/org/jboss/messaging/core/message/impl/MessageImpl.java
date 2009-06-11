@@ -347,19 +347,17 @@ public abstract class MessageImpl implements Message
    {
       Map<String, Object> map = new HashMap<String, Object>();
       
-      map.put("MessageID", messageID);
-      map.put("Destination", destination.toString());
-      map.put("Type", type);
-      map.put("Durable", durable);
-      map.put("Expiration", expiration);
-      map.put("Timestamp", timestamp);
-      map.put("Priority", priority);
-      Map<String, Object> props = new HashMap<String, Object>();
+      map.put("messageID", messageID);
+      map.put("destination", destination.toString());
+      map.put("type", type);
+      map.put("durable", durable);
+      map.put("expiration", expiration);
+      map.put("timestamp", timestamp);
+      map.put("priority", priority);
       for (SimpleString propName: properties.getPropertyNames())
       {
-         props.put(propName.toString(), properties.getProperty(propName));
+         map.put(propName.toString(), properties.getProperty(propName));
       }
-      map.put("properties", props);
       return map;      
    }
      

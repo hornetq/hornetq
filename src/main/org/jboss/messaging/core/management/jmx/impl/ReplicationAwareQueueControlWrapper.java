@@ -25,8 +25,6 @@ package org.jboss.messaging.core.management.jmx.impl;
 import java.util.Map;
 
 import javax.management.MBeanInfo;
-import javax.management.openmbean.CompositeData;
-import javax.management.openmbean.TabularData;
 
 import org.jboss.messaging.core.management.QueueControl;
 import org.jboss.messaging.core.management.ReplicationOperationInvoker;
@@ -148,6 +146,11 @@ public class ReplicationAwareQueueControlWrapper extends ReplicationAwareStandar
       return localQueueControl.listAllMessages();
    }
 
+   public String listAllMessagesAsJSON() throws Exception
+   {
+      return localQueueControl.listAllMessagesAsJSON();
+   }
+
    public String listMessageCounter() throws Exception
    {
       return localQueueControl.listMessageCounter();
@@ -178,6 +181,11 @@ public class ReplicationAwareQueueControlWrapper extends ReplicationAwareStandar
       return localQueueControl.listMessages(filter);
    }
    
+   public String listMessagesAsJSON(String filter) throws Exception
+   {
+      return localQueueControl.listMessagesAsJSON(filter);
+   }
+   
    public int countMessages(final String filter) throws Exception
    {
       return localQueueControl.countMessages(filter);
@@ -186,6 +194,11 @@ public class ReplicationAwareQueueControlWrapper extends ReplicationAwareStandar
    public Map<String, Object>[] listScheduledMessages() throws Exception
    {
       return localQueueControl.listScheduledMessages();
+   }
+   
+   public String listScheduledMessagesAsJSON() throws Exception
+   {
+      return localQueueControl.listScheduledMessagesAsJSON();
    }
 
    public boolean changeMessagePriority(final long messageID, final int newPriority) throws Exception

@@ -96,10 +96,10 @@ public class JBossMessage implements javax.jms.Message
    {
       Map<String, Object> jmsMessage = new HashMap<String, Object>();
 
-      String deliveryMode = (Boolean)coreMessage.get("Durable") ? "PERSISTENT" : "NON_PERSISTENT";
-      byte priority = (Byte)coreMessage.get("Priority");
-      long timestamp = (Long)coreMessage.get("Timestamp");
-      long expiration = (Long)coreMessage.get("Expiration");
+      String deliveryMode = (Boolean)coreMessage.get("durable") ? "PERSISTENT" : "NON_PERSISTENT";
+      byte priority = (Byte)coreMessage.get("priority");
+      long timestamp = (Long)coreMessage.get("timestamp");
+      long expiration = (Long)coreMessage.get("expiration");
 
       jmsMessage.put("JMSPriority", priority);
       jmsMessage.put("JMSTimestamp", timestamp);
@@ -108,12 +108,13 @@ public class JBossMessage implements javax.jms.Message
 
       for (Map.Entry<String, Object> entry : coreMessage.entrySet())
       {
-         if (entry.getKey().equals("MessageID") || entry.getKey().equals("Destination") ||
-             entry.getKey().equals("Type") ||
-             entry.getKey().equals("Durable") ||
-             entry.getKey().equals("Expiration") ||
-             entry.getKey().equals("Timestamp") ||
-             entry.getKey().equals("Priority"))
+         if (entry.getKey().equals("messageID") ||
+             entry.getKey().equals("destination") ||
+             entry.getKey().equals("type") ||
+             entry.getKey().equals("durable") ||
+             entry.getKey().equals("expiration") ||
+             entry.getKey().equals("timestamp") ||
+             entry.getKey().equals("priority"))
          {
             // Ignore
          }

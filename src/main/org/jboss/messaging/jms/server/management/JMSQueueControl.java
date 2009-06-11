@@ -71,8 +71,15 @@ public interface JMSQueueControl extends DestinationControlMBean
    @Operation(desc = "List all messages in the queue", impact = INFO)
    Map<String, Object>[] listAllMessages() throws Exception;
 
+   @Operation(desc = "List all messages in the queue using JSON", impact = INFO)
+   String listAllMessagesAsJSON() throws Exception;
+
    @Operation(desc = "List all messages in the queue which matches the filter", impact = INFO)
    Map<String, Object>[] listMessages(@Parameter(name = "filter", desc = "A JMS Message filter")
+   String filter) throws Exception;
+
+   @Operation(desc = "List all messages in the queue which matches the filter and return them using JSON", impact = INFO)
+   String listMessagesAsJSON(@Parameter(name = "filter", desc = "A JMS Message filter")
    String filter) throws Exception;
 
    @Operation(desc = "Returns the number of the messages in the queue matching the given filter", impact = INFO)

@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source
- * Copyright 2008, Red Hat Middleware LLC, and individual contributors
+ * Copyright 2005-2008, Red Hat Middleware LLC, and individual contributors
  * by the @authors tag. See the copyright.txt in the distribution for a
  * full listing of individual contributors.
  *
@@ -22,66 +22,15 @@
 
 package org.jboss.messaging.core.management;
 
-import static javax.management.openmbean.SimpleType.BOOLEAN;
-import static javax.management.openmbean.SimpleType.STRING;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-
-import javax.management.openmbean.CompositeData;
-import javax.management.openmbean.CompositeDataSupport;
-import javax.management.openmbean.CompositeType;
-import javax.management.openmbean.OpenDataException;
-import javax.management.openmbean.OpenType;
-import javax.management.openmbean.TabularData;
-import javax.management.openmbean.TabularDataSupport;
-import javax.management.openmbean.TabularType;
+import org.jboss.messaging.utils.json.JSONArray;
+import org.jboss.messaging.utils.json.JSONObject;
 
 /**
- * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
- * 
- * @version <tt>$Revision$</tt>
- * 
+ * @author <a href="jmesnil@redhat.com">Jeff Mesnil</a>
  */
 public class RoleInfo
 {
-   // Constants -----------------------------------------------------
-
-   public static final CompositeType TYPE;
-   private static final String ROLE_TYPE_NAME = "RoleInfo";
-   private static final String ROLE_TABULAR_TYPE_NAME = "RoleTabularInfo";
-   private static final TabularType TABULAR_TYPE;
-   private static final String[] ITEM_NAMES = new String[] { "name", "send",
-         "consume", "createDurableQueue", "deleteDurableQueue", "createNonDurableQueue", "deleteNonDurableQueue", "manage" };
-   private static final String[] ITEM_DESCRIPTIONS = new String[] {
-         "Name of the role", "Can the role send messages?", "Can the role consume messages?",
-         "Can the role create a durable queue?",
-         "Can the role delete a durable queue?",
-         "Can the role create a non durable queue?",
-         "Can the role create a non durable queue?",
-         "Can the user send management messages"};
-   private static final OpenType[] ITEM_TYPES = new OpenType[] { STRING,
-         BOOLEAN, BOOLEAN, BOOLEAN, BOOLEAN, BOOLEAN, BOOLEAN, BOOLEAN };
-
-   static
-   {
-      try
-      {
-         TYPE = new CompositeType(ROLE_TYPE_NAME, "Information for a Role",
-               ITEM_NAMES, ITEM_DESCRIPTIONS, ITEM_TYPES);
-         TABULAR_TYPE = new TabularType(ROLE_TABULAR_TYPE_NAME,
-               "Table of RoleInfo", TYPE, new String[] { "name" });
-      } catch (OpenDataException e)
-      {
-         throw new IllegalStateException(e);
-      }
-   }
-
-   // Attributes ----------------------------------------------------
-
-   private final String name;
+   final private String name;
 
    final private boolean send;
 
@@ -97,65 +46,34 @@ public class RoleInfo
 
    final private boolean manage;
 
-
-   // Static --------------------------------------------------------
-
-   public static TabularData toTabularData(RoleInfo[] infos)
+   public static final RoleInfo[] from(final String jsonString) throws Exception
    {
-      TabularData data = new TabularDataSupport(TABULAR_TYPE);
-      for (RoleInfo roleInfo : infos)
+      JSONArray array = new JSONArray(jsonString);
+      RoleInfo[] roles = new RoleInfo[array.length()];
+      for (int i = 0; i < array.length(); i++)
       {
-         data.put(roleInfo.toCompositeData());
+         JSONObject r = array.getJSONObject(i);
+         RoleInfo role = new RoleInfo(r.getString("name"),
+                                      r.getBoolean("send"),
+                                      r.getBoolean("consume"),
+                                      r.getBoolean("createDurableQueue"),
+                                      r.getBoolean("deleteDurableQueue"),
+                                      r.getBoolean("createNonDurableQueue"),
+                                      r.getBoolean("deleteNonDurableQueue"),
+                                      r.getBoolean("manage"));
+         roles[i] = role;
       }
-      return data;
+      return roles;
    }
 
-   public static RoleInfo[] from(TabularData roles)
-   {
-      Collection values = roles.values();
-      List<RoleInfo> infos = new ArrayList<RoleInfo>();
-      for (Object object : values)
-      {
-         CompositeData compositeData = (CompositeData) object;
-         String name = (String) compositeData.get("name");
-         boolean send = (Boolean) compositeData.get("send");
-         boolean consume = (Boolean) compositeData.get("consume");
-         boolean createDurableQueue = (Boolean) compositeData.get("createDurableQueue");
-         boolean deleteDurableQueue = (Boolean) compositeData.get("deleteDurableQueue");
-         boolean createNonDurableQueue = (Boolean) compositeData.get("createNonDurableQueue");
-         boolean deleteNonDurableQueue = (Boolean) compositeData.get("deleteNonDurableQueue");
-         boolean manage = (Boolean) compositeData.get("manage");
-         infos.add(new RoleInfo(name, send, consume, createDurableQueue, deleteDurableQueue, createNonDurableQueue, deleteNonDurableQueue, manage));
-      }
-
-      return (RoleInfo[]) infos.toArray(new RoleInfo[infos.size()]);
-   }
-   
-   public static RoleInfo[] from(Object[] roles)
-   {
-      //Collection values = roles.values();
-      List<RoleInfo> infos = new ArrayList<RoleInfo>();
-      for (Object object : roles)
-      {
-         Map<String, Object> compositeData = (Map<String, Object>) object;
-         String name = (String) compositeData.get("name");
-         boolean send = (Boolean) compositeData.get("send");
-         boolean consume = (Boolean) compositeData.get("consume");
-         boolean createDurableQueue = (Boolean) compositeData.get("createDurableQueue");
-         boolean deleteDurableQueue = (Boolean) compositeData.get("deleteDurableQueue");
-         boolean createNonDurableQueue = (Boolean) compositeData.get("createNonDurableQueue");
-         boolean deleteNonDurableQueue = (Boolean) compositeData.get("deleteNonDurableQueue");
-         boolean manage = (Boolean) compositeData.get("manage");
-         infos.add(new RoleInfo(name, send, consume, createDurableQueue, deleteDurableQueue, createNonDurableQueue, deleteNonDurableQueue, manage));
-      }
-
-      return (RoleInfo[]) infos.toArray(new RoleInfo[infos.size()]);
-   }
-   
-   // Constructors --------------------------------------------------
-
-
-   public RoleInfo(String name, boolean send, boolean consume, boolean createDurableQueue, boolean deleteDurableQueue, boolean createNonDurableQueue, boolean deleteNonDurableQueue, boolean manage)
+   private RoleInfo(final String name,
+                    final boolean send,
+                    final boolean consume,
+                    final boolean createDurableQueue,
+                    final boolean deleteDurableQueue,
+                    final boolean createNonDurableQueue,
+                    final boolean deleteNonDurableQueue,
+                    boolean manage)
    {
       this.name = name;
       this.send = send;
@@ -166,8 +84,6 @@ public class RoleInfo
       this.deleteNonDurableQueue = deleteNonDurableQueue;
       this.manage = manage;
    }
-
-   // Public --------------------------------------------------------
 
    public String getName()
    {
@@ -208,37 +124,4 @@ public class RoleInfo
    {
       return manage;
    }
-
-   public CompositeData toCompositeData()
-   {
-      try
-      {
-         return new CompositeDataSupport(TYPE, ITEM_NAMES, new Object[] { name,
-               send, consume, createDurableQueue, deleteDurableQueue, createNonDurableQueue, deleteNonDurableQueue, manage });
-      } catch (OpenDataException e)
-      {
-         return null;
-      }
-   }
-
-   @Override
-   public String toString()
-   {
-       return "RolInfoe {name=" + name + ";" +
-             "read=" + send + ";" +
-             "write=" + consume + ";" +
-             "createDurableQueue=" + createDurableQueue + "}" +
-            "deleteDurableQueue=" + deleteDurableQueue + "}" +
-            "createNonDurableQueue=" + createNonDurableQueue + "}" +
-            "deleteNonDurableQueue=" + deleteNonDurableQueue + "}" +
-            "manage=" + manage + "}";
-   }
-
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
-
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
 }

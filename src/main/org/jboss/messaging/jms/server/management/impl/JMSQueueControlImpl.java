@@ -34,6 +34,8 @@ import org.jboss.messaging.jms.JBossQueue;
 import org.jboss.messaging.jms.client.JBossMessage;
 import org.jboss.messaging.jms.client.SelectorTranslator;
 import org.jboss.messaging.jms.server.management.JMSQueueControl;
+import org.jboss.messaging.utils.json.JSONArray;
+import org.jboss.messaging.utils.json.JSONObject;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -67,6 +69,17 @@ public class JMSQueueControlImpl implements JMSQueueControl
    private static String createFilterForJMSMessageID(String jmsMessageID) throws Exception
    {
       return JBossMessage.JBM_MESSAGE_ID + " = '" + jmsMessageID + "'";
+   }
+
+   static String toJSON(Map<String, Object>[] messages)
+   {
+      JSONArray array = new JSONArray();
+      for (int i = 0; i < messages.length; i++)
+      {
+         Map<String, Object> message = messages[i];
+         array.put(new JSONObject(message));         
+      }
+      return array.toString();
    }
 
    // Constructors --------------------------------------------------
@@ -183,6 +196,11 @@ public class JMSQueueControlImpl implements JMSQueueControl
       return listMessages(null);
    }
 
+   public String listAllMessagesAsJSON() throws Exception
+   {
+      return toJSON(listMessages(null));
+   }
+
    public Map<String, Object>[] listMessages(final String filterStr) throws Exception
    {
       try
@@ -205,6 +223,11 @@ public class JMSQueueControlImpl implements JMSQueueControl
       {
          throw new IllegalStateException(e.getMessage());
       }
+   }
+   
+   public String listMessagesAsJSON(String filter) throws Exception
+   {
+      return toJSON(listMessages(filter));
    }
 
    public int countMessages(final String filterStr) throws Exception

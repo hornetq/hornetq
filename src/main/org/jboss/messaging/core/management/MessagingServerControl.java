@@ -128,6 +128,8 @@ public interface MessagingServerControl
    
    Object[] getConnectors() throws Exception;
 
+   String getConnectorsAsJSON() throws Exception;
+
    // Operations ----------------------------------------------------
 
    @Operation(desc = "Create a queue with the specified address", impact = ACTION)

@@ -123,6 +123,11 @@ public class ReplicationAwareJMSQueueControlWrapper extends ReplicationAwareStan
    {
       return localControl.listAllMessages();
    }
+   
+   public String listAllMessagesAsJSON() throws Exception
+   {
+      return localControl.listAllMessagesAsJSON();
+   }
 
    public String listMessageCounter()
    {
@@ -149,6 +154,11 @@ public class ReplicationAwareJMSQueueControlWrapper extends ReplicationAwareStan
       return localControl.listMessages(filter);
    }
    
+   public String listMessagesAsJSON(String filter) throws Exception
+   {
+      return localControl.listMessagesAsJSON(filter);
+   }
+
    public int countMessages(final String filter) throws Exception
    {
       return localControl.countMessages(filter);

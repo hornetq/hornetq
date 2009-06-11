@@ -58,6 +58,8 @@ import org.jboss.messaging.core.transaction.ResourceManager;
 import org.jboss.messaging.core.transaction.Transaction;
 import org.jboss.messaging.core.transaction.impl.XidImpl;
 import org.jboss.messaging.utils.SimpleString;
+import org.jboss.messaging.utils.json.JSONArray;
+import org.jboss.messaging.utils.json.JSONObject;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -481,6 +483,18 @@ public class MessagingServerControlImpl implements MessagingServerControl, Notif
       }
       
       return ret;
+   }
+   
+   public String getConnectorsAsJSON() throws Exception
+   {
+      JSONArray array = new JSONArray();
+      
+      for (TransportConfiguration config: configuration.getConnectorConfigurations().values())
+      {
+         array.put(new JSONObject(config));
+      }
+      
+      return array.toString();
    }
 
    public void sendQueueInfoToQueue(final String queueName, final String address) throws Exception

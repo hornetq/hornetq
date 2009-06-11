@@ -155,6 +155,11 @@ public class MessagingServerControlUsingCoreTest extends MessagingServerControlT
          {
             return (Object[])proxy.retrieveAttributeValue("Connectors");
          }
+         
+         public String getConnectorsAsJSON() throws Exception
+         {
+            return (String)proxy.retrieveAttributeValue("ConnectorsAsJSON");
+         }
 
          public int getIDCacheSize()
          {

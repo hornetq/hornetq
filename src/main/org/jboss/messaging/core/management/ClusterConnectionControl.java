@@ -23,6 +23,7 @@
 package org.jboss.messaging.core.management;
 
 
+
 /**
  * A ClusterConnectionControlMBean
  *
@@ -42,6 +43,8 @@ public interface ClusterConnectionControl extends MessagingComponentControlMBean
    int getMaxHops();
 
    Object[] getStaticConnectorNamePairs();
+
+   String getStaticConnectorNamePairsAsJSON() throws Exception;
 
    String getDiscoveryGroupName();
 

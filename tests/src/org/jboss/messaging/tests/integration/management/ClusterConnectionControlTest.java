@@ -34,8 +34,6 @@ import java.util.List;
 import java.util.Map;
 
 import javax.management.MBeanServerFactory;
-import javax.management.openmbean.CompositeData;
-import javax.management.openmbean.TabularData;
 
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.TransportConfiguration;
@@ -49,6 +47,8 @@ import org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory;
 import org.jboss.messaging.core.server.Messaging;
 import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.utils.Pair;
+import org.jboss.messaging.utils.json.JSONArray;
+import org.jboss.messaging.utils.json.JSONObject;
 
 /**
  * A BridgeControlTest
@@ -95,6 +95,14 @@ public class ClusterConnectionControlTest extends ManagementTestBase
       Object[] connectorPairData = (Object[])connectorPairs[0];
       assertEquals(clusterConnectionConfig.getStaticConnectorNamePairs().get(0).a, connectorPairData[0]);
       assertEquals(clusterConnectionConfig.getStaticConnectorNamePairs().get(0).b, connectorPairData[1]);
+
+      String jsonString = clusterConnectionControl.getStaticConnectorNamePairsAsJSON();
+      assertNotNull(jsonString);
+      JSONArray array = new JSONArray(jsonString);
+      assertEquals(1, array.length());
+      JSONObject data = array.getJSONObject(0);
+      assertEquals(clusterConnectionConfig.getStaticConnectorNamePairs().get(0).a, data.optString("a"));
+      assertEquals(clusterConnectionConfig.getStaticConnectorNamePairs().get(0).b, data.optString("b", null));
 
       assertTrue(clusterConnectionControl.isStarted());
    }

@@ -26,6 +26,8 @@ import org.jboss.messaging.core.config.cluster.BroadcastGroupConfiguration;
 import org.jboss.messaging.core.management.BroadcastGroupControl;
 import org.jboss.messaging.core.server.cluster.BroadcastGroup;
 import org.jboss.messaging.utils.Pair;
+import org.jboss.messaging.utils.json.JSONArray;
+import org.jboss.messaging.utils.json.JSONObject;
 
 /**
  * A BroadcastGroupControl
@@ -83,6 +85,20 @@ public class BroadcastGroupControlImpl implements BroadcastGroupControl
       }
       
       return ret;      
+   }
+   
+   public String getConnectorPairsAsJSON() throws Exception
+   {
+      JSONArray array = new JSONArray();
+      
+      for (Pair<String, String> pair: configuration.getConnectorInfos())
+      {
+         JSONObject p = new JSONObject();
+         p.put("a", pair.a);
+         p.put("b", pair.b);
+         array.put(p);
+      }
+      return array.toString();
    }
 
    public String getGroupAddress()

@@ -54,14 +54,28 @@ public interface TopicControl extends DestinationControlMBean
    @Operation(desc = "List all subscriptions")
    Object[] listAllSubscriptions() throws Exception;
 
+   @Operation(desc = "List all subscriptions")
+   String listAllSubscriptionsAsJSON() throws Exception;
+
    @Operation(desc = "List only the durable subscriptions")
    Object[] listDurableSubscriptions() throws Exception;
+
+   @Operation(desc = "List only the durable subscriptions")
+   String listDurableSubscriptionsAsJSON() throws Exception;
 
    @Operation(desc = "List only the non durable subscriptions")
    Object[] listNonDurableSubscriptions() throws Exception;
 
+   @Operation(desc = "List only the non durable subscriptions")
+   String listNonDurableSubscriptionsAsJSON() throws Exception;
+
    @Operation(desc = "List all the message for the given subscription")
    public Map<String, Object>[] listMessagesForSubscription(
+         @Parameter(name = "queueName", desc = "the name of the queue representing a subscription") String queueName)
+         throws Exception;
+
+   @Operation(desc = "List all the message for the given subscription")
+   public String listMessagesForSubscriptionAsJSON(
          @Parameter(name = "queueName", desc = "the name of the queue representing a subscription") String queueName)
          throws Exception;
 

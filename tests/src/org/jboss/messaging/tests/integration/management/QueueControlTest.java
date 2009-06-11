@@ -53,6 +53,7 @@ import org.jboss.messaging.core.server.Messaging;
 import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.core.settings.impl.AddressSettings;
 import org.jboss.messaging.utils.SimpleString;
+import org.jboss.messaging.utils.json.JSONArray;
 
 /**
  * A QueueControlTest
@@ -304,13 +305,48 @@ public class QueueControlTest extends ManagementTestBase
 
       Map<String, Object>[] messages = queueControl.listScheduledMessages();
       assertEquals(1, messages.length);    
-      Map properties = (Map)messages[0].get("properties");
-      assertEquals(intValue, properties.get("key"));
+      assertEquals(intValue, messages[0].get("key"));
 
       Thread.sleep(delay);
 
       messages = queueControl.listScheduledMessages();
       assertEquals(0, messages.length);
+
+      consumeMessages(2, session, queue);
+
+      session.deleteQueue(queue);
+   }
+   
+   public void testListScheduledMessagesAsJSON() throws Exception
+   {
+      long delay = 2000;
+      SimpleString address = randomSimpleString();
+      SimpleString queue = randomSimpleString();
+      int intValue = randomInt();
+      session.createQueue(address, queue, null, false);
+
+      QueueControl queueControl = createManagementControl(address, queue);
+
+      ClientProducer producer = session.createProducer(address);
+      ClientMessage message = session.createClientMessage(false);
+      message.putLongProperty(MessageImpl.HDR_SCHEDULED_DELIVERY_TIME, System.currentTimeMillis() + delay);
+      message.putIntProperty(new SimpleString("key"), intValue);
+      producer.send(message);
+      // unscheduled message
+      producer.send(session.createClientMessage(false));
+
+      String jsonString = queueControl.listScheduledMessagesAsJSON();
+      assertNotNull(jsonString);
+      JSONArray array = new JSONArray(jsonString);
+      assertEquals(1, array.length());
+      assertEquals(intValue, array.getJSONObject(0).get("key"));
+
+      Thread.sleep(delay);
+
+      jsonString = queueControl.listScheduledMessagesAsJSON();
+      assertNotNull(jsonString);
+      array = new JSONArray(jsonString);
+      assertEquals(0, array.length());
 
       consumeMessages(2, session, queue);
 
@@ -359,13 +395,42 @@ public class QueueControlTest extends ManagementTestBase
 
       Map<String, Object>[] messages =  queueControl.listAllMessages();
       assertEquals(1, messages.length);
-      Map properties = (Map)messages[0].get("properties");
-      assertEquals(intValue, properties.get("key"));
+      assertEquals(intValue, messages[0].get("key"));
 
       consumeMessages(1, session, queue);
 
       messages = queueControl.listAllMessages();
       assertEquals(0, messages.length);
+
+      session.deleteQueue(queue);
+   }
+   
+   public void testListAllMessagesAsJSON() throws Exception
+   {
+      SimpleString address = randomSimpleString();
+      SimpleString queue = randomSimpleString();
+      int intValue = randomInt();
+      session.createQueue(address, queue, null, false);
+
+      QueueControl queueControl = createManagementControl(address, queue);
+
+      ClientProducer producer = session.createProducer(address);
+      ClientMessage message = session.createClientMessage(false);
+      message.putIntProperty(new SimpleString("key"), intValue);
+      producer.send(message);
+
+      String jsonString =  queueControl.listAllMessagesAsJSON();
+      assertNotNull(jsonString);
+      JSONArray array = new JSONArray(jsonString);
+      assertEquals(1, array.length());
+      assertEquals(intValue, array.getJSONObject(0).get("key"));
+
+      consumeMessages(1, session, queue);
+
+      jsonString =  queueControl.listAllMessagesAsJSON();
+      assertNotNull(jsonString);
+      array = new JSONArray(jsonString);
+      assertEquals(0, array.length());
 
       session.deleteQueue(queue);
    }
@@ -393,8 +458,7 @@ public class QueueControlTest extends ManagementTestBase
 
       Map<String, Object>[] messages = queueControl.listMessages(filter);
       assertEquals(1, messages.length);
-      Map properties = (Map)messages[0].get("properties");
-      assertEquals(matchingValue, properties.get("key"));
+      assertEquals(matchingValue, messages[0].get("key"));
 
       consumeMessages(2, session, queue);
 
@@ -404,6 +468,43 @@ public class QueueControlTest extends ManagementTestBase
       session.deleteQueue(queue);
    }
 
+   public void testListMessagesAsJSONWithFilter() throws Exception
+   {
+      SimpleString key = new SimpleString("key");
+      long matchingValue = randomLong();
+      long unmatchingValue = matchingValue + 1;
+      String filter = key + " =" + matchingValue;
+
+      SimpleString address = randomSimpleString();
+      SimpleString queue = randomSimpleString();
+
+      session.createQueue(address, queue, null, false);
+      QueueControl queueControl = createManagementControl(address, queue);
+
+      ClientProducer producer = session.createProducer(address);
+      ClientMessage matchingMessage = session.createClientMessage(false);
+      matchingMessage.putLongProperty(key, matchingValue);
+      producer.send(matchingMessage);
+      ClientMessage unmatchingMessage = session.createClientMessage(false);
+      unmatchingMessage.putLongProperty(key, unmatchingValue);
+      producer.send(unmatchingMessage);
+
+      String jsonString = queueControl.listMessagesAsJSON(filter);
+      assertNotNull(jsonString);
+      JSONArray array = new JSONArray(jsonString);
+      assertEquals(1, array.length());
+      assertEquals(matchingValue, array.getJSONObject(0).get("key"));
+
+      consumeMessages(2, session, queue);
+
+      jsonString = queueControl.listMessagesAsJSON(filter);
+      assertNotNull(jsonString);
+      array = new JSONArray(jsonString);
+      assertEquals(0, array.length());
+
+      session.deleteQueue(queue);
+   }
+   
    /**
     * <ol>
     * <li>send a message to queue</li>
@@ -572,7 +673,7 @@ public class QueueControlTest extends ManagementTestBase
       // the message IDs are set on the server
       Map<String, Object>[] messages = queueControl.listAllMessages();   
       assertEquals(2, messages.length);
-      long messageID = (Long)messages[0].get("MessageID");
+      long messageID = (Long)messages[0].get("messageID");
 
       boolean moved = queueControl.moveMessage(messageID, otherQueue.toString());
       assertTrue(moved);
@@ -604,7 +705,7 @@ public class QueueControlTest extends ManagementTestBase
       // the message IDs are set on the server
       Map<String, Object>[] messages = queueControl.listAllMessages(); 
       assertEquals(1, messages.length);
-      long messageID = (Long)messages[0].get("MessageID");
+      long messageID = (Long)messages[0].get("messageID");
 
       // moved all messages to unknown queue
       try
@@ -726,7 +827,7 @@ public class QueueControlTest extends ManagementTestBase
       // the message IDs are set on the server
       Map<String, Object>[] messages = queueControl.listAllMessages(); 
       assertEquals(2, messages.length);
-      long messageID = (Long)messages[0].get("MessageID");
+      long messageID = (Long)messages[0].get("messageID");
 
       // delete 1st message
       boolean deleted = queueControl.removeMessage(messageID);
@@ -835,7 +936,7 @@ public class QueueControlTest extends ManagementTestBase
       // the message IDs are set on the server
       Map<String, Object>[] messages = queueControl.listAllMessages();       
       assertEquals(1, messages.length);
-      long messageID = (Long)messages[0].get("MessageID");
+      long messageID = (Long)messages[0].get("messageID");
 
       queueControl.setExpiryAddress(expiryAddress.toString());
       boolean expired = queueControl.expireMessage(messageID);
@@ -873,7 +974,7 @@ public class QueueControlTest extends ManagementTestBase
       // the message IDs are set on the server
       Map<String, Object>[] messages = queueControl.listAllMessages();       
       assertEquals(2, messages.length);
-      long messageID = (Long)messages[0].get("MessageID");
+      long messageID = (Long)messages[0].get("messageID");
 
       queueControl.setDeadLetterAddress(deadLetterAddress.toString());
 
@@ -914,7 +1015,7 @@ public class QueueControlTest extends ManagementTestBase
       // the message IDs are set on the server
       Map<String, Object>[] messages = queueControl.listAllMessages();       
       assertEquals(1, messages.length);
-      long messageID = (Long)messages[0].get("MessageID");
+      long messageID = (Long)messages[0].get("messageID");
 
       boolean priorityChanged = queueControl.changeMessagePriority(messageID, newPriority);
       assertTrue(priorityChanged);
@@ -947,7 +1048,7 @@ public class QueueControlTest extends ManagementTestBase
       // the message IDs are set on the server
       Map<String, Object>[] messages = queueControl.listAllMessages();       
       assertEquals(1, messages.length);
-      long messageID = (Long)messages[0].get("MessageID");
+      long messageID = (Long)messages[0].get("messageID");
 
       try
       {

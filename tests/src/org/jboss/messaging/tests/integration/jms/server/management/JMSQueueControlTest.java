@@ -42,6 +42,7 @@ import static org.jboss.messaging.tests.util.RandomUtil.randomLong;
 import static org.jboss.messaging.tests.util.RandomUtil.randomSimpleString;
 import static org.jboss.messaging.tests.util.RandomUtil.randomString;
 import org.jboss.messaging.utils.SimpleString;
+import org.jboss.messaging.utils.json.JSONArray;
 
 import javax.jms.Connection;
 import javax.jms.JMSException;
@@ -120,8 +121,55 @@ public class JMSQueueControlTest extends ManagementTestBase
       consumer.close();
 
       assertEquals(0, queueControl.getConsumerCount());
-      
+
       connection.close();
+   }
+
+   public void testListAllMessages() throws Exception
+   {
+      JMSQueueControl queueControl = createManagementControl();
+
+      assertEquals(0, queueControl.getMessageCount());
+
+      String[] ids = JMSUtil.sendMessages(queue, 2);
+
+      assertEquals(2, queueControl.getMessageCount());
+
+      Map<String, Object>[] data = queueControl.listAllMessages();
+      assertEquals(2, data.length);
+      System.out.println(data[0].keySet());
+      assertEquals(ids[0], data[0].get("JMSMessageID").toString());
+      assertEquals(ids[1], data[1].get("JMSMessageID").toString());
+
+      JMSUtil.consumeMessages(2, queue);
+
+      data = queueControl.listAllMessages();
+      assertEquals(0, data.length);
+   }
+
+   public void testListAllMessagesAsJSON() throws Exception
+   {
+      JMSQueueControl queueControl = createManagementControl();
+
+      assertEquals(0, queueControl.getMessageCount());
+
+      String[] ids = JMSUtil.sendMessages(queue, 2);
+
+      assertEquals(2, queueControl.getMessageCount());
+
+      String jsonString = queueControl.listAllMessagesAsJSON();
+      assertNotNull(jsonString);
+      JSONArray array = new JSONArray(jsonString);
+      assertEquals(2, array.length());
+      assertEquals(ids[0], array.getJSONObject(0).get("JMSMessageID"));
+      assertEquals(ids[1], array.getJSONObject(1).get("JMSMessageID"));
+
+      JMSUtil.consumeMessages(2, queue);
+
+      jsonString = queueControl.listAllMessagesAsJSON();
+      assertNotNull(jsonString);
+      array = new JSONArray(jsonString);
+      assertEquals(0, array.length());
    }
 
    public void testRemoveMessage() throws Exception
@@ -138,15 +186,14 @@ public class JMSQueueControlTest extends ManagementTestBase
       assertEquals(2, data.length);
 
       System.out.println(data[0]);
-      // retrieve the first message info 
+      // retrieve the first message info
       Set<String> keySet = data[0].keySet();
       Iterator<String> it = keySet.iterator();
       while (it.hasNext())
       {
          System.out.println(it.next());
       }
-      Map props = (Map)data[0].get("properties");
-      SimpleString messageID = (SimpleString)props.get("JMSMessageID");
+      SimpleString messageID = (SimpleString)data[0].get("JMSMessageID");
 
       queueControl.removeMessage(messageID.toString());
 
@@ -187,10 +234,10 @@ public class JMSQueueControlTest extends ManagementTestBase
 
       Connection connection = JMSUtil.createConnection(InVMConnectorFactory.class.getName());
       connection.start();
-      
+
       MessageConsumer consumer = JMSUtil.createConsumer(connection, queue);
       assertNull(consumer.receive(500));
-      
+
       connection.close();
    }
 
@@ -225,7 +272,7 @@ public class JMSQueueControlTest extends ManagementTestBase
       Message msg = consumer.receive(500);
       assertNotNull(msg);
       assertEquals("baz", msg.getStringProperty("foo"));
-      
+
       conn.close();
    }
 
@@ -238,9 +285,8 @@ public class JMSQueueControlTest extends ManagementTestBase
       assertEquals(1, queueControl.getMessageCount());
 
       Map<String, Object>[] data = queueControl.listAllMessages();
-      // retrieve the first message info     
-      Map props = (Map)data[0].get("properties");
-      SimpleString messageID = (SimpleString)props.get("JMSMessageID");
+      // retrieve the first message info
+      SimpleString messageID = (SimpleString)data[0].get("JMSMessageID");
       int currentPriority = (Byte)data[0].get("JMSPriority");
       int newPriority = 9;
 
@@ -254,7 +300,7 @@ public class JMSQueueControlTest extends ManagementTestBase
       Message message = consumer.receive(500);
       assertNotNull(message);
       assertEquals(newPriority, message.getJMSPriority());
-      
+
       connection.close();
    }
 
@@ -283,7 +329,7 @@ public class JMSQueueControlTest extends ManagementTestBase
       Message message = consumer.receive(500);
       assertNotNull(message);
       assertTrue(message.getJMSPriority() != invalidPriority);
-      
+
       connection.close();
    }
 
@@ -362,7 +408,7 @@ public class JMSQueueControlTest extends ManagementTestBase
       Message message = consumer.receive(500);
       assertNotNull(message);
       assertEquals(messageIDs[0], message.getJMSMessageID());
-      
+
       connection.close();
    }
 
@@ -610,7 +656,7 @@ public class JMSQueueControlTest extends ManagementTestBase
       JBossQueue otherQueue = new JBossQueue(otherQueueName);
 
       String[] messageIDs = JMSUtil.sendMessages(queue, 1);
-      
+
       JMSQueueControl queueControl = createManagementControl();
       assertEquals(1, queueControl.getMessageCount());
 
@@ -623,7 +669,7 @@ public class JMSQueueControlTest extends ManagementTestBase
 
       serverManager.destroyQueue(otherQueueName);
    }
-   
+
    public void testMoveMessageWithUnknownMessageID() throws Exception
    {
       String unknownMessageID = randomString();
@@ -645,13 +691,13 @@ public class JMSQueueControlTest extends ManagementTestBase
 
       serverManager.destroyQueue(otherQueueName);
    }
-   
+
    public void testMoveMessageToUnknownQueue() throws Exception
    {
       String unknwonQueue = randomString();
 
       String[] messageIDs = JMSUtil.sendMessages(queue, 1);
-      
+
       JMSQueueControl queueControl = createManagementControl();
       assertEquals(1, queueControl.getMessageCount());
 
@@ -666,7 +712,7 @@ public class JMSQueueControlTest extends ManagementTestBase
 
       JMSUtil.consumeMessages(1, queue);
    }
-   
+
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
@@ -712,9 +758,9 @@ public class JMSQueueControlTest extends ManagementTestBase
    private Connection createConnection() throws JMSException
    {
       JBossConnectionFactory cf = new JBossConnectionFactory(new TransportConfiguration(InVMConnectorFactory.class.getName()));
-      
+
       cf.setBlockOnPersistentSend(true);
-                
+
       return cf.createConnection();
    }
 

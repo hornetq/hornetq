@@ -76,11 +76,21 @@ public interface QueueControl
    @Operation(desc = "List the messages scheduled for delivery", impact = INFO)
    Map<String, Object>[] listScheduledMessages() throws Exception;
 
+   @Operation(desc = "List the messages scheduled for delivery and returns them using JSON", impact = INFO)
+   String listScheduledMessagesAsJSON() throws Exception;
+
    @Operation(desc = "List all the messages in the queue", impact = INFO)
    Map<String, Object>[] listAllMessages() throws Exception;
 
+   @Operation(desc = "List all the messages in the queue and return them using JSON", impact = INFO)
+   String listAllMessagesAsJSON() throws Exception;
+
    @Operation(desc = "List all the messages in the queue matching the given filter", impact = INFO)
    Map<String, Object>[] listMessages(@Parameter(name = "filter", desc = "A message filter")
+   String filter) throws Exception;
+
+   @Operation(desc = "List all the messages in the queue matching the given filter and returns them using JSON", impact = INFO)
+   String listMessagesAsJSON(@Parameter(name = "filter", desc = "A message filter")
    String filter) throws Exception;
 
    @Operation(desc = "Returns the number of the messages in the queue matching the given filter", impact = INFO)

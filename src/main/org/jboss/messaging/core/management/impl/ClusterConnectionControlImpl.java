@@ -26,6 +26,8 @@ import org.jboss.messaging.core.config.cluster.ClusterConnectionConfiguration;
 import org.jboss.messaging.core.management.ClusterConnectionControl;
 import org.jboss.messaging.core.server.cluster.ClusterConnection;
 import org.jboss.messaging.utils.Pair;
+import org.jboss.messaging.utils.json.JSONArray;
+import org.jboss.messaging.utils.json.JSONObject;
 
 /**
  * A ClusterConnectionControl
@@ -99,6 +101,19 @@ public class ClusterConnectionControlImpl implements ClusterConnectionControl
       return ret;            
    }
 
+   public String getStaticConnectorNamePairsAsJSON() throws Exception {
+      JSONArray array = new JSONArray();
+
+      for (Pair<String, String> pair: configuration.getStaticConnectorNamePairs())
+      {
+         JSONObject p = new JSONObject();
+         p.put("a", pair.a);
+         p.put("b", pair.b);
+         array.put(p);
+      }
+      return array.toString();
+   }
+   
    public boolean isDuplicateDetection()
    {
       return configuration.isDuplicateDetection();

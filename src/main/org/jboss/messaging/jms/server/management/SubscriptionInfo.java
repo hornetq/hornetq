@@ -22,18 +22,8 @@
 
 package org.jboss.messaging.jms.server.management;
 
-import static javax.management.openmbean.SimpleType.BOOLEAN;
-import static javax.management.openmbean.SimpleType.INTEGER;
-import static javax.management.openmbean.SimpleType.STRING;
-
-import javax.management.openmbean.CompositeData;
-import javax.management.openmbean.CompositeDataSupport;
-import javax.management.openmbean.CompositeType;
-import javax.management.openmbean.OpenDataException;
-import javax.management.openmbean.OpenType;
-import javax.management.openmbean.TabularData;
-import javax.management.openmbean.TabularDataSupport;
-import javax.management.openmbean.TabularType;
+import org.jboss.messaging.utils.json.JSONArray;
+import org.jboss.messaging.utils.json.JSONObject;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -45,72 +35,49 @@ public class SubscriptionInfo
 {
    // Constants -----------------------------------------------------
 
-   public static final CompositeType TYPE;
-   private static final TabularType TABULAR_TYPE;
-   private static final String SUBSCRIPTION_TYPE_NAME = "SubscriptionInfo";
-   private static final String SUBSCRIPTION_TABULAR_TYPE_NAME = "SubscriptionTabularInfo";
-   private static final String[] ITEM_NAMES = new String[] { "queueName", "clientID",
-         "name", "durable", "selector", "messageCount" };
-   private static final String[] ITEM_DESCRIPTIONS = new String[] {
-         "ID of the subscription", "ClientID of the subscription",
-         "name of the subscription", "Is the subscriber durable?", "Selector",
-         "Number of messages" };
-   private static final OpenType[] ITEM_TYPES = new OpenType[] { STRING,
-         STRING, STRING, BOOLEAN, STRING, INTEGER};
-
-   static
-   {
-      try
-      {
-         TYPE = createSubscriptionInfoType();
-         TABULAR_TYPE = createSubscriptionInfoTabularType();
-      } catch (OpenDataException e)
-      {
-         throw new IllegalStateException(e);
-      }
-   }
-
    // Attributes ----------------------------------------------------
 
    private final String queueName;
+
    private final String clientID;
+
    private final String name;
+
    private final boolean durable;
+
    private final String selector;
+
    private final int messageCount;
 
    // Static --------------------------------------------------------
 
-   public static TabularData toTabularData(final SubscriptionInfo[] infos)
+   public static SubscriptionInfo[] from(String jsonString) throws Exception
    {
-      TabularData data = new TabularDataSupport(TABULAR_TYPE);
-      for (SubscriptionInfo subscriberInfo : infos)
+      JSONArray array = new JSONArray(jsonString);
+      SubscriptionInfo[] infos = new SubscriptionInfo[array.length()];
+      for (int i = 0; i < array.length(); i++)
       {
-         data.put(subscriberInfo.toCompositeData());
+         JSONObject sub = array.getJSONObject(i);
+         SubscriptionInfo info = new SubscriptionInfo(sub.getString("queueName"),
+                                                      sub.optString("clientID", null),
+                                                      sub.optString("name", null),
+                                                      sub.getBoolean("durable"),
+                                                      sub.optString("selector", null),
+                                                      sub.getInt("messageCount"));
+         infos[i] = info;
       }
-      return data;
-   }
 
-   private static CompositeType createSubscriptionInfoType()
-         throws OpenDataException
-   {
-      return new CompositeType(SUBSCRIPTION_TYPE_NAME,
-            "Information for a Topic Subscription", ITEM_NAMES,
-            ITEM_DESCRIPTIONS, ITEM_TYPES);
-   }
-
-   private static TabularType createSubscriptionInfoTabularType()
-         throws OpenDataException
-   {
-      return new TabularType(SUBSCRIPTION_TABULAR_TYPE_NAME,
-            "Table of SubscriptionInfo", TYPE, new String[] { "queueName" });
+      return infos;
    }
 
    // Constructors --------------------------------------------------
 
-   public SubscriptionInfo(final String queueName, final String clientID,
-         final String name, final boolean durable, final String selector,
-         final int messageCount)
+   private SubscriptionInfo(final String queueName,
+                            final String clientID,
+                            final String name,
+                            final boolean durable,
+                            final String selector,
+                            final int messageCount)
    {
       this.queueName = queueName;
       this.clientID = clientID;
@@ -150,18 +117,6 @@ public class SubscriptionInfo
    public int getMessageCount()
    {
       return messageCount;
-   }
-
-   public CompositeData toCompositeData()
-   {
-      try
-      {
-         return new CompositeDataSupport(TYPE, ITEM_NAMES, new Object[] { queueName,
-               clientID, name, durable, selector, messageCount});
-      } catch (OpenDataException e)
-      {
-         return null;
-      }
    }
 
    // Package protected ---------------------------------------------

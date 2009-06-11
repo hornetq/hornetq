@@ -39,6 +39,8 @@ import org.jboss.messaging.jms.client.JBossMessage;
 import org.jboss.messaging.jms.client.SelectorTranslator;
 import org.jboss.messaging.jms.server.management.TopicControl;
 import org.jboss.messaging.utils.Pair;
+import org.jboss.messaging.utils.json.JSONArray;
+import org.jboss.messaging.utils.json.JSONObject;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -138,15 +140,30 @@ public class TopicControlImpl implements TopicControl
    {
       return listSubscribersInfos(DurabilityType.ALL);
    }
+   
+   public String listAllSubscriptionsAsJSON() throws Exception
+   {
+      return listSubscribersInfosAsJSON(DurabilityType.ALL);
+   }
 
    public Object[] listDurableSubscriptions()
    {
       return listSubscribersInfos(DurabilityType.DURABLE);
    }
+   
+   public String listDurableSubscriptionsAsJSON() throws Exception
+   {
+      return listSubscribersInfosAsJSON(DurabilityType.DURABLE);
+   }
 
    public Object[] listNonDurableSubscriptions()
    {
       return listSubscribersInfos(DurabilityType.NON_DURABLE);
+   }
+   
+   public String listNonDurableSubscriptionsAsJSON() throws Exception
+   {
+      return listSubscribersInfosAsJSON(DurabilityType.NON_DURABLE);
    }
 
    public Map<String, Object>[] listMessagesForSubscription(final String queueName) throws Exception
@@ -168,6 +185,11 @@ public class TopicControlImpl implements TopicControl
          jmsMessages[i++] = JBossMessage.coreMaptoJMSMap(coreMessage);
       }
       return jmsMessages;
+   }
+   
+   public String listMessagesForSubscriptionAsJSON(String queueName) throws Exception
+   {
+      return JMSQueueControlImpl.toJSON(listMessagesForSubscription(queueName));
    }
 
    public int countMessagesForSubscription(final String clientID, final String subscriptionName, final String filterStr) throws Exception
@@ -252,6 +274,38 @@ public class TopicControlImpl implements TopicControl
          subInfos.add(subscriptionInfo);
       }
       return subInfos.toArray(new Object[subInfos.size()]);
+   }
+   
+   private String listSubscribersInfosAsJSON(final DurabilityType durability) throws Exception
+   {
+      List<QueueControl> queues = getQueues(durability);
+      JSONArray array = new JSONArray();
+
+      for (QueueControl queue : queues)
+      {
+         String clientID = null;
+         String subName = null;
+
+         if (queue.isDurable())
+         {
+            Pair<String, String> pair = JBossTopic.decomposeQueueNameForDurableSubscription(queue.getName().toString());
+            clientID = pair.a;
+            subName = pair.b;
+         }
+
+         String filter = queue.getFilter() != null ? queue.getFilter() : null;
+
+         JSONObject info = new JSONObject();
+         info.put("queueName", queue.getName());
+         info.put("clientID", clientID);
+         info.put("selector", filter);
+         info.put("name", subName);
+         info.put("durable", queue.isDurable());
+         info.put("messageCount", queue.getMessageCount());
+         array.put(info);
+      }
+
+      return array.toString();
    }
 
    private int getMessageCount(final DurabilityType durability)

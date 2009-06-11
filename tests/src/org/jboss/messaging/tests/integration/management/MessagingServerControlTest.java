@@ -22,9 +22,11 @@
 
 package org.jboss.messaging.tests.integration.management;
 
+import static org.jboss.messaging.tests.util.RandomUtil.randomBoolean;
 import static org.jboss.messaging.tests.util.RandomUtil.randomString;
 
 import java.util.HashMap;
+import java.util.Map;
 
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.TransportConfiguration;
@@ -38,6 +40,8 @@ import org.jboss.messaging.core.server.Messaging;
 import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.tests.util.RandomUtil;
 import org.jboss.messaging.utils.SimpleString;
+import org.jboss.messaging.utils.json.JSONArray;
+import org.jboss.messaging.utils.json.JSONObject;
 
 /**
  * A QueueControlTest
@@ -124,6 +128,20 @@ public class MessagingServerControlTest extends ManagementTestBase
       Object[] config = (Object[])connectorData[0];           
 
       assertEquals(connectorConfig.getName(), config[0]);
+   }
+   
+   public void testGetConnectorsAsJSON() throws Exception
+   {
+      MessagingServerControl serverControl = createManagementControl();
+
+      String jsonString = serverControl.getConnectorsAsJSON();
+      assertNotNull(jsonString);
+      JSONArray array = new JSONArray(jsonString);
+      assertEquals(1, array.length());
+      JSONObject data = array.getJSONObject(0);
+      assertEquals(connectorConfig.getName(), data.optString("name"));
+      assertEquals(connectorConfig.getFactoryClassName(), data.optString("factoryClassName"));
+      assertEquals(connectorConfig.getParams().size(), data.getJSONObject("params").length());
    }
 
    public void testCreateAndDestroyQueue() throws Exception
@@ -284,8 +302,10 @@ public class MessagingServerControlTest extends ManagementTestBase
    {
       super.setUp();
 
+      Map<String, Object> params = new HashMap<String, Object>();
+      params.put(randomString(), randomBoolean());
       connectorConfig = new TransportConfiguration(InVMConnectorFactory.class.getName(),
-                                                                          new HashMap<String, Object>(),
+                                                                          params,
                                                                           randomString());
 
       conf = new ConfigurationImpl();

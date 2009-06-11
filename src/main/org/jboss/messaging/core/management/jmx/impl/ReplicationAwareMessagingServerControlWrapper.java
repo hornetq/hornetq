@@ -235,6 +235,11 @@ public class ReplicationAwareMessagingServerControlWrapper extends ReplicationAw
    {
       return localControl.getConnectors();
    }
+   
+   public String getConnectorsAsJSON() throws Exception
+   {
+      return localControl.getConnectorsAsJSON();
+   }
 
    public void sendQueueInfoToQueue(final String queueName, final String address) throws Exception
    {

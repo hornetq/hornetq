@@ -40,8 +40,10 @@ import org.jboss.messaging.core.server.Messaging;
 import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.jms.JBossTopic;
 import org.jboss.messaging.jms.server.impl.JMSServerManagerImpl;
+import org.jboss.messaging.jms.server.management.SubscriptionInfo;
 import org.jboss.messaging.jms.server.management.TopicControl;
 import org.jboss.messaging.tests.integration.management.ManagementTestBase;
+import org.jboss.messaging.utils.json.JSONArray;
 
 /**
  * A TopicControlTest
@@ -149,6 +151,40 @@ public class TopicControlTest extends ManagementTestBase
       assertEquals(1, topicControl.listNonDurableSubscriptions().length);
       assertEquals(2, topicControl.listDurableSubscriptions().length);
 
+      connection_1.close();
+      connection_2.close();
+      connection_3.close();
+   }
+   
+   public void testListXXXSubscriptionsAsJSON() throws Exception
+   {
+      // 1 non-durable subscriber, 2 durable subscribers
+      Connection connection_1 = JMSUtil.createConnection(InVMConnectorFactory.class.getName());
+      JMSUtil.createConsumer(connection_1, topic);
+      Connection connection_2 = JMSUtil.createConnection(InVMConnectorFactory.class.getName());
+      JMSUtil.createDurableSubscriber(connection_2, topic, clientID, subscriptionName);
+      Connection connection_3 = JMSUtil.createConnection(InVMConnectorFactory.class.getName());
+      JMSUtil.createDurableSubscriber(connection_3, topic, clientID, subscriptionName + "2");
+
+      TopicControl topicControl = createManagementControl();
+      String jsonString = topicControl.listDurableSubscriptionsAsJSON();
+      SubscriptionInfo[] infos = SubscriptionInfo.from(jsonString);
+      assertEquals(2, infos.length);
+      assertEquals(clientID, infos[0].getClientID());
+      assertEquals(subscriptionName, infos[0].getName());
+      assertEquals(clientID, infos[1].getClientID());
+      assertEquals(subscriptionName + "2", infos[1].getName());
+      
+      jsonString = topicControl.listNonDurableSubscriptionsAsJSON();
+      infos = SubscriptionInfo.from(jsonString);
+      assertEquals(1, infos.length);
+      assertEquals(null, infos[0].getClientID());
+      assertEquals(null, infos[0].getName());
+      
+      jsonString = topicControl.listAllSubscriptionsAsJSON();
+      infos = SubscriptionInfo.from(jsonString);
+      assertEquals(3, infos.length);
+      
       connection_1.close();
       connection_2.close();
       connection_3.close();
@@ -312,6 +348,26 @@ public class TopicControlTest extends ManagementTestBase
       Map<String, Object>[] messages = topicControl.listMessagesForSubscription(JBossTopic.createQueueNameForDurableSubscription(clientID,
                                                                                                                                  subscriptionName));
       assertEquals(3, messages.length);
+   }
+
+   public void testListMessagesForSubscriptionAsJSON() throws Exception
+   {
+      Connection connection = JMSUtil.createConnection(InVMConnectorFactory.class.getName());
+
+      JMSUtil.createDurableSubscriber(connection, topic, clientID, subscriptionName);
+
+      String[] ids = JMSUtil.sendMessages(topic, 3);
+
+      TopicControl topicControl = createManagementControl();
+      String jsonString = topicControl.listMessagesForSubscriptionAsJSON(JBossTopic.createQueueNameForDurableSubscription(clientID,
+                                                                                                                                 subscriptionName));
+      assertNotNull(jsonString);
+      JSONArray array = new JSONArray(jsonString);
+      assertEquals(3, array.length());
+      for (int i = 0; i < 3; i++)
+      {
+         assertEquals(ids[i], array.getJSONObject(i).get("JMSMessageID"));
+      }
    }
 
    public void testListMessagesForSubscriptionWithUnknownClientID() throws Exception

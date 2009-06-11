@@ -76,6 +76,11 @@ public class ReplicationAwareAddressControlWrapper extends ReplicationAwareStand
    {
       return localAddressControl.getRoles();
    }
+   
+   public String getRolesAsJSON() throws Exception
+   {
+      return localAddressControl.getRolesAsJSON();
+   }
 
    public void removeRole(final String name) throws Exception
    {

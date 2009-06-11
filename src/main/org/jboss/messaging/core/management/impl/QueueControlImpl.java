@@ -40,6 +40,8 @@ import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.core.settings.impl.AddressSettings;
 import org.jboss.messaging.utils.SimpleString;
+import org.jboss.messaging.utils.json.JSONArray;
+import org.jboss.messaging.utils.json.JSONObject;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -65,6 +67,17 @@ public class QueueControlImpl implements QueueControl
    private MessageCounter counter;
 
    // Static --------------------------------------------------------
+
+   private static String toJSON(Map<String, Object>[] messages)
+   {
+      JSONArray array = new JSONArray();
+      for (int i = 0; i < messages.length; i++)
+      {
+         Map<String, Object> message = messages[i];
+         array.put(new JSONObject(message));         
+      }
+      return array.toString();
+   }
 
    // Constructors --------------------------------------------------
 
@@ -203,6 +216,11 @@ public class QueueControlImpl implements QueueControl
       return listMessages(null);
    }
 
+   public String listAllMessagesAsJSON() throws Exception
+   {
+      return toJSON(listAllMessages());
+   }
+ 
    public Map<String, Object>[] listScheduledMessages() throws Exception
    {
       List<MessageReference> refs = queue.getScheduledMessages();
@@ -215,8 +233,13 @@ public class QueueControlImpl implements QueueControl
       }
       return messages;
    }
+   
+   public String listScheduledMessagesAsJSON() throws Exception
+   {
+      return toJSON(listScheduledMessages());
+   }
 
-   public Map[] listMessages(final String filterStr) throws Exception
+   public Map<String, Object>[] listMessages(final String filterStr) throws Exception
    {
       try
       {
@@ -235,6 +258,11 @@ public class QueueControlImpl implements QueueControl
       {
          throw new IllegalStateException(e.getMessage());
       }
+   }
+   
+   public String listMessagesAsJSON(String filter) throws Exception
+   {
+      return toJSON(listMessages(filter));
    }
 
    public int countMessages(final String filterStr) throws Exception

@@ -230,6 +230,11 @@ public class QueueDeployerTest extends UnitTestCase
 
          return null;
       }
+      
+      public String getConnectorsAsJSON() throws Exception
+      {
+         return null;
+      }
 
       public int getIDCacheSize()
       {

@@ -36,6 +36,8 @@ public interface AddressControl
    String getAddress();
 
    Object[] getRoles() throws Exception;
+
+   String getRolesAsJSON() throws Exception;
    
    String[] getQueueNames() throws Exception;
 

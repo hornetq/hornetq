@@ -36,6 +36,7 @@ import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.management.AddressControl;
+import org.jboss.messaging.core.management.RoleInfo;
 import org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory;
 import org.jboss.messaging.core.security.CheckType;
@@ -123,14 +124,14 @@ public class AddressControlTest extends ManagementTestBase
       session.createQueue(address, queue, true);
 
       AddressControl addressControl = createManagementControl(address);
-      Object[] tabularData = addressControl.getRoles();
-      assertEquals(0, tabularData.length);
+      Object[] roles = addressControl.getRoles();
+      assertEquals(0, roles.length);
 
       Set<Role> newRoles = new HashSet<Role>();
       newRoles.add(role);
       server.getSecurityRepository().addMatch(address.toString(), newRoles);
 
-      Object[] roles = addressControl.getRoles();
+      roles = addressControl.getRoles();
       assertEquals(1, roles.length);
       Object[] r = (Object[])roles[0];
       assertEquals(role.getName(), r[0]);
@@ -145,6 +146,48 @@ public class AddressControlTest extends ManagementTestBase
       session.deleteQueue(queue);
    }
 
+   public void testGetRolesAsJSON() throws Exception
+   {
+      SimpleString address = randomSimpleString();
+      SimpleString queue = randomSimpleString();
+      Role role = new Role(randomString(),
+                           randomBoolean(),
+                           randomBoolean(),
+                           randomBoolean(),
+                           randomBoolean(),
+                           randomBoolean(),
+                           randomBoolean(),
+                           randomBoolean());
+
+      session.createQueue(address, queue, true);
+
+      AddressControl addressControl = createManagementControl(address);
+      String jsonString = addressControl.getRolesAsJSON();
+      assertNotNull(jsonString);     
+      RoleInfo[] roles = RoleInfo.from(jsonString);
+      assertEquals(0, roles.length);
+
+      Set<Role> newRoles = new HashSet<Role>();
+      newRoles.add(role);
+      server.getSecurityRepository().addMatch(address.toString(), newRoles);
+
+      jsonString = addressControl.getRolesAsJSON();
+      assertNotNull(jsonString);     
+      roles = RoleInfo.from(jsonString);
+      assertEquals(1, roles.length);
+      RoleInfo r = roles[0];
+      assertEquals(role.getName(), roles[0].getName());
+      assertEquals(role.isSend(), r.isSend());
+      assertEquals(role.isConsume(), r.isConsume());
+      assertEquals(role.isCreateDurableQueue(), r.isCreateDurableQueue());
+      assertEquals(role.isDeleteDurableQueue(), r.isDeleteDurableQueue());
+      assertEquals(role.isCreateNonDurableQueue(), r.isCreateNonDurableQueue());
+      assertEquals(role.isDeleteNonDurableQueue(), r.isDeleteNonDurableQueue());
+      assertEquals(role.isManage(), r.isManage());
+
+      session.deleteQueue(queue);
+   }
+   
    public void testAddRole() throws Exception
    {
       SimpleString address = randomSimpleString();
