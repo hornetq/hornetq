@@ -219,6 +219,8 @@ public class ManagementServiceImpl implements ManagementService
          roles.add(new Role(CLUSTER_MANAGEMENT_ROLE, true, true, true, true, true, true, true));
          messagingServer.getSecurityRepository().addMatch(configuration.getManagementAddress().toString(), roles);
          messagingServer.getSecurityRepository().addMatch(configuration.getManagementAddress() + ".*", roles);
+         messagingServer.getSecurityRepository().addMatch(configuration.getManagementNotificationAddress().toString(), roles);
+         messagingServer.getSecurityRepository().addMatch(configuration.getManagementNotificationAddress() + ".*", roles);
       }
       
       messagingServerControl = new MessagingServerControlImpl(postOffice,
