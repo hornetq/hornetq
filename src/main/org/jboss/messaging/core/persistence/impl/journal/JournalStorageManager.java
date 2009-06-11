@@ -145,7 +145,7 @@ public class JournalStorageManager implements StorageManager
    private final int perfBlastPages;
 
    public JournalStorageManager(final Configuration config, final Executor executor)
-   {
+   {     
       this.executor = executor;
 
       if (config.getJournalType() != JournalType.NIO && config.getJournalType() != JournalType.ASYNCIO)
@@ -243,7 +243,7 @@ public class JournalStorageManager implements StorageManager
    }
 
    public long generateUniqueID()
-   {      
+   {            
       long id = idGenerator.generateID();
 
       return id;

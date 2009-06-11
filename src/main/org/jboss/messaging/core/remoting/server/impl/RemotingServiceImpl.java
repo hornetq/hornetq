@@ -41,6 +41,8 @@ import org.jboss.messaging.core.remoting.impl.AbstractBufferHandler;
 import org.jboss.messaging.core.remoting.impl.Pinger;
 import org.jboss.messaging.core.remoting.impl.RemotingConnectionImpl;
 import org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory;
+import org.jboss.messaging.core.remoting.impl.invm.InVMRegistry;
+import org.jboss.messaging.core.remoting.impl.invm.TransportConstants;
 import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
 import org.jboss.messaging.core.remoting.impl.wireformat.Ping;
 import org.jboss.messaging.core.remoting.server.RemotingService;
@@ -97,6 +99,8 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
 
    private Map<Object, Pinger> pingRunnables = new ConcurrentHashMap<Object, Pinger>();
 
+   private final int managementConnectorID;
+
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
@@ -105,7 +109,8 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
                               final MessagingServer server,
                               final ManagementService managementService,
                               final Executor threadPool,
-                              final ScheduledExecutorService scheduledThreadPool)
+                              final ScheduledExecutorService scheduledThreadPool,
+                              final int managementConnectorID)
    {
       transportConfigs = config.getAcceptorConfigurations();
 
@@ -128,6 +133,7 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
       this.managementService = managementService;
       this.threadPool = threadPool;
       this.scheduledThreadPool = scheduledThreadPool;
+      this.managementConnectorID = managementConnectorID;
    }
 
    // RemotingService implementation -------------------------------
@@ -141,24 +147,51 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
 
       // when JMX is enabled, it requires a INVM acceptor to send the core messages
       // corresponding to the JMX management operations (@see ReplicationAwareStandardMBeanWrapper)
+      // we create one with a special negative id - this is a hack and instead, management should not use a connector to connect
       if (config.isJMXManagementEnabled())
       {
-         boolean invmAcceptorConfigured = false;
-
+         boolean alreadyConfigured = false;
          for (TransportConfiguration config : transportConfigs)
          {
-            if (InVMAcceptorFactory.class.getName().equals(config.getFactoryClassName()))
+            if (config.getClass().getName().equals(InVMAcceptorFactory.class.getName()))
             {
-               invmAcceptorConfigured = true;
+               int serverID = 0;
+               if (config.getParams() != null)
+               {
+                  Integer iserverid = (Integer)config.getParams().get(TransportConstants.SERVER_ID_PROP_NAME);
+
+                  if (iserverid != null)
+                  {
+                     serverID = iserverid;
+                  }
+               }
+
+               if (serverID == managementConnectorID)
+               {
+                  alreadyConfigured = true;
+               }
             }
          }
-
-         if (!invmAcceptorConfigured)
+         if (!alreadyConfigured)
          {
             transportConfigs.add(new TransportConfiguration(InVMAcceptorFactory.class.getName(),
-                                                            new HashMap<String, Object>(),
-                                                            "in-vm"));
+                                                            new HashMap<String, Object>()
+                                                            {
+                                                               {
+                                                                  put(TransportConstants.SERVER_ID_PROP_NAME,
+                                                                      managementConnectorID);
+                                                               }
+                                                            }));
          }
+      }
+      
+      //Now we also need to create a invmacceptor with id 0 if it doesn't already exist - this is simple because
+      //lots of tests assume this - this requirement should also be removed
+      //this is a bad thing to do since does not play well when there are multiple servers in the same VM.
+      
+      if (InVMRegistry.instance.getAcceptor(0) == null)
+      {
+         transportConfigs.add(new TransportConfiguration(InVMAcceptorFactory.class.getName()));
       }
 
       ClassLoader loader = Thread.currentThread().getContextClassLoader();
@@ -355,10 +388,10 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
    public void cancelPingerForConnectionID(final Object connectionID)
    {
       Pinger pinger = pingRunnables.get(connectionID);
-      
+
       pinger.close();
    }
-   
+
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
@@ -369,7 +402,8 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
                                         final long clientFailureCheckPeriod,
                                         final long connectionTTL)
    {
-      if ((connectionTTL <= 0 || clientFailureCheckPeriod <= 0) && connectionTTL != -1 && clientFailureCheckPeriod != -1)
+      if ((connectionTTL <= 0 || clientFailureCheckPeriod <= 0) && connectionTTL != -1 &&
+          clientFailureCheckPeriod != -1)
       {
          log.warn("Invalid values of connectionTTL/clientFailureCheckPeriod");
 
@@ -384,7 +418,7 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
       if (connectionTTLToUse != -1)
       {
          FailedConnectionRunnable runnable = new FailedConnectionRunnable(conn);
-       
+
          Future<?> connectionTTLFuture = scheduledThreadPool.scheduleAtFixedRate(runnable,
                                                                                  connectionTTLToUse,
                                                                                  connectionTTLToUse,
@@ -401,7 +435,10 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
       {
          Pinger pingRunnable = new Pinger(conn);
 
-         Future<?> pingFuture = scheduledThreadPool.scheduleAtFixedRate(pingRunnable, 0, pingPeriod, TimeUnit.MILLISECONDS);         
+         Future<?> pingFuture = scheduledThreadPool.scheduleAtFixedRate(pingRunnable,
+                                                                        0,
+                                                                        pingPeriod,
+                                                                        TimeUnit.MILLISECONDS);
 
          pingRunnable.setFuture(pingFuture);
 
@@ -521,7 +558,7 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
          {
             return;
          }
-         
+
          if (!conn.isDataReceived())
          {
             removeConnection(conn.getID());
@@ -532,7 +569,7 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
             conn.fail(me);
          }
          else
-         {           
+         {
             conn.clearDataReceived();
          }
       }

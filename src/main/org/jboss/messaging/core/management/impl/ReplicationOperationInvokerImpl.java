@@ -22,6 +22,8 @@
 
 package org.jboss.messaging.core.management.impl;
 
+import java.util.HashMap;
+
 import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.client.ClientRequestor;
 import org.jboss.messaging.core.client.ClientSession;
@@ -32,6 +34,7 @@ import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.management.ReplicationOperationInvoker;
 import org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory;
+import org.jboss.messaging.core.remoting.impl.invm.TransportConstants;
 import org.jboss.messaging.utils.SimpleString;
 
 /**
@@ -61,6 +64,8 @@ public class ReplicationOperationInvokerImpl implements ReplicationOperationInvo
 
    private ClientRequestor requestor;
 
+   private final int managementConnectorID;
+
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
@@ -72,12 +77,14 @@ public class ReplicationOperationInvokerImpl implements ReplicationOperationInvo
    public ReplicationOperationInvokerImpl(final String clusterUser,
                                           final String clusterPassword,
                                           final SimpleString managementAddress,
-                                          final long managementRequestTimeout)
+                                          final long managementRequestTimeout,
+                                          final int managementConnectorID)
    {
       this.timeout = managementRequestTimeout;
       this.clusterUser = clusterUser;
       this.clusterPassword = clusterPassword;
       this.managementAddress = managementAddress;
+      this.managementConnectorID = managementConnectorID;
    }
 
    // Public --------------------------------------------------------
@@ -86,7 +93,15 @@ public class ReplicationOperationInvokerImpl implements ReplicationOperationInvo
    {
       if (clientSession == null)
       {
-         ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration(InVMConnectorFactory.class.getName()));
+         ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration(InVMConnectorFactory.class.getName(),
+                                                                                           new HashMap<String, Object>()
+                                                                                           {
+                                                                                              {
+                                                                                                 put(TransportConstants.SERVER_ID_PROP_NAME,
+                                                                                                     managementConnectorID);
+                                                                                              }
+                                                                                           }));
+
          clientSession = sf.createSession(clusterUser, clusterPassword, false, true, true, false, 1);
          requestor = new ClientRequestor(clientSession, managementAddress);
          clientSession.start();

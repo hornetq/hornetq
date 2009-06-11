@@ -258,9 +258,7 @@ public class UnitTestCase extends TestCase
    protected String getJournalDir(int index, boolean backup)
    {
       String dir =  getJournalDir(testDir) + index + "-" + (backup ? "B" : "L");
-      
-      log.info("dir is " + dir);
-      
+
       return dir;
    }
 

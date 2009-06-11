@@ -494,6 +494,11 @@ public class JBossConnectionFactory implements ConnectionFactory, QueueConnectio
    {
       return sessionFactory;
    }
+   
+   public void close()
+   {
+      sessionFactory.close();
+   }
 
    // Package protected ----------------------------------------------------------------------------
 

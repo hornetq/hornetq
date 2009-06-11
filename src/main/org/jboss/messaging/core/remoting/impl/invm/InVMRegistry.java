@@ -21,6 +21,7 @@
   */
 package org.jboss.messaging.core.remoting.impl.invm;
 
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -69,5 +70,10 @@ public class InVMRegistry
    public int size()
    {
       return this.acceptors.size();
+   }
+   
+   public Map<Integer, InVMAcceptor> getAcceptors()
+   {
+      return acceptors;
    }
 }

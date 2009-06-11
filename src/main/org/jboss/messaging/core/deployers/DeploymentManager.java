@@ -22,6 +22,8 @@
 
 package org.jboss.messaging.core.deployers;
 
+import java.util.List;
+
 import org.jboss.messaging.core.server.MessagingComponent;
 
 

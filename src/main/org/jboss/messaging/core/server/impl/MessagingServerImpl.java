@@ -27,6 +27,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.management.MBeanServer;
 
@@ -195,7 +196,10 @@ public class MessagingServerImpl implements MessagingServer
    
    private ConnectionManager replicatingConnectionManager;
 
-
+   private int managementConnectorID;
+   
+   private static AtomicInteger managementConnectorSequence = new AtomicInteger(0);
+   
    // Constructors
    // ---------------------------------------------------------------------------------
 
@@ -218,7 +222,7 @@ public class MessagingServerImpl implements MessagingServer
    {
       this(configuration, null, securityManager);
    }
-
+   
    public MessagingServerImpl(Configuration configuration,
                               MBeanServer mbeanServer,
                               final JBMSecurityManager securityManager)
@@ -247,8 +251,10 @@ public class MessagingServerImpl implements MessagingServer
       this.addressSettingsRepository = new HierarchicalObjectRepository<AddressSettings>();
 
       addressSettingsRepository.setDefault(new AddressSettings());
+      
+      this.managementConnectorID = managementConnectorSequence.decrementAndGet();
    }
-
+   
    // lifecycle methods
    // ----------------------------------------------------------------
 
@@ -279,7 +285,7 @@ public class MessagingServerImpl implements MessagingServer
    }
 
    public synchronized void stop() throws Exception
-   {
+   {      
       if (!started)
       {
          return;
@@ -306,7 +312,10 @@ public class MessagingServerImpl implements MessagingServer
 
          addressSettingsDeployer.stop();
 
-         queueDeployer.stop();
+         if (queueDeployer != null)
+         {
+            queueDeployer.stop();
+         }
 
          if (securityDeployer != null)
          {
@@ -610,6 +619,8 @@ public class MessagingServerImpl implements MessagingServer
 
             throw new IllegalStateException("Live and backup unique ids different (" + liveUniqueID + ":" + backupID + "). You're probably trying to restart a live backup pair after a crash");
          }
+         
+         log.info("Backup server is now operational");
       }
    }
 
@@ -765,7 +776,7 @@ public class MessagingServerImpl implements MessagingServer
       }
    }
 
-   private void checkActivate(final RemotingConnection connection)
+   private void checkActivate(final RemotingConnection connection) throws Exception
    {
       if (configuration.isBackup())
       {
@@ -789,6 +800,13 @@ public class MessagingServerImpl implements MessagingServer
             if (clusterManager != null)
             {
                clusterManager.activate();
+            }
+            
+            if (configuration.isFileDeploymentEnabled())
+            {
+               queueDeployer = new QueueDeployer(deploymentManager, messagingServerControl);
+
+               queueDeployer.start();
             }
          }
       }
@@ -852,11 +870,11 @@ public class MessagingServerImpl implements MessagingServer
                                                       new org.jboss.messaging.utils.JBMThreadFactory("JBM-scheduled-threads",
                                                                                                      false));
 
-      managementService = new ManagementServiceImpl(mbeanServer, configuration);
-
-      remotingService = new RemotingServiceImpl(configuration, this, managementService, threadPool, scheduledPool);
+      managementService = new ManagementServiceImpl(mbeanServer, configuration, managementConnectorID);
+      
+      remotingService = new RemotingServiceImpl(configuration, this, managementService, threadPool, scheduledPool, managementConnectorID);
    }
-
+   
    private void initialisePart2() throws Exception
    {
       // Create the hard-wired components
@@ -962,8 +980,9 @@ public class MessagingServerImpl implements MessagingServer
       deployQueuesFromConfiguration();
 
       // Deploy any predefined queues
-
-      if (configuration.isFileDeploymentEnabled())
+      
+      // We don't activate queue deployer on the backup - all queues deployed on live are deployed on backup by replicating them
+      if (configuration.isFileDeploymentEnabled() && !configuration.isBackup())
       {
          queueDeployer = new QueueDeployer(deploymentManager, messagingServerControl);
 

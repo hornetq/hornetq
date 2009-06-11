@@ -98,7 +98,7 @@ public class ManagementServiceImpl implements ManagementService
    // Constants -----------------------------------------------------
 
    public static final String CLUSTER_MANAGEMENT_ROLE = "cluster.management";
-   
+
    private static final Logger log = Logger.getLogger(ManagementServiceImpl.class);
 
    private final MBeanServer mbeanServer;
@@ -143,22 +143,20 @@ public class ManagementServiceImpl implements ManagementService
 
    private ReplicationOperationInvoker replicationInvoker;
 
-   // Static  --------------------------------------------------------
-   
+   // Static --------------------------------------------------------
+
    private static void checkDefaultManagementClusterCredentials(String user, String password)
    {
-      if (ConfigurationImpl.DEFAULT_MANAGEMENT_CLUSTER_USER.equals(user)
-               && ConfigurationImpl.DEFAULT_MANAGEMENT_CLUSTER_PASSWORD.equals(password))
+      if (ConfigurationImpl.DEFAULT_MANAGEMENT_CLUSTER_USER.equals(user) && ConfigurationImpl.DEFAULT_MANAGEMENT_CLUSTER_PASSWORD.equals(password))
       {
-         log.warn("It has been detected that the cluster admin user and password which are used to " +
-                  "replicate management operation from one node to the other have not been changed from the installation default. " +
-                  "Please see the JBoss Messaging user guide for instructions on how to do this.");
+         log.warn("It has been detected that the cluster admin user and password which are used to " + "replicate management operation from one node to the other have not been changed from the installation default. "
+                  + "Please see the JBoss Messaging user guide for instructions on how to do this.");
       }
    }
-   
+
    // Constructor ----------------------------------------------------
 
-   public ManagementServiceImpl(final MBeanServer mbeanServer, final Configuration configuration)
+   public ManagementServiceImpl(final MBeanServer mbeanServer, final Configuration configuration, final int managementConnectorID)
    {
       this.mbeanServer = mbeanServer;
       this.jmxManagementEnabled = configuration.isJMXManagementEnabled();
@@ -170,7 +168,7 @@ public class ManagementServiceImpl implements ManagementService
       this.managementRequestTimeout = configuration.getManagementRequestTimeout();
 
       checkDefaultManagementClusterCredentials(managementClusterUser, managementClusterPassword);
-      
+
       registry = new HashMap<String, Object>();
       broadcaster = new NotificationBroadcasterSupport();
       notificationsEnabled = true;
@@ -181,7 +179,8 @@ public class ManagementServiceImpl implements ManagementService
       replicationInvoker = new ReplicationOperationInvokerImpl(managementClusterUser,
                                                                managementClusterPassword,
                                                                managementAddress,
-                                                               managementRequestTimeout);
+                                                               managementRequestTimeout,
+                                                               managementConnectorID);
    }
 
    // Public --------------------------------------------------------
@@ -194,15 +193,15 @@ public class ManagementServiceImpl implements ManagementService
    }
 
    public MessagingServerControlImpl registerServer(final PostOffice postOffice,
-                                                final StorageManager storageManager,
-                                                final Configuration configuration,
-                                                final HierarchicalRepository<AddressSettings> addressSettingsRepository,
-                                                final HierarchicalRepository<Set<Role>> securityRepository,
-                                                final ResourceManager resourceManager,
-                                                final RemotingService remotingService,
-                                                final MessagingServer messagingServer,
-                                                final QueueFactory queueFactory,
-                                                final boolean backup) throws Exception
+                                                    final StorageManager storageManager,
+                                                    final Configuration configuration,
+                                                    final HierarchicalRepository<AddressSettings> addressSettingsRepository,
+                                                    final HierarchicalRepository<Set<Role>> securityRepository,
+                                                    final ResourceManager resourceManager,
+                                                    final RemotingService remotingService,
+                                                    final MessagingServer messagingServer,
+                                                    final QueueFactory queueFactory,
+                                                    final boolean backup) throws Exception
    {
       this.postOffice = postOffice;
       this.addressSettingsRepository = addressSettingsRepository;
@@ -222,14 +221,14 @@ public class ManagementServiceImpl implements ManagementService
          messagingServer.getSecurityRepository().addMatch(configuration.getManagementNotificationAddress().toString(), roles);
          messagingServer.getSecurityRepository().addMatch(configuration.getManagementNotificationAddress() + ".*", roles);
       }
-      
+
       messagingServerControl = new MessagingServerControlImpl(postOffice,
-                                                          configuration,
-                                                          resourceManager,
-                                                          remotingService,
-                                                          messagingServer,
-                                                          messageCounterManager,
-                                                          broadcaster);
+                                                              configuration,
+                                                              resourceManager,
+                                                              remotingService,
+                                                              messagingServer,
+                                                              messageCounterManager,
+                                                              broadcaster);
       ObjectName objectName = ObjectNames.getMessagingServerObjectName();
       registerInJMX(objectName, new ReplicationAwareMessagingServerControlWrapper(messagingServerControl,
                                                                                   replicationInvoker));
@@ -272,7 +271,10 @@ public class ManagementServiceImpl implements ManagementService
                                           final SimpleString address,
                                           final StorageManager storageManager) throws Exception
    {
-      QueueControlImpl queueControl = new QueueControlImpl(queue, address.toString(), postOffice, addressSettingsRepository);
+      QueueControlImpl queueControl = new QueueControlImpl(queue,
+                                                           address.toString(),
+                                                           postOffice,
+                                                           addressSettingsRepository);
       MessageCounter counter = new MessageCounter(queue.getName().toString(),
                                                   null,
                                                   queueControl,
@@ -747,19 +749,18 @@ public class ManagementServiceImpl implements ManagementService
             for (int i = 0; i < paramTypes.length; i++)
             {
                if (params[i] == null)
-               { 
+               {
                   continue;
                }
                // System.out.format("param=%s, expecting=%s\n", params[i].getClass(), paramTypes[i]);
                // System.out.println(!paramTypes[i].isAssignableFrom(params[i].getClass()));
                // System.out.println(paramTypes[i] == Long.TYPE && params[i].getClass() == Integer.class);
-               if (paramTypes[i].isAssignableFrom(params[i].getClass())
-                       || (paramTypes[i] == Long.TYPE && params[i].getClass() == Integer.class)
-                       || (paramTypes[i] == Double.TYPE && params[i].getClass() == Integer.class)
-                       || (paramTypes[i] == Long.TYPE && params[i].getClass() == Long.class)
-                       || (paramTypes[i] == Double.TYPE && params[i].getClass() == Double.class)
-                       || (paramTypes[i] == Integer.TYPE && params[i].getClass() == Integer.class)
-                       || (paramTypes[i] == Boolean.TYPE && params[i].getClass() == Boolean.class))
+               if (paramTypes[i].isAssignableFrom(params[i].getClass()) || (paramTypes[i] == Long.TYPE && params[i].getClass() == Integer.class) ||
+                   (paramTypes[i] == Double.TYPE && params[i].getClass() == Integer.class) ||
+                   (paramTypes[i] == Long.TYPE && params[i].getClass() == Long.class) ||
+                   (paramTypes[i] == Double.TYPE && params[i].getClass() == Double.class) ||
+                   (paramTypes[i] == Integer.TYPE && params[i].getClass() == Integer.class) ||
+                   (paramTypes[i] == Boolean.TYPE && params[i].getClass() == Boolean.class))
                {
                   // parameter match
                }
@@ -769,7 +770,7 @@ public class ManagementServiceImpl implements ManagementService
                   break; // parameter check loop
                }
             }
-            
+
             if (match)
             {
                method = m;

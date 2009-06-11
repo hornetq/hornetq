@@ -182,6 +182,8 @@ public abstract class MultiThreadFailoverSupport extends ServiceTestBase
          assertEquals(0, sf.numSessions());
 
          assertEquals(0, sf.numConnections());
+         
+         sf.close();
 
          stop();
       }

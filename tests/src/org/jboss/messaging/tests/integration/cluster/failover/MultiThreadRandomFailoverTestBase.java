@@ -1348,10 +1348,13 @@ public abstract class MultiThreadRandomFailoverTestBase extends MultiThreadFailo
 
    protected void stop() throws Exception
    {
+      log.info("** Stopping server");
       backupServer.stop();
 
       liveServer.stop();
-
+      
+      System.gc();      
+            
       assertEquals(0, InVMRegistry.instance.size());
    }
 

@@ -22,10 +22,22 @@
 
 package org.jboss.messaging.jms.server.impl;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+
+import javax.naming.Context;
+import javax.naming.InitialContext;
+import javax.naming.NameNotFoundException;
+import javax.naming.NamingException;
+
 import org.jboss.messaging.core.config.TransportConfiguration;
-import org.jboss.messaging.core.deployers.Deployer;
 import org.jboss.messaging.core.deployers.DeploymentManager;
 import org.jboss.messaging.core.deployers.impl.FileDeploymentManager;
+import org.jboss.messaging.core.deployers.impl.XmlDeployer;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.server.ActivateCallback;
 import org.jboss.messaging.core.server.MessagingServer;
@@ -37,18 +49,6 @@ import org.jboss.messaging.jms.server.JMSServerManager;
 import org.jboss.messaging.jms.server.management.JMSManagementService;
 import org.jboss.messaging.jms.server.management.impl.JMSManagementServiceImpl;
 import org.jboss.messaging.utils.Pair;
-import org.jboss.messaging.utils.SimpleString;
-
-import javax.naming.Context;
-import javax.naming.InitialContext;
-import javax.naming.NameNotFoundException;
-import javax.naming.NamingException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
 
 /**
  * A Deployer used to create and add to JNDI queues, topics and connection
@@ -79,7 +79,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
 
    private JMSManagementService jmsManagementService;
 
-   private Deployer jmsDeployer;
+   private XmlDeployer jmsDeployer;
 
    private boolean started;
 
@@ -87,9 +87,22 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
 
    private DeploymentManager deploymentManager;
 
+   private final String configFileName;
+   
+   private boolean contextSet;
+   
    public JMSServerManagerImpl(final MessagingServer server) throws Exception
    {
       this.server = server;
+      
+      this.configFileName = null;
+   }
+
+   public JMSServerManagerImpl(final MessagingServer server, final String configFileName) throws Exception
+   {
+      this.server = server;
+
+      this.configFileName = configFileName;
    }
 
    // ActivateCallback implementation -------------------------------------
@@ -105,6 +118,11 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
          jmsManagementService.registerJMSServer(this);
 
          jmsDeployer = new JMSServerDeployer(this, deploymentManager, server.getConfiguration());
+
+         if (configFileName != null)
+         {
+            jmsDeployer.setConfigFileNames(new String[] { configFileName });
+         }
 
          jmsDeployer.start();
 
@@ -124,8 +142,8 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
       {
          return;
       }
-      
-      if (context == null)
+
+      if (!contextSet)
       {
          context = new InitialContext();
       }
@@ -167,7 +185,10 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
       connectionFactories.clear();
       connectionFactoryBindings.clear();
 
-      context.close();
+      if (context != null)
+      {
+         context.close();
+      }
 
       server.stop();
 
@@ -182,8 +203,10 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
    // JMSServerManager implementation -------------------------------
 
    public synchronized void setContext(final Context context)
-   {      
+   {
       this.context = context;
+      
+      this.contextSet = true;
    }
 
    public synchronized String getVersion()
@@ -193,28 +216,34 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
       return server.getMessagingServerControl().getVersion();
    }
 
-   public synchronized boolean createQueue(final String queueName, final String jndiBinding, final String selectorString, boolean durable) throws Exception
+   public synchronized boolean createQueue(final String queueName,
+                                           final String jndiBinding,
+                                           final String selectorString,
+                                           boolean durable) throws Exception
    {
       checkInitialised();
       JBossQueue jBossQueue = new JBossQueue(queueName);
-      
-      //Convert from JMS selector to core filter
+
+      // Convert from JMS selector to core filter
       String coreFilterString = null;
 
       if (selectorString != null)
       {
          coreFilterString = SelectorTranslator.convertToJBMFilterString(selectorString);
       }
-      
-      server.getMessagingServerControl().deployQueue(jBossQueue.getAddress(), jBossQueue.getAddress(), coreFilterString, durable);
-      
+
+      server.getMessagingServerControl().deployQueue(jBossQueue.getAddress(),
+                                                     jBossQueue.getAddress(),
+                                                     coreFilterString,
+                                                     durable);
+
       boolean added = bindToJndi(jndiBinding, jBossQueue);
-      
+
       if (added)
       {
          addToDestinationBindings(queueName, jndiBinding);
       }
-       
+
       jmsManagementService.registerQueue(jBossQueue, jndiBinding);
       return added;
    }
@@ -248,12 +277,15 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
       {
          return false;
       }
-      Iterator<String> iter = jndiBindings.iterator();
-      while (iter.hasNext())
+      if (context != null)
       {
-         String jndiBinding = (String)iter.next();
-         context.unbind(jndiBinding);
-         iter.remove();
+         Iterator<String> iter = jndiBindings.iterator();      
+         while (iter.hasNext())
+         {
+            String jndiBinding = (String)iter.next();
+            context.unbind(jndiBinding);
+            iter.remove();
+         }
       }
       return true;
    }
@@ -281,16 +313,16 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
 
       return true;
    }
-   
+
    public synchronized void createConnectionFactory(String name,
-                                                    List<Pair<TransportConfiguration, TransportConfiguration>> connectorConfigs,                                   
+                                                    List<Pair<TransportConfiguration, TransportConfiguration>> connectorConfigs,
                                                     List<String> jndiBindings) throws Exception
    {
       checkInitialised();
       JBossConnectionFactory cf = connectionFactories.get(name);
       if (cf == null)
       {
-         cf = new JBossConnectionFactory(connectorConfigs);   
+         cf = new JBossConnectionFactory(connectorConfigs);
       }
 
       bindConnectionFactory(cf, name, jndiBindings);
@@ -547,15 +579,18 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
       {
          return false;
       }
-      for (String jndiBinding : jndiBindings)
+      if (context != null)
       {
-         try
+         for (String jndiBinding : jndiBindings)
          {
-            context.unbind(jndiBinding);
-         }
-         catch (NameNotFoundException e)
-         {
-            // this is ok.
+            try
+            {
+               context.unbind(jndiBinding);
+            }
+            catch (NameNotFoundException e)
+            {
+               // this is ok.
+            }
          }
       }
       connectionFactoryBindings.remove(name);
@@ -627,34 +662,36 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
 
    private boolean bindToJndi(final String jndiName, final Object objectToBind) throws NamingException
    {
-      String parentContext;
-      String jndiNameInContext;
-      int sepIndex = jndiName.lastIndexOf('/');
-      if (sepIndex == -1)
+      if (context != null)
       {
-         parentContext = "";
-      }
-      else
-      {
-         parentContext = jndiName.substring(0, sepIndex);
-      }
-      jndiNameInContext = jndiName.substring(sepIndex + 1);
-      try
-      {
-         context.lookup(jndiName);
-
-         log.warn("Binding for " + jndiName + " already exists");
-         return false;
-      }
-      catch (Throwable e)
-      {
-         // OK
-      }
-
-      Context c = org.jboss.messaging.utils.JNDIUtil.createContext(context, parentContext);
-
-      c.rebind(jndiNameInContext, objectToBind);
-      
+         String parentContext;
+         String jndiNameInContext;
+         int sepIndex = jndiName.lastIndexOf('/');
+         if (sepIndex == -1)
+         {
+            parentContext = "";
+         }
+         else
+         {
+            parentContext = jndiName.substring(0, sepIndex);
+         }
+         jndiNameInContext = jndiName.substring(sepIndex + 1);
+         try
+         {
+            context.lookup(jndiName);
+   
+            log.warn("Binding for " + jndiName + " already exists");
+            return false;
+         }
+         catch (Throwable e)
+         {
+            // OK
+         }
+   
+         Context c = org.jboss.messaging.utils.JNDIUtil.createContext(context, parentContext);
+   
+         c.rebind(jndiNameInContext, objectToBind);
+      }   
       return true;
    }
 

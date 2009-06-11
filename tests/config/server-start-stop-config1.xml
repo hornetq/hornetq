@@ -1,0 +1,40 @@
+<configuration xmlns="urn:jboss:messaging"
+            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+            xsi:schemaLocation="urn:jboss:messaging /schema/jbm-configuration.xsd">
+
+   <connectors>
+      <connector name="netty-connector">
+         <factory-class>org.jboss.messaging.integration.transports.netty.NettyConnectorFactory</factory-class>
+      </connector>
+   </connectors>
+   
+   <journal-directory>/tmp/jbm-unit-test/start-stop-data</journal-directory>
+   
+   <acceptors>
+      <acceptor name="netty-acceptor">
+         <factory-class>org.jboss.messaging.integration.transports.netty.NettyAcceptorFactory</factory-class>        
+      </acceptor>
+   </acceptors>
+
+   <security-settings>
+      <security-setting match="jms.#">
+         <permission type="createDurableQueue" roles="guest"/>
+         <permission type="deleteDurableQueue" roles="guest"/>
+         <permission type="createTempQueue" roles="guest"/>
+         <permission type="deleteTempQueue" roles="guest"/>
+         <permission type="consume" roles="guest"/>
+         <permission type="send" roles="guest"/>
+      </security-setting>
+   </security-settings>
+   
+   <queues>
+	   <queue name="myQueue">
+	   	<address>myAddress</address>
+	   </queue>
+	   
+	   <queue name="jms.queue.myJMSQueue">
+	   	<address>jms.queue.myJMSAddress</address>
+	   </queue>
+   </queues>
+
+</configuration>
