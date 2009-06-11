@@ -89,6 +89,8 @@
    <property name="src.config.dir" value="${src.dir}/config"/>
    <property name="src.config.standalone.non-clustered.dir" value="${src.dir}/config/stand-alone/non-clustered"/>
    <property name="src.config.standalone.clustered.dir" value="${src.dir}/config/stand-alone/clustered"/>
+   <property name="src.config.trunk.non-clustered.dir" value="${src.dir}/config/trunk/non-clustered"/>
+   <property name="src.config.trunk.clustered.dir" value="${src.dir}/config/trunk/clustered"/>
    <property name="src.config.jbossas.non-clustered.dir" value="${src.dir}/config/jboss-as/non-clustered"/>    
    <property name="src.config.jbossas.clustered.dir" value="${src.dir}/config/jboss-as/clustered"/>
    <property name="src.schema.dir" value="${src.config.dir}/common/schema"/>
@@ -814,7 +816,11 @@
             <include name="*.xml"/>
             <include name="jndi.properties"/>
             <include name="logging.properties"/>
+            <include name="stand-alone/**"/>
+            <include name="jboss-as/**"/>
             <exclude name="common/version.properties" />
+            <exclude name="*examples-ant.properties"/>
+            <exclude name="trunk"/>
          </fileset>
       </copy>
    	  <copy todir="${build.distro.native.dir}">
@@ -866,12 +872,6 @@
             <exclude name="**/*.svn"/>
             <exclude name="**/*.iml"/>
             <exclude name="**/*.*~"/>
-         </fileset>
-      </copy>
-
-      <copy todir="${build.distro.config.dir}">
-         <fileset dir="${src.config.dir}">
-            <exclude name="*examples-ant.properties"/>
          </fileset>
       </copy>
       
@@ -1410,12 +1410,12 @@
          <jvmarg value="-XX:+AggressiveOpts"/>
          <jvmarg value="-XX:+UseFastAccessorMethods"/>
          <jvmarg value="-Dcom.sun.management.jmxremote"/>
-         <jvmarg value="-Djava.util.logging.config.file=${src.config.standalone.non-clustered.dir}/logging.properties"/>
+         <jvmarg value="-Djava.util.logging.config.file=${src.config.trunk.non-clustered.dir}/logging.properties"/>
          <jvmarg value="-Djava.library.path=${native.bin.dir}"/>
          <!--<jvmarg line="-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=8000"/>-->
          <arg line="jbm-jboss-beans.xml"/>
          <classpath refid="jms.standalone.server.classpath"/>
-         <classpath path="${src.config.standalone.non-clustered.dir}" />
+         <classpath path="${src.config.trunk.non-clustered.dir}" />
       </java>
    </target>
 
@@ -1428,7 +1428,7 @@
          <jvmarg value="-XX:+AggressiveOpts"/>
          <jvmarg value="-XX:+UseFastAccessorMethods"/>
          <jvmarg value="-Dcom.sun.management.jmxremote"/>
-         <jvmarg value="-Djava.util.logging.config.file=${src.config.standalone.clustered.dir}/logging.properties"/>
+         <jvmarg value="-Djava.util.logging.config.file=${src.config.trunk.clustered.dir}/logging.properties"/>
          <jvmarg
                value="-Dorg.jboss.logging.Logger.pluginClass=org.jboss.messaging.integration.logging.JBMLoggerPlugin"/>
          <jvmarg value="-Djava.library.path=${native.bin.dir}"/>
@@ -1436,9 +1436,9 @@
          <jvmarg value="-Djnp.port=${jnp.port}"/>
          <jvmarg value="-Djnp.rmiPort=${jnp.rmiPort}"/>
          <jvmarg value="-Djbm.data.dir=${jbm.data.dir}"/>
-         <arg line="jbm-standalone-beans.xml"/>
+         <arg line="jbm-jboss-beans.xml"/>
          <classpath refid="jms.standalone.server.classpath"/>
-         <classpath path="${src.config.standalone.clustered.dir}" />
+         <classpath path="${src.config.trunk.clustered.dir}" />
       </java>
    </target>
 
