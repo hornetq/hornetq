@@ -6,7 +6,8 @@
 
    <connectors>
       <connector name="netty-connector">
-         <factory-class>org.jboss.messaging.integration.transports.netty.NettyConnectorFactory</factory-class>         
+         <factory-class>org.jboss.messaging.integration.transports.netty.NettyConnectorFactory</factory-class>
+         <param key="jbm.remoting.netty.port" value="5446" type="Integer"/>
       </connector>
    </connectors>
    
@@ -14,6 +15,7 @@
    <acceptors>
       <acceptor name="netty-acceptor">
          <factory-class>org.jboss.messaging.integration.transports.netty.NettyAcceptorFactory</factory-class>         
+         <param key="jbm.remoting.netty.port" value="5446" type="Integer"/>
       </acceptor>
    </acceptors>
 
