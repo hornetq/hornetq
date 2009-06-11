@@ -87,23 +87,23 @@ public class ReplicationAwareQueueControlWrapperTest extends ReplicationAwareTes
 
       Map<String, Object>[] messages = liveQueueControl.listAllMessages();
       assertEquals(1, messages.length);
-      long messageID = (Long)messages[0].get("MessageID");
-      assertEquals(oldPriority, messages[0].get("Priority"));
+      long messageID = (Long)messages[0].get("messageID");
+      assertEquals(oldPriority, messages[0].get("priority"));
 
       messages = backupQueueControl.listAllMessages();
       assertEquals(1, messages.length);
-      assertEquals(oldPriority, messages[0].get("Priority"));
+      assertEquals(oldPriority, messages[0].get("priority"));
 
       assertTrue(liveQueueControl.changeMessagePriority(messageID, newPriority));
 
       // check the priority is changed on both live & backup nodes
       messages = liveQueueControl.listAllMessages();
       assertEquals(1, messages.length);
-      assertEquals(newPriority, messages[0].get("Priority"));
+      assertEquals(newPriority, messages[0].get("priority"));
 
       messages = backupQueueControl.listAllMessages();
       assertEquals(1, messages.length);
-      assertEquals(newPriority, messages[0].get("Priority"));
+      assertEquals(newPriority, messages[0].get("priority"));
    }
 
    public void testExpireMessage() throws Exception
@@ -124,7 +124,7 @@ public class ReplicationAwareQueueControlWrapperTest extends ReplicationAwareTes
 
       Map<String, Object>[] messages = liveQueueControl.listAllMessages();
       assertEquals(1, messages.length);
-      long messageID = (Long)messages[0].get("MessageID");
+      long messageID = (Long)messages[0].get("messageID");
 
       assertTrue(liveQueueControl.expireMessage(messageID));
 
@@ -274,7 +274,7 @@ public class ReplicationAwareQueueControlWrapperTest extends ReplicationAwareTes
 
       Map<String, Object>[] messages = liveQueueControl.listAllMessages();
       assertEquals(1, messages.length);
-      long messageID = (Long)messages[0].get("MessageID");
+      long messageID = (Long)messages[0].get("messageID");
 
       assertTrue(liveQueueControl.moveMessage(messageID, otherQueue.toString()));
 
@@ -359,7 +359,7 @@ public class ReplicationAwareQueueControlWrapperTest extends ReplicationAwareTes
 
       Map<String, Object>[] messages = liveQueueControl.listAllMessages();
       assertEquals(1, messages.length);
-      long messageID = (Long)messages[0].get("MessageID");
+      long messageID = (Long)messages[0].get("messageID");
 
       assertTrue(liveQueueControl.removeMessage(messageID));
 
@@ -386,7 +386,7 @@ public class ReplicationAwareQueueControlWrapperTest extends ReplicationAwareTes
 
       Map<String, Object>[] messages = liveQueueControl.listAllMessages();
       assertEquals(1, messages.length);
-      long messageID = (Long)messages[0].get("MessageID");
+      long messageID = (Long)messages[0].get("messageID");
 
       assertTrue(liveQueueControl.sendMessageToDeadLetterAddress(messageID));
 

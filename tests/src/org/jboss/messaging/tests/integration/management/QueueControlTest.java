@@ -305,7 +305,7 @@ public class QueueControlTest extends ManagementTestBase
 
       Map<String, Object>[] messages = queueControl.listScheduledMessages();
       assertEquals(1, messages.length);    
-      assertEquals(intValue, messages[0].get("key"));
+      assertEquals(intValue, ((Number)messages[0].get("key")).intValue());
 
       Thread.sleep(delay);
 
@@ -395,7 +395,7 @@ public class QueueControlTest extends ManagementTestBase
 
       Map<String, Object>[] messages =  queueControl.listAllMessages();
       assertEquals(1, messages.length);
-      assertEquals(intValue, messages[0].get("key"));
+      assertEquals(intValue, ((Number)messages[0].get("key")).intValue());
 
       consumeMessages(1, session, queue);
 

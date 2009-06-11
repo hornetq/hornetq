@@ -44,7 +44,7 @@ import org.jboss.messaging.tests.util.UnitTestCase;
  *
  * @author <a href="jmesnil@redhat.com">Jeff Mesnil</a>
  */
-public class ReplicationAwareTestBase extends UnitTestCase
+public abstract class ReplicationAwareTestBase extends UnitTestCase
 {
    // Constants -----------------------------------------------------
 

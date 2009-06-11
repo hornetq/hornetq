@@ -193,7 +193,7 @@ public class JMSQueueControlTest extends ManagementTestBase
       {
          System.out.println(it.next());
       }
-      SimpleString messageID = (SimpleString)data[0].get("JMSMessageID");
+      String messageID = (String)data[0].get("JMSMessageID");
 
       queueControl.removeMessage(messageID.toString());
 
@@ -286,8 +286,8 @@ public class JMSQueueControlTest extends ManagementTestBase
 
       Map<String, Object>[] data = queueControl.listAllMessages();
       // retrieve the first message info
-      SimpleString messageID = (SimpleString)data[0].get("JMSMessageID");
-      int currentPriority = (Byte)data[0].get("JMSPriority");
+      String messageID = (String)data[0].get("JMSMessageID");
+      int currentPriority = ((Number)data[0].get("JMSPriority")).intValue();
       int newPriority = 9;
 
       assertTrue(newPriority != currentPriority);

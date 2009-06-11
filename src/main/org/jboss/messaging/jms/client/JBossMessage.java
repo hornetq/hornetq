@@ -120,7 +120,15 @@ public class JBossMessage implements javax.jms.Message
          }
          else
          {
-            jmsMessage.put(entry.getKey(), entry.getValue());
+            Object value = entry.getValue();
+            if (value instanceof SimpleString)
+            {
+               jmsMessage.put(entry.getKey(), value.toString());
+            } 
+            else
+            {
+               jmsMessage.put(entry.getKey(), value);
+            }
          }
       }
 
