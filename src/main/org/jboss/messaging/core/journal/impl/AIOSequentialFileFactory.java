@@ -207,7 +207,7 @@ public class AIOSequentialFileFactory extends AbstractSequentialFactory
       buffersControl.stop();
       timedBuffer.stop();
    }
-   
+
    protected void finalize()
    {
       this.stop();
@@ -225,7 +225,7 @@ public class AIOSequentialFileFactory extends AbstractSequentialFactory
 
       /** During reload we may disable/enable buffer reuse */
       private boolean enabled = true;
-      
+
       private boolean stopped = false;
 
       final BufferCallback callback = new LocalBufferCallback();
@@ -296,7 +296,7 @@ public class AIOSequentialFileFactory extends AbstractSequentialFactory
          stopped = true;
          clearPoll();
       }
-      
+
       public synchronized void clearPoll()
       {
          ByteBuffer reusedBuffer;
@@ -313,18 +313,17 @@ public class AIOSequentialFileFactory extends AbstractSequentialFactory
          {
             synchronized (ReuseBuffersController.this)
             {
-               if (stopped)
+
+               if (enabled)
                {
-                  System.out.println("Releasing buffer after stopped");
-                  releaseBuffer(buffer);
-               }
-               else
-               {
-                  
-                  if (enabled)
+                  if (stopped)
+                  {
+                     releaseBuffer(buffer);
+                  }
+                  else
                   {
                      bufferReuseLastTime = System.currentTimeMillis();
-      
+
                      // If a buffer has any other than the configured bufferSize, the buffer
                      // will be just sent to GC
                      if (buffer.capacity() == bufferSize)
