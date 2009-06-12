@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.jboss.messaging.core.asyncio.AIOCallback;
+import org.jboss.messaging.core.asyncio.impl.AsynchronousFileImpl;
 import org.jboss.messaging.core.asyncio.impl.TimedBuffer;
 import org.jboss.messaging.core.asyncio.impl.TimedBufferObserver;
 import org.jboss.messaging.tests.util.UnitTestCase;
@@ -133,6 +134,20 @@ public class TimedBufferTest extends UnitTestCase
 
    // Protected -----------------------------------------------------
 
+   @Override
+   protected void setUp() throws Exception
+   {
+      super.setUp();
+
+      if (!AsynchronousFileImpl.isLoaded())
+      {
+         fail(String.format("libAIO is not loaded on %s %s %s",
+                            System.getProperty("os.name"),
+                            System.getProperty("os.arch"),
+                            System.getProperty("os.version")));
+      }
+   }
+   
    // Private -------------------------------------------------------
 
    // Inner classes -------------------------------------------------
