@@ -144,56 +144,7 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
       {
          return;
       }
-
-      // when JMX is enabled, it requires a INVM acceptor to send the core messages
-      // corresponding to the JMX management operations (@see ReplicationAwareStandardMBeanWrapper)
-      // we create one with a special negative id - this is a hack and instead, management should not use a connector to connect
-      if (config.isJMXManagementEnabled())
-      {
-         boolean alreadyConfigured = false;
-         for (TransportConfiguration config : transportConfigs)
-         {
-            if (config.getClass().getName().equals(InVMAcceptorFactory.class.getName()))
-            {
-               int serverID = 0;
-               if (config.getParams() != null)
-               {
-                  Integer iserverid = (Integer)config.getParams().get(TransportConstants.SERVER_ID_PROP_NAME);
-
-                  if (iserverid != null)
-                  {
-                     serverID = iserverid;
-                  }
-               }
-
-               if (serverID == managementConnectorID)
-               {
-                  alreadyConfigured = true;
-               }
-            }
-         }
-         if (!alreadyConfigured)
-         {
-            transportConfigs.add(new TransportConfiguration(InVMAcceptorFactory.class.getName(),
-                                                            new HashMap<String, Object>()
-                                                            {
-                                                               {
-                                                                  put(TransportConstants.SERVER_ID_PROP_NAME,
-                                                                      managementConnectorID);
-                                                               }
-                                                            }));
-         }
-      }
       
-      //Now we also need to create a invmacceptor with id 0 if it doesn't already exist - this is simple because
-      //lots of tests assume this - this requirement should also be removed
-      //this is a bad thing to do since does not play well when there are multiple servers in the same VM.
-      
-      if (InVMRegistry.instance.getAcceptor(0) == null)
-      {
-         transportConfigs.add(new TransportConfiguration(InVMAcceptorFactory.class.getName()));
-      }
-
       ClassLoader loader = Thread.currentThread().getContextClassLoader();
 
       for (TransportConfiguration info : transportConfigs)
@@ -217,6 +168,32 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
          {
             log.warn("Error instantiating acceptor \"" + info.getFactoryClassName() + "\"", e);
          }
+      }
+      
+      //We now create a "special" acceptor used by management to send/receive management messages - this is an invm
+      //acceptor with a -ve server id
+      //TODO this is not the best solution, management should send/receive management messages direct.
+      //Remove this code when this is implemented without having to require a special acceptor
+      //https://jira.jboss.org/jira/browse/JBMESSAGING-1649
+      
+      if (config.isJMXManagementEnabled())
+      {
+         Map<String, Object> params = new HashMap<String, Object>();
+         
+         params.put(TransportConstants.SERVER_ID_PROP_NAME, managementConnectorID);
+         
+         AcceptorFactory factory = new InVMAcceptorFactory();
+         
+         Acceptor acceptor = factory.createAcceptor(params, bufferHandler, this, threadPool);
+         
+         acceptors.add(acceptor);
+         
+         if (managementService != null)
+         {
+            TransportConfiguration info = new TransportConfiguration(InVMAcceptorFactory.class.getName(), params);
+            
+            managementService.registerAcceptor(acceptor, info);
+         }         
       }
 
       for (Acceptor a : acceptors)

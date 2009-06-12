@@ -102,6 +102,8 @@ public class JMSServerStartStopTest extends UnitTestCase
          stop();
       }
       
+      start();
+      
       JBossConnectionFactory jbcf = new JBossConnectionFactory(new TransportConfiguration(NettyConnectorFactory.class.getCanonicalName()));
       
       jbcf.setBlockOnPersistentSend(true);
@@ -129,6 +131,8 @@ public class JMSServerStartStopTest extends UnitTestCase
       conn.close();
       
       jbcf.close();
+      
+      stop();
    }
 
    // Package protected ---------------------------------------------
