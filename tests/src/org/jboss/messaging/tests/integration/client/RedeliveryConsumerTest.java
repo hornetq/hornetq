@@ -33,6 +33,7 @@ import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory;
 import org.jboss.messaging.core.server.Messaging;
 import org.jboss.messaging.core.server.MessagingServer;
@@ -246,10 +247,12 @@ public class RedeliveryConsumerTest extends ServiceTestBase
    private void setUp(final boolean persistDeliveryCountBeforeDelivery) throws Exception, MessagingException
    {
       Configuration config = createConfigForJournal();
+      config.getAcceptorConfigurations().add(new TransportConfiguration(InVMAcceptorFactory.class.getCanonicalName()));
       config.setJournalFileSize(10 * 1024);
       config.setJournalMinFiles(2);
       config.setSecurityEnabled(false);
       config.setPersistDeliveryCountBeforeDelivery(persistDeliveryCountBeforeDelivery);
+      config.getAcceptorConfigurations().add(new TransportConfiguration(InVMAcceptorFactory.class.getCanonicalName()));
 
       server = createServer(true, config);
       
