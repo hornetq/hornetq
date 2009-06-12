@@ -188,8 +188,21 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
       //Now we also need to create a invmacceptor with id 0 if it doesn't already exist - this is simple because
       //lots of tests assume this - this requirement should also be removed
       //this is a bad thing to do since does not play well when there are multiple servers in the same VM.
-      
-      if (InVMRegistry.instance.getAcceptor(0) == null)
+
+      boolean foundInvmAcceptor = false;
+      for (TransportConfiguration config : transportConfigs)
+      {
+         if (config.getFactoryClassName().equals(InVMAcceptorFactory.class.getName())
+                  && (!config.getParams().containsKey(TransportConstants.SERVER_ID_PROP_NAME)
+                  || (config.getParams().containsKey(TransportConstants.SERVER_ID_PROP_NAME)
+                      && (Integer)config.getParams().get(TransportConstants.SERVER_ID_PROP_NAME) == 0)))
+         {
+            foundInvmAcceptor = true;
+            break;
+         }
+      }
+
+      if (!foundInvmAcceptor)
       {
          transportConfigs.add(new TransportConfiguration(InVMAcceptorFactory.class.getName()));
       }
