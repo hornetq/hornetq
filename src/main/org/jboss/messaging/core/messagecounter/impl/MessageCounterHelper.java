@@ -28,8 +28,6 @@ import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.StringTokenizer;
 
-import javax.management.openmbean.TabularData;
-
 import org.jboss.messaging.core.management.DayCounterInfo;
 import org.jboss.messaging.core.messagecounter.MessageCounter;
 import org.jboss.messaging.core.messagecounter.MessageCounter.DayCounter;

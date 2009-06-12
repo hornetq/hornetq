@@ -88,7 +88,7 @@ public class JMSServerDeployer extends XmlDeployer
 
    private static final String THREAD_POOL_MAX_SIZE = "thread-pool-max-size";
 
-   private static final String CONNECTOR_LINK_ELEMENT = "connector-ref";
+   private static final String CONNECTOR_REF_ELEMENT = "connector-ref";
 
    private static final String DISCOVERY_GROUP_ELEMENT = "discovery-group-ref";
 
@@ -317,7 +317,7 @@ public class JMSServerDeployer extends XmlDeployer
             {
                discoveryInitialWaitTimeout = org.jboss.messaging.utils.XMLUtil.parseInt(child);
             }
-            else if (CONNECTOR_LINK_ELEMENT.equals(child.getNodeName()))
+            else if (CONNECTOR_REF_ELEMENT.equals(child.getNodeName()))
             {
                String connectorName = child.getAttributes().getNamedItem("connector-name").getNodeValue();
 
@@ -470,7 +470,7 @@ public class JMSServerDeployer extends XmlDeployer
          }
       }
       else if (node.getNodeName().equals(TOPIC_NODE_NAME))
-      {
+      {        
          String topicName = node.getAttributes().getNamedItem(getKeyAttribute()).getNodeValue();
          NodeList children = node.getChildNodes();
          for (int i = 0; i < children.getLength(); i++)
@@ -479,7 +479,7 @@ public class JMSServerDeployer extends XmlDeployer
 
             if (ENTRY_NODE_NAME.equals(children.item(i).getNodeName()))
             {
-               String jndiName = child.getAttributes().getNamedItem("name").getNodeValue();
+               String jndiName = child.getAttributes().getNamedItem("name").getNodeValue();               
                jmsServerControl.createTopic(topicName, jndiName);
             }
          }

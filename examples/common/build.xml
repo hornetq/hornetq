@@ -141,6 +141,7 @@
          <jvmarg value="-Djbm.example.server.classpath=${serverclasspath}"/>
          <jvmarg value="-Djbm.example.server.args=${server.args}"/>
          <jvmarg value="-Djbm.example.logserveroutput=${jbm.example.logserveroutput}"/>
+         <jvmarg value="-Djbm.example.runServer=${jbm.example.runServer}"/>
          <arg line="${jbm.example.beans.file}"/>
          <sysproperty key="java.library.path" value="${java.library.path}${path.separator}${aio.library.path}"/>
          <classpath refid="client.classpath"/>

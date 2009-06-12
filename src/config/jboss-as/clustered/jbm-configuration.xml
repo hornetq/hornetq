@@ -4,68 +4,46 @@
 
    <clustered>true</clustered>
 
-   <!-- Connectors -->
-   <connectors>
-      <connector name="netty-backup">
-         <factory-class>org.jboss.messaging.integration.transports.netty.NettyConnectorFactory</factory-class>
-         <param key="jbm.remoting.netty.host" value="localhost" type="String"/>
-         <param key="jbm.remoting.netty.port" value="6400" type="Integer"/>
-      </connector>
+   <connectors>      
       <connector name="netty">
          <factory-class>org.jboss.messaging.integration.transports.netty.NettyConnectorFactory</factory-class>
          <param key="jbm.remoting.netty.host"  value="${jbm.remoting.netty.host:localhost}" type="String"/>
          <param key="jbm.remoting.netty.port"  value="${jbm.remoting.netty.port:5445}" type="Integer"/>
       </connector>
-      <connector name="in-vm">
-         <factory-class>org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory</factory-class>
-      </connector>
    </connectors>
 
-   <!-- Acceptors -->
    <acceptors>
-      <!-- In VM acceptor -->
-      <acceptor name="in-vm-acceptor">
-         <factory-class>org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory</factory-class>
-         <param key="jbm.remoting.invm.serverid" value="0" type="Integer"/>
-      </acceptor>
-
-      <!-- Netty TCP Acceptor -->
-      <acceptor name="netty-acceptor">
+      <acceptor name="netty">
          <factory-class>org.jboss.messaging.integration.transports.netty.NettyAcceptorFactory</factory-class>
          <param key="jbm.remoting.netty.host"  value="${jbm.remoting.netty.host:localhost}" type="String"/>
          <param key="jbm.remoting.netty.port"  value="${jbm.remoting.netty.port:5445}" type="Integer"/>
       </acceptor>
    </acceptors>
 
-   <!-- Clustering configuration -->
    <broadcast-groups>
-      <broadcast-group name="my-broadcast-group">
+      <broadcast-group name="bg-group1">
          <group-address>231.7.7.7</group-address>
          <group-port>9876</group-port>
-         <broadcast-period>100</broadcast-period>
+         <broadcast-period>5000</broadcast-period>
          <connector-ref connector-name="netty"/>
       </broadcast-group>
    </broadcast-groups>
 
    <discovery-groups>
-      <discovery-group name="my-discovery-group">
+      <discovery-group name="dg-group1">
          <group-address>231.7.7.7</group-address>
          <group-port>9876</group-port>
          <refresh-timeout>10000</refresh-timeout>
       </discovery-group>
    </discovery-groups>
-
+   
    <cluster-connections>
       <cluster-connection name="my-cluster">
-         <address>jms</address>
-         <retry-interval>500</retry-interval>
-         <use-duplicate-detection>true</use-duplicate-detection>
-         <forward-when-no-consumers>true</forward-when-no-consumers>
-         <max-hops>1</max-hops>
-         <discovery-group-ref discovery-group-name="my-discovery-group"/>
+         <address>jms</address>	 
+	      <discovery-group-ref discovery-group-name="dg-group1"/>
       </cluster-connection>
    </cluster-connections>
-
+   
    <security-settings>
       <security-setting match="#">
          <permission type="createTempQueue" roles="guest"/>

@@ -78,7 +78,9 @@ public class DiscoveryGroupImpl implements Runnable, DiscoveryGroup
    private final InetAddress groupAddress;
 
    private final int groupPort;
-
+   
+   private Map<String, UniqueIDEntry> uniqueIDMap = new HashMap<String, UniqueIDEntry>();
+   
    public DiscoveryGroupImpl(final String nodeID,
                              final String name,
                              final InetAddress groupAddress,
@@ -224,8 +226,6 @@ public class DiscoveryGroupImpl implements Runnable, DiscoveryGroup
          this.uniqueID = uniqueID;
       }      
    }
-   
-   private Map<String, UniqueIDEntry> uniqueIDMap = new HashMap<String, UniqueIDEntry>();
    
    /*
     * This is a sanity check to catch any cases where two different nodes are broadcasting the same node id either
