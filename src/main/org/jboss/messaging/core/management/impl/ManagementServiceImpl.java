@@ -97,8 +97,6 @@ public class ManagementServiceImpl implements ManagementService
 {
    // Constants -----------------------------------------------------
 
-   public static final String CLUSTER_MANAGEMENT_ROLE = "cluster.management";
-
    private static final Logger log = Logger.getLogger(ManagementServiceImpl.class);
 
    private final MBeanServer mbeanServer;
@@ -213,13 +211,6 @@ public class ManagementServiceImpl implements ManagementService
       if (sm != null)
       {
          sm.addUser(managementClusterUser, managementClusterPassword);
-         sm.addRole(managementClusterUser, CLUSTER_MANAGEMENT_ROLE);
-         Set<Role> roles = new HashSet<Role>();
-         roles.add(new Role(CLUSTER_MANAGEMENT_ROLE, true, true, true, true, true, true, true));
-         messagingServer.getSecurityRepository().addMatch(configuration.getManagementAddress().toString(), roles);
-         messagingServer.getSecurityRepository().addMatch(configuration.getManagementAddress() + ".*", roles);
-         messagingServer.getSecurityRepository().addMatch(configuration.getManagementNotificationAddress().toString(), roles);
-         messagingServer.getSecurityRepository().addMatch(configuration.getManagementNotificationAddress() + ".*", roles);
       }
 
       messagingServerControl = new MessagingServerControlImpl(postOffice,

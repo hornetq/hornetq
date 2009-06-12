@@ -84,7 +84,11 @@ public class SecurityStoreImpl implements SecurityStore, HierarchicalRepositoryC
    private volatile long lastCheck;
    
    private final boolean securityEnabled;
+
+   private final String managementClusterUser;
    
+   private final String managementClusterPassword;
+
    private final NotificationService notificationService;
    
    // Constructors --------------------------------------------------
@@ -96,12 +100,16 @@ public class SecurityStoreImpl implements SecurityStore, HierarchicalRepositoryC
                             final JBMSecurityManager securityManager,
                             final long invalidationInterval,
                             final boolean securityEnabled,
+                            final String managementClusterUser,
+                            final String managementClusterPassword,
                             final NotificationService notificationService)
    {
       this.securityRepository = securityRepository;
       this.securityManager = securityManager;
    	this.invalidationInterval = invalidationInterval;   	
    	this.securityEnabled = securityEnabled;
+   	this.managementClusterUser = managementClusterUser;
+   	this.managementClusterPassword = managementClusterPassword;
    	this.notificationService = notificationService;
    }
 
@@ -145,6 +153,12 @@ public class SecurityStoreImpl implements SecurityStore, HierarchicalRepositoryC
          String saddress = address.toString();
          
          Set<Role> roles = securityRepository.getMatch(saddress);
+         
+         // bypass permission checks for management cluster user
+         if (managementClusterUser.equals(user) && session.getPassword().equals(managementClusterPassword))
+         {
+            return;
+         }
          
          if (!securityManager.validateUserAndRole(user, session.getPassword(), roles, checkType))
          {
