@@ -16,9 +16,10 @@
       </programlisting>
       <para>JBoss Messaging is now running. If any errors are displayed or if the server was not
          started properly, please refer to the troubleshooting guide for help</para>
-      <para>By default, JBoss Messaging is run in a <emphasis>non-clustered</emphasis> configuration
-         (based on the configuration in <literal>config/stand-alone/non-clustered</literal>
-         directory).</para>
+      <para>Both the run and the stop scripts use the config under <literal
+            >config/stand-alone/non-clustered</literal> by default. The configuration can be changed
+         by running <literal>./run.sh ../config/stand-alone/clustered</literal> or another config of
+         your choosing. This is the same for the stop script and the windows bat files.</para>
    </section>
    <section id="running.jboss.as">
       <title>JBoss Messaging In JBoss AS 5</title>

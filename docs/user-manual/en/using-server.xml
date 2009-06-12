@@ -26,6 +26,11 @@
         <para>To run on Windows type <literal>stop.bat</literal></para>
         <para>Please note that JBoss Messaging requires a Java 5 or later JDK to run. We recommend
             running on Java 6.</para>
+        <para>Both the run and the stop scripts use the config under <literal
+                >config/stand-alone/non-clustered</literal> by default. The configuration can be
+            changed by running <literal>./run.sh ../config/stand-alone/clustered</literal> or
+            another config of your choosing. This is the same for the stop script and the windows
+            bat files.</para>
     </section>
     <section>
         <title>Server JVM settings</title>
