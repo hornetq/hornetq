@@ -247,7 +247,6 @@ public class RedeliveryConsumerTest extends ServiceTestBase
    private void setUp(final boolean persistDeliveryCountBeforeDelivery) throws Exception, MessagingException
    {
       Configuration config = createConfigForJournal();
-      config.getAcceptorConfigurations().add(new TransportConfiguration(InVMAcceptorFactory.class.getCanonicalName()));
       config.setJournalFileSize(10 * 1024);
       config.setJournalMinFiles(2);
       config.setSecurityEnabled(false);

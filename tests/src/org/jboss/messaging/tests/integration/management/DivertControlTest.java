@@ -32,6 +32,7 @@ import org.jboss.messaging.core.config.cluster.QueueConfiguration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.management.DivertControl;
 import org.jboss.messaging.core.management.ObjectNames;
+import org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory;
 import org.jboss.messaging.core.server.Messaging;
 import org.jboss.messaging.core.server.MessagingServer;
@@ -110,6 +111,7 @@ public class DivertControlTest extends ManagementTestBase
       conf.getQueueConfigurations().add(fowardQueueConfig);
       conf.getDivertConfigurations().add(divertConfig);
 
+      conf.getAcceptorConfigurations().add(new TransportConfiguration(InVMAcceptorFactory.class.getName()));
       conf.getConnectorConfigurations().put(connectorConfig.getName(), connectorConfig);
 
       service = Messaging.newMessagingServer(conf, mbeanServer, false);
