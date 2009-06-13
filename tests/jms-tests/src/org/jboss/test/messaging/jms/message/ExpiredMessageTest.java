@@ -14,14 +14,14 @@ import javax.jms.Session;
 import javax.jms.TextMessage;
 
 import org.jboss.messaging.core.logging.Logger;
-import org.jboss.test.messaging.JBMServerTestCase;
+import org.jboss.test.messaging.jms.JMSTestCase;
 
 /**
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
  * $Id$
  */
-public class ExpiredMessageTest extends JBMServerTestCase
+public class ExpiredMessageTest extends JMSTestCase
 {
    // Constants ------------------------------------------------------------------------------------
 
