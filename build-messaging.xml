@@ -1082,13 +1082,13 @@
 
    <target name="performance-tests" depends="jar, compile-unit-tests">
       <antcall inheritall="true" inheritrefs="true" target="tests">
-         <param name="tests.param" value="**/org/jboss/messaging/tests/performance/**/*${test-mask}.class"/>
+         <param name="tests.param" value="**/org/jboss/messaging/tests/performance/**/*StartStop*.class"/>
       </antcall>
    </target>
 
    <target name="integration-tests" depends="jar, compile-unit-tests">
       <antcall inheritall="true" inheritrefs="true" target="tests">
-         <param name="tests.param" value="**/org/jboss/messaging/tests/integration/**/*${test-mask}.class"/>
+         <param name="tests.param" value="**/org/jboss/messaging/tests/integration/**/*StartStop*.class"/>
       </antcall>
    </target>
 
