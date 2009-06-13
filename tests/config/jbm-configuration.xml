@@ -1,0 +1,49 @@
+<configuration xmlns="urn:jboss:messaging"
+               xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+               xsi:schemaLocation="urn:jboss:messaging /schema/jbm-configuration.xsd">
+
+   <connectors>
+      <connector name="netty">
+         <factory-class>org.jboss.messaging.integration.transports.netty.NettyConnectorFactory</factory-class>
+         <param key="jbm.remoting.netty.host"  value="${jbm.remoting.netty.host:localhost}" type="String"/>
+         <param key="jbm.remoting.netty.port"  value="${jbm.remoting.netty.port:5445}" type="Integer"/>
+      </connector>
+   </connectors>
+
+   <acceptors>
+      <acceptor name="netty">
+         <factory-class>org.jboss.messaging.integration.transports.netty.NettyAcceptorFactory</factory-class>
+         <param key="jbm.remoting.netty.host"  value="${jbm.remoting.netty.host:localhost}" type="String"/>
+         <param key="jbm.remoting.netty.port"  value="${jbm.remoting.netty.port:5445}" type="Integer"/>
+      </acceptor>
+   </acceptors>
+
+   <security-settings>
+      <security-setting match="#">
+         <permission type="createTempQueue" roles="guest"/>
+         <permission type="deleteTempQueue" roles="guest"/>
+         <permission type="consume" roles="guest"/>
+         <permission type="send" roles="guest"/>
+      </security-setting>
+   </security-settings>
+
+   <address-settings>
+      <!--default for catch all-->
+      <address-setting match="#">
+         <clustered>false</clustered>
+         <dead-letter-address>jms.queue.DLQ</dead-letter-address>
+         <expiry-address>jms.queue.ExpiryQueue</expiry-address>
+         <redelivery-delay>0</redelivery-delay>
+         <max-size-bytes>-1</max-size-bytes>
+         <page-size-bytes>10485760</page-size-bytes>
+         <distribution-policy-class>org.jboss.messaging.core.server.impl.RoundRobinDistributor</distribution-policy-class>
+         <message-counter-history-day-limit>10</message-counter-history-day-limit>
+      </address-setting>
+   </address-settings>
+
+   <paging-directory>../data/paging</paging-directory>
+   <bindings-directory>../data/bindings</bindings-directory>
+   <journal-directory>../data/journal</journal-directory>
+   <large-messages-directory>../data/large-messages</large-messages-directory>
+   
+</configuration>
