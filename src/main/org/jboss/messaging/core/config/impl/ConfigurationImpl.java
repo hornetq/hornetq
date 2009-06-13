@@ -93,7 +93,7 @@ public class ConfigurationImpl implements Configuration
 
    public static final int DEFAULT_JOURNAL_MIN_FILES = 2;
 
-   public static final int DEFAULT_JOURNAL_MAX_AIO = 500;
+   public static final int DEFAULT_JOURNAL_MAX_AIO = 1000;
    
    public static final boolean DEFAULT_JOURNAL_AIO_FLUSH_SYNC = false;
    
