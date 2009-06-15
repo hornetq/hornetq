@@ -53,12 +53,12 @@
    <security-settings>
       <!--security for example queue-->
       <security-setting match="jms.queue.exampleQueue">
-         <permission type="createDurableQueue" roles="guest, cluster.management"/>
-         <permission type="deleteDurableQueue" roles="guest, cluster.management"/>
-         <permission type="createTempQueue" roles="guest, cluster.management"/>
-         <permission type="deleteTempQueue" roles="guest, cluster.management"/>
-         <permission type="consume" roles="guest, cluster.management"/>
-         <permission type="send" roles="guest, cluster.management"/>
+         <permission type="createDurableQueue" roles="guest"/>
+         <permission type="deleteDurableQueue" roles="guest"/>
+         <permission type="createTempQueue" roles="guest"/>
+         <permission type="deleteTempQueue" roles="guest"/>
+         <permission type="consume" roles="guest"/>
+         <permission type="send" roles="guest"/>
       </security-setting>
    </security-settings>
 

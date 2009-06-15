@@ -67,9 +67,9 @@
       </address-setting>
    </address-settings>
 
-   <paging-directory>../data/paging</paging-directory>
-   <bindings-directory>../data/bindings</bindings-directory>
-   <journal-directory>../data/journal</journal-directory>
-   <large-messages-directory>../data/large-messages</large-messages-directory>
+   <paging-directory>${data.dir:../data}/paging</paging-directory>
+   <bindings-directory>${data.dir:../data}/bindings</bindings-directory>
+   <journal-directory>${data.dir:../data}/journal</journal-directory>
+   <large-messages-directory>${data.dir:../data}/large-messages</large-messages-directory>
 
 </configuration>
