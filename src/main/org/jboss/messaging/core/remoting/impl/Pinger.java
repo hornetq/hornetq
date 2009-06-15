@@ -44,9 +44,7 @@ public class Pinger implements Runnable, ChannelHandler
 {   
    private static final Logger log = Logger.getLogger(Pinger.class);
    
-   private boolean closed;
-
-   private RemotingConnection conn;
+   private volatile boolean closed;
 
    private Future<?> future;
    
@@ -61,12 +59,12 @@ public class Pinger implements Runnable, ChannelHandler
    private final Channel channel0;
    
    private boolean first = true;
-
+   
+   private boolean stopPinging;   
+   
    public Pinger(final RemotingConnection conn, final long expiryPeriod, final ChannelHandler extraHandler,
                  final Runnable connectionFailedAction, final long lastPingReceived)
    {
-      this.conn = conn;
-      
       this.expiryPeriod = expiryPeriod;
       
       this.extraHandler = extraHandler;
@@ -125,17 +123,15 @@ public class Pinger implements Runnable, ChannelHandler
       first = false;
    }
      
-   public synchronized void close()
+   public void close()
    {
       if (future != null)
-      {        
+      {             
          future.cancel(false);
       }
 
       closed = true;
    }
-   
-   private boolean stopPinging;
    
    public synchronized void stopPinging()
    {

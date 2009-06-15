@@ -796,7 +796,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
 
       for (ConnectionManager connectionManager : connectionManagerMap.values())
       {
-         connectionManager.close();
+         connectionManager.causeExit();
       }
 
       connectionManagerMap.clear();

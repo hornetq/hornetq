@@ -453,8 +453,23 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
       return sessions.size();
    }
 
+   public void causeExit()
+   {
+      closed = true;
+   }
+
    public void close()
    {
+      synchronized (failoverLock)
+      {
+         synchronized (createSessionLock)
+         {
+            refCount = 0;
+
+            checkCloseConnections();
+         }
+      }
+      
       closed = true;
    }
 
@@ -472,7 +487,7 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
    protected void finalize() throws Throwable
    {
       // In case user forgets to close it explicitly
-      close();
+      causeExit();
 
       super.finalize();
    }
@@ -492,7 +507,7 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
    }
 
    private boolean failoverOrReconnect(final MessagingException me, final Object connectionID)
-   {     
+   {
       // To prevent recursion
       if (inFailoverOrReconnect)
       {
@@ -539,7 +554,7 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
          boolean attemptFailover = (backupConnectorFactory) != null && (failoverOnServerShutdown || me.getCode() != MessagingException.DISCONNECTED);
 
          boolean done = false;
-         
+
          if (attemptFailover || reconnectAttempts != 0)
          {
             lockAllChannel1s();
@@ -588,7 +603,7 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
             {
                oldConnections.add(entry.connection);
             }
-            
+
             closePingers();
 
             connections.clear();
@@ -639,7 +654,7 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
             else
             {
                // Fail the old connections so their listeners get called
-               
+
                for (RemotingConnection connection : oldConnections)
                {
                   connection.fail(me);
@@ -649,9 +664,9 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
          else
          {
             // Just fail the connections
-            
+
             closePingers();
- 
+
             failConnection(me);
          }
 
@@ -663,14 +678,14 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
 
    private void closePingers()
    {
-      for (Pinger pinger: pingers.values())
+      for (Pinger pinger : pingers.values())
       {
-         pinger.close();         
+         pinger.close();
       }
-      
+
       pingers.clear();
    }
-    
+
    /*
     * Re-attach sessions all pre-existing sessions to new remoting connections
     */
@@ -938,10 +953,14 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
          // Send the initial ping, we always do this it contains connectionTTL and clientFailureInterval -
          // the server needs this in order to do pinging and failure checking
 
-         Pinger pinger = new Pinger(conn, clientFailureCheckPeriod, new Channel0Handler(conn), new FailedConnectionAction(conn), 0);
-         
+         Pinger pinger = new Pinger(conn,
+                                    clientFailureCheckPeriod,
+                                    new Channel0Handler(conn),
+                                    new FailedConnectionAction(conn),
+                                    0);
+
          pingers.put(conn.getID(), pinger);
-         
+
          Ping ping = new Ping(clientFailureCheckPeriod, connectionTTL);
 
          Channel channel0 = conn.getChannel(0, -1, false);
@@ -955,7 +974,7 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
                                                                              clientFailureCheckPeriod,
                                                                              TimeUnit.MILLISECONDS);
 
-            pinger.setFuture(pingerFuture);            
+            pinger.setFuture(pingerFuture);
          }
 
          if (debug)
@@ -1065,7 +1084,7 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
    }
 
    private void failConnection(final Object connectionID, final MessagingException me)
-   {            
+   {
       ConnectionEntry entry = connections.get(connectionID);
 
       if (entry != null)

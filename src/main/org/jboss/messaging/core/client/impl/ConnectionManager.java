@@ -60,7 +60,9 @@ public interface ConnectionManager
 
    int numSessions();
    
-   void close();
+   void causeExit();
    
    RemotingConnection getConnection(final int initialRefCount);
+   
+   void close();
 }

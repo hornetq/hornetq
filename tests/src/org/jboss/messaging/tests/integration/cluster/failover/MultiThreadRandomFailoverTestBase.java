@@ -40,6 +40,7 @@ import org.jboss.messaging.core.client.impl.ClientSessionFactoryInternal;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.remoting.impl.Pinger;
 import org.jboss.messaging.core.remoting.impl.invm.InVMRegistry;
 import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.jms.client.JBossBytesMessage;
@@ -1310,7 +1311,7 @@ public abstract class MultiThreadRandomFailoverTestBase extends MultiThreadFailo
       {
          backupServer.stop();
       }
-
+      
       super.tearDown();
    }
 
