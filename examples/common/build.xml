@@ -192,15 +192,11 @@
       <subant target="run" failonerror="true">
          <fileset dir="..">
             <include name="core/*/build.xml"/>
-            <exclude name="common/build.xml"/>
-            <exclude name="core/perf/build.xml"/>
-         </fileset>
-      </subant>
-      <subant target="run" failonerror="true">
-         <fileset dir="..">
             <include name="jms/*/build.xml"/>
             <exclude name="common/build.xml"/>
+            <exclude name="core/perf/build.xml"/>
             <exclude name="jms/perf/build.xml"/>
+            <exclude name="jms/clustered-standalone/build.xml"/>
          </fileset>
       </subant>
    </target>
