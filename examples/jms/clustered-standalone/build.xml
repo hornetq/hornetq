@@ -38,5 +38,24 @@
          <param name="jbm.example.runServer" value="false"/>
       </antcall>
    </target>
+	
+   <target name="run">
+   	<property name="bin.dir" value="../../../../bin"/>
+
+  	<sequential>
+   	  <parallel>
+        <exec dir="${bin.dir}" executable="sh">
+           <arg line="run.sh ../config/stand-alone/clustered"/>
+        </exec>
+   	  </parallel>
+  	</sequential>
+	<antcall target="runRemote"></antcall>
+ 	  <parallel>
+      <exec dir="${bin.dir}" executable="sh">
+         <arg line="stop.sh ../config/stand-alone/clustered"/>
+      </exec>
+ 	  </parallel>
+            
+   </target>
 
 </project>

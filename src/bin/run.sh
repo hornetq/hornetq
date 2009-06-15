@@ -6,7 +6,6 @@ if [ a"$1" = a ]; then CONFIG_DIR=$JBM_HOME/config/stand-alone/non-clustered; el
 if [ a"$2" = a ]; then FILENAME=jbm-jboss-beans.xml; else FILENAME="$2"; fi
 
 export CLASSPATH=$CONFIG_DIR:$JBM_HOME/schemas/
-export CLUSTER_PROPS=;
 #you can use the following line if you want to run with different ports
 #export CLUSTER_PROPS="-Djnp.port=1099 -Djnp.rmiPort=1098 -Djnp.host=localhost -Djbm.remoting.netty.host=localhost -Djbm.remoting.netty.port=5445"
 export JVM_ARGS="$CLUSTER_PROPS -XX:+UseParallelGC -XX:+AggressiveOpts -XX:+UseFastAccessorMethods -Xms512M -Xmx1024M -Djbm.config.dir=$CONFIG_DIR -Djava.util.logging.config.file=$CONFIG_DIR/logging.properties -Dorg.jboss.logging.Logger.pluginClass=org.jboss.messaging.integration.logging.JBMLoggerPlugin -Djava.library.path=."
