@@ -54,5 +54,15 @@
        <jvmarg value="-Xmx50M"/>
        <classpath refid="local.classpath"/>
     </java>
+    
+    <!-- if the example exited with a result value != 0, we fail the build -->
+    <fail message="Example ${example.classname} failed">
+       <condition>
+          <not>
+             <equals arg1="${example-result}" arg2="0"/>
+          </not>
+       </condition>
+    </fail>
+    
    </target>
 </project>
