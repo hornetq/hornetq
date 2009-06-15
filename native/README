@@ -41,7 +41,7 @@ if you are missing any dependencies, autoconf would tell you what you're missing
 
 COMPILED FILE
 
-The produced file will be under ./native/src/.libs/libJBMLibAIO.so
+The produced file will be under ./src/.libs/libJBMLibAIO.so
 
 
 PERF-DISK
@@ -51,7 +51,13 @@ There is a script on this directory called perf-disk. This script will tell you 
 If you interrupt this script, you will see a file (/tmp/foo.dat) created on your disk, which is used to measure the performance.
 
 
+DOCUMENTATION
+
+The User Manual, chapter 38 (Libaio Native Libraries) will provide more details about this
+
+
 
 README IS A REQUIRED FILE
 
 This file exists here as required by autoconf, or else we would have a compilation error.
+
