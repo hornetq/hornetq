@@ -314,7 +314,7 @@ public class PingTest extends ServiceTestBase
 
       serverConn.addFailureListener(serverListener);
 
-      ((RemotingServiceImpl)server.getRemotingService()).cancelPingerForConnectionID(serverConn.getID());
+      ((RemotingServiceImpl)server.getRemotingService()).stopPingingForConnectionID(serverConn.getID());
 
       for (int i = 0; i < 1000; i++)
       {

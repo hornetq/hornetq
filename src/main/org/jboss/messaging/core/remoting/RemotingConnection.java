@@ -62,12 +62,4 @@ public interface RemotingConnection extends BufferHandler
    void freeze();
   
    Connection getTransportConnection();
-   
-   boolean isDataReceived();
-   
-   boolean isDataSent();
-   
-   void clearDataSent();
-   
-   void clearDataReceived();
 }

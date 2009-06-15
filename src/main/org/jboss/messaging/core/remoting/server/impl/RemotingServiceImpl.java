@@ -41,7 +41,6 @@ import org.jboss.messaging.core.remoting.impl.AbstractBufferHandler;
 import org.jboss.messaging.core.remoting.impl.Pinger;
 import org.jboss.messaging.core.remoting.impl.RemotingConnectionImpl;
 import org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory;
-import org.jboss.messaging.core.remoting.impl.invm.InVMRegistry;
 import org.jboss.messaging.core.remoting.impl.invm.TransportConstants;
 import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
 import org.jboss.messaging.core.remoting.impl.wireformat.Ping;
@@ -95,9 +94,7 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
 
    private final ScheduledExecutorService scheduledThreadPool;
 
-   private Map<Object, FailedConnectionRunnable> connectionTTLRunnables = new ConcurrentHashMap<Object, FailedConnectionRunnable>();
-
-   private Map<Object, Pinger> pingRunnables = new ConcurrentHashMap<Object, Pinger>();
+   private Map<Object, Pinger> pingers = new ConcurrentHashMap<Object, Pinger>();
 
    private final int managementConnectorID;
 
@@ -144,7 +141,7 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
       {
          return;
       }
-      
+
       ClassLoader loader = Thread.currentThread().getContextClassLoader();
 
       for (TransportConfiguration info : transportConfigs)
@@ -169,31 +166,31 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
             log.warn("Error instantiating acceptor \"" + info.getFactoryClassName() + "\"", e);
          }
       }
-      
-      //We now create a "special" acceptor used by management to send/receive management messages - this is an invm
-      //acceptor with a -ve server id
-      //TODO this is not the best solution, management should send/receive management messages direct.
-      //Remove this code when this is implemented without having to require a special acceptor
-      //https://jira.jboss.org/jira/browse/JBMESSAGING-1649
-      
+
+      // We now create a "special" acceptor used by management to send/receive management messages - this is an invm
+      // acceptor with a -ve server id
+      // TODO this is not the best solution, management should send/receive management messages direct.
+      // Remove this code when this is implemented without having to require a special acceptor
+      // https://jira.jboss.org/jira/browse/JBMESSAGING-1649
+
       if (config.isJMXManagementEnabled())
       {
          Map<String, Object> params = new HashMap<String, Object>();
-         
+
          params.put(TransportConstants.SERVER_ID_PROP_NAME, managementConnectorID);
-         
+
          AcceptorFactory factory = new InVMAcceptorFactory();
-         
+
          Acceptor acceptor = factory.createAcceptor(params, bufferHandler, this, threadPool);
-         
+
          acceptors.add(acceptor);
-         
+
          if (managementService != null)
          {
             TransportConfiguration info = new TransportConfiguration(InVMAcceptorFactory.class.getName(), params);
-            
+
             managementService.registerAcceptor(acceptor, info);
-         }         
+         }
       }
 
       for (Acceptor a : acceptors)
@@ -239,12 +236,7 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
 
       acceptors.clear();
 
-      for (FailedConnectionRunnable runnable : connectionTTLRunnables.values())
-      {
-         runnable.close();
-      }
-
-      for (Pinger runnable : pingRunnables.values())
+      for (Pinger runnable : pingers.values())
       {
          runnable.close();
       }
@@ -296,21 +288,14 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
 
       channel1.setHandler(handler);
 
-      Channel channel0 = rc.getChannel(0, -1, false);
+      connections.put(connection.getID(), rc);
 
-      Channel0Handler channel0Handler = new Channel0Handler(rc);
-
-      channel0.setHandler(channel0Handler);
-
-      Object id = connection.getID();
-
-      connections.put(id, rc);
-
-      InitialPingTimeout runnable = new InitialPingTimeout(rc, channel0Handler);
+      InitialPingTimeout runnable = new InitialPingTimeout(rc);
 
       // We schedule an initial ping timeout. An inital ping is always sent from the client as the first thing it
       // does after creating a connection, this contains the ping period and connection TTL, if it doesn't
       // arrive the connection will get closed
+
       scheduledThreadPool.schedule(runnable, INITIAL_PING_TIMEOUT, TimeUnit.MILLISECONDS);
 
       if (config.isBackup())
@@ -322,7 +307,7 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
    public void connectionDestroyed(final Object connectionID)
    {
       RemotingConnection conn = connections.get(connectionID);
-
+      
       if (conn != null)
       {
          // if the connection has no failure listeners it means the sesssions etc were already closed so this is a clean
@@ -362,11 +347,11 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
 
    // Public --------------------------------------------------------
 
-   public void cancelPingerForConnectionID(final Object connectionID)
+   public void stopPingingForConnectionID(final Object connectionID)
    {
-      Pinger pinger = pingRunnables.get(connectionID);
+      Pinger pinger = pingers.get(connectionID);
 
-      pinger.close();
+      pinger.stopPinging();
    }
 
    // Package protected ---------------------------------------------
@@ -375,7 +360,7 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
 
    // Private -------------------------------------------------------
 
-   private void setupScheduledRunnables(final RemotingConnection conn,
+   private void setupPinger(final RemotingConnection conn,
                                         final long clientFailureCheckPeriod,
                                         final long connectionTTL)
    {
@@ -392,53 +377,26 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
       long connectionTTLToUse = config.getConnectionTTLOverride() != -1 ? config.getConnectionTTLOverride()
                                                                        : connectionTTL;
 
-      if (connectionTTLToUse != -1)
-      {
-         FailedConnectionRunnable runnable = new FailedConnectionRunnable(conn);
-
-         Future<?> connectionTTLFuture = scheduledThreadPool.scheduleAtFixedRate(runnable,
-                                                                                 connectionTTLToUse,
-                                                                                 connectionTTLToUse,
-                                                                                 TimeUnit.MILLISECONDS);
-
-         runnable.setFuture(connectionTTLFuture);
-
-         connectionTTLRunnables.put(conn.getID(), runnable);
-      }
-
       long pingPeriod = clientFailureCheckPeriod == -1 ? -1 : clientFailureCheckPeriod / 2;
 
-      if (pingPeriod != -1)
-      {
-         Pinger pingRunnable = new Pinger(conn);
+      Pinger pingRunnable = new Pinger(conn, connectionTTLToUse, null, new FailedConnectionAction(conn), System.currentTimeMillis());
 
-         Future<?> pingFuture = scheduledThreadPool.scheduleAtFixedRate(pingRunnable,
-                                                                        0,
-                                                                        pingPeriod,
-                                                                        TimeUnit.MILLISECONDS);
+      Future<?> pingFuture = scheduledThreadPool.scheduleAtFixedRate(pingRunnable, 0, pingPeriod, TimeUnit.MILLISECONDS);
 
-         pingRunnable.setFuture(pingFuture);
+      pingRunnable.setFuture(pingFuture);
 
-         pingRunnables.put(conn.getID(), pingRunnable);
-      }
+      pingers.put(conn.getID(), pingRunnable);
    }
 
    private RemotingConnection closeConnection(final Object connectionID)
    {
       RemotingConnection connection = connections.remove(connectionID);
+      
+      Pinger pinger = pingers.remove(connectionID);
 
-      FailedConnectionRunnable runnable = connectionTTLRunnables.remove(connectionID);
-
-      if (runnable != null)
+      if (pinger != null)
       {
-         runnable.close();
-      }
-
-      Pinger pingRunnable = pingRunnables.remove(connectionID);
-
-      if (pingRunnable != null)
-      {
-         pingRunnable.close();
+         pinger.close();
       }
 
       return connection;
@@ -446,18 +404,20 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
 
    // Inner classes -------------------------------------------------
 
-   private class Channel0Handler implements ChannelHandler
+   private class InitialPingTimeout implements Runnable, ChannelHandler
    {
       private final RemotingConnection conn;
 
-      private volatile boolean gotInitialPing;
+      private boolean gotInitialPing;
 
-      private Channel0Handler(final RemotingConnection conn)
+      private InitialPingTimeout(final RemotingConnection conn)
       {
          this.conn = conn;
+         
+         conn.getChannel(0, -1, false).setHandler(this);
       }
-
-      public void handlePacket(final Packet packet)
+      
+      public synchronized void handlePacket(final Packet packet)
       {
          final byte type = packet.getType();
 
@@ -467,7 +427,7 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
             {
                Ping ping = (Ping)packet;
 
-               setupScheduledRunnables(conn, ping.getClientFailureCheckPeriod(), ping.getConnectionTTL());
+               setupPinger(conn, ping.getClientFailureCheckPeriod(), ping.getConnectionTTL());
 
                gotInitialPing = true;
             }
@@ -478,28 +438,9 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
          }
       }
 
-      private boolean isGotInitialPing()
+      public synchronized void run()
       {
-         return gotInitialPing;
-      }
-   }
-
-   private class InitialPingTimeout implements Runnable
-   {
-      private final RemotingConnection conn;
-
-      private final Channel0Handler handler;
-
-      private InitialPingTimeout(final RemotingConnection conn, final Channel0Handler handler)
-      {
-         this.conn = conn;
-
-         this.handler = handler;
-      }
-
-      public void run()
-      {
-         if (!handler.isGotInitialPing())
+         if (!gotInitialPing)
          {
             // Never received initial ping
             log.warn("Did not receive initial ping for connection, it will be closed");
@@ -511,51 +452,23 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
       }
    }
 
-   private class FailedConnectionRunnable implements Runnable
+   private class FailedConnectionAction implements Runnable
    {
-      private boolean closed;
-
       private RemotingConnection conn;
 
-      private Future<?> future;
-
-      FailedConnectionRunnable(final RemotingConnection conn)
+      FailedConnectionAction(final RemotingConnection conn)
       {
          this.conn = conn;
       }
 
-      public synchronized void setFuture(final Future<?> future)
-      {
-         this.future = future;
-      }
-
       public synchronized void run()
       {
-         if (closed)
-         {
-            return;
-         }
+         removeConnection(conn.getID());
 
-         if (!conn.isDataReceived())
-         {
-            removeConnection(conn.getID());
+         MessagingException me = new MessagingException(MessagingException.CONNECTION_TIMEDOUT,
+                                                        "Did not receive ping on connection. It is likely a client has exited or crashed without " + "closing its connection, or the network between the server and client has failed. The connection will now be closed.");
 
-            MessagingException me = new MessagingException(MessagingException.CONNECTION_TIMEDOUT,
-                                                           "Did not receive ping on connection. It is likely a client has exited or crashed without " + "closing its connection, or the network between the server and client has failed. The connection will now be closed.");
-
-            conn.fail(me);
-         }
-         else
-         {
-            conn.clearDataReceived();
-         }
-      }
-
-      public synchronized void close()
-      {
-         future.cancel(false);
-
-         closed = true;
+         conn.fail(me);
       }
    }
 

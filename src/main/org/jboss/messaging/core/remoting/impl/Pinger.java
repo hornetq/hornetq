@@ -27,7 +27,10 @@ import java.util.concurrent.Future;
 
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.Channel;
+import org.jboss.messaging.core.remoting.ChannelHandler;
+import org.jboss.messaging.core.remoting.Packet;
 import org.jboss.messaging.core.remoting.RemotingConnection;
+import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
 import org.jboss.messaging.core.remoting.impl.wireformat.Ping;
 
 /**
@@ -37,58 +40,105 @@ import org.jboss.messaging.core.remoting.impl.wireformat.Ping;
  *
  *
  */
-public class Pinger implements Runnable
-{
+public class Pinger implements Runnable, ChannelHandler
+{   
    private static final Logger log = Logger.getLogger(Pinger.class);
    
-   private volatile boolean closed;
+   private boolean closed;
 
    private RemotingConnection conn;
 
-   private volatile Future<?> future;
+   private Future<?> future;
+   
+   private long lastPingReceived;
+   
+   private final long expiryPeriod;
+   
+   private final ChannelHandler extraHandler;
+   
+   private final Runnable connectionFailedAction;
+   
+   private final Channel channel0;
+   
+   private boolean first = true;
 
-   public Pinger(final RemotingConnection conn)
+   public Pinger(final RemotingConnection conn, final long expiryPeriod, final ChannelHandler extraHandler,
+                 final Runnable connectionFailedAction, final long lastPingReceived)
    {
       this.conn = conn;
+      
+      this.expiryPeriod = expiryPeriod;
+      
+      this.extraHandler = extraHandler;
+      
+      this.connectionFailedAction = connectionFailedAction;
+      
+      this.channel0 = conn.getChannel(0, -1, false); 
+      
+      this.lastPingReceived = lastPingReceived;
+      
+      channel0.setHandler(this);
    }
-
-   public void setFuture(final Future<?> future)
+      
+   public synchronized void setFuture(final Future<?> future)
    {
       this.future = future;
    }
-
-   public void run()
+   
+   public synchronized void handlePacket(final Packet packet)
    {
       if (closed)
       {
          return;
       }
       
-      //TODO - for now we *always* sent the ping otherwise.
-      //Checking dataSent does not work, for the following reason:
-      //If a packet is sent just after the last ping, then no ping will be sent the next time.
-      //Which means the amount of time between pings can approach 2 * ( 0.5 * client failure check period) = failure check period
-      //so, due to time taken to actually travel across network + scheduling difference the client failure checker
-      //can easily time out.
-      
-//      if (!conn.isDataSent())
-//      {
-         // We only send a ping if no data has been sent since last ping
-
-         Ping ping = new Ping();
-
-         Channel channel0 = conn.getChannel(0, -1, false);
-         
-         channel0.send(ping);
-    //  }
-
-      conn.clearDataSent();
+      if (packet.getType() == PacketImpl.PING)
+      {
+         lastPingReceived = System.currentTimeMillis();
+      }
+      else if (extraHandler != null)
+      {
+         extraHandler.handlePacket(packet);
+      }
+      else
+      {
+         throw new IllegalStateException("Invalid packet " + packet.getType());
+      }
    }
-
-   public void close()
+   
+   public synchronized void run()
    {
-      future.cancel(false);
+      if (closed)
+      {
+         return;
+      }
+      
+      if (!first && ( System.currentTimeMillis() - lastPingReceived > expiryPeriod))
+      {
+         connectionFailedAction.run();
+      }
+      else if (!stopPinging)
+      {      
+         channel0.send(new Ping());
+      }
+      
+      first = false;
+   }
+     
+   public synchronized void close()
+   {
+      if (future != null)
+      {        
+         future.cancel(false);
+      }
 
       closed = true;
+   }
+   
+   private boolean stopPinging;
+   
+   public synchronized void stopPinging()
+   {
+      this.stopPinging = true;
    }
 }

@@ -247,11 +247,7 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
    private boolean frozen;
 
    private final Object failLock = new Object();
-   
-   private volatile boolean dataReceived;
-   
-   private volatile boolean dataSent;
-   
+    
    // debug only stuff
 
    private boolean createdActive;
@@ -473,8 +469,6 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
 
    public void bufferReceived(final Object connectionID, final MessagingBuffer buffer)
    {
-      dataReceived = true;           
-      
       final Packet packet = decode(buffer);
       
       synchronized (transferLock)
@@ -1060,8 +1054,6 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
                if (connection.active || packet.isWriteAlways())
                {                  
                   connection.transportConnection.write(buffer, flush);
-                                 
-                  connection.dataSent = true;
                }
             }
             finally
@@ -1131,8 +1123,6 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
 
                connection.transportConnection.write(buffer);
                
-               connection.dataSent = true;
-
                long toWait = connection.blockingCallTimeout;
 
                long start = System.currentTimeMillis();
@@ -1213,8 +1203,6 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
                packet.encode(buffer);
 
                connection.transportConnection.write(buffer);
-               
-               connection.dataSent = true;
             }
          }
 
@@ -1276,6 +1264,11 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
       public void setHandler(final ChannelHandler handler)
       {
          this.handler = handler;
+      }
+      
+      public ChannelHandler getHandler()
+      {
+         return handler;
       }
 
       public void close()
@@ -1625,25 +1618,5 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
             sendSemaphore.release(sizeToFree);
          }
       }
-   }
-
-   public boolean isDataReceived()
-   {
-      return dataReceived;
-   }
-   
-   public void clearDataReceived()
-   {
-      dataReceived = false;
-   }
-   
-   public boolean isDataSent()
-   {      
-      return dataSent;
-   }
-   
-   public void clearDataSent()
-   {     
-      dataSent = false;
    }
 }

@@ -585,10 +585,6 @@ public class ClientConsumerImpl implements ClientConsumerInternal
     */
    private void sendCredits(final int credits)
    {
-      if (trace)
-      {
-         log.trace("Sending " + credits + " credits back", new Exception ("trace"));
-      }
       channel.send(new SessionConsumerFlowCreditMessage(id, credits));
    }
 

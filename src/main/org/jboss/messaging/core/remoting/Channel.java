@@ -33,6 +33,8 @@ public interface Channel
    void replicatePacket(Packet packet, long replicatedChannelID, Runnable action);
    
    void setHandler(ChannelHandler handler);
+   
+   ChannelHandler getHandler();
 
    void close();
 

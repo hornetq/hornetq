@@ -1160,7 +1160,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
    {
       try
       {
-         log.warn("Client connection failed, clearing up resources for session " + name, new Exception());
+         log.warn("Client connection failed, clearing up resources for session " + name);
 
          for (Runnable runner : failureRunners)
          {
