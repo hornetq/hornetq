@@ -132,6 +132,9 @@
       <copy todir="${example-profile}/deploy/">
          <fileset dir="${build.dir}">
             <include name="${example.name}-example.ear"/>
+            <exclude name="**/data/**"/>
+            <exclude name="**/log/**"/>
+            <exclude name="**/tmp/**"/>
          </fileset>
       </copy>
       <exec dir="${jboss.home}/bin" executable="sh">

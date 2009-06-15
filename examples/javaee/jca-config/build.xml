@@ -50,6 +50,9 @@
          <fileset dir="${deploy.dir}">
             <exclude  name="**/*jca-config-example.ear"/>
             <exclude name="**/*ra.xml"/>
+            <exclude name="**/data/**"/>
+            <exclude name="**/log/**"/>
+            <exclude name="**/tmp/**"/>
          </fileset>
       </copy>
       <copy todir="${deploy.dir2}/deploy/messaging.sar">
