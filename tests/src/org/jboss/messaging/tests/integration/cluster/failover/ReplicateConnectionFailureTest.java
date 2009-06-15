@@ -109,7 +109,16 @@ public class ReplicateConnectionFailureTest extends UnitTestCase
 
       ((ConnectionManagerImpl)sf1.getConnectionManagers()[0]).cancelPingerForConnectionID(conn1.getID());
 
-      Thread.sleep(3 * clientFailureCheckPeriod);
+      for (int i = 0; i < 1000; i++)
+      {
+         // a few tries to avoid a possible race caused by GCs or similar issues
+         if (liveServer.getRemotingService().getConnections().isEmpty())
+         {
+            break;
+         }
+
+         Thread.sleep(10);
+      }
 
       assertEquals(0, liveServer.getRemotingService().getConnections().size());
 
