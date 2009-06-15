@@ -21,7 +21,8 @@
         <pre>
          <code>Configuration configuration = new ConfigurationImpl();</code>
          <code>configuration.setEnablePersistence(false);</code>
-         <code>configuration.setSecurityEnabled(false);</code></pre>
+         <code>configuration.setSecurityEnabled(false);</code>
+         <code>configuration.getAcceptorConfigurations().add(new TransportConfiguration(InVMAcceptorFactory.class.getName()));</code></pre>
          
         <li>Create and start the server</li>
         <pre>
