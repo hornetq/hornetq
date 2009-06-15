@@ -39,23 +39,53 @@
       </antcall>
    </target>
 	
+	<!-- the example can be ran automatically from the distribution only -->
    <target name="run">
-   	<property name="bin.dir" value="../../../../bin"/>
+   	<property name="distro.bin.dir" value="../../../bin"/>
 
-  	<sequential>
-   	  <parallel>
-        <exec dir="${bin.dir}" executable="sh">
-           <arg line="run.sh ../config/stand-alone/clustered"/>
-        </exec>
-   	  </parallel>
-  	</sequential>
-	<antcall target="runRemote"></antcall>
- 	  <parallel>
-      <exec dir="${bin.dir}" executable="sh">
-         <arg line="stop.sh ../config/stand-alone/clustered"/>
-      </exec>
- 	  </parallel>
-            
+      <condition property="from.distro">
+         <available file="${distro.bin.dir}/run.sh" />
+      </condition>
+      
+      <antcall target="run-from-distro" />
+   </target>
+      
+   <target name="run-from-distro" if="from.distro">
+   	<property name="distro.bin.dir" value="../../../bin"/>
+   	
+   	<!-- start 3 clustered servers in parallel                   -->
+   	<!-- then wait for 1 minute and run the example              -->
+    	<!-- finally, stop the servers once the example has finished -->
+      <parallel>
+         <sequential>
+            <echo>Starting 3 clustered servers</echo>
+            <parallel>
+               <!-- start the 1st clustered server with default configuration -->
+               <exec dir="${distro.bin.dir}" executable="sh">
+                  <arg line="run.sh ../config/stand-alone/clustered"/>
+               </exec>
+               <!-- start the 2nd clustered server with modified configuration -->
+               <exec dir="${distro.bin.dir}" executable="sh">
+                  <env key="CLUSTER_PROPS" value="-Ddata.dir=../data-server2 -Djnp.port=2099 -Djnp.rmiPort=2098 -Djbm.remoting.netty.port=6445"/>
+                  <arg line="run.sh ../config/stand-alone/clustered"/>
+               </exec>
+               <!-- start the 3rd clustered server with modified configuration -->
+               <exec dir="${distro.bin.dir}" executable="sh">
+                  <env key="CLUSTER_PROPS" value="-Ddata.dir=../data-server3 -Djnp.port=3099 -Djnp.rmiPort=3098 -Djbm.remoting.netty.port=7445"/>
+                  <arg line="run.sh ../config/stand-alone/clustered"/>
+               </exec>
+            </parallel>
+         </sequential>
+         <sequential>
+            <sleep minutes="1" />
+            <echo>Running example</echo>
+            <antcall target="runRemote"></antcall>
+            <echo>Stopping servers</echo>
+            <exec dir="${distro.bin.dir}" executable="sh">
+               <arg line="stop.sh ../config/stand-alone/clustered"/>
+            </exec>
+         </sequential>
+      </parallel>
    </target>
 
 </project>

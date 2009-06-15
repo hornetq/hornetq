@@ -196,7 +196,6 @@
             <exclude name="common/build.xml"/>
             <exclude name="core/perf/build.xml"/>
             <exclude name="jms/perf/build.xml"/>
-            <exclude name="jms/clustered-standalone/build.xml"/>
          </fileset>
       </subant>
    </target>
