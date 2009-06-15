@@ -1108,7 +1108,8 @@ public class MessagingServerImpl implements MessagingServer
                   }
                });
 
-               boolean ok = future.await(10000);
+               //This may take a while especially if the journal is large
+               boolean ok = future.await(60000);
 
                if (!ok)
                {
