@@ -91,6 +91,22 @@
                 of connections across the cluster.</para>
         </section>
         <section>
+            <title>Clustered Queue</title>
+            <para>The <literal>clustered-queue</literal> example demonstrates a JMS queue deployed on two different nodes. The two
+                nodes are configured to form a cluster. We then create a consumer for the queue on
+                each node, and we create a producer on only one of the nodes. We then send some
+                messages via the producer, and we verify that both consumers receive the sent
+                messages in a round-robin fashio.</para>
+        </section>
+        <section>
+            <title>Clustered Standalone</title>
+            <para>The <literal>clustered-standalone</literal> example demonstrates how to configure and starts 3 cluster
+            nodes on the same machine to form a cluster. A subscriber for a JMS topic is created on
+                each node, and we create a producer on only one of the nodes. We then send some
+                messages via the producer, and we verify that the 3 subscribers receive all the sent
+                messages.</para>
+        </section>
+        <section>
             <title>Clustered Topic</title>
             <para>The <literal>clustered-topic</literal> example demonstrates a JMS topic deployed on two different nodes. The two
                 nodes are configured to form a cluster. We then create a subscriber on the topic on
