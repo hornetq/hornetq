@@ -51,9 +51,30 @@ There is a script on this directory called perf-disk. This script will tell you 
 If you interrupt this script, you will see a file (/tmp/foo.dat) created on your disk, which is used to measure the performance.
 
 
+DISKTEST
+
+There is also an executable that performs direct libaio write emulating the same behaviour you should see on the Journal.
+
+To verify what is your maximum disk throughput execute disktest
+
+Usage: disktest<Platform> <directory> <number-of-files>
+
+example:
+chmod +x disktest
+./disktest32 /tmp 20A
+
+
+At the end of the execution you will see something like:
+
+Total time on write files = 198, Bytes/millisecond = 105916 
+
+disktest is also compiled by our build scripts. disktest.cpp is also a sample of how to make calls into libaio.
+
+
+
 DOCUMENTATION
 
-The User Manual, chapter 38 (Libaio Native Libraries) will provide more details about this
+The User Manual, chapter 38 (Libaio Native Libraries) will provide more details about our native libraries on libaio.
 
 
 
