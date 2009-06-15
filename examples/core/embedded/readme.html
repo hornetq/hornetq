@@ -19,9 +19,11 @@
      <ol>
         <li>Create the Configuration, and set the properties accordingly</li>
         <pre>
-         <code>Configuration configuration = new ConfigurationImpl();</code>
-         <code>configuration.setEnablePersistence(false);</code>
-         <code>configuration.setSecurityEnabled(false);</code></pre>
+         <code>Configuration configuration = new ConfigurationImpl();
+         configuration.setEnablePersistence(false);
+         configuration.setSecurityEnabled(false);
+         configuration.getAcceptorConfigurations().add(new TransportConfiguration(InVMAcceptorFactory.class.getName()));
+         </code></pre>
          
         <li>Create and start the server</li>
         <pre>
