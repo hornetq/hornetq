@@ -37,8 +37,6 @@ public interface ServerConsumer extends Consumer
 {
 	long getID();
 	
-	//void handleClose(Packet packet);
-	
 	void close() throws Exception;
 	
 	int getCountOfPendingDeliveries();
