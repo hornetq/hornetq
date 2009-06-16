@@ -23,9 +23,9 @@
 package org.jboss.messaging.tests.stress.journal.remote;
 
 import java.nio.ByteBuffer;
-import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicLong;
 
+import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.journal.LoadManager;
 import org.jboss.messaging.core.journal.PreparedTransactionInfo;
 import org.jboss.messaging.core.journal.RecordInfo;
@@ -76,7 +76,7 @@ public class RemoteJournalAppender
       }
       catch (Exception e)
       {
-         e.printStackTrace();
+         e.printStackTrace(System.out);
          System.exit(-1);
       }
       
@@ -142,7 +142,7 @@ public class RemoteJournalAppender
 
    public static JournalImpl createJournal(String journalType, String journalDir)
    {
-      JournalImpl journal = new JournalImpl(10485760, 2, getFactory(journalType, journalDir), "journaltst", "tst", 5000);
+      JournalImpl journal = new JournalImpl(10485760, 2, getFactory(journalType, journalDir), "journaltst", "tst", 500);
       return journal;
    }
    
@@ -151,7 +151,11 @@ public class RemoteJournalAppender
    {
       if (factoryType.equals("aio"))
       {
-         return new AIOSequentialFileFactory(directory);
+         return new AIOSequentialFileFactory(directory,
+                                             ConfigurationImpl.DEFAULT_JOURNAL_AIO_BUFFER_SIZE,
+                                             ConfigurationImpl.DEFAULT_JOURNAL_AIO_BUFFER_TIMEOUT,
+                                             ConfigurationImpl.DEFAULT_JOURNAL_AIO_FLUSH_SYNC,
+                                             false);
       }
       else
       {
@@ -216,7 +220,7 @@ public class RemoteJournalAppender
                   if (++transactionCounter == transactionSize)
                   {
                      System.out.println("Commit transaction " + transactionId);
-                     journal.appendCommitRecord(transactionId, false);
+                     journal.appendCommitRecord(transactionId, true);
                      transactionCounter = 0;
                      transactionId = nextID.incrementAndGet();
                   }
@@ -229,7 +233,7 @@ public class RemoteJournalAppender
    
             if (transactionCounter != 0)
             {
-               journal.appendCommitRecord(transactionId, false);
+               journal.appendCommitRecord(transactionId, true);
             }
             
             if (transactionSize == 0)
