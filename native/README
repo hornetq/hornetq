@@ -61,7 +61,7 @@ Usage: disktest<Platform> <directory> <number-of-files>
 
 example:
 chmod +x disktest
-./disktest32 /tmp 20A
+./disktest32 /tmp 20
 
 
 At the end of the execution you will see something like:
