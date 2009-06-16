@@ -541,9 +541,6 @@
    </target>
 
    <target name="build-native" depends="jar">
-      <exec dir="native" executable="make">
-         <arg line="clean"/>
-      </exec>
       <exec dir="native" executable="bash">
          <arg line="bootstrap"/>
       </exec>
