@@ -540,7 +540,7 @@
       </javac>
    </target>
 
-   <target name="build-native">
+   <target name="build-native" depends="jar">
       <exec dir="native" executable="make">
          <arg line="clean"/>
       </exec>
