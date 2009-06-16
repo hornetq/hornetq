@@ -112,11 +112,11 @@ public class RemoteJournalAppender
       
       
       LocalThreads threads[] = new LocalThreads[numberOfThreads];
-      final AtomicLong nextInteger = new AtomicLong();
+      final AtomicLong sequenceTransaction = new AtomicLong();
       
       for (int i = 0; i < numberOfThreads; i++)
       {
-         threads[i] = new LocalThreads(journal, numberOfElements, transactionSize, nextInteger);
+         threads[i] = new LocalThreads(journal, numberOfElements, transactionSize, sequenceTransaction);
          threads[i].start();
       }
 
