@@ -64,102 +64,112 @@ public class SymmetricClusterTest extends ClusterTestBase
    {
       return false;
    }
-      
-   public void testStopAllStartAll() throws Exception
+
+   public void testStopAllStartAll() throws Throwable
    {
-      setupCluster();
+      try
+      {
+         setupCluster();
 
-      startServers();
-      
-      log.info("********** started servers");
+         startServers();
 
-      setupSessionFactory(0, isNetty());
-      setupSessionFactory(1, isNetty());
-      setupSessionFactory(2, isNetty());
-      setupSessionFactory(3, isNetty());
-      setupSessionFactory(4, isNetty());
+         log.info("********** started servers");
 
-      createQueue(0, "queues.testaddress", "queue0", null, false);
-      createQueue(1, "queues.testaddress", "queue0", null, false);
-      createQueue(2, "queues.testaddress", "queue0", null, false);
-      createQueue(3, "queues.testaddress", "queue0", null, false);
-      createQueue(4, "queues.testaddress", "queue0", null, false);
+         setupSessionFactory(0, isNetty());
+         setupSessionFactory(1, isNetty());
+         setupSessionFactory(2, isNetty());
+         setupSessionFactory(3, isNetty());
+         setupSessionFactory(4, isNetty());
 
-      addConsumer(0, 0, "queue0", null);
-      addConsumer(1, 1, "queue0", null);
-      addConsumer(2, 2, "queue0", null);
-      addConsumer(3, 3, "queue0", null);
-      addConsumer(4, 4, "queue0", null);
+         createQueue(0, "queues.testaddress", "queue0", null, false);
+         createQueue(1, "queues.testaddress", "queue0", null, false);
+         createQueue(2, "queues.testaddress", "queue0", null, false);
+         createQueue(3, "queues.testaddress", "queue0", null, false);
+         createQueue(4, "queues.testaddress", "queue0", null, false);
 
-      waitForBindings(0, "queues.testaddress", 1, 1, true);
-      waitForBindings(1, "queues.testaddress", 1, 1, true);
-      waitForBindings(2, "queues.testaddress", 1, 1, true);
-      waitForBindings(3, "queues.testaddress", 1, 1, true);
-      waitForBindings(4, "queues.testaddress", 1, 1, true);
+         addConsumer(0, 0, "queue0", null);
+         addConsumer(1, 1, "queue0", null);
+         addConsumer(2, 2, "queue0", null);
+         addConsumer(3, 3, "queue0", null);
+         addConsumer(4, 4, "queue0", null);
 
-      waitForBindings(0, "queues.testaddress", 4, 4, false);
-      waitForBindings(1, "queues.testaddress", 4, 4, false);
-      waitForBindings(2, "queues.testaddress", 4, 4, false);
-      waitForBindings(3, "queues.testaddress", 4, 4, false);
-      waitForBindings(4, "queues.testaddress", 4, 4, false);
+         waitForBindings(0, "queues.testaddress", 1, 1, true);
+         waitForBindings(1, "queues.testaddress", 1, 1, true);
+         waitForBindings(2, "queues.testaddress", 1, 1, true);
+         waitForBindings(3, "queues.testaddress", 1, 1, true);
+         waitForBindings(4, "queues.testaddress", 1, 1, true);
 
-      send(0, "queues.testaddress", 10, false, null);
+         waitForBindings(0, "queues.testaddress", 4, 4, false);
+         waitForBindings(1, "queues.testaddress", 4, 4, false);
+         waitForBindings(2, "queues.testaddress", 4, 4, false);
+         waitForBindings(3, "queues.testaddress", 4, 4, false);
+         waitForBindings(4, "queues.testaddress", 4, 4, false);
 
-      verifyReceiveRoundRobinInSomeOrder(10, 0, 1, 2, 3, 4);
+         send(0, "queues.testaddress", 10, false, null);
 
-      this.verifyNotReceive(0, 1, 2, 3, 4);
+         verifyReceiveRoundRobinInSomeOrder(10, 0, 1, 2, 3, 4);
 
-      this.removeConsumer(0);
-      this.removeConsumer(1);
-      this.removeConsumer(2);
-      this.removeConsumer(3);
-      this.removeConsumer(4);
+         this.verifyNotReceive(0, 1, 2, 3, 4);
 
-      this.closeAllSessionFactories();
+         this.removeConsumer(0);
+         this.removeConsumer(1);
+         this.removeConsumer(2);
+         this.removeConsumer(3);
+         this.removeConsumer(4);
 
-      log.info("** stopping servers");
-      
-      stopServers(0, 1, 2, 3, 4);
+         this.closeAllSessionFactories();
 
-      startServers();
+         log.info("** stopping servers");
 
-      setupSessionFactory(0, isNetty());
-      setupSessionFactory(1, isNetty());
-      setupSessionFactory(2, isNetty());
-      setupSessionFactory(3, isNetty());
-      setupSessionFactory(4, isNetty());
+         stopServers(0, 1, 2, 3, 4);
 
-      createQueue(0, "queues.testaddress", "queue0", null, false);
-      createQueue(1, "queues.testaddress", "queue0", null, false);
-      createQueue(2, "queues.testaddress", "queue0", null, false);
-      createQueue(3, "queues.testaddress", "queue0", null, false);
-      createQueue(4, "queues.testaddress", "queue0", null, false);
+         startServers();
 
-      addConsumer(0, 0, "queue0", null);
-      addConsumer(1, 1, "queue0", null);
-      addConsumer(2, 2, "queue0", null);
-      addConsumer(3, 3, "queue0", null);
-      addConsumer(4, 4, "queue0", null);
+         setupSessionFactory(0, isNetty());
+         setupSessionFactory(1, isNetty());
+         setupSessionFactory(2, isNetty());
+         setupSessionFactory(3, isNetty());
+         setupSessionFactory(4, isNetty());
 
-      waitForBindings(0, "queues.testaddress", 1, 1, true);
-      waitForBindings(1, "queues.testaddress", 1, 1, true);
-      waitForBindings(2, "queues.testaddress", 1, 1, true);
-      waitForBindings(3, "queues.testaddress", 1, 1, true);
-      waitForBindings(4, "queues.testaddress", 1, 1, true);
+         createQueue(0, "queues.testaddress", "queue0", null, false);
+         createQueue(1, "queues.testaddress", "queue0", null, false);
+         createQueue(2, "queues.testaddress", "queue0", null, false);
+         createQueue(3, "queues.testaddress", "queue0", null, false);
+         createQueue(4, "queues.testaddress", "queue0", null, false);
 
-      waitForBindings(0, "queues.testaddress", 4, 4, false);
-      waitForBindings(1, "queues.testaddress", 4, 4, false);
-      waitForBindings(2, "queues.testaddress", 4, 4, false);
-      waitForBindings(3, "queues.testaddress", 4, 4, false);
-      waitForBindings(4, "queues.testaddress", 4, 4, false);
+         addConsumer(0, 0, "queue0", null);
+         addConsumer(1, 1, "queue0", null);
+         addConsumer(2, 2, "queue0", null);
+         addConsumer(3, 3, "queue0", null);
+         addConsumer(4, 4, "queue0", null);
 
-      send(0, "queues.testaddress", 10, false, null);
+         waitForBindings(0, "queues.testaddress", 1, 1, true);
+         waitForBindings(1, "queues.testaddress", 1, 1, true);
+         waitForBindings(2, "queues.testaddress", 1, 1, true);
+         waitForBindings(3, "queues.testaddress", 1, 1, true);
+         waitForBindings(4, "queues.testaddress", 1, 1, true);
 
-      verifyReceiveRoundRobinInSomeOrder(10, 0, 1, 2, 3, 4);
+         waitForBindings(0, "queues.testaddress", 4, 4, false);
+         waitForBindings(1, "queues.testaddress", 4, 4, false);
+         waitForBindings(2, "queues.testaddress", 4, 4, false);
+         waitForBindings(3, "queues.testaddress", 4, 4, false);
+         waitForBindings(4, "queues.testaddress", 4, 4, false);
 
-      this.verifyNotReceive(0, 1, 2, 3, 4);
+         send(0, "queues.testaddress", 10, false, null);
+
+         verifyReceiveRoundRobinInSomeOrder(10, 0, 1, 2, 3, 4);
+
+         this.verifyNotReceive(0, 1, 2, 3, 4);
+
+      }
+      catch (Throwable e)
+      {
+         System.out.println(threadDump("SymmetricClusterTest::testStopAllStartAll"));
+         throw e;
+      }
+
    }
-   
+
    public void testBasicRoundRobin() throws Exception
    {
       setupCluster();
@@ -586,7 +596,7 @@ public class SymmetricClusterTest extends ClusterTestBase
    public void testMixtureLoadBalancedAndNonLoadBalancedQueuesAddQueuesAndConsumersBeforeAllServersAreStarted() throws Exception
    {
       setupCluster();
-      
+
       startServers(0);
 
       setupSessionFactory(0, isNetty());
@@ -1257,7 +1267,7 @@ public class SymmetricClusterTest extends ClusterTestBase
 
       send(0, "queues.testaddress", 10, false, null);
 
-      verifyReceiveAll(10, 1, 2, 3, 4);     
+      verifyReceiveAll(10, 1, 2, 3, 4);
    }
 
    public void testNoLocalQueueLoadBalancedQueues() throws Exception
@@ -1303,7 +1313,7 @@ public class SymmetricClusterTest extends ClusterTestBase
       setupCluster();
 
       startServers();
-       
+
       setupSessionFactory(0, isNetty());
       setupSessionFactory(1, isNetty());
       setupSessionFactory(2, isNetty());
@@ -1387,7 +1397,7 @@ public class SymmetricClusterTest extends ClusterTestBase
       waitForBindings(4, "queues.testaddress", 7, 7, true);
 
       waitForBindings(0, "queues.testaddress", 23, 23, false);
-      waitForBindings(1, "queues.testaddress", 23, 23, false); 
+      waitForBindings(1, "queues.testaddress", 23, 23, false);
       waitForBindings(2, "queues.testaddress", 23, 23, false);
       waitForBindings(3, "queues.testaddress", 22, 22, false);
       waitForBindings(4, "queues.testaddress", 21, 21, false);
@@ -1415,14 +1425,14 @@ public class SymmetricClusterTest extends ClusterTestBase
       removeConsumer(18);
       removeConsumer(21);
       removeConsumer(26);
-   
+
       closeSessionFactory(0);
       closeSessionFactory(3);
-      
+
       stopServers(0, 3);
-      
+
       startServers(3, 0);
-      
+
       setupSessionFactory(0, isNetty());
       setupSessionFactory(3, isNetty());
 
@@ -1513,7 +1523,7 @@ public class SymmetricClusterTest extends ClusterTestBase
       setupServer(3, isFileStorage(), isNetty());
       setupServer(4, isFileStorage(), isNetty());
    }
-   
+
    protected void startServers() throws Exception
    {
       startServers(0, 1, 2, 3, 4);
