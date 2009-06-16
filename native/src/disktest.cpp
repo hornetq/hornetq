@@ -133,7 +133,7 @@ int main(int arg, char * param[])
 
       for (long position = 0 ; position < fileSize; position += bufferSize)
       {
-    	writes++;
+    		writes++;
 		struct iocb * iocb = new struct iocb();
 		::io_prep_pwrite(iocb, handle, preAllocBuffer, bufferSize, position);
 		iocb->data = (void *)position;
