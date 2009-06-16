@@ -2944,30 +2944,30 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
       createJournal();
       startJournal();
       load();
+      
+      int transactionID = 0;
 
       for (int i = 0; i < 100; i++)
       {
          add(i);
          if (i % 10 == 0 && i > 0)
          {
-            System.out.println("new file at " + i);
             journal.forceMoveNextFile();
          }
          update(i);
 
       }
 
-      for (int i = 0; i < 100; i++)
+      for (int i = 100; i < 200; i++)
       {
 
-         addTx(i, i + 100);
+         addTx(transactionID, i);
          updateTx(i + 100);
          if (i % 10 == 0 && i > 0)
          {
-            System.out.println("new file at " + i);
             journal.forceMoveNextFile();
          }
-         commit(i);
+         commit(transactionID++);
          update(i);
       }
 
@@ -2986,22 +2986,44 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
 
       journal.forceMoveNextFile();
 
-      for (int i = 0; i < 200; i++)
+      for (int i = 0; i < 100; i++)
       {
          delete(i);
       }
 
-      journal.forceMoveNextFile();
+      for (int i = 100; i < 200; i++)
+      {
+         updateTx(transactionID, i);
+      }
 
+      journal.forceMoveNextFile();
+      
+      commit(transactionID++);
+      
+      for (int i = 100; i < 200; i++)
+      {
+         updateTx(transactionID, i);
+         deleteTx(transactionID, i);
+      }
+      
+      commit(transactionID++);
+      
+ 
       System.out.println("Before reclaim ****************************");
       System.out.println(journal.debug());
       System.out.println("*****************************************");
 
-      journal.checkAndReclaimFiles();
+      stopJournal();
+      createJournal();
+      startJournal();
+      loadAndCheck();
 
       System.out.println("After reclaim ****************************");
       System.out.println(journal.debug());
       System.out.println("*****************************************");
+      
+      journal.forceMoveNextFile();
+      journal.checkAndReclaimFiles();
 
       assertEquals(0, journal.getDataFilesCount());
 

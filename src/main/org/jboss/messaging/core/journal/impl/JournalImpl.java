@@ -45,6 +45,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.jboss.messaging.core.buffers.ChannelBuffer;
@@ -279,7 +280,7 @@ public class JournalImpl implements TestableJournal
       bb.writeByte(recordType);
       record.encode(bb);
       bb.writeInt(size);
-      
+
       IOCallback callback = getSyncCallback(sync);
 
       lock.acquire();
@@ -293,7 +294,7 @@ public class JournalImpl implements TestableJournal
       {
          lock.release();
       }
-      
+
       if (callback != null)
       {
          callback.waitCompletion();
@@ -331,9 +332,8 @@ public class JournalImpl implements TestableJournal
       record.encode(bb);
       bb.writeInt(size);
 
-      
       IOCallback callback = getSyncCallback(sync);
-      
+
       lock.acquire();
       try
       {
@@ -345,7 +345,7 @@ public class JournalImpl implements TestableJournal
       {
          lock.release();
       }
-      
+
       if (callback != null)
       {
          callback.waitCompletion();
@@ -374,7 +374,7 @@ public class JournalImpl implements TestableJournal
       bb.writeInt(-1); // skip ID part
       bb.writeLong(id);
       bb.writeInt(size);
-      
+
       IOCallback callback = getSyncCallback(sync);
 
       lock.acquire();
@@ -388,14 +388,17 @@ public class JournalImpl implements TestableJournal
       {
          lock.release();
       }
-      
+
       if (callback != null)
       {
          callback.waitCompletion();
       }
    }
 
-   public void appendAddRecordTransactional(final long txID, final long id, final byte recordType, final byte[] record,
+   public void appendAddRecordTransactional(final long txID,
+                                            final long id,
+                                            final byte recordType,
+                                            final byte[] record,
                                             final boolean sync) throws Exception
    {
       appendAddRecordTransactional(txID, id, recordType, new ByteArrayEncoding(record), sync);
@@ -491,13 +494,14 @@ public class JournalImpl implements TestableJournal
       }
    }
 
-   public void appendDeleteRecordTransactional(final long txID, final long id, final byte[] record,
-                                               final boolean sync) throws Exception
+   public void appendDeleteRecordTransactional(final long txID, final long id, final byte[] record, final boolean sync) throws Exception
    {
       appendDeleteRecordTransactional(txID, id, new ByteArrayEncoding(record), sync);
    }
 
-   public void appendDeleteRecordTransactional(final long txID, final long id, final EncodingSupport record,
+   public void appendDeleteRecordTransactional(final long txID,
+                                               final long id,
+                                               final EncodingSupport record,
                                                final boolean sync) throws Exception
    {
       if (state != STATE_LOADED)
@@ -535,8 +539,7 @@ public class JournalImpl implements TestableJournal
       }
    }
 
-   public void appendDeleteRecordTransactional(final long txID, final long id,
-                                               final boolean sync) throws Exception
+   public void appendDeleteRecordTransactional(final long txID, final long id, final boolean sync) throws Exception
    {
       if (state != STATE_LOADED)
       {
@@ -819,490 +822,300 @@ public class JournalImpl implements TestableJournal
 
       fileFactory.controlBuffersLifeCycle(false);
 
-      Map<Long, TransactionHolder> transactions = new LinkedHashMap<Long, TransactionHolder>();
+      final Map<Long, TransactionHolder> transactions = new LinkedHashMap<Long, TransactionHolder>();
 
-      List<JournalFile> orderedFiles = orderFiles();
+      final List<JournalFile> orderedFiles = orderFiles();
 
       int lastDataPos = SIZE_HEADER;
 
       long maxID = -1;
 
-      for (JournalFile file : orderedFiles)
+      for (final JournalFile file : orderedFiles)
       {
-         ByteBuffer wholeFileBuffer = fileFactory.newBuffer(fileSize);
+         trace("Loading file " + file.getFile().getFileName());
 
-         file.getFile().open(1);
+         final AtomicBoolean hasData = new AtomicBoolean(false);
 
-         int bytesRead = file.getFile().read(wholeFileBuffer);
-
-         if (bytesRead != fileSize)
+         int resultLastPost = readJournalFile(file, new JournalReader()
          {
-            // FIXME - We should extract everything we can from this file
-            // and then we shouldn't ever reuse this file on reclaiming (instead
-            // reclaim on different size files would aways throw the file away)
-            // rather than throw ISE!
-            // We don't want to leave the user with an unusable system
-            throw new IllegalStateException("File is wrong size " + bytesRead +
-                                            " expected " +
-                                            fileSize +
-                                            " : " +
-                                            file.getFile().getFileName());
-         }
 
-         wholeFileBuffer.position(0);
-
-         // First long is the ordering timestamp, we just jump its position
-         wholeFileBuffer.position(SIZE_HEADER);
-
-         boolean hasData = false;
-
-         while (wholeFileBuffer.hasRemaining())
-         {
-            final int pos = wholeFileBuffer.position();
-
-            byte recordType = wholeFileBuffer.get();
-
-            if (recordType < ADD_RECORD || recordType > ROLLBACK_RECORD)
+            public void addRecord(RecordInfo info) throws Exception
             {
-               // I - We scan for any valid record on the file. If a hole
-               // happened on the middle of the file we keep looking until all
-               // the possibilities are gone
-               continue;
+               if (trace)
+               {
+                  trace("AddRecord: " + info);
+               }
+               hasData.set(true);
+
+               loadManager.addRecord(info);
+
+               posFilesMap.put(info.id, new PosFiles(file));
+               
+               PosFiles file = posFilesMap.get(info.id);
             }
 
-            if (isInvalidSize(wholeFileBuffer.position(), SIZE_INT))
+            public void updateRecord(RecordInfo info) throws Exception
             {
-               hasData = true;
-               wholeFileBuffer.position(pos + 1);
-               // II - Ignore this record, lets keep looking
-               continue;
+               if (trace)
+               {
+                  trace("UpdateRecord: " + info);
+               }
+               hasData.set(true);
+
+               loadManager.updateRecord(info);
+
+               PosFiles posFiles = posFilesMap.get(info.id);
+
+               if (posFiles != null)
+               {
+                  // It's legal for this to be null. The file(s) with the may
+                  // have been deleted
+                  // just leaving some updates in this file
+
+                  posFiles.addUpdateFile(file);
+               }
             }
 
-            // III - Every record has the file-id.
-            // This is what supports us from not re-filling the whole file
-            int readFileId = wholeFileBuffer.getInt();
-
-            long transactionID = 0;
-
-            if (isTransaction(recordType))
+            public void deleteRecord(long recordID) throws Exception
             {
-               if (isInvalidSize(wholeFileBuffer.position(), SIZE_LONG))
+               if (trace)
                {
-                  wholeFileBuffer.position(pos + 1);
-                  hasData = true;
-                  continue;
+                  trace("DeleteRecord: " + recordID);
                }
+               hasData.set(true);
 
-               transactionID = wholeFileBuffer.getLong();
+               loadManager.deleteRecord(recordID);
+
+               PosFiles posFiles = posFilesMap.remove(recordID);
+
+               if (posFiles != null)
+               {
+                  posFiles.addDelete(file);
+               }
             }
 
-            long recordID = 0;
-
-            if (!isCompleteTransaction(recordType))
+            public void updateRecordTX(long transactionID, RecordInfo info) throws Exception
             {
-               if (isInvalidSize(wholeFileBuffer.position(), SIZE_LONG))
-               {
-                  wholeFileBuffer.position(pos + 1);
-                  hasData = true;
-                  continue;
-               }
-
-               recordID = wholeFileBuffer.getLong();
-
-               maxID = Math.max(maxID, recordID);
+               addRecordTX(transactionID, info);
             }
 
-            // We use the size of the record to validate the health of the
-            // record.
-            // (V) We verify the size of the record
-
-            // The variable record portion used on Updates and Appends
-            int variableSize = 0;
-
-            // Used to hold extra data on transaction prepares
-            int preparedTransactionExtraDataSize = 0;
-
-            byte userRecordType = 0;
-
-            byte record[] = null;
-
-            if (isContainsBody(recordType))
+            public void addRecordTX(long transactionID, RecordInfo info) throws Exception
             {
-               if (isInvalidSize(wholeFileBuffer.position(), SIZE_INT))
+
+               if (trace)
                {
-                  wholeFileBuffer.position(pos + 1);
-                  hasData = true;
-                  continue;
+                  trace((info.isUpdate ? "updateRecordTX: " : "addRecordTX: ") + info + ", txid = " + transactionID);
                }
 
-               variableSize = wholeFileBuffer.getInt();
+               hasData.set(true);
 
-               if (isInvalidSize(wholeFileBuffer.position(), variableSize))
+               TransactionHolder tx = transactions.get(transactionID);
+
+               if (tx == null)
                {
-                  wholeFileBuffer.position(pos + 1);
-                  continue;
+                  tx = new TransactionHolder(transactionID);
+
+                  transactions.put(transactionID, tx);
                }
 
-               if (recordType != DELETE_RECORD_TX)
+               tx.recordInfos.add(info);
+
+               JournalTransaction tnp = transactionInfos.get(transactionID);
+
+               if (tnp == null)
                {
-                  userRecordType = wholeFileBuffer.get();
+                  tnp = new JournalTransaction();
+
+                  transactionInfos.put(transactionID, tnp);
                }
 
-               record = new byte[variableSize];
-
-               wholeFileBuffer.get(record);
+               tnp.addPositive(file, info.id);
             }
 
-            if (recordType == PREPARE_RECORD || recordType == COMMIT_RECORD)
+            public void deleteRecordTX(long transactionID, RecordInfo info) throws Exception
             {
-               if (recordType == PREPARE_RECORD)
+               if (trace)
                {
-                  // Add the variable size required for preparedTransactions
-                  preparedTransactionExtraDataSize = wholeFileBuffer.getInt();
+                  trace("DeleteRecordTX: " + transactionID + " info = " + info);
                }
-               // Both commit and record contain the recordSummary, and this is
-               // used to calculate the record-size on both record-types
-               variableSize += wholeFileBuffer.getInt() * SIZE_INT * 2;
+
+               hasData.set(true);
+
+               TransactionHolder tx = transactions.get(transactionID);
+
+               if (tx == null)
+               {
+                  tx = new TransactionHolder(transactionID);
+
+                  transactions.put(transactionID, tx);
+               }
+
+               tx.recordsToDelete.add(info);
+
+               JournalTransaction tnp = transactionInfos.get(transactionID);
+
+               if (tnp == null)
+               {
+                  tnp = new JournalTransaction();
+
+                  transactionInfos.put(transactionID, tnp);
+               }
+
+               tnp.addNegative(file, info.id);
+
             }
 
-            int recordSize = getRecordSize(recordType);
-
-            // VI - this is completing V, We will validate the size at the end
-            // of the record,
-            // But we avoid buffer overflows by damaged data
-            if (isInvalidSize(pos, recordSize + variableSize + preparedTransactionExtraDataSize))
+            public void prepareRecord(long transactionID, byte[] extraData, Pair<Integer, Integer>[] summary) throws Exception
             {
-               // Avoid a buffer overflow caused by damaged data... continue
-               // scanning for more records...
-               log.debug("Record at position " + pos +
-                        " recordType = " + recordType +
-                        " file:" + file.getFile().getFileName() +
-                        " recordSize: " + recordSize + 
-                        " variableSize: " + variableSize +
-                        " preparedTransactionExtraDataSize: " + preparedTransactionExtraDataSize + 
-                        " is corrupted and it is being ignored (II)");
-               // If a file has damaged records, we make it a dataFile, and the
-               // next reclaiming will fix it
-               hasData = true;
-               wholeFileBuffer.position(pos + 1);
+               if (trace)
+               {
+                  trace("prepareRecordTX: txid = " + transactionID);
+               }
 
-               continue;
+               hasData.set(true);
+
+               TransactionHolder tx = transactions.get(transactionID);
+
+               if (tx == null)
+               {
+                  // The user could choose to prepare empty transactions
+                  tx = new TransactionHolder(transactionID);
+
+                  transactions.put(transactionID, tx);
+               }
+
+               tx.prepared = true;
+
+               tx.extraData = extraData;
+
+               JournalTransaction journalTransaction = transactionInfos.get(transactionID);
+
+               if (journalTransaction == null)
+               {
+                  journalTransaction = new JournalTransaction();
+
+                  transactionInfos.put(transactionID, journalTransaction);
+               }
+
+               boolean healthy = checkTransactionHealth(journalTransaction, orderedFiles, summary);
+
+               if (healthy)
+               {
+                  journalTransaction.prepare(file);
+               }
+               else
+               {
+                  log.warn("Prepared transaction " + transactionID + " wasn't considered completed, it will be ignored");
+                  tx.invalid = true;
+               }
             }
 
-            int oldPos = wholeFileBuffer.position();
-
-            wholeFileBuffer.position(pos + variableSize + recordSize + preparedTransactionExtraDataSize - SIZE_INT);
-
-            int checkSize = wholeFileBuffer.getInt();
-
-            // VII - The checkSize at the end has to match with the size
-            // informed at the beggining.
-            // This is like testing a hash for the record. (We could replace the
-            // checkSize by some sort of calculated hash)
-            if (checkSize != variableSize + recordSize + preparedTransactionExtraDataSize)
+            public void commitRecord(long transactionID, Pair<Integer, Integer>[] summary) throws Exception
             {
-               log.debug("Record at position " + pos +
-                        " recordType = " +
-                        recordType +
-                        " file:" +
-                        file.getFile().getFileName() +
-                        " is corrupted and it is being ignored (III)");
-
-               // If a file has damaged records, we make it a dataFile, and the
-               // next reclaiming will fix it
-               hasData = true;
-
-               wholeFileBuffer.position(pos + SIZE_BYTE);
-
-               continue;
-            }
-
-            // This record is from a previous file-usage. The file was
-            // reused and we need to ignore this record
-            if (readFileId != file.getOrderingID())
-            {
-               // If a file has damaged records, we make it a dataFile, and the
-               // next reclaiming will fix it
-               hasData = true;
-
-               continue;
-            }
-
-            wholeFileBuffer.position(oldPos);
-
-            // At this point everything is checked. So we relax and just load
-            // the data now.
-
-            switch (recordType)
-            {
-               case ADD_RECORD:
+               if (trace)
                {
-                  loadManager.addRecord(new RecordInfo(recordID, userRecordType, record, false));
-
-                  posFilesMap.put(recordID, new PosFiles(file));
-
-                  hasData = true;
-
-                  break;
+                  trace("commitRecord: txid = " + transactionID);
                }
-               case UPDATE_RECORD:
+
+               TransactionHolder tx = transactions.remove(transactionID);
+
+               // The commit could be alone on its own journal-file and the
+               // whole transaction body was reclaimed but not the
+               // commit-record
+               // So it is completely legal to not find a transaction at this
+               // point
+               // If we can't find it, we assume the TX was reclaimed and we
+               // ignore this
+               if (tx != null)
                {
-                  loadManager.updateRecord(new RecordInfo(recordID, userRecordType, record, true));
-
-                  hasData = true;
-
-                  PosFiles posFiles = posFilesMap.get(recordID);
-
-                  if (posFiles != null)
-                  {
-                     // It's legal for this to be null. The file(s) with the may
-                     // have been deleted
-                     // just leaving some updates in this file
-
-                     posFiles.addUpdateFile(file);
-                  }
-
-                  break;
-               }
-               case DELETE_RECORD:
-               {
-                  loadManager.deleteRecord(recordID);
-
-                  hasData = true;
-
-                  PosFiles posFiles = posFilesMap.remove(recordID);
-
-                  if (posFiles != null)
-                  {
-                     posFiles.addDelete(file);
-                  }
-
-                  break;
-               }
-               case ADD_RECORD_TX:
-               case UPDATE_RECORD_TX:
-               {
-                  TransactionHolder tx = transactions.get(transactionID);
-
-                  if (tx == null)
-                  {
-                     tx = new TransactionHolder(transactionID);
-
-                     transactions.put(transactionID, tx);
-                  }
-
-                  tx.recordInfos.add(new RecordInfo(recordID, userRecordType, record, recordType == UPDATE_RECORD_TX));
-
-                  JournalTransaction tnp = transactionInfos.get(transactionID);
-
-                  if (tnp == null)
-                  {
-                     tnp = new JournalTransaction();
-
-                     transactionInfos.put(transactionID, tnp);
-                  }
-
-                  tnp.addPositive(file, recordID);
-
-                  hasData = true;
-
-                  break;
-               }
-               case DELETE_RECORD_TX:
-               {
-                  TransactionHolder tx = transactions.get(transactionID);
-
-                  if (tx == null)
-                  {
-                     tx = new TransactionHolder(transactionID);
-
-                     transactions.put(transactionID, tx);
-                  }
-
-                  tx.recordsToDelete.add(new RecordInfo(recordID, (byte)0, record, true));
-
-                  JournalTransaction tnp = transactionInfos.get(transactionID);
-
-                  if (tnp == null)
-                  {
-                     tnp = new JournalTransaction();
-
-                     transactionInfos.put(transactionID, tnp);
-                  }
-
-                  tnp.addNegative(file, recordID);
-
-                  hasData = true;
-
-                  break;
-               }
-               case PREPARE_RECORD:
-               {
-                  TransactionHolder tx = transactions.get(transactionID);
-
-                  if (tx == null)
-                  {
-                     // The user could choose to prepare empty transactions
-                     tx = new TransactionHolder(transactionID);
-
-                     transactions.put(transactionID, tx);
-                  }
-
-                  byte extraData[] = new byte[preparedTransactionExtraDataSize];
-
-                  wholeFileBuffer.get(extraData);
-
-                  // Pair <FileID, NumberOfElements>
-                  Pair<Integer, Integer>[] recordedSummary = readTransactionalElementsSummary(variableSize,
-                                                                                              wholeFileBuffer);
-
-                  tx.prepared = true;
-
-                  tx.extraData = extraData;
-
-                  JournalTransaction journalTransaction = transactionInfos.get(transactionID);
+                  JournalTransaction journalTransaction = transactionInfos.remove(transactionID);
 
                   if (journalTransaction == null)
                   {
-                     journalTransaction = new JournalTransaction();
-
-                     transactionInfos.put(transactionID, journalTransaction);
+                     throw new IllegalStateException("Cannot find tx " + transactionID);
                   }
 
-                  boolean healthy = checkTransactionHealth(journalTransaction, orderedFiles, recordedSummary);
+                  boolean healthy = checkTransactionHealth(journalTransaction, orderedFiles, summary);
 
                   if (healthy)
                   {
-                     journalTransaction.prepare(file);
+                     for (RecordInfo txRecord : tx.recordInfos)
+                     {
+                        if (txRecord.isUpdate)
+                        {
+                           loadManager.updateRecord(txRecord);
+                        }
+                        else
+                        {
+                           loadManager.addRecord(txRecord);
+                        }
+                     }
+
+                     for (RecordInfo deleteValue : tx.recordsToDelete)
+                     {
+                        loadManager.deleteRecord(deleteValue.id);
+                     }
+
+                     journalTransaction.commit(file);
                   }
                   else
                   {
-                     log.warn("Prepared transaction " + transactionID +
-                              " wasn't considered completed, it will be ignored");
-                     tx.invalid = true;
+                     log.warn("Transaction " + transactionID +
+                              " is missing elements so the transaction is being ignored");
+
+                     journalTransaction.forget();
                   }
 
-                  hasData = true;
-
-                  break;
+                  hasData.set(true);
                }
-               case COMMIT_RECORD:
-               {
-                  TransactionHolder tx = transactions.remove(transactionID);
 
-                  // We need to read it even if transaction was not found, or
-                  // the reading checks would fail
-                  // Pair <OrderId, NumberOfElements>
-                  Pair<Integer, Integer>[] recordedSummary = readTransactionalElementsSummary(variableSize,
-                                                                                              wholeFileBuffer);
-
-                  // The commit could be alone on its own journal-file and the
-                  // whole transaction body was reclaimed but not the
-                  // commit-record
-                  // So it is completely legal to not find a transaction at this
-                  // point
-                  // If we can't find it, we assume the TX was reclaimed and we
-                  // ignore this
-                  if (tx != null)
-                  {
-                     JournalTransaction journalTransaction = transactionInfos.remove(transactionID);
-
-                     if (journalTransaction == null)
-                     {
-                        throw new IllegalStateException("Cannot find tx " + transactionID);
-                     }
-
-                     boolean healthy = checkTransactionHealth(journalTransaction, orderedFiles, recordedSummary);
-
-                     if (healthy)
-                     {
-                        for (RecordInfo txRecord : tx.recordInfos)
-                        {
-                           if (txRecord.isUpdate)
-                           {
-                              loadManager.updateRecord(txRecord);
-                           }
-                           else
-                           {
-                              loadManager.addRecord(txRecord);
-                           }
-                        }
-
-                        for (RecordInfo deleteValue : tx.recordsToDelete)
-                        {
-                           loadManager.deleteRecord(deleteValue.id);
-                        }
-
-                        journalTransaction.commit(file);
-                     }
-                     else
-                     {
-                        log.warn("Transaction " + transactionID +
-                                 " is missing elements so the transaction is being ignored");
-
-                        journalTransaction.forget();
-                     }
-
-                     hasData = true;
-                  }
-
-                  break;
-               }
-               case ROLLBACK_RECORD:
-               {
-                  TransactionHolder tx = transactions.remove(transactionID);
-
-                  // The rollback could be alone on its own journal-file and the
-                  // whole transaction body was reclaimed but the commit-record
-                  // So it is completely legal to not find a transaction at this
-                  // point
-                  if (tx != null)
-                  {
-                     JournalTransaction tnp = transactionInfos.remove(transactionID);
-
-                     if (tnp == null)
-                     {
-                        throw new IllegalStateException("Cannot find tx " + transactionID);
-                     }
-
-                     // There is no need to validate summaries/holes on
-                     // Rollbacks.. We will ignore the data anyway.
-                     tnp.rollback(file);
-
-                     hasData = true;
-                  }
-
-                  break;
-               }
-               default:
-               {
-                  throw new IllegalStateException("Journal " + file.getFile().getFileName() +
-                                                  " is corrupt, invalid record type " +
-                                                  recordType);
-               }
             }
 
-            checkSize = wholeFileBuffer.getInt();
-
-            // This is a sanity check about the loading code itself.
-            // If this checkSize doesn't match, it means the reading method is
-            // not doing what it was supposed to do
-            if (checkSize != variableSize + recordSize + preparedTransactionExtraDataSize)
+            public void rollbackRecord(long transactionID) throws Exception
             {
-               throw new IllegalStateException("Internal error on loading file. Position doesn't match with checkSize, file = " + file.getFile() +
-                                               ", pos = " +
-                                               pos);
+               if (trace)
+               {
+                  trace("rollbackRecord: txid = " + transactionID);
+               }
+
+               TransactionHolder tx = transactions.remove(transactionID);
+
+               // The rollback could be alone on its own journal-file and the
+               // whole transaction body was reclaimed but the commit-record
+               // So it is completely legal to not find a transaction at this
+               // point
+               if (tx != null)
+               {
+                  JournalTransaction tnp = transactionInfos.remove(transactionID);
+
+                  if (tnp == null)
+                  {
+                     throw new IllegalStateException("Cannot find tx " + transactionID);
+                  }
+
+                  // There is no need to validate summaries/holes on
+                  // Rollbacks.. We will ignore the data anyway.
+                  tnp.rollback(file);
+
+                  hasData.set(true);
+               }
             }
 
-            lastDataPos = wholeFileBuffer.position();
-         }
+            public void markAsDataFile(JournalFile file)
+            {
+               if (trace)
+               {
+                  trace("Marking " + file + " as data file");
+               }
 
-         fileFactory.releaseBuffer(wholeFileBuffer);
+               hasData.set(true);
+            }
 
-         file.getFile().close();
+         });
 
-         if (hasData)
+         if (hasData.get())
          {
+            lastDataPos = resultLastPost;
             dataFiles.add(file);
          }
          else
@@ -1354,7 +1167,7 @@ public class JournalImpl implements TestableJournal
 
          openFile(currentFile);
       }
-      
+
       fileFactory.activate(currentFile.getFile());
 
       pushOpenedFile();
@@ -1463,7 +1276,7 @@ public class JournalImpl implements TestableJournal
    /** Method for use on testcases.
     *  It will call waitComplete on every transaction, so any assertions on the file system will be correct after this */
    public void debugWait() throws Exception
-   {         
+   {
       for (TransactionCallback callback : transactionCallbacks.values())
       {
          callback.waitCompletion();
@@ -1583,7 +1396,7 @@ public class JournalImpl implements TestableJournal
          lock.release();
       }
    }
-   
+
    public void perfBlast(final int pages) throws Exception
    {
       new PerfBlast(pages).start();
@@ -1605,7 +1418,7 @@ public class JournalImpl implements TestableJournal
       }
 
       filesExecutor = Executors.newSingleThreadExecutor();
-      
+
       fileFactory.start();
 
       state = STATE_STARTED;
@@ -1680,13 +1493,13 @@ public class JournalImpl implements TestableJournal
       SequentialFile sf = file.getFile();
 
       sf.open(1);
-      
+
       sf.position(0);
 
       ByteBuffer bb = fileFactory.newBuffer(SIZE_INT);
-      
+
       bb.putInt(newOrderingID);
-      
+
       bb.rewind();
 
       sf.write(bb, true);
@@ -1700,6 +1513,317 @@ public class JournalImpl implements TestableJournal
       return jf;
    }
 
+   
+   private int readJournalFile(JournalFile file, JournalReader reader) throws Exception
+   {
+      ByteBuffer wholeFileBuffer = fileFactory.newBuffer(fileSize);
+
+      file.getFile().open(1);
+
+      int bytesRead = file.getFile().read(wholeFileBuffer);
+
+      if (bytesRead != fileSize)
+      {
+         // FIXME - We should extract everything we can from this file
+         // and then we shouldn't ever reuse this file on reclaiming (instead
+         // reclaim on different size files would aways throw the file away)
+         // rather than throw ISE!
+         // We don't want to leave the user with an unusable system
+         throw new IllegalStateException("File is wrong size " + bytesRead +
+                                         " expected " +
+                                         fileSize +
+                                         " : " +
+                                         file.getFile().getFileName());
+      }
+
+      wholeFileBuffer.position(0);
+
+      // First long is the ordering timestamp, we just jump its position
+      wholeFileBuffer.position(SIZE_HEADER);
+
+      int lastDataPos = SIZE_HEADER;
+
+      while (wholeFileBuffer.hasRemaining())
+      {
+         final int pos = wholeFileBuffer.position();
+
+         byte recordType = wholeFileBuffer.get();
+
+         if (recordType < ADD_RECORD || recordType > ROLLBACK_RECORD)
+         {
+            // I - We scan for any valid record on the file. If a hole
+            // happened on the middle of the file we keep looking until all
+            // the possibilities are gone
+            continue;
+         }
+
+         if (isInvalidSize(wholeFileBuffer.position(), SIZE_INT))
+         {
+            reader.markAsDataFile(file);
+
+            wholeFileBuffer.position(pos + 1);
+            // II - Ignore this record, lets keep looking
+            continue;
+         }
+
+         // III - Every record has the file-id.
+         // This is what supports us from not re-filling the whole file
+         int readFileId = wholeFileBuffer.getInt();
+
+         long transactionID = 0;
+
+         if (isTransaction(recordType))
+         {
+            if (isInvalidSize(wholeFileBuffer.position(), SIZE_LONG))
+            {
+               wholeFileBuffer.position(pos + 1);
+               reader.markAsDataFile(file);
+               continue;
+            }
+
+            transactionID = wholeFileBuffer.getLong();
+         }
+
+         long recordID = 0;
+
+         if (!isCompleteTransaction(recordType))
+         {
+            if (isInvalidSize(wholeFileBuffer.position(), SIZE_LONG))
+            {
+               wholeFileBuffer.position(pos + 1);
+               reader.markAsDataFile(file);
+               continue;
+            }
+
+            recordID = wholeFileBuffer.getLong();
+         }
+
+         // We use the size of the record to validate the health of the
+         // record.
+         // (V) We verify the size of the record
+
+         // The variable record portion used on Updates and Appends
+         int variableSize = 0;
+
+         // Used to hold extra data on transaction prepares
+         int preparedTransactionExtraDataSize = 0;
+
+         byte userRecordType = 0;
+
+         byte record[] = null;
+
+         if (isContainsBody(recordType))
+         {
+            if (isInvalidSize(wholeFileBuffer.position(), SIZE_INT))
+            {
+               wholeFileBuffer.position(pos + 1);
+               reader.markAsDataFile(file);
+               continue;
+            }
+
+            variableSize = wholeFileBuffer.getInt();
+
+            if (isInvalidSize(wholeFileBuffer.position(), variableSize))
+            {
+               wholeFileBuffer.position(pos + 1);
+               continue;
+            }
+
+            if (recordType != DELETE_RECORD_TX)
+            {
+               userRecordType = wholeFileBuffer.get();
+            }
+
+            record = new byte[variableSize];
+
+            wholeFileBuffer.get(record);
+         }
+
+         if (recordType == PREPARE_RECORD || recordType == COMMIT_RECORD)
+         {
+            if (recordType == PREPARE_RECORD)
+            {
+               // Add the variable size required for preparedTransactions
+               preparedTransactionExtraDataSize = wholeFileBuffer.getInt();
+            }
+            // Both commit and record contain the recordSummary, and this is
+            // used to calculate the record-size on both record-types
+            variableSize += wholeFileBuffer.getInt() * SIZE_INT * 2;
+         }
+
+         int recordSize = getRecordSize(recordType);
+
+         // VI - this is completing V, We will validate the size at the end
+         // of the record,
+         // But we avoid buffer overflows by damaged data
+         if (isInvalidSize(pos, recordSize + variableSize + preparedTransactionExtraDataSize))
+         {
+            // Avoid a buffer overflow caused by damaged data... continue
+            // scanning for more records...
+            trace("Record at position " + pos +
+                  " recordType = " +
+                  recordType +
+                  " file:" +
+                  file.getFile().getFileName() +
+                  " recordSize: " +
+                  recordSize +
+                  " variableSize: " +
+                  variableSize +
+                  " preparedTransactionExtraDataSize: " +
+                  preparedTransactionExtraDataSize +
+                  " is corrupted and it is being ignored (II)");
+            // If a file has damaged records, we make it a dataFile, and the
+            // next reclaiming will fix it
+            reader.markAsDataFile(file);
+            wholeFileBuffer.position(pos + 1);
+
+            continue;
+         }
+
+         int oldPos = wholeFileBuffer.position();
+
+         wholeFileBuffer.position(pos + variableSize + recordSize + preparedTransactionExtraDataSize - SIZE_INT);
+
+         int checkSize = wholeFileBuffer.getInt();
+
+         // VII - The checkSize at the end has to match with the size
+         // informed at the beggining.
+         // This is like testing a hash for the record. (We could replace the
+         // checkSize by some sort of calculated hash)
+         if (checkSize != variableSize + recordSize + preparedTransactionExtraDataSize)
+         {
+            trace("Record at position " + pos +
+                  " recordType = " +
+                  recordType +
+                  " file:" +
+                  file.getFile().getFileName() +
+                  " is corrupted and it is being ignored (III)");
+
+            // If a file has damaged records, we make it a dataFile, and the
+            // next reclaiming will fix it
+            reader.markAsDataFile(file);
+
+            wholeFileBuffer.position(pos + SIZE_BYTE);
+
+            continue;
+         }
+
+         // This record is from a previous file-usage. The file was
+         // reused and we need to ignore this record
+         if (readFileId != file.getOrderingID())
+         {
+            // If a file has damaged records, we make it a dataFile, and the
+            // next reclaiming will fix it
+            reader.markAsDataFile(file);
+
+            continue;
+         }
+
+         wholeFileBuffer.position(oldPos);
+
+         // At this point everything is checked. So we relax and just load
+         // the data now.
+
+         switch (recordType)
+         {
+            case ADD_RECORD:
+            {
+               reader.addRecord(new RecordInfo(recordID, userRecordType, record, false));
+               break;
+            }
+            
+            case UPDATE_RECORD:
+            {
+               reader.updateRecord(new RecordInfo(recordID, userRecordType, record, true));
+               break;
+            }
+            
+            case DELETE_RECORD:
+            {
+               reader.deleteRecord(recordID);
+               break;
+            }
+
+            case ADD_RECORD_TX:
+            {
+               reader.addRecordTX(transactionID, new RecordInfo(recordID, userRecordType, record, false));
+               break;
+            }
+            
+            case UPDATE_RECORD_TX:
+            {
+               reader.updateRecordTX(transactionID, new RecordInfo(recordID, userRecordType, record, true));
+               break;
+            }
+            
+            case DELETE_RECORD_TX:
+            {
+               reader.deleteRecordTX(transactionID, new RecordInfo(recordID, (byte)0, record, true));
+               break;
+            }
+            
+            case PREPARE_RECORD:
+            {
+
+               byte extraData[] = new byte[preparedTransactionExtraDataSize];
+
+               wholeFileBuffer.get(extraData);
+
+               // Pair <FileID, NumberOfElements>
+               Pair<Integer, Integer>[] summary = readTransactionalElementsSummary(variableSize, wholeFileBuffer);
+
+               reader.prepareRecord(transactionID, extraData, summary);
+
+               break;
+            }
+            case COMMIT_RECORD:
+            {
+               // We need to read it even if transaction was not found, or
+               // the reading checks would fail
+               // Pair <OrderId, NumberOfElements>
+               Pair<Integer, Integer>[] summary = readTransactionalElementsSummary(variableSize, wholeFileBuffer);
+
+               reader.commitRecord(transactionID, summary);
+               break;
+            }
+            case ROLLBACK_RECORD:
+            {
+               reader.rollbackRecord(transactionID);
+               break;
+            }
+            default:
+            {
+               throw new IllegalStateException("Journal " + file.getFile().getFileName() +
+                                               " is corrupt, invalid record type " +
+                                               recordType);
+            }
+         }
+
+         checkSize = wholeFileBuffer.getInt();
+
+         // This is a sanity check about the loading code itself.
+         // If this checkSize doesn't match, it means the reading method is
+         // not doing what it was supposed to do
+         if (checkSize != variableSize + recordSize + preparedTransactionExtraDataSize)
+         {
+            throw new IllegalStateException("Internal error on loading file. Position doesn't match with checkSize, file = " + file.getFile() +
+                                            ", pos = " +
+                                            pos);
+         }
+
+         lastDataPos = wholeFileBuffer.position();
+
+      }
+
+      fileFactory.releaseBuffer(wholeFileBuffer);
+
+      file.getFile().close();
+
+      return lastDataPos;
+
+   }
+
+   
    /** It will read the elements-summary back from the commit/prepare transaction 
     *  Pair<FileID, Counter> */
    @SuppressWarnings("unchecked")
@@ -1806,9 +1930,9 @@ public class JournalImpl implements TestableJournal
     * @throws Exception
     */
    private ChannelBuffer writeTransaction(final byte recordType,
-                                       final long txID,
-                                       final JournalTransaction tx,
-                                       final EncodingSupport transactionData) throws Exception
+                                          final long txID,
+                                          final JournalTransaction tx,
+                                          final EncodingSupport transactionData) throws Exception
    {
       int size = SIZE_COMPLETE_TRANSACTION_RECORD + tx.getElementsSummary().size() *
                  SIZE_INT *
@@ -1957,7 +2081,6 @@ public class JournalImpl implements TestableJournal
 
       return orderedFiles;
    }
-            
 
    /** 
     * Note: You should aways guarantee locking the semaphore lock.
@@ -1987,7 +2110,7 @@ public class JournalImpl implements TestableJournal
             currentFile.getFile().unlockBuffer();
             moveNextFile();
             currentFile.getFile().lockBuffer();
-            
+
             // The same check needs to be done at the new file also
             if (!currentFile.getFile().fits(size))
             {
@@ -2082,7 +2205,7 @@ public class JournalImpl implements TestableJournal
       closeFile(currentFile);
 
       currentFile = enqueueOpenFile();
-      
+
       fileFactory.activate(currentFile.getFile());
    }
 
@@ -2210,8 +2333,7 @@ public class JournalImpl implements TestableJournal
 
       return tx;
    }
-   
-   
+
    private IOCallback getSyncCallback(boolean sync)
    {
       if (fileFactory.isSupportsCallbacks())
@@ -2350,6 +2472,26 @@ public class JournalImpl implements TestableJournal
                file.incNegCount(jf);
             }
          }
+      }
+
+      public String toString()
+      {
+         StringBuffer buffer = new StringBuffer();
+         buffer.append("PosFiles(add=" + addFile.getFile().getFileName());
+
+         if (updateFiles != null)
+         {
+
+            for (JournalFile update : updateFiles)
+            {
+               buffer.append(", update=" + update.getFile().getFileName());
+            }
+
+         }
+
+         buffer.append(")");
+
+         return buffer.toString();
       }
    }
 
@@ -2564,25 +2706,25 @@ public class JournalImpl implements TestableJournal
    private class PerfBlast extends Thread
    {
       private final int pages;
-      
+
       private PerfBlast(final int pages)
       {
-         this.pages = pages;         
+         this.pages = pages;
       }
-      
+
       public void run()
-      {             
+      {
          try
-         {            
+         {
             lock.acquire();
-         
+
             MessagingBuffer bb = newBuffer(128 * 1024);
-            
+
             for (int i = 0; i < pages; i++)
             {
                appendRecord(bb, false, null);
             }
-            
+
             lock.release();
          }
          catch (Exception e)
@@ -2591,5 +2733,62 @@ public class JournalImpl implements TestableJournal
          }
       }
    }
-   
+
+   private static interface JournalReader
+   {
+      void addRecord(RecordInfo info) throws Exception;
+
+      /**
+       * @param recordInfo
+       * @throws Exception 
+       */
+      void updateRecord(RecordInfo recordInfo) throws Exception;
+
+      /**
+       * @param recordID
+       */
+      void deleteRecord(long recordID) throws Exception;
+
+      /**
+       * @param transactionID
+       * @param recordInfo
+       * @throws Exception 
+       */
+      void addRecordTX(long transactionID, RecordInfo recordInfo) throws Exception;
+
+      /**
+       * @param transactionID
+       * @param recordInfo
+       * @throws Exception 
+       */
+      void updateRecordTX(long transactionID, RecordInfo recordInfo) throws Exception;
+
+      /**
+       * @param transactionID
+       * @param recordInfo
+       */
+      void deleteRecordTX(long transactionID, RecordInfo recordInfo) throws Exception;
+
+      /**
+       * @param transactionID
+       * @param extraData
+       * @param summaryData
+       */
+      void prepareRecord(long transactionID, byte[] extraData, Pair<Integer, Integer>[] summary) throws Exception;
+
+      /**
+       * @param transactionID
+       * @param summaryData
+       */
+      void commitRecord(long transactionID, Pair<Integer, Integer>[] summary) throws Exception;
+
+      /**
+       * @param transactionID
+       */
+      void rollbackRecord(long transactionID) throws Exception;
+
+      public void markAsDataFile(JournalFile file);
+
+   }
+
 }
