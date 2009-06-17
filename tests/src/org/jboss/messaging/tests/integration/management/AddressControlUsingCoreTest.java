@@ -79,7 +79,7 @@ public class AddressControlUsingCoreTest extends ManagementTestBase
 
       CoreMessagingProxy proxy = createProxy(address);
 
-      assertEquals(address.toString(), proxy.retrieveAttributeValue("Address"));
+      assertEquals(address.toString(), proxy.retrieveAttributeValue("address"));
 
       session.deleteQueue(queue);
    }
@@ -93,17 +93,17 @@ public class AddressControlUsingCoreTest extends ManagementTestBase
       session.createQueue(address, queue, true);
 
       CoreMessagingProxy proxy = createProxy(address);
-      Object[] queueNames = (Object[])proxy.retrieveAttributeValue("QueueNames");
+      Object[] queueNames = (Object[])proxy.retrieveAttributeValue("queueNames");
       assertEquals(1, queueNames.length);
       assertEquals(queue.toString(), queueNames[0]);
 
       session.createQueue(address, anotherQueue, false);
-      queueNames = (Object[])proxy.retrieveAttributeValue("QueueNames");
+      queueNames = (Object[])proxy.retrieveAttributeValue("queueNames");
       assertEquals(2, queueNames.length);
 
       session.deleteQueue(queue);
 
-      queueNames = (Object[])proxy.retrieveAttributeValue("QueueNames");
+      queueNames = (Object[])proxy.retrieveAttributeValue("queueNames");
       assertEquals(1, queueNames.length);
       assertEquals(anotherQueue.toString(), queueNames[0]);
 
@@ -119,7 +119,7 @@ public class AddressControlUsingCoreTest extends ManagementTestBase
       session.createQueue(address, queue, true);
 
       CoreMessagingProxy proxy = createProxy(address);
-      Object[] roles = (Object[])proxy.retrieveAttributeValue("Roles");
+      Object[] roles = (Object[])proxy.retrieveAttributeValue("roles");
       for (int i = 0; i < roles.length; i++)
       {
          System.out.println(((Object[])roles[i])[0]);
@@ -130,7 +130,7 @@ public class AddressControlUsingCoreTest extends ManagementTestBase
       newRoles.add(role);
       server.getSecurityRepository().addMatch(address.toString(), newRoles);
 
-      roles = (Object[])proxy.retrieveAttributeValue("Roles");
+      roles = (Object[])proxy.retrieveAttributeValue("roles");
       assertEquals(1, roles.length);
       Object[] r = (Object[])roles[0];
       assertEquals(role.getName(), r[0]);
@@ -154,7 +154,7 @@ public class AddressControlUsingCoreTest extends ManagementTestBase
       session.createQueue(address, queue, true);
 
       CoreMessagingProxy proxy = createProxy(address);
-      Object[] roles = (Object[])proxy.retrieveAttributeValue("Roles");
+      Object[] roles = (Object[])proxy.retrieveAttributeValue("roles");
       assertEquals(0, roles.length);
 
       proxy.invokeOperation("addRole", role.getName(),
@@ -166,7 +166,7 @@ public class AddressControlUsingCoreTest extends ManagementTestBase
                              CheckType.DELETE_NON_DURABLE_QUEUE.hasRole(role),
                              CheckType.MANAGE.hasRole(role));
 
-      roles = (Object[])proxy.retrieveAttributeValue("Roles");
+      roles = (Object[])proxy.retrieveAttributeValue("roles");
       assertEquals(1, roles.length);
       Object[] r = (Object[])roles[0];
       assertEquals(role.getName(), r[0]);
@@ -192,7 +192,7 @@ public class AddressControlUsingCoreTest extends ManagementTestBase
       session.createQueue(address, queue, true);
 
       CoreMessagingProxy proxy = createProxy(address);
-      Object[] data = (Object[])proxy.retrieveAttributeValue("Roles");
+      Object[] data = (Object[])proxy.retrieveAttributeValue("roles");
       assertEquals(0, data.length);
 
       proxy.invokeOperation("addRole", role.getName(),
@@ -204,7 +204,7 @@ public class AddressControlUsingCoreTest extends ManagementTestBase
                              CheckType.DELETE_NON_DURABLE_QUEUE.hasRole(role),
                              CheckType.MANAGE.hasRole(role));
 
-      data = (Object[])proxy.retrieveAttributeValue("Roles");
+      data = (Object[])proxy.retrieveAttributeValue("roles");
       assertEquals(1, data.length);
 
       try
@@ -223,7 +223,7 @@ public class AddressControlUsingCoreTest extends ManagementTestBase
       {
       }
 
-      data = (Object[])proxy.retrieveAttributeValue("Roles");
+      data = (Object[])proxy.retrieveAttributeValue("roles");
       assertEquals(1, data.length);
 
       session.deleteQueue(queue);
@@ -238,17 +238,17 @@ public class AddressControlUsingCoreTest extends ManagementTestBase
       session.createQueue(address, queue, true);
 
       CoreMessagingProxy proxy = createProxy(address);
-      Object[] data = (Object[])proxy.retrieveAttributeValue("Roles");
+      Object[] data = (Object[])proxy.retrieveAttributeValue("roles");
       assertEquals(0, data.length);
 
       proxy.invokeOperation("addRole", roleName, randomBoolean(), randomBoolean(), randomBoolean(), randomBoolean(), randomBoolean(), randomBoolean(), randomBoolean());
 
-      data = (Object[])proxy.retrieveAttributeValue("Roles");
+      data = (Object[])proxy.retrieveAttributeValue("roles");
       assertEquals(1, data.length);
 
       proxy.invokeOperation("removeRole", roleName);  
 
-      data = (Object[])proxy.retrieveAttributeValue("Roles");
+      data = (Object[])proxy.retrieveAttributeValue("roles");
       assertEquals(0, data.length);
 
       session.deleteQueue(queue);
@@ -263,7 +263,7 @@ public class AddressControlUsingCoreTest extends ManagementTestBase
       session.createQueue(address, queue, true);
 
       CoreMessagingProxy proxy = createProxy(address);
-      Object[] data = (Object[])proxy.retrieveAttributeValue("Roles");
+      Object[] data = (Object[])proxy.retrieveAttributeValue("roles");
       assertEquals(0, data.length);
 
       try

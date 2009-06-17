@@ -66,52 +66,52 @@ public class ClusterConnectionControlUsingCoreTest extends ClusterConnectionCont
          
          public String getAddress()
          {
-            return (String)proxy.retrieveAttributeValue("Address");
+            return (String)proxy.retrieveAttributeValue("address");
          }
 
          public String getDiscoveryGroupName()
          {
-            return (String)proxy.retrieveAttributeValue("DiscoveryGroupName");
+            return (String)proxy.retrieveAttributeValue("discoveryGroupName");
          }
 
          public int getMaxHops()
          {
-            return (Integer)proxy.retrieveAttributeValue("MaxHops");
+            return (Integer)proxy.retrieveAttributeValue("maxHops");
          }
 
          public long getRetryInterval()
          {
-            return (Long)proxy.retrieveAttributeValue("RetryInterval");
+            return (Long)proxy.retrieveAttributeValue("retryInterval");
          }
 
          public Object[] getStaticConnectorNamePairs()
          {
-            return (Object[])proxy.retrieveAttributeValue("StaticConnectorNamePairs");
+            return (Object[])proxy.retrieveAttributeValue("staticConnectorNamePairs");
          }
 
          public String getStaticConnectorNamePairsAsJSON()
          {
-            return (String)proxy.retrieveAttributeValue("StaticConnectorNamePairsAsJSON");
+            return (String)proxy.retrieveAttributeValue("staticConnectorNamePairsAsJSON");
          }
 
          public boolean isDuplicateDetection()
          {
-            return (Boolean)proxy.retrieveAttributeValue("DuplicateDetection");
+            return (Boolean)proxy.retrieveAttributeValue("duplicateDetection");
          }
 
          public boolean isForwardWhenNoConsumers()
          {
-            return (Boolean)proxy.retrieveAttributeValue("ForwardWhenNoConsumers");
+            return (Boolean)proxy.retrieveAttributeValue("forwardWhenNoConsumers");
          }
 
          public String getName()
          {
-            return (String)proxy.retrieveAttributeValue("Name");
+            return (String)proxy.retrieveAttributeValue("name");
          }
 
          public boolean isStarted()
          {
-            return (Boolean)proxy.retrieveAttributeValue("Started");
+            return (Boolean)proxy.retrieveAttributeValue("started");
          }
 
          public void start() throws Exception

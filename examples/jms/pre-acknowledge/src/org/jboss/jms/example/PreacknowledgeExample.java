@@ -145,7 +145,7 @@ public class PreacknowledgeExample extends JBMExample
 
       Message m = session.createMessage();
 
-      JMSManagementHelper.putAttribute(m, "jms.queue.exampleQueue", "MessageCount");
+      JMSManagementHelper.putAttribute(m, "jms.queue.exampleQueue", "messageCount");
 
       Message response = requestor.request(m);
 

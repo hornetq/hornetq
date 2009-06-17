@@ -128,37 +128,37 @@ public class MessagingServerControlUsingCoreTest extends MessagingServerControlT
 
          public String getBackupConnectorName()
          {
-            return (String)proxy.retrieveAttributeValue("BackupConnectorName");
+            return (String)proxy.retrieveAttributeValue("backupConnectorName");
          }
 
          public String getBindingsDirectory()
          {
-            return (String)proxy.retrieveAttributeValue("BindingsDirectory");
+            return (String)proxy.retrieveAttributeValue("bindingsDirectory");
          }
 
          public Configuration getConfiguration()
          {
-            return (Configuration)proxy.retrieveAttributeValue("Configuration");
+            return (Configuration)proxy.retrieveAttributeValue("configuration");
          }
 
          public int getConnectionCount()
          {
-            return (Integer)proxy.retrieveAttributeValue("ConnectionCount");
+            return (Integer)proxy.retrieveAttributeValue("connectionCount");
          }
 
          public long getConnectionTTLOverride()
          {
-            return (Long)proxy.retrieveAttributeValue("ConnectionTTLOverride", Long.class);
+            return (Long)proxy.retrieveAttributeValue("connectionTTLOverride", Long.class);
          }
 
          public Object[] getConnectors() throws Exception
          {
-            return (Object[])proxy.retrieveAttributeValue("Connectors");
+            return (Object[])proxy.retrieveAttributeValue("connectors");
          }
          
          public String getConnectorsAsJSON() throws Exception
          {
-            return (String)proxy.retrieveAttributeValue("ConnectorsAsJSON");
+            return (String)proxy.retrieveAttributeValue("connectorsAsJSON");
          }
 
          public int getIDCacheSize()
@@ -168,7 +168,7 @@ public class MessagingServerControlUsingCoreTest extends MessagingServerControlT
 
          public String[] getInterceptorClassNames()
          {
-            Object[] res = (Object[])proxy.retrieveAttributeValue("InterceptorClassNames");
+            Object[] res = (Object[])proxy.retrieveAttributeValue("interceptorClassNames");
             String[] names = new String[res.length];
             for (int i = 0; i < res.length; i++)
             {
@@ -177,189 +177,179 @@ public class MessagingServerControlUsingCoreTest extends MessagingServerControlT
             return names;
          }
 
-         public int getJournalBufferReuseSize()
-         {
-            return (Integer)proxy.retrieveAttributeValue("JournalBufferReuseSize");
-         }
-
          public String getJournalDirectory()
          {
-            return (String)proxy.retrieveAttributeValue("JournalDirectory");
+            return (String)proxy.retrieveAttributeValue("journalDirectory");
          }
 
          public int getJournalFileSize()
          {
-            return (Integer)proxy.retrieveAttributeValue("JournalFileSize");
+            return (Integer)proxy.retrieveAttributeValue("journalFileSize");
          }
 
          public int getJournalMaxAIO()
          {
-            return (Integer)proxy.retrieveAttributeValue("JournalMaxAIO");
+            return (Integer)proxy.retrieveAttributeValue("journalMaxAIO");
          }
 
          public int getJournalMinFiles()
          {
-            return (Integer)proxy.retrieveAttributeValue("JournalMinFiles");
+            return (Integer)proxy.retrieveAttributeValue("journalMinFiles");
          }
 
          public String getJournalType()
          {
-            return (String)proxy.retrieveAttributeValue("JournalType");
+            return (String)proxy.retrieveAttributeValue("journalType");
          }
 
          public String getLargeMessagesDirectory()
          {
-            return (String)proxy.retrieveAttributeValue("LargeMessagesDirectory");
+            return (String)proxy.retrieveAttributeValue("largeMessagesDirectory");
          }
 
          public String getManagementAddress()
          {
-            return (String)proxy.retrieveAttributeValue("ManagementAddress");
+            return (String)proxy.retrieveAttributeValue("managementAddress");
          }
 
          public String getManagementNotificationAddress()
          {
-            return (String)proxy.retrieveAttributeValue("ManagementNotificationAddress");
+            return (String)proxy.retrieveAttributeValue("managementNotificationAddress");
          }
 
          public long getManagementRequestTimeout()
          {
-            return (Long)proxy.retrieveAttributeValue("ManagementRequestTimeout", Long.class);
+            return (Long)proxy.retrieveAttributeValue("managementRequestTimeout", Long.class);
          }
 
          public int getMessageCounterMaxDayCount()
          {
-            return (Integer)proxy.retrieveAttributeValue("MessageCounterMaxDayCount");
+            return (Integer)proxy.retrieveAttributeValue("messageCounterMaxDayCount");
          }
 
          public long getMessageCounterSamplePeriod()
          {
-            return (Long)proxy.retrieveAttributeValue("MessageCounterSamplePeriod", Long.class);
+            return (Long)proxy.retrieveAttributeValue("messageCounterSamplePeriod", Long.class);
          }
 
          public long getMessageExpiryScanPeriod()
          {
-            return (Long)proxy.retrieveAttributeValue("MessageExpiryScanPeriod", Long.class);
+            return (Long)proxy.retrieveAttributeValue("messageExpiryScanPeriod", Long.class);
          }
 
          public long getMessageExpiryThreadPriority()
          {
-            return (Long)proxy.retrieveAttributeValue("MessageExpiryThreadPriority", Long.class);
+            return (Long)proxy.retrieveAttributeValue("messageExpiryThreadPriority", Long.class);
          }
 
          public String getPagingDirectory()
          {
-            return (String)proxy.retrieveAttributeValue("PagingDirectory");
+            return (String)proxy.retrieveAttributeValue("pagingDirectory");
          }
 
          public int getGlobalPageSize()
          {
-            return (Integer)proxy.retrieveAttributeValue("GlobalPageSize");
+            return (Integer)proxy.retrieveAttributeValue("globalPageSize");
          }
 
          public long getPagingMaxGlobalSizeBytes()
          {
-            return (Long)proxy.retrieveAttributeValue("PagingMaxGlobalSizeBytes", Long.class);
+            return (Long)proxy.retrieveAttributeValue("pagingMaxGlobalSizeBytes", Long.class);
          }
 
          public long getQueueActivationTimeout()
          {
-            return (Long)proxy.retrieveAttributeValue("QueueActivationTimeout", Long.class);
+            return (Long)proxy.retrieveAttributeValue("queueActivationTimeout", Long.class);
          }
 
          public int getScheduledThreadPoolMaxSize()
          {
-            return (Integer)proxy.retrieveAttributeValue("ScheduledThreadPoolMaxSize");
+            return (Integer)proxy.retrieveAttributeValue("scheduledThreadPoolMaxSize");
          }
          
          public int getThreadPoolMaxSize()
          {
-            return (Integer)proxy.retrieveAttributeValue("ThreadPoolMaxSize");
+            return (Integer)proxy.retrieveAttributeValue("threadPoolMaxSize");
          }
 
          public long getSecurityInvalidationInterval()
          {
-            return (Long)proxy.retrieveAttributeValue("SecurityInvalidationInterval", Long.class);
+            return (Long)proxy.retrieveAttributeValue("securityInvalidationInterval", Long.class);
          }
 
          public long getTransactionTimeout()
          {
-            return (Long)proxy.retrieveAttributeValue("TransactionTimeout", Long.class);
+            return (Long)proxy.retrieveAttributeValue("transactionTimeout", Long.class);
          }
 
          public long getTransactionTimeoutScanPeriod()
          {
-            return (Long)proxy.retrieveAttributeValue("TransactionTimeoutScanPeriod", Long.class);
+            return (Long)proxy.retrieveAttributeValue("transactionTimeoutScanPeriod", Long.class);
          }
 
          public String getVersion()
          {
-            return (String)proxy.retrieveAttributeValue("Version");
-         }
-
-         public boolean isAllowRouteWhenNoBindings()
-         {
-            return (Boolean)proxy.retrieveAttributeValue("AllowRouteWhenNoBindings");
+            return (String)proxy.retrieveAttributeValue("version");
          }
 
          public boolean isBackup()
          {
-            return (Boolean)proxy.retrieveAttributeValue("Backup");
+            return (Boolean)proxy.retrieveAttributeValue("backup");
          }
 
          public boolean isClustered()
          {
-            return (Boolean)proxy.retrieveAttributeValue("Clustered");
+            return (Boolean)proxy.retrieveAttributeValue("clustered");
          }
 
          public boolean isCreateBindingsDir()
          {
-            return (Boolean)proxy.retrieveAttributeValue("CreateBindingsDir");
+            return (Boolean)proxy.retrieveAttributeValue("createBindingsDir");
          }
 
          public boolean isCreateJournalDir()
          {
-            return (Boolean)proxy.retrieveAttributeValue("CreateJournalDir");
+            return (Boolean)proxy.retrieveAttributeValue("createJournalDir");
          }
 
          public boolean isJournalSyncNonTransactional()
          {
-            return (Boolean)proxy.retrieveAttributeValue("JournalSyncNonTransactional");
+            return (Boolean)proxy.retrieveAttributeValue("journalSyncNonTransactional");
          }
 
          public boolean isJournalSyncTransactional()
          {
-            return (Boolean)proxy.retrieveAttributeValue("JournalSyncTransactional");
+            return (Boolean)proxy.retrieveAttributeValue("journalSyncTransactional");
          }
 
          public boolean isMessageCounterEnabled()
          {
-            return (Boolean)proxy.retrieveAttributeValue("MessageCounterEnabled");
+            return (Boolean)proxy.retrieveAttributeValue("messageCounterEnabled");
          }
 
          public boolean isPersistDeliveryCountBeforeDelivery()
          {
-            return (Boolean)proxy.retrieveAttributeValue("PersistDeliveryCountBeforeDelivery");
+            return (Boolean)proxy.retrieveAttributeValue("persistDeliveryCountBeforeDelivery");
          }
 
          public boolean isPersistIDCache()
          {
-            return (Boolean)proxy.retrieveAttributeValue("PersistIDCache");
+            return (Boolean)proxy.retrieveAttributeValue("persistIDCache");
          }
 
          public boolean isSecurityEnabled()
          {
-            return (Boolean)proxy.retrieveAttributeValue("SecurityEnabled");
+            return (Boolean)proxy.retrieveAttributeValue("securityEnabled");
          }
 
          public boolean isStarted()
          {
-            return (Boolean)proxy.retrieveAttributeValue("Started");
+            return (Boolean)proxy.retrieveAttributeValue("started");
          }
 
          public boolean isWildcardRoutingEnabled()
          {
-            return (Boolean)proxy.retrieveAttributeValue("WildcardRoutingEnabled");
+            return (Boolean)proxy.retrieveAttributeValue("wildcardRoutingEnabled");
          }
 
          public String[] listConnectionIDs() throws Exception
@@ -425,11 +415,6 @@ public class MessagingServerControlUsingCoreTest extends MessagingServerControlT
          public int getAIOBufferTimeout()
          {
             return (Integer)proxy.retrieveAttributeValue("AIOBufferTimeout");
-         }
-
-         public boolean isAIOFlushOnSync()
-         {
-            return (Boolean)proxy.retrieveAttributeValue("AIOFlushOnSync");
          }
 
       };

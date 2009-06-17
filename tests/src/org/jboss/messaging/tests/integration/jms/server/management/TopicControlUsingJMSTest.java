@@ -76,9 +76,9 @@ public class TopicControlUsingJMSTest extends ManagementTestBase
 
    public void testGetAttributes() throws Exception
    {
-      assertEquals(topic.getTopicName(), proxy.retrieveAttributeValue("Name"));
-      assertEquals(topic.getAddress(), proxy.retrieveAttributeValue("Address"));
-      assertEquals(topic.isTemporary(), proxy.retrieveAttributeValue("Temporary"));
+      assertEquals(topic.getTopicName(), proxy.retrieveAttributeValue("name"));
+      assertEquals(topic.getAddress(), proxy.retrieveAttributeValue("address"));
+      assertEquals(topic.isTemporary(), proxy.retrieveAttributeValue("temporary"));
       assertEquals(topic.getName(), proxy.retrieveAttributeValue("JNDIBinding"));
    }
 
@@ -94,9 +94,9 @@ public class TopicControlUsingJMSTest extends ManagementTestBase
       Connection connection_3 = JMSUtil.createConnection(InVMConnectorFactory.class.getName());
       JMSUtil.createDurableSubscriber(connection_3, topic, clientID, subscriptionName + "2");
 
-      assertEquals(3, proxy.retrieveAttributeValue("SubscriptionCount"));
-      assertEquals(1, proxy.retrieveAttributeValue("NonDurableSubscriptionCount"));
-      assertEquals(2, proxy.retrieveAttributeValue("DurableSubscriptionCount"));
+      assertEquals(3, proxy.retrieveAttributeValue("subscriptionCount"));
+      assertEquals(1, proxy.retrieveAttributeValue("nonDurableSubscriptionCount"));
+      assertEquals(2, proxy.retrieveAttributeValue("durableSubscriptionCount"));
 
       connection_1.close();
       connection_2.close();
@@ -113,15 +113,15 @@ public class TopicControlUsingJMSTest extends ManagementTestBase
       Connection connection_3 = JMSUtil.createConnection(InVMConnectorFactory.class.getName());
       JMSUtil.createDurableSubscriber(connection_3, topic, clientID, subscriptionName + "2");
 
-      assertEquals(0, proxy.retrieveAttributeValue("MessageCount"));
-      assertEquals(0, proxy.retrieveAttributeValue("NonDurableMessageCount"));
-      assertEquals(0, proxy.retrieveAttributeValue("DurableMessageCount"));
+      assertEquals(0, proxy.retrieveAttributeValue("messageCount"));
+      assertEquals(0, proxy.retrieveAttributeValue("nonDurableMessageCount"));
+      assertEquals(0, proxy.retrieveAttributeValue("durableMessageCount"));
 
       JMSUtil.sendMessages(topic, 2);
 
-      assertEquals(3 * 2, proxy.retrieveAttributeValue("MessageCount"));
-      assertEquals(1 * 2, proxy.retrieveAttributeValue("NonDurableMessageCount"));
-      assertEquals(2 * 2, proxy.retrieveAttributeValue("DurableMessageCount"));
+      assertEquals(3 * 2, proxy.retrieveAttributeValue("messageCount"));
+      assertEquals(1 * 2, proxy.retrieveAttributeValue("nonDurableMessageCount"));
+      assertEquals(2 * 2, proxy.retrieveAttributeValue("durableMessageCount"));
 
       connection_1.close();
       connection_2.close();
@@ -162,7 +162,7 @@ public class TopicControlUsingJMSTest extends ManagementTestBase
       JMSUtil.sendMessageWithProperty(session, topic, key, unmatchingValue);
       JMSUtil.sendMessageWithProperty(session, topic, key, matchingValue);
 
-      assertEquals(3, proxy.retrieveAttributeValue("MessageCount"));
+      assertEquals(3, proxy.retrieveAttributeValue("messageCount"));
 
       assertEquals(2, proxy.invokeOperation("countMessagesForSubscription", clientID, subscriptionName, key + " =" +
                                                                                                         matchingValue));
@@ -207,13 +207,13 @@ public class TopicControlUsingJMSTest extends ManagementTestBase
 
       JMSUtil.createDurableSubscriber(connection, topic, clientID, subscriptionName);
 
-      assertEquals(1, proxy.retrieveAttributeValue("DurableSubscriptionCount"));
+      assertEquals(1, proxy.retrieveAttributeValue("durableSubscriptionCount"));
 
       connection.close();
 
       proxy.invokeOperation("dropDurableSubscription", clientID, subscriptionName);
 
-      assertEquals(0, proxy.retrieveAttributeValue("DurableSubscriptionCount"));
+      assertEquals(0, proxy.retrieveAttributeValue("durableSubscriptionCount"));
    }
 
    public void testDropDurableSubscriptionWithUnknownSubscription() throws Exception
@@ -222,7 +222,7 @@ public class TopicControlUsingJMSTest extends ManagementTestBase
 
       JMSUtil.createDurableSubscriber(connection, topic, clientID, subscriptionName);
 
-      assertEquals(1, proxy.retrieveAttributeValue("DurableSubscriptionCount"));
+      assertEquals(1, proxy.retrieveAttributeValue("durableSubscriptionCount"));
 
       try
       {
@@ -234,7 +234,7 @@ public class TopicControlUsingJMSTest extends ManagementTestBase
 
       }
 
-      assertEquals(1, proxy.retrieveAttributeValue("DurableSubscriptionCount"));
+      assertEquals(1, proxy.retrieveAttributeValue("durableSubscriptionCount"));
 
       connection.close();
    }
@@ -252,15 +252,15 @@ public class TopicControlUsingJMSTest extends ManagementTestBase
                                                                             clientID,
                                                                             subscriptionName + "2");
 
-      assertEquals(2, proxy.retrieveAttributeValue("SubscriptionCount"));
+      assertEquals(2, proxy.retrieveAttributeValue("subscriptionCount"));
 
       durableSubscriber_1.close();
       durableSubscriber_2.close();
 
-      assertEquals(2, proxy.retrieveAttributeValue("SubscriptionCount"));
+      assertEquals(2, proxy.retrieveAttributeValue("subscriptionCount"));
       proxy.invokeOperation("dropAllSubscriptions");
 
-      assertEquals(0, proxy.retrieveAttributeValue("SubscriptionCount"));
+      assertEquals(0, proxy.retrieveAttributeValue("subscriptionCount"));
 
       connection_1.close();
       connection_2.close();
@@ -275,11 +275,11 @@ public class TopicControlUsingJMSTest extends ManagementTestBase
 
       JMSUtil.sendMessages(topic, 3);
 
-      assertEquals(3 * 2, proxy.retrieveAttributeValue("MessageCount"));
+      assertEquals(3 * 2, proxy.retrieveAttributeValue("messageCount"));
 
       int removedCount = (Integer)proxy.invokeOperation("removeAllMessages");
       assertEquals(3 * 2, removedCount);
-      assertEquals(0, proxy.retrieveAttributeValue("MessageCount"));
+      assertEquals(0, proxy.retrieveAttributeValue("messageCount"));
 
       connection_1.close();
       connection_2.close();

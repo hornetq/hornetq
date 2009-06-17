@@ -26,7 +26,6 @@ import javax.jms.Message;
 
 import org.jboss.messaging.core.client.management.impl.ManagementHelper;
 import org.jboss.messaging.jms.client.JBossMessage;
-import org.jboss.messaging.utils.json.JSONArray;
 
 /*
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>

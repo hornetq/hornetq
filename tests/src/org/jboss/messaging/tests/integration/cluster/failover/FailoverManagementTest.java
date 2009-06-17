@@ -115,7 +115,7 @@ public class FailoverManagementTest extends UnitTestCase
          
          ManagementHelper.putAttribute(managementMessage,
                                         ResourceNames.CORE_QUEUE + ADDRESS,
-                                        "MessageCount");
+                                        "messageCount");
          managementMessage.putStringProperty(ClientMessageImpl.REPLYTO_HEADER_NAME, replyTo);
          
          producer.send(DEFAULT_MANAGEMENT_ADDRESS, managementMessage);
@@ -134,7 +134,7 @@ public class FailoverManagementTest extends UnitTestCase
          
          ManagementHelper.putAttribute(managementMessage,
                                         ResourceNames.CORE_QUEUE + ADDRESS,
-                                        "MessageCount");
+                                        "messageCount");
          managementMessage.putStringProperty(ClientMessageImpl.REPLYTO_HEADER_NAME, replyTo);
          
          producer.send(DEFAULT_MANAGEMENT_ADDRESS, managementMessage);
@@ -204,7 +204,7 @@ public class FailoverManagementTest extends UnitTestCase
          
          ManagementHelper.putAttribute(managementMessage,
                                         ResourceNames.CORE_QUEUE + ADDRESS,
-                                        "MessageCount");
+                                        "messageCount");
          managementMessage.putStringProperty(ClientMessageImpl.REPLYTO_HEADER_NAME, replyTo);
          
          producer.send(DEFAULT_MANAGEMENT_ADDRESS, managementMessage);

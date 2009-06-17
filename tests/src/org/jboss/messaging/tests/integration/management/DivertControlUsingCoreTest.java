@@ -66,37 +66,37 @@ public class DivertControlUsingCoreTest extends DivertControlTest
          
          public String getAddress()
          {
-            return (String)proxy.retrieveAttributeValue("Address");
+            return (String)proxy.retrieveAttributeValue("address");
          }
 
          public String getFilter()
          {
-            return (String)proxy.retrieveAttributeValue("Filter");
+            return (String)proxy.retrieveAttributeValue("filter");
          }
 
          public String getForwardingAddress()
          {
-            return (String)proxy.retrieveAttributeValue("ForwardingAddress");
+            return (String)proxy.retrieveAttributeValue("forwardingAddress");
          }
 
          public String getRoutingName()
          {
-            return (String)proxy.retrieveAttributeValue("RoutingName");
+            return (String)proxy.retrieveAttributeValue("routingName");
          }
 
          public String getTransformerClassName()
          {
-            return (String)proxy.retrieveAttributeValue("TransformerClassName");
+            return (String)proxy.retrieveAttributeValue("transformerClassName");
          }
 
          public String getUniqueName()
          {
-            return (String)proxy.retrieveAttributeValue("UniqueName");
+            return (String)proxy.retrieveAttributeValue("uniqueName");
          }
 
          public boolean isExclusive()
          {
-            return (Boolean)proxy.retrieveAttributeValue("Exclusive");
+            return (Boolean)proxy.retrieveAttributeValue("exclusive");
          }
 
       };

@@ -113,52 +113,52 @@ public class JMSQueueControlUsingJMSTest extends JMSQueueControlTest
 
          public int getConsumerCount()
          {
-            return (Integer)proxy.retrieveAttributeValue("ConsumerCount");
+            return (Integer)proxy.retrieveAttributeValue("consumerCount");
          }
 
          public String getDeadLetterAddress()
          {
-            return (String)proxy.retrieveAttributeValue("DeadLetterAddress");
+            return (String)proxy.retrieveAttributeValue("deadLetterAddress");
          }
 
          public int getDeliveringCount()
          {
-            return (Integer)proxy.retrieveAttributeValue("DeliveringCount");
+            return (Integer)proxy.retrieveAttributeValue("deliveringCount");
          }
 
          public String getExpiryAddress()
          {
-            return (String)proxy.retrieveAttributeValue("ExpiryAddress");
+            return (String)proxy.retrieveAttributeValue("expiryAddress");
          }
 
          public int getMessageCount()
          {
-            return (Integer)proxy.retrieveAttributeValue("MessageCount");
+            return (Integer)proxy.retrieveAttributeValue("messageCount");
          }
 
          public int getMessagesAdded()
          {
-            return (Integer)proxy.retrieveAttributeValue("MessagesAdded");
+            return (Integer)proxy.retrieveAttributeValue("messagesAdded");
          }
 
          public String getName()
          {
-            return (String)proxy.retrieveAttributeValue("Name");
+            return (String)proxy.retrieveAttributeValue("name");
          }
 
          public long getScheduledCount()
          {
-            return (Long)proxy.retrieveAttributeValue("ScheduledCount");
+            return (Long)proxy.retrieveAttributeValue("scheduledCount");
          }
 
          public boolean isDurable()
          {
-            return (Boolean)proxy.retrieveAttributeValue("Durable");
+            return (Boolean)proxy.retrieveAttributeValue("durable");
          }
 
          public boolean isTemporary()
          {
-            return (Boolean)proxy.retrieveAttributeValue("Temporary");
+            return (Boolean)proxy.retrieveAttributeValue("temporary");
          }
 
          public Map<String, Object>[] listAllMessages() throws Exception
@@ -255,7 +255,7 @@ public class JMSQueueControlUsingJMSTest extends JMSQueueControlTest
 
          public String getAddress()
          {
-            return (String)proxy.retrieveAttributeValue("Address");
+            return (String)proxy.retrieveAttributeValue("address");
          }
 
          public String getJNDIBinding()

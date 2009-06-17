@@ -359,12 +359,12 @@ public class JMSServerControlUsingJMSTest extends JMSServerControlTest
 
          public String getVersion()
          {
-            return (String)proxy.retrieveAttributeValue("Version");
+            return (String)proxy.retrieveAttributeValue("version");
          }
 
          public boolean isStarted()
          {
-            return (Boolean)proxy.retrieveAttributeValue("Started");
+            return (Boolean)proxy.retrieveAttributeValue("started");
          }
 
          public String[] listConnectionIDs() throws Exception

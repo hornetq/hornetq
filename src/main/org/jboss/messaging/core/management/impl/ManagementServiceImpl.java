@@ -694,15 +694,16 @@ public class ManagementServiceImpl implements ManagementService
 
          Method method = null;
 
+         String upperCaseAttribute = attribute.substring(0, 1).toUpperCase() + attribute.substring(1);
          try
          {
-            method = resource.getClass().getMethod("get" + attribute, new Class[0]);
+            method = resource.getClass().getMethod("get" + upperCaseAttribute, new Class[0]);
          }
          catch (NoSuchMethodException nsme)
          {
             try
             {
-               method = resource.getClass().getMethod("is" + attribute, new Class[0]);
+               method = resource.getClass().getMethod("is" + upperCaseAttribute, new Class[0]);
             }
             catch (NoSuchMethodException nsme2)
             {
@@ -794,6 +795,7 @@ public class ManagementServiceImpl implements ManagementService
 
       return result;
    }
+
 
    // Inner classes -------------------------------------------------
 }

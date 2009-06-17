@@ -96,72 +96,72 @@ public class QueueControlUsingCoreTest extends QueueControlTest
 
          public String getAddress()
          {
-            return (String)proxy.retrieveAttributeValue("Address");
+            return (String)proxy.retrieveAttributeValue("address");
          }
 
          public int getConsumerCount()
          {
-            return (Integer)proxy.retrieveAttributeValue("ConsumerCount");
+            return (Integer)proxy.retrieveAttributeValue("consumerCount");
          }
 
          public String getDeadLetterAddress()
          {
-            return (String)proxy.retrieveAttributeValue("DeadLetterAddress");
+            return (String)proxy.retrieveAttributeValue("deadLetterAddress");
          }
 
          public int getDeliveringCount()
          {
-            return (Integer)proxy.retrieveAttributeValue("DeliveringCount");
+            return (Integer)proxy.retrieveAttributeValue("deliveringCount");
          }
 
          public String getExpiryAddress()
          {
-            return (String)proxy.retrieveAttributeValue("ExpiryAddress");
+            return (String)proxy.retrieveAttributeValue("expiryAddress");
          }
 
          public String getFilter()
          {
-            return (String)proxy.retrieveAttributeValue("Filter");
+            return (String)proxy.retrieveAttributeValue("filter");
          }
 
          public int getMessageCount()
          {
-            return (Integer)proxy.retrieveAttributeValue("MessageCount");
+            return (Integer)proxy.retrieveAttributeValue("messageCount");
          }
 
          public int getMessagesAdded()
          {
-            return (Integer)proxy.retrieveAttributeValue("MessagesAdded");
+            return (Integer)proxy.retrieveAttributeValue("messagesAdded");
          }
 
          public String getName()
          {
-            return (String)proxy.retrieveAttributeValue("Name");
+            return (String)proxy.retrieveAttributeValue("name");
          }
 
          public long getPersistenceID()
          {
-            return (Long)proxy.retrieveAttributeValue("PersistenceID");
+            return (Long)proxy.retrieveAttributeValue("persistenceID");
          }
 
          public long getScheduledCount()
          {
-            return (Long)proxy.retrieveAttributeValue("ScheduledCount", Long.class);
+            return (Long)proxy.retrieveAttributeValue("scheduledCount", Long.class);
          }
 
          public boolean isBackup()
          {
-            return (Boolean)proxy.retrieveAttributeValue("Backup");
+            return (Boolean)proxy.retrieveAttributeValue("backup");
          }
 
          public boolean isDurable()
          {
-            return (Boolean)proxy.retrieveAttributeValue("Durable");
+            return (Boolean)proxy.retrieveAttributeValue("durable");
          }
 
          public boolean isTemporary()
          {
-            return (Boolean)proxy.retrieveAttributeValue("Temporary");
+            return (Boolean)proxy.retrieveAttributeValue("temporary");
          }
 
          public Map<String, Object>[] listAllMessages() throws Exception

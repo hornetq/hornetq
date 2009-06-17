@@ -66,27 +66,27 @@ public class DiscoveryGroupControlUsingCoreTest extends DiscoveryGroupControlTes
          
          public String getGroupAddress()
          {
-            return (String)proxy.retrieveAttributeValue("GroupAddress");
+            return (String)proxy.retrieveAttributeValue("groupAddress");
          }
 
          public int getGroupPort()
          {
-            return (Integer)proxy.retrieveAttributeValue("GroupPort");
+            return (Integer)proxy.retrieveAttributeValue("groupPort");
          }
 
          public long getRefreshTimeout()
          {
-            return (Long)proxy.retrieveAttributeValue("RefreshTimeout");
+            return (Long)proxy.retrieveAttributeValue("refreshTimeout");
          }
 
          public String getName()
          {
-            return (String)proxy.retrieveAttributeValue("Name");
+            return (String)proxy.retrieveAttributeValue("name");
          }
 
          public boolean isStarted()
          {
-            return (Boolean)proxy.retrieveAttributeValue("Started");
+            return (Boolean)proxy.retrieveAttributeValue("started");
          }
 
          public void start() throws Exception

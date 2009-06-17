@@ -82,22 +82,22 @@ public class BridgeControlUsingCoreTest extends ManagementTestBase
       checkResource(ObjectNames.getBridgeObjectName(bridgeConfig.getName()));
       CoreMessagingProxy proxy = createProxy(bridgeConfig.getName());
 
-      assertEquals(bridgeConfig.getName(), (String)proxy.retrieveAttributeValue("Name"));
-      assertEquals(bridgeConfig.getDiscoveryGroupName(), (String)proxy.retrieveAttributeValue("DiscoveryGroupName"));
-      assertEquals(bridgeConfig.getQueueName(), (String)proxy.retrieveAttributeValue("QueueName"));
-      assertEquals(bridgeConfig.getForwardingAddress(), (String)proxy.retrieveAttributeValue("ForwardingAddress"));
-      assertEquals(bridgeConfig.getFilterString(), (String)proxy.retrieveAttributeValue("FilterString"));
-      assertEquals(bridgeConfig.getRetryInterval(), ((Long)proxy.retrieveAttributeValue("RetryInterval")).longValue());
-      assertEquals(bridgeConfig.getRetryIntervalMultiplier(), (Double)proxy.retrieveAttributeValue("RetryIntervalMultiplier"));
-      assertEquals(bridgeConfig.getReconnectAttempts(), ((Integer)proxy.retrieveAttributeValue("ReconnectAttempts")).intValue());
-      assertEquals(bridgeConfig.isFailoverOnServerShutdown(), ((Boolean)proxy.retrieveAttributeValue("FailoverOnServerShutdown")).booleanValue());
-      assertEquals(bridgeConfig.isUseDuplicateDetection(), ((Boolean)proxy.retrieveAttributeValue("UseDuplicateDetection")).booleanValue());
+      assertEquals(bridgeConfig.getName(), (String)proxy.retrieveAttributeValue("name"));
+      assertEquals(bridgeConfig.getDiscoveryGroupName(), (String)proxy.retrieveAttributeValue("discoveryGroupName"));
+      assertEquals(bridgeConfig.getQueueName(), (String)proxy.retrieveAttributeValue("queueName"));
+      assertEquals(bridgeConfig.getForwardingAddress(), (String)proxy.retrieveAttributeValue("forwardingAddress"));
+      assertEquals(bridgeConfig.getFilterString(), (String)proxy.retrieveAttributeValue("filterString"));
+      assertEquals(bridgeConfig.getRetryInterval(), ((Long)proxy.retrieveAttributeValue("retryInterval")).longValue());
+      assertEquals(bridgeConfig.getRetryIntervalMultiplier(), (Double)proxy.retrieveAttributeValue("retryIntervalMultiplier"));
+      assertEquals(bridgeConfig.getReconnectAttempts(), ((Integer)proxy.retrieveAttributeValue("reconnectAttempts")).intValue());
+      assertEquals(bridgeConfig.isFailoverOnServerShutdown(), ((Boolean)proxy.retrieveAttributeValue("failoverOnServerShutdown")).booleanValue());
+      assertEquals(bridgeConfig.isUseDuplicateDetection(), ((Boolean)proxy.retrieveAttributeValue("useDuplicateDetection")).booleanValue());
 
-      Object[] data = (Object[])proxy.retrieveAttributeValue("ConnectorPair");
+      Object[] data = (Object[])proxy.retrieveAttributeValue("connectorPair");
       assertEquals(bridgeConfig.getConnectorPair().a, data[0]);
       assertEquals(bridgeConfig.getConnectorPair().b, data[1]);
 
-      assertTrue((Boolean)proxy.retrieveAttributeValue("Started"));
+      assertTrue((Boolean)proxy.retrieveAttributeValue("started"));
    }
 
    public void testStartStop() throws Exception

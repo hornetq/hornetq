@@ -68,17 +68,17 @@ public class AcceptorControlUsingCoreTest extends AcceptorControlTest
 
          public String getFactoryClassName()
          {
-            return (String)proxy.retrieveAttributeValue("FactoryClassName");
+            return (String)proxy.retrieveAttributeValue("factoryClassName");
          }
 
          public String getName()
          {
-            return (String)proxy.retrieveAttributeValue("Name");
+            return (String)proxy.retrieveAttributeValue("name");
          }
 
          public Map<String, Object> getParameters()
          {
-            return (Map<String, Object>)proxy.retrieveAttributeValue("Parameters");
+            return (Map<String, Object>)proxy.retrieveAttributeValue("parameters");
          }
 
          public void pause() throws Exception
@@ -93,7 +93,7 @@ public class AcceptorControlUsingCoreTest extends AcceptorControlTest
 
          public boolean isStarted()
          {
-            return (Boolean)proxy.retrieveAttributeValue("Started");
+            return (Boolean)proxy.retrieveAttributeValue("started");
          }
 
          public void start() throws Exception

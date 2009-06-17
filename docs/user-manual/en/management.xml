@@ -540,7 +540,7 @@
    ClientSession session = ...
    ClientRequestor requestor = new ClientRequestor(session, "jbm.management");
    ClientMessage message = session.createClientMessage(false);
-   ManagementHelper.putAttribute(message, "core.queue.exampleQueue", "MessageCount");
+   ManagementHelper.putAttribute(message, "core.queue.exampleQueue", "messageCount");
    ClientMessage reply = requestor.request(m);
    int count = (Integer) ManagementHelper.getResult(reply);
    System.out.println("There are " + count + " messages in exampleQueue");
@@ -615,7 +615,7 @@
    QueueRequestor requestor = new QueueRequestor(session, managementQueue);
    connection.start();
    Message message = session.createMessage();
-   JMSManagementHelper.putAttribute(message, "jms.queue.exampleQueue", "MessageCount");
+   JMSManagementHelper.putAttribute(message, "jms.queue.exampleQueue", "managementQueueessageCount");
    Message reply = requestor.request(message);
    int count = (Integer)JMSManagementHelper.getResult(reply);
    System.out.println("There are " + count + " messages in exampleQueue");
@@ -840,16 +840,16 @@
 // retrieve a connection to JBoss Messaging's MBeanServer
 MBeanServerConnection mbsc = ...
 JMSQueueControlMBean queueControl = (JMSQueueControl)MBeanServerInvocationHandler.newProxyInstance(mbsc,
-on,
-JMSQueueControl.class,
-false);
+   on,
+   JMSQueueControl.class,
+   false);
 // message counters are retrieved as a JSON String                                                                                                      
 String counters = queueControl.listMessageCounter();
 // use the MessageCounterInfo helper class to manipulate message counters more easily
 MessageCounterInfo messageCounter = MessageCounterInfo.fromJSON(counters);         
 System.out.format("%s message(s) in the queue (since last sample: %s)\n",
-counter.getDepth(),
-counter.getDepthDelta());
+   counter.getDepth(),
+   counter.getDepthDelta());
          </programlisting>
       </section>
       <section>

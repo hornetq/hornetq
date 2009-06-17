@@ -146,7 +146,7 @@ public class ManagementServiceImplTest extends UnitTestCase
       ServerMessage message = new ServerMessageImpl();
       MessagingBuffer body = ChannelBuffers.buffer(2048);
       message.setBody(body);
-      ManagementHelper.putAttribute(message, ResourceNames.CORE_SERVER, "Attribute.Does.Not.Exist");
+      ManagementHelper.putAttribute(message, ResourceNames.CORE_SERVER, "attribute.Does.Not.Exist");
       
       ServerMessage reply = server.getManagementService().handleMessage(message);
 

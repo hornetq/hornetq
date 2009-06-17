@@ -66,42 +66,42 @@ public class BroadcastGroupControlUsingCoreTest extends BroadcastGroupControlTes
          
          public long getBroadcastPeriod()
          {
-            return ((Integer)proxy.retrieveAttributeValue("BroadcastPeriod")).longValue();
+            return ((Integer)proxy.retrieveAttributeValue("broadcastPeriod")).longValue();
          }
 
          public Object[] getConnectorPairs()
          {
-            return (Object[])proxy.retrieveAttributeValue("ConnectorPairs");
+            return (Object[])proxy.retrieveAttributeValue("connectorPairs");
          }
          
          public String getConnectorPairsAsJSON()
          {
-            return (String)proxy.retrieveAttributeValue("ConnectorPairsAsJSON");
+            return (String)proxy.retrieveAttributeValue("connectorPairsAsJSON");
          }
 
          public String getGroupAddress()
          {
-            return (String)proxy.retrieveAttributeValue("GroupAddress");
+            return (String)proxy.retrieveAttributeValue("groupAddress");
          }
 
          public int getGroupPort()
          {
-            return (Integer)proxy.retrieveAttributeValue("GroupPort");
+            return (Integer)proxy.retrieveAttributeValue("groupPort");
          }
 
          public int getLocalBindPort()
          {
-            return (Integer)proxy.retrieveAttributeValue("LocalBindPort");
+            return (Integer)proxy.retrieveAttributeValue("localBindPort");
          }
 
          public String getName()
          {
-            return (String)proxy.retrieveAttributeValue("Name");
+            return (String)proxy.retrieveAttributeValue("name");
          }
 
          public boolean isStarted()
          {
-            return (Boolean)proxy.retrieveAttributeValue("Started");
+            return (Boolean)proxy.retrieveAttributeValue("started");
          }
 
          public void start() throws Exception

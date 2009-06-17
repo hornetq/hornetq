@@ -96,8 +96,8 @@ public class ManagementExample extends JBMExample
                   
          // Step 13. Use a helper class to fill the JMS message with management information:
          // * the name of the resource to manage
-         // * in this case, we want to retrieve the value of the MessageCount of the queue
-         JMSManagementHelper.putAttribute(m, "jms.queue.exampleQueue", "MessageCount");
+         // * in this case, we want to retrieve the value of the messageCount of the queue
+         JMSManagementHelper.putAttribute(m, "jms.queue.exampleQueue", "messageCount");
          
          // Step 14. Use the requestor to send the request and wait for the reply
          Message reply = requestor.request(m);
