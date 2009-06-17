@@ -192,15 +192,16 @@ public abstract class JBMExample
 
    private void stopServer(Process server) throws Exception
    {
-      if (!System.getProperty("os.name").contains("Windows"))
+      if (!System.getProperty("os.name").contains("Windows")
+          && !System.getProperty("os.name").contains("Mac OS X"))
       {
          if (server.getInputStream() != null)
          {
-            //server.getInputStream().close();
+            server.getInputStream().close();
          }
          if (server.getErrorStream() != null)
          {
-            //server.getErrorStream().close();
+            server.getErrorStream().close();
          }
       }
       server.destroy();
