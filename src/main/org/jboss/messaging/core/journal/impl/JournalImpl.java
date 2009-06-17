@@ -208,6 +208,10 @@ public class JournalImpl implements TestableJournal
                       final String fileExtension,
                       final int maxAIO)
    {
+      if (fileFactory == null)
+      {
+         throw new NullPointerException("fileFactory is null");
+      }
       if (fileSize < MIN_FILE_SIZE)
       {
          throw new IllegalArgumentException("File size cannot be less than " + MIN_FILE_SIZE + " bytes");
@@ -221,10 +225,6 @@ public class JournalImpl implements TestableJournal
       if (minFiles < 2)
       {
          throw new IllegalArgumentException("minFiles cannot be less than 2");
-      }
-      if (fileFactory == null)
-      {
-         throw new NullPointerException("fileFactory is null");
       }
       if (filePrefix == null)
       {
@@ -850,8 +850,6 @@ public class JournalImpl implements TestableJournal
                loadManager.addRecord(info);
 
                posFilesMap.put(info.id, new PosFiles(file));
-               
-               PosFiles file = posFilesMap.get(info.id);
             }
 
             public void updateRecord(RecordInfo info) throws Exception
@@ -2653,7 +2651,7 @@ public class JournalImpl implements TestableJournal
 
    }
 
-   private class ByteArrayEncoding implements EncodingSupport
+   private static class ByteArrayEncoding implements EncodingSupport
    {
 
       final byte[] data;
