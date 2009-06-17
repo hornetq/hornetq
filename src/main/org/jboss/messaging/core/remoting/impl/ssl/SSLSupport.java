@@ -147,7 +147,8 @@ public class SSLSupport
       try
       {
          URL keystoreURL = validateStoreURL(keystorePath);
-         ks.load(keystoreURL.openStream(), keystorePassword.toCharArray());
+         in = keystoreURL.openStream();
+         ks.load(in, keystorePassword.toCharArray());
       }
       finally
       {
