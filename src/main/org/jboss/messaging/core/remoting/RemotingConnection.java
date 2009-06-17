@@ -32,6 +32,10 @@ public interface RemotingConnection extends BufferHandler
    String getRemoteAddress();
 
    Channel getChannel(long channelID, int windowSize, boolean block);
+   
+   void putChannel(long channelID, Channel channel);
+   
+   boolean removeChannel(long channelID);
 
    long generateChannelID();
 
@@ -62,4 +66,14 @@ public interface RemotingConnection extends BufferHandler
    void freeze();
   
    Connection getTransportConnection();
+   
+   boolean isActive();
+   
+   boolean isClient();
+   
+   boolean isDestroyed();
+   
+   long getBlockingCallTimeout();
+   
+   Object getTransferLock();     
 }

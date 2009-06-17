@@ -60,5 +60,9 @@ public interface Channel
    
    void setCommandConfirmationHandler(CommandConfirmationHandler handler);
    
-   void flushConfirmations();      
+   void flushConfirmations();  
+   
+   void handlePacket(Packet packet);
+   
+   void waitForAllReplicationResponse();
 }
