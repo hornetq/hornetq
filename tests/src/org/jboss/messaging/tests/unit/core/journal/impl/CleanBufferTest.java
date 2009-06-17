@@ -76,34 +76,42 @@ public class CleanBufferTest extends UnitTestCase
    private void testBuffer(final SequentialFileFactory factory)
    {
       ByteBuffer buffer = factory.newBuffer(100);
-      for (byte b = 0; b < 100; b++)
+      
+      try
       {
-         buffer.put(b);
-      }
-
-      buffer.rewind();
-
-      for (byte b = 0; b < 100; b++)
-      {
-         assertEquals(b, buffer.get());
-      }
-
-      buffer.limit(10);
-      factory.clearBuffer(buffer);
-      buffer.limit(100);
-
-      buffer.rewind();
-
-      for (byte b = 0; b < 100; b++)
-      {
-         if (b < 10)
+         for (byte b = 0; b < 100; b++)
          {
-            assertEquals(0, buffer.get());
+            buffer.put(b);
          }
-         else
+   
+         buffer.rewind();
+   
+         for (byte b = 0; b < 100; b++)
          {
             assertEquals(b, buffer.get());
          }
+   
+         buffer.limit(10);
+         factory.clearBuffer(buffer);
+         buffer.limit(100);
+   
+         buffer.rewind();
+   
+         for (byte b = 0; b < 100; b++)
+         {
+            if (b < 10)
+            {
+               assertEquals(0, buffer.get());
+            }
+            else
+            {
+               assertEquals(b, buffer.get());
+            }
+         }
+      }
+      finally
+      {
+         factory.releaseBuffer(buffer);
       }
    }
 
