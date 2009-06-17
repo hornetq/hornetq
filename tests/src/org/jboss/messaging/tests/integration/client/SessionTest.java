@@ -45,7 +45,7 @@ import java.util.concurrent.TimeUnit;
  *
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
  */
-public class ClientSessionTest extends ServiceTestBase
+public class SessionTest extends ServiceTestBase
 {
    private String queueName = "ClientSessionTestQ";
 

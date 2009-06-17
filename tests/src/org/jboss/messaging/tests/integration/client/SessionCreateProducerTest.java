@@ -31,7 +31,7 @@ import org.jboss.messaging.tests.util.ServiceTestBase;
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
  */
-public class ClientSessionCreateProducerTest extends ServiceTestBase
+public class SessionCreateProducerTest extends ServiceTestBase
 {
    public void testCreateAnonProducer() throws Exception
    {

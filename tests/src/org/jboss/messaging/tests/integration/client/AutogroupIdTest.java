@@ -39,7 +39,7 @@ import java.util.concurrent.CountDownLatch;
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
  */
-public class ClientAutogroupIdTest extends ServiceTestBase
+public class AutogroupIdTest extends ServiceTestBase
 {
    public final SimpleString addressA = new SimpleString("addressA");
 

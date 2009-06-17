@@ -38,9 +38,9 @@ import java.util.concurrent.TimeUnit;
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
  */
-public class ClientMessageHandlerTest extends ServiceTestBase
+public class MessageHandlerTest extends ServiceTestBase
 {
-   private static final Logger log = Logger.getLogger(ClientConsumerTest.class);
+   private static final Logger log = Logger.getLogger(MessageHandlerTest.class);
 
    private MessagingServer server;
 

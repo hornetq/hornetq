@@ -39,7 +39,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
  */
-public class ClientDeliveryOrderTest extends ServiceTestBase
+public class DeliveryOrderTest extends ServiceTestBase
 {
    public final SimpleString addressA = new SimpleString("addressA");
 

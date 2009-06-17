@@ -49,7 +49,7 @@ import org.jboss.messaging.utils.SimpleString;
  *
  * @author <a href="jmesnil@redhat.com">Jeff Mesnil</a>
  */
-public class ClientRequestorTest extends UnitTestCase
+public class RequestorTest extends UnitTestCase
 {
 
    // Constants -----------------------------------------------------

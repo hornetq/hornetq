@@ -31,7 +31,7 @@ import org.jboss.messaging.tests.util.ServiceTestBase;
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
  */
-public class ClientSessionCreateConsumerTest extends ServiceTestBase
+public class SessionCreateConsumerTest extends ServiceTestBase
 {
    private String queueName = "ClientSessionCreateConsumerTestQ";
 

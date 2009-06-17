@@ -34,7 +34,7 @@ import org.jboss.messaging.utils.SimpleString;
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
  */
-public class ClientSessionCreateAndDeleteQueueTest extends ServiceTestBase
+public class SessionCreateAndDeleteQueueTest extends ServiceTestBase
 {
    private MessagingServer server;
 

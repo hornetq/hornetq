@@ -21,8 +21,6 @@
  */
 package org.jboss.messaging.tests.integration.client;
 
-import org.jboss.messaging.core.client.ClientConsumer;
-import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.client.ClientProducer;
 import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.ClientSessionFactory;
@@ -34,7 +32,7 @@ import org.jboss.messaging.utils.SimpleString;
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
  */
-public class ClientAckBatchSizeTest extends ServiceTestBase
+public class SendTest extends ServiceTestBase
 {
    public final SimpleString addressA = new SimpleString("addressA");
 
@@ -44,110 +42,34 @@ public class ClientAckBatchSizeTest extends ServiceTestBase
 
    public final SimpleString queueC = new SimpleString("queueC");
 
-   /*ackbatchSize tests*/
 
-   /*
-   * tests that wed don't acknowledge until the correct ackBatchSize is reached
-   * */
-   
-   private int getMessageEncodeSize(final SimpleString address) throws Exception
-   {
-      ClientSessionFactory cf = createInVMFactory();
-      ClientSession session = cf.createSession(false, true, true);
-      ClientMessage message = session.createClientMessage(false);
-      // we need to set the destination so we can calculate the encodesize correctly
-      message.setDestination(address);
-      int encodeSize = message.getEncodeSize();
-      session.close();
-      cf.close();
-      return encodeSize;      
-   }
-
-   public void testAckBatchSize() throws Exception
+   public void testSendWithCommit() throws Exception
    {
       MessagingServer server = createServer(false);
-
       try
       {
          server.start();
          ClientSessionFactory cf = createInVMFactory();
-         int numMessages = 100;         
-         cf.setAckBatchSize(numMessages * getMessageEncodeSize(addressA));
-         cf.setBlockOnAcknowledge(true);
-         ClientSession sendSession = cf.createSession(false, true, true);
-         
-         ClientSession session = cf.createSession(false, true, true);
+         ClientSession session = cf.createSession(false, false, false);
          session.createQueue(addressA, queueA, false);
-         ClientProducer cp = sendSession.createProducer(addressA);
-         for (int i = 0; i < numMessages; i++)
-         {
-            cp.send(sendSession.createClientMessage(false));
-         }
-
-         ClientConsumer consumer = session.createConsumer(queueA);
-         session.start();
-         for (int i = 0; i < numMessages - 1; i++)
-         {
-            ClientMessage m = consumer.receive(5000);
-            m.acknowledge();
-         }
-
-         ClientMessage m = consumer.receive(5000);
-         Queue q = (Queue) server.getPostOffice().getBinding(queueA).getBindable();
-         assertEquals(numMessages, q.getDeliveringCount());
-         m.acknowledge();
-         assertEquals(0, q.getDeliveringCount());
-         sendSession.close();
-         session.close();
-      }
-      finally
-      {
-         if (server.isStarted())
-         {
-            server.stop();
-         }
-      }
-   }
-
-   /*
-   * tests that when the ackBatchSize is 0 we ack every message directly
-   * */
-   public void testAckBatchSizeZero() throws Exception
-   {
-      MessagingServer server = createServer(false);
-
-      try
-      {
-         server.start();
-         ClientSessionFactory cf = createInVMFactory();
-         cf.setAckBatchSize(0);
-         cf.setBlockOnAcknowledge(true);
-         ClientSession sendSession = cf.createSession(false, true, true);
+         ClientProducer cp = session.createProducer(addressA);
          int numMessages = 100;
-         
-         ClientSession session = cf.createSession(false, true, true);
-         session.createQueue(addressA, queueA, false);
-         ClientProducer cp = sendSession.createProducer(addressA);
          for (int i = 0; i < numMessages; i++)
          {
-            cp.send(sendSession.createClientMessage(false));
+            cp.send(session.createClientMessage(false));
          }
-
-         ClientConsumer consumer = session.createConsumer(queueA);
-         session.start();
          Queue q = (Queue) server.getPostOffice().getBinding(queueA).getBindable();
-         ClientMessage[] messages = new ClientMessage[numMessages];
+         assertEquals(q.getMessageCount(), 0);
+         session.commit();
+         assertEquals(q.getMessageCount(), numMessages);
+         // now send some more
          for (int i = 0; i < numMessages; i++)
          {
-            messages[i] = consumer.receive(5000);
-            assertNotNull(messages[i]);
+            cp.send(session.createClientMessage(false));
          }
-         for (int i = 0; i < numMessages; i++)
-         {
-            messages[i].acknowledge();
-            assertEquals(numMessages - i - 1, q.getDeliveringCount());
-         }
-         sendSession.close();
+         assertEquals(q.getMessageCount(), numMessages);
+         session.commit();
+         assertEquals(q.getMessageCount(), numMessages * 2);
          session.close();
       }
       finally
@@ -158,4 +80,43 @@ public class ClientAckBatchSizeTest extends ServiceTestBase
          }
       }
    }
+
+   public void testSendWithRollback() throws Exception
+   {
+      MessagingServer server = createServer(false);
+      try
+      {
+         server.start();
+         ClientSessionFactory cf = createInVMFactory();
+         ClientSession session = cf.createSession(false, false, false);
+         session.createQueue(addressA, queueA, false);
+         ClientProducer cp = session.createProducer(addressA);
+         int numMessages = 100;
+         for (int i = 0; i < numMessages; i++)
+         {
+            cp.send(session.createClientMessage(false));
+         }
+         Queue q = (Queue) server.getPostOffice().getBinding(queueA).getBindable();
+         assertEquals(q.getMessageCount(), 0);
+         session.rollback();
+         assertEquals(q.getMessageCount(), 0);
+         // now send some more
+         for (int i = 0; i < numMessages; i++)
+         {
+            cp.send(session.createClientMessage(false));
+         }
+         assertEquals(q.getMessageCount(), 0);
+         session.commit();
+         assertEquals(q.getMessageCount(), numMessages);
+         session.close();
+      }
+      finally
+      {
+         if (server.isStarted())
+         {
+            server.stop();
+         }
+      }
+   }
+
 }

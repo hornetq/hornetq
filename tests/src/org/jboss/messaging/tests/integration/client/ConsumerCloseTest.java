@@ -23,9 +23,11 @@ package org.jboss.messaging.tests.integration.client;
 
 import static org.jboss.messaging.tests.util.RandomUtil.randomSimpleString;
 
-import org.jboss.messaging.core.client.ClientProducer;
+import org.jboss.messaging.core.client.ClientConsumer;
+import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.ClientSessionFactory;
+import org.jboss.messaging.core.client.MessageHandler;
 import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.TransportConfiguration;
@@ -36,12 +38,13 @@ import org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory;
 import org.jboss.messaging.core.server.Messaging;
 import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.tests.util.ServiceTestBase;
+import org.jboss.messaging.utils.SimpleString;
 
 /**
  * 
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  */
-public class ClientProducerCloseTest extends ServiceTestBase
+public class ConsumerCloseTest extends ServiceTestBase
 {
 
    // Constants -----------------------------------------------------
@@ -49,8 +52,8 @@ public class ClientProducerCloseTest extends ServiceTestBase
    // Attributes ----------------------------------------------------
 
    private MessagingServer server;
-
    private ClientSession session;
+   private SimpleString queue;
 
    // Static --------------------------------------------------------
 
@@ -58,21 +61,40 @@ public class ClientProducerCloseTest extends ServiceTestBase
 
    // Public --------------------------------------------------------
 
-   public void testCanNotUseAClosedProducer() throws Exception
+   public void testCanNotUseAClosedConsumer() throws Exception
    {
-      final ClientProducer producer = session.createProducer(randomSimpleString());
+      final ClientConsumer consumer = session.createConsumer(queue);
 
-      assertFalse(producer.isClosed());
+      consumer.close();
 
-      producer.close();
-
-      assertTrue(producer.isClosed());
+      assertTrue(consumer.isClosed());
 
       expectMessagingException(MessagingException.OBJECT_CLOSED, new MessagingAction()
       {
          public void run() throws MessagingException
          {
-            producer.send(session.createClientMessage(false));
+            consumer.receive();
+         }
+      });
+      
+      expectMessagingException(MessagingException.OBJECT_CLOSED, new MessagingAction()
+      {
+         public void run() throws MessagingException
+         {
+            consumer.receiveImmediate();
+         }
+      });
+
+      expectMessagingException(MessagingException.OBJECT_CLOSED, new MessagingAction()
+      {
+         public void run() throws MessagingException
+         {
+            consumer.setMessageHandler(new MessageHandler()
+            {
+               public void onMessage(ClientMessage message)
+               {
+               }
+            });
          }
       });
    }
@@ -85,14 +107,20 @@ public class ClientProducerCloseTest extends ServiceTestBase
    protected void setUp() throws Exception
    {
       super.setUp();
+
       Configuration config = new ConfigurationImpl();
       config.getAcceptorConfigurations().add(new TransportConfiguration(InVMAcceptorFactory.class.getCanonicalName()));
       config.setSecurityEnabled(false);
       server = Messaging.newMessagingServer(config, false);
       server.start();
+      
+      SimpleString address = randomSimpleString();
+      queue = randomSimpleString();
 
       sf = new ClientSessionFactoryImpl(new TransportConfiguration(InVMConnectorFactory.class.getName()));
       session = sf.createSession(false, true, true);
+      session.createQueue(address, queue, false);
+
    }
    
    private ClientSessionFactory sf;
@@ -100,10 +128,12 @@ public class ClientProducerCloseTest extends ServiceTestBase
    @Override
    protected void tearDown() throws Exception
    {
+      session.deleteQueue(queue);
+      
       session.close();
-            
+      
       sf.close();
-
+      
       server.stop();
 
       super.tearDown();

@@ -52,7 +52,7 @@ import org.jboss.messaging.utils.Pair;
  *
  *
  */
-public class ClientSessionFactoryTest extends ServiceTestBase
+public class SessionFactoryTest extends ServiceTestBase
 {
    private final String groupAddress = "230.1.2.3";
 

@@ -35,9 +35,9 @@ import org.jboss.messaging.utils.SimpleString;
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
  */
-public class ClientMessageCounterTest extends ServiceTestBase
+public class MessageCounterTest extends ServiceTestBase
 {
-   private static final Logger log = Logger.getLogger(ClientConsumerTest.class);
+   private static final Logger log = Logger.getLogger(MessageCounterTest.class);
 
    private MessagingServer server;
 

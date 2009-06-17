@@ -21,6 +21,9 @@
  */
 package org.jboss.messaging.tests.integration.client;
 
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+
 import org.jboss.messaging.core.client.ClientConsumer;
 import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.client.ClientProducer;
@@ -32,15 +35,12 @@ import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.tests.util.ServiceTestBase;
 import org.jboss.messaging.utils.SimpleString;
 
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
  */
-public class ClientSessionStopStartTest extends ServiceTestBase
+public class SessionStopStartTest extends ServiceTestBase
 {
-   private static final Logger log = Logger.getLogger(ClientConsumerTest.class);
+   private static final Logger log = Logger.getLogger(SessionStopStartTest.class);
 
    private MessagingServer server;
 

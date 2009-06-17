@@ -39,11 +39,9 @@ import java.util.concurrent.TimeUnit;
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
  */
-public class ClientCommitRollbackTest extends ServiceTestBase
+public class AcknowledgeTest extends ServiceTestBase
 {
    public final SimpleString addressA = new SimpleString("addressA");
-
-   public final SimpleString addressB = new SimpleString("addressB");
 
    public final SimpleString queueA = new SimpleString("queueA");
 
@@ -52,15 +50,17 @@ public class ClientCommitRollbackTest extends ServiceTestBase
    public final SimpleString queueC = new SimpleString("queueC");
 
 
-   public void testReceiveWithCommit() throws Exception
+   public void testReceiveAckLastMessageOnly() throws Exception
    {
       MessagingServer server = createServer(false);
       try
       {
          server.start();
          ClientSessionFactory cf = createInVMFactory();
+         cf.setAckBatchSize(0);
+         cf.setBlockOnAcknowledge(true);
          ClientSession sendSession = cf.createSession(false, true, true);
-         ClientSession session = cf.createSession(false, false, false);
+         ClientSession session = cf.createSession(false, true, true);
          sendSession.createQueue(addressA, queueA, false);
          ClientProducer cp = sendSession.createProducer(addressA);
          ClientConsumer cc = session.createConsumer(queueA);
@@ -70,17 +70,18 @@ public class ClientCommitRollbackTest extends ServiceTestBase
             cp.send(sendSession.createClientMessage(false));
          }
          session.start();
+         ClientMessage cm = null;
          for (int i = 0; i < numMessages; i++)
          {
-            ClientMessage cm = cc.receive(5000);
+            cm = cc.receive(5000);
             assertNotNull(cm);
-            cm.acknowledge();
          }
+         cm.acknowledge();
          Queue q = (Queue) server.getPostOffice().getBinding(queueA).getBindable();
-         assertEquals(numMessages, q.getDeliveringCount());
-         session.commit();
+
          assertEquals(0, q.getDeliveringCount());
          session.close();
+         sendSession.close();
       }
       finally
       {
@@ -91,7 +92,7 @@ public class ClientCommitRollbackTest extends ServiceTestBase
       }
    }
 
-   public void testReceiveWithRollback() throws Exception
+   public void testAsyncConsumerNoAck() throws Exception
    {
       MessagingServer server = createServer(false);
       try
@@ -99,7 +100,7 @@ public class ClientCommitRollbackTest extends ServiceTestBase
          server.start();
          ClientSessionFactory cf = createInVMFactory();
          ClientSession sendSession = cf.createSession(false, true, true);
-         ClientSession session = cf.createSession(false, false, false);
+         ClientSession session = cf.createSession(false, true, true);
          sendSession.createQueue(addressA, queueA, false);
          ClientProducer cp = sendSession.createProducer(addressA);
          ClientConsumer cc = session.createConsumer(queueA);
@@ -108,25 +109,20 @@ public class ClientCommitRollbackTest extends ServiceTestBase
          {
             cp.send(sendSession.createClientMessage(false));
          }
+         final CountDownLatch latch = new CountDownLatch(numMessages);
          session.start();
-         for (int i = 0; i < numMessages; i++)
+         cc.setMessageHandler(new MessageHandler()
          {
-            ClientMessage cm = cc.receive(5000);
-            assertNotNull(cm);
-            cm.acknowledge();
-         }
+            public void onMessage(ClientMessage message)
+            {
+               latch.countDown();
+            }
+         });
+         assertTrue(latch.await(5, TimeUnit.SECONDS));
          Queue q = (Queue) server.getPostOffice().getBinding(queueA).getBindable();
          assertEquals(numMessages, q.getDeliveringCount());
-         session.rollback();
-         for (int i = 0; i < numMessages; i++)
-         {
-            ClientMessage cm = cc.receive(5000);
-            assertNotNull(cm);
-            cm.acknowledge();
-         }
-         assertEquals(numMessages, q.getDeliveringCount());
+         sendSession.close();
          session.close();
-         sendSession.close();
       }
       finally
       {
@@ -137,59 +133,7 @@ public class ClientCommitRollbackTest extends ServiceTestBase
       }
    }
 
-   public void testReceiveWithRollbackMultipleConsumersDifferentQueues() throws Exception
-   {
-      MessagingServer server = createServer(false);
-      try
-      {
-         server.start();
-         ClientSessionFactory cf = createInVMFactory();
-         ClientSession sendSession = cf.createSession(false, true, true);
-         ClientSession session = cf.createSession(false, false, false);
-         sendSession.createQueue(addressA, queueA, false);
-         sendSession.createQueue(addressB, queueB, false);
-         ClientProducer cp = sendSession.createProducer(addressA);
-         ClientProducer cp2 = sendSession.createProducer(addressB);
-         ClientConsumer cc = session.createConsumer(queueA);
-         ClientConsumer cc2 = session.createConsumer(queueB);
-         int numMessages = 100;
-         for (int i = 0; i < numMessages; i++)
-         {
-            cp.send(sendSession.createClientMessage(false));
-            cp2.send(sendSession.createClientMessage(false));
-         }
-         session.start();
-         for (int i = 0; i < numMessages; i++)
-         {
-            ClientMessage cm = cc.receive(5000);
-            assertNotNull(cm);
-            cm.acknowledge();
-            cm = cc2.receive(5000);
-            assertNotNull(cm);
-            cm.acknowledge();
-         }
-         Queue q = (Queue) server.getPostOffice().getBinding(queueA).getBindable();
-         Queue q2 = (Queue) server.getPostOffice().getBinding(queueB).getBindable();
-         assertEquals(numMessages, q.getDeliveringCount());
-         cc.close();
-         cc2.close();
-         session.rollback();
-         assertEquals(0, q2.getDeliveringCount());
-         assertEquals(numMessages, q.getMessageCount());
-         assertEquals(0, q2.getDeliveringCount());
-         assertEquals(numMessages, q.getMessageCount());
-         sendSession.close();
-      }
-      finally
-      {
-         if (server.isStarted())
-         {
-            server.stop();
-         }
-      }
-   }
-
-   public void testAsyncConsumerCommit() throws Exception
+   public void testAsyncConsumerAck() throws Exception
    {
       MessagingServer server = createServer(false);
       try
@@ -199,7 +143,7 @@ public class ClientCommitRollbackTest extends ServiceTestBase
          cf.setBlockOnAcknowledge(true);
          cf.setAckBatchSize(0);
          ClientSession sendSession = cf.createSession(false, true, true);
-         final ClientSession session = cf.createSession(false, true, false);
+         final ClientSession session = cf.createSession(false, true, true);
          sendSession.createQueue(addressA, queueA, false);
          ClientProducer cp = sendSession.createProducer(addressA);
          ClientConsumer cc = session.createConsumer(queueA);
@@ -233,12 +177,8 @@ public class ClientCommitRollbackTest extends ServiceTestBase
             }
          });
          assertTrue(latch.await(5, TimeUnit.SECONDS));
-         Queue q = (Queue)server.getPostOffice().getBinding(queueA).getBindable();
-         assertEquals(numMessages, q.getDeliveringCount());
-         assertEquals(numMessages, q.getMessageCount());
-         session.commit();
+         Queue q = (Queue) server.getPostOffice().getBinding(queueA).getBindable();
          assertEquals(0, q.getDeliveringCount());
-         assertEquals(0, q.getMessageCount());
          sendSession.close();
          session.close();
       }
@@ -251,7 +191,7 @@ public class ClientCommitRollbackTest extends ServiceTestBase
       }
    }
 
-   public void testAsyncConsumerRollback() throws Exception
+   public void testAsyncConsumerAckLastMessageOnly() throws Exception
    {
       MessagingServer server = createServer(false);
       try
@@ -261,7 +201,7 @@ public class ClientCommitRollbackTest extends ServiceTestBase
          cf.setBlockOnAcknowledge(true);
          cf.setAckBatchSize(0);
          ClientSession sendSession = cf.createSession(false, true, true);
-         final ClientSession session = cf.createSession(false, true, false);
+         final ClientSession session = cf.createSession(false, true, true);
          sendSession.createQueue(addressA, queueA, false);
          ClientProducer cp = sendSession.createProducer(addressA);
          ClientConsumer cc = session.createConsumer(queueA);
@@ -270,21 +210,36 @@ public class ClientCommitRollbackTest extends ServiceTestBase
          {
             cp.send(sendSession.createClientMessage(false));
          }
-         CountDownLatch latch = new CountDownLatch(numMessages);
+         final CountDownLatch latch = new CountDownLatch(numMessages);
          session.start();
-         cc.setMessageHandler(new ackHandler(session, latch));
+         cc.setMessageHandler(new MessageHandler()
+         {
+            public void onMessage(ClientMessage message)
+            {
+               if (latch.getCount() == 1)
+               {
+                  try
+                  {
+                     message.acknowledge();
+                  }
+                  catch (MessagingException e)
+                  {
+                     try
+                     {
+                        session.close();
+                     }
+                     catch (MessagingException e1)
+                     {
+                        e1.printStackTrace();
+                     }
+                  }
+               }
+               latch.countDown();
+            }
+         });
          assertTrue(latch.await(5, TimeUnit.SECONDS));
          Queue q = (Queue) server.getPostOffice().getBinding(queueA).getBindable();
-         assertEquals(numMessages, q.getDeliveringCount());
-         assertEquals(numMessages, q.getMessageCount());
-         session.stop();
-         session.rollback();
          assertEquals(0, q.getDeliveringCount());
-         assertEquals(numMessages, q.getMessageCount());
-         latch = new CountDownLatch(numMessages);
-         cc.setMessageHandler(new ackHandler(session, latch));
-         session.start();
-         assertTrue(latch.await(5, TimeUnit.SECONDS));
          sendSession.close();
          session.close();
       }
@@ -297,36 +252,4 @@ public class ClientCommitRollbackTest extends ServiceTestBase
       }
    }
 
-   private static class ackHandler implements MessageHandler
-   {
-      private final ClientSession session;
-
-      private final CountDownLatch latch;
-
-      public ackHandler(ClientSession session, CountDownLatch latch)
-      {
-         this.session = session;
-         this.latch = latch;
-      }
-
-      public void onMessage(ClientMessage message)
-      {
-         try
-         {
-            message.acknowledge();
-         }
-         catch (MessagingException e)
-         {
-            try
-            {
-               session.close();
-            }
-            catch (MessagingException e1)
-            {
-               e1.printStackTrace();
-            }
-         }
-         latch.countDown();
-      }
-   }
 }

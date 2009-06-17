@@ -52,7 +52,7 @@ import org.jboss.messaging.utils.SimpleString;
  *
  *
  */
-public class ClientSessionCloseTest extends UnitTestCase
+public class SessionCloseTest extends UnitTestCase
 {
 
    // Constants -----------------------------------------------------

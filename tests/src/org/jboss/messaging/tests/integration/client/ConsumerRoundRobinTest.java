@@ -33,7 +33,7 @@ import org.jboss.messaging.utils.SimpleString;
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
  */
-public class ClientConsumerRoundRobinTest extends ServiceTestBase
+public class ConsumerRoundRobinTest extends ServiceTestBase
 {
    public final SimpleString addressA = new SimpleString("addressA");
 

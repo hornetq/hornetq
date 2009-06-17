@@ -45,9 +45,9 @@ import java.util.concurrent.TimeUnit;
  *
  *
  */
-public class ClientSessionSendAcknowledgementHandlerTest extends ServiceTestBase
+public class SessionSendAcknowledgementHandlerTest extends ServiceTestBase
 {
-   private static final Logger log = Logger.getLogger(ClientSessionSendAcknowledgementHandlerTest.class);
+   private static final Logger log = Logger.getLogger(SessionSendAcknowledgementHandlerTest.class);
 
    private MessagingServer server;
 

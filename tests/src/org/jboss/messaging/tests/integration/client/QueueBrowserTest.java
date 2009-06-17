@@ -38,9 +38,9 @@ import org.jboss.messaging.utils.SimpleString;
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
  */
-public class ClientQueueBrowserTest extends ServiceTestBase
+public class QueueBrowserTest extends ServiceTestBase
 {
-   private static final Logger log = Logger.getLogger(ClientConsumerTest.class);
+   private static final Logger log = Logger.getLogger(QueueBrowserTest.class);
 
    private MessagingServer server;
 
