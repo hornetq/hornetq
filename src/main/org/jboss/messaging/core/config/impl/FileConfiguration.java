@@ -24,6 +24,18 @@ package org.jboss.messaging.core.config.impl;
 
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL_MULTIPLIER;
+import static org.jboss.messaging.core.config.impl.Validators.GE_ZERO;
+import static org.jboss.messaging.core.config.impl.Validators.GT_ZERO;
+import static org.jboss.messaging.core.config.impl.Validators.MINUS_ONE_OR_GE_ZERO;
+import static org.jboss.messaging.core.config.impl.Validators.MINUS_ONE_OR_GT_ZERO;
+import static org.jboss.messaging.core.config.impl.Validators.NOT_NULL_OR_EMPTY;
+import static org.jboss.messaging.core.config.impl.Validators.NO_CHECK;
+import static org.jboss.messaging.core.config.impl.Validators.THREAD_PRIORITY_RANGE;
+import static org.jboss.messaging.utils.XMLConfigurationUtil.getBoolean;
+import static org.jboss.messaging.utils.XMLConfigurationUtil.getDouble;
+import static org.jboss.messaging.utils.XMLConfigurationUtil.getInteger;
+import static org.jboss.messaging.utils.XMLConfigurationUtil.getLong;
+import static org.jboss.messaging.utils.XMLConfigurationUtil.getString;
 
 import java.io.InputStreamReader;
 import java.io.Reader;
@@ -105,45 +117,45 @@ public class FileConfiguration extends ConfigurationImpl
 
       persistDeliveryCountBeforeDelivery = getBoolean(e, "persist-delivery-count-before-delivery", persistDeliveryCountBeforeDelivery);
       
-      queueActivationTimeout = getLong(e, "queue-activation-timeout", queueActivationTimeout);
+      queueActivationTimeout = getLong(e, "queue-activation-timeout", queueActivationTimeout, GE_ZERO);
 
       // NOTE! All the defaults come from the super class
 
-      scheduledThreadPoolMaxSize = getInteger(e, "scheduled-thread-pool-max-size", scheduledThreadPoolMaxSize);
+      scheduledThreadPoolMaxSize = getInteger(e, "scheduled-thread-pool-max-size", scheduledThreadPoolMaxSize, GT_ZERO);
       
-      threadPoolMaxSize = getInteger(e, "thread-pool-max-size", threadPoolMaxSize);
+      threadPoolMaxSize = getInteger(e, "thread-pool-max-size", threadPoolMaxSize, MINUS_ONE_OR_GT_ZERO);
 
       securityEnabled = getBoolean(e, "security-enabled", securityEnabled);
 
       jmxManagementEnabled = getBoolean(e, "jmx-management-enabled", jmxManagementEnabled);
 
-      securityInvalidationInterval = getLong(e, "security-invalidation-interval", securityInvalidationInterval);
+      securityInvalidationInterval = getLong(e, "security-invalidation-interval", securityInvalidationInterval, GT_ZERO);
 
-      connectionTTLOverride = getLong(e, "connection-ttl-override", connectionTTLOverride);
+      connectionTTLOverride = getLong(e, "connection-ttl-override", connectionTTLOverride, MINUS_ONE_OR_GT_ZERO);
 
-      transactionTimeout = getLong(e, "transaction-timeout", transactionTimeout);
+      transactionTimeout = getLong(e, "transaction-timeout", transactionTimeout, GT_ZERO);
 
-      transactionTimeoutScanPeriod = getLong(e, "transaction-timeout-scan-period", transactionTimeoutScanPeriod);
+      transactionTimeoutScanPeriod = getLong(e, "transaction-timeout-scan-period", transactionTimeoutScanPeriod, GT_ZERO);
 
-      messageExpiryScanPeriod = getLong(e, "message-expiry-scan-period", messageExpiryScanPeriod);
+      messageExpiryScanPeriod = getLong(e, "message-expiry-scan-period", messageExpiryScanPeriod, GT_ZERO);
 
-      messageExpiryThreadPriority = getInteger(e, "message-expiry-thread-priority", messageExpiryThreadPriority);
+      messageExpiryThreadPriority = getInteger(e, "message-expiry-thread-priority", messageExpiryThreadPriority, THREAD_PRIORITY_RANGE);
 
-      idCacheSize = getInteger(e, "id-cache-size", idCacheSize);
+      idCacheSize = getInteger(e, "id-cache-size", idCacheSize, GT_ZERO);
 
       persistIDCache = getBoolean(e, "persist-id-cache", persistIDCache);
 
-      managementAddress = new SimpleString(getString(e, "management-address", managementAddress.toString()));
+      managementAddress = new SimpleString(getString(e, "management-address", managementAddress.toString(), NOT_NULL_OR_EMPTY));
 
       managementNotificationAddress = new SimpleString(getString(e,
                                                                  "management-notification-address",
-                                                                 managementNotificationAddress.toString()));
+                                                                 managementNotificationAddress.toString(), NOT_NULL_OR_EMPTY));
 
-      managementClusterPassword = getString(e, "management-cluster-password", managementClusterPassword);
+      managementClusterPassword = getString(e, "management-cluster-password", managementClusterPassword, NOT_NULL_OR_EMPTY);
 
-      managementClusterUser = getString(e, "management-cluster-user", managementClusterUser);
+      managementClusterUser = getString(e, "management-cluster-user", managementClusterUser, NOT_NULL_OR_EMPTY);
 
-      managementRequestTimeout = getLong(e, "management-request-timeout", managementRequestTimeout);
+      managementRequestTimeout = getLong(e, "management-request-timeout", managementRequestTimeout, GT_ZERO);
 
       NodeList interceptorNodes = e.getElementsByTagName("remoting-interceptors");
 
@@ -181,7 +193,7 @@ public class FileConfiguration extends ConfigurationImpl
 
       for (int i = 0; i < connectorNodes.getLength(); i++)
       {
-         Node connectorNode = connectorNodes.item(i);
+         Element connectorNode = (Element)connectorNodes.item(i);
 
          TransportConfiguration connectorConfig = parseTransportConfiguration(connectorNode);
 
@@ -207,7 +219,7 @@ public class FileConfiguration extends ConfigurationImpl
 
       for (int i = 0; i < acceptorNodes.getLength(); i++)
       {
-         Node acceptorNode = acceptorNodes.item(i);
+         Element acceptorNode = (Element)acceptorNodes.item(i);
 
          TransportConfiguration acceptorConfig = parseTransportConfiguration(acceptorNode);
 
@@ -261,28 +273,23 @@ public class FileConfiguration extends ConfigurationImpl
 
       // Persistence config
 
-      largeMessagesDirectory = getString(e, "large-messages-directory", largeMessagesDirectory);
+      largeMessagesDirectory = getString(e, "large-messages-directory", largeMessagesDirectory, NOT_NULL_OR_EMPTY);
 
-      bindingsDirectory = getString(e, "bindings-directory", bindingsDirectory);
+      bindingsDirectory = getString(e, "bindings-directory", bindingsDirectory, NOT_NULL_OR_EMPTY);
 
       createBindingsDir = getBoolean(e, "create-bindings-dir", createBindingsDir);
 
-      journalDirectory = getString(e, "journal-directory", journalDirectory);
+      journalDirectory = getString(e, "journal-directory", journalDirectory, NOT_NULL_OR_EMPTY);
 
-      pagingDirectory = getString(e, "paging-directory", pagingDirectory);
+      pagingDirectory = getString(e, "paging-directory", pagingDirectory, NOT_NULL_OR_EMPTY);
 
-      pagingMaxGlobalSize = getLong(e, "paging-max-global-size-bytes", pagingMaxGlobalSize);
+      pagingMaxGlobalSize = getLong(e, "paging-max-global-size-bytes", pagingMaxGlobalSize, MINUS_ONE_OR_GT_ZERO);
 
-      globalPageSize = getInteger(e, "global-page-size", globalPageSize);
+      globalPageSize = getInteger(e, "global-page-size", globalPageSize, GT_ZERO);
       
       createJournalDir = getBoolean(e, "create-journal-dir", createJournalDir);
 
-      String s = getString(e, "journal-type", journalType.toString());
-
-      if (s == null || !s.equals(JournalType.NIO.toString()) && !s.equals(JournalType.ASYNCIO.toString()))
-      {
-         throw new IllegalArgumentException("Invalid journal type " + s);
-      }
+      String s = getString(e, "journal-type", journalType.toString(), Validators.JOURNAL_TYPE);
 
       if (s.equals(JournalType.NIO.toString()))
       {
@@ -297,29 +304,29 @@ public class FileConfiguration extends ConfigurationImpl
 
       journalSyncNonTransactional = getBoolean(e, "journal-sync-non-transactional", journalSyncNonTransactional);
 
-      journalFileSize = getInteger(e, "journal-file-size", journalFileSize);
+      journalFileSize = getInteger(e, "journal-file-size", journalFileSize, GT_ZERO);
       
       journalAIOFlushSync = getBoolean(e, "journal-aio-flush-on-sync", DEFAULT_JOURNAL_AIO_FLUSH_SYNC);
       
-      journalAIOBufferTimeout = getInteger(e, "journal-aio-buffer-timeout", DEFAULT_JOURNAL_AIO_BUFFER_TIMEOUT);
+      journalAIOBufferTimeout = getInteger(e, "journal-aio-buffer-timeout", DEFAULT_JOURNAL_AIO_BUFFER_TIMEOUT, GT_ZERO);
       
-      journalAIOBufferSize = getInteger(e, "journal-aio-buffer-size", DEFAULT_JOURNAL_AIO_BUFFER_SIZE);
+      journalAIOBufferSize = getInteger(e, "journal-aio-buffer-size", DEFAULT_JOURNAL_AIO_BUFFER_SIZE, GT_ZERO);
 
-      journalMinFiles = getInteger(e, "journal-min-files", journalMinFiles);
+      journalMinFiles = getInteger(e, "journal-min-files", journalMinFiles, GT_ZERO);
 
-      journalMaxAIO = getInteger(e, "journal-max-aio", journalMaxAIO);
+      journalMaxAIO = getInteger(e, "journal-max-aio", journalMaxAIO, GT_ZERO);
       
       logJournalWriteRate = getBoolean(e, "log-journal-write-rate", DEFAULT_JOURNAL_LOG_WRITE_RATE);
       
-      journalPerfBlastPages = getInteger(e, "perf-blast-pages", DEFAULT_JOURNAL_PERF_BLAST_PAGES);
+      journalPerfBlastPages = getInteger(e, "perf-blast-pages", DEFAULT_JOURNAL_PERF_BLAST_PAGES, MINUS_ONE_OR_GT_ZERO);
 
       wildcardRoutingEnabled = getBoolean(e, "wild-card-routing-enabled", wildcardRoutingEnabled);
 
       messageCounterEnabled = getBoolean(e, "message-counter-enabled", messageCounterEnabled);
 
-      messageCounterSamplePeriod = getLong(e, "message-counter-sample-period", messageCounterSamplePeriod);
+      messageCounterSamplePeriod = getLong(e, "message-counter-sample-period", messageCounterSamplePeriod, GT_ZERO);
 
-      messageCounterMaxDayHistory = getInteger(e, "message-counter-max-day-history", messageCounterMaxDayHistory);
+      messageCounterMaxDayHistory = getInteger(e, "message-counter-max-day-history", messageCounterMaxDayHistory, GT_ZERO);
       
       started = true;
    }
@@ -343,127 +350,79 @@ public class FileConfiguration extends ConfigurationImpl
 
    // Private -------------------------------------------------------------------------
 
-   private Boolean getBoolean(final Element e, final String name, final Boolean def)
+   private TransportConfiguration parseTransportConfiguration(final Element e)
    {
-      NodeList nl = e.getElementsByTagName(name);
-      if (nl.getLength() > 0)
-      {
-         return org.jboss.messaging.utils.XMLUtil.parseBoolean(nl.item(0));
-      }
-      return def;
-   }
-
-   private Integer getInteger(final Element e, final String name, final Integer def)
-   {
-      NodeList nl = e.getElementsByTagName(name);
-      if (nl.getLength() > 0)
-      {
-         return XMLUtil.parseInt(nl.item(0));
-      }
-      return def;
-   }
-
-   private Long getLong(final Element e, final String name, final Long def)
-   {
-      NodeList nl = e.getElementsByTagName(name);
-      if (nl.getLength() > 0)
-      {
-         return org.jboss.messaging.utils.XMLUtil.parseLong(nl.item(0));
-      }
-      return def;
-   }
-
-   private String getString(final Element e, final String name, final String def)
-   {
-      NodeList nl = e.getElementsByTagName(name);
-      if (nl.getLength() > 0)
-      {
-         return nl.item(0).getTextContent().trim();
-      }
-      return def;
-   }
-
-   private TransportConfiguration parseTransportConfiguration(final Node node)
-   {
-      Node nameNode = node.getAttributes().getNamedItem("name");
+      Node nameNode = e.getAttributes().getNamedItem("name");
 
       String name = nameNode != null ? nameNode.getNodeValue() : null;
 
-      NodeList children = node.getChildNodes();
-
-      String clazz = null;
+      String clazz = getString(e, "factory-class", null, NOT_NULL_OR_EMPTY);
 
       Map<String, Object> params = new HashMap<String, Object>();
 
-      for (int i = 0; i < children.getLength(); i++)
+      NodeList paramsNodes = e.getElementsByTagName("param");
+
+      for (int i = 0; i < paramsNodes.getLength(); i++)
       {
-         String nodeName = children.item(i).getNodeName();
+         Node paramNode = paramsNodes.item(i);
+         NamedNodeMap attributes =paramNode.getAttributes();
 
-         if ("factory-class".equalsIgnoreCase(nodeName))
+         Node nkey = attributes.getNamedItem("key");
+
+         String key = nkey.getTextContent();
+
+         Node nValue = attributes.getNamedItem("value");
+
+         Node nType = attributes.getNamedItem("type");
+
+         String type = nType.getTextContent();
+
+         if (type.equalsIgnoreCase("Integer"))
          {
-            clazz = children.item(i).getTextContent();
+            int iVal = org.jboss.messaging.utils.XMLUtil.parseInt(nValue);
+
+            params.put(key, iVal);
          }
-         else if ("param".equalsIgnoreCase(nodeName))
+         else if (type.equalsIgnoreCase("Long"))
          {
-            NamedNodeMap attributes = children.item(i).getAttributes();
+            long lVal = org.jboss.messaging.utils.XMLUtil.parseLong(nValue);
 
-            Node nkey = attributes.getNamedItem("key");
+            params.put(key, lVal);
+         }
+         else if (type.equalsIgnoreCase("String"))
+         {
+            params.put(key, nValue.getTextContent().trim());
+         }
+         else if (type.equalsIgnoreCase("Boolean"))
+         {
+            boolean bVal = org.jboss.messaging.utils.XMLUtil.parseBoolean(nValue);
 
-            String key = nkey.getTextContent();
-
-            Node nValue = attributes.getNamedItem("value");
-
-            Node nType = attributes.getNamedItem("type");
-
-            String type = nType.getTextContent();
-
-            if (type.equalsIgnoreCase("Integer"))
-            {
-               int iVal = org.jboss.messaging.utils.XMLUtil.parseInt(nValue);
-
-               params.put(key, iVal);
-            }
-            else if (type.equalsIgnoreCase("Long"))
-            {
-               long lVal = org.jboss.messaging.utils.XMLUtil.parseLong(nValue);
-
-               params.put(key, lVal);
-            }
-            else if (type.equalsIgnoreCase("String"))
-            {
-               params.put(key, nValue.getTextContent().trim());
-            }
-            else if (type.equalsIgnoreCase("Boolean"))
-            {
-               boolean bVal = org.jboss.messaging.utils.XMLUtil.parseBoolean(nValue);
-
-               params.put(key, bVal);
-            }
-            else
-            {
-               throw new IllegalArgumentException("Invalid parameter type " + type);
-            }
+            params.put(key, bVal);
+         }
+         else
+         {
+            throw new IllegalArgumentException("Invalid parameter type " + type);
          }
       }
 
       return new TransportConfiguration(clazz, params, name);
    }
 
-   private void parseBroadcastGroupConfiguration(final Element bgNode)
+   private void parseBroadcastGroupConfiguration(final Element e)
    {
-      String name = bgNode.getAttribute("name");
+      String name = e.getAttribute("name");
 
-      String localAddress = null;
+      String localAddress = getString(e, "local-bind-address", null, NO_CHECK);
       
-      int localBindPort = -1;
+      int localBindPort = getInteger(e, "local-bind-port", -1, MINUS_ONE_OR_GT_ZERO);
 
-      String groupAddress = null;
+      String groupAddress = getString(e, "group-address", null, NOT_NULL_OR_EMPTY);
 
-      int groupPort = -1;
+      int groupPort = getInteger(e, "group-port", -1, GT_ZERO);
 
-      long broadcastPeriod = ConfigurationImpl.DEFAULT_BROADCAST_PERIOD;
+      long broadcastPeriod = getLong(e, "broadcast-period", DEFAULT_BROADCAST_PERIOD, GT_ZERO);
 
-      NodeList children = bgNode.getChildNodes();
+      NodeList children = e.getChildNodes();
 
       List<Pair<String, String>> connectorNames = new ArrayList<Pair<String, String>>();
 
@@ -471,27 +430,7 @@ public class FileConfiguration extends ConfigurationImpl
       {
          Node child = children.item(j);
 
-         if (child.getNodeName().equals("local-bind-address"))
-         {
-            localAddress = child.getTextContent().trim();
-         }
-         else if (child.getNodeName().equals("local-bind-port"))
-         {
-            localBindPort = org.jboss.messaging.utils.XMLUtil.parseInt(child);
-         }
-         else if (child.getNodeName().equals("group-address"))
-         {
-            groupAddress = child.getTextContent().trim();
-         }
-         else if (child.getNodeName().equals("group-port"))
-         {
-            groupPort = org.jboss.messaging.utils.XMLUtil.parseInt(child);
-         }
-         else if (child.getNodeName().equals("broadcast-period"))
-         {
-            broadcastPeriod = org.jboss.messaging.utils.XMLUtil.parseLong(child);
-         }
-         else if (child.getNodeName().equals("connector-ref"))
+         if (child.getNodeName().equals("connector-ref"))
          {
             String connectorName = child.getAttributes().getNamedItem("connector-name").getNodeValue();
 
@@ -521,35 +460,15 @@ public class FileConfiguration extends ConfigurationImpl
       broadcastGroupConfigurations.add(config);
    }
 
-   private void parseDiscoveryGroupConfiguration(final Element bgNode)
+   private void parseDiscoveryGroupConfiguration(final Element e)
    {
-      String name = bgNode.getAttribute("name");
+      String name = e.getAttribute("name");
 
-      String groupAddress = null;
+      String groupAddress = getString(e, "group-address", null, NOT_NULL_OR_EMPTY);
 
-      int groupPort = -1;
+      int groupPort = getInteger(e, "group-port", -1, MINUS_ONE_OR_GT_ZERO);
 
-      long refreshTimeout = ConfigurationImpl.DEFAULT_BROADCAST_REFRESH_TIMEOUT;
-
-      NodeList children = bgNode.getChildNodes();
-
-      for (int j = 0; j < children.getLength(); j++)
-      {
-         Node child = children.item(j);
-
-         if (child.getNodeName().equals("group-address"))
-         {
-            groupAddress = child.getTextContent().trim();
-         }
-         else if (child.getNodeName().equals("group-port"))
-         {
-            groupPort = org.jboss.messaging.utils.XMLUtil.parseInt(child);
-         }
-         else if (child.getNodeName().equals("refresh-timeout"))
-         {
-            refreshTimeout = org.jboss.messaging.utils.XMLUtil.parseLong(child);
-         }
-      }
+      long refreshTimeout = getLong(e, "refresh-timeout", DEFAULT_BROADCAST_REFRESH_TIMEOUT, GT_ZERO);
 
       DiscoveryGroupConfiguration config = new DiscoveryGroupConfiguration(name,
                                                                            groupAddress,
@@ -568,53 +487,31 @@ public class FileConfiguration extends ConfigurationImpl
       }
    }
 
-   private void parseClusterConnectionConfiguration(final Element brNode)
+   private void parseClusterConnectionConfiguration(final Element e)
    {
-      String name = null;
+      String name = e.getAttribute("name");
 
-      String address = null;
+      String address = getString(e, "address", null, NOT_NULL_OR_EMPTY);
 
-      boolean duplicateDetection = DEFAULT_CLUSTER_DUPLICATE_DETECTION;
+      boolean duplicateDetection = getBoolean(e, "use-duplicate-detection", DEFAULT_CLUSTER_DUPLICATE_DETECTION);
 
-      boolean forwardWhenNoConsumers = DEFAULT_CLUSTER_FORWARD_WHEN_NO_CONSUMERS;
+      boolean forwardWhenNoConsumers = getBoolean(e, "forward-when-no-consumers", DEFAULT_CLUSTER_FORWARD_WHEN_NO_CONSUMERS);
+
+      int maxHops = getInteger(e, "max-hops", DEFAULT_CLUSTER_MAX_HOPS, GE_ZERO);
+
+      long retryInterval = getLong(e, "retry-interval", (long)DEFAULT_CLUSTER_RETRY_INTERVAL, GT_ZERO);
 
       String discoveryGroupName = null;
 
-      int maxHops = DEFAULT_CLUSTER_MAX_HOPS;
-
-      long retryInterval = DEFAULT_CLUSTER_RETRY_INTERVAL;
-
       List<Pair<String, String>> connectorPairs = new ArrayList<Pair<String, String>>();
 
-      name = brNode.getAttribute("name");
-
-      NodeList children = brNode.getChildNodes();
+      NodeList children = e.getChildNodes();
 
       for (int j = 0; j < children.getLength(); j++)
       {
          Node child = children.item(j);
 
-         if (child.getNodeName().equals("address"))
-         {
-            address = child.getTextContent().trim();
-         }  
-         else if (child.getNodeName().equals("retry-interval"))
-         {
-            retryInterval = XMLUtil.parseLong(child);
-         }        
-         else if (child.getNodeName().equals("max-hops"))
-         {
-            maxHops = XMLUtil.parseInt(child);
-         }        
-         else if (child.getNodeName().equals("use-duplicate-detection"))
-         {
-            duplicateDetection = org.jboss.messaging.utils.XMLUtil.parseBoolean(child);
-         }
-         else if (child.getNodeName().equals("forward-when-no-consumers"))
-         {
-            forwardWhenNoConsumers = org.jboss.messaging.utils.XMLUtil.parseBoolean(child);
-         }
-         else if (child.getNodeName().equals("discovery-group-ref"))
+         if (child.getNodeName().equals("discovery-group-ref"))
          {
             discoveryGroupName = child.getAttributes().getNamedItem("discovery-group-name").getNodeValue();
          }
@@ -665,31 +562,29 @@ public class FileConfiguration extends ConfigurationImpl
 
    private void parseBridgeConfiguration(final Element brNode)
    {
-      String name = null;
+      String name = brNode.getAttribute("name");
 
-      String queueName = null;
+      String queueName = getString(brNode, "queue-name", null, NOT_NULL_OR_EMPTY);
 
-      String forwardingAddress = null;
+      String forwardingAddress = getString(brNode, "forwarding-address", null, NOT_NULL_OR_EMPTY);
+
+      String transformerClassName = getString(brNode, "transformer-class-name", null, NO_CHECK);
+
+      long retryInterval = getLong(brNode, "retry-interval", DEFAULT_RETRY_INTERVAL, GT_ZERO);
+
+      double retryIntervalMultiplier = getDouble(brNode, "retry-interval-multiplier", DEFAULT_RETRY_INTERVAL_MULTIPLIER, GT_ZERO);
+      
+      int reconnectAttempts = getInteger(brNode, "reconnect-attempts", DEFAULT_BRIDGE_RECONNECT_ATTEMPTS, MINUS_ONE_OR_GE_ZERO);
+
+      boolean failoverOnServerShutdown = getBoolean(brNode, "failover-on-server-shutdown", ClientSessionFactoryImpl.DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN);
+
+      boolean useDuplicateDetection = getBoolean(brNode, "use-duplicate-detection", DEFAULT_BRIDGE_DUPLICATE_DETECTION);
 
       String filterString = null;
-
+      
       Pair<String, String> connectorPair = null;
 
       String discoveryGroupName = null;
-
-      String transformerClassName = null;
-
-      long retryInterval = DEFAULT_RETRY_INTERVAL;
-
-      double retryIntervalMultiplier = DEFAULT_RETRY_INTERVAL_MULTIPLIER;
-
-      int reconnectAttempts = ConfigurationImpl.DEFAULT_BRIDGE_RECONNECT_ATTEMPTS;
-
-      boolean failoverOnServerShutdown = ClientSessionFactoryImpl.DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN;
-
-      boolean useDuplicateDetection = DEFAULT_BRIDGE_DUPLICATE_DETECTION;
-
-      name = brNode.getAttribute("name");
 
       NodeList children = brNode.getChildNodes();
 
@@ -697,41 +592,9 @@ public class FileConfiguration extends ConfigurationImpl
       {
          Node child = children.item(j);
 
-         if (child.getNodeName().equals("queue-name"))
-         {
-            queueName = child.getTextContent().trim();
-         }
-         else if (child.getNodeName().equals("forwarding-address"))
-         {
-            forwardingAddress = child.getTextContent().trim();
-         }
-         else if (child.getNodeName().equals("filter"))
+         if (child.getNodeName().equals("filter"))
          {
             filterString = child.getAttributes().getNamedItem("string").getNodeValue();
-         }
-         else if (child.getNodeName().equals("transformer-class-name"))
-         {
-            transformerClassName = child.getTextContent().trim();
-         }
-         else if (child.getNodeName().equals("retry-interval"))
-         {
-            retryInterval = org.jboss.messaging.utils.XMLUtil.parseLong(child);
-         }
-         else if (child.getNodeName().equals("retry-interval-multiplier"))
-         {
-            retryIntervalMultiplier = XMLUtil.parseDouble(child);
-         }
-         else if (child.getNodeName().equals("reconnect-attempts"))
-         {
-            reconnectAttempts = org.jboss.messaging.utils.XMLUtil.parseInt(child);
-         }
-         else if (child.getNodeName().equals("failover-on-server-shutdown"))
-         {
-            failoverOnServerShutdown = org.jboss.messaging.utils.XMLUtil.parseBoolean(child);
-         }
-         else if (child.getNodeName().equals("use-duplicate-detection"))
-         {
-            useDuplicateDetection = org.jboss.messaging.utils.XMLUtil.parseBoolean(child);
          }
          else if (child.getNodeName().equals("discovery-group-ref"))
          {
@@ -788,53 +651,31 @@ public class FileConfiguration extends ConfigurationImpl
       bridgeConfigurations.add(config);
    }
 
-   private void parseDivertConfiguration(final Element dvNode)
+   private void parseDivertConfiguration(final Element e)
    {
-      String name = null;
+      String name = e.getAttribute("name");
 
-      String routingName = null;
+      String routingName = getString(e, "routing-name", null, NOT_NULL_OR_EMPTY);
 
-      String address = null;
+      String address = getString(e, "address", null, NOT_NULL_OR_EMPTY);
 
-      String forwardingAddress = null;
+      String forwardingAddress = getString(e, "forwarding-address", null, NOT_NULL_OR_EMPTY);
 
-      boolean exclusive = DEFAULT_DIVERT_EXCLUSIVE;
+      boolean exclusive = getBoolean(e, "exclusive", DEFAULT_DIVERT_EXCLUSIVE);
+
+      String transformerClassName = getString(e, "transformer-class-name", null, NO_CHECK);
 
       String filterString = null;
 
-      String transformerClassName = null;
+      NodeList children = e.getChildNodes();
 
-      NodeList children = dvNode.getChildNodes();
-
-      name = dvNode.getAttribute("name");
-      
       for (int j = 0; j < children.getLength(); j++)
       {
          Node child = children.item(j);
 
-         if (child.getNodeName().equals("routing-name"))
-         {
-            routingName = child.getTextContent().trim();
-         }
-         else if (child.getNodeName().equals("address"))
-         {
-            address = child.getTextContent().trim();
-         }
-         else if (child.getNodeName().equals("forwarding-address"))
-         {
-            forwardingAddress = child.getTextContent().trim();
-         }
-         else if (child.getNodeName().equals("exclusive"))
-         {
-            exclusive = org.jboss.messaging.utils.XMLUtil.parseBoolean(child);
-         }
-         else if (child.getNodeName().equals("filter"))
+         if (child.getNodeName().equals("filter"))
          {
             filterString = child.getAttributes().getNamedItem("string").getNodeValue();
-         }
-         else if (child.getNodeName().equals("transformer-class-name"))
-         {
-            transformerClassName = child.getTextContent().trim();
          }
       }
 

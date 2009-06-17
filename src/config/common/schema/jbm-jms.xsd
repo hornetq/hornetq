@@ -28,7 +28,7 @@
    		<xsd:all>
            	<xsd:element name="connector-ref" type="connector-refType" maxOccurs="1" minOccurs="0"></xsd:element>
            	<xsd:element name="discovery-group-ref" type="discovery-group-refType" maxOccurs="1" minOccurs="0"></xsd:element>
-           	<xsd:element name="discovery-initial-wait-timeout" type="xsd:unsignedLong" maxOccurs="1" minOccurs="0"></xsd:element>
+           	<xsd:element name="discovery-initial-wait-timeout" type="xsd:long" maxOccurs="1" minOccurs="0"></xsd:element>
            	
            	<xsd:element name="entries" maxOccurs="1" minOccurs="0">
                 <xsd:complexType>
@@ -39,37 +39,37 @@
 		            </xsd:sequence>
 	            </xsd:complexType>
             </xsd:element>
-   			<xsd:element name="client-failure-check-period" type="xsd:unsignedLong"
+   			<xsd:element name="client-failure-check-period" type="xsd:long"
    				maxOccurs="1" minOccurs="0">
    			</xsd:element>
-   			<xsd:element name="connection-ttl" type="xsd:unsignedLong"
+   			<xsd:element name="connection-ttl" type="xsd:long"
    				maxOccurs="1" minOccurs="0">
    			</xsd:element>
-   			 <xsd:element name="call-timeout" type="xsd:unsignedLong"
+   			 <xsd:element name="call-timeout" type="xsd:long"
                 maxOccurs="1" minOccurs="0">
             </xsd:element>
-            <xsd:element name="consumer-window-size" type="minusOneOrMoreInteger"
+            <xsd:element name="consumer-window-size" type="xsd:int"
                 maxOccurs="1" minOccurs="0">
             </xsd:element>
-            <xsd:element name="consumer-max-rate" type="xsd:positiveInteger"
+            <xsd:element name="consumer-max-rate" type="xsd:int"
                 maxOccurs="1" minOccurs="0">
             </xsd:element>
-            <xsd:element name="producer-window-size" type="minusOneOrMoreInteger"
+            <xsd:element name="producer-window-size" type="xsd:int"
                 maxOccurs="1" minOccurs="0">
             </xsd:element>
-            <xsd:element name="producer-max-rate" type="xsd:positiveInteger"
+            <xsd:element name="producer-max-rate" type="xsd:int"
                 maxOccurs="1" minOccurs="0">
             </xsd:element>            
-   			<xsd:element name="min-large-message-size" type="xsd:unsignedLong"
+   			<xsd:element name="min-large-message-size" type="xsd:long"
    				maxOccurs="1" minOccurs="0">
    			</xsd:element>   			          
             <xsd:element name="client-id" type="xsd:string"
                 maxOccurs="1" minOccurs="0">
             </xsd:element>            
-            <xsd:element name="dups-ok-batch-size" type="xsd:positiveInteger"
+            <xsd:element name="dups-ok-batch-size" type="xsd:int"
                 maxOccurs="1" minOccurs="0">
             </xsd:element>
-            <xsd:element name="transaction-batch-size" type="xsd:positiveInteger"
+            <xsd:element name="transaction-batch-size" type="xsd:int"
                 maxOccurs="1" minOccurs="0">
             </xsd:element>
             <xsd:element name="block-on-acknowledge" type="xsd:boolean"
@@ -84,19 +84,19 @@
             <xsd:element name="auto-group-id" type="xsd:boolean"
                 maxOccurs="1" minOccurs="0">
             </xsd:element>
-            <xsd:element name="max-connections" type="xsd:positiveInteger"
+            <xsd:element name="max-connections" type="xsd:int"
                 maxOccurs="1" minOccurs="0">
             </xsd:element>
             <xsd:element name="pre-acknowledge" type="xsd:boolean"
    				maxOccurs="1" minOccurs="0">
    			</xsd:element>
-            <xsd:element name="retry-interval" type="xsd:unsignedLong"
+            <xsd:element name="retry-interval" type="xsd:long"
    				maxOccurs="1" minOccurs="0">
    			</xsd:element>
    			<xsd:element name="retry-interval-multiplier" type="xsd:float"
    				maxOccurs="1" minOccurs="0">
    			</xsd:element>            
-            <xsd:element name="reconnect-attempts" type="minusOneOrMoreInteger"
+            <xsd:element name="reconnect-attempts" type="xsd:int"
                 maxOccurs="1" minOccurs="0">
             </xsd:element>
             <xsd:element name="failover-on-server-shutdown" type="xsd:boolean"
@@ -108,10 +108,10 @@
             <xsd:element name="use-global-pools" type="xsd:boolean"
                 maxOccurs="1" minOccurs="0">
             </xsd:element>
-            <xsd:element name="scheduled-thread-pool-max-size" type="xsd:positiveInteger"
+            <xsd:element name="scheduled-thread-pool-max-size" type="xsd:int"
                 maxOccurs="1" minOccurs="0">
             </xsd:element>
-            <xsd:element name="thread-pool-max-size" type="xsd:positiveInteger"
+            <xsd:element name="thread-pool-max-size" type="xsd:int"
                 maxOccurs="1" minOccurs="0">
             </xsd:element>
    		</xsd:all>
@@ -155,12 +155,4 @@
     	</xsd:sequence>
     	<xsd:attribute name="name" type="xsd:ID" use="required"></xsd:attribute>
     </xsd:complexType>
-
-    
-    <xsd:simpleType name="minusOneOrMoreInteger">
-      <xsd:restriction base="xsd:int">
-         <xsd:minInclusive value="-1"></xsd:minInclusive>
-      </xsd:restriction>
-   </xsd:simpleType>	
-    
 </xsd:schema>
