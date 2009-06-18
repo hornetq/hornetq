@@ -177,7 +177,7 @@ public class DuplicateDetectionUnitTest extends ServiceTestBase
    // Private -------------------------------------------------------
 
    // Inner classes -------------------------------------------------
-   class FakePagingManager implements PagingManager
+   static class FakePagingManager implements PagingManager
    {
 
       public void activate()
