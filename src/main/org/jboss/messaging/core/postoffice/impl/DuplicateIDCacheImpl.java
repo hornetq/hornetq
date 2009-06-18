@@ -69,7 +69,6 @@ public class DuplicateIDCacheImpl implements DuplicateIDCache
 
    private final boolean persist;
 
-   
    public DuplicateIDCacheImpl(final SimpleString address,
                                final int size,
                                final StorageManager storageManager,
@@ -97,9 +96,9 @@ public class DuplicateIDCacheImpl implements DuplicateIDCache
          if (count < cacheSize)
          {
             ByteArrayHolder bah = new ByteArrayHolder(id.a);
-            
+
             Pair<ByteArrayHolder, Long> pair = new Pair<ByteArrayHolder, Long>(bah, id.b);
-            
+
             cache.add(bah);
 
             ids.add(pair);
@@ -123,7 +122,14 @@ public class DuplicateIDCacheImpl implements DuplicateIDCache
          storageManager.commit(txID);
       }
 
-      pos = theIds.size();
+      pos = ids.size();
+      
+      if (pos++ >= cacheSize - 1)
+      {
+         pos = 0;
+      }
+
+      
    }
 
    public boolean contains(final byte[] duplID)
@@ -159,7 +165,7 @@ public class DuplicateIDCacheImpl implements DuplicateIDCache
       }
    }
 
-   private void addToCacheInMemory(final byte[] duplID, final long recordID) throws Exception
+   private synchronized void addToCacheInMemory(final byte[] duplID, final long recordID) throws Exception
    {
       cache.add(new ByteArrayHolder(duplID));
 
@@ -188,7 +194,7 @@ public class DuplicateIDCacheImpl implements DuplicateIDCache
          ids.add(id);
       }
 
-      if (pos++ == cacheSize - 1)
+      if (pos++ >= cacheSize - 1)
       {
          pos = 0;
       }
@@ -254,7 +260,7 @@ public class DuplicateIDCacheImpl implements DuplicateIDCache
       }
 
    }
-   
+
    private static final class ByteArrayHolder
    {
       ByteArrayHolder(final byte[] bytes)
