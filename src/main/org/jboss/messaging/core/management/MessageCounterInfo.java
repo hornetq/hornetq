@@ -40,8 +40,6 @@ public class MessageCounterInfo
    // Constants -----------------------------------------------------
 
    private static final Logger log = Logger.getLogger(MessageCounterInfo.class);
-
-   private static final DateFormat DATE_FORMAT = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.MEDIUM);
    
    // Attributes ----------------------------------------------------
 
@@ -67,10 +65,12 @@ public class MessageCounterInfo
 
    public static String toJSon(MessageCounter counter) throws Exception
    {
+      DateFormat dateFormat = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.MEDIUM);
+
       JSONObject json = new JSONObject(counter);
-      String lastAddTimestamp = DATE_FORMAT.format(new Date(counter.getLastAddedMessageTime()));
+      String lastAddTimestamp = dateFormat.format(new Date(counter.getLastAddedMessageTime()));
       json.put("lastAddTimestamp", lastAddTimestamp);
-      String updateTimestamp = DATE_FORMAT.format(new Date(counter.getLastUpdate()));
+      String updateTimestamp = dateFormat.format(new Date(counter.getLastUpdate()));
       json.put("updateTimestamp", updateTimestamp);
       
       return json.toString();

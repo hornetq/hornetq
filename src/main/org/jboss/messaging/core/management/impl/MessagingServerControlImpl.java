@@ -73,8 +73,6 @@ public class MessagingServerControlImpl implements MessagingServerControl, Notif
 
    private static final Logger log = Logger.getLogger(MessagingServerControlImpl.class);
 
-   private static DateFormat DATE_FORMAT = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.MEDIUM);
-
    // Attributes ----------------------------------------------------
 
    private final PostOffice postOffice;
@@ -340,6 +338,9 @@ public class MessagingServerControlImpl implements MessagingServerControl, Notif
 
    public String[] listPreparedTransactions()
    {
+      DateFormat dateFormat = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.MEDIUM);
+
+
       Map<Xid, Long> xids = resourceManager.getPreparedTransactionsWithCreationTime();
       ArrayList<Entry<Xid, Long>> xidsSortedByCreationTime = new ArrayList<Map.Entry<Xid, Long>>(xids.entrySet());
       Collections.sort(xidsSortedByCreationTime, new Comparator<Entry<Xid, Long>>()
@@ -356,7 +357,7 @@ public class MessagingServerControlImpl implements MessagingServerControl, Notif
       {
          Date creation = new Date(entry.getValue());
          Xid xid = entry.getKey();
-         s[i++] = DATE_FORMAT.format(creation) + " base64: " + XidImpl.toBase64String(xid) + " " + xid.toString();
+         s[i++] = dateFormat.format(creation) + " base64: " + XidImpl.toBase64String(xid) + " " + xid.toString();
       }
       return s;
    }

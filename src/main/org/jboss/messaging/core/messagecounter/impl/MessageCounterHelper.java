@@ -42,8 +42,6 @@ public class MessageCounterHelper
 {
    // Constants -----------------------------------------------------
 
-   private static DateFormat DATE_FORMAT = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.MEDIUM);
-
    // Attributes ----------------------------------------------------
 
    // Static --------------------------------------------------------
@@ -212,7 +210,7 @@ public class MessageCounterHelper
    {
       if (time > 0)
       {
-         return DATE_FORMAT.format(new Date(time));
+         return DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.MEDIUM).format(new Date(time));
       }
       else
       {
