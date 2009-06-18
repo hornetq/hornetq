@@ -52,7 +52,7 @@ public class LargeMessageBufferImpl implements ChannelBuffer, LargeMessageBuffer
 {
    // Constants -----------------------------------------------------
 
-   private final String READ_ONLY_ERROR_MESSAGE = "This is a read-only buffer, setOperations are not supported";
+   private static final String READ_ONLY_ERROR_MESSAGE = "This is a read-only buffer, setOperations are not supported";
 
    // Attributes ----------------------------------------------------
 
