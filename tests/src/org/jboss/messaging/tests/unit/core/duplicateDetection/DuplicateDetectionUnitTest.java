@@ -26,8 +26,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Random;
 import java.util.concurrent.Executors;
 
 import org.jboss.messaging.core.config.Configuration;
@@ -36,7 +34,6 @@ import org.jboss.messaging.core.paging.PageTransactionInfo;
 import org.jboss.messaging.core.paging.PagingManager;
 import org.jboss.messaging.core.paging.PagingStore;
 import org.jboss.messaging.core.persistence.QueueBindingInfo;
-import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.persistence.impl.journal.JournalStorageManager;
 import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.postoffice.impl.DuplicateIDCacheImpl;
@@ -67,98 +64,109 @@ public class DuplicateDetectionUnitTest extends ServiceTestBase
 
    // Constructors --------------------------------------------------
 
+   @Override
    protected void tearDown() throws Exception
    {
       super.tearDown();
    }
-   
+
    // Public --------------------------------------------------------
 
    public void testReloadDuplication() throws Exception
    {
 
-      clearData();
-      
-      SimpleString ADDRESS = new SimpleString("address");
+      JournalStorageManager journal = null;
 
-      Configuration configuration = createConfigForJournal();
-
-      configuration.start();
-
-      configuration.setJournalType(JournalType.ASYNCIO);
-
-      JournalStorageManager journal = new JournalStorageManager(configuration, Executors.newCachedThreadPool());
-
-      journal.start();
-      journal.loadBindingJournal(new ArrayList<QueueBindingInfo>());
-
-      HashMap<SimpleString, List<Pair<byte[], Long>>> mapDups = new HashMap<SimpleString, List<Pair<byte[], Long>>>();
-
-      journal.loadMessageJournal(new FakePagingManager(),
-                                 new ResourceManagerImpl(0, 0),
-                                 new HashMap<Long, Queue>(),
-                                 mapDups);
-      
-      
-      assertEquals(0, mapDups.size());
-
-      DuplicateIDCacheImpl cacheID = new DuplicateIDCacheImpl(ADDRESS, 10, journal, true);
-
-      for (int i = 0; i < 100; i++)
+      try
       {
-         cacheID.addToCache(RandomUtil.randomBytes(), null);
+         clearData();
+
+         SimpleString ADDRESS = new SimpleString("address");
+
+         Configuration configuration = createConfigForJournal();
+
+         configuration.start();
+
+         configuration.setJournalType(JournalType.ASYNCIO);
+
+         journal = new JournalStorageManager(configuration, Executors.newCachedThreadPool());
+
+         journal.start();
+         journal.loadBindingJournal(new ArrayList<QueueBindingInfo>());
+
+         HashMap<SimpleString, List<Pair<byte[], Long>>> mapDups = new HashMap<SimpleString, List<Pair<byte[], Long>>>();
+
+         journal.loadMessageJournal(new FakePagingManager(),
+                                    new ResourceManagerImpl(0, 0),
+                                    new HashMap<Long, Queue>(),
+                                    mapDups);
+
+         assertEquals(0, mapDups.size());
+
+         DuplicateIDCacheImpl cacheID = new DuplicateIDCacheImpl(ADDRESS, 10, journal, true);
+
+         for (int i = 0; i < 100; i++)
+         {
+            cacheID.addToCache(RandomUtil.randomBytes(), null);
+         }
+
+         journal.stop();
+
+         journal = new JournalStorageManager(configuration, Executors.newCachedThreadPool());
+         journal.start();
+         journal.loadBindingJournal(new ArrayList<QueueBindingInfo>());
+
+         journal.loadMessageJournal(new FakePagingManager(),
+                                    new ResourceManagerImpl(0, 0),
+                                    new HashMap<Long, Queue>(),
+                                    mapDups);
+
+         assertEquals(1, mapDups.size());
+
+         List<Pair<byte[], Long>> values = mapDups.get(ADDRESS);
+
+         assertEquals(10, values.size());
+
+         cacheID = new DuplicateIDCacheImpl(ADDRESS, 10, journal, true);
+         cacheID.load(values);
+
+         for (int i = 0; i < 100; i++)
+         {
+            cacheID.addToCache(RandomUtil.randomBytes(), null);
+         }
+
+         journal.stop();
+
+         mapDups.clear();
+
+         journal = new JournalStorageManager(configuration, Executors.newCachedThreadPool());
+         journal.start();
+         journal.loadBindingJournal(new ArrayList<QueueBindingInfo>());
+
+         journal.loadMessageJournal(new FakePagingManager(),
+                                    new ResourceManagerImpl(0, 0),
+                                    new HashMap<Long, Queue>(),
+                                    mapDups);
+
+         assertEquals(1, mapDups.size());
+
+         values = mapDups.get(ADDRESS);
+
+         assertEquals(10, values.size());
       }
-
-      journal.stop();
-
-      journal = new JournalStorageManager(configuration, Executors.newCachedThreadPool());
-      journal.start();
-      journal.loadBindingJournal(new ArrayList<QueueBindingInfo>());
-
-      journal.loadMessageJournal(new FakePagingManager(),
-                                 new ResourceManagerImpl(0, 0),
-                                 new HashMap<Long, Queue>(),
-                                 mapDups);
-      
-      
-      assertEquals(1, mapDups.size());
-      
-      
-      List<Pair<byte[], Long>> values = mapDups.get(ADDRESS); 
-      
-      assertEquals(10, values.size());
-      
-      
-      cacheID = new DuplicateIDCacheImpl(ADDRESS, 10, journal, true);
-      cacheID.load(values);
-      
-      
-      for (int i = 0; i < 100; i++)
+      finally
       {
-         cacheID.addToCache(RandomUtil.randomBytes(), null);
+         if (journal != null)
+         {
+            try
+            {
+               journal.stop();
+            }
+            catch (Throwable ignored)
+            {
+            }
+         }
       }
-
-      
-      journal.stop();
-      
-      mapDups.clear();
-
-      journal = new JournalStorageManager(configuration, Executors.newCachedThreadPool());
-      journal.start();
-      journal.loadBindingJournal(new ArrayList<QueueBindingInfo>());
-
-      journal.loadMessageJournal(new FakePagingManager(),
-                                 new ResourceManagerImpl(0, 0),
-                                 new HashMap<Long, Queue>(),
-                                 mapDups);
-      
-      
-      assertEquals(1, mapDups.size());
-      
-      
-      values = mapDups.get(ADDRESS); 
-      
-      assertEquals(10, values.size());
 
    }
 
