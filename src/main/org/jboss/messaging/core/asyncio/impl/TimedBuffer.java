@@ -54,7 +54,7 @@ public class TimedBuffer
    private TimedBufferObserver bufferObserver;
    
    // Some kernels don't have good resolutions on timers.. I've set this to disabled.. we may decide later
-   private static final boolean USE_NATIVE_TIMERS = true;
+   private static final boolean USE_NATIVE_TIMERS = false;
 
    // This is used to pause and resume the timer
    // This is a reusable Latch, that uses java.util.concurrent base classes
