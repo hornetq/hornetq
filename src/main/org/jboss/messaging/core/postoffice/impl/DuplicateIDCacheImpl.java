@@ -124,7 +124,7 @@ public class DuplicateIDCacheImpl implements DuplicateIDCache
 
       pos = ids.size();
       
-      if (pos >= cacheSize - 1)
+      if (pos == cacheSize)
       {
          pos = 0;
       }
@@ -194,7 +194,7 @@ public class DuplicateIDCacheImpl implements DuplicateIDCache
          ids.add(id);
       }
 
-      if (pos++ >= cacheSize - 1)
+      if (pos++ == cacheSize - 1)
       {
          pos = 0;
       }
