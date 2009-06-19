@@ -20,7 +20,7 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.messaging.tests.unit.core.duplicateDetection;
+package org.jboss.messaging.tests.unit.core.postoffice.impl;
 
 import java.util.ArrayList;
 import java.util.Collection;
