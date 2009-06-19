@@ -321,13 +321,6 @@ public class JournalStorageManager implements StorageManager
       messageJournal.appendAddRecord(recordID, DUPLICATE_ID, encoding, syncNonTransactional);
    }
 
-   public void updateDuplicateID(final SimpleString address, final byte[] duplID, final long recordID) throws Exception
-   {
-      DuplicateIDEncoding encoding = new DuplicateIDEncoding(address, duplID);
-
-      messageJournal.appendUpdateRecord(recordID, DUPLICATE_ID, encoding, syncNonTransactional);
-   }
-
    public void deleteDuplicateID(long recordID) throws Exception
    {
       messageJournal.appendDeleteRecord(recordID, syncNonTransactional);

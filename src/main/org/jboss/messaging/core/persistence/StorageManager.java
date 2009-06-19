@@ -77,8 +77,6 @@ public interface StorageManager extends MessagingComponent
 
    void storeDuplicateID(SimpleString address, byte[] duplID, long recordID) throws Exception;
 
-   void updateDuplicateID(SimpleString address, byte[] duplID, long recordID) throws Exception;
-
    void deleteDuplicateID(long recordID) throws Exception;
 
    void storeMessageTransactional(long txID, ServerMessage message) throws Exception;
