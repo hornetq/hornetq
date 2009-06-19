@@ -52,9 +52,6 @@ public class TimedBuffer
    // Attributes ----------------------------------------------------
 
    private TimedBufferObserver bufferObserver;
-   
-   // Some kernels don't have good resolutions on timers.. I've set this to disabled.. we may decide later
-   private static final boolean USE_NATIVE_TIMERS = false;
 
    // This is used to pause and resume the timer
    // This is a reusable Latch, that uses java.util.concurrent base classes
@@ -113,14 +110,6 @@ public class TimedBuffer
          this.logRatesTimer = new Timer(true);
       }
       // Setting the interval for nano-sleeps
-
-      // We are keeping this disabled for now until we figure out what to do.
-      // I've found a few problems with nano-sleep depending on the version of the kernel:
-      // http://fixunix.com/unix/552033-problem-nanosleep.html
-      if (USE_NATIVE_TIMERS)
-      {
-         AsynchronousFileImpl.setNanoSleepInterval((int)timeout);
-      }
 
       buffer = ChannelBuffers.buffer(bufferSize);
       buffer.clear();
@@ -382,11 +371,6 @@ public class TimedBuffer
 
       public void run()
       {
-         if (USE_NATIVE_TIMERS)
-         {
-            Thread.currentThread().setPriority(Thread.MAX_PRIORITY);
-         }
-
          while (!closed)
          {
             try
@@ -409,19 +393,10 @@ public class TimedBuffer
        */
       private void sleep()
       {
-         if (USE_NATIVE_TIMERS)
+         long time = System.nanoTime() + timeout;
+         while (time > System.nanoTime())
          {
-            // The time is passed on the constructor.
-            // I'm avoiding the long on the calling stack, to avoid performance hits here
-            AsynchronousFileImpl.nanoSleep();
-         }
-         else
-         {
-            long time = System.nanoTime() + timeout;
-            while (time > System.nanoTime())
-            {
-               Thread.yield();
-            }
+            Thread.yield();
          }
       }
 
