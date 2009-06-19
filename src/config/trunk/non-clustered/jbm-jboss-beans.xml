@@ -33,8 +33,6 @@
 
 	<!-- The core server -->
    <bean name="MessagingServer" class="org.jboss.messaging.core.server.impl.MessagingServerImpl">
-     <start ignored="true"/>
-      <stop ignored="true"/>  
       <constructor>
          <parameter>
             <inject bean="Configuration"/>
@@ -45,7 +43,9 @@
          <parameter>
             <inject bean="JBMSecurityManager"/>
          </parameter>        
-      </constructor>         
+      </constructor>
+      <start ignored="true"/>
+      <stop ignored="true"/>
    </bean>
    
    <!-- The JMS server -->
