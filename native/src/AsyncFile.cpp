@@ -116,8 +116,6 @@ void AsyncFile::pollEvents(THREAD_CONTEXT threadContext)
 	LockClass lock(&pollerMutex);
 	pollerRunning=1;
 
-	// TODO: Maybe we don't need to wait for one second.... we just keep waiting forever, and use something to interrupt it
-	// maybe an invalid write to interrupt it.
 	struct timespec oneSecond;
 	oneSecond.tv_sec = 1;
 	oneSecond.tv_nsec = 0;
