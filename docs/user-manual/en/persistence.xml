@@ -175,6 +175,8 @@
                     in the AIO queue at any one time. If the queue becomes full then writes will
                     block until space is freed up. This parameter has no meaning when using the NIO
                     journal.</para>
+                <para>There is a limit and the total max AIO can't be higher than what is configured 
+                    at the OS level (/proc/sys/fs/aio-max-nr) usually at 65536.</para>
                 <para>The default value for this is <literal>500</literal>. 
                 </para>
             </listitem>
