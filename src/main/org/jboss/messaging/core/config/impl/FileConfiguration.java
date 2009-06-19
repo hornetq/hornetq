@@ -655,7 +655,7 @@ public class FileConfiguration extends ConfigurationImpl
    {
       String name = e.getAttribute("name");
 
-      String routingName = getString(e, "routing-name", null, NOT_NULL_OR_EMPTY);
+      String routingName = getString(e, "routing-name", null, NO_CHECK);
 
       String address = getString(e, "address", null, NOT_NULL_OR_EMPTY);
 
