@@ -466,7 +466,7 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
          removeConnection(conn.getID());
 
          MessagingException me = new MessagingException(MessagingException.CONNECTION_TIMEDOUT,
-                                                        "Did not receive ping on connection. It is likely a client has exited or crashed without " + "closing its connection, or the network between the server and client has failed. The connection will now be closed.");
+                                                        "Did not receive ping from client. It is likely a client has exited or crashed without " + "closing its connection, or the network between the server and client has failed. The connection will now be closed.");
 
          conn.fail(me);
       }
