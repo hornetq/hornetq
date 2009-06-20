@@ -535,11 +535,8 @@ public class ServerConsumerImpl implements ServerConsumer
    {
       if (messageQueue.isBackup())
       {
-         // We are supposed to finish largeMessageDeliverer, or use all the possible credits before we return this
-         // method.
-         // If we play the commands on a different order than how they were generated on the live node, we will
-         // eventually still be running this largeMessage before the next message come, what would reject messages
-         // from the cluster
+         // We need to deliver the largeMessage on backup also, exactly as done on the live node.
+         // In case of failure the same packets will be available for resume sending.
          largeMessageDeliverer.deliver();
       }
       else
