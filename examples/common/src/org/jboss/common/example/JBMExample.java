@@ -164,6 +164,7 @@ public abstract class JBMExample
       log.info("starting server with config '" + config + "' " + "logServerOutput " + logServerOutput);    
       servers[index] = SpawnedVMSupport.spawnVM(
             serverClasspath,
+            "JBMServer_" + index,
             SpawnedJBMServer.class.getName(),
             serverProps,
             logServerOutput,

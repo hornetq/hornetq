@@ -47,8 +47,20 @@ public class SpawnedVMSupport
    // Attributes ----------------------------------------------------
 
    // Static --------------------------------------------------------
+   public static Process spawnVM(String classPath,
+                                 final String className,
+                                 final String vmargs,
+                                 final boolean logOutput,
+                                 final String success,
+                                 final String failure,
+                                 final String configDir,
+                                 final String... args) throws Exception
+   {
+      return spawnVM(classPath, "JBMServer", className, vmargs, logOutput, success, failure, configDir, args);
+   }
 
    public static Process spawnVM(String classPath,
+                                 final String logName,
                                  final String className,
                                  final String vmargs,
                                  final boolean logOutput,
@@ -79,7 +91,7 @@ public class SpawnedVMSupport
          sb.append("-cp").append(" ").append(classPath).append(" ");
       }
 
-      //FIXME - not good to assume path separator
+      // FIXME - not good to assume path separator
       String libPath = "-Djava.library.path=" + System.getProperty("java.library.path", "./native/bin");
       if (isWindows)
       {
@@ -107,7 +119,7 @@ public class SpawnedVMSupport
 
       ProcessLogger outputLogger = new ProcessLogger(logOutput,
                                                      process.getInputStream(),
-                                                     className,
+                                                     logName,
                                                      false,
                                                      success,
                                                      failure,
@@ -118,7 +130,7 @@ public class SpawnedVMSupport
       // http://www.jboss.org/index.html?module=bb&op=viewtopic&t=151815
       ProcessLogger errorLogger = new ProcessLogger(true,
                                                     process.getErrorStream(),
-                                                    className,
+                                                    logName,
                                                     true,
                                                     success,
                                                     failure,
@@ -152,7 +164,7 @@ public class SpawnedVMSupport
    {
       private InputStream is;
 
-      private String className;
+      private String logName;
 
       private final boolean print;
 
@@ -168,7 +180,7 @@ public class SpawnedVMSupport
 
       ProcessLogger(final boolean print,
                     final InputStream is,
-                    final String className,
+                    final String logName,
                     boolean sendToErr,
                     String success,
                     String failure,
@@ -176,7 +188,7 @@ public class SpawnedVMSupport
       {
          this.is = is;
          this.print = print;
-         this.className = className;
+         this.logName = logName;
          this.sendToErr = sendToErr;
          this.success = success;
          this.failure = failure;
@@ -208,11 +220,11 @@ public class SpawnedVMSupport
                {
                   if (sendToErr)
                   {
-                     System.err.println("JBMServer err:" + line);
+                     System.err.println(logName + " err:" + line);
                   }
                   else
                   {
-                     System.out.println("JBMServer out:" + line);
+                     System.out.println(logName + " out:" + line);
                   }
                }
             }
