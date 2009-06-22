@@ -95,7 +95,12 @@
         <artifactId>jboss-jms-api</artifactId>
         <version>1.1.0.GA</version>
       </dependency>
-
+      <!-- needed to compile JavaEE examples-->
+      <dependency>
+        <groupId>org.jboss.javaee</groupId>
+        <artifactId>jboss-ejb-api</artifactId>
+        <version>3.0.0.GA</version>
+      </dependency>
       <dependency>
         <groupId>org.jboss.javaee</groupId>
         <artifactId>jboss-transaction-api</artifactId>

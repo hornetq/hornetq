@@ -81,35 +81,35 @@
 	<classpathentry kind="src" path="examples/javaee/mdb/src"/>
 	<classpathentry kind="src" path="examples/javaee/servlet-transport/src"/>
 	<classpathentry kind="src" path="examples/javaee/xarecovery/src"/>
-	<classpathentry kind="lib" path="thirdparty/apache-log4j/lib/log4j.jar"/>
 	<classpathentry kind="lib" path="thirdparty/junit/lib/junit.jar"/>
-	<classpathentry kind="lib" path="thirdparty/jboss/profiler/jvmti/lib/jboss-profiler-jvmti.jar"/>
 	<classpathentry kind="lib" path="thirdparty/apache-logging/lib/commons-logging.jar"/>
-	<classpathentry kind="lib" path="thirdparty/sun-javacc/lib/javacc.jar"/>
 	<classpathentry kind="lib" path="thirdparty/apache-xerces/lib/xercesImpl.jar"/>
-	<classpathentry kind="lib" path="thirdparty/javassist/lib/javassist.jar"/>
-	<classpathentry kind="lib" path="thirdparty/jboss/jbossxb/lib/jboss-xml-binding.jar"/>
-	<classpathentry kind="lib" path="thirdparty/trove/lib/trove.jar"/>
-	<classpathentry kind="lib" path="thirdparty/jboss/common-core/lib/jboss-common-core.jar" sourcepath="thirdparty/jboss/common-core/lib/jboss-common-core-sources.jar"/>
-	<classpathentry kind="lib" path="thirdparty/jboss/jboss-security-spi/lib/jboss-security-spi.jar"/>
-	<classpathentry kind="lib" path="thirdparty/jboss/microcontainer/lib/jboss-kernel.jar"/>
-	<classpathentry kind="lib" path="thirdparty/jboss/microcontainer/lib/jboss-dependency.jar"/>
-	<classpathentry kind="lib" path="thirdparty/jboss/microcontainer/lib/jboss-aop-mc-int.jar"/>
-	<classpathentry kind="lib" path="thirdparty/jboss/jboss-jaspi-api/lib/jboss-jaspi-api.jar"/>
-	<classpathentry kind="lib" path="thirdparty/jboss/jnpserver/lib/jnpserver.jar" sourcepath="thirdparty/jboss/jnpserver/lib/jnpserver-sources.jar"/>
-	<classpathentry kind="lib" path="thirdparty/netty/lib/netty-3.1.0.BETA3.jar" sourcepath="thirdparty/netty/lib/netty-3.1.0.BETA3-sources.jar"/>
 	<classpathentry kind="lib" path="thirdparty/sun-jaxb/lib/jaxb-api.jar"/>
-	<classpathentry kind="lib" path="thirdparty/jboss/jboss-common-logging-log4j/lib/jboss-common-logging-log4j.jar"/>
 	<classpathentry kind="lib" path="thirdparty/jboss/jbossts/lib/jbossts-common.jar"/>
+	<classpathentry kind="lib" path="thirdparty/org/jboss/javaee/lib/jboss-ejb-api.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry kind="lib" path="thirdparty/jboss/jboss-javaee/lib/jboss-javaee.jar"/>
-	<classpathentry kind="lib" path="thirdparty/jboss/jbosssx-client/lib/jbosssx-client.jar"/>
 	<classpathentry kind="lib" path="tests/tmpfiles"/>
-	<classpathentry kind="lib" path="thirdparty/jboss/jboss-common-logging-spi/lib/jboss-common-logging-spi.jar"/>
-	<classpathentry kind="lib" path="thirdparty/jboss/jbossts/lib/jbossjta.jar"/>
-	<classpathentry kind="lib" path="thirdparty/jboss/integration/lib/jboss-integration.jar"/>
-	<classpathentry kind="lib" path="thirdparty/jboss/jboss-reflect/lib/jboss-reflect.jar"/>
-	<classpathentry kind="lib" path="thirdparty/jboss/jboss-mdr/lib/jboss-mdr.jar"/>
-	<classpathentry kind="lib" path="thirdparty/jboss/aop/lib/jboss-aop.jar"/>
+	<classpathentry kind="lib" path="thirdparty/net/java/dev/javacc/lib/javacc.jar"/>
+	<classpathentry kind="lib" path="thirdparty/org/jboss/netty/lib/netty.jar"/>
+	<classpathentry kind="lib" path="thirdparty/log4j/lib/log4j.jar"/>
+	<classpathentry kind="lib" path="thirdparty/org/jboss/naming/lib/jnpserver.jar"/>
+	<classpathentry kind="lib" path="thirdparty/org/jboss/security/lib/jbosssx.jar"/>
+	<classpathentry kind="lib" path="thirdparty/jboss/jbossts/lib/jbossjts.jar"/>
+	<classpathentry kind="lib" path="thirdparty/apache-xerces/lib/xml-apis.jar"/>
+	<classpathentry kind="lib" path="thirdparty/javax/activation/lib/activation.jar"/>
+	<classpathentry kind="lib" path="thirdparty/org/jboss/integration/lib/jboss-transaction-spi.jar"/>
+	<classpathentry kind="lib" path="thirdparty/org/jboss/javaee/lib/jboss-jaspi-api.jar"/>
+	<classpathentry kind="lib" path="thirdparty/org/jboss/javaee/lib/jboss-jca-api.jar"/>
+	<classpathentry kind="lib" path="thirdparty/org/jboss/javaee/lib/jboss-jms-api.jar"/>
+	<classpathentry kind="lib" path="thirdparty/org/jboss/javaee/lib/jboss-transaction-api.jar"/>
+	<classpathentry kind="lib" path="thirdparty/org/jboss/lib/jboss-common-core.jar"/>
+	<classpathentry kind="lib" path="thirdparty/org/jboss/lib/jboss-mdr.jar"/>
+	<classpathentry kind="lib" path="thirdparty/org/jboss/lib/jboss-reflect.jar"/>
+	<classpathentry kind="lib" path="thirdparty/org/jboss/lib/jbossxb.jar"/>
+	<classpathentry kind="lib" path="thirdparty/org/jboss/logging/lib/jboss-logging-spi.jar"/>
+	<classpathentry kind="lib" path="thirdparty/org/jboss/microcontainer/lib/jboss-dependency.jar"/>
+	<classpathentry kind="lib" path="thirdparty/org/jboss/microcontainer/lib/jboss-kernel.jar"/>
+	<classpathentry kind="lib" path="thirdparty/org/jboss/security/lib/jboss-security-spi.jar"/>
+	<classpathentry kind="lib" path="thirdparty/wutka-dtdparser/lib/dtdparser121.jar"/>
 	<classpathentry kind="output" path="eclipse-output"/>
 </classpath>
