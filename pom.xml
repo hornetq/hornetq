@@ -144,7 +144,7 @@
       <dependency>
          <groupId>org.jboss.netty</groupId>
          <artifactId>netty</artifactId>
-         <version>3.1.0.BETA3</version>
+         <version>3.1.0.CR1</version>
       </dependency>
       <!--needed to compile the logging jar-->
       <dependency>
