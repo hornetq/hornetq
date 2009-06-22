@@ -55,6 +55,11 @@ public class JBMLoggerPlugin implements LoggerPlugin
       logger.log(Level.FINEST, o.toString(), throwable);
    }
 
+   public void trace(String s, Object o, Throwable throwable)
+   {
+      logger.log(Level.FINEST, s + o, throwable);
+   }
+
    public boolean isDebugEnabled()
    {
       return logger.isLoggable(Level.FINE);
@@ -68,6 +73,11 @@ public class JBMLoggerPlugin implements LoggerPlugin
    public void debug(Object o, Throwable throwable)
    {
       logger.log(Level.FINE, o.toString(), throwable);
+   }
+
+   public void debug(String s, Object o, Throwable throwable)
+   {
+      logger.log(Level.FINE, s + o, throwable);
    }
 
    public boolean isInfoEnabled()
@@ -85,6 +95,11 @@ public class JBMLoggerPlugin implements LoggerPlugin
       logger.log(Level.INFO, o.toString(), throwable);
    }
 
+   public void info(String s, Object o, Throwable throwable)
+   {
+      logger.log(Level.INFO, s + o, throwable);
+   }
+
    public void warn(Object o)
    {
       logger.log(Level.WARNING, o.toString());
@@ -93,6 +108,11 @@ public class JBMLoggerPlugin implements LoggerPlugin
    public void warn(Object o, Throwable throwable)
    {
       logger.log(Level.WARNING, o.toString(), throwable);
+   }
+
+   public void warn(String s, Object o, Throwable throwable)
+   {
+      logger.log(Level.WARNING, s + o, throwable);
    }
 
    public void error(Object o)
@@ -105,6 +125,11 @@ public class JBMLoggerPlugin implements LoggerPlugin
       logger.log(Level.SEVERE, o.toString(), throwable);
    }
 
+   public void error(String s, Object o, Throwable throwable)
+   {
+      logger.log(Level.SEVERE, s + o, throwable);
+   }
+
    public void fatal(Object o)
    {
       logger.log(Level.SEVERE, o.toString());
@@ -113,5 +138,10 @@ public class JBMLoggerPlugin implements LoggerPlugin
    public void fatal(Object o, Throwable throwable)
    {
       logger.log(Level.SEVERE, o.toString(), throwable);
+   }
+
+   public void fatal(String s, Object o, Throwable throwable)
+   {
+      logger.log(Level.SEVERE, s + o, throwable);
    }
 }

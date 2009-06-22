@@ -58,7 +58,6 @@
 
    <property name="core.jar.name" value="jbm-core.jar"/>
    <property name="jms.jar.name" value="jbm-jms.jar"/>
-   <property name="jms.api.jar.name" value="jbm-jms-api.jar"/>
    <property name="jms.client.jar.name" value="jbm-jms-client.jar"/>
    <property name="jnp.client.jar.name" value="jnp-client.jar"/>
    <property name="transports.jar.name" value="jbm-transports.jar"/>
@@ -68,7 +67,7 @@
    <property name="core.client.jar.name" value="jbm-core-client.jar"/>
    <property name="ra.jar.name" value="jbm-ra.jar"/>
    <property name="ra.rar.name" value="jbm-ra.rar"/>
-   <property name="netty.jar.name" value="netty-3.1.0.BETA3.jar"/>
+   <property name="netty.jar.name" value="netty.jar"/>
    <property name="mc.jar.name" value="jboss-mc.jar"/>
    <property name="resources.jar.name" value="jbm-resources.jar"/>
 
@@ -128,7 +127,7 @@
    <!-- ======================================================================================== -->
 
    <property name="project.thirdparty" value="thirdparty"/>
-   <property name="sun.javacc.lib" value="${project.thirdparty}/sun-javacc/lib/"/>
+   <property name="sun.javacc.lib" value="${project.thirdparty}/net/java/dev/javacc/lib/"/>
    &libraries;
 
    <!--
@@ -146,6 +145,7 @@
    <!-- ======================================================================================== -->
 
    <property name="test.dir" value="tests"/>
+   <property name="thirdparty.dir" value="thirdparty"/>
    <property name="test.build.dir" value="${test.dir}/build"/>
    <property name="test.src.dir" value="${test.dir}/src"/>
    <property name="test-mask" value="*Test"/>
@@ -170,34 +170,31 @@
 
    <path id="jms.compilation.classpath">
       <path location="${build.core.classes.dir}"/>
-      <path refid="jboss.jboss.javaee.classpath"/>
+      <path refid="org.jboss.javaee.classpath"/>
+      <path refid="org.jboss.integration.classpath"/>
       <path refid="jboss.jbossts.classpath"/>
-      <path refid="jboss.integration.classpath"/>
    </path>
 
    <path id="transports.compilation.classpath">
       <path location="${build.core.classes.dir}"/>
-      <path refid="jboss.jboss.javaee.classpath"/>
-      <path refid="netty.netty.classpath"/>
+      <path refid="org.jboss.javaee.classpath"/>
+      <path refid="org.jboss.netty.classpath"/>
    </path>
 
    <path id="security.compilation.classpath">
       <path location="${build.core.classes.dir}"/>
-      <path refid="jboss.integration.classpath"/>
-      <path refid="jboss.jbosssx.client.classpath"/>
-      <path refid="jboss.jboss.security.spi.classpath"/>
-      <path refid="jboss.jboss.jaspi.api.classpath"/>
+      <path refid="org.jboss.security.classpath"/>
    </path>
 
    <path id="bootstrap.compilation.classpath">
       <path location="${build.core.classes.dir}"/>
-      <path refid="jboss.microcontainer.classpath"/>
-      <path refid="jboss.common.core.classpath"/>
+      <path refid="org.jboss.microcontainer.classpath"/>
+      <path refid="org.jboss.classpath"/>
    </path>
 
    <path id="logging.compilation.classpath">
-      <path refid="apache.log4j.classpath"/>
-      <path refid="jboss.jboss.common.logging.spi.classpath"/>
+      <path refid="log4j.log4j.classpath"/>
+      <path refid="org.jboss.logging.classpath"/>
    </path>
 
    <path id="javadoc.classpath">
@@ -211,9 +208,6 @@
       <path refid="security.compilation.classpath"/>
       <path refid="bootstrap.compilation.classpath"/>
       <path refid="junit.junit.classpath"/>
-      <path refid="jboss.jboss.reflect.classpath"/>
-      <path refid="jboss.jboss.common.logging.spi.classpath"/>
-      <path refid="jboss.jboss.mdr.classpath"/>
       <path location="${build.jars.dir}/${ra.jar.name}"/>
       <path location="${build.jars.dir}/${jms.jar.name}"/>
       <path location="${build.jars.dir}/${transports.jar.name}"/>
@@ -228,10 +222,7 @@
       <path refid="bootstrap.compilation.classpath"/>
       <path refid="jms.compilation.classpath"/>
       <path refid="junit.junit.classpath"/>
-      <path refid="jboss.profiler.jvmti.classpath"/>
-      <path refid="jboss.jboss.reflect.classpath"/>
-      <path refid="jboss.jboss.common.logging.spi.classpath"/>
-      <path refid="jboss.jboss.mdr.classpath"/>
+      <path refid="org.jboss.security.classpath"/>
       <path location="${build.jars.dir}/${core.jar.name}"/>
       <path location="${build.jars.dir}/${jms.jar.name}"/>
       <path location="${build.jars.dir}/${transports.jar.name}"/>
@@ -244,15 +235,14 @@
       <path refid="jms.test.compilation.classpath"/>
       <path location="${test.jms.classes.dir}" />
       <path location="${test.classes.dir}" />
-      <path refid="jboss.jnpserver.classpath"/>
+      <path refid="org.jboss.naming.classpath"/>
+      <path refid="org.jboss.logging.classpath"/>
    </path>
    
    <path id="findbugs.classpath">
       <path refid="jms.compilation.classpath"/>
       <path location="${build.jars.dir}/jboss-${module.name}.jar"/>
       <path refid="junit.junit.classpath"/>
-      <path refid="jboss.profiler.jvmti.classpath"/>
-      <path refid="jboss.jbossxb.classpath"/>
    </path>
 
    <path id="unit.test.execution.classpath">
@@ -270,15 +260,11 @@
       <pathelement location="${src.schema.dir}"/>
       <path refid="test.compilation.classpath"/>
       <path refid="sun.jaxb.classpath"/>
-      <path refid="apache.log4j.classpath"/>
-      <path refid="jboss.common.core.classpath"/>
-      <path refid="jboss.aop.classpath"/>
-      <path refid="trove.trove.classpath"/>
-      <path refid="javassist.classpath"/>
-      <path refid="jboss.jbossxb.classpath"/>
+      <path refid="org.jboss.logging.classpath"/>
+      <path refid="jboss.jbossts.classpath"/>
       <path refid="apache.xerces.classpath"/>
       <path refid="apache.logging.classpath"/>
-      <path refid="jboss.jboss.common.logging.log4j.classpath"/> 
+      <path refid="log4j.log4j.classpath"/>
    </path>
 
    <path id="emma.unit.test.execution.classpath">
@@ -288,14 +274,7 @@
       <pathelement location="${src.config.dir}/common"/>
       <pathelement location="${src.schema.dir}"/>
       <path refid="test.compilation.classpath"/>
-      <path refid="apache.log4j.classpath"/>
-      <path refid="jboss.common.core.classpath"/>
-      <path refid="jboss.aop.classpath"/>
-      <path refid="trove.trove.classpath"/>
-      <path refid="javassist.classpath"/>
-      <path refid="jboss.jbossxb.classpath"/>
       <path refid="apache.xerces.classpath"/>
-      <path refid="apache.logging.classpath"/>
    </path>
    
    <path id="jms.test.execution.classpath">
@@ -307,16 +286,12 @@
       <path location="${build.jars.dir}/${transports.jar.name}"/>
       <path refid="jms.test.compilation.classpath"/>
       <path refid="sun.jaxb.classpath"/>
-      <path refid="jboss.common.core.classpath"/>
-      <path refid="jboss.aop.classpath"/>
-      <path refid="trove.trove.classpath"/>
-      <path refid="javassist.classpath"/>
-      <path refid="jboss.jbossxb.classpath"/>
+      <path refid="org.jboss.logging.classpath"/>
+      <path refid="org.jboss.naming.classpath"/>
+      <path refid="jboss.jbossts.classpath"/>
       <path refid="apache.xerces.classpath"/>
       <path refid="apache.logging.classpath"/>
-      <path refid="jboss.jnpserver.classpath"/>
-      <path refid="jboss.jboss.common.logging.log4j.classpath"/>
-      <path  refid="apache.log4j.classpath"/>
+      <path refid="log4j.log4j.classpath"/>
    </path>
     
    <path id="joram.test.execution.classpath">
@@ -330,12 +305,11 @@
       <pathelement location="${src.schema.dir}"/>
       <path location="${build.jars.dir}/${transports.jar.name}"/>
       <path refid="jms.test.execution.classpath"/>
-
-      <path refid="jboss.jnpserver.classpath"/>
-      <path refid="jboss.jboss.reflect.classpath"/>
+      <path refid="org.jboss.naming.classpath"/>
+      <!--<path refid="jboss.jboss.reflect.classpath"/>
       <path refid="jboss.jboss.mdr.classpath"/>
       <path refid="jboss.jboss.common.logging.spi.classpath"/>
-      <path refid="jboss.jboss.common.logging.log4j.classpath"/>
+      <path refid="jboss.jboss.common.logging.log4j.classpath"/>-->
    </path>
 
    <target name="clean">
@@ -344,6 +318,7 @@
       <delete dir="${test.output.dir}"/>
       <delete dir="${test.jms.build.dir}"/>
       <delete dir="${test.joram.build.dir}"/>
+      <delete dir="${thirdparty.dir}"/>
       <ant antfile="${examples.dir}/build.xml" target="clean" inheritall="false"/>
    </target>
 
@@ -363,7 +338,7 @@
    
    
    <target name="createthirdparty" unless="inhibit.downloads" depends="check.inhibit.downloads">
-      <ant antfile="build-thirdparty.xml" target="generate-libraries-ent"/>
+      <ant antfile="build-thirdparty.xml" target="maven-install"/>
    </target>
 
    <target name="check.inhibit.downloads">
@@ -584,12 +559,6 @@
          <schema namespace="urn:jboss:messaging" 
                  file="${src.schema.dir}/jbm-jms.xsd"/>
       </schemavalidate>
-      <!--
-      <schemavalidate file="${conf.dir}/jbm-queues.xml">
-         <schema namespace="urn:jboss:messaging" 
-                 file="${src.schema.dir}/jbm-queues.xsd"/>
-      </schemavalidate>
-      -->   
    </target>
    
    <!-- ======================================================================================== -->
@@ -597,25 +566,16 @@
    <!-- ======================================================================================== -->
 
    <target name="jar"
-           depends="jar-core, jar-core-client, jar-jms, jar-jms-client, jar-transports, jar-security, jar-bootstrap, jar-logging, jar-ra, jar-mc, jar-jms-api, jar-jnp-client">
+           depends="jar-core, jar-core-client, jar-jms, jar-jms-client, jar-transports, jar-security, jar-bootstrap, jar-logging, jar-ra, jar-mc, jar-jnp-client">
    </target>
-   
-   <target name="jar-jms-api" depends="init">
-      <jar jarfile="${build.jars.dir}/${jms.api.jar.name}">
-         <zipfileset src="${jboss.jboss.javaee.lib}/jboss-javaee.jar">
-            <include name="javax/jms/**/*.class"/>
-         </zipfileset>	     
-      </jar>         
-   </target>
-
    <target name="jar-jnp-client" depends="init">
       <jar jarfile="${build.jars.dir}/${jnp.client.jar.name}">
-         <zipfileset src="${jboss.jnpserver.lib}/jnpserver.jar">
+         <zipfileset src="${org.jboss.naming.lib}/jnpserver.jar">
             <include name="org/jnp/interfaces/**/*.class"/>
             <include name="org/jboss/naming/**/*.class"/>
             <include name="org/jnp/server/NamingServer_Stub.class"/>
          </zipfileset>
-         <zipfileset src="${jboss.jboss.common.logging.spi.lib}/jboss-common-logging-spi.jar">
+         <zipfileset src="${org.jboss.logging.lib}/jboss-logging-spi.jar">
             <include name="org/jboss/logging/**/*.class"/>
          </zipfileset>
       </jar>
@@ -623,18 +583,13 @@
    
    <target name="jar-mc" depends="init">
       <jar jarfile="${build.jars.dir}/${mc.jar.name}">
-         <zipfileset src="./thirdparty/jboss/jboss-common-logging-spi/lib/jboss-common-logging-spi.jar"/>
-	      <zipfileset src="./thirdparty/jboss/jboss-reflect/lib/jboss-reflect.jar"/>
-	      <zipfileset src="./thirdparty/jboss/jboss-common-logging-spi/lib/jboss-common-logging-spi.jar"/>
-	      <zipfileset src="./thirdparty/jboss/common-core/lib/jboss-common-core.jar"/>
-	      <zipfileset src="./thirdparty/jboss/jboss-mdr/lib/jboss-mdr.jar"/>
-	      <zipfileset src="./thirdparty/jboss/jbossxb/lib/jboss-xml-binding.jar"/>
-	      <zipfileset src="./thirdparty/sun-jaxb/lib/jaxb-api.jar"/>
-	      <zipfileset src="./thirdparty/jboss/aop/lib/jboss-aop.jar"/>
-	      <zipfileset src="./thirdparty/trove/lib/trove.jar"/>
-	      <zipfileset src="./thirdparty/javassist/lib/javassist.jar"/>
-         <zipfileset src="./thirdparty/jboss/microcontainer/lib/jboss-kernel.jar"/>
-         <zipfileset src="./thirdparty/jboss/microcontainer/lib/jboss-dependency.jar"/>
+         <zipfileset src="./thirdparty/org/jboss/logging/lib/jboss-logging-spi.jar"/>
+         <zipfileset src="./thirdparty/org/jboss/microcontainer/lib/jboss-kernel.jar"/>
+         <zipfileset src="./thirdparty/org/jboss/microcontainer/lib/jboss-dependency.jar"/>
+         <zipfileset src="./thirdparty/org/jboss/lib/jboss-reflect.jar"/>
+         <zipfileset src="./thirdparty/org/jboss/lib/jboss-common-core.jar"/>
+         <zipfileset src="./thirdparty/org/jboss/lib/jboss-mdr.jar"/>
+         <zipfileset src="./thirdparty/org/jboss/lib/jbossxb.jar"/>
       </jar>         
    </target>   
          
@@ -794,13 +749,15 @@
             <include name="${logging.jar.name}"/>
             <include name="${mc.jar.name}"/>
             <include name="${ra.rar.name}"/>
-            <include name="${jms.api.jar.name}"/>
          </fileset>
-         <fileset dir="${jboss.jnpserver.lib}">
+         <fileset dir="${org.jboss.naming.lib}">
             <include name="jnpserver.jar"/>
-         </fileset> 
+         </fileset>
+         <fileset dir="${org.jboss.javaee.lib}">
+            <include name="jboss-jms-api.jar"/>
+         </fileset>
       </copy>
-      <copy file="${netty.netty.lib}/${netty.jar.name}" tofile="${build.distro.lib.dir}/netty.jar"/>
+      <copy file="${org.jboss.netty.lib}/${netty.jar.name}" tofile="${build.distro.lib.dir}/netty.jar"/>
       <copy todir="${build.distro.client.dir}">
          <fileset dir="${build.jars.dir}">
             <include name="${core.client.jar.name}"/>

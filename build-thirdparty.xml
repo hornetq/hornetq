@@ -31,137 +31,134 @@
 <!--                                                                                             -->
 <!-- =========================================================================================== -->
 
-<project name="main.build" default="synchronize">
+<project name="main.build" default="maven-install">
 
    <!-- ======================================================================================== -->
    <!-- Configuration                                                                            -->
    <!-- ======================================================================================== -->
 
-   <property file="local.properties"/>
-   <property file="synchronize.properties"/>
-   <property name="librariesEntFile" value="./thirdparty/libraries.ent"/>
 
-   <property environment="ENV"/>
+   <!--maven targets-->
+   <!-- Define a macro for calling maven -->
+   <!--<target name="createthirdparty" unless="inhibit.downloads"
+      depends="maven-init, init, check.inhibit.downloads, set.proxy">
 
-   <!--
-      | Allow jbossbuild.repository to be set from (in order or priority)
-      | 1) Command line -Djbossbuild.repository=...
-      | 2) synchronize.properties jbossbuild.repository setting
-      | 3) JBOSS_REPOSITORY environment variable
-   -->
-   <condition property="jbossbuild.repository" value="${ENV.JBOSS_REPOSITORY}">
-      <isset property="ENV.JBOSS_REPOSITORY"/>
-   </condition>
+      <property name="maven.opts" value=""/>
+      <property name="thirdparty.maven.opts" value="${maven.opts}"/>
 
-   <!--
-      | Fall back to default.
-   -->
-   <property name="jbossbuild.repository" value="http://repository.jboss.com"/>
+      <maven basedir="${basedir}/thirdparty"
+             options="${thirdparty.maven.opts}"
+             goal="generate-resources"
+             resultproperty="maven.thirdparty.result"/>
 
-   <import file="./tools/config/jbossbuild/tasks.xml"/>
+      <fail message="Unable to build thirdparty directory.  See maven output for details.">
+        <condition>
+          <not>
+            <equals arg1="${maven.thirdparty.result}" arg2="0"/>
+          </not>
+        </condition>
+      </fail>
 
-   <!--
-      | This is where JBoss Messaging external dependencies are declared. The repository is in CVS
-      | under the module repository.jboss.com whose contents are pushed to the
-      | http://repository.jboss.com site.
-   -->
-   <build id="jboss-messaging"
-          impltitle="JBoss Messaging"
-          implversion="undefined"
-          implvendor="JBoss Inc."
-          implurl="http://www.jboss.org"
-          description="JBoss Messaging"
-          cvsroot="${cvs.prefix}@cvs.forge.jboss.com:/cvsroot/jboss"
-          thirdpartypath="./thirdparty/"
-          location="${jbossbuild.repository}"
-          targetdefs="targets">
-
-      <!--
-          needed for the filters
-      -->
-      <componentref name="sun-javacc" version="3.2"/>
-
-      <!--
-           Dependencies required to build the transport jar
-      -->
-
-      <componentref name="netty" version="3.1.0.BETA3"/>
-
-      <!--
-           Dependencies needed to build the security.jar
-      -->
-
-      <componentref name="jboss/integration" version="5.1.0.CR2"/>
-      <componentref name="jboss/jboss-security-spi" version="2.0.3.SP1"/>
-      <componentref name="jboss/jbosssx-client" version="2.0.3.SP1"/>
-      <componentref name="jboss/jboss-jaspi-api" version="1.0.0.GA"/>
-
-      <!--
-          Dependencies required to build the bootstrap.jar
-      -->
-
-      <componentref name="jboss/microcontainer" version="2.0.4.GA"/>
-      <componentref name="jboss/common-core" version="2.2.11.GA"/>
-
-      <!--
-           Dependencies required to build logging.jar
-      -->
-
-      <componentref name="apache-log4j" version="1.2.14"/>
-      <componentref name="jboss/jboss-common-logging-spi" version="2.0.4.GA"/>
-      <componentref name="jboss/jboss-common-logging-log4j" version="2.0.4.GA"/>
-
-      <!--
-          Dependencies required to build jms.jar
-      -->
-
-      <componentref name="jboss/jboss-javaee" version="5.0.1.GA"/>
-
-      <!--
-         Dependencied required by the Bridge and JCA Adapter
-      -->
-      <componentref name="jboss/jbossts" version="4.6.1.GA"/>
+   </target>-->
 
 
-      <!--
-           Added Dependencies required by the microcontainer to run the server standalone.
-      -->
+  <macrodef name="maven">
+    <attribute name="options" default="" />
+    <attribute name="goal" />
+    <attribute name="basedir" />
+    <attribute name="resultproperty" default="maven.result" />
+    <element name="args" implicit="true" optional="true" />
+    <sequential>
+      <java classname="org.codehaus.classworlds.Launcher" fork="true"
+            dir="@{basedir}" resultproperty="@{resultproperty}">
+        <jvmarg value="-Xmx512m"/>
+        <classpath>
+          <fileset dir="${maven.home}/boot">
+            <include name="*.jar" />
+          </fileset>
+          <fileset dir="${maven.home}/lib">
+            <include name="*.jar" />
+          </fileset>
+        </classpath>
+        <sysproperty key="classworlds.conf" value="${maven.home}/bin/m2.conf" />
+        <sysproperty key="maven.home" value="${maven.home}" />
+        <arg line="--batch-mode @{options} @{goal}" />
+      </java>
+    </sequential>
+  </macrodef>
 
-      <componentref name="jboss/jnpserver" version="5.0.1.GA"/>
-      <componentref name="jboss/jboss-reflect" version="2.0.2.GA"/>
-      <componentref name="jboss/jboss-mdr" version="2.0.1.GA"/>
-      <componentref name="jboss/aop" version="2.1.0.CR2"/>
-      <componentref name="javassist" version="3.9.0.GA/"/>
-      <componentref name="jboss/jbossxb" version="2.0.0.GA"/>
-      <componentref name="apache-xerces" version="2.9.1"/>
-      <componentref name="sun-jaxb" version="2.1.9"/>
+   <target name="maven-init">
+    <property name="maven.home" location="${basedir}/tools/maven"/>
+    <echo message="Maven Home set to ${maven.home}"/>
+  </target>
 
-      <!--
-          Dependencies required to run the unit tests
-      -->
+  <!--<target name="checkthirdparty">
+    <if>
+      <not>
+        <available file="${basedir}/thirdparty/libraries.ent"/>
+      </not>
+      <then>
+        <antcall target="createthirdparty"/>
+      </then>
+    </if>
+  </target>-->
 
-      <componentref name="junit" version="3.8.2-brew"/>
-      <componentref name="trove" version="1.0.2-brew"/>
-      <componentref name="jboss/profiler/jvmti" version="1.0.0.CR5-brew"/>
+   <target name="maven-install" description="Run the install goal against the maven build"
+          depends="maven-init">
 
-      <!--
-          Dependencies required to run the jms tests
-      -->
+     <property name="maven.opts" value=""/>
+     <property name="maven.install.opts" value="-Dintegrated-build ${maven.opts}"/>
 
-      <componentref name="apache-logging" version="1.1.0.jboss"/>
+     <maven basedir="${basedir}"
+            options="${maven.install.opts}"
+            goal="install"
+            resultproperty="maven.install.result"/>
 
-   </build>
+     <fail message="Unable to build maven modules.  See maven output for details.">
+       <condition>
+         <not>
+           <equals arg1="${maven.install.result}" arg2="0"/>
+         </not>
+       </condition>
+     </fail>
 
-   <synchronizeinfo/>
+  </target>
 
-   <!--
-      | Generate the targets.
-   -->
-   <generate generate="jboss-messaging"/>
+   <target name="set.proxy" depends="set.proxy.withoutauth, set.proxy.auth"/>
 
-   <target name="generate-libraries-ent" depends="synchronize">
-      <gen-lib-file path="tools/config/buildmagic" filename="${librariesEntFile}"/>
-      <visit-componentref-graph componentVisitor="org.jboss.ant.util.graph.ComponentRefGraphLicenseVisitor"/>
+   <!-- set proxy settings without auth -->
+   <target name="set.proxy.withoutauth" if="hasproxy" unless="hasproxyauth" depends="check.proxy">
+      <echo>Proxy is set to ${proxy.host}:${proxy.port}</echo>
+      <setproxy proxyhost="${proxy.host}" proxyport="${proxy.port}"/>
    </target>
 
+   <!-- set proxy settings using auth -->
+   <target name="set.proxy.auth" if="hasproxyauth" depends="check.proxy">
+      <echo>Auth Proxy is set to ${proxy.host}:${proxy.port} username=[${proxy.username}]</echo>
+      <setproxy proxyhost="${proxy.host}" proxyport="${proxy.port}" proxyuser="${proxy.username}" proxypassword="${proxy.password}"/>
+   </target>
+
+    <!-- check if the the user has specied proxy settings -->
+   <target name="check.proxy">
+      <condition property="hasproxy">
+         <and>
+            <isset property="proxy.host"/>
+            <isset property="proxy.port"/>
+            <not>
+               <equals arg1="" arg2="${proxy.host}" trim="true"/>
+            </not>
+            <not>
+               <equals arg1="" arg2="${proxy.port}" trim="true"/>
+            </not>
+         </and>
+      </condition>
+   </target>
+
+   <!-- check if thirdparty libraries are to be downloaded -->
+   <target name="check.inhibit.downloads">
+      <condition property="inhibit.downloads">
+         <istrue value="${nodownload}"/>
+      </condition>
+   </target>
+   
 </project>

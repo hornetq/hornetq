@@ -48,14 +48,14 @@
    <property name="nodownload" value="false"/>
 
    <target name="createthirdparty" unless="inhibit.downloads" depends="check.inhibit.downloads">
-      <ant antfile="build-thirdparty.xml" target="generate-libraries-ent"/>
+      <ant antfile="build-thirdparty.xml" target="maven-install"/>
    </target>
 
    <target name="check.inhibit.downloads">
       <condition property="inhibit.downloads">
          <or>
             <uptodate property="dependencies.current"
-                      srcfile="build-thirdparty.xml"
+                      srcfile="pom.xml"
                       targetfile="./thirdparty/libraries.ent"/>
             <istrue value="${nodownload}"/>
          </or>

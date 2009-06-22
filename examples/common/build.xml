@@ -65,13 +65,19 @@
       <fileset dir="${jbm.jars.dir}">
          <include name="**/*.jar"/>
       </fileset>
+       <fileset dir="${jars.dir}">
+         <include  name="**/jboss-jms-api.jar"/>
+      </fileset>
       <path refid="extra.classpath"/>
    </path>
 
    <path id="client.compilation.classpath">
       <fileset dir="${jbm.jars.dir}">
          <include name="**/*client*.jar"/>
-         <include  name="**/jbm-jms-api.jar"/>
+         <include  name="**/jboss-jms-api.jar"/>
+      </fileset>
+       <fileset dir="${jars.dir}">
+         <include  name="**/jboss-jms-api.jar"/>
       </fileset>
       <path refid="extra.classpath"/>
    </path>
@@ -98,8 +104,8 @@
       <pathelement location="${example.config.dir}"/>
       <pathelement location="${classes.dir}"/>
       <fileset dir="${jars.dir}">
-         <include name="jboss/jnpserver/lib/jnpserver.jar"/>
-         <include name="netty/lib/netty*.jar"/>
+         <include name="org/jboss/naming/lib/jnpserver.jar"/>
+         <include name="org/jboss/netty/lib/netty*.jar"/>
       </fileset>
    </path>
 

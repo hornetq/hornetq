@@ -1,17 +1,249 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ * JBoss, Home of Professional Open Source
+ *
+ * Copyright 2009, Red Hat Middleware LLC, and individual contributors
+ * by the @author tags. See the COPYRIGHT.txt in the distribution for a
+ * full listing of individual contributors.
+ *
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+-->
 <project xmlns="http://maven.apache.org/POM/4.0.0"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-    <modelVersion>4.0.0</modelVersion>
-    <groupId>org.jboss</groupId>
-    <artifactId>webdav-loader</artifactId>
-    <version>1</version>
-    <name>JBoss Webdav Extension pom</name>
-    <build>
-      <extensions>
-        <extension>
-          <groupId>org.apache.maven.wagon</groupId>
-          <artifactId>wagon-webdav</artifactId>
-        </extension>
-      </extensions>
-    </build>
-  </project>
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
+   <modelVersion>4.0.0</modelVersion>
+   <groupId>org.jboss.messaging</groupId>
+   <artifactId>messaging</artifactId>
+   <packaging>pom</packaging>
+   <version>2.0.0.BETA3-SNAPSHOT</version>
+
+   <name>The JBoss Messaging Project</name>
+   <url>http://www.jboss.org/jbossmessaging</url>
+   <description>
+      JBoss Messaging enables high performance, clustered messaging for Java.
+   </description>
+
+   <organization>
+      <name>JBoss, a division of Red Hat</name>
+      <url>http://www.jboss.org/</url>
+   </organization>
+
+   <scm>
+      <connection>scm:svn:http://anonsvn.jboss.org/repos/messaging/trunk</connection>
+      <developerConnection>scm:svn:https://svn.jboss.org/repos/messaging/trunk</developerConnection>
+   </scm>
+   <build>
+
+      <plugins>
+         <plugin>
+            <groupId>org.jboss.maven.plugins</groupId>
+            <artifactId>maven-buildmagic-thirdparty-plugin</artifactId>
+            <executions>
+               <execution>
+                  <id>build-thirdparty</id>
+                  <goals>
+                     <goal>build-thirdparty</goal>
+                  </goals>
+                  <configuration>
+                     <outputDirectory>thirdparty</outputDirectory>
+                     <librariesEnt>thirdparty/libraries.ent</librariesEnt>
+                     <includedScopes>
+                        <scope>compile</scope>
+                     </includedScopes>
+                  </configuration>
+               </execution>
+            </executions>
+            <configuration>
+               <!--without this dummy entry we get a npe, just ignore-->
+               <mappedDependencies>
+                  <dependency>
+                     <groupId>id</groupId>
+                     <artifactId>art-id</artifactId>
+                     <mapping>
+                        <artifactId>1.0.0</artifactId>
+                     </mapping>
+                  </dependency>
+               </mappedDependencies>
+            </configuration>
+         </plugin>
+      </plugins>
+
+   </build>
+   <dependencies>
+      <!--needed for the filters-->
+      <dependency>
+        <groupId>net.java.dev.javacc</groupId>
+        <artifactId>javacc</artifactId>
+        <version>4.0</version>
+      </dependency>
+      <!-- needed to compile JMS-->
+      <dependency>
+        <groupId>org.jboss.javaee</groupId>
+        <artifactId>jboss-jms-api</artifactId>
+        <version>1.1.0.GA</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.jboss.javaee</groupId>
+        <artifactId>jboss-transaction-api</artifactId>
+        <version>1.0.1.GA</version>
+      </dependency>
+      <!--this specifically for the JMS Bridge-->
+      <dependency>
+        <groupId>org.jboss.integration</groupId>
+        <artifactId>jboss-transaction-spi</artifactId>
+        <version>5.1.0.GA</version>
+      </dependency>
+      <!--this for xa recovery-->
+      <dependency>
+        <groupId>jboss.jbossts</groupId>
+        <artifactId>jbossjts</artifactId>
+        <version>4.6.1.GA</version>
+      </dependency>
+      <!--needed to compile security-->
+      <dependency>
+        <groupId>org.jboss.security</groupId>
+        <artifactId>jboss-security-spi</artifactId>
+        <version>2.0.3.SP1</version>
+      </dependency>
+      <dependency>
+        <groupId>org.jboss.security</groupId>
+        <artifactId>jbosssx</artifactId>
+        <version>2.0.3.SP1</version>
+      </dependency>
+      <!--needed to compile the bootstrap jar-->
+      <dependency>
+        <groupId>org.jboss.microcontainer</groupId>
+        <artifactId>jboss-kernel</artifactId>
+        <version>2.0.6.GA</version>
+      </dependency>
+      <dependency>
+        <groupId>org.jboss</groupId>
+        <artifactId>jboss-common-core</artifactId>
+        <version>2.2.14.GA</version>
+      </dependency>
+      <!--needed to compile transport jar-->
+      <dependency>
+         <groupId>org.jboss.netty</groupId>
+         <artifactId>netty</artifactId>
+         <version>3.1.0.BETA3</version>
+      </dependency>
+      <!--needed to compile the logging jar-->
+      <dependency>
+         <groupId>log4j</groupId>
+         <artifactId>log4j</artifactId>
+         <version>1.2.14</version>
+      </dependency>
+      <dependency>
+         <groupId>org.jboss.logging</groupId>
+         <artifactId>jboss-logging-spi</artifactId>
+         <version>2.1.0.GA</version>
+      </dependency>
+      <!-- needed to compile the tests-->
+      <dependency>
+        <groupId>junit</groupId>
+        <artifactId>junit</artifactId>
+        <version>3.8.2</version>
+      </dependency>
+      <!--needed to compile the jms tests-->
+      <dependency>
+        <groupId>org.jboss.javaee</groupId>
+        <artifactId>jboss-jaspi-api</artifactId>
+        <version>1.0.0.GA</version>
+      </dependency>
+
+      <!--needed to run the jms tests-->
+      <dependency>
+        <groupId>org.jboss.naming</groupId>
+        <artifactId>jnpserver</artifactId>
+        <version>5.0.3.GA</version>
+      </dependency>
+      <dependency>
+        <groupId>jboss.jbossts</groupId>
+        <artifactId>jbossts-common</artifactId>
+        <version>4.6.1.GA</version>
+      </dependency>
+      <dependency>
+        <groupId>apache-logging</groupId>
+        <artifactId>commons-logging</artifactId>
+        <version>1.1.0.jboss</version>
+      </dependency>
+   </dependencies>
+
+
+   <repositories>
+      <repository>
+         <snapshots>
+            <enabled>false</enabled>
+            <updatePolicy>never</updatePolicy>
+         </snapshots>
+         <releases>
+            <enabled>true</enabled>
+            <updatePolicy>interval:10080</updatePolicy>
+         </releases>
+         <id>jboss.release</id>
+         <name>JBoss releases</name>
+         <url>http://repository.jboss.org/maven2</url>
+      </repository>
+   </repositories>
+
+   <pluginRepositories>
+      <pluginRepository>
+         <snapshots>
+            <enabled>false</enabled>
+            <updatePolicy>never</updatePolicy>
+         </snapshots>
+         <releases>
+            <enabled>true</enabled>
+            <updatePolicy>interval:10080</updatePolicy>
+         </releases>
+         <id>jboss.release</id>
+         <name>JBoss releases</name>
+         <url>http://repository.jboss.org/maven2</url>
+      </pluginRepository>
+   </pluginRepositories>                     
+   <!--<profiles>
+      --><!-- This profile is used by the ant/buildmagic build --><!--
+      <profile>
+         <id>integrated-build</id>
+         <activation>
+            <property>
+               <name>integrated-build</name>
+            </property>
+         </activation>
+         <modules>
+            <module>thirdparty</module>
+         </modules>
+      </profile>
+
+   </profiles>-->
+
+   <distributionManagement>
+      <repository>
+         <id>repository.jboss.org</id>
+         <name>JBoss.org Release Distribution Repository</name>
+         <url>dav:https://svn.jboss.org/repos/repository.jboss.org/maven2</url>
+      </repository>
+      <snapshotRepository>
+         <id>snapshots.jboss.org</id>
+         <name>JBoss.org Development Snapshot Repository</name>
+         <url>dav:https://snapshots.jboss.org/maven2</url>
+      </snapshotRepository>
+   </distributionManagement>
+
+
+</project>
+
