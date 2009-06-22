@@ -95,6 +95,7 @@
    <property name="src.schema.dir" value="${src.config.dir}/common/schema"/>
    <property name="src.bin.dir" value="${src.dir}/bin"/>
    <property name="doc.dir" value="docs"/>
+   <property name="logs.dir" value="logs"/>
    <property name="licenses.dir" value="licenses"/>
    <property name="doc.examples.dir" value="examples"/>
    <property name="user-manual.build.dir" value="${doc.dir}/user-manual/build"/>
@@ -1073,6 +1074,7 @@
       <echo message=""/>
       <mkdir dir="${test.output.dir}"/>
       <mkdir dir="${test.reports.dir}"/>
+      <mkdir dir="${logs.dir}"/>
       <junit printsummary="${junit.printsummary}"
              fork="on"
              forkMode="once"
@@ -1085,7 +1087,7 @@
          <sysproperty key="java.io.tmpdir" value="${java.io.tmpdir}"/>
          <jvmarg value="-Djava.library.path=native/bin"/>
          <jvmarg value="-Dmodule.output=./"/>
-         <jvmarg value="-Djava.util.logging.config.file=src/config/stand-alone/non-clustered/logging.properties"/>
+         <jvmarg value="-Djava.util.logging.config.file=src/config/trunk/non-clustered/logging.properties"/>
          <jvmarg
                value="-Dorg.jboss.logging.Logger.pluginClass=org.jboss.messaging.integration.logging.JBMLoggerPlugin"/>
          <jvmarg value="-XX:+PrintClassHistogram"/>
