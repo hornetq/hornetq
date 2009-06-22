@@ -45,7 +45,6 @@ int main(int arg, char * param[])
    directory = param[1];
    numberOfFiles = atoi(param[2]);
 
-   fprintf (stderr, "allocating file");
    if (posix_memalign(&preAllocBuffer, 512, bufferSize))
    {
        fprintf (stderr, "Error allocating buffer");
