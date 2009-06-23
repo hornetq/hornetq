@@ -129,7 +129,6 @@ public class AddressControlImpl implements AddressControl
       {
          json.put(new JSONObject(role));
       }
-      System.out.println(json.toString(2));
       return json.toString();
    }
 
