@@ -16,6 +16,7 @@
 <!-- the License, or (at your option) any later version.                                         -->
 <!--                                                                                             -->
 <!-- This software is distributed in the hope that it will be useful,                            -->
+
 <!-- but WITHOUT ANY WARRANTY; without even the implied warranty of                              -->
 <!-- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU                            -->
 <!-- Lesser General Public License for more details.                                             -->
@@ -28,7 +29,7 @@
 <!-- =========================================================================================== -->
 
 
-<project default="runRemote" name="JBoss Messaging Clustered Standalone Example">
+<project default="run" name="JBoss Messaging Clustered Standalone Example">
 
    <import file="../../common/build.xml"/>
 
@@ -38,7 +39,7 @@
          <param name="jbm.example.runServer" value="false"/>
       </antcall>
    </target>
-	
+
 	<!-- the example can be ran automatically from the distribution only -->
    <target name="run">
    	<property name="distro.bin.dir" value="../../../bin"/>
@@ -46,45 +47,73 @@
       <condition property="from.distro">
          <available file="${distro.bin.dir}/run.sh" />
       </condition>
-      
+
       <antcall target="run-from-distro" />
    </target>
-      
+
    <target name="run-from-distro" if="from.distro">
    	<property name="distro.bin.dir" value="../../../bin"/>
-   	
+   	<echo message="${os.name}" />
+
    	<!-- start 3 clustered servers in parallel                   -->
    	<!-- then wait for 1 minute and run the example              -->
-    	<!-- finally, stop the servers once the example has finished -->
+   	<!-- finally, stop the servers once the example has finished -->
+
+      <property name="unix.arg" value="run.sh  ../config/stand-alone/clustered"/>
+      <property name="windows.arg" value="/c run.bat ..\\config\\stand-alone\\clustered"/>
+      <property name="cluster.props.node2" value="-Ddata.dir=../data-server2 -Djnp.port=2099 -Djnp.rmiPort=2098 -Djbm.remoting.netty.port=6445"/>
+      <property name="cluster.props.node3" value="-Ddata.dir=../data-server3 -Djnp.port=3099 -Djnp.rmiPort=3098 -Djbm.remoting.netty.port=7445"/>
       <parallel>
          <sequential>
+
             <echo>Starting 3 clustered servers</echo>
             <parallel>
                <!-- start the 1st clustered server with default configuration -->
-               <exec dir="${distro.bin.dir}" executable="sh">
-                  <arg line="run.sh ../config/stand-alone/clustered"/>
+               <exec dir="${distro.bin.dir}" executable="sh" osfamily="unix">
+                  <arg line="${unix.arg}"/>
                </exec>
+               <exec dir="${distro.bin.dir}" executable="cmd" osfamily="windows">
+                  <arg line="${windows.arg}"/>
+
+               </exec>
+
                <!-- start the 2nd clustered server with modified configuration -->
-               <exec dir="${distro.bin.dir}" executable="sh">
-                  <env key="CLUSTER_PROPS" value="-Ddata.dir=../data-server2 -Djnp.port=2099 -Djnp.rmiPort=2098 -Djbm.remoting.netty.port=6445"/>
-                  <arg line="run.sh ../config/stand-alone/clustered"/>
+               <exec dir="${distro.bin.dir}" executable="sh" osfamily="unix">
+                  <env key="CLUSTER_PROPS" value="${cluster.props.node2}"/>
+                <arg line="${unix.arg}"/>
                </exec>
-               <!-- start the 3rd clustered server with modified configuration -->
-               <exec dir="${distro.bin.dir}" executable="sh">
-                  <env key="CLUSTER_PROPS" value="-Ddata.dir=../data-server3 -Djnp.port=3099 -Djnp.rmiPort=3098 -Djbm.remoting.netty.port=7445"/>
-                  <arg line="run.sh ../config/stand-alone/clustered"/>
-               </exec>
+                <exec dir="${distro.bin.dir}" executable="cmd" osfamily="windows">
+                   <env key="CLUSTER_PROPS" value="${cluster.props.node2}" />
+                   <arg line="${windows.arg}"/>
+
+                </exec>
+
+                <!-- start the 3rd clustered server with modified configuration -->
+                <exec dir="${distro.bin.dir}" executable="sh" osfamily="unix">
+                   <env key="CLUSTER_PROPS" value="${cluster.props.node3}"/>
+                    <arg line="${unix.arg}"/>
+                </exec>
+                 <exec dir="${distro.bin.dir}" executable="cmd" osfamily="windows">
+                    <env key="CLUSTER_PROPS" value="${cluster.props.node3}"/>
+
+                    <arg line="${windows.arg}"/>
+                 </exec>
             </parallel>
          </sequential>
          <sequential>
             <sleep minutes="1" />
             <echo>Running example</echo>
             <antcall target="runRemote"></antcall>
+
             <echo>Stopping servers</echo>
-            <exec dir="${distro.bin.dir}" executable="sh">
+            <exec dir="${distro.bin.dir}" executable="sh" osfamily="unix">
                <arg line="stop.sh ../config/stand-alone/clustered"/>
             </exec>
+            <exec dir="${distro.bin.dir}" executable="cmd" osfamily="windows">
+               <arg line="/c stop.bat ..\\config\\stand-alone\\clustered"/>
+            </exec>
          </sequential>
+
       </parallel>
    </target>
 

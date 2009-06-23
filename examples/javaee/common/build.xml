@@ -137,8 +137,11 @@
             <exclude name="**/tmp/**"/>
          </fileset>
       </copy>
-      <exec dir="${jboss.home}/bin" executable="sh">
+      <exec dir="${jboss.home}/bin" executable="sh" osfamily="linux">
          <arg line="run.sh -c ${example.name}-example-profile"/>
+      </exec>
+      <exec dir="${jboss.home}/bin" executable="cmd" osfamily="windows">
+         <arg line="/c run.bat -c ${example.name}-example-profile"/>
       </exec>
    </target>
 
