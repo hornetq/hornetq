@@ -591,6 +591,7 @@
          <zipfileset src="./thirdparty/org/jboss/lib/jboss-common-core.jar"/>
          <zipfileset src="./thirdparty/org/jboss/lib/jboss-mdr.jar"/>
          <zipfileset src="./thirdparty/org/jboss/lib/jbossxb.jar"/>
+         <zipfileset src="./thirdparty/sun-jaxb/lib/jaxb-api.jar"/>
       </jar>         
    </target>   
          
