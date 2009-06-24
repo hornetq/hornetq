@@ -51,6 +51,7 @@ public class FakeConsumer implements Consumer
 
    public FakeConsumer()
    {
+      this.filter = null;
    }
 
    public FakeConsumer(Filter filter)
@@ -60,7 +61,7 @@ public class FakeConsumer implements Consumer
 
    public Filter getFilter()
    {
-      return null;
+      return filter;
    }
 
    public synchronized MessageReference waitForNextReference(long timeout)
