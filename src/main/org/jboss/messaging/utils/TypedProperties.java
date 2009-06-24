@@ -748,5 +748,11 @@ public class TypedProperties
       {
          return SIZE_BYTE + SimpleString.sizeofString(val);
       }
+
+      @Override
+      public String toString()
+      {
+         return val.toString();
+      }
    }
 }
