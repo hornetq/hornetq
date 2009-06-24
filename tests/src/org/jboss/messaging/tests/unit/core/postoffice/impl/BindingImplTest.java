@@ -24,6 +24,7 @@ package org.jboss.messaging.tests.unit.core.postoffice.impl;
 
 import java.io.InputStream;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -1365,6 +1366,11 @@ public class BindingImplTest extends UnitTestCase
       public List<MessageReference> list(Filter filter)
       {
 
+         return null;
+      }
+      
+      public Iterator<MessageReference> iterator()
+      {
          return null;
       }
 

@@ -24,26 +24,27 @@ package org.jboss.messaging.core.list.impl;
 
 import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.ListIterator;
 import java.util.NoSuchElementException;
 
 import org.jboss.messaging.core.list.PriorityLinkedList;
+import org.jboss.messaging.utils.concurrent.Deque;
+import org.jboss.messaging.utils.concurrent.LinkedBlockingDeque;
 
 /**
  * A priority linked list implementation
  * 
- * It implements this by maintaining an individual LinkedList for each priority level.
+ * It implements this by maintaining an individual LinkedBlockingDeque for each priority level.
  * 
  * @author <a href="mailto:tim.fox@jboss.com>Tim Fox</a>
+ * @author <a href="mailto:jmesnil@redhat.com>Jeff Mesnil</a>
  * @version <tt>$Revision: 1174 $</tt>
  *
  * $Id: BasicPrioritizedDeque.java 1174 2006-08-02 14:14:32Z timfox $
  */
 public class PriorityLinkedListImpl<T> implements PriorityLinkedList<T>
 {
-   private final List<LinkedList<T>> linkedLists;
+   private final List<Deque<T>> levels;
 
    private final int priorities;
 
@@ -53,24 +54,24 @@ public class PriorityLinkedListImpl<T> implements PriorityLinkedList<T>
    {
       this.priorities = priorities;
 
-      linkedLists = new ArrayList<LinkedList<T>>();
+      levels = new ArrayList<Deque<T>>();
 
       for (int i = 0; i < priorities; i++)
       {
-         linkedLists.add(new LinkedList<T>());
+         levels.add(new LinkedBlockingDeque<T>());
       }
    }
 
    public void addFirst(final T t, final int priority)
    {
-      linkedLists.get(priority).addFirst(t);
+      levels.get(priority).addFirst(t);
 
       size++;
    }
 
    public void addLast(final T t, final int priority)
    {
-      linkedLists.get(priority).addLast(t);
+      levels.get(priority).addLast(t);
 
       size++;
    }
@@ -87,7 +88,7 @@ public class PriorityLinkedListImpl<T> implements PriorityLinkedList<T>
 
       for (int i = priorities - 1; i >= 0; i--)
       {
-         LinkedList<T> ll = linkedLists.get(i);
+         Deque<T> ll = levels.get(i);
 
          if (!ll.isEmpty())
          {
@@ -110,7 +111,7 @@ public class PriorityLinkedListImpl<T> implements PriorityLinkedList<T>
 
       for (int i = priorities - 1; i >= 0; i--)
       {
-         LinkedList<T> ll = linkedLists.get(i);
+         Deque<T> ll = levels.get(i);
          if (!ll.isEmpty())
          {
             t = ll.getFirst();
@@ -130,7 +131,7 @@ public class PriorityLinkedListImpl<T> implements PriorityLinkedList<T>
 
       for (int i = priorities - 1; i >= 0; i--)
       {
-         LinkedList<T> list = linkedLists.get(i);
+         Deque<T> list = levels.get(i);
          all.addAll(list);
       }
 
@@ -139,7 +140,7 @@ public class PriorityLinkedListImpl<T> implements PriorityLinkedList<T>
 
    public void clear()
    {
-      for (LinkedList<T> list : linkedLists)
+      for (Deque<T> list : levels)
       {
          list.clear();
       }
@@ -166,13 +167,13 @@ public class PriorityLinkedListImpl<T> implements PriorityLinkedList<T>
    {
       private int index;
 
-      private ListIterator<T> currentIter;
+      private Iterator<T> currentIter;
 
       PriorityLinkedListIterator()
       {
-         index = linkedLists.size() - 1;
+         index = levels.size() - 1;
 
-         currentIter = linkedLists.get(index).listIterator();
+         currentIter = levels.get(index).iterator();
       }
 
       public boolean hasNext()
@@ -191,7 +192,7 @@ public class PriorityLinkedListImpl<T> implements PriorityLinkedList<T>
 
             index--;
 
-            currentIter = linkedLists.get(index).listIterator();
+            currentIter = levels.get(index).iterator();
          }
          return currentIter.hasNext();
       }

@@ -22,6 +22,7 @@
 
 package org.jboss.messaging.core.server;
 
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Executor;
@@ -151,4 +152,9 @@ public interface Queue extends Bindable
    void lockDelivery();
    
    void unlockDelivery();
+
+   /**
+    * @return an immutable iterator which does not allow to remove references
+    */
+   Iterator<MessageReference> iterator();
 }

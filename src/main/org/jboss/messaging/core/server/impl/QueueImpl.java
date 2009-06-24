@@ -497,6 +497,29 @@ public class QueueImpl implements Queue
       return consumers;
    }
 
+   public Iterator<MessageReference> iterator()
+   {
+      return new Iterator<MessageReference>()
+      {
+         private final Iterator<MessageReference> iterator = messageReferences.iterator();
+         
+         public boolean hasNext()
+         {
+            return iterator.hasNext();
+         }
+
+         public MessageReference next()
+         {
+            return iterator.next();
+         }
+
+         public void remove()
+         {
+            throw new UnsupportedOperationException("iterator is immutable");
+         }
+      };
+   }
+
    public synchronized List<MessageReference> list(final Filter filter)
    {
       if (filter == null)

@@ -51,7 +51,6 @@ import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
 import org.jboss.messaging.core.server.HandleStatus;
 import org.jboss.messaging.core.server.LargeServerMessage;
 import org.jboss.messaging.core.server.MessageReference;
-import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.ServerConsumer;
 import org.jboss.messaging.core.server.ServerMessage;
@@ -116,6 +115,8 @@ public class ServerConsumerImpl implements ServerConsumer
     * if we are a browse only consumer we don't need to worry about acknowledgemenets or being started/stopeed by the session.
     */
    private final boolean browseOnly;
+
+   private Runnable browserDeliverer;
 
    private final boolean updateDeliveries;
 
@@ -189,7 +190,14 @@ public class ServerConsumerImpl implements ServerConsumer
 
       this.updateDeliveries = updateDeliveries;
       
-      binding.getQueue().addConsumer(this);
+      if (browseOnly)
+      {
+         browserDeliverer = new BrowserDeliverer(messageQueue.iterator());
+      }
+      else
+      {
+         messageQueue.addConsumer(this);
+      }
    }
 
    // ServerConsumer implementation
@@ -219,8 +227,11 @@ public class ServerConsumerImpl implements ServerConsumer
          largeMessageDeliverer.close();
       }
 
-      messageQueue.removeConsumer(this);
-
+      if (!browseOnly)
+      {
+         messageQueue.removeConsumer(this);
+      }
+      
       session.removeConsumer(this);
 
       LinkedList<MessageReference> refs = cancelRefs(false, null);
@@ -519,7 +530,14 @@ public class ServerConsumerImpl implements ServerConsumer
          }
          else
          {
-            session.promptDelivery(messageQueue);
+            if (browseOnly)
+            {
+               executor.execute(browserDeliverer);
+            }
+            else
+            {
+               session.promptDelivery(messageQueue);
+            }
          }
       }
       finally
@@ -739,8 +757,15 @@ public class ServerConsumerImpl implements ServerConsumer
          {
             if (largeMessageDeliverer == null || largeMessageDeliverer.deliver())
             {
-               // prompt Delivery only if chunk was finished
-               session.promptDelivery(messageQueue);
+               if (browseOnly)
+               {
+                  executor.execute(browserDeliverer);
+               }
+               else
+               {
+                  // prompt Delivery only if chunk was finished
+                  session.promptDelivery(messageQueue);
+               }
             }
          }
          finally
@@ -988,5 +1013,60 @@ public class ServerConsumerImpl implements ServerConsumer
 
          return chunk;
       }
+   }
+   
+   private class BrowserDeliverer implements Runnable
+   {
+      private MessageReference current = null;
+      
+      public BrowserDeliverer(final Iterator<MessageReference> iterator)
+      {
+         this.iterator = iterator;
+      }
+
+      private final Iterator<MessageReference> iterator;
+      
+      public void run()
+      {
+         // if the reference was busy during the previous iteration, handle it now
+         if (current != null)
+         {
+            try
+            {
+               HandleStatus status = handle(current);
+               if (status == HandleStatus.BUSY)
+               {
+                  return;
+               }            
+            }
+            catch (Exception e)
+            {
+               log.warn("Exception while browser handled from " + messageQueue + ": " + current);
+               return;
+            }
+         }
+
+         while (iterator.hasNext())
+         {
+            MessageReference ref = (MessageReference)iterator.next();
+            try
+            {
+               HandleStatus status = handle(ref);
+               if (status == HandleStatus.BUSY)
+               {
+                  // keep a reference on the current message reference
+                  // to handle it next time the browser deliverer is executed
+                  current = ref;
+                  break;
+               }
+            }
+            catch (Exception e)
+            {
+               log.warn("Exception while browser handled from " + messageQueue + ": " + ref);
+               break;
+            }
+         }
+      }
+      
    }
 }
