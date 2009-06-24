@@ -41,11 +41,12 @@ public class JBMLoggerFormatter extends java.util.logging.Formatter
       StringBuffer sb = new StringBuffer();
       // Minimize memory allocations here.
       date.setTime(record.getMillis());
+      sb.append("[").append(Thread.currentThread().getName()).append("] ");
       sb.append(dateFormat.format(date)).append(" ");
       sb.append(record.getLevel()). append(" [");
       sb.append(record.getLoggerName()).append("]").append("  ");
       sb.append(record.getMessage());
-      sb.append(" ");
+      
       sb.append(lineSeparator);
       if (record.getThrown() != null)
       {
