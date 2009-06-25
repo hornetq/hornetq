@@ -32,12 +32,12 @@ import java.util.logging.LogRecord;
  */
 public class JBMLoggerFormatter extends java.util.logging.Formatter
 {
-   Date date = new Date();
-   SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm:ss,SSS");
-   private String lineSeparator = System.getProperty("line.separator");
+   private static String LINE_SEPARATOR = System.getProperty("line.separator");
 
-   public synchronized String format(LogRecord record)
+   public String format(LogRecord record)
    {
+      Date date = new Date();
+      SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm:ss,SSS");
       StringBuffer sb = new StringBuffer();
       // Minimize memory allocations here.
       date.setTime(record.getMillis());
@@ -47,7 +47,7 @@ public class JBMLoggerFormatter extends java.util.logging.Formatter
       sb.append(record.getLoggerName()).append("]").append("  ");
       sb.append(record.getMessage());
       
-      sb.append(lineSeparator);
+      sb.append(LINE_SEPARATOR);
       if (record.getThrown() != null)
       {
          try
