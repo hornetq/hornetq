@@ -21,13 +21,11 @@
  */
 package org.jboss.messaging.ra;
 
-import java.io.Serializable;
-import java.util.Map;
+import org.jboss.messaging.core.logging.Logger;
 
 import javax.jms.Queue;
 import javax.jms.Topic;
-
-import org.jboss.messaging.core.logging.Logger;
+import java.io.Serializable;
 
 /**
  * The MCF default properties - these are set in the <tx-connection-factory> at the jms-ds.xml
@@ -35,37 +33,50 @@ import org.jboss.messaging.core.logging.Logger;
  * @author <a href="mailto:adrian@jboss.com">Adrian Brock</a>
  * @author <a href="mailto:jesper.pedersen@jboss.org">Jesper Pedersen</a>
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
+ * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
  * @version $Revision: $
  */
-public class JBMMCFProperties implements Serializable
+public class JBMMCFProperties extends ConnectionFactoryProperties implements Serializable
 {
-   /** Serial version UID */
+   /**
+    * Serial version UID
+    */
    static final long serialVersionUID = -5951352236582886862L;
 
-   /** The logger */
+   /**
+    * The logger
+    */
    private static final Logger log = Logger.getLogger(JBMMCFProperties.class);
 
-   /** Trace enabled */
+   /**
+    * Trace enabled
+    */
    private static boolean trace = log.isTraceEnabled();
 
-   /** The queue type */
+   /**
+    * The queue type
+    */
    private static final String QUEUE_TYPE = Queue.class.getName();
 
-   /** The topic type */
+   /**
+    * The topic type
+    */
    private static final String TOPIC_TYPE = Topic.class.getName();
 
-   /** The transport config, changing the default configured from the RA */
-   private Map<String, Object> connectionParameters;
+
 
    public String strConnectionParameters;
 
-   /** The transport type, changing the default configured from the RA */
-   private String connectorClassName;
+   public String strBackupConnectionParameters;
 
-   /** The connection type */
+   /**
+    * The connection type
+    */
    private int type = JBMConnectionFactory.CONNECTION;
 
-   /** Use tryLock */
+   /**
+    * Use tryLock
+    */
    private Integer useTryLock;
 
    /**
@@ -83,6 +94,7 @@ public class JBMMCFProperties implements Serializable
 
    /**
     * Get the connection type
+    *
     * @return The type
     */
    public int getType()
@@ -98,37 +110,35 @@ public class JBMMCFProperties implements Serializable
    /**
     * @return the connectionParameters
     */
-   public String getConnectionParameters()
+   public String getStrConnectionParameters()
    {
       return strConnectionParameters;
    }
 
-   public Map<String, Object> getParsedConnectionParameters()
-   {
-      return connectionParameters;
-   }
 
    public void setConnectionParameters(final String configuration)
    {
       strConnectionParameters = configuration;
-      connectionParameters = Util.parseConfig(configuration);
+      setParsedConnectionParameters(Util.parseConfig(configuration));
    }
 
    /**
-    * @return the transportType
+    * @return the connectionParameters
     */
-   public String getConnectorClassName()
+   public String getBackupConnectionParameters()
    {
-      return connectorClassName;
+      return strBackupConnectionParameters;
    }
 
-   public void setConnectorClassName(final String value)
+   public void setBackupConnectionParameters(final String configuration)
    {
-      connectorClassName = value;
+      strBackupConnectionParameters = configuration;
+      setParsedBackupConnectionParameters(Util.parseConfig(configuration));
    }
-
+   
    /**
     * Set the default session type.
+    *
     * @param defaultType either javax.jms.Topic or javax.jms.Queue
     */
    public void setSessionDefaultType(final String defaultType)
@@ -154,6 +164,7 @@ public class JBMMCFProperties implements Serializable
 
    /**
     * Get the default session type.
+    *
     * @return The default session type
     */
    public String getSessionDefaultType()
@@ -179,6 +190,7 @@ public class JBMMCFProperties implements Serializable
 
    /**
     * Get the useTryLock.
+    *
     * @return the useTryLock.
     */
    public Integer getUseTryLock()
@@ -193,6 +205,7 @@ public class JBMMCFProperties implements Serializable
 
    /**
     * Set the useTryLock.
+    *
     * @param useTryLock the useTryLock.
     */
    public void setUseTryLock(final Integer useTryLock)
@@ -203,52 +216,5 @@ public class JBMMCFProperties implements Serializable
       }
 
       this.useTryLock = useTryLock;
-   }
-
-   /**
-    * Indicates whether some other object is "equal to" this one.
-    * @param obj Object with which to compare
-    * @return True if this object is the same as the obj argument; false otherwise.
-    */
-   @Override
-   public boolean equals(final Object obj)
-   {
-      if (trace)
-      {
-         log.trace("equals(" + obj + ")");
-      }
-
-      if (obj == null)
-      {
-         return false;
-      }
-
-      if (obj instanceof JBMMCFProperties)
-      {
-         JBMMCFProperties you = (JBMMCFProperties)obj;
-         return type == you.getType() && Util.compare(useTryLock, you.getUseTryLock());
-      }
-
-      return false;
-   }
-
-   /**
-    * Return the hash code for the object
-    * @return The hash code
-    */
-   @Override
-   public int hashCode()
-   {
-      if (trace)
-      {
-         log.trace("hashCode()");
-      }
-
-      int hash = 7;
-
-      hash += 31 * hash + Integer.valueOf(type).hashCode();
-      hash += 31 * hash + (useTryLock != null ? useTryLock.hashCode() : 0);
-
-      return hash;
    }
 }

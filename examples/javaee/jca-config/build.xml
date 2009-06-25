@@ -72,7 +72,7 @@
       </copy>
 
       <exec dir="${jboss.home}/bin" executable="sh" osfamily="unix">
-         <arg line="run.sh -c jca-config-example-profile2 -Djboss.service.binding.set=ports-01"/>
+         <arg line="debug.sh -c jca-config-example-profile2 -Djboss.service.binding.set=ports-01"/>
       </exec>
       <exec dir="${jboss.home}/bin" executable="cmd" osfamily="windows">
          <arg line="/c run.bat -c jca-config-example-profile2 -Djboss.service.binding.set=ports-01"/>

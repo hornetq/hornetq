@@ -21,18 +21,6 @@
  */
 package org.jboss.messaging.ra.inflow;
 
-import java.util.UUID;
-
-import javax.jms.InvalidClientIDException;
-import javax.jms.JMSException;
-import javax.jms.MessageListener;
-import javax.jms.Session;
-import javax.resource.spi.endpoint.MessageEndpoint;
-import javax.resource.spi.endpoint.MessageEndpointFactory;
-import javax.transaction.Status;
-import javax.transaction.Transaction;
-import javax.transaction.TransactionManager;
-
 import org.jboss.messaging.core.client.ClientConsumer;
 import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.client.ClientSession;
@@ -43,6 +31,17 @@ import org.jboss.messaging.core.remoting.impl.wireformat.SessionQueueQueryRespon
 import org.jboss.messaging.jms.JBossTopic;
 import org.jboss.messaging.jms.client.JBossMessage;
 import org.jboss.messaging.utils.SimpleString;
+
+import javax.jms.InvalidClientIDException;
+import javax.jms.JMSException;
+import javax.jms.MessageListener;
+import javax.jms.Session;
+import javax.resource.spi.endpoint.MessageEndpoint;
+import javax.resource.spi.endpoint.MessageEndpointFactory;
+import javax.transaction.Status;
+import javax.transaction.Transaction;
+import javax.transaction.TransactionManager;
+import java.util.UUID;
 
 /**
  * The message handler
@@ -106,13 +105,13 @@ public class JBMMessageHandler implements MessageHandler
 
          // Durable sub
 
-         if (activation.getActivationSpec().getClientId() == null)
+         if (activation.getActivationSpec().getClientID() == null)
          {
             throw new InvalidClientIDException("Cannot create durable subscription - client ID has not been set");
          }
 
          SimpleString queueName = new SimpleString(JBossTopic.createQueueNameForDurableSubscription(activation.getActivationSpec()
-                                                                                                              .getClientId(),
+                                                                                                              .getClientID(),
                                                                                                     subscriptionName));
 
          SessionQueueQueryResponseMessage subResponse = session.queueQuery(queueName);

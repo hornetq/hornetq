@@ -21,20 +21,6 @@
  */
 package org.jboss.messaging.ra;
 
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicBoolean;
-
-import javax.jms.Session;
-import javax.resource.ResourceException;
-import javax.resource.spi.ActivationSpec;
-import javax.resource.spi.BootstrapContext;
-import javax.resource.spi.ResourceAdapter;
-import javax.resource.spi.ResourceAdapterInternalException;
-import javax.resource.spi.endpoint.MessageEndpointFactory;
-import javax.resource.spi.work.WorkManager;
-import javax.transaction.xa.XAResource;
-
 import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.ClientSessionFactory;
 import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
@@ -45,6 +31,19 @@ import org.jboss.messaging.jms.client.JBossConnectionFactory;
 import org.jboss.messaging.jms.client.JBossSession;
 import org.jboss.messaging.ra.inflow.JBMActivation;
 import org.jboss.messaging.ra.inflow.JBMActivationSpec;
+
+import javax.jms.Session;
+import javax.resource.ResourceException;
+import javax.resource.spi.ActivationSpec;
+import javax.resource.spi.BootstrapContext;
+import javax.resource.spi.ResourceAdapter;
+import javax.resource.spi.ResourceAdapterInternalException;
+import javax.resource.spi.endpoint.MessageEndpointFactory;
+import javax.resource.spi.work.WorkManager;
+import javax.transaction.xa.XAResource;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * The resource adapter for JBoss Messaging
@@ -91,7 +90,7 @@ public class JBMResourceAdapter implements ResourceAdapter
     */
    private final Map<ActivationSpec, JBMActivation> activations;
 
-   private JBossConnectionFactory jBossConnectionFactory;
+   private JBossConnectionFactory defaultJBossConnectionFactory;
 
    /**
     * Constructor
@@ -134,7 +133,7 @@ public class JBMResourceAdapter implements ResourceAdapter
          log.trace("endpointActivation(" + endpointFactory + ", " + spec + ")");
       }
 
-      JBMActivation activation = new JBMActivation(this, endpointFactory, (JBMActivationSpec)spec);
+      JBMActivation activation = new JBMActivation(this, endpointFactory, (JBMActivationSpec) spec);
       activations.put(spec, activation);
       activation.start();
    }
@@ -239,14 +238,14 @@ public class JBMResourceAdapter implements ResourceAdapter
 
    public Map<String, Object> getConnectionParameters()
    {
-      return raProperties.getConnectionParameters();
+      return raProperties.getParsedConnectionParameters();
    }
 
    public void setConnectionParameters(final String config)
    {
       if (config != null)
       {
-         raProperties.setConnectionParameters(Util.parseConfig(config));
+         raProperties.setParsedConnectionParameters(Util.parseConfig(config));
       }
    }
 
@@ -266,14 +265,14 @@ public class JBMResourceAdapter implements ResourceAdapter
 
    public Map<String, Object> getBackupConnectionParameters()
    {
-      return raProperties.getBackupConnectionParameters();
+      return raProperties.getParsedBackupConnectionParameters();
    }
 
    public void setBackupTransportConfiguration(final String config)
    {
       if (config != null)
       {
-         raProperties.setBackupConnectionParameters(Util.parseConfig(config));
+         raProperties.setParsedBackupConnectionParameters(Util.parseConfig(config));
       }
    }
 
@@ -282,14 +281,14 @@ public class JBMResourceAdapter implements ResourceAdapter
     *
     * @return The value
     */
-   public String getDiscoveryGroupAddress()
+   public String getDiscoveryAddress()
    {
       if (trace)
       {
          log.trace("getDiscoveryGroupAddress()");
       }
 
-      return raProperties.getDiscoveryGroupAddress();
+      return raProperties.getDiscoveryAddress();
    }
 
    /**
@@ -297,14 +296,14 @@ public class JBMResourceAdapter implements ResourceAdapter
     *
     * @param dgn The value
     */
-   public void setDiscoveryGroupAddress(final String dgn)
+   public void setDiscoveryAddress(final String dgn)
    {
       if (trace)
       {
          log.trace("setDiscoveryGroupAddress(" + dgn + ")");
       }
 
-      raProperties.setDiscoveryGroupAddress(dgn);
+      raProperties.setDiscoveryAddress(dgn);
    }
 
    /**
@@ -312,14 +311,14 @@ public class JBMResourceAdapter implements ResourceAdapter
     *
     * @return The value
     */
-   public Integer getDiscoveryGroupPort()
+   public Integer getDiscoveryPort()
    {
       if (trace)
       {
          log.trace("getDiscoveryGroupPort()");
       }
 
-      return raProperties.getDiscoveryGroupPort();
+      return raProperties.getDiscoveryPort();
    }
 
    /**
@@ -327,14 +326,14 @@ public class JBMResourceAdapter implements ResourceAdapter
     *
     * @param dgp The value
     */
-   public void setDiscoveryGroupPort(final Integer dgp)
+   public void setDiscoveryPort(final Integer dgp)
    {
       if (trace)
       {
          log.trace("setDiscoveryGroupPort(" + dgp + ")");
       }
 
-      raProperties.setDiscoveryGroupPort(dgp);
+      raProperties.setDiscoveryPort(dgp);
    }
 
    /**
@@ -739,7 +738,7 @@ public class JBMResourceAdapter implements ResourceAdapter
          log.trace("getBlockOnAcknowledge()");
       }
 
-      return raProperties.getBlockOnAcknowledge();
+      return raProperties.isBlockOnAcknowledge();
    }
 
    /**
@@ -769,7 +768,7 @@ public class JBMResourceAdapter implements ResourceAdapter
          log.trace("getBlockOnNonPersistentSend()");
       }
 
-      return raProperties.getBlockOnNonPersistentSend();
+      return raProperties.isBlockOnNonPersistentSend();
    }
 
    /**
@@ -799,7 +798,7 @@ public class JBMResourceAdapter implements ResourceAdapter
          log.trace("getBlockOnPersistentSend()");
       }
 
-      return raProperties.getBlockOnPersistentSend();
+      return raProperties.isBlockOnPersistentSend();
    }
 
    /**
@@ -829,7 +828,7 @@ public class JBMResourceAdapter implements ResourceAdapter
          log.trace("getAutoGroup()");
       }
 
-      return raProperties.getAutoGroup();
+      return raProperties.isAutoGroup();
    }
 
    /**
@@ -889,7 +888,7 @@ public class JBMResourceAdapter implements ResourceAdapter
          log.trace("getPreAcknowledge()");
       }
 
-      return raProperties.getPreAcknowledge();
+      return raProperties.isPreAcknowledge();
    }
 
    /**
@@ -1037,6 +1036,61 @@ public class JBMResourceAdapter implements ResourceAdapter
       raProperties.setFailoverOnServerShutdown(failoverOnServerShutdown);
    }
 
+   public String getConnectionLoadBalancingPolicyClassName()
+   {
+      return raProperties.getConnectionLoadBalancingPolicyClassName();
+   }
+
+   public void setConnectionLoadBalancingPolicyClassName(String connectionLoadBalancingPolicyClassName)
+   {
+      if (trace)
+      {
+         log.trace("setFailoverOnServerShutdown(" + connectionLoadBalancingPolicyClassName + ")");
+      }
+      raProperties.setConnectionLoadBalancingPolicyClassName(connectionLoadBalancingPolicyClassName);
+   }
+
+   public Integer getScheduledThreadPoolMaxSize()
+   {
+      return raProperties.getScheduledThreadPoolMaxSize();
+   }
+   public void setScheduledThreadPoolMaxSize(Integer scheduledThreadPoolMaxSize)
+   {
+      if (trace)
+      {
+         log.trace("setFailoverOnServerShutdown(" + scheduledThreadPoolMaxSize + ")");
+      }
+      raProperties.setScheduledThreadPoolMaxSize(scheduledThreadPoolMaxSize);
+   }
+
+   public Integer getThreadPoolMaxSize()
+   {
+      return raProperties.getThreadPoolMaxSize();
+   }
+
+   public void setThreadPoolMaxSize(Integer threadPoolMaxSize)
+   {
+      if (trace)
+      {
+         log.trace("setFailoverOnServerShutdown(" + threadPoolMaxSize + ")");
+      }
+      raProperties.setThreadPoolMaxSize(threadPoolMaxSize);
+   }
+
+    public Boolean getUseGlobalPools()
+    {
+       return raProperties.isUseGlobalPools();
+    }
+   
+   public void setUseGlobalPools(Boolean useGlobalPools)
+   {
+      if (trace)
+      {
+         log.trace("setFailoverOnServerShutdown(" + useGlobalPools + ")");
+      }
+      raProperties.setUseGlobalPools(useGlobalPools);
+   }
+
    /**
     * Get the user name
     *
@@ -1177,7 +1231,7 @@ public class JBMResourceAdapter implements ResourceAdapter
 
       if (obj instanceof JBMResourceAdapter)
       {
-         return raProperties.equals(((JBMResourceAdapter)obj).getProperties());
+         return raProperties.equals(((JBMResourceAdapter) obj).getProperties());
       }
       else
       {
@@ -1252,9 +1306,9 @@ public class JBMResourceAdapter implements ResourceAdapter
 
       boolean actPreAck = preAck != null ? preAck : ClientSessionFactoryImpl.DEFAULT_PRE_ACKNOWLEDGE;
       int actDupsOkBatchSize = dupsOkBatchSize != null ? dupsOkBatchSize
-                                                      : ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE;
-      int actTxBatchSize = transactionBatchSize != null ? transactionBatchSize
                                                        : ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE;
+      int actTxBatchSize = transactionBatchSize != null ? transactionBatchSize
+                                                        : ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE;
       switch (ackMode)
       {
          case Session.SESSION_TRANSACTED:
@@ -1312,151 +1366,6 @@ public class JBMResourceAdapter implements ResourceAdapter
 
    }
 
-   private void setParams(final JBossConnectionFactory cf)
-   {
-      if (getLoadBalancingPolicyClassName() != null)
-      {
-         cf.setConnectionLoadBalancingPolicyClassName(getLoadBalancingPolicyClassName());
-      }
-
-      if (getClientFailureCheckPeriod() != null)
-      {
-         cf.setClientFailureCheckPeriod(getClientFailureCheckPeriod());
-      }
-
-      if (getConnectionTTL() != null)
-      {
-         cf.setConnectionTTL(getConnectionTTL());
-      }
-
-      if (getCallTimeout() != null)
-      {
-         cf.setCallTimeout(getCallTimeout());
-      }
-
-      if (getClientID() != null)
-      {
-         cf.setClientID(getClientID());
-      }
-
-      if (getDupsOKBatchSize() != null)
-      {
-         cf.setDupsOKBatchSize(getDupsOKBatchSize());
-      }
-
-      if (getTransactionBatchSize() != null)
-      {
-         cf.setTransactionBatchSize(getTransactionBatchSize());
-      }
-
-      if (getConsumerWindowSize() != null)
-      {
-         cf.setConsumerWindowSize(getConsumerWindowSize());
-      }
-
-      if (getConsumerMaxRate() != null)
-      {
-         cf.setConsumerMaxRate(getConsumerMaxRate());
-      }
-
-      if (getProducerWindowSize() != null)
-      {
-         cf.setProducerWindowSize(getProducerWindowSize());
-      }
-
-      if (getProducerMaxRate() != null)
-      {
-         cf.setProducerMaxRate(getProducerMaxRate());
-      }
-
-      if (getMinLargeMessageSize() != null)
-      {
-         cf.setMinLargeMessageSize(getMinLargeMessageSize());
-      }
-
-      if (getBlockOnAcknowledge() != null)
-      {
-         cf.setBlockOnAcknowledge(getBlockOnAcknowledge());
-      }
-
-      if (getBlockOnNonPersistentSend() != null)
-      {
-         cf.setBlockOnNonPersistentSend(getBlockOnNonPersistentSend());
-      }
-
-      if (getBlockOnPersistentSend() != null)
-      {
-         cf.setBlockOnPersistentSend(getBlockOnPersistentSend());
-      }
-
-      if (getAutoGroup() != null)
-      {
-         cf.setAutoGroup(getAutoGroup());
-      }
-
-      if (getMaxConnections() != null)
-      {
-         cf.setMaxConnections(getMaxConnections());
-      }
-
-      if (getPreAcknowledge() != null)
-      {
-         cf.setPreAcknowledge(getPreAcknowledge());
-      }
-
-      if (getRetryInterval() != null)
-      {
-         cf.setRetryInterval(getRetryInterval());
-      }
-
-      if (getRetryIntervalMultiplier() != null)
-      {
-         cf.setRetryIntervalMultiplier(getRetryIntervalMultiplier());
-      }
-
-      if (getReconnectAttempts() != null)
-      {
-         cf.setReconnectAttempts(getReconnectAttempts());
-      }
-
-      if (getFailoverOnServerShutdown() != null)
-      {
-         cf.setFailoverOnServerShutdown(getFailoverOnServerShutdown());
-      }
-   }
-
-   /**
-    * @param connectorClassName
-    * @param connectionParameters
-    */
-   public JBossConnectionFactory createRemoteFactory(final String connectorClassName,
-                                                     final Map<String, Object> connectionParameters)
-   {
-      TransportConfiguration transportConf = new TransportConfiguration(connectorClassName, connectionParameters);
-
-      TransportConfiguration backup = getBackupConnectorClassName() == null ? null
-                                                                           : new TransportConfiguration(getBackupConnectorClassName(),
-                                                                                                        getBackupConnectionParameters());
-
-      JBossConnectionFactory cf = new JBossConnectionFactory(transportConf, backup);
-
-      setParams(cf);
-
-      return cf;
-   }
-
-   /**
-    * @param discoveryGroup
-    * @param discoveryGroupPort
-    */
-   public JBossConnectionFactory createDiscoveryFactory(final String discoveryGroup, final Integer discoveryGroupPort)
-   {
-      JBossConnectionFactory cf = new JBossConnectionFactory(discoveryGroup, discoveryGroupPort);
-
-      setParams(cf);
-
-      return cf;
-   }
 
    /**
     * Get the resource adapter properties
@@ -1478,24 +1387,11 @@ public class JBMResourceAdapter implements ResourceAdapter
     */
    protected void setup() throws MessagingException
    {
-
-      if (getConnectorClassName() != null)
-      {
-         jBossConnectionFactory = createRemoteFactory(getConnectorClassName(), getConnectionParameters());
-      }
-      else if (getDiscoveryGroupAddress() != null && getDiscoveryGroupPort() != null)
-      {
-         jBossConnectionFactory = createDiscoveryFactory(getDiscoveryGroupAddress(), getDiscoveryGroupPort());
-      }
-      else
-      {
-         log.fatal("must provide either TransportTyoe or DiscoveryGroupAddress and DiscoveryGroupPort for JBM ResourceAdapter");
-      }
-
-      sessionFactory = jBossConnectionFactory.getCoreFactory();
+      defaultJBossConnectionFactory = createJBossConnectionFactory(raProperties);
+      sessionFactory = defaultJBossConnectionFactory.getCoreFactory();
    }
 
-   public JBossConnectionFactory getJBossConnectionFactory() throws ResourceException
+   public JBossConnectionFactory getDefaultJBossConnectionFactory() throws ResourceException
    {
       if (!configured.getAndSet(true))
       {
@@ -1508,6 +1404,177 @@ public class JBMResourceAdapter implements ResourceAdapter
             throw new ResourceException("Unable to create activation", e);
          }
       }
-      return jBossConnectionFactory;
+      return defaultJBossConnectionFactory;
    }
+
+   public JBossConnectionFactory createJBossConnectionFactory(ConnectionFactoryProperties overrideProperties)
+   {
+      JBossConnectionFactory cf;
+      String connectorClassName = overrideProperties.getConnectorClassName() != null ? overrideProperties.getConnectorClassName() : getConnectorClassName();
+      String discoveryAddress = overrideProperties.getDiscoveryAddress() != null ? overrideProperties.getDiscoveryAddress() : getDiscoveryAddress();
+      if (connectorClassName != null)
+      {
+         Map<String, Object> connectionParams = overrideProperties.getParsedConnectionParameters() != null ? overrideProperties.getParsedConnectionParameters() : getConnectionParameters();
+         TransportConfiguration transportConf = new TransportConfiguration(connectorClassName, connectionParams);
+
+         String backUpCOnnectorClassname = overrideProperties.getBackupConnectorClassName() != null ? overrideProperties.getBackupConnectorClassName() : getBackupConnectorClassName();
+         Map<String, Object> backupConnectionParams = overrideProperties.getParsedBackupConnectionParameters() != null ? overrideProperties.getParsedBackupConnectionParameters() : getBackupConnectionParameters();
+         TransportConfiguration backup = backUpCOnnectorClassname == null ? null
+                                                                          : new TransportConfiguration(backUpCOnnectorClassname,
+                                                                                                       backupConnectionParams);
+
+         cf = new JBossConnectionFactory(transportConf, backup);
+      }
+      else if (discoveryAddress != null)
+      {
+         Integer discoveryPort = overrideProperties.getDiscoveryPort() != null ? overrideProperties.getDiscoveryPort() : getDiscoveryPort();
+         cf = new JBossConnectionFactory(discoveryAddress, discoveryPort);
+      }
+      else
+      {
+         throw new IllegalArgumentException("must provide either TransportType or DiscoveryGroupAddress and DiscoveryGroupPort for JBM ResourceAdapter Connection Factory");
+      }
+      setParams(cf, overrideProperties);
+      return cf;
+   }
+
+   private void setParams(final JBossConnectionFactory cf, ConnectionFactoryProperties overrideProperties)
+   {
+      Boolean val = overrideProperties.isAutoGroup() != null ? overrideProperties.isAutoGroup() : raProperties.isAutoGroup();
+      if (val != null)
+      {
+         cf.setAutoGroup(val);
+      }
+      val = overrideProperties.isBlockOnAcknowledge() != null ? overrideProperties.isBlockOnAcknowledge() : raProperties.isBlockOnAcknowledge();
+      if (val != null)
+      {
+         cf.setBlockOnAcknowledge(val);
+      }
+      val = overrideProperties.isBlockOnNonPersistentSend() != null ? overrideProperties.isBlockOnNonPersistentSend() : raProperties.isBlockOnNonPersistentSend();
+      if (val != null)
+      {
+         cf.setBlockOnNonPersistentSend(val);
+      }
+      val = overrideProperties.isBlockOnPersistentSend() != null ? overrideProperties.isBlockOnPersistentSend() : raProperties.isBlockOnPersistentSend();
+      if (val != null)
+      {
+         cf.setBlockOnPersistentSend(val);
+      }
+      val = overrideProperties.isFailoverOnServerShutdown() != null?overrideProperties.isFailoverOnServerShutdown():raProperties.isFailoverOnServerShutdown();
+      if(val != null)
+      {
+         cf.setFailoverOnServerShutdown(val);
+      }
+      val = overrideProperties.isPreAcknowledge() != null?overrideProperties.isPreAcknowledge():raProperties.isPreAcknowledge();
+      if(val != null)
+      {
+         cf.setPreAcknowledge(val);
+      }
+      val = overrideProperties.isUseGlobalPools() != null?overrideProperties.isUseGlobalPools():raProperties.isUseGlobalPools();
+      if(val != null)
+      {
+         cf.setUseGlobalPools(val);
+      }
+      Integer val2 = overrideProperties.getConsumerMaxRate() != null?overrideProperties.getConsumerMaxRate():raProperties.getConsumerMaxRate();
+      if(val2 != null)
+      {
+         cf.setConsumerMaxRate(val2);
+      }
+      val2 = overrideProperties.getConsumerWindowSize() != null?overrideProperties.getConsumerWindowSize():raProperties.getConsumerWindowSize();
+      if(val2 != null)
+      {
+         cf.setConsumerWindowSize(val2);
+      }
+      val2 = overrideProperties.getDupsOKBatchSize() != null?overrideProperties.getDupsOKBatchSize():raProperties.getDupsOKBatchSize();
+      if(val2 != null)
+      {
+         cf.setDupsOKBatchSize(val2);
+      }
+      val2 = overrideProperties.getMaxConnections() != null?overrideProperties.getMaxConnections():raProperties.getMaxConnections();
+      if(val2 != null)
+      {
+         cf.setMaxConnections(val2);
+      }
+      val2 = overrideProperties.getMinLargeMessageSize() != null?overrideProperties.getMinLargeMessageSize():raProperties.getMinLargeMessageSize();
+      if(val2 != null)
+      {
+         cf.setMinLargeMessageSize(val2);
+      }
+      val2 = overrideProperties.getProducerMaxRate() != null?overrideProperties.getProducerMaxRate():raProperties.getProducerMaxRate();
+      if(val2 != null)
+      {
+         cf.setProducerMaxRate(val2);
+      }
+      val2 = overrideProperties.getProducerWindowSize() != null?overrideProperties.getProducerWindowSize():raProperties.getProducerWindowSize();
+      if(val2 != null)
+      {
+         cf.setProducerWindowSize(val2);
+      }
+      val2 = overrideProperties.getReconnectAttempts() != null?overrideProperties.getReconnectAttempts():raProperties.getReconnectAttempts();
+      if(val2 != null)
+      {
+         cf.setReconnectAttempts(val2);
+      }
+      val2 = overrideProperties.getThreadPoolMaxSize() != null?overrideProperties.getThreadPoolMaxSize():raProperties.getThreadPoolMaxSize();
+      if(val2 != null)
+      {
+         cf.setThreadPoolMaxSize(val2);
+      }
+      val2 = overrideProperties.getScheduledThreadPoolMaxSize() != null?overrideProperties.getScheduledThreadPoolMaxSize():raProperties.getScheduledThreadPoolMaxSize();
+      if(val2 != null)
+      {
+         cf.setScheduledThreadPoolMaxSize(val2);
+      }
+      val2 = overrideProperties.getTransactionBatchSize() != null?overrideProperties.getTransactionBatchSize():raProperties.getTransactionBatchSize();
+      if(val2 != null)
+      {
+         cf.setTransactionBatchSize(val2);
+      }
+      Long val3 = overrideProperties.getClientFailureCheckPeriod() != null?overrideProperties.getClientFailureCheckPeriod():raProperties.getClientFailureCheckPeriod();
+      if(val3 != null)
+      {
+         cf.setClientFailureCheckPeriod(val3);
+      }
+      val3 = overrideProperties.getCallTimeout() != null?overrideProperties.getCallTimeout():raProperties.getCallTimeout();
+      if(val3 != null)
+      {
+         cf.setCallTimeout(val3);
+      }
+      val3 = overrideProperties.getConnectionTTL() != null?overrideProperties.getConnectionTTL():raProperties.getConnectionTTL();
+      if(val3 != null)
+      {
+         cf.setConnectionTTL(val3);
+      }
+      val3 = overrideProperties.getDiscoveryInitialWaitTimeout() != null?overrideProperties.getDiscoveryInitialWaitTimeout():raProperties.getDiscoveryInitialWaitTimeout();
+      if(val3 != null)
+      {
+         cf.setDiscoveryInitialWaitTimeout(val3);
+      }
+      val3 = overrideProperties.getDiscoveryRefreshTimeout() != null?overrideProperties.getDiscoveryRefreshTimeout():raProperties.getDiscoveryRefreshTimeout();
+      if(val3 != null)
+      {
+         cf.setDiscoveryRefreshTimeout(val3);
+      }
+      val3 = overrideProperties.getRetryInterval() != null?overrideProperties.getRetryInterval():raProperties.getRetryInterval();
+      if(val3 != null)
+      {
+         cf.setRetryInterval(val3);
+      }
+      Double val4 = overrideProperties.getRetryIntervalMultiplier() != null?overrideProperties.getRetryIntervalMultiplier():raProperties.getRetryIntervalMultiplier();
+      if(val4 != null)
+      {
+         cf.setRetryIntervalMultiplier(val4);
+      }
+      String val5 = overrideProperties.getClientID() != null?overrideProperties.getClientID():raProperties.getClientID();
+      if(val5 != null)
+      {
+         cf.setClientID(val5);
+      }
+      val5 = overrideProperties.getConnectionLoadBalancingPolicyClassName() != null?overrideProperties.getConnectionLoadBalancingPolicyClassName():raProperties.getConnectionLoadBalancingPolicyClassName();
+      if(val5 != null)
+      {
+         cf.setConnectionLoadBalancingPolicyClassName(val5);
+      }
+   }
+
 }

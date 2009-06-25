@@ -21,10 +21,16 @@
  */
 package org.jboss.messaging.ra.inflow;
 
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
+import org.jboss.messaging.core.client.ClientSession;
+import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.jms.JBossDestination;
+import org.jboss.messaging.jms.JBossQueue;
+import org.jboss.messaging.jms.JBossTopic;
+import org.jboss.messaging.jms.client.JBossConnectionFactory;
+import org.jboss.messaging.ra.JBMResourceAdapter;
+import org.jboss.messaging.ra.Util;
+import org.jboss.messaging.utils.SimpleString;
+import org.jboss.tm.TransactionManagerLocator;
 
 import javax.jms.Destination;
 import javax.jms.Message;
@@ -37,17 +43,10 @@ import javax.resource.ResourceException;
 import javax.resource.spi.endpoint.MessageEndpointFactory;
 import javax.resource.spi.work.WorkManager;
 import javax.transaction.TransactionManager;
-
-import org.jboss.messaging.core.client.ClientSession;
-import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.jms.JBossDestination;
-import org.jboss.messaging.jms.JBossQueue;
-import org.jboss.messaging.jms.JBossTopic;
-import org.jboss.messaging.jms.client.JBossConnectionFactory;
-import org.jboss.messaging.ra.JBMResourceAdapter;
-import org.jboss.messaging.ra.Util;
-import org.jboss.messaging.utils.SimpleString;
-import org.jboss.tm.TransactionManagerLocator;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * The activation.
@@ -325,28 +324,28 @@ public class JBMActivation
       {
          handler.teardown();
       }
-
+      if(spec.isHasBeenUpdated())
+      {
+         factory.close();
+         factory = null;
+      }
       log.debug("Tearing down complete " + this);
    }
 
    protected void setupCF() throws Exception
    {
-      if (spec.getConnectorClassName() == null)
+      if(spec.isHasBeenUpdated())
       {
-         factory = ra.getJBossConnectionFactory();
+         factory = ra.createJBossConnectionFactory(spec);
       }
       else
       {
-         factory = ra.createRemoteFactory(spec.getConnectorClassName(), spec.getParsedConnectionParameters());
+         factory = ra.getDefaultJBossConnectionFactory();
       }
    }
 
    /**
     * Setup a session
-    *
-    * @param user     The user
-    * @param pass     The password
-    * @param clientID The client id
     * @return The connection
     * @throws Exception Thrown if an error occurs
     */

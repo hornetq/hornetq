@@ -22,9 +22,20 @@
 
 package org.jboss.messaging.tests.unit.ra;
 
-import java.lang.reflect.Method;
-import java.util.Map;
-import java.util.Timer;
+import org.jboss.messaging.core.client.ClientSession;
+import org.jboss.messaging.core.client.ClientSessionFactory;
+import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
+import org.jboss.messaging.core.remoting.impl.invm.InVMConnector;
+import org.jboss.messaging.core.server.MessagingServer;
+import org.jboss.messaging.integration.transports.netty.NettyConnector;
+import org.jboss.messaging.jms.JBossQueue;
+import org.jboss.messaging.jms.client.JBossConnectionFactory;
+import org.jboss.messaging.ra.ConnectionFactoryProperties;
+import org.jboss.messaging.ra.JBMManagedConnectionFactory;
+import org.jboss.messaging.ra.JBMResourceAdapter;
+import org.jboss.messaging.ra.inflow.JBMActivation;
+import org.jboss.messaging.ra.inflow.JBMActivationSpec;
+import org.jboss.messaging.tests.util.ServiceTestBase;
 
 import javax.jms.Connection;
 import javax.resource.spi.BootstrapContext;
@@ -34,17 +45,8 @@ import javax.resource.spi.endpoint.MessageEndpoint;
 import javax.resource.spi.endpoint.MessageEndpointFactory;
 import javax.resource.spi.work.WorkManager;
 import javax.transaction.xa.XAResource;
-
-import org.jboss.messaging.core.client.ClientSession;
-import org.jboss.messaging.core.client.ClientSessionFactory;
-import org.jboss.messaging.core.server.MessagingServer;
-import org.jboss.messaging.jms.JBossQueue;
-import org.jboss.messaging.jms.client.JBossConnectionFactory;
-import org.jboss.messaging.ra.JBMManagedConnectionFactory;
-import org.jboss.messaging.ra.JBMResourceAdapter;
-import org.jboss.messaging.ra.inflow.JBMActivation;
-import org.jboss.messaging.ra.inflow.JBMActivationSpec;
-import org.jboss.messaging.tests.util.ServiceTestBase;
+import java.lang.reflect.Method;
+import java.util.Timer;
 
 /**
  * A ResourceAdapterTest
@@ -66,10 +68,256 @@ public class ResourceAdapterTest extends ServiceTestBase
 
    // Public --------------------------------------------------------
 
+   public void testDefaultConnectionFactory() throws Exception
+   {
+      JBMResourceAdapter ra = new JBMResourceAdapter();
+      ra.setConnectorClassName(InVMConnector.class.getName());
+      JBossConnectionFactory factory = ra.getDefaultJBossConnectionFactory();
+      assertEquals(factory.getCallTimeout(), ClientSessionFactoryImpl.DEFAULT_CALL_TIMEOUT);
+      assertEquals(factory.getClientFailureCheckPeriod(), ClientSessionFactoryImpl.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD);
+      assertEquals(factory.getClientID(), null);
+      assertEquals(factory.getConnectionLoadBalancingPolicyClassName(), ClientSessionFactoryImpl.DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME);
+      assertEquals(factory.getConnectionTTL(), ClientSessionFactoryImpl.DEFAULT_CONNECTION_TTL);
+      assertEquals(factory.getConsumerMaxRate(), ClientSessionFactoryImpl.DEFAULT_CONSUMER_MAX_RATE);
+      assertEquals(factory.getConsumerWindowSize(), ClientSessionFactoryImpl.DEFAULT_CONSUMER_WINDOW_SIZE);
+      assertEquals(factory.getDiscoveryAddress(), null);
+      assertEquals(factory.getDiscoveryInitialWaitTimeout(), ClientSessionFactoryImpl.DEFAULT_DISCOVERY_INITIAL_WAIT_TIMEOUT);
+      assertEquals(factory.getDiscoveryPort(), 0);
+      assertEquals(factory.getDiscoveryRefreshTimeout(), ClientSessionFactoryImpl.DEFAULT_DISCOVERY_REFRESH_TIMEOUT);
+      assertEquals(factory.getDupsOKBatchSize(), ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE);
+      assertEquals(factory.getMaxConnections(), ClientSessionFactoryImpl.DEFAULT_MAX_CONNECTIONS);
+      assertEquals(factory.getMinLargeMessageSize(), ClientSessionFactoryImpl.DEFAULT_MIN_LARGE_MESSAGE_SIZE);
+      assertEquals(factory.getProducerMaxRate(), ClientSessionFactoryImpl.DEFAULT_PRODUCER_MAX_RATE);
+      assertEquals(factory.getProducerWindowSize(), ClientSessionFactoryImpl.DEFAULT_PRODUCER_WINDOW_SIZE);
+      assertEquals(factory.getReconnectAttempts(), ClientSessionFactoryImpl.DEFAULT_RECONNECT_ATTEMPTS);
+      assertEquals(factory.getRetryInterval(), ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL);
+      assertEquals(factory.getRetryIntervalMultiplier(), ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL_MULTIPLIER);
+      assertEquals(factory.getScheduledThreadPoolMaxSize(), ClientSessionFactoryImpl.DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE);
+      assertEquals(factory.getThreadPoolMaxSize(), ClientSessionFactoryImpl.DEFAULT_THREAD_POOL_MAX_SIZE);
+      assertEquals(factory.getTransactionBatchSize(), ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE);
+      assertEquals(factory.isAutoGroup(), ClientSessionFactoryImpl.DEFAULT_AUTO_GROUP);
+      assertEquals(factory.isBlockOnAcknowledge(), ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_ACKNOWLEDGE);
+      assertEquals(factory.isBlockOnNonPersistentSend(), ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND);
+      assertEquals(factory.isBlockOnPersistentSend(), ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_PERSISTENT_SEND);
+      assertEquals(factory.isFailoverOnServerShutdown(), ClientSessionFactoryImpl.DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN);
+      assertEquals(factory.isPreAcknowledge(), ClientSessionFactoryImpl.DEFAULT_PRE_ACKNOWLEDGE);
+      assertEquals(factory.isUseGlobalPools(), ClientSessionFactoryImpl.DEFAULT_USE_GLOBAL_POOLS);
+   }
+
+   public void test2DefaultConnectionFactorySame() throws Exception
+   {
+      JBMResourceAdapter ra = new JBMResourceAdapter();
+      ra.setConnectorClassName(InVMConnector.class.getName());
+      JBossConnectionFactory factory = ra.getDefaultJBossConnectionFactory();
+      JBossConnectionFactory factory2 = ra.getDefaultJBossConnectionFactory();
+      assertEquals(factory, factory2);
+   }
+
+   public void testCreateConnectionFactoryNoOverrides() throws Exception
+   {
+      JBMResourceAdapter ra = new JBMResourceAdapter();
+      ra.setConnectorClassName(InVMConnector.class.getName());
+      JBossConnectionFactory factory = ra.createJBossConnectionFactory(new ConnectionFactoryProperties());
+      assertEquals(factory.getCallTimeout(), ClientSessionFactoryImpl.DEFAULT_CALL_TIMEOUT);
+      assertEquals(factory.getClientFailureCheckPeriod(), ClientSessionFactoryImpl.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD);
+      assertEquals(factory.getClientID(), null);
+      assertEquals(factory.getConnectionLoadBalancingPolicyClassName(), ClientSessionFactoryImpl.DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME);
+      assertEquals(factory.getConnectionTTL(), ClientSessionFactoryImpl.DEFAULT_CONNECTION_TTL);
+      assertEquals(factory.getConsumerMaxRate(), ClientSessionFactoryImpl.DEFAULT_CONSUMER_MAX_RATE);
+      assertEquals(factory.getConsumerWindowSize(), ClientSessionFactoryImpl.DEFAULT_CONSUMER_WINDOW_SIZE);
+      assertEquals(factory.getDiscoveryAddress(), null);
+      assertEquals(factory.getDiscoveryInitialWaitTimeout(), ClientSessionFactoryImpl.DEFAULT_DISCOVERY_INITIAL_WAIT_TIMEOUT);
+      assertEquals(factory.getDiscoveryPort(), 0);
+      assertEquals(factory.getDiscoveryRefreshTimeout(), ClientSessionFactoryImpl.DEFAULT_DISCOVERY_REFRESH_TIMEOUT);
+      assertEquals(factory.getDupsOKBatchSize(), ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE);
+      assertEquals(factory.getMaxConnections(), ClientSessionFactoryImpl.DEFAULT_MAX_CONNECTIONS);
+      assertEquals(factory.getMinLargeMessageSize(), ClientSessionFactoryImpl.DEFAULT_MIN_LARGE_MESSAGE_SIZE);
+      assertEquals(factory.getProducerMaxRate(), ClientSessionFactoryImpl.DEFAULT_PRODUCER_MAX_RATE);
+      assertEquals(factory.getProducerWindowSize(), ClientSessionFactoryImpl.DEFAULT_PRODUCER_WINDOW_SIZE);
+      assertEquals(factory.getReconnectAttempts(), ClientSessionFactoryImpl.DEFAULT_RECONNECT_ATTEMPTS);
+      assertEquals(factory.getRetryInterval(), ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL);
+      assertEquals(factory.getRetryIntervalMultiplier(), ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL_MULTIPLIER);
+      assertEquals(factory.getScheduledThreadPoolMaxSize(), ClientSessionFactoryImpl.DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE);
+      assertEquals(factory.getThreadPoolMaxSize(), ClientSessionFactoryImpl.DEFAULT_THREAD_POOL_MAX_SIZE);
+      assertEquals(factory.getTransactionBatchSize(), ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE);
+      assertEquals(factory.isAutoGroup(), ClientSessionFactoryImpl.DEFAULT_AUTO_GROUP);
+      assertEquals(factory.isBlockOnAcknowledge(), ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_ACKNOWLEDGE);
+      assertEquals(factory.isBlockOnNonPersistentSend(), ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND);
+      assertEquals(factory.isBlockOnPersistentSend(), ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_PERSISTENT_SEND);
+      assertEquals(factory.isFailoverOnServerShutdown(), ClientSessionFactoryImpl.DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN);
+      assertEquals(factory.isPreAcknowledge(), ClientSessionFactoryImpl.DEFAULT_PRE_ACKNOWLEDGE);
+      assertEquals(factory.isUseGlobalPools(), ClientSessionFactoryImpl.DEFAULT_USE_GLOBAL_POOLS);
+   }
+
+   public void testDefaultConnectionFactoryOverrides() throws Exception
+   {
+      JBMResourceAdapter ra = new JBMResourceAdapter();
+      ra.setConnectorClassName(InVMConnector.class.getName());
+      ra.setAutoGroup(!ClientSessionFactoryImpl.DEFAULT_AUTO_GROUP);
+      ra.setBlockOnAcknowledge(!ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_ACKNOWLEDGE);
+      ra.setBlockOnNonPersistentSend(!ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND);
+      ra.setBlockOnPersistentSend(!ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_PERSISTENT_SEND);
+      ra.setCallTimeout(1l);
+      ra.setClientFailureCheckPeriod(2l);
+      ra.setClientID("myid");
+      ra.setConnectionLoadBalancingPolicyClassName("mlbcn");
+      ra.setConnectionTTL(3l);
+      ra.setConsumerMaxRate(4);
+      ra.setConsumerWindowSize(5);
+      ra.setDiscoveryInitialWaitTimeout(6l);
+      ra.setDiscoveryRefreshTimeout(7l);
+      ra.setDupsOKBatchSize(8);
+      ra.setFailoverOnServerShutdown(!ClientSessionFactoryImpl.DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN);
+      ra.setMaxConnections(9);
+      ra.setMinLargeMessageSize(10);
+      ra.setPreAcknowledge(!ClientSessionFactoryImpl.DEFAULT_PRE_ACKNOWLEDGE);
+      ra.setProducerMaxRate(11);
+      ra.setProducerWindowSize(12);
+      ra.setReconnectAttempts(13);
+      ra.setRetryInterval(14l);
+      ra.setRetryIntervalMultiplier(15d);
+      ra.setScheduledThreadPoolMaxSize(16);
+      ra.setThreadPoolMaxSize(17);
+      ra.setTransactionBatchSize(18);
+      ra.setUseGlobalPools(!ClientSessionFactoryImpl.DEFAULT_USE_GLOBAL_POOLS);
+      JBossConnectionFactory factory = ra.getDefaultJBossConnectionFactory();
+      assertEquals(factory.getCallTimeout(), 1);
+      assertEquals(factory.getClientFailureCheckPeriod(), 2);
+      assertEquals(factory.getClientID(), "myid");
+      assertEquals(factory.getConnectionLoadBalancingPolicyClassName(), "mlbcn");
+      assertEquals(factory.getConnectionTTL(), 3);
+      assertEquals(factory.getConsumerMaxRate(), 4);
+      assertEquals(factory.getConsumerWindowSize(), 5);
+      assertEquals(factory.getDiscoveryAddress(), null);
+      assertEquals(factory.getDiscoveryInitialWaitTimeout(), 6);
+      assertEquals(factory.getDiscoveryPort(), 0);
+      assertEquals(factory.getDiscoveryRefreshTimeout(), 7);
+      assertEquals(factory.getDupsOKBatchSize(), 8);
+      assertEquals(factory.getMaxConnections(), 9);
+      assertEquals(factory.getMinLargeMessageSize(), 10);
+      assertEquals(factory.getProducerMaxRate(), 11);
+      assertEquals(factory.getProducerWindowSize(), 12);
+      assertEquals(factory.getReconnectAttempts(), 13);
+      assertEquals(factory.getRetryInterval(), 14);
+      assertEquals(factory.getRetryIntervalMultiplier(), 15d);
+      assertEquals(factory.getScheduledThreadPoolMaxSize(), 16);
+      assertEquals(factory.getThreadPoolMaxSize(), 17);
+      assertEquals(factory.getTransactionBatchSize(), 18);
+      assertEquals(factory.isAutoGroup(), !ClientSessionFactoryImpl.DEFAULT_AUTO_GROUP);
+      assertEquals(factory.isBlockOnAcknowledge(), !ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_ACKNOWLEDGE);
+      assertEquals(factory.isBlockOnNonPersistentSend(), !ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND);
+      assertEquals(factory.isBlockOnPersistentSend(), !ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_PERSISTENT_SEND);
+      assertEquals(factory.isFailoverOnServerShutdown(), !ClientSessionFactoryImpl.DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN);
+      assertEquals(factory.isPreAcknowledge(), !ClientSessionFactoryImpl.DEFAULT_PRE_ACKNOWLEDGE);
+      assertEquals(factory.isUseGlobalPools(), !ClientSessionFactoryImpl.DEFAULT_USE_GLOBAL_POOLS);
+   }
+
+   public void testCreateConnectionFactoryOverrides() throws Exception
+   {
+      JBMResourceAdapter ra = new JBMResourceAdapter();
+      ra.setConnectorClassName(InVMConnector.class.getName());
+      ConnectionFactoryProperties connectionFactoryProperties = new ConnectionFactoryProperties();
+      connectionFactoryProperties.setAutoGroup(!ClientSessionFactoryImpl.DEFAULT_AUTO_GROUP);
+      connectionFactoryProperties.setBlockOnAcknowledge(!ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_ACKNOWLEDGE);
+      connectionFactoryProperties.setBlockOnNonPersistentSend(!ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND);
+      connectionFactoryProperties.setBlockOnPersistentSend(!ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_PERSISTENT_SEND);
+      connectionFactoryProperties.setCallTimeout(1l);
+      connectionFactoryProperties.setClientFailureCheckPeriod(2l);
+      connectionFactoryProperties.setClientID("myid");
+      connectionFactoryProperties.setConnectionLoadBalancingPolicyClassName("mlbcn");
+      connectionFactoryProperties.setConnectionTTL(3l);
+      connectionFactoryProperties.setConsumerMaxRate(4);
+      connectionFactoryProperties.setConsumerWindowSize(5);
+      connectionFactoryProperties.setDiscoveryInitialWaitTimeout(6l);
+      connectionFactoryProperties.setDiscoveryRefreshTimeout(7l);
+      connectionFactoryProperties.setDupsOKBatchSize(8);
+      connectionFactoryProperties.setFailoverOnServerShutdown(!ClientSessionFactoryImpl.DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN);
+      connectionFactoryProperties.setMaxConnections(9);
+      connectionFactoryProperties.setMinLargeMessageSize(10);
+      connectionFactoryProperties.setPreAcknowledge(!ClientSessionFactoryImpl.DEFAULT_PRE_ACKNOWLEDGE);
+      connectionFactoryProperties.setProducerMaxRate(11);
+      connectionFactoryProperties.setProducerWindowSize(12);
+      connectionFactoryProperties.setReconnectAttempts(13);
+      connectionFactoryProperties.setRetryInterval(14l);
+      connectionFactoryProperties.setRetryIntervalMultiplier(15d);
+      connectionFactoryProperties.setScheduledThreadPoolMaxSize(16);
+      connectionFactoryProperties.setThreadPoolMaxSize(17);
+      connectionFactoryProperties.setTransactionBatchSize(18);
+      connectionFactoryProperties.setUseGlobalPools(!ClientSessionFactoryImpl.DEFAULT_USE_GLOBAL_POOLS);
+      JBossConnectionFactory factory = ra.createJBossConnectionFactory(connectionFactoryProperties);
+      assertEquals(factory.getCallTimeout(), 1);
+      assertEquals(factory.getClientFailureCheckPeriod(), 2);
+      assertEquals(factory.getClientID(), "myid");
+      assertEquals(factory.getConnectionLoadBalancingPolicyClassName(), "mlbcn");
+      assertEquals(factory.getConnectionTTL(), 3);
+      assertEquals(factory.getConsumerMaxRate(), 4);
+      assertEquals(factory.getConsumerWindowSize(), 5);
+      assertEquals(factory.getDiscoveryAddress(), null);
+      assertEquals(factory.getDiscoveryInitialWaitTimeout(), 6);
+      assertEquals(factory.getDiscoveryPort(), 0);
+      assertEquals(factory.getDiscoveryRefreshTimeout(), 7);
+      assertEquals(factory.getDupsOKBatchSize(), 8);
+      assertEquals(factory.getMaxConnections(), 9);
+      assertEquals(factory.getMinLargeMessageSize(), 10);
+      assertEquals(factory.getProducerMaxRate(), 11);
+      assertEquals(factory.getProducerWindowSize(), 12);
+      assertEquals(factory.getReconnectAttempts(), 13);
+      assertEquals(factory.getRetryInterval(), 14);
+      assertEquals(factory.getRetryIntervalMultiplier(), 15d);
+      assertEquals(factory.getScheduledThreadPoolMaxSize(), 16);
+      assertEquals(factory.getThreadPoolMaxSize(), 17);
+      assertEquals(factory.getTransactionBatchSize(), 18);
+      assertEquals(factory.isAutoGroup(), !ClientSessionFactoryImpl.DEFAULT_AUTO_GROUP);
+      assertEquals(factory.isBlockOnAcknowledge(), !ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_ACKNOWLEDGE);
+      assertEquals(factory.isBlockOnNonPersistentSend(), !ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND);
+      assertEquals(factory.isBlockOnPersistentSend(), !ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_PERSISTENT_SEND);
+      assertEquals(factory.isFailoverOnServerShutdown(), !ClientSessionFactoryImpl.DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN);
+      assertEquals(factory.isPreAcknowledge(), !ClientSessionFactoryImpl.DEFAULT_PRE_ACKNOWLEDGE);
+      assertEquals(factory.isUseGlobalPools(), !ClientSessionFactoryImpl.DEFAULT_USE_GLOBAL_POOLS);
+   }
+
+   public void testCreateConnectionFactoryOverrideConnector() throws Exception
+   {
+      JBMResourceAdapter ra = new JBMResourceAdapter();
+      ra.setConnectorClassName(InVMConnector.class.getName());
+      ConnectionFactoryProperties connectionFactoryProperties = new ConnectionFactoryProperties();
+      connectionFactoryProperties.setConnectorClassName(NettyConnector.class.getName());
+      JBossConnectionFactory factory = ra.createJBossConnectionFactory(connectionFactoryProperties);
+      JBossConnectionFactory defaultFactory = ra.getDefaultJBossConnectionFactory();
+      assertNotSame(factory, defaultFactory);
+   }
+
+   public void testCreateConnectionFactoryOverrideDiscovery() throws Exception
+   {
+      JBMResourceAdapter ra = new JBMResourceAdapter();
+      ra.setConnectorClassName(InVMConnector.class.getName());
+      ConnectionFactoryProperties connectionFactoryProperties = new ConnectionFactoryProperties();
+      connectionFactoryProperties.setDiscoveryAddress("myhost");
+      connectionFactoryProperties.setDiscoveryPort(5678);
+      JBossConnectionFactory factory = ra.createJBossConnectionFactory(connectionFactoryProperties);
+      JBossConnectionFactory defaultFactory = ra.getDefaultJBossConnectionFactory();
+      assertNotSame(factory, defaultFactory);
+   }
+
+    public void testCreateConnectionFactoryThrowsException() throws Exception
+   {
+      JBMResourceAdapter ra = new JBMResourceAdapter();
+      ConnectionFactoryProperties connectionFactoryProperties = new ConnectionFactoryProperties();
+      try
+      {
+         JBossConnectionFactory factory = ra.createJBossConnectionFactory(connectionFactoryProperties);
+         fail("should throw exception");
+      }
+      catch (IllegalArgumentException e)
+      {
+         //pass
+      }
+   }
+
    public void testValidateProperties() throws Exception
    {
       validateGettersAndSetters(new JBMResourceAdapter(), "backupTransportConfiguration");
-      validateGettersAndSetters(new JBMManagedConnectionFactory(), "connectionParameters", "sessionDefaultType");
+      validateGettersAndSetters(new JBMManagedConnectionFactory(), "connectionParameters", "sessionDefaultType", "backupConnectionParameters");
       validateGettersAndSetters(new JBMActivationSpec(),
                                 "connectionParameters",
                                 "acknowledgeMode",
@@ -103,16 +351,15 @@ public class ResourceAdapterTest extends ServiceTestBase
       
       assertEquals("us1", spec.getUser());
       assertEquals("ps1", spec.getPassword());
-      assertEquals("cl1", spec.getClientId());
       
       spec.setUser("us2");
       spec.setPassword("ps2");
-      spec.setClientId("cl2");
+      spec.setClientID("cl2");
 
       
       assertEquals("us2", spec.getUser());
       assertEquals("ps2", spec.getPassword());
-      assertEquals("cl2", spec.getClientId());
+      assertEquals("cl2", spec.getClientID());
       
       
    }
@@ -140,7 +387,7 @@ public class ResourceAdapterTest extends ServiceTestBase
          ra.setPassword("passwordGlobal");
          ra.start(fakeCTX);
 
-         Connection conn = ra.getJBossConnectionFactory().createConnection();
+         Connection conn = ra.getDefaultJBossConnectionFactory().createConnection();
          
          conn.close();
          
@@ -181,13 +428,13 @@ public class ResourceAdapterTest extends ServiceTestBase
 
    class MockJBMResourceAdapter extends JBMResourceAdapter
    {
-      public JBossConnectionFactory createRemoteFactory(String connectorClassName,
+      /*public JBossConnectionFactory createRemoteFactory(String connectorClassName,
                                                         Map<String, Object> connectionParameters)
       {
-         JBossConnectionFactory factory = super.createRemoteFactory(connectorClassName, connectionParameters);
+         JBossConnectionFactory factory = super.createJBossConnectionFactory(connectionParameters);
 
          return factory;
-      }
+      }*/
    }
 
    BootstrapContext fakeCTX = new BootstrapContext()

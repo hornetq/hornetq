@@ -21,18 +21,18 @@
  */
 package org.jboss.messaging.ra.inflow;
 
-import java.util.HashMap;
-import java.util.Map;
+import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.ra.ConnectionFactoryProperties;
+import org.jboss.messaging.ra.JBMResourceAdapter;
+import org.jboss.messaging.ra.Util;
 
 import javax.jms.Session;
 import javax.resource.ResourceException;
 import javax.resource.spi.ActivationSpec;
 import javax.resource.spi.InvalidPropertyException;
 import javax.resource.spi.ResourceAdapter;
-
-import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.ra.JBMResourceAdapter;
-import org.jboss.messaging.ra.Util;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * The activation spec
@@ -44,7 +44,7 @@ import org.jboss.messaging.ra.Util;
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
  * @version $Revision: $
  */
-public class JBMActivationSpec implements ActivationSpec
+public class JBMActivationSpec extends ConnectionFactoryProperties implements ActivationSpec
 {
    /** The logger */
    private static final Logger log = Logger.getLogger(JBMActivationSpec.class);
@@ -56,9 +56,6 @@ public class JBMActivationSpec implements ActivationSpec
    private Map<String, Object> connectionParameters = new HashMap<String, Object>();
 
    public String strConnectionParameters;
-
-   /** The transport type, changing the default configured from the RA */
-   private String connectorClassName;
 
    /** The resource adapter */
    private JBMResourceAdapter ra;
@@ -80,9 +77,6 @@ public class JBMActivationSpec implements ActivationSpec
 
    /** The subscription name */
    private String subscriptionName;
-
-   /** The client id */
-   private String clientId;
 
    /** The user */
    private String user;
@@ -142,7 +136,6 @@ public class JBMActivationSpec implements ActivationSpec
       acknowledgeMode = Session.SESSION_TRANSACTED;
       subscriptionDurability = false;
       subscriptionName = null;
-      clientId = null;
       user = null;
       password = null;
       maxMessages = Integer.valueOf(1);
@@ -181,7 +174,7 @@ public class JBMActivationSpec implements ActivationSpec
    }
 
    /**
-    * @param useJNDI the useJNDI to set
+    * @param value the useJNDI to set
     */
    public void setUseJNDI(final boolean value)
    {
@@ -439,38 +432,6 @@ public class JBMActivationSpec implements ActivationSpec
       }
 
       subscriptionName = value;
-   }
-
-   /**
-    * Get the client id
-    * @return The value
-    */
-   public String getClientId()
-   {
-      if (trace)
-      {
-         log.trace("getClientId()");
-      }
-
-      if (clientId == null)
-      {
-         return ra.getClientID();
-      }
-      return clientId;
-   }
-
-   /**
-    * Set the client id
-    * @param value The value
-    */
-   public void setClientId(final String value)
-   {
-      if (trace)
-      {
-         log.trace("setClientId(" + value + ")");
-      }
-
-      clientId = value;
    }
 
    /**
@@ -1002,19 +963,6 @@ public class JBMActivationSpec implements ActivationSpec
    }
 
    /**
-    * @return the connectorClassName
-    */
-   public String getConnectorClassName()
-   {
-      return connectorClassName;
-   }
-
-   public void setConnectorClassName(final String value)
-   {
-      connectorClassName = value;
-   }
-
-   /**
     * Get a string representation
     * @return The value
     */
@@ -1035,10 +983,6 @@ public class JBMActivationSpec implements ActivationSpec
          buffer.append(" ack=").append(getAcknowledgeMode());
       }
       buffer.append(" durable=").append(subscriptionDurability);
-      if (clientId != null)
-      {
-         buffer.append(" clientID=").append(clientId);
-      }
       if (subscriptionName != null)
       {
          buffer.append(" subscription=").append(subscriptionName);

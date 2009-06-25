@@ -21,9 +21,8 @@
  */
 package org.jboss.messaging.ra;
 
-import java.io.PrintWriter;
-import java.util.Iterator;
-import java.util.Set;
+import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.jms.client.JBossConnectionFactory;
 
 import javax.jms.ConnectionMetaData;
 import javax.resource.ResourceException;
@@ -34,38 +33,53 @@ import javax.resource.spi.ManagedConnectionFactory;
 import javax.resource.spi.ResourceAdapter;
 import javax.resource.spi.ResourceAdapterAssociation;
 import javax.security.auth.Subject;
-
-import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.jms.client.JBossConnectionFactory;
+import java.io.PrintWriter;
+import java.util.Iterator;
+import java.util.Set;
 
 /**
  * JBM ManagedConectionFactory
- * 
+ *
  * @author <a href="mailto:adrian@jboss.com">Adrian Brock</a>
  * @author <a href="mailto:jesper.pedersen@jboss.org">Jesper Pedersen</a>.
+ * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
  * @version $Revision: $
  */
 public class JBMManagedConnectionFactory implements ManagedConnectionFactory, ResourceAdapterAssociation
 {
-   /** Serial version UID */
+   /**
+    * Serial version UID
+    */
    static final long serialVersionUID = -1452379518562456741L;
 
-   /** The logger */
+   /**
+    * The logger
+    */
    private static final Logger log = Logger.getLogger(JBMManagedConnectionFactory.class);
 
-   /** Trace enabled */
+   /**
+    * Trace enabled
+    */
    private static boolean trace = log.isTraceEnabled();
 
-   /** The resource adapter */
+   /**
+    * The resource adapter
+    */
    private JBMResourceAdapter ra;
 
-   /** Connection manager */
+   /**
+    * Connection manager
+    */
    private ConnectionManager cm;
 
-   /** The managed connection factory properties */
+   /**
+    * The managed connection factory properties
+    */
    private final JBMMCFProperties mcfProperties;
 
-   /** Connection Factory used if properties are set */
+   /**
+    * Connection Factory used if properties are set
+    */
    private JBossConnectionFactory connectionFactory;
 
    /**
@@ -85,8 +99,9 @@ public class JBMManagedConnectionFactory implements ManagedConnectionFactory, Re
 
    /**
     * Creates a Connection Factory instance
+    *
     * @return javax.resource.cci.ConnectionFactory instance
-    * @exception ResourceException Thrown if a connection factory cant be created
+    * @throws ResourceException Thrown if a connection factory cant be created
     */
    public Object createConnectionFactory() throws ResourceException
    {
@@ -100,9 +115,10 @@ public class JBMManagedConnectionFactory implements ManagedConnectionFactory, Re
 
    /**
     * Creates a Connection Factory instance
+    *
     * @param cxManager The connection manager
     * @return javax.resource.cci.ConnectionFactory instance
-    * @exception ResourceException Thrown if a connection factory cant be created
+    * @throws ResourceException Thrown if a connection factory cant be created
     */
    public Object createConnectionFactory(final ConnectionManager cxManager) throws ResourceException
    {
@@ -125,10 +141,11 @@ public class JBMManagedConnectionFactory implements ManagedConnectionFactory, Re
 
    /**
     * Creates a new physical connection to the underlying EIS resource manager.
-    * @param subject Caller's security information
+    *
+    * @param subject       Caller's security information
     * @param cxRequestInfo Additional resource adapter specific connection request information
     * @return The managed connection
-    * @exception ResourceException Thrown if a managed connection cant be created
+    * @throws ResourceException Thrown if a managed connection cant be created
     */
    public ManagedConnection createManagedConnection(final Subject subject, final ConnectionRequestInfo cxRequestInfo) throws ResourceException
    {
@@ -137,7 +154,7 @@ public class JBMManagedConnectionFactory implements ManagedConnectionFactory, Re
          log.trace("createManagedConnection(" + subject + ", " + cxRequestInfo + ")");
       }
 
-      JBMConnectionRequestInfo cri = getCRI((JBMConnectionRequestInfo)cxRequestInfo);
+      JBMConnectionRequestInfo cri = getCRI((JBMConnectionRequestInfo) cxRequestInfo);
 
       JBMCredential credential = JBMCredential.getCredential(this, subject, cri);
 
@@ -158,11 +175,12 @@ public class JBMManagedConnectionFactory implements ManagedConnectionFactory, Re
 
    /**
     * Returns a matched connection from the candidate set of connections.
+    *
     * @param connectionSet The candidate connection set
-    * @param subject Caller's security information
+    * @param subject       Caller's security information
     * @param cxRequestInfo Additional resource adapter specific connection request information
     * @return The managed connection
-    * @exception ResourceException Thrown if no managed connection cant be found
+    * @throws ResourceException Thrown if no managed connection cant be found
     */
    public ManagedConnection matchManagedConnections(final Set connectionSet,
                                                     final Subject subject,
@@ -173,7 +191,7 @@ public class JBMManagedConnectionFactory implements ManagedConnectionFactory, Re
          log.trace("matchManagedConnections(" + connectionSet + ", " + subject + ", " + cxRequestInfo + ")");
       }
 
-      JBMConnectionRequestInfo cri = getCRI((JBMConnectionRequestInfo)cxRequestInfo);
+      JBMConnectionRequestInfo cri = getCRI((JBMConnectionRequestInfo) cxRequestInfo);
       JBMCredential credential = JBMCredential.getCredential(this, subject, cri);
 
       if (trace)
@@ -189,11 +207,11 @@ public class JBMManagedConnectionFactory implements ManagedConnectionFactory, Re
 
          if (obj instanceof JBMManagedConnection)
          {
-            JBMManagedConnection mc = (JBMManagedConnection)obj;
+            JBMManagedConnection mc = (JBMManagedConnection) obj;
             ManagedConnectionFactory mcf = mc.getManagedConnectionFactory();
 
             if ((mc.getUserName() == null || mc.getUserName() != null && mc.getUserName()
-                                                                           .equals(credential.getUserName())) && mcf.equals(this))
+                  .equals(credential.getUserName())) && mcf.equals(this))
             {
                if (cri.equals(mc.getCRI()))
                {
@@ -218,8 +236,9 @@ public class JBMManagedConnectionFactory implements ManagedConnectionFactory, Re
 
    /**
     * Set the log writer -- NOT SUPPORTED
+    *
     * @param out The writer
-    * @exception ResourceException Thrown if the writer cant be set
+    * @throws ResourceException Thrown if the writer cant be set
     */
    public void setLogWriter(final PrintWriter out) throws ResourceException
    {
@@ -231,8 +250,9 @@ public class JBMManagedConnectionFactory implements ManagedConnectionFactory, Re
 
    /**
     * Get the log writer -- NOT SUPPORTED
+    *
     * @return The writer
-    * @exception ResourceException Thrown if the writer cant be retrieved
+    * @throws ResourceException Thrown if the writer cant be retrieved
     */
    public PrintWriter getLogWriter() throws ResourceException
    {
@@ -246,6 +266,7 @@ public class JBMManagedConnectionFactory implements ManagedConnectionFactory, Re
 
    /**
     * Get the resource adapter
+    *
     * @return The resource adapter
     */
    public ResourceAdapter getResourceAdapter()
@@ -260,8 +281,9 @@ public class JBMManagedConnectionFactory implements ManagedConnectionFactory, Re
 
    /**
     * Set the resource adapter
+    *
     * @param ra The resource adapter
-    * @exception ResourceException Thrown if incorrect resource adapter
+    * @throws ResourceException Thrown if incorrect resource adapter
     */
    public void setResourceAdapter(final ResourceAdapter ra) throws ResourceException
    {
@@ -275,11 +297,12 @@ public class JBMManagedConnectionFactory implements ManagedConnectionFactory, Re
          throw new ResourceException("Resource adapter is " + ra);
       }
 
-      this.ra = (JBMResourceAdapter)ra;
+      this.ra = (JBMResourceAdapter) ra;
    }
 
    /**
     * Indicates whether some other object is "equal to" this one.
+    *
     * @param obj Object with which to compare
     * @return True if this object is the same as the obj argument; false otherwise.
     */
@@ -298,7 +321,7 @@ public class JBMManagedConnectionFactory implements ManagedConnectionFactory, Re
 
       if (obj instanceof JBMManagedConnectionFactory)
       {
-         JBMManagedConnectionFactory other = (JBMManagedConnectionFactory)obj;
+         JBMManagedConnectionFactory other = (JBMManagedConnectionFactory) obj;
 
          return mcfProperties.equals(other.getProperties()) && ra.equals(other.getResourceAdapter());
       }
@@ -310,6 +333,7 @@ public class JBMManagedConnectionFactory implements ManagedConnectionFactory, Re
 
    /**
     * Return the hash code for the object
+    *
     * @return The hash code
     */
    @Override
@@ -328,6 +352,7 @@ public class JBMManagedConnectionFactory implements ManagedConnectionFactory, Re
 
    /**
     * Get the default session type
+    *
     * @return The value
     */
    public String getSessionDefaultType()
@@ -342,6 +367,7 @@ public class JBMManagedConnectionFactory implements ManagedConnectionFactory, Re
 
    /**
     * Set the default session type
+    *
     * @param type either javax.jms.Topic or javax.jms.Queue
     */
    public void setSessionDefaultType(final String type)
@@ -359,12 +385,26 @@ public class JBMManagedConnectionFactory implements ManagedConnectionFactory, Re
     */
    public String getConnectionParameters()
    {
-      return mcfProperties.getConnectionParameters();
+      return mcfProperties.getStrConnectionParameters();
    }
 
    public void setConnectionParameters(final String configuration)
    {
       mcfProperties.setConnectionParameters(configuration);
+   }
+
+   public String getBackupConnectorClassName() {return mcfProperties.getBackupConnectorClassName();}
+
+   public void setBackupConnectorClassName(String backupConnectorClassName)
+   {
+      mcfProperties.setBackupConnectorClassName(backupConnectorClassName);
+   }
+
+   public String getBackupConnectionParameters() {return mcfProperties.getBackupConnectionParameters();}
+
+   public void setBackupConnectionParameters(String configuration)
+   {
+      mcfProperties.setBackupConnectionParameters(configuration);
    }
 
    /**
@@ -380,8 +420,292 @@ public class JBMManagedConnectionFactory implements ManagedConnectionFactory, Re
       mcfProperties.setConnectorClassName(value);
    }
 
+   public String getConnectionLoadBalancingPolicyClassName()
+   {
+      return mcfProperties.getConnectionLoadBalancingPolicyClassName();
+   }
+
+   public void setConnectionLoadBalancingPolicyClassName(String connectionLoadBalancingPolicyClassName)
+   {
+      mcfProperties.setConnectionLoadBalancingPolicyClassName(connectionLoadBalancingPolicyClassName);
+   }
+
+   public String getDiscoveryAddress() {return mcfProperties.getDiscoveryAddress();}
+
+   public void setDiscoveryAddress(String discoveryAddress)
+   {
+      mcfProperties.setDiscoveryAddress(discoveryAddress);
+   }
+
+   public Integer getDiscoveryPort()
+   {
+      return mcfProperties.getDiscoveryPort();
+   }
+
+   public void setDiscoveryPort(Integer discoveryPort)
+   {
+      mcfProperties.setDiscoveryPort(discoveryPort);
+   }
+
+   public Long getDiscoveryRefreshTimeout()
+   {
+      return mcfProperties.getDiscoveryRefreshTimeout();
+   }
+
+   public void setDiscoveryRefreshTimeout(
+         Long discoveryRefreshTimeout)
+   {
+      mcfProperties.setDiscoveryRefreshTimeout(
+            discoveryRefreshTimeout);
+   }
+
+   public Long getDiscoveryInitialWaitTimeout()
+   {
+      return mcfProperties.getDiscoveryInitialWaitTimeout();
+   }
+
+   public void setDiscoveryInitialWaitTimeout(Long discoveryInitialWaitTimeout)
+   {
+      mcfProperties.setDiscoveryInitialWaitTimeout(discoveryInitialWaitTimeout);
+   }
+
+   public String getClientID()
+   {
+      return mcfProperties.getClientID();
+   }
+
+   public void setClientID(String clientID)
+   {
+      mcfProperties.setClientID(clientID);
+   }
+
+   public Integer getDupsOKBatchSize()
+   {
+      return mcfProperties.getDupsOKBatchSize();
+   }
+
+   public void setDupsOKBatchSize(Integer dupsOKBatchSize)
+   {
+      mcfProperties.setDupsOKBatchSize(dupsOKBatchSize);
+   }
+
+   public Integer getTransactionBatchSize()
+   {
+      return mcfProperties.getTransactionBatchSize();
+   }
+
+   public void setTransactionBatchSize(Integer transactionBatchSize)
+   {
+      mcfProperties.setTransactionBatchSize(transactionBatchSize);
+   }
+
+   public Long getClientFailureCheckPeriod()
+   {
+      return mcfProperties.getClientFailureCheckPeriod();
+   }
+
+   public void setClientFailureCheckPeriod(Long clientFailureCheckPeriod)
+   {
+      mcfProperties.setClientFailureCheckPeriod(clientFailureCheckPeriod);
+   }
+
+   public Long getConnectionTTL()
+   {
+      return mcfProperties.getConnectionTTL();
+   }
+
+   public void setConnectionTTL(Long connectionTTL)
+   {
+      mcfProperties.setConnectionTTL(connectionTTL);
+   }
+
+   public Long getCallTimeout()
+   {
+      return mcfProperties.getCallTimeout();
+   }
+
+   public void setCallTimeout(Long callTimeout)
+   {
+      mcfProperties.setCallTimeout(callTimeout);
+   }
+
+   public Integer getConsumerWindowSize()
+   {
+      return mcfProperties.getConsumerWindowSize();
+   }
+
+   public void setConsumerWindowSize(Integer consumerWindowSize)
+   {
+      mcfProperties.setConsumerWindowSize(consumerWindowSize);
+   }
+
+   public Integer getConsumerMaxRate()
+   {
+      return mcfProperties.getConsumerMaxRate();
+   }
+
+   public void setConsumerMaxRate(Integer consumerMaxRate)
+   {
+      mcfProperties.setConsumerMaxRate(consumerMaxRate);
+   }
+
+   public Integer getProducerWindowSize()
+   {
+      return mcfProperties.getProducerWindowSize();
+   }
+
+   public void setProducerWindowSize(Integer producerWindowSize)
+   {
+      mcfProperties.setProducerWindowSize(producerWindowSize);
+   }
+
+   public Integer getProducerMaxRate()
+   {
+      return mcfProperties.getProducerMaxRate();
+   }
+
+   public void setProducerMaxRate(Integer producerMaxRate)
+   {
+      mcfProperties.setProducerMaxRate(producerMaxRate);
+   }
+
+   public Integer getMinLargeMessageSize()
+   {
+      return mcfProperties.getMinLargeMessageSize();
+   }
+
+   public void setMinLargeMessageSize(Integer minLargeMessageSize)
+   {
+      mcfProperties.setMinLargeMessageSize(minLargeMessageSize);
+   }
+
+   public Boolean isBlockOnAcknowledge()
+   {
+      return mcfProperties.isBlockOnAcknowledge();
+   }
+
+   public void setBlockOnAcknowledge(Boolean blockOnAcknowledge)
+   {
+      mcfProperties.setBlockOnAcknowledge(blockOnAcknowledge);
+   }
+
+   public Boolean isBlockOnNonPersistentSend() {return mcfProperties.isBlockOnNonPersistentSend();}
+
+   public void setBlockOnNonPersistentSend(Boolean blockOnNonPersistentSend)
+   {
+      mcfProperties.setBlockOnNonPersistentSend(blockOnNonPersistentSend);
+   }
+
+   public Boolean isBlockOnPersistentSend() {return mcfProperties.isBlockOnPersistentSend();}
+
+   public void setBlockOnPersistentSend(Boolean blockOnPersistentSend)
+   {
+      mcfProperties.setBlockOnPersistentSend(blockOnPersistentSend);
+   }
+
+   public Boolean isAutoGroup()
+   {
+      return mcfProperties.isAutoGroup();
+   }
+
+   public void setAutoGroup(Boolean autoGroup)
+   {
+      mcfProperties.setAutoGroup(autoGroup);
+   }
+
+   public Integer getMaxConnections()
+   {
+      return mcfProperties.getMaxConnections();
+   }
+
+   public void setMaxConnections(Integer maxConnections)
+   {
+      mcfProperties.setMaxConnections(maxConnections);
+   }
+
+   public Boolean isPreAcknowledge()
+   {
+      return mcfProperties.isPreAcknowledge();
+   }
+
+   public void setPreAcknowledge(Boolean preAcknowledge)
+   {
+      mcfProperties.setPreAcknowledge(preAcknowledge);
+   }
+
+   public Long getRetryInterval()
+   {
+      return mcfProperties.getRetryInterval();
+   }
+
+   public void setRetryInterval(Long retryInterval)
+   {
+      mcfProperties.setRetryInterval(retryInterval);
+   }
+
+   public Double getRetryIntervalMultiplier()
+   {
+      return mcfProperties.getRetryIntervalMultiplier();
+   }
+
+   public void setRetryIntervalMultiplier(Double retryIntervalMultiplier)
+   {
+      mcfProperties.setRetryIntervalMultiplier(retryIntervalMultiplier);
+   }
+
+   public Integer getReconnectAttempts()
+   {
+      return mcfProperties.getReconnectAttempts();
+   }
+
+   public void setReconnectAttempts(Integer reconnectAttempts)
+   {
+      mcfProperties.setReconnectAttempts(reconnectAttempts);
+   }
+
+   public Boolean isFailoverOnServerShutdown()
+   {
+      return mcfProperties.isFailoverOnServerShutdown();
+   }
+
+   public void setFailoverOnServerShutdown(Boolean failoverOnServerShutdown)
+   {
+      mcfProperties.setFailoverOnServerShutdown(failoverOnServerShutdown);
+   }
+
+   public Boolean isUseGlobalPools()
+   {
+      return mcfProperties.isUseGlobalPools();
+   }
+
+   public void setUseGlobalPools(Boolean useGlobalPools)
+   {
+      mcfProperties.setUseGlobalPools(useGlobalPools);
+   }
+
+   public Integer getScheduledThreadPoolMaxSize()
+   {
+      return mcfProperties.getScheduledThreadPoolMaxSize();
+   }
+
+   public void setScheduledThreadPoolMaxSize(Integer scheduledThreadPoolMaxSize)
+   {
+      mcfProperties.setScheduledThreadPoolMaxSize(scheduledThreadPoolMaxSize);
+   }
+
+   public Integer getThreadPoolMaxSize()
+   {
+      return mcfProperties.getThreadPoolMaxSize();
+   }
+
+   public void setThreadPoolMaxSize(Integer threadPoolMaxSize)
+   {
+      mcfProperties.setThreadPoolMaxSize(threadPoolMaxSize);
+   }
+
    /**
     * Get the useTryLock.
+    *
     * @return the useTryLock.
     */
    public Integer getUseTryLock()
@@ -396,6 +720,7 @@ public class JBMManagedConnectionFactory implements ManagedConnectionFactory, Re
 
    /**
     * Set the useTryLock.
+    *
     * @param useTryLock the useTryLock.
     */
    public void setUseTryLock(final Integer useTryLock)
@@ -410,6 +735,7 @@ public class JBMManagedConnectionFactory implements ManagedConnectionFactory, Re
 
    /**
     * Get the connection metadata
+    *
     * @return The metadata
     */
    public ConnectionMetaData getMetaData()
@@ -424,11 +750,12 @@ public class JBMManagedConnectionFactory implements ManagedConnectionFactory, Re
 
    /**
     * Get the JBoss connection factory
+    *
     * @return The factory
     */
    protected synchronized JBossConnectionFactory getJBossConnectionFactory() throws ResourceException
    {
-      if (mcfProperties.getConnectorClassName() != null)
+      /*if (mcfProperties.getConnectorClassName() != null)
       {
          if (connectionFactory == null)
          {
@@ -440,12 +767,18 @@ public class JBMManagedConnectionFactory implements ManagedConnectionFactory, Re
       }
       else
       {
-         return ra.getJBossConnectionFactory();
+         return ra.getDefaultJBossConnectionFactory();
+      }*/
+      if(connectionFactory == null)
+      {
+         connectionFactory = ra.createJBossConnectionFactory(mcfProperties);
       }
+      return connectionFactory;
    }
 
    /**
     * Get the managed connection factory properties
+    *
     * @return The properties
     */
    protected JBMMCFProperties getProperties()
@@ -460,6 +793,7 @@ public class JBMManagedConnectionFactory implements ManagedConnectionFactory, Re
 
    /**
     * Get a connection request info instance
+    *
     * @param info The instance that should be updated; may be <code>null</code>
     * @return The instance
     */
