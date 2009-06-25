@@ -11,10 +11,14 @@
       <excludeFolder url="file://$MODULE_DIR$/build/api" />
       <excludeFolder url="file://$MODULE_DIR$/build/classes" />
       <excludeFolder url="file://$MODULE_DIR$/build/jars" />
+      <excludeFolder url="file://$MODULE_DIR$/build/messaging-2.0.0.BETA1" />
       <excludeFolder url="file://$MODULE_DIR$/build/messaging-2.0.0.BETA1-SNAPSHOT" />
+      <excludeFolder url="file://$MODULE_DIR$/build/messaging-2.0.0.BETA3" />
       <excludeFolder url="file://$MODULE_DIR$/build/messaging-2.0.0.alpha1" />
       <excludeFolder url="file://$MODULE_DIR$/classes" />
       <excludeFolder url="file://$MODULE_DIR$/data" />
+      <excludeFolder url="file://$MODULE_DIR$/docs/quickstart-guide/build" />
+      <excludeFolder url="file://$MODULE_DIR$/docs/user-manual/build" />
       <excludeFolder url="file://$MODULE_DIR$/examples" />
       <excludeFolder url="file://$MODULE_DIR$/examples/jms/build" />
       <excludeFolder url="file://$MODULE_DIR$/examples/jms/common/build" />
