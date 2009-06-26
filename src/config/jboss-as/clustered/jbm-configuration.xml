@@ -4,6 +4,14 @@
 
    <clustered>true</clustered>
 
+   <bindings-directory>${jboss.server.data.dir}/messaging/bindings</bindings-directory>
+
+   <journal-directory>${jboss.server.data.dir}/messaging/journal</journal-directory>
+
+   <large-messages-directory>${jboss.server.data.dir}/messaging/largemessages</large-messages-directory>
+
+   <paging-directory>${jboss.server.data.dir}/messaging/paging</paging-directory>
+
    <connectors>      
       <connector name="netty">
          <factory-class>org.jboss.messaging.integration.transports.netty.NettyConnectorFactory</factory-class>
