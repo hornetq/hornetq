@@ -119,6 +119,22 @@ public class SecurityStoreImpl implements SecurityStore, HierarchicalRepositoryC
    {     
       if (securityEnabled)
       {
+         
+         if (managementClusterUser.equals(user))
+         {
+            if (trace) { log.trace("Authenticating cluster admin user"); }
+            
+            // The special user cluster user is used for creating sessions that replicate management operation between nodes
+            if (!managementClusterPassword.equals(password))
+            {
+               throw new MessagingException(MessagingException.SECURITY_EXCEPTION, "Unable to validate user: " + user);                 
+            }
+            else
+            {
+               return;
+            }
+         }
+
          if (!securityManager.validateUser(user, password))
          {
             if (notificationService != null)

@@ -70,7 +70,6 @@ import org.jboss.messaging.core.persistence.StorageManager;
 import org.jboss.messaging.core.postoffice.PostOffice;
 import org.jboss.messaging.core.remoting.server.RemotingService;
 import org.jboss.messaging.core.remoting.spi.Acceptor;
-import org.jboss.messaging.core.security.JBMSecurityManager;
 import org.jboss.messaging.core.security.Role;
 import org.jboss.messaging.core.server.Divert;
 import org.jboss.messaging.core.server.MessagingServer;
@@ -206,12 +205,6 @@ public class ManagementServiceImpl implements ManagementService
       this.securityRepository = securityRepository;
       this.storageManager = storageManager;
       this.messagingServer = messagingServer;
-
-      JBMSecurityManager sm = messagingServer.getSecurityManager();
-      if (sm != null)
-      {
-         sm.addUser(managementClusterUser, managementClusterPassword);
-      }
 
       messagingServerControl = new MessagingServerControlImpl(postOffice,
                                                               configuration,
