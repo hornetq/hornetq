@@ -61,9 +61,12 @@ public class JMSQueueControlImpl implements JMSQueueControl
 
    // Static --------------------------------------------------------
 
+   /**
+    * Returns null if the string is null or empty
+    */
    public static String createFilterFromJMSSelector(final String selectorStr) throws MessagingException
    {
-      return (selectorStr == null) ? null : SelectorTranslator.convertToJBMFilterString(selectorStr);
+      return (selectorStr == null || selectorStr.length() == 0) ? null : SelectorTranslator.convertToJBMFilterString(selectorStr);
    }
 
    private static String createFilterForJMSMessageID(String jmsMessageID) throws Exception

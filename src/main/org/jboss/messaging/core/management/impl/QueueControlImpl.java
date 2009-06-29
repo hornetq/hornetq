@@ -78,6 +78,20 @@ public class QueueControlImpl implements QueueControl
       }
       return array.toString();
    }
+   
+   /**
+    * Returns null if the string is null or empty
+    */
+   public static Filter createFilter(final String filterStr) throws MessagingException
+   {
+      if (filterStr == null || filterStr.length() == 0)
+      {
+         return null;
+      } else
+      {
+         return new FilterImpl(new SimpleString(filterStr));
+      }
+   }
 
    // Constructors --------------------------------------------------
 
@@ -240,10 +254,10 @@ public class QueueControlImpl implements QueueControl
    }
 
    public Map<String, Object>[] listMessages(final String filterStr) throws Exception
-   {
+   {     
       try
       {
-         Filter filter = FilterImpl.createFilter(filterStr);
+         Filter filter = createFilter(filterStr);
          List<MessageReference> refs = queue.list(filter);
          Map<String, Object>[] messages = new Map[refs.size()];
          int i = 0;
@@ -267,7 +281,7 @@ public class QueueControlImpl implements QueueControl
 
    public int countMessages(final String filterStr) throws Exception
    {
-      Filter filter = FilterImpl.createFilter(filterStr);
+      Filter filter = createFilter(filterStr);
       List<MessageReference> refs = queue.list(filter);
       return refs.size();
    }
@@ -298,8 +312,7 @@ public class QueueControlImpl implements QueueControl
 
    public int removeMatchingMessages(final String filterStr) throws Exception
    {
-      Filter filter = FilterImpl.createFilter(filterStr);
-
+      Filter filter = createFilter(filterStr);
       return queue.deleteMatchingReferences(filter);
    }
 
@@ -312,8 +325,7 @@ public class QueueControlImpl implements QueueControl
    {
       try
       {
-         Filter filter = FilterImpl.createFilter(filterStr);
-
+         Filter filter = createFilter(filterStr);
          return queue.expireReferences(filter);
       }
       catch (MessagingException e)
@@ -336,7 +348,7 @@ public class QueueControlImpl implements QueueControl
 
    public int moveMatchingMessages(final String filterStr, final String otherQueueName) throws Exception
    {
-      Filter filter = FilterImpl.createFilter(filterStr);
+      Filter filter = createFilter(filterStr);
 
       Binding binding = postOffice.getBinding(new SimpleString(otherQueueName));
 
@@ -355,7 +367,7 @@ public class QueueControlImpl implements QueueControl
 
    public int sendMessagesToDeadLetterAddress(final String filterStr) throws Exception
    {
-      Filter filter = filterStr == null ? null : new FilterImpl(new SimpleString(filterStr));
+      Filter filter = createFilter(filterStr);
 
       List<MessageReference> refs = queue.list(filter);
 
@@ -374,7 +386,7 @@ public class QueueControlImpl implements QueueControl
 
    public int changeMessagesPriority(String filterStr, int newPriority) throws Exception
    {
-      Filter filter = filterStr == null ? null : new FilterImpl(new SimpleString(filterStr));
+      Filter filter = createFilter(filterStr);
 
       List<MessageReference> refs = queue.list(filter);
 
