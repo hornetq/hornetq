@@ -448,7 +448,7 @@ public abstract class BridgeTestBase extends UnitTestCase
 
       if (messageCount > 0)
       {
-         queueControl.removeAllMessages();
+         queueControl.removeMessages(null);
       }
       return true;
    }
@@ -473,7 +473,7 @@ public abstract class BridgeTestBase extends UnitTestCase
          managementService = server1.getManagementService();
       }
       JMSQueueControl queueControl = (JMSQueueControl)managementService.getResource(ResourceNames.JMS_QUEUE + queueName);
-      queueControl.removeAllMessages();
+      queueControl.removeMessages(null);
    }
 
    protected TransactionManager newTransactionManager()

@@ -85,23 +85,23 @@ public class ReplicationAwareQueueControlWrapperTest extends ReplicationAwareTes
       assertEquals(1, liveQueueControl.getMessageCount());
       assertEquals(1, backupQueueControl.getMessageCount());
 
-      Map<String, Object>[] messages = liveQueueControl.listAllMessages();
+      Map<String, Object>[] messages = liveQueueControl.listMessages(null);
       assertEquals(1, messages.length);
       long messageID = (Long)messages[0].get("messageID");
       assertEquals(oldPriority, messages[0].get("priority"));
 
-      messages = backupQueueControl.listAllMessages();
+      messages = backupQueueControl.listMessages(null);
       assertEquals(1, messages.length);
       assertEquals(oldPriority, messages[0].get("priority"));
 
       assertTrue(liveQueueControl.changeMessagePriority(messageID, newPriority));
 
       // check the priority is changed on both live & backup nodes
-      messages = liveQueueControl.listAllMessages();
+      messages = liveQueueControl.listMessages(null);
       assertEquals(1, messages.length);
       assertEquals(newPriority, messages[0].get("priority"));
 
-      messages = backupQueueControl.listAllMessages();
+      messages = backupQueueControl.listMessages(null);
       assertEquals(1, messages.length);
       assertEquals(newPriority, messages[0].get("priority"));
    }
@@ -122,7 +122,7 @@ public class ReplicationAwareQueueControlWrapperTest extends ReplicationAwareTes
       assertEquals(1, liveQueueControl.getMessageCount());
       assertEquals(1, backupQueueControl.getMessageCount());
 
-      Map<String, Object>[] messages = liveQueueControl.listAllMessages();
+      Map<String, Object>[] messages = liveQueueControl.listMessages(null);
       assertEquals(1, messages.length);
       long messageID = (Long)messages[0].get("messageID");
 
@@ -195,7 +195,7 @@ public class ReplicationAwareQueueControlWrapperTest extends ReplicationAwareTes
       assertEquals(0, backupOtherQueueControl.getMessageCount());
 
       // moved all messages to otherQueue
-      int movedMessagesCount = liveQueueControl.moveAllMessages(otherQueue.toString());
+      int movedMessagesCount = liveQueueControl.moveMessages(null, otherQueue.toString());
       assertEquals(1, movedMessagesCount);
 
       assertEquals(0, liveQueueControl.getMessageCount());
@@ -236,7 +236,7 @@ public class ReplicationAwareQueueControlWrapperTest extends ReplicationAwareTes
       assertEquals(0, backupOtherQueueControl.getMessageCount());
 
       // moved matching messages to otherQueue
-      int movedMatchedMessagesCount = liveQueueControl.moveMatchingMessages(key + " =" + matchingValue,
+      int movedMatchedMessagesCount = liveQueueControl.moveMessages(key + " =" + matchingValue,
                                                                             otherQueue.toString());
       assertEquals(1, movedMatchedMessagesCount);
 
@@ -272,7 +272,7 @@ public class ReplicationAwareQueueControlWrapperTest extends ReplicationAwareTes
       assertEquals(0, liveOtherQueueControl.getMessageCount());
       assertEquals(0, backupOtherQueueControl.getMessageCount());
 
-      Map<String, Object>[] messages = liveQueueControl.listAllMessages();
+      Map<String, Object>[] messages = liveQueueControl.listMessages(null);
       assertEquals(1, messages.length);
       long messageID = (Long)messages[0].get("messageID");
 
@@ -304,7 +304,7 @@ public class ReplicationAwareQueueControlWrapperTest extends ReplicationAwareTes
       assertEquals(1, backupQueueControl.getMessageCount());
 
       // remove all messages
-      int count = liveQueueControl.removeAllMessages();
+      int count = liveQueueControl.removeMessages(null);
       assertEquals(1, count);
 
       // check there are no messages on both live & backup nodes
@@ -334,7 +334,7 @@ public class ReplicationAwareQueueControlWrapperTest extends ReplicationAwareTes
       assertEquals(2, backupQueueControl.getMessageCount());
 
       // removed matching messages
-      int removedMatchedMessagesCount = liveQueueControl.removeMatchingMessages(key + " =" + matchingValue);
+      int removedMatchedMessagesCount = liveQueueControl.removeMessages(key + " =" + matchingValue);
       assertEquals(1, removedMatchedMessagesCount);
 
       assertEquals(1, liveQueueControl.getMessageCount());
@@ -357,7 +357,7 @@ public class ReplicationAwareQueueControlWrapperTest extends ReplicationAwareTes
       assertEquals(1, liveQueueControl.getMessageCount());
       assertEquals(1, backupQueueControl.getMessageCount());
 
-      Map<String, Object>[] messages = liveQueueControl.listAllMessages();
+      Map<String, Object>[] messages = liveQueueControl.listMessages(null);
       assertEquals(1, messages.length);
       long messageID = (Long)messages[0].get("messageID");
 
@@ -384,7 +384,7 @@ public class ReplicationAwareQueueControlWrapperTest extends ReplicationAwareTes
       assertEquals(1, liveQueueControl.getMessageCount());
       assertEquals(1, backupQueueControl.getMessageCount());
 
-      Map<String, Object>[] messages = liveQueueControl.listAllMessages();
+      Map<String, Object>[] messages = liveQueueControl.listMessages(null);
       assertEquals(1, messages.length);
       long messageID = (Long)messages[0].get("messageID");
 

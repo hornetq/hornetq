@@ -22,6 +22,23 @@
 
 package org.jboss.messaging.tests.integration.jms.server.management;
 
+import static org.jboss.messaging.tests.integration.management.ManagementControlHelper.createJMSQueueControl;
+import static org.jboss.messaging.tests.util.RandomUtil.randomLong;
+import static org.jboss.messaging.tests.util.RandomUtil.randomSimpleString;
+import static org.jboss.messaging.tests.util.RandomUtil.randomString;
+
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
+
+import javax.jms.Connection;
+import javax.jms.JMSException;
+import javax.jms.Message;
+import javax.jms.MessageConsumer;
+import javax.jms.MessageProducer;
+import javax.jms.Session;
+import javax.naming.Context;
+
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
@@ -35,25 +52,10 @@ import org.jboss.messaging.jms.client.JBossConnectionFactory;
 import org.jboss.messaging.jms.server.impl.JMSServerManagerImpl;
 import org.jboss.messaging.jms.server.management.JMSQueueControl;
 import org.jboss.messaging.tests.integration.management.ManagementControlHelper;
-import static org.jboss.messaging.tests.integration.management.ManagementControlHelper.createJMSQueueControl;
 import org.jboss.messaging.tests.integration.management.ManagementTestBase;
 import org.jboss.messaging.tests.unit.util.InVMContext;
-import static org.jboss.messaging.tests.util.RandomUtil.randomLong;
-import static org.jboss.messaging.tests.util.RandomUtil.randomSimpleString;
-import static org.jboss.messaging.tests.util.RandomUtil.randomString;
 import org.jboss.messaging.utils.SimpleString;
 import org.jboss.messaging.utils.json.JSONArray;
-
-import javax.jms.Connection;
-import javax.jms.JMSException;
-import javax.jms.Message;
-import javax.jms.MessageConsumer;
-import javax.jms.MessageProducer;
-import javax.jms.Session;
-import javax.naming.Context;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
 
 /**
  * A QueueControlTest
@@ -125,7 +127,7 @@ public class JMSQueueControlTest extends ManagementTestBase
       connection.close();
    }
 
-   public void testListAllMessages() throws Exception
+   public void testListMessagesWithNullFilter() throws Exception
    {
       JMSQueueControl queueControl = createManagementControl();
 
@@ -135,7 +137,7 @@ public class JMSQueueControlTest extends ManagementTestBase
 
       assertEquals(2, queueControl.getMessageCount());
 
-      Map<String, Object>[] data = queueControl.listAllMessages();
+      Map<String, Object>[] data = queueControl.listMessages(null);
       assertEquals(2, data.length);
       System.out.println(data[0].keySet());
       assertEquals(ids[0], data[0].get("JMSMessageID").toString());
@@ -143,11 +145,11 @@ public class JMSQueueControlTest extends ManagementTestBase
 
       JMSUtil.consumeMessages(2, queue);
 
-      data = queueControl.listAllMessages();
+      data = queueControl.listMessages(null);
       assertEquals(0, data.length);
    }
 
-   public void testListAllMessagesAsJSON() throws Exception
+   public void testListMessagesAsJSONWithNullFilter() throws Exception
    {
       JMSQueueControl queueControl = createManagementControl();
 
@@ -157,7 +159,7 @@ public class JMSQueueControlTest extends ManagementTestBase
 
       assertEquals(2, queueControl.getMessageCount());
 
-      String jsonString = queueControl.listAllMessagesAsJSON();
+      String jsonString = queueControl.listMessagesAsJSON(null);
       assertNotNull(jsonString);
       JSONArray array = new JSONArray(jsonString);
       assertEquals(2, array.length());
@@ -166,7 +168,7 @@ public class JMSQueueControlTest extends ManagementTestBase
 
       JMSUtil.consumeMessages(2, queue);
 
-      jsonString = queueControl.listAllMessagesAsJSON();
+      jsonString = queueControl.listMessagesAsJSON(null);
       assertNotNull(jsonString);
       array = new JSONArray(jsonString);
       assertEquals(0, array.length());
@@ -182,7 +184,7 @@ public class JMSQueueControlTest extends ManagementTestBase
 
       assertEquals(2, queueControl.getMessageCount());
 
-      Map<String, Object>[] data = queueControl.listAllMessages();
+      Map<String, Object>[] data = queueControl.listMessages(null);
       assertEquals(2, data.length);
 
       System.out.println(data[0]);
@@ -228,7 +230,7 @@ public class JMSQueueControlTest extends ManagementTestBase
 
       assertEquals(2, queueControl.getMessageCount());
 
-      queueControl.removeAllMessages();
+      queueControl.removeMessages(null);
 
       assertEquals(0, queueControl.getMessageCount());
 
@@ -262,7 +264,7 @@ public class JMSQueueControlTest extends ManagementTestBase
 
       assertEquals(2, queueControl.getMessageCount());
 
-      int removedMatchingMessagesCount = queueControl.removeMatchingMessages("foo = 'bar'");
+      int removedMatchingMessagesCount = queueControl.removeMessages("foo = 'bar'");
       assertEquals(1, removedMatchingMessagesCount);
 
       assertEquals(1, queueControl.getMessageCount());
@@ -284,7 +286,7 @@ public class JMSQueueControlTest extends ManagementTestBase
 
       assertEquals(1, queueControl.getMessageCount());
 
-      Map<String, Object>[] data = queueControl.listAllMessages();
+      Map<String, Object>[] data = queueControl.listMessages(null);
       // retrieve the first message info
       String messageID = (String)data[0].get("JMSMessageID");
       int currentPriority = ((Number)data[0].get("JMSPriority")).intValue();
@@ -566,7 +568,7 @@ public class JMSQueueControlTest extends ManagementTestBase
 
    }
 
-   public void testMoveAllMessages() throws Exception
+   public void testMoveMessages() throws Exception
    {
       String otherQueueName = randomString();
 
@@ -580,7 +582,7 @@ public class JMSQueueControlTest extends ManagementTestBase
       assertEquals(2, queueControl.getMessageCount());
 
       // moved all messages to otherQueue
-      int movedMessagesCount = queueControl.moveAllMessages(otherQueueName);
+      int movedMessagesCount = queueControl.moveMessages(null, otherQueueName);
       assertEquals(2, movedMessagesCount);
       assertEquals(0, queueControl.getMessageCount());
 
@@ -593,7 +595,7 @@ public class JMSQueueControlTest extends ManagementTestBase
       serverManager.destroyQueue(otherQueueName);
    }
 
-   public void testMoveAllMessagesToUknownQueue() throws Exception
+   public void testMoveMessagesToUknownQueue() throws Exception
    {
       String unknownQueue = randomString();
 
@@ -601,7 +603,7 @@ public class JMSQueueControlTest extends ManagementTestBase
 
       try
       {
-         queueControl.moveAllMessages(unknownQueue);
+         queueControl.moveMessages(null, unknownQueue);
          fail();
       }
       catch (Exception e)
@@ -630,7 +632,7 @@ public class JMSQueueControlTest extends ManagementTestBase
       assertEquals(2, queueControl.getMessageCount());
 
       // moved matching messages to otherQueue
-      int movedMessagesCount = queueControl.moveMatchingMessages(filter, otherQueueName);
+      int movedMessagesCount = queueControl.moveMessages(filter, otherQueueName);
       assertEquals(1, movedMessagesCount);
       assertEquals(1, queueControl.getMessageCount());
 

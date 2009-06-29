@@ -83,7 +83,7 @@ public interface TopicControl extends DestinationControlMBean
    public int countMessagesForSubscription(
          @Parameter(name = "clientID", desc = "the client ID") String clientID,
          @Parameter(name = "subscriptionName", desc = "the name of the durable subscription") String subscriptionName,
-         @Parameter(name = "filter", desc = "a JMS filter") String filter)
+         @Parameter(name = "filter", desc = "a JMS filter (can be empty)") String filter)
          throws Exception;
 
    @Operation(desc = "Drop a durable subscription", impact = ACTION)

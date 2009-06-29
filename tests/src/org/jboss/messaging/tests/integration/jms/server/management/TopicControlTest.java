@@ -328,7 +328,7 @@ public class TopicControlTest extends ManagementTestBase
       TopicControl topicControl = createManagementControl();
       assertEquals(3 * 2, topicControl.getMessageCount());
 
-      int removedCount = topicControl.removeAllMessages();
+      int removedCount = topicControl.removeMessages(null);
       assertEquals(3 * 2, removedCount);
       assertEquals(0, topicControl.getMessageCount());
 

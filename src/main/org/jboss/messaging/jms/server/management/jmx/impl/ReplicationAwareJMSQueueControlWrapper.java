@@ -119,16 +119,6 @@ public class ReplicationAwareJMSQueueControlWrapper extends ReplicationAwareStan
       return localControl.isTemporary();
    }
 
-   public Map<String, Object>[] listAllMessages() throws Exception
-   {
-      return localControl.listAllMessages();
-   }
-   
-   public String listAllMessagesAsJSON() throws Exception
-   {
-      return localControl.listAllMessagesAsJSON();
-   }
-
    public String listMessageCounter()
    {
       return localControl.listMessageCounter();
@@ -189,14 +179,9 @@ public class ReplicationAwareJMSQueueControlWrapper extends ReplicationAwareStan
       return (Integer)replicationAwareInvoke("expireMessages", filter);
    }
 
-   public int moveAllMessages(final String otherQueueName) throws Exception
+   public int moveMessages(final String filter, final String otherQueueName) throws Exception
    {
-      return (Integer)replicationAwareInvoke("moveAllMessages", otherQueueName);
-   }
-
-   public int moveMatchingMessages(final String filter, final String otherQueueName) throws Exception
-   {
-      return (Integer)replicationAwareInvoke("moveMatchingMessages", filter, otherQueueName);
+      return (Integer)replicationAwareInvoke("moveMessages", filter, otherQueueName);
    }
 
    public boolean moveMessage(final String messageID, final String otherQueueName) throws Exception
@@ -204,9 +189,9 @@ public class ReplicationAwareJMSQueueControlWrapper extends ReplicationAwareStan
       return (Boolean)replicationAwareInvoke("moveMessage", messageID, otherQueueName);
    }
 
-   public int removeMatchingMessages(final String filter) throws Exception
+   public int removeMessages(final String filter) throws Exception
    {
-      return (Integer)replicationAwareInvoke("removeMatchingMessages", filter);
+      return (Integer)replicationAwareInvoke("removeMessages", filter);
    }
 
    public boolean removeMessage(final String messageID) throws Exception
@@ -222,11 +207,6 @@ public class ReplicationAwareJMSQueueControlWrapper extends ReplicationAwareStan
    public void setExpiryAddress(final String expiryAddress) throws Exception
    {
       replicationAwareInvoke("setExpiryAddress", expiryAddress);
-   }
-
-   public int removeAllMessages() throws Exception
-   {
-      return (Integer)replicationAwareInvoke("removeAllMessages");
    }
 
    // StandardMBean overrides ---------------------------------------

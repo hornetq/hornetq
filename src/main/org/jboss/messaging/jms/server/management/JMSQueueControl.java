@@ -68,22 +68,16 @@ public interface JMSQueueControl extends DestinationControlMBean
 
    // Operations ----------------------------------------------------
 
-   @Operation(desc = "List all messages in the queue", impact = INFO)
-   Map<String, Object>[] listAllMessages() throws Exception;
-
-   @Operation(desc = "List all messages in the queue using JSON", impact = INFO)
-   String listAllMessagesAsJSON() throws Exception;
-
    @Operation(desc = "List all messages in the queue which matches the filter", impact = INFO)
    Map<String, Object>[] listMessages(@Parameter(name = "filter", desc = "A JMS Message filter")
    String filter) throws Exception;
 
    @Operation(desc = "List all messages in the queue which matches the filter and return them using JSON", impact = INFO)
-   String listMessagesAsJSON(@Parameter(name = "filter", desc = "A JMS Message filter")
+   String listMessagesAsJSON(@Parameter(name = "filter", desc = "A JMS Message filter (can be empty)")
    String filter) throws Exception;
 
    @Operation(desc = "Returns the number of the messages in the queue matching the given filter", impact = INFO)
-   int countMessages(@Parameter(name = "filter", desc = "A JMS message filter")
+   int countMessages(@Parameter(name = "filter", desc = "A JMS message filter (can be empty)")
    String filter) throws Exception;
 
    @Operation(desc = "Remove the message corresponding to the given messageID", impact = ACTION)
@@ -91,11 +85,11 @@ public interface JMSQueueControl extends DestinationControlMBean
    String messageID) throws Exception;
 
    @Operation(desc = "Remove the messages corresponding to the given filter (and returns the number of removed messages)", impact = ACTION)
-   int removeMatchingMessages(@Parameter(name = "filter", desc = "A message filter")
+   int removeMessages(@Parameter(name = "filter", desc = "A message filter (can be empty)")
    String filter) throws Exception;
 
    @Operation(desc = "Expire the messages corresponding to the given filter (and returns the number of expired messages)", impact = ACTION)
-   int expireMessages(@Parameter(name = "filter", desc = "A message filter")
+   int expireMessages(@Parameter(name = "filter", desc = "A message filter (can be empty)")
    String filter) throws Exception;
 
    @Operation(desc = "Expire the message corresponding to the given messageID", impact = ACTION)
@@ -117,12 +111,8 @@ public interface JMSQueueControl extends DestinationControlMBean
    String otherQueueName) throws Exception;
 
    @Operation(desc = "Move the messages corresponding to the given filter (and returns the number of moved messages)", impact = ACTION)
-   int moveMatchingMessages(@Parameter(name = "filter", desc = "A message filter")
+   int moveMessages(@Parameter(name = "filter", desc = "A message filter (can be empty)")
    String filter, @Parameter(name = "otherQueueName", desc = "The name of the queue to move the messages to")
-   String otherQueueName) throws Exception;
-
-   @Operation(desc = "Move all the messages to another queue (and returns the number of moved messages)", impact = ACTION)
-   int moveAllMessages(@Parameter(name = "otherQueueName", desc = "The name of the queue to move the messages to")
    String otherQueueName) throws Exception;
 
    String listMessageCounter() throws Exception;

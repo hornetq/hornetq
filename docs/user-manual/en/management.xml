@@ -44,6 +44,14 @@
       </itemizedlist>
       <para>The way to invoke a <emphasis>management operations</emphasis> depends whether JMX, core
          messages, or JMS messages are used.</para>
+         
+      <note>
+         <para>A few management operations requires a <literal>filter</literal> parameter to chose which
+         messages are involved by the operation. Passing
+         <literal>null</literal> or an empty string means that the management operation will be performed
+         on <emphasis>all messages</emphasis>.</para>
+      </note>
+         
       <section>
          <title>Core Management API</title>
          <para>JBoss Messaging defines a core management API to manage core resources. For full
@@ -143,7 +151,7 @@
                      dead letter address can be set with the <literal
                         >setDeadLetterAddress()</literal> method.</para>
                   <para>Messages can also be moved from a queue to another queue by using the
-                        <literal>moveMatchingMessages()</literal> method.</para>
+                        <literal>moveMessages()</literal> method.</para>
                </listitem>
                <listitem>
                   <para>Listing and removing messages</para>
@@ -151,7 +159,7 @@
                         >listMessages()</literal> method which returns an array of <literal
                         >Map</literal>, one <literal>Map</literal> for each message.</para>
                   <para>Messages can also be removed from the queue by using the <literal
-                        >removeMatchingMessages()</literal> method which returns a <literal
+                        >removeMessages()</literal> method which returns a <literal
                         >boolean</literal> for the single message ID variant or the number of
                      removed messages for the filter variant.</para>
                </listitem>
@@ -351,7 +359,7 @@
                      dead letter address can be set with the <literal
                         >setDeadLetterAddress()</literal> method.</para>
                   <para>Messages can also be moved from a queue to another queue by using the
-                        <literal>moveMatchingMessages()</literal> method.</para>
+                        <literal>moveMessages()</literal> method.</para>
                </listitem>
                <listitem>
                   <para>Listing and removing messages</para>
@@ -359,7 +367,7 @@
                         >listMessages()</literal> method which returns an array of <literal
                         >Map</literal>, one <literal>Map</literal> for each message.</para>
                   <para>Messages can also be removed from the queue by using the <literal
-                        >removeMatchingMessages()</literal> method which returns a <literal
+                        >removeMessages()</literal> method which returns a <literal
                         >boolean</literal> for the single message ID variant or the number of
                      removed messages for the filter variant.</para>
                </listitem>
@@ -465,17 +473,32 @@
                Management guide</ulink> to configure the server for remote management (system
             properties must be set in <literal>run.sh</literal> or <literal>run.bat</literal>
             scripts).</para>
-         <para>By default, JBoss Messaging uses the Java Virtual Machine's <literal>Platform
+            
+         <section>
+            <title>MBeanServer configuration</title>
+            
+            <para>When JBoss Messaging is run in standalone, it uses the Java Virtual Machine's <literal>Platform
                MBeanServer</literal> to register its MBeans. This is configured in JBoss
             Microcontainer Beans file (see <xref linkend="server.microcontainer.configuration"
             />):</para>
-         <programlisting>&lt;!-- MBeanServer --&gt;
+            <programlisting>&lt;!-- MBeanServer --&gt;
 &lt;bean name="MBeanServer" class="javax.management.MBeanServer"&gt;
    &lt;constructor factoryClass="java.lang.management.ManagementFactory"
                          factoryMethod="getPlatformMBeanServer" /&gt;
 &lt;/bean&gt;            
-         </programlisting>
+            </programlisting>
+         
+            <para>When it is integrated in JBoss AS 5, it uses the Application Server's own
+               MBean Server so that it can be managed using AS 5's jmx-console:</para>
+            <programlisting>&lt;!-- MBeanServer --&gt;
+&lt;bean name="MBeanServer" class="javax.management.MBeanServer"&gt;
+   &lt;constructor factoryClass="org.jboss.mx.util.MBeanServerLocator"
+                         factoryMethod="locateJBoss" /&gt;
+&lt;/bean&gt;            
+            </programlisting>
+         </section>         
       </section>
+      
       <section>
          <title>Example</title>
          <para>See <xref linkend="examples.jmx" /> for an example which 

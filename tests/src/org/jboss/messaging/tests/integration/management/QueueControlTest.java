@@ -378,34 +378,8 @@ public class QueueControlTest extends ManagementTestBase
       consumer.close();
       session.deleteQueue(queue);
    }
-
-   public void testListAllMessages() throws Exception
-   {
-      SimpleString address = randomSimpleString();
-      SimpleString queue = randomSimpleString();
-      int intValue = randomInt();
-      session.createQueue(address, queue, null, false);
-
-      QueueControl queueControl = createManagementControl(address, queue);
-
-      ClientProducer producer = session.createProducer(address);
-      ClientMessage message = session.createClientMessage(false);
-      message.putIntProperty(new SimpleString("key"), intValue);
-      producer.send(message);
-
-      Map<String, Object>[] messages =  queueControl.listAllMessages();
-      assertEquals(1, messages.length);
-      assertEquals(intValue, ((Number)messages[0].get("key")).intValue());
-
-      consumeMessages(1, session, queue);
-
-      messages = queueControl.listAllMessages();
-      assertEquals(0, messages.length);
-
-      session.deleteQueue(queue);
-   }
    
-   public void testListAllMessagesAsJSON() throws Exception
+   public void testListMessagesAsJSONWithNullFilter() throws Exception
    {
       SimpleString address = randomSimpleString();
       SimpleString queue = randomSimpleString();
@@ -419,7 +393,7 @@ public class QueueControlTest extends ManagementTestBase
       message.putIntProperty(new SimpleString("key"), intValue);
       producer.send(message);
 
-      String jsonString =  queueControl.listAllMessagesAsJSON();
+      String jsonString =  queueControl.listMessagesAsJSON(null);
       assertNotNull(jsonString);
       JSONArray array = new JSONArray(jsonString);
       assertEquals(1, array.length());
@@ -427,7 +401,7 @@ public class QueueControlTest extends ManagementTestBase
 
       consumeMessages(1, session, queue);
 
-      jsonString =  queueControl.listAllMessagesAsJSON();
+      jsonString =  queueControl.listMessagesAsJSON(null);
       assertNotNull(jsonString);
       array = new JSONArray(jsonString);
       assertEquals(0, array.length());
@@ -468,6 +442,52 @@ public class QueueControlTest extends ManagementTestBase
       session.deleteQueue(queue);
    }
 
+   public void testListMessagesWithNullFilter() throws Exception
+   {
+      SimpleString address = randomSimpleString();
+      SimpleString queue = randomSimpleString();
+
+      session.createQueue(address, queue, null, false);
+      QueueControl queueControl = createManagementControl(address, queue);
+
+      ClientProducer producer = session.createProducer(address);
+      producer.send(session.createClientMessage(false));
+      producer.send(session.createClientMessage(false));
+
+      Map<String, Object>[] messages = queueControl.listMessages(null);
+      assertEquals(2, messages.length);
+
+      consumeMessages(2, session, queue);
+
+      messages = queueControl.listMessages(null);
+      assertEquals(0, messages.length);
+
+      session.deleteQueue(queue);
+   }
+   
+   public void testListMessagesWithEmptyFilter() throws Exception
+   {
+      SimpleString address = randomSimpleString();
+      SimpleString queue = randomSimpleString();
+
+      session.createQueue(address, queue, null, false);
+      QueueControl queueControl = createManagementControl(address, queue);
+
+      ClientProducer producer = session.createProducer(address);
+      producer.send(session.createClientMessage(false));
+      producer.send(session.createClientMessage(false));
+
+      Map<String, Object>[] messages = queueControl.listMessages("");
+      assertEquals(2, messages.length);
+
+      consumeMessages(2, session, queue);
+
+      messages = queueControl.listMessages("");
+      assertEquals(0, messages.length);
+
+      session.deleteQueue(queue);
+   }
+   
    public void testListMessagesAsJSONWithFilter() throws Exception
    {
       SimpleString key = new SimpleString("key");
@@ -513,7 +533,7 @@ public class QueueControlTest extends ManagementTestBase
     * <li>consume the message from otherQueue</li>
     * </ol>
     */
-   public void testMoveAllMessages() throws Exception
+   public void testMoveMessages() throws Exception
    {
       SimpleString address = randomSimpleString();
       SimpleString queue = randomSimpleString();
@@ -535,7 +555,7 @@ public class QueueControlTest extends ManagementTestBase
       assertEquals(1, queueControl.getMessageCount());
 
       // moved all messages to otherQueue
-      int movedMessagesCount = queueControl.moveAllMessages(otherQueue.toString());
+      int movedMessagesCount = queueControl.moveMessages(null, otherQueue.toString());
       assertEquals(1, movedMessagesCount);
       assertEquals(0, queueControl.getMessageCount());
 
@@ -554,7 +574,7 @@ public class QueueControlTest extends ManagementTestBase
       session.deleteQueue(otherQueue);
    }
 
-   public void testMoveAllMessagesToUnknownQueue() throws Exception
+   public void testMoveMessagesToUnknownQueue() throws Exception
    {
       SimpleString address = randomSimpleString();
       SimpleString queue = randomSimpleString();
@@ -576,7 +596,7 @@ public class QueueControlTest extends ManagementTestBase
       // moved all messages to unknown queue
       try
       {
-         queueControl.moveAllMessages(unknownQueue.toString());
+         queueControl.moveMessages(null, unknownQueue.toString());
          fail("operation must fail if the other queue does not exist");
       }
       catch (Exception e)
@@ -598,7 +618,7 @@ public class QueueControlTest extends ManagementTestBase
     * </ol>
     */
 
-   public void testMoveMatchingMessages() throws Exception
+   public void testMoveMessagesWithFilter() throws Exception
    {
       SimpleString key = new SimpleString("key");
       long matchingValue = randomLong();
@@ -625,7 +645,7 @@ public class QueueControlTest extends ManagementTestBase
       assertEquals(2, queueControl.getMessageCount());
 
       // moved matching messages to otherQueue
-      int movedMatchedMessagesCount = queueControl.moveMatchingMessages(key + " =" + matchingValue,
+      int movedMatchedMessagesCount = queueControl.moveMessages(key + " =" + matchingValue,
                                                                         otherQueue.toString());
       assertEquals(1, movedMatchedMessagesCount);
       assertEquals(1, queueControl.getMessageCount());
@@ -671,7 +691,7 @@ public class QueueControlTest extends ManagementTestBase
       assertEquals(0, otherQueueControl.getMessageCount());
 
       // the message IDs are set on the server
-      Map<String, Object>[] messages = queueControl.listAllMessages();   
+      Map<String, Object>[] messages = queueControl.listMessages(null);   
       assertEquals(2, messages.length);
       long messageID = (Long)messages[0].get("messageID");
 
@@ -703,7 +723,7 @@ public class QueueControlTest extends ManagementTestBase
       assertEquals(1, queueControl.getMessageCount());
 
       // the message IDs are set on the server
-      Map<String, Object>[] messages = queueControl.listAllMessages(); 
+      Map<String, Object>[] messages = queueControl.listMessages(null); 
       assertEquals(1, messages.length);
       long messageID = (Long)messages[0].get("messageID");
 
@@ -725,47 +745,13 @@ public class QueueControlTest extends ManagementTestBase
 
    /**
     * <ol>
-    * <li>send 2 messages to queue</li>
-    * <li>remove all messages using management method</li>
-    * <li>check there is no message to consume from queue</li>
-    * <li>consume the message from otherQueue</li>
-    * </ol>
-    */
-   public void testRemoveAllMessages() throws Exception
-   {
-      SimpleString address = randomSimpleString();
-      SimpleString queue = randomSimpleString();
-
-      session.createQueue(address, queue, null, false);
-      ClientProducer producer = session.createProducer(address);
-
-      // send 2 messages on queue
-      producer.send(session.createClientMessage(false));
-      producer.send(session.createClientMessage(false));
-
-      QueueControl queueControl = createManagementControl(address, queue);
-      assertEquals(2, queueControl.getMessageCount());
-
-      // delete all messages
-      int deletedMessagesCount = queueControl.removeAllMessages();
-      assertEquals(2, deletedMessagesCount);
-      assertEquals(0, queueControl.getMessageCount());
-
-      // check there is no message to consume from queue
-      consumeMessages(0, session, queue);
-
-      session.deleteQueue(queue);
-   }
-
-   /**
-    * <ol>
     * <li>send 2 message to queue</li>
     * <li>remove messages from queue using management method <em>with filter</em></li>
     * <li>check there is only one message to consume from queue</li>
     * </ol>
     */
 
-   public void testRemoveMatchingMessages() throws Exception
+   public void testRemoveMessages() throws Exception
    {
       SimpleString key = new SimpleString("key");
       long matchingValue = randomLong();
@@ -789,7 +775,7 @@ public class QueueControlTest extends ManagementTestBase
       assertEquals(2, queueControl.getMessageCount());
 
       // removed matching messages to otherQueue
-      int removedMatchedMessagesCount = queueControl.removeMatchingMessages(key + " =" + matchingValue);
+      int removedMatchedMessagesCount = queueControl.removeMessages(key + " =" + matchingValue);
       assertEquals(1, removedMatchedMessagesCount);
       assertEquals(1, queueControl.getMessageCount());
 
@@ -809,6 +795,53 @@ public class QueueControlTest extends ManagementTestBase
       session.deleteQueue(queue);
    }
 
+   public void testRemoveMessagesWithNullFilter() throws Exception
+   {
+      SimpleString address = randomSimpleString();
+      SimpleString queue = randomSimpleString();
+
+      session.createQueue(address, queue, null, false);
+      ClientProducer producer = session.createProducer(address);
+
+      // send on queue
+      producer.send(session.createClientMessage(false));
+      producer.send(session.createClientMessage(false));
+
+      QueueControl queueControl = createManagementControl(address, queue);
+      assertEquals(2, queueControl.getMessageCount());
+
+      // removed matching messages to otherQueue
+      int removedMatchedMessagesCount = queueControl.removeMessages(null);
+      assertEquals(2, removedMatchedMessagesCount);
+      assertEquals(0, queueControl.getMessageCount());
+      
+      session.deleteQueue(queue);
+   }
+
+   public void testRemoveMessagesWithEmptyFilter() throws Exception
+   {
+      SimpleString address = randomSimpleString();
+      SimpleString queue = randomSimpleString();
+
+      session.createQueue(address, queue, null, false);
+      ClientProducer producer = session.createProducer(address);
+
+      // send on queue
+      producer.send(session.createClientMessage(false));
+      producer.send(session.createClientMessage(false));
+
+      QueueControl queueControl = createManagementControl(address, queue);
+      assertEquals(2, queueControl.getMessageCount());
+
+      // removed matching messages to otherQueue
+      int removedMatchedMessagesCount = queueControl.removeMessages("");
+      assertEquals(2, removedMatchedMessagesCount);
+      assertEquals(0, queueControl.getMessageCount());
+      
+      session.deleteQueue(queue);
+   }
+   
+   
    public void testRemoveMessage() throws Exception
    {
       SimpleString address = randomSimpleString();
@@ -825,7 +858,7 @@ public class QueueControlTest extends ManagementTestBase
       assertEquals(2, queueControl.getMessageCount());
 
       // the message IDs are set on the server
-      Map<String, Object>[] messages = queueControl.listAllMessages(); 
+      Map<String, Object>[] messages = queueControl.listMessages(null); 
       assertEquals(2, messages.length);
       long messageID = (Long)messages[0].get("messageID");
 
@@ -934,7 +967,7 @@ public class QueueControlTest extends ManagementTestBase
       assertEquals(0, expiryQueueControl.getMessageCount());
 
       // the message IDs are set on the server
-      Map<String, Object>[] messages = queueControl.listAllMessages();       
+      Map<String, Object>[] messages = queueControl.listMessages(null);       
       assertEquals(1, messages.length);
       long messageID = (Long)messages[0].get("messageID");
 
@@ -972,7 +1005,7 @@ public class QueueControlTest extends ManagementTestBase
       assertEquals(2, queueControl.getMessageCount());
 
       // the message IDs are set on the server
-      Map<String, Object>[] messages = queueControl.listAllMessages();       
+      Map<String, Object>[] messages = queueControl.listMessages(null);       
       assertEquals(2, messages.length);
       long messageID = (Long)messages[0].get("messageID");
 
@@ -1013,7 +1046,7 @@ public class QueueControlTest extends ManagementTestBase
       assertEquals(1, queueControl.getMessageCount());
 
       // the message IDs are set on the server
-      Map<String, Object>[] messages = queueControl.listAllMessages();       
+      Map<String, Object>[] messages = queueControl.listMessages(null);       
       assertEquals(1, messages.length);
       long messageID = (Long)messages[0].get("messageID");
 
@@ -1046,7 +1079,7 @@ public class QueueControlTest extends ManagementTestBase
       assertEquals(1, queueControl.getMessageCount());
 
       // the message IDs are set on the server
-      Map<String, Object>[] messages = queueControl.listAllMessages();       
+      Map<String, Object>[] messages = queueControl.listMessages(null);       
       assertEquals(1, messages.length);
       long messageID = (Long)messages[0].get("messageID");
 

@@ -84,7 +84,7 @@ public class QueueControlImpl implements QueueControl
     */
    public static Filter createFilter(final String filterStr) throws MessagingException
    {
-      if (filterStr == null || filterStr.length() == 0)
+      if (filterStr == null || filterStr.trim().length() == 0)
       {
          return null;
       } else
@@ -225,16 +225,6 @@ public class QueueControlImpl implements QueueControl
       }
    }
 
-   public Map<String, Object>[] listAllMessages() throws Exception
-   {
-      return listMessages(null);
-   }
-
-   public String listAllMessagesAsJSON() throws Exception
-   {
-      return toJSON(listAllMessages());
-   }
- 
    public Map<String, Object>[] listScheduledMessages() throws Exception
    {
       List<MessageReference> refs = queue.getScheduledMessages();
@@ -286,18 +276,6 @@ public class QueueControlImpl implements QueueControl
       return refs.size();
    }
 
-   public int removeAllMessages() throws Exception
-   {
-      try
-      {
-         return queue.deleteAllReferences();
-      }
-      catch (MessagingException e)
-      {
-         throw new IllegalStateException(e.getMessage());
-      }
-   }
-
    public boolean removeMessage(final long messageID) throws Exception
    {
       try
@@ -310,7 +288,7 @@ public class QueueControlImpl implements QueueControl
       }
    }
 
-   public int removeMatchingMessages(final String filterStr) throws Exception
+   public int removeMessages(final String filterStr) throws Exception
    {
       Filter filter = createFilter(filterStr);
       return queue.deleteMatchingReferences(filter);
@@ -346,7 +324,7 @@ public class QueueControlImpl implements QueueControl
       return queue.moveReference(messageID, binding.getAddress());
    }
 
-   public int moveMatchingMessages(final String filterStr, final String otherQueueName) throws Exception
+   public int moveMessages(final String filterStr, final String otherQueueName) throws Exception
    {
       Filter filter = createFilter(filterStr);
 
@@ -358,11 +336,6 @@ public class QueueControlImpl implements QueueControl
       }
 
       return queue.moveReferences(filter, binding.getAddress());
-   }
-
-   public int moveAllMessages(String otherQueueName) throws Exception
-   {
-      return moveMatchingMessages(null, otherQueueName);
    }
 
    public int sendMessagesToDeadLetterAddress(final String filterStr) throws Exception

@@ -22,14 +22,6 @@
 
 package org.jboss.messaging.tests.integration.jms.cluster.management;
 
-import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory;
-import org.jboss.messaging.jms.JBossQueue;
-import org.jboss.messaging.jms.server.impl.JMSServerManagerImpl;
-import org.jboss.messaging.jms.server.management.JMSQueueControl;
-import org.jboss.messaging.tests.integration.cluster.management.ReplicationAwareTestBase;
-import org.jboss.messaging.tests.integration.jms.server.management.JMSUtil;
-import org.jboss.messaging.tests.integration.jms.server.management.NullInitialContext;
 import static org.jboss.messaging.tests.integration.management.ManagementControlHelper.createJMSQueueControl;
 import static org.jboss.messaging.tests.util.RandomUtil.randomLong;
 import static org.jboss.messaging.tests.util.RandomUtil.randomString;
@@ -39,6 +31,15 @@ import javax.jms.Message;
 import javax.jms.MessageProducer;
 import javax.jms.Session;
 import javax.jms.TextMessage;
+
+import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory;
+import org.jboss.messaging.jms.JBossQueue;
+import org.jboss.messaging.jms.server.impl.JMSServerManagerImpl;
+import org.jboss.messaging.jms.server.management.JMSQueueControl;
+import org.jboss.messaging.tests.integration.cluster.management.ReplicationAwareTestBase;
+import org.jboss.messaging.tests.integration.jms.server.management.JMSUtil;
+import org.jboss.messaging.tests.integration.jms.server.management.NullInitialContext;
 
 /**
  * A ReplicationAwareQueueControlWrapperTest
@@ -146,7 +147,7 @@ public class ReplicationAwareJMSQueueControlWrapperTest extends ReplicationAware
       assertEquals(0, backupOtherQueueControl.getMessageCount());
 
       // moved all messages to otherQueue
-      int movedMessagesCount = liveQueueControl.moveAllMessages(otherQueue.getName());
+      int movedMessagesCount = liveQueueControl.moveMessages(null, otherQueue.getName());
       assertEquals(1, movedMessagesCount);
       
       assertEquals(0, liveQueueControl.getMessageCount());
@@ -171,7 +172,7 @@ public class ReplicationAwareJMSQueueControlWrapperTest extends ReplicationAware
       assertEquals(0, backupOtherQueueControl.getMessageCount());
 
       // moved matching messages to otherQueue
-      int movedMatchedMessagesCount = liveQueueControl.moveMatchingMessages(key + " =" + matchingValue, otherQueue.getName());
+      int movedMatchedMessagesCount = liveQueueControl.moveMessages(key + " =" + matchingValue, otherQueue.getName());
       assertEquals(1, movedMatchedMessagesCount);
 
       assertEquals(1, liveQueueControl.getMessageCount());
@@ -213,7 +214,7 @@ public class ReplicationAwareJMSQueueControlWrapperTest extends ReplicationAware
       assertEquals(1, backupQueueControl.getMessageCount());
 
       // remove all messages
-      int count = liveQueueControl.removeAllMessages();
+      int count = liveQueueControl.removeMessages(null);
       assertEquals(1, count);
 
       // check there are no messages on both live & backup nodes
@@ -235,7 +236,7 @@ public class ReplicationAwareJMSQueueControlWrapperTest extends ReplicationAware
       assertEquals(2, backupQueueControl.getMessageCount());
 
       // removed matching messages
-      int removedMatchedMessagesCount = liveQueueControl.removeMatchingMessages(key + " =" + matchingValue);
+      int removedMatchedMessagesCount = liveQueueControl.removeMessages(key + " =" + matchingValue);
       assertEquals(1, removedMatchedMessagesCount);
 
       assertEquals(1, liveQueueControl.getMessageCount());

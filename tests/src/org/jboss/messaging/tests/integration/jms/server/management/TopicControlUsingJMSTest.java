@@ -277,7 +277,7 @@ public class TopicControlUsingJMSTest extends ManagementTestBase
 
       assertEquals(3 * 2, proxy.retrieveAttributeValue("messageCount"));
 
-      int removedCount = (Integer)proxy.invokeOperation("removeAllMessages");
+      int removedCount = (Integer)proxy.invokeOperation("removeMessages", "");
       assertEquals(3 * 2, removedCount);
       assertEquals(0, proxy.retrieveAttributeValue("messageCount"));
 

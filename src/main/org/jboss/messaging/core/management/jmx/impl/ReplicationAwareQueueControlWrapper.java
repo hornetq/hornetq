@@ -141,16 +141,6 @@ public class ReplicationAwareQueueControlWrapper extends ReplicationAwareStandar
       return localQueueControl.isTemporary();
    }
 
-   public Map<String, Object>[] listAllMessages() throws Exception
-   {
-      return localQueueControl.listAllMessages();
-   }
-
-   public String listAllMessagesAsJSON() throws Exception
-   {
-      return localQueueControl.listAllMessagesAsJSON();
-   }
-
    public String listMessageCounter() throws Exception
    {
       return localQueueControl.listMessageCounter();
@@ -221,14 +211,9 @@ public class ReplicationAwareQueueControlWrapper extends ReplicationAwareStandar
       return (Integer)replicationAwareInvoke("expireMessages", filter);
    }
 
-   public int moveAllMessages(final String otherQueueName) throws Exception
+   public int moveMessages(final String filter, final String otherQueueName) throws Exception
    {
-      return (Integer)replicationAwareInvoke("moveAllMessages", otherQueueName);
-   }
-
-   public int moveMatchingMessages(final String filter, final String otherQueueName) throws Exception
-   {
-      return (Integer)replicationAwareInvoke("moveMatchingMessages", filter, otherQueueName);
+      return (Integer)replicationAwareInvoke("moveMessages", filter, otherQueueName);
    }
 
    public boolean moveMessage(final long messageID, final String otherQueueName) throws Exception
@@ -236,14 +221,9 @@ public class ReplicationAwareQueueControlWrapper extends ReplicationAwareStandar
       return (Boolean)replicationAwareInvoke("moveMessage", messageID, otherQueueName);
    }
 
-   public int removeAllMessages() throws Exception
+   public int removeMessages(final String filter) throws Exception
    {
-      return (Integer)replicationAwareInvoke("removeAllMessages");
-   }
-
-   public int removeMatchingMessages(final String filter) throws Exception
-   {
-      return (Integer)replicationAwareInvoke("removeMatchingMessages", filter);
+      return (Integer)replicationAwareInvoke("removeMessages", filter);
    }
 
    public boolean removeMessage(final long messageID) throws Exception

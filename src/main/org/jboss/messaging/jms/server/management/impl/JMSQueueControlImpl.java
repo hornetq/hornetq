@@ -66,7 +66,7 @@ public class JMSQueueControlImpl implements JMSQueueControl
     */
    public static String createFilterFromJMSSelector(final String selectorStr) throws MessagingException
    {
-      return (selectorStr == null || selectorStr.length() == 0) ? null : SelectorTranslator.convertToJBMFilterString(selectorStr);
+      return (selectorStr == null || selectorStr.trim().length() == 0) ? null : SelectorTranslator.convertToJBMFilterString(selectorStr);
    }
 
    private static String createFilterForJMSMessageID(String jmsMessageID) throws Exception
@@ -175,7 +175,7 @@ public class JMSQueueControlImpl implements JMSQueueControl
    public boolean removeMessage(final String messageID) throws Exception
    {
       String filter = createFilterForJMSMessageID(messageID);
-      int removed = coreQueueControl.removeMatchingMessages(filter);
+      int removed = coreQueueControl.removeMessages(filter);
       if (removed != 1)
       {
          throw new IllegalArgumentException("No message found for JMSMessageID: " + messageID);
@@ -183,25 +183,10 @@ public class JMSQueueControlImpl implements JMSQueueControl
       return true;
    }
 
-   public int removeMatchingMessages(String filterStr) throws Exception
+   public int removeMessages(String filterStr) throws Exception
    {
       String filter = createFilterFromJMSSelector(filterStr);
-      return coreQueueControl.removeMatchingMessages(filter);
-   }
-
-   public int removeAllMessages() throws Exception
-   {
-      return coreQueueControl.removeAllMessages();
-   }
-
-   public Map<String, Object>[] listAllMessages() throws Exception
-   {
-      return listMessages(null);
-   }
-
-   public String listAllMessagesAsJSON() throws Exception
-   {
-      return toJSON(listMessages(null));
+      return coreQueueControl.removeMessages(filter);
    }
 
    public Map<String, Object>[] listMessages(final String filterStr) throws Exception
@@ -282,7 +267,7 @@ public class JMSQueueControlImpl implements JMSQueueControl
    {
       String filter = createFilterForJMSMessageID(messageID);
       JBossQueue otherQueue = new JBossQueue(otherQueueName);
-      int moved = coreQueueControl.moveMatchingMessages(filter, otherQueue.getAddress());
+      int moved = coreQueueControl.moveMessages(filter, otherQueue.getAddress());
       if (moved != 1)
       {
          throw new IllegalArgumentException("No message found for JMSMessageID: " + messageID);
@@ -291,16 +276,11 @@ public class JMSQueueControlImpl implements JMSQueueControl
       return true;
    }
 
-   public int moveMatchingMessages(String filterStr, String otherQueueName) throws Exception
+   public int moveMessages(String filterStr, String otherQueueName) throws Exception
    {
       String filter = createFilterFromJMSSelector(filterStr);
       JBossQueue otherQueue = new JBossQueue(otherQueueName);
-      return coreQueueControl.moveMatchingMessages(filter, otherQueue.getAddress());
-   }
-
-   public int moveAllMessages(String otherQueueName) throws Exception
-   {
-      return moveMatchingMessages(null, otherQueueName);
+      return coreQueueControl.moveMessages(filter, otherQueue.getAddress());
    }
 
    public String listMessageCounter()

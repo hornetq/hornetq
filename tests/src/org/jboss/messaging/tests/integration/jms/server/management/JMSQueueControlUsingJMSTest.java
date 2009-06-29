@@ -161,22 +161,6 @@ public class JMSQueueControlUsingJMSTest extends JMSQueueControlTest
             return (Boolean)proxy.retrieveAttributeValue("temporary");
          }
 
-         public Map<String, Object>[] listAllMessages() throws Exception
-         {
-            Object[] res = (Object[])proxy.invokeOperation("listAllMessages");
-            Map<String, Object>[] results = new Map[res.length];
-            for (int i = 0; i < res.length; i++)
-            {
-               results[i] = (Map<String, Object>)res[i];
-            }
-            return results;
-         }
-         
-         public String listAllMessagesAsJSON() throws Exception
-         {
-            return (String)proxy.invokeOperation("listAllMessagesAsJSON");
-         }
-
          public String listMessageCounter() throws Exception
          {
             return (String)proxy.invokeOperation("listMessageCounter");
@@ -213,14 +197,9 @@ public class JMSQueueControlUsingJMSTest extends JMSQueueControlTest
             return (String)proxy.invokeOperation("listMessagesAsJSON", filter);
          }
          
-         public int moveAllMessages(String otherQueueName) throws Exception
+         public int moveMessages(String filter, String otherQueueName) throws Exception
          {
-            return (Integer)proxy.invokeOperation("moveAllMessages", otherQueueName);
-         }
-
-         public int moveMatchingMessages(String filter, String otherQueueName) throws Exception
-         {
-            return (Integer)proxy.invokeOperation("moveMatchingMessages", filter, otherQueueName);
+            return (Integer)proxy.invokeOperation("moveMessages", filter, otherQueueName);
          }
 
          public boolean moveMessage(String messageID, String otherQueueName) throws Exception
@@ -228,9 +207,9 @@ public class JMSQueueControlUsingJMSTest extends JMSQueueControlTest
             return (Boolean)proxy.invokeOperation("moveMessage", messageID, otherQueueName);
          }
 
-         public int removeMatchingMessages(String filter) throws Exception
+         public int removeMessages(String filter) throws Exception
          {
-            return (Integer)proxy.invokeOperation("removeMatchingMessages", filter);
+            return (Integer)proxy.invokeOperation("removeMessages", filter);
          }
 
          public boolean removeMessage(String messageID) throws Exception
@@ -262,12 +241,6 @@ public class JMSQueueControlUsingJMSTest extends JMSQueueControlTest
          {
             return (String)proxy.retrieveAttributeValue("JNDIBinding");
          }
-
-         public int removeAllMessages() throws Exception
-         {
-            return (Integer)proxy.invokeOperation("removeAllMessages");
-         }
-
       };
    }
 

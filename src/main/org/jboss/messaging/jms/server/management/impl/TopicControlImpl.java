@@ -68,7 +68,7 @@ public class TopicControlImpl implements TopicControl
 
    public static String createFilterFromJMSSelector(final String selectorStr) throws MessagingException
    {
-      return (selectorStr == null || selectorStr.length() == 0) ? null : SelectorTranslator.convertToJBMFilterString(selectorStr);
+      return (selectorStr == null || selectorStr.trim().length() == 0) ? null : SelectorTranslator.convertToJBMFilterString(selectorStr);
    }
 
    // Constructors --------------------------------------------------
@@ -174,7 +174,7 @@ public class TopicControlImpl implements TopicControl
          throw new IllegalArgumentException("No subscriptions with name " + queueName);
       }
 
-      Map<String, Object>[] coreMessages = coreQueueControl.listAllMessages();
+      Map<String, Object>[] coreMessages = coreQueueControl.listMessages(null);
 
       Map<String, Object>[] jmsMessages = new Map[coreMessages.length];
 
@@ -204,14 +204,15 @@ public class TopicControlImpl implements TopicControl
       return coreQueueControl.listMessages(filter).length;
    }
 
-   public int removeAllMessages() throws Exception
+   public int removeMessages(String filterStr) throws Exception
    {
+      String filter = createFilterFromJMSSelector(filterStr);
       int count = 0;
       String[] queues = addressControl.getQueueNames();
       for (String queue : queues)
       {
          QueueControl coreQueueControl = (QueueControl)managementService.getResource(ResourceNames.CORE_QUEUE + queue);
-         count += coreQueueControl.removeAllMessages();
+         count += coreQueueControl.removeMessages(filter);
       }
 
       return count;

@@ -167,9 +167,9 @@ public class ReplicationAwareTopicControlWrapper extends ReplicationAwareStandar
       return localControl.isTemporary();
    }
 
-   public int removeAllMessages() throws Exception
+   public int removeMessages(String filter) throws Exception
    {
-      return (Integer)replicationAwareInvoke("removeAllMessages");
+      return (Integer)replicationAwareInvoke("removeMessages", filter);
    }
   
 
