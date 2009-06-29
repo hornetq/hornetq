@@ -4,9 +4,9 @@
 
    <!-- MBean server -->
    <bean name="MBeanServer" class="javax.management.MBeanServer">
-      <constructor factoryClass="java.lang.management.ManagementFactory"
-                   factoryMethod="getPlatformMBeanServer"/>
-   </bean> 
+      <constructor factoryClass="org.jboss.mx.util.MBeanServerLocator"
+                   factoryMethod="locateJBoss"/>
+   </bean>
 
    <!-- The core configuration -->
    <bean name="Configuration" class="org.jboss.messaging.core.config.impl.FileConfiguration"/>   
