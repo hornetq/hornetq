@@ -177,6 +177,38 @@ public abstract class SequentialFileFactoryTestBase extends UnitTestCase
 
    }
    
+   public void testRename() throws Exception
+   {
+      SequentialFile sf = factory.createSequentialFile("test1.jbm", 1);
+
+      sf.open();
+
+      List<String> fileNames = factory.listFiles("jbm");
+
+      assertEquals(1, fileNames.size());
+
+      assertTrue(fileNames.contains("test1.jbm"));
+      
+      sf.renameTo("test1.cmp");
+
+      fileNames = factory.listFiles("cmp");
+
+      assertEquals(1, fileNames.size());
+
+      assertTrue(fileNames.contains("test1.cmp"));
+
+      sf.delete();
+
+      fileNames = factory.listFiles("jbm");
+
+      assertEquals(0, fileNames.size());
+
+      fileNames = factory.listFiles("cmp");
+
+      assertEquals(0, fileNames.size());
+
+   }
+   
    // TODO: RE-ENABLE THIS
 //   public void testWriteandRead() throws Exception
 //   {

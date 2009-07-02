@@ -24,6 +24,7 @@ package org.jboss.messaging.core.journal;
 
 import java.util.List;
 
+import org.jboss.messaging.core.journal.impl.JournalFile;
 import org.jboss.messaging.core.server.MessagingComponent;
 
 /**
@@ -41,7 +42,7 @@ public interface Journal extends MessagingComponent
    void appendAddRecord(long id, byte recordType, byte[] record, boolean sync) throws Exception;
 
    void appendAddRecord(long id, byte recordType, EncodingSupport record, boolean sync) throws Exception;
-   
+
    void appendUpdateRecord(long id, byte recordType, byte[] record, boolean sync) throws Exception;
 
    void appendUpdateRecord(long id, byte recordType, EncodingSupport record, boolean sync) throws Exception;
@@ -50,19 +51,19 @@ public interface Journal extends MessagingComponent
 
    // Transactional operations
 
-   void appendAddRecordTransactional(long txID, long id, byte recordType, byte[] record, boolean sync) throws Exception;
+   void appendAddRecordTransactional(long txID, long id, byte recordType, byte[] record) throws Exception;
 
-   void appendAddRecordTransactional(long txID, long id, byte recordType, EncodingSupport record, boolean sync) throws Exception;
+   void appendAddRecordTransactional(long txID, long id, byte recordType, EncodingSupport record) throws Exception;
 
-   void appendUpdateRecordTransactional(long txID, long id, byte recordType, byte[] record, boolean sync) throws Exception;
+   void appendUpdateRecordTransactional(long txID, long id, byte recordType, byte[] record) throws Exception;
 
-   void appendUpdateRecordTransactional(long txID, long id, byte recordType, EncodingSupport record, boolean sync) throws Exception;
+   void appendUpdateRecordTransactional(long txID, long id, byte recordType, EncodingSupport record) throws Exception;
 
-   void appendDeleteRecordTransactional(long txID, long id, byte[] record, boolean sync) throws Exception;
+   void appendDeleteRecordTransactional(long txID, long id, byte[] record) throws Exception;
 
-   void appendDeleteRecordTransactional(long txID, long id, EncodingSupport record, boolean sync) throws Exception;
+   void appendDeleteRecordTransactional(long txID, long id, EncodingSupport record) throws Exception;
 
-   void appendDeleteRecordTransactional(long txID, long id, boolean sync) throws Exception;
+   void appendDeleteRecordTransactional(long txID, long id) throws Exception;
 
    void appendCommitRecord(long txID, boolean sync) throws Exception;
 
@@ -86,7 +87,24 @@ public interface Journal extends MessagingComponent
    long load(List<RecordInfo> committedRecords, List<PreparedTransactionInfo> preparedTransactions) throws Exception;
 
    int getAlignment() throws Exception;
-   
+
    void perfBlast(int pages) throws Exception;
+
+   /** This method is called automatically when a new file is opened  */
+   void checkAndReclaimFiles() throws Exception;
+
+   /** This method check for the need of compacting based on the minCompactPercentage 
+    * This method is usually called automatically when new files are opened
+   */
+   void checkCompact() throws Exception;
+
+   /**
+    * Eliminate deleted records of the journal.
+    * @throws Exception 
+    */
+   void compact() throws Exception;
+   
+   
+   JournalFile[] getDataFiles();
 
 }

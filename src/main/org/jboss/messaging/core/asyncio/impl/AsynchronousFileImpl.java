@@ -55,7 +55,7 @@ public class AsynchronousFileImpl implements AsynchronousFile
 
    private static boolean loaded = false;
 
-   private static int EXPECTED_NATIVE_VERSION = 21;
+   private static int EXPECTED_NATIVE_VERSION = 22;
 
    public static void addMax(final int io)
    {
@@ -289,11 +289,11 @@ public class AsynchronousFileImpl implements AsynchronousFile
                }
                catch (MessagingException e)
                {
-                  callbackError(aioCallback, e.getCode(), e.getMessage());
+                  callbackError(aioCallback, directByteBuffer, e.getCode(), e.getMessage());
                }
                catch (RuntimeException e)
                {
-                  callbackError(aioCallback, MessagingException.INTERNAL_ERROR, e.getMessage());
+                  callbackError(aioCallback, directByteBuffer, MessagingException.INTERNAL_ERROR, e.getMessage());
                }
             }
          });
@@ -308,11 +308,11 @@ public class AsynchronousFileImpl implements AsynchronousFile
          }
          catch (MessagingException e)
          {
-            callbackError(aioCallback, e.getCode(), e.getMessage());
+            callbackError(aioCallback, directByteBuffer, e.getCode(), e.getMessage());
          }
          catch (RuntimeException e)
          {
-            callbackError(aioCallback, MessagingException.INTERNAL_ERROR, e.getMessage());
+            callbackError(aioCallback, directByteBuffer, MessagingException.INTERNAL_ERROR, e.getMessage());
          }
       }
 
@@ -418,7 +418,9 @@ public class AsynchronousFileImpl implements AsynchronousFile
       writeSemaphore.release();
       pendingWrites.down();
       callback.done();
-      if (bufferCallback != null)
+      
+      // The buffer is not sent on callback for read operations
+      if (bufferCallback != null && buffer != null)
       {
          bufferCallback.bufferDone(buffer);
       }
@@ -426,12 +428,18 @@ public class AsynchronousFileImpl implements AsynchronousFile
 
    // Called by the JNI layer.. just ignore the
    // warning
-   private void callbackError(final AIOCallback callback, final int errorCode, final String errorMessage)
+   private void callbackError(final AIOCallback callback, final ByteBuffer buffer, final int errorCode, final String errorMessage)
    {
       log.warn("CallbackError: " + errorMessage);
       writeSemaphore.release();
       pendingWrites.down();
       callback.onError(errorCode, errorMessage);
+
+      // The buffer is not sent on callback for read operations
+      if (bufferCallback != null && buffer != null)
+      {
+         bufferCallback.bufferDone(buffer);
+      }
    }
 
    private void pollEvents()

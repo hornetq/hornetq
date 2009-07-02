@@ -78,7 +78,19 @@ public class Validators
          }
          else
          {
-            throw new IllegalArgumentException(format("%s  must be greater than 0 (actual value: %s", name, val));
+            throw new IllegalArgumentException(format("%s  must be greater than 0 (actual value: %s)", name, val));
+         }
+      }
+   };
+
+   public static Validator PERCENTAGE = new Validator()
+   {
+      public void validate(String name, Object value)
+      {
+         Number val = (Number)value;
+         if (val != null && val.intValue()< 0 || val.intValue() > 100)
+         {
+            throw new IllegalArgumentException(format("%s  must be a valid percentual value between 0 and 100 (actual value: %s)", name, val));
          }
       }
    };
@@ -94,7 +106,7 @@ public class Validators
          }
          else
          {
-            throw new IllegalArgumentException(format("%s  must be greater or equals than 0 (actual value: %s",
+            throw new IllegalArgumentException(format("%s  must be greater or equals than 0 (actual value: %s)",
                                                       name,
                                                       val));
          }

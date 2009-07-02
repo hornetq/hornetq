@@ -70,7 +70,12 @@ public class RealAIOJournalImplTest extends JournalImplTestUnit
 
       file.mkdir();
 
-      return new AIOSequentialFileFactory(getTestDir());
+      return new AIOSequentialFileFactory(getTestDir(),
+                                          ConfigurationImpl.DEFAULT_JOURNAL_AIO_BUFFER_SIZE,
+                                          1000000,
+                                          true,
+                                          false      
+      );
    }
 
 

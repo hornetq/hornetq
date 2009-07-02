@@ -35,6 +35,10 @@ import org.jboss.messaging.core.journal.SequentialFile;
  */
 public interface JournalFile
 {
+   
+   /** Used during compacting (clearing counters) */
+   void clearCounts();
+   
    int getNegCount(JournalFile file);
 
    void incNegCount(JournalFile file);
@@ -44,14 +48,20 @@ public interface JournalFile
    void incPosCount();
 
    void decPosCount();
-
+   
+   void addSize(int bytes);
+   
+   void decSize(int bytes);
+   
+   int getLiveSize();
+   
    void setCanReclaim(boolean canDelete);
 
    boolean isCanReclaim();
 
    long getOffset();
-
-   int getOrderingID();
+   
+   int getFileID();
 
    SequentialFile getFile();
 }

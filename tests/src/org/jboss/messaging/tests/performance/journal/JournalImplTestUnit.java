@@ -200,7 +200,7 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
 
    public void testSpeedTransactional() throws Exception
    {
-      Journal journal = new JournalImpl(10 * 1024 * 1024, 10, getFileFactory(), "jbm-data", "jbm", 5000);
+      Journal journal = new JournalImpl(10 * 1024 * 1024, 10, 0, 0, getFileFactory(), "jbm-data", "jbm", 5000);
 
       journal.start();
 
@@ -221,7 +221,7 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
             long startTrans = System.currentTimeMillis();
             for (int j = 0; j < 1000; j++)
             {
-               journal.appendAddRecordTransactional(i, count++, (byte)0, data, true);
+               journal.appendAddRecordTransactional(i, count++, (byte)0, data);
             }
 
             journal.appendCommitRecord(i, true);
@@ -261,7 +261,7 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
 
       log.debug("num Files=" + numFiles);
 
-      Journal journal = new JournalImpl(10 * 1024 * 1024, numFiles, getFileFactory(), "jbm-data", "jbm", 5000);
+      Journal journal = new JournalImpl(10 * 1024 * 1024, numFiles, 0, 0, getFileFactory(), "jbm-data", "jbm", 5000);
 
       journal.start();
 
@@ -285,7 +285,7 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
 
       journal.stop();
 
-      journal = new JournalImpl(10 * 1024 * 1024, numFiles, getFileFactory(), "jbm-data", "jbm", 5000);
+      journal = new JournalImpl(10 * 1024 * 1024, numFiles, 0, 0, getFileFactory(), "jbm-data", "jbm", 5000);
 
       journal.start();
       journal.load(new ArrayList<RecordInfo>(), null);

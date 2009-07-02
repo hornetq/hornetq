@@ -34,6 +34,8 @@ private:
 	jobject callback;
 	jobject fileController;
 	jobject bufferReference;
+	// Is this a read operation
+	short isRead;
 
 	void release(THREAD_CONTEXT threadContext)
 	{
@@ -47,7 +49,7 @@ private:
 	
 public:
 	// _ob must be a global Reference (use createGloblReferente before calling the constructor)
-	JNICallbackAdapter(AIOController * _controller, jobject _callback, jobject _fileController, jobject _bufferReference);
+	JNICallbackAdapter(AIOController * _controller, jobject _callback, jobject _fileController, jobject _bufferReference, short _isRead);
 	virtual ~JNICallbackAdapter();
 
 	void done(THREAD_CONTEXT threadContext);

@@ -30,6 +30,7 @@ import static org.jboss.messaging.core.config.impl.Validators.MINUS_ONE_OR_GE_ZE
 import static org.jboss.messaging.core.config.impl.Validators.MINUS_ONE_OR_GT_ZERO;
 import static org.jboss.messaging.core.config.impl.Validators.NOT_NULL_OR_EMPTY;
 import static org.jboss.messaging.core.config.impl.Validators.NO_CHECK;
+import static org.jboss.messaging.core.config.impl.Validators.PERCENTAGE;
 import static org.jboss.messaging.core.config.impl.Validators.THREAD_PRIORITY_RANGE;
 import static org.jboss.messaging.utils.XMLConfigurationUtil.getBoolean;
 import static org.jboss.messaging.utils.XMLConfigurationUtil.getDouble;
@@ -313,6 +314,10 @@ public class FileConfiguration extends ConfigurationImpl
       journalAIOBufferSize = getInteger(e, "journal-aio-buffer-size", DEFAULT_JOURNAL_AIO_BUFFER_SIZE, GT_ZERO);
 
       journalMinFiles = getInteger(e, "journal-min-files", journalMinFiles, GT_ZERO);
+      
+      journalCompactMinFiles = getInteger(e, "journal-compact-min-files", journalCompactMinFiles, GE_ZERO);
+
+      journalCompactPercentage = getInteger(e, "journal-compact-percentage", journalCompactPercentage, PERCENTAGE);
 
       journalMaxAIO = getInteger(e, "journal-max-aio", journalMaxAIO, GT_ZERO);
       

@@ -106,6 +106,10 @@ public class DefaultsFileConfigurationTest extends ConfigurationImplTest
 
       assertEquals(ConfigurationImpl.DEFAULT_JOURNAL_FILE_SIZE, conf.getJournalFileSize());
 
+      assertEquals(ConfigurationImpl.DEFAULT_JOURNAL_COMPACT_MIN_FILES, conf.getJournalCompactMinFiles());
+      
+      assertEquals(ConfigurationImpl.DEFAULT_JOURNAL_COMPACT_PERCENTAGE, conf.getJournalCompactPercentage());
+      
       assertEquals(ConfigurationImpl.DEFAULT_JOURNAL_MIN_FILES, conf.getJournalMinFiles());
 
       assertEquals(ConfigurationImpl.DEFAULT_JOURNAL_MAX_AIO, conf.getJournalMaxAIO());

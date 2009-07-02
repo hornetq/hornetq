@@ -128,7 +128,7 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
    {
       try
       {
-         new JournalImpl(JournalImpl.MIN_FILE_SIZE - 1, 10, fileFactory, filePrefix, fileExtension, 1);
+         new JournalImpl(JournalImpl.MIN_FILE_SIZE - 1, 10, 0, 0, fileFactory, filePrefix, fileExtension, 1);
 
          fail("Should throw exception");
       }
@@ -139,7 +139,7 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
 
       try
       {
-         new JournalImpl(10 * 1024, 1, fileFactory, filePrefix, fileExtension, 1);
+         new JournalImpl(10 * 1024, 1, 0, 0, fileFactory, filePrefix, fileExtension, 1);
 
          fail("Should throw exception");
       }
@@ -150,7 +150,7 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
 
       try
       {
-         new JournalImpl(10 * 1024, 10, null, filePrefix, fileExtension, 1);
+         new JournalImpl(10 * 1024, 10, 0, 0, null, filePrefix, fileExtension, 1);
 
          fail("Should throw exception");
       }
@@ -161,7 +161,7 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
 
       try
       {
-         new JournalImpl(10 * 1024, 10, fileFactory, null, fileExtension, 1);
+         new JournalImpl(10 * 1024, 10, 0, 0, fileFactory, null, fileExtension, 1);
 
          fail("Should throw exception");
       }
@@ -172,7 +172,7 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
 
       try
       {
-         new JournalImpl(10 * 1024, 10, fileFactory, filePrefix, null, 1);
+         new JournalImpl(10 * 1024, 10, 0, 0, fileFactory, filePrefix, null, 1);
 
          fail("Should throw exception");
       }
@@ -183,7 +183,7 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
 
       try
       {
-         new JournalImpl(10 * 1024, 10, fileFactory, filePrefix, null, 0);
+         new JournalImpl(10 * 1024, 10, 0, 0, fileFactory, filePrefix, null, 0);
 
          fail("Should throw exception");
       }
@@ -1665,7 +1665,6 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
       assertEquals(1, journal.getIDMapSize());
    }
 
-   
    public void testPrepareNoReclaim() throws Exception
    {
       setup(2, calculateRecordSize(JournalImpl.SIZE_HEADER, getAlignment()) + calculateRecordSize(recordLength,
@@ -2316,6 +2315,41 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
       loadAndCheck();
    }
 
+   public void testSimpleAddTXReload() throws Exception
+   {
+      setup(2, 10 * 1024, true);
+      createJournal();
+      startJournal();
+      load();
+      addTx(1, 1);
+      commit(1);
+
+      stopJournal();
+      createJournal();
+      startJournal();
+      loadAndCheck();
+
+   }
+
+   public void testSimpleAddTXXAReload() throws Exception
+   {
+      setup(2, 10 * 1024, true);
+      createJournal();
+      startJournal();
+      load();
+      addTx(1, 1);
+
+      EncodingSupport xid = new SimpleEncoding(10, (byte)'p');
+
+      prepare(1, xid);
+
+      stopJournal();
+      createJournal();
+      startJournal();
+      loadAndCheck();
+
+   }
+
    public void testAddUpdateDeleteTransactionalRestartAndContinue() throws Exception
    {
       setup(10, 10 * 1024, true);
@@ -2944,7 +2978,7 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
       createJournal();
       startJournal();
       load();
-      
+
       int transactionID = 0;
 
       for (int i = 0; i < 100; i++)
@@ -2962,7 +2996,6 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
       {
 
          addTx(transactionID, i);
-         updateTx(i + 100);
          if (i % 10 == 0 && i > 0)
          {
             journal.forceMoveNextFile();
@@ -2991,25 +3024,40 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
          delete(i);
       }
 
+      System.out.println("After delete ****************************");
+      System.out.println(journal.debug());
+      System.out.println("*****************************************");
+
       for (int i = 100; i < 200; i++)
       {
          updateTx(transactionID, i);
       }
 
+      System.out.println("After updatetx ****************************");
+      System.out.println(journal.debug());
+      System.out.println("*****************************************");
+
       journal.forceMoveNextFile();
-      
+
       commit(transactionID++);
-      
+
+      System.out.println("After commit ****************************");
+      System.out.println(journal.debug());
+      System.out.println("*****************************************");
+
       for (int i = 100; i < 200; i++)
       {
          updateTx(transactionID, i);
          deleteTx(transactionID, i);
       }
-      
+
+      System.out.println("After delete ****************************");
+      System.out.println(journal.debug());
+      System.out.println("*****************************************");
+
       commit(transactionID++);
-      
- 
-      System.out.println("Before reclaim ****************************");
+
+      System.out.println("Before reclaim/after commit ****************************");
       System.out.println(journal.debug());
       System.out.println("*****************************************");
 
@@ -3021,7 +3069,7 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
       System.out.println("After reclaim ****************************");
       System.out.println(journal.debug());
       System.out.println("*****************************************");
-      
+
       journal.forceMoveNextFile();
       journal.checkAndReclaimFiles();
 

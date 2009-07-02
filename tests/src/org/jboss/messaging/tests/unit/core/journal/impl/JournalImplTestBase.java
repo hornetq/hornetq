@@ -38,7 +38,6 @@ import org.jboss.messaging.core.journal.SequentialFileFactory;
 import org.jboss.messaging.core.journal.TestableJournal;
 import org.jboss.messaging.core.journal.impl.JournalImpl;
 import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.tests.util.RandomUtil;
 import org.jboss.messaging.tests.util.UnitTestCase;
 
 /**
@@ -67,7 +66,7 @@ public abstract class JournalImplTestBase extends UnitTestCase
    protected int fileSize;
 
    protected boolean sync;
-   
+
    protected String filePrefix = "jbm";
 
    protected String fileExtension = "jbm";
@@ -105,7 +104,7 @@ public abstract class JournalImplTestBase extends UnitTestCase
       journal = null;
 
       assertEquals(0, AsynchronousFileImpl.getTotalMaxIO());
-      
+
       super.tearDown();
    }
 
@@ -144,7 +143,7 @@ public abstract class JournalImplTestBase extends UnitTestCase
 
    public void createJournal() throws Exception
    {
-      journal = new JournalImpl(fileSize, minFiles, fileFactory, filePrefix, fileExtension, maxAIO);
+      journal = new JournalImpl(fileSize, minFiles, 0, 0, fileFactory, filePrefix, fileExtension, maxAIO);
       journal.setAutoReclaim(false);
    }
 
@@ -168,7 +167,7 @@ public abstract class JournalImplTestBase extends UnitTestCase
 
       journal.stop();
    }
-   
+
    protected void loadAndCheck() throws Exception
    {
       loadAndCheck(false);
@@ -183,7 +182,7 @@ public abstract class JournalImplTestBase extends UnitTestCase
       journal.load(committedRecords, preparedTransactions);
 
       checkRecordsEquivalent(records, committedRecords);
-      
+
       if (printDebugJournal)
       {
          printJournalLists(records, committedRecords);
@@ -270,7 +269,7 @@ public abstract class JournalImplTestBase extends UnitTestCase
          // SIZE_BYTE
          byte[] record = generateRecord(recordLength - JournalImpl.SIZE_ADD_RECORD_TX);
 
-         journal.appendAddRecordTransactional(txID, element, (byte)0, record, sync);
+         journal.appendAddRecordTransactional(txID, element, (byte)0, record);
 
          tx.records.add(new RecordInfo(element, (byte)0, record, false));
 
@@ -287,7 +286,7 @@ public abstract class JournalImplTestBase extends UnitTestCase
       {
          byte[] updateRecord = generateRecord(recordLength - JournalImpl.SIZE_UPDATE_RECORD_TX);
 
-         journal.appendUpdateRecordTransactional(txID, element, (byte)0, updateRecord, sync);
+         journal.appendUpdateRecordTransactional(txID, element, (byte)0, updateRecord);
 
          tx.records.add(new RecordInfo(element, (byte)0, updateRecord, true));
       }
@@ -300,7 +299,7 @@ public abstract class JournalImplTestBase extends UnitTestCase
 
       for (long element : arguments)
       {
-         journal.appendDeleteRecordTransactional(txID, element, sync);
+         journal.appendDeleteRecordTransactional(txID, element);
 
          tx.deletes.add(new RecordInfo(element, (byte)0, null, true));
       }
@@ -499,7 +498,8 @@ public abstract class JournalImplTestBase extends UnitTestCase
       byte[] record = new byte[length];
       for (int i = 0; i < length; i++)
       {
-         record[i] = RandomUtil.randomByte();
+         // record[i] = RandomUtil.randomByte();
+         record[i] = getSamplebyte(i);
       }
       return record;
    }

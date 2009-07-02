@@ -27,7 +27,7 @@ package org.jboss.messaging.core.journal;
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
  * 
  */
-public interface LoadManager
+public interface LoaderCallback
 {
    void addRecord(RecordInfo info);
 

@@ -53,9 +53,9 @@ public class AIOSequentialFile implements SequentialFile
 {
    private static final Logger log = Logger.getLogger(AIOSequentialFile.class);
 
-   private final String journalDir;
+   private final String directory;
 
-   private final String fileName;
+   private File file;
 
    private boolean opened = false;
 
@@ -89,7 +89,7 @@ public class AIOSequentialFile implements SequentialFile
    public AIOSequentialFile(final SequentialFileFactory factory,
                             final int bufferSize,
                             final long bufferTimeoutMilliseconds,
-                            final String journalDir,
+                            final String directory,
                             final String fileName,
                             final int maxIO,
                             final BufferCallback bufferCallback,
@@ -97,8 +97,8 @@ public class AIOSequentialFile implements SequentialFile
                             final Executor pollerExecutor)
    {
       this.factory = factory;
-      this.journalDir = journalDir;
-      this.fileName = fileName;
+      this.directory = directory;
+      file = new File(directory + "/" + fileName);
       this.maxIO = maxIO;
       this.bufferCallback = bufferCallback;
       this.executor = executor;
@@ -115,6 +115,11 @@ public class AIOSequentialFile implements SequentialFile
       checkOpened();
 
       return aioFile.getBlockSize();
+   }
+   
+   public boolean exists()
+   {
+      return file.exists();
    }
 
    public int calculateBlockStart(final int position) throws Exception
@@ -166,13 +171,27 @@ public class AIOSequentialFile implements SequentialFile
 
       while (!donelatch.await(60, TimeUnit.SECONDS))
       {
-         log.warn("Executor on file " + fileName + " couldn't complete its tasks in 60 seconds.",
-                  new Exception("Warning: Executor on file " + fileName + " couldn't complete its tasks in 60 seconds."));
+         log.warn("Executor on file " + file.getName() + " couldn't complete its tasks in 60 seconds.",
+                  new Exception("Warning: Executor on file " + file.getName() + " couldn't complete its tasks in 60 seconds."));
       }
 
       aioFile.close();
       aioFile = null;
+      
+      this.notifyAll();
    }
+
+   /* (non-Javadoc)
+    * @see org.jboss.messaging.core.journal.SequentialFile#waitForClose()
+    */
+   public synchronized void waitForClose() throws Exception
+   {
+      while (isOpen())
+      {
+         wait();
+      }
+   }
+
 
    public void delete() throws Exception
    {
@@ -182,7 +201,6 @@ public class AIOSequentialFile implements SequentialFile
          aioFile = null;
       }
 
-      File file = new File(journalDir + "/" + fileName);
       file.delete();
    }
 
@@ -236,7 +254,7 @@ public class AIOSequentialFile implements SequentialFile
 
    public String getFileName()
    {
-      return fileName;
+      return file.getName();
    }
 
    public void open() throws Exception
@@ -247,17 +265,22 @@ public class AIOSequentialFile implements SequentialFile
    /* (non-Javadoc)
     * @see org.jboss.messaging.core.journal.SequentialFile#renameTo(org.jboss.messaging.core.journal.SequentialFile)
     */
-   public void renameTo(String fileName) throws Exception
+   public void renameTo(String newFileName) throws Exception
    {
-      throw new IllegalStateException("method rename not supported on AIO");
-
+      if (isOpen())
+      {
+         close();
+      }
+      File newFile = new File(directory + "/" + newFileName);
+      file.renameTo(newFile);
+      file = newFile;
    }
 
    public synchronized void open(final int currentMaxIO) throws Exception
    {
       opened = true;
       aioFile = newFile();
-      aioFile.open(journalDir + "/" + fileName, currentMaxIO);
+      aioFile.open(file.getAbsolutePath(), currentMaxIO);
       position.set(0);
       aioFile.setBufferCallback(bufferCallback);
       this.fileSize = aioFile.size();
@@ -328,7 +351,7 @@ public class AIOSequentialFile implements SequentialFile
       }
       else
       {
-         write(bytes, false, DummyCallback.instance);
+         write(bytes, false, DummyCallback.getInstance());
       }
    }
    
@@ -358,7 +381,7 @@ public class AIOSequentialFile implements SequentialFile
       }
       else
       {
-         write(bytes, false, DummyCallback.instance);
+         write(bytes, false, DummyCallback.getInstance());
       }
    }
 
@@ -376,7 +399,7 @@ public class AIOSequentialFile implements SequentialFile
    @Override
    public String toString()
    {
-      return "AIOSequentialFile:" + journalDir + "/" + fileName;
+      return "AIOSequentialFile:" + file.getAbsolutePath();
    }
 
    // Public methods
@@ -514,9 +537,8 @@ public class AIOSequentialFile implements SequentialFile
       
       public String toString()
       {
-         return "TimedBufferObserver on file (" + AIOSequentialFile.this.fileName + ")";
+         return "TimedBufferObserver on file (" + AIOSequentialFile.this.file.getName() + ")";
       }
 
    }
-
 }

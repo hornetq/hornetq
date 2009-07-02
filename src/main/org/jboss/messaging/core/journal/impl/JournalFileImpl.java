@@ -44,21 +44,30 @@ public class JournalFileImpl implements JournalFile
 
    private final SequentialFile file;
 
-   private final int orderingID;
+   private final int fileID;
 
    private long offset;
-
+   
    private final AtomicInteger posCount = new AtomicInteger(0);
+   
+   private final AtomicInteger liveBytes = new AtomicInteger(0);
 
    private boolean canReclaim;
 
    private final Map<JournalFile, AtomicInteger> negCounts = new ConcurrentHashMap<JournalFile, AtomicInteger>();
-
-   public JournalFileImpl(final SequentialFile file, final int orderingID)
+   
+   public JournalFileImpl(final SequentialFile file, final int fileID)
    {
       this.file = file;
 
-      this.orderingID = orderingID;
+      this.fileID = fileID;
+   }
+
+   public void clearCounts()
+   {
+      negCounts.clear();
+      posCount.set(0);
+      liveBytes.set(0);
    }
 
    public int getPosCount()
@@ -104,7 +113,7 @@ public class JournalFileImpl implements JournalFile
    {
       posCount.decrementAndGet();
    }
-
+   
    public void extendOffset(final int delta)
    {
       offset += delta;
@@ -115,9 +124,9 @@ public class JournalFileImpl implements JournalFile
       return offset;
    }
 
-   public int getOrderingID()
+   public int getFileID()
    {
-      return orderingID;
+      return fileID;
    }
 
    public void setOffset(final long offset)
@@ -169,5 +178,30 @@ public class JournalFileImpl implements JournalFile
 
       return count;
    }
+
+   /* (non-Javadoc)
+    * @see org.jboss.messaging.core.journal.impl.JournalFile#addSize(int)
+    */
+   public void addSize(int bytes)
+   {
+      liveBytes.addAndGet(bytes);
+   }
+
+   /* (non-Javadoc)
+    * @see org.jboss.messaging.core.journal.impl.JournalFile#decSize(int)
+    */
+   public void decSize(int bytes)
+   {
+      liveBytes.addAndGet(-bytes);
+   }
+
+   /* (non-Javadoc)
+    * @see org.jboss.messaging.core.journal.impl.JournalFile#getSize()
+    */
+   public int getLiveSize()
+   {
+      return liveBytes.get();
+   }
+
 
 }

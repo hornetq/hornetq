@@ -90,6 +90,10 @@ public class ConfigurationImpl implements Configuration
    public static final boolean DEFAULT_JOURNAL_SYNC_NON_TRANSACTIONAL = false;
 
    public static final int DEFAULT_JOURNAL_FILE_SIZE = 10485760;
+   
+   public static final int DEFAULT_JOURNAL_COMPACT_MIN_FILES = 10;
+   
+   public static final int DEFAULT_JOURNAL_COMPACT_PERCENTAGE = 30;
 
    public static final int DEFAULT_JOURNAL_MIN_FILES = 2;
 
@@ -235,6 +239,11 @@ public class ConfigurationImpl implements Configuration
 
    protected boolean journalSyncNonTransactional = DEFAULT_JOURNAL_SYNC_NON_TRANSACTIONAL;
 
+   
+   protected int journalCompactMinFiles = DEFAULT_JOURNAL_COMPACT_MIN_FILES;
+   
+   protected int journalCompactPercentage = DEFAULT_JOURNAL_COMPACT_PERCENTAGE;
+   
    protected int journalFileSize = DEFAULT_JOURNAL_FILE_SIZE;
 
    protected int journalMinFiles = DEFAULT_JOURNAL_MIN_FILES;
@@ -885,5 +894,37 @@ public class ConfigurationImpl implements Configuration
              cother.getSecurityInvalidationInterval() == getSecurityInvalidationInterval() &&
              cother.getManagementAddress().equals(getManagementAddress()) &&
              cother.getGlobalPagingSize() == getGlobalPagingSize();
+   }
+
+   /* (non-Javadoc)
+    * @see org.jboss.messaging.core.config.Configuration#getJournalCompactMinFiles()
+    */
+   public int getJournalCompactMinFiles()
+   {
+      return journalCompactMinFiles;
+   }
+
+   /* (non-Javadoc)
+    * @see org.jboss.messaging.core.config.Configuration#getJournalCompactPercentage()
+    */
+   public int getJournalCompactPercentage()
+   {
+      return journalCompactPercentage;
+   }
+   
+   /* (non-Javadoc)
+    * @see org.jboss.messaging.core.config.Configuration#setJournalCompactMinFiles()
+    */
+   public void setJournalCompactMinFiles(int minFiles)
+   {
+      this.journalCompactMinFiles = minFiles;
+   }
+
+   /* (non-Javadoc)
+    * @see org.jboss.messaging.core.config.Configuration#setJournalCompactPercentage()
+    */
+   public void setJournalCompactPercentage(int percentage)
+   {
+      this.journalCompactPercentage = percentage;
    }
 }

@@ -24,37 +24,69 @@
 package org.jboss.messaging.core.journal.impl;
 
 import org.jboss.messaging.core.journal.IOCallback;
-import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.utils.VariableLatch;
 
 /**
- * A DummyCallback
+ * A TransactionCallback
  *
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
  *
  *
  */
-public  class DummyCallback implements IOCallback
+public class TransactionCallback implements IOCallback
 {
-   private static DummyCallback instance = new DummyCallback();
-   
-   private static final Logger log = Logger.getLogger(SimpleWaitIOCallback.class);
-   
-   public static IOCallback getInstance()
+   private final VariableLatch countLatch = new VariableLatch();
+
+   private volatile String errorMessage = null;
+
+   private volatile int errorCode = 0;
+
+   public void countUp()
    {
-      return instance;
+      countLatch.up();
    }
 
    public void done()
    {
+      countLatch.down();
+   }
+
+   public void waitCompletion() throws InterruptedException
+   {
+      countLatch.waitCompletion();
+
+      if (errorMessage != null)
+      {
+         throw new IllegalStateException("Error on Transaction: " + errorCode + " - " + errorMessage);
+      }
    }
 
    public void onError(final int errorCode, final String errorMessage)
    {
-      log.warn("Error on writing data!" + errorMessage + " code - " + errorCode, new Exception(errorMessage));
+      this.errorMessage = errorMessage;
+
+      this.errorCode = errorCode;
+
+      countLatch.down();
    }
 
-   public void waitCompletion() throws Exception
+   /**
+    * @return the errorMessage
+    */
+   public String getErrorMessage()
    {
+      return errorMessage;
    }
-}
 
+   /**
+    * @return the errorCode
+    */
+   public int getErrorCode()
+   {
+      return errorCode;
+   }
+   
+   
+   
+
+}

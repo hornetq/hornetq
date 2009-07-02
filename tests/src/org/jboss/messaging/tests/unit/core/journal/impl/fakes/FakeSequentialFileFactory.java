@@ -87,7 +87,7 @@ public class FakeSequentialFileFactory implements SequentialFileFactory
    {
       FakeSequentialFile sf = fileMap.get(fileName);
 
-      if (sf == null)
+      if (sf == null || sf.data == null)
       {
          sf = newSequentialFile(fileName);
 
@@ -332,7 +332,7 @@ public class FakeSequentialFileFactory implements SequentialFileFactory
          this.fileName = fileName;
       }
 
-      public void close() throws Exception
+      public synchronized void close() throws Exception
       {
          open = false;
 
@@ -340,15 +340,24 @@ public class FakeSequentialFileFactory implements SequentialFileFactory
          {
             data.position(0);
          }
+
+         this.notifyAll();
+      }
+
+      public synchronized void waitForClose() throws Exception
+      {
+         while (open)
+         {
+            this.wait();
+         }
       }
 
       public void delete() throws Exception
       {
          if (!open)
          {
-            throw new IllegalStateException("Is closed");
+            close();
          }
-         close();
 
          fileMap.remove(fileName);
       }
@@ -602,7 +611,7 @@ public class FakeSequentialFileFactory implements SequentialFileFactory
       public void write(MessagingBuffer bytes, boolean sync, IOCallback callback) throws Exception
       {
          write(ByteBuffer.wrap(bytes.array()), sync, callback);
-         
+
       }
 
       /* (non-Javadoc)
@@ -611,6 +620,16 @@ public class FakeSequentialFileFactory implements SequentialFileFactory
       public void write(MessagingBuffer bytes, boolean sync) throws Exception
       {
          write(ByteBuffer.wrap(bytes.array()), sync);
+      }
+
+      /* (non-Javadoc)
+       * @see org.jboss.messaging.core.journal.SequentialFile#exists()
+       */
+      public boolean exists()
+      {
+         FakeSequentialFile file = fileMap.get(fileName);
+         
+         return file != null && file.data != null && file.data.capacity() > 0;
       }
 
    }
@@ -677,6 +696,13 @@ public class FakeSequentialFileFactory implements SequentialFileFactory
     * @see org.jboss.messaging.core.journal.SequentialFileFactory#deactivate(org.jboss.messaging.core.journal.SequentialFile)
     */
    public void deactivate(SequentialFile file)
+   {
+   }
+
+   /* (non-Javadoc)
+    * @see org.jboss.messaging.core.journal.SequentialFileFactory#testFlush()
+    */
+   public void testFlush()
    {
    }
 

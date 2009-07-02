@@ -37,14 +37,13 @@ import org.jboss.messaging.tests.unit.core.journal.impl.SequentialFileFactoryTes
  */
 public class NIOSequentialFileFactoryTest extends SequentialFileFactoryTestBase
 {
-   protected String journalDir = System.getProperty("user.home") + "/journal-test";
 
    @Override
    protected void setUp() throws Exception
    {
       super.setUp();
 
-      File file = new File(journalDir);
+      File file = new File(getTestDir());
 
       deleteDirectory(file);
 
@@ -54,7 +53,7 @@ public class NIOSequentialFileFactoryTest extends SequentialFileFactoryTestBase
    @Override
    protected SequentialFileFactory createFactory()
    {
-      return new NIOSequentialFileFactory(journalDir);
+      return new NIOSequentialFileFactory(getTestDir());
    }
 
 }

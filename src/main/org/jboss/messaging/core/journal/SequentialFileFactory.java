@@ -40,12 +40,10 @@ public interface SequentialFileFactory
    List<String> listFiles(String extension) throws Exception;
 
    boolean isSupportsCallbacks();
-
+   
    ByteBuffer newBuffer(int size);
    
    void releaseBuffer(ByteBuffer buffer);
-   
-   void controlBuffersLifeCycle(boolean value);
    
    /** The factory may need to do some initialization before the file is activated.
     *  this was added as a hook for AIO to initialize the Observer on TimedBuffer.
@@ -71,5 +69,9 @@ public interface SequentialFileFactory
     * Create the directory if it doesn't exist yet
     */
    void createDirs() throws Exception;
+   
+   // used on tests only
+   void testFlush();
+
 
 }

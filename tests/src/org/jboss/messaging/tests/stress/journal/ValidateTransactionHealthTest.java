@@ -26,7 +26,7 @@ import java.io.File;
 import java.nio.ByteBuffer;
 
 import org.jboss.messaging.core.asyncio.impl.AsynchronousFileImpl;
-import org.jboss.messaging.core.journal.LoadManager;
+import org.jboss.messaging.core.journal.LoaderCallback;
 import org.jboss.messaging.core.journal.PreparedTransactionInfo;
 import org.jboss.messaging.core.journal.RecordInfo;
 import org.jboss.messaging.core.journal.impl.JournalImpl;
@@ -181,7 +181,7 @@ public class ValidateTransactionHealthTest extends UnitTestCase
 
    // Inner classes -------------------------------------------------
 
-   class Loader implements LoadManager
+   class Loader implements LoaderCallback
    {
       int numberOfPreparedTransactions = 0;
 

@@ -1,6 +1,6 @@
 /*
  * JBoss, Home of Professional Open Source
- * Copyright 2005-2008, Red Hat Middleware LLC, and individual contributors
+ * Copyright 2005-2009, Red Hat Middleware LLC, and individual contributors
  * by the @authors tag. See the copyright.txt in the distribution for a
  * full listing of individual contributors.
  *
@@ -18,55 +18,62 @@
  * License along with this software; if not, write to the Free
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
- */ 
+ */
 
-package org.jboss.messaging.tests.performance.journal;
+
+package org.jboss.messaging.tests.integration.journal;
 
 import java.io.File;
 
-import org.jboss.messaging.core.asyncio.impl.AsynchronousFileImpl;
+import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.journal.SequentialFileFactory;
 import org.jboss.messaging.core.journal.impl.AIOSequentialFileFactory;
-import org.jboss.messaging.core.logging.Logger;
 
 /**
- * 
- * A RealJournalImplTest
- * 
- * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * A AIOJournalCompactTest
+ *
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
  *
+ *
  */
-public class RealJournalImplAIOTest extends JournalImplTestUnit
+public class AIOJournalCompactTest extends NIOJournalCompactTest
 {
-   private static final Logger log = Logger.getLogger(RealJournalImplAIOTest.class);
-      
-   @Override
-   protected void setUp() throws Exception
-   {
-      super.setUp();
 
-      if (!AsynchronousFileImpl.isLoaded())
-      {
-         fail(String.format("libAIO is not loaded on %s %s %s", 
-               System.getProperty("os.name"), 
-               System.getProperty("os.arch"), 
-               System.getProperty("os.version")));
-      }
-   }
-   
+   // Constants -----------------------------------------------------
+
+   // Attributes ----------------------------------------------------
+
+   // Static --------------------------------------------------------
+
+   // Constructors --------------------------------------------------
+
+   // Public --------------------------------------------------------
+
+   // Package protected ---------------------------------------------
+
+   // Protected -----------------------------------------------------
+
+   @Override
    protected SequentialFileFactory getFileFactory() throws Exception
    {
       File file = new File(getTestDir());
-      
-      log.debug("deleting directory " + file);
-      
-      deleteDirectory(file);
-      
-      file.mkdir();     
-      
-      return new AIOSequentialFileFactory(getTestDir());
-   }
-   
-}
 
+      deleteDirectory(file);
+
+      file.mkdir();
+
+      return new AIOSequentialFileFactory(getTestDir(),
+                                          ConfigurationImpl.DEFAULT_JOURNAL_AIO_BUFFER_SIZE,
+                                          1000000,
+                                          true,
+                                          false      
+      );
+   }
+
+
+
+   // Private -------------------------------------------------------
+
+   // Inner classes -------------------------------------------------
+
+}

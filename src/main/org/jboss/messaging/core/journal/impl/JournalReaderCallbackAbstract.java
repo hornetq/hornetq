@@ -23,38 +23,56 @@
 
 package org.jboss.messaging.core.journal.impl;
 
-import org.jboss.messaging.core.journal.IOCallback;
-import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.journal.RecordInfo;
 
 /**
- * A DummyCallback
+ * A JournalReaderCallbackAbstract
  *
- * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
+ * @author <mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
  *
  *
  */
-public  class DummyCallback implements IOCallback
+public class JournalReaderCallbackAbstract implements JournalReaderCallback
 {
-   private static DummyCallback instance = new DummyCallback();
-   
-   private static final Logger log = Logger.getLogger(SimpleWaitIOCallback.class);
-   
-   public static IOCallback getInstance()
-   {
-      return instance;
-   }
 
-   public void done()
+   public void markAsDataFile(JournalFile file)
    {
    }
 
-   public void onError(final int errorCode, final String errorMessage)
+   public void onReadAddRecord(RecordInfo info) throws Exception
    {
-      log.warn("Error on writing data!" + errorMessage + " code - " + errorCode, new Exception(errorMessage));
    }
 
-   public void waitCompletion() throws Exception
+   public void onReadAddRecordTX(long transactionID, RecordInfo recordInfo) throws Exception
    {
    }
+
+   public void onReadCommitRecord(long transactionID, int numberOfRecords) throws Exception
+   {
+   }
+
+   public void onReadDeleteRecord(long recordID) throws Exception
+   {
+   }
+
+   public void onReadDeleteRecordTX(long transactionID, RecordInfo recordInfo) throws Exception
+   {
+   }
+
+   public void onReadPrepareRecord(long transactionID, byte[] extraData, int numberOfRecords) throws Exception
+   {
+   }
+
+   public void onReadRollbackRecord(long transactionID) throws Exception
+   {
+   }
+
+   public void onReadUpdateRecord(RecordInfo recordInfo) throws Exception
+   {
+   }
+
+   public void onReadUpdateRecordTX(long transactionID, RecordInfo recordInfo) throws Exception
+   {
+   }
+
 }
-

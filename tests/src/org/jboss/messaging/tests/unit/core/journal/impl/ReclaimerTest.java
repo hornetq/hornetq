@@ -762,7 +762,7 @@ public class ReclaimerTest extends UnitTestCase
          return 0;
       }
 
-      public int getOrderingID()
+      public int getFileID()
       {
          return 0;
       }
@@ -862,6 +862,65 @@ public class ReclaimerTest extends UnitTestCase
       public Set<Long> getTransactionsIDs()
       {
          return transactionIDs;
+      }
+
+      /* (non-Javadoc)
+       * @see org.jboss.messaging.core.journal.impl.JournalFile#decPendingTransaction()
+       */
+      public void decPendingTransaction()
+      {
+      }
+
+      /* (non-Javadoc)
+       * @see org.jboss.messaging.core.journal.impl.JournalFile#getPendingTransactions()
+       */
+      public int getPendingTransactions()
+      {
+         return 0;
+      }
+
+      /* (non-Javadoc)
+       * @see org.jboss.messaging.core.journal.impl.JournalFile#incPendingTransaction()
+       */
+      public void incPendingTransaction()
+      {
+      }
+
+      /* (non-Javadoc)
+       * @see org.jboss.messaging.core.journal.impl.JournalFile#getOrderingID()
+       */
+      public int getOrderingID()
+      {
+         return 0;
+      }
+
+      /* (non-Javadoc)
+       * @see org.jboss.messaging.core.journal.impl.JournalFile#clearCounts()
+       */
+      public void clearCounts()
+      {
+      }
+
+      /* (non-Javadoc)
+       * @see org.jboss.messaging.core.journal.impl.JournalFile#addSize(int)
+       */
+      public void addSize(int bytes)
+      {
+      }
+
+      /* (non-Javadoc)
+       * @see org.jboss.messaging.core.journal.impl.JournalFile#decSize(int)
+       */
+      public void decSize(int bytes)
+      {
+      }
+
+      /* (non-Javadoc)
+       * @see org.jboss.messaging.core.journal.impl.JournalFile#getSize()
+       */
+      public int getLiveSize()
+      {
+         return 0;
       }
    }
 }

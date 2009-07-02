@@ -185,6 +185,14 @@ public interface Configuration extends Serializable, MessagingComponent
    int getJournalFileSize();
 
    void setJournalFileSize(int size);
+   
+   int getJournalCompactMinFiles();
+   
+   void setJournalCompactMinFiles(int minFiles);
+   
+   int getJournalCompactPercentage();
+   
+   void setJournalCompactPercentage(int percentage);
 
    int getJournalMinFiles();
 

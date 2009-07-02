@@ -128,6 +128,8 @@ public class ServiceTestBase extends UnitTestCase
       config.setBindingsDirectory(getBindingsDir());
       config.setJournalType(JournalType.ASYNCIO);
       config.setLargeMessagesDirectory(getLargeMessagesDir());
+      config.setJournalCompactMinFiles(0);
+      config.setJournalCompactPercentage(0);
       return config;
    }
 
@@ -275,6 +277,9 @@ public class ServiceTestBase extends UnitTestCase
       configuration.setJournalType(JournalType.ASYNCIO);
       configuration.setPagingDirectory(getPageDir(index, false));
       configuration.setLargeMessagesDirectory(getLargeMessagesDir(index, false));
+      configuration.setJournalCompactMinFiles(0);
+      configuration.setJournalCompactPercentage(0);
+
 
       configuration.getAcceptorConfigurations().clear();
 
@@ -298,6 +303,8 @@ public class ServiceTestBase extends UnitTestCase
       configuration.setJournalFileSize(100 * 1024);
       configuration.setPagingDirectory(getPageDir());
       configuration.setLargeMessagesDirectory(getLargeMessagesDir());
+      configuration.setJournalCompactMinFiles(0);
+      configuration.setJournalCompactPercentage(0);
 
       configuration.setJournalType(JournalType.ASYNCIO);
 

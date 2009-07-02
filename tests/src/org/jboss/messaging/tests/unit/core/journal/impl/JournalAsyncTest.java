@@ -85,7 +85,7 @@ public class JournalAsyncTest extends UnitTestCase
             {
                for (int i = 0; i < 10; i++)
                {
-                  journalImpl.appendAddRecordTransactional(1l, i, (byte)1, new SimpleEncoding(1, (byte)0), true);
+                  journalImpl.appendAddRecordTransactional(1l, i, (byte)1, new SimpleEncoding(1, (byte)0));
                }
 
                latch.countDown();
@@ -147,7 +147,7 @@ public class JournalAsyncTest extends UnitTestCase
             {
                for (int i = 0; i < 10; i++)
                {
-                  journalImpl.appendAddRecordTransactional(1l, i, (byte)1, new SimpleEncoding(1, (byte)0), true);
+                  journalImpl.appendAddRecordTransactional(1l, i, (byte)1, new SimpleEncoding(1, (byte)0));
                }
 
                journalImpl.appendRollbackRecord(1l, true);
@@ -211,7 +211,7 @@ public class JournalAsyncTest extends UnitTestCase
             {
                for (int i = 0; i < 10; i++)
                {
-                  journalImpl.appendAddRecordTransactional(1l, i, (byte)1, new SimpleEncoding(1, (byte)0), true);
+                  journalImpl.appendAddRecordTransactional(1l, i, (byte)1, new SimpleEncoding(1, (byte)0));
                }
 
                journalImpl.appendCommitRecord(1l, true);
@@ -268,7 +268,7 @@ public class JournalAsyncTest extends UnitTestCase
       factory.setHoldCallbacks(true, null);
       factory.setGenerateErrors(true);
 
-      journalImpl.appendAddRecordTransactional(1l, 1, (byte)1, new SimpleEncoding(1, (byte)0), true);
+      journalImpl.appendAddRecordTransactional(1l, 1, (byte)1, new SimpleEncoding(1, (byte)0));
 
       factory.flushAllCallbacks();
 
@@ -277,7 +277,7 @@ public class JournalAsyncTest extends UnitTestCase
 
       try
       {
-         journalImpl.appendAddRecordTransactional(1l, 2, (byte)1, new SimpleEncoding(1, (byte)0), true);
+         journalImpl.appendAddRecordTransactional(1l, 2, (byte)1, new SimpleEncoding(1, (byte)0));
          fail("Exception expected"); // An exception already happened in one
          // of the elements on this transaction.
          // We can't accept any more elements on
@@ -340,7 +340,7 @@ public class JournalAsyncTest extends UnitTestCase
          {
          }
       }
-      
+
       super.tearDown();
    }
 
@@ -357,7 +357,7 @@ public class JournalAsyncTest extends UnitTestCase
          journalImpl.stop();
       }
 
-      journalImpl = new JournalImpl(journalSize, numberOfMinimalFiles, factory, "tt", "tt", 1000);
+      journalImpl = new JournalImpl(journalSize, numberOfMinimalFiles, 0, 0, factory, "tt", "tt", 1000);
 
       journalImpl.start();
 

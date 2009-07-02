@@ -158,6 +158,10 @@
 				</xsd:element>
 				<xsd:element maxOccurs="1" minOccurs="0" name="journal-min-files" type="xsd:int">
 				</xsd:element>
+				<xsd:element maxOccurs="1" minOccurs="0" name="journal-compact-percentage" type="xsd:int">
+				</xsd:element>
+				<xsd:element maxOccurs="1" minOccurs="0" name="journal-compact-min-files" type="xsd:int">
+				</xsd:element>
 				<xsd:element maxOccurs="1" minOccurs="0" name="journal-max-aio" type="xsd:int">
 				</xsd:element>
 				<xsd:element maxOccurs="1" minOccurs="0" name="perf-blast-pages" type="xsd:int">

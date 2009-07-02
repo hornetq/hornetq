@@ -86,6 +86,8 @@ public class FileConfigurationTest extends ConfigurationImplTest
       assertEquals(true, conf.isJournalSyncNonTransactional());
       assertEquals(12345678, conf.getJournalFileSize());
       assertEquals(100, conf.getJournalMinFiles());      
+      assertEquals(123, conf.getJournalCompactMinFiles());
+      assertEquals(33, conf.getJournalCompactPercentage());
       assertEquals(56546, conf.getJournalMaxAIO());
       assertEquals("largemessagesdir", conf.getLargeMessagesDirectory());
       

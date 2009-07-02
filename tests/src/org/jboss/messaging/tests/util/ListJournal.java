@@ -67,6 +67,8 @@ public class ListJournal
 
          JournalImpl journal = new JournalImpl(fileConf.getJournalFileSize(),
                                                fileConf.getJournalMinFiles(),
+                                               0,
+                                               0,
                                                new NIOSequentialFileFactory(fileConf.getJournalDirectory()),
                                                "jbm-data",
                                                "jbm",

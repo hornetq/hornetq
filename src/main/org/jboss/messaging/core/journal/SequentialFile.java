@@ -42,6 +42,8 @@ public interface SequentialFile
    void open() throws Exception;
    
    boolean isOpen();
+   
+   boolean exists();
 
    /**
     * For certain operations (like loading) we don't need open the file with full maxIO
@@ -79,6 +81,8 @@ public interface SequentialFile
    long position() throws Exception;
 
    void close() throws Exception;
+   
+   void waitForClose() throws Exception;
 
    void sync() throws Exception;
 

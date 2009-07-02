@@ -53,10 +53,6 @@ public abstract class AbstractSequentialFactory implements SequentialFileFactory
    }
 
    
-   public void controlBuffersLifeCycle(boolean value)
-   {
-   }
-   
    public void stop()
    {
    }
@@ -74,6 +70,10 @@ public abstract class AbstractSequentialFactory implements SequentialFileFactory
    }
    
    public void deactivate(SequentialFile file)
+   {
+   }
+   
+   public void testFlush()
    {
    }
 

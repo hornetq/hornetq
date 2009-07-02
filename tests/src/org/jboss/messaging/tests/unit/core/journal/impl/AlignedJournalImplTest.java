@@ -31,7 +31,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.jboss.messaging.core.journal.EncodingSupport;
-import org.jboss.messaging.core.journal.LoadManager;
+import org.jboss.messaging.core.journal.LoaderCallback;
 import org.jboss.messaging.core.journal.PreparedTransactionInfo;
 import org.jboss.messaging.core.journal.RecordInfo;
 import org.jboss.messaging.core.journal.SequentialFile;
@@ -52,7 +52,7 @@ public class AlignedJournalImplTest extends UnitTestCase
 
    // Constants -----------------------------------------------------
 
-   private static final LoadManager dummyLoader = new LoadManager()
+   private static final LoaderCallback dummyLoader = new LoaderCallback()
    {
 
       public void addPreparedTransaction(PreparedTransactionInfo preparedTransaction)
@@ -146,7 +146,7 @@ public class AlignedJournalImplTest extends UnitTestCase
 
       try
       {
-         journalImpl = new JournalImpl(2000, 2, factory, "tt", "tt", 1000);
+         journalImpl = new JournalImpl(2000, 2, 0, 0, factory, "tt", "tt", 1000);
          fail("Supposed to throw an exception");
       }
       catch (Exception ignored)
@@ -159,7 +159,7 @@ public class AlignedJournalImplTest extends UnitTestCase
    {
       final int JOURNAL_SIZE = 1060;
 
-      setupJournal(JOURNAL_SIZE, 10);
+      setupAndLoadJournal(JOURNAL_SIZE, 10);
 
       journalImpl.appendAddRecord(13, (byte)14, new SimpleEncoding(1, (byte)15), false);
 
@@ -167,7 +167,7 @@ public class AlignedJournalImplTest extends UnitTestCase
 
       journalImpl.checkAndReclaimFiles();
 
-      setupJournal(JOURNAL_SIZE, 10);
+      setupAndLoadJournal(JOURNAL_SIZE, 10);
 
       assertEquals(1, records.size());
 
@@ -186,7 +186,7 @@ public class AlignedJournalImplTest extends UnitTestCase
 
       final int JOURNAL_SIZE = 1060;
 
-      setupJournal(JOURNAL_SIZE, 10);
+      setupAndLoadJournal(JOURNAL_SIZE, 10);
 
       assertEquals(0, records.size());
       assertEquals(0, transactions.size());
@@ -207,7 +207,7 @@ public class AlignedJournalImplTest extends UnitTestCase
          journalImpl.appendAddRecord(i * 100l, (byte)i, support, false);
       }
 
-      setupJournal(JOURNAL_SIZE, 1024);
+      setupAndLoadJournal(JOURNAL_SIZE, 1024);
 
       assertEquals(50, records.size());
 
@@ -236,7 +236,7 @@ public class AlignedJournalImplTest extends UnitTestCase
          journalImpl.appendUpdateRecord(i * 100l, (byte)i, bytes, false);
       }
 
-      setupJournal(JOURNAL_SIZE, 1024);
+      setupAndLoadJournal(JOURNAL_SIZE, 1024);
 
       i = 0;
       for (RecordInfo recordItem : records)
@@ -275,7 +275,7 @@ public class AlignedJournalImplTest extends UnitTestCase
    {
       final int JOURNAL_SIZE = 10000;
 
-      setupJournal(JOURNAL_SIZE, 100);
+      setupAndLoadJournal(JOURNAL_SIZE, 100);
 
       journalImpl.setAutoReclaim(false);
 
@@ -309,7 +309,7 @@ public class AlignedJournalImplTest extends UnitTestCase
 
       journalImpl.debugWait();
 
-      setupJournal(JOURNAL_SIZE, 100);
+      setupAndLoadJournal(JOURNAL_SIZE, 100);
 
       assertEquals(10, records.size());
 
@@ -321,7 +321,7 @@ public class AlignedJournalImplTest extends UnitTestCase
    {
       final int JOURNAL_SIZE = 10000;
 
-      setupJournal(JOURNAL_SIZE, 1);
+      setupAndLoadJournal(JOURNAL_SIZE, 1);
 
       journalImpl.setAutoReclaim(false);
 
@@ -359,7 +359,7 @@ public class AlignedJournalImplTest extends UnitTestCase
 
       assertEquals(3, factory.listFiles("tt").size());
 
-      setupJournal(JOURNAL_SIZE, 1);
+      setupAndLoadJournal(JOURNAL_SIZE, 1);
 
       assertEquals(1, records.size());
 
@@ -385,14 +385,14 @@ public class AlignedJournalImplTest extends UnitTestCase
    {
       final int JOURNAL_SIZE = 2000;
 
-      setupJournal(JOURNAL_SIZE, 100);
+      setupAndLoadJournal(JOURNAL_SIZE, 100);
 
       assertEquals(0, records.size());
       assertEquals(0, transactions.size());
 
-      journalImpl.appendAddRecordTransactional(1, 1, (byte)1, new SimpleEncoding(1, (byte)1), false);
+      journalImpl.appendAddRecordTransactional(1, 1, (byte)1, new SimpleEncoding(1, (byte)1));
 
-      setupJournal(JOURNAL_SIZE, 100);
+      setupAndLoadJournal(JOURNAL_SIZE, 100);
 
       assertEquals(0, records.size());
       assertEquals(0, transactions.size());
@@ -409,7 +409,7 @@ public class AlignedJournalImplTest extends UnitTestCase
          log.warn(e);
       }
 
-      setupJournal(JOURNAL_SIZE, 100);
+      setupAndLoadJournal(JOURNAL_SIZE, 100);
 
       assertEquals(0, records.size());
       assertEquals(0, transactions.size());
@@ -420,7 +420,7 @@ public class AlignedJournalImplTest extends UnitTestCase
    {
       final int JOURNAL_SIZE = 1100;
 
-      setupJournal(JOURNAL_SIZE, 100);
+      setupAndLoadJournal(JOURNAL_SIZE, 100);
 
       journalImpl.setAutoReclaim(false);
 
@@ -429,7 +429,7 @@ public class AlignedJournalImplTest extends UnitTestCase
 
       for (int i = 0; i < 10; i++)
       {
-         journalImpl.appendAddRecordTransactional(77l, 1, (byte)1, new SimpleEncoding(1, (byte)1), false);
+         journalImpl.appendAddRecordTransactional(77l, 1, (byte)1, new SimpleEncoding(1, (byte)1));
          journalImpl.forceMoveNextFile();
       }
 
@@ -437,11 +437,11 @@ public class AlignedJournalImplTest extends UnitTestCase
 
       assertEquals(12, factory.listFiles("tt").size());
 
-      journalImpl.appendAddRecordTransactional(78l, 1, (byte)1, new SimpleEncoding(1, (byte)1), false);
+      journalImpl.appendAddRecordTransactional(78l, 1, (byte)1, new SimpleEncoding(1, (byte)1));
 
       assertEquals(12, factory.listFiles("tt").size());
 
-      setupJournal(JOURNAL_SIZE, 100);
+      setupAndLoadJournal(JOURNAL_SIZE, 100);
 
       assertEquals(0, records.size());
       assertEquals(0, transactions.size());
@@ -458,7 +458,7 @@ public class AlignedJournalImplTest extends UnitTestCase
          log.debug("Expected exception " + e, e);
       }
 
-      setupJournal(JOURNAL_SIZE, 100);
+      setupAndLoadJournal(JOURNAL_SIZE, 100);
 
       assertEquals(0, records.size());
       assertEquals(0, transactions.size());
@@ -471,14 +471,14 @@ public class AlignedJournalImplTest extends UnitTestCase
    {
       final int JOURNAL_SIZE = 2000;
 
-      setupJournal(JOURNAL_SIZE, 100);
+      setupAndLoadJournal(JOURNAL_SIZE, 100);
 
       assertEquals(0, records.size());
       assertEquals(0, transactions.size());
 
       for (int i = 0; i < 10; i++)
       {
-         journalImpl.appendAddRecordTransactional(1, i, (byte)1, new SimpleEncoding(1, (byte)1), false);
+         journalImpl.appendAddRecordTransactional(1, i, (byte)1, new SimpleEncoding(1, (byte)1));
          journalImpl.forceMoveNextFile();
       }
 
@@ -488,7 +488,7 @@ public class AlignedJournalImplTest extends UnitTestCase
 
       assertEquals(12, factory.listFiles("tt").size());
 
-      setupJournal(JOURNAL_SIZE, 100);
+      setupAndLoadJournal(JOURNAL_SIZE, 100);
 
       assertEquals(10, records.size());
       assertEquals(0, transactions.size());
@@ -501,7 +501,7 @@ public class AlignedJournalImplTest extends UnitTestCase
 
       for (int i = 0; i < 10; i++)
       {
-         journalImpl.appendDeleteRecordTransactional(2l, i, false);
+         journalImpl.appendDeleteRecordTransactional(2l, i);
          journalImpl.forceMoveNextFile();
       }
 
@@ -517,7 +517,7 @@ public class AlignedJournalImplTest extends UnitTestCase
 
       assertEquals(1, journalImpl.getDataFilesCount());
 
-      setupJournal(JOURNAL_SIZE, 100);
+      setupAndLoadJournal(JOURNAL_SIZE, 100);
 
       assertEquals(1, journalImpl.getDataFilesCount());
 
@@ -528,7 +528,7 @@ public class AlignedJournalImplTest extends UnitTestCase
    {
       final int JOURNAL_SIZE = 2000;
 
-      setupJournal(JOURNAL_SIZE, 100);
+      setupAndLoadJournal(JOURNAL_SIZE, 100);
 
       assertEquals(0, records.size());
       assertEquals(0, transactions.size());
@@ -536,13 +536,13 @@ public class AlignedJournalImplTest extends UnitTestCase
       journalImpl.appendAddRecordTransactional(1l,
                                                2l,
                                                (byte)3,
-                                               new SimpleEncoding(1900 - JournalImpl.SIZE_ADD_RECORD_TX, (byte)4), false);
+                                               new SimpleEncoding(1900 - JournalImpl.SIZE_ADD_RECORD_TX, (byte)4));
 
       journalImpl.appendCommitRecord(1l, false);
 
       journalImpl.debugWait();
 
-      setupJournal(JOURNAL_SIZE, 100);
+      setupAndLoadJournal(JOURNAL_SIZE, 100);
 
       assertEquals(1, records.size());
 
@@ -552,22 +552,21 @@ public class AlignedJournalImplTest extends UnitTestCase
    {
       final int JOURNAL_SIZE = 2000;
 
-      setupJournal(JOURNAL_SIZE, 100);
+      setupAndLoadJournal(JOURNAL_SIZE, 100);
 
       assertEquals(2, factory.listFiles("tt").size());
 
       assertEquals(0, records.size());
       assertEquals(0, transactions.size());
 
-      for (int i = 0; i < 20; i++)
+      for (int i = 0; i < 2; i++)
       {
-         journalImpl.appendAddRecordTransactional(1l, i, (byte)0, new SimpleEncoding(1, (byte)15), false);
-         journalImpl.forceMoveNextFile();
+         journalImpl.appendAddRecordTransactional(1l, i, (byte)0, new SimpleEncoding(1, (byte)15));
       }
 
-      journalImpl.forceMoveNextFile();
-
       journalImpl.appendCommitRecord(1l, false);
+
+      System.out.println("Files = " + factory.listFiles("tt"));
 
       SequentialFile file = factory.createSequentialFile("tt-1.tt", 1);
 
@@ -601,7 +600,7 @@ public class AlignedJournalImplTest extends UnitTestCase
 
       file.close();
 
-      setupJournal(JOURNAL_SIZE, 100);
+      setupAndLoadJournal(JOURNAL_SIZE, 100);
 
       assertEquals(0, records.size());
 
@@ -615,9 +614,9 @@ public class AlignedJournalImplTest extends UnitTestCase
 
    public void testPartiallyBrokenFile() throws Exception
    {
-      final int JOURNAL_SIZE = 2000;
+      final int JOURNAL_SIZE = 20000;
 
-      setupJournal(JOURNAL_SIZE, 100);
+      setupAndLoadJournal(JOURNAL_SIZE, 100);
 
       assertEquals(2, factory.listFiles("tt").size());
 
@@ -626,12 +625,9 @@ public class AlignedJournalImplTest extends UnitTestCase
 
       for (int i = 0; i < 20; i++)
       {
-         journalImpl.appendAddRecordTransactional(1l, i, (byte)0, new SimpleEncoding(1, (byte)15), false);
-         journalImpl.appendAddRecordTransactional(2l, i + 20l, (byte)0, new SimpleEncoding(1, (byte)15), false);
-         journalImpl.forceMoveNextFile();
+         journalImpl.appendAddRecordTransactional(1l, i, (byte)0, new SimpleEncoding(1, (byte)15));
+         journalImpl.appendAddRecordTransactional(2l, i + 20l, (byte)0, new SimpleEncoding(1, (byte)15));
       }
-
-      journalImpl.forceMoveNextFile();
 
       journalImpl.appendCommitRecord(1l, false);
 
@@ -669,15 +665,11 @@ public class AlignedJournalImplTest extends UnitTestCase
 
       file.close();
 
-      setupJournal(JOURNAL_SIZE, 100);
+      setupAndLoadJournal(JOURNAL_SIZE, 100);
 
       assertEquals(20, records.size());
 
       journalImpl.checkAndReclaimFiles();
-
-      assertEquals(20, journalImpl.getDataFilesCount());
-
-      assertEquals(22, factory.listFiles("tt").size());
 
    }
 
@@ -685,11 +677,11 @@ public class AlignedJournalImplTest extends UnitTestCase
    {
       final int JOURNAL_SIZE = 2000;
 
-      setupJournal(JOURNAL_SIZE, 100, 10);
+      setupAndLoadJournal(JOURNAL_SIZE, 100, 10);
 
       assertEquals(10, factory.listFiles("tt").size());
 
-      setupJournal(JOURNAL_SIZE, 100, 2);
+      setupAndLoadJournal(JOURNAL_SIZE, 100, 2);
 
       assertEquals(10, factory.listFiles("tt").size());
 
@@ -699,7 +691,7 @@ public class AlignedJournalImplTest extends UnitTestCase
          journalImpl.forceMoveNextFile();
       }
 
-      setupJournal(JOURNAL_SIZE, 100, 2);
+      setupAndLoadJournal(JOURNAL_SIZE, 100, 2);
 
       assertEquals(10, records.size());
 
@@ -714,7 +706,7 @@ public class AlignedJournalImplTest extends UnitTestCase
 
       journalImpl.checkAndReclaimFiles();
 
-      setupJournal(JOURNAL_SIZE, 100, 2);
+      setupAndLoadJournal(JOURNAL_SIZE, 100, 2);
 
       assertEquals(0, records.size());
 
@@ -725,7 +717,7 @@ public class AlignedJournalImplTest extends UnitTestCase
    {
       final int JOURNAL_SIZE = 2000;
 
-      setupJournal(JOURNAL_SIZE, 100);
+      setupAndLoadJournal(JOURNAL_SIZE, 100);
 
       assertEquals(2, factory.listFiles("tt").size());
 
@@ -734,17 +726,13 @@ public class AlignedJournalImplTest extends UnitTestCase
 
       for (int i = 0; i < 10; i++)
       {
-         journalImpl.appendAddRecordTransactional(1l, i, (byte)0, new SimpleEncoding(1, (byte)15), false);
-         journalImpl.forceMoveNextFile();
+         journalImpl.appendAddRecordTransactional(1l, i, (byte)0, new SimpleEncoding(1, (byte)15));
       }
 
       for (int i = 10; i < 20; i++)
       {
-         journalImpl.appendAddRecordTransactional(1l, i, (byte)0, new SimpleEncoding(1, (byte)15), false);
-         journalImpl.forceMoveNextFile();
+         journalImpl.appendAddRecordTransactional(1l, i, (byte)0, new SimpleEncoding(1, (byte)15));
       }
-
-      journalImpl.forceMoveNextFile();
 
       journalImpl.appendCommitRecord(1l, false);
 
@@ -773,7 +761,7 @@ public class AlignedJournalImplTest extends UnitTestCase
 
       file.close();
 
-      setupJournal(JOURNAL_SIZE, 100);
+      setupAndLoadJournal(JOURNAL_SIZE, 100);
 
       assertEquals(0, records.size());
 
@@ -789,14 +777,14 @@ public class AlignedJournalImplTest extends UnitTestCase
    {
       final int JOURNAL_SIZE = 20000;
 
-      setupJournal(JOURNAL_SIZE, 100);
+      setupAndLoadJournal(JOURNAL_SIZE, 100);
 
       assertEquals(0, records.size());
       assertEquals(0, transactions.size());
 
       for (int i = 0; i < 10; i++)
       {
-         journalImpl.appendAddRecordTransactional(1l, i, (byte)0, new SimpleEncoding(1, (byte)15), false);
+         journalImpl.appendAddRecordTransactional(1l, i, (byte)0, new SimpleEncoding(1, (byte)15));
       }
 
       journalImpl.forceMoveNextFile();
@@ -807,7 +795,7 @@ public class AlignedJournalImplTest extends UnitTestCase
 
       for (int i = 0; i < 10; i++)
       {
-         journalImpl.appendDeleteRecordTransactional(2l, i, false);
+         journalImpl.appendDeleteRecordTransactional(2l, i);
       }
 
       journalImpl.appendCommitRecord(2l, false);
@@ -821,7 +809,7 @@ public class AlignedJournalImplTest extends UnitTestCase
       journalImpl.forceMoveNextFile();
       journalImpl.checkAndReclaimFiles();
 
-      setupJournal(JOURNAL_SIZE, 100);
+      setupAndLoadJournal(JOURNAL_SIZE, 100);
 
       assertEquals(1, records.size());
    }
@@ -830,7 +818,7 @@ public class AlignedJournalImplTest extends UnitTestCase
    {
       final int JOURNAL_SIZE = 20000;
 
-      setupJournal(JOURNAL_SIZE, 100);
+      setupAndLoadJournal(JOURNAL_SIZE, 100);
 
       assertEquals(0, records.size());
       assertEquals(0, transactions.size());
@@ -841,7 +829,7 @@ public class AlignedJournalImplTest extends UnitTestCase
          {
             journalImpl.forceMoveNextFile();
          }
-         journalImpl.appendAddRecordTransactional(1l, i, (byte)0, new SimpleEncoding(1, (byte)15), false);
+         journalImpl.appendAddRecordTransactional(1l, i, (byte)0, new SimpleEncoding(1, (byte)15));
       }
 
       journalImpl.appendCommitRecord(1l, false);
@@ -852,14 +840,14 @@ public class AlignedJournalImplTest extends UnitTestCase
          {
             journalImpl.forceMoveNextFile();
          }
-         journalImpl.appendDeleteRecordTransactional(2l, i, false);
+         journalImpl.appendDeleteRecordTransactional(2l, i);
       }
 
       journalImpl.appendCommitRecord(2l, false);
       journalImpl.forceMoveNextFile();
       journalImpl.checkAndReclaimFiles();
 
-      setupJournal(JOURNAL_SIZE, 100);
+      setupAndLoadJournal(JOURNAL_SIZE, 100);
 
       assertEquals(40, records.size());
 
@@ -869,7 +857,7 @@ public class AlignedJournalImplTest extends UnitTestCase
    {
       final int JOURNAL_SIZE = 3 * 1024;
 
-      setupJournal(JOURNAL_SIZE, 1);
+      setupAndLoadJournal(JOURNAL_SIZE, 1);
 
       assertEquals(0, records.size());
       assertEquals(0, transactions.size());
@@ -878,13 +866,13 @@ public class AlignedJournalImplTest extends UnitTestCase
 
       journalImpl.appendAddRecord(10l, (byte)0, new SimpleEncoding(10, (byte)0), false);
 
-      journalImpl.appendDeleteRecordTransactional(1l, 10l, new SimpleEncoding(100, (byte)'j'), false);
+      journalImpl.appendDeleteRecordTransactional(1l, 10l, new SimpleEncoding(100, (byte)'j'));
 
       journalImpl.appendPrepareRecord(1, xid, false);
 
       journalImpl.debugWait();
 
-      setupJournal(JOURNAL_SIZE, 1);
+      setupAndLoadJournal(JOURNAL_SIZE, 1);
 
       assertEquals(1, transactions.size());
       assertEquals(1, transactions.get(0).recordsToDelete.size());
@@ -911,7 +899,7 @@ public class AlignedJournalImplTest extends UnitTestCase
 
       journalImpl.debugWait();
 
-      setupJournal(JOURNAL_SIZE, 1);
+      setupAndLoadJournal(JOURNAL_SIZE, 1);
 
       assertEquals(0, transactions.size());
       assertEquals(0, records.size());
@@ -922,14 +910,14 @@ public class AlignedJournalImplTest extends UnitTestCase
    {
       final int JOURNAL_SIZE = 3 * 1024;
 
-      setupJournal(JOURNAL_SIZE, 1);
+      setupAndLoadJournal(JOURNAL_SIZE, 1);
 
       assertEquals(0, records.size());
       assertEquals(0, transactions.size());
 
       for (int i = 0; i < 10; i++)
       {
-         journalImpl.appendAddRecordTransactional(1, i, (byte)1, new SimpleEncoding(50, (byte)1), false);
+         journalImpl.appendAddRecordTransactional(1, i, (byte)1, new SimpleEncoding(50, (byte)1));
          journalImpl.forceMoveNextFile();
       }
 
@@ -941,7 +929,7 @@ public class AlignedJournalImplTest extends UnitTestCase
 
       assertEquals(12, factory.listFiles("tt").size());
 
-      setupJournal(JOURNAL_SIZE, 1024);
+      setupAndLoadJournal(JOURNAL_SIZE, 1024);
 
       assertEquals(0, records.size());
       assertEquals(1, transactions.size());
@@ -960,7 +948,7 @@ public class AlignedJournalImplTest extends UnitTestCase
 
       journalImpl.appendCommitRecord(1l, false);
 
-      setupJournal(JOURNAL_SIZE, 1024);
+      setupAndLoadJournal(JOURNAL_SIZE, 1024);
 
       assertEquals(10, records.size());
 
@@ -968,14 +956,14 @@ public class AlignedJournalImplTest extends UnitTestCase
 
       for (int i = 0; i < 10; i++)
       {
-         journalImpl.appendDeleteRecordTransactional(2l, i, false);
+         journalImpl.appendDeleteRecordTransactional(2l, i);
       }
 
       SimpleEncoding xid2 = new SimpleEncoding(15, (byte)2);
 
       journalImpl.appendPrepareRecord(2l, xid2, false);
 
-      setupJournal(JOURNAL_SIZE, 1);
+      setupAndLoadJournal(JOURNAL_SIZE, 1);
 
       assertEquals(1, transactions.size());
 
@@ -992,7 +980,7 @@ public class AlignedJournalImplTest extends UnitTestCase
 
       journalImpl.appendCommitRecord(2l, false);
 
-      setupJournal(JOURNAL_SIZE, 1);
+      setupAndLoadJournal(JOURNAL_SIZE, 1);
 
       assertEquals(0, records.size());
       assertEquals(0, transactions.size());
@@ -1011,20 +999,19 @@ public class AlignedJournalImplTest extends UnitTestCase
    {
       final int JOURNAL_SIZE = 3000;
 
-      setupJournal(JOURNAL_SIZE, 100);
+      setupAndLoadJournal(JOURNAL_SIZE, 100);
 
       assertEquals(0, records.size());
       assertEquals(0, transactions.size());
 
       for (int i = 0; i < 10; i++)
       {
-         journalImpl.appendAddRecordTransactional(1, i, (byte)1, new SimpleEncoding(50, (byte)1), false);
-         journalImpl.forceMoveNextFile();
+         journalImpl.appendAddRecordTransactional(1, i, (byte)1, new SimpleEncoding(50, (byte)1));
       }
 
       journalImpl.appendPrepareRecord(1l, new SimpleEncoding(13, (byte)0), false);
 
-      setupJournal(JOURNAL_SIZE, 100);
+      setupAndLoadJournal(JOURNAL_SIZE, 100);
       assertEquals(0, records.size());
       assertEquals(1, transactions.size());
 
@@ -1053,7 +1040,7 @@ public class AlignedJournalImplTest extends UnitTestCase
 
       file.close();
 
-      setupJournal(JOURNAL_SIZE, 100);
+      setupAndLoadJournal(JOURNAL_SIZE, 100);
 
       assertEquals(0, records.size());
       assertEquals(0, transactions.size());
@@ -1063,11 +1050,11 @@ public class AlignedJournalImplTest extends UnitTestCase
    {
       final int JOURNAL_SIZE = 2000;
 
-      setupJournal(JOURNAL_SIZE, 1);
+      setupAndLoadJournal(JOURNAL_SIZE, 1);
 
       for (int i = 0; i < 10; i++)
       {
-         journalImpl.appendAddRecordTransactional(1l, i, (byte)0, new SimpleEncoding(1, (byte)0), false);
+         journalImpl.appendAddRecordTransactional(1l, i, (byte)0, new SimpleEncoding(1, (byte)0));
          journalImpl.forceMoveNextFile();
       }
 
@@ -1079,7 +1066,7 @@ public class AlignedJournalImplTest extends UnitTestCase
 
       assertEquals(0, journalImpl.getDataFilesCount());
 
-      setupJournal(JOURNAL_SIZE, 1);
+      setupAndLoadJournal(JOURNAL_SIZE, 1);
 
       assertEquals(0, journalImpl.getDataFilesCount());
 
@@ -1092,20 +1079,20 @@ public class AlignedJournalImplTest extends UnitTestCase
    {
       final int JOURNAL_SIZE = 512 * 4;
 
-      setupJournal(JOURNAL_SIZE, 512);
+      setupAndLoadJournal(JOURNAL_SIZE, 512);
 
       for (int i = 0; i < 10; i++)
       {
-         journalImpl.appendAddRecordTransactional(1l, i, (byte)0, new SimpleEncoding(1, (byte)0), false);
+         journalImpl.appendAddRecordTransactional(1l, i, (byte)0, new SimpleEncoding(1, (byte)0));
       }
 
       journalImpl.appendCommitRecord(1l, false);
 
-      setupJournal(JOURNAL_SIZE, 100);
+      setupAndLoadJournal(JOURNAL_SIZE, 100);
 
       assertEquals(10, records.size());
 
-      setupJournal(JOURNAL_SIZE, 1);
+      setupAndLoadJournal(JOURNAL_SIZE, 1);
 
       assertEquals(10, records.size());
    }
@@ -1115,20 +1102,20 @@ public class AlignedJournalImplTest extends UnitTestCase
    {
       final int JOURNAL_SIZE = 512 * 4;
 
-      setupJournal(JOURNAL_SIZE, 1);
+      setupAndLoadJournal(JOURNAL_SIZE, 1);
 
       for (int i = 0; i < 10; i++)
       {
-         journalImpl.appendAddRecordTransactional(1l, i, (byte)0, new SimpleEncoding(1, (byte)0), false);
+         journalImpl.appendAddRecordTransactional(1l, i, (byte)0, new SimpleEncoding(1, (byte)0));
       }
 
       journalImpl.appendCommitRecord(1l, false);
 
-      setupJournal(JOURNAL_SIZE, 100);
+      setupAndLoadJournal(JOURNAL_SIZE, 100);
 
       assertEquals(10, records.size());
 
-      setupJournal(JOURNAL_SIZE, 512);
+      setupAndLoadJournal(JOURNAL_SIZE, 512);
 
       assertEquals(10, records.size());
    }
@@ -1137,7 +1124,7 @@ public class AlignedJournalImplTest extends UnitTestCase
    {
       final int JOURNAL_SIZE = 512 * 4;
 
-      setupJournal(JOURNAL_SIZE, 1);
+      setupAndLoadJournal(JOURNAL_SIZE, 1);
 
       journalImpl.appendPrepareRecord(2l, new SimpleEncoding(10, (byte)'j'), false);
 
@@ -1145,7 +1132,7 @@ public class AlignedJournalImplTest extends UnitTestCase
 
       journalImpl.appendAddRecord(1l, (byte)0, new SimpleEncoding(10, (byte)'k'), false);
 
-      setupJournal(JOURNAL_SIZE, 1);
+      setupAndLoadJournal(JOURNAL_SIZE, 1);
 
       assertEquals(1, journalImpl.getDataFilesCount());
 
@@ -1153,7 +1140,7 @@ public class AlignedJournalImplTest extends UnitTestCase
 
       journalImpl.forceMoveNextFile();
 
-      setupJournal(JOURNAL_SIZE, 1);
+      setupAndLoadJournal(JOURNAL_SIZE, 1);
 
       assertEquals(1, journalImpl.getDataFilesCount());
 
@@ -1165,7 +1152,7 @@ public class AlignedJournalImplTest extends UnitTestCase
 
       journalImpl.forceMoveNextFile();
 
-      setupJournal(JOURNAL_SIZE, 0);
+      setupAndLoadJournal(JOURNAL_SIZE, 0);
 
       journalImpl.forceMoveNextFile();
       journalImpl.debugWait();
@@ -1180,7 +1167,7 @@ public class AlignedJournalImplTest extends UnitTestCase
    {
       final int JOURNAL_SIZE = 10 * 1024;
 
-      setupJournal(JOURNAL_SIZE, 1);
+      setupAndLoadJournal(JOURNAL_SIZE, 1);
 
       assertEquals(0, records.size());
       assertEquals(0, transactions.size());
@@ -1203,7 +1190,7 @@ public class AlignedJournalImplTest extends UnitTestCase
                latchStart.await();
                for (int i = 0; i < NUMBER_OF_ELEMENTS; i++)
                {
-                  journalImpl.appendAddRecordTransactional(i, i, (byte)1, new SimpleEncoding(50, (byte)1), false);
+                  journalImpl.appendAddRecordTransactional(i, i, (byte)1, new SimpleEncoding(50, (byte)1));
                   journalImpl.appendCommitRecord(i, false);
                   queueDelete.offer(i);
                }
@@ -1268,7 +1255,7 @@ public class AlignedJournalImplTest extends UnitTestCase
    {
 
       SequentialFileFactory factory = new FakeSequentialFileFactory(512, false);
-      JournalImpl impl = new JournalImpl(512 + 512 * 3, 20, factory, "jbm", "jbm", 1000);
+      JournalImpl impl = new JournalImpl(512 + 512 * 3, 20, 0, 0, factory, "jbm", "jbm", 1000);
 
       impl.start();
 
@@ -1281,7 +1268,7 @@ public class AlignedJournalImplTest extends UnitTestCase
 
       impl.stop();
 
-      impl = new JournalImpl(512 + 1024 + 512, 20, factory, "jbm", "jbm", 1000);
+      impl = new JournalImpl(512 + 1024 + 512, 20, 0, 0, factory, "jbm", "jbm", 1000);
       impl.start();
       impl.load(dummyLoader);
 
@@ -1296,7 +1283,7 @@ public class AlignedJournalImplTest extends UnitTestCase
 
       impl.stop();
 
-      impl = new JournalImpl(512 + 1024 + 512, 20, factory, "jbm", "jbm", 1000);
+      impl = new JournalImpl(512 + 1024 + 512, 20, 0, 0, factory, "jbm", "jbm", 1000);
       impl.start();
 
       ArrayList<RecordInfo> info = new ArrayList<RecordInfo>();
@@ -1341,18 +1328,18 @@ public class AlignedJournalImplTest extends UnitTestCase
          {
          }
       }
-      
+
       super.tearDown();
    }
 
    // Private -------------------------------------------------------
 
-   private void setupJournal(final int journalSize, final int alignment) throws Exception
+   private void setupAndLoadJournal(final int journalSize, final int alignment) throws Exception
    {
-      setupJournal(journalSize, alignment, 2);
+      setupAndLoadJournal(journalSize, alignment, 2);
    }
 
-   private void setupJournal(final int journalSize, final int alignment, final int numberOfMinimalFiles) throws Exception
+   private void setupAndLoadJournal(final int journalSize, final int alignment, final int numberOfMinimalFiles) throws Exception
    {
       if (factory == null)
       {
@@ -1364,7 +1351,7 @@ public class AlignedJournalImplTest extends UnitTestCase
          journalImpl.stop();
       }
 
-      journalImpl = new JournalImpl(journalSize, numberOfMinimalFiles, factory, "tt", "tt", 1000);
+      journalImpl = new JournalImpl(journalSize, numberOfMinimalFiles, 0, 0, factory, "tt", "tt", 1000);
 
       journalImpl.start();
 

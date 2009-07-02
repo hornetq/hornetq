@@ -22,6 +22,8 @@
 
 package org.jboss.messaging.core.journal;
 
+import org.jboss.messaging.core.journal.impl.JournalFile;
+
 /**
  * 
  * A TestableJournal
@@ -32,8 +34,6 @@ package org.jboss.messaging.core.journal;
  */
 public interface TestableJournal extends Journal
 {
-   void checkAndReclaimFiles() throws Exception;
-
    int getDataFilesCount();
 
    int getFreeFilesCount();
@@ -50,10 +50,6 @@ public interface TestableJournal extends Journal
 
    int getMinFiles();
 
-  // boolean isSyncTransactional();
-
-  // boolean isSyncNonTransactional();
-
    String getFilePrefix();
 
    String getFileExtension();
@@ -63,14 +59,14 @@ public interface TestableJournal extends Journal
    /** This method could be promoted to {@link Journal} interface when we decide to use the loadManager 
     *  instead of load(List,List)
     */
-   long load(LoadManager reloadManager) throws Exception;
+   long load(LoaderCallback reloadManager) throws Exception;
 
    void forceMoveNextFile() throws Exception;
 
    void setAutoReclaim(boolean autoReclaim);
 
    boolean isAutoReclaim();
-   
+
    
 
 }

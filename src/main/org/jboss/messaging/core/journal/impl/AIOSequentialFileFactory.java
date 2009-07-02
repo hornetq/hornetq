@@ -111,6 +111,11 @@ public class AIOSequentialFileFactory extends AbstractSequentialFactory
       }
    }
 
+   public void testFlush()
+   {
+      timedBuffer.flush();
+   }
+
    public void deactivate(SequentialFile file)
    {
       timedBuffer.flush();
@@ -138,18 +143,6 @@ public class AIOSequentialFileFactory extends AbstractSequentialFactory
    public static boolean isSupported()
    {
       return AsynchronousFileImpl.isLoaded();
-   }
-
-   public void controlBuffersLifeCycle(boolean value)
-   {
-      if (value)
-      {
-         buffersControl.enable();
-      }
-      else
-      {
-         buffersControl.disable();
-      }
    }
 
    public ByteBuffer newBuffer(int size)
@@ -223,22 +216,9 @@ public class AIOSequentialFileFactory extends AbstractSequentialFactory
        * and ready to be reused or GCed */
       private final ConcurrentLinkedQueue<ByteBuffer> reuseBuffersQueue = new ConcurrentLinkedQueue<ByteBuffer>();
 
-      /** During reload we may disable/enable buffer reuse */
-      private boolean enabled = true;
-
       private boolean stopped = false;
 
       final BufferCallback callback = new LocalBufferCallback();
-
-      public void enable()
-      {
-         this.enabled = true;
-      }
-
-      public void disable()
-      {
-         this.enabled = false;
-      }
 
       public ByteBuffer newBuffer(final int size)
       {
@@ -314,26 +294,23 @@ public class AIOSequentialFileFactory extends AbstractSequentialFactory
             synchronized (ReuseBuffersController.this)
             {
 
-               if (enabled)
+               if (stopped)
                {
-                  if (stopped)
+                  releaseBuffer(buffer);
+               }
+               else
+               {
+                  bufferReuseLastTime = System.currentTimeMillis();
+
+                  // If a buffer has any other than the configured bufferSize, the buffer
+                  // will be just sent to GC
+                  if (buffer.capacity() == bufferSize)
                   {
-                     releaseBuffer(buffer);
+                     reuseBuffersQueue.offer(buffer);
                   }
                   else
                   {
-                     bufferReuseLastTime = System.currentTimeMillis();
-
-                     // If a buffer has any other than the configured bufferSize, the buffer
-                     // will be just sent to GC
-                     if (buffer.capacity() == bufferSize)
-                     {
-                        reuseBuffersQueue.offer(buffer);
-                     }
-                     else
-                     {
-                        releaseBuffer(buffer);
-                     }
+                     releaseBuffer(buffer);
                   }
                }
             }

@@ -70,8 +70,10 @@ public class JournalExample
          SequentialFileFactory fileFactory = new AIOSequentialFileFactory("/tmp"); // any dir you want
          // SequentialFileFactory fileFactory = new NIOSequentialFileFactory("/tmp"); // any dir you want
          JournalImpl journalExample = new JournalImpl(10 * 1024 * 1024, // 10M.. we believe that's the usual cilinder
-                                                                        // bufferSize.. not an exact science here
+                                                      // bufferSize.. not an exact science here
                                                       2, // number of files pre-allocated
+                                                      0,
+                                                      0,
                                                       fileFactory, // AIO or NIO
                                                       "exjournal", // file name
                                                       "dat", // extension
@@ -147,7 +149,7 @@ public class JournalExample
                                                                                                            0,
                                                                                                            1,
                                                                                                            2,
-                                                                                                           5 }, true);
+                                                                                                           5 });
          }
 
          // After this is complete, you're sure the records are there

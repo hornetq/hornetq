@@ -35,8 +35,11 @@
    <path id="extra.classpath">
        <path location="server0"/>
    </path>
+
+
+   <property name="file.name" value="perf.properties"/>
    
-   <property name="perf.properties.file.name" value="perf.properties" />
+   <property name="perf.properties.file.name" value="${file.name}" />
 
    <target name="runSender" depends="compile">
       <java classname="org.jboss.core.example.PerfSender" fork="true" resultproperty="example-result">

@@ -46,7 +46,7 @@ public class NIOSequentialFile implements SequentialFile
    private static final Logger log = Logger.getLogger(NIOSequentialFile.class);
 
    private File file;
-   
+
    private long fileSize = 0;
 
    private final String directory;
@@ -54,7 +54,7 @@ public class NIOSequentialFile implements SequentialFile
    private FileChannel channel;
 
    private RandomAccessFile rfile;
-   
+
    private final AtomicLong position = new AtomicLong(0);
 
    public NIOSequentialFile(final String directory, final String fileName)
@@ -63,11 +63,16 @@ public class NIOSequentialFile implements SequentialFile
       file = new File(directory + "/" + fileName);
    }
 
+   public boolean exists()
+   {
+      return file.exists();
+   }
+
    public int getAlignment()
    {
       return 1;
    }
-   
+
    public void flush()
    {
    }
@@ -76,7 +81,7 @@ public class NIOSequentialFile implements SequentialFile
    {
       return position;
    }
-   
+
    public boolean fits(final int size)
    {
       return this.position.get() + size <= fileSize;
@@ -97,7 +102,7 @@ public class NIOSequentialFile implements SequentialFile
       rfile = new RandomAccessFile(file, "rw");
 
       channel = rfile.getChannel();
-      
+
       fileSize = channel.size();
    }
 
@@ -124,11 +129,19 @@ public class NIOSequentialFile implements SequentialFile
       channel.force(false);
 
       channel.position(0);
-      
+
       fileSize = channel.size();
    }
 
-   public void close() throws Exception
+   public synchronized void waitForClose() throws Exception
+   {
+      while (isOpen())
+      {
+         wait();
+      }
+   }
+
+   public synchronized void close() throws Exception
    {
       if (channel != null)
       {
@@ -143,6 +156,8 @@ public class NIOSequentialFile implements SequentialFile
       channel = null;
 
       rfile = null;
+
+      notifyAll();
    }
 
    public void delete() throws Exception
@@ -184,7 +199,6 @@ public class NIOSequentialFile implements SequentialFile
 
    }
 
-   
    public void write(final MessagingBuffer bytes, final boolean sync) throws Exception
    {
       write(ByteBuffer.wrap(bytes.array()), sync);
@@ -202,7 +216,7 @@ public class NIOSequentialFile implements SequentialFile
       channel.write(bytes);
 
       if (sync)
-      {         
+      {
          sync();
       }
    }
@@ -212,9 +226,9 @@ public class NIOSequentialFile implements SequentialFile
       try
       {
          position.addAndGet(bytes.limit());
-         
+
          channel.write(bytes);
-         
+
          if (sync)
          {
             sync();
@@ -234,7 +248,10 @@ public class NIOSequentialFile implements SequentialFile
 
    public void sync() throws Exception
    {
-      channel.force(false);
+      if (channel != null)
+      {
+         channel.force(false);
+      }
    }
 
    public long size() throws Exception
