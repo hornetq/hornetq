@@ -313,7 +313,8 @@ public abstract class JournalImplTestBase extends UnitTestCase
 
       if (tx == null)
       {
-         throw new IllegalStateException("Cannot find tx " + txID);
+         tx = new TransactionHolder();
+         transactions.put(txID, tx);
       }
 
       if (tx.prepared)

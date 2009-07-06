@@ -22,9 +22,11 @@
 
 package org.jboss.messaging.tests.unit.core.journal.impl;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.jboss.messaging.core.journal.EncodingSupport;
+import org.jboss.messaging.core.journal.PreparedTransactionInfo;
 import org.jboss.messaging.core.journal.RecordInfo;
 import org.jboss.messaging.core.journal.impl.JournalImpl;
 import org.jboss.messaging.core.logging.Logger;
@@ -1665,6 +1667,42 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
       assertEquals(1, journal.getIDMapSize());
    }
 
+   public void testEmptyPrepare() throws Exception
+   {
+      setup(2, calculateRecordSize(JournalImpl.SIZE_HEADER, getAlignment()) + calculateRecordSize(recordLength,
+                                                                                                  getAlignment()) +
+               512, true);
+      createJournal();
+      startJournal();
+      load();
+
+      EncodingSupport xid = new SimpleEncoding(10, (byte)0);
+      prepare(1, xid);
+      
+      stopJournal();
+      createJournal();
+      startJournal();
+      loadAndCheck();
+      
+      commit(1);
+      
+      xid = new SimpleEncoding(10, (byte)1);
+      prepare(2, xid);
+      
+      stopJournal();
+      createJournal();
+      startJournal();
+      loadAndCheck();
+
+      rollback(2);
+      
+      stopJournal();
+      createJournal();
+      startJournal();
+      loadAndCheck();
+
+   }
+   
    public void testPrepareNoReclaim() throws Exception
    {
       setup(2, calculateRecordSize(JournalImpl.SIZE_HEADER, getAlignment()) + calculateRecordSize(recordLength,
