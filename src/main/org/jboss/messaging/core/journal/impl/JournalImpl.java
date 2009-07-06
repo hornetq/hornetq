@@ -2839,9 +2839,12 @@ public class JournalImpl implements TestableJournal
             compactingLock.readLock().lock();
             try
             {
-               file.getFile().close();
                dataFiles.add(file);
                pendingCloseFiles.remove(file);
+               if (file.getFile().isOpen())
+               {
+                  file.getFile().close();
+               }
             }
             catch (Exception e)
             {
