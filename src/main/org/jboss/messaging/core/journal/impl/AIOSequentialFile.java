@@ -361,12 +361,10 @@ public class AIOSequentialFile implements SequentialFile
       if (timedBuffer != null)
       {
          // sanity check.. it shouldn't happen
-         throw new IllegalStateException("Illegal buffered usage. Can't use ByteBuffer write while buffer SequentialFile");
+         log.warn("Illegal buffered usage. Can't use ByteBuffer write while buffer SequentialFile");
       }
-      else
-      {
-         doWrite(bytes, callback);
-      }
+      
+      doWrite(bytes, callback);
    }
 
    public void write(final ByteBuffer bytes, final boolean sync) throws Exception

@@ -613,14 +613,7 @@ public class NIOJournalCompactTest extends JournalImplTestBase
          journal.forceMoveNextFile();
       }
 
-      System.out.println("DataFiles = " + journal.getDataFilesCount());
-
       JournalFile files[] = journal.getDataFiles();
-
-      for (JournalFile file : files)
-      {
-         System.out.println("Size: " + file.getLiveSize());
-      }
 
       stopJournal();
       createJournal();
@@ -629,16 +622,9 @@ public class NIOJournalCompactTest extends JournalImplTestBase
 
       journal.forceMoveNextFile();
 
-      System.out.println("DataFiles = " + journal.getDataFilesCount());
-
       JournalFile files2[] = journal.getDataFiles();
 
       assertEquals(files.length, files2.length);
-
-      for (JournalFile file : files2)
-      {
-         System.out.println("Size: " + file.getLiveSize());
-      }
 
       for (int i = 0; i < files.length; i++)
       {
@@ -654,11 +640,6 @@ public class NIOJournalCompactTest extends JournalImplTestBase
       journal.forceMoveNextFile();
 
       JournalFile files3[] = journal.getDataFiles();
-
-      for (JournalFile file : files3)
-      {
-         System.out.println("Size: " + file.getLiveSize());
-      }
 
       for (JournalFile file : files3)
       {

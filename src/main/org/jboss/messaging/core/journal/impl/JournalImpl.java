@@ -195,6 +195,8 @@ public class JournalImpl implements TestableJournal
 
    private final LinkedBlockingDeque<JournalFile> dataFiles = new LinkedBlockingDeque<JournalFile>();
 
+   private final LinkedBlockingDeque<JournalFile> pendingCloseFiles = new LinkedBlockingDeque<JournalFile>();
+
    private final Queue<JournalFile> freeFiles = new ConcurrentLinkedQueue<JournalFile>();
 
    private final BlockingQueue<JournalFile> openedFiles = new LinkedBlockingQueue<JournalFile>();
@@ -1405,6 +1407,14 @@ public class JournalImpl implements TestableJournal
 
             dataFilesToProcess.addAll(dataFiles);
 
+            for (JournalFile file : pendingCloseFiles)
+            {
+               file.getFile().close();
+            }
+
+            dataFilesToProcess.addAll(pendingCloseFiles);
+            pendingCloseFiles.clear();
+
             dataFiles.clear();
 
             compactor = new JournalCompactor(fileFactory, this, records.keySet(), dataFilesToProcess.get(0).getFileID());
@@ -1967,132 +1977,6 @@ public class JournalImpl implements TestableJournal
       return maxID;
    }
 
-   protected void deleteControlFile(final SequentialFile controlFile) throws Exception
-   {
-      controlFile.delete();
-   }
-
-   /** being protected as testcases can override this method */
-   protected void renameFiles(final List<JournalFile> oldFiles, final List<JournalFile> newFiles) throws Exception
-   {
-      for (JournalFile file : oldFiles)
-      {
-         dataFiles.remove(file);
-         freeFiles.add(reinitializeFile(file));
-      }
-
-      for (JournalFile file : newFiles)
-      {
-         String newName = file.getFile().getFileName();
-         newName = newName.substring(0, newName.lastIndexOf(".cmp"));
-         file.getFile().renameTo(newName);
-      }
-
-   }
-
-   /** This is an interception point for testcases, when the compacted files are written, before replacing the data structures */
-   protected void onCompactDone()
-   {
-   }
-
-   /**
-    * @throws Exception
-    */
-   protected SequentialFile createControlFile(final List<JournalFile> files, final List<JournalFile> newFiles) throws Exception
-   {
-      return JournalCompactor.writeControlFile(fileFactory, files, newFiles);
-   }
-
-   // TestableJournal implementation
-   // --------------------------------------------------------------
-
-   public void setAutoReclaim(final boolean autoReclaim)
-   {
-      this.autoReclaim = autoReclaim;
-   }
-
-   public boolean isAutoReclaim()
-   {
-      return autoReclaim;
-   }
-
-   public String debug() throws Exception
-   {
-      checkReclaimStatus();
-
-      StringBuilder builder = new StringBuilder();
-
-      for (JournalFile file : dataFiles)
-      {
-         builder.append("DataFile:" + file +
-                        " posCounter = " +
-                        file.getPosCount() +
-                        " reclaimStatus = " +
-                        file.isCanReclaim() +
-                        " live size = " +
-                        file.getLiveSize() +
-                        "\n");
-         if (file instanceof JournalFileImpl)
-         {
-            builder.append(((JournalFileImpl)file).debug());
-
-         }
-      }
-
-      for (JournalFile file : freeFiles)
-      {
-         builder.append("FreeFile:" + file + "\n");
-      }
-
-      if (currentFile != null)
-      {
-         builder.append("CurrentFile:" + currentFile + " posCounter = " + currentFile.getPosCount() + "\n");
-
-         if (currentFile instanceof JournalFileImpl)
-         {
-            builder.append(((JournalFileImpl)currentFile).debug());
-         }
-      }
-      else
-      {
-         builder.append("CurrentFile: No current file at this point!");
-      }
-
-      builder.append("#Opened Files:" + openedFiles.size());
-
-      return builder.toString();
-   }
-
-   /** Method for use on testcases.
-    *  It will call waitComplete on every transaction, so any assertions on the file system will be correct after this */
-   public void debugWait() throws Exception
-   {
-      fileFactory.testFlush();
-
-      for (JournalTransaction tx : transactions.values())
-      {
-         tx.waitCallbacks();
-      }
-
-      if (filesExecutor != null && !filesExecutor.isShutdown())
-      {
-         // Send something to the closingExecutor, just to make sure we went
-         // until its end
-         final CountDownLatch latch = new CountDownLatch(1);
-
-         filesExecutor.execute(new Runnable()
-         {
-            public void run()
-            {
-               latch.countDown();
-            }
-         });
-
-         latch.await();
-      }
-
-   }
-
    public void checkAndReclaimFiles() throws Exception
    {
       // We can't start compacting while compacting is working
@@ -2198,6 +2082,96 @@ public class JournalImpl implements TestableJournal
 
          t.start();
       }
+   }
+
+   // TestableJournal implementation
+   // --------------------------------------------------------------
+
+   public void setAutoReclaim(final boolean autoReclaim)
+   {
+      this.autoReclaim = autoReclaim;
+   }
+
+   public boolean isAutoReclaim()
+   {
+      return autoReclaim;
+   }
+
+   public String debug() throws Exception
+   {
+      checkReclaimStatus();
+
+      StringBuilder builder = new StringBuilder();
+
+      for (JournalFile file : dataFiles)
+      {
+         builder.append("DataFile:" + file +
+                        " posCounter = " +
+                        file.getPosCount() +
+                        " reclaimStatus = " +
+                        file.isCanReclaim() +
+                        " live size = " +
+                        file.getLiveSize() +
+                        "\n");
+         if (file instanceof JournalFileImpl)
+         {
+            builder.append(((JournalFileImpl)file).debug());
+
+         }
+      }
+
+      for (JournalFile file : freeFiles)
+      {
+         builder.append("FreeFile:" + file + "\n");
+      }
+
+      if (currentFile != null)
+      {
+         builder.append("CurrentFile:" + currentFile + " posCounter = " + currentFile.getPosCount() + "\n");
+
+         if (currentFile instanceof JournalFileImpl)
+         {
+            builder.append(((JournalFileImpl)currentFile).debug());
+         }
+      }
+      else
+      {
+         builder.append("CurrentFile: No current file at this point!");
+      }
+
+      builder.append("#Opened Files:" + openedFiles.size());
+
+      return builder.toString();
+   }
+
+   /** Method for use on testcases.
+    *  It will call waitComplete on every transaction, so any assertions on the file system will be correct after this */
+   public void debugWait() throws Exception
+   {
+      fileFactory.testFlush();
+
+      for (JournalTransaction tx : transactions.values())
+      {
+         tx.waitCallbacks();
+      }
+
+      if (filesExecutor != null && !filesExecutor.isShutdown())
+      {
+         // Send something to the closingExecutor, just to make sure we went
+         // until its end
+         final CountDownLatch latch = new CountDownLatch(1);
+
+         filesExecutor.execute(new Runnable()
+         {
+            public void run()
+            {
+               latch.countDown();
+            }
+         });
+
+         latch.await();
+      }
+
    }
 
    public int getDataFilesCount()
@@ -2354,6 +2328,45 @@ public class JournalImpl implements TestableJournal
 
    // Public
    // -----------------------------------------------------------------------------
+
+   // Protected
+   // -----------------------------------------------------------------------------
+
+   protected void deleteControlFile(final SequentialFile controlFile) throws Exception
+   {
+      controlFile.delete();
+   }
+
+   /** being protected as testcases can override this method */
+   protected void renameFiles(final List<JournalFile> oldFiles, final List<JournalFile> newFiles) throws Exception
+   {
+      for (JournalFile file : oldFiles)
+      {
+         dataFiles.remove(file);
+         freeFiles.add(reinitializeFile(file));
+      }
+
+      for (JournalFile file : newFiles)
+      {
+         String newName = file.getFile().getFileName();
+         newName = newName.substring(0, newName.lastIndexOf(".cmp"));
+         file.getFile().renameTo(newName);
+      }
+
+   }
+
+   /** This is an interception point for testcases, when the compacted files are written, before replacing the data structures */
+   protected void onCompactDone()
+   {
+   }
+
+   /**
+    * @throws Exception
+    */
+   protected SequentialFile createControlFile(final List<JournalFile> files, final List<JournalFile> newFiles) throws Exception
+   {
+      return JournalCompactor.writeControlFile(fileFactory, files, newFiles);
+   }
 
    // Private
    // -----------------------------------------------------------------------------
@@ -2817,19 +2830,26 @@ public class JournalImpl implements TestableJournal
    private void closeFile(final JournalFile file)
    {
       fileFactory.deactivate(file.getFile());
-      dataFiles.add(file);
+      pendingCloseFiles.add(file);
 
       filesExecutor.execute(new Runnable()
       {
          public void run()
          {
+            compactingLock.readLock().lock();
             try
             {
                file.getFile().close();
+               dataFiles.add(file);
+               pendingCloseFiles.remove(file);
             }
             catch (Exception e)
             {
                log.warn(e.getMessage(), e);
+            }
+            finally
+            {
+               compactingLock.readLock().unlock();
             }
          }
       });
