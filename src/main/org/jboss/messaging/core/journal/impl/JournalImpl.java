@@ -499,16 +499,16 @@ public class JournalImpl implements TestableJournal
       try
       {
 
-         wholeFileBuffer = fileFactory.newBuffer((int)file.getFile().size());
+         final int filesize = (int)file.getFile().size();
+
+         wholeFileBuffer = fileFactory.newBuffer((int)filesize);
 
          final int journalFileSize = file.getFile().read(wholeFileBuffer);
 
-         if (journalFileSize != file.getFile().size())
+         if (journalFileSize != filesize)
          {
             throw new RuntimeException("Invalid read! The system couldn't read the entire file into memory");
          }
-
-         wholeFileBuffer.position(0);
 
          // First long is the ordering timestamp, we just jump its position
          wholeFileBuffer.position(SIZE_HEADER);
@@ -1397,11 +1397,10 @@ public class JournalImpl implements TestableJournal
          compactingLock.writeLock().lock();
          try
          {
+            autoReclaim = false;
 
             // We need to move to the next file, as we need a clear start for negatives and positives counts
-            moveNextFile();
-
-            autoReclaim = false;
+            moveNextFile(true);
 
             // Take the snapshots and replace the structures
 
@@ -1416,6 +1415,11 @@ public class JournalImpl implements TestableJournal
             pendingCloseFiles.clear();
 
             dataFiles.clear();
+
+            if (dataFilesToProcess.size() == 0)
+            {
+               return;
+            }
 
             compactor = new JournalCompactor(fileFactory, this, records.keySet(), dataFilesToProcess.get(0).getFileID());
 
@@ -1438,19 +1442,8 @@ public class JournalImpl implements TestableJournal
 
          // Read the files, and use the JournalCompactor class to create the new outputFiles, and the new collections as
          // well
-         JournalFile previousFile = null;
          for (final JournalFile file : dataFilesToProcess)
          {
-            if (previousFile != null)
-            {
-               if (file.getFileID() < previousFile.getFileID())
-               {
-                  // Sanity check, this should never happen
-                  throw new IllegalStateException("DataFiles out of order!");
-               }
-            }
-            previousFile = file;
-
             log.info("Compacting file " + file.getFile().getFileName() + ", internalID = " + file.getFileID());
             readJournalFile(fileFactory, file, compactor);
          }
@@ -1492,6 +1485,8 @@ public class JournalImpl implements TestableJournal
                }
                dataFiles.addFirst(fileToAdd);
             }
+
+            trace("There are " + dataFiles.size() + " datafiles Now");
 
             // Replay pending commands (including updates, deletes and commits)
 
@@ -2001,21 +1996,7 @@ public class JournalImpl implements TestableJournal
                   log.warn("Could not remove file " + file);
                }
 
-               // FIXME - size() involves a scan!!!
-               if (freeFiles.size() + dataFiles.size() + 1 + openedFiles.size() < minFiles)
-               {
-                  // Re-initialise it
-
-                  JournalFile jf = reinitializeFile(file);
-
-                  freeFiles.add(jf);
-               }
-               else
-               {
-                  file.getFile().open(1);
-
-                  file.getFile().delete();
-               }
+               addFreeFile(file);
             }
          }
       }
@@ -2046,7 +2027,7 @@ public class JournalImpl implements TestableJournal
 
       long compactMargin = (long)(totalBytes * compactPercentage);
 
-      if (totalLiveSize < compactMargin && compactor == null && dataFiles.length > compactMinFiles)
+      if (totalLiveSize < compactMargin && compactorWait.getCount() == 0 && dataFiles.length > compactMinFiles)
       {
 
          log.info("Compacting being started, numberOfDataFiles = " + dataFiles.length +
@@ -2054,6 +2035,8 @@ public class JournalImpl implements TestableJournal
                   totalLiveSize +
                   ", margin to start compacting = " +
                   compactMargin);
+
+         compactorWait.waitCompletion();
 
          compactorWait.up();
 
@@ -2148,6 +2131,8 @@ public class JournalImpl implements TestableJournal
     *  It will call waitComplete on every transaction, so any assertions on the file system will be correct after this */
    public void debugWait() throws Exception
    {
+      compactorWait.waitCompletion();
+
       fileFactory.testFlush();
 
       for (JournalTransaction tx : transactions.values())
@@ -2230,7 +2215,7 @@ public class JournalImpl implements TestableJournal
       lock.acquire();
       try
       {
-         moveNextFile();
+         moveNextFile(true);
          debugWait();
       }
       finally
@@ -2279,6 +2264,11 @@ public class JournalImpl implements TestableJournal
 
       try
       {
+         while (!compactorWait.waitCompletion(60000))
+         {
+            log.warn("Waiting the compactor to finish its operations");
+         }
+
          filesExecutor.shutdown();
 
          if (!filesExecutor.awaitTermination(60, TimeUnit.SECONDS))
@@ -2286,14 +2276,9 @@ public class JournalImpl implements TestableJournal
             log.warn("Couldn't stop journal executor after 60 seconds");
          }
 
-         while (!compactorWait.waitCompletion(60000))
-         {
-            log.warn("Waiting the compactor to finish its operations");
-         }
-
          fileFactory.stop();
 
-         if (currentFile != null)
+         if (currentFile != null && currentFile.getFile().isOpen())
          {
             currentFile.getFile().close();
          }
@@ -2316,13 +2301,6 @@ public class JournalImpl implements TestableJournal
       finally
       {
          lock.release();
-         try
-         {
-            compactingLock.writeLock().unlock();
-         }
-         catch (Throwable ignored)
-         {
-         }
       }
    }
 
@@ -2342,8 +2320,7 @@ public class JournalImpl implements TestableJournal
    {
       for (JournalFile file : oldFiles)
       {
-         dataFiles.remove(file);
-         freeFiles.add(reinitializeFile(file));
+         addFreeFile(file);
       }
 
       for (JournalFile file : newFiles)
@@ -2370,6 +2347,29 @@ public class JournalImpl implements TestableJournal
 
    // Private
    // -----------------------------------------------------------------------------
+
+   /**
+    * @param file
+    * @throws Exception
+    */
+   private void addFreeFile(JournalFile file) throws Exception
+   {
+      // FIXME - size() involves a scan!!!
+      if (freeFiles.size() + dataFiles.size() + 1 + openedFiles.size() < minFiles)
+      {
+         // Re-initialise it
+
+         JournalFile jf = reinitializeFile(file);
+
+         freeFiles.add(jf);
+      }
+      else
+      {
+         file.getFile().open(1);
+
+         file.getFile().delete();
+      }
+   }
 
    private void checkReclaimStatus() throws Exception
    {
@@ -2558,7 +2558,7 @@ public class JournalImpl implements TestableJournal
          if (!currentFile.getFile().fits(size))
          {
             currentFile.getFile().unlockBuffer();
-            moveNextFile();
+            moveNextFile(false);
             currentFile.getFile().lockBuffer();
 
             // The same check needs to be done at the new file also
@@ -2699,12 +2699,11 @@ public class JournalImpl implements TestableJournal
    }
 
    // You need to guarantee lock.acquire() before calling this method
-   private void moveNextFile() throws InterruptedException
+   private void moveNextFile(boolean synchronous) throws InterruptedException
    {
-      // Asynchronously close the file
-      closeFile(currentFile);
+      closeFile(currentFile, synchronous);
 
-      currentFile = enqueueOpenFile();
+      currentFile = enqueueOpenFile(synchronous);
 
       if (trace)
       {
@@ -2719,14 +2718,14 @@ public class JournalImpl implements TestableJournal
     * <p>In case there are no cached opened files, this method will block until the file was opened,
     * what would happen only if the system is under heavy load by another system (like a backup system, or a DB sharing the same box as JBM).</p> 
     * */
-   private JournalFile enqueueOpenFile() throws InterruptedException
+   private JournalFile enqueueOpenFile(boolean synchronous) throws InterruptedException
    {
       if (trace)
       {
          trace("enqueueOpenFile with openedFiles.size=" + openedFiles.size());
       }
 
-      filesExecutor.execute(new Runnable()
+      Runnable run = new Runnable()
       {
          public void run()
          {
@@ -2739,9 +2738,18 @@ public class JournalImpl implements TestableJournal
                log.error(e.getMessage(), e);
             }
          }
-      });
+      };
 
-      if (autoReclaim)
+      if (synchronous)
+      {
+         run.run();
+      }
+      else
+      {
+         filesExecutor.execute(run);
+      }
+
+      if (autoReclaim && !synchronous)
       {
          filesExecutor.execute(new Runnable()
          {
@@ -2827,12 +2835,12 @@ public class JournalImpl implements TestableJournal
       return nextOpenedFile;
    }
 
-   private void closeFile(final JournalFile file)
+   private void closeFile(final JournalFile file, boolean synchronous)
    {
       fileFactory.deactivate(file.getFile());
       pendingCloseFiles.add(file);
 
-      filesExecutor.execute(new Runnable()
+      Runnable run = new Runnable()
       {
          public void run()
          {
@@ -2855,7 +2863,17 @@ public class JournalImpl implements TestableJournal
                compactingLock.readLock().unlock();
             }
          }
-      });
+      };
+
+      if (synchronous)
+      {
+         run.run();
+      }
+      else
+      {
+         filesExecutor.execute(run);
+      }
+
    }
 
    private JournalTransaction getTransactionInfo(final long txID)
