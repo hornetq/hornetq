@@ -221,11 +221,14 @@ public class JournalTransaction
       }
       else
       {
-         for (JournalFile file : pendingFiles)
+         if (pendingFiles != null)
          {
-            if (file != currentFile)
+            for (JournalFile file : pendingFiles)
             {
-               file.getFile().waitForClose();
+               if (file != currentFile)
+               {
+                  file.getFile().waitForClose();
+               }
             }
          }
       }
@@ -472,8 +475,7 @@ public class JournalTransaction
       long id;
 
       int size;
-      
-      
+
       /**
        * @param file
        * @param id
