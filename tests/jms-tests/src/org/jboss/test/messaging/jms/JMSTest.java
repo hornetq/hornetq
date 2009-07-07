@@ -331,6 +331,10 @@ public class JMSTest extends JMSTestCase
             {
                try
                {
+                  // sleep a little bit to ensure that
+                  // prod.send will be called before cons.reveive
+                  Thread.sleep(500);
+
                   synchronized (session)
                   {
                      Message m = cons.receive(5000);

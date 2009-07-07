@@ -21,6 +21,8 @@
  */
 package org.jboss.messaging.tests.integration.client;
 
+import java.util.concurrent.CountDownLatch;
+
 import org.jboss.messaging.core.client.ClientConsumer;
 import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.client.ClientProducer;
@@ -29,12 +31,8 @@ import org.jboss.messaging.core.client.ClientSessionFactory;
 import org.jboss.messaging.core.client.MessageHandler;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.server.MessagingServer;
-import org.jboss.messaging.core.server.impl.GroupingRoundRobinDistributor;
-import org.jboss.messaging.core.settings.impl.AddressSettings;
 import org.jboss.messaging.tests.util.ServiceTestBase;
 import org.jboss.messaging.utils.SimpleString;
-
-import java.util.concurrent.CountDownLatch;
 
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
@@ -62,9 +60,6 @@ public class AutogroupIdTest extends ServiceTestBase
       MessagingServer server = createServer(false);
       try
       {
-         AddressSettings qs = new AddressSettings();
-         qs.setDistributionPolicyClass(GroupingRoundRobinDistributor.class.getName());
-         server.getAddressSettingsRepository().addMatch(groupTestQ.toString(), qs);
          server.start();
 
          ClientSessionFactory sf = createInVMFactory();
@@ -118,9 +113,6 @@ public class AutogroupIdTest extends ServiceTestBase
       MessagingServer server = createServer(false);
       try
       {
-         AddressSettings qs = new AddressSettings();
-         qs.setDistributionPolicyClass(GroupingRoundRobinDistributor.class.getName());
-         server.getAddressSettingsRepository().addMatch(groupTestQ.toString(), qs);
          server.start();
 
          ClientSessionFactory sf = createInVMFactory();
@@ -183,10 +175,6 @@ public class AutogroupIdTest extends ServiceTestBase
       MessagingServer server = createServer(false);
       try
       {
-         AddressSettings qs = new AddressSettings();
-         qs.setDistributionPolicyClass(GroupingRoundRobinDistributor.class.getName());
-
-         server.getAddressSettingsRepository().addMatch(groupTestQ.toString(), qs);
          server.start();
 
          ClientSessionFactory sf = createInVMFactory();

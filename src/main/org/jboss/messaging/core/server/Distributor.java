@@ -22,7 +22,6 @@
 
 package org.jboss.messaging.core.server;
 
-import java.util.List;
 
 /**
  * 
@@ -33,15 +32,13 @@ import java.util.List;
  */
 public interface Distributor
 {
-   HandleStatus distribute(final MessageReference reference);
-
    void addConsumer(Consumer consumer);
 
    boolean removeConsumer(Consumer consumer);
 
    int getConsumerCount();
-
-   boolean hasConsumers();
    
-   List<Consumer> getConsumers();
+   Consumer peekConsumer();
+
+   void incrementPosition();
 }

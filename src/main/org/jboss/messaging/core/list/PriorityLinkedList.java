@@ -53,4 +53,5 @@ public interface PriorityLinkedList<T> extends Iterable<T>
    Iterator<T> iterator();
    
    boolean isEmpty();
+   
 }

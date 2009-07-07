@@ -21,6 +21,13 @@
  */
 package org.jboss.messaging.tests.integration.client;
 
+import java.util.ArrayList;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+
+import javax.transaction.xa.XAResource;
+import javax.transaction.xa.Xid;
+
 import org.jboss.messaging.core.client.ClientConsumer;
 import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.client.ClientProducer;
@@ -34,17 +41,10 @@ import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.message.impl.MessageImpl;
 import org.jboss.messaging.core.server.Messaging;
 import org.jboss.messaging.core.server.MessagingServer;
-import org.jboss.messaging.core.server.impl.GroupingRoundRobinDistributor;
 import org.jboss.messaging.core.settings.impl.AddressSettings;
 import org.jboss.messaging.core.transaction.impl.XidImpl;
 import org.jboss.messaging.tests.util.UnitTestCase;
 import org.jboss.messaging.utils.SimpleString;
-
-import javax.transaction.xa.XAResource;
-import javax.transaction.xa.Xid;
-import java.util.ArrayList;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
@@ -77,8 +77,8 @@ public class MessageGroupingTest extends UnitTestCase
       DummyMessageHandler dummyMessageHandler2 = new DummyMessageHandler(latch, true);
       consumer2.setMessageHandler(dummyMessageHandler2);
       assertTrue(latch.await(10, TimeUnit.SECONDS));
-      assertTrue(dummyMessageHandler.list.size() == 100);
-      assertTrue(dummyMessageHandler2.list.size() == 0);
+      assertEquals(100, dummyMessageHandler.list.size());
+      assertEquals(0, dummyMessageHandler2.list.size());
       consumer.close();
       consumer2.close();
    }
@@ -111,14 +111,14 @@ public class MessageGroupingTest extends UnitTestCase
       DummyMessageHandler dummyMessageHandler2 = new DummyMessageHandler(latch, true);
       consumer2.setMessageHandler(dummyMessageHandler2);
       assertTrue(latch.await(10, TimeUnit.SECONDS));
-      assertEquals(dummyMessageHandler.list.size(), 50);
+      assertEquals(50, dummyMessageHandler.list.size());
       int i = 0;
       for (ClientMessage message : dummyMessageHandler.list)
       {
          assertEquals(message.getBody().readString(), "m" + i);
          i += 2;
       }
-      assertEquals(dummyMessageHandler2.list.size(), 50);
+      assertEquals(50, dummyMessageHandler2.list.size());
       i = 1;
       for (ClientMessage message : dummyMessageHandler2.list)
       {
@@ -158,14 +158,14 @@ public class MessageGroupingTest extends UnitTestCase
       DummyMessageHandler dummyMessageHandler2 = new DummyMessageHandler(latch, true);
       consumer2.setMessageHandler(dummyMessageHandler2);
       assertTrue(latch.await(10, TimeUnit.SECONDS));
-      assertEquals(dummyMessageHandler.list.size(), 50);
+      assertEquals(50, dummyMessageHandler.list.size());
       int i = 0;
       for (ClientMessage message : dummyMessageHandler.list)
       {
          assertEquals(message.getBody().readString(), "m" + i);
          i += 2;
       }
-      assertEquals(dummyMessageHandler2.list.size(), 50);
+      assertEquals(50, dummyMessageHandler2.list.size());
       i = 1;
       for (ClientMessage message : dummyMessageHandler2.list)
       {
@@ -558,9 +558,6 @@ public class MessageGroupingTest extends UnitTestCase
       // start the server
       server.start();
 
-      AddressSettings qs = new AddressSettings();
-      qs.setDistributionPolicyClass(GroupingRoundRobinDistributor.class.getName());
-      server.getAddressSettingsRepository().addMatch(qName.toString(), qs);
       // then we create a client as normal
       ClientSessionFactory sessionFactory = new ClientSessionFactoryImpl(new TransportConfiguration(INVM_CONNECTOR_FACTORY));
       clientSession = sessionFactory.createSession(false, true, true);

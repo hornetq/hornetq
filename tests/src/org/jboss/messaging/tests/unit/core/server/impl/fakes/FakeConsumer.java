@@ -111,6 +111,11 @@ public class FakeConsumer implements Consumer
 
    public synchronized HandleStatus handle(MessageReference reference)
    {
+      if (statusToReturn == HandleStatus.BUSY)
+      {
+         return HandleStatus.BUSY;
+      }
+
       if (filter != null)
       {
          if (filter.match(reference.getMessage()))

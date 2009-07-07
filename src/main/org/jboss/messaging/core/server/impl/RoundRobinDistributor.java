@@ -24,14 +24,13 @@ package org.jboss.messaging.core.server.impl;
 
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.server.Consumer;
-import org.jboss.messaging.core.server.HandleStatus;
-import org.jboss.messaging.core.server.MessageReference;
 
 /**
  * A RoundRobinDistributor
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
+ * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  */
 public class RoundRobinDistributor extends DistributorImpl
 {
@@ -58,56 +57,12 @@ public class RoundRobinDistributor extends DistributorImpl
       return super.getConsumerCount();
    }
 
-   public HandleStatus distribute(final MessageReference reference)
+   public Consumer peekConsumer()
    {
-      if (getConsumerCount() == 0)
-      {
-         return HandleStatus.BUSY;
-      }
-      int startPos = pos;
-      
-      boolean filterRejected = false;
-      
-      HandleStatus status;
-      
-      while (true)
-      {
-         status = handle(reference, getNextConsumer());
-
-         if (status == HandleStatus.HANDLED)
-         {
-            return HandleStatus.HANDLED;
-         }
-         else if (status == HandleStatus.NO_MATCH)
-         {
-            filterRejected = true;
-         }
-         if (startPos == pos)
-         {
-            // Tried all of them
-            if (filterRejected)
-            {
-               return HandleStatus.NO_MATCH;
-            }
-            else
-            {
-               // Give up - all consumers busy
-               return HandleStatus.BUSY;
-            }
-         }
-      }
+      return consumers.get(pos);
    }
-
-   private final synchronized Consumer getNextConsumer()
-   {
-      Consumer consumer = consumers.get(pos);
-      
-      incrementPosition();
-      
-      return consumer;
-   }
-
-   protected void incrementPosition()
+   
+   public synchronized void incrementPosition()
    {
       pos++;
       
@@ -115,39 +70,5 @@ public class RoundRobinDistributor extends DistributorImpl
       {
          pos = 0;
       }
-   }
-
-   protected HandleStatus handle(final MessageReference reference, final Consumer consumer)
-   {
-      HandleStatus status;
-      try
-      {
-         status = consumer.handle(reference);
-      }
-      catch (Throwable t)
-      {
-         log.warn("removing consumer which did not handle a message, " + "consumer=" +
-                  consumer +
-                  ", message=" +
-                  reference, t);
-
-         // If the consumer throws an exception we remove the consumer
-         try
-         {
-            removeConsumer(consumer);
-         }
-         catch (Exception e)
-         {
-            log.error("Failed to remove consumer", e);
-         }
-
-         return HandleStatus.BUSY;
-      }
-
-      if (status == null)
-      {
-         throw new IllegalStateException("ClientConsumer.handle() should never return null");
-      }
-      return status;
    }
 }

@@ -15,22 +15,6 @@
             messages with the same group id.</para>
       </listitem>
    </itemizedlist>
-   <section id="message-grouping.configuring">
-      <title>Configuring Message Grouping</title>
-      <para>Message grouping must be enabled in the address-setting configuration by using a
-         specific <literal>distribution-policy-class</literal>:</para>
-      <programlisting>
- &lt;address-setting match="jms.queue.exampleQueue"&gt;
-    &lt;distribution-policy-class&gt;
-       org.jboss.messaging.core.server.impl.GroupingRoundRobinDistributor
-    &lt;/distribution-policy-class&gt;
- &lt;/address-setting&gt;
-       </programlisting>
-      <para>By default, <literal>distribution-policy-class</literal> is set to <literal
-            >org.jboss.messaging.core.server.impl.RoundRobinDistributor</literal> and message groups
-         will not be handled by the queue. Address wildcards can be used to configure the
-         distribution policy for a set of addresses (see <xref linkend="wildcard-syntax"/>).</para>
-   </section>
    <section>
       <title>Using Core API</title>
       <para>The property name used to identify the message group is <literal

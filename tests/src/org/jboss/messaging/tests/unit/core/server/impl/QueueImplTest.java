@@ -31,6 +31,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
 import org.jboss.messaging.core.filter.Filter;
+import org.jboss.messaging.core.filter.impl.FilterImpl;
 import org.jboss.messaging.core.server.Consumer;
 import org.jboss.messaging.core.server.Distributor;
 import org.jboss.messaging.core.server.HandleStatus;
@@ -916,6 +917,137 @@ public class QueueImplTest extends UnitTestCase
       assertRefListsIdenticalRefs(refs, consumer.getReferences());
    }
 
+   public void testBusyConsumerWithFilterThenAddMoreMessages() throws Exception
+   {
+      Queue queue = new QueueImpl(1, address1, queue1, null, false, true, scheduledExecutor, null, null, null);
+
+      FakeConsumer consumer = new FakeConsumer(FilterImpl.createFilter("color = 'green'"));
+
+      consumer.setStatusImmediate(HandleStatus.BUSY);
+
+      queue.addConsumer(consumer);
+
+      final int numMessages = 10;
+
+      List<MessageReference> refs = new ArrayList<MessageReference>();
+
+      for (int i = 0; i < numMessages; i++)
+      {
+         MessageReference ref = generateReference(queue, i);
+         ref.getMessage().putStringProperty("color", "red");
+         refs.add(ref);
+
+         queue.addLast(ref);
+      }
+
+      assertEquals(10, queue.getMessageCount());
+      assertEquals(0, queue.getScheduledCount());
+      assertEquals(0, queue.getDeliveringCount());
+
+      queue.deliverNow();
+
+      assertEquals(10, queue.getMessageCount());
+      assertEquals(0, queue.getScheduledCount());
+      assertEquals(0, queue.getDeliveringCount());
+      assertTrue(consumer.getReferences().isEmpty());
+
+      for (int i = numMessages; i < numMessages * 2; i++)
+      {
+         MessageReference ref = generateReference(queue, i);
+
+         refs.add(ref);
+         ref.getMessage().putStringProperty("color", "green");
+         queue.addLast(ref);
+      }
+
+      assertEquals(20, queue.getMessageCount());
+      assertEquals(0, queue.getScheduledCount());
+      assertEquals(0, queue.getDeliveringCount());
+      assertTrue(consumer.getReferences().isEmpty());
+
+      consumer.setStatusImmediate(null);
+
+      for (int i = numMessages * 2; i < numMessages * 3; i++)
+      {
+         MessageReference ref = generateReference(queue, i);
+
+         refs.add(ref);
+
+         queue.addLast(ref);
+      }
+
+      queue.deliverNow();
+
+      assertEquals(numMessages, consumer.getReferences().size());
+      assertEquals(30, queue.getMessageCount());
+      assertEquals(0, queue.getScheduledCount());
+      assertEquals(10, queue.getDeliveringCount());
+   }
+
+   public void testConsumerWithFilterThenAddMoreMessages() throws Exception
+   {
+      Queue queue = new QueueImpl(1, address1, queue1, null, false, true, scheduledExecutor, null, null, null);
+
+      final int numMessages = 10;
+      List<MessageReference> refs = new ArrayList<MessageReference>();
+
+      for (int i = 0; i < numMessages; i++)
+      {
+         MessageReference ref = generateReference(queue, i);
+         ref.getMessage().putStringProperty("color", "red");
+         refs.add(ref);
+
+         queue.addLast(ref);
+      }
+
+      assertEquals(10, queue.getMessageCount());
+      assertEquals(0, queue.getScheduledCount());
+      assertEquals(0, queue.getDeliveringCount());
+
+      queue.deliverNow();
+
+      assertEquals(10, queue.getMessageCount());
+      assertEquals(0, queue.getScheduledCount());
+      assertEquals(0, queue.getDeliveringCount());
+
+      for (int i = numMessages; i < numMessages * 2; i++)
+      {
+         MessageReference ref = generateReference(queue, i);
+
+         refs.add(ref);
+         ref.getMessage().putStringProperty("color", "green");
+         queue.addLast(ref);
+      }
+
+      FakeConsumer consumer = new FakeConsumer(FilterImpl.createFilter("color = 'green'"));
+
+      queue.addConsumer(consumer);
+
+      queue.deliverNow();
+
+      assertEquals(20, queue.getMessageCount());
+      assertEquals(0, queue.getScheduledCount());
+      assertEquals(10, queue.getDeliveringCount());
+
+
+      for (int i = numMessages * 2; i < numMessages * 3; i++)
+      {
+         MessageReference ref = generateReference(queue, i);
+
+         refs.add(ref);
+         ref.getMessage().putStringProperty("color", "green");
+         queue.addLast(ref);
+      }
+
+      queue.deliverNow();
+
+      assertEquals(20, consumer.getReferences().size());
+      assertEquals(30, queue.getMessageCount());
+      assertEquals(0, queue.getScheduledCount());
+      assertEquals(20, queue.getDeliveringCount());
+   }
+
+
    // Private ------------------------------------------------------------------------------
 
    private void testConsumerWithFilters(boolean direct) throws Exception
@@ -1100,27 +1232,11 @@ public class QueueImplTest extends UnitTestCase
 
    class DummyDistributionPolicy implements Distributor
    {
+      Consumer consumer;
+
       public List<Consumer> getConsumers()
       {         
          return null;
-      }
-
-      Consumer consumer;
-      public Consumer select(ServerMessage message, boolean redeliver)
-      {
-         return null;
-      }
-
-      public HandleStatus distribute(MessageReference reference)
-      {
-         try
-         {
-            return consumer.handle(reference);
-         }
-         catch (Exception e)
-         {
-            return HandleStatus.BUSY;
-         }
       }
 
       public void addConsumer(Consumer consumer)
@@ -1133,19 +1249,18 @@ public class QueueImplTest extends UnitTestCase
          return false;
       }
 
+      public void incrementPosition()
+      {
+      }
+      
       public int getConsumerCount()
       {
          return 0;
       }
 
-      public boolean hasConsumers()
+      public Consumer peekConsumer()
       {
-         return false;
-      }
-
-      public int getCurrentPosition()
-      {
-         return 0;  
+         return consumer;
       }
    }
 

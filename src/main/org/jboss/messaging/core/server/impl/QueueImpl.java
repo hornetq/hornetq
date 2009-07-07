@@ -25,6 +25,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -63,7 +65,7 @@ import org.jboss.messaging.utils.ConcurrentSet;
 import org.jboss.messaging.utils.SimpleString;
 
 /**
- * Implementation of a Queue TODO use Java 5 concurrent queue
+ * Implementation of a Queue
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
@@ -139,6 +141,8 @@ public class QueueImpl implements Queue
    // We cache the consumers here since we don't want to include the redistributor
 
    private final Set<Consumer> consumers = new HashSet<Consumer>();
+   private final Map<Consumer, Iterator<MessageReference>> iterators = new HashMap<Consumer, Iterator<MessageReference>>();
+   private ConcurrentMap<SimpleString, Consumer> groups = new ConcurrentHashMap<SimpleString, Consumer>();
 
    public QueueImpl(final long persistenceID,
                     final SimpleString address,
@@ -420,21 +424,36 @@ public class QueueImpl implements Queue
       cancelRedistributor();
 
       distributionPolicy.addConsumer(consumer);
-
       consumers.add(consumer);
+      if (consumer.getFilter() != null)
+      {
+         iterators.put(consumer, messageReferences.iterator());
+      }
    }
 
    public synchronized boolean removeConsumer(final Consumer consumer) throws Exception
    {
       boolean removed = distributionPolicy.removeConsumer(consumer);
 
-      if (!distributionPolicy.hasConsumers())
+      if (distributionPolicy.getConsumerCount() == 0)
       {
          promptDelivery = false;
       }
 
       consumers.remove(consumer);
+      iterators.remove(consumer);
 
+      if (removed)
+      {
+         for (SimpleString groupID : groups.keySet())
+         {
+            if (consumer == groups.get(groupID))
+            {
+               groups.remove(groupID);
+            }
+         }
+      }
+      
       return removed;
    }
 
@@ -1265,12 +1284,28 @@ public class QueueImpl implements Queue
 
       direct = false;
 
+      if (distributionPolicy.getConsumerCount() == 0)
+      {
+         return;
+      }
+      
+      Consumer firstConsumer = distributionPolicy.peekConsumer();
+      
+      Consumer consumer;
+      
       MessageReference reference;
 
       Iterator<MessageReference> iterator = null;
 
+      int totalConsumers = distributionPolicy.getConsumerCount();
+      Set<Consumer> busyConsumers = new HashSet<Consumer>();
+ 
       while (true)
       {
+        consumer = distributionPolicy.peekConsumer();
+         
+         iterator = iterators.get(consumer);
+         
          if (iterator == null)
          {
             reference = messageReferences.peekFirst();
@@ -1284,51 +1319,44 @@ public class QueueImpl implements Queue
             else
             {
                reference = null;
+               if (consumer.getFilter() != null)
+               {
+                  // we have iterated on the whole queue for
+                  // messages which matches the consumer filter.
+                  // we reset its iterator in case new messages are added to the queue
+                  iterators.put(consumer, messageReferences.iterator());
+               }
             }
          }
-
+         
          if (reference == null)
          {
-            if (iterator == null)
+            if (consumer == firstConsumer)
             {
-               if (pagingStore != null)
-               {
-                  // If the queue is empty, we need to check if there are pending messages, and throw a warning
-                  if (pagingStore.isPaging() && !pagingStore.isDropWhenMaxSize())
-                  {
-                     // This is just a *request* to depage. Depage will only happens if there is space on the Address
-                     // and GlobalSize
-                     pagingStore.startDepaging();
-
-                     log.warn("The Queue " + name +
-                              " is empty, however there are pending messages on Paging for the address " +
-                              pagingStore.getStoreName() +
-                              " waiting message ACK before they could be routed");
-                  }
-               }
+               startDepaging();
                // We delivered all the messages - go into direct delivery
                direct = true;
-
                promptDelivery = false;
             }
             return;
          }
 
-         // PagingManager would be null only on testcases
-         if (pagingStore == null && pagingManager != null)
+         initPagingStore(reference.getMessage().getDestination());
+
+         final SimpleString groupID = (SimpleString)reference.getMessage().getProperty(MessageImpl.HDR_GROUP_ID);
+
+         if (groupID != null)
          {
-            // TODO: It would be better if we could initialize the pagingStore during the construction
-            try
+            Consumer groupConsumer = groups.putIfAbsent(groupID, consumer);
+            if (groupConsumer != null && groupConsumer != consumer)
             {
-               pagingStore = pagingManager.getPageStore(reference.getMessage().getDestination());
-            }
-            catch (Exception e)
-            {
-               // This shouldn't happen, and if it happens, this shouldn't abort the route
+               // this consumer is not in charge of the message group
+               distributionPolicy.incrementPosition();
+               continue;
             }
          }
-
-         HandleStatus status = deliver(reference);
+         
+         HandleStatus status = handle(reference, consumer);
 
          if (status == HandleStatus.HANDLED)
          {
@@ -1343,15 +1371,21 @@ public class QueueImpl implements Queue
          }
          else if (status == HandleStatus.BUSY)
          {
-            // All consumers busy - give up
-            break;
+            busyConsumers.add(consumer);
+            if (groupID != null || busyConsumers.size() == totalConsumers)
+            {
+               // when all consumers are busy, we stop
+               break;
+            }
          }
-         else if (status == HandleStatus.NO_MATCH && iterator == null)
+         else if (status == HandleStatus.NO_MATCH)
          {
-            // Consumers not all busy - but filter not accepting - iterate
-            // back
-            // through the queue
-            iterator = messageReferences.iterator();
+            // if consumer filter reject the message make sure it won't be assigned the message group
+            if (groupID != null)
+            {
+               groups.remove(consumer);
+            }
+            continue;
          }
       }
    }
@@ -1374,7 +1408,7 @@ public class QueueImpl implements Queue
       {
          // Deliver directly
 
-         HandleStatus status = deliver(ref);
+         HandleStatus status = directDeliver(ref);
 
          if (status == HandleStatus.HANDLED)
          {
@@ -1428,18 +1462,121 @@ public class QueueImpl implements Queue
       }
    }
 
-   private HandleStatus deliver(final MessageReference reference)
+   private synchronized HandleStatus directDeliver(final MessageReference reference)
    {
-      HandleStatus status = distributionPolicy.distribute(reference);
+      if (distributionPolicy.getConsumerCount() == 0)
+      {
+         return HandleStatus.BUSY;
+      }
+      
+      Consumer firstConsumer = distributionPolicy.peekConsumer();
+      
+      HandleStatus status;
 
+      boolean filterRejected = false;
+
+      while (true)
+      {
+         Consumer consumer = distributionPolicy.peekConsumer();
+
+         final SimpleString groupId = (SimpleString)reference.getMessage().getProperty(MessageImpl.HDR_GROUP_ID);
+
+         if (groupId != null)
+         {
+            Consumer groupConsumer = groups.putIfAbsent(groupId, consumer);
+            if (groupConsumer != null && groupConsumer != consumer)
+            {
+               // this consumer is not in charge in the message group
+               distributionPolicy.incrementPosition();
+               continue;
+            }
+         }
+
+         status = handle(reference, consumer);
+
+         if (status == HandleStatus.HANDLED)
+         {
+            break;
+         }
+         else if (status == HandleStatus.NO_MATCH)
+         {
+            filterRejected = true;
+            if (groupId != null)
+            {
+               groups.remove(consumer);
+            }
+         }
+         else if (status == HandleStatus.BUSY)
+         {
+            if (groupId != null)
+            {
+               break;
+            }
+         }
+         // if we've tried all of them
+         if (distributionPolicy.peekConsumer() == firstConsumer)
+         {
+            if (filterRejected)
+            {
+               status = HandleStatus.NO_MATCH;
+               break;
+            }
+            else
+            {
+               // Give up - all consumers busy
+               status = HandleStatus.BUSY;
+               break;
+            }
+         }
+      }
+      
       if (status == HandleStatus.NO_MATCH)
       {
          promptDelivery = true;
       }
-
+      
       return status;
    }
+   
+   private synchronized HandleStatus handle(final MessageReference reference, final Consumer consumer)
+   {
 
+      HandleStatus status;
+      try
+      {
+         status = consumer.handle(reference);
+      }
+      catch (Throwable t)
+      {
+         log.warn("removing consumer which did not handle a message, consumer=" +
+                  consumer +
+                  ", message=" +
+                  reference, t);
+
+         // If the consumer throws an exception we remove the consumer
+         try
+         {
+            removeConsumer(consumer);
+         }
+         catch (Exception e)
+         {
+            log.error("Failed to remove consumer", e);
+         }
+         return HandleStatus.BUSY;
+      }
+      finally
+      {
+         distributionPolicy.incrementPosition();         
+      }
+
+      if (status == null)
+      {
+         throw new IllegalStateException("ClientConsumer.handle() should never return null");
+      }
+
+      return status; 
+   }
+   
    private void removeExpiringReference(final MessageReference ref) throws Exception
    {
       if (ref.getMessage().getExpiration() > 0)
@@ -1515,6 +1652,42 @@ public class QueueImpl implements Queue
       }
    }
 
+   private synchronized void initPagingStore(SimpleString destination)
+   {      
+      // PagingManager would be null only on testcases
+      if (pagingStore == null && pagingManager != null)
+      {
+         // TODO: It would be better if we could initialize the pagingStore during the construction
+         try
+         {
+            pagingStore = pagingManager.getPageStore(destination);
+         }
+         catch (Exception e)
+         {
+            // This shouldn't happen, and if it happens, this shouldn't abort the route
+         }
+      }
+   }
+
+  private synchronized void startDepaging()
+   {
+      if (pagingStore != null)
+      {
+         // If the queue is empty, we need to check if there are pending messages, and throw a warning
+         if (pagingStore.isPaging() && !pagingStore.isDropWhenMaxSize())
+         {
+            // This is just a *request* to depage. Depage will only happens if there is space on the Address
+            // and GlobalSize
+            pagingStore.startDepaging();
+
+            log.warn("The Queue " + name +
+                     " is empty, however there are pending messages on Paging for the address " +
+                     pagingStore.getStoreName() +
+                     " waiting message ACK before they could be routed");
+         }
+      }
+   }
+  
    // Inner classes
    // --------------------------------------------------------------------------
 

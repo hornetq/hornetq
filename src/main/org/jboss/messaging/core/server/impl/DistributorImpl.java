@@ -49,11 +49,6 @@ public abstract class DistributorImpl implements Distributor
       return consumers.size();
    }
 
-   public boolean hasConsumers()
-   {
-      return !consumers.isEmpty();
-   }
-   
    public List<Consumer> getConsumers()
    {
       return consumers;

@@ -79,7 +79,7 @@
         &lt;redelivery-delay>5000&lt;/redelivery-delay>
         &lt;expiry-address>jms.queue.expiryQueue&lt;/expiry-address>
         &lt;last-value-queue>true&lt;/last-value-queue>
-        &lt;distribution-policy-class>org.jboss.messaging.core.server.impl.GroupingRoundRobinDistributor&lt;/distribution-policy-class>
+        &lt;distribution-policy-class>org.jboss.messaging.core.server.impl.RoundRobinDistributor&lt;/distribution-policy-class>
         &lt;max-size-bytes>100000&lt;/max-size-bytes>
         &lt;page-size-bytes>20000&lt;/page-size-bytes>
         &lt;redistribution-delay>0&lt;/redistribution-delay>
