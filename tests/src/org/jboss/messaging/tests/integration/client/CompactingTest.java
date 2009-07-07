@@ -230,22 +230,6 @@ public class CompactingTest extends ServiceTestBase
 
       server.stop();
 
-      // NIOSequentialFileFactory factory = new NIOSequentialFileFactory(getJournalDir());
-      //      
-      // List<String> files = factory.listFiles("jbm");
-      //      
-      // for (String str: files)
-      // {
-      // System.out.println("Files " + str);
-      // SequentialFile file = factory.createSequentialFile(str, 1);
-      // for (int i = 0 ; i < 10 && file.size() == 0; i ++)
-      // {
-      // System.out.println("File size is ZERO = " + file.size());
-      // Thread.sleep(1000);
-      // }
-      // assertTrue(file.getFileName() + " size = " + file.size(), file.size() > 0);
-      // }
-
       setupServer(journalType);
 
       ClientSession sess = sf.createSession(true, true);
@@ -331,6 +315,8 @@ public class CompactingTest extends ServiceTestBase
 
       server.stop();
 
+      // We don't super.tearDown here because in case of failure, the data may be useful for debug
+      // so, we only clear data on setup.
       // super.tearDown();
    }
 

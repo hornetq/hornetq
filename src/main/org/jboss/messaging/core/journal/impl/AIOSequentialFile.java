@@ -116,7 +116,7 @@ public class AIOSequentialFile implements SequentialFile
 
       return aioFile.getBlockSize();
    }
-   
+
    public boolean exists()
    {
       return file.exists();
@@ -151,14 +151,8 @@ public class AIOSequentialFile implements SequentialFile
       checkOpened();
       opened = false;
 
-//      if (timedBuffer != null)
-//      {
-//         timedBuffer.flush();
-//         timedBuffer.setObserver(null);
-//      } -- remove this
-//      
       timedBuffer = null;
-      
+
       final CountDownLatch donelatch = new CountDownLatch(1);
 
       executor.execute(new Runnable()
@@ -172,12 +166,13 @@ public class AIOSequentialFile implements SequentialFile
       while (!donelatch.await(60, TimeUnit.SECONDS))
       {
          log.warn("Executor on file " + file.getName() + " couldn't complete its tasks in 60 seconds.",
-                  new Exception("Warning: Executor on file " + file.getName() + " couldn't complete its tasks in 60 seconds."));
+                  new Exception("Warning: Executor on file " + file.getName() +
+                                " couldn't complete its tasks in 60 seconds."));
       }
 
       aioFile.close();
       aioFile = null;
-      
+
       this.notifyAll();
    }
 
@@ -191,7 +186,6 @@ public class AIOSequentialFile implements SequentialFile
          wait();
       }
    }
-
 
    public void delete() throws Exception
    {
@@ -258,8 +252,8 @@ public class AIOSequentialFile implements SequentialFile
    }
 
    public void open() throws Exception
-   {            
-      open(maxIO);            
+   {
+      open(maxIO);
    }
 
    /* (non-Javadoc)
@@ -354,8 +348,7 @@ public class AIOSequentialFile implements SequentialFile
          write(bytes, false, DummyCallback.getInstance());
       }
    }
-   
-   
+
    public void write(final ByteBuffer bytes, final boolean sync, final IOCallback callback) throws Exception
    {
       if (timedBuffer != null)
@@ -363,7 +356,7 @@ public class AIOSequentialFile implements SequentialFile
          // sanity check.. it shouldn't happen
          log.warn("Illegal buffered usage. Can't use ByteBuffer write while buffer SequentialFile");
       }
-      
+
       doWrite(bytes, callback);
    }
 
@@ -382,7 +375,6 @@ public class AIOSequentialFile implements SequentialFile
          write(bytes, false, DummyCallback.getInstance());
       }
    }
-
 
    public void sync() throws Exception
    {
@@ -409,7 +401,7 @@ public class AIOSequentialFile implements SequentialFile
       {
          timedBuffer.setObserver(null);
       }
-      
+
       this.timedBuffer = buffer;
 
       if (buffer != null)
@@ -532,7 +524,7 @@ public class AIOSequentialFile implements SequentialFile
             return (int)(fileSize - position.get());
          }
       }
-      
+
       public String toString()
       {
          return "TimedBufferObserver on file (" + AIOSequentialFile.this.file.getName() + ")";
