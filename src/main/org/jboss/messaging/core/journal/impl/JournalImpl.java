@@ -628,6 +628,11 @@ public class JournalImpl implements TestableJournal
 
                if (recordType == PREPARE_RECORD)
                {
+                  if (isInvalidSize(journalFileSize, wholeFileBuffer.position(), DataConstants.SIZE_INT))
+                  {
+                     wholeFileBuffer.position(pos + 1);
+                     continue;
+                  }
                   // Add the variable size required for preparedTransactions
                   preparedTransactionExtraDataSize = wholeFileBuffer.getInt();
                }
