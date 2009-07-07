@@ -209,6 +209,17 @@
                 <para><literal>journal-aio-buffer-size</literal></para>
                 <para>The size of the timed buffer on AIO. The default value is <literal>128KiB</literal>.</para>
             </listitem>
+            <listitem id="configuring.message.journal.journal-compact-min-files">
+                <para><literal>journal-compact-min-files</literal></para>
+                <para>The minimal number of files before we can consider compacting the journal. The compacting algorithm won't start until you have at least <literal>journal-compact-min-files</literal></para>
+                <para>The default for this parameter is <literal>10</literal></para>
+            </listitem>
+            <listitem id="configuring.message.journal.journal-compact-percentage">
+                <para><literal>journal-compact-percentage</literal></para>
+                <para>The threshold to start compacting. When less than this percentage is considered live data, we start compacting. 
+                Note also that compacting won't kick in until you have at least <literal>journal-compact-min-files</literal> data files on the journal</para>
+                <para>The default for this parameter is <literal>30</literal></para>
+            </listitem>
         </itemizedlist>
     </section>
     <section id="installing-aio">

@@ -124,6 +124,20 @@
                             <entry>False</entry>
                         </row>
                         <row>
+                            <entry><link linkend="configuring.message.journal.journal-compact-min-files"
+                                >journal-compact-min-files</link></entry>
+                            <entry>Integer</entry>
+                            <entry>The minimal number of data files before we can start compacting</entry>
+                            <entry>10</entry>
+                        </row>                                              
+                        <row>
+                            <entry><link linkend="configuring.message.journal.journal-compact-percentage"
+                                >journal-compact-percentage</link></entry>
+                            <entry>Integer</entry>
+                            <entry>The percentage of live data on which we consider compacting the journal</entry>
+                            <entry>30</entry>
+                        </row>                                              
+                        <row>
                             <entry><link linkend="configuring.message.journal.journal-directory"
                                 >journal-directory</link></entry>
                             <entry>String</entry>
