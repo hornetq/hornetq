@@ -1378,8 +1378,9 @@ public class JournalImpl implements TestableJournal
     * 
     *  Note: This method can't be called from the main executor, as it will invoke other methods depending on it.
     */
-   public void compact() throws Exception
+   public synchronized void compact() throws Exception
    {
+
       if (compactor != null)
       {
          throw new IllegalStateException("There is pending compacting operation");
@@ -1397,6 +1398,11 @@ public class JournalImpl implements TestableJournal
          compactingLock.writeLock().lock();
          try
          {
+            if (state != STATE_LOADED)
+            {
+               return;
+            }
+
             autoReclaim = false;
 
             // We need to move to the next file, as we need a clear start for negatives and positives counts
@@ -2264,11 +2270,6 @@ public class JournalImpl implements TestableJournal
 
       try
       {
-         while (!compactorWait.waitCompletion(60000))
-         {
-            log.warn("Waiting the compactor to finish its operations");
-         }
-
          filesExecutor.shutdown();
 
          if (!filesExecutor.awaitTermination(60, TimeUnit.SECONDS))
@@ -2352,7 +2353,7 @@ public class JournalImpl implements TestableJournal
     * @param file
     * @throws Exception
     */
-   private void addFreeFile(JournalFile file) throws Exception
+   private void addFreeFile(final JournalFile file) throws Exception
    {
       // FIXME - size() involves a scan!!!
       if (freeFiles.size() + dataFiles.size() + 1 + openedFiles.size() < minFiles)
@@ -2365,8 +2366,6 @@ public class JournalImpl implements TestableJournal
       }
       else
       {
-         file.getFile().open(1);
-
          file.getFile().delete();
       }
    }
@@ -2699,7 +2698,7 @@ public class JournalImpl implements TestableJournal
    }
 
    // You need to guarantee lock.acquire() before calling this method
-   private void moveNextFile(boolean synchronous) throws InterruptedException
+   private void moveNextFile(final boolean synchronous) throws InterruptedException
    {
       closeFile(currentFile, synchronous);
 
@@ -2707,7 +2706,7 @@ public class JournalImpl implements TestableJournal
 
       if (trace)
       {
-         trace("moveNextFile: " + currentFile.getFile().getFileName());
+         trace("moveNextFile: " + currentFile.getFile().getFileName() + " sync: " + synchronous);
       }
 
       fileFactory.activate(currentFile.getFile());
@@ -2718,7 +2717,7 @@ public class JournalImpl implements TestableJournal
     * <p>In case there are no cached opened files, this method will block until the file was opened,
     * what would happen only if the system is under heavy load by another system (like a backup system, or a DB sharing the same box as JBM).</p> 
     * */
-   private JournalFile enqueueOpenFile(boolean synchronous) throws InterruptedException
+   private JournalFile enqueueOpenFile(final boolean synchronous) throws InterruptedException
    {
       if (trace)
       {
@@ -2835,7 +2834,7 @@ public class JournalImpl implements TestableJournal
       return nextOpenedFile;
    }
 
-   private void closeFile(final JournalFile file, boolean synchronous)
+   private void closeFile(final JournalFile file, final boolean synchronous)
    {
       fileFactory.deactivate(file.getFile());
       pendingCloseFiles.add(file);

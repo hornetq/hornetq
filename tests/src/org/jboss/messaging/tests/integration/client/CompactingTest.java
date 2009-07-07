@@ -22,6 +22,7 @@
 
 package org.jboss.messaging.tests.integration.client;
 
+import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -34,6 +35,8 @@ import org.jboss.messaging.core.client.ClientSessionFactory;
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.exception.MessagingException;
+import org.jboss.messaging.core.journal.SequentialFile;
+import org.jboss.messaging.core.journal.impl.NIOSequentialFileFactory;
 import org.jboss.messaging.core.server.JournalType;
 import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.tests.util.ServiceTestBase;
@@ -70,14 +73,14 @@ public class CompactingTest extends ServiceTestBase
 
    // Public --------------------------------------------------------
 
-   public void testMultiProducerAndCompactNIO() throws Throwable
-   {
-      internalTestMultiProducer(JournalType.NIO);
-   }
-
    public void testMultiProducerAndCompactAIO() throws Throwable
    {
       internalTestMultiProducer(JournalType.ASYNCIO);
+   }
+
+   public void testMultiProducerAndCompactNIO() throws Throwable
+   {
+      internalTestMultiProducer(JournalType.NIO);
    }
 
    public void internalTestMultiProducer(JournalType journalType) throws Throwable
@@ -227,6 +230,22 @@ public class CompactingTest extends ServiceTestBase
 
       server.stop();
 
+      // NIOSequentialFileFactory factory = new NIOSequentialFileFactory(getJournalDir());
+      //      
+      // List<String> files = factory.listFiles("jbm");
+      //      
+      // for (String str: files)
+      // {
+      // System.out.println("Files " + str);
+      // SequentialFile file = factory.createSequentialFile(str, 1);
+      // for (int i = 0 ; i < 10 && file.size() == 0; i ++)
+      // {
+      // System.out.println("File size is ZERO = " + file.size());
+      // Thread.sleep(1000);
+      // }
+      // assertTrue(file.getFileName() + " size = " + file.size(), file.size() > 0);
+      // }
+
       setupServer(journalType);
 
       ClientSession sess = sf.createSession(true, true);
@@ -273,8 +292,8 @@ public class CompactingTest extends ServiceTestBase
 
       config.setJournalType(journalType);
 
-      config.setJournalCompactMinFiles(ConfigurationImpl.DEFAULT_JOURNAL_COMPACT_MIN_FILES);
-      config.setJournalCompactPercentage(ConfigurationImpl.DEFAULT_JOURNAL_COMPACT_PERCENTAGE);
+      config.setJournalCompactMinFiles(3);
+      config.setJournalCompactPercentage(50);
 
       server = createServer(true, config);
 
