@@ -144,7 +144,7 @@
       <dependency>
          <groupId>org.jboss.netty</groupId>
          <artifactId>netty</artifactId>
-         <version>3.1.0.CR1</version>
+         <version>3.1.0.CR2-SNAPSHOT</version>
       </dependency>
       <!--needed to compile the logging jar-->
       <dependency>
@@ -202,6 +202,19 @@
          <id>jboss.release</id>
          <name>JBoss releases</name>
          <url>http://repository.jboss.org/maven2</url>
+      </repository>
+      <repository>
+         <snapshots>
+            <enabled>true</enabled>
+            <updatePolicy>never</updatePolicy>
+         </snapshots>
+         <releases>
+            <enabled>false</enabled>
+            <updatePolicy>interval:10080</updatePolicy>
+         </releases>
+         <id>netty.snapshots</id>
+         <name>Netty releases</name>
+         <url>http://gleamynode.net/repo/mvn/</url>
       </repository>
    </repositories>
 
