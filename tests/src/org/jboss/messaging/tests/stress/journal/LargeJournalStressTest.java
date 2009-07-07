@@ -20,8 +20,10 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-package org.jboss.messaging.tests.integration.client;
+package org.jboss.messaging.tests.stress.journal;
 
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -39,13 +41,13 @@ import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.tests.util.ServiceTestBase;
 
 /**
- * A CompactingTest
+ * A LargeJournalStressTest
  *
  * @author <mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
  *
  *
  */
-public class CompactingTest extends ServiceTestBase
+public class LargeJournalStressTest extends ServiceTestBase
 {
 
    // Constants -----------------------------------------------------
@@ -69,7 +71,7 @@ public class CompactingTest extends ServiceTestBase
    // Constructors --------------------------------------------------
 
    // Public --------------------------------------------------------
-
+ 
    public void testMultiProducerAndCompactAIO() throws Throwable
    {
       internalTestMultiProducer(JournalType.ASYNCIO);
@@ -86,8 +88,8 @@ public class CompactingTest extends ServiceTestBase
       setupServer(journalType);
 
       final AtomicInteger numberOfMessages = new AtomicInteger(0);
-      final int NUMBER_OF_FAST_MESSAGES = 100000;
-      final int SLOW_INTERVAL = 100;
+      final int SLOW_INTERVAL = 25000;
+      final int NUMBER_OF_FAST_MESSAGES = SLOW_INTERVAL * 50;
 
       final CountDownLatch latchReady = new CountDownLatch(2);
       final CountDownLatch latchStart = new CountDownLatch(1);
@@ -117,6 +119,8 @@ public class CompactingTest extends ServiceTestBase
                {
                   if (i % SLOW_INTERVAL == 0)
                   {
+                     System.out.println("Sending slow message, msgs = " + i + " slowMessages = " + numberOfMessages.get());
+                     
                      if (numberOfMessages.incrementAndGet() % 5 == 0)
                      {
                         sessionSlow.commit();
@@ -273,7 +277,7 @@ public class CompactingTest extends ServiceTestBase
 
       config.setJournalType(journalType);
 
-      config.setJournalCompactMinFiles(3);
+      config.setJournalCompactMinFiles(0);
       config.setJournalCompactPercentage(50);
 
       server = createServer(true, config);
@@ -308,9 +312,15 @@ public class CompactingTest extends ServiceTestBase
    @Override
    protected void tearDown() throws Exception
    {
-      sf.close();
+      if (sf != null)
+      {
+         sf.close();
+      }
 
-      server.stop();
+      if (server != null)
+      {
+         server.stop();
+      }
 
       // We don't super.tearDown here because in case of failure, the data may be useful for debug
       // so, we only clear data on setup.
