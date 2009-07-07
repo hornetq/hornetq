@@ -252,7 +252,7 @@ public class NettyConnector implements Connector
       if (useServlet)
       {
          ClientSocketChannelFactory proxyChannelFactory = channelFactory;
-         channelFactory = new HttpTunnelingClientSocketChannelFactory(proxyChannelFactory, virtualExecutor);
+         channelFactory = new HttpTunnelingClientSocketChannelFactory(proxyChannelFactory);
       }
       bootstrap = new ClientBootstrap(channelFactory);
 
