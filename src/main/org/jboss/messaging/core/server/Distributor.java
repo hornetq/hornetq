@@ -38,7 +38,5 @@ public interface Distributor
 
    int getConsumerCount();
    
-   Consumer peekConsumer();
-
-   void incrementPosition();
+   Consumer getNextConsumer();
 }

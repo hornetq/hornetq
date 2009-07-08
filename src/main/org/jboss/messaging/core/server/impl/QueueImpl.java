@@ -1288,9 +1288,7 @@ public class QueueImpl implements Queue
       {
          return;
       }
-      
-      Consumer firstConsumer = distributionPolicy.peekConsumer();
-      
+
       Consumer consumer;
       
       MessageReference reference;
@@ -1299,12 +1297,13 @@ public class QueueImpl implements Queue
 
       int totalConsumers = distributionPolicy.getConsumerCount();
       Set<Consumer> busyConsumers = new HashSet<Consumer>();
- 
+      Set<Consumer> nullReferences = new HashSet<Consumer>();
+
       while (true)
       {
-        consumer = distributionPolicy.peekConsumer();
+        consumer = distributionPolicy.getNextConsumer();
          
-         iterator = iterators.get(consumer);
+        iterator = iterators.get(consumer);
          
          if (iterator == null)
          {
@@ -1331,14 +1330,20 @@ public class QueueImpl implements Queue
          
          if (reference == null)
          {
-            if (consumer == firstConsumer)
+            nullReferences.add(consumer);
+            if (nullReferences.size() + busyConsumers.size() == totalConsumers)
             {
                startDepaging();
                // We delivered all the messages - go into direct delivery
                direct = true;
                promptDelivery = false;
+               return;
             }
-            return;
+            continue;
+         }
+         else
+         {
+            nullReferences.remove(consumer);
          }
 
          initPagingStore(reference.getMessage().getDestination());
@@ -1350,8 +1355,6 @@ public class QueueImpl implements Queue
             Consumer groupConsumer = groups.putIfAbsent(groupID, consumer);
             if (groupConsumer != null && groupConsumer != consumer)
             {
-               // this consumer is not in charge of the message group
-               distributionPolicy.incrementPosition();
                continue;
             }
          }
@@ -1469,16 +1472,17 @@ public class QueueImpl implements Queue
          return HandleStatus.BUSY;
       }
       
-      Consumer firstConsumer = distributionPolicy.peekConsumer();
-      
       HandleStatus status;
 
       boolean filterRejected = false;
 
+      int consumerCount = 0;
+
       while (true)
       {
-         Consumer consumer = distributionPolicy.peekConsumer();
-
+         Consumer consumer = distributionPolicy.getNextConsumer();
+         consumerCount++;
+         
          final SimpleString groupId = (SimpleString)reference.getMessage().getProperty(MessageImpl.HDR_GROUP_ID);
 
          if (groupId != null)
@@ -1486,8 +1490,6 @@ public class QueueImpl implements Queue
             Consumer groupConsumer = groups.putIfAbsent(groupId, consumer);
             if (groupConsumer != null && groupConsumer != consumer)
             {
-               // this consumer is not in charge in the message group
-               distributionPolicy.incrementPosition();
                continue;
             }
          }
@@ -1514,7 +1516,7 @@ public class QueueImpl implements Queue
             }
          }
          // if we've tried all of them
-         if (distributionPolicy.peekConsumer() == firstConsumer)
+         if (consumerCount == distributionPolicy.getConsumerCount())
          {
             if (filterRejected)
             {
@@ -1563,10 +1565,6 @@ public class QueueImpl implements Queue
             log.error("Failed to remove consumer", e);
          }
          return HandleStatus.BUSY;
-      }
-      finally
-      {
-         distributionPolicy.incrementPosition();         
       }
 
       if (status == null)

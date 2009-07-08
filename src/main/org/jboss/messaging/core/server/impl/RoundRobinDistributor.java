@@ -57,12 +57,14 @@ public class RoundRobinDistributor extends DistributorImpl
       return super.getConsumerCount();
    }
 
-   public Consumer peekConsumer()
+   public synchronized Consumer getNextConsumer()
    {
-      return consumers.get(pos);
+      Consumer consumer = consumers.get(pos);
+      incrementPosition();
+      return consumer;
    }
    
-   public synchronized void incrementPosition()
+   private synchronized void incrementPosition()
    {
       pos++;
       

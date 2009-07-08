@@ -1249,16 +1249,12 @@ public class QueueImplTest extends UnitTestCase
          return false;
       }
 
-      public void incrementPosition()
-      {
-      }
-      
       public int getConsumerCount()
       {
          return 0;
       }
 
-      public Consumer peekConsumer()
+      public Consumer getNextConsumer()
       {
          return consumer;
       }
