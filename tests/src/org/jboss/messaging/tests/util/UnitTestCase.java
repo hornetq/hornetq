@@ -35,6 +35,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.net.ServerSocket;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -228,6 +229,35 @@ public class UnitTestCase extends TestCase
       Object o = context.lookup(binding);
       assertNotNull(o);
       return o;
+   }
+   
+   protected static void checkFreePort(int... ports)
+   {
+      for (int port : ports)
+      {
+         ServerSocket ssocket = null;
+         try
+         {
+           ssocket = new ServerSocket(port);  
+         }
+         catch (Exception e)
+         {
+            fail("port " + port + " is already bound");
+         }
+         finally
+         {
+            if (ssocket != null)
+            {
+               try
+               {
+                  ssocket.close();
+               }
+               catch (IOException e)
+               {
+               }
+            }
+         }
+      }
    }
    
    // Constructors --------------------------------------------------
@@ -507,6 +537,8 @@ public class UnitTestCase extends TestCase
       
       InVMRegistry.instance.clear();
       
+      checkFreePort(5445, 5545);
+      
       log.info("###### starting test " + this.getClass().getName() + "." + this.getName());
    }
    
@@ -516,7 +548,9 @@ public class UnitTestCase extends TestCase
       deleteDirectory(new File(getTestDir()));
 
       assertEquals(0, InVMRegistry.instance.size());          
-      
+
+      checkFreePort(5445, 5545);
+
       super.tearDown();
    }
 
