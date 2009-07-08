@@ -67,6 +67,7 @@ import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.core.server.impl.ServerMessageImpl;
 import org.jboss.messaging.core.transaction.impl.XidImpl;
+import org.jboss.messaging.integration.transports.netty.TransportConstants;
 import org.jboss.messaging.jms.client.JBossTextMessage;
 import org.jboss.messaging.utils.SimpleString;
 import org.jboss.messaging.utils.UUIDGenerator;
@@ -537,7 +538,7 @@ public class UnitTestCase extends TestCase
       
       InVMRegistry.instance.clear();
       
-      checkFreePort(5445, 5545);
+      checkFreePort(TransportConstants.DEFAULT_PORT);
       
       log.info("###### starting test " + this.getClass().getName() + "." + this.getName());
    }
@@ -549,7 +550,7 @@ public class UnitTestCase extends TestCase
 
       assertEquals(0, InVMRegistry.instance.size());          
 
-      checkFreePort(5445, 5545);
+      checkFreePort(TransportConstants.DEFAULT_PORT);
 
       super.tearDown();
    }

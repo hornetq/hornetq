@@ -56,6 +56,7 @@ import org.jboss.messaging.core.server.Messaging;
 import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.core.server.cluster.ClusterConnection;
 import org.jboss.messaging.core.server.cluster.RemoteQueueBinding;
+import org.jboss.messaging.integration.transports.netty.TransportConstants;
 import org.jboss.messaging.tests.util.ServiceTestBase;
 import org.jboss.messaging.utils.Pair;
 import org.jboss.messaging.utils.SimpleString;
@@ -73,6 +74,18 @@ public class ClusterTestBase extends ServiceTestBase
 {
    private static final Logger log = Logger.getLogger(ClusterTestBase.class);
 
+   private static final int[] PORTS = {TransportConstants.DEFAULT_PORT,
+                                       TransportConstants.DEFAULT_PORT + 1,
+                                       TransportConstants.DEFAULT_PORT + 2,
+                                       TransportConstants.DEFAULT_PORT + 3,
+                                       TransportConstants.DEFAULT_PORT + 4,
+                                       TransportConstants.DEFAULT_PORT + 5,
+                                       TransportConstants.DEFAULT_PORT + 6,
+                                       TransportConstants.DEFAULT_PORT + 7,
+                                       TransportConstants.DEFAULT_PORT + 8,
+                                       TransportConstants.DEFAULT_PORT + 9,
+   };
+
    private static final long WAIT_TIMEOUT = 10000;
 
    @Override
@@ -80,7 +93,17 @@ public class ClusterTestBase extends ServiceTestBase
    {
       super.setUp();
 
+      checkFreePort(PORTS);
+      
       clearData();
+   }
+   
+   @Override
+   protected void tearDown() throws Exception
+   {
+      checkFreePort(PORTS);
+      
+      super.tearDown();
    }
 
    // Private -------------------------------------------------------------------------------------------------------
