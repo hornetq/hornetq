@@ -21,6 +21,8 @@
         This is only needed when starting the standalone server and is set in the run script. This
         is not a problem if you are embedding JBoss Messaging in your own code as the Microcontainer
         won't be being used.</para>
+   <para>If you want configure your client's logging, make sure you provide a <literal>logging.properties</literal>
+   file and set the <literal>java.util.logging.config.file</literal> property on client startup</para>
     <section>
         <title>Log4j Configuration</title>
         <para>JBoss Messaging supplies a JUL Log4j handler that can be used instead of the defaults.
