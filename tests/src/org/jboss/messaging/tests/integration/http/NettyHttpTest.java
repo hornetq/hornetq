@@ -55,6 +55,8 @@ public class NettyHttpTest extends UnitTestCase
    {
       super.setUp();
       
+      checkFreePort(TransportConstants.DEFAULT_PORT);
+
       threadPool = Executors.newCachedThreadPool();
    }
    
@@ -73,6 +75,8 @@ public class NettyHttpTest extends UnitTestCase
       }
       
       threadPool.shutdownNow();
+
+      checkFreePort(TransportConstants.DEFAULT_PORT);
 
       super.tearDown();
    }

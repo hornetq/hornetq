@@ -538,7 +538,7 @@ public class UnitTestCase extends TestCase
       
       InVMRegistry.instance.clear();
       
-      checkFreePort(TransportConstants.DEFAULT_PORT);
+      // checkFreePort(TransportConstants.DEFAULT_PORT);
       
       log.info("###### starting test " + this.getClass().getName() + "." + this.getName());
    }
@@ -550,7 +550,7 @@ public class UnitTestCase extends TestCase
 
       assertEquals(0, InVMRegistry.instance.size());          
 
-      checkFreePort(TransportConstants.DEFAULT_PORT);
+      // checkFreePort(TransportConstants.DEFAULT_PORT);
 
       super.tearDown();
    }
