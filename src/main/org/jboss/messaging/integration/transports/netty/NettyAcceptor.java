@@ -26,6 +26,7 @@ import static org.jboss.netty.channel.Channels.pipeline;
 
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Timer;
 import java.util.concurrent.ConcurrentHashMap;
@@ -54,6 +55,7 @@ import org.jboss.netty.channel.ChannelPipelineCoverage;
 import org.jboss.netty.channel.ChannelPipelineFactory;
 import org.jboss.netty.channel.ChannelStateEvent;
 import org.jboss.netty.channel.group.ChannelGroup;
+import org.jboss.netty.channel.group.ChannelGroupFuture;
 import org.jboss.netty.channel.group.DefaultChannelGroup;
 import org.jboss.netty.channel.local.DefaultLocalServerChannelFactory;
 import org.jboss.netty.channel.local.LocalAddress;
@@ -367,7 +369,20 @@ public class NettyAcceptor implements Acceptor
       
       if (!paused)
       {
-         serverChannelGroup.close().awaitUninterruptibly(); 
+         ChannelGroupFuture future = serverChannelGroup.close().awaitUninterruptibly();
+         if (!future.isCompleteSuccess())
+         {
+            log.warn("Server channel group did not completely close");
+            Iterator<Channel> iterator = future.getGroup().iterator();
+            while (iterator.hasNext())
+            {
+               Channel channel = (Channel)iterator.next();
+               if (channel.isBound())
+               {
+                  log.warn(channel + " is still bound to " + channel.getLocalAddress());
+               }
+            }
+         }
       }
 
       if (httpKeepAliveTimer != null)
@@ -377,8 +392,22 @@ public class NettyAcceptor implements Acceptor
          httpKeepAliveTimer.cancel();
       }
       
-      channelGroup.close().awaitUninterruptibly();
+      ChannelGroupFuture future = channelGroup.close().awaitUninterruptibly();
 
+      if (!future.isCompleteSuccess())
+      {
+         log.warn("channel group did not completely close");
+         Iterator<Channel> iterator = future.getGroup().iterator();
+         while (iterator.hasNext())
+         {
+            Channel channel = (Channel)iterator.next();
+            if (channel.isBound())
+            {
+               log.warn(channel + " is still connected to " + channel.getRemoteAddress());
+            }
+         }
+      }
+      
       channelFactory = null;  
       
       for (Connection connection : connections.values())
