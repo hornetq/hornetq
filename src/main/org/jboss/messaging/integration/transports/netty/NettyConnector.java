@@ -544,10 +544,15 @@ public class NettyConnector implements Connector
 
       private class HttpIdleTimerTask extends TimerTask
       {
-         long currentTime = System.currentTimeMillis();
+         private boolean closed = false;
 
          public synchronized void run()
          {
+            if (closed)
+            {
+               return;
+            }
+            
             if (!waitingGet && System.currentTimeMillis() > lastSendTime + httpMaxClientIdleTime)
             {
                HttpRequest httpRequest = new DefaultHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, url);
@@ -558,6 +563,8 @@ public class NettyConnector implements Connector
 
          public synchronized boolean cancel()
          {
+            closed  = true;
+
             return super.cancel();
          }
       }

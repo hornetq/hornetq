@@ -32,9 +32,15 @@ import java.util.TimerTask;
 public class HttpKeepAliveTask extends TimerTask
 {
    private final List<HttpAcceptorHandler> handlers = new ArrayList<HttpAcceptorHandler>();
+   private boolean closed = false;
 
    public synchronized void run()
    {
+      if (closed)
+      {
+         return;
+      }
+      
       long time = System.currentTimeMillis();
       for (HttpAcceptorHandler handler : handlers)
       {
@@ -54,6 +60,8 @@ public class HttpKeepAliveTask extends TimerTask
 
    public synchronized boolean cancel()
    {
+      closed  = true;
+
       return super.cancel();
    }
 }
