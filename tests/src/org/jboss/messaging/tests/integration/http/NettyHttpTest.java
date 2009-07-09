@@ -21,8 +21,6 @@
  */
 package org.jboss.messaging.tests.integration.http;
 
-import java.io.IOException;
-import java.net.ServerSocket;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.concurrent.CountDownLatch;
@@ -51,26 +49,15 @@ public class NettyHttpTest extends UnitTestCase
    private NettyConnector connector;
    
    private ExecutorService threadPool;
-
-   private int port;
-
-   private static int findFreePort() throws IOException
-   {
-      ServerSocket server = new ServerSocket(0);
-      server.setReuseAddress(true);
-      int port = server.getLocalPort();
-      server.close();
-      return port;
-   }
    
    @Override
    protected void setUp() throws Exception
    {
       super.setUp();
       
+      checkFreePort(TransportConstants.DEFAULT_PORT);
+
       threadPool = Executors.newCachedThreadPool();
-      
-      port = findFreePort();
    }
    
    @Override
@@ -89,6 +76,8 @@ public class NettyHttpTest extends UnitTestCase
       
       threadPool.shutdownNow();
 
+      checkFreePort(TransportConstants.DEFAULT_PORT);
+
       super.tearDown();
    }
    
@@ -103,7 +92,6 @@ public class NettyHttpTest extends UnitTestCase
       HashMap<String, Object> conf = new HashMap<String, Object>();
       conf.put(TransportConstants.HTTP_ENABLED_PROP_NAME, true);
       conf.put(TransportConstants.HTTP_CLIENT_IDLE_SCAN_PERIOD, -1l);
-      conf.put(TransportConstants.PORT_PROP_NAME, port);
       DummyConnectionLifeCycleListener acceptorListener = new DummyConnectionLifeCycleListener(connCreatedLatch);
       SimpleBufferHandler acceptorHandler = new SimpleBufferHandler(acceptorLatch);
       acceptor = new NettyAcceptor(conf, acceptorHandler, acceptorListener, threadPool);
@@ -154,7 +142,6 @@ public class NettyHttpTest extends UnitTestCase
       HashMap<String, Object> conf = new HashMap<String, Object>();
       conf.put(TransportConstants.HTTP_ENABLED_PROP_NAME, true);
       conf.put(TransportConstants.HTTP_CLIENT_IDLE_SCAN_PERIOD, -1l);
-      conf.put(TransportConstants.PORT_PROP_NAME, port);
       DummyConnectionLifeCycleListener acceptorListener = new DummyConnectionLifeCycleListener(connCreatedLatch);
       SimpleBufferHandler acceptorHandler = new SimpleBufferHandler(acceptorLatch);
       acceptor = new NettyAcceptor(conf, acceptorHandler, acceptorListener, threadPool);
@@ -208,7 +195,6 @@ public class NettyHttpTest extends UnitTestCase
       HashMap<String, Object> conf = new HashMap<String, Object>();
       conf.put(TransportConstants.HTTP_ENABLED_PROP_NAME, true);
       conf.put(TransportConstants.HTTP_CLIENT_IDLE_SCAN_PERIOD, -1l);
-      conf.put(TransportConstants.PORT_PROP_NAME, port);
       DummyConnectionLifeCycleListener acceptorListener = new DummyConnectionLifeCycleListener(connCreatedLatch);
       SimpleBufferHandler acceptorHandler = new SimpleBufferHandler(acceptorLatch);
       acceptor = new NettyAcceptor(conf, acceptorHandler, acceptorListener, threadPool);
@@ -263,7 +249,6 @@ public class NettyHttpTest extends UnitTestCase
       HashMap<String, Object> conf = new HashMap<String, Object>();
       conf.put(TransportConstants.HTTP_ENABLED_PROP_NAME, true);
       conf.put(TransportConstants.HTTP_CLIENT_IDLE_SCAN_PERIOD, -1l);
-      conf.put(TransportConstants.PORT_PROP_NAME, port);
       DummyConnectionLifeCycleListener acceptorListener = new DummyConnectionLifeCycleListener(connCreatedLatch);
       SimpleBufferHandler acceptorHandler = new SimpleBufferHandler(acceptorLatch);
       acceptor = new NettyAcceptor(conf, acceptorHandler, acceptorListener, threadPool);
@@ -317,7 +302,6 @@ public class NettyHttpTest extends UnitTestCase
       conf.put(TransportConstants.HTTP_ENABLED_PROP_NAME, true);
       conf.put(TransportConstants.HTTP_CLIENT_IDLE_SCAN_PERIOD, 500l);
       conf.put(TransportConstants.HTTP_CLIENT_IDLE_PROP_NAME, 500l);
-      conf.put(TransportConstants.PORT_PROP_NAME, port);
       DummyConnectionLifeCycleListener acceptorListener = new DummyConnectionLifeCycleListener(connCreatedLatch);
       SimpleBufferHandler acceptorHandler = new SimpleBufferHandler(acceptorLatch);
       acceptor = new NettyAcceptor(conf, acceptorHandler, acceptorListener, threadPool);
@@ -367,7 +351,6 @@ public class NettyHttpTest extends UnitTestCase
       conf.put(TransportConstants.HTTP_CLIENT_IDLE_SCAN_PERIOD, -1l);
       conf.put(TransportConstants.HTTP_RESPONSE_TIME_PROP_NAME, 500l);
       conf.put(TransportConstants.HTTP_SERVER_SCAN_PERIOD_PROP_NAME, 5000l);
-      conf.put(TransportConstants.PORT_PROP_NAME, port);
       DummyConnectionLifeCycleListener acceptorListener = new DummyConnectionLifeCycleListener(connCreatedLatch);
       SimpleBufferHandler acceptorHandler = new SimpleBufferHandler(acceptorLatch);
       acceptor = new NettyAcceptor(conf, acceptorHandler, acceptorListener, threadPool);
@@ -410,7 +393,6 @@ public class NettyHttpTest extends UnitTestCase
       conf.put(TransportConstants.HTTP_CLIENT_IDLE_SCAN_PERIOD, -1l);
       conf.put(TransportConstants.HTTP_RESPONSE_TIME_PROP_NAME, 500l);
       conf.put(TransportConstants.HTTP_SERVER_SCAN_PERIOD_PROP_NAME, 5000l);
-      conf.put(TransportConstants.PORT_PROP_NAME, port);
       DummyConnectionLifeCycleListener acceptorListener = new DummyConnectionLifeCycleListener(connCreatedLatch);
       SimpleBufferHandler2 acceptorHandler = new SimpleBufferHandler2(acceptorLatch);
       acceptor = new NettyAcceptor(conf, acceptorHandler, acceptorListener, threadPool);
