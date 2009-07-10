@@ -910,7 +910,8 @@ public class MessagingServerImpl implements MessagingServer
       pagingManager = createPagingManager();
 
       resourceManager = new ResourceManagerImpl((int)(configuration.getTransactionTimeout() / 1000),
-                                                configuration.getTransactionTimeoutScanPeriod());
+                                                configuration.getTransactionTimeoutScanPeriod(),
+                                                scheduledPool);
       postOffice = new PostOfficeImpl(this,
                                       storageManager,
                                       pagingManager,
@@ -934,6 +935,7 @@ public class MessagingServerImpl implements MessagingServer
                                                                 remotingService,
                                                                 this,
                                                                 queueFactory,
+                                                                scheduledPool,
                                                                 configuration.isBackup());
 
       // Address settings need to deployed initially, since they're require on paging manager.start()

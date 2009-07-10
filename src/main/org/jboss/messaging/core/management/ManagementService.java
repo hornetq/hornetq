@@ -23,6 +23,7 @@
 package org.jboss.messaging.core.management;
 
 import java.util.Set;
+import java.util.concurrent.ScheduledExecutorService;
 
 import javax.management.ObjectName;
 
@@ -88,6 +89,7 @@ public interface ManagementService extends NotificationService, MessagingCompone
                                          RemotingService remotingService,
                                          MessagingServer messagingServer,
                                          QueueFactory queueFactory,
+                                         ScheduledExecutorService scheduledThreadPool,
                                          boolean backup) throws Exception;
 
    void unregisterServer() throws Exception;

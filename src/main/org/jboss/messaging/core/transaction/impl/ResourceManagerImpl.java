@@ -28,10 +28,11 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.Timer;
-import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.Future;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import javax.transaction.xa.Xid;
 
@@ -58,17 +59,20 @@ public class ResourceManagerImpl implements ResourceManager, MessagingComponent
 
    private boolean started = false;
 
-   private Timer timer;
-
-   private TimerTask task;
+   private TxTimeoutHandler task;
 
    private final long txTimeoutScanPeriod;
 
-   public ResourceManagerImpl(final int defaultTimeoutSeconds, final long txTimeoutScanPeriod)
+   private final ScheduledExecutorService scheduledThreadPool;
+
+   public ResourceManagerImpl(final int defaultTimeoutSeconds, 
+                              final long txTimeoutScanPeriod, 
+                              final ScheduledExecutorService scheduledThreadPool)
    {
       this.defaultTimeoutSeconds = defaultTimeoutSeconds;
       this.timeoutSeconds = defaultTimeoutSeconds;
       this.txTimeoutScanPeriod = txTimeoutScanPeriod;
+      this.scheduledThreadPool = scheduledThreadPool;
    }
 
    // MessagingComponent implementation
@@ -79,9 +83,11 @@ public class ResourceManagerImpl implements ResourceManager, MessagingComponent
       {
          return;
       }
-      timer = new Timer(true);
+      
       task = new TxTimeoutHandler();
-      timer.schedule(task, txTimeoutScanPeriod, txTimeoutScanPeriod);
+      Future<?> future = scheduledThreadPool.scheduleAtFixedRate(task, txTimeoutScanPeriod, txTimeoutScanPeriod, TimeUnit.MILLISECONDS);
+      task.setFuture(future);
+      
       started = true;
    }
 
@@ -91,15 +97,9 @@ public class ResourceManagerImpl implements ResourceManager, MessagingComponent
       {
          return;
       }
-      if (timer != null)
+      if (task != null)
       {
-         task.cancel();
-
-         task = null;
-
-         timer.cancel();
-
-         timer = null;
+         task.close();
       }
 
       started = false;
@@ -173,10 +173,19 @@ public class ResourceManagerImpl implements ResourceManager, MessagingComponent
       return xidsWithCreationTime;
    }
 
-   class TxTimeoutHandler extends TimerTask
+   class TxTimeoutHandler implements Runnable
    {
+      private boolean closed = false;
+      
+      private Future<?> future;
+
       public void run()
       {
+         if (closed)
+         {
+            return;
+         }
+         
          Set<Transaction> timedoutTransactions = new HashSet<Transaction>();
 
          long now = System.currentTimeMillis();
@@ -202,6 +211,21 @@ public class ResourceManagerImpl implements ResourceManager, MessagingComponent
                log.error("failed to timeout transaction, xid:" + failedTransaction.getXid(), e);
             }
          }
+      }
+
+      synchronized void setFuture(Future<?> future)
+      {
+         this.future = future;
+      }
+      
+      void close()
+      {
+         if (future != null)
+         {
+            future.cancel(false);
+         }
+         
+         closed = true;
       }
 
    }

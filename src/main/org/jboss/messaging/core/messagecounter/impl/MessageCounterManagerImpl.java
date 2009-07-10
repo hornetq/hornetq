@@ -26,8 +26,9 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
-import java.util.Timer;
-import java.util.TimerTask;
+import java.util.concurrent.Future;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.logging.Logger;
@@ -39,6 +40,8 @@ import org.jboss.messaging.core.messagecounter.MessageCounterManager;
  * A MessageCounterManager
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
+ * 
  * @version <tt>$Revision: 3307 $</tt>
  *
  * $Id: MessageCounterManager.java 3307 2007-11-09 20:43:00Z timfox $
@@ -59,17 +62,19 @@ public class MessageCounterManagerImpl implements MessageCounterManager
    
    private boolean started;
    
-   private Timer timer;
-   
    private long period = DEFAULT_SAMPLE_PERIOD;
    
-   private PingMessageCountersTask task;
+   private MessageCountersPinger messageCountersPinger;
 
    private int maxDayCount = DEFAULT_MAX_DAY_COUNT;
+
+   private final ScheduledExecutorService scheduledThreadPool;
           
-   public MessageCounterManagerImpl()
+   public MessageCounterManagerImpl(final ScheduledExecutorService scheduledThreadPool)
    {
       messageCounters = new HashMap<String, MessageCounter>();
+      
+      this.scheduledThreadPool = scheduledThreadPool;
    }
 
    public synchronized void start()
@@ -79,12 +84,10 @@ public class MessageCounterManagerImpl implements MessageCounterManager
          return;
       }
       
-      // Needs to be daemon
-      timer = new Timer(true);
+      messageCountersPinger = new MessageCountersPinger();
       
-      task = new PingMessageCountersTask();
-            
-      timer.schedule(task, 0, period);      
+      Future<?> future = scheduledThreadPool.scheduleAtFixedRate(messageCountersPinger, 0, period, TimeUnit.MILLISECONDS);
+      messageCountersPinger.setFuture(future);
       
       started = true;      
    }
@@ -96,13 +99,7 @@ public class MessageCounterManagerImpl implements MessageCounterManager
          return;
       }
       
-      //Wait for timer task to stop
-      
-      task.stop();
-      
-      timer.cancel();
-      
-      timer = null;
+      messageCountersPinger.stop();
       
       started = false;
    }
@@ -206,10 +203,19 @@ public class MessageCounterManagerImpl implements MessageCounterManager
       }
    }
    
-   class PingMessageCountersTask extends TimerTask
+   class MessageCountersPinger implements Runnable
    {
+      private boolean closed = false;
+      
+      private Future<?> future;
+
       public synchronized void run()
       {
+         if (closed)
+         {
+            return;
+         }
+         
          synchronized (messageCounters)
          {
             Iterator<MessageCounter> iter = messageCounters.values().iterator();
@@ -223,9 +229,19 @@ public class MessageCounterManagerImpl implements MessageCounterManager
          }
       }  
                         
+      public void setFuture(Future<?> future)
+      {
+         this.future = future;
+      }
+
       synchronized void stop()
       {
-         cancel();
+         if (future != null)
+         {
+            future.cancel(false);
+         }
+         
+         closed = true;
       }
    }
 

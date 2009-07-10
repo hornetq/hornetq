@@ -30,6 +30,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ScheduledExecutorService;
 
 import javax.management.MBeanServer;
 import javax.management.NotificationBroadcasterSupport;
@@ -118,7 +119,7 @@ public class ManagementServiceImpl implements ManagementService
 
    private MessagingServerControlImpl messagingServerControl;
 
-   private final MessageCounterManager messageCounterManager;
+   private MessageCounterManager messageCounterManager;
 
    private final SimpleString managementNotificationAddress;
 
@@ -169,9 +170,6 @@ public class ManagementServiceImpl implements ManagementService
       registry = new HashMap<String, Object>();
       broadcaster = new NotificationBroadcasterSupport();
       notificationsEnabled = true;
-      messageCounterManager = new MessageCounterManagerImpl();
-      messageCounterManager.setMaxDayCount(configuration.getMessageCounterMaxDayHistory());
-      messageCounterManager.reschedule(configuration.getMessageCounterSamplePeriod());
 
       replicationInvoker = new ReplicationOperationInvokerImpl(managementClusterUser,
                                                                managementClusterPassword,
@@ -198,6 +196,7 @@ public class ManagementServiceImpl implements ManagementService
                                                     final RemotingService remotingService,
                                                     final MessagingServer messagingServer,
                                                     final QueueFactory queueFactory,
+                                                    final ScheduledExecutorService scheduledThreadPool,
                                                     final boolean backup) throws Exception
    {
       this.postOffice = postOffice;
@@ -205,6 +204,10 @@ public class ManagementServiceImpl implements ManagementService
       this.securityRepository = securityRepository;
       this.storageManager = storageManager;
       this.messagingServer = messagingServer;
+
+      this.messageCounterManager = new MessageCounterManagerImpl(scheduledThreadPool);
+      messageCounterManager.setMaxDayCount(configuration.getMessageCounterMaxDayHistory());
+      messageCounterManager.reschedule(configuration.getMessageCounterSamplePeriod());
 
       messagingServerControl = new MessagingServerControlImpl(postOffice,
                                                               configuration,

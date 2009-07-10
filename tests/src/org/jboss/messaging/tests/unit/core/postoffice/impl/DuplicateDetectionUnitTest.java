@@ -27,6 +27,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
@@ -89,6 +90,8 @@ public class DuplicateDetectionUnitTest extends ServiceTestBase
 
          configuration.setJournalType(JournalType.ASYNCIO);
 
+         ScheduledExecutorService scheduledThreadPool = Executors.newScheduledThreadPool(ConfigurationImpl.DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE);
+         
          journal = new JournalStorageManager(configuration, Executors.newCachedThreadPool());
 
          journal.start();
@@ -97,7 +100,7 @@ public class DuplicateDetectionUnitTest extends ServiceTestBase
          HashMap<SimpleString, List<Pair<byte[], Long>>> mapDups = new HashMap<SimpleString, List<Pair<byte[], Long>>>();
 
          journal.loadMessageJournal(new FakePagingManager(),
-                                    new ResourceManagerImpl(0, 0),
+                                    new ResourceManagerImpl(0, 0, scheduledThreadPool),
                                     new HashMap<Long, Queue>(),
                                     mapDups);
 
@@ -117,7 +120,7 @@ public class DuplicateDetectionUnitTest extends ServiceTestBase
          journal.loadBindingJournal(new ArrayList<QueueBindingInfo>());
 
          journal.loadMessageJournal(new FakePagingManager(),
-                                    new ResourceManagerImpl(0, 0),
+                                    new ResourceManagerImpl(0, 0, scheduledThreadPool),
                                     new HashMap<Long, Queue>(),
                                     mapDups);
 
@@ -144,7 +147,7 @@ public class DuplicateDetectionUnitTest extends ServiceTestBase
          journal.loadBindingJournal(new ArrayList<QueueBindingInfo>());
 
          journal.loadMessageJournal(new FakePagingManager(),
-                                    new ResourceManagerImpl(0, 0),
+                                    new ResourceManagerImpl(0, 0, scheduledThreadPool),
                                     new HashMap<Long, Queue>(),
                                     mapDups);
 
