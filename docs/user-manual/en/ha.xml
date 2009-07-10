@@ -69,8 +69,8 @@
                 purposes, it's necessary to copy the <literal>data</literal> directory from the live
                 server to the backup server. This means the backup server will have an identical
                 persistent store to the backup server.</para>
-            <para>Similarly when a client fails over from a live server <literal>L</literal>to a
-                backup server <literal>B</literal>, the server <literal>L</literal>becomes invalid
+            <para>Similarly when a client fails over from a live server <literal>L</literal> to a
+                backup server <literal>B</literal>, the server <literal>L</literal> becomes invalid
                 since, from that point on, the data on <literal>L</literal> and <literal>B</literal>
                 may diverge. After such a failure, at the next available opportunity the <literal
                     >B</literal> server should be taken down, and its <literal>data</literal>
@@ -94,7 +94,7 @@
                 activating delivery on itself. If all connections have not reattached with this
                 timeout then the queue will activate regardless.</para>
             <para>This param is defined in <literal>jbm-configuration.xml</literal> using the
-                setting <literal>queue-activation-timeout</literal>. It's default value is <literal
+                setting <literal>queue-activation-timeout</literal>. Its default value is <literal
                     >30000</literal> milliseconds.</para>
         </section>
     </section>
