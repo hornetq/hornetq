@@ -150,8 +150,9 @@
                 >ExceptionListener</literal> will be called by JBoss Messaging in the event that
             connection failure is detected. In your <literal>ExceptionListener</literal> you would
             close your old JMS connections, potentially look up new connection factory instances
-            from JNDI and creating new connections. In this case you may well be using HA-JNDI
-            [link] to ensure that the new connection factory is looked up from a different
+            from JNDI and creating new connections. In this case you may well be using 
+            <ulink url="http://www.jboss.org/community/wiki/JBossHAJNDIImpl">HA-JNDI</ulink>
+            to ensure that the new connection factory is looked up from a different
             server.</para>
         <para>For a working example of application-level failover, please see <xref
                 linkend="application-level-failover"/>.</para>
