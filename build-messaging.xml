@@ -1105,6 +1105,7 @@
                     failureproperty="tests.failed">
             <formatter type="plain" usefile="${junit.formatter.usefile}"/>
             <fileset dir="${test.classes.dir}">
+               <exclude name="**/integration/http/*" />
                <include name="${tests.param}"/>
             </fileset>
          </batchtest>
