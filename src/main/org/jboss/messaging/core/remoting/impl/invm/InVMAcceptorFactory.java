@@ -23,6 +23,7 @@ package org.jboss.messaging.core.remoting.impl.invm;
 
 import java.util.Map;
 import java.util.concurrent.Executor;
+import java.util.concurrent.ScheduledExecutorService;
 
 import org.jboss.messaging.core.remoting.spi.Acceptor;
 import org.jboss.messaging.core.remoting.spi.AcceptorFactory;
@@ -40,7 +41,8 @@ public class InVMAcceptorFactory implements AcceptorFactory
 
    public Acceptor createAcceptor(final Map<String, Object> configuration,
             final BufferHandler handler, final ConnectionLifeCycleListener listener,
-            final Executor threadPool)
+            final Executor threadPool,
+            final ScheduledExecutorService scheduledThreadPool)
    {
       return new InVMAcceptor(configuration, handler, listener, threadPool);
    }

@@ -28,10 +28,12 @@ import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Timer;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Executor;
+import java.util.concurrent.Future;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import javax.net.ssl.SSLContext;
 
@@ -119,9 +121,7 @@ public class NettyAcceptor implements Acceptor
 
    private final int tcpReceiveBufferSize;
 
-   private final Timer httpKeepAliveTimer;
-
-   private final HttpKeepAliveTask httpKeepAliveTask;
+   private final HttpKeepAliveRunnable httpKeepAliveRunnable;
 
    private ConcurrentMap<Object, Connection> connections = new ConcurrentHashMap<Object, Connection>();
    
@@ -129,15 +129,20 @@ public class NettyAcceptor implements Acceptor
    
    private final Executor threadPool;
 
+   private final ScheduledExecutorService scheduledThreadPool;
+
    public NettyAcceptor(final Map<String, Object> configuration,
                         final BufferHandler handler,
                         final ConnectionLifeCycleListener listener,
-                        final Executor threadPool)
+                        final Executor threadPool,
+                        final ScheduledExecutorService scheduledThreadPool)
    {
       this.handler = handler;
 
       this.listener = listener;
 
+      this.scheduledThreadPool = scheduledThreadPool;
+      
       this.sslEnabled = ConfigurationHelper.getBooleanProperty(TransportConstants.SSL_ENABLED_PROP_NAME,
                                                                TransportConstants.DEFAULT_SSL_ENABLED,
                                                                configuration);
@@ -153,16 +158,15 @@ public class NettyAcceptor implements Acceptor
          httpResponseTime = ConfigurationHelper.getLongProperty(TransportConstants.HTTP_RESPONSE_TIME_PROP_NAME,
                                                                 TransportConstants.DEFAULT_HTTP_RESPONSE_TIME,
                                                                 configuration);
-         httpKeepAliveTimer = new Timer();
-         httpKeepAliveTask = new HttpKeepAliveTask();
-         httpKeepAliveTimer.schedule(httpKeepAliveTask, httpServerScanPeriod, httpServerScanPeriod);
+         httpKeepAliveRunnable = new HttpKeepAliveRunnable();
+         Future<?> future = this.scheduledThreadPool.scheduleAtFixedRate(httpKeepAliveRunnable, httpServerScanPeriod, httpServerScanPeriod, TimeUnit.MILLISECONDS);
+         httpKeepAliveRunnable.setFuture(future);
       }
       else
       {
          httpServerScanPeriod = 0;
          httpResponseTime = 0;
-         httpKeepAliveTimer = null;
-         httpKeepAliveTask = null;
+         httpKeepAliveRunnable = null;
       }
       this.useNio = ConfigurationHelper.getBooleanProperty(TransportConstants.USE_NIO_PROP_NAME,
                                                            TransportConstants.DEFAULT_USE_NIO,
@@ -269,7 +273,7 @@ public class NettyAcceptor implements Acceptor
             {
                pipeline.addLast("httpRequestDecoder", new HttpRequestDecoder());
                pipeline.addLast("httpResponseEncoder", new HttpResponseEncoder());
-               pipeline.addLast("httphandler", new HttpAcceptorHandler(httpKeepAliveTask, httpResponseTime));
+               pipeline.addLast("httphandler", new HttpAcceptorHandler(httpKeepAliveRunnable, httpResponseTime));
             }
 
             ChannelPipelineSupport.addCodecFilter(pipeline, handler);
@@ -385,11 +389,9 @@ public class NettyAcceptor implements Acceptor
          }
       }
 
-      if (httpKeepAliveTimer != null)
+      if (httpKeepAliveRunnable != null)
       {
-         httpKeepAliveTask.cancel();
-
-         httpKeepAliveTimer.cancel();
+         httpKeepAliveRunnable.close();
       }
       
       ChannelGroupFuture future = channelGroup.close().awaitUninterruptibly();

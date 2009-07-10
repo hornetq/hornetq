@@ -78,7 +78,7 @@ public class NettyConnectorTest extends UnitTestCase
          }
       };
       
-      NettyConnector connector = new NettyConnector(params, handler, listener, Executors.newCachedThreadPool());
+      NettyConnector connector = new NettyConnector(params, handler, listener, Executors.newCachedThreadPool(), Executors.newScheduledThreadPool(5));
       
       connector.start();
       assertTrue(connector.isStarted());
@@ -112,7 +112,7 @@ public class NettyConnectorTest extends UnitTestCase
 
       try
       {
-         new NettyConnector(params, null, listener, Executors.newCachedThreadPool());
+         new NettyConnector(params, null, listener, Executors.newCachedThreadPool(), Executors.newScheduledThreadPool(5));
          
          fail("Should throw Exception");
       }
@@ -123,7 +123,7 @@ public class NettyConnectorTest extends UnitTestCase
       
       try
       {
-         new NettyConnector(params, handler, null, Executors.newCachedThreadPool());
+         new NettyConnector(params, handler, null, Executors.newCachedThreadPool(), Executors.newScheduledThreadPool(5));
          
          fail("Should throw Exception");
       }

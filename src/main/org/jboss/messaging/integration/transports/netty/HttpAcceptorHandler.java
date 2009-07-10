@@ -58,13 +58,13 @@ class HttpAcceptorHandler extends SimpleChannelHandler
 
    private final Executor executor = new ThreadPoolExecutor(1, 1, 0, TimeUnit.SECONDS, delayedResponses);
 
-   private final HttpKeepAliveTask httpKeepAliveTask;
+   private final HttpKeepAliveRunnable httpKeepAliveTask;
 
    private final long responseTime;
 
    private Channel channel;
 
-   public HttpAcceptorHandler(final HttpKeepAliveTask httpKeepAliveTask, long responseTime)
+   public HttpAcceptorHandler(final HttpKeepAliveRunnable httpKeepAliveTask, long responseTime)
    {
       super();
       this.responseTime = responseTime;

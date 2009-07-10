@@ -24,6 +24,7 @@ package org.jboss.messaging.core.remoting.spi;
 
 import java.util.Map;
 import java.util.concurrent.Executor;
+import java.util.concurrent.ScheduledExecutorService;
 
 /**
  * 
@@ -36,5 +37,6 @@ public interface ConnectorFactory
 {
    Connector createConnector(Map<String, Object> configuration, BufferHandler handler,                           
                              ConnectionLifeCycleListener listener,
-                             Executor threadPool);
+                             Executor threadPool, 
+                             ScheduledExecutorService scheduledThreadPool);
 }

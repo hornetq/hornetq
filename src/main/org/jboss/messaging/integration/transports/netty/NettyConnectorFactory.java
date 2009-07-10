@@ -2,6 +2,7 @@ package org.jboss.messaging.integration.transports.netty;
 
 import java.util.Map;
 import java.util.concurrent.Executor;
+import java.util.concurrent.ScheduledExecutorService;
 
 import org.jboss.messaging.core.remoting.spi.BufferHandler;
 import org.jboss.messaging.core.remoting.spi.ConnectionLifeCycleListener;
@@ -18,8 +19,9 @@ public class NettyConnectorFactory implements ConnectorFactory
    public Connector createConnector(final Map<String, Object> configuration,
                                     final BufferHandler handler,
                                     final ConnectionLifeCycleListener listener,
-                                    final Executor threadPool)
+                                    final Executor threadPool, 
+                                    final ScheduledExecutorService scheduledThreadPool)
    {
-      return new NettyConnector(configuration, handler, listener, threadPool);
+      return new NettyConnector(configuration, handler, listener, threadPool, scheduledThreadPool);
    }
 }

@@ -17,7 +17,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.Executor;
 
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
@@ -28,9 +27,6 @@ import org.jboss.messaging.core.remoting.Interceptor;
 import org.jboss.messaging.core.remoting.Packet;
 import org.jboss.messaging.core.remoting.RemotingConnection;
 import org.jboss.messaging.core.remoting.spi.Connection;
-import org.jboss.messaging.core.remoting.spi.ConnectionLifeCycleListener;
-import org.jboss.messaging.core.remoting.spi.Connector;
-import org.jboss.messaging.core.remoting.spi.ConnectorFactory;
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
 import org.jboss.messaging.utils.SimpleIDGenerator;
 
@@ -48,37 +44,6 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
 
    // Static
    // ---------------------------------------------------------------------------------------
-
-   public static RemotingConnection createConnection(final ConnectorFactory connectorFactory,
-                                                     final Map<String, Object> params,
-                                                     final long callTimeout,
-                                                     final Executor threadPool,
-                                                     final ConnectionLifeCycleListener listener)
-   {
-      DelegatingBufferHandler handler = new DelegatingBufferHandler();
-
-      Connector connector = connectorFactory.createConnector(params, handler, listener, threadPool);
-
-      if (connector == null)
-      {
-         return null;
-      }
-
-      connector.start();
-
-      Connection tc = connector.createConnection();
-
-      if (tc == null)
-      {
-         return null;
-      }
-
-      RemotingConnection connection = new RemotingConnectionImpl(tc, callTimeout, null);
-
-      handler.conn = connection;
-
-      return connection;
-   }
 
    // Attributes
    // -----------------------------------------------------------------------------------

@@ -31,11 +31,11 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Map;
 import java.util.Set;
-import java.util.Timer;
-import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Executor;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLException;
@@ -139,6 +139,8 @@ public class NettyConnector implements Connector
    
    private final VirtualExecutorService virtualExecutor;
 
+   private ScheduledExecutorService scheduledThreadPool;
+
    
    // Static --------------------------------------------------------
 
@@ -149,7 +151,8 @@ public class NettyConnector implements Connector
    public NettyConnector(final Map<String, Object> configuration,
                          final BufferHandler handler,
                          final ConnectionLifeCycleListener listener,
-                         final Executor threadPool)
+                         final Executor threadPool,
+                         final ScheduledExecutorService scheduledThreadPool)
    {
       if (listener == null)
       {
@@ -231,6 +234,8 @@ public class NettyConnector implements Connector
                                                                      configuration);
       
       virtualExecutor = new VirtualExecutorService(threadPool); 
+      
+      this.scheduledThreadPool = scheduledThreadPool;      
    }
 
    public synchronized void start()
@@ -439,9 +444,7 @@ public class NettyConnector implements Connector
 
       private boolean waitingGet = false;
 
-      private Timer idleClientTimer;
-
-      private HttpIdleTimerTask task;
+      private HttpIdleTimer task;
 
       private String url = "http://" + host + ":" + port + servletPath;
 
@@ -463,19 +466,17 @@ public class NettyConnector implements Connector
          channel = e.getChannel();
          if (httpClientIdleScanPeriod > 0)
          {
-            idleClientTimer = new Timer("Http Idle Timer", true);
-            task = new HttpIdleTimerTask();
-            idleClientTimer.schedule(task, httpClientIdleScanPeriod, httpClientIdleScanPeriod);
+            task = new HttpIdleTimer();
+            java.util.concurrent.Future<?> future = scheduledThreadPool.scheduleAtFixedRate(task, httpClientIdleScanPeriod, httpClientIdleScanPeriod, TimeUnit.MILLISECONDS);
+            task.setFuture(future);
          }
       }
 
       public void channelClosed(final ChannelHandlerContext ctx, final ChannelStateEvent e) throws Exception
       {
-         if (idleClientTimer != null)
+         if (task != null)
          {
-            task.cancel();
-
-            idleClientTimer.cancel();
+            task.close();
          }
 
          super.channelClosed(ctx, e);
@@ -542,9 +543,10 @@ public class NettyConnector implements Connector
          }
       }
 
-      private class HttpIdleTimerTask extends TimerTask
+      private class HttpIdleTimer implements Runnable
       {
          private boolean closed = false;
+         private java.util.concurrent.Future<?> future;
 
          public synchronized void run()
          {
@@ -561,11 +563,19 @@ public class NettyConnector implements Connector
             }
          }
 
-         public synchronized boolean cancel()
+         public synchronized void setFuture(final java.util.concurrent.Future<?> future)
          {
+            this.future = future;
+         }
+         
+         public void close()
+         {
+            if (future != null)
+            {             
+               future.cancel(false);
+            }
+            
             closed  = true;
-
-            return super.cancel();
          }
       }
    }

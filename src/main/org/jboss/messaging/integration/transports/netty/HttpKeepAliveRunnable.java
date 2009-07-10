@@ -23,16 +23,18 @@ package org.jboss.messaging.integration.transports.netty;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.TimerTask;
+import java.util.concurrent.Future;
 
 /**
- * A simple Timer Task to allow HttpAcceptorHandlers to be called intermittently.
+ * A simple Runnable to allow HttpAcceptorHandlers to be called intermittently.
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
+ * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  */
-public class HttpKeepAliveTask extends TimerTask
+public class HttpKeepAliveRunnable implements Runnable
 {
    private final List<HttpAcceptorHandler> handlers = new ArrayList<HttpAcceptorHandler>();
    private boolean closed = false;
+   private Future<?> future;
 
    public synchronized void run()
    {
@@ -58,10 +60,18 @@ public class HttpKeepAliveTask extends TimerTask
       handlers.remove(httpAcceptorHandler);
    }
 
-   public synchronized boolean cancel()
+   public void close()
    {
-      closed  = true;
+      if (future != null)
+      {             
+         future.cancel(false);
+      }
 
-      return super.cancel();
+      closed  = true;
+   }
+
+   public synchronized void setFuture(Future<?> future)
+   {
+      this.future = future;
    }
 }

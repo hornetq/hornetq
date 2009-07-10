@@ -879,7 +879,7 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
             {
                DelegatingBufferHandler handler = new DelegatingBufferHandler();
 
-               connector = connectorFactory.createConnector(transportParams, handler, this, threadPool);
+               connector = connectorFactory.createConnector(transportParams, handler, this, threadPool, scheduledThreadPool);
 
                if (connector != null)
                {

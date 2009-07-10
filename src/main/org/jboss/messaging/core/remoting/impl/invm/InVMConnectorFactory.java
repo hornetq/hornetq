@@ -23,6 +23,7 @@ package org.jboss.messaging.core.remoting.impl.invm;
 
 import java.util.Map;
 import java.util.concurrent.Executor;
+import java.util.concurrent.ScheduledExecutorService;
 
 import org.jboss.messaging.core.remoting.spi.BufferHandler;
 import org.jboss.messaging.core.remoting.spi.ConnectionLifeCycleListener;
@@ -40,7 +41,8 @@ public class InVMConnectorFactory implements ConnectorFactory
    public Connector createConnector(final Map<String, Object> configuration,
                                     final BufferHandler handler,
                                     final ConnectionLifeCycleListener listener,
-                                    final Executor threadPool)
+                                    final Executor threadPool, 
+                                    final ScheduledExecutorService scheduledThreadPool)
    {      
       InVMConnector connector = new InVMConnector(configuration, handler, listener, threadPool);
       

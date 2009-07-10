@@ -152,7 +152,7 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
 
             AcceptorFactory factory = (AcceptorFactory)clazz.newInstance();
 
-            Acceptor acceptor = factory.createAcceptor(info.getParams(), bufferHandler, this, threadPool);
+            Acceptor acceptor = factory.createAcceptor(info.getParams(), bufferHandler, this, threadPool, scheduledThreadPool);
 
             acceptors.add(acceptor);
 
@@ -181,7 +181,7 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
 
          AcceptorFactory factory = new InVMAcceptorFactory();
 
-         Acceptor acceptor = factory.createAcceptor(params, bufferHandler, this, threadPool);
+         Acceptor acceptor = factory.createAcceptor(params, bufferHandler, this, threadPool, scheduledThreadPool);
 
          acceptors.add(acceptor);
 

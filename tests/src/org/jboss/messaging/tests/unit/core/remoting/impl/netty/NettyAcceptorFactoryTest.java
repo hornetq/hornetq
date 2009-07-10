@@ -25,6 +25,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Executors;
 
+import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.remoting.impl.AbstractBufferHandler;
 import org.jboss.messaging.core.remoting.spi.Acceptor;
@@ -74,7 +75,9 @@ public class NettyAcceptorFactoryTest extends UnitTestCase
          }
       };
            
-      Acceptor acceptor = factory.createAcceptor(params, handler, listener, Executors.newCachedThreadPool());
+      Acceptor acceptor = factory.createAcceptor(params, handler, listener, 
+                                                 Executors.newCachedThreadPool(),
+                                                 Executors.newScheduledThreadPool(ConfigurationImpl.DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE));
 
       assertTrue(acceptor instanceof NettyAcceptor);
    }
