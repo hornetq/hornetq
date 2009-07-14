@@ -2247,6 +2247,10 @@ public class JournalImpl implements TestableJournal
       try
       {
          moveNextFile(true);
+         if (autoReclaim)
+         {
+            checkAndReclaimFiles();
+         }
          debugWait();
       }
       finally
