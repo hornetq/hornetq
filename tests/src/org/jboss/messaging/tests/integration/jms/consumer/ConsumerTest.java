@@ -40,6 +40,7 @@ import javax.jms.Message;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
 import javax.jms.Session;
+import javax.jms.TextMessage;
 
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
@@ -110,6 +111,34 @@ public class ConsumerTest extends UnitTestCase
          producer.send(session.createTextMessage("m" + i));
       }
 
+      conn.start();
+      for (int i = 0; i < noOfMessages; i++)
+      {
+         Message m = consumer.receive(500);
+         assertNotNull(m);
+      }
+      // assert that all the messages are there and none have been acked
+      SimpleString queueName = new SimpleString(JBossQueue.JMS_QUEUE_ADDRESS_PREFIX + Q_NAME);
+      assertEquals(0, ((Queue)server.getPostOffice().getBinding(queueName).getBindable()).getDeliveringCount());
+      assertEquals(0, ((Queue)server.getPostOffice().getBinding(queueName).getBindable()).getMessageCount());
+      session.close();
+   }
+
+   public void testPreCommitAcksWithMessageExpiry() throws Exception
+   {
+      Connection conn = cf.createConnection();
+      Session session = conn.createSession(false, JBossSession.PRE_ACKNOWLEDGE);
+      jBossQueue = new JBossQueue(Q_NAME);
+      MessageProducer producer = session.createProducer(jBossQueue);
+      MessageConsumer consumer = session.createConsumer(jBossQueue);
+      int noOfMessages = 1000;
+      for (int i = 0; i < noOfMessages; i++)
+      {
+         TextMessage textMessage = session.createTextMessage("m" + i);
+         producer.setTimeToLive(1);
+         producer.send(textMessage);
+      }
+                                                                    
       conn.start();
       for (int i = 0; i < noOfMessages; i++)
       {

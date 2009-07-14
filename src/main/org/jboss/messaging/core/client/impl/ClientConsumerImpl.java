@@ -103,6 +103,8 @@ public class ClientConsumerImpl implements ClientConsumerInternal
 
    private boolean stopped = false;
 
+   private final boolean preAcknowledge;
+
    // Constructors
    // ---------------------------------------------------------------------------------
 
@@ -113,7 +115,8 @@ public class ClientConsumerImpl implements ClientConsumerInternal
                              final TokenBucketLimiter rateLimiter,
                              final Executor executor,
                              final Channel channel,
-                             final File directory)
+                             final File directory,
+                             final boolean preAcknowledge)
    {
       this.id = id;
 
@@ -130,6 +133,8 @@ public class ClientConsumerImpl implements ClientConsumerInternal
       this.ackBatchSize = ackBatchSize;
 
       this.directory = directory;
+
+      this.preAcknowledge = preAcknowledge;
    }
 
    // ClientConsumer implementation
@@ -213,8 +218,8 @@ public class ClientConsumerImpl implements ClientConsumerInternal
 
             if (m != null)
             {
-               boolean expired = m.isExpired();
-
+               //if we have already pre acked we cant expire
+               boolean expired = !preAcknowledge && m.isExpired();
                flowControlBeforeConsumption(m);
 
                if (expired)

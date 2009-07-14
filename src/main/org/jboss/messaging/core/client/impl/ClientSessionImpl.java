@@ -1174,7 +1174,8 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
                                                                                   : null,
                                                                executor,
                                                                channel,
-                                                               directory);
+                                                               directory,
+                                                               preAcknowledge);
 
       addConsumer(consumer);
 
