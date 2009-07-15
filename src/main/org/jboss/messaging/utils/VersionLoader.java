@@ -35,12 +35,14 @@ import org.jboss.messaging.core.version.impl.VersionImpl;
  *
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
  * @author <a href="csuconic@redhat.com">Clebert Suconic</a>
+ * @author <a href="jmesnil@redhat.com">Jeff Mesnil</a>
  */
 public class VersionLoader
 {
 
    private static final Logger log = Logger.getLogger(VersionLoader.class);
 
+   public static final String PROP_FILE_NAME = "jboss-messaging-version.properties";
    
    private static Version version;
    
@@ -62,7 +64,7 @@ public class VersionLoader
    {
       if (version == null)
       {
-         throw new RuntimeException("version.properties is not available");
+         throw new RuntimeException(PROP_FILE_NAME + " is not available");
       }
       
       return version;
@@ -71,12 +73,12 @@ public class VersionLoader
    private static Version load()
    {
       Properties versionProps = new Properties();
-      InputStream in = VersionImpl.class.getClassLoader().getResourceAsStream("version.properties");
+      InputStream in = VersionImpl.class.getClassLoader().getResourceAsStream(PROP_FILE_NAME);
       try
       {
          if (in == null)
          {
-            throw new RuntimeException("version.properties is not available");
+            throw new RuntimeException(PROP_FILE_NAME + " is not available");
          }
          try
          {
@@ -97,7 +99,7 @@ public class VersionLoader
          catch (IOException e)
          {
             //if we get here then the messaging hasnt been built properly and the version.properties is skewed in some way
-            throw new RuntimeException("unable to load version.properties", e);
+            throw new RuntimeException("unable to load " + PROP_FILE_NAME, e);
          }
       }
       finally

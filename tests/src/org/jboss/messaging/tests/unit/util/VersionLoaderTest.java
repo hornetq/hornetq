@@ -52,7 +52,7 @@ public class VersionLoaderTest extends UnitTestCase
    {
       Version version = VersionLoader.getVersion();
       Properties props = new Properties();
-      props.load(ClassLoader.getSystemResourceAsStream("version.properties"));
+      props.load(ClassLoader.getSystemResourceAsStream(VersionLoader.PROP_FILE_NAME));
    
       assertEquals(props.get("messaging.version.versionName"), version.getVersionName());
       assertEquals(props.get("messaging.version.versionSuffix"), version.getVersionSuffix());

@@ -41,8 +41,8 @@
    <!-- ======================================================================================== -->
 
    <property name="module.name" value="messaging"/>
-    <!-- Version properties are read rom version.properties instead of duplicating them here -->
-   <property file="src/config/common/version.properties"/>
+   <!-- Version properties are read from jboss-messaging-version.properties instead of duplicating them here -->
+   <property file="src/config/common/jboss-messaging-version.properties"/>
    <property name="messaging.version.revision" value="0" />
    <property name="messaging.version.svnurl" value="https://svn.jboss.org/repos/messaging/trunk"/>
    <property name="messaging.version.string"
@@ -248,7 +248,7 @@
 
    <path id="unit.test.execution.classpath">
       <!-- ensure that the core client jar is included for
-           tests security tests which needs to read version.properties
+           tests security tests which needs to read jboss-messaging-version.properties
 	       from inside this jar
 	  -->
       <fileset dir="${build.jars.dir}">
@@ -386,13 +386,9 @@
       <javah class="org.jboss.messaging.core.asyncio.impl.AsynchronousFileImpl"
              classpath="${build.core.classes.dir}" destdir="./native/src"/>
 
-      <copy file="${src.config.dir}/common/version.properties"
-            tofile="${build.core.classes.dir}/version.properties"/>
+      <copy file="${src.config.dir}/common/jboss-messaging-version.properties"
+            tofile="${build.core.classes.dir}/jboss-messaging-version.properties"/>
 
-      <!--
-<echo message="messaging.version.versionName=${messaging.version.name}${line.separator}messaging.version.majorVersion=${messaging.version.major}${line.separator}messaging.version.minorVersion=${messaging.version.minor}${line.separator}messaging.version.microVersion=${messaging.version.micro}${line.separator}messaging.version.incrementingVersion=${messaging.version.incrementing}${line.separator}messaging.version.versionSuffix=${messaging.version.suffix}${line.separator}"
-      file="${build.classes.dir}/version.properties"/>
-      -->
    </target>
 
    <target name="compile-jms" depends="compile-core">
@@ -669,7 +665,7 @@
    <target name="jar-core-client" depends="compile-core">
       <jar jarfile="${build.jars.dir}/${core.client.jar.name}">
          <fileset dir="${build.core.classes.dir}">
-            <include name="version.properties"/>
+            <include name="jboss-messaging-version.properties"/>
             <include name="org/jboss/messaging/core/client/**/*.class"/>
             <include name="org/jboss/messaging/core/filter/**/*.class"/>
             <include name="org/jboss/messaging/core/buffers/**/*.class"/>
@@ -774,7 +770,7 @@
             <include name="logging.properties"/>
             <include name="stand-alone/**"/>
             <include name="jboss-as/**"/>
-            <exclude name="common/version.properties" />
+            <exclude name="common/jboss-messaging-version.properties" />
             <exclude name="*examples-ant.properties"/>
             <exclude name="trunk"/>
          </fileset>
