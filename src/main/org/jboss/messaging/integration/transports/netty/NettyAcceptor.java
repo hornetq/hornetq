@@ -373,20 +373,7 @@ public class NettyAcceptor implements Acceptor
       
       if (!paused)
       {
-         ChannelGroupFuture future = serverChannelGroup.close().awaitUninterruptibly();
-         if (!future.isCompleteSuccess())
-         {
-            log.warn("Server channel group did not completely close");
-            Iterator<Channel> iterator = future.getGroup().iterator();
-            while (iterator.hasNext())
-            {
-               Channel channel = (Channel)iterator.next();
-               if (channel.isBound())
-               {
-                  log.warn(channel + " is still bound to " + channel.getLocalAddress());
-               }
-            }
-         }
+         pause();
       }
 
       if (httpKeepAliveRunnable != null)

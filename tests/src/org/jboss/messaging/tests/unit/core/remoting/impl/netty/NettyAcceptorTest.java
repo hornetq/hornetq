@@ -94,14 +94,16 @@ public class NettyAcceptorTest extends UnitTestCase
 
       acceptor.start();
       assertTrue(acceptor.isStarted());
-      acceptor.pause();
       acceptor.stop();
-      assertFalse(acceptor.isStarted());
+      assertFalse(acceptor.isStarted());      
+      checkFreePort(TransportConstants.DEFAULT_PORT);
+      
       acceptor.start();
       assertTrue(acceptor.isStarted());
       acceptor.pause();
       acceptor.stop();
       assertFalse(acceptor.isStarted());
+      checkFreePort(TransportConstants.DEFAULT_PORT);
 
       acceptor.start();
       assertTrue(acceptor.isStarted());
@@ -109,10 +111,12 @@ public class NettyAcceptorTest extends UnitTestCase
       acceptor.resume();
       acceptor.stop();
       assertFalse(acceptor.isStarted());
+      checkFreePort(TransportConstants.DEFAULT_PORT);
+
       acceptor.start();
       assertTrue(acceptor.isStarted());
       acceptor.stop();
       assertFalse(acceptor.isStarted());
-
+      checkFreePort(TransportConstants.DEFAULT_PORT);
    }
 }
