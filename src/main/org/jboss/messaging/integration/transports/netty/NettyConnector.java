@@ -64,7 +64,6 @@ import org.jboss.netty.channel.UpstreamMessageEvent;
 import org.jboss.netty.channel.group.ChannelGroup;
 import org.jboss.netty.channel.group.DefaultChannelGroup;
 import org.jboss.netty.channel.socket.ClientSocketChannelFactory;
-import org.jboss.netty.channel.socket.http.HttpTunnelAddress;
 import org.jboss.netty.channel.socket.http.HttpTunnelingClientSocketChannelFactory;
 import org.jboss.netty.channel.socket.nio.NioClientSocketChannelFactory;
 import org.jboss.netty.channel.socket.oio.OioClientSocketChannelFactory;
@@ -348,23 +347,23 @@ public class NettyConnector implements Connector
       {
          return null;
       }
+
       SocketAddress address;
       if (useServlet)
       {
          try
          {
             URI uri = new URI("http", null, host, port, servletPath, null, null);
-            address = new HttpTunnelAddress(uri);
+            bootstrap.setOption("serverName", uri.getHost());
+            bootstrap.setOption("serverPath", uri.getRawPath());
          }
          catch (URISyntaxException e)
          {
             throw new IllegalArgumentException(e.getMessage());
          }
       }
-      else
-      {
-         address = new InetSocketAddress(host, port);
-      }
+      address = new InetSocketAddress(host, port);
+      
       ChannelFuture future = bootstrap.connect(address);
       future.awaitUninterruptibly();
 
