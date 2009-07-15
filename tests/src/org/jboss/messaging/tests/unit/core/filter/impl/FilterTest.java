@@ -22,11 +22,13 @@
 
 package org.jboss.messaging.tests.unit.core.filter.impl;
 
+import org.jboss.messaging.core.buffers.ChannelBuffers;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.filter.Filter;
 import org.jboss.messaging.core.filter.impl.FilterImpl;
 import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.core.server.impl.ServerMessageImpl;
+import org.jboss.messaging.tests.util.RandomUtil;
 import org.jboss.messaging.tests.util.UnitTestCase;
 import org.jboss.messaging.utils.SimpleString;
 
@@ -95,6 +97,25 @@ public class FilterTest  extends UnitTestCase
       
       assertTrue(filter.match(message));
       
+   }
+   
+   public void testJBMSize() throws Exception
+   {
+      message.setDestination(RandomUtil.randomSimpleString());      
+      message.setBody(ChannelBuffers.wrappedBuffer(RandomUtil.randomBytes(1)));
+      assertTrue(message.getEncodeSize() < 1024);
+      
+      Filter moreThan128 = new FilterImpl(new SimpleString("JBMSize > 128"));
+      Filter lessThan1024 = new FilterImpl(new SimpleString("JBMSize < 1024"));
+      
+      assertFalse(moreThan128.match(message));
+      assertTrue(lessThan1024.match(message));
+      
+      message.setBody(ChannelBuffers.wrappedBuffer(RandomUtil.randomBytes(1024)));
+
+      assertTrue(moreThan128.match(message));
+      assertFalse(lessThan1024.match(message));
+
    }
 
    public void testJBMPriority() throws Exception
