@@ -34,6 +34,7 @@ import org.jboss.messaging.core.remoting.spi.Connection;
 import org.jboss.messaging.core.remoting.spi.ConnectionLifeCycleListener;
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
 import org.jboss.messaging.integration.transports.netty.NettyAcceptor;
+import org.jboss.messaging.integration.transports.netty.TransportConstants;
 import org.jboss.messaging.tests.util.UnitTestCase;
 
 /**
@@ -45,6 +46,22 @@ import org.jboss.messaging.tests.util.UnitTestCase;
  */
 public class NettyAcceptorTest extends UnitTestCase
 {
+   @Override
+   protected void setUp() throws Exception
+   {
+      super.setUp();
+      
+      checkFreePort(TransportConstants.DEFAULT_PORT);      
+   }
+   
+   @Override
+   protected void tearDown() throws Exception
+   {
+      checkFreePort(TransportConstants.DEFAULT_PORT);
+
+      super.tearDown();
+   }
+   
    public void testStartStop() throws Exception
    {
       BufferHandler handler = new AbstractBufferHandler()
