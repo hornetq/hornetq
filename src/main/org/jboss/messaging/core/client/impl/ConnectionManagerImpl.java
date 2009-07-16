@@ -969,7 +969,7 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
 
          if (clientFailureCheckPeriod != -1)
          {
-            Future<?> pingerFuture = scheduledThreadPool.scheduleAtFixedRate(pinger,
+            Future<?> pingerFuture = scheduledThreadPool.scheduleWithFixedDelay(pinger,
                                                                              clientFailureCheckPeriod,
                                                                              clientFailureCheckPeriod,
                                                                              TimeUnit.MILLISECONDS);

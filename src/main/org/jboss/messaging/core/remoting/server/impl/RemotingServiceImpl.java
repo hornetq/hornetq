@@ -381,7 +381,7 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
 
       Pinger pingRunnable = new Pinger(conn, connectionTTLToUse, null, new FailedConnectionAction(conn), System.currentTimeMillis());
 
-      Future<?> pingFuture = scheduledThreadPool.scheduleAtFixedRate(pingRunnable, 0, pingPeriod, TimeUnit.MILLISECONDS);
+      Future<?> pingFuture = scheduledThreadPool.scheduleWithFixedDelay(pingRunnable, 0, pingPeriod, TimeUnit.MILLISECONDS);
 
       pingRunnable.setFuture(pingFuture);
 
