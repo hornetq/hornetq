@@ -94,7 +94,6 @@ public class NIOJournalCompactTest extends JournalImplTestBase
       {
          assertEquals(file.getFile().getFileName(), iterDataFiles.next());
       }
-
       assertFalse(iterDataFiles.hasNext());
 
       Iterator<String> iterNewFiles = strNewFiles.iterator();
@@ -102,6 +101,8 @@ public class NIOJournalCompactTest extends JournalImplTestBase
       {
          assertEquals(file.getFile().getFileName(), iterNewFiles.next());
       }
+      assertFalse(iterNewFiles.hasNext());
+
    }
 
    public void testCrashRenamingFiles() throws Exception
