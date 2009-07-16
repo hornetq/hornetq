@@ -73,6 +73,7 @@ import org.jboss.netty.handler.ssl.SslHandler;
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="tlee@redhat.com">Trustin Lee</a>
+ * @author <a href="jmesnil@redhat.com">Jeff Mesnil</a>
  * @version $Rev$, $Date$
  */
 public class NettyAcceptor implements Acceptor
@@ -129,8 +130,6 @@ public class NettyAcceptor implements Acceptor
    
    private final Executor threadPool;
 
-   private final ScheduledExecutorService scheduledThreadPool;
-
    public NettyAcceptor(final Map<String, Object> configuration,
                         final BufferHandler handler,
                         final ConnectionLifeCycleListener listener,
@@ -141,8 +140,6 @@ public class NettyAcceptor implements Acceptor
 
       this.listener = listener;
 
-      this.scheduledThreadPool = scheduledThreadPool;
-      
       this.sslEnabled = ConfigurationHelper.getBooleanProperty(TransportConstants.SSL_ENABLED_PROP_NAME,
                                                                TransportConstants.DEFAULT_SSL_ENABLED,
                                                                configuration);
@@ -159,7 +156,7 @@ public class NettyAcceptor implements Acceptor
                                                                 TransportConstants.DEFAULT_HTTP_RESPONSE_TIME,
                                                                 configuration);
          httpKeepAliveRunnable = new HttpKeepAliveRunnable();
-         Future<?> future = this.scheduledThreadPool.scheduleAtFixedRate(httpKeepAliveRunnable, httpServerScanPeriod, httpServerScanPeriod, TimeUnit.MILLISECONDS);
+         Future<?> future = scheduledThreadPool.scheduleAtFixedRate(httpKeepAliveRunnable, httpServerScanPeriod, httpServerScanPeriod, TimeUnit.MILLISECONDS);
          httpKeepAliveRunnable.setFuture(future);
       }
       else
@@ -225,17 +222,19 @@ public class NettyAcceptor implements Acceptor
          return;
       }
 
+      VirtualExecutorService virtualExecutor = new VirtualExecutorService(threadPool);
+
       if (useInvm)
       {
          channelFactory = new DefaultLocalServerChannelFactory();
       }
       else if (useNio)
       {
-         channelFactory = new NioServerSocketChannelFactory(threadPool, threadPool);
+         channelFactory = new NioServerSocketChannelFactory(virtualExecutor, virtualExecutor);
       }
       else
       {
-         channelFactory = new OioServerSocketChannelFactory(threadPool, threadPool);
+         channelFactory = new OioServerSocketChannelFactory(virtualExecutor, virtualExecutor);
       }
       bootstrap = new ServerBootstrap(channelFactory);
 
@@ -373,7 +372,7 @@ public class NettyAcceptor implements Acceptor
       
       if (!paused)
       {
-         pause();
+         serverChannelGroup.close().awaitUninterruptibly();
       }
 
       if (httpKeepAliveRunnable != null)
@@ -396,7 +395,8 @@ public class NettyAcceptor implements Acceptor
             }
          }
       }
-      
+
+      channelFactory.releaseExternalResources();
       channelFactory = null;  
       
       for (Connection connection : connections.values())
