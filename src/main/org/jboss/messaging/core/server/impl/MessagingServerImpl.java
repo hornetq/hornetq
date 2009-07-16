@@ -261,6 +261,8 @@ public class MessagingServerImpl implements MessagingServer
 
    public synchronized void start() throws Exception
    {
+      log.info((configuration.isBackup() ? "backup":"live") + " server is starting..");
+
       if (started)
       {
          return;
