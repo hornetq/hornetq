@@ -61,13 +61,11 @@ public interface QueueControl
 
    String getExpiryAddress();
 
-   void setExpiryAddress(@Parameter(name = "expiryAddress", desc = "Expiry address of the queue")
-   String expiryAddres) throws Exception;
+   void setExpiryAddress(@Parameter(name = "expiryAddress", desc = "Expiry address of the queue") String expiryAddres) throws Exception;
 
    String getDeadLetterAddress();
 
-   void setDeadLetterAddress(@Parameter(name = "deadLetterAddress", desc = "Dead-letter address of the queue")
-   String deadLetterAddress) throws Exception;
+   void setDeadLetterAddress(@Parameter(name = "deadLetterAddress", desc = "Dead-letter address of the queue") String deadLetterAddress) throws Exception;
 
    boolean isBackup();
 
@@ -80,53 +78,42 @@ public interface QueueControl
    String listScheduledMessagesAsJSON() throws Exception;
 
    @Operation(desc = "List all the messages in the queue matching the given filter", impact = INFO)
-   Map<String, Object>[] listMessages(@Parameter(name = "filter", desc = "A message filter (can be empty)")
-   String filter) throws Exception;
+   Map<String, Object>[] listMessages(@Parameter(name = "filter", desc = "A message filter (can be empty)") String filter) throws Exception;
 
    @Operation(desc = "List all the messages in the queue matching the given filter and returns them using JSON", impact = INFO)
-   String listMessagesAsJSON(@Parameter(name = "filter", desc = "A message filter (can be empty)")
-   String filter) throws Exception;
+   String listMessagesAsJSON(@Parameter(name = "filter", desc = "A message filter (can be empty)") String filter) throws Exception;
 
    @Operation(desc = "Returns the number of the messages in the queue matching the given filter", impact = INFO)
-   int countMessages(@Parameter(name = "filter", desc = "A message filter (can be empty)")
-   String filter) throws Exception;
+   int countMessages(@Parameter(name = "filter", desc = "A message filter (can be empty)") String filter) throws Exception;
 
    @Operation(desc = "Remove the message corresponding to the given messageID", impact = ACTION)
-   boolean removeMessage(@Parameter(name = "messageID", desc = "A message ID")
-   long messageID) throws Exception;
+   boolean removeMessage(@Parameter(name = "messageID", desc = "A message ID") long messageID) throws Exception;
 
    @Operation(desc = "Remove the messages corresponding to the given filter (and returns the number of removed messages)", impact = ACTION)
-   int removeMessages(@Parameter(name = "filter", desc = "A message filter (can be empty)")
-   String filter) throws Exception;
+   int removeMessages(@Parameter(name = "filter", desc = "A message filter (can be empty)") String filter) throws Exception;
 
    @Operation(desc = "Remove the messages corresponding to the given filter (and returns the number of expired messages)", impact = ACTION)
-   int expireMessages(@Parameter(name = "filter", desc = "A message filter")
-   String filter) throws Exception;
+   int expireMessages(@Parameter(name = "filter", desc = "A message filter") String filter) throws Exception;
 
    @Operation(desc = "Remove the message corresponding to the given messageID", impact = ACTION)
-   boolean expireMessage(@Parameter(name = "messageID", desc = "A message ID")
-   long messageID) throws Exception;
+   boolean expireMessage(@Parameter(name = "messageID", desc = "A message ID") long messageID) throws Exception;
 
    @Operation(desc = "Move the message corresponding to the given messageID to another queue", impact = ACTION)
-   boolean moveMessage(@Parameter(name = "messageID", desc = "A message ID")
-   long messageID, @Parameter(name = "otherQueueName", desc = "The name of the queue to move the message to")
-   String otherQueueName) throws Exception;
+   boolean moveMessage(@Parameter(name = "messageID", desc = "A message ID") long messageID,
+                       @Parameter(name = "otherQueueName", desc = "The name of the queue to move the message to") String otherQueueName) throws Exception;
 
    @Operation(desc = "Move the messages corresponding to the given filter (and returns the number of moved messages)", impact = ACTION)
-   int moveMessages(@Parameter(name = "filter", desc = "A message filter (can be empty)")
-   String filter, @Parameter(name = "otherQueueName", desc = "The name of the queue to move the messages to")
-   String otherQueueName) throws Exception;
+   int moveMessages(@Parameter(name = "filter", desc = "A message filter (can be empty)") String filter,
+                    @Parameter(name = "otherQueueName", desc = "The name of the queue to move the messages to") String otherQueueName) throws Exception;
 
    @Operation(desc = "Send the message corresponding to the given messageID to this queue's Dead Letter Address", impact = ACTION)
-   boolean sendMessageToDeadLetterAddress(@Parameter(name = "messageID", desc = "A message ID")
-   long messageID) throws Exception;
+   boolean sendMessageToDeadLetterAddress(@Parameter(name = "messageID", desc = "A message ID") long messageID) throws Exception;
 
    int sendMessagesToDeadLetterAddress(String filterStr) throws Exception;
 
    @Operation(desc = "Change the priority of the message corresponding to the given messageID", impact = ACTION)
-   boolean changeMessagePriority(@Parameter(name = "messageID", desc = "A message ID")
-   long messageID, @Parameter(name = "newPriority", desc = "the new priority (between 0 and 9)")
-   int newPriority) throws Exception;
+   boolean changeMessagePriority(@Parameter(name = "messageID", desc = "A message ID") long messageID,
+                                 @Parameter(name = "newPriority", desc = "the new priority (between 0 and 9)") int newPriority) throws Exception;
 
    int changeMessagesPriority(String filter, int newPriority) throws Exception;
 

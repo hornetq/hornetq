@@ -29,7 +29,7 @@ package org.jboss.messaging.core.management;
  * @author <a href="jmesnil@redhat.com">Jeff Mesnil</a>
  *
  */
-public interface BridgeControl extends MessagingComponentControlMBean
+public interface BridgeControl extends MessagingComponentControl
 {
    String getName();
    

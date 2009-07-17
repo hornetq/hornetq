@@ -28,7 +28,7 @@ package org.jboss.messaging.core.management;
  * @author <a href="jmesnil@redhat.com">Jeff Mesnil</a>
  *
  */
-public interface DiscoveryGroupControl extends MessagingComponentControlMBean
+public interface DiscoveryGroupControl extends MessagingComponentControl
 {
    String getName();
 

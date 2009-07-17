@@ -47,7 +47,7 @@ public interface MessagingServerControl
    boolean isClustered();
 
    int getScheduledThreadPoolMaxSize();
-   
+
    int getThreadPoolMaxSize();
 
    long getSecurityInvalidationInterval();
@@ -89,9 +89,9 @@ public interface MessagingServerControl
    public boolean isBackup();
 
    int getAIOBufferSize();
-   
+
    int getAIOBufferTimeout();
-   
+
    public long getPagingMaxGlobalSizeBytes();
 
    public String getPagingDirectory();
@@ -125,7 +125,7 @@ public interface MessagingServerControl
    long getMessageExpiryScanPeriod();
 
    long getMessageExpiryThreadPriority();
-   
+
    Object[] getConnectors() throws Exception;
 
    String getConnectorsAsJSON() throws Exception;
@@ -133,32 +133,28 @@ public interface MessagingServerControl
    // Operations ----------------------------------------------------
 
    @Operation(desc = "Create a queue with the specified address", impact = ACTION)
-   void createQueue(@Parameter(name = "address", desc = "Address of the queue")
-   String address, @Parameter(name = "name", desc = "Name of the queue")
-   String name) throws Exception;
+   void createQueue(@Parameter(name = "address", desc = "Address of the queue") String address,
+                    @Parameter(name = "name", desc = "Name of the queue") String name) throws Exception;
 
    @Operation(desc = "Create a queue", impact = ACTION)
-   void createQueue(@Parameter(name = "address", desc = "Address of the queue")
-   String address, @Parameter(name = "name", desc = "Name of the queue")
-   String name, @Parameter(name = "filter", desc = "Filter of the queue")
-   String filter, @Parameter(name = "durable", desc = "Is the queue durable?")
-   boolean durable) throws Exception;
+   void createQueue(@Parameter(name = "address", desc = "Address of the queue") String address,
+                    @Parameter(name = "name", desc = "Name of the queue") String name,
+                    @Parameter(name = "filter", desc = "Filter of the queue") String filter,
+                    @Parameter(name = "durable", desc = "Is the queue durable?") boolean durable) throws Exception;
 
    @Operation(desc = "Deploy a queue", impact = ACTION)
-   void deployQueue(@Parameter(name = "address", desc = "Address of the queue")
-   String address, @Parameter(name = "name", desc = "Name of the queue")
-   String name, String filterString) throws Exception;
+   void deployQueue(@Parameter(name = "address", desc = "Address of the queue") String address,
+                    @Parameter(name = "name", desc = "Name of the queue") String name,
+                    String filterString) throws Exception;
 
    @Operation(desc = "Deploy a queue", impact = ACTION)
-   void deployQueue(@Parameter(name = "address", desc = "Address of the queue")
-   String address, @Parameter(name = "name", desc = "Name of the queue")
-   String name, @Parameter(name = "filter", desc = "Filter of the queue")
-   String filter, @Parameter(name = "durable", desc = "Is the queue durable?")
-   boolean durable) throws Exception;
+   void deployQueue(@Parameter(name = "address", desc = "Address of the queue") String address,
+                    @Parameter(name = "name", desc = "Name of the queue") String name,
+                    @Parameter(name = "filter", desc = "Filter of the queue") String filter,
+                    @Parameter(name = "durable", desc = "Is the queue durable?") boolean durable) throws Exception;
 
    @Operation(desc = "Destroy a queue", impact = ACTION)
-   void destroyQueue(@Parameter(name = "name", desc = "Name of the queue to destroy")
-   String name) throws Exception;
+   void destroyQueue(@Parameter(name = "name", desc = "Name of the queue to destroy") String name) throws Exception;
 
    void enableMessageCounters() throws Exception;
 
@@ -172,32 +168,26 @@ public interface MessagingServerControl
    public String[] listPreparedTransactions() throws Exception;
 
    @Operation(desc = "Commit a prepared transaction")
-   boolean commitPreparedTransaction(@Parameter(desc = "the Base64 representation of a transaction", name = "transactionAsBase64")
-   String transactionAsBase64) throws Exception;
+   boolean commitPreparedTransaction(@Parameter(desc = "the Base64 representation of a transaction", name = "transactionAsBase64") String transactionAsBase64) throws Exception;
 
    @Operation(desc = "Rollback a prepared transaction")
-   boolean rollbackPreparedTransaction(@Parameter(desc = "the Base64 representation of a transaction", name = "transactionAsBase64")
-   String transactionAsBase64) throws Exception;
+   boolean rollbackPreparedTransaction(@Parameter(desc = "the Base64 representation of a transaction", name = "transactionAsBase64") String transactionAsBase64) throws Exception;
 
    @Operation(desc = "List the client addresses", impact = INFO)
    String[] listRemoteAddresses() throws Exception;
 
    @Operation(desc = "List the client addresses which match the given IP Address", impact = INFO)
-   String[] listRemoteAddresses(@Parameter(desc = "an IP address", name = "ipAddress")
-   String ipAddress) throws Exception;
+   String[] listRemoteAddresses(@Parameter(desc = "an IP address", name = "ipAddress") String ipAddress) throws Exception;
 
    @Operation(desc = "Closes all the connections for the given IP Address", impact = INFO)
-   boolean closeConnectionsForAddress(@Parameter(desc = "an IP address", name = "ipAddress")
-   String ipAddress) throws Exception;
+   boolean closeConnectionsForAddress(@Parameter(desc = "an IP address", name = "ipAddress") String ipAddress) throws Exception;
 
    @Operation(desc = "List all the connection IDs", impact = INFO)
    String[] listConnectionIDs() throws Exception;
 
    @Operation(desc = "List the sessions for the given connectionID", impact = INFO)
-   String[] listSessions(@Parameter(desc = "a connection ID", name = "connectionID")
-   String connectionID) throws Exception;
+   String[] listSessions(@Parameter(desc = "a connection ID", name = "connectionID") String connectionID) throws Exception;
 
    void sendQueueInfoToQueue(String queueName, String address) throws Exception;
-
 
 }

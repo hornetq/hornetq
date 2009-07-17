@@ -48,22 +48,18 @@ public interface JMSServerControl
    // Operations ----------------------------------------------------
 
    @Operation(desc = "Create a JMS Queue", impact = ACTION)
-   boolean createQueue(@Parameter(name = "name", desc = "Name of the queue to create")
-   String name, @Parameter(name = "jndiBinding", desc = "the name of the binding for JNDI")
-   String jndiBinding) throws Exception;
+   boolean createQueue(@Parameter(name = "name", desc = "Name of the queue to create") String name,
+                       @Parameter(name = "jndiBinding", desc = "the name of the binding for JNDI") String jndiBinding) throws Exception;
 
    @Operation(desc = "Destroy a JMS Queue", impact = ACTION)
-   boolean destroyQueue(@Parameter(name = "name", desc = "Name of the queue to destroy")
-   String name) throws Exception;
+   boolean destroyQueue(@Parameter(name = "name", desc = "Name of the queue to destroy") String name) throws Exception;
 
    @Operation(desc = "Create a JMS Topic", impact = ACTION)
-   boolean createTopic(@Parameter(name = "name", desc = "Name of the topic to create")
-   String name, @Parameter(name = "jndiBinding", desc = "the name of the binding for JNDI")
-   String jndiBinding) throws Exception;
+   boolean createTopic(@Parameter(name = "name", desc = "Name of the topic to create") String name,
+                       @Parameter(name = "jndiBinding", desc = "the name of the binding for JNDI") String jndiBinding) throws Exception;
 
    @Operation(desc = "Destroy a JMS Topic", impact = ACTION)
-   boolean destroyTopic(@Parameter(name = "name", desc = "Name of the topic to destroy")
-   String name) throws Exception;
+   boolean destroyTopic(@Parameter(name = "name", desc = "Name of the topic to destroy") String name) throws Exception;
 
    void createConnectionFactory(String name,
                                 Object[] liveConnectorsTransportClassNames,
@@ -154,7 +150,7 @@ public interface JMSServerControl
                                 String liveTransportClassName,
                                 Map<String, Object> liveTransportParams,
                                 Object[] jndiBindings) throws Exception;
-   
+
    void createConnectionFactory(String name,
                                 String liveTransportClassName,
                                 Map<String, Object> liveTransportParams,
@@ -177,24 +173,20 @@ public interface JMSServerControl
                                 Object[] jndiBindings) throws Exception;
 
    @Operation(desc = "Create a JMS ConnectionFactory", impact = ACTION)
-   void destroyConnectionFactory(@Parameter(name = "name", desc = "Name of the ConnectionFactory to create")
-   String name) throws Exception;
+   void destroyConnectionFactory(@Parameter(name = "name", desc = "Name of the ConnectionFactory to create") String name) throws Exception;
 
    @Operation(desc = "List the client addresses", impact = INFO)
    String[] listRemoteAddresses() throws Exception;
 
    @Operation(desc = "List the client addresses which match the given IP Address", impact = INFO)
-   String[] listRemoteAddresses(@Parameter(desc = "an IP address", name = "ipAddress")
-   String ipAddress) throws Exception;
+   String[] listRemoteAddresses(@Parameter(desc = "an IP address", name = "ipAddress") String ipAddress) throws Exception;
 
    @Operation(desc = "Closes all the connections for the given IP Address", impact = INFO)
-   boolean closeConnectionsForAddress(@Parameter(desc = "an IP address", name = "ipAddress")
-   String ipAddress) throws Exception;
+   boolean closeConnectionsForAddress(@Parameter(desc = "an IP address", name = "ipAddress") String ipAddress) throws Exception;
 
    @Operation(desc = "List all the connection IDs", impact = INFO)
    String[] listConnectionIDs() throws Exception;
 
    @Operation(desc = "List the sessions for the given connectionID", impact = INFO)
-   String[] listSessions(@Parameter(desc = "a connection ID", name = "connectionID")
-   String connectionID) throws Exception;
+   String[] listSessions(@Parameter(desc = "a connection ID", name = "connectionID") String connectionID) throws Exception;
 }

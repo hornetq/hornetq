@@ -24,11 +24,11 @@
 package org.jboss.messaging.core.management;
 
 /**
- * A MessagingComponentControlMBean
+ * A MessagingComponentControl
  *
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  */
-public interface MessagingComponentControlMBean
+public interface MessagingComponentControl
 {
    boolean isStarted();
    

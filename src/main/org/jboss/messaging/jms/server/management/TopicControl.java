@@ -70,28 +70,19 @@ public interface TopicControl extends DestinationControlMBean
    String listNonDurableSubscriptionsAsJSON() throws Exception;
 
    @Operation(desc = "List all the message for the given subscription")
-   public Map<String, Object>[] listMessagesForSubscription(
-         @Parameter(name = "queueName", desc = "the name of the queue representing a subscription") String queueName)
-         throws Exception;
+   public Map<String, Object>[] listMessagesForSubscription(@Parameter(name = "queueName", desc = "the name of the queue representing a subscription") String queueName) throws Exception;
 
    @Operation(desc = "List all the message for the given subscription")
-   public String listMessagesForSubscriptionAsJSON(
-         @Parameter(name = "queueName", desc = "the name of the queue representing a subscription") String queueName)
-         throws Exception;
+   public String listMessagesForSubscriptionAsJSON(@Parameter(name = "queueName", desc = "the name of the queue representing a subscription") String queueName) throws Exception;
 
    @Operation(desc = "Count the number of messages matching the filter for the given subscription")
-   public int countMessagesForSubscription(
-         @Parameter(name = "clientID", desc = "the client ID") String clientID,
-         @Parameter(name = "subscriptionName", desc = "the name of the durable subscription") String subscriptionName,
-         @Parameter(name = "filter", desc = "a JMS filter (can be empty)") String filter)
-         throws Exception;
+   public int countMessagesForSubscription(@Parameter(name = "clientID", desc = "the client ID") String clientID,
+                                           @Parameter(name = "subscriptionName", desc = "the name of the durable subscription") String subscriptionName,
+                                           @Parameter(name = "filter", desc = "a JMS filter (can be empty)") String filter) throws Exception;
 
    @Operation(desc = "Drop a durable subscription", impact = ACTION)
-   void dropDurableSubscription(
-         @Parameter(name = "clientID", desc = "the client ID") String clientID,
-         @Parameter(name = "subscriptionName", desc = "the name of the durable subscription") String subscriptionName)
-         throws Exception;
-   
+   void dropDurableSubscription(@Parameter(name = "clientID", desc = "the client ID") String clientID,
+                                @Parameter(name = "subscriptionName", desc = "the name of the durable subscription") String subscriptionName) throws Exception;
 
    @Operation(desc = "Drop all subscriptions from this topic", impact = ACTION)
    void dropAllSubscriptions() throws Exception;
