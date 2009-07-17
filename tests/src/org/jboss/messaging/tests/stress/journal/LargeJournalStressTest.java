@@ -22,8 +22,6 @@
 
 package org.jboss.messaging.tests.stress.journal;
 
-import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
 

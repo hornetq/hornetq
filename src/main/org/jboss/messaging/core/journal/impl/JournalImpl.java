@@ -211,7 +211,7 @@ public class JournalImpl implements TestableJournal
    private volatile JournalCompactor compactor;
 
    // Latch used to wait compactor finish, to make sure we won't stop the journal with the compactor running
-   private final VariableLatch compactorWait = new VariableLatch();
+   private final AtomicBoolean compactorRunning = new AtomicBoolean();
 
    private ExecutorService filesExecutor = null;
 
@@ -1402,6 +1402,7 @@ public class JournalImpl implements TestableJournal
    /**
     * 
     *  Note: This method can't be called from the main executor, as it will invoke other methods depending on it.
+    *  
     */
    public synchronized void compact() throws Exception
    {
@@ -2058,7 +2059,7 @@ public class JournalImpl implements TestableJournal
 
       long compactMargin = (long)(totalBytes * compactPercentage);
 
-      if (totalLiveSize < compactMargin && compactorWait.getCount() == 0 && dataFiles.length > compactMinFiles)
+      if (totalLiveSize < compactMargin && !compactorRunning.get() && dataFiles.length > compactMinFiles)
       {
 
          log.info("Compacting being started, numberOfDataFiles = " + dataFiles.length +
@@ -2067,9 +2068,10 @@ public class JournalImpl implements TestableJournal
                   ", margin to start compacting = " +
                   compactMargin);
 
-         compactorWait.waitCompletion();
-
-         compactorWait.up();
+         if (!compactorRunning.compareAndSet(false, true))
+         {
+            return;
+         }
 
          // We can't use the executor for the compacting... or we would lock files opening and creation (besides other
          // operations)
@@ -2089,7 +2091,7 @@ public class JournalImpl implements TestableJournal
                }
                finally
                {
-                  compactorWait.down();
+                  compactorRunning.set(false);
                }
             }
          };
@@ -2162,8 +2164,6 @@ public class JournalImpl implements TestableJournal
     *  It will call waitComplete on every transaction, so any assertions on the file system will be correct after this */
    public void debugWait() throws Exception
    {
-      compactorWait.waitCompletion();
-
       fileFactory.testFlush();
 
       for (JournalTransaction tx : transactions.values())
