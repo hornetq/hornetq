@@ -284,7 +284,7 @@ public class JournalStorageManager implements StorageManager
 
       // Note that we don't sync, the add reference that comes immediately after will sync
 
-      if (message instanceof LargeServerMessage)
+      if (message.isLargeMessage())
       {
          messageJournal.appendAddRecord(message.getMessageID(),
                                         ADD_LARGE_MESSAGE,
