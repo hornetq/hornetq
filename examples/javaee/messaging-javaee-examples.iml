@@ -9,6 +9,15 @@
         <webroots>
           <root url="file://$MODULE_DIR$/servlet-transport/config/jms-servlet.war" relative="/" />
         </webroots>
+        <sourceRoots>
+          <root url="file://$MODULE_DIR$/ejb-jms-transaction/src" />
+          <root url="file://$MODULE_DIR$/hajndi/src" />
+          <root url="file://$MODULE_DIR$/jca-config/src" />
+          <root url="file://$MODULE_DIR$/jms-bridge/src" />
+          <root url="file://$MODULE_DIR$/mdb/src" />
+          <root url="file://$MODULE_DIR$/servlet-transport/src" />
+          <root url="file://$MODULE_DIR$/xarecovery/src" />
+        </sourceRoots>
         <building>
           <setting name="EXPLODED_URL" value="file://" />
           <setting name="EXPLODED_ENABLED" value="false" />
@@ -48,6 +57,7 @@
       <sourceFolder url="file://$MODULE_DIR$/jca-config/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/jms-bridge/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/mdb/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/servlet-ssl-example/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/servlet-transport/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/xarecovery/src" isTestSource="false" />
       <excludeFolder url="file://$MODULE_DIR$/mdb/build" />
