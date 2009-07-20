@@ -181,11 +181,17 @@
       <ant antfile="build-messaging.xml" target="build.sar"/>
    </target>
 
-   <target name="distro" depends="createthirdparty">
-      <ant antfile="build-messaging.xml" target="distro"/>
+   <target name="distro" depends="bin-distro, source-distro" />
+	
+   <target name="bin-distro" depends="createthirdparty">
+      <ant antfile="build-messaging.xml" target="bin-distro"/>
    </target>
 
-    <target name="artifacts" depends="createthirdparty">
+   <target name="source-distro" depends="createthirdparty">
+      <ant antfile="build-messaging.xml" target="source-distro"/>
+   </target>
+
+	<target name="artifacts" depends="createthirdparty">
       <ant antfile="build-messaging.xml" target="artifacts"/>
    </target>
 

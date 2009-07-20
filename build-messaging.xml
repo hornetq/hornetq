@@ -727,7 +727,7 @@
    <!-- Distribution targets                                                                     -->
    <!-- ======================================================================================== -->
 
-   <target name="distro" depends="createthirdparty, jar, jar-core-client, jar-jms-client, validate-configuration">
+   <target name="bin-distro" depends="createthirdparty, jar, jar-core-client, jar-jms-client, validate-configuration">
       
       <mkdir dir="${build.distro.dir}"/>
       <mkdir dir="${build.distro.lib.dir}"/>
@@ -852,6 +852,27 @@
       </tar>
       <gzip src="${build.dir}/${build.artifact}.tar"
             destfile="${build.dir}/${build.artifact}.tar.gz"/>
+   </target>
+
+
+   <target name="source-distro">
+      <mkdir dir="${build.dir}"/>
+      <zip destfile="${build.dir}/${build.artifact}-src.zip">
+         <zipfileset dir="${basedir}" prefix="${build.artifact}-src">
+            <exclude name="**/.svn"/>
+            <exclude name="*.iml"/>
+            <exclude name="*.ipr"/>
+            <exclude name="*.iws"/>
+            <exclude name="**/output/**"/>
+            <exclude name="eclipse-output/**"/>
+            <exclude name="**/build/**"/>
+            <exclude name="**/target/**"/>
+            <exclude name="**/data/**"/>
+            <exclude name="**/logs/**"/>
+            <exclude name="**/ObjectStore/**"/>
+            <exclude name="junit*.properties"/>
+         </zipfileset>
+      </zip>
    </target>
 
    <!-- ======================================================================================== -->
