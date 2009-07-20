@@ -33,7 +33,7 @@ import org.jboss.messaging.core.management.Parameter;
  * @version <tt>$Revision$</tt>
  * 
  */
-public interface DestinationControlMBean
+public interface DestinationControl
 {
    // Attributes ----------------------------------------------------
 
@@ -49,7 +49,7 @@ public interface DestinationControlMBean
 
    // Operations ----------------------------------------------------
 
-   @Operation(desc = "Remove messages from the destination", impact = ACTION)
+   @Operation(desc = "Remove messages matching the given filter from the destination", impact = ACTION)
    int removeMessages(@Parameter(name = "filter", desc = "A JMS message filter (can be empty)") String filter) throws Exception;
 
 }

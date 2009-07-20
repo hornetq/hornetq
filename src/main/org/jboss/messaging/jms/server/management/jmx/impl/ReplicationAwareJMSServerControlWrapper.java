@@ -130,7 +130,71 @@ public class ReplicationAwareJMSServerControlWrapper extends ReplicationAwareSta
                              reconnectAttempts,
                              failoverOnServerShutdown,
                              jndiBindings);
+   }
 
+   public void createConnectionFactory(final String name,
+                                       final String discoveryAddress,
+                                       final int discoveryPort,
+                                       final String clientID,
+                                       final long discoveryRefreshTimeout,
+                                       final long clientFailureCheckPeriod,
+                                       final long connectionTTL,
+                                       final long callTimeout,
+                                       final int maxConnections,
+                                       final int minLargeMessageSize,
+                                       final int consumerWindowSize,
+                                       final int consumerMaxRate,
+                                       final int producerWindowSize,
+                                       final int producerMaxRate,
+                                       final boolean blockOnAcknowledge,
+                                       final boolean blockOnPersistentSend,
+                                       final boolean blockOnNonPersistentSend,
+                                       final boolean autoGroup,
+                                       final boolean preAcknowledge,
+                                       final String loadBalancingPolicyClassName,
+                                       final int transactionBatchSize,
+                                       final int dupsOKBatchSize,
+                                       final long initialWaitTimeout,
+                                       final boolean useGlobalPools,
+                                       final int scheduledThreadPoolMaxSize,
+                                       final int threadPoolMaxSize,
+                                       final long retryInterval,
+                                       final double retryIntervalMultiplier,
+                                       final int reconnectAttempts,
+                                       final boolean failoverOnServerShutdown,
+                                       final String jndiBindings) throws Exception
+   {
+      replicationAwareInvoke("createConnectionFactory",
+                             name,
+                             discoveryAddress,
+                             discoveryPort,
+                             clientID,
+                             clientFailureCheckPeriod,
+                             connectionTTL,
+                             callTimeout,
+                             maxConnections,
+                             minLargeMessageSize,
+                             consumerWindowSize,
+                             consumerMaxRate,
+                             producerWindowSize,
+                             producerMaxRate,
+                             blockOnAcknowledge,
+                             blockOnPersistentSend,
+                             blockOnNonPersistentSend,
+                             autoGroup,
+                             preAcknowledge,
+                             loadBalancingPolicyClassName,
+                             transactionBatchSize,
+                             dupsOKBatchSize,
+                             initialWaitTimeout,
+                             useGlobalPools,
+                             scheduledThreadPoolMaxSize,
+                             threadPoolMaxSize,
+                             retryInterval,
+                             retryIntervalMultiplier,
+                             reconnectAttempts,
+                             failoverOnServerShutdown,
+                             jndiBindings);
    }
 
    public void createConnectionFactory(final String name,
@@ -138,6 +202,15 @@ public class ReplicationAwareJMSServerControlWrapper extends ReplicationAwareSta
                                        final int discoveryPort,
                                        final String clientID,
                                        final Object[] jndiBindings) throws Exception
+   {
+      replicationAwareInvoke("createConnectionFactory", name, discoveryAddress, discoveryPort, clientID, jndiBindings);
+   }
+
+   public void createConnectionFactory(final String name,
+                                       final String discoveryAddress,
+                                       final int discoveryPort,
+                                       final String clientID,
+                                       final String jndiBindings) throws Exception
    {
       replicationAwareInvoke("createConnectionFactory", name, discoveryAddress, discoveryPort, clientID, jndiBindings);
 
@@ -162,6 +235,24 @@ public class ReplicationAwareJMSServerControlWrapper extends ReplicationAwareSta
    }
 
    public void createConnectionFactory(final String name,
+                                       final String liveTransportClassNames,
+                                       final String liveTransportParams,
+                                       final String backupTransportClassNames,
+                                       final String backupTransportParams,
+                                       final String clientID,
+                                       final String jndiBindings) throws Exception
+   {
+      replicationAwareInvoke("createConnectionFactory",
+                             name,
+                             liveTransportClassNames,
+                             liveTransportParams,
+                             backupTransportClassNames,
+                             backupTransportParams,
+                             clientID,
+                             jndiBindings);
+   }
+
+   public void createConnectionFactory(final String name,
                                        final String liveTransportClassName,
                                        final Map<String, Object> liveTransportParams,
                                        final String backupTransportClassName,
@@ -178,17 +269,55 @@ public class ReplicationAwareJMSServerControlWrapper extends ReplicationAwareSta
    }
 
    public void createConnectionFactory(final String name,
+                                       final String liveTransportClassNames,
+                                       final String liveTransportParams,
+                                       final String backupTransportClassNames,
+                                       final String backupTransportParams,
+                                       final String jndiBindings) throws Exception
+   {
+      replicationAwareInvoke("createConnectionFactory",
+                             name,
+                             liveTransportClassNames,
+                             liveTransportParams,
+                             backupTransportClassNames,
+                             backupTransportParams,
+                             jndiBindings);
+   }
+
+   public void createConnectionFactory(final String name,
                                        final String liveTransportClassName,
                                        final Map<String, Object> liveTransportParams,
                                        final String clientID,
                                        final Object[] jndiBindings) throws Exception
    {
       replicationAwareInvoke("createConnectionFactory",
-                             name, 
+                             name,
                              liveTransportClassName,
                              liveTransportParams,
                              clientID,
                              jndiBindings);
+   }
+
+   public void createConnectionFactory(final String name,
+                                       final String liveTransportClassName,
+                                       final String liveTransportParams,
+                                       final String clientID,
+                                       final String jndiBindings) throws Exception
+   {
+      replicationAwareInvoke("createConnectionFactory",
+                             name,
+                             liveTransportClassName,
+                             liveTransportParams,
+                             clientID,
+                             jndiBindings);
+   }
+
+   public void createConnectionFactory(String name,
+                                       String liveTransportClassName,
+                                       String liveTransportParams,
+                                       String jndiBindings) throws Exception
+   {
+      replicationAwareInvoke("createConnectionFactory", name, liveTransportClassName, liveTransportParams, jndiBindings);
    }
 
    public void createConnectionFactory(final String name,
@@ -198,7 +327,7 @@ public class ReplicationAwareJMSServerControlWrapper extends ReplicationAwareSta
    {
       replicationAwareInvoke("createConnectionFactory", name, liveTransportClassName, liveTransportParams, jndiBindings);
    }
-   
+
    public void createConnectionFactory(final String name,
                                        final Object[] liveConnectorsTransportClassNames,
                                        final Object[] liveConnectorTransportParams,
@@ -230,6 +359,72 @@ public class ReplicationAwareJMSServerControlWrapper extends ReplicationAwareSta
                                        final int reconnectAttempts,
                                        final boolean failoverOnServerShutdown,
                                        final Object[] jndiBindings) throws Exception
+   {
+      replicationAwareInvoke("createConnectionFactory",
+                             name,
+                             liveConnectorsTransportClassNames,
+                             liveConnectorTransportParams,
+                             backupConnectorsTransportClassNames,
+                             backupConnectorTransportParams,
+                             clientID,
+                             clientFailureCheckPeriod,
+                             connectionTTL,
+                             callTimeout,
+                             maxConnections,
+                             minLargeMessageSize,
+                             consumerWindowSize,
+                             consumerMaxRate,
+                             producerWindowSize,
+                             producerMaxRate,
+                             blockOnAcknowledge,
+                             blockOnPersistentSend,
+                             blockOnNonPersistentSend,
+                             autoGroup,
+                             preAcknowledge,
+                             loadBalancingPolicyClassName,
+                             transactionBatchSize,
+                             dupsOKBatchSize,
+                             useGlobalPools,
+                             scheduledThreadPoolMaxSize,
+                             threadPoolMaxSize,
+                             retryInterval,
+                             retryIntervalMultiplier,
+                             reconnectAttempts,
+                             failoverOnServerShutdown,
+                             jndiBindings);
+   }
+
+   public void createConnectionFactory(final String name,
+                                       final String liveConnectorsTransportClassNames,
+                                       final String liveConnectorTransportParams,
+                                       final String backupConnectorsTransportClassNames,
+                                       final String backupConnectorTransportParams,
+                                       final String clientID,
+                                       final long clientFailureCheckPeriod,
+                                       final long connectionTTL,
+                                       final long callTimeout,
+                                       final int maxConnections,
+                                       final int minLargeMessageSize,
+                                       final int consumerWindowSize,
+                                       final int consumerMaxRate,
+                                       final int producerWindowSize,
+                                       final int producerMaxRate,
+                                       final boolean blockOnAcknowledge,
+                                       final boolean blockOnPersistentSend,
+                                       final boolean blockOnNonPersistentSend,
+                                       final boolean autoGroup,
+                                       final boolean preAcknowledge,
+                                       final String loadBalancingPolicyClassName,
+                                       final int transactionBatchSize,
+                                       final int dupsOKBatchSize,
+                                       final boolean useGlobalPools,
+                                       final int scheduledThreadPoolMaxSize,
+                                       final int threadPoolMaxSize,
+                                       final long retryInterval,
+                                       final double retryIntervalMultiplier,
+                                       final int reconnectAttempts,
+                                       final boolean failoverOnServerShutdown,
+                                       final String jndiBindings) throws Exception
    {
       replicationAwareInvoke("createConnectionFactory",
                              name,

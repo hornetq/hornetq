@@ -39,5 +39,5 @@ import java.lang.annotation.Target;
 @Target(ElementType.PARAMETER)
 public @interface Parameter {
     String name();
-    String desc();
+    String desc() default "N/A";
 }

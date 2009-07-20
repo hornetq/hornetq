@@ -36,7 +36,7 @@ import org.jboss.messaging.core.management.Parameter;
  * @version <tt>$Revision$</tt>
  * 
  */
-public interface JMSQueueControl extends DestinationControlMBean
+public interface JMSQueueControl extends DestinationControl
 {
    // Attributes ----------------------------------------------------
 
@@ -102,12 +102,16 @@ public interface JMSQueueControl extends DestinationControlMBean
    int moveMessages(@Parameter(name = "filter", desc = "A message filter (can be empty)") String filter,
                     @Parameter(name = "otherQueueName", desc = "The name of the queue to move the messages to") String otherQueueName) throws Exception;
 
+   @Operation(desc = "List the message counters", impact = INFO)
    String listMessageCounter() throws Exception;
 
+   @Operation(desc = "List the message counters as HTML", impact = INFO)
    String listMessageCounterAsHTML() throws Exception;
 
+   @Operation(desc = "List the message counters history", impact = INFO)
    String listMessageCounterHistory() throws Exception;
 
+   @Operation(desc = "List the message counters history as HTML", impact = INFO)
    String listMessageCounterHistoryAsHTML() throws Exception;
 
 }

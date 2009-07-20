@@ -156,7 +156,86 @@ public class JMSServerControlUsingJMSTest extends JMSServerControlTest
                                              String discoveryAddress,
                                              int discoveryPort,
                                              String clientID,
+                                             long discoveryRefreshTimeout,
+                                             long clientFailureCheckPeriod,
+                                             long connectionTTL,
+                                             long callTimeout,
+                                             int maxConnections,
+                                             int minLargeMessageSize,
+                                             int consumerWindowSize,
+                                             int consumerMaxRate,
+                                             int producerWindowSize,
+                                             int producerMaxRate,
+                                             boolean blockOnAcknowledge,
+                                             boolean blockOnPersistentSend,
+                                             boolean blockOnNonPersistentSend,
+                                             boolean autoGroup,
+                                             boolean preAcknowledge,
+                                             String loadBalancingPolicyClassName,
+                                             int transactionBatchSize,
+                                             int dupsOKBatchSize,
+                                             long initialWaitTimeout,
+                                             boolean useGlobalPools,
+                                             int scheduledThreadPoolMaxSize,
+                                             int threadPoolMaxSize,
+                                             long retryInterval,
+                                             double retryIntervalMultiplier,
+                                             int reconnectAttempts,
+                                             boolean failoverOnServerShutdown,
+                                             String jndiBindings) throws Exception
+         {
+            proxy.invokeOperation("createConnectionFactory",
+                                  name,
+                                  discoveryAddress,
+                                  discoveryPort,
+                                  clientID,
+                                  clientFailureCheckPeriod,
+                                  connectionTTL,
+                                  callTimeout,
+                                  maxConnections,
+                                  minLargeMessageSize,
+                                  consumerWindowSize,
+                                  consumerMaxRate,
+                                  producerWindowSize,
+                                  producerMaxRate,
+                                  blockOnAcknowledge,
+                                  blockOnPersistentSend,
+                                  blockOnNonPersistentSend,
+                                  autoGroup,
+                                  preAcknowledge,
+                                  loadBalancingPolicyClassName,
+                                  transactionBatchSize,
+                                  dupsOKBatchSize,
+                                  initialWaitTimeout,
+                                  useGlobalPools,
+                                  scheduledThreadPoolMaxSize,
+                                  threadPoolMaxSize,
+                                  retryInterval,
+                                  retryIntervalMultiplier,
+                                  reconnectAttempts,
+                                  failoverOnServerShutdown,
+                                  jndiBindings);
+         }
+
+         public void createConnectionFactory(String name,
+                                             String discoveryAddress,
+                                             int discoveryPort,
+                                             String clientID,
                                              Object[] jndiBindings) throws Exception
+         {
+            proxy.invokeOperation("createConnectionFactory",
+                                  name,
+                                  discoveryAddress,
+                                  discoveryPort,
+                                  clientID,
+                                  jndiBindings);
+         }
+
+         public void createConnectionFactory(String name,
+                                             String discoveryAddress,
+                                             int discoveryPort,
+                                             String clientID,
+                                             String jndiBindings) throws Exception
          {
             proxy.invokeOperation("createConnectionFactory",
                                   name,
@@ -185,6 +264,24 @@ public class JMSServerControlUsingJMSTest extends JMSServerControlTest
          }
 
          public void createConnectionFactory(String name,
+                                             String liveTransportClassNames,
+                                             String liveTransportParams,
+                                             String backupTransportClassNames,
+                                             String backupTransportParams,
+                                             String clientID,
+                                             String jndiBindings) throws Exception
+         {
+            proxy.invokeOperation("createConnectionFactory",
+                                  name,
+                                  liveTransportClassNames,
+                                  liveTransportParams,
+                                  backupTransportClassNames,
+                                  backupTransportParams,
+                                  clientID,
+                                  jndiBindings);
+         }
+
+         public void createConnectionFactory(String name,
                                              String liveTransportClassName,
                                              Map<String, Object> liveTransportParams,
                                              String backupTransportClassName,
@@ -196,6 +293,22 @@ public class JMSServerControlUsingJMSTest extends JMSServerControlTest
                                   liveTransportClassName,
                                   liveTransportParams,
                                   backupTransportClassName,
+                                  backupTransportParams,
+                                  jndiBindings);
+         }
+
+         public void createConnectionFactory(String name,
+                                             String liveTransportClassNames,
+                                             String liveTransportParams,
+                                             String backupTransportClassNames,
+                                             String backupTransportParams,
+                                             String jndiBindings) throws Exception
+         {
+            proxy.invokeOperation("createConnectionFactory",
+                                  name,
+                                  liveTransportClassNames,
+                                  liveTransportParams,
+                                  backupTransportClassNames,
                                   backupTransportParams,
                                   jndiBindings);
          }
@@ -216,8 +329,34 @@ public class JMSServerControlUsingJMSTest extends JMSServerControlTest
 
          public void createConnectionFactory(String name,
                                              String liveTransportClassName,
+                                             String liveTransportParams,
+                                             String clientID,
+                                             String jndiBindings) throws Exception
+         {
+            proxy.invokeOperation("createConnectionFactory",
+                                  name,
+                                  liveTransportClassName,
+                                  liveTransportParams,
+                                  clientID,
+                                  jndiBindings);
+         }
+
+         public void createConnectionFactory(String name,
+                                             String liveTransportClassName,
                                              Map<String, Object> liveTransportParams,
                                              Object[] jndiBindings) throws Exception
+         {
+            proxy.invokeOperation("createConnectionFactory",
+                                  name,
+                                  liveTransportClassName,
+                                  liveTransportParams,
+                                  jndiBindings);
+         }
+
+         public void createConnectionFactory(String name,
+                                             String liveTransportClassName,
+                                             String liveTransportParams,
+                                             String jndiBindings) throws Exception
          {
             proxy.invokeOperation("createConnectionFactory",
                                   name,
@@ -257,6 +396,73 @@ public class JMSServerControlUsingJMSTest extends JMSServerControlTest
                                              int reconnectAttempts,
                                              boolean failoverOnServerShutdown,
                                              Object[] jndiBindings) throws Exception
+         {
+            proxy.invokeOperation("createConnectionFactory",
+                                  name,
+                                  liveConnectorsTransportClassNames,
+                                  liveConnectorTransportParams,
+                                  backupConnectorsTransportClassNames,
+                                  backupConnectorTransportParams,
+                                  clientID,
+                                  clientFailureCheckPeriod,
+                                  connectionTTL,
+                                  callTimeout,
+                                  maxConnections,
+                                  minLargeMessageSize,
+                                  consumerWindowSize,
+                                  consumerMaxRate,
+                                  producerWindowSize,
+                                  producerMaxRate,
+                                  blockOnAcknowledge,
+                                  blockOnPersistentSend,
+                                  blockOnNonPersistentSend,
+                                  autoGroup,
+                                  preAcknowledge,
+                                  loadBalancingPolicyClassName,
+                                  transactionBatchSize,
+                                  dupsOKBatchSize,
+                                  useGlobalPools,
+                                  scheduledThreadPoolMaxSize,
+                                  threadPoolMaxSize,
+                                  retryInterval,
+                                  retryIntervalMultiplier,
+                                  reconnectAttempts,
+                                  failoverOnServerShutdown,
+                                  jndiBindings);
+
+         }
+
+         public void createConnectionFactory(String name,
+                                             String liveConnectorsTransportClassNames,
+                                             String liveConnectorTransportParams,
+                                             String backupConnectorsTransportClassNames,
+                                             String backupConnectorTransportParams,
+                                             String clientID,
+                                             long clientFailureCheckPeriod,
+                                             long connectionTTL,
+                                             long callTimeout,
+                                             int maxConnections,
+                                             int minLargeMessageSize,
+                                             int consumerWindowSize,
+                                             int consumerMaxRate,
+                                             int producerWindowSize,
+                                             int producerMaxRate,
+                                             boolean blockOnAcknowledge,
+                                             boolean blockOnPersistentSend,
+                                             boolean blockOnNonPersistentSend,
+                                             boolean autoGroup,
+                                             boolean preAcknowledge,
+                                             String loadBalancingPolicyClassName,
+                                             int transactionBatchSize,
+                                             int dupsOKBatchSize,
+                                             boolean useGlobalPools,
+                                             int scheduledThreadPoolMaxSize,
+                                             int threadPoolMaxSize,
+                                             long retryInterval,
+                                             double retryIntervalMultiplier,
+                                             int reconnectAttempts,
+                                             boolean failoverOnServerShutdown,
+                                             String jndiBindings) throws Exception
          {
             proxy.invokeOperation("createConnectionFactory",
                                   name,

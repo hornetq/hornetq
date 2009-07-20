@@ -156,12 +156,16 @@ public interface MessagingServerControl
    @Operation(desc = "Destroy a queue", impact = ACTION)
    void destroyQueue(@Parameter(name = "name", desc = "Name of the queue to destroy") String name) throws Exception;
 
+   @Operation(desc = "Enable message counters", impact = ACTION)
    void enableMessageCounters() throws Exception;
 
+   @Operation(desc = "Disable message counters", impact = ACTION)
    void disableMessageCounters() throws Exception;
 
+   @Operation(desc = "Reset all message counters", impact = ACTION)
    void resetAllMessageCounters() throws Exception;
 
+   @Operation(desc = "Reset all message counters history", impact = ACTION)
    void resetAllMessageCounterHistories() throws Exception;
 
    @Operation(desc = "List all the prepared transaction, sorted by date, oldest first")

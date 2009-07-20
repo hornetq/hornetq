@@ -35,6 +35,7 @@ import javax.management.NotificationEmitter;
 import javax.management.NotificationFilter;
 import javax.management.NotificationListener;
 
+import org.jboss.messaging.core.client.management.impl.ManagementHelper;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.jms.server.JMSServerManager;
 import org.jboss.messaging.jms.server.management.JMSServerControl;
@@ -62,14 +63,67 @@ public class JMSServerControlImpl implements JMSServerControl, NotificationEmitt
 
    // Static --------------------------------------------------------
 
-   private static List<String> convert(Object[] jndiBindings)
+   private static List<String> convert(final Object[] jndiBindings)
    {
       List<String> bindings = new ArrayList<String>();
       for (Object object : jndiBindings)
       {
-         bindings.add(object.toString());
+         bindings.add(object.toString().trim());
       }
       return bindings;
+   }
+
+   private static String[] toArray(String commaSeparatedString)
+   {
+      if (commaSeparatedString == null || commaSeparatedString.trim().length() == 0)
+      {
+         return new String[0];
+      }
+      String[] values = commaSeparatedString.split(",");
+      String[] trimmed = new String[values.length];
+      for (int i = 0; i < values.length; i++)
+      {
+         trimmed[i] = values[i].trim();
+      }
+      return trimmed;
+   }
+
+   private static List<Pair<TransportConfiguration, TransportConfiguration>> convertToConnectorPairs(final Object[] liveConnectorsTransportClassNames,
+                                                                                                     final Object[] liveConnectorTransportParams,
+                                                                                                     final Object[] backupConnectorsTransportClassNames,
+                                                                                                     final Object[] backupConnectorTransportParams)
+   {
+      List<Pair<TransportConfiguration, TransportConfiguration>> pairs = new ArrayList<Pair<TransportConfiguration, TransportConfiguration>>();
+
+      for (int i = 0; i < liveConnectorsTransportClassNames.length; i++)
+      {
+         Map<String, Object> liveParams = null;
+         if (liveConnectorTransportParams.length > i)
+         {
+            liveParams = (Map<String, Object>)liveConnectorTransportParams[i];
+         }
+
+         TransportConfiguration tcLive = new TransportConfiguration(liveConnectorsTransportClassNames[i].toString(),
+                                                                    liveParams);
+
+         Map<String, Object> backupParams = null;
+         if (backupConnectorTransportParams.length > i)
+         {
+            backupParams = (Map<String, Object>)backupConnectorTransportParams[i];
+         }
+
+         TransportConfiguration tcBackup = null;
+         if (backupConnectorsTransportClassNames.length > i)
+         {
+            new TransportConfiguration(backupConnectorsTransportClassNames[i].toString(), backupParams);
+         }
+         Pair<TransportConfiguration, TransportConfiguration> pair = new Pair<TransportConfiguration, TransportConfiguration>(tcLive,
+                                                                                                                              tcBackup);
+
+         pairs.add(pair);
+      }
+
+      return pairs;
    }
 
    // Constructors --------------------------------------------------
@@ -95,47 +149,26 @@ public class JMSServerControlImpl implements JMSServerControl, NotificationEmitt
                                                                                                  liveConnectorTransportParams,
                                                                                                  backupConnectorsTransportClassNames,
                                                                                                  backupConnectorTransportParams);
-
       List<String> jndiBindingsList = convert(jndiBindings);
-      
+
       server.createConnectionFactory(name, pairs, jndiBindingsList);
 
       sendNotification(NotificationType.CONNECTION_FACTORY_CREATED, name);
    }
 
-   private List<Pair<TransportConfiguration, TransportConfiguration>> convertToConnectorPairs(final Object[] liveConnectorsTransportClassNames,
-                                                                                              final Object[] liveConnectorTransportParams,
-                                                                                              final Object[] backupConnectorsTransportClassNames,
-                                                                                              final Object[] backupConnectorTransportParams)
+   public void createConnectionFactory(final String name,
+                                       final String liveTransportClassNames,
+                                       final String liveTransportParams,
+                                       final String backupTransportClassNames,
+                                       final String backupTransportParams,
+                                       final String jndiBindings) throws Exception
    {
-      List<Pair<TransportConfiguration, TransportConfiguration>> pairs = new ArrayList<Pair<TransportConfiguration, TransportConfiguration>>();
-
-      for (int i = 0; i < liveConnectorsTransportClassNames.length; i++)
-      {
-         Map<String, Object>[] liveParams = new Map[liveConnectorTransportParams.length];
-         for (int j = 0; j < liveConnectorTransportParams.length; j++)
-         {
-            liveParams[i] = (Map<String, Object>)liveConnectorTransportParams[j];            
-         }
-         
-         TransportConfiguration tcLive = new TransportConfiguration(liveConnectorsTransportClassNames[i].toString(),
-                                                                    liveParams[i]);
-
-         Map<String, Object>[] backupParams = new Map[backupConnectorTransportParams.length];
-         for (int j = 0; j < backupConnectorTransportParams.length; j++)
-         {
-            backupParams[i] = (Map<String, Object>)backupConnectorTransportParams[j];            
-         }
-
-         TransportConfiguration tcBackup = new TransportConfiguration(backupConnectorsTransportClassNames[i].toString(),
-                                                                      backupParams[i]);
-         Pair<TransportConfiguration, TransportConfiguration> pair = new Pair<TransportConfiguration, TransportConfiguration>(tcLive,
-                                                                                                                              tcBackup);
-
-         pairs.add(pair);
-      }
-
-      return pairs;
+      Object[] liveClassNames = toArray(liveTransportClassNames);
+      Object[] liveParams = ManagementHelper.fromCommaSeparatedArrayOfCommaSeparatedKeyValues(liveTransportParams);
+      Object[] backupClassNames = toArray(backupTransportClassNames);
+      Object[] backupParams = ManagementHelper.fromCommaSeparatedArrayOfCommaSeparatedKeyValues(backupTransportParams);;
+      Object[] bindings = toArray(jndiBindings);
+      createConnectionFactory(name, liveClassNames, liveParams, backupClassNames, backupParams, bindings);
    }
 
    public void createConnectionFactory(final String name,
@@ -152,10 +185,27 @@ public class JMSServerControlImpl implements JMSServerControl, NotificationEmitt
                                                                                                  backupConnectorTransportParams);
 
       List<String> jndiBindingsList = convert(jndiBindings);
-      
+
       server.createConnectionFactory(name, pairs, clientID, jndiBindingsList);
 
       sendNotification(NotificationType.CONNECTION_FACTORY_CREATED, name);
+   }
+
+   public void createConnectionFactory(String name,
+                                       String liveTransportClassNames,
+                                       String liveTransportParams,
+                                       String backupTransportClassNames,
+                                       String backupTransportParams,
+                                       String clientID,
+                                       String jndiBindings) throws Exception
+   {
+      Object[] liveClassNames = toArray(liveTransportClassNames);
+      Object[] liveParams = ManagementHelper.fromCommaSeparatedArrayOfCommaSeparatedKeyValues(liveTransportParams);
+      Object[] backupClassNames = toArray(backupTransportClassNames);
+      Object[] backupParams = ManagementHelper.fromCommaSeparatedArrayOfCommaSeparatedKeyValues(backupTransportParams);;
+      Object[] bindings = toArray(jndiBindings);
+
+      createConnectionFactory(name, liveClassNames, liveParams, backupClassNames, backupParams, clientID, bindings);
    }
 
    public void createConnectionFactory(final String name,
@@ -196,7 +246,7 @@ public class JMSServerControlImpl implements JMSServerControl, NotificationEmitt
                                                                                                  backupConnectorTransportParams);
 
       List<String> jndiBindingsList = convert(jndiBindings);
-      
+
       server.createConnectionFactory(name,
                                      pairs,
                                      clientID,
@@ -230,16 +280,98 @@ public class JMSServerControlImpl implements JMSServerControl, NotificationEmitt
    }
 
    public void createConnectionFactory(final String name,
+                                       final String liveTransportClassNames,
+                                       final String liveTransportParams,
+                                       final String backupTransportClassNames,
+                                       final String backupTransportParams,
+                                       final String clientID,
+                                       final long clientFailureCheckPeriod,
+                                       final long connectionTTL,
+                                       final long callTimeout,
+                                       final int maxConnections,
+                                       final int minLargeMessageSize,
+                                       final int consumerWindowSize,
+                                       final int consumerMaxRate,
+                                       final int producerWindowSize,
+                                       final int producerMaxRate,
+                                       final boolean blockOnAcknowledge,
+                                       final boolean blockOnPersistentSend,
+                                       final boolean blockOnNonPersistentSend,
+                                       final boolean autoGroup,
+                                       final boolean preAcknowledge,
+                                       final String loadBalancingPolicyClassName,
+                                       final int transactionBatchSize,
+                                       final int dupsOKBatchSize,
+                                       final boolean useGlobalPools,
+                                       final int scheduledThreadPoolMaxSize,
+                                       final int threadPoolMaxSize,
+                                       final long retryInterval,
+                                       final double retryIntervalMultiplier,
+                                       final int reconnectAttempts,
+                                       final boolean failoverOnServerShutdown,
+                                       final String jndiBindings) throws Exception
+   {
+      Object[] liveClassNames = toArray(liveTransportClassNames);
+      Object[] liveParams = ManagementHelper.fromCommaSeparatedArrayOfCommaSeparatedKeyValues(liveTransportParams);
+      Object[] backupClassNames = toArray(backupTransportClassNames);
+      Object[] backupParams = ManagementHelper.fromCommaSeparatedArrayOfCommaSeparatedKeyValues(backupTransportParams);
+      Object[] bindings = toArray(jndiBindings);
+
+      createConnectionFactory(name,
+                              liveClassNames,
+                              liveParams,
+                              backupClassNames,
+                              backupParams,
+                              clientID,
+                              clientFailureCheckPeriod,
+                              connectionTTL,
+                              callTimeout,
+                              maxConnections,
+                              minLargeMessageSize,
+                              consumerWindowSize,
+                              consumerMaxRate,
+                              producerWindowSize,
+                              producerMaxRate,
+                              blockOnAcknowledge,
+                              blockOnPersistentSend,
+                              blockOnNonPersistentSend,
+                              autoGroup,
+                              preAcknowledge,
+                              loadBalancingPolicyClassName,
+                              transactionBatchSize,
+                              dupsOKBatchSize,
+                              useGlobalPools,
+                              scheduledThreadPoolMaxSize,
+                              threadPoolMaxSize,
+                              retryInterval,
+                              retryIntervalMultiplier,
+                              reconnectAttempts,
+                              failoverOnServerShutdown,
+                              bindings);
+   }
+
+   public void createConnectionFactory(final String name,
                                        final String discoveryAddress,
                                        final int discoveryPort,
                                        final String clientID,
                                        final Object[] jndiBindings) throws Exception
    {
       List<String> jndiBindingsList = convert(jndiBindings);
-      
+
       server.createConnectionFactory(name, discoveryAddress, discoveryPort, clientID, jndiBindingsList);
 
       sendNotification(NotificationType.CONNECTION_FACTORY_CREATED, name);
+   }
+
+   public void createConnectionFactory(String name,
+                                       String discoveryAddress,
+                                       int discoveryPort,
+                                       String clientID,
+                                       String jndiBindings) throws Exception
+   {
+      Object[] bindings = toArray(jndiBindings);
+
+      createConnectionFactory(name, discoveryAddress, discoveryPort, clientID, bindings);
    }
 
    public void createConnectionFactory(final String name,
@@ -275,7 +407,7 @@ public class JMSServerControlImpl implements JMSServerControl, NotificationEmitt
                                        final Object[] jndiBindings) throws Exception
    {
       List<String> jndiBindingsList = convert(jndiBindings);
-      
+
       server.createConnectionFactory(name,
                                      discoveryAddress,
                                      discoveryPort,
@@ -312,20 +444,96 @@ public class JMSServerControlImpl implements JMSServerControl, NotificationEmitt
    }
 
    public void createConnectionFactory(final String name,
-                                       final String liveTransportClassName,
-                                       final Map<String, Object> liveTransportParams,
-                                       final Object[] jndiBindings) throws Exception
+                                       final String discoveryAddress,
+                                       final int discoveryPort,
+                                       final String clientID,
+                                       final long discoveryRefreshTimeout,
+                                       final long clientFailureCheckPeriod,
+                                       final long connectionTTL,
+                                       final long callTimeout,
+                                       final int maxConnections,
+                                       final int minLargeMessageSize,
+                                       final int consumerWindowSize,
+                                       final int consumerMaxRate,
+                                       final int producerWindowSize,
+                                       final int producerMaxRate,
+                                       final boolean blockOnAcknowledge,
+                                       final boolean blockOnPersistentSend,
+                                       final boolean blockOnNonPersistentSend,
+                                       final boolean autoGroup,
+                                       final boolean preAcknowledge,
+                                       final String loadBalancingPolicyClassName,
+                                       final int transactionBatchSize,
+                                       final int dupsOKBatchSize,
+                                       final long initialWaitTimeout,
+                                       final boolean useGlobalPools,
+                                       final int scheduledThreadPoolMaxSize,
+                                       final int threadPoolMaxSize,
+                                       final long retryInterval,
+                                       final double retryIntervalMultiplier,
+                                       final int reconnectAttempts,
+                                       final boolean failoverOnServerShutdown,
+                                       final String jndiBindings) throws Exception
    {
-      
+      Object[] bindings = toArray(jndiBindings);
+
+      createConnectionFactory(name,
+                              discoveryAddress,
+                              discoveryPort,
+                              clientID,
+                              discoveryRefreshTimeout,
+                              clientFailureCheckPeriod,
+                              connectionTTL,
+                              callTimeout,
+                              maxConnections,
+                              minLargeMessageSize,
+                              consumerWindowSize,
+                              consumerMaxRate,
+                              producerWindowSize,
+                              producerMaxRate,
+                              blockOnAcknowledge,
+                              blockOnPersistentSend,
+                              blockOnNonPersistentSend,
+                              autoGroup,
+                              preAcknowledge,
+                              loadBalancingPolicyClassName,
+                              transactionBatchSize,
+                              dupsOKBatchSize,
+                              initialWaitTimeout,
+                              useGlobalPools,
+                              scheduledThreadPoolMaxSize,
+                              threadPoolMaxSize,
+                              retryInterval,
+                              retryIntervalMultiplier,
+                              reconnectAttempts,
+                              failoverOnServerShutdown,
+                              bindings);
+   }
+
+   public void createConnectionFactory(String name,
+                                       String liveTransportClassName,
+                                       Map<String, Object> liveTransportParams,
+                                       Object[] jndiBindings) throws Exception
+   {
+      List<String> jndiBindingsList = convert(jndiBindings);
       TransportConfiguration liveTC = new TransportConfiguration(liveTransportClassName, liveTransportParams);
 
-      List<String> jndiBindingsList = convert(jndiBindings);
-      
       server.createConnectionFactory(name, liveTC, jndiBindingsList);
 
       sendNotification(NotificationType.CONNECTION_FACTORY_CREATED, name);
    }
-   
+
+   public void createConnectionFactory(String name,
+                                       String liveTransportClassName,
+                                       String liveTransportParams,
+                                       String jndiBindings) throws Exception
+   {
+      Map<String, Object> params = ManagementHelper.fromCommaSeparatedKeyValues(liveTransportParams);
+      String[] bindings = toArray(jndiBindings);
+
+      createConnectionFactory(name, liveTransportClassName, params, bindings);
+   }
+
    public void createConnectionFactory(final String name,
                                        final String liveTransportClassName,
                                        final Map<String, Object> liveTransportParams,
@@ -333,12 +541,24 @@ public class JMSServerControlImpl implements JMSServerControl, NotificationEmitt
                                        final Object[] jndiBindings) throws Exception
    {
       List<String> jndiBindingsList = convert(jndiBindings);
-      
+
       TransportConfiguration liveTC = new TransportConfiguration(liveTransportClassName, liveTransportParams);
 
       server.createConnectionFactory(name, liveTC, clientID, jndiBindingsList);
 
       sendNotification(NotificationType.CONNECTION_FACTORY_CREATED, name);
+   }
+
+   public void createConnectionFactory(String name,
+                                       String liveTransportClassName,
+                                       String liveTransportParams,
+                                       String clientID,
+                                       String jndiBindings) throws Exception
+   {
+      Map<String, Object> params = ManagementHelper.fromCommaSeparatedKeyValues(liveTransportParams);
+      String[] bindings = toArray(jndiBindings);
+
+      createConnectionFactory(name, liveTransportClassName, params, clientID, bindings);
    }
 
    public void createConnectionFactory(final String name,
@@ -353,7 +573,7 @@ public class JMSServerControlImpl implements JMSServerControl, NotificationEmitt
       TransportConfiguration backupTC = new TransportConfiguration(backupTransportClassName, backupTransportParams);
 
       List<String> jndiBindingsList = convert(jndiBindings);
-      
+
       server.createConnectionFactory(name, liveTC, backupTC, jndiBindingsList);
 
       sendNotification(NotificationType.CONNECTION_FACTORY_CREATED, name);
@@ -372,7 +592,7 @@ public class JMSServerControlImpl implements JMSServerControl, NotificationEmitt
       TransportConfiguration backupTC = new TransportConfiguration(backupTransportClassName, backupTransportParams);
 
       List<String> jndiBindingsList = convert(jndiBindings);
-      
+
       server.createConnectionFactory(name, liveTC, backupTC, clientID, jndiBindingsList);
 
       sendNotification(NotificationType.CONNECTION_FACTORY_CREATED, name);

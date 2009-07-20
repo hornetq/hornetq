@@ -248,6 +248,87 @@ public class ManagementHelperTest extends TestCase
       
    }
    
+   public void testFromCommaSeparatedKeyValues() throws Exception
+   {
+      String str = "key1=1, key2=false, key3=2.0, key4=whatever";
+      
+      Map<String, Object> map = ManagementHelper.fromCommaSeparatedKeyValues(str);
+      assertEquals(4, map.size());
+      assertTrue(map.containsKey("key1"));
+      assertEquals(1L, map.get("key1"));
+      
+      assertTrue(map.containsKey("key2"));
+      assertEquals(false, map.get("key2"));
+      
+      assertTrue(map.containsKey("key3"));
+      assertEquals(2.0, map.get("key3"));
+      
+      assertTrue(map.containsKey("key4"));
+      assertEquals("whatever", map.get("key4"));
+   }
+   
+   public void testFromCommaSeparatedArrayOfCommaSeparatedKeyValuesForSingleItem() throws Exception
+   {
+      // if there is a single item, no need to enclose it in { }
+      String str = "k11=1, k12=false, k13=2.0, k14=whatever ";
+      
+      Object[] objects = ManagementHelper.fromCommaSeparatedArrayOfCommaSeparatedKeyValues(str);
+      assertEquals(1, objects.length);
+
+      assertTrue(objects[0] instanceof Map<?, ?>);
+      Map<String, Object> map = (Map<String, Object>)objects[0];
+      assertEquals(4, map.size());
+      assertTrue(map.containsKey("k11"));
+      assertEquals(1L, map.get("k11"));
+      
+      assertTrue(map.containsKey("k12"));
+      assertEquals(false, map.get("k12"));
+      
+      assertTrue(map.containsKey("k13"));
+      assertEquals(2.0, map.get("k13"));
+      
+      assertTrue(map.containsKey("k14"));
+      assertEquals("whatever", map.get("k14"));
+   }
+
+   public void testFromCommaSeparatedArrayOfCommaSeparatedKeyValues() throws Exception
+   {
+      String str = "{ k11=1, k12=false, k13=2.0, k14=whatever },{ k21=2, k22=true, k23=23.0, k24=foo }";
+      
+      Object[] objects = ManagementHelper.fromCommaSeparatedArrayOfCommaSeparatedKeyValues(str);
+      assertEquals(2, objects.length);
+
+      assertTrue(objects[0] instanceof Map<?, ?>);
+      Map<String, Object> map = (Map<String, Object>)objects[0];
+      assertEquals(4, map.size());
+      assertTrue(map.containsKey("k11"));
+      assertEquals(1L, map.get("k11"));
+      
+      assertTrue(map.containsKey("k12"));
+      assertEquals(false, map.get("k12"));
+      
+      assertTrue(map.containsKey("k13"));
+      assertEquals(2.0, map.get("k13"));
+      
+      assertTrue(map.containsKey("k14"));
+      assertEquals("whatever", map.get("k14"));
+
+      assertTrue(objects[1] instanceof Map<?, ?>);
+      map = (Map<String, Object>)objects[1];
+      assertEquals(4, map.size());
+      assertTrue(map.containsKey("k21"));
+      assertEquals(2L, map.get("k21"));
+      
+      assertTrue(map.containsKey("k22"));
+      assertEquals(true, map.get("k22"));
+      
+      assertTrue(map.containsKey("k23"));
+      assertEquals(23.0, map.get("k23"));
+      
+      assertTrue(map.containsKey("k24"));
+      assertEquals("foo", map.get("k24"));
+}
+   
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------

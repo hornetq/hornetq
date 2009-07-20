@@ -35,7 +35,7 @@ import org.jboss.messaging.core.management.Parameter;
  * @version <tt>$Revision$</tt>
  * 
  */
-public interface TopicControl extends DestinationControlMBean
+public interface TopicControl extends DestinationControl
 {
    // Attributes ----------------------------------------------------
 

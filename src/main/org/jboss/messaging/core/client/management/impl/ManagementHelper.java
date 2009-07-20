@@ -21,6 +21,7 @@
 
 package org.jboss.messaging.core.client.management.impl;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -361,6 +362,37 @@ public class ManagementHelper
          return (Boolean)message.getProperty(HDR_OPERATION_SUCCEEDED);
       }
       return false;
+   }
+
+   public static Map<String, Object> fromCommaSeparatedKeyValues(final String str) throws Exception
+   {
+      if (str == null || str.trim().length() == 0)
+      {
+         return Collections.emptyMap();
+      }
+      
+      // create a JSON array with 1 object:
+      JSONArray array = new JSONArray("[{" + str + "}]");
+      Map<String, Object> params = (Map<String, Object>)fromJSONArray(array)[0];
+      return params;
+   }
+
+   public static Object[] fromCommaSeparatedArrayOfCommaSeparatedKeyValues(final String str) throws Exception
+   {
+      if (str == null || str.trim().length() == 0)
+      {
+         return new Object[0];
+      }
+    
+      String s = str;
+      
+      // if there is a single item, we wrap it in {Ê}Êto make it a JSON object
+      if (!s.trim().startsWith("{"))
+      {
+         s = "{" + s + "}";
+      }
+      JSONArray array = new JSONArray("[" + s + "]");
+      return fromJSONArray(array);
    }
 
    // Constructors --------------------------------------------------

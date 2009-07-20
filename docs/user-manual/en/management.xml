@@ -290,7 +290,15 @@
                   <para>JMS connection factories can be created or destroyed using the <literal
                         >createConnectionFactory()</literal> methods or <literal
                         >destroyConnectionFactory()</literal> methods. These connection factories
-                     are bound to JNDI so that JMS clients can look them up</para>
+                     are bound to JNDI so that JMS clients can look them up.
+                     If a graphical console is used to create the connection factories, the 
+                     transport parameters are specified in the text fied input as a comma-separated 
+                     list of key=value
+                     (e.g. <literal>key1=10, key2="value", key3=false</literal>). If there are multiple
+                     transports defined, you need to enclose the key/value pairs between curly braces.
+                     For example <literal>{key=10}, {key=20}</literal>. In that case, the first 
+                     <literal>key</literal> will be associated to the first transport configuration and the
+                     second <literal>key</literal> will be associated to the second transport configuration.</para>
                </listitem>
                <listitem>
                   <para>Creating/destroying queues</para>

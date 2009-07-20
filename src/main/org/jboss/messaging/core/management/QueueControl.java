@@ -115,16 +115,22 @@ public interface QueueControl
    boolean changeMessagePriority(@Parameter(name = "messageID", desc = "A message ID") long messageID,
                                  @Parameter(name = "newPriority", desc = "the new priority (between 0 and 9)") int newPriority) throws Exception;
 
-   int changeMessagesPriority(String filter, int newPriority) throws Exception;
+   @Operation(desc = "Change the priority of the messages corresponding to the given filter", impact = ACTION)
+   int changeMessagesPriority(@Parameter(name = "filter", desc = "A message filter (can be empty)") String filter,
+                              @Parameter(name = "newPriority", desc = "the new priority (between 0 and 9)") int newPriority) throws Exception;
 
+   @Operation(desc = "List the message counters", impact = INFO)
    String listMessageCounter() throws Exception;
 
+   @Operation(desc = "Reset the message counters", impact = INFO)
    void resetMessageCounter() throws Exception;
 
+   @Operation(desc = "List the message counters as HTML", impact = INFO)
    String listMessageCounterAsHTML() throws Exception;
 
+   @Operation(desc = "List the message counters history", impact = INFO)
    String listMessageCounterHistory() throws Exception;
 
+   @Operation(desc = "List the message counters history HTML", impact = INFO)
    String listMessageCounterHistoryAsHTML() throws Exception;
-
 }
