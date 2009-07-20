@@ -315,39 +315,17 @@ etc
                     <para>Deploy the servlet. Here's an example web.xml describing a web application
                         that uses the servlet:</para>
                     <programlisting>&lt;?xml version="1.0" encoding="UTF-8"?>
-&lt;web-app>
-   &lt;context-param>
-      &lt;param-name>serverChannelName&lt;/param-name>
-      &lt;param-value>org.jboss.jbm&lt;/param-value>
-   &lt;/context-param>
-
-    &lt;context-param>
-      &lt;param-name>streaming&lt;/param-name>
-      &lt;param-value>true&lt;/param-value>
-   &lt;/context-param>
-
-   &lt;context-param>
-      &lt;param-name>reconnectTimeout&lt;/param-name>
-      &lt;param-value>3000&lt;/param-value>
-   &lt;/context-param>
-   
-   &lt;listener>
-      &lt;listener-class>
-        org.jboss.netty.channel.socket.http.HttpTunnelingSessionListener
-      &lt;/listener-class>
-   &lt;/listener>
-
-   &lt;listener>
-      &lt;listener-class>
-        org.jboss.netty.channel.socket.http.HttpTunnelingContextListener
-      &lt;/listener-class>
-   &lt;/listener>
-
+&lt;web-app xmlns="http://java.sun.com/xml/ns/j2ee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/j2ee/web-app_2_4.xsd"
+         version="2.4">
    &lt;servlet>
       &lt;servlet-name>NettyServlet&lt;/servlet-name>
-      &lt;servlet-class>
-        org.jboss.netty.channel.socket.http.HttpTunnelingServlet
-      &lt;/servlet-class>
+      &lt;servlet-class>org.jboss.netty.channel.socket.http.HttpTunnelingServlet&lt;/servlet-class>
+      &lt;init-param>
+             &lt;param-name>endpoint&lt;/param-name>
+             &lt;param-value>local:org.jboss.jbm&lt;/param-value>
+           &lt;/init-param>
+           &lt;load-on-startup>1&lt;/load-on-startup>
    &lt;/servlet>
 
    &lt;servlet-mapping>
@@ -355,6 +333,7 @@ etc
       &lt;url-pattern>/JBMServlet&lt;/url-pattern>
    &lt;/servlet-mapping>
 &lt;/web-app>
+
 </programlisting>
                 </listitem>
                 <listitem>
@@ -395,26 +374,44 @@ etc
  &lt;/connectors></programlisting>
                 </listitem>
             </itemizedlist>
-            <para>Heres a list of the context params and what they are used for</para>
+            <para>Heres a list of the init params and what they are used for</para>
             <itemizedlist>
                 <listitem>
-                    <para>serverChannelName - This is the name of the netty acceptor that the
-                        servlet will forward its packets too. You can see it matches the name of the
-                            <literal>jbm.remoting.netty.host</literal> param.</para>
-                </listitem>
-                <listitem>
-                    <para>streaming - set to true means that all packets will be streamed as one
-                        continuous request rather than one request per packet.</para>
-                </listitem>
-                <listitem>
-                    <para>reconnectTimeout - How long in milliseconds the servlet will await for the
-                        client to reconnect after a connection being closed by the web server</para>
+                    <para>endpoint - This is the name of the netty acceptor that the servlet will
+                        forward its packets too. You can see it matches the name of the <literal
+                            >jbm.remoting.netty.host</literal> param.</para>
                 </listitem>
             </itemizedlist>
             <para>The servlet pattern configured in the <literal>web.xml</literal> is the path of
                 the URL that is used. The connector param <literal
                     >jbm.remoting.netty.servletpath</literal> on the connector config must match
                 this using the application context of the web app if there is one.</para>
+            <para>Its also possible to use the servlet transport over SSL. simply add the following
+                configuration to the
+                connector:<programlisting>    &lt;connector name="netty-servlet">
+         &lt;factory-class>org.jboss.messaging.integration.transports.netty.NettyConnectorFactory&lt;/factory-class>
+         &lt;param key="jbm.remoting.netty.host" value="localhost" type="String"/>
+         &lt;param key="jbm.remoting.netty.port" value="8443" type="Integer"/>
+         &lt;param key="jbm.remoting.netty.useservlet" value="true" type="Boolean"/>
+         &lt;param key="jbm.remoting.netty.servletpath" value="/messaging/JBMServlet" type="String"/>
+         &lt;param key="jbm.remoting.netty.sslenabled" value="true" type="Boolean"/>
+         &lt;param key="jbm.remoting.netty.keystorepath" value="path to a keystoree" type="String"/>
+         &lt;param key="jbm.remoting.netty.keystorepassword" value="keysore password" type="String"/>
+      &lt;/connector>
+</programlisting></para>
+            <para>You will also have to configure the Application server to use a KeyStore. Edit the
+                    <literal>server.xml</literal> file that can be found under <literal
+                    >server/default/deploy/jbossweb.sar</literal> of the Application Server
+                installation and edit the SSL/TLS connector configuration to look like the
+                following:<programlisting>&lt;Connector protocol="HTTP/1.1" SSLEnabled="true"
+           port="8443" address="${jboss.bind.address}"
+           scheme="https" secure="true" clientAuth="false"
+           keystoreFile="path to a keystore"
+           keystorePass="keystore password" sslProtocol = "TLS" />
+
+</programlisting>In
+                both cases you will need to provide a keystore and password. Take a look at the
+                servlet ssl example shipped with JBoss Messaging for more detail.</para>
         </section>
     </section>
 </chapter>
