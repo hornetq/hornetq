@@ -298,7 +298,9 @@
                      transports defined, you need to enclose the key/value pairs between curly braces.
                      For example <literal>{key=10}, {key=20}</literal>. In that case, the first 
                      <literal>key</literal> will be associated to the first transport configuration and the
-                     second <literal>key</literal> will be associated to the second transport configuration.</para>
+                     second <literal>key</literal> will be associated to the second transport configuration
+                     (see <xref
+                     linkend="configuring-transports"/> for a list of the transport parameters)</para>
                </listitem>
                <listitem>
                   <para>Creating/destroying queues</para>
