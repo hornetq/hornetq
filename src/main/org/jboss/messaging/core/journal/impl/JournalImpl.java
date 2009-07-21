@@ -1344,7 +1344,7 @@ public class JournalImpl implements TestableJournal
    {
       final Set<Long> recordsToDelete = new HashSet<Long>();
       final List<RecordInfo> records = new ArrayList<RecordInfo>();
-      
+
       final int DELETE_FLUSH = 20000;
 
       long maxID = load(new LoaderCallback()
@@ -1367,7 +1367,7 @@ public class JournalImpl implements TestableJournal
          public void deleteRecord(final long id)
          {
             recordsToDelete.add(id);
-            
+
             // Clean up when the list is too large, or it won't be possible to load large sets of files
             // Done as part of JBMESSAGING-1678
             if (recordsToDelete.size() == DELETE_FLUSH)
@@ -1376,7 +1376,7 @@ public class JournalImpl implements TestableJournal
                while (iter.hasNext())
                {
                   RecordInfo record = iter.next();
-                  
+
                   if (recordsToDelete.contains(record.id))
                   {
                      iter.remove();
@@ -1619,6 +1619,18 @@ public class JournalImpl implements TestableJournal
       }
 
       checkControlFile();
+
+      records.clear();
+
+      dataFiles.clear();
+
+      pendingCloseFiles.clear();
+
+      freeFiles.clear();
+
+      openedFiles.clear();
+
+      transactions.clear();
 
       final Map<Long, TransactionHolder> loadTransactions = new LinkedHashMap<Long, TransactionHolder>();
 

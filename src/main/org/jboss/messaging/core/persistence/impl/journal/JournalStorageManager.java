@@ -143,6 +143,16 @@ public class JournalStorageManager implements StorageManager
    private final boolean syncNonTransactional;
 
    private final int perfBlastPages;
+   
+   private final boolean createBindingsDir;
+   
+   private final String bindingsDir;
+   
+   private final boolean createJournalDir;
+   
+   private final String journalDir;
+   
+   private final String largeMessagesDirectory;
 
    public JournalStorageManager(final Configuration config, final Executor executor)
    {
@@ -153,14 +163,23 @@ public class JournalStorageManager implements StorageManager
          throw new IllegalArgumentException("Only NIO and AsyncIO are supported journals");
       }
 
-      String bindingsDir = config.getBindingsDirectory();
+      bindingsDir = config.getBindingsDirectory();
 
       if (bindingsDir == null)
       {
          throw new NullPointerException("bindings-dir is null");
       }
+      
+      createBindingsDir = config.isCreateBindingsDir();
 
-      checkAndCreateDir(bindingsDir, config.isCreateBindingsDir());
+      journalDir = config.getJournalDirectory();
+
+      if (journalDir == null)
+      {
+         throw new NullPointerException("journal-dir is null");
+      }
+      
+      createJournalDir = config.isCreateJournalDir();
 
       SequentialFileFactory bindingsFF = new NIOSequentialFileFactory(bindingsDir);
 
@@ -173,18 +192,9 @@ public class JournalStorageManager implements StorageManager
                                         "bindings",
                                         1);
 
-      String journalDir = config.getJournalDirectory();
-
-      if (journalDir == null)
-      {
-         throw new NullPointerException("journal-dir is null");
-      }
-
       syncNonTransactional = config.isJournalSyncNonTransactional();
 
       syncTransactional = config.isJournalSyncTransactional();
-
-      checkAndCreateDir(journalDir, config.isCreateJournalDir());
 
       SequentialFileFactory journalFF = null;
 
@@ -225,11 +235,9 @@ public class JournalStorageManager implements StorageManager
                                        "jbm",
                                        config.getJournalMaxAIO());
 
-      String largeMessagesDirectory = config.getLargeMessagesDirectory();
+      largeMessagesDirectory = config.getLargeMessagesDirectory();
 
-      checkAndCreateDir(largeMessagesDirectory, config.isCreateJournalDir());
-
-      largeMessagesFactory = new NIOSequentialFileFactory(config.getLargeMessagesDirectory());
+      largeMessagesFactory = new NIOSequentialFileFactory(largeMessagesDirectory);
 
       perfBlastPages = config.getJournalPerfBlastPages();
    }
@@ -996,6 +1004,14 @@ public class JournalStorageManager implements StorageManager
       {
          return;
       }
+
+
+      checkAndCreateDir(bindingsDir, createBindingsDir);
+
+      checkAndCreateDir(journalDir, createJournalDir);
+      
+      checkAndCreateDir(largeMessagesDirectory, createJournalDir);
+
 
       cleanupIncompleteFiles();
 
