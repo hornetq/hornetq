@@ -26,7 +26,7 @@ import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
 
 /**
  * 
- * This class provides encoding support for the Journal.
+ * This interface provides encoding support for the Journal.
  * 
  * 
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>

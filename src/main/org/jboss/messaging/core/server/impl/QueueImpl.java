@@ -141,7 +141,9 @@ public class QueueImpl implements Queue
    // We cache the consumers here since we don't want to include the redistributor
 
    private final Set<Consumer> consumers = new HashSet<Consumer>();
+
    private final Map<Consumer, Iterator<MessageReference>> iterators = new HashMap<Consumer, Iterator<MessageReference>>();
+
    private ConcurrentMap<SimpleString, Consumer> groups = new ConcurrentHashMap<SimpleString, Consumer>();
 
    public QueueImpl(final long persistenceID,
@@ -342,7 +344,7 @@ public class QueueImpl implements Queue
       {
          return;
       }
-      
+
       try
       {
          lock.acquire();
@@ -359,7 +361,7 @@ public class QueueImpl implements Queue
       {
          return;
       }
-      
+
       lock.release();
    }
 
@@ -453,7 +455,7 @@ public class QueueImpl implements Queue
             }
          }
       }
-      
+
       return removed;
    }
 
@@ -521,7 +523,7 @@ public class QueueImpl implements Queue
       return new Iterator<MessageReference>()
       {
          private final Iterator<MessageReference> iterator = messageReferences.iterator();
-         
+
          public boolean hasNext()
          {
             return iterator.hasNext();
@@ -1181,10 +1183,18 @@ public class QueueImpl implements Queue
 
       ServerMessage copy = message.copy(newMessageId);
 
-      SimpleString originalQueue = copy.getDestination();
-      copy.putStringProperty(HDR_ORIGINAL_DESTINATION, originalQueue);
-      copy.putLongProperty(HDR_ORIG_MESSAGE_ID, message.getMessageID());
-
+      if (ref.getMessage().getProperty(HDR_ORIG_MESSAGE_ID) != null)
+      {
+         copy.putStringProperty(HDR_ORIGINAL_DESTINATION, (SimpleString)ref.getMessage()
+                                                                           .getProperty(HDR_ORIGINAL_DESTINATION));
+         copy.putLongProperty(HDR_ORIG_MESSAGE_ID, (Long)ref.getMessage().getProperty(HDR_ORIG_MESSAGE_ID));
+      }
+      else
+      {
+         SimpleString originalQueue = copy.getDestination();
+         copy.putStringProperty(HDR_ORIGINAL_DESTINATION, originalQueue);
+         copy.putLongProperty(HDR_ORIG_MESSAGE_ID, message.getMessageID());
+      }
       // reset expiry
       copy.setExpiration(0);
       if (expiry)
@@ -1290,7 +1300,7 @@ public class QueueImpl implements Queue
       }
 
       Consumer consumer;
-      
+
       MessageReference reference;
 
       Iterator<MessageReference> iterator = null;
@@ -1301,10 +1311,10 @@ public class QueueImpl implements Queue
 
       while (true)
       {
-        consumer = distributionPolicy.getNextConsumer();
-         
-        iterator = iterators.get(consumer);
-         
+         consumer = distributionPolicy.getNextConsumer();
+
+         iterator = iterators.get(consumer);
+
          if (iterator == null)
          {
             reference = messageReferences.peekFirst();
@@ -1327,7 +1337,7 @@ public class QueueImpl implements Queue
                }
             }
          }
-         
+
          if (reference == null)
          {
             nullReferences.add(consumer);
@@ -1358,7 +1368,7 @@ public class QueueImpl implements Queue
                continue;
             }
          }
-         
+
          HandleStatus status = handle(reference, consumer);
 
          if (status == HandleStatus.HANDLED)
@@ -1471,7 +1481,7 @@ public class QueueImpl implements Queue
       {
          return HandleStatus.BUSY;
       }
-      
+
       HandleStatus status;
 
       boolean filterRejected = false;
@@ -1482,7 +1492,7 @@ public class QueueImpl implements Queue
       {
          Consumer consumer = distributionPolicy.getNextConsumer();
          consumerCount++;
-         
+
          final SimpleString groupId = (SimpleString)reference.getMessage().getProperty(MessageImpl.HDR_GROUP_ID);
 
          if (groupId != null)
@@ -1531,15 +1541,15 @@ public class QueueImpl implements Queue
             }
          }
       }
-      
+
       if (status == HandleStatus.NO_MATCH)
       {
          promptDelivery = true;
       }
-      
+
       return status;
    }
-   
+
    private synchronized HandleStatus handle(final MessageReference reference, final Consumer consumer)
    {
 
@@ -1550,10 +1560,8 @@ public class QueueImpl implements Queue
       }
       catch (Throwable t)
       {
-         log.warn("removing consumer which did not handle a message, consumer=" +
-                  consumer +
-                  ", message=" +
-                  reference, t);
+         log.warn("removing consumer which did not handle a message, consumer=" + consumer + ", message=" + reference,
+                  t);
 
          // If the consumer throws an exception we remove the consumer
          try
@@ -1572,9 +1580,9 @@ public class QueueImpl implements Queue
          throw new IllegalStateException("ClientConsumer.handle() should never return null");
       }
 
-      return status; 
+      return status;
    }
-   
+
    private void removeExpiringReference(final MessageReference ref) throws Exception
    {
       if (ref.getMessage().getExpiration() > 0)
@@ -1651,7 +1659,7 @@ public class QueueImpl implements Queue
    }
 
    private synchronized void initPagingStore(SimpleString destination)
-   {      
+   {
       // PagingManager would be null only on testcases
       if (pagingStore == null && pagingManager != null)
       {
@@ -1667,7 +1675,7 @@ public class QueueImpl implements Queue
       }
    }
 
-  private synchronized void startDepaging()
+   private synchronized void startDepaging()
    {
       if (pagingStore != null)
       {
@@ -1685,7 +1693,7 @@ public class QueueImpl implements Queue
          }
       }
    }
-  
+
    // Inner classes
    // --------------------------------------------------------------------------
 

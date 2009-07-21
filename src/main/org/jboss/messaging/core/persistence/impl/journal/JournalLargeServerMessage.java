@@ -55,6 +55,8 @@ public class JournalLargeServerMessage extends ServerMessageImpl implements Larg
 
    private final JournalStorageManager storageManager;
 
+   private LargeServerMessage linkMessage;
+
    // We should only use the NIO implementation on the Journal
    private SequentialFile file;
 
@@ -81,6 +83,7 @@ public class JournalLargeServerMessage extends ServerMessageImpl implements Larg
                                      final long newID)
    {
       super(copy);
+      this.linkMessage = copy;
       storageManager = copy.storageManager;
       file = fileCopy;
       complete = true;
@@ -153,10 +156,9 @@ public class JournalLargeServerMessage extends ServerMessageImpl implements Larg
       {
          throw new RuntimeException(e.getMessage(), e);
       }
-      // FIXME: The file could be bigger than MAX_INT
-      return (int)bodySize;
+      return (int)Math.min(bodySize, Integer.MAX_VALUE);
    }
-   
+
    public synchronized long getLargeBodySize()
    {
       try
@@ -190,6 +192,22 @@ public class JournalLargeServerMessage extends ServerMessageImpl implements Larg
       decodeProperties(buffer);
    }
 
+   /**
+    * @return the complete
+    */
+   public boolean isComplete()
+   {
+      return complete;
+   }
+
+   /**
+    * @param complete the complete to set
+    */
+   public void setComplete(boolean complete)
+   {
+      this.complete = complete;
+   }
+
    @Override
    public int decrementRefCount()
    {
@@ -197,18 +215,26 @@ public class JournalLargeServerMessage extends ServerMessageImpl implements Larg
 
       if (currentRefCount == 0)
       {
-         if (isTrace)
+         if (linkMessage != null)
          {
-            log.trace("Deleting file " + file + " as the usage was complete");
+            // This file is linked to another message, deleting the reference where it belongs on this case
+            linkMessage.decrementRefCount();
          }
+         else
+         {
+            if (isTrace)
+            {
+               log.trace("Deleting file " + file + " as the usage was complete");
+            }
 
-         try
-         {
-            deleteFile();
-         }
-         catch (Exception e)
-         {
-            log.error(e.getMessage(), e);
+            try
+            {
+               deleteFile();
+            }
+            catch (Exception e)
+            {
+               log.error(e.getMessage(), e);
+            }
          }
       }
 
@@ -221,12 +247,10 @@ public class JournalLargeServerMessage extends ServerMessageImpl implements Larg
       return true;
    }
 
-   public synchronized void deleteFile() throws MessagingException
+   public synchronized void deleteFile() throws Exception
    {
-      if (file != null)
-      {
-         storageManager.deleteFile(file);
-      }
+      validateFile();
+      storageManager.deleteFile(file);
    }
 
    // We cache this
@@ -270,32 +294,23 @@ public class JournalLargeServerMessage extends ServerMessageImpl implements Larg
       }
    }
 
-   // TODO: Optimise this per https://jira.jboss.org/jira/browse/JBMESSAGING-1496
    @Override
    public synchronized ServerMessage copy(final long newID) throws Exception
    {
-      SequentialFile newfile = storageManager.createFileForLargeMessage(newID, complete);
-
-      file.open();
-      newfile.open();
-
-      file.position(0);
-      newfile.position(0);
-
-      ByteBuffer buffer = ByteBuffer.allocate(100 * 1024);
-
-      for (long i = 0; i < file.size();)
+      incrementRefCount();
+      
+      long idToUse = messageID;
+      
+      if (linkMessage != null)
       {
-         buffer.rewind();
-         file.read(buffer);
-         newfile.write(buffer, false);
-         i += buffer.limit();
+         idToUse = linkMessage.getMessageID();
       }
 
-      file.close();
-      newfile.close();
+      SequentialFile newfile = storageManager.createFileForLargeMessage(idToUse, true);
 
-      JournalLargeServerMessage newMessage = new JournalLargeServerMessage(this, newfile, newID);
+      file.open();
+
+      JournalLargeServerMessage newMessage = new JournalLargeServerMessage(linkMessage == null ? this : (JournalLargeServerMessage)linkMessage, newfile, newID);
 
       return newMessage;
    }
@@ -328,6 +343,43 @@ public class JournalLargeServerMessage extends ServerMessageImpl implements Larg
 
          bodySize = file.size();
 
+      }
+   }
+
+   /* (non-Javadoc)
+    * @see org.jboss.messaging.core.server.LargeServerMessage#getLinkedMessage()
+    */
+   public LargeServerMessage getLinkedMessage()
+   {
+      return linkMessage;
+   }
+
+   /* (non-Javadoc)
+    * @see org.jboss.messaging.core.server.LargeServerMessage#setLinkedMessage(org.jboss.messaging.core.server.LargeServerMessage)
+    */
+   public void setLinkedMessage(LargeServerMessage message)
+   {
+      if (file != null)
+      {
+         // Sanity check.. it shouldn't happen
+         throw new IllegalStateException("LargeMessage file was already set");
+      }
+
+      this.linkMessage = message;
+
+      file = storageManager.createFileForLargeMessage(message.getMessageID(), true);
+      try
+      {
+         file.open();
+         this.bodySize = file.size();
+         file.close();
+      }
+      catch (Exception e)
+      {
+         throw new RuntimeException("could not setup linked file", e);
+      }
+      finally
+      {
       }
    }
 

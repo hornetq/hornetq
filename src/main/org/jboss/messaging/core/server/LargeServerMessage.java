@@ -34,6 +34,12 @@ package org.jboss.messaging.core.server;
 public interface LargeServerMessage extends ServerMessage
 {
    void addBytes(byte[] bytes) throws Exception;
+   
+   /** When a large message is copied (e.g. ExpiryQueue) instead of copying the file, we specify a link between the messages */
+   void setLinkedMessage(LargeServerMessage message);
+   
+   /** When a large message is copied (e.g. ExpiryQueue) instead of copying the file, we specify a link between the messages */
+   LargeServerMessage getLinkedMessage();
 
    /** Close the files if opened */
    void releaseResources();
@@ -41,6 +47,10 @@ public interface LargeServerMessage extends ServerMessage
    long getLargeBodySize();
    
    void complete() throws Exception;
+   
+   void setComplete(boolean isComplete);
+   
+   boolean isComplete();
    
    void deleteFile() throws Exception;
 }

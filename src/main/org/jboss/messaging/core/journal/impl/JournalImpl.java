@@ -890,9 +890,9 @@ public class JournalImpl implements TestableJournal
       try
       {
 
-         JournalRecord posFiles = records.get(id);
+         JournalRecord jrnRecord = records.get(id);
 
-         if (posFiles == null)
+         if (jrnRecord == null)
          {
             if (!(compactor != null && compactor.lookupRecord(id)))
             {
@@ -915,13 +915,13 @@ public class JournalImpl implements TestableJournal
 
             // record== null here could only mean there is a compactor, and computing the delete should be done after
             // compacting is done
-            if (posFiles == null)
+            if (jrnRecord == null)
             {
                compactor.addCommandUpdate(id, usedFile, size);
             }
             else
             {
-               posFiles.addUpdateFile(usedFile, size);
+               jrnRecord.addUpdateFile(usedFile, size);
             }
          }
          finally

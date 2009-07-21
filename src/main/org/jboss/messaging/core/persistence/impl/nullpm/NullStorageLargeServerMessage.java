@@ -103,6 +103,38 @@ public class NullStorageLargeServerMessage extends ServerMessageImpl implements 
       return true;
    }
 
+   /* (non-Javadoc)
+    * @see org.jboss.messaging.core.server.LargeServerMessage#getLinkedMessage()
+    */
+   public LargeServerMessage getLinkedMessage()
+   {
+      return null;
+   }
+
+   /* (non-Javadoc)
+    * @see org.jboss.messaging.core.server.LargeServerMessage#setLinkedMessage(org.jboss.messaging.core.server.LargeServerMessage)
+    */
+   public void setLinkedMessage(LargeServerMessage message)
+   {
+   }
+
+   /* (non-Javadoc)
+    * @see org.jboss.messaging.core.server.LargeServerMessage#isComplete()
+    */
+   public boolean isComplete()
+   {
+      // nothing to be done on null persistence
+      return true;
+   }
+
+   /* (non-Javadoc)
+    * @see org.jboss.messaging.core.server.LargeServerMessage#setComplete(boolean)
+    */
+   public void setComplete(boolean isComplete)
+   {
+      // nothing to be done on null persistence
+   }
+
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------

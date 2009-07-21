@@ -76,6 +76,376 @@ public class LargeMessageTest extends LargeMessageTestBase
 
    // Public --------------------------------------------------------
 
+   public void testDLALargeMessage() throws Exception
+   {
+      final int messageSize = 50000;
+
+      ClientSession session = null;
+
+      try
+      {
+         server = createServer(true);
+
+         server.start();
+
+         ClientSessionFactory sf = createInVMFactory();
+
+         session = sf.createSession(false, false, false);
+
+         session.createQueue(ADDRESS, ADDRESS, true);
+         session.createQueue(ADDRESS, ADDRESS.concat("-2"), true);
+
+         SimpleString ADDRESS_DLA = ADDRESS.concat("-dla");
+
+         AddressSettings addressSettings = new AddressSettings();
+
+         addressSettings.setDeadLetterAddress(ADDRESS_DLA);
+         addressSettings.setMaxDeliveryAttempts(1);
+
+         server.getAddressSettingsRepository().addMatch("*", addressSettings);
+
+         session.createQueue(ADDRESS_DLA, ADDRESS_DLA, true);
+
+         ClientProducer producer = session.createProducer(ADDRESS);
+
+         Message clientFile = createLargeClientMessage(session, messageSize, true);
+
+         producer.send(clientFile);
+
+         session.commit();
+
+         session.start();
+
+         ClientConsumer consumer = session.createConsumer(ADDRESS_DLA);
+
+         ClientConsumer consumerRollback = session.createConsumer(ADDRESS);
+         ClientMessage msg1 = consumerRollback.receive(1000);
+         assertNotNull(msg1);
+         msg1.acknowledge();
+         session.rollback();
+         consumerRollback.close();
+
+         msg1 = consumer.receive(10000);
+
+         assertNotNull(msg1);
+
+         for (int i = 0; i < messageSize; i++)
+         {
+            assertEquals(getSamplebyte(i), msg1.getBody().readByte());
+         }
+
+         session.close();
+         server.stop();
+
+         server = createServer(true);
+
+         server.start();
+
+         sf = createInVMFactory();
+
+         session = sf.createSession(false, false, false);
+
+         session.start();
+
+         consumer = session.createConsumer(ADDRESS_DLA);
+
+         msg1 = consumer.receive(10000);
+
+         assertNotNull(msg1);
+
+         for (int i = 0; i < messageSize; i++)
+         {
+            assertEquals(getSamplebyte(i), msg1.getBody().readByte());
+         }
+
+         msg1.acknowledge();
+
+         session.commit();
+
+         validateNoFilesOnLargeDir(1);
+
+         consumer = session.createConsumer(ADDRESS.concat("-2"));
+
+         msg1 = consumer.receive(10000);
+
+         assertNotNull(msg1);
+
+         for (int i = 0; i < messageSize; i++)
+         {
+            assertEquals(getSamplebyte(i), msg1.getBody().readByte());
+         }
+
+         msg1.acknowledge();
+
+         session.commit();
+
+         session.close();
+
+         validateNoFilesOnLargeDir();
+      }
+      finally
+      {
+         try
+         {
+            server.stop();
+         }
+         catch (Throwable ignored)
+         {
+         }
+
+         try
+         {
+            session.close();
+         }
+         catch (Throwable ignored)
+         {
+         }
+      }
+   }
+
+   public void testDLAOnExpiry() throws Exception
+   {
+      final int messageSize = 50000;
+
+      ClientSession session = null;
+
+      try
+      {
+         server = createServer(true);
+
+         server.start();
+
+         ClientSessionFactory sf = createInVMFactory();
+
+         session = sf.createSession(false, false, false);
+
+         session.createQueue(ADDRESS, ADDRESS, true);
+
+         SimpleString ADDRESS_DLA = ADDRESS.concat("-dla");
+         SimpleString ADDRESS_EXPIRY = ADDRESS.concat("-expiry");
+
+         AddressSettings addressSettings = new AddressSettings();
+
+         addressSettings.setDeadLetterAddress(ADDRESS_DLA);
+         addressSettings.setExpiryAddress(ADDRESS_EXPIRY);
+         addressSettings.setMaxDeliveryAttempts(1);
+
+         server.getAddressSettingsRepository().addMatch("*", addressSettings);
+
+         session.createQueue(ADDRESS_DLA, ADDRESS_DLA, true);
+         session.createQueue(ADDRESS_EXPIRY, ADDRESS_EXPIRY, true);
+
+         ClientProducer producer = session.createProducer(ADDRESS);
+
+         Message clientFile = createLargeClientMessage(session, messageSize, true);
+         clientFile.setExpiration(System.currentTimeMillis());
+
+         producer.send(clientFile);
+
+         session.commit();
+
+         session.start();
+
+         ClientConsumer consumerExpired = session.createConsumer(ADDRESS);
+         // to kick expiry quicker than waiting reaper thread
+         assertNull(consumerExpired.receive(1000));
+         consumerExpired.close();
+
+         ClientConsumer consumerExpiry = session.createConsumer(ADDRESS_EXPIRY);
+
+         ClientMessage msg1 = consumerExpiry.receive(5000);
+         assertNotNull(msg1);
+         msg1.acknowledge();
+
+         session.rollback();
+
+         for (int j = 0; j < messageSize; j++)
+         {
+            assertEquals(getSamplebyte(j), msg1.getBody().readByte());
+         }
+
+         consumerExpiry.close();
+
+         for (int i = 0; i < 10; i++)
+         {
+
+            consumerExpiry = session.createConsumer(ADDRESS_DLA);
+
+            msg1 = consumerExpiry.receive(5000);
+            assertNotNull(msg1);
+            msg1.acknowledge();
+
+            session.rollback();
+
+            for (int j = 0; j < messageSize; j++)
+            {
+               assertEquals(getSamplebyte(j), msg1.getBody().readByte());
+            }
+
+            consumerExpiry.close();
+         }
+
+         session.close();
+         server.stop();
+
+         server = createServer(true);
+
+         server.start();
+
+         sf = createInVMFactory();
+
+         session = sf.createSession(false, false, false);
+
+         session.start();
+
+         consumerExpiry = session.createConsumer(ADDRESS_DLA);
+
+         msg1 = consumerExpiry.receive(5000);
+         assertNotNull(msg1);
+         msg1.acknowledge();
+
+         for (int i = 0; i < messageSize; i++)
+         {
+            assertEquals(getSamplebyte(i), msg1.getBody().readByte());
+         }
+
+         session.commit();
+
+         consumerExpiry.close();
+
+         session.commit();
+
+         session.close();
+
+         validateNoFilesOnLargeDir();
+      }
+      finally
+      {
+         try
+         {
+            server.stop();
+         }
+         catch (Throwable ignored)
+         {
+         }
+
+         try
+         {
+            session.close();
+         }
+         catch (Throwable ignored)
+         {
+         }
+      }
+   }
+
+   public void testExpiryLargeMessage() throws Exception
+   {
+      final int messageSize = 50000;
+
+      ClientSession session = null;
+
+      try
+      {
+         server = createServer(true);
+
+         server.start();
+
+         ClientSessionFactory sf = createInVMFactory();
+
+         session = sf.createSession(false, false, false);
+
+         session.createQueue(ADDRESS, ADDRESS, true);
+
+         SimpleString ADDRESS_EXPIRY = ADDRESS.concat("-expiry");
+
+         AddressSettings addressSettings = new AddressSettings();
+
+         addressSettings.setExpiryAddress(ADDRESS_EXPIRY);
+
+         server.getAddressSettingsRepository().addMatch("*", addressSettings);
+
+         session.createQueue(ADDRESS_EXPIRY, ADDRESS_EXPIRY, true);
+
+         ClientProducer producer = session.createProducer(ADDRESS);
+
+         Message clientFile = createLargeClientMessage(session, messageSize, true);
+
+         clientFile.setExpiration(System.currentTimeMillis());
+
+         producer.send(clientFile);
+
+         session.commit();
+
+         session.start();
+
+         ClientConsumer consumer = session.createConsumer(ADDRESS_EXPIRY);
+
+         // Creating a consumer just to make the expiry process go faster and not have to wait for the reaper
+         ClientConsumer consumer2 = session.createConsumer(ADDRESS);
+         assertNull(consumer2.receive(1000));
+
+         ClientMessage msg1 = consumer.receive(50000);
+
+         assertNotNull(msg1);
+
+         for (int i = 0; i < messageSize; i++)
+         {
+            assertEquals(getSamplebyte(i), msg1.getBody().readByte());
+         }
+
+         session.close();
+         server.stop();
+
+         server = createServer(true);
+
+         server.start();
+
+         sf = createInVMFactory();
+
+         session = sf.createSession(false, false, false);
+
+         session.start();
+
+         consumer = session.createConsumer(ADDRESS_EXPIRY);
+
+         msg1 = consumer.receive(10000);
+
+         assertNotNull(msg1);
+
+         for (int i = 0; i < messageSize; i++)
+         {
+            assertEquals(getSamplebyte(i), msg1.getBody().readByte());
+         }
+
+         msg1.acknowledge();
+
+         session.commit();
+
+         session.close();
+
+         validateNoFilesOnLargeDir();
+      }
+      finally
+      {
+         try
+         {
+            server.stop();
+         }
+         catch (Throwable ignored)
+         {
+         }
+
+         try
+         {
+            session.close();
+         }
+         catch (Throwable ignored)
+         {
+         }
+      }
+   }
+
    public void testResendSmallStreamMessage() throws Exception
    {
       internalTestResendMessage(50000);
@@ -1017,7 +1387,7 @@ public class LargeMessageTest extends LargeMessageTestBase
          }
       }
    }
-   
+
    public void testSendStreamingSingleMessage() throws Exception
    {
       ClientSession session = null;
@@ -1069,7 +1439,7 @@ public class LargeMessageTest extends LargeMessageTestBase
          // }
 
          session.commit();
-         
+
          assertGlobalSize(server);
          assertEquals(0, ((Queue)server.getPostOffice().getBinding(ADDRESS).getBindable()).getDeliveringCount());
          assertEquals(0, ((Queue)server.getPostOffice().getBinding(ADDRESS).getBindable()).getMessageCount());
@@ -1343,7 +1713,6 @@ public class LargeMessageTest extends LargeMessageTestBase
 
       assertEquals(0l, server.getPostOffice().getPagingManager().getTotalMemory());
    }
-
 
    // Inner classes -------------------------------------------------
 

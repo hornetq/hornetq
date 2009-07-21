@@ -107,7 +107,7 @@ public class JournalStorageManager implements StorageManager
    public static final int SIZE_FIELDS = SIZE_INT + SIZE_LONG + SIZE_LONG + SIZE_BYTE;
 
    // Message journal record types
-
+   
    public static final byte ADD_LARGE_MESSAGE = 30;
 
    public static final byte ADD_MESSAGE = 31;
@@ -344,7 +344,7 @@ public class JournalStorageManager implements StorageManager
          throw new MessagingException(MessagingException.ILLEGAL_STATE, "MessageId was not assigned to Message");
       }
 
-      if (message instanceof LargeServerMessage)
+      if (message.isLargeMessage())
       {
          messageJournal.appendAddRecordTransactional(txID,
                                                      message.getMessageID(),
@@ -357,7 +357,7 @@ public class JournalStorageManager implements StorageManager
       }
 
    }
-
+   
    public void storePageTransaction(final long txID, final PageTransactionInfo pageTransaction) throws Exception
    {
       if (pageTransaction.getRecordID() != 0)
@@ -505,6 +505,29 @@ public class JournalStorageManager implements StorageManager
                LargeMessageEncoding messageEncoding = new LargeMessageEncoding(largeMessage);
 
                messageEncoding.decode(buff);
+               
+               Long originalMessageID = (Long)largeMessage.getProperties().getProperty(MessageImpl.HDR_ORIG_MESSAGE_ID);
+               
+               // Using the linked file by the original file
+               if (originalMessageID != null)
+               {
+                  LargeServerMessage originalMessage = (LargeServerMessage)messages.get(originalMessageID);
+                  
+                  if (originalMessage == null)
+                  {
+                     // this could happen if the message was deleted but the file still exists as the file still being used
+                      originalMessage = createLargeMessage();
+                     originalMessage.setMessageID(originalMessageID);
+                     originalMessage.setComplete(true);
+                     messages.put(originalMessageID, originalMessage);
+                  }
+                  
+                  originalMessage.incrementRefCount();
+                  
+                  largeMessage.setLinkedMessage(originalMessage);
+                  largeMessage.setComplete(true);
+               }
+               
 
                messages.put(record.id, largeMessage);
 

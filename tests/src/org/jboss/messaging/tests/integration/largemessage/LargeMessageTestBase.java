@@ -607,14 +607,14 @@ public class LargeMessageTestBase extends ServiceTestBase
    /**
     * Deleting a file on LargeDire is an asynchronous process. Wee need to keep looking for a while if the file hasn't been deleted yet
     */
-   protected void validateNoFilesOnLargeDir() throws Exception
+   protected void validateNoFilesOnLargeDir(int expect) throws Exception
    {
       File largeMessagesFileDir = new File(getLargeMessagesDir());
 
       // Deleting the file is async... we keep looking for a period of the time until the file is really gone
       for (int i = 0; i < 100; i++)
       {
-         if (largeMessagesFileDir.listFiles().length > 0)
+         if (largeMessagesFileDir.listFiles().length != expect)
          {
             Thread.sleep(10);
          }
@@ -624,7 +624,15 @@ public class LargeMessageTestBase extends ServiceTestBase
          }
       }
 
-      assertEquals(0, largeMessagesFileDir.listFiles().length);
+      assertEquals(expect, largeMessagesFileDir.listFiles().length);
+   }
+
+   /**
+    * Deleting a file on LargeDire is an asynchronous process. Wee need to keep looking for a while if the file hasn't been deleted yet
+    */
+   protected void validateNoFilesOnLargeDir() throws Exception
+   {
+      validateNoFilesOnLargeDir(0);
    }
 
    protected OutputStream createFakeOutputStream() throws Exception
