@@ -77,7 +77,7 @@ public class DeadLetterAddressTest extends UnitTestCase
       m.acknowledge();
       assertNotNull(m);
       assertEquals(m.getBody().readString(), "heyho!");
-      //force a cancel
+      // force a cancel
       clientSession.end(xid, XAResource.TMSUCCESS);
       clientSession.rollback(xid);
       m = clientConsumer.receive(500);
@@ -112,7 +112,7 @@ public class DeadLetterAddressTest extends UnitTestCase
       m.acknowledge();
       assertNotNull(m);
       assertEquals(m.getBody().readString(), "heyho!");
-      //force a cancel
+      // force a cancel
       clientSession.end(xid, XAResource.TMSUCCESS);
       clientSession.rollback(xid);
       clientSession.start(xid, XAResource.TMNOFLAGS);
@@ -150,7 +150,7 @@ public class DeadLetterAddressTest extends UnitTestCase
       m.acknowledge();
       assertNotNull(m);
       assertEquals(m.getBody().readString(), "heyho!");
-      //force a cancel
+      // force a cancel
       clientSession.end(xid, XAResource.TMSUCCESS);
       clientSession.rollback(xid);
       m = clientConsumer.receive(500);
@@ -195,7 +195,7 @@ public class DeadLetterAddressTest extends UnitTestCase
 
             assertNotNull(tm);
             tm.acknowledge();
-            if(i == 0)
+            if (i == 0)
             {
                origIds.put("Message:" + j, tm.getMessageID());
             }
@@ -204,11 +204,11 @@ public class DeadLetterAddressTest extends UnitTestCase
          clientSession.end(xid, XAResource.TMSUCCESS);
          clientSession.rollback(xid);
       }
-      
+
       assertEquals(0, ((Queue)server.getPostOffice().getBinding(qName).getBindable()).getMessageCount());
       ClientMessage m = clientConsumer.receive(1000);
       assertNull(m);
-      //All the messages should now be in the DLQ
+      // All the messages should now be in the DLQ
 
       ClientConsumer cc3 = clientSession.createConsumer(dlq);
 
@@ -222,11 +222,9 @@ public class DeadLetterAddressTest extends UnitTestCase
          assertEquals("Message:" + i, text);
 
          // Check the headers
-         SimpleString origDest =
-               (SimpleString) tm.getProperty(MessageImpl.HDR_ORIGINAL_DESTINATION);
+         SimpleString origDest = (SimpleString)tm.getProperty(MessageImpl.HDR_ORIGINAL_DESTINATION);
 
-         Long origMessageId =
-               (Long) tm.getProperty(MessageImpl.HDR_ORIG_MESSAGE_ID);
+         Long origMessageId = (Long)tm.getProperty(MessageImpl.HDR_ORIG_MESSAGE_ID);
 
          assertEquals(qName, origDest);
 
@@ -250,14 +248,14 @@ public class DeadLetterAddressTest extends UnitTestCase
       addressSettings.setMaxDeliveryAttempts(deliveryAttempt);
       addressSettings.setDeadLetterAddress(deadLetterAdress);
       server.getAddressSettingsRepository().setDefault(addressSettings);
-      
+
       clientSession.createQueue(address, queue, false);
       clientSession.createQueue(deadLetterAdress, deadLetterQueue, false);
-      
+
       ClientProducer producer = clientSession.createProducer(address);
       ClientMessage clientMessage = createTextMessage("heyho!", clientSession);
       producer.send(clientMessage);
-      
+
       clientSession.start();
       ClientConsumer clientConsumer = clientSession.createConsumer(queue);
       for (int i = 0; i < deliveryAttempt; i++)
@@ -293,14 +291,14 @@ public class DeadLetterAddressTest extends UnitTestCase
       addressSettings.setMaxDeliveryAttempts(deliveryAttempt);
       addressSettings.setDeadLetterAddress(deadLetterAdress);
       server.getAddressSettingsRepository().addMatch("*", addressSettings);
-      
+
       clientSession.createQueue(address, queue, false);
       clientSession.createQueue(deadLetterAdress, deadLetterQueue, false);
-      
+
       ClientProducer producer = clientSession.createProducer(address);
       ClientMessage clientMessage = createTextMessage("heyho!", clientSession);
       producer.send(clientMessage);
-      
+
       clientSession.start();
       ClientConsumer clientConsumer = clientSession.createConsumer(queue);
       for (int i = 0; i < deliveryAttempt; i++)
@@ -322,7 +320,7 @@ public class DeadLetterAddressTest extends UnitTestCase
       assertNotNull(m);
       assertEquals(m.getBody().readString(), "heyho!");
    }
-      
+
    public void testDeadLetterAddressWithOverridenSublevelAddressSettings() throws Exception
    {
       int defaultDeliveryAttempt = 3;
@@ -344,15 +342,15 @@ public class DeadLetterAddressTest extends UnitTestCase
       specificAddressSettings.setMaxDeliveryAttempts(specificeDeliveryAttempt);
       specificAddressSettings.setDeadLetterAddress(specificDeadLetterAddress);
       server.getAddressSettingsRepository().addMatch(address.toString(), specificAddressSettings);
-      
+
       clientSession.createQueue(address, queue, false);
       clientSession.createQueue(defaultDeadLetterAddress, defaultDeadLetterQueue, false);
       clientSession.createQueue(specificDeadLetterAddress, specificDeadLetterQueue, false);
-      
+
       ClientProducer producer = clientSession.createProducer(address);
       ClientMessage clientMessage = createTextMessage("heyho!", clientSession);
       producer.send(clientMessage);
-      
+
       clientSession.start();
       ClientConsumer clientConsumer = clientSession.createConsumer(queue);
       ClientConsumer defaultDeadLetterConsumer = clientSession.createConsumer(defaultDeadLetterQueue);
@@ -368,7 +366,7 @@ public class DeadLetterAddressTest extends UnitTestCase
          clientSession.end(xid, XAResource.TMSUCCESS);
          clientSession.rollback(xid);
       }
-      
+
       assertNull(defaultDeadLetterConsumer.receive(500));
       assertNull(specificDeadLetterConsumer.receive(500));
 
@@ -384,20 +382,20 @@ public class DeadLetterAddressTest extends UnitTestCase
       assertNull(defaultDeadLetterConsumer.receive(500));
       assertNotNull(specificDeadLetterConsumer.receive(500));
    }
-   
+
    @Override
    protected void setUp() throws Exception
    {
       super.setUp();
-      
+
       ConfigurationImpl configuration = new ConfigurationImpl();
       configuration.setSecurityEnabled(false);
       TransportConfiguration transportConfig = new TransportConfiguration(INVM_ACCEPTOR_FACTORY);
       configuration.getAcceptorConfigurations().add(transportConfig);
       server = Messaging.newMessagingServer(configuration, false);
-      //start the server
+      // start the server
       server.start();
-      //then we create a client as normal
+      // then we create a client as normal
       ClientSessionFactory sessionFactory = new ClientSessionFactoryImpl(new TransportConfiguration(INVM_CONNECTOR_FACTORY));
       clientSession = sessionFactory.createSession(true, true, false);
    }
