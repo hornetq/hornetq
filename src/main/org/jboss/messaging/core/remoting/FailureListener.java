@@ -34,5 +34,8 @@ import org.jboss.messaging.core.exception.MessagingException;
  */
 public interface FailureListener
 {
+   /**
+    * @return <code>false</code> to stop calling subsequent failure listeners
+    */
    boolean connectionFailed(MessagingException me);
 }
