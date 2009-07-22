@@ -50,8 +50,8 @@ public class JBMRAProperties extends ConnectionFactoryProperties implements Seri
    /** The password */
    private String password;
 
-   /** Use XA */
-   private Boolean useXA;
+   /** Use Local TX instead of XA */
+   private Boolean localTx = false;
 
    /**
     * Constructor
@@ -127,32 +127,32 @@ public class JBMRAProperties extends ConnectionFactoryProperties implements Seri
     * Get the use XA flag
     * @return The value
     */
-   public Boolean getUseXA()
+   public Boolean getUseLocalTx()
    {
       if (trace)
       {
-         log.trace("getUseXA()");
+         log.trace("getUseLocalTx()");
       }
 
-      return useXA;
+      return localTx;
    }
 
    /**
     * Set the use XA flag
-    * @param xa The value
+    * @param localTx The value
     */
-   public void setUseXA(final Boolean xa)
+   public void setUseLocalTx(final Boolean localTx)
    {
       if (trace)
       {
-         log.trace("setUseXA(" + xa + ")");
+         log.trace("setUseLocalTx(" + localTx + ")");
       }
 
-      useXA = xa;
+      this.localTx = localTx;
    }
 
    /**
-    * Use XA for communication
+    * Use local tx instead of XA for
     * @return The value
     */
    public boolean isUseXA()
@@ -162,12 +162,8 @@ public class JBMRAProperties extends ConnectionFactoryProperties implements Seri
          log.trace("isUseXA()");
       }
 
-      if (useXA == null)
-      {
-         return false;
-      }
+      return localTx != null && localTx;
 
-      return useXA.booleanValue();
    }
    
 }

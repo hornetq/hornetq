@@ -122,7 +122,7 @@
       <maximumStackSize value="32" />
       <properties />
     </buildFile>
-    <buildFile url="file://$PROJECT_DIR$/examples/javaee/mdb/build.xml">
+    <buildFile url="file://$PROJECT_DIR$/examples/javaee/mdb-cmp-tx-required/build.xml">
       <additionalClassPath />
       <antReference projectDefault="true" />
       <customJdkName value="" />

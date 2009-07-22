@@ -33,13 +33,11 @@ import org.jboss.messaging.jms.client.JBossMessage;
 import org.jboss.messaging.utils.SimpleString;
 
 import javax.jms.InvalidClientIDException;
-import javax.jms.JMSException;
 import javax.jms.MessageListener;
-import javax.jms.Session;
+import javax.resource.ResourceException;
 import javax.resource.spi.endpoint.MessageEndpoint;
 import javax.resource.spi.endpoint.MessageEndpointFactory;
-import javax.transaction.Status;
-import javax.transaction.Transaction;
+import javax.transaction.SystemException;
 import javax.transaction.TransactionManager;
 import java.util.UUID;
 
@@ -167,9 +165,9 @@ public class JBMMessageHandler implements MessageHandler
          consumer = session.createConsumer(queueName, selectorString);
       }
 
-      // Create the endpoint
+      // Create the endpoint, if we are transacted pass the sesion so it is enlisted, unless using Local TX
       MessageEndpointFactory endpointFactory = activation.getMessageEndpointFactory();
-      if (activation.isDeliveryTransacted())
+      if (activation.isDeliveryTransacted() && !activation.getActivationSpec().isUseLocalTx())
       {
          endpoint = endpointFactory.createEndpoint(session);
       }
@@ -230,7 +228,7 @@ public class JBMMessageHandler implements MessageHandler
       catch (Throwable throwable)
       {
          log.warn("Unable to create transaction: " + throwable.getMessage());
-         txnStrategy = null;
+         txnStrategy = new NoTXTransactionDemarcationStrategy();
       }
 
       JBossMessage jbm = JBossMessage.createMessage(message, session);
@@ -238,6 +236,7 @@ public class JBMMessageHandler implements MessageHandler
       try
       {
          jbm.doBeforeReceive();
+         message.acknowledge();
       }
       catch (Exception e)
       {
@@ -246,48 +245,19 @@ public class JBMMessageHandler implements MessageHandler
          return;
       }
 
-      if (activation.getActivationSpec().getAcknowledgeModeInt() == Session.SESSION_TRANSACTED || activation.getActivationSpec()
-                                                                                                            .getAcknowledgeModeInt() == Session.CLIENT_ACKNOWLEDGE)
-      {
-         try
-         {
-            message.acknowledge();
-         }
-         catch (MessagingException e)
-         {
-            log.error("Failed to process message", e);
-         }
-      }
       try
       {
-         endpoint.beforeDelivery(JBMActivation.ONMESSAGE);
-         try
-         {
-            MessageListener listener = (MessageListener)endpoint;
-            listener.onMessage(jbm);
-         }
-         finally
-         {
-            endpoint.afterDelivery();
-         }
+         ((MessageListener)endpoint).onMessage(jbm);
       }
       catch (Throwable t)
       {
          log.error("Unexpected error delivering message " + message, t);
-
-         if (txnStrategy != null)
-         {
-            txnStrategy.error();
-         }
+         txnStrategy.error();
       }
       finally
       {
-         if (txnStrategy != null)
-         {
-            txnStrategy.end();
-         }
+         txnStrategy.end();
       }
-
    }
 
    /**
@@ -309,18 +279,33 @@ public class JBMMessageHandler implements MessageHandler
 
          if (activation.isDeliveryTransacted())
          {
-            try
+            if (!activation.getActivationSpec().isUseLocalTx())
             {
-               return new XATransactionDemarcationStrategy();
+               try
+               {
+                  return new XATransactionDemarcationStrategy();
+                  }
+                  catch (Throwable t)
+                  {
+                     log.error(this + " error creating transaction demarcation ", t);
+                  }
             }
-            catch (Throwable t)
+            else
             {
-               log.error(this + " error creating transaction demarcation ", t);
+               return new LocalDemarcationStrategy();
             }
+
          }
          else
          {
-            return new LocalDemarcationStrategy();
+            if (!activation.getActivationSpec().isUseLocalTx())
+            {
+               return new NoTXTransactionDemarcationStrategy();
+            }
+            else
+            {
+               return new LocalDemarcationStrategy();
+            }
          }
 
          return null;
@@ -353,6 +338,7 @@ public class JBMMessageHandler implements MessageHandler
     */
    private class LocalDemarcationStrategy implements TransactionDemarcationStrategy
    {
+      private boolean rolledBack = false;
       /*
       * Start
       */
@@ -371,33 +357,16 @@ public class JBMMessageHandler implements MessageHandler
             log.trace("error()");
          }
 
-         final JBMActivationSpec spec = activation.getActivationSpec();
-
-         if (spec.isSessionTransacted())
+         if (session != null)
          {
-            if (session != null)
+            try
             {
-               try
-               {
-                  /*
-                   * Looks strange, but this basically means
-                   *
-                   * If the underlying connection was non-XA and the transaction
-                   * attribute is REQUIRED we rollback. Also, if the underlying
-                   * connection was non-XA and the transaction attribute is
-                   * NOT_SUPPORT and the non standard redelivery behavior is
-                   * enabled we rollback to force redelivery.
-                   *
-                   */
-                  if (activation.isDeliveryTransacted() || spec.getRedeliverUnspecified())
-                  {
-                     session.rollback();
-                  }
-               }
-               catch (MessagingException e)
-               {
-                  log.error("Failed to rollback session transaction", e);
-               }
+               session.rollback();
+               rolledBack = true;
+            }
+            catch (MessagingException e)
+            {
+               log.error("Failed to rollback session transaction", e);
             }
          }
       }
@@ -409,12 +378,10 @@ public class JBMMessageHandler implements MessageHandler
       {
          if (trace)
          {
-            log.trace("error()");
+            log.trace("end()");
          }
 
-         final JBMActivationSpec spec = activation.getActivationSpec();
-
-         if (spec.isSessionTransacted())
+         if (!rolledBack)
          {
             if (session != null)
             {
@@ -436,8 +403,6 @@ public class JBMMessageHandler implements MessageHandler
     */
    private class XATransactionDemarcationStrategy implements TransactionDemarcationStrategy
    {
-      private Transaction trans = null;
-
       private final TransactionManager tm = activation.getTransactionManager();
 
       public void start() throws Throwable
@@ -453,57 +418,26 @@ public class JBMMessageHandler implements MessageHandler
 
             tm.setTransactionTimeout(timeout);
          }
-
-         tm.begin();
-
-         try
-         {
-            trans = tm.getTransaction();
-
-            if (trace)
-            {
-               log.trace(this + " using tx=" + trans);
-            }
-
-            if (!trans.enlistResource(session))
-            {
-               throw new JMSException("could not enlist resource");
-            }
-            if (trace)
-            {
-               log.trace(this + " XAResource '" + session + " enlisted.");
-            }
-
-         }
-         catch (Throwable t)
-         {
-            try
-            {
-               tm.rollback();
-            }
-            catch (Throwable ignored)
-            {
-               log.trace(this + " ignored error rolling back after failed enlist", ignored);
-            }
-            throw t;
-         }
+         endpoint.beforeDelivery(JBMActivation.ONMESSAGE);
       }
 
       public void error()
       {
-         // Mark for tollback TX via TM
          try
          {
-            if (trace)
+            try
             {
-               log.trace(this + " using TM to mark TX for rollback tx=" + trans);
+               tm.getTransaction().setRollbackOnly();
             }
-
-            trans.setRollbackOnly();
+            catch (SystemException e)
+            {
+               log.error("Unable to mark transaction as rollback only", e);
+            }
+            endpoint.afterDelivery();
          }
-         catch (Throwable t)
+         catch (ResourceException e)
          {
-            log.error(this + " failed to set rollback only", t);
+            log.error("Error calling after delivery on endpoint", e);
          }
       }
 
@@ -511,48 +445,27 @@ public class JBMMessageHandler implements MessageHandler
       {
          try
          {
-            // Use the TM to commit the Tx (assert the correct association)
-            Transaction currentTx = tm.getTransaction();
-            if (trans.equals(currentTx) == false)
-            {
-               throw new IllegalStateException("Wrong tx association: expected " + trans + " was " + currentTx);
-            }
-
-            // Marked rollback
-            if (trans.getStatus() == Status.STATUS_MARKED_ROLLBACK)
-            {
-               if (trace)
-               {
-                  log.trace(this + " rolling back JMS transaction tx=" + trans);
-               }
-
-               // Actually roll it back
-               tm.rollback();
-
-            }
-            else if (trans.getStatus() == Status.STATUS_ACTIVE)
-            {
-               // Commit tx
-               // This will happen if
-               // a) everything goes well
-               // b) app. exception was thrown
-               if (trace)
-               {
-                  log.trace(this + " commiting the JMS transaction tx=" + trans);
-               }
-
-               tm.commit();
-
-            }
-            else
-            {
-               tm.suspend();
-            }
+            endpoint.afterDelivery();
          }
-         catch (Throwable t)
+         catch (ResourceException e)
          {
-            log.error(this + " failed to commit/rollback", t);
+            log.error("Error calling after delivery on endpoint", e);
          }
+      }
+   }
+
+   private class NoTXTransactionDemarcationStrategy implements TransactionDemarcationStrategy
+   {
+      public void start() throws Throwable
+      {
+      }
+
+      public void error()
+      {
+      }
+
+      public void end()
+      {
       }
    }
 }

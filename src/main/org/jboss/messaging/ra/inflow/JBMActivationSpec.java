@@ -93,31 +93,13 @@ public class JBMActivationSpec extends ConnectionFactoryProperties implements Ac
    /** The maximum number of sessions */
    private Integer maxSession;
 
-   /** The keep alive time for sessions */
-   private Long keepAlive;
-
-   /** Is the session transacted */
-   private Boolean sessionTransacted;
-
-   /** Unspecified redelivery */
-   private Boolean redeliverUnspecified;
-
    /** Transaction timeout */
    private Integer transactionTimeout;
 
-   /** Is same RM override */
-   private Boolean isSameRMOverrideValue;
-
    private boolean useJNDI = true;
 
-   /** Force clear on shutdown */
-   private Boolean forceClearOnShutdown;
-
-   /** Force clear internal */
-   private Long forceClearOnShutdownInterval;
-
-   /** Force clear attempts */
-   private Integer forceClearAttempts;
+   /* use local tx instead of XA*/
+   private Boolean localTx;
 
    /**
     * Constructor
@@ -133,22 +115,15 @@ public class JBMActivationSpec extends ConnectionFactoryProperties implements Ac
       destination = null;
       destinationType = null;
       messageSelector = null;
-      acknowledgeMode = Session.SESSION_TRANSACTED;
+      acknowledgeMode = Session.AUTO_ACKNOWLEDGE;
       subscriptionDurability = false;
       subscriptionName = null;
       user = null;
       password = null;
-      maxMessages = Integer.valueOf(1);
-      minSession = Integer.valueOf(1);
-      maxSession = Integer.valueOf(15);
-      keepAlive = Long.valueOf(60000);
-      sessionTransacted = Boolean.TRUE;
-      redeliverUnspecified = Boolean.TRUE;
-      transactionTimeout = Integer.valueOf(0);
-      isSameRMOverrideValue = null;
-      forceClearOnShutdown = Boolean.FALSE;
-      forceClearOnShutdownInterval = Long.valueOf(1000);
-      forceClearAttempts = Integer.valueOf(0);
+      maxMessages = 1;
+      minSession = 1;
+      maxSession = 15;
+      transactionTimeout = 0;
    }
 
    /**
@@ -296,11 +271,7 @@ public class JBMActivationSpec extends ConnectionFactoryProperties implements Ac
          log.trace("getAcknowledgeMode()");
       }
 
-      if (sessionTransacted.booleanValue())
-      {
-         return "Transacted";
-      }
-      else if (Session.DUPS_OK_ACKNOWLEDGE == acknowledgeMode)
+      if (Session.DUPS_OK_ACKNOWLEDGE == acknowledgeMode)
       {
          return "Dups-ok-acknowledge";
       }
@@ -321,17 +292,13 @@ public class JBMActivationSpec extends ConnectionFactoryProperties implements Ac
          log.trace("setAcknowledgeMode(" + value + ")");
       }
 
-      if ("DUPS_OK_ACKNOWLEDGE".equals(value) || "Dups-ok-acknowledge".equals(value))
+      if ("DUPS_OK_ACKNOWLEDGE".equalsIgnoreCase(value) || "Dups-ok-acknowledge".equalsIgnoreCase(value))
       {
          acknowledgeMode = Session.DUPS_OK_ACKNOWLEDGE;
       }
-      else if ("AUTO_ACKNOWLEDGE".equals(value) || "Auto-acknowledge".equals(value))
+      else if ("AUTO_ACKNOWLEDGE".equalsIgnoreCase(value) || "Auto-acknowledge".equalsIgnoreCase(value))
       {
          acknowledgeMode = Session.AUTO_ACKNOWLEDGE;
-      }
-      else if ("SESSION_TRANSACTED".equals(value))
-      {
-         acknowledgeMode = Session.SESSION_TRANSACTED;
       }
       else
       {
@@ -347,11 +314,6 @@ public class JBMActivationSpec extends ConnectionFactoryProperties implements Ac
       if (trace)
       {
          log.trace("getAcknowledgeMode()");
-      }
-
-      if (sessionTransacted.booleanValue())
-      {
-         return Session.SESSION_TRANSACTED;
       }
 
       return acknowledgeMode;
@@ -548,7 +510,7 @@ public class JBMActivationSpec extends ConnectionFactoryProperties implements Ac
          return 0;
       }
 
-      return maxMessages.intValue();
+      return maxMessages;
    }
 
    /**
@@ -595,7 +557,7 @@ public class JBMActivationSpec extends ConnectionFactoryProperties implements Ac
          return 0;
       }
 
-      return minSession.intValue();
+      return minSession;
    }
 
    /**
@@ -642,129 +604,7 @@ public class JBMActivationSpec extends ConnectionFactoryProperties implements Ac
          return 0;
       }
 
-      return maxSession.intValue();
-   }
-
-   /**
-    * Get the keep alive
-    * @return The value
-    */
-   public Long getKeepAlive()
-   {
-      if (trace)
-      {
-         log.trace("getKeepAlive()");
-      }
-
-      return keepAlive;
-   }
-
-   /**
-    * Set the keep alive
-    * @param value The value
-    */
-   public void setKeepAlive(final Long value)
-   {
-      if (trace)
-      {
-         log.trace("setKeepAlive(" + value + ")");
-      }
-
-      keepAlive = value;
-   }
-
-   /**
-    * Get the keep alive
-    * @return The value
-    */
-   public long getKeepAliveLong()
-   {
-      if (trace)
-      {
-         log.trace("getKeepAliveLong()");
-      }
-
-      if (keepAlive == null)
-      {
-         return 0;
-      }
-
-      return keepAlive.longValue();
-   }
-
-   /**
-    * Get the session transacted
-    * @return The value
-    */
-   public Boolean getSessionTransacted()
-   {
-      if (trace)
-      {
-         log.trace("getSessionTransacted()");
-      }
-
-      return sessionTransacted;
-   }
-
-   /**
-    * Set the session transacted
-    * @param value The value
-    */
-   public void setSessionTransacted(final Boolean value)
-   {
-      if (trace)
-      {
-         log.trace("setTransactionTimeout(" + value + ")");
-      }
-
-      sessionTransacted = value;
-   }
-
-   /**
-    * Get the session transaced
-    * @return THe value
-    */
-   public boolean isSessionTransacted()
-   {
-      if (trace)
-      {
-         log.trace("isSessionTransacted()");
-      }
-
-      if (sessionTransacted == null)
-      {
-         return false;
-      }
-
-      return sessionTransacted.booleanValue();
-   }
-
-   /**
-    * Get the redeliver upspecified
-    * @return The value
-    */
-   public Boolean getRedeliverUnspecified()
-   {
-      if (trace)
-      {
-         log.trace("getRedeliverUnspecified()");
-      }
-
-      return redeliverUnspecified;
-   }
-
-   /**
-    * Set the redeliver unspecified
-    * @param value The value
-    */
-   public void setRedeliverUnspecified(final Boolean value)
-   {
-      if (trace)
-      {
-         log.trace("setRedeliverUnspecified(" + value + ")");
-      }
-
-      redeliverUnspecified = value;
+      return maxSession;
    }
 
    /**
@@ -795,135 +635,21 @@ public class JBMActivationSpec extends ConnectionFactoryProperties implements Ac
       transactionTimeout = value;
    }
 
-   /**
-    * Get the is same rm override
-    * @return The value
-    */
-   public Boolean getIsSameRMOverrideValue()
+   public Boolean isUseLocalTx()
    {
-      if (trace)
+      if(localTx == null)
       {
-         log.trace("getIsSameRMOverrideValue()");
+         return ra.getUseLocalTx();
       }
-
-      return isSameRMOverrideValue;
+      else
+      {
+         return localTx;
+      }
    }
 
-   /**
-    * Set the is same RM override
-    * @param value The value
-    */
-   public void setIsSameRMOverrideValue(final Boolean value)
+   public void setUseLocalTx(Boolean localTx)
    {
-      if (trace)
-      {
-         log.trace("setIsSameRMOverrideValue(" + value + ")");
-      }
-
-      isSameRMOverrideValue = value;
-   }
-
-   /**
-    * Get force clear on shutdown
-    * @return The value
-    */
-   public Boolean getForceClearOnShutdown()
-   {
-      if (trace)
-      {
-         log.trace("getForceClearOnShutdown()");
-      }
-
-      return forceClearOnShutdown;
-   }
-
-   /**
-    * Set the force clear on shutdown
-    * @param value The value
-    */
-   public void setForceClearOnShutdown(final Boolean value)
-   {
-      if (trace)
-      {
-         log.trace("setForceClearOnShutdown(" + value + ")");
-      }
-
-      forceClearOnShutdown = value;
-   }
-
-   /**
-    * Get force clear on shutdown
-    * @return The value
-    */
-   public boolean isForceClearOnShutdown()
-   {
-      if (trace)
-      {
-         log.trace("isForceClearOnShutdown()");
-      }
-
-      if (forceClearOnShutdown == null)
-      {
-         return false;
-      }
-
-      return forceClearOnShutdown.booleanValue();
-   }
-
-   /**
-    * Get force clear on shutdown interval
-    * @return The value
-    */
-   public Long getForceClearOnShutdownInterval()
-   {
-      if (trace)
-      {
-         log.trace("getForceClearOnShutdownInterval()");
-      }
-
-      return forceClearOnShutdownInterval;
-   }
-
-   /**
-    * Set the force clear on shutdown interval
-    * @param value The value
-    */
-   public void setForceClearOnShutdownInterval(final Long value)
-   {
-      if (trace)
-      {
-         log.trace("setForceClearOnShutdownInterval(" + value + ")");
-      }
-
-      forceClearOnShutdownInterval = value;
-   }
-
-   /**
-    * Get force clear attempts
-    * @return The value
-    */
-   public Integer getForceClearAttempts()
-   {
-      if (trace)
-      {
-         log.trace("getForceClearAttempts()");
-      }
-
-      return forceClearAttempts;
-   }
-
-   /**
-    * Set the force clear attempts
-    * @param value The value
-    */
-   public void setForceClearAttempts(final Integer value)
-   {
-      if (trace)
-      {
-         log.trace("setForceClearAttempts(" + value + ")");
-      }
-
-      forceClearAttempts = value;
+      this.localTx = localTx;
    }
 
    /**
@@ -977,11 +703,7 @@ public class JBMActivationSpec extends ConnectionFactoryProperties implements Ac
       {
          buffer.append(" selector=").append(messageSelector);
       }
-      buffer.append(" tx=").append(sessionTransacted);
-      if (sessionTransacted == false)
-      {
-         buffer.append(" ack=").append(getAcknowledgeMode());
-      }
+      buffer.append(" ack=").append(getAcknowledgeMode());
       buffer.append(" durable=").append(subscriptionDurability);
       if (subscriptionName != null)
       {
@@ -995,7 +717,6 @@ public class JBMActivationSpec extends ConnectionFactoryProperties implements Ac
       buffer.append(" maxMessages=").append(maxMessages);
       buffer.append(" minSession=").append(minSession);
       buffer.append(" maxSession=").append(maxSession);
-      buffer.append(" keepAlive=").append(keepAlive);
       buffer.append(')');
       return buffer.toString();
    }

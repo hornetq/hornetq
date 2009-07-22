@@ -326,12 +326,7 @@ public class ResourceAdapterTest extends ServiceTestBase
       JBMActivationSpec spec = new JBMActivationSpec();
 
       spec.setAcknowledgeMode("DUPS_OK_ACKNOWLEDGE");
-      spec.setSessionTransacted(false);
       assertEquals("Dups-ok-acknowledge", spec.getAcknowledgeMode());
-
-      spec.setSessionTransacted(true);
-
-      assertEquals("Transacted", spec.getAcknowledgeMode());
 
       spec.setSubscriptionDurability("Durable");
       assertEquals("Durable", spec.getSubscriptionDurability());
@@ -382,7 +377,6 @@ public class ResourceAdapterTest extends ServiceTestBase
          JBMResourceAdapter ra = new JBMResourceAdapter();
          ra.setConnectorClassName("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory");
          ra.setConnectionParameters("bm.remoting.invm.serverid=0");
-         ra.setUseXA(true);
          ra.setUserName("userGlobal");
          ra.setPassword("passwordGlobal");
          ra.start(fakeCTX);

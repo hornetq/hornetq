@@ -28,7 +28,6 @@ import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.jms.client.JBossConnectionFactory;
-import org.jboss.messaging.jms.client.JBossSession;
 import org.jboss.messaging.ra.inflow.JBMActivation;
 import org.jboss.messaging.ra.inflow.JBMActivationSpec;
 
@@ -1054,6 +1053,7 @@ public class JBMResourceAdapter implements ResourceAdapter
    {
       return raProperties.getScheduledThreadPoolMaxSize();
    }
+
    public void setScheduledThreadPoolMaxSize(Integer scheduledThreadPoolMaxSize)
    {
       if (trace)
@@ -1077,11 +1077,11 @@ public class JBMResourceAdapter implements ResourceAdapter
       raProperties.setThreadPoolMaxSize(threadPoolMaxSize);
    }
 
-    public Boolean getUseGlobalPools()
-    {
-       return raProperties.isUseGlobalPools();
-    }
-   
+   public Boolean getUseGlobalPools()
+   {
+      return raProperties.isUseGlobalPools();
+   }
+
    public void setUseGlobalPools(Boolean useGlobalPools)
    {
       if (trace)
@@ -1186,29 +1186,29 @@ public class JBMResourceAdapter implements ResourceAdapter
     *
     * @return The value
     */
-   public Boolean getUseXA()
+   public Boolean getUseLocalTx()
    {
       if (trace)
       {
-         log.trace("getUseXA()");
+         log.trace("getUseLocalTx()");
       }
 
-      return raProperties.getUseXA();
+      return raProperties.getUseLocalTx();
    }
 
    /**
     * Set the use XA flag
     *
-    * @param xa The value
+    * @param localTx The value
     */
-   public void setUseXA(final Boolean xa)
+   public void setUseLocalTx(final Boolean localTx)
    {
       if (trace)
       {
-         log.trace("setUseXA(" + xa + ")");
+         log.trace("setUseXA(" + localTx + ")");
       }
 
-      raProperties.setUseXA(xa);
+      raProperties.setUseLocalTx(localTx);
    }
 
    /**
@@ -1274,24 +1274,6 @@ public class JBMResourceAdapter implements ResourceAdapter
       return ctx.getWorkManager();
    }
 
-   public ClientSession createSession(final int ackMode,
-                                      final String user,
-                                      final String pass,
-                                      final Boolean preAck,
-                                      final Integer dupsOkBatchSize,
-                                      final Integer transactionBatchSize,
-                                      final boolean deliveryTransacted) throws Exception
-   {
-      return createSession(sessionFactory,
-                           ackMode,
-                           user,
-                           pass,
-                           preAck,
-                           dupsOkBatchSize,
-                           transactionBatchSize,
-                           deliveryTransacted);
-   }
-
    public ClientSession createSession(final ClientSessionFactory parameterFactory,
                                       final int ackMode,
                                       final String user,
@@ -1299,65 +1281,79 @@ public class JBMResourceAdapter implements ResourceAdapter
                                       final Boolean preAck,
                                       final Integer dupsOkBatchSize,
                                       final Integer transactionBatchSize,
-                                      final boolean deliveryTransacted) throws Exception
+                                      final boolean deliveryTransacted,
+                                      final boolean useLocalTx) throws Exception
    {
 
       ClientSession result;
 
-      boolean actPreAck = preAck != null ? preAck : ClientSessionFactoryImpl.DEFAULT_PRE_ACKNOWLEDGE;
-      int actDupsOkBatchSize = dupsOkBatchSize != null ? dupsOkBatchSize
-                                                       : ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE;
-      int actTxBatchSize = transactionBatchSize != null ? transactionBatchSize
-                                                        : ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE;
-      switch (ackMode)
+      //if we are CMP or BMP using local tx we ignore the ack mode as we are transactional
+      if (deliveryTransacted || useLocalTx)
       {
-         case Session.SESSION_TRANSACTED:
+         int actTxBatchSize = transactionBatchSize != null ? transactionBatchSize
+                                                           : ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE;
+         if (useLocalTx)
+         {
             result = parameterFactory.createSession(user,
                                                     pass,
-                                                    deliveryTransacted,
                                                     false,
                                                     false,
-                                                    actPreAck,
+                                                    false,
+                                                    false,
                                                     actTxBatchSize);
-            break;
-         case Session.AUTO_ACKNOWLEDGE:
+         }
+         else
+         {
             result = parameterFactory.createSession(user,
                                                     pass,
-                                                    deliveryTransacted,
                                                     true,
                                                     false,
-                                                    actPreAck,
+                                                    false,
+                                                    false,
                                                     actTxBatchSize);
-            break;
-         case Session.DUPS_OK_ACKNOWLEDGE:
+         }
+      }
+      else
+      {
+         if (preAck != null && preAck)
+         {
             result = parameterFactory.createSession(user,
                                                     pass,
-                                                    deliveryTransacted,
-                                                    true,
-                                                    false,
-                                                    actPreAck,
-                                                    actDupsOkBatchSize);
-            break;
-         case Session.CLIENT_ACKNOWLEDGE:
-            result = parameterFactory.createSession(user,
-                                                    pass,
-                                                    deliveryTransacted,
-                                                    false,
-                                                    false,
-                                                    actPreAck,
-                                                    actTxBatchSize);
-            break;
-         case JBossSession.PRE_ACKNOWLEDGE:
-            result = parameterFactory.createSession(user,
-                                                    pass,
-                                                    deliveryTransacted,
                                                     false,
                                                     true,
-                                                    actPreAck,
-                                                    actTxBatchSize);
-            break;
-         default:
-            throw new IllegalArgumentException("Invalid ackmode: " + ackMode);
+                                                    true,
+                                                    true,
+                                                    -1);
+         }
+         else
+         {
+            //only auto ack and dups ok are supported
+            switch (ackMode)
+            {
+               case Session.AUTO_ACKNOWLEDGE:
+                  result = parameterFactory.createSession(user,
+                                                          pass,
+                                                          false,
+                                                          true,
+                                                          true,
+                                                          false,
+                                                          0);
+                  break;
+               case Session.DUPS_OK_ACKNOWLEDGE:
+                  int actDupsOkBatchSize = dupsOkBatchSize != null ? dupsOkBatchSize
+                                                                   : ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE;
+                  result = parameterFactory.createSession(user,
+                                                          pass,
+                                                          false,
+                                                          true,
+                                                          true,
+                                                          false,
+                                                          actDupsOkBatchSize);
+                  break;
+               default:
+                  throw new IllegalArgumentException("Invalid ackmode: " + ackMode);
+            }
+         }
       }
 
       log.debug("Using queue connection " + result);
@@ -1460,118 +1456,118 @@ public class JBMResourceAdapter implements ResourceAdapter
       {
          cf.setBlockOnPersistentSend(val);
       }
-      val = overrideProperties.isFailoverOnServerShutdown() != null?overrideProperties.isFailoverOnServerShutdown():raProperties.isFailoverOnServerShutdown();
-      if(val != null)
+      val = overrideProperties.isFailoverOnServerShutdown() != null ? overrideProperties.isFailoverOnServerShutdown() : raProperties.isFailoverOnServerShutdown();
+      if (val != null)
       {
          cf.setFailoverOnServerShutdown(val);
       }
-      val = overrideProperties.isPreAcknowledge() != null?overrideProperties.isPreAcknowledge():raProperties.isPreAcknowledge();
-      if(val != null)
+      val = overrideProperties.isPreAcknowledge() != null ? overrideProperties.isPreAcknowledge() : raProperties.isPreAcknowledge();
+      if (val != null)
       {
          cf.setPreAcknowledge(val);
       }
-      val = overrideProperties.isUseGlobalPools() != null?overrideProperties.isUseGlobalPools():raProperties.isUseGlobalPools();
-      if(val != null)
+      val = overrideProperties.isUseGlobalPools() != null ? overrideProperties.isUseGlobalPools() : raProperties.isUseGlobalPools();
+      if (val != null)
       {
          cf.setUseGlobalPools(val);
       }
-      Integer val2 = overrideProperties.getConsumerMaxRate() != null?overrideProperties.getConsumerMaxRate():raProperties.getConsumerMaxRate();
-      if(val2 != null)
+      Integer val2 = overrideProperties.getConsumerMaxRate() != null ? overrideProperties.getConsumerMaxRate() : raProperties.getConsumerMaxRate();
+      if (val2 != null)
       {
          cf.setConsumerMaxRate(val2);
       }
-      val2 = overrideProperties.getConsumerWindowSize() != null?overrideProperties.getConsumerWindowSize():raProperties.getConsumerWindowSize();
-      if(val2 != null)
+      val2 = overrideProperties.getConsumerWindowSize() != null ? overrideProperties.getConsumerWindowSize() : raProperties.getConsumerWindowSize();
+      if (val2 != null)
       {
          cf.setConsumerWindowSize(val2);
       }
-      val2 = overrideProperties.getDupsOKBatchSize() != null?overrideProperties.getDupsOKBatchSize():raProperties.getDupsOKBatchSize();
-      if(val2 != null)
+      val2 = overrideProperties.getDupsOKBatchSize() != null ? overrideProperties.getDupsOKBatchSize() : raProperties.getDupsOKBatchSize();
+      if (val2 != null)
       {
          cf.setDupsOKBatchSize(val2);
       }
-      val2 = overrideProperties.getMaxConnections() != null?overrideProperties.getMaxConnections():raProperties.getMaxConnections();
-      if(val2 != null)
+      val2 = overrideProperties.getMaxConnections() != null ? overrideProperties.getMaxConnections() : raProperties.getMaxConnections();
+      if (val2 != null)
       {
          cf.setMaxConnections(val2);
       }
-      val2 = overrideProperties.getMinLargeMessageSize() != null?overrideProperties.getMinLargeMessageSize():raProperties.getMinLargeMessageSize();
-      if(val2 != null)
+      val2 = overrideProperties.getMinLargeMessageSize() != null ? overrideProperties.getMinLargeMessageSize() : raProperties.getMinLargeMessageSize();
+      if (val2 != null)
       {
          cf.setMinLargeMessageSize(val2);
       }
-      val2 = overrideProperties.getProducerMaxRate() != null?overrideProperties.getProducerMaxRate():raProperties.getProducerMaxRate();
-      if(val2 != null)
+      val2 = overrideProperties.getProducerMaxRate() != null ? overrideProperties.getProducerMaxRate() : raProperties.getProducerMaxRate();
+      if (val2 != null)
       {
          cf.setProducerMaxRate(val2);
       }
-      val2 = overrideProperties.getProducerWindowSize() != null?overrideProperties.getProducerWindowSize():raProperties.getProducerWindowSize();
-      if(val2 != null)
+      val2 = overrideProperties.getProducerWindowSize() != null ? overrideProperties.getProducerWindowSize() : raProperties.getProducerWindowSize();
+      if (val2 != null)
       {
          cf.setProducerWindowSize(val2);
       }
-      val2 = overrideProperties.getReconnectAttempts() != null?overrideProperties.getReconnectAttempts():raProperties.getReconnectAttempts();
-      if(val2 != null)
+      val2 = overrideProperties.getReconnectAttempts() != null ? overrideProperties.getReconnectAttempts() : raProperties.getReconnectAttempts();
+      if (val2 != null)
       {
          cf.setReconnectAttempts(val2);
       }
-      val2 = overrideProperties.getThreadPoolMaxSize() != null?overrideProperties.getThreadPoolMaxSize():raProperties.getThreadPoolMaxSize();
-      if(val2 != null)
+      val2 = overrideProperties.getThreadPoolMaxSize() != null ? overrideProperties.getThreadPoolMaxSize() : raProperties.getThreadPoolMaxSize();
+      if (val2 != null)
       {
          cf.setThreadPoolMaxSize(val2);
       }
-      val2 = overrideProperties.getScheduledThreadPoolMaxSize() != null?overrideProperties.getScheduledThreadPoolMaxSize():raProperties.getScheduledThreadPoolMaxSize();
-      if(val2 != null)
+      val2 = overrideProperties.getScheduledThreadPoolMaxSize() != null ? overrideProperties.getScheduledThreadPoolMaxSize() : raProperties.getScheduledThreadPoolMaxSize();
+      if (val2 != null)
       {
          cf.setScheduledThreadPoolMaxSize(val2);
       }
-      val2 = overrideProperties.getTransactionBatchSize() != null?overrideProperties.getTransactionBatchSize():raProperties.getTransactionBatchSize();
-      if(val2 != null)
+      val2 = overrideProperties.getTransactionBatchSize() != null ? overrideProperties.getTransactionBatchSize() : raProperties.getTransactionBatchSize();
+      if (val2 != null)
       {
          cf.setTransactionBatchSize(val2);
       }
-      Long val3 = overrideProperties.getClientFailureCheckPeriod() != null?overrideProperties.getClientFailureCheckPeriod():raProperties.getClientFailureCheckPeriod();
-      if(val3 != null)
+      Long val3 = overrideProperties.getClientFailureCheckPeriod() != null ? overrideProperties.getClientFailureCheckPeriod() : raProperties.getClientFailureCheckPeriod();
+      if (val3 != null)
       {
          cf.setClientFailureCheckPeriod(val3);
       }
-      val3 = overrideProperties.getCallTimeout() != null?overrideProperties.getCallTimeout():raProperties.getCallTimeout();
-      if(val3 != null)
+      val3 = overrideProperties.getCallTimeout() != null ? overrideProperties.getCallTimeout() : raProperties.getCallTimeout();
+      if (val3 != null)
       {
          cf.setCallTimeout(val3);
       }
-      val3 = overrideProperties.getConnectionTTL() != null?overrideProperties.getConnectionTTL():raProperties.getConnectionTTL();
-      if(val3 != null)
+      val3 = overrideProperties.getConnectionTTL() != null ? overrideProperties.getConnectionTTL() : raProperties.getConnectionTTL();
+      if (val3 != null)
       {
          cf.setConnectionTTL(val3);
       }
-      val3 = overrideProperties.getDiscoveryInitialWaitTimeout() != null?overrideProperties.getDiscoveryInitialWaitTimeout():raProperties.getDiscoveryInitialWaitTimeout();
-      if(val3 != null)
+      val3 = overrideProperties.getDiscoveryInitialWaitTimeout() != null ? overrideProperties.getDiscoveryInitialWaitTimeout() : raProperties.getDiscoveryInitialWaitTimeout();
+      if (val3 != null)
       {
          cf.setDiscoveryInitialWaitTimeout(val3);
       }
-      val3 = overrideProperties.getDiscoveryRefreshTimeout() != null?overrideProperties.getDiscoveryRefreshTimeout():raProperties.getDiscoveryRefreshTimeout();
-      if(val3 != null)
+      val3 = overrideProperties.getDiscoveryRefreshTimeout() != null ? overrideProperties.getDiscoveryRefreshTimeout() : raProperties.getDiscoveryRefreshTimeout();
+      if (val3 != null)
       {
          cf.setDiscoveryRefreshTimeout(val3);
       }
-      val3 = overrideProperties.getRetryInterval() != null?overrideProperties.getRetryInterval():raProperties.getRetryInterval();
-      if(val3 != null)
+      val3 = overrideProperties.getRetryInterval() != null ? overrideProperties.getRetryInterval() : raProperties.getRetryInterval();
+      if (val3 != null)
       {
          cf.setRetryInterval(val3);
       }
-      Double val4 = overrideProperties.getRetryIntervalMultiplier() != null?overrideProperties.getRetryIntervalMultiplier():raProperties.getRetryIntervalMultiplier();
-      if(val4 != null)
+      Double val4 = overrideProperties.getRetryIntervalMultiplier() != null ? overrideProperties.getRetryIntervalMultiplier() : raProperties.getRetryIntervalMultiplier();
+      if (val4 != null)
       {
          cf.setRetryIntervalMultiplier(val4);
       }
-      String val5 = overrideProperties.getClientID() != null?overrideProperties.getClientID():raProperties.getClientID();
-      if(val5 != null)
+      String val5 = overrideProperties.getClientID() != null ? overrideProperties.getClientID() : raProperties.getClientID();
+      if (val5 != null)
       {
          cf.setClientID(val5);
       }
-      val5 = overrideProperties.getConnectionLoadBalancingPolicyClassName() != null?overrideProperties.getConnectionLoadBalancingPolicyClassName():raProperties.getConnectionLoadBalancingPolicyClassName();
-      if(val5 != null)
+      val5 = overrideProperties.getConnectionLoadBalancingPolicyClassName() != null ? overrideProperties.getConnectionLoadBalancingPolicyClassName() : raProperties.getConnectionLoadBalancingPolicyClassName();
+      if (val5 != null)
       {
          cf.setConnectionLoadBalancingPolicyClassName(val5);
       }

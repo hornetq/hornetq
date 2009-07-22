@@ -362,7 +362,8 @@ public class JBMActivation
                                    ra.getPreAcknowledge(),
                                    ra.getDupsOKBatchSize(),
                                    ra.getTransactionBatchSize(),
-                                   isDeliveryTransacted);
+                                   isDeliveryTransacted,
+                                   spec.isUseLocalTx());
 
          log.debug("Using queue connection " + result);
 

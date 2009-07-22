@@ -54,13 +54,13 @@
          <config-property-type>java.lang.String</config-property-type>
          <config-property-value>jbm.remoting.invm.serverid=0</config-property-value>
       </config-property>
-       <config-property>
-        <description>Use XA methods to obtain connections?</description>
-        <config-property-name>UseXA</config-property-name>
+      <!-- <config-property>
+        <description>Use A local Transaction instead of XA?</description>
+        <config-property-name>UseLocalTx</config-property-name>
         <config-property-type>java.lang.Boolean</config-property-type>
-        <config-property-value>true</config-property-value>
+        <config-property-value>false</config-property-value>
       </config-property>
-      <!--<config-property>
+      <config-property>
         <description>The user name used to login to the JMS server</description>
         <config-property-name>UserName</config-property-name>
         <config-property-type>java.lang.String</config-property-type>
