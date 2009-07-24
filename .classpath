@@ -78,7 +78,12 @@
 	<classpathentry kind="src" path="examples/javaee/ejb-jms-transaction/src"/>
 	<classpathentry kind="src" path="examples/javaee/hajndi/src"/>
 	<classpathentry kind="src" path="examples/javaee/jms-bridge/src"/>
-	<classpathentry kind="src" path="examples/javaee/mdb/src"/>
+	<classpathentry kind="src" path="examples/javaee/mdb-bmp/src"/>
+	<classpathentry kind="src" path="examples/javaee/mdb-cmp-setrollbackonly/src"/>
+	<classpathentry kind="src" path="examples/javaee/mdb-cmp-tx-local/src"/>
+	<classpathentry kind="src" path="examples/javaee/mdb-cmp-tx-not-supported/src"/>
+	<classpathentry kind="src" path="examples/javaee/mdb-cmp-tx-required/src"/>
+	<classpathentry kind="src" path="examples/javaee/servlet-ssl-example/src"/>
 	<classpathentry kind="src" path="examples/javaee/servlet-transport/src"/>
 	<classpathentry kind="src" path="examples/javaee/xarecovery/src"/>
 	<classpathentry kind="lib" path="thirdparty/junit/lib/junit.jar"/>
