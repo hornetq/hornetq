@@ -22,13 +22,14 @@
 
 package org.jboss.messaging.jms.server.recovery;
 
-import org.jboss.messaging.core.logging.Logger;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.transaction.xa.XAResource;
 
 import com.arjuna.ats.jta.recovery.XAResourceRecovery;
 
-import java.util.StringTokenizer;
+import org.jboss.messaging.core.logging.Logger;
 
 /**
  * 
@@ -47,13 +48,7 @@ public class MessagingXAResourceRecovery implements XAResourceRecovery
 
    private static final Logger log = Logger.getLogger(MessagingXAResourceRecovery.class);
    
-   private String xaConnectionFactoryLookupName;
-   
    private boolean hasMore;
-   
-   private String username;
-   
-   private String password;
    
    private MessagingXAResourceWrapper res;
 
@@ -66,33 +61,13 @@ public class MessagingXAResourceRecovery implements XAResourceRecovery
    {
       if (log.isTraceEnabled()) { log.trace(this + " intialise: " + config); }
       
-      StringTokenizer tok = new StringTokenizer(config, ",");
+      ConfigParser parser = new ConfigParser(config);
+      String connectorFactoryClassName = parser.getConnectorFactoryClassName();
+      Map<String, Object> connectorParams = parser.getConnectorParameters();
+      String username = parser.getUsername();
+      String password = parser.getPassword();
       
-      //First (mandatory) param is the provider adaptor name
-      
-      if (!tok.hasMoreTokens())
-      {
-         throw new IllegalArgumentException("Must specify provider adaptor name in config");
-      }
-      
-      xaConnectionFactoryLookupName = tok.nextToken();
-                  
-      //Next two (optional) parameters are the username and password to use for creating the connection
-      //for recovery
-      
-      if (tok.hasMoreTokens())
-      {
-         username = tok.nextToken();
-         
-         if (!tok.hasMoreTokens())
-         {
-            throw new IllegalArgumentException("If username is specified, password must be specified too");
-         }
-         
-         password = tok.nextToken();
-      }
-         
-      res = new MessagingXAResourceWrapper(xaConnectionFactoryLookupName, username, password);
+      res = new MessagingXAResourceWrapper(connectorFactoryClassName, connectorParams, username, password);
              
       if (log.isTraceEnabled()) { log.trace(this + " initialised"); }      
       
@@ -137,6 +112,93 @@ public class MessagingXAResourceRecovery implements XAResourceRecovery
    protected void finalize()
    {
       res.close();  
+   }
+   
+   public static class ConfigParser
+   {
+      private String connectorFactoryClassName;
+      
+      private Map<String, Object> connectorParameters;
+
+      private String username;
+      
+      private String password;
+
+      public ConfigParser(String config)
+      {
+         if (config == null || config.length() == 0)
+         {
+            throw new IllegalArgumentException("Must specify provider connector factory class name in config");
+         }
+         
+         String[] strings = config.split(",");
+         
+         //First (mandatory) param is the  connector factory class name
+         if (strings.length < 1)
+         {
+            throw new IllegalArgumentException("Must specify provider connector factory class name in config");
+         }
+         
+         connectorFactoryClassName = strings[0].trim();
+                     
+         //Next two (optional) parameters are the username and password to use for creating the session for recovery
+         
+         if (strings.length >= 2)
+         {
+            
+            username = strings[1].trim();
+            if (username.length() == 0)
+            {
+               username = null;
+            }
+            
+            if (strings.length == 2)
+            {
+               throw new IllegalArgumentException("If username is specified, password must be specified too");
+            }
+            
+            password = strings[2].trim();
+            if (password.length() == 0)
+            {
+               password = null;
+            }
+         }
+         
+         
+         // other tokens are for connector configurations
+         connectorParameters = new HashMap<String, Object>();
+         if (strings.length >= 3)
+         {
+            for (int i = 3; i < strings.length; i++)
+            {
+               String[] str = strings[i].split("=");
+               if (str.length == 2)
+               {
+                  connectorParameters.put(str[0].trim(), str[1].trim());
+               }
+            }
+         }
+      }
+      
+      public String getConnectorFactoryClassName()
+      {
+         return connectorFactoryClassName;
+      }
+      
+      public Map<String, Object> getConnectorParameters()
+      {
+         return connectorParameters;
+      }
+      
+      public String getUsername()
+      {
+         return username;
+      }
+      
+      public String getPassword()
+      {
+         return password;
+      }
    }
 }
 

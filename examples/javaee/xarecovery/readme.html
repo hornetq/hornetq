@@ -25,15 +25,16 @@
      <h3>XA Recovery configuration</h3>
      
      <p>You need to enable XA Recovery of JBoss Messaging resources.</p>
-     <p>In the <code>jta</code> section of the <code>$JBOSS_HOME/server/default-with-jbm2/conf/jbossts-properties.xml</code> configuration file, the following property
+     <p>In the <code>jta</code> section of the <code>$JBOSS_HOME/server/xarecovery-example-profile//conf/jbossts-properties.xml</code> configuration file, the following property
         is added:</p>
      <pre>
          <code>&lt;property name="com.arjuna.ats.jta.recovery.XAResourceRecovery.JBMESSAGING1"
-                   value="org.jboss.messaging.jms.server.recovery.MessagingXAResourceRecovery;java:/XAConnectionFactory"/&gt;</code>
+                      value="org.jboss.messaging.jms.server.recovery.MessagingXAResourceRecovery;org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"/&gt;</code>
      </pre>
 
-     <p>This informs the Recovery Manager that it can recovers JBoss Messaging XA Resources using the <code>XAConnectionFactory</code> bound to <code>java:/XAConnectionFactory</code> in JNDI
-         (as it is configured in <a href="config/jbm-jms.xml">jbm-jms.xml</a> which will be deployed to <code>$JBOSS_HOME/server/default-with-jbm2/deploy/messaging.sar/</code>).</p>
+     <p>This informs the Recovery Manager that it can recovers JBoss Messaging XA Resources by connecting to the server using an <code>InVMConnectorFactory</code>.
+        Since the Recovery Manager is in the same server than JBoss Messaging, the examples uses intra-vm communication to recover the messaging resources.
+        JBoss Messaging must have configured an invm acceptor to accept this connection (see the "in-vm"<code>&lt;acceptor></code> in <code>jbm-configuration.xml</code>).</p>
       
      <p>The example copies a <code>jbossts-properties.xml</code> already configured for JBoss Messaging XA Recovery, so you
         do not need to manually edit the profile's file.</p>

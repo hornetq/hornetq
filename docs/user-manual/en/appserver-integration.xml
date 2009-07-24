@@ -827,7 +827,8 @@ initialContext = new InitialContext(jndiParameters);</programlisting>
             (depending on the transaction outcome) when the server is restarted.</para>
         <section>
             <title>XA Recovery Configuration</title>
-            <para>To enable JBoss Messagings XA Recovery, the following property must be added to
+            <para>To enable JBoss Messagings XA Recovery, the Recovery Manager must be configured to connect
+                to JBoss Messaging to recover its resources. The following property must be added to
                 the <literal>jta</literal> section of <literal>conf/jbossts-properties.xml</literal>
                 of JBoss AS profiles:</para>
             <programlisting>
@@ -835,14 +836,69 @@ initialContext = new InitialContext(jndiParameters);</programlisting>
    ...
                      
    &lt;property name="com.arjuna.ats.jta.recovery.XAResourceRecovery.JBMESSAGING1"
-                value="org.jboss.messaging.jms.server.recovery.MessagingXAResourceRecovery;java:/XAConnectionFactory"/&gt;
+                value="org.jboss.messaging.jms.server.recovery.MessagingXAResourceRecovery;[connection configuration]"/&gt;
 &lt;/properties&gt;
-         </programlisting>
-            <para>This informs the recovery manager that it can recovers JBoss Messaging XA
-                Resources using the <literal>XAConnectionFactory</literal> bound to <literal
-                    >java:/XAConnectionFactory</literal> in JNDI. A ConnectionFactory must have been
-                configured with this JNDI name in <literal>jbm-jms.xml</literal> (see <xref
-                    linkend="using-jms.server.configuration"/>).</para>
+            </programlisting>
+            <para>The <literal>[connection configuration]</literal> contains all the information required to connect to
+            JBoss Messaging node under the form <literal>[connector factory class name],[user name], [password], [connector parameters]</literal>.
+            </para>
+            <itemizedlist>
+                <listitem>
+                    <para><literal>[connector factory class name]</literal> corresponds to the name of the <literal>ConnectorFactory</literal> used
+                    to connect to JBoss Messaging. Values can be <literal>org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory</literal>
+                     or <literal>org.jboss.messaging.integration.transports.netty.NettyConnectorFactory</literal></para>
+                </listitem>
+                <listitem>
+                    <para><literal>[user name]</literal> is the user name to create a client session. It is optional</para>
+                </listitem>
+                <listitem>
+                    <para><literal>[password]</literal> is the password to create a client session. It is mandatory only if the user name is specified</para>
+                </listitem>
+                <listitem>
+                    <para><literal>[connector parameters]</literal> is a list of comma-separated key=value pair which are passed to the connector factory (see <xref
+                     linkend="configuring-transports"/> for a list of the transport parameters).</para>
+                </listitem>
+            </itemizedlist>
+            <note>
+               <para>JBoss Messaging must have a valid acceptor which corresponds to the connector
+                   specified in <literal>conf/jbossts-properties.xml</literal>.</para>
+            </note>
+            <section>
+                <title>Configuration Settings</title>
+                <para>If JBoss Messaging is configured with a default in-vm acceptor:</para>
+                <programlisting>
+&lt;acceptor name="in-vm">
+    &lt;factory-class>org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory&lt;/factory-class>
+&lt;/acceptor>
+                </programlisting>
+                <para>the corresponding configuration in <literal>conf/jbossts-properties.xml</literal> is:</para>
+                <programlisting>
+&lt;property name="com.arjuna.ats.jta.recovery.XAResourceRecovery.JBMESSAGING1"
+   value="org.jboss.messaging.jms.server.recovery.MessagingXAResourceRecovery;org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"/>        			
+                </programlisting>
+                <para>If it is now configured with a netty acceptor on a non-default port:</para>
+                <programlisting>
+&lt;acceptor name="netty">
+    &lt;factory-class>org.jboss.messaging.integration.transports.netty.NettyAcceptorFactory&lt;/factory-class>
+    &lt;param key="jbm.remoting.netty.port" value="8888" type="Integer"/>
+&lt;/acceptor>
+                </programlisting>
+                <para>the corresponding configuration in <literal>conf/jbossts-properties.xml</literal> is:</para>
+                <programlisting>
+&lt;property name="com.arjuna.ats.jta.recovery.XAResourceRecovery.JBMESSAGING1"
+       value="org.jboss.messaging.jms.server.recovery.MessagingXAResourceRecovery;org.jboss.messaging.integration.transports.netty.NettyConnectorFactory, , , jbm.remoting.netty.port=8888"/>        			                    
+                </programlisting>
+                <note>
+                    <para>Note the additional commas to skip the user and password before connector parameters</para>
+                </note>
+                <para>If the recovery must use <literal>admin, adminpass</literal>, the configuration would have been:</para>
+                <programlisting>
+                    &lt;property name="com.arjuna.ats.jta.recovery.XAResourceRecovery.JBMESSAGING1"
+                           value="org.jboss.messaging.jms.server.recovery.MessagingXAResourceRecovery;org.jboss.messaging.integration.transports.netty.NettyConnectorFactory, admin, adminpass, jbm.remoting.netty.port=8888"/>        			                    
+                </programlisting>    
+                <para>Configuring JBoss Messaging with an invm acceptor and configuring the Recovery Manager with an invm connector is the recommended
+                    way to enable XA Recovery.</para>
+            </section>
         </section>
         <section>
             <title>Example</title>

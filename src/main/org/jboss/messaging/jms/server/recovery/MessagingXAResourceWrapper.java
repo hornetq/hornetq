@@ -22,18 +22,19 @@
 
 package org.jboss.messaging.jms.server.recovery;
 
-import javax.jms.ExceptionListener;
-import javax.jms.JMSException;
-import javax.jms.XAConnection;
-import javax.jms.XAConnectionFactory;
-import javax.jms.XASession;
-import javax.naming.Context;
-import javax.naming.InitialContext;
+import java.util.Map;
+
 import javax.transaction.xa.XAException;
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
 
+import org.jboss.messaging.core.client.ClientSession;
+import org.jboss.messaging.core.client.ClientSessionFactory;
+import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
+import org.jboss.messaging.core.config.TransportConfiguration;
+import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.remoting.FailureListener;
 
 /**
  * XAResourceWrapper.
@@ -50,39 +51,41 @@ import org.jboss.messaging.core.logging.Logger;
  * 
  * @version $Revision: 45341 $
  */
-public class MessagingXAResourceWrapper implements XAResource, ExceptionListener
+public class MessagingXAResourceWrapper implements XAResource, FailureListener
 {
    /** The log */
    private static final Logger log = Logger.getLogger(MessagingXAResourceWrapper.class);
 
-   /** The JNDI lookup for the XA connection factory */
-   private final String xaConnectionFactoryLookupName;
-
    /** The state lock */
    private static final Object lock = new Object();
 
-   /** The connection */
-   private XAConnection connection;
+   /** The JNDI lookup for the XA connection factory */
+   private final String connectorFactoryClassName;
 
-   /** The connectionFactory XAResource */
-   private XAResource delegate;
+   private Map<String, Object> connectorConfig;
 
    private final String username;
 
    private final String password;
 
-   public MessagingXAResourceWrapper(final String xaConnectionFactoryLookupName, final String username, final String password)
+   private ClientSessionFactory csf;
+
+   private XAResource delegate;
+
+   public MessagingXAResourceWrapper(final String connectorFactoryClassName,
+                                     final Map<String, Object> connectorConfig,
+                                     final String username, 
+                                     final String password)
    {
-      this.xaConnectionFactoryLookupName = xaConnectionFactoryLookupName;
-
+      this.connectorFactoryClassName = connectorFactoryClassName;
+      this.connectorConfig = connectorConfig;
       this.username = username;
-
       this.password = password;
    }
 
    public Xid[] recover(int flag) throws XAException
    {
-      log.debug("Recover " + xaConnectionFactoryLookupName);
+      log.debug("Recover " + connectorFactoryClassName);
       XAResource xaResource = getDelegate();
       try
       {
@@ -96,7 +99,7 @@ public class MessagingXAResourceWrapper implements XAResource, ExceptionListener
 
    public void commit(Xid xid, boolean onePhase) throws XAException
    {
-      log.debug("Commit " + xaConnectionFactoryLookupName + " xid " + " onePhase=" + onePhase);
+      log.debug("Commit " + connectorFactoryClassName + " xid " + " onePhase=" + onePhase);
       XAResource xaResource = getDelegate();
       try
       {
@@ -110,7 +113,7 @@ public class MessagingXAResourceWrapper implements XAResource, ExceptionListener
 
    public void rollback(Xid xid) throws XAException
    {
-      log.debug("Rollback " + xaConnectionFactoryLookupName + " xid ");
+      log.debug("Rollback " + connectorFactoryClassName + " xid ");
       XAResource xaResource = getDelegate();
       try
       {
@@ -124,7 +127,7 @@ public class MessagingXAResourceWrapper implements XAResource, ExceptionListener
 
    public void forget(Xid xid) throws XAException
    {
-      log.debug("Forget " + xaConnectionFactoryLookupName + " xid ");
+      log.debug("Forget " + connectorFactoryClassName + " xid ");
       XAResource xaResource = getDelegate();
       try
       {
@@ -217,10 +220,11 @@ public class MessagingXAResourceWrapper implements XAResource, ExceptionListener
       }
    }
 
-   public void onException(JMSException exception)
+   public boolean connectionFailed(MessagingException me)
    {
-      log.warn("Notified of connection failure in recovery connectionFactory for provider " + xaConnectionFactoryLookupName, exception);
+      log.warn("Notified of connection failure in recovery connectionFactory for provider " + connectorFactoryClassName, me);
       close();
+      return true;
    }
 
    /**
@@ -245,7 +249,7 @@ public class MessagingXAResourceWrapper implements XAResource, ExceptionListener
 
       if (result == null)
       {
-         XAException xae = new XAException("Error trying to connect to provider " + xaConnectionFactoryLookupName);
+         XAException xae = new XAException("Error trying to connect to provider " + connectorFactoryClassName);
          xae.errorCode = XAException.XAER_RMERR;
          if (error != null)
             xae.initCause(error);
@@ -271,61 +275,26 @@ public class MessagingXAResourceWrapper implements XAResource, ExceptionListener
             return delegate;
       }
 
-      // Create the connection
-      XAConnection xaConnection;
+      TransportConfiguration config = new TransportConfiguration(connectorFactoryClassName, connectorConfig);
+      csf = new ClientSessionFactoryImpl(config);
+      ClientSession cs = null;
 
       if (username == null)
       {
-         xaConnection = getConnectionFactory().createXAConnection();
+         cs = csf.createSession(true, false, false);
       }
       else
       {
-         xaConnection = getConnectionFactory().createXAConnection(username, password);
+         cs = csf.createSession(username, password, true, false, false, false, 1);
       }
+      cs.addFailureListener(this);
 
       synchronized (lock)
       {
-         connection = xaConnection;
+         delegate = cs;
       }
-
-      // Retrieve the connectionFactory XAResource
-      try
-      {
-         XASession session = connection.createXASession();
-         XAResource result = session.getXAResource();
-         synchronized (lock)
-         {
-            delegate = result;
-         }
-         return delegate;
-      }
-      catch (Exception e)
-      {
-         close();
-         throw e;
-      }
-   }
-
-   /**
-    * Get the XAConnectionFactory
-    * 
-    * @return the connection
-    * @throws Exception for any problem
-    */
-   protected XAConnectionFactory getConnectionFactory() throws Exception
-   {
-      // Get the XA Connection Factory
-      if (xaConnectionFactoryLookupName == null)
-         throw new IllegalArgumentException("Null XA ConnectionFactory lookup name");
-      Context ctx = new InitialContext();
-      try
-      {
-         return (XAConnectionFactory)ctx.lookup(xaConnectionFactoryLookupName);
-      }
-      finally
-      {
-         ctx.close();
-      }
+      
+      return delegate;
    }
 
    /**
@@ -335,15 +304,15 @@ public class MessagingXAResourceWrapper implements XAResource, ExceptionListener
    {
       try
       {
-         XAConnection oldConnection = null;
+         ClientSessionFactory oldCSF = null;
          synchronized (lock)
          {
-            oldConnection = connection;
-            connection = null;
+            oldCSF = csf;
+            csf = null;
             delegate = null;
          }
-         if (oldConnection != null)
-            oldConnection.close();
+         if (oldCSF != null)
+            oldCSF.close();
       }
       catch (Exception ignored)
       {
@@ -363,7 +332,7 @@ public class MessagingXAResourceWrapper implements XAResource, ExceptionListener
    {
       if (e.errorCode == XAException.XA_RETRY)
       {
-         log.debug("Fatal error in provider " + xaConnectionFactoryLookupName, e);
+         log.debug("Fatal error in provider " + connectorFactoryClassName, e);
          close();
       }
       throw new XAException(XAException.XAER_RMFAIL);
