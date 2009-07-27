@@ -32,7 +32,7 @@ import javax.naming.InitialContext;
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
  */
-public class MDB_CMP_TxRequiredClientExample
+public class MDB_CMT_TxRequiredClientExample
 {
    public static void main(String[] args) throws Exception
    {

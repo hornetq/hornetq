@@ -39,7 +39,7 @@ import javax.transaction.TransactionManager;
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
  */
-@MessageDriven(name = "MDB_CMP_TxRequiredExample",
+@MessageDriven(name = "MDB_CMT_TxRequiredExample",
                activationConfig =
                      {
                         @ActivationConfigProperty(propertyName = "destinationType", propertyValue = "javax.jms.Queue"),
@@ -47,7 +47,7 @@ import javax.transaction.TransactionManager;
                      })
 @TransactionManagement(value= TransactionManagementType.CONTAINER)
 @TransactionAttribute(value= TransactionAttributeType.REQUIRED)
-public class MDB_CMP_TxRequiredExample implements MessageListener
+public class MDB_CMT_TxRequiredExample implements MessageListener
 {
    @Resource(mappedName = "java:/TransactionManager")
    private TransactionManager tm;
