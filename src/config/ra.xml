@@ -54,6 +54,12 @@
          <config-property-type>java.lang.String</config-property-type>
          <config-property-value>jbm.remoting.invm.serverid=0</config-property-value>
       </config-property>
+      <config-property>
+        <description>Use XA?</description>
+        <config-property-name>UseXA</config-property-name>
+        <config-property-type>java.lang.Boolean</config-property-type>
+        <config-property-value>true</config-property-value>
+      </config-property>
       <!-- <config-property>
         <description>Use A local Transaction instead of XA?</description>
         <config-property-name>UseLocalTx</config-property-name>

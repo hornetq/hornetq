@@ -5,11 +5,235 @@
         Enterprise Application Platform 5.1 or later. For details on installing JBoss Messaging in
         the JBoss Application Server refer to quick-start guide.</para>
     <para>JBoss Messaging can also be integrated with any other JEE compliant application server by
-        using the JBoss Messaging JCA adapter.</para>
+        using the JBoss Messaging JCA adapter. A JCA Adapter basically controls the incoming of
+        messages to Message Driven Beans and the outgoing of messages from other J2EE
+        components.</para>
     <para>This section explains the basics behind configuring the different JEE components in the
         AS.</para>
     <section>
-        <title>Using and Configuring the JCA Adapter</title>
+        <title>Configuring Message Driven Beans</title>
+        <para>The delivery of messages to an MDB using JBoss Messaging is configured on the JCA
+            Adapter via a configuration file <literal>ra.xml</literal> which can be found under in
+            the <literal>jms-ra.rar</literal> archive of directory.  By default this is configured
+            to consume messages using an InVM connector from the instance of JBoss Messaging running
+            within the application server. A full list of what is configurable is found later in
+            this chapter. </para>
+        <para>All MDB's however need to have the destination type and the destination configured.
+            The following example shows how this can be done via annotations.</para>
+        <programlisting>@MessageDriven(name = "MDBExample",
+               activationConfig =
+                     {
+                        @ActivationConfigProperty(propertyName = "destinationType", propertyValue = "javax.jms.Queue"),
+                        @ActivationConfigProperty(propertyName = "destination", propertyValue = "queue/testQueue")
+                     })
+public class MDBExample implements MessageListener
+{
+   public void onMessage(Message message)...
+}</programlisting>
+        <para>In this example you can see that the MDB will consume messages from a queue that is
+            mapped into JNDI with the binding <literal>queue/testQueue</literal>. This queue must be
+            preconfigured in the usual way using the JBoss Messaging configuration files.</para>
+        <section>
+            <title>Using Container Managed Persistence</title>
+            <para>When an MDB is using Container Managed Persistence, the delivery of the message is
+                done within the scope of an XA transaction. The commit or rollback of this
+                transaction is controlled by the container itself. If the transaction is rolled back
+                then the JBoss Message delivery semantics will kick in (by default this is to try
+                and redeliver the message up to 10 times before sending to a DLQ). Using annotations
+                this would be configured as follows:</para>
+            <programlisting>@MessageDriven(name = "MDB_CMP_TxRequiredExample",
+               activationConfig =
+                     {
+                        @ActivationConfigProperty(propertyName = "destinationType", propertyValue = "javax.jms.Queue"),
+                        @ActivationConfigProperty(propertyName = "destination", propertyValue = "queue/testQueue")
+                     })
+@TransactionManagement(value= TransactionManagementType.CONTAINER)
+@TransactionAttribute(value= TransactionAttributeType.REQUIRED)
+public class MDB_CMP_TxRequiredExample implements MessageListener
+{
+   public void onMessage(Message message)...
+}</programlisting>
+            <para>The <literal>TransactionManagement</literal> annotation tells the container to
+                treat this MDB to use Container Managed Persistence. The <literal
+                    >TransactionAttribute</literal> annotation tells the container that an XA
+                transaction is required for this MDB. Note that the only other valid value for this
+                is <literal>TransactionAttributeType.NOT_SUPPORTED</literal> which tells the
+                container that this MDB does not support XA transactions and one should not be
+                created.</para>
+            <para>It is also possible to inform the container that it must rollback the transaction
+                by calling <literal>setRollbackOnly</literal> on the <literal
+                    >MessageDrivenContext</literal>. The code for this would look something
+                like:</para>
+            <programlisting>   @Resource
+   MessageDrivenContext ctx;
+
+   public void onMessage(Message message)
+   {
+      try
+      {
+         //something here fails
+      }
+      catch (Exception e)
+      {
+         ctx.setRollbackOnly();
+      }
+   }</programlisting>
+            <para>If you don't want the over head of an xa transaction being created every time but
+                you would still like the message delivered within a transaction (i.e. you are only
+                using a JMS resource) then you can configure the MDB to use a local transaction.
+                This would be configured as such:</para>
+            <programlisting>@MessageDriven(name = "MDB_CMP_TxLocalExample",
+               activationConfig =
+                     {
+                           @ActivationConfigProperty(propertyName = "destinationType", propertyValue = "javax.jms.Queue"),
+                           @ActivationConfigProperty(propertyName = "destination", propertyValue = "queue/testQueue"),
+                           @ActivationConfigProperty(propertyName = "useLocalTx", propertyValue = "true")
+                     })
+@TransactionManagement(value = TransactionManagementType.CONTAINER)
+@TransactionAttribute(value = TransactionAttributeType.NOT_SUPPORTED)
+public class MDB_CMP_TxLocalExample implements MessageListener
+{
+   public void onMessage(Message message)...
+}</programlisting>
+        </section>
+        <section>
+            <title>Using Bean Managed Persistence</title>
+            <para>Message driven beans can also be configured to use Bean Managed Persistence. In
+                this case a User Transaction is created. This would be configured as follows:</para>
+            <programlisting>@MessageDriven(name = "MDB_BMPExample",
+               activationConfig =
+                     {
+                        @ActivationConfigProperty(propertyName = "destinationType", propertyValue = "javax.jms.Queue"),
+                        @ActivationConfigProperty(propertyName = "destination", propertyValue = "queue/testQueue"),
+                        @ActivationConfigProperty(propertyName = "acknowledgeMode", propertyValue = "Dups-ok-acknowledge")
+                     })
+@TransactionManagement(value= TransactionManagementType.BEAN)
+public class MDB_BMPExample implements MessageListener
+{
+   public void onMessage(Message message)
+}</programlisting>
+            <para>When using Bean Managed transactions the message will be acknowledged outside the
+                scope of the user transaction and use the acknowledge mode specified by the user
+                with the <literal>acknowledgeMode</literal> property. There are only 2 acceptable
+                values for this <literal>Auto-acknowledge</literal> and <literal
+                    >Dups-ok-acknowledge</literal>.Not that because the message delivery is outside
+                the scope of the transaction a failure within the MDB will not cause the message to
+                be redelivered.</para>
+            <para>A user would control the lifecycle of the transaction something like the
+                following:</para>
+            <programlisting>   @Resource
+   MessageDrivenContext ctx;
+
+   public void onMessage(Message message)
+   {
+      UserTransaction tx;
+      try
+      {
+         TextMessage textMessage = (TextMessage)message;
+
+         String text = textMessage.getText();
+
+         UserTransaction tx = ctx.getUserTransaction();
+
+         tx.begin();
+         //do some stuff within the transaction
+         tx.xommit();
+
+      }
+      catch (Exception e)
+      {
+         tx.rollback();
+      }
+   }</programlisting>
+        </section>
+        <section>
+            <title>Using Message Selectors with MDB's</title>
+            <para>It is also possible to use MDB's with message selectors. To do this simple define
+                your message selector as follows:</para>
+            <programlisting>@MessageDriven(name = "MDBMessageSelectorExample",
+               activationConfig =
+                     {
+                        @ActivationConfigProperty(propertyName = "destinationType", propertyValue = "javax.jms.Queue"),
+                        @ActivationConfigProperty(propertyName = "destination", propertyValue = "queue/testQueue"),
+                        @ActivationConfigProperty(propertyName = "messageSelector", propertyValue = "color = 'RED'")
+                     })
+@TransactionManagement(value= TransactionManagementType.CONTAINER)
+@TransactionAttribute(value= TransactionAttributeType.REQUIRED)
+public class MDBMessageSelectorExample implements MessageListener
+{
+   public void onMessage(Message message)....
+}</programlisting>
+        </section>
+    </section>
+    <section>
+        <title>Sending Messages from within J2EE components</title>
+        <para>The JCA adapter can also be used for sending messages. The Connection Factory to use
+            is configured by default in the <literal>jms-ds.xml</literal> file and is mapped to
+                <literal>java:/JmsXA</literal>. Using this from within a J2EE component will mean
+            that the sending of the message will be done as part of the XA transaction being used by
+            the component. This means that if the sending of the message fails the overall
+            transaction would rollback and the message redelivered. Heres an example of this from
+            within an MDB:</para>
+        <programlisting>@MessageDriven(name = "MDBMessageSendTxExample",
+               activationConfig =
+                     {
+                        @ActivationConfigProperty(propertyName = "destinationType", propertyValue = "javax.jms.Queue"),
+                        @ActivationConfigProperty(propertyName = "destination", propertyValue = "queue/testQueue")
+                     })
+@TransactionManagement(value= TransactionManagementType.CONTAINER)
+@TransactionAttribute(value= TransactionAttributeType.REQUIRED)
+public class MDBMessageSendTxExample implements MessageListener
+{
+   @Resource(mappedName = "java:JmsXA")
+   ConnectionFactory connectionFactory;
+
+   @Resource(mappedName = "queue/replyQueue")
+   Queue replyQueue;
+
+   public void onMessage(Message message)
+   {
+      Connection conn = null;
+      try
+      {
+         //Step 9. We know the client is sending a text message so we cast
+         TextMessage textMessage = (TextMessage)message;
+
+         //Step 10. get the text from the message.
+         String text = textMessage.getText();
+
+         System.out.println("message " + text);
+
+         conn = connectionFactory.createConnection();
+
+         Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+
+         MessageProducer producer = sess.createProducer(replyQueue);
+
+         producer.send(sess.createTextMessage("this is a reply"));
+
+      }
+      catch (Exception e)
+      {
+         e.printStackTrace();
+      }
+      finally
+      {
+         if(conn != null)
+         {
+            try
+            {
+               conn.close();
+            }
+            catch (JMSException e)
+            { 
+            }
+         }
+      }
+   }
+}</programlisting>
+    </section>
+    <section>
+        <title>Configuring the JCA Adapter</title>
         <para>The Java Connector Architecture (JCA) Adapter is what allows JBM to be integrated with
             JEE components such as MDB's and EJB's. It configures how components such as MDB's
             consume messages from the JBM server and also how components such as EJB's or Servlet's
@@ -32,12 +256,6 @@
          &lt;config-property-name>ConnectionParameters&lt;/config-property-name>
          &lt;config-property-type>java.lang.String&lt;/config-property-type>
          &lt;config-property-value>jbm.remoting.invm.serverid=0&lt;/config-property-value>
-      &lt;/config-property>
-       &lt;config-property>
-        &lt;description>Use XA methods to obtain connections?&lt;/description>
-        &lt;config-property-name>UseXA&lt;/config-property-name>
-        &lt;config-property-type>java.lang.Boolean&lt;/config-property-type>
-        &lt;config-property-value>true&lt;/config-property-value>
       &lt;/config-property>
 
       &lt;outbound-resourceadapter>
@@ -143,9 +361,14 @@
                                 key=val;key=val; and will be specific to the connector used</entry>
                         </row>
                         <row>
+                            <entry>useLocalTx</entry>
+                            <entry>boolean</entry>
+                            <entry>True will enable local transaction optimisation.</entry>
+                        </row>
+                        <row>
                             <entry>UseXA</entry>
                             <entry>boolean</entry>
-                            <entry>True will enable XA transactions</entry>
+                            <entry>Whether XA should be used</entry>
                         </row>
                         <row>
                             <entry>UserName</entry>
@@ -358,56 +581,6 @@ private ConnectionFactory connectionFactory;</programlisting>
                 configure the MDB to consume from a different server. The next section demonstrates
                 over riding the configuration.</para>
         </section>
-    </section>
-    <section>
-        <title>Using JBM with MDBs in JBoss AS</title>
-        <para>Once the JCA Connector is configured, as shown previously, the MDB's can be configured
-            to consume messages from the MDB server.</para>
-        <para>This is best done by using the <literal>MessageDriven</literal> tag on the MDB itself.
-            The following shows an example.</para>
-        <programlisting>@MessageDriven(name = "MessageMDBExample",
-               activationConfig =
-                     {
-                        @ActivationConfigProperty(propertyName = "destinationType", 
-                        propertyValue = "javax.jms.Queue"),
-                        @ActivationConfigProperty(propertyName = "destination", 
-                        propertyValue = "queue/testQueue"),
-                        @ActivationConfigProperty(propertyName = "acknowledgeMode", 
-                        propertyValue = "Auto-acknowledge"),
-                        @ActivationConfigProperty(propertyName = "ConnectorClassName", 
-                        propertyValue = 
-            "org.jboss.messaging.integration.transports.netty.NettyConnectorFactory"),
-                        @ActivationConfigProperty(propertyName = "ConnectionParameters", 
-                        propertyValue = "jbm.remoting.netty.port=5545")
-                     })
-public class MDBRemoteExample implements MessageListener
-{
-   public void onMessage(Message message)
-   {
-      try
-      {
-         //Step 9. We know the client is sending a text message so we cast
-         TextMessage tm = (TextMessage)message;
-
-         //Step 10. get the text from the message.
-         String text = tm.getText();
-
-         System.out.println("message " + text + " received");
-         
-      }
-      catch (Exception e)
-      {
-         e.printStackTrace();
-      }
-   }
-}</programlisting>
-        <para>In this example we have configured the MDB to consume from the queue named <literal
-                >queue/testQueue</literal>. It is also possible to override properties for the
-            inbound resource adapter here is well. Here the MDB is configured to connect to a
-            different server. Any of the global properties defined on the adapter can be over ridden
-            via an <literal>ActivationConfigProperty</literal>.</para>
-        <para>It is also possible to define these properties in the <literal>web.xml</literal>
-            deployment descriptor. Refer to the JBoss AS documentation on how to do this.</para>
     </section>
     <section>
         <title>High Availability JNDI (HA-JNDI)</title>

@@ -24,32 +24,42 @@ package org.jboss.javaee.example.server;
 import javax.annotation.Resource;
 import javax.ejb.ActivationConfigProperty;
 import javax.ejb.MessageDriven;
-import javax.ejb.MessageDrivenContext;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
 import javax.ejb.TransactionManagement;
 import javax.ejb.TransactionManagementType;
+import javax.jms.Connection;
+import javax.jms.ConnectionFactory;
+import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.MessageListener;
+import javax.jms.MessageProducer;
+import javax.jms.Queue;
+import javax.jms.Session;
 import javax.jms.TextMessage;
-import javax.transaction.UserTransaction;
 
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
  */
-@MessageDriven(name = "MDB_BMPExample",
+@MessageDriven(name = "MDBMessageSendTxExample",
                activationConfig =
                      {
                         @ActivationConfigProperty(propertyName = "destinationType", propertyValue = "javax.jms.Queue"),
-                        @ActivationConfigProperty(propertyName = "destination", propertyValue = "queue/testQueue"),
-                        @ActivationConfigProperty(propertyName = "acknowledgeMode", propertyValue = "Dups-ok-acknowledge")
+                        @ActivationConfigProperty(propertyName = "destination", propertyValue = "queue/testQueue")
                      })
-@TransactionManagement(value= TransactionManagementType.BEAN)
-public class MDB_BMPExample implements MessageListener
+@TransactionManagement(value= TransactionManagementType.CONTAINER)
+@TransactionAttribute(value= TransactionAttributeType.REQUIRED)
+public class MDBMessageSendTxExample implements MessageListener
 {
-   @Resource
-   MessageDrivenContext ctx;
+   @Resource(mappedName = "java:JmsXA")
+   ConnectionFactory connectionFactory;
+
+   @Resource(mappedName = "queue/replyQueue")
+   Queue replyQueue;
 
    public void onMessage(Message message)
    {
+      Connection conn = null;
       try
       {
          //Step 9. We know the client is sending a text message so we cast
@@ -58,25 +68,37 @@ public class MDB_BMPExample implements MessageListener
          //Step 10. get the text from the message.
          String text = textMessage.getText();
 
-         System.out.println("message " + text + " received");
+         System.out.println("message " + text);
 
-         //Step 11. lets look at the user transaction to make sure there isn't one.
-         UserTransaction tx = ctx.getUserTransaction();
+         //Step 11. we create a JMS connection
+         conn = connectionFactory.createConnection();
 
-         if(tx != null)
-         {
-            tx.begin();
-            System.out.println("we're in the middle of a transaction: " + tx);
-            tx.commit();
-         }
-         else
-         {
-            System.out.println("something is wrong, I was expecting a transaction");
-         }
+         //Step 12. We create a JMS session
+         Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+
+         //Step 13. we create a producer for the reply queue
+         MessageProducer producer = sess.createProducer(replyQueue);
+
+         //Step 14. we create a message and send it
+         producer.send(sess.createTextMessage("this is a reply"));
+
       }
       catch (Exception e)
       {
          e.printStackTrace();
+      }
+      finally
+      {
+         if(conn != null)
+         {
+            try
+            {
+               conn.close();
+            }
+            catch (JMSException e)
+            { 
+            }
+         }
       }
    }
 }

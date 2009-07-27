@@ -23,6 +23,7 @@ package org.jboss.javaee.example;
 
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
+import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
 import javax.jms.Queue;
 import javax.jms.Session;
@@ -32,7 +33,7 @@ import javax.naming.InitialContext;
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
  */
-public class MDB_CMP_TxRequiredClientExample
+public class MDBMessageSendTxClientExample
 {
    public static void main(String[] args) throws Exception
    {
@@ -66,11 +67,24 @@ public class MDB_CMP_TxRequiredClientExample
          //Step 8. Send the Message
          producer.send(message);
 
-          //Step 9,10 and 11 in MDBExample
+         //Step 15. We lookup the reply queue
+         queue = (Queue) initialContext.lookup("/queue/replyQueue");
+
+         //Step 16. We create a JMS message consumer
+         MessageConsumer messageConsumer = session.createConsumer(queue);
+
+         //Step 17. We start the connedction so we can receive messages
+         connection.start();
+
+         //Step 18. We receive the message and print it out
+         message = (TextMessage) messageConsumer.receive(5000);
+
+         System.out.println("message.getText() = " + message.getText());
+
       }
       finally
       {
-         //Step 12. Be sure to close our JMS resources!
+         //Step 19. Be sure to close our JMS resources!
          if (initialContext != null)
          {
             initialContext.close();

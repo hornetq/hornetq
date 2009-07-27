@@ -21,58 +21,45 @@
  */
 package org.jboss.javaee.example.server;
 
-import javax.annotation.Resource;
 import javax.ejb.ActivationConfigProperty;
 import javax.ejb.MessageDriven;
-import javax.ejb.MessageDrivenContext;
+import javax.ejb.TransactionAttribute;
+import javax.ejb.TransactionAttributeType;
 import javax.ejb.TransactionManagement;
 import javax.ejb.TransactionManagementType;
 import javax.jms.Message;
 import javax.jms.MessageListener;
 import javax.jms.TextMessage;
-import javax.transaction.UserTransaction;
 
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
  */
-@MessageDriven(name = "MDB_BMPExample",
+@MessageDriven(name = "MDBMessageSelectorExample",
                activationConfig =
                      {
                         @ActivationConfigProperty(propertyName = "destinationType", propertyValue = "javax.jms.Queue"),
                         @ActivationConfigProperty(propertyName = "destination", propertyValue = "queue/testQueue"),
-                        @ActivationConfigProperty(propertyName = "acknowledgeMode", propertyValue = "Dups-ok-acknowledge")
+                        @ActivationConfigProperty(propertyName = "messageSelector", propertyValue = "color = 'RED'")
                      })
-@TransactionManagement(value= TransactionManagementType.BEAN)
-public class MDB_BMPExample implements MessageListener
+@TransactionManagement(value= TransactionManagementType.CONTAINER)
+@TransactionAttribute(value= TransactionAttributeType.REQUIRED)
+public class MDBMessageSelectorExample implements MessageListener
 {
-   @Resource
-   MessageDrivenContext ctx;
-
    public void onMessage(Message message)
    {
       try
       {
-         //Step 9. We know the client is sending a text message so we cast
+         //Step 11. We know the client is sending a text message so we cast
          TextMessage textMessage = (TextMessage)message;
 
-         //Step 10. get the text from the message.
+         //Step 12. get the text from the message.
          String text = textMessage.getText();
 
-         System.out.println("message " + text + " received");
+         //Step 13. We check we received the right color of message
+         String color = textMessage.getStringProperty("color");
 
-         //Step 11. lets look at the user transaction to make sure there isn't one.
-         UserTransaction tx = ctx.getUserTransaction();
+         System.out.println("message " + text + " received color=" + color);
 
-         if(tx != null)
-         {
-            tx.begin();
-            System.out.println("we're in the middle of a transaction: " + tx);
-            tx.commit();
-         }
-         else
-         {
-            System.out.println("something is wrong, I was expecting a transaction");
-         }
       }
       catch (Exception e)
       {

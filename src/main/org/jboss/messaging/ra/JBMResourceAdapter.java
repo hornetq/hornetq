@@ -1212,6 +1212,36 @@ public class JBMResourceAdapter implements ResourceAdapter
    }
 
    /**
+    * Get the use XA flag
+    *
+    * @return The value
+    */
+   public Boolean getUseXA()
+   {
+      if (trace)
+      {
+         log.trace("getUseXA()");
+      }
+
+      return raProperties.getUseXA();
+   }
+
+   /**
+    * Set the use XA flag
+    *
+    * @param xa The value
+    */
+   public void setUseXA(final Boolean xa)
+   {
+      if (trace)
+      {
+         log.trace("setUseXA(" + xa + ")");
+      }
+
+      raProperties.setUseXA(xa);
+   }
+
+   /**
     * Indicates whether some other object is "equal to" this one.
     *
     * @param obj Object with which to compare

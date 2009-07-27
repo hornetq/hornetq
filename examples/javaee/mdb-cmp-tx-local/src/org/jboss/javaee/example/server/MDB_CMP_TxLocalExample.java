@@ -67,6 +67,7 @@ public class MDB_CMP_TxLocalExample implements MessageListener
 
          if (!textMessage.getJMSRedelivered())
          {
+            //Step 11. On first delivery get the transaction, take a look, and throw an exception
             Transaction tx = tm.getTransaction();
 
             if (tx != null)
@@ -82,6 +83,7 @@ public class MDB_CMP_TxLocalExample implements MessageListener
          }
          else
          {
+            //Step 12. Print the message
             System.out.println("The message was redelivered since the message delivery used a local transaction");
          }
 

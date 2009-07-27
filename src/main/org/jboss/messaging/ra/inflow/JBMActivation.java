@@ -41,6 +41,7 @@ import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.resource.ResourceException;
 import javax.resource.spi.endpoint.MessageEndpointFactory;
+import javax.resource.spi.work.Work;
 import javax.resource.spi.work.WorkManager;
 import javax.transaction.TransactionManager;
 import java.lang.reflect.Method;
@@ -262,16 +263,8 @@ public class JBMActivation
       {
          log.trace("start()");
       }
-
-      try
-      {
-         setup();
-      }
-      catch (Exception e)
-      {
-         throw new ResourceException("unable to start Activation", e);
-      }
       deliveryActive.set(true);
+      ra.getWorkManager().scheduleWork(new SetupActivation());
    }
 
    /**
@@ -500,5 +493,27 @@ public class JBMActivation
       buffer.append(" transacted=").append(isDeliveryTransacted);
       buffer.append(')');
       return buffer.toString();
+   }
+
+   /**
+    * Handles the setup
+    */
+   private class SetupActivation implements Work
+   {
+      public void run()
+      {
+         try
+         {
+            setup();
+         }
+         catch (Throwable t)
+         {
+            log.error("Unabler to start activation ", t);
+         }
+      }
+
+      public void release()
+      {
+      }
    }
 }

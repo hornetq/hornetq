@@ -138,7 +138,7 @@
          </fileset>
       </copy>
       <exec dir="${jboss.home}/bin" executable="sh" osfamily="unix">
-         <arg line="debug.sh -c ${example.name}-example-profile"/>
+         <arg line="run.sh -c ${example.name}-example-profile"/>
       </exec>
       <exec dir="${jboss.home}/bin" executable="cmd" osfamily="windows">
          <arg line="/c run.bat -c ${example.name}-example-profile"/>

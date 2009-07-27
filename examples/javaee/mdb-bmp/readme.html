@@ -1,12 +1,12 @@
 <html>
   <head>
-    <title>JBoss Messaging Java EE MDB Example</title>
+    <title>JBoss Messaging Java EE MDB BMP Example</title>
     <link rel="stylesheet" type="text/css" href="../../common/common.css">
   </head>
   <body>
-     <h1>Java EE MDB Example</h1>
+     <h1>Java EE MDB BMP Example</h1>
      <br>
-     <p>This example shows you how to send a message to an MDB</p>
+     <p>This example shows you how to send a message to an MDB configured to use Bean Managed Persistence</p>
      <p>
          The example will send deploy a simple MDB and demonstrate sending a message and the MDB consuming it
      </p>
@@ -76,7 +76,21 @@
             System.out.println("message " + text + " received");
             </code>
         </pre>
-        
+
+          <li>Now we can do something within a user transaction, lets just start and commit it
+        </li>
+        <pre>
+            <code>UserTransaction tx = ctx.getUserTransaction();
+
+             if(tx != null)
+             {
+                tx.begin();
+                System.out.println("we're in the middle of a transaction: " + tx);
+                tx.commit();
+             }
+            </code>
+        </pre>
+
         <li>And finally, <b>always</b> remember to close your JMS connections and resources after use, in a <code>finally</code> block. Closing a JMS connection will automatically close all of its sessions, consumers, producer and browser objects</li>
 
         <pre>

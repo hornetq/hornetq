@@ -1,14 +1,14 @@
 <html>
   <head>
-    <title>JBoss Messaging Java EE MDB CMP with NOT_SUPPORTED transaction Example</title>
+    <title>JBoss Messaging Java EE MDB Send Example</title>
     <link rel="stylesheet" type="text/css" href="../../common/common.css">
   </head>
   <body>
-     <h1>Java EE MDB  with NOT_SUPPORTED transaction Example</h1>
+     <h1>Java EE MDB Send Example</h1>
      <br>
-     <p>This example shows you how to send a message to an MDB</p>
+     <p>This example shows you how to send a message to an MDB that returns a reply using the same XA transaction</p>
      <p>
-         The example will send deploy a simple MDB and demonstrate sending a message and the MDB consuming it but with a transaction as this MDB does not suuport one.
+         The example will send deploy a simple MDB and demonstrate sending a message and the MDB consuming it
      </p>
      
      <h2>JBoss AS configuration</h2>
@@ -77,15 +77,61 @@
             </code>
         </pre>
 
-         <li>We look at the transaction to make sure there isn't one
+         <li>The MDB creates a JMS connection
         </li>
         <pre>
-            <code>Transaction tx = tm.getTransaction();
+            <code>conn = connectionFactory.createConnection();
+            </code>
+        </pre>
 
-             if(tx == null)
-             {
-                System.out.println("tx is null, just as expected");
-             }
+         <li>The MDB creates a JMS session
+        </li>
+        <pre>
+            <code>Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+            </code>
+        </pre>
+
+         <li>The MDB creates a JMS message producer
+        </li>
+        <pre>
+            <code>MessageProducer producer = sess.createProducer(replyQueue);
+            </code>
+        </pre>
+
+         <li>The MDB creates a text message and sends it to the reply queue
+        </li>
+        <pre>
+            <code>producer.send(sess.createTextMessage("this is a reply"));
+            </code>
+        </pre>
+
+        <li>The Client looks up the reply queue
+        </li>
+        <pre>
+            <code>queue = (Queue) initialContext.lookup("/queue/replyQueue");
+            </code>
+        </pre>
+
+         <li>The Client creates a JMS message consumer
+        </li>
+        <pre>
+            <code>MessageConsumer messageConsumer = session.createConsumer(queue);
+            </code>
+        </pre>
+
+          <li>The Client starts the connection so it can receive messages
+        </li>
+        <pre>
+            <code>connection.start();
+            </code>
+        </pre>
+
+          <li>The Client receives the reply and prints it out
+        </li>
+        <pre>
+            <code>message = (TextMessage) messageConsumer.receive(5000);
+
+            System.out.println("message.getText() = " + message.getText());
             </code>
         </pre>
         

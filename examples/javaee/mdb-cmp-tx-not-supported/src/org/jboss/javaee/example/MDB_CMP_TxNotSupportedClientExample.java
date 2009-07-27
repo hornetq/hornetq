@@ -66,11 +66,11 @@ public class MDB_CMP_TxNotSupportedClientExample
          //Step 8. Send the Message
          producer.send(message);
 
-          //Step 9 and 10 in MDBExample
+          //Step 9,10 and 11 in MDB_CMP_TxNotSupported
       }
       finally
       {
-         //Step 11. Be sure to close our JMS resources!
+         //Step 12. Be sure to close our JMS resources!
          if (initialContext != null)
          {
             initialContext.close();

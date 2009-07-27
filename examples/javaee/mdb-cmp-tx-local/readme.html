@@ -1,14 +1,14 @@
 <html>
   <head>
-    <title>JBoss Messaging Java EE MDB Example</title>
+    <title>JBoss Messaging Java EE MDB using a local transaction Example</title>
     <link rel="stylesheet" type="text/css" href="../../common/common.css">
   </head>
   <body>
-     <h1>Java EE MDB Example</h1>
+     <h1>Java EE MDB using a local transaction Example</h1>
      <br>
-     <p>This example shows you how to send a message to an MDB</p>
+     <p>This example shows you how to send a message to an MDB and deliver it within a local transaction</p>
      <p>
-         The example will send deploy a simple MDB and demonstrate sending a message and the MDB consuming it
+         The example will send deploy a simple MDB and demonstrate sending a message and the MDB consuming it, throwing an exception and the message being re delivered.
      </p>
      
      <h2>JBoss AS configuration</h2>
@@ -69,14 +69,36 @@
            <code>TextMessage tm = (TextMessage)message;</code>
         </pre>
             
-        <li>The MDB gets the text and prints it
+        <li>The MDB gets the text and prints it, we take a quick look at the transaction and throw an exception.
         </li>
         <pre>
-            <code>String text = tm.getText();
-            System.out.println("message " + text + " received");
+            <code>System.out.println("message " + text + " received");
+
+             if (!textMessage.getJMSRedelivered())
+             {
+                //Step 11. On first delivery get the transaction, take a look, and throw an exception
+                Transaction tx = tm.getTransaction();
+
+                if (tx != null)
+                {
+                   System.out.println("something is wrong, there should be no global transaction: " + tx);
+                }
+                else
+                {
+                   System.out.println("there is no global transaction, altho the messge delivery is using a local transaction");
+                   System.out.println("lets throw an exception and see what happens");
+                   throw new RuntimeException("DOH!");
+                }
+             }
             </code>
         </pre>
-        
+
+         <li>The MDB receives the message again and we print a message.
+            </li>
+        <pre>
+           <code>System.out.println("The message was redelivered since the message delivery used a local transaction");</code>
+        </pre>
+         
         <li>And finally, <b>always</b> remember to close your JMS connections and resources after use, in a <code>finally</code> block. Closing a JMS connection will automatically close all of its sessions, consumers, producer and browser objects</li>
 
         <pre>

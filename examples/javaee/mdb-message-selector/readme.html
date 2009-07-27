@@ -1,14 +1,14 @@
 <html>
   <head>
-    <title>JBoss Messaging Java EE MDB CMP with NOT_SUPPORTED transaction Example</title>
+    <title>JBoss Messaging Java EE MDB Message Selector Example</title>
     <link rel="stylesheet" type="text/css" href="../../common/common.css">
   </head>
   <body>
-     <h1>Java EE MDB  with NOT_SUPPORTED transaction Example</h1>
+     <h1>Java EE MDB Message Selector Example</h1>
      <br>
-     <p>This example shows you how to send a message to an MDB</p>
+     <p>This example shows you how to send a message to an MDB that is configured to use a message selector</p>
      <p>
-         The example will send deploy a simple MDB and demonstrate sending a message and the MDB consuming it but with a transaction as this MDB does not suuport one.
+         The example will send deploy a simple MDB and demonstrate sending a message and the MDB consuming only the message that matches the message selector.
      </p>
      
      <h2>JBoss AS configuration</h2>
@@ -54,12 +54,32 @@
 
         <li>We create a JMS text messages that we are going to send.</li>
         <pre>
-           <code> TextMessage message = session.createTextMessage("This is a text message");</code>
+           <code> TextMessage blueMessage = session.createTextMessage("This is a text message");</code>
+        </pre>
+
+        <li>Set the color property on the message to 'BLUE'.</li>
+        <pre>
+           <code> blueMessage.setStringProperty("color", "BLUE");</code>
         </pre>
 
         <li>We send messages to the queue</li>
         <pre>
-           <code>messageProducer.send(message);</code>
+           <code>messageProducer.send(blueMessage);</code>
+        </pre>
+
+         <li>We create a second JMS text message that we are going to send.</li>
+        <pre>
+           <code> TextMessage redMessage = session.createTextMessage("This is a text message");</code>
+        </pre>
+
+        <li>Set the color property on the message to 'RED'.</li>
+        <pre>
+           <code> redMessage.setStringProperty("color", "RED");</code>
+        </pre>
+
+        <li>We send messages to the queue</li>
+        <pre>
+           <code>messageProducer.send(redMessage);</code>
         </pre>
         
         <li>The MDB receives the message<br />
@@ -68,24 +88,18 @@
         <pre>
            <code>TextMessage tm = (TextMessage)message;</code>
         </pre>
+
+         <li>We get the color property to check it
+            </li>
+        <pre>
+           <code>String color = textMessage.getStringProperty("color");</code>
+        </pre>
             
-        <li>The MDB gets the text and prints it
+        <li>The MDB gets the text and color and print it
         </li>
         <pre>
             <code>String text = tm.getText();
-            System.out.println("message " + text + " received");
-            </code>
-        </pre>
-
-         <li>We look at the transaction to make sure there isn't one
-        </li>
-        <pre>
-            <code>Transaction tx = tm.getTransaction();
-
-             if(tx == null)
-             {
-                System.out.println("tx is null, just as expected");
-             }
+            System.out.println("message " + text + " received color=" + color);
             </code>
         </pre>
         

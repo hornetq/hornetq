@@ -63,7 +63,7 @@ public class MDB_CMP_TxNotSupported implements MessageListener
 
          System.out.println("message " + text + " received");
 
-         //Step 3. lets look at the transaction to make sure there isn't one.
+         //Step 11. lets look at the transaction to make sure there isn't one.
          Transaction tx = tm.getTransaction();
 
          if(tx == null)

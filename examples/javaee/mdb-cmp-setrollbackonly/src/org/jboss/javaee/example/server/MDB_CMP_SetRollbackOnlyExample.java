@@ -59,13 +59,16 @@ public class MDB_CMP_SetRollbackOnlyExample implements MessageListener
 
          //Step 10. get the text from the message.
          String text = textMessage.getText();
+
          if(!textMessage.getJMSRedelivered())
          {
+            //Step 11. rollback delivery of message if the first time
             System.out.println("message " + text + " received for the first time");
             ctx.setRollbackOnly();
          }
          else
          {
+            //Step 12. read the message
             System.out.println("message " + text + " received for the second time");  
          }
 

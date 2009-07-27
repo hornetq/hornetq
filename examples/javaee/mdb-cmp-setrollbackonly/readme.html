@@ -1,12 +1,12 @@
 <html>
   <head>
-    <title>JBoss Messaging Java EE MDB Example</title>
+    <title>JBoss Messaging Java EE MDB SetRollbackOnly Example</title>
     <link rel="stylesheet" type="text/css" href="../../common/common.css">
   </head>
   <body>
-     <h1>Java EE MDB Example</h1>
+     <h1>Java EE MDB SetRollbackOnly Example</h1>
      <br>
-     <p>This example shows you how to send a message to an MDB</p>
+     <p>This example shows you how to send a message to an MDB and then roll back the transaction forcing re delivery</p>
      <p>
          The example will send deploy a simple MDB and demonstrate sending a message and the MDB consuming it
      </p>
@@ -69,11 +69,24 @@
            <code>TextMessage tm = (TextMessage)message;</code>
         </pre>
             
-        <li>The MDB gets the text and prints it
+        <li>The MDB gets the text and prints it, if its the first time we roll back
         </li>
         <pre>
-            <code>String text = tm.getText();
-            System.out.println("message " + text + " received");
+            <code> String text = textMessage.getText();
+
+             if(!textMessage.getJMSRedelivered())
+             {
+                //Step 11. rollback delivery of message if the first time
+                System.out.println("message " + text + " received for the first time");
+                ctx.setRollbackOnly();
+             }
+            </code>
+        </pre>
+
+         <li>The message is received again but this time we just print the text
+        </li>
+        <pre>
+            <code>System.out.println("message " + text + " received for the second time");
             </code>
         </pre>
         

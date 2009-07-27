@@ -32,7 +32,7 @@ import javax.naming.InitialContext;
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
  */
-public class MDB_CMP_TxRequiredClientExample
+public class MDBMessageSelectorClientExample
 {
    public static void main(String[] args) throws Exception
    {
@@ -58,19 +58,30 @@ public class MDB_CMP_TxRequiredClientExample
          //Step 6. Create a JMS Message Producer
          MessageProducer producer = session.createProducer(queue);
 
-         //Step 7. Create a Text Message
-         TextMessage message = session.createTextMessage("This is a text message");
+         //Step 7. Create a Text Message and set the color property to blue
+         TextMessage blueMessage = session.createTextMessage("This is a text message");
 
-         System.out.println("Sent message: " + message.getText());
+         blueMessage.setStringProperty("color", "BLUE");
+
+         System.out.println("Sent message: " + blueMessage.getText() + " color=BLUE");
 
          //Step 8. Send the Message
-         producer.send(message);
+         producer.send(blueMessage);
 
-          //Step 9,10 and 11 in MDBExample
+         //Step 9. create another message and set the color property to red
+         TextMessage redMessage = session.createTextMessage("This is a text message");
+
+         redMessage.setStringProperty("color", "RED");
+
+         System.out.println("Sent message: " + redMessage.getText() + " color=RED");
+
+         //Step 10. Send the Message
+         producer.send(redMessage);
+          //Step 10,11 and 12 in MDBMessageSelectorExample
       }
       finally
       {
-         //Step 12. Be sure to close our JMS resources!
+         //Step 13. Be sure to close our JMS resources!
          if (initialContext != null)
          {
             initialContext.close();

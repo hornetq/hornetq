@@ -66,11 +66,11 @@ public class MDB_CMP_TxLocalClientExample
          //Step 8. Send the Message
          producer.send(message);
 
-          //Step 9 and 10 in MDBExample
+          //Step 9,,10, 11 and 12 in MDB_CMP_TxLocalExample
       }
       finally
       {
-         //Step 11. Be sure to close our JMS resources!
+         //Step 13. Be sure to close our JMS resources!
          if (initialContext != null)
          {
             initialContext.close();
