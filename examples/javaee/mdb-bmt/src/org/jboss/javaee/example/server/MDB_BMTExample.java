@@ -43,7 +43,7 @@ import javax.transaction.UserTransaction;
                         @ActivationConfigProperty(propertyName = "acknowledgeMode", propertyValue = "Dups-ok-acknowledge")
                      })
 @TransactionManagement(value= TransactionManagementType.BEAN)
-public class MDB_BMPExample implements MessageListener
+public class MDB_BMTExample implements MessageListener
 {
    @Resource
    MessageDrivenContext ctx;

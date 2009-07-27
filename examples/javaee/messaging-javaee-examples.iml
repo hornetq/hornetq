@@ -60,13 +60,13 @@
       <sourceFolder url="file://$MODULE_DIR$/mdb-cmt-setrollbackonly/src" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/mdb-cmt-tx-local/src" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/mdb-cmt-tx-not-supported/src" isTestSource="true" />
-      <sourceFolder url="file://$MODULE_DIR$/mdb-cmp-tx-required/src" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/mdb-cmt-tx-required/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/mdb-message-selector/src" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/mdb-tx-send/src" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/servlet-ssl-example/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/servlet-transport/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/xarecovery/src" isTestSource="false" />
-      <excludeFolder url="file://$MODULE_DIR$/mdb-cmp-tx-required/build" />
+      <excludeFolder url="file://$MODULE_DIR$/mdb-cmt-tx-required/build" />
       <excludeFolder url="file://$MODULE_DIR$/output" />
       <excludeFolder url="file://$MODULE_DIR$/servlet-ssl-example/build" />
     </content>
