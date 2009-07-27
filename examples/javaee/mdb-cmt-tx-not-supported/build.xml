@@ -31,7 +31,7 @@
    
    <target name="run">
       <antcall target="runExample">
-         <param name="example.classname" value="org.jboss.javaee.example.MDB_CMP_TxNotSupportedClientExample"/>
+         <param name="example.classname" value="org.jboss.javaee.example.MDB_CMT_TxNotSupportedClientExample"/>
       </antcall>
    </target>
 </project>

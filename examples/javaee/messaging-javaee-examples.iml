@@ -58,8 +58,8 @@
       <sourceFolder url="file://$MODULE_DIR$/jms-bridge/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/mdb-bmt/src" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/mdb-cmt-setrollbackonly/src" isTestSource="true" />
-      <sourceFolder url="file://$MODULE_DIR$/mdb-cmp-tx-local/src" isTestSource="true" />
-      <sourceFolder url="file://$MODULE_DIR$/mdb-cmp-tx-not-supported/src" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/mdb-cmt-tx-local/src" isTestSource="true" />
+      <sourceFolder url="file://$MODULE_DIR$/mdb-cmt-tx-not-supported/src" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/mdb-cmp-tx-required/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/mdb-message-selector/src" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/mdb-tx-send/src" isTestSource="true" />
