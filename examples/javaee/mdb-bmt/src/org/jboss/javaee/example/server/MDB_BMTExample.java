@@ -35,7 +35,7 @@ import javax.transaction.UserTransaction;
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
  */
-@MessageDriven(name = "MDB_BMPExample",
+@MessageDriven(name = "MDB_BMTExample",
                activationConfig =
                      {
                         @ActivationConfigProperty(propertyName = "destinationType", propertyValue = "javax.jms.Queue"),
