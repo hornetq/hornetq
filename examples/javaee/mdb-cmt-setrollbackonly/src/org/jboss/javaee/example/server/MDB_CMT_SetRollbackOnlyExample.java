@@ -45,7 +45,7 @@ import javax.jms.TextMessage;
                      })
 @TransactionManagement(value= TransactionManagementType.CONTAINER)
 @TransactionAttribute(value= TransactionAttributeType.REQUIRED)
-public class MDB_CMP_SetRollbackOnlyExample implements MessageListener
+public class MDB_CMT_SetRollbackOnlyExample implements MessageListener
 {
    @Resource
    MessageDrivenContext ctx;
