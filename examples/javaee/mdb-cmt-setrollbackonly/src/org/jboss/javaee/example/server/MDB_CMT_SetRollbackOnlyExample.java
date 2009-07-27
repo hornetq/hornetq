@@ -37,7 +37,7 @@ import javax.jms.TextMessage;
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
  */
-@MessageDriven(name = "MDB_CMP_SetRollbackOnlyExample",
+@MessageDriven(name = "MDB_CMT_SetRollbackOnlyExample",
                activationConfig =
                      {
                         @ActivationConfigProperty(propertyName = "destinationType", propertyValue = "javax.jms.Queue"),
