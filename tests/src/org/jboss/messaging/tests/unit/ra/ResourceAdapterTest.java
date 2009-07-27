@@ -43,6 +43,10 @@ import javax.resource.spi.UnavailableException;
 import javax.resource.spi.XATerminator;
 import javax.resource.spi.endpoint.MessageEndpoint;
 import javax.resource.spi.endpoint.MessageEndpointFactory;
+import javax.resource.spi.work.ExecutionContext;
+import javax.resource.spi.work.Work;
+import javax.resource.spi.work.WorkException;
+import javax.resource.spi.work.WorkListener;
 import javax.resource.spi.work.WorkManager;
 import javax.transaction.xa.XAResource;
 import java.lang.reflect.Method;
@@ -375,6 +379,7 @@ public class ResourceAdapterTest extends ServiceTestBase
          session.close();
          
          JBMResourceAdapter ra = new JBMResourceAdapter();
+
          ra.setConnectorClassName("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory");
          ra.setConnectionParameters("bm.remoting.invm.serverid=0");
          ra.setUserName("userGlobal");
@@ -441,7 +446,35 @@ public class ResourceAdapterTest extends ServiceTestBase
 
       public WorkManager getWorkManager()
       {
-         return null;
+         return new WorkManager()
+         {
+            public void doWork(Work work) throws WorkException
+            {
+            }
+
+            public void doWork(Work work, long l, ExecutionContext executionContext, WorkListener workListener) throws WorkException
+            {
+            }
+
+            public long startWork(Work work) throws WorkException
+            {
+               return 0;
+            }
+
+            public long startWork(Work work, long l, ExecutionContext executionContext, WorkListener workListener) throws WorkException
+            {
+               return 0;
+            }
+
+            public void scheduleWork(Work work) throws WorkException
+            {
+               work.run();
+            }
+
+            public void scheduleWork(Work work, long l, ExecutionContext executionContext, WorkListener workListener) throws WorkException
+            {
+            }
+         };
       }
 
       public XATerminator getXATerminator()
