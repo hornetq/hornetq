@@ -123,8 +123,8 @@ public class JMSServerDeployer extends XmlDeployer
       {
          Element e = (Element)node;
 
-         long clientFailureCheckPeriod = getLong(e, "client-failure-check-period", ClientSessionFactoryImpl.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD, GT_ZERO);
-         long connectionTTL = getLong(e, "connection-ttl", ClientSessionFactoryImpl.DEFAULT_CONNECTION_TTL, GE_ZERO);
+         long clientFailureCheckPeriod = getLong(e, "client-failure-check-period", ClientSessionFactoryImpl.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD, MINUS_ONE_OR_GT_ZERO);
+         long connectionTTL = getLong(e, "connection-ttl", ClientSessionFactoryImpl.DEFAULT_CONNECTION_TTL, MINUS_ONE_OR_GE_ZERO);
          long callTimeout = getLong(e, "call-timeout", ClientSessionFactoryImpl.DEFAULT_CALL_TIMEOUT, GE_ZERO);
          String clientID = getString(e, "client-id", null, Validators.NO_CHECK);
          int dupsOKBatchSize = getInteger(e, "dups-ok-batch-size", ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE, GT_ZERO);
