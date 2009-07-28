@@ -58,8 +58,6 @@ public interface ClientConsumerInternal extends ClientConsumer
    void acknowledge(ClientMessage message) throws MessagingException;
    
    void flushAcks() throws MessagingException;
-   
-   boolean isFileConsumer();
 
    void stop() throws MessagingException;
 

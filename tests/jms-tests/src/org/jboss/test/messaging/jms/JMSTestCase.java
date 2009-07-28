@@ -10,6 +10,7 @@ import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFA
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CONSUMER_WINDOW_SIZE;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_MAX_CONNECTIONS;
+import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CACHE_LARGE_MESSAGE_CLIENT;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_MIN_LARGE_MESSAGE_SIZE;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_PRE_ACKNOWLEDGE;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_PRODUCER_MAX_RATE;
@@ -76,6 +77,7 @@ public class JMSTestCase extends JBMServerTestCase
                                                     DEFAULT_CONNECTION_TTL,
                                                     DEFAULT_CALL_TIMEOUT,
                                                     DEFAULT_MAX_CONNECTIONS,
+                                                    DEFAULT_CACHE_LARGE_MESSAGE_CLIENT,
                                                     DEFAULT_MIN_LARGE_MESSAGE_SIZE,
                                                     DEFAULT_CONSUMER_WINDOW_SIZE,
                                                     DEFAULT_CONSUMER_MAX_RATE,

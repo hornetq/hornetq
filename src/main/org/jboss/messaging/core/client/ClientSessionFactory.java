@@ -62,6 +62,10 @@ public interface ClientSessionFactory
    long getClientFailureCheckPeriod();
 
    void setClientFailureCheckPeriod(long clientFailureCheckPeriod);
+   
+   boolean isCacheLargeMessagesClient();
+   
+   void setCacheLargeMessagesClient(boolean cached);
 
    long getConnectionTTL();
 

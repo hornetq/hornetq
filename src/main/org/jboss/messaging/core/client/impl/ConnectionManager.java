@@ -44,6 +44,7 @@ public interface ConnectionManager
                                final boolean autoCommitAcks,
                                final boolean preAcknowledge,
                                final int ackBatchSize,
+                               final boolean cacheLargeMessageClient,
                                final int minLargeMessageSize,
                                final boolean blockOnAcknowledge,
                                final boolean autoGroup,

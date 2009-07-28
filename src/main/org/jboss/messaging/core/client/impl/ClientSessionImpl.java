@@ -153,6 +153,8 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
    private final boolean blockOnPersistentSend;
 
    private final int minLargeMessageSize;
+   
+   private final boolean cacheLargeMessageClient;
 
    private final Channel channel;
 
@@ -185,6 +187,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
                             final int producerMaxRate,
                             final boolean blockOnNonPersistentSend,
                             final boolean blockOnPersistentSend,
+                            final boolean cacheLargeMessageClient,
                             final int minLargeMessageSize,
                             final RemotingConnection remotingConnection,
                             final int version,
@@ -226,6 +229,8 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
       this.blockOnNonPersistentSend = blockOnNonPersistentSend;
 
       this.blockOnPersistentSend = blockOnPersistentSend;
+      
+      this.cacheLargeMessageClient = cacheLargeMessageClient;
 
       this.minLargeMessageSize = minLargeMessageSize;
    }
@@ -353,7 +358,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
                                         final int maxRate,
                                         final boolean browseOnly) throws MessagingException
    {
-      return internalCreateConsumer(queueName, filterString, windowSize, maxRate, browseOnly, null);
+      return internalCreateConsumer(queueName, filterString, windowSize, maxRate, browseOnly);
    }
 
    public ClientConsumer createConsumer(final String queueName,
@@ -567,6 +572,20 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
 
    // ClientSessionInternal implementation
    // ------------------------------------------------------------
+
+   
+   public int getMinLargeMessageSize()
+   {
+      return minLargeMessageSize;
+   }
+   
+   /**
+    * @return the cacheLargeMessageClient
+    */
+   public boolean isCacheLargeMessageClient()
+   {
+      return cacheLargeMessageClient;
+   }
 
    public String getName()
    {
@@ -1123,8 +1142,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
                                                  final SimpleString filterString,
                                                  final int windowSize,
                                                  final int maxRate,
-                                                 final boolean browseOnly,
-                                                 final File directory) throws MessagingException
+                                                 final boolean browseOnly) throws MessagingException
    {
       checkClosed();
 
@@ -1174,7 +1192,6 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
                                                                                   : null,
                                                                executor,
                                                                channel,
-                                                               directory,
                                                                preAcknowledge);
 
       addConsumer(consumer);

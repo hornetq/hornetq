@@ -190,6 +190,7 @@ public abstract class BridgeTestBase extends UnitTestCase
             cf.setReconnectAttempts(0);
             cf.setBlockOnNonPersistentSend(true);
             cf.setBlockOnPersistentSend(true);
+            cf.setCacheLargeMessagesClient(true);
             
             return cf;
          }
@@ -209,6 +210,7 @@ public abstract class BridgeTestBase extends UnitTestCase
             cf.setReconnectAttempts(0);
             cf.setBlockOnNonPersistentSend(true);
             cf.setBlockOnPersistentSend(true);
+            cf.setCacheLargeMessagesClient(true);
             
             return cf;
          }

@@ -351,6 +351,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
                                                     long connectionTTL,
                                                     long callTimeout,
                                                     int maxConnections,
+                                                    boolean cacheLargeMessagesClient,
                                                     int minLargeMessageSize,
                                                     int consumerWindowSize,
                                                     int consumerMaxRate,
@@ -383,6 +384,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
          cf.setConnectionTTL(connectionTTL);
          cf.setCallTimeout(callTimeout);
          cf.setMaxConnections(maxConnections);
+         cf.setCacheLargeMessagesClient(cacheLargeMessagesClient);
          cf.setMinLargeMessageSize(minLargeMessageSize);
          cf.setConsumerWindowSize(consumerWindowSize);
          cf.setConsumerMaxRate(consumerMaxRate);
@@ -417,6 +419,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
                                                     long connectionTTL,
                                                     long callTimeout,
                                                     int maxConnections,
+                                                    boolean cacheLargeMessagesClient,
                                                     int minLargeMessageSize,
                                                     int consumerWindowSize,
                                                     int consumerMaxRate,
@@ -451,6 +454,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
          cf.setConnectionTTL(connectionTTL);
          cf.setCallTimeout(callTimeout);
          cf.setMaxConnections(maxConnections);
+         cf.setCacheLargeMessagesClient(cacheLargeMessagesClient);
          cf.setMinLargeMessageSize(minLargeMessageSize);
          cf.setConsumerWindowSize(consumerWindowSize);
          cf.setConsumerMaxRate(consumerMaxRate);

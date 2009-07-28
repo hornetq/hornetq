@@ -46,9 +46,9 @@ import org.jboss.messaging.utils.Pair;
  */
 public class JBossConnectionFactory implements ConnectionFactory, QueueConnectionFactory, TopicConnectionFactory,
          XAConnectionFactory, XAQueueConnectionFactory, XATopicConnectionFactory, Serializable/*
-                                                                                                 * , Referenceable
-                                                                                                 * http://jira.jboss.org/jira/browse/JBMESSAGING-395
-                                                                                                 */
+   * , Referenceable
+   * http://jira.jboss.org/jira/browse/JBMESSAGING-395
+   */
 {
    // Constants ------------------------------------------------------------------------------------
 
@@ -67,9 +67,9 @@ public class JBossConnectionFactory implements ConnectionFactory, QueueConnectio
    private int dupsOKBatchSize = ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE;
 
    private int transactionBatchSize = ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE;
-   
+
    private boolean readOnly;
-   
+
    // Constructors ---------------------------------------------------------------------------------
 
    public JBossConnectionFactory()
@@ -102,7 +102,7 @@ public class JBossConnectionFactory implements ConnectionFactory, QueueConnectio
    {
       this(connectorConfig, null);
    }
-      
+
    // ConnectionFactory implementation -------------------------------------------------------------
 
    public Connection createConnection() throws JMSException
@@ -239,7 +239,7 @@ public class JBossConnectionFactory implements ConnectionFactory, QueueConnectio
 
    public synchronized long getDiscoveryInitialWaitTimeout()
    {
-     return sessionFactory.getDiscoveryInitialWaitTimeout();
+      return sessionFactory.getDiscoveryInitialWaitTimeout();
    }
 
    public synchronized void setDiscoveryInitialWaitTimeout(long discoveryInitialWaitTimeout)
@@ -253,7 +253,7 @@ public class JBossConnectionFactory implements ConnectionFactory, QueueConnectio
    }
 
    public synchronized void setClientID(String clientID)
-   {      
+   {
       checkWrite();
       this.clientID = clientID;
    }
@@ -348,6 +348,19 @@ public class JBossConnectionFactory implements ConnectionFactory, QueueConnectio
    public synchronized void setProducerMaxRate(int producerMaxRate)
    {
       sessionFactory.setProducerMaxRate(producerMaxRate);
+   }
+
+   /**
+    * @param cacheLargeMessagesClient
+    */
+   public synchronized void setCacheLargeMessagesClient(boolean cacheLargeMessagesClient)
+   {
+      sessionFactory.setCacheLargeMessagesClient(cacheLargeMessagesClient);
+   }
+
+   public synchronized boolean isCacheLargeMessagesClient()
+   {
+      return sessionFactory.isCacheLargeMessagesClient();
    }
 
    public synchronized int getMinLargeMessageSize()
@@ -459,7 +472,7 @@ public class JBossConnectionFactory implements ConnectionFactory, QueueConnectio
    {
       sessionFactory.setFailoverOnServerShutdown(failoverOnServerShutdown);
    }
-   
+
    public synchronized boolean isUseGlobalPools()
    {
       return sessionFactory.isUseGlobalPools();
@@ -469,7 +482,7 @@ public class JBossConnectionFactory implements ConnectionFactory, QueueConnectio
    {
       sessionFactory.setUseGlobalPools(useGlobalPools);
    }
-   
+
    public synchronized int getScheduledThreadPoolMaxSize()
    {
       return sessionFactory.getScheduledThreadPoolMaxSize();
@@ -489,12 +502,12 @@ public class JBossConnectionFactory implements ConnectionFactory, QueueConnectio
    {
       sessionFactory.setThreadPoolMaxSize(threadPoolMaxSize);
    }
-   
+
    public ClientSessionFactory getCoreFactory()
    {
       return sessionFactory;
    }
-   
+
    public void close()
    {
       sessionFactory.close();
@@ -510,7 +523,7 @@ public class JBossConnectionFactory implements ConnectionFactory, QueueConnectio
                                                                    final int type) throws JMSException
    {
       readOnly = true;
-      
+
       JBossConnection connection = new JBossConnection(username,
                                                        password,
                                                        type,
@@ -534,7 +547,6 @@ public class JBossConnectionFactory implements ConnectionFactory, QueueConnectio
       }
    }
 
-   
    // Inner classes --------------------------------------------------------------------------------
 
 }

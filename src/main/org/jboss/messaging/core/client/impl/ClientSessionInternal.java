@@ -29,7 +29,11 @@ public interface ClientSessionInternal extends ClientSession
    String getName();
 
    void acknowledge(long consumerID, long messageID) throws MessagingException;
-   
+
+   boolean isCacheLargeMessageClient();
+
+   int getMinLargeMessageSize();
+
    MessagingBuffer createBuffer(int size);
 
    void expire(long consumerID, long messageID) throws MessagingException;
@@ -51,8 +55,8 @@ public interface ClientSessionInternal extends ClientSession
    boolean handleFailover(RemotingConnection backupConnection);
 
    RemotingConnection getConnection();
-   
+
    void cleanUp() throws Exception;
-   
+
    void returnBlocking();
 }

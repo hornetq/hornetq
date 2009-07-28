@@ -25,6 +25,7 @@ package org.jboss.messaging.tests.unit.core.client.impl;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PipedInputStream;
@@ -195,6 +196,44 @@ public class LargeMessageBufferTest extends UnitTestCase
       assertEquals(f1, readBuffer.readFloat());
    }
 
+   private File getTestFile()
+   {
+      return new File(getTestDir(), "temp.file");
+   }
+   
+   public void testReadDataOverCached() throws Exception
+   {
+      clearData();
+      
+      ChannelBuffer dynamic = ChannelBuffers.dynamicBuffer(1);
+
+      String str1 = RandomUtil.randomString();
+      String str2 = RandomUtil.randomString();
+      Double d1 = RandomUtil.randomDouble();
+      float f1 = RandomUtil.randomFloat();
+
+      dynamic.writeUTF(str1);
+      dynamic.writeString(str2);
+      dynamic.writeDouble(d1);
+      dynamic.writeFloat(f1);
+
+      LargeMessageBufferImpl readBuffer = splitBuffer(3, dynamic.array(), getTestFile());
+
+      assertEquals(str1, readBuffer.readUTF());
+      assertEquals(str2, readBuffer.readString());
+      assertEquals(d1, readBuffer.readDouble());
+      assertEquals(f1, readBuffer.readFloat());
+      
+      readBuffer.readerIndex(0);
+      
+      assertEquals(str1, readBuffer.readUTF());
+      assertEquals(str2, readBuffer.readString());
+      assertEquals(d1, readBuffer.readDouble());
+      assertEquals(f1, readBuffer.readFloat());
+      
+      readBuffer.close();
+   }
+
    public void testReadPartialData() throws Exception
    {
 
@@ -239,7 +278,7 @@ public class LargeMessageBufferTest extends UnitTestCase
 
       latchGo.await();
 
-      buffer.close();
+      buffer.cancel();
 
       t.join();
 
@@ -262,7 +301,9 @@ public class LargeMessageBufferTest extends UnitTestCase
 
    public void testStreamData() throws Exception
    {
-      final LargeMessageBufferImpl outBuffer = new LargeMessageBufferImpl(new FakeConsumerInternal(), 1024 * 11 + 123, 1);
+      final LargeMessageBufferImpl outBuffer = new LargeMessageBufferImpl(new FakeConsumerInternal(),
+                                                                          1024 * 11 + 123,
+                                                                          1);
 
       final PipedOutputStream output = new PipedOutputStream();
       final PipedInputStream input = new PipedInputStream(output);
@@ -373,11 +414,11 @@ public class LargeMessageBufferTest extends UnitTestCase
       assertEquals(0, errors.get());
 
    }
-   
+
    public void testStreamDataWaitCompletionOnCompleteBuffer() throws Exception
    {
       final LargeMessageBufferImpl outBuffer = create15BytesSample();
-      
+
       outBuffer.saveBuffer(new OutputStream()
       {
          @Override
@@ -395,7 +436,6 @@ public class LargeMessageBufferTest extends UnitTestCase
 
       outBuffer.addPacket(new SessionReceiveContinuationMessage(-1, new byte[] { 0, 1, 2, 3, 4 }, true, false));
 
-
       final CountDownLatch latchBytesWritten1 = new CountDownLatch(5);
       final CountDownLatch latchBytesWritten2 = new CountDownLatch(10);
 
@@ -408,8 +448,7 @@ public class LargeMessageBufferTest extends UnitTestCase
             latchBytesWritten2.countDown();
          }
       });
-      
-      
+
       latchBytesWritten1.await();
 
       try
@@ -420,8 +459,7 @@ public class LargeMessageBufferTest extends UnitTestCase
       catch (IllegalAccessError ignored)
       {
       }
-      
-      
+
       assertTrue("It waited too much", System.currentTimeMillis() - start < 30000);
 
    }
@@ -462,7 +500,12 @@ public class LargeMessageBufferTest extends UnitTestCase
 
    private LargeMessageBufferImpl splitBuffer(int splitFactor, byte[] bytes) throws Exception
    {
-      LargeMessageBufferImpl outBuffer = new LargeMessageBufferImpl(new FakeConsumerInternal(), bytes.length, 5);
+      return splitBuffer(splitFactor, bytes, null);
+   }
+
+   private LargeMessageBufferImpl splitBuffer(int splitFactor, byte[] bytes, File file) throws Exception
+   {
+      LargeMessageBufferImpl outBuffer = new LargeMessageBufferImpl(new FakeConsumerInternal(), bytes.length, 5, file);
 
       ByteArrayInputStream input = new ByteArrayInputStream(bytes);
 
@@ -698,6 +741,21 @@ public class LargeMessageBufferTest extends UnitTestCase
       public void setMessageHandler(MessageHandler handler) throws MessagingException
       {
 
+      }
+
+      /* (non-Javadoc)
+       * @see org.jboss.messaging.core.client.ClientConsumer#getLargeMessageCacheDir()
+       */
+      public File getLargeMessageCacheDir()
+      {
+          return null;
+      }
+
+      /* (non-Javadoc)
+       * @see org.jboss.messaging.core.client.ClientConsumer#setLargeMessageCacheDir(java.io.File)
+       */
+      public void setLargeMessageCacheDir(File largeMessageCacheDir)
+      {
       }
 
    }

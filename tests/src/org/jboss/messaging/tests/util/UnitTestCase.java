@@ -273,6 +273,28 @@ public class UnitTestCase extends TestCase
       return testDir;
    }
 
+   protected void clearData()
+   {
+      clearData(getTestDir());
+   }
+
+   protected void clearData(String testDir)
+   {
+      // Need to delete the root
+
+      File file = new File(testDir);
+      deleteDirectory(file);
+      file.mkdirs();
+
+      recreateDirectory(getJournalDir(testDir));
+      recreateDirectory(getBindingsDir(testDir));
+      recreateDirectory(getPageDir(testDir));
+      recreateDirectory(getLargeMessagesDir(testDir));
+      recreateDirectory(getClientLargeMessagesDir(testDir));
+      recreateDirectory(getTemporaryDir(testDir));
+   }
+
+
    /**
     * @return the journalDir
     */

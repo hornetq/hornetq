@@ -22,10 +22,14 @@
 
 package org.jboss.messaging.core.client.impl;
 
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
 import java.nio.channels.GatheringByteChannel;
 import java.nio.channels.ScatteringByteChannel;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -34,6 +38,7 @@ import java.util.concurrent.TimeUnit;
 import org.jboss.messaging.core.buffers.ChannelBuffer;
 import org.jboss.messaging.core.client.LargeMessageBuffer;
 import org.jboss.messaging.core.exception.MessagingException;
+import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionReceiveContinuationMessage;
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
 import org.jboss.messaging.utils.DataConstants;
@@ -55,6 +60,8 @@ public class LargeMessageBufferImpl implements ChannelBuffer, LargeMessageBuffer
    private static final String READ_ONLY_ERROR_MESSAGE = "This is a read-only buffer, setOperations are not supported";
 
    // Attributes ----------------------------------------------------
+
+   private static final Logger log = Logger.getLogger(LargeMessageBufferImpl.class);
 
    private final ClientConsumerInternal consumerInternal;
 
@@ -80,6 +87,8 @@ public class LargeMessageBufferImpl implements ChannelBuffer, LargeMessageBuffer
 
    private Exception handledException;
 
+   private final FileCache fileCache;
+
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
@@ -88,9 +97,25 @@ public class LargeMessageBufferImpl implements ChannelBuffer, LargeMessageBuffer
                                  final long totalSize,
                                  final int readTimeout)
    {
+      this(consumerInternal, totalSize, readTimeout, null);
+   }
+
+   public LargeMessageBufferImpl(final ClientConsumerInternal consumerInternal,
+                                 final long totalSize,
+                                 final int readTimeout,
+                                 final File cachedFile)
+   {
       this.consumerInternal = consumerInternal;
       this.readTimeout = readTimeout;
       this.totalSize = totalSize;
+      if (cachedFile == null)
+      {
+         this.fileCache = null;
+      }
+      else
+      {
+         this.fileCache = new FileCache(cachedFile);
+      }
    }
 
    // Public --------------------------------------------------------
@@ -125,7 +150,7 @@ public class LargeMessageBufferImpl implements ChannelBuffer, LargeMessageBuffer
    {
       int flowControlCredit = 0;
       boolean continues = false;
-      
+
       synchronized (this)
       {
          if (outStream != null)
@@ -135,6 +160,11 @@ public class LargeMessageBufferImpl implements ChannelBuffer, LargeMessageBuffer
                if (!packet.isContinues())
                {
                   streamEnded = true;
+               }
+
+               if (fileCache != null)
+               {
+                  fileCache.cachePackage(packet.getBody());
                }
 
                outStream.write(packet.getBody());
@@ -151,11 +181,25 @@ public class LargeMessageBufferImpl implements ChannelBuffer, LargeMessageBuffer
             }
             catch (Exception e)
             {
+               log.warn(e.getMessage(), e);
                handledException = e;
             }
          }
          else
          {
+            if (fileCache != null)
+            {
+               try
+               {
+                  fileCache.cachePackage(packet.getBody());
+               }
+               catch (Exception e)
+               {
+                  log.warn(e.getMessage(), e);
+                  handledException = e;
+               }
+            }
+
             packets.offer(packet);
          }
       }
@@ -168,16 +212,26 @@ public class LargeMessageBufferImpl implements ChannelBuffer, LargeMessageBuffer
          }
          catch (Exception e)
          {
+            log.warn(e.getMessage(), e);
             handledException = e;
          }
       }
    }
 
-   public synchronized void close()
+   public synchronized void cancel()
    {
       packets.offer(new SessionReceiveContinuationMessage());
       streamEnded = true;
+
       notifyAll();
+   }
+
+   public synchronized void close()
+   {
+      if (fileCache != null)
+      {
+         fileCache.close();
+      }
    }
 
    public void setOutputStream(final OutputStream output) throws MessagingException
@@ -289,14 +343,23 @@ public class LargeMessageBufferImpl implements ChannelBuffer, LargeMessageBuffer
     */
    public byte getByte(final int index)
    {
-      checkForPacket(index);
-      return currentPacket.getBody()[(int)(index - packetPosition)];
+      return getByte((long)index);
    }
 
    private byte getByte(final long index)
    {
       checkForPacket(index);
-      return currentPacket.getBody()[(int)(index - packetPosition)];
+
+      //System.out.println("position = " + index + " , packetPosition = " + packetPosition + " filecache = " + fileCache);
+
+      if (fileCache != null && index < packetPosition)
+      {
+         return fileCache.getByteFromCache(index);
+      }
+      else
+      {
+         return currentPacket.getBody()[(int)(index - packetPosition)];
+      }
    }
 
    /* (non-Javadoc)
@@ -555,7 +618,15 @@ public class LargeMessageBufferImpl implements ChannelBuffer, LargeMessageBuffer
 
    public void readerIndex(final int readerIndex)
    {
-      checkForPacket(readerIndex);
+      try
+      {
+         checkForPacket(readerIndex);
+      }
+      catch (Exception e)
+      {
+         log.warn(e.getMessage(), e);
+         throw new RuntimeException(e.getMessage(), e);
+      }
       this.readerIndex = readerIndex;
    }
 
@@ -576,7 +647,15 @@ public class LargeMessageBufferImpl implements ChannelBuffer, LargeMessageBuffer
 
    public void setIndex(final int readerIndex, final int writerIndex)
    {
-      checkForPacket(readerIndex);
+      try
+      {
+         checkForPacket(readerIndex);
+      }
+      catch (Exception e)
+      {
+         log.warn(e.getMessage(), e);
+         throw new RuntimeException(e.getMessage(), e);
+      }
       this.readerIndex = readerIndex;
    }
 
@@ -620,7 +699,15 @@ public class LargeMessageBufferImpl implements ChannelBuffer, LargeMessageBuffer
 
    public void resetReaderIndex()
    {
-      checkForPacket(0);
+      try
+      {
+         checkForPacket(0);
+      }
+      catch (Exception e)
+      {
+         log.warn(e.getMessage(), e);
+         throw new RuntimeException(e.getMessage(), e);
+      }
    }
 
    public void markWriterIndex()
@@ -1186,11 +1273,15 @@ public class LargeMessageBufferImpl implements ChannelBuffer, LargeMessageBuffer
       {
          throw new IndexOutOfBoundsException();
       }
-      if (index < lastIndex)
+
+      if (fileCache == null)
       {
-         throw new IllegalAccessError("LargeMessage have read-only and one-way buffers");
+         if (index < lastIndex)
+         {
+            throw new IllegalAccessError("LargeMessage have read-only and one-way buffers");
+         }
+         lastIndex = index;
       }
-      lastIndex = index;
 
       while (index >= packetLastPosition && !streamEnded)
       {
@@ -1198,6 +1289,148 @@ public class LargeMessageBufferImpl implements ChannelBuffer, LargeMessageBuffer
       }
    }
 
+   /**
+    * @param body
+    */
    // Inner classes -------------------------------------------------
+
+   private class FileCache
+   {
+
+      private final int BUFFER_SIZE = 10 * 1024;
+
+      public FileCache(File cachedFile)
+      {
+         this.cachedFile = cachedFile;
+      }
+
+      ByteBuffer readCache;
+
+      long readCachePositionStart = Integer.MAX_VALUE;
+
+      long readCachePositionEnd = -1;
+
+      private final File cachedFile;
+
+      private volatile RandomAccessFile cachedRAFile;
+
+      private volatile FileChannel cachedChannel;
+
+      private synchronized void readCache(long position)
+      {
+
+         try
+         {
+            if (position < readCachePositionStart || position > readCachePositionEnd)
+            {
+               
+               checkOpen();
+
+               if (position > cachedChannel.size())
+               {
+                  throw new ArrayIndexOutOfBoundsException("position > " + cachedChannel.size());
+               }
+
+               readCachePositionStart = (position / BUFFER_SIZE) * BUFFER_SIZE;
+
+               if (readCache == null)
+               {
+                  readCache = ByteBuffer.allocate(BUFFER_SIZE);
+               }
+
+               readCache.clear();
+
+               readCachePositionEnd = readCachePositionStart + cachedChannel.read(readCache) -1;
+            }
+         }
+         catch (Exception e)
+         {
+            log.warn(e.getMessage(), e);
+            throw new RuntimeException(e.getMessage(), e);
+         }
+         finally
+         {
+            close();
+         }
+      }
+
+      public synchronized byte getByteFromCache(long position)
+      {
+         readCache(position);
+
+         return readCache.get((int)(position - readCachePositionStart));
+
+      }
+
+      public void cachePackage(byte[] body) throws Exception
+      {
+         checkOpen();
+
+         cachedChannel.position(cachedChannel.size());
+         cachedChannel.write(ByteBuffer.wrap(body));
+         
+         close();
+      }
+
+      /**
+      * @throws FileNotFoundException
+      */
+      public void checkOpen() throws FileNotFoundException
+      {
+         if (cachedFile != null || !cachedChannel.isOpen())
+         {
+            this.cachedRAFile = new RandomAccessFile(cachedFile, "rw");
+
+            cachedChannel = cachedRAFile.getChannel();
+         }
+      }
+
+      public void close()
+      {
+         if (cachedChannel != null && cachedChannel.isOpen())
+         {
+            try
+            {
+               cachedChannel.close();
+            }
+            catch (Exception e)
+            {
+               log.warn(e.getMessage(), e);
+            }
+            cachedChannel = null;
+         }
+
+         if (cachedRAFile != null)
+         {
+            try
+            {
+               cachedRAFile.close();
+            }
+            catch (Exception e)
+            {
+               log.warn(e.getMessage(), e);
+            }
+            cachedRAFile = null;
+         }
+
+      }
+
+      protected void finalize()
+      {
+         close();
+         if (cachedFile != null && cachedFile.exists())
+         {
+            try
+            {
+               cachedFile.delete();
+            }
+            catch (Exception e)
+            {
+               log.warn("Exception during finalization for LargeMessage file cache", e);
+            }
+         }
+      }
+
+   }
 
 }

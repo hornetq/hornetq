@@ -29,6 +29,7 @@ import org.jboss.messaging.core.remoting.impl.wireformat.SessionReceiveContinuat
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionReceiveMessage;
 import org.jboss.messaging.utils.Future;
 import org.jboss.messaging.utils.TokenBucketLimiter;
+import org.jboss.messaging.utils.UUIDGenerator;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -70,13 +71,12 @@ public class ClientConsumerImpl implements ClientConsumerInternal
 
    private final Runner runner = new Runner();
 
-   private final File directory;
-
    private ClientMessageInternal currentChunkMessage;
-   
+
    private LargeMessageBufferImpl currentLargeMessageBuffer;
-   
-   // When receiving LargeMessages, the user may choose to not read the body, on this case we need to discard te body before moving to the next message.
+
+   // When receiving LargeMessages, the user may choose to not read the body, on this case we need to discard the body
+   // before moving to the next message.
    private ClientMessageInternal largeMessageReceived;
 
    private final TokenBucketLimiter rateLimiter;
@@ -92,7 +92,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
    private volatile boolean closed;
 
    private volatile int creditsToSend;
-   
+
    private volatile boolean slowConsumerInitialCreditSent = false;
 
    private volatile Exception lastException;
@@ -115,7 +115,6 @@ public class ClientConsumerImpl implements ClientConsumerInternal
                              final TokenBucketLimiter rateLimiter,
                              final Executor executor,
                              final Channel channel,
-                             final File directory,
                              final boolean preAcknowledge)
    {
       this.id = id;
@@ -132,18 +131,16 @@ public class ClientConsumerImpl implements ClientConsumerInternal
 
       this.ackBatchSize = ackBatchSize;
 
-      this.directory = directory;
-
       this.preAcknowledge = preAcknowledge;
    }
 
    // ClientConsumer implementation
    // -----------------------------------------------------------------
 
-   public ClientMessage receive(long timeout) throws MessagingException
+    public ClientMessage receive(long timeout) throws MessagingException
    {
       checkClosed();
-      
+
       if (largeMessageReceived != null)
       {
          // Check if there are pending packets to be received
@@ -161,7 +158,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
          throw new MessagingException(MessagingException.ILLEGAL_STATE,
                                       "Cannot call receive(...) - a MessageHandler is set");
       }
-      
+
       if (clientWindowSize == 0)
       {
          startSlowConsumer();
@@ -218,20 +215,20 @@ public class ClientConsumerImpl implements ClientConsumerInternal
 
             if (m != null)
             {
-               //if we have already pre acked we cant expire
+               // if we have already pre acked we cant expire
                boolean expired = !preAcknowledge && m.isExpired();
                flowControlBeforeConsumption(m);
 
                if (expired)
                {
                   m.discardLargeBody();
-                  
+
                   session.expire(id, m.getMessageID());
 
                   if (clientWindowSize == 0)
                   {
                      startSlowConsumer();
-                  }                 
+                  }
 
                   if (toWait > 0)
                   {
@@ -247,7 +244,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
                {
                   this.largeMessageReceived = m;
                }
-               
+
                return m;
             }
             else
@@ -335,14 +332,6 @@ public class ClientConsumerImpl implements ClientConsumerInternal
       return closed;
    }
 
-   /* (non-Javadoc)
-    * @see org.jboss.messaging.core.client.ClientConsumer#isLargeMessagesAsFiles()
-    */
-   public boolean isFileConsumer()
-   {
-      return directory != null;
-   }
-
    public void stop() throws MessagingException
    {
       waitForOnMessageToComplete();
@@ -389,7 +378,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
       ClientMessageInternal messageToHandle = message;
 
       messageToHandle.onReceipt(this);
-      
+
       if (trace)
       {
          log.trace("Adding message " + message + " into buffer");
@@ -419,17 +408,25 @@ public class ClientConsumerImpl implements ClientConsumerInternal
          // This is ok - we just ignore the message
          return;
       }
-      
+
       // Flow control for the first packet, we will have others
       flowControl(packet.getPacketSize(), false);
 
       currentChunkMessage = new ClientMessageImpl();
-      
+
       currentChunkMessage.decodeProperties(ChannelBuffers.wrappedBuffer(packet.getLargeMessageHeader()));
-      
+
       currentChunkMessage.setLargeMessage(true);
 
-      currentLargeMessageBuffer = new LargeMessageBufferImpl(this, packet.getLargeMessageSize(), 60);
+      File largeMessageCache = null;
+      
+      if (session.isCacheLargeMessageClient())
+      {
+         largeMessageCache = File.createTempFile("tmp-large-message-" + currentChunkMessage.getMessageID()+ "-", ".tmp");
+         largeMessageCache.deleteOnExit();
+      }
+
+      currentLargeMessageBuffer = new LargeMessageBufferImpl(this, packet.getLargeMessageSize(), 60, largeMessageCache);
 
       currentChunkMessage.setBody(currentLargeMessageBuffer);
 
@@ -444,7 +441,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
       {
          return;
       }
-      
+
       currentLargeMessageBuffer.addPacket(chunk);
    }
 
@@ -502,17 +499,17 @@ public class ClientConsumerImpl implements ClientConsumerInternal
       if (clientWindowSize >= 0)
       {
          creditsToSend += messageBytes;
-         
+
          if (creditsToSend >= clientWindowSize)
          {
-            
+
             if (clientWindowSize == 0 && discountSlowConsumer)
             {
                if (trace)
                {
                   log.trace("Sending " + creditsToSend + " -1, for slow consumer");
                }
-               
+
                slowConsumerInitialCreditSent = false;
 
                // sending the credits - 1 initially send to fire the slow consumer, or the slow consumer would be
@@ -520,7 +517,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
                final int credits = creditsToSend - 1;
 
                creditsToSend = 0;
-               
+
                sendCredits(credits);
             }
             else
@@ -529,7 +526,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
                {
                   log.trace("Sending " + messageBytes + " from flow-control");
                }
-             
+
                final int credits = creditsToSend;
 
                creditsToSend = 0;
@@ -669,12 +666,12 @@ public class ClientConsumerImpl implements ClientConsumerInternal
                   log.trace("Calling handler.onMessage");
                }
                theHandler.onMessage(message);
-               
+
                if (trace)
                {
                   log.trace("Handler.onMessage done");
                }
-               
+
                if (message.isLargeMessage())
                {
                   message.discardLargeBody();
@@ -723,13 +720,12 @@ public class ClientConsumerImpl implements ClientConsumerInternal
 
          // Now we wait for any current handler runners to run.
          waitForOnMessageToComplete();
-         
+
          if (currentLargeMessageBuffer != null)
          {
-            currentLargeMessageBuffer.close();
+            currentLargeMessageBuffer.cancel();
             currentLargeMessageBuffer = null;
          }
-         
 
          closed = true;
 

@@ -108,6 +108,8 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
    public static final int DEFAULT_THREAD_POOL_MAX_SIZE = -1;
 
    public static final int DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE = 5;
+   
+   public static final boolean DEFAULT_CACHE_LARGE_MESSAGE_CLIENT = false;
 
    // Attributes
    // -----------------------------------------------------------------------------------
@@ -129,6 +131,8 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
    private boolean readOnly;
 
    // Settable attributes:
+   
+   private boolean cacheLargeMessagesClient = DEFAULT_CACHE_LARGE_MESSAGE_CLIENT;
 
    private List<Pair<TransportConfiguration, TransportConfiguration>> staticConnectors;
 
@@ -386,6 +390,17 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
 
    // ClientSessionFactory implementation------------------------------------------------------------
 
+   public synchronized boolean isCacheLargeMessagesClient()
+   {
+      return cacheLargeMessagesClient;
+   }
+
+   public synchronized void setCacheLargeMessagesClient(boolean cached)
+   {
+      this.cacheLargeMessagesClient = cached;
+   }
+   
+   
    public synchronized List<Pair<TransportConfiguration, TransportConfiguration>> getStaticConnectors()
    {
       return staticConnectors;
@@ -966,6 +981,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
                                                                  autoCommitAcks,
                                                                  preAcknowledge,
                                                                  ackBatchSize,
+                                                                 cacheLargeMessagesClient,
                                                                  minLargeMessageSize,
                                                                  blockOnAcknowledge,
                                                                  autoGroup,
@@ -1007,4 +1023,5 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
 
       connectionManagerMap.values().toArray(connectionManagerArray);
    }
+
 }

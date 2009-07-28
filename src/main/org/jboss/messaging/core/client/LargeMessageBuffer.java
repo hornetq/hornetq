@@ -42,6 +42,8 @@ public interface LargeMessageBuffer extends MessagingBuffer
 
    void close();
 
+   void cancel();
+
    void setOutputStream(final OutputStream output) throws MessagingException;
 
    void saveBuffer(final OutputStream output) throws MessagingException;

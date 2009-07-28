@@ -133,6 +133,7 @@ public class JMSServerDeployer extends XmlDeployer
          int consumerMaxRate = getInteger(e, "consumer-max-rate", ClientSessionFactoryImpl.DEFAULT_CONSUMER_MAX_RATE, MINUS_ONE_OR_GT_ZERO);
          int producerWindowSize = getInteger(e, "producer-window-size", ClientSessionFactoryImpl.DEFAULT_PRODUCER_WINDOW_SIZE, GT_ZERO);
          int producerMaxRate = getInteger(e, "producer-max-rate", ClientSessionFactoryImpl.DEFAULT_PRODUCER_MAX_RATE, MINUS_ONE_OR_GT_ZERO);
+         boolean cacheLargeMessagesClient = getBoolean(e, "cache-large-message-client", ClientSessionFactoryImpl.DEFAULT_CACHE_LARGE_MESSAGE_CLIENT);
          int minLargeMessageSize = getInteger(e, "min-large-message-size", ClientSessionFactoryImpl.DEFAULT_MIN_LARGE_MESSAGE_SIZE, GT_ZERO);
          boolean blockOnAcknowledge = getBoolean(e, "block-on-acknowledge", ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_ACKNOWLEDGE);
          boolean blockOnNonPersistentSend = getBoolean(e, "block-on-non-persistent-send", ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND);
@@ -235,6 +236,7 @@ public class JMSServerDeployer extends XmlDeployer
                                                      connectionTTL,
                                                      callTimeout,
                                                      maxConnections,
+                                                     cacheLargeMessagesClient,
                                                      minLargeMessageSize,
                                                      consumerWindowSize,
                                                      consumerMaxRate,
@@ -267,6 +269,7 @@ public class JMSServerDeployer extends XmlDeployer
                                                      connectionTTL,
                                                      callTimeout,
                                                      maxConnections,
+                                                     cacheLargeMessagesClient,
                                                      minLargeMessageSize,
                                                      consumerWindowSize,
                                                      consumerMaxRate,
