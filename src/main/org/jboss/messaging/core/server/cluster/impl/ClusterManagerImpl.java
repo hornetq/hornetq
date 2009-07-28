@@ -397,9 +397,44 @@ public class ClusterManagerImpl implements ClusterManager
 
       Queue queue = (Queue)binding.getBindable();
 
-      Bridge bridge;
+      Bridge bridge = null;
 
-      if (connectorNamePair != null)
+      if (config.getDiscoveryGroupName() != null)
+      {
+         DiscoveryGroupConfiguration discoveryGroupConfiguration = configuration.getDiscoveryGroupConfigurations().get(config.getDiscoveryGroupName());
+         if (discoveryGroupConfiguration == null)
+         {
+            log.warn("No discovery group configured with name '" + config.getDiscoveryGroupName() + "'. The bridge will not be deployed.");
+
+            return;
+         }
+         
+         bridge = new BridgeImpl(nodeUUID,
+                                 new SimpleString(config.getName()),
+                                 queue,
+                                 discoveryGroupConfiguration.getGroupAddress(),
+                                 discoveryGroupConfiguration.getGroupPort(),
+                                 null,
+                                 executorFactory.getExecutor(),
+                                 SimpleString.toSimpleString(config.getFilterString()),
+                                 new SimpleString(config.getForwardingAddress()),
+                                 scheduledExecutor,
+                                 transformer,
+                                 config.getRetryInterval(),
+                                 config.getRetryIntervalMultiplier(),
+                                 config.getReconnectAttempts(),
+                                 config.isFailoverOnServerShutdown(),
+                                 config.isUseDuplicateDetection(),
+                                 managementService.getManagementAddress(),
+                                 managementService.getManagementNotificationAddress(),
+                                 managementService.getClusterUser(),
+                                 managementService.getClusterPassword(),
+                                 null,
+                                 replicatingChannel,
+                                 !backup,
+                                 server.getStorageManager());
+      }
+      else
       {
          TransportConfiguration connector = configuration.getConnectorConfigurations().get(connectorNamePair.a);
 
@@ -430,9 +465,11 @@ public class ClusterManagerImpl implements ClusterManager
          bridge = new BridgeImpl(nodeUUID,
                                  new SimpleString(config.getName()),
                                  queue,
+                                 null,
+                                 -1,
                                  pair,
                                  executorFactory.getExecutor(),
-                                 config.getFilterString() == null ? null : new SimpleString(config.getFilterString()),
+                                 SimpleString.toSimpleString(config.getFilterString()),
                                  new SimpleString(config.getForwardingAddress()),
                                  scheduledExecutor,
                                  transformer,
@@ -445,16 +482,17 @@ public class ClusterManagerImpl implements ClusterManager
                                  managementService.getManagementNotificationAddress(),
                                  managementService.getClusterUser(),
                                  managementService.getClusterPassword(),
+                                 null,
                                  replicatingChannel,
                                  !backup,
                                  server.getStorageManager());
-
-         bridges.put(config.getName(), bridge);
-
-         managementService.registerBridge(bridge, config);
-
-         bridge.start();
       }
+
+      bridges.put(config.getName(), bridge);
+
+      managementService.registerBridge(bridge, config);
+
+      bridge.start();
    }
 
    private synchronized void deployClusterConnection(final ClusterConnectionConfiguration config) throws Exception

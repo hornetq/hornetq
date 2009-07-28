@@ -106,6 +106,16 @@ public class FilterImpl implements Filter
       Filter filter = filterStr == null ? null : new FilterImpl(new SimpleString(filterStr));
       return filter;
    }
+   
+   /**
+    * @return null if <code>filterStr</code> is null or a valid filter else
+    * @throws MessagingException if the string does not correspond to a valid filter
+    */
+   public static Filter createFilter(final SimpleString filterStr) throws MessagingException
+   {
+      Filter filter = filterStr == null ? null : new FilterImpl(filterStr);
+      return filter;
+   }
 
    // Constructors ---------------------------------------------------
 

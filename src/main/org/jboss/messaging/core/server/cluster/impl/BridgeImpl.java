@@ -56,7 +56,6 @@ import org.jboss.messaging.core.remoting.RemotingConnection;
 import org.jboss.messaging.core.remoting.impl.wireformat.replication.ReplicateAcknowledgeMessage;
 import org.jboss.messaging.core.server.HandleStatus;
 import org.jboss.messaging.core.server.MessageReference;
-import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.core.server.ServerMessage;
 import org.jboss.messaging.core.server.cluster.Bridge;
@@ -92,8 +91,6 @@ public class BridgeImpl implements Bridge, FailureListener, SendAcknowledgementH
 
    private final Executor executor;
 
-   private final SimpleString filterString;
-
    private final Filter filter;
 
    private final SimpleString forwardingAddress;
@@ -115,6 +112,10 @@ public class BridgeImpl implements Bridge, FailureListener, SendAcknowledgementH
    private volatile boolean active;
 
    private final Pair<TransportConfiguration, TransportConfiguration> connectorPair;
+
+   private final String discoveryAddress;
+
+   private final int discoveryPort;
 
    private final long retryInterval;
 
@@ -146,55 +147,16 @@ public class BridgeImpl implements Bridge, FailureListener, SendAcknowledgementH
 
    // Public --------------------------------------------------------
 
+   /**
+    * discoveryAddress (+ discoveryPort) and connectorPair are mutually exclusive.
+    * If discoveryAddress is != null, it will be used to create the bridge's client session factory.
+    * Otherwise, the connectorPair will be used
+    */
    public BridgeImpl(final UUID nodeUUID,
                      final SimpleString name,
                      final Queue queue,
-                     final Pair<TransportConfiguration, TransportConfiguration> connectorPair,
-                     final Executor executor,
-                     final SimpleString filterString,
-                     final SimpleString forwardingAddress,
-                     final ScheduledExecutorService scheduledExecutor,
-                     final Transformer transformer,
-                     final long retryInterval,
-                     final double retryIntervalMultiplier,
-                     final int reconnectAttempts,
-                     final boolean failoverOnServerShutdown,
-                     final boolean useDuplicateDetection,
-                     final SimpleString managementAddress,
-                     final SimpleString managementNotificationAddress,
-                     final String clusterUser,
-                     final String clusterPassword,
-                     final Channel replicatingChannel,
-                     final boolean activated,
-                     final StorageManager storageManager) throws Exception
-   {
-      this(nodeUUID,
-           name,
-           queue,
-           connectorPair,
-           executor,
-           filterString,
-           forwardingAddress,
-           scheduledExecutor,
-           transformer,
-           retryInterval,
-           retryIntervalMultiplier,
-           reconnectAttempts,
-           failoverOnServerShutdown,
-           useDuplicateDetection,
-           managementAddress,
-           managementNotificationAddress,
-           clusterUser,
-           clusterPassword,
-           null,
-           replicatingChannel,
-           activated,
-           storageManager, null);
-   }
-
-   public BridgeImpl(final UUID nodeUUID,
-                     final SimpleString name,
-                     final Queue queue,
+                     final String discoveryAddress,
+                     final int discoveryPort,
                      final Pair<TransportConfiguration, TransportConfiguration> connectorPair,
                      final Executor executor,
                      final SimpleString filterString,
@@ -213,8 +175,7 @@ public class BridgeImpl implements Bridge, FailureListener, SendAcknowledgementH
                      final MessageFlowRecord flowRecord,
                      final Channel replicatingChannel,
                      final boolean activated,
-                     final StorageManager storageManager,
-                     MessagingServer server) throws Exception
+                     final StorageManager storageManager) throws Exception
    {
       this.nodeUUID = nodeUUID;
 
@@ -224,16 +185,7 @@ public class BridgeImpl implements Bridge, FailureListener, SendAcknowledgementH
 
       this.executor = executor;
 
-      this.filterString = filterString;
-
-      if (this.filterString != null)
-      {
-         this.filter = new FilterImpl(filterString);
-      }
-      else
-      {
-         this.filter = null;
-      }
+      this.filter = FilterImpl.createFilter(filterString);
 
       this.forwardingAddress = forwardingAddress;
 
@@ -241,6 +193,10 @@ public class BridgeImpl implements Bridge, FailureListener, SendAcknowledgementH
 
       this.useDuplicateDetection = useDuplicateDetection;
 
+      this.discoveryAddress = discoveryAddress;
+      
+      this.discoveryPort = discoveryPort;
+      
       this.connectorPair = connectorPair;
 
       this.retryInterval = retryInterval;
@@ -565,8 +521,16 @@ public class BridgeImpl implements Bridge, FailureListener, SendAcknowledgementH
       {
          queue.addConsumer(BridgeImpl.this);
   
-         csf = new ClientSessionFactoryImpl(connectorPair.a,
-                                            connectorPair.b);
+         csf = null;
+         if (discoveryAddress != null)
+         {
+            csf = new ClientSessionFactoryImpl(discoveryAddress, discoveryPort);
+         }
+         else
+         {
+            csf = new ClientSessionFactoryImpl(connectorPair.a,
+                                         connectorPair.b);
+         }
          
          csf.setFailoverOnServerShutdown(failoverOnServerShutdown);
          csf.setRetryInterval(retryInterval);

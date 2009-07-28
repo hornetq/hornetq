@@ -441,6 +441,8 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
       Bridge bridge = new BridgeImpl(nodeUUID,
                                      queueName,
                                      queue,
+                                     null,
+                                     -1,
                                      connectorPair,
                                      executorFactory.getExecutor(),
                                      null,
@@ -459,8 +461,7 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
                                      record,
                                      replicatingChannel,
                                      !backup,
-                                     server.getStorageManager(),
-                                     server);
+                                     server.getStorageManager());
 
       record.setBridge(bridge);
 
