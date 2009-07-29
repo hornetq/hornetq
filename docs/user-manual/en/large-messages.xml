@@ -228,32 +228,25 @@ for (int i = 0; i &lt; rm.getBodyLength(); i += 1024)
    // Do whatever you want with the data
 }        </programlisting>
     </section>
+
     <section>
-        <title>Other Types of Messages</title>
-        <para>JBoss Messaging supports large messages of type <literal>TextMessage</literal>,
-                <literal>ObjectMessage</literal> and <literal>MapMessage</literal> transparently.
-            However those types of message will require a full reconstruction in memory in order to
-            work properly.</para>
-        <para>For example: You may choose to send a 1MiB String over a TextMessage. When you read
-            the message Java will need to parse the body of the message back into a String, so you
-            need to have enough memory to allocate your large messages when using those types. If
-            you use <literal>BytesMessage</literal> or <literal>StreamMessage</literal> this
-            restriction won't apply.</para>
+      <title>Cache Large Messages on client</title>
+
+      <para>LargeMessages are transfered like a streaming from server to client.
+      The message is broken into smaller packets and as the message is read more
+      packets will be received. Because of that the body of the large message
+      can be read only once, and by consequence a received message can be sent to another producer only once. 
+      The JMS Bridge for instance won't be able to resend a large message in case of failure</para>
+
+      <para>To solve this problem, you can enable the property <literal>cache-large-message-client</literal> on the connection factory. 
+      If you enable this property the client consumer
+      will create a temporary file to hold the large message content, so it
+      would be possible to resend large messages.</para>
+    
+      <note>Use this option on the connection factory used by the JMS Bridge if the JMS Bridge is being used for large messages.</note>
+
     </section>
-    <section>
-        <title>Resending a large message</title>
-        <para>As large messages are broken into smaller packets the fragmented packets are delivered
-            individually from server to client. The message fragments are not kept in memory so once
-            they are delivered it is not possible to resend them.</para>
-        <para>As a result resending a large messages after consumption will not work as seen on this
-            example:</para>
-        <programlisting>BytesMessage bm = (BytesMessage)cons.receive(1000);
-                
-bm.setObjectProperty("JMS_JBM_SaveStream", bufferedOutput);
-                                
-/// <emphasis role="bold">This will not work! The body streaming is already gone!</emphasis>
-someOtherProducer.send(bm); // resending the message to another destination;            </programlisting>
-    </section>
+  
     <section id="large-messages.example">
         <title>Large message example</title>
         <para>Please see <xref linkend="examples.large-message" /> for an example which 
