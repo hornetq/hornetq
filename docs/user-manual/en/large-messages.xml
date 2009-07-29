@@ -229,7 +229,7 @@ for (int i = 0; i &lt; rm.getBodyLength(); i += 1024)
 }        </programlisting>
     </section>
 
-    <section>
+    <section id="large-messages.cache.client">
       <title>Cache Large Messages on client</title>
 
       <para>LargeMessages are transfered like a streaming from server to client.

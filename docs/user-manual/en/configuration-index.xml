@@ -948,6 +948,13 @@
                             <entry>100 * 1024</entry>
                         </row>
                         <row>
+                            <entry><link linkend="large-messages.cache.client"
+                                    >connection-factory.cache-large-message-client</link></entry>
+                            <entry>Boolean</entry>
+                            <entry>If true clients using this connection factory will hold the large message body on temporary files.</entry>
+                            <entry>false</entry>
+                        </row>
+                        <row>
                             <entry><link linkend="pre-acknowledge.configure"
                                 >connection-factory.pre-acknowledge</link></entry>
                             <entry>Boolean</entry>
