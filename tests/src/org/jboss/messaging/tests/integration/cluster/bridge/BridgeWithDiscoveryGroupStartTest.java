@@ -54,13 +54,8 @@ import org.jboss.messaging.utils.SimpleString;
  * 
  */
 public class BridgeWithDiscoveryGroupStartTest extends ServiceTestBase
-{
-   public void testFoo() throws Exception
-   {
-      
-   }
-   
-   public void _testStartStop() throws Exception
+{   
+   public void testStartStop() throws Exception
    {
       Map<String, Object> server0Params = new HashMap<String, Object>();
       MessagingServer server0 = createClusteredServerWithParams(0, true, server0Params);
@@ -82,7 +77,7 @@ public class BridgeWithDiscoveryGroupStartTest extends ServiceTestBase
       final String queueName1 = "queue1";
 
       final String groupAddress = "230.1.2.3";
-      final int port = 6745;
+      final int port = 6746;
 
       List<Pair<String, String>> connectorPairs = new ArrayList<Pair<String, String>>();
       connectorPairs.add(new Pair<String, String>(server1tc.getName(), null));
