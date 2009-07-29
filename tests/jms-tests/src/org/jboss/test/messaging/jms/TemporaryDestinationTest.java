@@ -473,6 +473,61 @@ public class TemporaryDestinationTest extends JMSTestCase
    	}
    }
 
+   /**
+    * https://jira.jboss.org/jira/browse/JBMESSAGING-1566
+    */
+   public void testCanNotCreateConsumerFromAnotherConnectionForTemporaryQueue() throws Exception 
+   { 
+      Connection conn = cf.createConnection();
+
+      Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+
+      TemporaryQueue tempQueue = sess.createTemporaryQueue();
+
+      Connection anotherConn = cf.createConnection();
+
+      Session sessFromAnotherConn = anotherConn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+
+      try 
+      { 
+         sessFromAnotherConn.createConsumer(tempQueue);
+         fail("Only temporary destination's own connection is allowed to create MessageConsumers for them.");
+      } 
+      catch (JMSException e) 
+      { 
+      } 
+      
+      conn.close();
+      anotherConn.close();
+   }
+   
+   /**
+    * https://jira.jboss.org/jira/browse/JBMESSAGING-1566
+    */
+   public void testCanNotCreateConsumerFromAnotherCnnectionForTemporaryTopic() throws Exception 
+   { 
+      Connection conn = cf.createConnection();
+
+      Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+
+      TemporaryTopic tempTopic = sess.createTemporaryTopic();
+
+      Connection anotherConn = cf.createConnection();
+
+      Session sessFromAnotherConn = anotherConn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+
+      try 
+      { 
+         sessFromAnotherConn.createConsumer(tempTopic);
+         fail("Only temporary destination's own connection is allowed to create MessageConsumers for them.");
+      } 
+      catch (JMSException e) 
+      { 
+      } 
+      
+      conn.close();
+      anotherConn.close();
+   }
 
    // Package protected ---------------------------------------------
 

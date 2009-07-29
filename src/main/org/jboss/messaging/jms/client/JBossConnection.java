@@ -385,14 +385,19 @@ public class JBossConnection implements Connection, QueueConnection, TopicConnec
 
    // Public ---------------------------------------------------------------------------------------
 
-   public void addTemporaryQueue(final SimpleString queueName)
+   public void addTemporaryQueue(final SimpleString queueAddress)
    {
-      tempQueues.add(queueName);
+      tempQueues.add(queueAddress);
    }
 
-   public void removeTemporaryQueue(final SimpleString queueName)
+   public void removeTemporaryQueue(final SimpleString queueAddress)
    {
-      tempQueues.remove(queueName);
+      tempQueues.remove(queueAddress);
+   }
+   
+   public boolean containsTemporaryQueue(final SimpleString queueAddress)
+   {
+      return tempQueues.contains(queueAddress);
    }
 
    public boolean hasNoLocal()

@@ -390,6 +390,11 @@ public class JBossSession implements Session, XASession, QueueSession, XAQueueSe
 
       JBossDestination jbdest = (JBossDestination)destination;
 
+      if (jbdest.isTemporary() && !connection.containsTemporaryQueue(jbdest.getSimpleAddress()))
+      {
+         throw new JMSException("Can not create consumer for temporary destination " + destination + " from another JMS connection");
+      }
+      
       JBossMessageConsumer consumer = createConsumer(jbdest, null, messageSelector, noLocal);
 
       return consumer;
