@@ -33,11 +33,12 @@ import org.jboss.messaging.jms.client.JBossMessage;
 import org.jboss.messaging.utils.SimpleString;
 
 import javax.jms.InvalidClientIDException;
+import javax.jms.JMSException;
 import javax.jms.MessageListener;
-import javax.resource.ResourceException;
 import javax.resource.spi.endpoint.MessageEndpoint;
 import javax.resource.spi.endpoint.MessageEndpointFactory;
-import javax.transaction.SystemException;
+import javax.transaction.Status;
+import javax.transaction.Transaction;
 import javax.transaction.TransactionManager;
 import java.util.UUID;
 
@@ -109,7 +110,7 @@ public class JBMMessageHandler implements MessageHandler
          }
 
          SimpleString queueName = new SimpleString(JBossTopic.createQueueNameForDurableSubscription(activation.getActivationSpec()
-                                                                                                              .getClientID(),
+               .getClientID(),
                                                                                                     subscriptionName));
 
          SessionQueueQueryResponseMessage subResponse = session.queueQuery(queueName);
@@ -247,7 +248,7 @@ public class JBMMessageHandler implements MessageHandler
 
       try
       {
-         ((MessageListener)endpoint).onMessage(jbm);
+         ((MessageListener) endpoint).onMessage(jbm);
       }
       catch (Throwable t)
       {
@@ -284,11 +285,11 @@ public class JBMMessageHandler implements MessageHandler
                try
                {
                   return new XATransactionDemarcationStrategy();
-                  }
-                  catch (Throwable t)
-                  {
-                     log.error(this + " error creating transaction demarcation ", t);
-                  }
+               }
+               catch (Throwable t)
+               {
+                  log.error(this + " error creating transaction demarcation ", t);
+               }
             }
             else
             {
@@ -405,6 +406,8 @@ public class JBMMessageHandler implements MessageHandler
    {
       private final TransactionManager tm = activation.getTransactionManager();
 
+      private Transaction trans;
+
       public void start() throws Throwable
       {
          final int timeout = activation.getActivationSpec().getTransactionTimeout();
@@ -418,26 +421,57 @@ public class JBMMessageHandler implements MessageHandler
 
             tm.setTransactionTimeout(timeout);
          }
-         endpoint.beforeDelivery(JBMActivation.ONMESSAGE);
+
+         tm.begin();
+
+         try
+         {
+            trans = tm.getTransaction();
+
+            if (trace)
+            {
+               log.trace(this + " using tx=" + trans);
+            }
+
+            if (!trans.enlistResource(session))
+            {
+               throw new JMSException("could not enlist resource");
+            }
+            if (trace)
+            {
+               log.trace(this + " XAResource '" + session + " enlisted.");
+            }
+
+         }
+         catch (Throwable t)
+         {
+            try
+            {
+               tm.rollback();
+            }
+            catch (Throwable ignored)
+            {
+               log.trace(this + " ignored error rolling back after failed enlist", ignored);
+            }
+            throw t;
+         }
       }
 
       public void error()
       {
+         // Mark for tollback TX via TM
          try
          {
-            try
+            if (trace)
             {
-               tm.getTransaction().setRollbackOnly();
+               log.trace(this + " using TM to mark TX for rollback tx=" + trans);
             }
-            catch (SystemException e)
-            {
-               log.error("Unable to mark transaction as rollback only", e);
-            }
-            endpoint.afterDelivery();
+
+            trans.setRollbackOnly();
          }
-         catch (ResourceException e)
+         catch (Throwable t)
          {
-            log.error("Error calling after delivery on endpoint", e);
+            log.error(this + " failed to set rollback only", t);
          }
       }
 
@@ -445,11 +479,47 @@ public class JBMMessageHandler implements MessageHandler
       {
          try
          {
-            endpoint.afterDelivery();
+            // Use the TM to commit the Tx (assert the correct association)
+            Transaction currentTx = tm.getTransaction();
+            if (!trans.equals(currentTx))
+            {
+               throw new IllegalStateException("Wrong tx association: expected " + trans + " was " + currentTx);
+            }
+
+            // Marked rollback
+            if (trans.getStatus() == Status.STATUS_MARKED_ROLLBACK)
+            {
+               if (trace)
+               {
+                  log.trace(this + " rolling back JMS transaction tx=" + trans);
+               }
+
+               // Actually roll it back
+               tm.rollback();
+
+            }
+            else if (trans.getStatus() == Status.STATUS_ACTIVE)
+            {
+               // Commit tx
+               // This will happen if
+               // a) everything goes well
+               // b) app. exception was thrown
+               if (trace)
+               {
+                  log.trace(this + " commiting the JMS transaction tx=" + trans);
+               }
+
+               tm.commit();
+
+            }
+            else
+            {
+               tm.suspend();
+            }
          }
-         catch (ResourceException e)
+         catch (Throwable t)
          {
-            log.error("Error calling after delivery on endpoint", e);
+            log.error(this + " failed to commit/rollback", t);
          }
       }
    }
