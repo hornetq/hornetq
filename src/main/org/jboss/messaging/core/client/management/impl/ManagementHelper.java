@@ -386,7 +386,7 @@ public class ManagementHelper
     
       String s = str;
       
-      // if there is a single item, we wrap it in {Ê}Êto make it a JSON object
+      // if there is a single item, we wrap it in to make it a JSON object
       if (!s.trim().startsWith("{"))
       {
          s = "{" + s + "}";
