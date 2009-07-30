@@ -337,6 +337,12 @@ public class TypedProperties
       }
    }
    
+   @Override
+   public String toString()
+   {
+      return "TypedProperties[" + properties  + "]";
+   }
+   
    // Private ------------------------------------------------------------------------------------
 
    private void checkCreateProperties()
@@ -402,16 +408,22 @@ public class TypedProperties
 
    // Inner classes ------------------------------------------------------------------------------
 
-   private interface PropertyValue
+   private static abstract class PropertyValue
    {
-      Object getValue();
+      abstract Object getValue();
 
-      void write(MessagingBuffer buffer);
+      abstract void write(MessagingBuffer buffer);
 
-      int encodeSize();
+      abstract int encodeSize();
+      
+      @Override
+      public String toString()
+      {
+         return "" + getValue();
+      }
    }
 
-   private static final class NullValue implements PropertyValue
+   private static final class NullValue extends PropertyValue
    {
       public NullValue()
       {
@@ -434,7 +446,7 @@ public class TypedProperties
 
    }
 
-   private static final class BooleanValue implements PropertyValue
+   private static final class BooleanValue extends PropertyValue
    {
       final boolean val;
 
@@ -466,7 +478,7 @@ public class TypedProperties
 
    }
 
-   private static final class ByteValue implements PropertyValue
+   private static final class ByteValue extends PropertyValue
    {
       final byte val;
 
@@ -497,7 +509,7 @@ public class TypedProperties
       }
    }
 
-   private static final class BytesValue implements PropertyValue
+   private static final class BytesValue extends PropertyValue
    {
       final byte[] val;
 
@@ -532,7 +544,7 @@ public class TypedProperties
 
    }
 
-   private static final class ShortValue implements PropertyValue
+   private static final class ShortValue extends PropertyValue
    {
       final short val;
 
@@ -563,7 +575,7 @@ public class TypedProperties
       }
    }
 
-   private static final class IntValue implements PropertyValue
+   private static final class IntValue extends PropertyValue
    {
       final int val;
 
@@ -594,7 +606,7 @@ public class TypedProperties
       }
    }
 
-   private static final class LongValue implements PropertyValue
+   private static final class LongValue extends PropertyValue
    {
       final long val;
 
@@ -625,7 +637,7 @@ public class TypedProperties
       }
    }
 
-   private static final class FloatValue implements PropertyValue
+   private static final class FloatValue extends PropertyValue
    {
       final float val;
 
@@ -657,7 +669,7 @@ public class TypedProperties
 
    }
 
-   private static final class DoubleValue implements PropertyValue
+   private static final class DoubleValue extends PropertyValue
    {
       final double val;
 
@@ -688,7 +700,7 @@ public class TypedProperties
       }
    }
 
-   private static final class CharValue implements PropertyValue
+   private static final class CharValue extends PropertyValue
    {
       final char val;
 
@@ -719,7 +731,7 @@ public class TypedProperties
       }
    }
 
-   private static final class StringValue implements PropertyValue
+   private static final class StringValue extends PropertyValue
    {
       final SimpleString val;
 
@@ -747,12 +759,6 @@ public class TypedProperties
       public int encodeSize()
       {
          return SIZE_BYTE + SimpleString.sizeofString(val);
-      }
-
-      @Override
-      public String toString()
-      {
-         return val.toString();
       }
    }
 }
