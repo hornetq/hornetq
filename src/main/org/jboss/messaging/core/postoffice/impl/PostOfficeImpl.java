@@ -438,14 +438,10 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
 
                break;
             }
-            case SECURITY_AUTHENTICATION_VIOLATION:
-            case SECURITY_PERMISSION_VIOLATION:
-               break;
             default:
             {
-               throw new IllegalArgumentException("Invalid type " + type);
+               break;
             }
-
          }
       }
    }

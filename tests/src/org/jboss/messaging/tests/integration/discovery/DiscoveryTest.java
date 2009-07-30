@@ -34,10 +34,14 @@ import org.jboss.messaging.core.cluster.DiscoveryListener;
 import org.jboss.messaging.core.cluster.impl.DiscoveryGroupImpl;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.management.Notification;
+import org.jboss.messaging.core.management.NotificationType;
 import org.jboss.messaging.core.server.cluster.BroadcastGroup;
 import org.jboss.messaging.core.server.cluster.impl.BroadcastGroupImpl;
+import org.jboss.messaging.tests.integration.SimpleNotificationService;
 import org.jboss.messaging.tests.util.UnitTestCase;
 import org.jboss.messaging.utils.Pair;
+import org.jboss.messaging.utils.SimpleString;
 import org.jboss.messaging.utils.UUIDGenerator;
 
 /**
@@ -852,6 +856,65 @@ public class DiscoveryTest extends UnitTestCase
       dg1.stop();
       dg2.stop();
       dg3.stop();
+   }
+
+   public void testDiscoveryGroupNotifications() throws Exception
+   {
+      SimpleNotificationService notifService = new SimpleNotificationService();
+      SimpleNotificationService.Listener notifListener = new SimpleNotificationService.Listener();
+      notifService.addNotificationListener(notifListener);
+
+      final InetAddress groupAddress = InetAddress.getByName(address1);
+      final int groupPort = 6745;
+      final int timeout = 500;
+
+      DiscoveryGroup dg = new DiscoveryGroupImpl(randomString(), randomString(), groupAddress, groupPort, timeout);
+      dg.setNotificationService(notifService);
+      
+      assertEquals(0, notifListener.getNotifications().size());
+      
+      dg.start();
+      
+      assertEquals(1, notifListener.getNotifications().size());
+      Notification notif = notifListener.getNotifications().get(0);
+      assertEquals(NotificationType.DISCOVERY_GROUP_STARTED, notif.getType());
+      assertEquals(dg.getName(), (notif.getProperties().getProperty(new SimpleString("name")).toString()));
+      
+      dg.stop();
+      
+      assertEquals(2, notifListener.getNotifications().size());
+      notif = notifListener.getNotifications().get(1);
+      assertEquals(NotificationType.DISCOVERY_GROUP_STOPPED, notif.getType());
+      assertEquals(dg.getName(), (notif.getProperties().getProperty(new SimpleString("name")).toString()));
+   }
+   
+   public void testBroadcastGroupNotifications() throws Exception
+   {
+      SimpleNotificationService notifService = new SimpleNotificationService();
+      SimpleNotificationService.Listener notifListener = new SimpleNotificationService.Listener();
+      notifService.addNotificationListener(notifListener);
+
+      final InetAddress groupAddress = InetAddress.getByName(address1);
+      final int groupPort = 6745;
+
+      BroadcastGroup bg = new BroadcastGroupImpl(randomString(), randomString(), null, -1, groupAddress, groupPort, true);
+      bg.setNotificationService(notifService);
+
+      assertEquals(0, notifListener.getNotifications().size());
+      
+      bg.start();
+      
+      assertEquals(1, notifListener.getNotifications().size());
+      Notification notif = notifListener.getNotifications().get(0);
+      assertEquals(NotificationType.BROADCAST_GROUP_STARTED, notif.getType());
+      assertEquals(bg.getName(), (notif.getProperties().getProperty(new SimpleString("name")).toString()));
+      
+      bg.stop();
+      
+      assertEquals(2, notifListener.getNotifications().size());
+      notif = notifListener.getNotifications().get(1);
+      assertEquals(NotificationType.BROADCAST_GROUP_STOPPED, notif.getType());
+      assertEquals(bg.getName(), (notif.getProperties().getProperty(new SimpleString("name")).toString()));
    }
 
    private TransportConfiguration generateTC()

@@ -43,6 +43,8 @@ import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.filter.Filter;
 import org.jboss.messaging.core.filter.impl.FilterImpl;
 import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.management.Notification;
+import org.jboss.messaging.core.management.NotificationService;
 import org.jboss.messaging.core.management.NotificationType;
 import org.jboss.messaging.core.management.ResourceNames;
 import org.jboss.messaging.core.message.Message;
@@ -64,12 +66,14 @@ import org.jboss.messaging.core.server.cluster.Transformer;
 import org.jboss.messaging.utils.Future;
 import org.jboss.messaging.utils.Pair;
 import org.jboss.messaging.utils.SimpleString;
+import org.jboss.messaging.utils.TypedProperties;
 import org.jboss.messaging.utils.UUID;
 
 /**
- * A JMSBridgeImpl
+ * A Core BridgeImpl
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  * 
  * Created 12 Nov 2008 11:37:35
  *
@@ -140,6 +144,8 @@ public class BridgeImpl implements Bridge, FailureListener, SendAcknowledgementH
    private Channel replicatingChannel;
 
    private boolean activated;
+
+   private NotificationService notificationService;
    
    // Static --------------------------------------------------------
 
@@ -224,6 +230,11 @@ public class BridgeImpl implements Bridge, FailureListener, SendAcknowledgementH
       this.activated = activated;  
    }
 
+   public void setNotificationService(final NotificationService notificationService)
+   {
+      this.notificationService = notificationService;
+   }
+   
    public synchronized void start() throws Exception
    {
       if (started)
@@ -236,7 +247,15 @@ public class BridgeImpl implements Bridge, FailureListener, SendAcknowledgementH
       if (activated)
       {
          executor.execute(new CreateObjectsRunnable());
-      }                     
+      }
+      
+      if (notificationService != null)
+      {
+         TypedProperties props = new TypedProperties();
+         props.putStringProperty(new SimpleString("name"), name);
+         Notification notification = new Notification(nodeUUID.toString(), NotificationType.BRIDGE_STARTED, props);
+         notificationService.sendNotification(notification );
+      }
    }
 
    private void cancelRefs() throws Exception
@@ -271,7 +290,22 @@ public class BridgeImpl implements Bridge, FailureListener, SendAcknowledgementH
       
       executor.execute(new StopRunnable());
            
-      waitForRunnablesToComplete();   
+      waitForRunnablesToComplete();
+      
+      if (notificationService != null)
+      {
+         TypedProperties props = new TypedProperties();
+         props.putStringProperty(new SimpleString("name"), name);
+         Notification notification = new Notification(nodeUUID.toString(), NotificationType.BRIDGE_STOPPED, props);
+         try
+         {
+            notificationService.sendNotification(notification );
+         }
+         catch (Exception e)
+         {
+            log.warn("unable to send notification when broadcast group is stopped", e);
+         }
+      }
    }
 
    public boolean isStarted()

@@ -41,12 +41,16 @@ import org.jboss.messaging.core.config.cluster.BridgeConfiguration;
 import org.jboss.messaging.core.config.cluster.QueueConfiguration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.management.BridgeControl;
+import org.jboss.messaging.core.management.Notification;
+import org.jboss.messaging.core.management.NotificationType;
 import org.jboss.messaging.core.management.ObjectNames;
 import org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory;
 import org.jboss.messaging.core.server.Messaging;
 import org.jboss.messaging.core.server.MessagingServer;
+import org.jboss.messaging.tests.integration.SimpleNotificationService;
 import org.jboss.messaging.utils.Pair;
+import org.jboss.messaging.utils.SimpleString;
 
 /**
  * A BridgeControlTest
@@ -111,6 +115,30 @@ public class BridgeControlTest extends ManagementTestBase
       assertTrue(bridgeControl.isStarted());
    }
 
+   public void testNotifications() throws Exception
+   {
+      SimpleNotificationService.Listener notifListener = new SimpleNotificationService.Listener();
+      BridgeControl bridgeControl = createBridgeControl(bridgeConfig.getName(), mbeanServer);
+
+      server_0.getManagementService().addNotificationListener(notifListener);
+      
+      assertEquals(0, notifListener.getNotifications().size());
+      
+      bridgeControl.stop();
+      
+      assertEquals(1, notifListener.getNotifications().size());
+      Notification notif = notifListener.getNotifications().get(0);
+      assertEquals(NotificationType.BRIDGE_STOPPED, notif.getType());
+      assertEquals(bridgeControl.getName(), (notif.getProperties().getProperty(new SimpleString("name")).toString()));
+      
+      bridgeControl.start();
+      
+      assertEquals(2, notifListener.getNotifications().size());
+      notif = notifListener.getNotifications().get(1);
+      assertEquals(NotificationType.BRIDGE_STARTED, notif.getType());
+      assertEquals(bridgeControl.getName(), (notif.getProperties().getProperty(new SimpleString("name")).toString()));      
+   }
+   
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------

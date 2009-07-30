@@ -25,6 +25,7 @@ package org.jboss.messaging.core.cluster;
 
 import java.util.Map;
 
+import org.jboss.messaging.core.management.NotificationService;
 import org.jboss.messaging.core.server.MessagingComponent;
 
 /**
@@ -38,6 +39,8 @@ import org.jboss.messaging.core.server.MessagingComponent;
  */
 public interface DiscoveryGroup extends MessagingComponent
 {
+   void setNotificationService(NotificationService notificationService);
+
    String getName();
 
    Map<String, DiscoveryEntry> getDiscoveryEntryMap();

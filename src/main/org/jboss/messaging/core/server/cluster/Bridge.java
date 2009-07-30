@@ -23,6 +23,7 @@
 
 package org.jboss.messaging.core.server.cluster;
 
+import org.jboss.messaging.core.management.NotificationService;
 import org.jboss.messaging.core.server.Consumer;
 import org.jboss.messaging.core.server.MessagingComponent;
 import org.jboss.messaging.core.server.Queue;
@@ -30,9 +31,10 @@ import org.jboss.messaging.utils.SimpleString;
 
 
 /**
- * A JMSBridge
+ * A Core Bridge
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  * 
  * Created 15 Nov 2008 09:42:31
  *
@@ -53,4 +55,6 @@ public interface Bridge extends Consumer, MessagingComponent
    void activate();
    
    void setQueue(Queue queue);
+
+   void setNotificationService(NotificationService notificationService);
 }

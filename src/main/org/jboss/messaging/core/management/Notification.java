@@ -62,4 +62,10 @@ public class Notification
    {
       return uid;
    }
+   
+   @Override
+   public String toString()
+   {
+      return "Notification[uid=" + uid + ", type=" + type + ", properties=" + properties + "]";
+   }
 }

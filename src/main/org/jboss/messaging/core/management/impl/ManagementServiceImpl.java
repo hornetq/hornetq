@@ -326,6 +326,7 @@ public class ManagementServiceImpl implements ManagementService
    public synchronized void registerBroadcastGroup(BroadcastGroup broadcastGroup,
                                                    BroadcastGroupConfiguration configuration) throws Exception
    {
+      broadcastGroup.setNotificationService(this);
       ObjectName objectName = ObjectNames.getBroadcastGroupObjectName(configuration.getName());
       BroadcastGroupControl control = new BroadcastGroupControlImpl(broadcastGroup, configuration);
       registerInJMX(objectName, new StandardMBean(control, BroadcastGroupControl.class));
@@ -342,6 +343,7 @@ public class ManagementServiceImpl implements ManagementService
    public synchronized void registerDiscoveryGroup(DiscoveryGroup discoveryGroup,
                                                    DiscoveryGroupConfiguration configuration) throws Exception
    {
+      discoveryGroup.setNotificationService(this);
       ObjectName objectName = ObjectNames.getDiscoveryGroupObjectName(configuration.getName());
       DiscoveryGroupControl control = new DiscoveryGroupControlImpl(discoveryGroup, configuration);
       registerInJMX(objectName, new StandardMBean(control, DiscoveryGroupControl.class));
@@ -357,6 +359,7 @@ public class ManagementServiceImpl implements ManagementService
 
    public synchronized void registerBridge(Bridge bridge, BridgeConfiguration configuration) throws Exception
    {
+      bridge.setNotificationService(this);
       ObjectName objectName = ObjectNames.getBridgeObjectName(configuration.getName());
       BridgeControl control = new BridgeControlImpl(bridge, configuration);
       registerInJMX(objectName, new StandardMBean(control, BridgeControl.class));
@@ -629,8 +632,8 @@ public class ManagementServiceImpl implements ManagementService
                   }
                }
 
-               // start sending notification *messages* only when the server if fully started
-               if (messagingServer != null && !messagingServer.isStarted())
+               // start sending notification *messages* only when the *remoting service* if started
+               if (messagingServer == null || !messagingServer.isStarted() || !messagingServer.getRemotingService().isStarted())
                {
                   return;
                }

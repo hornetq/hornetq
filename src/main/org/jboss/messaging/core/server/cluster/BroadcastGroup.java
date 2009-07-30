@@ -24,6 +24,7 @@
 package org.jboss.messaging.core.server.cluster;
 
 import org.jboss.messaging.core.config.TransportConfiguration;
+import org.jboss.messaging.core.management.NotificationService;
 import org.jboss.messaging.core.server.MessagingComponent;
 import org.jboss.messaging.utils.Pair;
 
@@ -31,6 +32,7 @@ import org.jboss.messaging.utils.Pair;
  * A BroadcastGroup
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  * 
  * Created 18 Nov 2008 09:29:45
  *
@@ -38,6 +40,8 @@ import org.jboss.messaging.utils.Pair;
  */
 public interface BroadcastGroup extends MessagingComponent
 {
+   void setNotificationService(NotificationService notificationService);
+
    String getName();
 
    void addConnectorPair(Pair<TransportConfiguration, TransportConfiguration> connectorPair);

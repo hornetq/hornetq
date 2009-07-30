@@ -24,7 +24,12 @@ package org.jboss.messaging.jms.server.management.jmx.impl;
 
 import java.util.Map;
 
+import javax.management.ListenerNotFoundException;
 import javax.management.MBeanInfo;
+import javax.management.MBeanNotificationInfo;
+import javax.management.NotificationEmitter;
+import javax.management.NotificationFilter;
+import javax.management.NotificationListener;
 
 import org.jboss.messaging.core.management.ReplicationOperationInvoker;
 import org.jboss.messaging.core.management.ResourceNames;
@@ -40,7 +45,7 @@ import org.jboss.messaging.jms.server.management.impl.JMSServerControlImpl;
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  */
 public class ReplicationAwareJMSServerControlWrapper extends ReplicationAwareStandardMBeanWrapper implements
-         JMSServerControl
+         JMSServerControl, NotificationEmitter
 {
 
    // Constants -----------------------------------------------------
@@ -556,6 +561,28 @@ public class ReplicationAwareJMSServerControlWrapper extends ReplicationAwareSta
    {
       return localControl.listSessions(connectionID);
    }
+   
+   // NotificationEmitter implementation ----------------------------
+
+   public void addNotificationListener(NotificationListener listener, NotificationFilter filter, Object handback) throws IllegalArgumentException
+   {
+      localControl.addNotificationListener(listener, filter, handback);
+   }
+
+   public void removeNotificationListener(NotificationListener listener) throws ListenerNotFoundException
+   {
+      localControl.removeNotificationListener(listener);
+   }
+
+   public void removeNotificationListener(NotificationListener listener, NotificationFilter filter, Object handback) throws ListenerNotFoundException
+   {
+      localControl.removeNotificationListener(listener, filter, handback);
+   }
+
+   public MBeanNotificationInfo[] getNotificationInfo()
+   {
+      return localControl.getNotificationInfo();
+   }
 
    // StandardMBean overrides ---------------------------------------
 
@@ -568,7 +595,7 @@ public class ReplicationAwareJMSServerControlWrapper extends ReplicationAwareSta
                            info.getAttributes(),
                            info.getConstructors(),
                            MBeanInfoHelper.getMBeanOperationsInfo(JMSServerControl.class),
-                           info.getNotifications());
+                           localControl.getNotificationInfo());
    }
 
    // Public --------------------------------------------------------

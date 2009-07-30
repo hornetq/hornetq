@@ -38,8 +38,13 @@ import org.jboss.messaging.core.cluster.DiscoveryGroup;
 import org.jboss.messaging.core.cluster.DiscoveryListener;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.management.Notification;
+import org.jboss.messaging.core.management.NotificationService;
+import org.jboss.messaging.core.management.NotificationType;
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
 import org.jboss.messaging.utils.Pair;
+import org.jboss.messaging.utils.SimpleString;
+import org.jboss.messaging.utils.TypedProperties;
 
 /**
  * A DiscoveryGroupImpl
@@ -80,6 +85,8 @@ public class DiscoveryGroupImpl implements Runnable, DiscoveryGroup
    private final int groupPort;
    
    private Map<String, UniqueIDEntry> uniqueIDMap = new HashMap<String, UniqueIDEntry>();
+
+   private NotificationService notificationService;
    
    public DiscoveryGroupImpl(final String nodeID,
                              final String name,
@@ -96,6 +103,11 @@ public class DiscoveryGroupImpl implements Runnable, DiscoveryGroup
       this.groupAddress = groupAddress;
 
       this.groupPort = groupPort;
+   }
+
+   public void setNotificationService(final NotificationService notificationService)
+   {
+      this.notificationService = notificationService;
    }
 
    public synchronized void start() throws Exception
@@ -118,6 +130,14 @@ public class DiscoveryGroupImpl implements Runnable, DiscoveryGroup
       thread.setDaemon(true);
 
       thread.start();
+      
+      if (notificationService != null)
+      {
+         TypedProperties props = new TypedProperties();
+         props.putStringProperty(new SimpleString("name"), new SimpleString(name));
+         Notification notification = new Notification(nodeID, NotificationType.DISCOVERY_GROUP_STARTED, props );
+         notificationService.sendNotification(notification );
+      }
    }
 
    public void stop()
@@ -145,6 +165,21 @@ public class DiscoveryGroupImpl implements Runnable, DiscoveryGroup
       socket = null;
 
       thread = null;
+      
+      if (notificationService != null)
+      {
+         TypedProperties props = new TypedProperties();
+         props.putStringProperty(new SimpleString("name"), new SimpleString(name));
+         Notification notification = new Notification(nodeID, NotificationType.DISCOVERY_GROUP_STOPPED, props );
+         try
+         {
+            notificationService.sendNotification(notification );
+         }
+         catch (Exception e)
+         {
+            log.warn("unable to send notification when discovery group is stopped", e);
+         }
+      }
    }
 
    public boolean isStarted()

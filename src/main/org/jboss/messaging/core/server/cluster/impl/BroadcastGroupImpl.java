@@ -30,11 +30,17 @@ import java.util.List;
 import java.util.concurrent.ScheduledFuture;
 
 import org.jboss.messaging.core.buffers.ChannelBuffers;
+import org.jboss.messaging.core.client.management.impl.ManagementHelper;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.management.Notification;
+import org.jboss.messaging.core.management.NotificationService;
+import org.jboss.messaging.core.management.NotificationType;
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
 import org.jboss.messaging.core.server.cluster.BroadcastGroup;
 import org.jboss.messaging.utils.Pair;
+import org.jboss.messaging.utils.SimpleString;
+import org.jboss.messaging.utils.TypedProperties;
 import org.jboss.messaging.utils.UUIDGenerator;
 
 /**
@@ -75,6 +81,8 @@ public class BroadcastGroupImpl implements BroadcastGroup, Runnable
    //on the network which would be an error
    private final String uniqueID;
 
+   private NotificationService notificationService;
+
    /**
     * Broadcast group is bound locally to the wildcard address
     */
@@ -103,6 +111,11 @@ public class BroadcastGroupImpl implements BroadcastGroup, Runnable
       this.uniqueID = UUIDGenerator.getInstance().generateStringUUID();
    }
 
+   public void setNotificationService(final NotificationService notificationService)
+   {
+      this.notificationService = notificationService;
+   }
+
    public synchronized void start() throws Exception
    {
       if (started)
@@ -120,6 +133,14 @@ public class BroadcastGroupImpl implements BroadcastGroup, Runnable
       }
 
       started = true;
+      
+      if (notificationService != null)
+      {
+         TypedProperties props = new TypedProperties();
+         props.putStringProperty(new SimpleString("name"), new SimpleString(name));
+         Notification notification = new Notification(nodeID, NotificationType.BROADCAST_GROUP_STARTED, props);
+         notificationService.sendNotification(notification );
+      }
    }
 
    public synchronized void stop()
@@ -137,6 +158,22 @@ public class BroadcastGroupImpl implements BroadcastGroup, Runnable
       socket.close();
 
       started = false;
+      
+      if (notificationService != null)
+      {
+         TypedProperties props = new TypedProperties();
+         props.putStringProperty(new SimpleString("name"), new SimpleString(name));
+         Notification notification = new Notification(nodeID, NotificationType.BROADCAST_GROUP_STOPPED, props);
+         try
+         {
+            notificationService.sendNotification(notification );
+         }
+         catch (Exception e)
+         {
+            log.warn("unable to send notification when broadcast group is stopped", e);
+         }
+      }
+
    }
 
    public synchronized boolean isStarted()
