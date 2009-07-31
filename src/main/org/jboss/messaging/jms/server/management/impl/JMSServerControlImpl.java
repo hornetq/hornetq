@@ -126,6 +126,19 @@ public class JMSServerControlImpl implements JMSServerControl, NotificationEmitt
       return pairs;
    }
 
+   public static MBeanNotificationInfo[] getNotificationInfos()
+   {
+      NotificationType[] values = NotificationType.values();
+      String[] names = new String[values.length];
+      for (int i = 0; i < values.length; i++)
+      {
+         names[i] = values[i].toString();
+      }
+      return new MBeanNotificationInfo[] { new MBeanNotificationInfo(names,
+                                                                     JMSServerControl.class.getName(),
+                                                                     "Notifications emitted by a JMS Server") };
+   }
+
    // Constructors --------------------------------------------------
 
    public JMSServerControlImpl(final JMSServerManager server)
@@ -688,15 +701,7 @@ public class JMSServerControlImpl implements JMSServerControl, NotificationEmitt
 
    public MBeanNotificationInfo[] getNotificationInfo()
    {
-      NotificationType[] values = NotificationType.values();
-      String[] names = new String[values.length];
-      for (int i = 0; i < values.length; i++)
-      {
-         names[i] = values[i].toString();
-      }
-      return new MBeanNotificationInfo[] { new MBeanNotificationInfo(names,
-                                                                     this.getClass().getName(),
-                                                                     "Notifications emitted by a JMS Server") };
+      return getNotificationInfos();
    }
 
    public String[] listRemoteAddresses() throws Exception

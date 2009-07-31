@@ -37,6 +37,7 @@ import org.jboss.messaging.core.management.impl.MBeanInfoHelper;
 import org.jboss.messaging.core.management.jmx.impl.ReplicationAwareStandardMBeanWrapper;
 import org.jboss.messaging.jms.server.management.JMSServerControl;
 import org.jboss.messaging.jms.server.management.impl.JMSServerControlImpl;
+import org.jboss.messaging.jms.server.management.impl.JMSServerControlImpl.NotificationType;
 
 /**
  * A ReplicationAwareJMSServerControlWrapper
@@ -581,7 +582,7 @@ public class ReplicationAwareJMSServerControlWrapper extends ReplicationAwareSta
 
    public MBeanNotificationInfo[] getNotificationInfo()
    {
-      return localControl.getNotificationInfo();
+      return JMSServerControlImpl.getNotificationInfos();
    }
 
    // StandardMBean overrides ---------------------------------------
@@ -595,7 +596,7 @@ public class ReplicationAwareJMSServerControlWrapper extends ReplicationAwareSta
                            info.getAttributes(),
                            info.getConstructors(),
                            MBeanInfoHelper.getMBeanOperationsInfo(JMSServerControl.class),
-                           localControl.getNotificationInfo());
+                           getNotificationInfo());
    }
 
    // Public --------------------------------------------------------
