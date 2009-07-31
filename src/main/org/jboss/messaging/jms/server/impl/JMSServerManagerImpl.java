@@ -130,7 +130,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
       }
       catch (Exception e)
       {
-         log.error("Failed to start jms deployer");
+         log.error("Failed to start jms deployer", e);
       }
    }
 
