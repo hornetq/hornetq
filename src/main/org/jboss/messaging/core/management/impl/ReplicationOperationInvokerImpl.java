@@ -114,6 +114,7 @@ public class ReplicationOperationInvokerImpl implements ReplicationOperationInvo
       {
          throw new Exception("did not receive reply for message " + mngmntMessage);
       }
+      reply.acknowledge();
       if (ManagementHelper.hasOperationSucceeded(reply))
       {
          return ManagementHelper.getResult(reply);
