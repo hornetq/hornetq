@@ -2887,11 +2887,15 @@ public class JournalImpl implements TestableJournal
             compactingLock.readLock().lock();
             try
             {
-               dataFiles.add(file);
-               pendingCloseFiles.remove(file);
-               if (file.getFile().isOpen())
+               // The file could be closed by compacting. On this case we need to check if the close still pending
+               // before we add it to dataFiles
+               if (pendingCloseFiles.remove(file))
                {
-                  file.getFile().close();
+                  dataFiles.add(file);
+                  if (file.getFile().isOpen())
+                  {
+                     file.getFile().close();
+                  }
                }
             }
             catch (Exception e)
