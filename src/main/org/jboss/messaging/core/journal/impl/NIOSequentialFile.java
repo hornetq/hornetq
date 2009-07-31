@@ -256,7 +256,14 @@ public class NIOSequentialFile implements SequentialFile
 
    public long size() throws Exception
    {
-      return channel.size();
+      if (channel == null)
+      {
+         return file.length();
+      }
+      else
+      {
+         return channel.size();
+      }
    }
 
    public void position(final long pos) throws Exception

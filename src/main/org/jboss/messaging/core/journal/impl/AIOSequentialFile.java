@@ -383,7 +383,14 @@ public class AIOSequentialFile implements SequentialFile
 
    public long size() throws Exception
    {
-      return aioFile.size();
+      if (aioFile == null)
+      {
+         return file.length();
+      }
+      else
+      {
+         return aioFile.size();
+      }
    }
 
    @Override
