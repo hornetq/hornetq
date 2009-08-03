@@ -1389,8 +1389,8 @@
          <jvmarg value="-Djava.library.path=${native.bin.dir}"/>
          <!--<jvmarg line="-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=8000"/>-->
          <arg line="jbm-jboss-beans.xml"/>
-         <classpath refid="jms.standalone.server.classpath"/>
          <classpath path="${src.config.trunk.non-clustered.dir}" />
+         <classpath refid="jms.standalone.server.classpath"/>
       </java>
    </target>
 
@@ -1412,8 +1412,8 @@
          <jvmarg value="-Djnp.rmiPort=${jnp.rmiPort}"/>
          <jvmarg value="-Djbm.data.dir=${jbm.data.dir}"/>
          <arg line="jbm-jboss-beans.xml"/>
-         <classpath refid="jms.standalone.server.classpath"/>
          <classpath path="${src.config.trunk.clustered.dir}" />
+         <classpath refid="jms.standalone.server.classpath"/>
       </java>
    </target>
 
@@ -1436,7 +1436,6 @@
          <jvmarg value="-Djava.naming.factory.initial=org.jnp.interfaces.NamingContextFactory"/>
          <jvmarg value="-Djava.naming.factory.url.pkgs=org.jboss.naming:org.jnp.interfaces"/>
          <arg line="jbm-jboss-beans.xml"/>
-         <classpath refid="jms.standalone.server.classpath"/>
          <classpath path="${src.config.standalone.non-clustered.dir}" />
       </java>
    </target>
