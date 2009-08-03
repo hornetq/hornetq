@@ -10,12 +10,12 @@
         reaches a total configured maximum size or b) The total size of all queues reaches a
         configured maximum size.</para>
     <para>These two modes of operation are called <link linkend="paging.address.mode">Address Paging
-            Mode </link> and <link linkend="paging.global.mode">Global Paging Mode </link>.</para>
+            Mode</link> and <link linkend="paging.global.mode">Global Paging Mode</link>.</para>
     <section>
         <title>Page Files</title>
         <para>Messages are stored per address on the file system. Each address has an individual
             folder where messages are stored in multiple files (page files). Each file will contain
-            messages up to a max configured size. (<literal>page-size-bytes</literal>). When reading
+            messages up to a max configured size (<literal>page-size-bytes</literal>). When reading
             page-files all messages on the page-file are read, routed and the file is deleted as
             soon as the messages are recovered.</para>
     </section>
@@ -142,7 +142,7 @@ xsi:schemaLocation="urn:jboss:messaging /schema/jbm-configuration.xsd">
             JMS subscription, there is only 1 copy of the message in memory. Each queue only deals
             with a reference to this. Because of this the memory is only freed up once all queues
             referencing the message have delivered it. This means that if not all queues deliver the
-            message we can end up in a state where messages to not get delivered. </para>
+            message we can end up in a state where messages are not delivered. </para>
         <para>For example:</para>
         <itemizedlist>
             <listitem>
