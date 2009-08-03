@@ -92,7 +92,7 @@ xsi:schemaLocation="urn:jboss:messaging /schema/jbm-configuration.xsd">
       &lt;address-setting match="jms.someaddress">
          &lt;max-size-bytes>-1&lt;/max-size-bytes>
          &lt;page-size-bytes>10485760&lt;/page-size-bytes>
-         &lt;drop-messages-when-full>10485760&lt;/drop-messages-when-full>
+         &lt;drop-messages-when-full>true&lt;/drop-messages-when-full>
       &lt;/address-setting>
    &lt;/address-settings>
         </programlisting>
