@@ -222,4 +222,36 @@ public class ConsumerTest extends ServiceTestBase
                    ((Queue)server.getPostOffice().getBinding(QUEUE).getBindable()).getMessageCount());
    }
 
+   /*public void testAcksWithSmallSendWindow() throws Exception
+   {
+      ClientSessionFactory sf = createInVMFactory();
+
+      ClientSession session = sf.createSession(false, true, true);
+
+      session.createQueue(QUEUE, QUEUE, null, false);
+
+      ClientProducer producer = session.createProducer(QUEUE);
+
+      final int numMessages = 1000;
+
+      for (int i = 0; i < numMessages; i++)
+      {
+         ClientMessage message = createTextMessage("m" + i, session);
+         producer.send(message);
+      }
+      System.out.println("-----------------------------------------------------------------------------");
+      ClientSessionFactory sfReceive = createInVMFactory();
+      sfReceive.setProducerWindowSize(100);
+      sfReceive.setAckBatchSize(-1);
+      ClientSession sessionRec = sfReceive.createSession(false, true, true);
+      ClientConsumer consumer = sessionRec.createConsumer(QUEUE);
+      sessionRec.start();
+      for (int i = 0; i < numMessages; i++)
+      {
+         ClientMessage message2 = consumer.receive(1000);
+         System.out.println("message2 = " + message2);
+         message2.acknowledge();
+      }
+   }*/
+
 }
