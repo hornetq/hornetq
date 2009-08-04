@@ -101,6 +101,8 @@ public class FileConfiguration extends ConfigurationImpl
       }
        
       URL url = getClass().getClassLoader().getResource(configurationUrl);
+      log.info("Loading server configuration from " + url);
+
       Reader reader = new InputStreamReader(url.openStream());
       String xml = org.jboss.messaging.utils.XMLUtil.readerToString(reader);
       xml = XMLUtil.replaceSystemProps(xml);

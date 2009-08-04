@@ -134,7 +134,7 @@ public class FileDeploymentManager implements Runnable, DeploymentManager
 
                try
                {
-                  log.debug("Deploying " + deployer + " with url " + url);
+                  log.info("Deploying " + url + " for " + deployer.getClass().getSimpleName());
                   deployer.deploy(url);
                }
                catch (Exception e)
