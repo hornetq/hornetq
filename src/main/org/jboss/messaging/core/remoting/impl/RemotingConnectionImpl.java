@@ -238,7 +238,7 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
          destroyed = true;
       }
 
-      log.warn("Connection failure has been detected " + me.getMessage() + ":" + me.getCode());
+      log.warn("Connection failure has been detected: " + me.getMessage() + " [code=" + me.getCode() + "]");
 
       // Then call the listeners
       callFailureListeners(me);
