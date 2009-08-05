@@ -1142,7 +1142,7 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
       public synchronized void run()
       {
          final MessagingException me = new MessagingException(MessagingException.CONNECTION_TIMEDOUT,
-                                                              "Did not receive ping from server");
+                                                              "Did not receive ping from server for " + conn.getTransportConnection());
 
          threadPool.execute(new Runnable()
          {

@@ -161,6 +161,12 @@ public class NettyConnection implements Connection
 
    // Public --------------------------------------------------------
 
+   @Override
+   public String toString()
+   {
+      return super.toString() + "[local= " + channel.getLocalAddress() + ", remote=" + channel.getRemoteAddress() + "]";
+   }
+
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
