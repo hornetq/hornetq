@@ -748,7 +748,10 @@ public class QueueImpl implements Queue
 
          if (bindingList.getBindings().isEmpty())
          {
-            log.warn("Message has expired. No bindings for Expiry Address " + expiryAddress + " so dropping it");
+            if (log.isDebugEnabled())
+            {
+               log.debug("Message " + ref + " has expired without any binding for expiry address " + expiryAddress + ", dropping it");
+            }
          }
          else
          {
@@ -757,7 +760,10 @@ public class QueueImpl implements Queue
       }
       else
       {
-         log.warn("Message has expired. No expiry queue configured for queue " + name + " so dropping it");
+         if (log.isDebugEnabled())
+         {
+            log.debug("Message " + ref + " has expired without any expiry address configured for " + name + ", dropping it");
+         }
 
          acknowledge(ref);
       }
