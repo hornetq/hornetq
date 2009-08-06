@@ -19,10 +19,6 @@
 
    <!-- Other config -->
 
-   <paging-max-global-size-bytes>20485760</paging-max-global-size-bytes>
-   
-   <global-page-size>1048576</global-page-size>
-
    <security-settings>
       <!--security for example queue-->
       <security-setting match="jms.queue.exampleQueue">
@@ -51,6 +47,11 @@
       </address-setting>
 
       <address-setting match="jms.queue.exampleQueue">
+          <max-size-bytes>10485760</max-size-bytes>
+         <page-size-bytes>1048576</page-size-bytes>
+      </address-setting>
+      <address-setting match="#">
+          <max-size-bytes>10485760</max-size-bytes>
          <page-size-bytes>1048576</page-size-bytes>
       </address-setting>
    </address-settings>

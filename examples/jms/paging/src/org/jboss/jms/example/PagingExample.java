@@ -117,7 +117,7 @@ public class PagingExample extends JBMExample
          {
             message = (BytesMessage)messageConsumer.receive(3000);
 
-            if (i % 1000 == 0)
+            if (i % 100 == 0)
             {
                System.out.println("Received " + i + " messages");
                message.acknowledge();
