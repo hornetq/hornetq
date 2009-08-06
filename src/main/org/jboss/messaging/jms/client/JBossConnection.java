@@ -439,7 +439,12 @@ public class JBossConnection implements Connection, QueueConnection, TopicConnec
 
    protected void finalize() throws Throwable
    {
-      close();
+      if (!closed)
+      {
+         log.warn("I'm closing a connection you left open. Please make sure you close all connections explicitly " +
+                  "before letting them go out of scope!");
+         close();
+      }
    }
 
    protected JBossSession createSessionInternal(final boolean transacted,
