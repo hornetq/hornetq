@@ -249,15 +249,6 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
 
       for (Channel channel : channels.values())
       {
-         // channel.lock.lock();
-         // try
-         // {
-         // channel.sendCondition.signalAll();
-         // }
-         // finally
-         // {
-         // channel.lock.unlock();
-         // }
          channel.returnBlocking();
       }
    }
@@ -447,14 +438,4 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
       }
    }
    
-   private static class DelegatingBufferHandler extends AbstractBufferHandler
-   {
-      RemotingConnection conn;
-
-      public void bufferReceived(final Object connectionID, final MessagingBuffer buffer)
-      {
-         conn.bufferReceived(connectionID, buffer);
-      }
-   }
-
 }

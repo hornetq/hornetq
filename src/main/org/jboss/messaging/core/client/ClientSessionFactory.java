@@ -23,6 +23,7 @@
 package org.jboss.messaging.core.client;
 
 import java.util.List;
+import java.util.concurrent.Executor;
 
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.exception.MessagingException;
@@ -172,4 +173,6 @@ public interface ClientSessionFactory
    void setDiscoveryRefreshTimeout(long discoveryRefreshTimeout);
 
    void close();
+   
+   Executor getThreadPool();
 }

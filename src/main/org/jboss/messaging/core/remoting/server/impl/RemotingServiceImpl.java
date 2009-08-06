@@ -297,7 +297,7 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
       // arrive the connection will get closed
 
       scheduledThreadPool.schedule(runnable, INITIAL_PING_TIMEOUT, TimeUnit.MILLISECONDS);
-
+      
       if (config.isBackup())
       {
          serverSideReplicatingConnection = rc;
@@ -385,7 +385,7 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
 
       pingRunnable.setFuture(pingFuture);
 
-      pingers.put(conn.getID(), pingRunnable);
+      pingers.put(conn.getID(), pingRunnable);           
    }
 
    private RemotingConnection closeConnection(final Object connectionID)
@@ -393,12 +393,12 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
       RemotingConnection connection = connections.remove(connectionID);
       
       Pinger pinger = pingers.remove(connectionID);
-
+      
       if (pinger != null)
       {
          pinger.close();
       }
-
+      
       return connection;
    }
 
@@ -441,7 +441,7 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
       public synchronized void run()
       {
          if (!gotInitialPing)
-         {
+         {            
             // Never received initial ping
             log.warn("Did not receive initial ping from " + conn.getRemoteAddress() + ", connection will be closed");
 

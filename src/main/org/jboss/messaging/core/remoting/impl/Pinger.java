@@ -126,7 +126,7 @@ public class Pinger implements Runnable, ChannelHandler
    public void close()
    {
       if (future != null)
-      {             
+      {                      
          future.cancel(false);
       }
 

@@ -515,7 +515,9 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
       {
          return false;
       }
-
+      
+      boolean done = false;
+      
       synchronized (failoverLock)
       {
          if (connectionID != null && !connections.containsKey(connectionID))
@@ -554,9 +556,7 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
          // until failover is complete
 
          boolean attemptFailover = (backupConnectorFactory) != null && (failoverOnServerShutdown || me.getCode() != MessagingException.DISCONNECTED);
-
-         boolean done = false;
-
+         
          if (attemptFailover || reconnectAttempts != 0)
          {
             lockAllChannel1s();
@@ -607,7 +607,7 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
             }
 
             closePingers();
-
+            
             connections.clear();
 
             refCount = 0;
@@ -666,16 +666,16 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
          else
          {
             // Just fail the connections
-
-            closePingers();
-
-            failConnection(me);
+            
+            failConnections(me);
          }
 
          inFailoverOrReconnect = false;
 
-         return done;
       }
+
+      return done;
+      
    }
 
    private void closePingers()
@@ -829,7 +829,7 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
    }
 
    private void checkCloseConnections()
-   {
+   {      
       if (refCount == 0)
       {
          // Close connections
@@ -863,6 +863,7 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
 
          connector = null;
       }
+      
    }
 
    public RemotingConnection getConnection(final int initialRefCount)
@@ -1020,23 +1021,25 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
       {
          // Can be legitimately null if session was closed before then went to remove session from csf
          // and locked since failover had started then after failover removes it but it's already been failed
-      }
+      } 
    }
 
-   private void failConnection(final MessagingException me)
+   private void failConnections(final MessagingException me)
    {
       synchronized (failConnectionLock)
       {
          // When a single connection fails, we fail *all* the connections
-
+         
          Set<ConnectionEntry> copy = new HashSet<ConnectionEntry>(connections.values());
 
          for (ConnectionEntry entry : copy)
          {
             entry.connection.fail(me);
          }
-
+         
          refCount = 0;
+         
+         checkCloseConnections();
       }
    }
 

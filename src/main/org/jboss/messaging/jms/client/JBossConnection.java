@@ -24,6 +24,7 @@ package org.jboss.messaging.jms.client;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.Executor;
 
 import javax.jms.Connection;
 import javax.jms.ConnectionConsumer;
@@ -53,6 +54,7 @@ import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.FailureListener;
 import org.jboss.messaging.core.version.Version;
+import org.jboss.messaging.utils.OrderedExecutorFactory;
 import org.jboss.messaging.utils.SimpleString;
 import org.jboss.messaging.utils.UUIDGenerator;
 import org.jboss.messaging.utils.VersionLoader;
@@ -121,6 +123,8 @@ public class JBossConnection implements Connection, QueueConnection, TopicConnec
    private final int transactionBatchSize;
 
    private ClientSession initialSession;
+   
+   private final Executor executor;
 
    // Constructors ---------------------------------------------------------------------------------
 
@@ -141,6 +145,8 @@ public class JBossConnection implements Connection, QueueConnection, TopicConnec
       this.clientID = clientID;
 
       this.sessionFactory = sessionFactory;
+      
+      this.executor = new OrderedExecutorFactory(sessionFactory.getThreadPool()).getExecutor();
 
       uid = UUIDGenerator.getInstance().generateSimpleStringUUID();
 
@@ -543,11 +549,20 @@ public class JBossConnection implements Connection, QueueConnection, TopicConnec
 
          if (exceptionListener != null)
          {
-            JMSException je = new JMSException(me.toString());
+            final JMSException je = new JMSException(me.toString());
 
             je.initCause(me);
-
-            exceptionListener.onException(je);
+            
+            executor.execute(new Runnable()
+            {
+               public void run()
+               {
+                  synchronized (exceptionListener)
+                  {
+                     exceptionListener.onException(je);
+                  }
+               }
+            });           
          }
          
          failed = true;

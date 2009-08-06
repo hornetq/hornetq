@@ -58,15 +58,6 @@ public class JBossConnectionFactoryTest extends UnitTestCase
 {
    private static final Logger log = Logger.getLogger(JBossConnectionFactoryTest.class);
 
-   // private MessagingServer server;
-   //
-   // private JMSServerManagerImpl jmsServer;
-   //
-   // private JBossConnectionFactory cf;
-   //
-   // private static final String Q_NAME = "ConnectionTestQueue";
-   //   
-
    private final String groupAddress = "230.1.2.3";
 
    private final int groupPort = 8765;
