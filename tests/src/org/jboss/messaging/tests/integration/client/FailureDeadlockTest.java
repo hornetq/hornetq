@@ -169,7 +169,7 @@ public class FailureDeadlockTest extends UnitTestCase
    }
 
       
-   //https://jira.jboss.org/jira/browse/JBMESSAGING-1702
+   //https://jira.jboss.org/jira/browse/JBMESSAGING-1703
    //Make sure that failing a connection removes it from the connection manager and can't be returned in a subsequent call
    public void testUsingDeadConnection() throws Exception
    {
