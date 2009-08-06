@@ -26,11 +26,20 @@ import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.client.ClientProducer;
 import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.ClientSessionFactory;
+import org.jboss.messaging.core.client.MessageHandler;
+import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.remoting.Interceptor;
+import org.jboss.messaging.core.remoting.Packet;
+import org.jboss.messaging.core.remoting.RemotingConnection;
+import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
 import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.tests.util.ServiceTestBase;
 import org.jboss.messaging.utils.SimpleString;
+
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
@@ -222,7 +231,7 @@ public class ConsumerTest extends ServiceTestBase
                    ((Queue)server.getPostOffice().getBinding(QUEUE).getBindable()).getMessageCount());
    }
 
-   /*public void testAcksWithSmallSendWindow() throws Exception
+   public void testAcksWithSmallSendWindow() throws Exception
    {
       ClientSessionFactory sf = createInVMFactory();
 
@@ -232,26 +241,48 @@ public class ConsumerTest extends ServiceTestBase
 
       ClientProducer producer = session.createProducer(QUEUE);
 
-      final int numMessages = 1000;
+      final int numMessages = 10000;
 
       for (int i = 0; i < numMessages; i++)
       {
          ClientMessage message = createTextMessage("m" + i, session);
          producer.send(message);
       }
-      System.out.println("-----------------------------------------------------------------------------");
+      session.close();
+      sf.close();
+      final CountDownLatch latch = new CountDownLatch(numMessages);
+      server.getRemotingService().addInterceptor(new Interceptor()
+      {
+         public boolean intercept(Packet packet, RemotingConnection connection) throws MessagingException
+         {
+            if(packet.getType() == PacketImpl.SESS_ACKNOWLEDGE)
+            {
+               latch.countDown();
+            }
+            return true;
+         }
+      });
       ClientSessionFactory sfReceive = createInVMFactory();
       sfReceive.setProducerWindowSize(100);
       sfReceive.setAckBatchSize(-1);
       ClientSession sessionRec = sfReceive.createSession(false, true, true);
       ClientConsumer consumer = sessionRec.createConsumer(QUEUE);
-      sessionRec.start();
-      for (int i = 0; i < numMessages; i++)
+      consumer.setMessageHandler(new MessageHandler()
       {
-         ClientMessage message2 = consumer.receive(1000);
-         System.out.println("message2 = " + message2);
-         message2.acknowledge();
-      }
-   }*/
+         public void onMessage(ClientMessage message)
+         {
+            try
+            {
+               message.acknowledge();
+            }
+            catch (MessagingException e)
+            {
+               e.printStackTrace();
+            }
+         }
+      });
+      sessionRec.start();
+      assertTrue(latch.await(5, TimeUnit.SECONDS));
+   }
 
 }

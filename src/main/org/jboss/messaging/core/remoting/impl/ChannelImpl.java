@@ -22,9 +22,20 @@
 
 package org.jboss.messaging.core.remoting.impl;
 
+import org.jboss.messaging.core.exception.MessagingException;
+import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.remoting.Channel;
+import org.jboss.messaging.core.remoting.ChannelHandler;
+import org.jboss.messaging.core.remoting.CommandConfirmationHandler;
+import org.jboss.messaging.core.remoting.Packet;
+import org.jboss.messaging.core.remoting.RemotingConnection;
+import org.jboss.messaging.core.remoting.impl.wireformat.MessagingExceptionMessage;
+import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.EARLY_RESPONSE;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.PACKETS_CONFIRMED;
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.REPLICATION_RESPONSE;
+import org.jboss.messaging.core.remoting.impl.wireformat.PacketsConfirmedMessage;
+import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -36,25 +47,10 @@ import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
-import org.jboss.messaging.core.exception.MessagingException;
-import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.remoting.Channel;
-import org.jboss.messaging.core.remoting.ChannelHandler;
-import org.jboss.messaging.core.remoting.CommandConfirmationHandler;
-import org.jboss.messaging.core.remoting.Interceptor;
-import org.jboss.messaging.core.remoting.Packet;
-import org.jboss.messaging.core.remoting.RemotingConnection;
-import org.jboss.messaging.core.remoting.impl.wireformat.MessagingExceptionMessage;
-import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
-import org.jboss.messaging.core.remoting.impl.wireformat.PacketsConfirmedMessage;
-import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
-
 /**
  * A ChannelImpl
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- *
- *
  */
 public class ChannelImpl implements Channel
 {
@@ -114,7 +110,7 @@ public class ChannelImpl implements Channel
 
       this.windowSize = windowSize;
 
-      this.confWindowSize = (int)(0.75 * windowSize);
+      this.confWindowSize = (int) (0.75 * windowSize);
 
       if (this.windowSize != -1)
       {
@@ -186,22 +182,10 @@ public class ChannelImpl implements Channel
          packet.setChannelID(id);
 
          final MessagingBuffer buffer = connection.getTransportConnection()
-                                                  .createBuffer(packet.getRequiredBufferSize());
+               .createBuffer(packet.getRequiredBufferSize());
 
          int size = packet.encode(buffer);
 
-         // Must block on semaphore outside the main lock or this can prevent failover from occurring
-         if (sendSemaphore != null && packet.getType() != PACKETS_CONFIRMED)
-         {
-            try
-            {
-               sendSemaphore.acquire(size);
-            }
-            catch (InterruptedException e)
-            {
-               throw new IllegalStateException("Semaphore interrupted");
-            }
-         }
 
          lock.lock();
 
@@ -233,6 +217,20 @@ public class ChannelImpl implements Channel
          {
             lock.unlock();
          }
+         // Must block on semaphore outside the main lock or this can prevent failover from occurring, also after the
+         // packet is sent to assure we get some credits back
+         if (sendSemaphore != null && packet.getType() != PACKETS_CONFIRMED)
+         {
+            try
+            {
+               sendSemaphore.acquire(size);
+            }
+            catch (InterruptedException e)
+            {
+               throw new IllegalStateException("Semaphore interrupted");
+            }
+         }
+
       }
    }
 
@@ -255,22 +253,9 @@ public class ChannelImpl implements Channel
          packet.setChannelID(id);
 
          final MessagingBuffer buffer = connection.getTransportConnection()
-                                                  .createBuffer(packet.getRequiredBufferSize());
+               .createBuffer(packet.getRequiredBufferSize());
 
          int size = packet.encode(buffer);
-
-         // Must block on semaphore outside the main lock or this can prevent failover from occurring
-         if (sendSemaphore != null)
-         {
-            try
-            {
-               sendSemaphore.acquire(size);
-            }
-            catch (InterruptedException e)
-            {
-               throw new IllegalStateException("Semaphore interrupted");
-            }
-         }
 
          lock.lock();
 
@@ -331,19 +316,29 @@ public class ChannelImpl implements Channel
 
             if (response.getType() == PacketImpl.EXCEPTION)
             {
-               final MessagingExceptionMessage mem = (MessagingExceptionMessage)response;
+               final MessagingExceptionMessage mem = (MessagingExceptionMessage) response;
 
                throw mem.getException();
-            }
-            else
-            {
-               return response;
             }
          }
          finally
          {
             lock.unlock();
          }
+         // Must block on semaphore outside the main lock or this can prevent failover from occurring, also after the
+         // packet is sent to assure we get some credits back
+         if (sendSemaphore != null && packet.getType() != PACKETS_CONFIRMED)
+         {
+            try
+            {
+               sendSemaphore.acquire(size);
+            }
+            catch (InterruptedException e)
+            {
+               throw new IllegalStateException("Semaphore interrupted");
+            }
+         }
+         return response;
       }
    }
 
@@ -373,7 +368,7 @@ public class ChannelImpl implements Channel
             }
 
             final MessagingBuffer buffer = connection.getTransportConnection()
-                                                     .createBuffer(packet.getRequiredBufferSize());
+                  .createBuffer(packet.getRequiredBufferSize());
 
             packet.encode(buffer);
 
@@ -388,7 +383,7 @@ public class ChannelImpl implements Channel
          action.run();
       }
    }
-   
+
    public void setCommandConfirmationHandler(final CommandConfirmationHandler handler)
    {
       this.commandConfirmationHandler = handler;
@@ -488,7 +483,7 @@ public class ChannelImpl implements Channel
 
          // And switch it
 
-         final RemotingConnectionImpl rnewConnection = (RemotingConnectionImpl)newConnection;
+         final RemotingConnectionImpl rnewConnection = (RemotingConnectionImpl) newConnection;
 
          rnewConnection.putChannel(newChannelID, this);
 
@@ -549,28 +544,54 @@ public class ChannelImpl implements Channel
       }
    }
 
-   public void confirm(final Packet packet)
+   public synchronized void  confirm(final Packet packet)
    {
-      if (resendCache != null && packet.isRequiresConfirmations())
+      if (packet.getType() == PacketImpl.SESS_ACKNOWLEDGE || packet.getType() == PacketImpl.CREATESESSION || packet.getType() == PacketImpl.SESS_CREATECONSUMER
+            || packet.getType() == PacketImpl.SESS_START || packet.getType() == PacketImpl.PING || packet.getType() == PacketImpl.SESS_FLOWTOKEN)
       {
-         lastReceivedCommandID++;
-
-         receivedBytes += packet.getPacketSize();
-
-         if (receivedBytes >= confWindowSize)
+         if (resendCache != null && packet.isRequiresConfirmations())
          {
-            receivedBytes = 0;
+            lastReceivedCommandID++;
 
-            if (connection.isActive())
+            receivedBytes += packet.getPacketSize();
+            if (receivedBytes >= confWindowSize)
             {
-               final Packet confirmed = new PacketsConfirmedMessage(lastReceivedCommandID);
+               receivedBytes = 0;
 
-               confirmed.setChannelID(id);
+               if (connection.isActive())
+               {
+                  final Packet confirmed = new PacketsConfirmedMessage(lastReceivedCommandID);
 
-               doWrite(confirmed);
+                  confirmed.setChannelID(id);
+
+                  doWrite(confirmed);
+               }
             }
          }
       }
+      else
+      {
+         if (resendCache != null && packet.isRequiresConfirmations())
+         {
+            lastReceivedCommandID++;
+
+            receivedBytes += packet.getPacketSize();
+            if (receivedBytes >= confWindowSize)
+            {
+               receivedBytes = 0;
+
+               if (connection.isActive())
+               {
+                  final Packet confirmed = new PacketsConfirmedMessage(lastReceivedCommandID);
+                  confirmed.setChannelID(id);
+
+                  doWrite(confirmed);
+               }
+            }
+         }
+
+      }
+
    }
 
    public void handlePacket(final Packet packet)
@@ -579,7 +600,7 @@ public class ChannelImpl implements Channel
       {
          if (resendCache != null)
          {
-            final PacketsConfirmedMessage msg = (PacketsConfirmedMessage)packet;
+            final PacketsConfirmedMessage msg = (PacketsConfirmedMessage) packet;
 
             clearUpTo(msg.getCommandID());
          }
@@ -624,7 +645,7 @@ public class ChannelImpl implements Channel
 
       replicateComplete();
    }
-   
+
    public void waitForAllReplicationResponse()
    {
       synchronized (replicationLock)
@@ -675,6 +696,7 @@ public class ChannelImpl implements Channel
 
    // TODO it's not ideal synchronizing this since it forms a contention point with replication
    // but we need to do this to protect it w.r.t. the check on replicatingChannel
+
    private void replicateResponseReceived()
    {
       Runnable result = null;
@@ -711,7 +733,7 @@ public class ChannelImpl implements Channel
          }
       }
    }
-   
+
    private void doWrite(final Packet packet)
    {
       final MessagingBuffer buffer = connection.getTransportConnection().createBuffer(packet.getRequiredBufferSize());
