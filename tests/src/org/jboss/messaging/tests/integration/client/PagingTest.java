@@ -61,6 +61,10 @@ public class PagingTest extends ServiceTestBase
 
    private static final int RECEIVE_TIMEOUT = 30000;
 
+   private static final int PAGE_MAX = 100 * 1024;
+
+   private static final int PAGE_SIZE = 10 * 1024;
+
    // Attributes ----------------------------------------------------
 
    // Static --------------------------------------------------------
@@ -77,10 +81,7 @@ public class PagingTest extends ServiceTestBase
 
       Configuration config = createDefaultConfig();
 
-      config.setPagingMaxGlobalSizeBytes(100 * 1024);
-      config.setGlobalPagingSize(10 * 1024);
-
-      MessagingServer server = createServer(true, config, new HashMap<String, AddressSettings>());
+      MessagingServer server = createServer(true, config, PAGE_SIZE, PAGE_MAX, new HashMap<String, AddressSettings>());
 
       server.start();
 
@@ -129,14 +130,22 @@ public class PagingTest extends ServiceTestBase
 
          session.close();
 
+         assertTrue("TotalMemory expected to be > 0 when it was " + server.getPostOffice()
+                                                                          .getPagingManager()
+                                                                          .getTotalMemory(),
+                    server.getPostOffice().getPagingManager().getTotalMemory() > 0);
+
          server.stop();
 
-         server = createServer(true, config, new HashMap<String, AddressSettings>());
+         server = createServer(true, config, PAGE_SIZE, PAGE_MAX, new HashMap<String, AddressSettings>());
          server.start();
 
          sf = createInVMFactory();
 
-         assertTrue(server.getPostOffice().getPagingManager().getTotalMemory() > 0);
+         assertTrue("TotalMemory expected to be > 0 when it was " + server.getPostOffice()
+                                                                          .getPagingManager()
+                                                                          .getTotalMemory(),
+                    server.getPostOffice().getPagingManager().getTotalMemory() > 0);
 
          session = sf.createSession(null, null, false, true, true, false, 0);
 
@@ -202,10 +211,7 @@ public class PagingTest extends ServiceTestBase
 
       Configuration config = createDefaultConfig();
 
-      config.setPagingMaxGlobalSizeBytes(100 * 1024);
-      config.setGlobalPagingSize(10 * 1024);
-
-      MessagingServer server = createServer(true, config, new HashMap<String, AddressSettings>());
+      MessagingServer server = createServer(true, config, PAGE_SIZE, PAGE_MAX, new HashMap<String, AddressSettings>());
 
       server.start();
 
@@ -341,16 +347,13 @@ public class PagingTest extends ServiceTestBase
 
       Configuration config = createDefaultConfig();
 
-      config.setPagingMaxGlobalSizeBytes(100 * 1024);
-      config.setGlobalPagingSize(10 * 1024);
-
-      MessagingServer server = createServer(true, config, new HashMap<String, AddressSettings>());
+      MessagingServer server = createServer(true, config, PAGE_SIZE, PAGE_MAX, new HashMap<String, AddressSettings>());
 
       server.start();
 
-      final int numberOfIntegers = 256;
-
       final int numberOfMessages = 10000;
+
+      final int numberOfBytes = 1024;
 
       try
       {
@@ -368,7 +371,12 @@ public class PagingTest extends ServiceTestBase
 
          ClientMessage message = null;
 
-         byte[] body = null;
+         byte[] body = new byte[numberOfBytes];
+
+         for (int j = 0; j < numberOfBytes; j++)
+         {
+            body[j] = getSamplebyte(j);
+         }
 
          long scheduledTime = System.currentTimeMillis() + 5000;
 
@@ -376,23 +384,11 @@ public class PagingTest extends ServiceTestBase
          {
             message = session.createClientMessage(true);
 
-            MessagingBuffer bodyLocal = message.getBody();
-
-            for (int j = 1; j <= numberOfIntegers; j++)
-            {
-               bodyLocal.writeInt(j);
-            }
-
-            if (body == null)
-            {
-               body = bodyLocal.array();
-            }
-
-            message.setBody(bodyLocal);
+            message.setBody(ChannelBuffers.wrappedBuffer(body));
             message.putIntProperty(new SimpleString("id"), i);
 
             // Worse scenario possible... only schedule what's on pages
-            if (server.getPostOffice().getPagingManager().isPaging(ADDRESS))
+            if (server.getPostOffice().getPagingManager().getPageStore(ADDRESS).getCurrentPage() != null)
             {
                message.putLongProperty(MessageImpl.HDR_SCHEDULED_DELIVERY_TIME, scheduledTime);
             }
@@ -406,7 +402,7 @@ public class PagingTest extends ServiceTestBase
 
             server.stop();
 
-            server = createServer(true, config, new HashMap<String, AddressSettings>());
+            server = createServer(true, config, PAGE_SIZE, PAGE_MAX, new HashMap<String, AddressSettings>());
             server.start();
 
             sf = createInVMFactory();
@@ -420,6 +416,7 @@ public class PagingTest extends ServiceTestBase
 
          for (int i = 0; i < numberOfMessages; i++)
          {
+
             ClientMessage message2 = consumer.receive(RECEIVE_TIMEOUT);
 
             assertNotNull(message2);
@@ -472,10 +469,7 @@ public class PagingTest extends ServiceTestBase
 
       Configuration config = createDefaultConfig();
 
-      config.setPagingMaxGlobalSizeBytes(100 * 1024);
-      config.setGlobalPagingSize(10 * 1024);
-
-      MessagingServer server = createServer(true, config, new HashMap<String, AddressSettings>());
+      MessagingServer server = createServer(true, config, PAGE_SIZE, PAGE_MAX, new HashMap<String, AddressSettings>());
 
       server.start();
 
@@ -548,10 +542,7 @@ public class PagingTest extends ServiceTestBase
 
       Configuration config = createDefaultConfig();
 
-      config.setPagingMaxGlobalSizeBytes(100 * 1024);
-      config.setGlobalPagingSize(10 * 1024);
-
-      MessagingServer server = createServer(true, config, new HashMap<String, AddressSettings>());
+      MessagingServer server = createServer(true, config, PAGE_SIZE, PAGE_MAX, new HashMap<String, AddressSettings>());
 
       server.start();
 
@@ -634,17 +625,7 @@ public class PagingTest extends ServiceTestBase
       internalTestPageMultipleDestinations(true);
    }
 
-   public void testDropMessagesQueueMax() throws Exception
-   {
-      testDropMessages(false);
-   }
-
-   public void testDropMessagesGlobalMax() throws Exception
-   {
-      testDropMessages(true);
-   }
-
-   private void testDropMessages(boolean global) throws Exception
+   public void testDropMessages() throws Exception
    {
       clearData();
 
@@ -657,20 +638,7 @@ public class PagingTest extends ServiceTestBase
 
       settings.put(ADDRESS.toString(), set);
 
-      if (global)
-      {
-         set.setMaxSizeBytes(-1);
-         config.setPagingMaxGlobalSizeBytes(10 * 1024);
-      }
-      else
-      {
-         config.setPagingMaxGlobalSizeBytes(-1);
-         set.setMaxSizeBytes(10 * 1024);
-      }
-
-      config.setGlobalPagingSize(10 * 1024);
-
-      MessagingServer server = createServer(true, config, settings);
+      MessagingServer server = createServer(true, config, 10 * 1024, 10 * 1024, settings);
 
       server.start();
 
@@ -805,10 +773,7 @@ public class PagingTest extends ServiceTestBase
 
       int NUMBER_OF_MESSAGES = 2;
 
-      config.setPagingMaxGlobalSizeBytes(100 * 1024);
-      config.setGlobalPagingSize(10 * 1024);
-
-      MessagingServer server = createServer(true, config, new HashMap<String, AddressSettings>());
+      MessagingServer server = createServer(true, config, PAGE_SIZE, PAGE_MAX, new HashMap<String, AddressSettings>());
 
       server.start();
 
@@ -850,7 +815,7 @@ public class PagingTest extends ServiceTestBase
 
          server.stop();
 
-         server = createServer(true, config, new HashMap<String, AddressSettings>());
+         server = createServer(true, config, PAGE_SIZE, PAGE_MAX, new HashMap<String, AddressSettings>());
          server.start();
 
          sf = createInVMFactory();
@@ -916,9 +881,6 @@ public class PagingTest extends ServiceTestBase
 
       Configuration configuration = createDefaultConfig();
 
-      configuration.setPagingMaxGlobalSizeBytes(0);
-      configuration.setGlobalPagingSize(0);
-
       Map<String, AddressSettings> addresses = new HashMap<String, AddressSettings>();
 
       addresses.put("#", new AddressSettings());
@@ -929,7 +891,7 @@ public class PagingTest extends ServiceTestBase
 
       addresses.put(PAGED_ADDRESS.toString(), pagedDestination);
 
-      MessagingServer server = createServer(true, configuration, addresses);
+      MessagingServer server = createServer(true, configuration, -1, -1, addresses);
 
       try
       {
@@ -1023,9 +985,6 @@ public class PagingTest extends ServiceTestBase
 
       Configuration configuration = createDefaultConfig();
 
-      configuration.setPagingMaxGlobalSizeBytes(0);
-      configuration.setGlobalPagingSize(0);
-
       Map<String, AddressSettings> addresses = new HashMap<String, AddressSettings>();
 
       addresses.put("#", new AddressSettings());
@@ -1044,7 +1003,7 @@ public class PagingTest extends ServiceTestBase
 
       addresses.put(PAGED_ADDRESS_B.toString(), pagedDestinationB);
 
-      MessagingServer server = createServer(true, configuration, addresses);
+      MessagingServer server = createServer(true, configuration, -1, -1, addresses);
 
       try
       {
@@ -1143,274 +1102,6 @@ public class PagingTest extends ServiceTestBase
       }
       finally
       {
-         if (server.isStarted())
-         {
-            server.stop();
-         }
-      }
-   }
-
-   public void testPagingDifferentSizesAndGlobal() throws Exception
-   {
-      SimpleString PAGED_ADDRESS_A = new SimpleString("paged-a");
-      SimpleString PAGED_ADDRESS_B = new SimpleString("paged-b");
-      SimpleString PAGED_ADDRESS_GLOBAL = new SimpleString("paged-global");
-
-      Configuration configuration = createDefaultConfig();
-
-      configuration.setPagingMaxGlobalSizeBytes(30 * 1024);
-      configuration.setGlobalPagingSize(1024);
-
-      Map<String, AddressSettings> addresses = new HashMap<String, AddressSettings>();
-
-      addresses.put("#", new AddressSettings());
-
-      AddressSettings pagedDestinationA = new AddressSettings();
-      pagedDestinationA.setPageSizeBytes(1024);
-      pagedDestinationA.setMaxSizeBytes(10 * 1024);
-
-      int NUMBER_MESSAGES_BEFORE_PAGING = 20;
-
-      addresses.put(PAGED_ADDRESS_A.toString(), pagedDestinationA);
-
-      AddressSettings pagedDestinationB = new AddressSettings();
-      pagedDestinationB.setPageSizeBytes(2024);
-      pagedDestinationB.setMaxSizeBytes(20 * 1024);
-
-      addresses.put(PAGED_ADDRESS_B.toString(), pagedDestinationB);
-
-      MessagingServer server = createServer(true, configuration, addresses);
-
-      try
-      {
-         server.start();
-
-         ClientSessionFactory sf = createInVMFactory();
-
-         ClientSession session = sf.createSession(false, true, false);
-
-         session.createQueue(PAGED_ADDRESS_A, PAGED_ADDRESS_A, true);
-
-         session.createQueue(PAGED_ADDRESS_B, PAGED_ADDRESS_B, true);
-
-         session.createQueue(PAGED_ADDRESS_GLOBAL, PAGED_ADDRESS_GLOBAL, true);
-
-         ClientProducer producerA = session.createProducer(PAGED_ADDRESS_A);
-         ClientProducer producerB = session.createProducer(PAGED_ADDRESS_B);
-
-         int NUMBER_OF_MESSAGES = 100;
-
-         for (int i = 0; i < NUMBER_MESSAGES_BEFORE_PAGING; i++)
-         {
-            ClientMessage msg = session.createClientMessage(true);
-            msg.getBody().writeBytes(new byte[512]);
-
-            producerA.send(msg);
-            producerB.send(msg);
-         }
-
-         session.commit(); // commit was called to clean the buffer only (making sure everything is on the server side)
-
-         assertTrue(server.getPostOffice().getPagingManager().getPageStore(PAGED_ADDRESS_A).isPaging());
-         assertFalse(server.getPostOffice().getPagingManager().getPageStore(PAGED_ADDRESS_B).isPaging());
-
-         for (int i = 0; i < NUMBER_MESSAGES_BEFORE_PAGING; i++)
-         {
-            ClientMessage msg = session.createClientMessage(true);
-            msg.getBody().writeBytes(new byte[512]);
-
-            producerA.send(msg);
-            producerB.send(msg);
-         }
-
-         session.commit(); // commit was called to clean the buffer only (making sure everything is on the server side)
-
-         assertTrue(server.getPostOffice().getPagingManager().getPageStore(PAGED_ADDRESS_A).isPaging());
-         assertTrue(server.getPostOffice().getPagingManager().getPageStore(PAGED_ADDRESS_B).isPaging());
-
-         for (int i = NUMBER_MESSAGES_BEFORE_PAGING * 2; i < NUMBER_OF_MESSAGES; i++)
-         {
-            ClientMessage msg = session.createClientMessage(true);
-            msg.getBody().writeBytes(new byte[512]);
-
-            producerA.send(msg);
-            producerB.send(msg);
-         }
-
-         session.close();
-
-         assertTrue(server.getPostOffice().getPagingManager().getPageStore(PAGED_ADDRESS_A).isPaging());
-         assertTrue(server.getPostOffice().getPagingManager().getPageStore(PAGED_ADDRESS_B).isPaging());
-
-         session = sf.createSession(null, null, false, true, true, false, 0);
-
-         session.start();
-
-         ClientConsumer consumerA = session.createConsumer(PAGED_ADDRESS_A);
-
-         ClientConsumer consumerB = session.createConsumer(PAGED_ADDRESS_B);
-
-         for (int i = 0; i < NUMBER_OF_MESSAGES; i++)
-         {
-            ClientMessage msg = consumerA.receive(5000);
-            assertNotNull("Couldn't receive a message on consumerA, iteration = " + i, msg);
-            msg.acknowledge();
-         }
-
-         assertNull(consumerA.receiveImmediate());
-
-         consumerA.close();
-
-         session.commit();
-
-         assertTrue(server.getPostOffice().getPagingManager().getPageStore(PAGED_ADDRESS_B).isPaging());
-
-         for (int i = 0; i < NUMBER_OF_MESSAGES; i++)
-         {
-            ClientMessage msg = consumerB.receive(5000);
-            assertNotNull(msg);
-            msg.acknowledge();
-            session.commit();
-         }
-
-         assertNull(consumerB.receiveImmediate());
-
-         consumerB.close();
-
-         session.close();
-      }
-      finally
-      {
-         if (server.isStarted())
-         {
-            server.stop();
-         }
-      }
-   }
-
-   public void testPageTwoDestinationsGlobalAndAddresSettings() throws Exception
-   {
-      clearData();
-      
-      SimpleString PAGED_ADDRESS_A = new SimpleString("paged-a");
-      SimpleString PAGED_ADDRESS_GLOBAL = new SimpleString("paged-global");
-
-      Configuration configuration = createDefaultConfig();
-      configuration.setPagingMaxGlobalSizeBytes(104857600);
-
-      Map<String, AddressSettings> addresses = new HashMap<String, AddressSettings>();
-
-      addresses.put("#", new AddressSettings());
-
-      AddressSettings pagedDestinationA = new AddressSettings();
-      pagedDestinationA.setPageSizeBytes(20000);
-      pagedDestinationA.setMaxSizeBytes(100000);
-
-      addresses.put(PAGED_ADDRESS_A.toString(), pagedDestinationA);
-
-      MessagingServer server = createServer(true, configuration, addresses);
-      
-      ClientSession session = null;
-      
-      try
-      {
-         server.start();
-
-         ClientSessionFactory sf = createInVMFactory();
-        
-         session = sf.createSession(false, true, false);
-
-         session.createQueue(PAGED_ADDRESS_A, PAGED_ADDRESS_A, true);
-
-         session.start();
-
-         session.createQueue(PAGED_ADDRESS_GLOBAL, PAGED_ADDRESS_GLOBAL, true);
-
-         ClientProducer producerA = session.createProducer(PAGED_ADDRESS_A);
-
-         ClientProducer producerGlobal = session.createProducer(PAGED_ADDRESS_GLOBAL);
-
-         int NUMBER_OF_MESSAGES_A = 20;
-
-         int NUMBER_OF_MESSAGES_GLOBAL = 30000;
-
-         ClientMessage msg = session.createClientMessage(false);
-         msg.getBody().writeBytes(new byte[10 * 1024]);
-
-         for (int i = 0; i < NUMBER_OF_MESSAGES_A; i++)
-         {
-            producerA.send(msg);
-         }
-
-         session.commit(); // commit was called to clean the buffer only (making sure everything is on the server side)
-
-         assertTrue(server.getPostOffice().getPagingManager().getPageStore(PAGED_ADDRESS_A).isPaging());
-         assertFalse(server.getPostOffice().getPagingManager().getPageStore(PAGED_ADDRESS_GLOBAL).isPaging());
-
-         System.out.println("AddressA.size = " + server.getPostOffice()
-                                                       .getPagingManager()
-                                                       .getPageStore(PAGED_ADDRESS_A)
-                                                       .getAddressSize() +
-                            " globalSize = " +
-                            server.getPostOffice().getPagingManager().getTotalMemory());
-
-         for (int i = 0; i < NUMBER_OF_MESSAGES_GLOBAL; i++)
-         {
-            producerGlobal.send(msg);
-         }
-
-
-         System.out.println("AddressA.size = " + server.getPostOffice()
-                                                       .getPagingManager()
-                                                       .getPageStore(PAGED_ADDRESS_A)
-                                                       .getAddressSize() +
-                            " globalSize = " +
-                            server.getPostOffice().getPagingManager().getTotalMemory());
-
-         assertTrue(server.getPostOffice().getPagingManager().getPageStore(PAGED_ADDRESS_A).isPaging());
-         assertTrue(server.getPostOffice().getPagingManager().getPageStore(PAGED_ADDRESS_GLOBAL).isPaging());
-
-         ClientConsumer consumerGlobal = session.createConsumer(PAGED_ADDRESS_GLOBAL);
-
-         for (int i = 0; i < NUMBER_OF_MESSAGES_GLOBAL; i++)
-         {
-            msg = consumerGlobal.receive(5000);
-            assertNotNull("Couldn't receive a message on consumerGlobal, iteration = " + i, msg);
-            msg.acknowledge();
-            if (i % 1000 == 0)
-            {
-               session.commit();
-            }
-         }
-         
-         session.commit();
-         
-         assertNull(consumerGlobal.receiveImmediate());
-
-         ClientConsumer consumerA = session.createConsumer(PAGED_ADDRESS_A);
-
-         for (int i = 0; i < NUMBER_OF_MESSAGES_A; i++)
-         {
-            msg = consumerA.receive(5000);
-            assertNotNull("Couldn't receive a message on consumerA, iteration = " + i, msg);
-            msg.acknowledge();
-            session.commit();
-         }
-
-         assertNull(consumerA.receiveImmediate());
-
-         consumerA.close();
-
-         session.commit();
-
-         session.close();
-      }
-      finally
-      {
-         if (session != null)
-         {
-            session.close();
-         }
          if (server.isStarted())
          {
             server.stop();

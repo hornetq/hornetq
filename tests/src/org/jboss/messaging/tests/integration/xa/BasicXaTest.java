@@ -77,9 +77,8 @@ public class BasicXaTest extends ServiceTestBase
       configuration.setSecurityEnabled(false);
       configuration.setJournalMinFiles(2);
       configuration.setPagingDirectory(getPageDir());
-      configuration.setPagingMaxGlobalSizeBytes(0); // no paging for these tests
 
-      messagingService = createServer(false, configuration, addressSettings);
+      messagingService = createServer(false, configuration, -1, -1, addressSettings);
 
       // start the server
       messagingService.start();
@@ -340,7 +339,7 @@ public class BasicXaTest extends ServiceTestBase
       messagingService.stop();
 
       // do the same test with a file persistence now
-      messagingService = createServer(true, configuration, addressSettings);
+      messagingService = createServer(true, configuration, -1, -1, addressSettings);
 
       messagingService.start();
 

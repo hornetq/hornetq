@@ -232,27 +232,13 @@ public class PagingStoreImpl implements TestSupportPageStore
       }
       else
       {
-         final long currentGlobalSize = pagingManager.addSize(size);
-
-         final long maxGlobalSize = pagingManager.getMaxMemory();
+         pagingManager.addSize(size);
 
          final long addressSize = addAddressSize(size);
 
          if (size > 0)
          {
-            if (maxGlobalSize > 0 && currentGlobalSize > maxGlobalSize)
-            {
-               pagingManager.setGlobalPageMode(true);
-
-               if (startPaging())
-               {
-                  if (isTrace)
-                  {
-                     trace("Starting paging on " + getStoreName() + ", size = " + addressSize + ", maxSize=" + maxSize);
-                  }
-               }
-            }
-            else if (maxSize > 0 && addressSize > maxSize)
+            if (maxSize > 0 && addressSize > maxSize)
             {
                if (startPaging())
                {
@@ -266,27 +252,7 @@ public class PagingStoreImpl implements TestSupportPageStore
          else
          {
             // When in Global mode, we use the default page size as the mark to start depage
-
-            if (isTrace)
-            {
-
-               log.trace(" globalDepage = " + pagingManager.isGlobalPageMode() +
-                         " currentGlobalSize = " +
-                         currentGlobalSize +
-                         " GlobalPageSize = " +
-                         pagingManager.getGlobalPageSize() +
-                         " maxGlobalSize = " +
-                         maxGlobalSize +
-                         " maxGlobalSize - defaultPageSize = " +
-                         (maxGlobalSize - pagingManager.getGlobalPageSize()));
-            }
-
-            if (maxGlobalSize > 0 && pagingManager.isGlobalPageMode() &&
-                currentGlobalSize < maxGlobalSize - pagingManager.getGlobalPageSize())
-            {
-               pagingManager.startGlobalDepage();
-            }
-            else if (maxSize > 0 && addressSize < maxSize - pageSize)
+            if (maxSize > 0 && currentPage != null && addressSize <= maxSize - pageSize && !depaging.get())
             {
                if (startDepaging())
                {
@@ -364,7 +330,7 @@ public class PagingStoreImpl implements TestSupportPageStore
             ByteBuffer buff = ByteBuffer.wrap(bytes);
 
             buff.putLong(msg.getMessageID());
-                        
+
             msg.putBytesProperty(MessageImpl.HDR_DUPLICATE_DETECTION_ID, bytes);
          }
 
@@ -437,11 +403,6 @@ public class PagingStoreImpl implements TestSupportPageStore
 
    public boolean startDepaging()
    {
-      return startDepaging(executor);
-   }
-
-   public boolean startDepaging(final Executor executor)
-   {
       if (!running)
       {
          return false;
@@ -498,7 +459,7 @@ public class PagingStoreImpl implements TestSupportPageStore
       if (running)
       {
          running = false;
-        
+
          if (currentPage != null)
          {
             currentPage.close();
@@ -650,6 +611,11 @@ public class PagingStoreImpl implements TestSupportPageStore
          return false;
       }
 
+   }
+
+   public Page getCurrentPage()
+   {
+      return currentPage;
    }
 
    // TestSupportPageStore ------------------------------------------
@@ -905,18 +871,9 @@ public class PagingStoreImpl implements TestSupportPageStore
    /**
     * @return
     */
-   private boolean isFull(final long nextPageSize)
+   private boolean isAddressFull(final long nextPageSize)
    {
       return getMaxSizeBytes() > 0 && getAddressSize() + nextPageSize > getMaxSizeBytes();
-   }
-
-   /**
-    * @param nextPageSize
-    * @return
-    */
-   private boolean isGlobalFull(final long nextPageSize)
-   {
-      return pagingManager.getMaxMemory() > 0 && pagingManager.getTotalMemory() + nextPageSize > pagingManager.getMaxMemory();
    }
 
    private long addAddressSize(final long delta)
@@ -931,15 +888,27 @@ public class PagingStoreImpl implements TestSupportPageStore
     */
    private synchronized boolean clearDepage()
    {
-      final boolean pageFull = isFull(getPageSizeBytes());
-      final boolean globalFull = isGlobalFull(getPageSizeBytes());
-      if (pageFull || globalFull || !isPaging())
+      final boolean addressFull = isAddressFull(getPageSizeBytes());
+
+      if (isTrace)
+      {
+         trace("Clear Depage on Address = " + this.getStoreName() +
+               " PagingManager size " +
+               pagingManager.getTotalMemory() +
+               " addressSize = " +
+               this.getAddressSize() +
+                " addressMax " +
+               this.getMaxSizeBytes() +
+               " isPaging = " +
+               isPaging() +
+               " addressFull = " +
+               addressFull);
+      }
+
+      // It should stop the executor when the destination is full or when there is nothing else to be depaged
+      if (addressFull || !isPaging())
       {
          depaging.set(false);
-         if (!globalFull)
-         {
-            pagingManager.setGlobalPageMode(false);
-         }
          return true;
       }
       else
@@ -1000,9 +969,7 @@ public class PagingStoreImpl implements TestSupportPageStore
    // To be used on isDropMessagesWhenFull
    private boolean isDrop()
    {
-      return getMaxSizeBytes() > 0 && getAddressSize() > getMaxSizeBytes() ||
-             pagingManager.getMaxMemory() > 0 &&
-             pagingManager.getTotalMemory() > pagingManager.getMaxMemory();
+      return getMaxSizeBytes() > 0 && getAddressSize() > getMaxSizeBytes();
    }
 
    // Inner classes -------------------------------------------------
@@ -1022,7 +989,7 @@ public class PagingStoreImpl implements TestSupportPageStore
          {
             if (running)
             {
-               if (!isFull(getPageSizeBytes()) && !isGlobalFull(getPageSizeBytes()))
+               if (!isAddressFull(getPageSizeBytes()))
                {
                   readPage();
                }

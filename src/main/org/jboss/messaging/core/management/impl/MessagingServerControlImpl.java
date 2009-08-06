@@ -187,11 +187,6 @@ public class MessagingServerControlImpl implements MessagingServerControl, Notif
       return configuration.getJournalType().toString();
    }
 
-   public long getPagingMaxGlobalSizeBytes()
-   {
-      return configuration.getPagingMaxGlobalSizeBytes();
-   }
-
    public String getPagingDirectory()
    {
       return configuration.getPagingDirectory();
@@ -611,11 +606,6 @@ public class MessagingServerControlImpl implements MessagingServerControl, Notif
    public long getMessageExpiryThreadPriority()
    {
       return configuration.getMessageExpiryThreadPriority();
-   }
-
-   public int getGlobalPageSize()
-   {
-      return configuration.getGlobalPagingSize();
    }
 
    public long getQueueActivationTimeout()

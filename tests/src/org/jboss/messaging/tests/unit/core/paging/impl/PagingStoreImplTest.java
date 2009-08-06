@@ -747,11 +747,6 @@ public class PagingStoreImplTest extends UnitTestCase
          return null;
       }
 
-      public long getGlobalPageSize()
-      {
-         return ConfigurationImpl.DEFAULT_GLOBAL_PAGE_SIZE;
-      }
-
       public long getTotalMemory()
       {
          return 0;
@@ -814,7 +809,7 @@ public class PagingStoreImplTest extends UnitTestCase
       {
       }
 
-      public void startGlobalDepage()
+      public void resumeDepages()
       {
       }
 
@@ -833,6 +828,14 @@ public class PagingStoreImplTest extends UnitTestCase
 
       public void stop() throws Exception
       {
+      }
+
+      /* (non-Javadoc)
+       * @see org.jboss.messaging.core.paging.PagingManager#isGlobalFull()
+       */
+      public boolean isGlobalFull()
+      {
+         return false;
       }
 
    }

@@ -72,8 +72,6 @@ public class DeleteQueueRestartTest extends ServiceTestBase
    {
       MessagingServer server = createServer(true);
 
-      server.getConfiguration().setPagingMaxGlobalSizeBytes(0);
-
       server.start();
 
       ClientSessionFactory factory = createInVMFactory();

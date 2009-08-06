@@ -57,13 +57,9 @@ public class PagingManagerImpl implements PagingManager
 
    private volatile boolean started = false;
 
-   private final long maxGlobalSize;
-
    private volatile boolean backup;
 
    private final AtomicLong totalMemoryBytes = new AtomicLong(0);
-
-   private final AtomicBoolean globalMode = new AtomicBoolean(false);
 
    private final ConcurrentMap<SimpleString, PagingStore> stores = new ConcurrentHashMap<SimpleString, PagingStore>();
 
@@ -72,8 +68,6 @@ public class PagingManagerImpl implements PagingManager
    private final PagingStoreFactory pagingStoreFactory;
 
    private final StorageManager storageManager;
-
-   private final long globalPageSize;
 
    private final boolean syncNonTransactional;
 
@@ -90,16 +84,12 @@ public class PagingManagerImpl implements PagingManager
    public PagingManagerImpl(final PagingStoreFactory pagingSPI,
                             final StorageManager storageManager,
                             final HierarchicalRepository<AddressSettings> addressSettingsRepository,
-                            final long maxGlobalSize,
-                            final long globalPageSize,
-                            final boolean syncNonTransactional,
+                             final boolean syncNonTransactional,
                             final boolean backup)
    {
       pagingStoreFactory = pagingSPI;
       this.addressSettingsRepository = addressSettingsRepository;
       this.storageManager = storageManager;
-      this.globalPageSize = globalPageSize;
-      this.maxGlobalSize = maxGlobalSize;
       this.syncNonTransactional = syncNonTransactional;
       this.backup = backup;
    }
@@ -114,22 +104,18 @@ public class PagingManagerImpl implements PagingManager
    {
       backup = false;
 
-      startGlobalDepage();
+      for (PagingStore store : stores.values())
+      {
+         if (store.isPaging())
+         {
+            store.startDepaging();
+         }
+      }
    }
 
    public boolean isBackup()
    {
       return backup;
-   }
-
-   public boolean isGlobalPageMode()
-   {
-      return globalMode.get();
-   }
-
-   public void setGlobalPageMode(final boolean globalMode)
-   {
-      this.globalMode.set(globalMode);
    }
 
    /* (non-Javadoc)
@@ -186,11 +172,6 @@ public class PagingManagerImpl implements PagingManager
    public void setPostOffice(final PostOffice postOffice)
    {
       pagingStoreFactory.setPostOffice(postOffice);
-   }
-
-   public long getGlobalPageSize()
-   {
-      return globalPageSize;
    }
 
    public boolean isPaging(final SimpleString destination) throws Exception
@@ -279,17 +260,15 @@ public class PagingManagerImpl implements PagingManager
       pagingStoreFactory.stop();
 
       totalMemoryBytes.set(0);
-
-      globalMode.set(false);
    }
 
-   public void startGlobalDepage()
+   public void resumeDepages()
    {
       if (!started)
       {
          // If stop the server while depaging, the server may call a rollback,
          // the rollback may addSizes back and that would fire a globalDepage.
-         // Because of that we must ignore any startGlobalDepage calls, 
+         // Because of that we must ignore any startGlobalDepage calls,
          // and this check needs to be done outside of the lock
          return;
       }
@@ -297,10 +276,12 @@ public class PagingManagerImpl implements PagingManager
       {
          if (!isBackup())
          {
-            setGlobalPageMode(true);
             for (PagingStore store : stores.values())
             {
-               store.startDepaging(pagingStoreFactory.getGlobalDepagerExecutor());
+               if (store.isPaging())
+               {
+                  store.startDepaging();
+               }
             }
          }
       }
@@ -322,14 +303,6 @@ public class PagingManagerImpl implements PagingManager
       return totalMemoryBytes.addAndGet(size);
    }
 
-   /* (non-Javadoc)
-    * @see org.jboss.messaging.core.paging.PagingManager#getMaxGlobalSize()
-    */
-   public long getMaxMemory()
-   {
-      return maxGlobalSize;
-   }
-
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
@@ -338,7 +311,8 @@ public class PagingManagerImpl implements PagingManager
 
    private PagingStore newStore(final SimpleString destinationName) throws Exception
    {
-      return pagingStoreFactory.newStore(destinationName, addressSettingsRepository.getMatch(destinationName.toString()));
+      return pagingStoreFactory.newStore(destinationName,
+                                         addressSettingsRepository.getMatch(destinationName.toString()));
    }
 
    // Inner classes -------------------------------------------------

@@ -78,9 +78,7 @@ public class MeasurePagingMultiThreadTest extends ServiceTestBase
 
       HashMap<String, AddressSettings> settings = new HashMap<String, AddressSettings>();
 
-      config.setPagingMaxGlobalSizeBytes(20 * 1024);
-
-      MessagingServer messagingService = createServer(true, config, settings);
+      MessagingServer messagingService = createServer(true, config, 10 * 1024, 20 * 1024, settings);
       messagingService.start();
       try
       {

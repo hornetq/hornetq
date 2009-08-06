@@ -105,9 +105,9 @@ public class PagingFailoverMultiThreadTest extends MultiThreadFailoverSupport
 
    public void testFoo()
    {
-      
+
    }
-   
+
    // Currently disabled - https://jira.jboss.org/jira/browse/JBMESSAGING-1558
    public void disabled_testB() throws Exception
    {
@@ -364,7 +364,7 @@ public class PagingFailoverMultiThreadTest extends MultiThreadFailoverSupport
 
    }
 
-   protected void setUpFailoverServers(boolean fileBased, final long maxGlobalSize, final int pageSize) throws Exception
+   protected void setUpFailoverServers(boolean fileBased, final int maxGlobalSize, final int pageSize) throws Exception
    {
       deleteDirectory(new File(getTestDir()));
 
@@ -388,9 +388,14 @@ public class PagingFailoverMultiThreadTest extends MultiThreadFailoverSupport
 
          backupConf.setJournalType(JournalType.ASYNCIO);
 
-         backupConf.setPagingMaxGlobalSizeBytes(maxGlobalSize);
-         backupConf.setGlobalPagingSize(pageSize);
          backupServer = Messaging.newMessagingServer(backupConf);
+
+         AddressSettings defaultSetting = new AddressSettings();
+         defaultSetting.setPageSizeBytes(pageSize);
+         defaultSetting.setMaxSizeBytes(maxGlobalSize);
+
+         backupServer.getAddressSettingsRepository().addMatch("#", defaultSetting);
+
       }
       else
       {
@@ -422,16 +427,18 @@ public class PagingFailoverMultiThreadTest extends MultiThreadFailoverSupport
          liveConf.setBindingsDirectory(getBindingsDir(getTestDir() + "/live"));
          liveConf.setPagingDirectory(getPageDir(getTestDir() + "/live"));
 
-         liveConf.setPagingMaxGlobalSizeBytes(maxGlobalSize);
-         liveConf.setGlobalPagingSize(pageSize);
          liveConf.setJournalFileSize(100 * 1024);
 
          liveConf.setJournalType(JournalType.ASYNCIO);
-      }
 
-      if (fileBased)
-      {
          liveServer = Messaging.newMessagingServer(liveConf);
+
+         AddressSettings defaultSetting = new AddressSettings();
+         defaultSetting.setPageSizeBytes(pageSize);
+         defaultSetting.setMaxSizeBytes(maxGlobalSize);
+
+         liveServer.getAddressSettingsRepository().addMatch("#", defaultSetting);
+
       }
       else
       {

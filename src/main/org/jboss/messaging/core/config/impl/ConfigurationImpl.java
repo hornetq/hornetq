@@ -75,10 +75,6 @@ public class ConfigurationImpl implements Configuration
 
    public static final String DEFAULT_PAGING_DIR = "data/paging";
 
-   public static final int DEFAULT_GLOBAL_PAGE_SIZE = 10 * 1024 * 1024;
-
-   public static final long DEFAULT_PAGE_MAX_GLOBAL_SIZE = -1;
-
    public static final String DEFAULT_LARGE_MESSAGES_DIR = "data/largemessages";
 
    public static final boolean DEFAULT_CREATE_JOURNAL_DIR = true;
@@ -214,10 +210,6 @@ public class ConfigurationImpl implements Configuration
    protected Map<String, DiscoveryGroupConfiguration> discoveryGroupConfigurations = new LinkedHashMap<String, DiscoveryGroupConfiguration>();
 
    // Paging related attributes ------------------------------------------------------------
-
-   protected long pagingMaxGlobalSize = DEFAULT_PAGE_MAX_GLOBAL_SIZE;
-
-   protected int globalPageSize = DEFAULT_GLOBAL_PAGE_SIZE;
 
    protected String pagingDirectory = DEFAULT_PAGING_DIR;
 
@@ -766,32 +758,6 @@ public class ConfigurationImpl implements Configuration
       this.journalAIOBufferSize = size;
    }
    
-   public long getPagingMaxGlobalSizeBytes()
-   {
-      return pagingMaxGlobalSize;
-   }
-
-   public void setPagingMaxGlobalSizeBytes(final long maxGlobalSize)
-   {
-      pagingMaxGlobalSize = maxGlobalSize;
-   }
-
-   /* (non-Javadoc)
-    * @see org.jboss.messaging.core.config.Configuration#getPagingDefaultSize()
-    */
-   public int getGlobalPagingSize()
-   {
-      return globalPageSize;
-   }
-
-   /* (non-Javadoc)
-    * @see org.jboss.messaging.core.config.Configuration#setPagingDefaultSize(long)
-    */
-   public void setGlobalPagingSize(final int pageSize)
-   {
-      globalPageSize = pageSize;
-   }
-
    public String getLargeMessagesDirectory()
    {
       return largeMessagesDirectory;
@@ -892,8 +858,7 @@ public class ConfigurationImpl implements Configuration
              cother.getJournalType() == getJournalType() &&
              cother.getScheduledThreadPoolMaxSize() == getScheduledThreadPoolMaxSize() &&
              cother.getSecurityInvalidationInterval() == getSecurityInvalidationInterval() &&
-             cother.getManagementAddress().equals(getManagementAddress()) &&
-             cother.getGlobalPagingSize() == getGlobalPagingSize();
+             cother.getManagementAddress().equals(getManagementAddress());
    }
 
    /* (non-Javadoc)

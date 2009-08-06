@@ -42,8 +42,6 @@ public interface PagingStoreFactory
 {
    PagingStore newStore(SimpleString destinationName, AddressSettings addressSettings) throws Exception;
 
-   Executor getGlobalDepagerExecutor();
-
    void stop() throws InterruptedException;
 
    void setPagingManager(PagingManager manager);

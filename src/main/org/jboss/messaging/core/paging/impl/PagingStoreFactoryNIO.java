@@ -68,8 +68,6 @@ public class PagingStoreFactoryNIO implements PagingStoreFactory
 
    private final ExecutorFactory executorFactory;
 
-   private final Executor globalDepagerExecutor;
-
    private PagingManager pagingManager;
 
    private StorageManager storageManager;
@@ -85,16 +83,9 @@ public class PagingStoreFactoryNIO implements PagingStoreFactory
       this.directory = directory;
 
       this.executorFactory = executorFactory;
-
-      globalDepagerExecutor = executorFactory.getExecutor();
    }
 
    // Public --------------------------------------------------------
-
-   public Executor getGlobalDepagerExecutor()
-   {
-      return globalDepagerExecutor;
-   }
 
    public void stop()
    {

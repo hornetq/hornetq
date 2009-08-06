@@ -92,8 +92,6 @@ public interface MessagingServerControl
 
    int getAIOBufferTimeout();
 
-   public long getPagingMaxGlobalSizeBytes();
-
    public String getPagingDirectory();
 
    boolean isPersistDeliveryCountBeforeDelivery();
@@ -111,8 +109,6 @@ public interface MessagingServerControl
    int getIDCacheSize();
 
    boolean isPersistIDCache();
-
-   int getGlobalPageSize();
 
    String getLargeMessagesDirectory();
 

@@ -286,10 +286,6 @@ public class FileConfiguration extends ConfigurationImpl
 
       pagingDirectory = getString(e, "paging-directory", pagingDirectory, NOT_NULL_OR_EMPTY);
 
-      pagingMaxGlobalSize = getLong(e, "paging-max-global-size-bytes", pagingMaxGlobalSize, MINUS_ONE_OR_GT_ZERO);
-
-      globalPageSize = getInteger(e, "global-page-size", globalPageSize, GT_ZERO);
-      
       createJournalDir = getBoolean(e, "create-journal-dir", createJournalDir);
 
       String s = getString(e, "journal-type", journalType.toString(), Validators.JOURNAL_TYPE);

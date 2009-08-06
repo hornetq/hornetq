@@ -136,11 +136,6 @@ public class ReplicationAwareMessagingServerControlWrapper extends ReplicationAw
       return localControl.getPagingDirectory();
    }
 
-   public long getPagingMaxGlobalSizeBytes()
-   {
-      return localControl.getPagingMaxGlobalSizeBytes();
-   }
-
    public int getScheduledThreadPoolMaxSize()
    {
       return localControl.getScheduledThreadPoolMaxSize();
@@ -364,11 +359,6 @@ public class ReplicationAwareMessagingServerControlWrapper extends ReplicationAw
    public long getMessageExpiryThreadPriority()
    {
       return localControl.getMessageExpiryThreadPriority();
-   }
-
-   public int getGlobalPageSize()
-   {
-      return localControl.getGlobalPageSize();
    }
 
    public long getQueueActivationTimeout()

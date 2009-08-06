@@ -81,7 +81,7 @@ public class BasicXaRecoveryTest extends ServiceTestBase
       configuration.setJournalMinFiles(2);
       configuration.setPagingDirectory(getPageDir());
 
-      server = createServer(true, configuration, addressSettings);
+      server = createServer(true, configuration, -1, -1, addressSettings);
 
       // start the server
       server.start();
@@ -1215,7 +1215,7 @@ public class BasicXaRecoveryTest extends ServiceTestBase
       clientSession = null;
       server.stop();
       server = null;
-      server = createServer(true, configuration, addressSettings);
+      server = createServer(true, configuration, -1, -1, addressSettings);
 
       server.start();
       createClients();

@@ -85,12 +85,12 @@ public class FailoverTestBase extends ServiceTestBase
                                                                      backupParams));
    }
 
-   protected void setUpFileBased(final long maxGlobalSize) throws Exception
+   protected void setUpFileBased(final int maxGlobalSize) throws Exception
    {
       setUpFileBased(maxGlobalSize, 20 * 1024);
    }
 
-   protected void setUpFileBased(final long maxGlobalSize, final int pageSize) throws Exception
+   protected void setUpFileBased(final int maxGlobalSize, final int pageSize) throws Exception
    {
       setUpFailoverServers(true, maxGlobalSize, pageSize);
    }
@@ -101,7 +101,7 @@ public class FailoverTestBase extends ServiceTestBase
     */
 
    protected void setUpFailoverServers(boolean fileBased,
-                                       final long maxGlobalSize,
+                                       final int maxAddressSize,
                                        final int pageSize) throws Exception
    {
       deleteDirectory(new File(getTestDir()));
@@ -126,9 +126,14 @@ public class FailoverTestBase extends ServiceTestBase
 
          backupConf.setJournalType(JournalType.ASYNCIO);
 
-         backupConf.setPagingMaxGlobalSizeBytes(maxGlobalSize);
-         backupConf.setGlobalPagingSize(pageSize);
+         
+         
          backupServer = Messaging.newMessagingServer(backupConf);
+
+         AddressSettings defaultSetting = new AddressSettings();
+         defaultSetting.setPageSizeBytes(pageSize);
+         defaultSetting.setMaxSizeBytes(maxAddressSize);
+         backupServer.getAddressSettingsRepository().addMatch("#", defaultSetting);
       }
       else
       {
@@ -160,8 +165,6 @@ public class FailoverTestBase extends ServiceTestBase
          liveConf.setBindingsDirectory(getBindingsDir(getTestDir() + "/live"));
          liveConf.setPagingDirectory(getPageDir(getTestDir() + "/live"));
 
-         liveConf.setPagingMaxGlobalSizeBytes(maxGlobalSize);
-         liveConf.setGlobalPagingSize(pageSize);
          liveConf.setJournalFileSize(100 * 1024);
 
          liveConf.setJournalType(JournalType.ASYNCIO);
@@ -170,6 +173,12 @@ public class FailoverTestBase extends ServiceTestBase
       if (fileBased)
       {
          liveServer = Messaging.newMessagingServer(liveConf);
+         
+         AddressSettings defaultSetting = new AddressSettings();
+         defaultSetting.setPageSizeBytes(pageSize);
+         defaultSetting.setMaxSizeBytes(maxAddressSize);
+         liveServer.getAddressSettingsRepository().addMatch("#", defaultSetting);
+
       }
       else
       {
@@ -210,9 +219,8 @@ public class FailoverTestBase extends ServiceTestBase
 
          backupConf.setJournalType(JournalType.ASYNCIO);
 
-         backupConf.setPagingMaxGlobalSizeBytes(-1);
-         backupConf.setGlobalPagingSize(-1);
          backupServer = Messaging.newMessagingServer(backupConf);
+         
       }
       else
       {
@@ -259,8 +267,6 @@ public class FailoverTestBase extends ServiceTestBase
          liveConf.setBindingsDirectory(getBindingsDir(getTestDir() + "/live"));
          liveConf.setPagingDirectory(getPageDir(getTestDir() + "/live"));
 
-         liveConf.setPagingMaxGlobalSizeBytes(-1);
-         liveConf.setGlobalPagingSize(-1);
          liveConf.setJournalFileSize(100 * 1024);
 
          liveConf.setJournalType(JournalType.ASYNCIO);

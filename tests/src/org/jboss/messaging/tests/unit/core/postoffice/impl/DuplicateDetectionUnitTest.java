@@ -91,7 +91,7 @@ public class DuplicateDetectionUnitTest extends ServiceTestBase
          configuration.setJournalType(JournalType.ASYNCIO);
 
          ScheduledExecutorService scheduledThreadPool = Executors.newScheduledThreadPool(ConfigurationImpl.DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE);
-         
+
          journal = new JournalStorageManager(configuration, Executors.newCachedThreadPool());
 
          journal.start();
@@ -201,11 +201,6 @@ public class DuplicateDetectionUnitTest extends ServiceTestBase
          return null;
       }
 
-      public long getGlobalPageSize()
-      {
-         return ConfigurationImpl.DEFAULT_GLOBAL_PAGE_SIZE;
-      }
-
       public long getTotalMemory()
       {
          return 0;
@@ -268,7 +263,7 @@ public class DuplicateDetectionUnitTest extends ServiceTestBase
       {
       }
 
-      public void startGlobalDepage()
+      public void resumeDepages()
       {
       }
 
@@ -287,6 +282,14 @@ public class DuplicateDetectionUnitTest extends ServiceTestBase
 
       public void stop() throws Exception
       {
+      }
+
+      /* (non-Javadoc)
+       * @see org.jboss.messaging.core.paging.PagingManager#isGlobalFull()
+       */
+      public boolean isGlobalFull()
+      {
+         return false;
       }
 
    }

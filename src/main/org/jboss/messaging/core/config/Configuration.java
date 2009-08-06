@@ -237,14 +237,6 @@ public interface Configuration extends Serializable, MessagingComponent
 
    void setPagingDirectory(String dir);
 
-   long getPagingMaxGlobalSizeBytes();
-
-   void setPagingMaxGlobalSizeBytes(long maxGlobalSize);
-
-   int getGlobalPagingSize();
-
-   void setGlobalPagingSize(int globalPageSize);
-
    // Large Messages Properties ------------------------------------------------------------
 
    String getLargeMessagesDirectory();

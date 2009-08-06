@@ -47,38 +47,17 @@ public class PageStressTest extends ServiceTestBase
 
    // Public --------------------------------------------------------
 
-   public void testStopDuringGlobalDepage() throws Exception
-   {
-      testStopDuringDepage(true);
-   }
-
-   public void testStopDuringRegularDepage() throws Exception
-   {
-      testStopDuringDepage(false);
-   }
-
-   public void testStopDuringDepage(final boolean globalPage) throws Exception
+   public void testStopDuringDepage() throws Exception
    {
       Configuration config = createDefaultConfig();
 
       HashMap<String, AddressSettings> settings = new HashMap<String, AddressSettings>();
 
-      if (globalPage)
-      {
-         config.setPagingMaxGlobalSizeBytes(20 * 1024 * 1024);
-         AddressSettings setting = new AddressSettings();
-         setting.setMaxSizeBytes(-1);
-         settings.put("page-adr", setting);
-      }
-      else
-      {
-         config.setPagingMaxGlobalSizeBytes(-1);
-         AddressSettings setting = new AddressSettings();
-         setting.setMaxSizeBytes(20 * 1024 * 1024);
-         settings.put("page-adr", setting);
-      }
+      AddressSettings setting = new AddressSettings();
+      setting.setMaxSizeBytes(20 * 1024 * 1024);
+      settings.put("page-adr", setting);
 
-      messagingService = createServer(true, config, settings);
+      messagingService = createServer(true, config, 10 * 1024 * 1024, 20 * 1024 * 1024, settings);
       messagingService.start();
 
       ClientSessionFactory factory = createInVMFactory();
@@ -139,7 +118,7 @@ public class PageStressTest extends ServiceTestBase
 
          System.out.println("server stopped, nr msgs: " + msgs);
 
-         messagingService = createServer(true, config, settings);
+         messagingService = createServer(true, config, 20 * 1024 * 1024, 10 * 1024 * 1024, settings);
          messagingService.start();
 
          factory = createInVMFactory();
@@ -178,38 +157,17 @@ public class PageStressTest extends ServiceTestBase
 
    }
 
-   public void testGlobalPageOnMultipleDestinations() throws Exception
-   {
-      testPageOnMultipleDestinations(true);
-   }
-
-   public void testRegularPageOnMultipleDestinations() throws Exception
-   {
-      testPageOnMultipleDestinations(false);
-   }
-
-   public void testPageOnMultipleDestinations(final boolean globalPage) throws Exception
+   public void testPageOnMultipleDestinations() throws Exception
    {
       Configuration config = createDefaultConfig();
 
       HashMap<String, AddressSettings> settings = new HashMap<String, AddressSettings>();
 
-      if (globalPage)
-      {
-         config.setPagingMaxGlobalSizeBytes(20 * 1024 * 1024);
-         AddressSettings setting = new AddressSettings();
-         setting.setMaxSizeBytes(-1);
-         settings.put("page-adr", setting);
-      }
-      else
-      {
-         config.setPagingMaxGlobalSizeBytes(-1);
-         AddressSettings setting = new AddressSettings();
-         setting.setMaxSizeBytes(20 * 1024 * 1024);
-         settings.put("page-adr", setting);
-      }
+      AddressSettings setting = new AddressSettings();
+      setting.setMaxSizeBytes(20 * 1024 * 1024);
+      settings.put("page-adr", setting);
 
-      messagingService = createServer(true, config, settings);
+      messagingService = createServer(true, config, 10 * 1024 * 1024, 20 * 1024 * 1024, settings);
       messagingService.start();
 
       ClientSessionFactory factory = createInVMFactory();

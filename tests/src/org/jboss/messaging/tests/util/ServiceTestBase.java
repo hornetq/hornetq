@@ -113,6 +113,8 @@ public class ServiceTestBase extends UnitTestCase
 
    protected MessagingServer createServer(final boolean realFiles,
                                           final Configuration configuration,
+                                          int pageSize,
+                                          int maxAddressSize,
                                           final Map<String, AddressSettings> settings)
    {
       MessagingServer server;
@@ -132,7 +134,8 @@ public class ServiceTestBase extends UnitTestCase
       }
 
       AddressSettings defaultSetting = new AddressSettings();
-      defaultSetting.setPageSizeBytes(configuration.getGlobalPagingSize());
+      defaultSetting.setPageSizeBytes(pageSize);
+      defaultSetting.setMaxSizeBytes(maxAddressSize);
 
       server.getAddressSettingsRepository().addMatch("#", defaultSetting);
 
@@ -161,8 +164,6 @@ public class ServiceTestBase extends UnitTestCase
       }
 
       AddressSettings defaultSetting = new AddressSettings();
-      defaultSetting.setPageSizeBytes(configuration.getGlobalPagingSize());
-
       server.getAddressSettingsRepository().addMatch("#", defaultSetting);
 
       return server;
@@ -170,12 +171,12 @@ public class ServiceTestBase extends UnitTestCase
 
    protected MessagingServer createServer(final boolean realFiles)
    {
-      return createServer(realFiles, createDefaultConfig(), new HashMap<String, AddressSettings>());
+      return createServer(realFiles, createDefaultConfig(), -1, -1, new HashMap<String, AddressSettings>());
    }
 
    protected MessagingServer createServer(final boolean realFiles, final Configuration configuration)
    {
-      return createServer(realFiles, configuration, new HashMap<String, AddressSettings>());
+      return createServer(realFiles, configuration,  -1, -1, new HashMap<String, AddressSettings>());
    }
 
    protected MessagingServer createServer(final boolean realFiles, final Configuration configuration,
@@ -200,7 +201,6 @@ public class ServiceTestBase extends UnitTestCase
       }
 
       AddressSettings defaultSetting = new AddressSettings();
-      defaultSetting.setPageSizeBytes(configuration.getGlobalPagingSize());
 
       server.getAddressSettingsRepository().addMatch("#", defaultSetting);
 
@@ -212,7 +212,7 @@ public class ServiceTestBase extends UnitTestCase
                                                              final Map<String, Object> params)
    {
       return createServer(realFiles,
-                          createClusteredDefaultConfig(index, params, INVM_ACCEPTOR_FACTORY),
+                          createClusteredDefaultConfig(index, params, INVM_ACCEPTOR_FACTORY), -1, -1,
                           new HashMap<String, AddressSettings>());
    }
 

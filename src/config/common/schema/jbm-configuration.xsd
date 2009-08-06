@@ -128,10 +128,6 @@
                 </xsd:element>
 				<xsd:element maxOccurs="1" minOccurs="0" name="paging-directory" type="xsd:string">
 				</xsd:element>
-				<xsd:element maxOccurs="1" minOccurs="0" name="global-page-size" type="xsd:long">
-				</xsd:element>
-				<xsd:element maxOccurs="1" minOccurs="0" name="paging-max-global-size-bytes" type="xsd:long">
-				</xsd:element>
 				<xsd:element maxOccurs="1" minOccurs="0" name="bindings-directory" type="xsd:string">
 				</xsd:element>
 				<xsd:element maxOccurs="1" minOccurs="0" name="create-bindings-dir" type="xsd:boolean">

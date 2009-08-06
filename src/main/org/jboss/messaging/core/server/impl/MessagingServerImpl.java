@@ -762,9 +762,7 @@ public class MessagingServerImpl implements MessagingServer
       return new PagingManagerImpl(new PagingStoreFactoryNIO(configuration.getPagingDirectory(), executorFactory),
                                    storageManager,
                                    addressSettingsRepository,
-                                   configuration.getPagingMaxGlobalSizeBytes(),
-                                   configuration.getGlobalPagingSize(),
-                                   configuration.isJournalSyncNonTransactional(),
+                                    configuration.isJournalSyncNonTransactional(),
                                    configuration.isBackup());
    }
 
@@ -1030,7 +1028,7 @@ public class MessagingServerImpl implements MessagingServer
          deploymentManager.start();
       }
 
-      pagingManager.startGlobalDepage();
+      pagingManager.resumeDepages();
 
       initialised = true;
 

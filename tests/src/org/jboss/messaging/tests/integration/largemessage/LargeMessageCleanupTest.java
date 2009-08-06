@@ -79,7 +79,7 @@ public class LargeMessageCleanupTest extends LargeMessageTestBase
 
       Configuration config = createDefaultConfig();
 
-      server = createServer(true, config, new HashMap<String, AddressSettings>());
+      server = createServer(true, config, -1, -1, new HashMap<String, AddressSettings>());
 
       server.start();
 
@@ -102,10 +102,7 @@ public class LargeMessageCleanupTest extends LargeMessageTestBase
 
       Configuration config = createDefaultConfig();
 
-      config.setPagingMaxGlobalSizeBytes(20 * 1024);
-      config.setGlobalPagingSize(10 * 1024);
-
-      server = createServer(true, config, new HashMap<String, AddressSettings>());
+      server = createServer(true, config, 10 * 1024, 20 * 1024, new HashMap<String, AddressSettings>());
 
       server.start();
 

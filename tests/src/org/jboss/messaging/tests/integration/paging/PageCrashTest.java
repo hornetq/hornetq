@@ -93,10 +93,7 @@ public class PageCrashTest extends ServiceTestBase
 
       Configuration config = createDefaultConfig();
 
-      config.setPagingMaxGlobalSizeBytes(100 * 1024);
-      config.setGlobalPagingSize(10 * 1024);
-
-      MessagingServer messagingService = createServer(true, config, new HashMap<String, AddressSettings>());
+      MessagingServer messagingService = createServer(true, config, 10 * 1024, 100 * 1024, new HashMap<String, AddressSettings>());
 
       messagingService.start();
 
@@ -134,9 +131,6 @@ public class PageCrashTest extends ServiceTestBase
    {
       clearData();
       Configuration config = createDefaultConfig();
-
-      config.setPagingMaxGlobalSizeBytes(100 * 1024);
-      config.setGlobalPagingSize(10 * 1024);
 
       MessagingServer server = newMessagingServer(config);
 
@@ -230,7 +224,8 @@ public class PageCrashTest extends ServiceTestBase
       MessagingServer server = new FailingMessagingServerImpl(configuration, securityManager);
 
       AddressSettings defaultSetting = new AddressSettings();
-      defaultSetting.setPageSizeBytes(configuration.getGlobalPagingSize());
+      defaultSetting.setPageSizeBytes(10 * 1024);
+      defaultSetting.setMaxSizeBytes(100 * 1024);
 
       server.getAddressSettingsRepository().addMatch("#", defaultSetting);
 
@@ -255,9 +250,7 @@ public class PageCrashTest extends ServiceTestBase
          return new PagingManagerImpl(new FailurePagingStoreFactoryNIO(super.getConfiguration().getPagingDirectory()),
                                       super.getStorageManager(),
                                       super.getAddressSettingsRepository(),
-                                      super.getConfiguration().getPagingMaxGlobalSizeBytes(),
-                                      super.getConfiguration().getGlobalPagingSize(),
-                                      super.getConfiguration().isJournalSyncNonTransactional(),
+                                       super.getConfiguration().isJournalSyncNonTransactional(),
                                       false);
       }
 

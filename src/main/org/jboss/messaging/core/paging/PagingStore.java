@@ -64,6 +64,8 @@ public interface PagingStore extends MessagingComponent
    boolean page(PagedMessage message, boolean sync, boolean duplicateDetection) throws Exception;
    
    public boolean readPage() throws Exception;
+   
+   Page getCurrentPage();
 
    /**
     * 
@@ -71,9 +73,6 @@ public interface PagingStore extends MessagingComponent
     * @throws Exception 
     */
    boolean startDepaging();
-
-   /** When start depaging from a global perspective, we don't want all the stores depaging at once what could saturate the servers */
-   boolean startDepaging(Executor executor);
 
    /**
     * @param memoryEstimate

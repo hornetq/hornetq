@@ -65,7 +65,6 @@ public class ScheduledMessageTest extends ServiceTestBase
       configuration = createDefaultConfig();
       configuration.setSecurityEnabled(false);
       configuration.setJournalMinFiles(2);
-      configuration.setPagingMaxGlobalSizeBytes(-1);
       server = createServer(true, configuration);
       server.start();
    }

@@ -61,17 +61,14 @@ public interface PagingManager extends MessagingComponent
 
    boolean isBackup();
 
-   /** The system is paging because of global-page-mode */
-   boolean isGlobalPageMode();
-
-   /** During startup PostOffice may set GlobalPageMode as true */
-   void setGlobalPageMode(boolean globalMode);
-
    /** To return the PageStore associated with the address */
    PagingStore getPageStore(SimpleString address) throws Exception;
 
    /** An injection point for the PostOffice to inject itself */
    void setPostOffice(PostOffice postOffice);
+   
+   /** Used to start depaging every paged destination, after a reload/restart */
+   void resumeDepages() throws Exception;
 
    /**
     * To be used by transactions only.
@@ -116,19 +113,9 @@ public interface PagingManager extends MessagingComponent
    void sync(Collection<SimpleString> destinationsToSync) throws Exception;
 
    /**
-    * @return
-    */
-   long getGlobalPageSize();
-
-   /**
     * @param transactionID
     */
    void removeTransaction(long transactionID);
-
-   /**
-    * @return
-    */
-   long getMaxMemory();
 
    /**
     * @return
@@ -140,11 +127,6 @@ public interface PagingManager extends MessagingComponent
     * @return
     */
    long addSize(long size);
-
-   /**
-    * 
-    */
-   void startGlobalDepage();
 
    /**
     * Reload previously created PagingStores into memory

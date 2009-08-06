@@ -1575,10 +1575,11 @@ public class LargeMessageTest extends LargeMessageTestBase
    {
       Configuration config = createDefaultConfig();
 
-      config.setPagingMaxGlobalSizeBytes(20 * 1024);
-      config.setGlobalPagingSize(10 * 1024);
+      final int PAGE_MAX = 20 * 1024;
 
-      server = createServer(realFiles, config, new HashMap<String, AddressSettings>());
+      final int PAGE_SIZE = 10 * 1024;
+
+      server = createServer(realFiles, config, PAGE_SIZE, PAGE_MAX, new HashMap<String, AddressSettings>());
 
       server.start();
 
@@ -1639,7 +1640,7 @@ public class LargeMessageTest extends LargeMessageTestBase
          {
             server.stop();
 
-            server = createServer(true, config, new HashMap<String, AddressSettings>());
+            server = createServer(true, config, PAGE_SIZE, PAGE_MAX, new HashMap<String, AddressSettings>());
             server.start();
 
             sf = createInVMFactory();
