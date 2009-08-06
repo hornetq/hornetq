@@ -110,7 +110,7 @@ public class ChannelImpl implements Channel
 
       this.windowSize = windowSize;
 
-      this.confWindowSize = (int) (0.75 * windowSize);
+      this.confWindowSize = (int)(0.75 * windowSize);
 
       if (this.windowSize != -1)
       {
@@ -182,10 +182,9 @@ public class ChannelImpl implements Channel
          packet.setChannelID(id);
 
          final MessagingBuffer buffer = connection.getTransportConnection()
-               .createBuffer(packet.getRequiredBufferSize());
+                                                  .createBuffer(packet.getRequiredBufferSize());
 
          int size = packet.encode(buffer);
-
 
          lock.lock();
 
@@ -253,7 +252,7 @@ public class ChannelImpl implements Channel
          packet.setChannelID(id);
 
          final MessagingBuffer buffer = connection.getTransportConnection()
-               .createBuffer(packet.getRequiredBufferSize());
+                                                  .createBuffer(packet.getRequiredBufferSize());
 
          int size = packet.encode(buffer);
 
@@ -316,7 +315,7 @@ public class ChannelImpl implements Channel
 
             if (response.getType() == PacketImpl.EXCEPTION)
             {
-               final MessagingExceptionMessage mem = (MessagingExceptionMessage) response;
+               final MessagingExceptionMessage mem = (MessagingExceptionMessage)response;
 
                throw mem.getException();
             }
@@ -368,7 +367,7 @@ public class ChannelImpl implements Channel
             }
 
             final MessagingBuffer buffer = connection.getTransportConnection()
-                  .createBuffer(packet.getRequiredBufferSize());
+                                                     .createBuffer(packet.getRequiredBufferSize());
 
             packet.encode(buffer);
 
@@ -483,7 +482,7 @@ public class ChannelImpl implements Channel
 
          // And switch it
 
-         final RemotingConnectionImpl rnewConnection = (RemotingConnectionImpl) newConnection;
+         final RemotingConnectionImpl rnewConnection = (RemotingConnectionImpl)newConnection;
 
          rnewConnection.putChannel(newChannelID, this);
 
@@ -544,54 +543,27 @@ public class ChannelImpl implements Channel
       }
    }
 
-   public synchronized void  confirm(final Packet packet)
+   public synchronized void confirm(final Packet packet)
    {
-      if (packet.getType() == PacketImpl.SESS_ACKNOWLEDGE || packet.getType() == PacketImpl.CREATESESSION || packet.getType() == PacketImpl.SESS_CREATECONSUMER
-            || packet.getType() == PacketImpl.SESS_START || packet.getType() == PacketImpl.PING || packet.getType() == PacketImpl.SESS_FLOWTOKEN)
+      if (resendCache != null && packet.isRequiresConfirmations())
       {
-         if (resendCache != null && packet.isRequiresConfirmations())
+         lastReceivedCommandID++;
+
+         receivedBytes += packet.getPacketSize();
+         if (receivedBytes >= confWindowSize)
          {
-            lastReceivedCommandID++;
+            receivedBytes = 0;
 
-            receivedBytes += packet.getPacketSize();
-            if (receivedBytes >= confWindowSize)
+            if (connection.isActive())
             {
-               receivedBytes = 0;
+               final Packet confirmed = new PacketsConfirmedMessage(lastReceivedCommandID);
 
-               if (connection.isActive())
-               {
-                  final Packet confirmed = new PacketsConfirmedMessage(lastReceivedCommandID);
+               confirmed.setChannelID(id);
 
-                  confirmed.setChannelID(id);
-
-                  doWrite(confirmed);
-               }
+               doWrite(confirmed);
             }
          }
       }
-      else
-      {
-         if (resendCache != null && packet.isRequiresConfirmations())
-         {
-            lastReceivedCommandID++;
-
-            receivedBytes += packet.getPacketSize();
-            if (receivedBytes >= confWindowSize)
-            {
-               receivedBytes = 0;
-
-               if (connection.isActive())
-               {
-                  final Packet confirmed = new PacketsConfirmedMessage(lastReceivedCommandID);
-                  confirmed.setChannelID(id);
-
-                  doWrite(confirmed);
-               }
-            }
-         }
-
-      }
-
    }
 
    public void handlePacket(final Packet packet)
@@ -600,7 +572,7 @@ public class ChannelImpl implements Channel
       {
          if (resendCache != null)
          {
-            final PacketsConfirmedMessage msg = (PacketsConfirmedMessage) packet;
+            final PacketsConfirmedMessage msg = (PacketsConfirmedMessage)packet;
 
             clearUpTo(msg.getCommandID());
          }
