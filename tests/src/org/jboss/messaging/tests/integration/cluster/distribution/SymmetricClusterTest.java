@@ -22,9 +22,7 @@
 
 package org.jboss.messaging.tests.integration.cluster.distribution;
 
-import org.jboss.messaging.core.client.ClientSessionFactory;
 import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.server.MessagingServer;
 
 /**
  * A SymmetricClusterTest
