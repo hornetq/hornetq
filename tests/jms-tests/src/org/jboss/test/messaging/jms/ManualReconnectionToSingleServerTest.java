@@ -56,19 +56,15 @@ import javax.jms.MessageProducer;
 import javax.jms.Session;
 import javax.jms.Topic;
 import javax.naming.Context;
-import javax.naming.InitialContext;
 
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
 import org.jboss.messaging.core.logging.Logger;
-import org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.jboss.messaging.core.server.Messaging;
 import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.integration.transports.netty.NettyAcceptorFactory;
 import org.jboss.messaging.integration.transports.netty.NettyConnectorFactory;
-import org.jboss.messaging.jms.JBossQueue;
-import org.jboss.messaging.jms.client.JBossConnection;
 import org.jboss.messaging.jms.server.impl.JMSServerManagerImpl;
 import org.jboss.messaging.tests.unit.util.InVMContext;
 import org.jboss.messaging.tests.util.UnitTestCase;
@@ -140,11 +136,11 @@ public class ManualReconnectionToSingleServerTest extends UnitTestCase
 
    // Public --------------------------------------------------------
 
-   public void _testExceptionListener() throws Exception
+   public void testExceptionListener() throws Exception
    {
       connect();
       
-      int num = 50;
+      int num = 10;
       for (int i = 0; i < num; i++)
       {
          try
@@ -161,7 +157,7 @@ public class ManualReconnectionToSingleServerTest extends UnitTestCase
          if (i == num / 2)
          {
             killServer();
-            Thread.sleep(10000);
+            Thread.sleep(5000);
             restartServer();
             afterRestart = true;
          }

@@ -558,7 +558,7 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
          boolean attemptFailover = (backupConnectorFactory) != null && (failoverOnServerShutdown || me.getCode() != MessagingException.DISCONNECTED);
          
          if (attemptFailover || reconnectAttempts != 0)
-         {
+         {  
             lockAllChannel1s();
 
             final boolean needToInterrupt;
@@ -657,10 +657,7 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
             {
                // Fail the old connections so their listeners get called
 
-               for (RemotingConnection connection : oldConnections)
-               {
-                  connection.fail(me);
-               }
+               failConnections(me);
             }
          }
          else
@@ -695,7 +692,7 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
    {
       // We re-attach sessions per connection to ensure there is the same mapping of channel id
       // on live and backup connections
-
+      
       Map<RemotingConnection, List<ClientSessionInternal>> sessionsPerConnection = new HashMap<RemotingConnection, List<ClientSessionInternal>>();
 
       for (Map.Entry<ClientSessionInternal, RemotingConnection> entry : sessions.entrySet())
@@ -780,7 +777,7 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
       long interval = retryInterval;
 
       int count = 0;
-
+      
       while (true)
       {
          if (closed)

@@ -543,13 +543,14 @@ public class ChannelImpl implements Channel
       }
    }
 
-   public synchronized void confirm(final Packet packet)
+   public void confirm(final Packet packet)
    {
       if (resendCache != null && packet.isRequiresConfirmations())
       {
          lastReceivedCommandID++;
 
          receivedBytes += packet.getPacketSize();
+         
          if (receivedBytes >= confWindowSize)
          {
             receivedBytes = 0;
