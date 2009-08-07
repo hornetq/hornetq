@@ -913,6 +913,7 @@ public class ClusterTestBase extends ServiceTestBase
       configuration.setPagingDirectory(getPageDir(node, backup));
       configuration.setLargeMessagesDirectory(getLargeMessagesDir(node, backup));
       configuration.setClustered(true);
+      configuration.setJournalCompactMinFiles(0);
       configuration.setBackup(backup);
 
       if (backupNode != -1)
