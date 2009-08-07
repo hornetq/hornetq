@@ -199,6 +199,8 @@ public class ManualReconnectionToSingleServerTest extends UnitTestCase
    @Override
    protected void tearDown() throws Exception
    {
+      connection.close();
+      
       server.stop();
 
       super.tearDown();

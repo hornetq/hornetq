@@ -1337,10 +1337,13 @@ public class MessagingServerImpl implements MessagingServer
                                                         final int sendWindowSize,
                                                         final boolean backup) throws Exception
    {
-      if (version.getIncrementingVersion() < incrementingVersion)
+      if (version.getIncrementingVersion() != incrementingVersion)
       {
          throw new MessagingException(MessagingException.INCOMPATIBLE_CLIENT_SERVER_VERSIONS,
-                                      "client not compatible with version: " + version.getFullVersion());
+                                      "Client with version " + incrementingVersion + " is not compatible with server version " +
+                                      version.getFullVersion()  + ". " +
+                                      "Please ensure all clients and servers are upgraded to the same version for them to " +
+                                      "interoperate");
       }
 
       // Is this comment relevant any more ?

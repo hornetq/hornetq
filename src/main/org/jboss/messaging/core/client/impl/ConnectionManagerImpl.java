@@ -1019,6 +1019,8 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
          // Can be legitimately null if session was closed before then went to remove session from csf
          // and locked since failover had started then after failover removes it but it's already been failed
       } 
+      
+      log.info("Returning connection, now " + this.connections.size() + " pingers " + this.pingers.size());
    }
 
    private void failConnections(final MessagingException me)
