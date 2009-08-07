@@ -350,8 +350,6 @@ public class LargeMessageBufferImpl implements ChannelBuffer, LargeMessageBuffer
    {
       checkForPacket(index);
 
-      //System.out.println("position = " + index + " , packetPosition = " + packetPosition + " filecache = " + fileCache);
-
       if (fileCache != null && index < packetPosition)
       {
          return fileCache.getByteFromCache(index);

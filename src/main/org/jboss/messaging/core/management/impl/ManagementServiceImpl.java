@@ -743,9 +743,6 @@ public class ManagementServiceImpl implements ManagementService
                {
                   continue;
                }
-               // System.out.format("param=%s, expecting=%s\n", params[i].getClass(), paramTypes[i]);
-               // System.out.println(!paramTypes[i].isAssignableFrom(params[i].getClass()));
-               // System.out.println(paramTypes[i] == Long.TYPE && params[i].getClass() == Integer.class);
                if (paramTypes[i].isAssignableFrom(params[i].getClass()) || (paramTypes[i] == Long.TYPE && params[i].getClass() == Integer.class) ||
                    (paramTypes[i] == Double.TYPE && params[i].getClass() == Integer.class) ||
                    (paramTypes[i] == Long.TYPE && params[i].getClass() == Long.class) ||
@@ -774,22 +771,7 @@ public class ManagementServiceImpl implements ManagementService
       {
          throw new IllegalArgumentException("no operation " + operation + "/" + params.length);
       }
-      // System.out.println(method.getName());
-      // for (Class<?> parameters : method.getParameterTypes())
-      // {
-      // System.out.println(parameters);
-      // }
-      // System.out.println("===");
-      // for (Object object : params)
-      // {
-      // if (object == null)
-      // {
-      // System.out.println("null");
-      // } else
-      // {
-      // System.out.println(object.getClass());
-      // }
-      // }
+      
       Object result = method.invoke(resource, params);
 
       return result;
