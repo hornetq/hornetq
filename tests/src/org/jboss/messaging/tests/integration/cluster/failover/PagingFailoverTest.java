@@ -243,12 +243,12 @@ public class PagingFailoverTest extends FailoverTestBase
    
    protected int getMaxGlobal()
    {
-      return 1024;
+      return 10024;
    }
    
    protected int getPageSize()
    {
-      return 512;
+      return 5120;
    }
    
    protected void fail(final ClientSession session) throws Exception

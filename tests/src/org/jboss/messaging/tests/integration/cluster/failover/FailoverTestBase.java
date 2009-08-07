@@ -126,15 +126,8 @@ public class FailoverTestBase extends ServiceTestBase
          backupConf.setJournalCompactPercentage(0);
 
          backupConf.setJournalType(JournalType.ASYNCIO);
-
-         
          
          backupServer = Messaging.newMessagingServer(backupConf);
-
-         AddressSettings defaultSetting = new AddressSettings();
-         defaultSetting.setPageSizeBytes(pageSize);
-         defaultSetting.setMaxSizeBytes(maxAddressSize);
-         backupServer.getAddressSettingsRepository().addMatch("#", defaultSetting);
       }
       else
       {
@@ -175,12 +168,6 @@ public class FailoverTestBase extends ServiceTestBase
       if (fileBased)
       {
          liveServer = Messaging.newMessagingServer(liveConf);
-         
-         AddressSettings defaultSetting = new AddressSettings();
-         defaultSetting.setPageSizeBytes(pageSize);
-         defaultSetting.setMaxSizeBytes(maxAddressSize);
-         liveServer.getAddressSettingsRepository().addMatch("#", defaultSetting);
-
       }
       else
       {
@@ -188,6 +175,8 @@ public class FailoverTestBase extends ServiceTestBase
       }
 
       AddressSettings settings = new AddressSettings();
+      settings.setPageSizeBytes(pageSize);
+      settings.setMaxSizeBytes(maxAddressSize);
       settings.setPageSizeBytes(pageSize);
 
       liveServer.getAddressSettingsRepository().addMatch("#", settings);
