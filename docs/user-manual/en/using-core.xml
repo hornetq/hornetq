@@ -106,11 +106,11 @@
         <para>Here's a very simple program using the core messaging API to send and receive a
             message:</para>
         <programlisting>
-ClientSessionFactory nettyFactory =  new ClientSessionFactoryImpl(
+ClientSessionFactory factory =  new ClientSessionFactoryImpl(
                                         new TransportConfiguration(
                                            InVMConnectorFactory.class.getName()));
 
-ClientSession session = nettyFactory.createSession();
+ClientSession session = factory.createSession();
 
 session.createQueue("example", "example", true);
 

@@ -112,7 +112,7 @@ org.jboss.messaging.integration.transports.netty.NettyAcceptorFactory
         <programlisting>
 Map&lt;String, Object&gt; connectionParams = new HashMap&lt;String, Object&gt;();
     
-connectionParams.put(org.jboss.messaging.integration.transports.netty.PORT_PROP_NAME, 
+    connectionParams.put(org.jboss.messaging.integration.transports.netty.TransportConstants.PORT_PROP_NAME, 
                     5446);
 
 TransportConfiguration transportConfiguration = 
@@ -120,7 +120,7 @@ TransportConfiguration transportConfiguration =
     "org.jboss.messaging.integration.transports.netty.NettyConnectorFactory", 
     connectionParams);
 
-ClientSessionFactory sessionFactory = new ClientSessionFactory(transportConfiguration);
+ClientSessionFactory sessionFactory = new ClientSessionFactoryImpl(transportConfiguration);
 
 ClientSession session = sessionFactory.createSession(...);
 
@@ -132,7 +132,7 @@ etc
         <programlisting>
 Map&lt;String, Object&gt; connectionParams = new HashMap&lt;String, Object&gt;();
 
-connectionParams.put(org.jboss.messaging.integration.transports.netty.PORT_PROP_NAME, 5446);
+connectionParams.put(org.jboss.messaging.integration.transports.netty.TransportConstants.PORT_PROP_NAME, 5446);
 
 TransportConfiguration transportConfiguration = 
     new TransportConfiguration(

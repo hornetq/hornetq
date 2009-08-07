@@ -6,11 +6,8 @@
     <para>In such a situation it's not possible to store all of the queues in memory at any one
         time, so JBoss Messaging transparently <emphasis>pages</emphasis> messages into and out of
         memory as they are needed, thus allowing massive queues with a low memory footprint.</para>
-    <para>JBoss Messaging will start paging messages to disk, when either a) the size of the queue
-        reaches a total configured maximum size or b) The total size of all queues reaches a
-        configured maximum size.</para>
-    <para>These two modes of operation are called <link linkend="paging.address.mode">Address Paging
-            Mode</link> and <link linkend="paging.global.mode">Global Paging Mode</link>.</para>
+    <para>JBoss Messaging will start paging messages to disk, when either the size of the queue
+        reaches a total configured maximum size.</para>
     <section>
         <title>Page Files</title>
         <para>Messages are stored per address on the file system. Each address has an individual
@@ -19,75 +16,54 @@
             page-files all messages on the page-file are read, routed and the file is deleted as
             soon as the messages are recovered.</para>
     </section>
-    <section id="paging.global.mode">
-        <title>Global Paging Mode</title>
-        <para>JBoss Messaging goes into global paging mode when the total memory used by all queues
-            reaches a configured maximum value, determined by <literal><link
-                    linkend="paging.main.config">paging-max-global-size-bytes</link></literal>. </para>
-        <para>These messages are depaged back into memory once enough memory (<literal
-                >global-page-size</literal>) has been freed up.</para>
-        <section id="paging.main.config">
-            <title>Configuration</title>
-            <para>Global paging parameters are specified on the main configuration file.</para>
-            <programlisting>&lt;configuration xmlns="urn:jboss:messaging"
-xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-xsi:schemaLocation="urn:jboss:messaging /schema/jbm-configuration.xsd">
-
-...
-
-&lt;paging-max-global-size-bytes>20485760&lt;/paging-max-global-size-bytes>
-&lt;global-page-size>1048576&lt;/global-page-size>
-
-...        </programlisting>
-            <para>
-                <table frame="topbot">
-                    <title>Paging Configuration Parameters</title>
-                    <tgroup cols="3">
-                        <colspec colname="c1" colnum="1"/>
-                        <colspec colname="c2" colnum="2"/>
-                        <colspec colname="c3" colnum="3"/>
-                        <thead>
-                            <row>
-                                <entry>Property Name</entry>
-                                <entry>Description</entry>
-                                <entry>Default</entry>
-                            </row>
-                        </thead>
-                        <tbody>
-                            <row>
-                                <entry><literal>paging-directory</literal></entry>
-                                <entry>Where page files are stored. JBoss Messaging will create one
-                                    folder for each address being paged under this configured
-                                    location.</entry>
-                                <entry>data/paging</entry>
-                            </row>
-                            <row>
-                                <entry><literal>paging-max-global-size-bytes</literal></entry>
-                                <entry>JBoss Messaging enters into global page mode as soon as the
-                                    total memory consumed by messages hits this value.</entry>
-                                <entry>-1 (disabled)</entry>
-                            </row>
-                            <row>
-                                <entry><literal>global-page-size</literal></entry>
-                                <entry>The standard size of a page-file. JBoss Messaging will only
-                                    read messages when there is enough space to read at least one
-                                    page file, determined by this value.</entry>
-                                <entry>10MiB (10 * 1024 * 1024 bytes)</entry>
-                            </row>
-                        </tbody>
-                    </tgroup>
-                </table>
-            </para>
-        </section>
+    <section id="paging.main.config">
+        <title>Configuration</title>
+        <para>You can configure the location of the paging folder</para>
+        <para>Global paging parameters are specified on the main configuration file.</para>
+        <programlisting>&lt;configuration xmlns="urn:jboss:messaging"
+            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+            xsi:schemaLocation="urn:jboss:messaging /schema/jbm-configuration.xsd">
+            
+            ...
+            
+            &lt;paging-directory>/somewhere/paging-directory&lt;/paging-directory>
+            
+            ...        </programlisting>
+        <para>
+            <table frame="topbot">
+                <title>Paging Configuration Parameters</title>
+                <tgroup cols="3">
+                    <colspec colname="c1" colnum="1"/>
+                    <colspec colname="c2" colnum="2"/>
+                    <colspec colname="c3" colnum="3"/>
+                    <thead>
+                        <row>
+                            <entry>Property Name</entry>
+                            <entry>Description</entry>
+                            <entry>Default</entry>
+                        </row>
+                    </thead>
+                    <tbody>
+                        <row>
+                            <entry><literal>paging-directory</literal></entry>
+                            <entry>Where page files are stored. JBoss Messaging will create one
+                                folder for each address being paged under this configured
+                                location.</entry>
+                            <entry>data/paging</entry>
+                        </row>
+                    </tbody>
+                </tgroup>
+            </table>
+        </para>
     </section>
-    <section id="paging.address.mode">
-        <title>Address Paging Mode</title>
-        <para>It is also possible to configure paging at the address level. As soon as messages
+    <section id="paging.mode">
+        <title>Paging Mode</title>
+        <para>As soon as messages
             delivered to an address exceed the configured size, that address alone goes into page
             mode.</para>
         <section>
             <title>Configuration</title>
-            <para>Address level configuration is done at the address settings.</para>
+            <para>Configuration is done at the address settings.</para>
             <programlisting>  &lt;address-settings>
       &lt;address-setting match="jms.someaddress">
          &lt;max-size-bytes>-1&lt;/max-size-bytes>

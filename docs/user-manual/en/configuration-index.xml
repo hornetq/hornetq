@@ -84,15 +84,6 @@
                             <entry>true</entry>
                         </row>
                         <row>
-                            <entry><link linkend="paging.main.config"
-                                >global-page-size</link></entry>
-                            <entry>Long</entry>
-                            <entry>the standard size (in bytes) of a page-file. JBoss Messaging will
-                                only read messages when there is enough space to read at least one
-                                page file, determined by this value.</entry>
-                            <entry>10 * 1024 * 1024</entry>
-                        </row>
-                        <row>
                             <entry><link linkend="duplicate.id.cache">id-cache-size</link></entry>
                             <entry>Integer</entry>
                             <entry>the size of the cache for pre creating message id's</entry>
@@ -287,14 +278,6 @@
                             <entry>String</entry>
                             <entry>the directory to store paged messages in</entry>
                             <entry>data/paging</entry>
-                        </row>
-                        <row>
-                            <entry><link linkend="paging.main.config"
-                                >paging-max-global-size-bytes</link></entry>
-                            <entry>Long</entry>
-                            <entry>JBoss Messaging enters into global page mode as soon as the total
-                                memory consumed by messages hits this value (in bytes)</entry>
-                            <entry>-1</entry>
                         </row>
                         <row>
                             <entry><link linkend="configuring.delivery.count.persistence">
