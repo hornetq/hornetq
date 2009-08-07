@@ -103,6 +103,10 @@ public class ClusterTestBase extends ServiceTestBase
    {
       checkFreePort(PORTS);
       
+      servers = new MessagingServer[MAX_SERVERS];
+
+      sfs = new ClientSessionFactory[MAX_SERVERS];
+
       super.tearDown();
    }
 
@@ -1360,9 +1364,16 @@ public class ClusterTestBase extends ServiceTestBase
       {
          if (servers[nodes[i]].isStarted())
          {
-            log.info("stopping server " + nodes[i]);
-            servers[nodes[i]].stop();
-            log.info("server stopped");
+            try
+            {
+               log.info("stopping server " + nodes[i]);
+               servers[nodes[i]].stop();
+               log.info("server stopped");
+            }
+            catch (Exception e)
+            {
+               log.warn(e.getMessage(), e);
+            }
          }
       }
    }

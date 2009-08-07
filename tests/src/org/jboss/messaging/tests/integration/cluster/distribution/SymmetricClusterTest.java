@@ -22,7 +22,9 @@
 
 package org.jboss.messaging.tests.integration.cluster.distribution;
 
+import org.jboss.messaging.core.client.ClientSessionFactory;
 import org.jboss.messaging.core.logging.Logger;
+import org.jboss.messaging.core.server.MessagingServer;
 
 /**
  * A SymmetricClusterTest
@@ -51,8 +53,10 @@ public class SymmetricClusterTest extends ClusterTestBase
    protected void tearDown() throws Exception
    {
       stopServers();
-
+      
       super.tearDown();
+      
+      
    }
 
    protected boolean isNetty()
@@ -1307,7 +1311,7 @@ public class SymmetricClusterTest extends ClusterTestBase
 
       verifyReceiveRoundRobinInSomeOrder(10, 1, 2, 3, 4);
    }
-
+   
    public void testStartStopServers() throws Exception
    {
       setupCluster();
