@@ -98,7 +98,7 @@ public class OrderingOnBackupTest extends FailoverTestBase
       final SimpleString sequenceIDKey = new SimpleString("SEQUENCE_ID");
       final SimpleString ADDRESS = new SimpleString("SOME_QUEUE");
 
-      final int NUMBER_OF_THREADS = 100;
+      final int NUMBER_OF_THREADS = 10;
       final int NUMBER_OF_MESSAGES = 200;
 
       final int NUMBER_OF_HANDLERS = consumeMessages ? NUMBER_OF_THREADS : 0;

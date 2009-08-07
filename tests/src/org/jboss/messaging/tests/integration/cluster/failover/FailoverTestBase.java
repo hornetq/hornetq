@@ -123,6 +123,7 @@ public class FailoverTestBase extends ServiceTestBase
          backupConf.setBindingsDirectory(getBindingsDir(getTestDir() + "/backup"));
          backupConf.setPagingDirectory(getPageDir(getTestDir() + "/backup"));
          backupConf.setJournalFileSize(100 * 1024);
+         backupConf.setJournalCompactPercentage(0);
 
          backupConf.setJournalType(JournalType.ASYNCIO);
 
@@ -164,7 +165,8 @@ public class FailoverTestBase extends ServiceTestBase
          liveConf.setLargeMessagesDirectory(getLargeMessagesDir(getTestDir() + "/live"));
          liveConf.setBindingsDirectory(getBindingsDir(getTestDir() + "/live"));
          liveConf.setPagingDirectory(getPageDir(getTestDir() + "/live"));
-
+         liveConf.setJournalCompactMinFiles(0);
+         
          liveConf.setJournalFileSize(100 * 1024);
 
          liveConf.setJournalType(JournalType.ASYNCIO);
