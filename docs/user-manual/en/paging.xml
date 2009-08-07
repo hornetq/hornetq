@@ -113,7 +113,7 @@ xsi:schemaLocation="urn:jboss:messaging /schema/jbm-configuration.xsd">
                         </thead>
                         <tbody>
                             <row>
-                                <entry><literal>max-size</literal></entry>
+                                <entry><literal>max-size-bytes</literal></entry>
                                 <entry>What's the max memory the address could have before entering
                                     on page mode.</entry>
                                 <entry>-1 (disabled)</entry>
