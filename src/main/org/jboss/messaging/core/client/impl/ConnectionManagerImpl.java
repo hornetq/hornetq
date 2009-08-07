@@ -852,7 +852,10 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
 
          try
          {
-            connector.close();
+            if (connector != null)
+            {
+               connector.close();
+            }
          }
          catch (Throwable ignore)
          {
