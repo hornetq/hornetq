@@ -256,7 +256,10 @@ public class PagingStoreImpl implements TestSupportPageStore
             {
                if (startDepaging())
                {
-                  log.info("Starting depaging Thread, size = " + addressSize);
+                  if (isTrace)
+                  {
+                     trace("Starting depaging Thread, size = " + addressSize);
+                  }
                }
             }
          }
@@ -897,7 +900,7 @@ public class PagingStoreImpl implements TestSupportPageStore
                pagingManager.getTotalMemory() +
                " addressSize = " +
                this.getAddressSize() +
-                " addressMax " +
+               " addressMax " +
                this.getMaxSizeBytes() +
                " isPaging = " +
                isPaging() +
