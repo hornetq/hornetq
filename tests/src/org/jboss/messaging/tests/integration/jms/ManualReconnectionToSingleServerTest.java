@@ -19,7 +19,7 @@
   * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
   * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
   */
-package org.jboss.test.messaging.jms;
+package org.jboss.messaging.tests.integration.jms;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE;
@@ -38,7 +38,6 @@ import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFA
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_THREAD_POOL_MAX_SIZE;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_USE_GLOBAL_POOLS;
-import static org.jboss.messaging.tests.util.RandomUtil.randomString;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -91,11 +90,11 @@ public class ManualReconnectionToSingleServerTest extends UnitTestCase
    private MessageConsumer consumer;
 
    private CountDownLatch exceptionLatch = new CountDownLatch(1);
-   
+
    private boolean afterRestart = false;
-   
+
    private boolean receivedMessagesAfterRestart = false;
-   
+
    private MessageListener listener = new MessageListener()
    {
       public void onMessage(Message msg)
@@ -106,7 +105,7 @@ public class ManualReconnectionToSingleServerTest extends UnitTestCase
          }
          System.out.println(msg);
       }
-   };   
+   };
 
    private ExceptionListener exceptionListener = new ExceptionListener()
    {
@@ -124,7 +123,7 @@ public class ManualReconnectionToSingleServerTest extends UnitTestCase
 
    private InVMContext context;
 
-   private String topicName;
+   private final String topicName = "my-topic";
 
    // Static --------------------------------------------------------
 
@@ -139,7 +138,7 @@ public class ManualReconnectionToSingleServerTest extends UnitTestCase
    public void testExceptionListener() throws Exception
    {
       connect();
-      
+
       int num = 10;
       for (int i = 0; i < num; i++)
       {
@@ -162,10 +161,10 @@ public class ManualReconnectionToSingleServerTest extends UnitTestCase
             afterRestart = true;
          }
       }
-      
+
       boolean gotException = exceptionLatch.await(10, SECONDS);
       assertTrue(gotException);
-      
+
       assertTrue(receivedMessagesAfterRestart);
    }
 
@@ -190,8 +189,7 @@ public class ManualReconnectionToSingleServerTest extends UnitTestCase
       serverManager.setContext(context);
       serverManager.start();
       serverManager.activated();
-
-      topicName = randomString();
+      
       serverManager.createTopic(topicName, topicName);
       registerConnectionFactory();
    }
@@ -200,12 +198,12 @@ public class ManualReconnectionToSingleServerTest extends UnitTestCase
    protected void tearDown() throws Exception
    {
       connection.close();
-      
+
       server.stop();
 
       super.tearDown();
    }
-   
+
    // Private -------------------------------------------------------
 
    // Inner classes -------------------------------------------------
@@ -215,8 +213,7 @@ public class ManualReconnectionToSingleServerTest extends UnitTestCase
       serverManager.start();
       serverManager.activated();
       context = new InVMContext();
-      serverManager.setContext(context);
-      topicName = randomString();
+      serverManager.setContext(context);      
       serverManager.createTopic(topicName, topicName);
       registerConnectionFactory();
    }
@@ -242,34 +239,34 @@ public class ManualReconnectionToSingleServerTest extends UnitTestCase
       jndiBindings.add("/cf");
 
       serverManager.createConnectionFactory("ManualReconnectionToSingleServerTest",
-                                                    connectorConfigs,
-                                                    null,
-                                                    DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
-                                                    DEFAULT_CONNECTION_TTL,
-                                                    callTimeout,
-                                                    DEFAULT_MAX_CONNECTIONS,
-                                                    DEFAULT_CACHE_LARGE_MESSAGE_CLIENT,
-                                                    DEFAULT_MIN_LARGE_MESSAGE_SIZE,
-                                                    DEFAULT_CONSUMER_WINDOW_SIZE,
-                                                    DEFAULT_CONSUMER_MAX_RATE,
-                                                    DEFAULT_PRODUCER_WINDOW_SIZE,
-                                                    DEFAULT_PRODUCER_MAX_RATE,
-                                                    true,
-                                                    true,
-                                                    true,
-                                                    DEFAULT_AUTO_GROUP,
-                                                    DEFAULT_PRE_ACKNOWLEDGE,
-                                                    DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME,
-                                                    DEFAULT_ACK_BATCH_SIZE,
-                                                    DEFAULT_ACK_BATCH_SIZE,
-                                                    DEFAULT_USE_GLOBAL_POOLS,
-                                                    DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE,
-                                                    DEFAULT_THREAD_POOL_MAX_SIZE,
-                                                    retryInterval,
-                                                    retryIntervalMultiplier,
-                                                    reconnectAttempts,
-                                                    failoverOnServerShutdown,
-                                                    jndiBindings);
+                                            connectorConfigs,
+                                            null,
+                                            DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
+                                            DEFAULT_CONNECTION_TTL,
+                                            callTimeout,
+                                            DEFAULT_MAX_CONNECTIONS,
+                                            DEFAULT_CACHE_LARGE_MESSAGE_CLIENT,
+                                            DEFAULT_MIN_LARGE_MESSAGE_SIZE,
+                                            DEFAULT_CONSUMER_WINDOW_SIZE,
+                                            DEFAULT_CONSUMER_MAX_RATE,
+                                            DEFAULT_PRODUCER_WINDOW_SIZE,
+                                            DEFAULT_PRODUCER_MAX_RATE,
+                                            true,
+                                            true,
+                                            true,
+                                            DEFAULT_AUTO_GROUP,
+                                            DEFAULT_PRE_ACKNOWLEDGE,
+                                            DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME,
+                                            DEFAULT_ACK_BATCH_SIZE,
+                                            DEFAULT_ACK_BATCH_SIZE,
+                                            DEFAULT_USE_GLOBAL_POOLS,
+                                            DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE,
+                                            DEFAULT_THREAD_POOL_MAX_SIZE,
+                                            retryInterval,
+                                            retryIntervalMultiplier,
+                                            reconnectAttempts,
+                                            failoverOnServerShutdown,
+                                            jndiBindings);
    }
 
    protected void disconnect()
