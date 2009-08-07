@@ -137,7 +137,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
    // ClientConsumer implementation
    // -----------------------------------------------------------------
 
-    public ClientMessage receive(long timeout) throws MessagingException
+   public ClientMessage receive(long timeout) throws MessagingException
    {
       checkClosed();
 
@@ -379,11 +379,6 @@ public class ClientConsumerImpl implements ClientConsumerInternal
 
       messageToHandle.onReceipt(this);
 
-      if (trace)
-      {
-         log.trace("Adding message " + message + " into buffer");
-      }
-
       // Add it to the buffer
       buffer.addLast(messageToHandle, messageToHandle.getPriority());
 
@@ -419,10 +414,11 @@ public class ClientConsumerImpl implements ClientConsumerInternal
       currentChunkMessage.setLargeMessage(true);
 
       File largeMessageCache = null;
-      
+
       if (session.isCacheLargeMessageClient())
       {
-         largeMessageCache = File.createTempFile("tmp-large-message-" + currentChunkMessage.getMessageID()+ "-", ".tmp");
+         largeMessageCache = File.createTempFile("tmp-large-message-" + currentChunkMessage.getMessageID() + "-",
+                                                 ".tmp");
          largeMessageCache.deleteOnExit();
       }
 
