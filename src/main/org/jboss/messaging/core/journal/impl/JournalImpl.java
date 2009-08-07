@@ -1475,8 +1475,7 @@ public class JournalImpl implements TestableJournal
          // Read the files, and use the JournalCompactor class to create the new outputFiles, and the new collections as
          // well
          for (final JournalFile file : dataFilesToProcess)
-         {
-            log.info("Compacting file " + file.getFile().getFileName() + ", internalID = " + file.getFileID());
+         {            
             readJournalFile(fileFactory, file, compactor);
          }
 
@@ -2073,13 +2072,6 @@ public class JournalImpl implements TestableJournal
 
       if (totalLiveSize < compactMargin && !compactorRunning.get() && dataFiles.length > compactMinFiles)
       {
-
-         log.info("Compacting being started, numberOfDataFiles = " + dataFiles.length +
-                  ", liveSize = " +
-                  totalLiveSize +
-                  ", margin to start compacting = " +
-                  compactMargin);
-
          if (!compactorRunning.compareAndSet(false, true))
          {
             return;
@@ -2970,12 +2962,9 @@ public class JournalImpl implements TestableJournal
       SequentialFile controlFile = JournalCompactor.readControlFile(fileFactory, dataFiles, newFiles);
       if (controlFile != null)
       {
-         log.info("Journal Compactor was interrupted during renaming phase, renaming files");
-
          for (String dataFile : dataFiles)
          {
-            SequentialFile file = fileFactory.createSequentialFile(dataFile, 1);
-            log.info("Removing old compacted file" + file.getFileName());
+            SequentialFile file = fileFactory.createSequentialFile(dataFile, 1);           
             if (file.exists())
             {
                file.delete();
@@ -2984,8 +2973,7 @@ public class JournalImpl implements TestableJournal
 
          for (String newFile : newFiles)
          {
-            SequentialFile file = fileFactory.createSequentialFile(newFile, 1);
-            log.info("Renaming file " + file.getFileName() + " as an part of the data files");
+            SequentialFile file = fileFactory.createSequentialFile(newFile, 1);           
             if (file.exists())
             {
                final String originalName = file.getFileName();

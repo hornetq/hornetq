@@ -560,8 +560,7 @@ public class JournalCompactor implements JournalReaderCallback
       currentFile = journal.getFile(false, false, false);
       sequentialFile = currentFile.getFile();
       sequentialFile.renameTo(sequentialFile.getFileName() + ".cmp");
-      
-      log.info("Writing compacted data into " + sequentialFile.getFileName());
+            
       sequentialFile.open(1);
       fileID = nextOrderingID++;
       currentFile = new JournalFileImpl(sequentialFile, fileID);
