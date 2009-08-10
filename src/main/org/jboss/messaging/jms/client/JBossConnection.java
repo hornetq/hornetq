@@ -558,16 +558,16 @@ public class JBossConnection implements Connection, QueueConnection, TopicConnec
 
             je.initCause(me);
             
-            executor.execute(new Runnable()
-            {
-               public void run()
-               {
-                  synchronized (exceptionListener)
-                  {
+//            executor.execute(new Runnable()
+//            {
+//               public void run()
+//               {
+//                  synchronized (exceptionListener)
+//                  {
                      exceptionListener.onException(je);
-                  }
-               }
-            });           
+//                  }
+//               }
+//            });           
          }
          
          failed = true;

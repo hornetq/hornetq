@@ -250,7 +250,9 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
    }
 
    private void initialise() throws Exception
-   {      
+   {            
+      setThreadPools();
+      
       instantiateLoadBalancingPolicy();
 
       if (discoveryAddress != null)
@@ -353,8 +355,6 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
       reconnectAttempts = DEFAULT_RECONNECT_ATTEMPTS;
 
       failoverOnServerShutdown = DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN;
-      
-      setThreadPools();
    }
 
    public ClientSessionFactoryImpl(final String discoveryAddress, final int discoveryPort)

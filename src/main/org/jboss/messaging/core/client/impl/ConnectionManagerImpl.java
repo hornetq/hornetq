@@ -471,7 +471,7 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
             checkCloseConnections();
          }
       }
-      
+
       closed = true;
    }
 
@@ -515,9 +515,9 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
       {
          return false;
       }
-      
+
       boolean done = false;
-      
+
       synchronized (failoverLock)
       {
          if (connectionID != null && !connections.containsKey(connectionID))
@@ -556,9 +556,9 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
          // until failover is complete
 
          boolean attemptFailover = (backupConnectorFactory) != null && (failoverOnServerShutdown || me.getCode() != MessagingException.DISCONNECTED);
-         
+
          if (attemptFailover || reconnectAttempts != 0)
-         {  
+         {
             lockAllChannel1s();
 
             final boolean needToInterrupt;
@@ -607,7 +607,7 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
             }
 
             closePingers();
-            
+
             connections.clear();
 
             refCount = 0;
@@ -657,13 +657,16 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
             {
                // Fail the old connections so their listeners get called
 
-               failConnections(me);
+               for (RemotingConnection connection : oldConnections)
+               {
+                  connection.fail(me);
+               }
             }
          }
          else
          {
             // Just fail the connections
-            
+
             failConnections(me);
          }
 
@@ -672,7 +675,7 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
       }
 
       return done;
-      
+
    }
 
    private void closePingers()
@@ -692,7 +695,7 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
    {
       // We re-attach sessions per connection to ensure there is the same mapping of channel id
       // on live and backup connections
-      
+
       Map<RemotingConnection, List<ClientSessionInternal>> sessionsPerConnection = new HashMap<RemotingConnection, List<ClientSessionInternal>>();
 
       for (Map.Entry<ClientSessionInternal, RemotingConnection> entry : sessions.entrySet())
@@ -777,7 +780,7 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
       long interval = retryInterval;
 
       int count = 0;
-      
+
       while (true)
       {
          if (closed)
@@ -826,7 +829,7 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
    }
 
    private void checkCloseConnections()
-   {      
+   {
       if (refCount == 0)
       {
          // Close connections
@@ -863,7 +866,7 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
 
          connector = null;
       }
-      
+
    }
 
    public RemotingConnection getConnection(final int initialRefCount)
@@ -882,7 +885,11 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
             {
                DelegatingBufferHandler handler = new DelegatingBufferHandler();
 
-               connector = connectorFactory.createConnector(transportParams, handler, this, threadPool, scheduledThreadPool);
+               connector = connectorFactory.createConnector(transportParams,
+                                                            handler,
+                                                            this,
+                                                            threadPool,
+                                                            scheduledThreadPool);
 
                if (connector != null)
                {
@@ -973,9 +980,9 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
          if (clientFailureCheckPeriod != -1)
          {
             Future<?> pingerFuture = scheduledThreadPool.scheduleWithFixedDelay(pinger,
-                                                                             clientFailureCheckPeriod,
-                                                                             clientFailureCheckPeriod,
-                                                                             TimeUnit.MILLISECONDS);
+                                                                                clientFailureCheckPeriod,
+                                                                                clientFailureCheckPeriod,
+                                                                                TimeUnit.MILLISECONDS);
 
             pinger.setFuture(pingerFuture);
          }
@@ -1021,7 +1028,7 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
       {
          // Can be legitimately null if session was closed before then went to remove session from csf
          // and locked since failover had started then after failover removes it but it's already been failed
-      }            
+      }
    }
 
    private void failConnections(final MessagingException me)
@@ -1029,16 +1036,16 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
       synchronized (failConnectionLock)
       {
          // When a single connection fails, we fail *all* the connections
-         
+
          Set<ConnectionEntry> copy = new HashSet<ConnectionEntry>(connections.values());
 
          for (ConnectionEntry entry : copy)
          {
             entry.connection.fail(me);
          }
-         
+
          refCount = 0;
-         
+
          checkCloseConnections();
       }
    }
