@@ -848,11 +848,6 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
 
       closed = true;
    }
-   
-   public Executor getThreadPool()
-   {
-      return threadPool;
-   }
 
    // DiscoveryListener implementation --------------------------------------------------------
 

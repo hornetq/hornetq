@@ -23,7 +23,6 @@ package org.jboss.messaging.core.client.impl;
 
 import static org.jboss.messaging.utils.SimpleString.toSimpleString;
 
-import java.io.File;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -1276,7 +1275,10 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
          channel.close();
       }
 
-      connectionManager.removeSession(this);
+      if (!channel.getConnection().isDestroyed())
+      {
+         connectionManager.removeSession(this);
+      }
    }
 
    private void cleanUpChildren() throws Exception

@@ -123,8 +123,6 @@ public class JBossConnection implements Connection, QueueConnection, TopicConnec
    private final int transactionBatchSize;
 
    private ClientSession initialSession;
-   
-   private final Executor executor;
 
    // Constructors ---------------------------------------------------------------------------------
 
@@ -145,8 +143,6 @@ public class JBossConnection implements Connection, QueueConnection, TopicConnec
       this.clientID = clientID;
 
       this.sessionFactory = sessionFactory;
-      
-      this.executor = new OrderedExecutorFactory(sessionFactory.getThreadPool()).getExecutor();
 
       uid = UUIDGenerator.getInstance().generateSimpleStringUUID();
 
@@ -400,7 +396,7 @@ public class JBossConnection implements Connection, QueueConnection, TopicConnec
    {
       tempQueues.remove(queueAddress);
    }
-   
+
    public boolean containsTemporaryQueue(final SimpleString queueAddress)
    {
       return tempQueues.contains(queueAddress);
@@ -425,7 +421,7 @@ public class JBossConnection implements Connection, QueueConnection, TopicConnec
    {
       sessions.remove(session);
    }
-   
+
    public ClientSession getInitialSession()
    {
       return initialSession;
@@ -441,8 +437,7 @@ public class JBossConnection implements Connection, QueueConnection, TopicConnec
    {
       if (!closed)
       {
-         log.warn("I'm closing a connection you left open. Please make sure you close all connections explicitly " +
-                  "before letting them go out of scope!");
+         log.warn("I'm closing a connection you left open. Please make sure you close all connections explicitly " + "before letting them go out of scope!");
          close();
       }
    }
@@ -523,8 +518,8 @@ public class JBossConnection implements Connection, QueueConnection, TopicConnec
    {
       try
       {
-         initialSession = sessionFactory.createSession(username, password, false, false, false, false, 0); 
-         
+         initialSession = sessionFactory.createSession(username, password, false, false, false, false, 0);
+
          initialSession.addFailureListener(listener);
       }
       catch (MessagingException me)
@@ -537,16 +532,16 @@ public class JBossConnection implements Connection, QueueConnection, TopicConnec
 
    private class JMSFailureListener implements FailureListener
    {
-      //Make sure it's only called once
+      // Make sure it's only called once
       private boolean failed;
-      
+
       public synchronized boolean connectionFailed(final MessagingException me)
       {
          if (failed)
          {
             return true;
          }
-         
+
          if (me == null)
          {
             return true;
@@ -557,19 +552,16 @@ public class JBossConnection implements Connection, QueueConnection, TopicConnec
             final JMSException je = new JMSException(me.toString());
 
             je.initCause(me);
-            
-//            executor.execute(new Runnable()
-//            {
-//               public void run()
-//               {
-//                  synchronized (exceptionListener)
-//                  {
-                     exceptionListener.onException(je);
-//                  }
-//               }
-//            });           
+
+            new Thread(new Runnable()
+            {
+               public void run()
+               {
+                  exceptionListener.onException(je);
+               }
+            }).start();
          }
-         
+
          failed = true;
 
          return true;

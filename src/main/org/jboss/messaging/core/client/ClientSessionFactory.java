@@ -173,6 +173,4 @@ public interface ClientSessionFactory
    void setDiscoveryRefreshTimeout(long discoveryRefreshTimeout);
 
    void close();
-   
-   Executor getThreadPool();
 }
