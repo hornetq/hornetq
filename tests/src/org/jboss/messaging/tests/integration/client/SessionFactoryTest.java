@@ -23,6 +23,10 @@ package org.jboss.messaging.tests.integration.client;
 
 import static org.jboss.messaging.tests.util.RandomUtil.randomString;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -65,6 +69,29 @@ public class SessionFactoryTest extends ServiceTestBase
    private TransportConfiguration liveTC;
 
    private TransportConfiguration backupTC;
+   
+   public void testSerializable() throws Exception
+   {
+      ClientSessionFactory cf = new ClientSessionFactoryImpl();
+      
+      ByteArrayOutputStream baos = new ByteArrayOutputStream();
+      
+      ObjectOutputStream oos = new ObjectOutputStream(baos);
+      
+      oos.writeObject(cf);
+      
+      oos.close();
+      
+      byte[] bytes = baos.toByteArray();
+      
+      ByteArrayInputStream bais = new ByteArrayInputStream(bytes);
+      
+      ObjectInputStream ois = new ObjectInputStream(bais);
+      
+      ClientSessionFactoryImpl csi = (ClientSessionFactoryImpl)ois.readObject();
+      
+      assertNotNull(csi);
+   }
 
    public void testDefaultConstructor() throws Exception
    {

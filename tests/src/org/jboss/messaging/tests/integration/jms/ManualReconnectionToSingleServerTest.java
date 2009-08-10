@@ -94,6 +94,8 @@ public class ManualReconnectionToSingleServerTest extends UnitTestCase
    private boolean afterRestart = false;
 
    private boolean receivedMessagesAfterRestart = false;
+   
+   private int callTimeout;
 
    private MessageListener listener = new MessageListener()
    {
@@ -137,36 +139,45 @@ public class ManualReconnectionToSingleServerTest extends UnitTestCase
 
    public void testExceptionListener() throws Exception
    {
-//      connect();
-//
-//      int num = 10;
-//      for (int i = 0; i < num; i++)
-//      {
-//         try
-//         {
-//            Message message = session.createTextMessage((new Date()).toString());
-//            producer.send(message);
-//            Thread.sleep(500);
-//         }
-//         catch (Exception e)
-//         {
-//            e.printStackTrace();
-//         }
-//
-//         if (i == num / 2)
-//         {
-//            killServer();
-//            Thread.sleep(5000);
-//            restartServer();
-//            afterRestart = true;
-//         }
-//      }
-//
-//      boolean gotException = exceptionLatch.await(10, SECONDS);
-//      assertTrue(gotException);
-//
-//      assertTrue(receivedMessagesAfterRestart);
-//      connection.close();
+      long start = System.currentTimeMillis();
+      
+      connect();
+
+      int num = 10;
+      for (int i = 0; i < num; i++)
+      {
+         try
+         {
+            Message message = session.createTextMessage((new Date()).toString());
+            producer.send(message);
+            Thread.sleep(500);
+         }
+         catch (Exception e)
+         {
+            e.printStackTrace();
+         }
+
+         if (i == num / 2)
+         {
+            killServer();
+            Thread.sleep(5000);
+            restartServer();
+            afterRestart = true;
+         }
+      }
+
+      boolean gotException = exceptionLatch.await(10, SECONDS);
+      assertTrue(gotException);
+
+      assertTrue(receivedMessagesAfterRestart);
+      connection.close();
+      
+      long end = System.currentTimeMillis();
+      
+      log.info("That took " + (end - start));
+      
+      //Make sure it doesn't pass by just timing out on blocking send
+      assertTrue(end - start < callTimeout);
 
    }
 
@@ -229,7 +240,7 @@ public class ManualReconnectionToSingleServerTest extends UnitTestCase
       double retryIntervalMultiplier = 1.0;
       int reconnectAttempts = -1;
       boolean failoverOnServerShutdown = true;
-      int callTimeout = 5000;
+      callTimeout = 30000;
 
       List<Pair<TransportConfiguration, TransportConfiguration>> connectorConfigs = new ArrayList<Pair<TransportConfiguration, TransportConfiguration>>();
       connectorConfigs.add(new Pair<TransportConfiguration, TransportConfiguration>(new TransportConfiguration(NettyConnectorFactory.class.getName()),

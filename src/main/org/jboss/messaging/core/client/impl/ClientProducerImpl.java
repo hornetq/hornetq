@@ -229,8 +229,8 @@ public class ClientProducerImpl implements ClientProducerInternal
          sendMessageInChunks(sendBlocking, msg);
       }
       else if (sendBlocking)
-      {
-         channel.sendBlocking(message);
+      {         
+         channel.sendBlocking(message);         
       }
       else
       {

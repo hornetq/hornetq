@@ -657,10 +657,23 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
             {
                // Fail the old connections so their listeners get called
 
-               for (RemotingConnection connection : oldConnections)
-               {
-                  connection.fail(me);
+               //We need to destroy the current connections - since we might have connected ok just couldn't
+               //find session, but we don't want to call the FailureListeners on them - these will get called when
+               //we close the old connections (which have the same failureListeners)
+               
+               for (ConnectionEntry entry : connections.values())
+               {                  
+                  entry.connection.setFailureListeners(new ArrayList<FailureListener>());
                }
+               
+               failConnections(me);
+               
+               //Then we need to destroy the old connections - pingers will already have been closed for these               
+                                        
+               for (RemotingConnection connection : oldConnections)
+               {                  
+                  connection.fail(me);                  
+               }               
             }
          }
          else
