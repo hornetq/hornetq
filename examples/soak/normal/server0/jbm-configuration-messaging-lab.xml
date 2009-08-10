@@ -1,0 +1,32 @@
+<configuration xmlns="urn:jboss:messaging"
+            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+            xsi:schemaLocation="urn:jboss:messaging /schema/jbm-configuration.xsd">
+
+   
+   <!-- Acceptors -->
+   <acceptors>
+      <acceptor name="netty-acceptor">
+         <factory-class>org.jboss.messaging.integration.transports.netty.NettyAcceptorFactory</factory-class>    
+         <param key="jbm.remoting.netty.tcpnodelay" value="false" type="Boolean"/>
+         <param key="jbm.remoting.netty.tcpsendbuffersize" value="1048576" type="Boolean"/>
+         <param key="jbm.remoting.netty.tcpreceivebuffersize" value="1048576" type="Boolean"/>
+         <param key="jbm.remoting.netty.host" value="172.16.8.10" type="String"/>
+      </acceptor>
+   </acceptors>
+   
+   <security-enabled>false</security-enabled>
+   
+   <persistence-enabled>true</persistence-enabled>
+
+   <large-messages-directory>/jbm-data/large-messages</large-messages-directory>
+   <bindings-directory>/jbm-data/bindings</bindings-directory>
+   <journal-directory>/jbm-data/journal</journal-directory>
+   <paging-directory>/jbm-data/paging</paging-directory> 
+   
+   <queues>
+	   <queue name="perfQueue">
+	   	<address>perfAddress</address>
+	   </queue>
+   </queues>
+
+</configuration>
