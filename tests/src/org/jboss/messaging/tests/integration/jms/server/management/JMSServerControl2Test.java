@@ -24,6 +24,7 @@ package org.jboss.messaging.tests.integration.jms.server.management;
 
 import static org.jboss.messaging.tests.util.RandomUtil.randomString;
 
+import java.util.Arrays;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
@@ -177,6 +178,9 @@ public class JMSServerControl2Test extends ManagementTestBase
          connection.close();
          Thread.sleep(2 * CONNECTION_TTL);
 
+         connectionIDs = control.listConnectionIDs();
+         assertEquals("got " + Arrays.asList(connectionIDs), 1, connectionIDs.length);
+
          assertEquals(1, control.listConnectionIDs().length);
 
          connection2.close();
@@ -214,7 +218,7 @@ public class JMSServerControl2Test extends ManagementTestBase
          assertEquals(1, sessions.length);
          connection.close();
          sessions = control.listSessions(connectionID);
-         assertEquals(0, sessions.length);
+         assertEquals("got " + Arrays.asList(sessions), 0, sessions.length);
 
          connection.close();
 
@@ -258,7 +262,8 @@ public class JMSServerControl2Test extends ManagementTestBase
 
          Thread.sleep(2 * CONNECTION_TTL);
 
-         assertEquals(0, control.listRemoteAddresses().length);
+         remoteAddresses = control.listRemoteAddresses();         
+         assertEquals("got " + Arrays.asList(remoteAddresses), 0, remoteAddresses.length);
       }
       finally
       {
@@ -303,11 +308,9 @@ public class JMSServerControl2Test extends ManagementTestBase
 
          boolean gotException = exceptionLatch.await(2 * CONNECTION_TTL, TimeUnit.MILLISECONDS);
          assertTrue("did not received the expected JMSException", gotException);
-         for (String string : control.listRemoteAddresses())
-         {
-            System.out.println(string);
-         }
-         assertEquals(0, control.listRemoteAddresses().length);
+
+         remoteAddresses = control.listRemoteAddresses();         
+         assertEquals("got " + Arrays.asList(remoteAddresses), 0, remoteAddresses.length);
          assertEquals(0, server.getConnectionCount());
       }
       finally
