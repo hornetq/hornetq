@@ -186,7 +186,7 @@ public abstract class MultiThreadFailoverSupport extends ServiceTestBase
          sf.close();
 
          stop();
-      }
+               }
    }
 
 

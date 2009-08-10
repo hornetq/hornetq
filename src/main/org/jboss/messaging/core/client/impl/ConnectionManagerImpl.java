@@ -229,7 +229,7 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
 
       this.orderedExecutorFactory = new OrderedExecutorFactory(threadPool);
    }
-
+   
    // ConnectionLifeCycleListener implementation --------------------------------------------------
 
    public void connectionCreated(final Connection connection)
@@ -450,7 +450,7 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
    }
 
    public int numSessions()
-   {
+   {   
       return sessions.size();
    }
 

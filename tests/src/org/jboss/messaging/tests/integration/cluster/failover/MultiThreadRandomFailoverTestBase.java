@@ -1287,7 +1287,7 @@ public abstract class MultiThreadRandomFailoverTestBase extends MultiThreadFailo
 
    protected int getNumIterations()
    {
-      return 2;
+      return 3;
    }
 
    @Override

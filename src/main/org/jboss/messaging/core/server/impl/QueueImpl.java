@@ -190,7 +190,7 @@ public class QueueImpl implements Queue
 
       scheduledDeliveryHandler = new ScheduledDeliveryHandlerImpl(scheduledExecutor);
    }
-
+   
    // Bindable implementation -------------------------------------------------------------------------------------
 
    public SimpleString getRoutingName()

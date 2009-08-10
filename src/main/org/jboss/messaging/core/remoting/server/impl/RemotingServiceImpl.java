@@ -217,7 +217,7 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
       {
          return;
       }
-
+      
       // We need to stop them accepting first so no new connections are accepted after we send the disconnect message
       for (Acceptor acceptor : acceptors)
       {
@@ -236,10 +236,12 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
 
       acceptors.clear();
 
-      for (Pinger runnable : pingers.values())
+      for (Pinger pinger : pingers.values())
       {
-         runnable.close();
+         pinger.close();
       }
+      
+      pingers.clear();
 
       connections.clear();
 

@@ -572,8 +572,6 @@ public class UnitTestCase extends TestCase
 
       assertEquals(0, InVMRegistry.instance.size());          
 
-      // checkFreePort(TransportConstants.DEFAULT_PORT);
-
       super.tearDown();
    }
 

@@ -31,6 +31,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.atomic.AtomicLong;
 
 import javax.management.MBeanServer;
 import javax.management.NotificationBroadcasterSupport;
@@ -154,7 +155,9 @@ public class ManagementServiceImpl implements ManagementService
 
    // Constructor ----------------------------------------------------
 
-   public ManagementServiceImpl(final MBeanServer mbeanServer, final Configuration configuration, final int managementConnectorID)
+   public ManagementServiceImpl(final MBeanServer mbeanServer,
+                                final Configuration configuration,
+                                final int managementConnectorID)
    {
       this.mbeanServer = mbeanServer;
       this.jmxManagementEnabled = configuration.isJMXManagementEnabled();
@@ -472,6 +475,8 @@ public class ManagementServiceImpl implements ManagementService
       return registry.get(resourceName);
    }
 
+   private Set<ObjectName> registeredNames = new HashSet<ObjectName>();
+   
    public void registerInJMX(final ObjectName objectName, final Object managedResource) throws Exception
    {
       if (!jmxManagementEnabled)
@@ -482,7 +487,10 @@ public class ManagementServiceImpl implements ManagementService
       synchronized (mbeanServer)
       {
          unregisterFromJMX(objectName);
+
          mbeanServer.registerMBean(managedResource, objectName);
+
+         registeredNames.add(objectName);
       }
    }
 
@@ -507,11 +515,14 @@ public class ManagementServiceImpl implements ManagementService
       {
          return;
       }
+
       synchronized (mbeanServer)
       {
          if (mbeanServer.isRegistered(objectName))
          {
             mbeanServer.unregisterMBean(objectName);
+
+            registeredNames.remove(objectName);
          }
       }
    }
@@ -574,10 +585,20 @@ public class ManagementServiceImpl implements ManagementService
 
       if (jmxManagementEnabled)
       {
-         Set<ObjectName> names = mbeanServer.queryNames(ObjectName.getInstance(ObjectNames.DOMAIN + ":*"), null);
-         for (ObjectName name : names)
+         if (!registeredNames.isEmpty())
          {
-            mbeanServer.unregisterMBean(name);
+            log.warn("On ManagementService stop, there are " + registeredNames.size() + " MBeans");
+
+            for (ObjectName on : this.registeredNames)
+            {
+               try
+               {
+                  mbeanServer.unregisterMBean(on);                                   
+               }
+               catch (Exception ignore)
+               {
+               }
+            }
          }
       }
 
@@ -588,8 +609,8 @@ public class ManagementServiceImpl implements ManagementService
       messageCounterManager.resetAllCounterHistories();
 
       messageCounterManager.clear();
-
-      // replicationInvoker.stop();
+      
+      registeredNames.clear();
 
       started = false;
    }
@@ -633,7 +654,8 @@ public class ManagementServiceImpl implements ManagementService
                }
 
                // start sending notification *messages* only when the *remoting service* if started
-               if (messagingServer == null || !messagingServer.isStarted() || !messagingServer.getRemotingService().isStarted())
+               if (messagingServer == null || !messagingServer.isStarted() ||
+                   !messagingServer.getRemotingService().isStarted())
                {
                   return;
                }
@@ -771,12 +793,11 @@ public class ManagementServiceImpl implements ManagementService
       {
          throw new IllegalArgumentException("no operation " + operation + "/" + params.length);
       }
-      
+
       Object result = method.invoke(resource, params);
 
       return result;
    }
-
 
    // Inner classes -------------------------------------------------
 }

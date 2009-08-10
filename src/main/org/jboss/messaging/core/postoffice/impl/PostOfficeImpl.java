@@ -459,6 +459,8 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
 
       boolean existed = addressManager.addBinding(binding);
 
+      //TODO - why is this code here?
+      //Shouldn't it be in MessagingServerImpl::createQueue??
       if (binding.getType() == BindingType.LOCAL_QUEUE)
       {
          Queue queue = (Queue)binding.getBindable();
@@ -505,6 +507,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
    public synchronized Binding removeBinding(final SimpleString uniqueName) throws Exception
    {
       Binding binding = addressManager.removeBinding(uniqueName);
+      
       if (binding == null)
       {
          throw new MessagingException(MessagingException.QUEUE_DOES_NOT_EXIST);

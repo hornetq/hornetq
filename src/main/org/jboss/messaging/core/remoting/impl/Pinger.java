@@ -77,7 +77,7 @@ public class Pinger implements Runnable, ChannelHandler
       
       channel0.setHandler(this);
    }
-      
+              
    public synchronized void setFuture(final Future<?> future)
    {
       this.future = future;
@@ -129,6 +129,8 @@ public class Pinger implements Runnable, ChannelHandler
       {                      
          future.cancel(false);
       }
+      
+      channel0.setHandler(null);
 
       closed = true;
    }
@@ -137,4 +139,5 @@ public class Pinger implements Runnable, ChannelHandler
    {
       this.stopPinging = true;
    }
+      
 }
