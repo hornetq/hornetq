@@ -104,6 +104,8 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
 
    {
       this(transportConnection, -1, interceptors, active, false);
+      
+      log.info("created server connection " + this);
    }
 
    private RemotingConnectionImpl(final Connection transportConnection,
@@ -390,12 +392,7 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
       {
          try
          {
-            boolean callNext = listener.connectionFailed(me);
-
-            if (!callNext)
-            {
-               break;
-            }
+            listener.connectionFailed(me);
          }
          catch (final Throwable t)
          {

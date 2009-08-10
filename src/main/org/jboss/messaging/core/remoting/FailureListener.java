@@ -37,5 +37,5 @@ public interface FailureListener
    /**
     * @return <code>false</code> to stop calling subsequent failure listeners
     */
-   boolean connectionFailed(MessagingException me);
+   void connectionFailed(MessagingException me);
 }

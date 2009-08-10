@@ -90,11 +90,9 @@ public class FailureListenerOnFailoverTest extends UnitTestCase
 
       int failCount;
 
-      public synchronized boolean connectionFailed(final MessagingException me)
+      public synchronized void connectionFailed(final MessagingException me)
       {
          failCount++;
-
-         return true;
       }
 
       synchronized int getFailCount()

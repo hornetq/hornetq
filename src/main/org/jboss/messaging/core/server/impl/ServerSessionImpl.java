@@ -1156,7 +1156,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
    // FailureListener implementation
    // --------------------------------------------------------------------
 
-   public boolean connectionFailed(final MessagingException me)
+   public void connectionFailed(final MessagingException me)
    {
       try
       {
@@ -1182,8 +1182,6 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
       {
          log.error("Failed to close connection " + this);
       }
-
-      return true;
    }
 
    public void connectionClosed()

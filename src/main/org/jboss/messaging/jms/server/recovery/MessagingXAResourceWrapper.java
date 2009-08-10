@@ -220,11 +220,10 @@ public class MessagingXAResourceWrapper implements XAResource, FailureListener
       }
    }
 
-   public boolean connectionFailed(MessagingException me)
+   public void connectionFailed(MessagingException me)
    {
       log.warn("Notified of connection failure in recovery connectionFactory for provider " + connectorFactoryClassName, me);
       close();
-      return true;
    }
 
    /**

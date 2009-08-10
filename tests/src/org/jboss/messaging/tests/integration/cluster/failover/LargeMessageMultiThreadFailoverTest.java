@@ -69,8 +69,6 @@ public class LargeMessageMultiThreadFailoverTest extends MultiThreadRandomFailov
    {
       return 60000;
    }
-
-
    
    protected ClientSessionFactoryInternal createSessionFactory()
    {

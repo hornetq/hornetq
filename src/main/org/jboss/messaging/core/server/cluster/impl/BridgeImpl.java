@@ -508,11 +508,9 @@ public class BridgeImpl implements Bridge, FailureListener, SendAcknowledgementH
 
    // FailureListener implementation --------------------------------
 
-   public boolean connectionFailed(final MessagingException me)
+   public void connectionFailed(final MessagingException me)
    {
       fail();
-
-      return true;
    }
 
    // Package protected ---------------------------------------------

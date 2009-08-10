@@ -60,10 +60,9 @@ public class SessionTest extends ServiceTestBase
          final CountDownLatch latch = new CountDownLatch(1);
          clientSession.addFailureListener(new FailureListener()
          {
-            public boolean connectionFailed(MessagingException me)
+            public void connectionFailed(MessagingException me)
             {
                latch.countDown();
-               return false;
             }
          });
 
@@ -91,10 +90,9 @@ public class SessionTest extends ServiceTestBase
          {
             boolean called = false;
 
-            public boolean connectionFailed(MessagingException me)
+            public void connectionFailed(MessagingException me)
             {
                called = true;
-               return false;
             }
          }
 

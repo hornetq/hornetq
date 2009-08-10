@@ -1087,11 +1087,9 @@ public class MessagingServerImpl implements MessagingServer
 
                replicatingConnection.addFailureListener(new FailureListener()
                {
-                  public boolean connectionFailed(MessagingException me)
+                  public void connectionFailed(MessagingException me)
                   {
                      replicatingChannel.executeOutstandingDelayedResults();
-
-                     return true;
                   }
                });
 

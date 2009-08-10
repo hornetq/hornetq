@@ -256,8 +256,6 @@ public class JMSServerControl2Test extends ManagementTestBase
             System.out.println(remoteAddress);
          }
          
-         log.info("*** closing connection");
-         
          connection.close();
 
          Thread.sleep(2 * CONNECTION_TTL);
@@ -272,7 +270,6 @@ public class JMSServerControl2Test extends ManagementTestBase
             server.stop();
          }
       }
-
    }
 
    private void doCloseConnectionsForAddress(String acceptorFactory, String connectorFactory) throws Exception

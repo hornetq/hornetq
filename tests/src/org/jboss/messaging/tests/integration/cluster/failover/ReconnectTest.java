@@ -263,11 +263,9 @@ public class ReconnectTest extends UnitTestCase
       {
          volatile boolean failed;
          
-         public boolean connectionFailed(MessagingException me)
+         public void connectionFailed(MessagingException me)
          {
             failed = true;
-            
-            return true;
          }
       }
       

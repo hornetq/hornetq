@@ -650,11 +650,9 @@ public class SimpleAutomaticFailoverTest extends UnitTestCase
 
       class MyListener implements FailureListener
       {
-         public boolean connectionFailed(final MessagingException me)
+         public void connectionFailed(final MessagingException me)
          {
             latch.countDown();
-
-            return true;
          }
       }
 

@@ -86,11 +86,9 @@ public class PingTest extends ServiceTestBase
    {
       volatile MessagingException me;
 
-      public boolean connectionFailed(MessagingException me)
+      public void connectionFailed(MessagingException me)
       {
          this.me = me;
-
-         return true;
       }
 
       public MessagingException getException()
@@ -146,6 +144,8 @@ public class PingTest extends ServiceTestBase
       assertNull(serverListener.getException());
 
       RemotingConnection serverConn2 = server.getRemotingService().getConnections().iterator().next();
+      
+      log.info("Server conn2 is " + serverConn2);
 
       assertTrue(serverConn == serverConn2);
 

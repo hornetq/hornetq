@@ -556,12 +556,12 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
 
    public void addFailureListener(final FailureListener listener)
    {
-      remotingConnection.addFailureListener(listener);
+      connectionManager.addFailureListener(listener);      
    }
 
    public boolean removeFailureListener(final FailureListener listener)
    {
-      return remotingConnection.removeFailureListener(listener);
+      return connectionManager.removeFailureListener(listener);
    }
 
    public int getVersion()
@@ -571,7 +571,6 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
 
    // ClientSessionInternal implementation
    // ------------------------------------------------------------
-
    
    public int getMinLargeMessageSize()
    {
@@ -1093,7 +1092,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
 
    // FailureListener implementation --------------------------------------------
 
-   public boolean connectionFailed(final MessagingException me)
+   public void connectionFailed(final MessagingException me)
    {
       try
       {
@@ -1103,8 +1102,6 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
       {
          log.error("Failed to cleanup session");
       }
-
-      return true;
    }
 
    // Public
@@ -1275,10 +1272,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
          channel.close();
       }
 
-      if (!channel.getConnection().isDestroyed())
-      {
-         connectionManager.removeSession(this);
-      }
+      connectionManager.removeSession(this);      
    }
 
    private void cleanUpChildren() throws Exception

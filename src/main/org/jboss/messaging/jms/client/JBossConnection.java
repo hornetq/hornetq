@@ -24,7 +24,6 @@ package org.jboss.messaging.jms.client;
 
 import java.util.HashSet;
 import java.util.Set;
-import java.util.concurrent.Executor;
 
 import javax.jms.Connection;
 import javax.jms.ConnectionConsumer;
@@ -54,7 +53,6 @@ import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.FailureListener;
 import org.jboss.messaging.core.version.Version;
-import org.jboss.messaging.utils.OrderedExecutorFactory;
 import org.jboss.messaging.utils.SimpleString;
 import org.jboss.messaging.utils.UUIDGenerator;
 import org.jboss.messaging.utils.VersionLoader;
@@ -532,19 +530,11 @@ public class JBossConnection implements Connection, QueueConnection, TopicConnec
 
    private class JMSFailureListener implements FailureListener
    {
-      // Make sure it's only called once
-      private boolean failed;
-
-      public synchronized boolean connectionFailed(final MessagingException me)
+      public synchronized void connectionFailed(final MessagingException me)
       {
-         if (failed)
-         {
-            return true;
-         }
-
          if (me == null)
          {
-            return true;
+            return;
          }
 
          if (exceptionListener != null)
@@ -561,10 +551,6 @@ public class JBossConnection implements Connection, QueueConnection, TopicConnec
                }
             }).start();
          }
-
-         failed = true;
-
-         return true;
       }
 
    }

@@ -63,6 +63,7 @@ import org.jboss.messaging.core.remoting.spi.Connector;
 import org.jboss.messaging.core.remoting.spi.ConnectorFactory;
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
 import org.jboss.messaging.core.version.Version;
+import org.jboss.messaging.utils.ConcurrentHashSet;
 import org.jboss.messaging.utils.ExecutorFactory;
 import org.jboss.messaging.utils.OrderedExecutorFactory;
 import org.jboss.messaging.utils.UUIDGenerator;
@@ -134,8 +135,6 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
 
    private Iterator<ConnectionEntry> mapIterator;
 
-   private Object failConnectionLock = new Object();
-
    private final long retryInterval;
 
    private final double retryIntervalMultiplier; // For exponential backoff
@@ -146,8 +145,8 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
 
    private volatile boolean closed;
 
-   private boolean inFailoverOrReconnect;
-
+   private Set<FailureListener> listeners = new ConcurrentHashSet<FailureListener>();
+   
    private Connector connector;
 
    private Map<Object, Pinger> pingers = new ConcurrentHashMap<Object, Pinger>();
@@ -474,6 +473,17 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
 
       closed = true;
    }
+   
+   public void addFailureListener(FailureListener listener)
+   {
+      listeners.add(listener);
+   }
+
+   public boolean removeFailureListener(FailureListener listener)
+   {
+      return listeners.remove(listener);
+   }
+
 
    // Public
    // ---------------------------------------------------------------------------------------
@@ -503,19 +513,13 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
    // Private
    // --------------------------------------------------------------------------------------
 
-   private boolean handleConnectionFailure(final MessagingException me, final Object connectionID)
+   private void handleConnectionFailure(final MessagingException me, final Object connectionID)
    {
-      return !failoverOrReconnect(me, connectionID);
+      failoverOrReconnect(me, connectionID);
    }
 
-   private boolean failoverOrReconnect(final MessagingException me, final Object connectionID)
+   private void failoverOrReconnect(final MessagingException me, final Object connectionID)
    {
-      // To prevent recursion
-      if (inFailoverOrReconnect)
-      {
-         return false;
-      }
-
       boolean done = false;
 
       synchronized (failoverLock)
@@ -527,7 +531,7 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
             // came in for one of the already closed connections, so we return true - we don't want to call the
             // listeners again
 
-            return true;
+            return;
          }
 
          // Now get locks on all channel 1s, whilst holding the failoverLock - this makes sure
@@ -643,8 +647,6 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
                done = reattachSessions(reconnectAttempts);
             }
 
-            inFailoverOrReconnect = true;
-
             if (done)
             {
                // Destroy the old connections
@@ -655,40 +657,56 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
             }
             else
             {
-               // Fail the old connections so their listeners get called
-
-               //We need to destroy the current connections - since we might have connected ok just couldn't
-               //find session, but we don't want to call the FailureListeners on them - these will get called when
-               //we close the old connections (which have the same failureListeners)
-               
-               for (ConnectionEntry entry : connections.values())
-               {                  
-                  entry.connection.setFailureListeners(new ArrayList<FailureListener>());
+               for (RemotingConnection connection : oldConnections)
+               {
+                  connection.destroy();
                }
                
-               failConnections(me);
-               
-               //Then we need to destroy the old connections - pingers will already have been closed for these               
-                                        
-               for (RemotingConnection connection : oldConnections)
-               {                  
-                  connection.fail(me);                  
-               }               
+               closeConnectionsAndCallFailureListeners(me);               
             }
          }
          else
          {
-            // Just fail the connections
-
-            failConnections(me);
+            closeConnectionsAndCallFailureListeners(me);
          }
-
-         inFailoverOrReconnect = false;
-
       }
+   }
+   
+   private void closeConnectionsAndCallFailureListeners(final MessagingException me)
+   {
+      refCount = 0;
+      mapIterator = null;
+      checkCloseConnections();
+      
+      //TODO (after beta5) should really execute on different thread then remove the async in JBossConnection
+      
+//      threadPool.execute(new Runnable()
+//      {
+//         public void run()
+//         {
+            callFailureListeners(me);
+//         }
+//      });      
+   }
+   
+   private void callFailureListeners(final MessagingException me)
+   {
+      final List<FailureListener> listenersClone = new ArrayList<FailureListener>(listeners);
 
-      return done;
-
+      for (final FailureListener listener : listenersClone)
+      {
+         try
+         {
+            listener.connectionFailed(me);
+         }
+         catch (final Throwable t)
+         {
+            // Failure of one listener to execute shouldn't prevent others
+            // from
+            // executing
+            log.error("Failed to execute failure listener", t);
+         }
+      }
    }
 
    private void closePingers()
@@ -1044,25 +1062,6 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
       }
    }
 
-   private void failConnections(final MessagingException me)
-   {
-      synchronized (failConnectionLock)
-      {
-         // When a single connection fails, we fail *all* the connections
-
-         Set<ConnectionEntry> copy = new HashSet<ConnectionEntry>(connections.values());
-
-         for (ConnectionEntry entry : copy)
-         {
-            entry.connection.fail(me);
-         }
-
-         refCount = 0;
-
-         checkCloseConnections();
-      }
-   }
-
    private ConnectorFactory instantiateConnectorFactory(final String connectorFactoryClassName)
    {
       ClassLoader loader = Thread.currentThread().getContextClassLoader();
@@ -1214,9 +1213,9 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
          this.connectionID = connectionID;
       }
 
-      public boolean connectionFailed(final MessagingException me)
+      public void connectionFailed(final MessagingException me)
       {
-         return handleConnectionFailure(me, connectionID);
+         handleConnectionFailure(me, connectionID);
       }
    }
 

@@ -24,6 +24,7 @@ package org.jboss.messaging.core.client.impl;
 
 import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.exception.MessagingException;
+import org.jboss.messaging.core.remoting.FailureListener;
 import org.jboss.messaging.core.remoting.RemotingConnection;
 
 /**
@@ -66,4 +67,8 @@ public interface ConnectionManager
    RemotingConnection getConnection(final int initialRefCount);
    
    void close();
+   
+   void addFailureListener(FailureListener listener);
+
+   boolean removeFailureListener(FailureListener listener);
 }
