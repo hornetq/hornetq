@@ -92,6 +92,7 @@ public abstract class MultiThreadRandomFailoverTestBase extends MultiThreadFailo
             doTestA(sf, threadNum);
          }
       }, NUM_THREADS, false);
+      
    }
 
    public void testB() throws Exception
@@ -1296,21 +1297,25 @@ public abstract class MultiThreadRandomFailoverTestBase extends MultiThreadFailo
       super.setUp();
 
       log.info("************ Starting test " + getName());
+      
    }
 
    @Override
    protected void tearDown() throws Exception
    {
+      for (int i = 0 ; i < 10; i ++)
       log.info("************* Ending test " + getName());
 
       if (liveServer != null && liveServer.isStarted())
       {
          liveServer.stop();
       }
+      liveServer = null;
       if (backupServer != null && backupServer.isStarted())
       {
          backupServer.stop();
       }
+      backupServer = null;
       
       super.tearDown();
    }
