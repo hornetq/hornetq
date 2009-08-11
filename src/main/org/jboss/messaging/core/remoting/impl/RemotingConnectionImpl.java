@@ -104,6 +104,8 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
 
    {
       this(transportConnection, -1, interceptors, active, false);
+      
+      log.info("Created remotingconnection " + this + " on server");
    }
 
    private RemotingConnectionImpl(final Connection transportConnection,

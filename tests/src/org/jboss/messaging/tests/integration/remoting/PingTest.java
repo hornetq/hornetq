@@ -198,6 +198,8 @@ public class PingTest extends ServiceTestBase
       assertNull(serverListener.getException());
 
       RemotingConnection serverConn2 = server.getRemotingService().getConnections().iterator().next();
+      
+      log.info("Serverconn2 is " + serverConn2);
 
       assertTrue(serverConn == serverConn2);
 
@@ -261,9 +263,16 @@ public class PingTest extends ServiceTestBase
 
          Thread.sleep(10);
       }
+      
+      if (!server.getRemotingService().getConnections().isEmpty())
+      {
+         RemotingConnection serverConn2 = server.getRemotingService().getConnections().iterator().next();
+         
+         log.info("Serverconn2 is " + serverConn2);
+      }
 
       assertTrue(server.getRemotingService().getConnections().isEmpty());
-
+            
       // The client listener should be called too since the server will close it from the server side which will result
       // in the
       // netty detecting closure on the client side and then calling failure listener
