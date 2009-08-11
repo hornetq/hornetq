@@ -29,6 +29,7 @@ import java.lang.management.ThreadMXBean;
 import java.util.Date;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.logging.Logger;
 
 import javax.management.MBeanServerInvocationHandler;
 
@@ -44,6 +45,8 @@ import org.jboss.messaging.core.management.ObjectNames;
  */
 public class ServerDump
 {
+   private static final Logger log = Logger.getLogger(ServerDump.class.getName());
+
    private final int dumpIntervalInMinutes;
 
    private final TimerTask task;
@@ -77,21 +80,21 @@ public class ServerDump
                                                                                                                               ObjectNames.getMessagingServerObjectName(),
                                                                                                                               MessagingServerControl.class,
                                                                                                                               false);
-               System.out.println("**** Server Dump ****");
-               System.out.format("date:            %s\n", new Date());
-               System.out.format("heap memory:     used=%s, max=%s\n",
+               String info          = "\n**** Server Dump ****\n";
+               info += String.format("date:            %s\n", new Date());
+               info += String.format("heap memory:     used=%s, max=%s\n",
                                  sizeof(heapMemory.getUsed()),
                                  sizeof(heapMemory.getMax()));
-               System.out.format("non-heap memory: used=%s, max=%s\n",
+               info += String.format("non-heap memory: used=%s, max=%s\n",
                                  sizeof(nonHeapMemory.getUsed()),
                                  sizeof(nonHeapMemory.getMax()));
-               System.out.format("# of thread:     %d\n", threadMXBean.getThreadCount());
-               System.out.format("# of conns:      %d\n", messagingServer.getConnectionCount());
-               System.out.println("********************");
+               info += String.format("# of thread:     %d\n", threadMXBean.getThreadCount());
+               info += String.format("# of conns:      %d\n", messagingServer.getConnectionCount());
+               info +=               "********************\n";
+               log.info(info);
             }
             catch (Exception e)
             {
-               // TODO Auto-generated catch block
                e.printStackTrace();
             }
          }
