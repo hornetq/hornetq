@@ -406,33 +406,32 @@ public class ChannelImpl implements Channel
       List<Runnable> toRun = new ArrayList<Runnable>();
 
       synchronized (replicationLock)
-      {
-         // Execute all the response actions now
-
-         while (true)
-         {
-            Runnable action = responseActions.poll();
-
-            if (action != null)
-            {
-               toRun.add(action);
-            }
-            else
-            {
-               break;
-            }
-         }
-
-         responseActionCount = 0;
-
+      {         
          playedResponsesOnFailure = true;
-
-         for (Runnable action : toRun)
-         {
-            action.run();
-         }
+         
+         responseActionCount = 0;
       }
 
+      while (true)
+      {
+         // Execute all the response actions now
+         
+         Runnable action = responseActions.poll();
+
+         if (action != null)
+         {
+            toRun.add(action);
+         }
+         else
+         {
+            break;
+         }
+      }
+      
+      for (Runnable action : toRun)
+      {
+         action.run();
+      }      
    }
 
    public void setHandler(final ChannelHandler handler)

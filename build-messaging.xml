@@ -1064,6 +1064,18 @@
          <param name="tests.param" value="**/org/jboss/messaging/tests/integration/**/*${test-mask}.class"/>
       </antcall>
    </target>
+   
+   <target name="failover-tests" depends="jar, compile-unit-tests">
+      <antcall inheritall="true" inheritrefs="true" target="tests">
+         <param name="tests.param" value="**/org/jboss/messaging/tests/integration/cluster/failover/**/*${test-mask}.class"/>
+      </antcall>
+   </target>
+   
+   <target name="distribution-tests" depends="jar, compile-unit-tests">
+      <antcall inheritall="true" inheritrefs="true" target="tests">
+         <param name="tests.param" value="**/org/jboss/messaging/tests/integration/cluster/distribution/**/*${test-mask}.class"/>
+      </antcall>
+   </target>   
 
    <target name="concurrent-tests" depends="jar, compile-unit-tests">
       <antcall inheritall="true" inheritrefs="true" target="tests">

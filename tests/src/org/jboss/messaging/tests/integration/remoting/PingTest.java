@@ -150,6 +150,8 @@ public class PingTest extends ServiceTestBase
       assertTrue(serverConn == serverConn2);
 
       session.close();
+      
+      csf.close();
    }
 
    /*
@@ -204,6 +206,8 @@ public class PingTest extends ServiceTestBase
       assertTrue(serverConn == serverConn2);
 
       session.close();
+      
+      csf.close();
    }
 
    /*
@@ -281,6 +285,8 @@ public class PingTest extends ServiceTestBase
       assertNotNull(serverListener.getException());
 
       session.close();
+      
+      csf.close();
    }
 
    /*
@@ -342,10 +348,7 @@ public class PingTest extends ServiceTestBase
 
       session.close();
 
-      tearDown();
-
-      setUp();
-
+      csf.close();
    }
 
    // Package protected ---------------------------------------------

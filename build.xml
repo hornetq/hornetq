@@ -225,6 +225,16 @@
       <ant antfile="build-messaging.xml" target="integration-tests"/>
       <ant antfile="build-messaging.xml" target="compile-reports"/>
    </target>
+   
+   <target name="failover-tests" depends="createthirdparty">
+	   <ant antfile="build-messaging.xml" target="failover-tests"/>
+	   <ant antfile="build-messaging.xml" target="compile-reports"/>
+   </target>   
+   
+   <target name="distribution-tests" depends="createthirdparty">
+	   <ant antfile="build-messaging.xml" target="distribution-tests"/>
+	   <ant antfile="build-messaging.xml" target="compile-reports"/>
+   </target>
 
     <target name="concurrent-tests" depends="createthirdparty">
       <ant antfile="build-messaging.xml" target="concurrent-tests"/>
