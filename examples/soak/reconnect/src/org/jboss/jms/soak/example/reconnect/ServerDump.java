@@ -40,6 +40,7 @@ import javax.management.ObjectName;
 import org.jboss.messaging.core.management.MessagingServerControl;
 import org.jboss.messaging.core.management.ObjectNames;
 import org.jboss.messaging.jms.server.management.JMSQueueControl;
+import org.jboss.messaging.jms.server.management.TopicControl;
 
 /**
  * A MemoryDump
@@ -85,7 +86,7 @@ public class ServerDump
                                                                                                                               ObjectNames.getMessagingServerObjectName(),
                                                                                                                               MessagingServerControl.class,
                                                                                                                               false);
-               String info =         "\n**** Server Dump ****\n";
+               String info = "\n**** Server Dump ****\n";
                info += String.format("date:            %s\n", new Date());
                info += String.format("heap memory:     used=%s, max=%s\n",
                                      sizeof(heapMemory.getUsed()),
@@ -96,6 +97,7 @@ public class ServerDump
                info += String.format("# of thread:     %d\n", threadMXBean.getThreadCount());
                info += String.format("# of conns:      %d\n", messagingServer.getConnectionCount());
                info += appendQueuesInfo();
+               info += appendTopicsInfo();
                info += "********************\n";
                log.info(info);
             }
@@ -107,10 +109,14 @@ public class ServerDump
 
          private String appendQueuesInfo() throws Exception
          {
-            String info = "JMS queues:\n";
+            String info = "";
 
             ObjectName query = ObjectName.getInstance("org.jboss.messaging:module=JMS,type=Queue,*");
             Set names = ManagementFactory.getPlatformMBeanServer().queryNames(query, null);
+            if (!names.isEmpty())
+            {
+               info += "JMS queues:\n";
+            }
             for (Iterator iterator = names.iterator(); iterator.hasNext();)
             {
                ObjectName on = (ObjectName)iterator.next();
@@ -124,6 +130,33 @@ public class ServerDump
                                      queue.getConsumerCount(),
                                      queue.getMessageCount(),
                                      queue.getMessagesAdded());
+            }
+
+            return info;
+         }
+
+         private String appendTopicsInfo() throws Exception
+         {
+            String info = "";
+
+            ObjectName query = ObjectName.getInstance("org.jboss.messaging:module=JMS,type=Topic,*");
+            Set names = ManagementFactory.getPlatformMBeanServer().queryNames(query, null);
+            if (!names.isEmpty())
+            {
+               info += "JMS topics:\n";
+            }
+            for (Iterator iterator = names.iterator(); iterator.hasNext();)
+            {
+               ObjectName on = (ObjectName)iterator.next();
+               TopicControl topic = (TopicControl)MBeanServerInvocationHandler.newProxyInstance(ManagementFactory.getPlatformMBeanServer(),
+                                                                                                on,
+                                                                                                TopicControl.class,
+                                                                                                false);
+               info += String.format("\t%s: %s subscription (%s non-durable) receiving %s message\n",
+                                     topic.getName(),
+                                     topic.getSubscriptionCount(),
+                                     topic.getNonDurableSubscriptionCount(),
+                                     topic.getMessageCount());
             }
 
             return info;
