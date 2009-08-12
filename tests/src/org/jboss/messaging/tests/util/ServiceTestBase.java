@@ -22,7 +22,6 @@
 
 package org.jboss.messaging.tests.util;
 
-import java.io.File;
 import java.lang.management.ManagementFactory;
 import java.lang.ref.WeakReference;
 import java.util.HashMap;

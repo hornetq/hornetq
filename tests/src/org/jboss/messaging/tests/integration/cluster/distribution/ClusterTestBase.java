@@ -106,6 +106,8 @@ public class ClusterTestBase extends ServiceTestBase
       servers = new MessagingServer[MAX_SERVERS];
 
       sfs = new ClientSessionFactory[MAX_SERVERS];
+      
+      consumers = new ConsumerHolder[MAX_CONSUMERS];
 
       super.tearDown();
    }

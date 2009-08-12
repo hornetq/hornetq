@@ -103,8 +103,6 @@ public abstract class JournalImplTestBase extends UnitTestCase
 
       journal = null;
 
-      assertEquals(0, AsynchronousFileImpl.getTotalMaxIO());
-
       super.tearDown();
    }
 

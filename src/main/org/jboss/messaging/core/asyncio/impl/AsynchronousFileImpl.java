@@ -406,6 +406,16 @@ public class AsynchronousFileImpl implements AsynchronousFile
       resetBuffer(buffer, buffer.limit());
       buffer.position(0);
    }
+   
+   // Protected -------------------------------------------------------------------------
+   
+   protected void finalize()
+   {
+      if (opened)
+      {
+         log.warn("AsynchronousFile: " + this.fileName + " being finalized with opened state");
+      }
+   }
 
    // Private ---------------------------------------------------------------------------
 

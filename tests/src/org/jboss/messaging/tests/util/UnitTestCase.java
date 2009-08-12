@@ -50,6 +50,7 @@ import javax.transaction.xa.Xid;
 
 import junit.framework.TestCase;
 
+import org.jboss.messaging.core.asyncio.impl.AsynchronousFileImpl;
 import org.jboss.messaging.core.buffers.ChannelBuffers;
 import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.client.ClientSession;
@@ -570,7 +571,9 @@ public class UnitTestCase extends TestCase
    {
       deleteDirectory(new File(getTestDir()));
 
-      assertEquals(0, InVMRegistry.instance.size());          
+      assertEquals(0, InVMRegistry.instance.size());
+      
+      assertEquals(0, AsynchronousFileImpl.getTotalMaxIO());
 
       super.tearDown();
    }
