@@ -174,6 +174,13 @@ public abstract class BridgeTestBase extends UnitTestCase
 
       server1.stop();
       server0.stop();
+      
+      server1 = null;
+      server0 = null;
+      jmsServer0 = null;
+      jmsServer1 = null;
+      context0 = context1 = null;
+     
 
       super.tearDown();
    }

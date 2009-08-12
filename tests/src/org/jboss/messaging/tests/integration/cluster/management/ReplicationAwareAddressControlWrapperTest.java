@@ -22,19 +22,18 @@
 
 package org.jboss.messaging.tests.integration.cluster.management;
 
+import static org.jboss.messaging.tests.integration.management.ManagementControlHelper.createAddressControl;
+import static org.jboss.messaging.tests.util.RandomUtil.randomBoolean;
+import static org.jboss.messaging.tests.util.RandomUtil.randomSimpleString;
+import static org.jboss.messaging.tests.util.RandomUtil.randomString;
+
 import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
 import org.jboss.messaging.core.client.impl.ClientSessionFactoryInternal;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.management.AddressControl;
 import org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory;
-import static org.jboss.messaging.tests.integration.management.ManagementControlHelper.createAddressControl;
-import static org.jboss.messaging.tests.util.RandomUtil.randomBoolean;
-import static org.jboss.messaging.tests.util.RandomUtil.randomSimpleString;
-import static org.jboss.messaging.tests.util.RandomUtil.randomString;
 import org.jboss.messaging.utils.SimpleString;
-
-import javax.management.openmbean.TabularData;
 
 /**
  * A ReplicationAwareQueueControlWrapperTest
@@ -117,6 +116,9 @@ public class ReplicationAwareAddressControlWrapperTest extends ReplicationAwareT
    {
       session.deleteQueue(address);
       session.close();
+      
+      address = null;
+      session = null;
 
       super.tearDown();
    }

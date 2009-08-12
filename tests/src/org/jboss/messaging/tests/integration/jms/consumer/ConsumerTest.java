@@ -92,8 +92,12 @@ public class ConsumerTest extends UnitTestCase
             e.printStackTrace();
          }
          server = null;
-
       }
+      
+      server = null;
+      jmsServer = null;
+      cf = null;
+      jBossQueue = null;
       
       super.tearDown();
    }

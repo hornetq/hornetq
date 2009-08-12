@@ -345,6 +345,22 @@ public class ReplicationAwareJMSQueueControlWrapperTest extends ReplicationAware
    protected void tearDown() throws Exception
    {
       session.close();
+      
+      liveServerManager = null;
+      
+      backupServerManager = null;
+      
+      liveQueueControl = null;
+      
+      backupQueueControl = null;
+      
+      liveOtherQueueControl = null;
+      
+      backupOtherQueueControl = null;
+      
+      session = null;
+      
+      queue = otherQueue = null;
 
       super.tearDown();
    }

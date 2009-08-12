@@ -107,50 +107,7 @@ public class AcceptorControlTest extends ManagementTestBase
       assertNotNull(session);
       session.close();
       
-      acceptorControl.pause();
-      
-      try
-      {
-         ClientSession session2 = sf.createSession(false, true, true);
-         
-         fail("acceptor must not accept connections when paused");
-      }
-      catch (Exception e)
-      {
-      }
-      
-      //Pausing a second time should do nothing
-      
-      acceptorControl.pause();
-      assertTrue(acceptorControl.isStarted());
-         
-      try
-      {
-         ClientSession session2 = sf.createSession(false, true, true);
-         
-         fail("acceptor must not accept connections when paused");
-      }
-      catch (Exception e)
-      {
-      }
-      
-      acceptorControl.resume();
-      assertTrue(acceptorControl.isStarted());
-      
-      ClientSession session2 = sf.createSession(false, true, true);
-      assertNotNull(session2);
-      session2.close();
-      
-      //resuming again should do nothing
-      
-      acceptorControl.resume();
-      assertTrue(acceptorControl.isStarted());
-      
-      session2 = sf.createSession(false, true, true);
-      assertNotNull(session2);
-      session2.close();
-      
-      
+            
       acceptorControl.stop();
        
       assertFalse(acceptorControl.isStarted());

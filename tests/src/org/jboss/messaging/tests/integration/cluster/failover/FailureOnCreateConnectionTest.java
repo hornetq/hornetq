@@ -109,6 +109,8 @@ public class FailureOnCreateConnectionTest extends UnitTestCase
 
       assertEquals(0, InVMRegistry.instance.size());
       
+      service = null;
+      
       super.tearDown();
    }
 

@@ -148,6 +148,7 @@ public class JMSServerStartStopTest extends UnitTestCase
    @Override
    protected void tearDown() throws Exception
    {
+      liveJMSServer = null;
       super.tearDown();
    }
 

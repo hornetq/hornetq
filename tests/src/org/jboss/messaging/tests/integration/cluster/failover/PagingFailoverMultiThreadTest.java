@@ -95,7 +95,7 @@ public class PagingFailoverMultiThreadTest extends MultiThreadFailoverSupport
 
    protected MessagingServer backupServer;
 
-   protected final Map<String, Object> backupParams = new HashMap<String, Object>();
+   protected Map<String, Object> backupParams = new HashMap<String, Object>();
 
    // Static --------------------------------------------------------
 
@@ -111,7 +111,6 @@ public class PagingFailoverMultiThreadTest extends MultiThreadFailoverSupport
    // Currently disabled - https://jira.jboss.org/jira/browse/JBMESSAGING-1558
    public void disabled_testB() throws Exception
    {
-
       runMultipleThreadsFailoverTest(new RunnableT()
       {
          @Override
@@ -252,7 +251,10 @@ public class PagingFailoverMultiThreadTest extends MultiThreadFailoverSupport
       liveServer.stop();
 
       assertEquals(0, InVMRegistry.instance.size());
-
+      
+      backupServer = null;
+      
+      liveServer = null;
    }
 
    private void sendMessages(final ClientSession sessSend,

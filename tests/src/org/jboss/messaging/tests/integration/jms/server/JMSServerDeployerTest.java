@@ -263,6 +263,10 @@ public class JMSServerDeployerTest extends ServiceTestBase
    protected void tearDown() throws Exception
    {
       jmsServer.stop();
+      jmsServer = null;
+      context = null;
+      deploymentManager = null;
+      config = null;
 
       super.tearDown();
    }

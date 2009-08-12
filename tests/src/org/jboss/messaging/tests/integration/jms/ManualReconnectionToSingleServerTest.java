@@ -211,6 +211,12 @@ public class ManualReconnectionToSingleServerTest extends UnitTestCase
    protected void tearDown() throws Exception
    {      
       server.stop();
+      
+      server = null;
+      
+      serverManager = null;
+      
+      connection = null;
 
       super.tearDown();
    }

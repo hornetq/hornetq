@@ -98,6 +98,9 @@ public class JMSServerStartStopWithReplicationTest extends UnitTestCase
    @Override
    protected void tearDown() throws Exception
    {
+      this.liveJMSServer = null;
+      this.backupJMSServer = null;
+      
       super.tearDown();
    }
 

@@ -96,6 +96,10 @@ public class ExceptionListenerTest extends UnitTestCase
 
       }
       
+      server = null;
+      jmsServer = null;
+      cf = null;
+      
       super.tearDown();
    }
    

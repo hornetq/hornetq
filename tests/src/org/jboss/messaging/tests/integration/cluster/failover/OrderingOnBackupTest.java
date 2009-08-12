@@ -528,8 +528,6 @@ public class OrderingOnBackupTest extends FailoverTestBase
       compareQueues(ADDRESS, PROPERTY_KEY, NTHREADS * NMESSAGES);
 
       stopServers();
-      // ClientProducer p = s
-
    }
 
    public void testDeliveryOrderOnRedeliveryMultiThread() throws Exception

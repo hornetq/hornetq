@@ -61,7 +61,7 @@ public class XAMultiThreadRandomFailoverTest extends MultiThreadFailoverSupport
 
    protected MessagingServer backupService;
 
-   protected final Map<String, Object> backupParams = new HashMap<String, Object>();
+   protected Map<String, Object> backupParams = new HashMap<String, Object>();
 
    protected Map<ClientSession, Xid> xids;
 
@@ -631,6 +631,10 @@ public class XAMultiThreadRandomFailoverTest extends MultiThreadFailoverSupport
       backupService.stop();
 
       liveService.stop();
+      
+      backupService = null;
+      
+      liveService = null;
 
       assertEquals(0, InVMRegistry.instance.size());
    }

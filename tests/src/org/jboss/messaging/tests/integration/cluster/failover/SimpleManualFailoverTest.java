@@ -199,6 +199,12 @@ public class SimpleManualFailoverTest extends UnitTestCase
 
       assertEquals(0, InVMRegistry.instance.size());
       
+      server1Service = null;
+      
+      server0Service = null;
+      
+      server1Params = null;
+      
       super.tearDown();
    }
 

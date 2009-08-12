@@ -32,9 +32,9 @@ import java.util.Map;
  */
 public interface AcceptorControl extends MessagingComponentControl
 {
-   void pause() throws Exception;
-   
-   void resume() throws Exception;
+//   void pause() throws Exception;
+//   
+//   void resume() throws Exception;
    
    String getName();
 

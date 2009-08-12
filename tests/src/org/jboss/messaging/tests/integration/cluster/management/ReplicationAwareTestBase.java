@@ -54,7 +54,7 @@ public abstract class ReplicationAwareTestBase extends UnitTestCase
 
    protected MessagingServer backupServer;
 
-   protected final Map<String, Object> backupParams = new HashMap<String, Object>();
+   protected Map<String, Object> backupParams = new HashMap<String, Object>();
 
    protected MBeanServer liveMBeanServer;
 
@@ -146,6 +146,16 @@ public abstract class ReplicationAwareTestBase extends UnitTestCase
       backupServer.stop();
 
       liveServer.stop();
+      
+      backupServer = null;
+      
+      liveServer = null;
+      
+      backupParams = null;
+      
+      liveMBeanServer = null;
+      
+      backupMBeanServer = null;
 
       super.tearDown();
    }

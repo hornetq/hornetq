@@ -459,6 +459,10 @@ public class ReplicationAwareQueueControlWrapperTest extends ReplicationAwareTes
    protected void tearDown() throws Exception
    {
       session.close();
+      
+      session = null;
+      
+      address = null;
 
       super.tearDown();
    }

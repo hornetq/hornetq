@@ -74,7 +74,7 @@ public abstract class MultiThreadRandomFailoverTestBase extends MultiThreadFailo
 
    protected MessagingServer backupServer;
 
-   protected final Map<String, Object> backupParams = new HashMap<String, Object>();
+   protected Map<String, Object> backupParams = new HashMap<String, Object>();
 
    // Static --------------------------------------------------------
 
@@ -1316,6 +1316,12 @@ public abstract class MultiThreadRandomFailoverTestBase extends MultiThreadFailo
          backupServer.stop();
       }
       backupServer = null;
+      
+      liveServer = null;
+      
+      backupServer = null;
+      
+      backupParams = null;
       
       super.tearDown();
    }

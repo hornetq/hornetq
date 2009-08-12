@@ -100,56 +100,9 @@ public class NettyAcceptorTest extends UnitTestCase
       
       acceptor.start();
       assertTrue(acceptor.isStarted());
-      acceptor.pause();
       acceptor.stop();
       assertFalse(acceptor.isStarted());
       checkFreePort(TransportConstants.DEFAULT_PORT);
    }
-   
-   public void testPauseResume() throws Exception
-   {
-      BufferHandler handler = new AbstractBufferHandler()
-      {
-
-         public void bufferReceived(Object connectionID, MessagingBuffer buffer)
-         {
-         }
-      };
-
-      Map<String, Object> params = new HashMap<String, Object>();
-      ConnectionLifeCycleListener listener = new ConnectionLifeCycleListener()
-      {
-
-         public void connectionException(Object connectionID, MessagingException me)
-         {
-         }
-
-         public void connectionDestroyed(Object connectionID)
-         {
-         }
-
-         public void connectionCreated(Connection connection)
-         {
-         }
-      };
-      NettyAcceptor acceptor = new NettyAcceptor(params, handler, listener, 
-                                                 Executors.newCachedThreadPool(), 
-                                                 Executors.newScheduledThreadPool(ConfigurationImpl.DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE));
-
-      acceptor.start();
-      assertTrue(acceptor.isStarted());
-
-      acceptor.pause();
-      acceptor.stop();
-      assertFalse(acceptor.isStarted());
-      checkFreePort(TransportConstants.DEFAULT_PORT);
-
-      acceptor.start();
-      assertTrue(acceptor.isStarted());
-      acceptor.pause();
-      acceptor.resume();
-      acceptor.stop();
-      assertFalse(acceptor.isStarted());
-      checkFreePort(TransportConstants.DEFAULT_PORT);
-   }
+     
 }

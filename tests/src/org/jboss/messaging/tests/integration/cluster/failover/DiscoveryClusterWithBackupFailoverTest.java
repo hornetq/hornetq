@@ -52,85 +52,70 @@ public class DiscoveryClusterWithBackupFailoverTest extends ClusterWithBackupFai
    @Override
    public void testFailAllNodes() throws Exception
    {
-      for (int i = 0; i < 5; i++)
-      {
-         log.info("*** iteration " + i);
 
-         tearDown();
+      startServers(3, 4, 5, 0, 1, 2);
 
-         super.clearAllServers();
+      setupSessionFactory(0, 3, isNetty(), false);
+      setupSessionFactory(1, 4, isNetty(), false);
+      setupSessionFactory(2, 5, isNetty(), false);
 
-         setUp();
+      createQueue(0, "queues.testaddress", "queue0", null, false);
+      createQueue(1, "queues.testaddress", "queue0", null, false);
+      createQueue(2, "queues.testaddress", "queue0", null, false);
 
-         this.setupCluster();
+      addConsumer(0, 0, "queue0", null);
+      addConsumer(1, 1, "queue0", null);
+      addConsumer(2, 2, "queue0", null);
 
-         startServers(3, 4, 5, 0, 1, 2);
+      waitForBindings(0, "queues.testaddress", 1, 1, true);
+      waitForBindings(1, "queues.testaddress", 1, 1, true);
+      waitForBindings(2, "queues.testaddress", 1, 1, true);
 
-         setupSessionFactory(0, 3, isNetty(), false);
-         setupSessionFactory(1, 4, isNetty(), false);
-         setupSessionFactory(2, 5, isNetty(), false);
+      waitForBindings(0, "queues.testaddress", 2, 2, false);
+      waitForBindings(1, "queues.testaddress", 2, 2, false);
+      waitForBindings(2, "queues.testaddress", 2, 2, false);
 
-         createQueue(0, "queues.testaddress", "queue0", null, false);
-         createQueue(1, "queues.testaddress", "queue0", null, false);
-         createQueue(2, "queues.testaddress", "queue0", null, false);
+      send(0, "queues.testaddress", 10, false, null);
+      verifyReceiveRoundRobinInSomeOrder(10, 0, 1, 2);
 
-         addConsumer(0, 0, "queue0", null);
-         addConsumer(1, 1, "queue0", null);
-         addConsumer(2, 2, "queue0", null);
+      send(1, "queues.testaddress", 10, false, null);
+      verifyReceiveRoundRobinInSomeOrder(10, 0, 1, 2);
 
-         waitForBindings(0, "queues.testaddress", 1, 1, true);
-         waitForBindings(1, "queues.testaddress", 1, 1, true);
-         waitForBindings(2, "queues.testaddress", 1, 1, true);
+      send(2, "queues.testaddress", 10, false, null);
+      verifyReceiveRoundRobinInSomeOrder(10, 0, 1, 2);
 
-         waitForBindings(0, "queues.testaddress", 2, 2, false);
-         waitForBindings(1, "queues.testaddress", 2, 2, false);
-         waitForBindings(2, "queues.testaddress", 2, 2, false);
+      failNode(0);
 
-         send(0, "queues.testaddress", 10, false, null);
-         verifyReceiveRoundRobinInSomeOrder(10, 0, 1, 2);
+      send(0, "queues.testaddress", 10, false, null);
+      verifyReceiveRoundRobinInSomeOrder(10, 0, 1, 2);
 
-         send(1, "queues.testaddress", 10, false, null);
-         verifyReceiveRoundRobinInSomeOrder(10, 0, 1, 2);
+      send(1, "queues.testaddress", 10, false, null);
+      verifyReceiveRoundRobinInSomeOrder(10, 0, 1, 2);
 
-         send(2, "queues.testaddress", 10, false, null);
-         verifyReceiveRoundRobinInSomeOrder(10, 0, 1, 2);
+      send(2, "queues.testaddress", 10, false, null);
+      verifyReceiveRoundRobinInSomeOrder(10, 0, 1, 2);
 
-         failNode(0);
+      failNode(1);
 
-         send(0, "queues.testaddress", 10, false, null);
-         verifyReceiveRoundRobinInSomeOrder(10, 0, 1, 2);
+      send(0, "queues.testaddress", 10, false, null);
+      verifyReceiveRoundRobinInSomeOrder(10, 0, 1, 2);
 
-         send(1, "queues.testaddress", 10, false, null);
-         verifyReceiveRoundRobinInSomeOrder(10, 0, 1, 2);
+      send(1, "queues.testaddress", 10, false, null);
+      verifyReceiveRoundRobinInSomeOrder(10, 0, 1, 2);
 
-         send(2, "queues.testaddress", 10, false, null);
-         verifyReceiveRoundRobinInSomeOrder(10, 0, 1, 2);
+      send(2, "queues.testaddress", 10, false, null);
+      verifyReceiveRoundRobinInSomeOrder(10, 0, 1, 2);
 
-         failNode(1);
+      failNode(2);
 
-         send(0, "queues.testaddress", 10, false, null);
-         verifyReceiveRoundRobinInSomeOrder(10, 0, 1, 2);
+      send(0, "queues.testaddress", 10, false, null);
+      verifyReceiveRoundRobinInSomeOrder(10, 0, 1, 2);
 
-         send(1, "queues.testaddress", 10, false, null);
-         verifyReceiveRoundRobinInSomeOrder(10, 0, 1, 2);
+      send(1, "queues.testaddress", 10, false, null);
+      verifyReceiveRoundRobinInSomeOrder(10, 0, 1, 2);
 
-         send(2, "queues.testaddress", 10, false, null);
-         verifyReceiveRoundRobinInSomeOrder(10, 0, 1, 2);
-
-         failNode(2);
-
-         send(0, "queues.testaddress", 10, false, null);
-         verifyReceiveRoundRobinInSomeOrder(10, 0, 1, 2);
-
-         send(1, "queues.testaddress", 10, false, null);
-         verifyReceiveRoundRobinInSomeOrder(10, 0, 1, 2);
-
-         send(2, "queues.testaddress", 10, false, null);
-         verifyReceiveRoundRobinInSomeOrder(10, 0, 1, 2);
-
-         stopServers();
-      }
-
+      send(2, "queues.testaddress", 10, false, null);
+      verifyReceiveRoundRobinInSomeOrder(10, 0, 1, 2);
    }
 
    @Override

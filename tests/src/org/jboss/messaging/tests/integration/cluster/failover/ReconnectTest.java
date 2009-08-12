@@ -712,6 +712,8 @@ public class ReconnectTest extends UnitTestCase
       service.stop();
 
       assertEquals(0, InVMRegistry.instance.size());
+      
+      service = null;
 
       super.tearDown();
    }

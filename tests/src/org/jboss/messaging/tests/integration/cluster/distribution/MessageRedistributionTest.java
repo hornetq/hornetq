@@ -44,15 +44,25 @@ public class MessageRedistributionTest extends ClusterTestBase
    {
       super.setUp();
 
+         start();
+   }
+   
+   private void start() throws Exception
+   {
       setupServers();
       
-      setRedistributionDelay(0);      
+      setRedistributionDelay(0);   
+   }
+   
+   private void stop() throws Exception
+   {
+      stopServers();
    }
 
    @Override
    protected void tearDown() throws Exception
    {
-      stopServers();
+      stop();
 
       super.tearDown();
    }
@@ -441,8 +451,8 @@ public class MessageRedistributionTest extends ClusterTestBase
          verifyNotReceive(1);
          removeConsumer(1);
          
-         tearDown();
-         setUp();
+         stop();
+         start();
       }
       
    }

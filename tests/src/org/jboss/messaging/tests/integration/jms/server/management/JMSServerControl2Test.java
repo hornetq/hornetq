@@ -29,6 +29,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 import javax.jms.Connection;
+import javax.jms.ConnectionFactory;
 import javax.jms.ExceptionListener;
 import javax.jms.JMSException;
 
@@ -167,12 +168,14 @@ public class JMSServerControl2Test extends ManagementTestBase
 
          assertEquals(0, control.listConnectionIDs().length);
 
-         Connection connection = JMSUtil.createConnection(connectorFactory, CONNECTION_TTL, PING_PERIOD);
+         ConnectionFactory cf1 = JMSUtil.createFactory(connectorFactory, CONNECTION_TTL, PING_PERIOD);
+         Connection connection = cf1.createConnection();
 
          String[] connectionIDs = control.listConnectionIDs();
          assertEquals(1, connectionIDs.length);
-
-         Connection connection2 = JMSUtil.createConnection(connectorFactory, CONNECTION_TTL, PING_PERIOD);
+       
+         ConnectionFactory cf2 = JMSUtil.createFactory(connectorFactory, CONNECTION_TTL, PING_PERIOD);
+         Connection connection2 = cf2.createConnection();
          assertEquals(2, control.listConnectionIDs().length);
 
          connection.close();
@@ -208,7 +211,8 @@ public class JMSServerControl2Test extends ManagementTestBase
 
          assertEquals(0, control.listConnectionIDs().length);
 
-         Connection connection = JMSUtil.createConnection(connectorFactory, CONNECTION_TTL, PING_PERIOD);
+         ConnectionFactory cf = JMSUtil.createFactory(connectorFactory, CONNECTION_TTL, PING_PERIOD);
+         Connection connection = cf.createConnection();
 
          String[] connectionIDs = control.listConnectionIDs();
          assertEquals(1, connectionIDs.length);
@@ -246,7 +250,8 @@ public class JMSServerControl2Test extends ManagementTestBase
 
          assertEquals(0, control.listRemoteAddresses().length);
 
-         Connection connection = JMSUtil.createConnection(connectorFactory, CONNECTION_TTL, PING_PERIOD);
+         ConnectionFactory cf = JMSUtil.createFactory(connectorFactory, CONNECTION_TTL, PING_PERIOD);
+         Connection connection = cf.createConnection();
 
          String[] remoteAddresses = control.listRemoteAddresses();
          assertEquals(1, remoteAddresses.length);
@@ -284,7 +289,8 @@ public class JMSServerControl2Test extends ManagementTestBase
          assertEquals(0, server.getConnectionCount());
          assertEquals(0, control.listRemoteAddresses().length);
 
-         Connection connection = JMSUtil.createConnection(connectorFactory, CONNECTION_TTL, PING_PERIOD);
+         ConnectionFactory cf = JMSUtil.createFactory(connectorFactory, CONNECTION_TTL, PING_PERIOD);
+         Connection connection = cf.createConnection();
 
          assertEquals(1, server.getConnectionCount());
 
@@ -309,6 +315,8 @@ public class JMSServerControl2Test extends ManagementTestBase
          remoteAddresses = control.listRemoteAddresses();         
          assertEquals("got " + Arrays.asList(remoteAddresses), 0, remoteAddresses.length);
          assertEquals(0, server.getConnectionCount());
+         
+         connection.close();
       }
       finally
       {
@@ -334,7 +342,8 @@ public class JMSServerControl2Test extends ManagementTestBase
          assertEquals(0, server.getConnectionCount());
          assertEquals(0, control.listRemoteAddresses().length);
 
-         Connection connection = JMSUtil.createConnection(connectorFactory, CONNECTION_TTL, PING_PERIOD);
+         ConnectionFactory cf = JMSUtil.createFactory(connectorFactory, CONNECTION_TTL, PING_PERIOD);
+         Connection connection = cf.createConnection();
 
          assertEquals(1, server.getConnectionCount());
          String[] remoteAddresses = control.listRemoteAddresses();
@@ -356,6 +365,8 @@ public class JMSServerControl2Test extends ManagementTestBase
 
          assertEquals(1, control.listRemoteAddresses().length);
          assertEquals(1, server.getConnectionCount());
+         
+         connection.close();
 
       }
       finally

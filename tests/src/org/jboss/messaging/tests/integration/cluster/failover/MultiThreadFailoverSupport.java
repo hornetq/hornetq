@@ -84,6 +84,7 @@ public abstract class MultiThreadFailoverSupport extends ServiceTestBase
    protected void tearDown() throws Exception
    {
       timer.cancel();
+      timer = null;
       super.tearDown();
    }
    
@@ -91,9 +92,7 @@ public abstract class MultiThreadFailoverSupport extends ServiceTestBase
    {
       return true;
    }
-
-
-   
+  
    protected void runMultipleThreadsFailoverTest(final RunnableT runnable,
                                        final int numThreads,
                                        final int numIts,

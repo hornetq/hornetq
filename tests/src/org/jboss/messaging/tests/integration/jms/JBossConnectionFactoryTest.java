@@ -853,6 +853,14 @@ public class JBossConnectionFactoryTest extends UnitTestCase
    protected void tearDown() throws Exception
    {
       stopLiveAndBackup();
+      
+      this.liveService = null;
+      
+      this.backupService = null;
+      
+      this.liveTC = null;
+      
+      this.backupTC = null;
 
       super.tearDown();
    }

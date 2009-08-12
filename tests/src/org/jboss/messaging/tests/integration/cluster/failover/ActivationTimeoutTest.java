@@ -72,7 +72,7 @@ public class ActivationTimeoutTest extends UnitTestCase
 
    private MessagingServer backupService;
 
-   private final Map<String, Object> backupParams = new HashMap<String, Object>();
+   private Map<String, Object> backupParams = new HashMap<String, Object>();
 
    // Static --------------------------------------------------------
 
@@ -256,9 +256,9 @@ public class ActivationTimeoutTest extends UnitTestCase
 
          session2.close();
 
-         tearDown();
+         stop();
 
-         setUp();
+         start();
 
       }
    }
@@ -267,11 +267,8 @@ public class ActivationTimeoutTest extends UnitTestCase
 
    // Protected -----------------------------------------------------
 
-   @Override
-   protected void setUp() throws Exception
+   private void start() throws Exception
    {
-      super.setUp();
-
       Configuration backupConf = new ConfigurationImpl();
       backupConf.setSecurityEnabled(false);
       backupConf.setQueueActivationTimeout(ACTIVATION_TIMEOUT);
@@ -297,16 +294,36 @@ public class ActivationTimeoutTest extends UnitTestCase
       liveService = Messaging.newMessagingServer(liveConf, false);
       liveService.start();
    }
-
-   @Override
-   protected void tearDown() throws Exception
+   
+   private void stop() throws Exception
    {
       backupService.stop();
 
       liveService.stop();
-
+            
       assertEquals(0, InVMRegistry.instance.size());
+            
+   }
+   
+   @Override
+   protected void setUp() throws Exception
+   {
+      super.setUp();
 
+      start();
+   }
+
+   @Override
+   protected void tearDown() throws Exception
+   {
+      stop();
+      
+      backupService = null;
+      
+      liveService = null;
+      
+      backupParams = null;
+      
       super.tearDown();
    }
 

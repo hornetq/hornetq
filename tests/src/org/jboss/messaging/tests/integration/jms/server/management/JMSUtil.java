@@ -70,7 +70,7 @@ public class JMSUtil
       return cf.createConnection();
    }
    
-   public static Connection createConnection(String connectorFactory, long connectionTTL, long clientFailureCheckPeriod) throws JMSException
+   public static ConnectionFactory createFactory(String connectorFactory, long connectionTTL, long clientFailureCheckPeriod) throws JMSException
    {
       JBossConnectionFactory cf = new JBossConnectionFactory(new TransportConfiguration(connectorFactory));
       
@@ -80,9 +80,9 @@ public class JMSUtil
       cf.setConnectionTTL(connectionTTL);
       cf.setClientFailureCheckPeriod(clientFailureCheckPeriod);
 
-      return cf.createConnection();
+      return cf;
    }
-
+   
    static MessageConsumer createConsumer(Connection connection, Destination destination, String connectorFactory) throws JMSException
    {
       Session s = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);

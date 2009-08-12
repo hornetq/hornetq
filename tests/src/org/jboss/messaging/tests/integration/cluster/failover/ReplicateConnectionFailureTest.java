@@ -65,7 +65,7 @@ public class ReplicateConnectionFailureTest extends UnitTestCase
 
    private MessagingServer backupServer;
 
-   private final Map<String, Object> backupParams = new HashMap<String, Object>();
+   private Map<String, Object> backupParams = new HashMap<String, Object>();
 
    // Static --------------------------------------------------------
 
@@ -173,6 +173,12 @@ public class ReplicateConnectionFailureTest extends UnitTestCase
       liveServer.stop();
 
       assertEquals(0, InVMRegistry.instance.size());
+      
+      backupServer = null;
+      
+      liveServer = null;
+      
+      backupParams = null;
       
       super.tearDown();
    }

@@ -60,7 +60,7 @@ public class FailoverTestBase extends ServiceTestBase
 
    // Attributes ----------------------------------------------------
 
-   protected final Map<String, Object> backupParams = new HashMap<String, Object>();
+   protected Map<String, Object> backupParams = new HashMap<String, Object>();
 
    protected MessagingServer liveServer;
 
@@ -281,6 +281,12 @@ public class FailoverTestBase extends ServiceTestBase
    protected void tearDown() throws Exception
    {
       stopServers();
+      
+      backupServer = null;
+      
+      liveServer = null;
+      
+      backupParams = null;
 
       super.tearDown();
    }
@@ -289,20 +295,19 @@ public class FailoverTestBase extends ServiceTestBase
    {
       if (backupServer != null && backupServer.isStarted())
       {
-         backupServer.stop();
-
-         backupServer = null;
+         backupServer.stop();        
       }
 
       if (liveServer != null && liveServer.isStarted())
       {
-         liveServer.stop();
-
-         liveServer = null;
-
+         liveServer.stop();        
       }
 
       assertEquals(0, InVMRegistry.instance.size());
+      
+      backupServer = null;
+      
+      liveServer = null;
    }
 
    // Private -------------------------------------------------------

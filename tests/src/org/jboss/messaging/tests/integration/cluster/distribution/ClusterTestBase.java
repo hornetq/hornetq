@@ -103,9 +103,11 @@ public class ClusterTestBase extends ServiceTestBase
    {
       checkFreePort(PORTS);
       
-      servers = new MessagingServer[MAX_SERVERS];
+      servers = null;
 
-      sfs = new ClientSessionFactory[MAX_SERVERS];
+      sfs = null;
+      
+      consumers = null;
       
       consumers = new ConsumerHolder[MAX_CONSUMERS];
 

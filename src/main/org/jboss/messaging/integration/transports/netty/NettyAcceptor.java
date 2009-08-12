@@ -83,7 +83,7 @@ public class NettyAcceptor implements Acceptor
    private ChannelFactory channelFactory;
 
    private volatile ChannelGroup serverChannelGroup;
-   
+
    private volatile ChannelGroup channelGroup;
 
    private ServerBootstrap bootstrap;
@@ -125,9 +125,9 @@ public class NettyAcceptor implements Acceptor
    private final HttpKeepAliveRunnable httpKeepAliveRunnable;
 
    private ConcurrentMap<Object, Connection> connections = new ConcurrentHashMap<Object, Connection>();
-   
-   private boolean paused;
-   
+
+   // private boolean paused;
+
    private final Executor threadPool;
 
    public NettyAcceptor(final Map<String, Object> configuration,
@@ -156,7 +156,10 @@ public class NettyAcceptor implements Acceptor
                                                                 TransportConstants.DEFAULT_HTTP_RESPONSE_TIME,
                                                                 configuration);
          httpKeepAliveRunnable = new HttpKeepAliveRunnable();
-         Future<?> future = scheduledThreadPool.scheduleAtFixedRate(httpKeepAliveRunnable, httpServerScanPeriod, httpServerScanPeriod, TimeUnit.MILLISECONDS);
+         Future<?> future = scheduledThreadPool.scheduleAtFixedRate(httpKeepAliveRunnable,
+                                                                    httpServerScanPeriod,
+                                                                    httpServerScanPeriod,
+                                                                    TimeUnit.MILLISECONDS);
          httpKeepAliveRunnable.setFuture(future);
       }
       else
@@ -210,15 +213,15 @@ public class NettyAcceptor implements Acceptor
       this.tcpReceiveBufferSize = ConfigurationHelper.getIntProperty(TransportConstants.TCP_RECEIVEBUFFER_SIZE_PROPNAME,
                                                                      TransportConstants.DEFAULT_TCP_RECEIVEBUFFER_SIZE,
                                                                      configuration);
-      
-      this.threadPool= threadPool;
+
+      this.threadPool = threadPool;
    }
 
    public synchronized void start() throws Exception
-   {      
+   {
       if (channelFactory != null)
       {
-         // Already started        
+         // Already started
          return;
       }
 
@@ -297,14 +300,14 @@ public class NettyAcceptor implements Acceptor
       bootstrap.setOption("child.keepAlive", true);
 
       channelGroup = new DefaultChannelGroup("jbm-accepted-channels");
-      
+
       serverChannelGroup = new DefaultChannelGroup("jbm-acceptor-channels");
 
       startServerChannels();
-      
-      paused = false;           
+
+      // paused = false;
    }
-   
+
    private void startServerChannels()
    {
       String[] hosts = TransportConfiguration.splitHosts(host);
@@ -313,7 +316,7 @@ public class NettyAcceptor implements Acceptor
          SocketAddress address;
          if (useInvm)
          {
-            address = new LocalAddress(h);            
+            address = new LocalAddress(h);
          }
          else
          {
@@ -323,63 +326,60 @@ public class NettyAcceptor implements Acceptor
          serverChannelGroup.add(serverChannel);
       }
    }
-   
-   public synchronized void pause()
-   {      
-      if (paused)
-      {
-         return;
-      }
-      
-      if (channelFactory == null)
-      {
-         return;
-      }
 
-      //We *pause* the acceptor so no new connections are made
-      
-      serverChannelGroup.close().awaitUninterruptibly();     
-     
-      try
-      {
-         Thread.sleep(500);
-      }
-      catch (Exception e)
-      {         
-      }
-      
-      paused = true;         
-   }
-   
-   public synchronized void resume()
-   {
-      if (!paused)
-      {
-         return;
-      }
-            
-      startServerChannels();
-      
-      paused = false;
-   }
-   
+   // public synchronized void pause()
+   // {
+   // if (paused)
+   // {
+   // return;
+   // }
+   //      
+   // if (channelFactory == null)
+   // {
+   // return;
+   // }
+   //
+   // //We *pause* the acceptor so no new connections are made
+   //      
+   // serverChannelGroup.close().awaitUninterruptibly();
+   //     
+   // try
+   // {
+   // Thread.sleep(500);
+   // }
+   // catch (Exception e)
+   // {
+   // }
+   //      
+   // paused = true;
+   // }
+   //   
+   // public synchronized void resume()
+   // {
+   // if (!paused)
+   // {
+   // return;
+   // }
+   //            
+   // startServerChannels();
+   //      
+   // paused = false;
+   // }
+
    public synchronized void stop()
    {
       if (channelFactory == null)
       {
          return;
       }
-      
-      if (!paused)
-      {
-         serverChannelGroup.close().awaitUninterruptibly();
-      }
+
+      serverChannelGroup.close().awaitUninterruptibly();
 
       if (httpKeepAliveRunnable != null)
       {
          httpKeepAliveRunnable.close();
       }
-      
+
       ChannelGroupFuture future = channelGroup.close().awaitUninterruptibly();
 
       if (!future.isCompleteSuccess())
@@ -397,8 +397,8 @@ public class NettyAcceptor implements Acceptor
       }
 
       channelFactory.releaseExternalResources();
-      channelFactory = null;  
-      
+      channelFactory = null;
+
       for (Connection connection : connections.values())
       {
          listener.connectionDestroyed(connection.getID());
@@ -468,14 +468,14 @@ public class NettyAcceptor implements Acceptor
       {
          if (connections.remove(connectionID) != null)
          {
-//            // Execute on different thread to avoid deadlocks
-//            new Thread()
-//            {
-//               public void run()
-//               {
-                  listener.connectionDestroyed(connectionID);
-          //     }
-          //  }.start();
+            // // Execute on different thread to avoid deadlocks
+            // new Thread()
+            // {
+            // public void run()
+            // {
+            listener.connectionDestroyed(connectionID);
+            // }
+            // }.start();
          }
       }
 

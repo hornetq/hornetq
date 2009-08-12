@@ -79,6 +79,7 @@ public class PingTest extends ServiceTestBase
    protected void tearDown() throws Exception
    {
       server.stop();
+      server = null;
       super.tearDown();
    }
 

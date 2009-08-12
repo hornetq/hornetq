@@ -77,7 +77,7 @@ public class JMSFailoverTest extends UnitTestCase
 
    private MessagingServer backupService;
 
-   private final Map<String, Object> backupParams = new HashMap<String, Object>();
+   private Map<String, Object> backupParams = new HashMap<String, Object>();
 
    // Static --------------------------------------------------------
 
@@ -277,6 +277,12 @@ public class JMSFailoverTest extends UnitTestCase
 
       assertEquals(0, InVMRegistry.instance.size());
 
+      liveService = null;
+      
+      backupService = null;
+      
+      backupParams = null;
+      
       super.tearDown();
    }
 

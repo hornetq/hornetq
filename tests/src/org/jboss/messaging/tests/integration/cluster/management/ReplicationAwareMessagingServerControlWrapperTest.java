@@ -233,6 +233,10 @@ public class ReplicationAwareMessagingServerControlWrapperTest extends Replicati
    protected void tearDown() throws Exception
    {
       session.close();
+      
+      session = null;
+      
+      address = null;
 
       super.tearDown();
    }

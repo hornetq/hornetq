@@ -52,9 +52,7 @@ public class SymmetricClusterTest extends ClusterTestBase
    {
       stopServers();
       
-      super.tearDown();
-      
-      
+      super.tearDown();           
    }
 
    protected boolean isNetty()

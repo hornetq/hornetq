@@ -207,7 +207,14 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
 
       for (Acceptor acceptor : acceptors)
       {
-         acceptor.pause();
+         try
+         {
+            acceptor.stop();
+         }
+         catch (Exception e)
+         {
+            log.error("Failed to stop acceptor", e);
+         }
       }
    }
 
@@ -221,7 +228,7 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
       // We need to stop them accepting first so no new connections are accepted after we send the disconnect message
       for (Acceptor acceptor : acceptors)
       {
-         acceptor.pause();
+         acceptor.stop();
       }
 
       for (RemotingConnection connection : connections.values())
@@ -229,10 +236,10 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
          connection.getChannel(0, -1, false).sendAndFlush(new PacketImpl(DISCONNECT));
       }
 
-      for (Acceptor acceptor : acceptors)
-      {
-         acceptor.stop();
-      }
+//      for (Acceptor acceptor : acceptors)
+//      {
+//         acceptor.stop();
+//      }
 
       acceptors.clear();
 

@@ -68,7 +68,7 @@ public class FailoverNoSessionsFailoverTest extends UnitTestCase
 
    private MessagingServer backupService;
 
-   private final Map<String, Object> backupParams = new HashMap<String, Object>();
+   private Map<String, Object> backupParams = new HashMap<String, Object>();
 
    // Static --------------------------------------------------------
 
@@ -215,6 +215,12 @@ public class FailoverNoSessionsFailoverTest extends UnitTestCase
       liveService.stop();
 
       assertEquals(0, InVMRegistry.instance.size());
+      
+      backupService = null;
+      
+      liveService = null;
+      
+      backupParams = null;
       
       super.tearDown();
    }

@@ -83,6 +83,10 @@ public class NettyHttpTest extends UnitTestCase
       threadPool.shutdownNow();
 
       scheduledThreadPool.shutdownNow();
+      
+      threadPool = null;
+      
+      scheduledThreadPool = null;
 
       checkFreePort(TransportConstants.DEFAULT_PORT);
 
