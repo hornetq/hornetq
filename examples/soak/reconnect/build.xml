@@ -39,8 +39,6 @@
 		</fileset>
 	</path>
 
-	<property name="perf.properties.file.name" value="perf.properties" />
-
 	<path id="the.classpath">
 		<path refid="client.classpath" />
 		<path location="." />
@@ -58,7 +56,6 @@
                  <jvmarg value="-Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=8000"/>
              -->
 			<jvmarg value="-Djava.util.logging.config.file=${config.dir}/logging.properties" />
-			<arg line="${perf.properties.file.name}" />
 			<classpath refid="the.classpath" />
 		</java>
 	</target>
@@ -75,7 +72,6 @@
                  <jvmarg value="-Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=8000"/>
              -->
 			<jvmarg value="-Djava.util.logging.config.file=${config.dir}/logging.properties" />
-			<arg line="${perf.properties.file.name}" />
 			<classpath refid="the.classpath" />
 		</java>
 	</target>

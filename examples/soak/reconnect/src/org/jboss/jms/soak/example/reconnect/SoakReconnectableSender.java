@@ -43,6 +43,7 @@ public class SoakReconnectableSender
 {
    private static final Logger log = Logger.getLogger(SoakReconnectableSender.class.getName());
 
+
    public static void main(String[] args)
    {
       try
@@ -98,9 +99,10 @@ public class SoakReconnectableSender
 
    public void run() throws Exception
    {
-      System.out.println("SoakReconnectableSender.run()");
       connect();
 
+      boolean runInfinitely = (perfParams.getDurationInMinutes() == -1);
+      
       BytesMessage message = session.createBytesMessage();
 
       byte[] payload = SoakBase.randomByteArray(perfParams.getMessageSize());
@@ -118,41 +120,56 @@ public class SoakReconnectableSender
       boolean display = true;
 
       long start = System.currentTimeMillis();
+      long moduleStart = start;
       AtomicLong count = new AtomicLong(0);
       while (true)
       {
          try
          {
-            while (true)
+            producer.send(message);
+            count.incrementAndGet();
+
+            if (transacted)
             {
-               producer.send(message);
-               count.incrementAndGet();
-
-               if (transacted)
+               if (count.longValue() % txBatchSize == 0)
                {
-                  if (count.longValue() % txBatchSize == 0)
-                  {
-                     session.commit();
-                  }
+                  session.commit();
                }
+            }
 
-               if (display && (count.longValue() % modulo == 0))
-               {
-                  double duration = (1.0 * System.currentTimeMillis() - start) / 1000;
-                  start = System.currentTimeMillis();
-                  log.info(String.format("sent %s messages in %2.2fs", modulo, duration));
-               }
+            long totalDuration = System.currentTimeMillis() - start;
 
-               if (tbl != null)
-               {
-                  tbl.limit();
-               }
+            if (display && (count.longValue() % modulo == 0))
+            {
+               double duration = (1.0 * System.currentTimeMillis() - moduleStart) / 1000;
+               moduleStart = System.currentTimeMillis();
+               log.info(String.format("sent %s messages in %2.2fs (time: %.0fs)", modulo, duration, totalDuration / 1000.0));
+            }
+
+            if (tbl != null)
+            {
+               tbl.limit();
+            }
+            
+            if (!runInfinitely && totalDuration > perfParams.getDurationInMinutes() * SoakBase.TO_MILLIS)
+            {
+               break;
             }
          }
          catch (Exception e)
          {
             e.printStackTrace();
          }
+      }
+      
+      log.info(String.format("Sent %s messages in %s minutes", count, perfParams.getDurationInMinutes()));
+      log.info("END OF RUN");
+
+      
+      if (connection != null)
+      {
+         connection.close();
+         connection = null;
       }
    }
 

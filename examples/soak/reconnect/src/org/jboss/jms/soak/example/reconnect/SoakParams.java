@@ -33,7 +33,7 @@ public class SoakParams implements Serializable
 {
    private static final long serialVersionUID = -4336539641012356002L;
    
-   private int noOfMessagesToSend = 1000;
+   private int durationInMinutes = 60;
    private int noOfWarmupMessages;
    private int messageSize = 1024; // in bytes
    private boolean durable = false;
@@ -47,13 +47,13 @@ public class SoakParams implements Serializable
    private boolean disableTimestamp;
    private boolean dupsOK;
    
-   public synchronized int getNoOfMessagesToSend()
+   public synchronized int getDurationInMinutes()
    {
-      return noOfMessagesToSend;
+      return durationInMinutes;
    }
-   public synchronized void setNoOfMessagesToSend(int noOfMessagesToSend)
+   public synchronized void setDurationInMinutes(int durationInMinutes)
    {
-      this.noOfMessagesToSend = noOfMessagesToSend;
+      this.durationInMinutes = durationInMinutes;
    }
    public synchronized int getNoOfWarmupMessages()
    {

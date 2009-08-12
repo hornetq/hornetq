@@ -28,8 +28,8 @@
    <persistence-enabled>true</persistence-enabled>
    
    <queues>
-	   <queue name="perfQueue">
-	   	<address>perfAddress</address>
+	   <queue name="soakQueue">
+	   	<address>soakAddress</address>
 	   </queue>
    </queues>
 

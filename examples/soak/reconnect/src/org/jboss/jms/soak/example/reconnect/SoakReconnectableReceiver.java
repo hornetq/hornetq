@@ -21,6 +21,7 @@
    */
 package org.jboss.jms.soak.example.reconnect;
 
+import java.util.UUID;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Logger;
 
@@ -39,6 +40,8 @@ import javax.naming.NamingException;
 public class SoakReconnectableReceiver
 {
    private static final Logger log = Logger.getLogger(SoakReconnectableReceiver.class.getName());
+
+   private static final String EOF = UUID.randomUUID().toString();
 
    public static void main(String[] args)
    {
@@ -89,17 +92,36 @@ public class SoakReconnectableReceiver
       private final AtomicLong count = new AtomicLong(0);
 
       private long start = System.currentTimeMillis();
+      long moduloStart = start;
 
       public void onMessage(Message msg)
       {
+         long totalDuration = System.currentTimeMillis() - start;
+
+         try
+         {
+            if (EOF.equals(msg.getStringProperty("eof")))
+            {
+               log.info(String.format("Received %s messages in %.2f minutes", count, (1.0 * totalDuration) / SoakBase.TO_MILLIS));
+               log.info("END OF RUN");
+
+               return;
+            }
+         }
+         catch (JMSException e1)
+         {
+            e1.printStackTrace();
+         }
          if (count.incrementAndGet() % modulo == 0)
          {
-            double duration = (1.0 * System.currentTimeMillis() - start) / 1000;
-            start = System.currentTimeMillis();
-            log.info(String.format("received %s messages in %2.2fs", modulo, duration));
+            double duration = (1.0 * System.currentTimeMillis() - moduloStart) / 1000;
+            moduloStart = System.currentTimeMillis();
+            log.info(String.format("received %s messages in %2.2fs (total: %.0fs)", modulo, duration, totalDuration / 1000.0));
          }
       }
    };
+
+   private Session session;
 
    private SoakReconnectableReceiver(final SoakParams perfParams)
    {
@@ -110,9 +132,28 @@ public class SoakReconnectableReceiver
    {
       connect();
 
-      while (true)
+      boolean runInfinitely = (perfParams.getDurationInMinutes() == -1);
+
+      if (!runInfinitely)
       {
-         Thread.sleep(500);
+         Thread.sleep(perfParams.getDurationInMinutes() * SoakBase.TO_MILLIS);
+
+         // send EOF message
+         Message eof = session.createMessage();
+         eof.setStringProperty("eof", EOF);
+         listener.onMessage(eof);
+         
+         if (connection != null)
+         {
+            connection.close();
+            connection = null;
+         }
+      } else
+      {
+         while (true)
+         {
+            Thread.sleep(500);
+         }
       }
    }
 
@@ -150,7 +191,7 @@ public class SoakReconnectableReceiver
          connection = factory.createConnection();
          connection.setExceptionListener(exceptionListener);
 
-         Session session = connection.createSession(perfParams.isSessionTransacted(),
+         session = connection.createSession(perfParams.isSessionTransacted(),
                                                     perfParams.isDupsOK() ? Session.DUPS_OK_ACKNOWLEDGE
                                                                          : Session.AUTO_ACKNOWLEDGE);
 

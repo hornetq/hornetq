@@ -61,9 +61,9 @@ public class ServerDump
 
    // Constructors --------------------------------------------------
 
-   public ServerDump(int dumpIntervalInHours)
+   public ServerDump(int dumpIntervalInMinutes)
    {
-      this.dumpIntervalInMinutes = dumpIntervalInHours;
+      this.dumpIntervalInMinutes = dumpIntervalInMinutes;
       timer = new Timer(true);
       task = new TimerTask()
       {

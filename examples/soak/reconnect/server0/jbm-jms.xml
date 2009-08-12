@@ -16,8 +16,8 @@
 <block-on-persistent-send>true</block-on-persistent-send>
    </connection-factory>
    
-   <queue name="perfQueue">
-      <entry name="perfQueue"/>
+   <queue name="soakQueue">
+      <entry name="soakQueue"/>
    </queue>
 
 </configuration>
