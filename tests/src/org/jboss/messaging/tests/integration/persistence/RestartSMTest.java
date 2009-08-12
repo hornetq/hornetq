@@ -30,13 +30,12 @@ import java.util.Map;
 import java.util.concurrent.Executors;
 
 import org.jboss.messaging.core.config.Configuration;
+import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.persistence.QueueBindingInfo;
 import org.jboss.messaging.core.persistence.impl.journal.JournalStorageManager;
 import org.jboss.messaging.core.server.JournalType;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.tests.util.ServiceTestBase;
-import org.jboss.messaging.utils.Pair;
-import org.jboss.messaging.utils.SimpleString;
 
 /**
  * A DeleteMessagesRestartTest
@@ -51,7 +50,8 @@ public class RestartSMTest extends ServiceTestBase
 {
 
    // Constants -----------------------------------------------------
-
+   private static final Logger log = Logger.getLogger(RestartSMTest.class);
+                                                      
    // Attributes ----------------------------------------------------
 
    // Static --------------------------------------------------------
@@ -64,7 +64,7 @@ public class RestartSMTest extends ServiceTestBase
    {
       File testdir = new File(getTestDir());
       deleteDirectory(testdir);
-      
+
       Configuration configuration = createConfigForJournal();
 
       configuration.start();
@@ -72,31 +72,47 @@ public class RestartSMTest extends ServiceTestBase
       configuration.setJournalType(JournalType.ASYNCIO);
 
       final JournalStorageManager journal = new JournalStorageManager(configuration, Executors.newCachedThreadPool());
-      journal.start();
+      try
+      {
 
-      List<QueueBindingInfo> queueBindingInfos = new ArrayList<QueueBindingInfo>();
+         journal.start();
 
-      journal.loadBindingJournal(queueBindingInfos);
+         List<QueueBindingInfo> queueBindingInfos = new ArrayList<QueueBindingInfo>();
 
-      Map<Long, Queue> queues = new HashMap<Long, Queue>();
+         journal.loadBindingJournal(queueBindingInfos);
 
-      journal.loadMessageJournal(null, null, queues, null);
+         Map<Long, Queue> queues = new HashMap<Long, Queue>();
 
-      journal.stop();
+         journal.loadMessageJournal(null, null, queues, null);
 
-      deleteDirectory(testdir);
+         journal.stop();
 
-      journal.start();
+         deleteDirectory(testdir);
 
-      queues = new HashMap<Long, Queue>();
+         journal.start();
 
-      journal.loadMessageJournal(null, null, queues, null);
+         queues = new HashMap<Long, Queue>();
 
-      queueBindingInfos = new ArrayList<QueueBindingInfo>();
+         journal.loadMessageJournal(null, null, queues, null);
 
-      journal.loadBindingJournal(queueBindingInfos);
+         queueBindingInfos = new ArrayList<QueueBindingInfo>();
 
-      journal.start();
+         journal.loadBindingJournal(queueBindingInfos);
+
+         journal.start();
+      }
+      finally
+      {
+
+         try
+         {
+            journal.stop();
+         }
+         catch (Exception ex)
+         {
+            log.warn(ex.getMessage(), ex);
+         }
+      }
    }
 
    // Package protected ---------------------------------------------
