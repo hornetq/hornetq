@@ -55,9 +55,7 @@ public class InVMAcceptor implements Acceptor
    private ConcurrentMap<String, Connection> connections = new ConcurrentHashMap<String, Connection>();
 
    private volatile boolean started;
-      
-   private boolean paused;
-   
+
    private final ExecutorFactory executorFactory;
 
    public InVMAcceptor(final Map<String, Object> configuration,
@@ -70,7 +68,7 @@ public class InVMAcceptor implements Acceptor
       this.listener = listener;
 
       this.id = ConfigurationHelper.getIntProperty(TransportConstants.SERVER_ID_PROP_NAME, 0, configuration);
-      
+
       this.executorFactory = new OrderedExecutorFactory(threadPool);
    }
 
@@ -82,55 +80,18 @@ public class InVMAcceptor implements Acceptor
       }
 
       InVMRegistry.instance.registerAcceptor(id, this);
-      
+
       started = true;
-      
-      paused = false;
    }
 
-   /*
-    * Stop accepting new connections
-    */
-   public synchronized void pause()
-   {      
-      if (!started)
-      {
-         return;
-      }
-      
-      if (paused)
-      {
-         return;
-      }
-      
-      InVMRegistry.instance.unregisterAcceptor(id);   
-      
-      paused = true;
-   }
-   
-   public synchronized void resume()
-   {
-      if (!paused)
-      {
-         return;
-      }
-      
-      InVMRegistry.instance.registerAcceptor(id, this);
-      
-      paused = false;
-   }
-   
    public synchronized void stop()
    {
       if (!started)
       {
          return;
       }
-      
-      if (!paused)
-      {
-         InVMRegistry.instance.unregisterAcceptor(id);  
-      }
+
+      InVMRegistry.instance.unregisterAcceptor(id);
 
       for (Connection connection : connections.values())
       {
@@ -138,7 +99,7 @@ public class InVMAcceptor implements Acceptor
       }
 
       connections.clear();
-      
+
       started = false;
    }
 
@@ -156,13 +117,15 @@ public class InVMAcceptor implements Acceptor
 
       return handler;
    }
-   
+
    public ExecutorFactory getExecutorFactory()
    {
       return this.executorFactory;
    }
 
-   public void connect(final String connectionID, final BufferHandler remoteHandler, final InVMConnector connector,
+   public void connect(final String connectionID,
+                       final BufferHandler remoteHandler,
+                       final InVMConnector connector,
                        final Executor clientExecutor)
    {
       if (!started)
@@ -210,14 +173,14 @@ public class InVMAcceptor implements Acceptor
       public void connectionDestroyed(final Object connectionID)
       {
          if (connections.remove(connectionID) != null)
-         {             
+         {
             listener.connectionDestroyed(connectionID);
-            
-            //Execute on different thread to avoid deadlocks
+
+            // Execute on different thread to avoid deadlocks
             new Thread()
             {
                public void run()
-               {                                    
+               {
                   // Remove on the other side too
                   connector.disconnect((String)connectionID);
                }

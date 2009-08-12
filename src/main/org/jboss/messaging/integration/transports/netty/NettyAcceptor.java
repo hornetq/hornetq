@@ -126,8 +126,6 @@ public class NettyAcceptor implements Acceptor
 
    private ConcurrentMap<Object, Connection> connections = new ConcurrentHashMap<Object, Connection>();
 
-   // private boolean paused;
-
    private final Executor threadPool;
 
    public NettyAcceptor(final Map<String, Object> configuration,
@@ -326,45 +324,6 @@ public class NettyAcceptor implements Acceptor
          serverChannelGroup.add(serverChannel);
       }
    }
-
-   // public synchronized void pause()
-   // {
-   // if (paused)
-   // {
-   // return;
-   // }
-   //      
-   // if (channelFactory == null)
-   // {
-   // return;
-   // }
-   //
-   // //We *pause* the acceptor so no new connections are made
-   //      
-   // serverChannelGroup.close().awaitUninterruptibly();
-   //     
-   // try
-   // {
-   // Thread.sleep(500);
-   // }
-   // catch (Exception e)
-   // {
-   // }
-   //      
-   // paused = true;
-   // }
-   //   
-   // public synchronized void resume()
-   // {
-   // if (!paused)
-   // {
-   // return;
-   // }
-   //            
-   // startServerChannels();
-   //      
-   // paused = false;
-   // }
 
    public synchronized void stop()
    {
