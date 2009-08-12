@@ -27,14 +27,19 @@ import java.lang.management.MemoryMXBean;
 import java.lang.management.MemoryUsage;
 import java.lang.management.ThreadMXBean;
 import java.util.Date;
+import java.util.Iterator;
+import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.logging.Logger;
 
 import javax.management.MBeanServerInvocationHandler;
+import javax.management.MalformedObjectNameException;
+import javax.management.ObjectName;
 
 import org.jboss.messaging.core.management.MessagingServerControl;
 import org.jboss.messaging.core.management.ObjectNames;
+import org.jboss.messaging.jms.server.management.JMSQueueControl;
 
 /**
  * A MemoryDump
@@ -80,23 +85,48 @@ public class ServerDump
                                                                                                                               ObjectNames.getMessagingServerObjectName(),
                                                                                                                               MessagingServerControl.class,
                                                                                                                               false);
-               String info          = "\n**** Server Dump ****\n";
+               String info =         "\n**** Server Dump ****\n";
                info += String.format("date:            %s\n", new Date());
                info += String.format("heap memory:     used=%s, max=%s\n",
-                                 sizeof(heapMemory.getUsed()),
-                                 sizeof(heapMemory.getMax()));
+                                     sizeof(heapMemory.getUsed()),
+                                     sizeof(heapMemory.getMax()));
                info += String.format("non-heap memory: used=%s, max=%s\n",
-                                 sizeof(nonHeapMemory.getUsed()),
-                                 sizeof(nonHeapMemory.getMax()));
+                                     sizeof(nonHeapMemory.getUsed()),
+                                     sizeof(nonHeapMemory.getMax()));
                info += String.format("# of thread:     %d\n", threadMXBean.getThreadCount());
                info += String.format("# of conns:      %d\n", messagingServer.getConnectionCount());
-               info +=               "********************\n";
+               info += appendQueuesInfo();
+               info += "********************\n";
                log.info(info);
             }
             catch (Exception e)
             {
                e.printStackTrace();
             }
+         }
+
+         private String appendQueuesInfo() throws Exception
+         {
+            String info = "JMS queues:\n";
+
+            ObjectName query = ObjectName.getInstance("org.jboss.messaging:module=JMS,type=Queue,*");
+            Set names = ManagementFactory.getPlatformMBeanServer().queryNames(query, null);
+            for (Iterator iterator = names.iterator(); iterator.hasNext();)
+            {
+               ObjectName on = (ObjectName)iterator.next();
+               JMSQueueControl queue = (JMSQueueControl)MBeanServerInvocationHandler.newProxyInstance(ManagementFactory.getPlatformMBeanServer(),
+                                                                                                      on,
+                                                                                                      JMSQueueControl.class,
+                                                                                                      false);
+               info += String.format("\t%s: delivering %s msgs to %s consumers (%s msgs in memory, %s added)\n",
+                                     queue.getName(),
+                                     queue.getDeliveringCount(),
+                                     queue.getConsumerCount(),
+                                     queue.getMessageCount(),
+                                     queue.getMessagesAdded());
+            }
+
+            return info;
          }
       };
    }
