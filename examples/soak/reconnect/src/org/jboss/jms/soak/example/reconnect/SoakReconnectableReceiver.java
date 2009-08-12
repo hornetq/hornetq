@@ -21,6 +21,7 @@
    */
 package org.jboss.jms.soak.example.reconnect;
 
+import java.util.Hashtable;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Logger;
@@ -45,13 +46,30 @@ public class SoakReconnectableReceiver
 
    public static void main(String[] args)
    {
+      for (int i = 0; i < args.length; i++)
+      {
+         System.out.println(i + ":" + args[i]);
+      }
+      String jndiURL = "jndi://localhost:1099";
+      if (args.length > 0)
+      {
+         jndiURL = args[0];
+      }
+      
+      System.out.println("Connecting to JNDI at " + jndiURL);
+      
       try
       {
          String fileName = SoakBase.getPerfFileName(args);
 
          SoakParams params = SoakBase.getParams(fileName);
 
-         final SoakReconnectableReceiver receiver = new SoakReconnectableReceiver(params);
+         Hashtable<String, String> jndiProps = new Hashtable<String, String>();
+         jndiProps.put("java.naming.provider.url", jndiURL);
+         jndiProps.put("java.naming.factory.initial", "org.jnp.interfaces.NamingContextFactory");
+         jndiProps.put("java.naming.factory.url.pkgs", "org.jboss.naming:org.jnp.interfaces");
+
+         final SoakReconnectableReceiver receiver = new SoakReconnectableReceiver(jndiProps, params);
 
          Runtime.getRuntime().addShutdownHook(new Thread()
          {
@@ -70,13 +88,11 @@ public class SoakReconnectableReceiver
       }
    }
 
-   private SoakParams perfParams;
+   private final Hashtable<String, String> jndiProps;
 
-   private Destination destination;
+   private final SoakParams perfParams;
 
-   private Connection connection;
-
-   private ExceptionListener exceptionListener = new ExceptionListener()
+   private final ExceptionListener exceptionListener = new ExceptionListener()
    {
       public void onException(JMSException e)
       {
@@ -85,7 +101,7 @@ public class SoakReconnectableReceiver
       }
    };
 
-   private MessageListener listener = new MessageListener()
+   private final MessageListener listener = new MessageListener()
    {
       int modulo = 10000;
 
@@ -123,8 +139,11 @@ public class SoakReconnectableReceiver
 
    private Session session;
 
-   private SoakReconnectableReceiver(final SoakParams perfParams)
+   private Connection connection;
+
+   private SoakReconnectableReceiver(final Hashtable<String, String> jndiProps, final SoakParams perfParams)
    {
+      this.jndiProps = jndiProps;
       this.perfParams = perfParams;
    }
 
@@ -182,11 +201,11 @@ public class SoakReconnectableReceiver
       InitialContext ic = null;
       try
       {
-         ic = new InitialContext();
+         ic = new InitialContext(jndiProps);
 
          ConnectionFactory factory = (ConnectionFactory)ic.lookup(perfParams.getConnectionFactoryLookup());
 
-         destination = (Destination)ic.lookup(perfParams.getDestinationLookup());
+         Destination destination = (Destination)ic.lookup(perfParams.getDestinationLookup());
 
          connection = factory.createConnection();
          connection.setExceptionListener(exceptionListener);

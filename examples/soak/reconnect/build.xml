@@ -32,8 +32,12 @@
 
 	<import file="../../common/build.xml" />
 
+    <property name="server.dir" value="server0" />
+    <property name="jndi.address" value="localhost" />
+    <property name="jndi.port" value="1099" />
+
 	<path id="extra.classpath">
-		<path location="server0" />
+		<path location="${server.dir}" />
 		<fileset dir="extra-libs">
 			<include name="*.jar" />
 		</fileset>
@@ -45,6 +49,7 @@
 	</path>
 
 	<target name="runSender" depends="compile">
+	    <property name="jndi.url" value="jnp://${jndi.address}:${jndi.port}" />
 		<java classname="org.jboss.jms.soak.example.reconnect.SoakReconnectableSender" fork="true" resultproperty="example-result">
 			<jvmarg value="-Xms512M" />
 			<jvmarg value="-Xmx512M" />
@@ -57,10 +62,12 @@
              -->
 			<jvmarg value="-Djava.util.logging.config.file=${config.dir}/logging.properties" />
 			<classpath refid="the.classpath" />
+			<arg line="${jndi.url}" />
 		</java>
 	</target>
 
 	<target name="runReceiver" depends="compile">
+	    <property name="jndi.url" value="jnp://${jndi.address}:${jndi.port}" />
 		<java classname="org.jboss.jms.soak.example.reconnect.SoakReconnectableReceiver" fork="true" resultproperty="example-result">
 			<jvmarg value="-Xms512M" />
 			<jvmarg value="-Xmx512M" />
@@ -73,11 +80,13 @@
              -->
 			<jvmarg value="-Djava.util.logging.config.file=${config.dir}/logging.properties" />
 			<classpath refid="the.classpath" />
+			<arg line="${jndi.url}" />
 		</java>
 	</target>
 
 	<target name="runServer" depends="compile">
-		<java classname="org.jboss.common.example.SpawnedJBMServer" fork="true" resultproperty="example-result">
+	    <echo message="Using server configuration from server.dir: ${server.dir}" />
+		<java classname="org.jboss.common.example.SpawnedJBMServer" fork="true" clonevm="true" resultproperty="example-result">
 			<jvmarg value="-Xms2048M" />
 			<jvmarg value="-Xmx2048M" />
 			<jvmarg value="-XX:+UseParallelGC" />

@@ -8,6 +8,7 @@
          <param key="jbm.remoting.netty.tcpnodelay" value="false" type="Boolean"/>
          <param key="jbm.remoting.netty.tcpsendbuffersize" value="1048576" type="Integer"/>
          <param key="jbm.remoting.netty.tcpreceivebuffersize" value="1048576" type="Integer"/>
+         <param key="jbm.remoting.netty.host" value="localhost" type="String"/>
       </connector>
    </connectors>
    
@@ -18,6 +19,7 @@
          <param key="jbm.remoting.netty.tcpnodelay" value="false" type="Boolean"/>
          <param key="jbm.remoting.netty.tcpsendbuffersize" value="1048576" type="Integer"/>
          <param key="jbm.remoting.netty.tcpreceivebuffersize" value="1048576" type="Integer"/>
+         <param key="jbm.remoting.netty.host" value="localhost" type="String"/>
       </acceptor>
    </acceptors>
 

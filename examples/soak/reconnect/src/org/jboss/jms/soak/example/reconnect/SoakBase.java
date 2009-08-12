@@ -62,9 +62,9 @@ public class SoakBase
    {
       String fileName;
 
-      if (args.length > 0)
+      if (args.length > 2)
       {
-         fileName = args[0];
+         fileName = args[1];
       }
       else
       {

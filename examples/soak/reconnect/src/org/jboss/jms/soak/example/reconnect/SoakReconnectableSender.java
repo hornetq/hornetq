@@ -21,6 +21,7 @@
    */
 package org.jboss.jms.soak.example.reconnect;
 
+import java.util.Hashtable;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Logger;
 
@@ -46,13 +47,29 @@ public class SoakReconnectableSender
 
    public static void main(String[] args)
    {
+      for (int i = 0; i < args.length; i++)
+      {
+         System.out.println(i + ":" + args[i]);
+      }
+      String jndiURL = "jndi://localhost:1099";
+      if (args.length > 0)
+      {
+         jndiURL = args[0];
+      }
+      
+      System.out.println("Connecting to JNDI at " + jndiURL);
       try
       {
          String fileName = SoakBase.getPerfFileName(args);
 
          SoakParams params = SoakBase.getParams(fileName);
 
-         final SoakReconnectableSender sender = new SoakReconnectableSender(params);
+         Hashtable<String, String> jndiProps = new Hashtable<String, String>();
+         jndiProps.put("java.naming.provider.url", jndiURL);
+         jndiProps.put("java.naming.factory.initial", "org.jnp.interfaces.NamingContextFactory");
+         jndiProps.put("java.naming.factory.url.pkgs", "org.jboss.naming:org.jnp.interfaces");
+
+         final SoakReconnectableSender sender = new SoakReconnectableSender(jndiProps, params);
 
          Runtime.getRuntime().addShutdownHook(new Thread()
          {
@@ -71,9 +88,9 @@ public class SoakReconnectableSender
       }
    }
 
-   private SoakParams perfParams;
+   private final SoakParams perfParams;
 
-   private Destination destination;
+   private final Hashtable<String, String> jndiProps;
 
    private Connection connection;
 
@@ -81,7 +98,7 @@ public class SoakReconnectableSender
 
    private MessageProducer producer;
 
-   private ExceptionListener exceptionListener = new ExceptionListener()
+   private final ExceptionListener exceptionListener = new ExceptionListener()
    {
       public void onException(JMSException e)
       {
@@ -92,8 +109,9 @@ public class SoakReconnectableSender
 
    };
 
-   private SoakReconnectableSender(final SoakParams perfParams)
+   private SoakReconnectableSender(final Hashtable<String, String> jndiProps, final SoakParams perfParams)
    {
+      this.jndiProps = jndiProps;
       this.perfParams = perfParams;
    }
 
@@ -198,11 +216,11 @@ public class SoakReconnectableSender
       InitialContext ic = null;
       try
       {
-         ic = new InitialContext();
+         ic = new InitialContext(jndiProps);
 
          ConnectionFactory factory = (ConnectionFactory)ic.lookup(perfParams.getConnectionFactoryLookup());
 
-         destination = (Destination)ic.lookup(perfParams.getDestinationLookup());
+         Destination destination = (Destination)ic.lookup(perfParams.getDestinationLookup());
 
          connection = factory.createConnection();
 
