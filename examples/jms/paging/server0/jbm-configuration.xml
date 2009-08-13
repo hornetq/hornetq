@@ -9,6 +9,7 @@
       </connector>
    </connectors>
    
+   <paging-directory>./data/page</paging-directory>
    
    <!-- Acceptors -->
    <acceptors>

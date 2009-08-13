@@ -19,7 +19,8 @@
     <section id="paging.main.config">
         <title>Configuration</title>
         <para>You can configure the location of the paging folder</para>
-        <para>Global paging parameters are specified on the main configuration file.</para>
+        <para>Global paging parameters are specified on the main configuration file (<literal
+                >jbm-configuration.xml</literal>).</para>
         <programlisting>&lt;configuration xmlns="urn:jboss:messaging"
             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
             xsi:schemaLocation="urn:jboss:messaging /schema/jbm-configuration.xsd">
@@ -58,17 +59,17 @@
     </section>
     <section id="paging.mode">
         <title>Paging Mode</title>
-        <para>As soon as messages
-            delivered to an address exceed the configured size, that address alone goes into page
-            mode.</para>
+        <para>As soon as messages delivered to an address exceed the configured size, that address
+            alone goes into page mode.</para>
         <section>
             <title>Configuration</title>
-            <para>Configuration is done at the address settings.</para>
+            <para>Configuration is done at the address settings, done at the main configuration file
+                    (<literal>jbm-configuration.xml</literal>).</para>
             <programlisting>  &lt;address-settings>
       &lt;address-setting match="jms.someaddress">
-         &lt;max-size-bytes>-1&lt;/max-size-bytes>
+         &lt;max-size-bytes>104857600&lt;/max-size-bytes>
          &lt;page-size-bytes>10485760&lt;/page-size-bytes>
-         &lt;drop-messages-when-full>true&lt;/drop-messages-when-full>
+         &lt;drop-messages-when-full>false&lt;/drop-messages-when-full>
       &lt;/address-setting>
    &lt;/address-settings>
         </programlisting>
