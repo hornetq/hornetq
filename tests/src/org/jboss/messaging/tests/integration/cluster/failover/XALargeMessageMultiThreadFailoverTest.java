@@ -51,7 +51,7 @@ public class XALargeMessageMultiThreadFailoverTest extends XAMultiThreadRandomFa
    // Constants -----------------------------------------------------
 
    // Attributes ----------------------------------------------------
-   private final byte[] BODY = new byte[500];
+   private static final byte[] BODY = new byte[500];
 
    // Static --------------------------------------------------------
 
@@ -70,7 +70,7 @@ public class XALargeMessageMultiThreadFailoverTest extends XAMultiThreadRandomFa
       return sf;
 
    }
-
+   
    @Override
    protected void start() throws Exception
    {

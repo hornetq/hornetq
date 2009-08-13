@@ -71,6 +71,36 @@ public class XAMultiThreadRandomFailoverTest extends MultiThreadFailoverSupport
 
    private final int NUM_SESSIONS = getNumSessions();
 
+   protected void tearDown() throws Exception
+   {
+      try
+      {
+         if (backupService != null && backupService.isStarted())
+         {
+            backupService.stop();
+         }
+      }
+      catch (Throwable ignored)
+      {
+      }
+
+      try
+      {
+         if (liveService != null && liveService.isStarted())
+         {
+            liveService.stop();
+         }
+      }
+      catch (Throwable ignored)
+      {
+      }
+
+      liveService = null;
+      backupService = null;
+
+      super.tearDown();
+   }
+
    protected int getNumSessions()
    {
       return 10;
@@ -631,9 +661,9 @@ public class XAMultiThreadRandomFailoverTest extends MultiThreadFailoverSupport
       backupService.stop();
 
       liveService.stop();
-      
+
       backupService = null;
-      
+
       liveService = null;
 
       assertEquals(0, InVMRegistry.instance.size());
@@ -784,11 +814,11 @@ public class XAMultiThreadRandomFailoverTest extends MultiThreadFailoverSupport
          try
          {
             stop();
-            
+
             // Suspend & resume... just exercising the API as part of the test
             session.end(xid, XAResource.TMSUSPEND);
             session.start(xid, XAResource.TMRESUME);
-            
+
             session.end(xid, XAResource.TMSUCCESS);
             session.prepare(xid);
             session.commit(xid, false);
@@ -825,7 +855,7 @@ public class XAMultiThreadRandomFailoverTest extends MultiThreadFailoverSupport
             log.error(failure);
             return;
          }
-      
+
          try
          {
             message.acknowledge();
