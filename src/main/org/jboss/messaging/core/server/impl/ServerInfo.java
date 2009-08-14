@@ -109,30 +109,30 @@ public class ServerInfo
       return info;
    }
 
-   private static long oneKB = 1024;
+   private static long oneKiB = 1024;
 
-   private static long oneMB = oneKB * 1024;
+   private static long oneMiB = oneKiB * 1024;
 
-   private static long oneGB = oneMB * 1024;
+   private static long oneGiB = oneMiB * 1024;
 
    private static String sizeof(long size)
    {
       double s = Long.valueOf(size).doubleValue();
       String suffix = "B";
-      if (s > oneGB)
+      if (s > oneGiB)
       {
-         s /= oneGB;
-         suffix = "GB";
+         s /= oneGiB;
+         suffix = "GiB";
       }
-      else if (s > oneMB)
+      else if (s > oneMiB)
       {
-         s /= oneMB;
-         suffix = "MB";
+         s /= oneMiB;
+         suffix = "MiB";
       }
-      else if (s > oneKB)
+      else if (s > oneKiB)
       {
-         s /= oneKB;
-         suffix = "kB";
+         s /= oneKiB;
+         suffix = "kiB";
       }
       return String.format("%.2f %s", s, suffix);
    }
