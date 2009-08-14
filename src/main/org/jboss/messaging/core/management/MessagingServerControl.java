@@ -39,6 +39,8 @@ public interface MessagingServerControl
    String getVersion();
 
    int getConnectionCount();
+   
+   long getPagingTotalMemory();
 
    boolean isStarted();
 

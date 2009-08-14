@@ -331,6 +331,8 @@ public class FileConfiguration extends ConfigurationImpl
 
       messageCounterMaxDayHistory = getInteger(e, "message-counter-max-day-history", messageCounterMaxDayHistory, GT_ZERO);
       
+      serverDumpInterval = getLong(e, "server-dump-interval", serverDumpInterval, GE_ZERO); // in milliseconds
+
       started = true;
    }
    

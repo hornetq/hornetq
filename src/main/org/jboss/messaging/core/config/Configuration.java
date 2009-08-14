@@ -230,6 +230,9 @@ public interface Configuration extends Serializable, MessagingComponent
    
    void setJournalPerfBlastPages(int pages);
 
+   long getServerDumpInterval();
+
+   void getServerDumpInterval(long interval);
 
    // Paging Properties --------------------------------------------------------------------
 

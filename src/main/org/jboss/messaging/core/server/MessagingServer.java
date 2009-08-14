@@ -112,6 +112,8 @@ public interface MessagingServer extends MessagingComponent
 
    int getConnectionCount();
 
+   long getPagingTotalMemory();
+
    PostOffice getPostOffice();
 
    QueueFactory getQueueFactory();
@@ -145,4 +147,5 @@ public interface MessagingServer extends MessagingComponent
    void destroyQueue(SimpleString queueName, ServerSession session) throws Exception;
 
    void handleReplicateRedistribution(final SimpleString queueName, final long messageID) throws Exception;
+
 }

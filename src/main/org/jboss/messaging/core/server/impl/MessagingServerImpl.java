@@ -636,6 +636,11 @@ public class MessagingServerImpl implements MessagingServer
    {
       return remotingService.getConnections().size();
    }
+   
+   public long getPagingTotalMemory()
+   {
+      return pagingManager.getTotalMemory();
+   }
 
    public PostOffice getPostOffice()
    {
@@ -873,7 +878,7 @@ public class MessagingServerImpl implements MessagingServer
 
       managementService = new ManagementServiceImpl(mbeanServer, configuration, managementConnectorID);
       
-      remotingService = new RemotingServiceImpl(configuration, this, managementService, threadPool, scheduledPool, managementConnectorID);
+      remotingService = new RemotingServiceImpl(configuration, this, managementService, threadPool, scheduledPool, managementConnectorID);      
    }
    
    private void initialisePart2() throws Exception
@@ -1030,6 +1035,19 @@ public class MessagingServerImpl implements MessagingServer
 
       pagingManager.resumeDepages();
 
+      final ServerInfo dumper = new ServerInfo(this);
+      long dumpInfoInterval = configuration.getServerDumpInterval();
+      if (dumpInfoInterval > 0)
+      {
+         scheduledPool.scheduleWithFixedDelay(new Runnable()
+         {
+
+            public void run()
+            {
+               log.info(dumper.dump());
+            }
+         }, 0, dumpInfoInterval, TimeUnit.MILLISECONDS);
+      }
       initialised = true;
 
       started = true;

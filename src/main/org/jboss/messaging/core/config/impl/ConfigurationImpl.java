@@ -153,6 +153,8 @@ public class ConfigurationImpl implements Configuration
 
    public static final int DEFAULT_BRIDGE_RECONNECT_ATTEMPTS = -1;
 
+   public static final long DEFAULT_SERVER_DUMP_INTERVAL = 0;
+
    // Attributes -----------------------------------------------------------------------------
 
    protected boolean clustered = DEFAULT_CLUSTERED;
@@ -273,6 +275,8 @@ public class ConfigurationImpl implements Configuration
    protected String managementClusterPassword = DEFAULT_MANAGEMENT_CLUSTER_PASSWORD;
 
    protected long managementRequestTimeout = DEFAULT_MANAGEMENT_REQUEST_TIMEOUT;
+
+   protected long serverDumpInterval = DEFAULT_SERVER_DUMP_INTERVAL;
 
    // MessagingComponent implementation ----------------------------------------------
 
@@ -861,35 +865,33 @@ public class ConfigurationImpl implements Configuration
              cother.getManagementAddress().equals(getManagementAddress());
    }
 
-   /* (non-Javadoc)
-    * @see org.jboss.messaging.core.config.Configuration#getJournalCompactMinFiles()
-    */
    public int getJournalCompactMinFiles()
    {
       return journalCompactMinFiles;
    }
 
-   /* (non-Javadoc)
-    * @see org.jboss.messaging.core.config.Configuration#getJournalCompactPercentage()
-    */
    public int getJournalCompactPercentage()
    {
       return journalCompactPercentage;
    }
    
-   /* (non-Javadoc)
-    * @see org.jboss.messaging.core.config.Configuration#setJournalCompactMinFiles()
-    */
    public void setJournalCompactMinFiles(int minFiles)
    {
       this.journalCompactMinFiles = minFiles;
    }
 
-   /* (non-Javadoc)
-    * @see org.jboss.messaging.core.config.Configuration#setJournalCompactPercentage()
-    */
    public void setJournalCompactPercentage(int percentage)
    {
       this.journalCompactPercentage = percentage;
+   }
+   
+   public long getServerDumpInterval()
+   {
+      return serverDumpInterval;
+   }
+   
+   public void getServerDumpInterval(long intervalInMilliseconds)
+   {
+      this.serverDumpInterval = intervalInMilliseconds;
    }
 }

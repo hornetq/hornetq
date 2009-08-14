@@ -272,6 +272,11 @@ public class MessagingServerControlImpl implements MessagingServerControl, Notif
    {
       return server.getConnectionCount();
    }
+   
+   public long getPagingTotalMemory()
+   {
+      return server.getPagingTotalMemory();
+   }
 
    public void enableMessageCounters()
    {
