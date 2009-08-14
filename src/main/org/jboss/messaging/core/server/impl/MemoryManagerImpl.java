@@ -145,7 +145,7 @@ public class MemoryManagerImpl implements MemoryManager
             
             long freeMemory = runtime.freeMemory();
             
-            double currentFreeMemoryPercent = 100.0 * freeMemory / totalMemory;
+            double currentFreeMemoryPercent = 100.0 * freeMemory / maxMemory;
             
             String info = "";
             info += String.format("free memory:      %s\n", SizeFormatterUtil.sizeof(freeMemory));
