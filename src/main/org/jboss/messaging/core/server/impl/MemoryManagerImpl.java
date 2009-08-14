@@ -145,20 +145,22 @@ public class MemoryManagerImpl implements MemoryManager
             
             long freeMemory = runtime.freeMemory();
             
-            double currentFreeMemoryPercent = 100.0 * freeMemory / maxMemory;
+            long availableMemory = freeMemory + (maxMemory - totalMemory);
+                                    
+            double availableMemoryPercent = 100.0 * (double)availableMemory / maxMemory;
             
             String info = "";
             info += String.format("free memory:      %s\n", SizeFormatterUtil.sizeof(freeMemory));
             info += String.format("max memory:       %s\n", SizeFormatterUtil.sizeof(maxMemory));
             info += String.format("total memory:     %s\n", SizeFormatterUtil.sizeof(totalMemory));
-            info += String.format("available memory: %.2f%%\n", currentFreeMemoryPercent);
+            info += String.format("available memory: %.2f%%\n", availableMemoryPercent);
 
             if (log.isDebugEnabled())
             {
                log.debug(info);
             }
             
-            if (currentFreeMemoryPercent <= freeMemoryPercent)
+            if (availableMemoryPercent <= freeMemoryPercent)
             {
                log.warn("Less than " + freeMemoryPercent + "%\n" 
                         + info +
