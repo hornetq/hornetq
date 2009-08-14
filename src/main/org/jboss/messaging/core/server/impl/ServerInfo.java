@@ -32,6 +32,7 @@ import org.jboss.messaging.core.paging.PagingManager;
 import org.jboss.messaging.core.paging.PagingStore;
 import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.utils.SimpleString;
+import org.jboss.messaging.utils.SizeFormatterUtil;
 
 /**
  * A ServerInfo
@@ -71,11 +72,11 @@ public class ServerInfo
       String info = "\n**** Server Dump ****\n";
       info += String.format("date:            %s\n", new Date());
       info += String.format("heap memory:     used=%s, max=%s\n",
-                            sizeof(heapMemory.getUsed()),
-                            sizeof(heapMemory.getMax()));
+                            SizeFormatterUtil.sizeof(heapMemory.getUsed()),
+                            SizeFormatterUtil.sizeof(heapMemory.getMax()));
       info += String.format("non-heap memory: used=%s, max=%s\n",
-                            sizeof(nonHeapMemory.getUsed()),
-                            sizeof(nonHeapMemory.getMax()));
+                            SizeFormatterUtil.sizeof(nonHeapMemory.getUsed()),
+                            SizeFormatterUtil.sizeof(nonHeapMemory.getMax()));
       info += appendPagingInfos();
       info += String.format("# of thread:     %d\n", threadMXBean.getThreadCount());
       info += String.format("# of conns:      %d\n", server.getConnectionCount());
@@ -92,14 +93,14 @@ public class ServerInfo
    private String appendPagingInfos()
    {
       String info = "";
-      info += String.format("total paging memory:   %s\n", sizeof(pagingManager.getTotalMemory()));
+      info += String.format("total paging memory:   %s\n", SizeFormatterUtil.sizeof(pagingManager.getTotalMemory()));
       for (SimpleString storeName : pagingManager.getStoreNames())
       {
          PagingStore pageStore;
          try
          {
             pageStore = pagingManager.getPageStore(storeName);
-            info += String.format("\t%s: %s\n", storeName, sizeof(pageStore.getPageSizeBytes() * pageStore.getNumberOfPages()));         
+            info += String.format("\t%s: %s\n", storeName, SizeFormatterUtil.sizeof(pageStore.getPageSizeBytes() * pageStore.getNumberOfPages()));         
          }
          catch (Exception e)
          {
@@ -107,34 +108,6 @@ public class ServerInfo
          }
       }
       return info;
-   }
-
-   private static long oneKiB = 1024;
-
-   private static long oneMiB = oneKiB * 1024;
-
-   private static long oneGiB = oneMiB * 1024;
-
-   private static String sizeof(long size)
-   {
-      double s = Long.valueOf(size).doubleValue();
-      String suffix = "B";
-      if (s > oneGiB)
-      {
-         s /= oneGiB;
-         suffix = "GiB";
-      }
-      else if (s > oneMiB)
-      {
-         s /= oneMiB;
-         suffix = "MiB";
-      }
-      else if (s > oneKiB)
-      {
-         s /= oneKiB;
-         suffix = "kiB";
-      }
-      return String.format("%.2f %s", s, suffix);
    }
 
    // Inner classes -------------------------------------------------

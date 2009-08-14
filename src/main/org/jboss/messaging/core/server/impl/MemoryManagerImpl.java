@@ -23,6 +23,7 @@ package org.jboss.messaging.core.server.impl;
 
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.server.MemoryManager;
+import org.jboss.messaging.utils.SizeFormatterUtil;
 
 /**
  * A MemoryManager
@@ -142,20 +143,26 @@ public class MemoryManagerImpl implements MemoryManager
             
             long totalMemory = runtime.totalMemory();
             
-            long availableMemory = maxMemory - totalMemory;
+            long freeMemory = runtime.freeMemory();
             
-            double currentFreeMemoryPercent = 100 * (double)availableMemory / maxMemory;
+            double currentFreeMemoryPercent = 100.0 * freeMemory / totalMemory;
             
-            log.info("Free memory " + currentFreeMemoryPercent + "% " +
-                     " Calculated available memory " + availableMemory + 
-                     " Total mem " + totalMemory);
+            String info = "";
+            info += String.format("free memory:      %s\n", SizeFormatterUtil.sizeof(freeMemory));
+            info += String.format("max memory:       %s\n", SizeFormatterUtil.sizeof(maxMemory));
+            info += String.format("total memory:     %s\n", SizeFormatterUtil.sizeof(totalMemory));
+            info += String.format("available memory: %.2f%%\n", currentFreeMemoryPercent);
+
+            if (log.isDebugEnabled())
+            {
+               log.debug(info);
+            }
             
             if (currentFreeMemoryPercent <= freeMemoryPercent)
             {
-               log.warn("Less than " + freeMemoryPercent + "% (" + currentFreeMemoryPercent + "% total: " + totalMemory +
-                        " available " + availableMemory
-                        + ") of total available memory free. " + 
-                        "You are in danger of running out of RAM. Have you set paging parameters " +
+               log.warn("Less than " + freeMemoryPercent + "%\n" 
+                        + info +
+                        "\nYou are in danger of running out of RAM. Have you set paging parameters " +
                         "on your addresses? (See user manual \"Paging\" chapter)");
                
                low = true;
