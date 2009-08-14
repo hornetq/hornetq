@@ -40,8 +40,6 @@ public interface MessagingServerControl
 
    int getConnectionCount();
    
-   long getPagingTotalMemory();
-
    boolean isStarted();
 
    String[] getInterceptorClassNames();

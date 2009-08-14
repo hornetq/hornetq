@@ -134,4 +134,5 @@ public interface PagingManager extends MessagingComponent
     */
    void reloadStores() throws Exception;
 
+   SimpleString[] getStoreNames();
 }

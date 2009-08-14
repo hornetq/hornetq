@@ -153,7 +153,7 @@ public class ConfigurationImpl implements Configuration
 
    public static final int DEFAULT_BRIDGE_RECONNECT_ATTEMPTS = -1;
 
-   public static final long DEFAULT_SERVER_DUMP_INTERVAL = 0;
+   public static final long DEFAULT_SERVER_DUMP_INTERVAL = -1;
 
    // Attributes -----------------------------------------------------------------------------
 

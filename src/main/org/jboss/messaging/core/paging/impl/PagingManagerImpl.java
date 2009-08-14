@@ -24,9 +24,9 @@ package org.jboss.messaging.core.paging.impl;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.jboss.messaging.core.logging.Logger;
@@ -100,6 +100,12 @@ public class PagingManagerImpl implements PagingManager
    // PagingManager implementation
    // -----------------------------------------------------------------------------------------------------
 
+   public SimpleString[] getStoreNames()
+   {
+      Set<SimpleString> names = stores.keySet();
+      return (SimpleString[])names.toArray(new SimpleString[names.size()]);
+   }
+   
    public void activate()
    {
       backup = false;

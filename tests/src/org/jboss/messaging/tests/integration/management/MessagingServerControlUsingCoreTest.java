@@ -146,11 +146,6 @@ public class MessagingServerControlUsingCoreTest extends MessagingServerControlT
             return (Integer)proxy.retrieveAttributeValue("connectionCount");
          }
 
-         public long getPagingTotalMemory()
-         {
-            return (Integer)proxy.retrieveAttributeValue("pagingTotalMemory");
-         }
-
          public long getConnectionTTLOverride()
          {
             return (Long)proxy.retrieveAttributeValue("connectionTTLOverride", Long.class);

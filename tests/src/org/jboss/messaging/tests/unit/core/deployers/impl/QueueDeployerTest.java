@@ -219,11 +219,6 @@ public class QueueDeployerTest extends UnitTestCase
          return 0;
       }
       
-      public long getPagingTotalMemory()
-      {
-         return 0;
-      }
-
       public long getConnectionTTLOverride()
       {
 

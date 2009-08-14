@@ -112,8 +112,6 @@ public interface MessagingServer extends MessagingComponent
 
    int getConnectionCount();
 
-   long getPagingTotalMemory();
-
    PostOffice getPostOffice();
 
    QueueFactory getQueueFactory();

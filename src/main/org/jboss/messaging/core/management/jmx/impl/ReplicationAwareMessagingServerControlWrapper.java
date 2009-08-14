@@ -81,11 +81,6 @@ public class ReplicationAwareMessagingServerControlWrapper extends ReplicationAw
       return localControl.getConnectionCount();
    }
    
-   public long getPagingTotalMemory()
-   {
-      return localControl.getPagingTotalMemory();
-   }
-
    public String[] getInterceptorClassNames()
    {
       return localControl.getInterceptorClassNames();

@@ -751,6 +751,11 @@ public class PagingStoreImplTest extends UnitTestCase
       {
          return 0;
       }
+      
+      public SimpleString[] getStoreNames()
+      {
+         return null;
+      }
 
       public long getMaxMemory()
       {

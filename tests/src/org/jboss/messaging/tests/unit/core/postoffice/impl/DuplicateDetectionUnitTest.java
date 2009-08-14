@@ -205,6 +205,11 @@ public class DuplicateDetectionUnitTest extends ServiceTestBase
       {
          return 0;
       }
+      
+      public SimpleString[] getStoreNames()
+      {
+         return null;
+      }
 
       public long getMaxMemory()
       {

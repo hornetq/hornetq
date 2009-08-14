@@ -28,7 +28,10 @@ import java.lang.management.MemoryUsage;
 import java.lang.management.ThreadMXBean;
 import java.util.Date;
 
+import org.jboss.messaging.core.paging.PagingManager;
+import org.jboss.messaging.core.paging.PagingStore;
 import org.jboss.messaging.core.server.MessagingServer;
+import org.jboss.messaging.utils.SimpleString;
 
 /**
  * A ServerInfo
@@ -41,6 +44,8 @@ public class ServerInfo
 {
    private final MessagingServer server;
 
+   private PagingManager pagingManager;
+
    // Constants -----------------------------------------------------
 
    // Attributes ----------------------------------------------------
@@ -49,9 +54,10 @@ public class ServerInfo
 
    // Constructors --------------------------------------------------
 
-   public ServerInfo(final MessagingServer server)
+   public ServerInfo(final MessagingServer server, final PagingManager pagingManager)
    {
       this.server = server;
+      this.pagingManager = pagingManager;
    }
 
    // Public --------------------------------------------------------
@@ -70,7 +76,7 @@ public class ServerInfo
       info += String.format("non-heap memory: used=%s, max=%s\n",
                             sizeof(nonHeapMemory.getUsed()),
                             sizeof(nonHeapMemory.getMax()));
-      info += String.format("paging memory:   %s\n", sizeof(server.getPagingTotalMemory()));
+      info += appendPagingInfos();
       info += String.format("# of thread:     %d\n", threadMXBean.getThreadCount());
       info += String.format("# of conns:      %d\n", server.getConnectionCount());
       info += "********************\n";
@@ -82,6 +88,26 @@ public class ServerInfo
    // Protected -----------------------------------------------------
 
    // Private -------------------------------------------------------
+
+   private String appendPagingInfos()
+   {
+      String info = "";
+      info += String.format("total paging memory:   %s\n", sizeof(pagingManager.getTotalMemory()));
+      for (SimpleString storeName : pagingManager.getStoreNames())
+      {
+         PagingStore pageStore;
+         try
+         {
+            pageStore = pagingManager.getPageStore(storeName);
+            info += String.format("\t%s: %s\n", storeName, sizeof(pageStore.getPageSizeBytes() * pageStore.getNumberOfPages()));         
+         }
+         catch (Exception e)
+         {
+            info += String.format("\t%s: %s\n", storeName, e.getMessage());
+         }
+      }
+      return info;
+   }
 
    private static long oneKB = 1024;
 

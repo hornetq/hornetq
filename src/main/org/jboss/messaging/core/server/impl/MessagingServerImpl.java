@@ -637,11 +637,6 @@ public class MessagingServerImpl implements MessagingServer
       return remotingService.getConnections().size();
    }
    
-   public long getPagingTotalMemory()
-   {
-      return pagingManager.getTotalMemory();
-   }
-
    public PostOffice getPostOffice()
    {
       return postOffice;
@@ -1035,13 +1030,12 @@ public class MessagingServerImpl implements MessagingServer
 
       pagingManager.resumeDepages();
 
-      final ServerInfo dumper = new ServerInfo(this);
+      final ServerInfo dumper = new ServerInfo(this, pagingManager);
       long dumpInfoInterval = configuration.getServerDumpInterval();
       if (dumpInfoInterval > 0)
       {
          scheduledPool.scheduleWithFixedDelay(new Runnable()
          {
-
             public void run()
             {
                log.info(dumper.dump());
