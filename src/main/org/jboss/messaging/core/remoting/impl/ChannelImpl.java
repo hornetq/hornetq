@@ -150,7 +150,6 @@ public class ChannelImpl implements Channel
 
    public void returnBlocking()
    {
-      sendSemaphore.release(Integer.MAX_VALUE);
       lock.lock();
 
       try
