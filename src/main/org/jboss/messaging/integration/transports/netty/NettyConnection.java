@@ -125,7 +125,7 @@ public class NettyConnection implements Connection
    
    public void write(final MessagingBuffer buffer, final boolean flush)
    {
-      ChannelFuture future = channel.write(buffer.getUnderlyingBuffer());
+      ChannelFuture future = channel.write(buffer.getUnderlyingBuffer());      
       
       if (flush)
       {

@@ -82,6 +82,7 @@ import org.jboss.messaging.core.security.SecurityStore;
 import org.jboss.messaging.core.security.impl.SecurityStoreImpl;
 import org.jboss.messaging.core.server.ActivateCallback;
 import org.jboss.messaging.core.server.Divert;
+import org.jboss.messaging.core.server.MemoryManager;
 import org.jboss.messaging.core.server.MessageReference;
 import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.core.server.Queue;
@@ -173,9 +174,11 @@ public class MessagingServerImpl implements MessagingServer
    private RemotingService remotingService;
 
    private ManagementService managementService;
+   
+   private MemoryManager memoryManager;
 
    private DeploymentManager deploymentManager;
-
+      
    private Deployer basicUserCredentialsDeployer;
 
    private Deployer addressSettingsDeployer;
@@ -382,6 +385,8 @@ public class MessagingServerImpl implements MessagingServer
       threadPool = null;
 
       pagingManager.stop();
+      
+      memoryManager.stop();
 
       pagingManager = null;
       securityStore = null;
@@ -392,6 +397,7 @@ public class MessagingServerImpl implements MessagingServer
       queueFactory = null;
       resourceManager = null;
       messagingServerControl = null;
+      memoryManager = null;
 
       sessions.clear();
 
@@ -747,6 +753,11 @@ public class MessagingServerImpl implements MessagingServer
    {
       activateCallbacks.remove(callback);
    }
+   
+   public ExecutorFactory getExecutorFactory()
+   {
+      return executorFactory;
+   }
 
    // Public
    // ---------------------------------------------------------------------------------------
@@ -874,6 +885,10 @@ public class MessagingServerImpl implements MessagingServer
       managementService = new ManagementServiceImpl(mbeanServer, configuration, managementConnectorID);
       
       remotingService = new RemotingServiceImpl(configuration, this, managementService, threadPool, scheduledPool, managementConnectorID);      
+      
+      memoryManager = new MemoryManagerImpl();
+      
+      memoryManager.start();
    }
    
    private void initialisePart2() throws Exception
@@ -1349,11 +1364,11 @@ public class MessagingServerImpl implements MessagingServer
    {
       if (version.getIncrementingVersion() != incrementingVersion)
       {
-         throw new MessagingException(MessagingException.INCOMPATIBLE_CLIENT_SERVER_VERSIONS,
-                                      "Client with version " + incrementingVersion + " is not compatible with server version " +
+         log.warn("Client with version " + incrementingVersion + " is not compatible with server version " +
                                       version.getFullVersion()  + ". " +
                                       "Please ensure all clients and servers are upgraded to the same version for them to " +
                                       "interoperate");
+         return null;
       }
 
       // Is this comment relevant any more ?

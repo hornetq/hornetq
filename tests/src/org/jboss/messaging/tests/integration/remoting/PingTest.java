@@ -28,7 +28,6 @@ import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.ClientSessionFactory;
 import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
 import org.jboss.messaging.core.client.impl.ClientSessionFactoryInternal;
-import org.jboss.messaging.core.client.impl.ClientSessionInternal;
 import org.jboss.messaging.core.client.impl.ConnectionManagerImpl;
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.TransportConfiguration;
@@ -36,8 +35,6 @@ import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.FailureListener;
 import org.jboss.messaging.core.remoting.RemotingConnection;
-import org.jboss.messaging.core.remoting.impl.RemotingConnectionImpl;
-import org.jboss.messaging.core.remoting.server.impl.RemotingServiceImpl;
 import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.tests.util.ServiceTestBase;
 
@@ -111,6 +108,8 @@ public class PingTest extends ServiceTestBase
       csf.setConnectionTTL(CLIENT_FAILURE_CHECK_PERIOD * 2);
 
       ClientSession session = csf.createSession(false, true, true);
+      
+      log.info("Created session");
 
       assertEquals(1, ((ClientSessionFactoryInternal)csf).numConnections());
 
@@ -231,11 +230,9 @@ public class PingTest extends ServiceTestBase
 
       session.addFailureListener(clientListener);
 
-      RemotingConnectionImpl conn = (RemotingConnectionImpl)((ClientSessionInternal)session).getConnection();
+      // We need to get it to stop pinging after one
 
-      // We need to get it to stop pinging
-
-      ((ConnectionManagerImpl)csf.getConnectionManagers()[0]).cancelPingerForConnectionID(conn.getID());
+      ((ConnectionManagerImpl)csf.getConnectionManagers()[0]).stopPingingAfterOne();
 
       RemotingConnection serverConn = null;
 
@@ -330,7 +327,10 @@ public class PingTest extends ServiceTestBase
 
       serverConn.addFailureListener(serverListener);
 
-      ((RemotingServiceImpl)server.getRemotingService()).stopPingingForConnectionID(serverConn.getID());
+      //((RemotingServiceImpl)server.getRemotingService()).stopPingingForConnectionID(serverConn.getID());
+      
+      //Setting the handler to null will prevent server sending pings back to client
+      serverConn.getChannel(0, -1, false).setHandler(null);
 
       for (int i = 0; i < 1000; i++)
       {
@@ -344,6 +344,7 @@ public class PingTest extends ServiceTestBase
       }
             
       assertNotNull(clientListener.getException());
+      
       //Server connection will be closed too, when client closes client side connection after failure is detected
       assertTrue(server.getRemotingService().getConnections().isEmpty());
 

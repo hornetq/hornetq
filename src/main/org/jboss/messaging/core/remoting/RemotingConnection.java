@@ -75,5 +75,7 @@ public interface RemotingConnection extends BufferHandler
    
    long getBlockingCallTimeout();
    
-   Object getTransferLock();     
+   Object getTransferLock(); 
+   
+   boolean checkDataReceived();
 }

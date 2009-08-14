@@ -40,19 +40,15 @@ public class Ping extends PacketImpl
 
    private long connectionTTL;
 
-   private long clientFailureCheckPeriod;
-
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   public Ping(final long clientFailureCheckPeriod, final long connectionTTL)
+   public Ping(final long connectionTTL)
    {
       super(PING);
 
       this.connectionTTL = connectionTTL;
-
-      this.clientFailureCheckPeriod = clientFailureCheckPeriod;
    }
 
    public Ping()
@@ -66,32 +62,25 @@ public class Ping extends PacketImpl
    {
       return true;
    }
-   
+
    public long getConnectionTTL()
    {
       return connectionTTL;
    }
 
-   public long getClientFailureCheckPeriod()
-   {
-      return clientFailureCheckPeriod;
-   }
-
    public int getRequiredBufferSize()
    {
-      return BASIC_PACKET_SIZE + 2 * DataConstants.SIZE_LONG;
+      return BASIC_PACKET_SIZE + DataConstants.SIZE_LONG;
    }
 
    public void encodeBody(final MessagingBuffer buffer)
    {
       buffer.writeLong(connectionTTL);
-      buffer.writeLong(clientFailureCheckPeriod);
    }
 
    public void decodeBody(final MessagingBuffer buffer)
    {
       connectionTTL = buffer.readLong();
-      clientFailureCheckPeriod = buffer.readLong();
    }
 
    @Override
@@ -99,7 +88,6 @@ public class Ping extends PacketImpl
    {
       StringBuffer buf = new StringBuffer(getParentString());
       buf.append(", connectionTTL=" + connectionTTL);
-      buf.append(", clientFailureCheckPeriod=" + clientFailureCheckPeriod);
       buf.append("]");
       return buf.toString();
    }
@@ -113,8 +101,7 @@ public class Ping extends PacketImpl
 
       Ping r = (Ping)other;
 
-      return super.equals(other) && this.connectionTTL == r.connectionTTL &&
-             this.clientFailureCheckPeriod == r.clientFailureCheckPeriod;
+      return super.equals(other) && this.connectionTTL == r.connectionTTL;
    }
 
    public final boolean isRequiresConfirmations()

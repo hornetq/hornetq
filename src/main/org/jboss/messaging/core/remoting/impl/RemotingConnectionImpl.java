@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.Executor;
 
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
@@ -26,6 +27,7 @@ import org.jboss.messaging.core.remoting.FailureListener;
 import org.jboss.messaging.core.remoting.Interceptor;
 import org.jboss.messaging.core.remoting.Packet;
 import org.jboss.messaging.core.remoting.RemotingConnection;
+import org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl;
 import org.jboss.messaging.core.remoting.spi.Connection;
 import org.jboss.messaging.core.remoting.spi.MessagingBuffer;
 import org.jboss.messaging.utils.SimpleIDGenerator;
@@ -79,9 +81,13 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
    private boolean frozen;
 
    private final Object failLock = new Object();
-   
+
    private final PacketDecoder decoder = new PacketDecoder();
-   
+
+   private volatile boolean dataReceived;
+
+   private final Executor executor;
+
    // Constructors
    // ---------------------------------------------------------------------------------
 
@@ -92,7 +98,7 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
                                  final long blockingCallTimeout,
                                  final List<Interceptor> interceptors)
    {
-      this(transportConnection, blockingCallTimeout, interceptors, true, true);
+      this(transportConnection, blockingCallTimeout, interceptors, true, true, null);
    }
 
    /*
@@ -100,17 +106,19 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
     */
    public RemotingConnectionImpl(final Connection transportConnection,
                                  final List<Interceptor> interceptors,
-                                 final boolean active)
+                                 final boolean active,
+                                 final Executor executor)
 
    {
-      this(transportConnection, -1, interceptors, active, false);           
+      this(transportConnection, -1, interceptors, active, false, executor);
    }
 
    private RemotingConnectionImpl(final Connection transportConnection,
                                   final long blockingCallTimeout,
                                   final List<Interceptor> interceptors,
                                   final boolean active,
-                                  final boolean client)
+                                  final boolean client,
+                                  final Executor executor)
 
    {
       this.transportConnection = transportConnection;
@@ -122,6 +130,8 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
       this.active = active;
 
       this.client = client;
+
+      this.executor = executor;
    }
 
    // RemotingConnection implementation
@@ -294,25 +304,34 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
    {
       return transferLock;
    }
-   
+
    public boolean isActive()
    {
       return active;
    }
-   
+
    public boolean isClient()
    {
       return client;
    }
-   
+
    public boolean isDestroyed()
    {
       return destroyed;
    }
-   
+
    public long getBlockingCallTimeout()
    {
       return blockingCallTimeout;
+   }
+
+   public boolean checkDataReceived()
+   {
+      boolean res = dataReceived;
+
+      dataReceived = false;
+
+      return res;
    }
 
    // Buffer Handler implementation
@@ -322,6 +341,28 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
    {
       final Packet packet = decoder.decode(buffer);
 
+      if (executor == null || packet.getType() == PacketImpl.PING)
+      {
+         // Pings must always be handled out of band so we can send pings back to the client quickly
+         // otherwise they would get in the queue with everything else which might give a intolerable delay
+         doBufferReceived(packet);
+      }
+      else
+      {
+         executor.execute(new Runnable()
+         {
+            public void run()
+            {
+               doBufferReceived(packet);
+            }
+         });
+      }
+
+      dataReceived = true;
+   }
+
+   private void doBufferReceived(final Packet packet)
+   {
       synchronized (transferLock)
       {
          if (!frozen)
@@ -432,5 +473,5 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
          channel.close();
       }
    }
-   
+
 }

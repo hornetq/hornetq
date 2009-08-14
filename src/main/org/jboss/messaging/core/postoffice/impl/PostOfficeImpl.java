@@ -390,7 +390,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
 
                if (info == null)
                {
-                  throw new IllegalStateException("Cannot find queue info for queue " + clusterName);
+                  return;
                }
 
                info.decrementConsumers();

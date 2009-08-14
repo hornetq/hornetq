@@ -103,6 +103,10 @@ public interface Configuration extends Serializable, MessagingComponent
    long getConnectionTTLOverride();
 
    void setConnectionTTLOverride(long ttl);
+   
+   boolean isAsyncConnectionExecutionEnabled();
+   
+   void setEnabledAsyncConnectionExecution(boolean enabled);
 
    Set<TransportConfiguration> getAcceptorConfigurations();
 

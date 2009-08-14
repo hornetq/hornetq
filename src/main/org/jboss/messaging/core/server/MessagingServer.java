@@ -18,7 +18,6 @@ import java.util.Set;
 import javax.management.MBeanServer;
 
 import org.jboss.messaging.core.config.Configuration;
-import org.jboss.messaging.core.deployers.DeploymentManager;
 import org.jboss.messaging.core.management.ManagementService;
 import org.jboss.messaging.core.management.impl.MessagingServerControlImpl;
 import org.jboss.messaging.core.persistence.StorageManager;
@@ -35,6 +34,7 @@ import org.jboss.messaging.core.settings.HierarchicalRepository;
 import org.jboss.messaging.core.settings.impl.AddressSettings;
 import org.jboss.messaging.core.transaction.ResourceManager;
 import org.jboss.messaging.core.version.Version;
+import org.jboss.messaging.utils.ExecutorFactory;
 import org.jboss.messaging.utils.SimpleString;
 import org.jboss.messaging.utils.UUID;
 
@@ -63,11 +63,11 @@ public interface MessagingServer extends MessagingComponent
    Version getVersion();
 
    MessagingServerControlImpl getMessagingServerControl();
-   
+
    void registerActivateCallback(ActivateCallback callback);
-   
+
    void unregisterActivateCallback(ActivateCallback callback);
-    
+
    ReattachSessionResponseMessage reattachSession(RemotingConnection connection, String name, int lastReceivedCommandID) throws Exception;
 
    CreateSessionResponseMessage createSession(String name,
@@ -141,9 +141,10 @@ public interface MessagingServer extends MessagingComponent
                      SimpleString filterString,
                      boolean durable,
                      boolean temporary) throws Exception;
-   
+
    void destroyQueue(SimpleString queueName, ServerSession session) throws Exception;
 
    void handleReplicateRedistribution(final SimpleString queueName, final long messageID) throws Exception;
 
+   ExecutorFactory getExecutorFactory();
 }

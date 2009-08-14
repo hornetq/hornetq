@@ -66,6 +66,8 @@ public class ConfigurationImpl implements Configuration
    public static final boolean DEFAULT_JMX_MANAGEMENT_ENABLED = true;
 
    public static final long DEFAULT_CONNECTION_TTL_OVERRIDE = -1;
+   
+   public static final boolean DEFAULT_ASYNC_CONNECTION_EXECUTION_ENABLED = true;
 
    public static final String DEFAULT_BINDINGS_DIRECTORY = "data/bindings";
 
@@ -182,7 +184,9 @@ public class ConfigurationImpl implements Configuration
    protected boolean jmxManagementEnabled = DEFAULT_JMX_MANAGEMENT_ENABLED;
 
    protected long connectionTTLOverride = DEFAULT_CONNECTION_TTL_OVERRIDE;
-
+   
+   protected boolean asyncConnectionExecutionEnabled = DEFAULT_ASYNC_CONNECTION_EXECUTION_ENABLED;
+   
    protected long messageExpiryScanPeriod = DEFAULT_MESSAGE_EXPIRY_SCAN_PERIOD;
 
    protected int messageExpiryThreadPriority = DEFAULT_MESSAGE_EXPIRY_THREAD_PRIORITY;
@@ -409,6 +413,16 @@ public class ConfigurationImpl implements Configuration
    public void setConnectionTTLOverride(final long ttl)
    {
       connectionTTLOverride = ttl;
+   }
+   
+   public boolean isAsyncConnectionExecutionEnabled()
+   {
+      return asyncConnectionExecutionEnabled;
+   }
+   
+   public void setEnabledAsyncConnectionExecution(final boolean enabled)
+   {
+      asyncConnectionExecutionEnabled = enabled;
    }
 
    public List<String> getInterceptorClassNames()

@@ -135,6 +135,8 @@ public class FileConfiguration extends ConfigurationImpl
       securityInvalidationInterval = getLong(e, "security-invalidation-interval", securityInvalidationInterval, GT_ZERO);
 
       connectionTTLOverride = getLong(e, "connection-ttl-override", connectionTTLOverride, MINUS_ONE_OR_GT_ZERO);
+      
+      asyncConnectionExecutionEnabled = getBoolean(e, "async-connection-execution-enabled", asyncConnectionExecutionEnabled);
 
       transactionTimeout = getLong(e, "transaction-timeout", transactionTimeout, GT_ZERO);
 

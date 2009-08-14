@@ -24,14 +24,12 @@ package org.jboss.messaging.tests.integration.jms;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_AUTO_GROUP;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CACHE_LARGE_MESSAGE_CLIENT;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CONNECTION_TTL;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CONSUMER_MAX_RATE;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CONSUMER_WINDOW_SIZE;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_MAX_CONNECTIONS;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_MIN_LARGE_MESSAGE_SIZE;
-import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_PRE_ACKNOWLEDGE;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_PRODUCER_MAX_RATE;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_PRODUCER_WINDOW_SIZE;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE;
@@ -49,7 +47,6 @@ import javax.jms.Message;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
 import javax.jms.Session;
-import javax.jms.Topic;
 
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.TransportConfiguration;
@@ -157,7 +154,7 @@ public class FloodServerTest extends UnitTestCase
       serverManager.createConnectionFactory("ManualReconnectionToSingleServerTest",
                                             connectorConfigs,
                                             null,
-                                            DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
+                                            1000,
                                             DEFAULT_CONNECTION_TTL,
                                             callTimeout,
                                             DEFAULT_MAX_CONNECTIONS,
@@ -185,116 +182,100 @@ public class FloodServerTest extends UnitTestCase
                                             jndiBindings);
    }
 
-   
-   public void testFoo()
-   {      
-   }
-   
-   public void _testFlood() throws Exception
-   {      
-      Connection connection = null;
       
-      try
+    public void testFoo()
+    {
+    }
+
+   public void _testFlood() throws Exception
+   {
+      ConnectionFactory cf = (ConnectionFactory)initialContext.lookup("/cf");
+
+      final int numProducers = 20;
+
+      final int numConsumers = 20;
+
+      final int numMessages = 10000;
+
+      ProducerThread[] producers = new ProducerThread[numProducers];
+
+      for (int i = 0; i < numProducers; i++)
       {
-         ConnectionFactory cf = (ConnectionFactory)initialContext.lookup("/cf");
-         
-         connection = cf.createConnection();
-         
-         final int numProducers = 20;
-         
-         final int numConsumers = 20;
-         
-         final int numMessages = 100000;
-         
-         ProducerThread[] producers = new ProducerThread[numProducers];
-         
-         for (int i = 0; i < numProducers; i++)
-         {
-            producers[i] = new ProducerThread(cf, numMessages);
-         }
-         
-         ConsumerThread[] consumers = new ConsumerThread[numConsumers];
-         
-         for (int i = 0; i < numConsumers; i++)
-         {
-            consumers[i] = new ConsumerThread(cf, numMessages);
-         }
-         
-         
-         for (int i = 0; i < numConsumers; i++)
-         {
-            consumers[i].start();
-         }
-         
-         for (int i = 0; i < numProducers; i++)
-         {
-            producers[i].start();
-         }
-         
-         for (int i = 0; i < numConsumers; i++)
-         {
-            consumers[i].join();
-         }
-         
-         for (int i = 0; i < numProducers; i++)
-         {
-            producers[i].join();
-         }
-         
+         producers[i] = new ProducerThread(cf, numMessages);
       }
-      finally
+
+      ConsumerThread[] consumers = new ConsumerThread[numConsumers];
+
+      for (int i = 0; i < numConsumers; i++)
       {
-         if (connection != null)
-         {
-            connection.close();
-         }
+         consumers[i] = new ConsumerThread(cf, numMessages);
       }
-    
+
+      for (int i = 0; i < numConsumers; i++)
+      {
+         consumers[i].start();
+      }
+
+      for (int i = 0; i < numProducers; i++)
+      {
+         producers[i].start();
+      }
+
+      for (int i = 0; i < numConsumers; i++)
+      {
+         consumers[i].join();
+      }
+
+      for (int i = 0; i < numProducers; i++)
+      {
+         producers[i].join();
+      }
+
    }
-   
+
    class ProducerThread extends Thread
    {
       private Connection connection;
-      
+
       private Session session;
-      
+
       private MessageProducer producer;
-      
+
       private int numMessages;
-                 
+
       ProducerThread(ConnectionFactory cf, int numMessages) throws Exception
       {
          connection = cf.createConnection();
-         
+
          session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         
+
          producer = session.createProducer(new JBossTopic("my-topic"));
-         
+
          producer.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
-         
+
          this.numMessages = numMessages;
       }
-      
+
       public void run()
       {
          try
          {
             byte[] bytes = new byte[1000];
-            
+
             BytesMessage message = session.createBytesMessage();
-            
+
             message.writeBytes(bytes);
-            
+
             for (int i = 0; i < numMessages; i++)
             {
                producer.send(message);
-               
-               if (i % 1000 == 0)
-               {
-                  log.info("Producer " + this + " sent " + i);
-               }
+
+//               if (i % 1000 == 0)
+//               {
+//                  log.info("Producer " + this + " sent " + i);
+//               }
             }
-            
+
             connection.close();
          }
          catch (Exception e)
@@ -303,50 +284,50 @@ public class FloodServerTest extends UnitTestCase
          }
       }
    }
-   
+
    class ConsumerThread extends Thread
    {
       private Connection connection;
-      
+
       private Session session;
-      
+
       private MessageConsumer consumer;
-      
+
       private int numMessages;
-                 
+
       ConsumerThread(ConnectionFactory cf, int numMessages) throws Exception
       {
          connection = cf.createConnection();
-         
+
          connection.start();
-         
+
          session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         
+
          consumer = session.createConsumer(new JBossTopic("my-topic"));
-         
+
          this.numMessages = numMessages;
       }
-      
+
       public void run()
       {
          try
-         {                        
+         {
             for (int i = 0; i < numMessages; i++)
             {
                Message msg = consumer.receive();
-               
+
                if (msg == null)
                {
                   log.error("message is null");
                   break;
                }
-               
-               if (i % 1000 == 0)
-               {
-                  log.info("Consumer " + this + " received " + i);
-               }
+
+//               if (i % 1000 == 0)
+//               {
+//                  log.info("Consumer " + this + " received " + i);
+//               }
             }
-            
+
             connection.close();
          }
          catch (Exception e)
@@ -355,5 +336,5 @@ public class FloodServerTest extends UnitTestCase
          }
       }
    }
-   
+
 }

@@ -565,13 +565,6 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
          this.bridge = bridge;
       }
 
-      // public synchronized void reset() throws Exception
-      // {
-      // clearBindings();
-      //
-      // firstReset = false;
-      // }
-
       public synchronized void onMessage(final ClientMessage message)
       {
          try

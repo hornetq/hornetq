@@ -107,7 +107,7 @@ public class ReplicateConnectionFailureTest extends UnitTestCase
 
       final RemotingConnectionImpl conn1 = (RemotingConnectionImpl)((ClientSessionImpl)session1).getConnection();
 
-      ((ConnectionManagerImpl)sf1.getConnectionManagers()[0]).cancelPingerForConnectionID(conn1.getID());
+      ((ConnectionManagerImpl)sf1.getConnectionManagers()[0]).stopPingingAfterOne();
 
       for (int i = 0; i < 1000; i++)
       {

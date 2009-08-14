@@ -36,8 +36,6 @@ import org.jboss.messaging.core.server.MessagingComponent;
  */
 public interface RemotingService extends MessagingComponent
 {
-   RemotingConnection getConnection(Object remotingConnectionID);
-
    /**
     * Remove a connection from the connections held by the remoting service.
     * <strong>This method must be used only from the management API.

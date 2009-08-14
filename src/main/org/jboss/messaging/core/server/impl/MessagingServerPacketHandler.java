@@ -212,6 +212,11 @@ public class MessagingServerPacketHandler implements ChannelHandler
                                          request.isPreAcknowledge(),
                                          request.isXA(),
                                          request.getWindowSize());
+         
+         if (response == null)
+         {
+            response = new MessagingExceptionMessage(new MessagingException(MessagingException.INCOMPATIBLE_CLIENT_SERVER_VERSIONS));
+         }
       }
       catch (Exception e)
       {

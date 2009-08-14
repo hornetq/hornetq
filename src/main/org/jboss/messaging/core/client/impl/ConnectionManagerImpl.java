@@ -51,7 +51,6 @@ import org.jboss.messaging.core.remoting.FailureListener;
 import org.jboss.messaging.core.remoting.Packet;
 import org.jboss.messaging.core.remoting.RemotingConnection;
 import org.jboss.messaging.core.remoting.impl.AbstractBufferHandler;
-import org.jboss.messaging.core.remoting.impl.Pinger;
 import org.jboss.messaging.core.remoting.impl.RemotingConnectionImpl;
 import org.jboss.messaging.core.remoting.impl.wireformat.CreateSessionMessage;
 import org.jboss.messaging.core.remoting.impl.wireformat.CreateSessionResponseMessage;
@@ -146,10 +145,12 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
    private volatile boolean closed;
 
    private Set<FailureListener> listeners = new ConcurrentHashSet<FailureListener>();
-   
+
    private Connector connector;
 
-   private Map<Object, Pinger> pingers = new ConcurrentHashMap<Object, Pinger>();
+   private Future<?> pingerFuture;
+
+   private PingRunnable pingRunnable;
 
    // debug
 
@@ -229,7 +230,7 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
 
       this.orderedExecutorFactory = new OrderedExecutorFactory(threadPool);
    }
-   
+
    // ConnectionLifeCycleListener implementation --------------------------------------------------
 
    public void connectionCreated(final Connection connection)
@@ -450,7 +451,7 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
    }
 
    public int numSessions()
-   {   
+   {
       return sessions.size();
    }
 
@@ -473,7 +474,7 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
 
       closed = true;
    }
-   
+
    public void addFailureListener(FailureListener listener)
    {
       listeners.add(listener);
@@ -484,16 +485,8 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
       return listeners.remove(listener);
    }
 
-
    // Public
    // ---------------------------------------------------------------------------------------
-
-   public void cancelPingerForConnectionID(final Object connectionID)
-   {
-      Pinger pinger = pingers.get(connectionID);
-
-      pinger.close();
-   }
 
    @Override
    protected void finalize() throws Throwable
@@ -502,6 +495,13 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
       causeExit();
 
       super.finalize();
+   }
+
+   private volatile boolean stopPingingAfterOne;
+
+   public void stopPingingAfterOne()
+   {
+      this.stopPingingAfterOne = true;
    }
 
    // Protected
@@ -610,7 +610,7 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
                oldConnections.add(entry.connection);
             }
 
-            closePingers();
+            // closePingers();
 
             connections.clear();
 
@@ -661,8 +661,8 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
                {
                   connection.destroy();
                }
-               
-               closeConnectionsAndCallFailureListeners(me);               
+
+               closeConnectionsAndCallFailureListeners(me);
             }
          }
          else
@@ -671,24 +671,24 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
          }
       }
    }
-   
+
    private void closeConnectionsAndCallFailureListeners(final MessagingException me)
    {
       refCount = 0;
       mapIterator = null;
       checkCloseConnections();
-      
-      //TODO (after beta5) should really execute on different thread then remove the async in JBossConnection
-      
-//      threadPool.execute(new Runnable()
-//      {
-//         public void run()
-//         {
-            callFailureListeners(me);
-//         }
-//      });      
+
+      // TODO (after beta5) should really execute on different thread then remove the async in JBossConnection
+
+      // threadPool.execute(new Runnable()
+      // {
+      // public void run()
+      // {
+      callFailureListeners(me);
+      // }
+      // });
    }
-   
+
    private void callFailureListeners(final MessagingException me)
    {
       final List<FailureListener> listenersClone = new ArrayList<FailureListener>(listeners);
@@ -707,16 +707,6 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
             log.error("Failed to execute failure listener", t);
          }
       }
-   }
-
-   private void closePingers()
-   {
-      for (Pinger pinger : pingers.values())
-      {
-         pinger.close();
-      }
-
-      pingers.clear();
    }
 
    /*
@@ -867,7 +857,16 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
 
          Set<ConnectionEntry> copy = new HashSet<ConnectionEntry>(connections.values());
 
-         closePingers();
+         if (pingerFuture != null)
+         {
+            pingRunnable.cancel();
+
+            pingerFuture.cancel(false);
+
+            pingRunnable = null;
+
+            pingerFuture = null;
+         }
 
          connections.clear();
 
@@ -989,33 +988,21 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
 
          conn.addFailureListener(new DelegatingFailureListener(conn.getID()));
 
-         connections.put(conn.getID(), new ConnectionEntry(conn, connector));
+         conn.getChannel(0, -1, false).setHandler(new Channel0Handler(conn));
 
-         // Send the initial ping, we always do this it contains connectionTTL and clientFailureInterval -
-         // the server needs this in order to do pinging and failure checking
+         connections.put(conn.getID(), new ConnectionEntry(conn,
+                                                           connector,
+                                                           clientFailureCheckPeriod,
+                                                           System.currentTimeMillis()));
 
-         Pinger pinger = new Pinger(conn,
-                                    clientFailureCheckPeriod,
-                                    new Channel0Handler(conn),
-                                    new FailedConnectionAction(conn),
-                                    0);
-
-         pingers.put(conn.getID(), pinger);
-
-         Ping ping = new Ping(clientFailureCheckPeriod, connectionTTL);
-
-         Channel channel0 = conn.getChannel(0, -1, false);
-
-         channel0.send(ping);
-
-         if (clientFailureCheckPeriod != -1)
+         if (clientFailureCheckPeriod != -1 && pingerFuture == null)
          {
-            Future<?> pingerFuture = scheduledThreadPool.scheduleWithFixedDelay(pinger,
-                                                                                clientFailureCheckPeriod,
-                                                                                clientFailureCheckPeriod,
-                                                                                TimeUnit.MILLISECONDS);
+            pingRunnable = new PingRunnable();
 
-            pinger.setFuture(pingerFuture);
+            pingerFuture = scheduledThreadPool.scheduleWithFixedDelay(pingRunnable,
+                                                                      0,
+                                                                      clientFailureCheckPeriod,
+                                                                      TimeUnit.MILLISECONDS);
          }
 
          if (debug)
@@ -1144,51 +1131,33 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
                                                    "The connection was closed by the server"));
                }
             });
-         }
-         else
-         {
-            throw new IllegalArgumentException("Invalid packet: " + packet);
-         }
-      }
-   }
-
-   private class FailedConnectionAction implements Runnable
-   {
-      private RemotingConnection conn;
-
-      FailedConnectionAction(final RemotingConnection conn)
-      {
-         this.conn = conn;
-      }
-
-      public synchronized void run()
-      {
-         final MessagingException me = new MessagingException(MessagingException.CONNECTION_TIMEDOUT,
-                                                              "Did not receive ping from server for " + conn.getTransportConnection());
-
-         threadPool.execute(new Runnable()
-         {
-            // Must be executed on different thread
-            public void run()
-            {
-               conn.fail(me);
-            }
-         });
+         }         
       }
    }
 
    private static class ConnectionEntry
    {
-      ConnectionEntry(final RemotingConnection connection, final Connector connector)
+      ConnectionEntry(final RemotingConnection connection,
+                      final Connector connector,
+                      final long expiryPeriod,
+                      final long createTime)
       {
          this.connection = connection;
 
          this.connector = connector;
+
+         this.expiryPeriod = expiryPeriod;
+
+         this.lastCheck = createTime;
       }
 
       final RemotingConnection connection;
 
       final Connector connector;
+
+      volatile long lastCheck;
+
+      final long expiryPeriod;
    }
 
    private class DelegatingBufferHandler extends AbstractBufferHandler
@@ -1260,6 +1229,70 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
          {
             conn.fail(new MessagingException(MessagingException.INTERNAL_ERROR, "blah"));
          }
+      }
+   }
+
+   private class PingRunnable implements Runnable
+   {
+      private boolean cancelled;
+
+      private boolean first;
+
+      public synchronized void run()
+      {
+         if (cancelled || (stopPingingAfterOne && !first))
+         {
+            return;
+         }
+         
+         first = false;
+
+         synchronized (connections)
+         {
+            long now = System.currentTimeMillis();
+
+            for (ConnectionEntry entry : connections.values())
+            {
+               final RemotingConnection connection = entry.connection;
+               
+               if (entry.expiryPeriod != -1 && now >= entry.lastCheck + entry.expiryPeriod)
+               {
+                  if (!connection.checkDataReceived())
+                  {
+                     final MessagingException me = new MessagingException(MessagingException.CONNECTION_TIMEDOUT,
+                                                                          "Did not receive data from server for " + connection.getTransportConnection());
+
+                     threadPool.execute(new Runnable()
+                     {
+                        // Must be executed on different thread
+                        public void run()
+                        {
+                           connection.fail(me);
+                        }
+                     });
+                     
+                     return;
+                  }
+                  else
+                  {
+                     entry.lastCheck = now;
+                  }
+               }
+               
+               // Send a ping
+
+               Ping ping = new Ping(connectionTTL);
+
+               Channel channel0 = connection.getChannel(0, -1, false);
+
+               channel0.send(ping);
+            }
+         }
+      }
+
+      public synchronized void cancel()
+      {
+         cancelled = true;
       }
    }
 
