@@ -5,7 +5,7 @@
    <bean name="Naming" class="org.jnp.server.NamingBeanImpl"/>
 
    <!-- JNDI server. Disable this if you don't want JNDI -->
-   <bean name="JNDIServer" class="org.jnp.server.Main">
+   <bean name="JNDIServer" class="org.jboss.test.messaging.tools.WrappedJNDIServer">
       <property name="namingInfo">
          <inject bean="Naming"/>
       </property>
