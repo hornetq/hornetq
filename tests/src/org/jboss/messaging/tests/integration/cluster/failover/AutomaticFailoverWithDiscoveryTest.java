@@ -28,6 +28,7 @@ import org.jboss.messaging.core.client.ClientProducer;
 import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
 import org.jboss.messaging.core.client.impl.ClientSessionImpl;
+import org.jboss.messaging.core.client.impl.ClientSessionInternal;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.RemotingConnection;
@@ -89,7 +90,7 @@ public class AutomaticFailoverWithDiscoveryTest extends FailoverTestBase
          producer.send(message);
       }
 
-      RemotingConnection conn1 = ((ClientSessionImpl)session).getConnection();
+      RemotingConnection conn1 = ((ClientSessionInternal)session).getConnection();
 
       // Simulate failure on connection
       conn1.fail(new MessagingException(MessagingException.NOT_CONNECTED));

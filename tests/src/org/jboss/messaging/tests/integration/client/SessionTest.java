@@ -21,12 +21,15 @@
  */
 package org.jboss.messaging.tests.integration.client;
 
+import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+
 import org.jboss.messaging.core.client.ClientConsumer;
 import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.client.ClientProducer;
 import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.ClientSessionFactory;
-import org.jboss.messaging.core.client.impl.ClientSessionImpl;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.remoting.FailureListener;
 import org.jboss.messaging.core.remoting.impl.wireformat.SessionBindingQueryResponseMessage;
@@ -35,10 +38,6 @@ import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.tests.util.ServiceTestBase;
 import org.jboss.messaging.utils.SimpleString;
-
-import java.util.List;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 
 /**
  * This test covers the API for ClientSession altho XA tests are tested seperately.
@@ -372,7 +371,7 @@ public class SessionTest extends ServiceTestBase
       {
          server.start();
          ClientSessionFactory cf = createInVMFactory();
-         ClientSessionImpl clientSession = (ClientSessionImpl) cf.createSession(false, true, true);
+         ClientSession clientSession = cf.createSession(false, true, true);
          clientSession.createQueue(queueName, queueName, false);
          clientSession.start();
          clientSession.close();
@@ -393,7 +392,7 @@ public class SessionTest extends ServiceTestBase
       {
          server.start();
          ClientSessionFactory cf = createInVMFactory();
-         ClientSessionImpl clientSession = (ClientSessionImpl) cf.createSession(false, true, true);
+         ClientSession clientSession = cf.createSession(false, true, true);
          clientSession.createQueue(queueName, queueName, false);
          clientSession.start();
          clientSession.stop();
@@ -415,7 +414,7 @@ public class SessionTest extends ServiceTestBase
       {
          server.start();
          ClientSessionFactory cf = createInVMFactory();
-         ClientSessionImpl clientSession = (ClientSessionImpl) cf.createSession(false, false, true);
+         ClientSession clientSession = cf.createSession(false, false, true);
          clientSession.createQueue(queueName, queueName, false);
          ClientProducer cp = clientSession.createProducer(queueName);
          cp.send(clientSession.createClientMessage(false));
@@ -450,7 +449,7 @@ public class SessionTest extends ServiceTestBase
       {
          server.start();
          ClientSessionFactory cf = createInVMFactory();
-         ClientSessionImpl clientSession = (ClientSessionImpl) cf.createSession(false, false, true);
+         ClientSession clientSession = cf.createSession(false, false, true);
          clientSession.createQueue(queueName, queueName, false);
          ClientProducer cp = clientSession.createProducer(queueName);
          cp.send(clientSession.createClientMessage(false));
@@ -490,9 +489,9 @@ public class SessionTest extends ServiceTestBase
          ClientSessionFactory cf = createInVMFactory();
          cf.setBlockOnNonPersistentSend(true);
          cf.setBlockOnPersistentSend(true);
-         ClientSessionImpl sendSession = (ClientSessionImpl) cf.createSession(false, true, true);
+         ClientSession sendSession = cf.createSession(false, true, true);
          ClientProducer cp = sendSession.createProducer(queueName);
-         ClientSessionImpl clientSession = (ClientSessionImpl) cf.createSession(false, true, false);
+         ClientSession clientSession = cf.createSession(false, true, false);
          clientSession.createQueue(queueName, queueName, false);
          cp.send(clientSession.createClientMessage(false));
          cp.send(clientSession.createClientMessage(false));
@@ -561,9 +560,9 @@ public class SessionTest extends ServiceTestBase
          ClientSessionFactory cf = createInVMFactory();
          cf.setBlockOnNonPersistentSend(true);
          cf.setBlockOnPersistentSend(true);
-         ClientSessionImpl sendSession = (ClientSessionImpl) cf.createSession(false, true, true);
+         ClientSession sendSession = cf.createSession(false, true, true);
          ClientProducer cp = sendSession.createProducer(queueName);
-         ClientSessionImpl clientSession = (ClientSessionImpl) cf.createSession(false, true, false);
+         ClientSession clientSession = cf.createSession(false, true, false);
          clientSession.createQueue(queueName, queueName, false);
          cp.send(clientSession.createClientMessage(false));
          cp.send(clientSession.createClientMessage(false));

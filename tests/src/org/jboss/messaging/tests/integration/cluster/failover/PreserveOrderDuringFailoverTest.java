@@ -28,6 +28,7 @@ import org.jboss.messaging.core.client.ClientProducer;
 import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.ClientSessionFactory;
 import org.jboss.messaging.core.client.impl.ClientSessionImpl;
+import org.jboss.messaging.core.client.impl.ClientSessionInternal;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.remoting.Interceptor;
@@ -81,7 +82,7 @@ public class PreserveOrderDuringFailoverTest extends FailoverTestBase
 
       ClientSession session = sf.createSession(false, true, true);
 
-      final RemotingConnection conn1 = ((ClientSessionImpl)session).getConnection();
+      final RemotingConnection conn1 = ((ClientSessionInternal)session).getConnection();
 
       session.createQueue(ADDRESS, ADDRESS, null, false);
 

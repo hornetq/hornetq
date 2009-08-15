@@ -33,6 +33,7 @@ import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.ClientSessionFactory;
 import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
 import org.jboss.messaging.core.client.impl.ClientSessionImpl;
+import org.jboss.messaging.core.client.impl.ClientSessionInternal;
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.exception.MessagingException;
@@ -121,7 +122,7 @@ public class LargeMessageCleanupTest extends LargeMessageTestBase
             log.info("calling cb onwrite** ");
             if (counter.incrementAndGet() == 5)
             {
-               RemotingConnectionImpl conn = (RemotingConnectionImpl)((ClientSessionImpl)session).getConnection();
+               RemotingConnectionImpl conn = (RemotingConnectionImpl)((ClientSessionInternal)session).getConnection();
                RemotingServiceImpl remotingServiceImpl = (RemotingServiceImpl)server.getRemotingService();
                remotingServiceImpl.connectionException(conn.getID(),
                                                        new MessagingException(MessagingException.NOT_CONNECTED, "blah!"));

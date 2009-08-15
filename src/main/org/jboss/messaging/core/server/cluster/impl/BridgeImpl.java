@@ -366,7 +366,7 @@ public class BridgeImpl implements Bridge, FailureListener, SendAcknowledgementH
       }
       else
       {
-         return ((ClientSessionImpl)session).getConnection();
+         return ((ClientSessionInternal)session).getConnection();
       }
    }
 

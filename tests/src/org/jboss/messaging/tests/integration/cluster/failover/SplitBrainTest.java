@@ -34,6 +34,7 @@ import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
 import org.jboss.messaging.core.client.impl.ClientSessionFactoryInternal;
 import org.jboss.messaging.core.client.impl.ClientSessionImpl;
+import org.jboss.messaging.core.client.impl.ClientSessionInternal;
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
@@ -128,7 +129,7 @@ public class SplitBrainTest extends UnitTestCase
       Thread.sleep(2000);
       
       //Fail client connection      
-      ((ClientSessionImpl)session).getConnection().fail(new MessagingException(MessagingException.NOT_CONNECTED, "simulated failure b/w client and live node"));
+      ((ClientSessionInternal)session).getConnection().fail(new MessagingException(MessagingException.NOT_CONNECTED, "simulated failure b/w client and live node"));
 
       ClientConsumer consumer1 = session.createConsumer(ADDRESS);
 

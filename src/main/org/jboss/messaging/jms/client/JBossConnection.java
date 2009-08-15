@@ -22,6 +22,7 @@
 
 package org.jboss.messaging.jms.client;
 
+import java.lang.ref.WeakReference;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -435,7 +436,9 @@ public class JBossConnection implements Connection, QueueConnection, TopicConnec
    {
       if (!closed)
       {
-         log.warn("I'm closing a connection you left open. Please make sure you close all connections explicitly " + "before letting them go out of scope!");
+         log.warn("I'm closing a connection you left open. Please make sure you close all connections explicitly " +
+                  "before letting them go out of scope!");
+         
          close();
       }
    }
@@ -528,28 +531,44 @@ public class JBossConnection implements Connection, QueueConnection, TopicConnec
 
    // Inner classes --------------------------------------------------------------------------------
 
-   private class JMSFailureListener implements FailureListener
+   private static class JMSFailureListener implements FailureListener
    {
+      private WeakReference<JBossConnection> connectionRef;
+      
       public synchronized void connectionFailed(final MessagingException me)
       {
          if (me == null)
          {
             return;
          }
-
-         if (exceptionListener != null)
+         
+         JBossConnection conn = connectionRef.get();
+         
+         if (conn != null)
          {
-            final JMSException je = new JMSException(me.toString());
-
-            je.initCause(me);
-
-            new Thread(new Runnable()
+            try
             {
-               public void run()
+               final ExceptionListener exceptionListener = conn.getExceptionListener();
+               
+               if (exceptionListener != null)
                {
-                  exceptionListener.onException(je);
+                  final JMSException je = new JMSException(me.toString());
+      
+                  je.initCause(me);
+      
+                  new Thread(new Runnable()
+                  {
+                     public void run()
+                     {
+                        exceptionListener.onException(je);
+                     }
+                  }).start();
                }
-            }).start();
+            }
+            catch (JMSException e)
+            {
+               log.error("Failed to get exception listener");
+            }
          }
       }
 

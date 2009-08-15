@@ -32,9 +32,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.ClientSessionFactory;
 import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
-import org.jboss.messaging.core.client.impl.ClientSessionImpl;
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.config.cluster.BroadcastGroupConfiguration;
@@ -130,7 +130,7 @@ public class SessionFactoryTest extends ServiceTestBase
                              ClientSessionFactoryImpl.DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN);
          try
          {
-            ClientSessionImpl session = (ClientSessionImpl)cf.createSession(false, true, true);
+            ClientSession session = cf.createSession(false, true, true);
             fail("Should throw exception");
          }
          catch (MessagingException e)
@@ -142,7 +142,7 @@ public class SessionFactoryTest extends ServiceTestBase
                                                                                                                                this.backupTC);
          staticConnectors.add(pair0);
          cf.setStaticConnectors(staticConnectors);
-         ClientSessionImpl session = (ClientSessionImpl)cf.createSession(false, true, true);
+         ClientSession session = cf.createSession(false, true, true);
          assertNotNull(session);
          session.close();
          testSettersThrowException(cf);
@@ -188,7 +188,7 @@ public class SessionFactoryTest extends ServiceTestBase
                              ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL_MULTIPLIER,
                              ClientSessionFactoryImpl.DEFAULT_RECONNECT_ATTEMPTS,
                              ClientSessionFactoryImpl.DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN);
-         ClientSessionImpl session = (ClientSessionImpl)cf.createSession(false, true, true);
+         ClientSession session = cf.createSession(false, true, true);
          assertNotNull(session);
          session.close();
          testSettersThrowException(cf);
@@ -239,7 +239,7 @@ public class SessionFactoryTest extends ServiceTestBase
                              ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL_MULTIPLIER,
                              ClientSessionFactoryImpl.DEFAULT_RECONNECT_ATTEMPTS,
                              ClientSessionFactoryImpl.DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN);
-         ClientSessionImpl session = (ClientSessionImpl)cf.createSession(false, true, true);
+         ClientSession session = cf.createSession(false, true, true);
          assertNotNull(session);
          session.close();
          testSettersThrowException(cf);
@@ -290,7 +290,7 @@ public class SessionFactoryTest extends ServiceTestBase
                              ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL_MULTIPLIER,
                              ClientSessionFactoryImpl.DEFAULT_RECONNECT_ATTEMPTS,
                              ClientSessionFactoryImpl.DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN);
-         ClientSessionImpl session = (ClientSessionImpl)cf.createSession(false, true, true);
+         ClientSession session = cf.createSession(false, true, true);
          assertNotNull(session);
          session.close();
          testSettersThrowException(cf);
@@ -341,7 +341,7 @@ public class SessionFactoryTest extends ServiceTestBase
                              ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL_MULTIPLIER,
                              ClientSessionFactoryImpl.DEFAULT_RECONNECT_ATTEMPTS,
                              ClientSessionFactoryImpl.DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN);
-         ClientSessionImpl session = (ClientSessionImpl)cf.createSession(false, true, true);
+         ClientSession session = cf.createSession(false, true, true);
          assertNotNull(session);
          session.close();
          testSettersThrowException(cf);

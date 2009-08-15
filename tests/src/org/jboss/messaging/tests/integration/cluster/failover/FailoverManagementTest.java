@@ -35,6 +35,7 @@ import org.jboss.messaging.core.client.impl.ClientMessageImpl;
 import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
 import org.jboss.messaging.core.client.impl.ClientSessionFactoryInternal;
 import org.jboss.messaging.core.client.impl.ClientSessionImpl;
+import org.jboss.messaging.core.client.impl.ClientSessionInternal;
 import org.jboss.messaging.core.client.management.impl.ManagementHelper;
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.TransportConfiguration;
@@ -123,7 +124,7 @@ public class FailoverManagementTest extends UnitTestCase
                             
       ClientConsumer consumer1 = session1.createConsumer(replyTo);
                  
-      final RemotingConnection conn1 = ((ClientSessionImpl)session1).getConnection();
+      final RemotingConnection conn1 = ((ClientSessionInternal)session1).getConnection();
  
       conn1.fail(new MessagingException(MessagingException.NOT_CONNECTED));
       
@@ -224,7 +225,7 @@ public class FailoverManagementTest extends UnitTestCase
          if (i == 0)
          {
             //Fail after receipt but before ack
-            final RemotingConnection conn1 = ((ClientSessionImpl)session1).getConnection();
+            final RemotingConnection conn1 = ((ClientSessionInternal)session1).getConnection();
             
             conn1.fail(new MessagingException(MessagingException.NOT_CONNECTED));
          }

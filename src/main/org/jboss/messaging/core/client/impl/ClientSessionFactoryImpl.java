@@ -911,15 +911,6 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
 
    // Protected ------------------------------------------------------------------------------
 
-   @Override
-   protected void finalize() throws Throwable
-   {
-      // In case user forgets to close it explicitly
-      close();
-
-      super.finalize();
-   }
-
    // Private --------------------------------------------------------------------------------
 
    private void checkWrite()

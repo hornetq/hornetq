@@ -32,6 +32,7 @@ import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
 import org.jboss.messaging.core.client.impl.ClientSessionFactoryInternal;
 import org.jboss.messaging.core.client.impl.ClientSessionImpl;
+import org.jboss.messaging.core.client.impl.ClientSessionInternal;
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
@@ -124,7 +125,7 @@ public class ReconnectWithBackupTest extends UnitTestCase
          }
          ClientConsumer consumer = session.createConsumer(ADDRESS);
 
-         RemotingConnection conn = ((ClientSessionImpl)session).getConnection();
+         RemotingConnection conn = ((ClientSessionInternal)session).getConnection();
 
          conn.fail(new MessagingException(MessagingException.NOT_CONNECTED));
 
@@ -195,7 +196,7 @@ public class ReconnectWithBackupTest extends UnitTestCase
       }
       ClientConsumer consumer = session.createConsumer(ADDRESS);
 
-      RemotingConnection conn = ((ClientSessionImpl)session).getConnection();
+      RemotingConnection conn = ((ClientSessionInternal)session).getConnection();
 
       conn.fail(new MessagingException(MessagingException.NOT_CONNECTED));
 
@@ -236,7 +237,7 @@ public class ReconnectWithBackupTest extends UnitTestCase
 
          // Now fail again - should reconnect to the backup node
 
-         conn = ((ClientSessionImpl)session).getConnection();
+         conn = ((ClientSessionInternal)session).getConnection();
 
          conn.fail(new MessagingException(MessagingException.NOT_CONNECTED));
 

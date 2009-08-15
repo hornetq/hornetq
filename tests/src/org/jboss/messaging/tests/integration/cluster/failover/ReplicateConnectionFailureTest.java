@@ -29,6 +29,7 @@ import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
 import org.jboss.messaging.core.client.impl.ClientSessionFactoryInternal;
 import org.jboss.messaging.core.client.impl.ClientSessionImpl;
+import org.jboss.messaging.core.client.impl.ClientSessionInternal;
 import org.jboss.messaging.core.client.impl.ConnectionManagerImpl;
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.TransportConfiguration;
@@ -105,7 +106,7 @@ public class ReplicateConnectionFailureTest extends UnitTestCase
 
       session1 = sf1.createSession(false, true, true);
 
-      final RemotingConnectionImpl conn1 = (RemotingConnectionImpl)((ClientSessionImpl)session1).getConnection();
+      final RemotingConnectionImpl conn1 = (RemotingConnectionImpl)((ClientSessionInternal)session1).getConnection();
 
       ((ConnectionManagerImpl)sf1.getConnectionManagers()[0]).stopPingingAfterOne();
 

@@ -37,6 +37,7 @@ import org.jboss.messaging.core.client.ClientSessionFactory;
 import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
 import org.jboss.messaging.core.client.impl.ClientSessionFactoryInternal;
 import org.jboss.messaging.core.client.impl.ClientSessionImpl;
+import org.jboss.messaging.core.client.impl.ClientSessionInternal;
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
@@ -158,7 +159,7 @@ public class SimpleAutomaticFailoverTest extends UnitTestCase
          producer.send(message);
       }
 
-      RemotingConnection conn1 = ((ClientSessionImpl)session).getConnection();
+      RemotingConnection conn1 = ((ClientSessionInternal)session).getConnection();
 
       // Simulate failure on connection
       conn1.fail(new MessagingException(MessagingException.NOT_CONNECTED));
@@ -236,7 +237,7 @@ public class SimpleAutomaticFailoverTest extends UnitTestCase
          producer.send(message);
       }
 
-      RemotingConnection conn = ((ClientSessionImpl)session).getConnection();
+      RemotingConnection conn = ((ClientSessionInternal)session).getConnection();
 
       // Simulate failure on connection
       conn.fail(new MessagingException(MessagingException.NOT_CONNECTED));
@@ -317,7 +318,7 @@ public class SimpleAutomaticFailoverTest extends UnitTestCase
          producer.send(message);
       }
 
-      RemotingConnection conn = ((ClientSessionImpl)session).getConnection();
+      RemotingConnection conn = ((ClientSessionInternal)session).getConnection();
 
       // Simulate failure on connection
       conn.fail(new MessagingException(MessagingException.NOT_CONNECTED));
@@ -385,7 +386,7 @@ public class SimpleAutomaticFailoverTest extends UnitTestCase
          producer.send(message);
       }
 
-      RemotingConnection conn = ((ClientSessionImpl)session).getConnection();
+      RemotingConnection conn = ((ClientSessionInternal)session).getConnection();
 
       // Simulate failure on connection
       conn.fail(new MessagingException(MessagingException.NOT_CONNECTED));
@@ -476,7 +477,7 @@ public class SimpleAutomaticFailoverTest extends UnitTestCase
          producer.send(message);
       }
 
-      RemotingConnection conn = ((ClientSessionImpl)session).getConnection();
+      RemotingConnection conn = ((ClientSessionInternal)session).getConnection();
 
       // Simulate failure on connection
       conn.fail(new MessagingException(MessagingException.NOT_CONNECTED));
@@ -565,7 +566,7 @@ public class SimpleAutomaticFailoverTest extends UnitTestCase
          sessions.add(sess);
       }
 
-      RemotingConnection conn = ((ClientSessionImpl)sessions.get(0)).getConnection();
+      RemotingConnection conn = ((ClientSessionInternal)sessions.get(0)).getConnection();
 
       // Simulate failure on connection
       conn.fail(new MessagingException(MessagingException.NOT_CONNECTED));
@@ -622,7 +623,7 @@ public class SimpleAutomaticFailoverTest extends UnitTestCase
          producer.send(message);
       }
 
-      RemotingConnection conn = ((ClientSessionImpl)session).getConnection();
+      RemotingConnection conn = ((ClientSessionInternal)session).getConnection();
 
       // Simulate failure on connection
       conn.fail(new MessagingException(MessagingException.NOT_CONNECTED));
@@ -644,7 +645,7 @@ public class SimpleAutomaticFailoverTest extends UnitTestCase
          message2.acknowledge();
       }
 
-      RemotingConnection conn2 = ((ClientSessionImpl)session).getConnection();
+      RemotingConnection conn2 = ((ClientSessionInternal)session).getConnection();
 
       final CountDownLatch latch = new CountDownLatch(1);
 
@@ -798,7 +799,7 @@ public class SimpleAutomaticFailoverTest extends UnitTestCase
       sess.createQueue("blah", "blah3", false);
       sess.createQueue("blah", "blah4", false);
 
-      RemotingConnection conn = ((ClientSessionImpl)sess).getConnection();
+      RemotingConnection conn = ((ClientSessionInternal)sess).getConnection();
 
       // Simulate failure on connection
       conn.fail(new MessagingException(MessagingException.NOT_CONNECTED));
@@ -853,7 +854,7 @@ public class SimpleAutomaticFailoverTest extends UnitTestCase
          producer.send(message);
       }
 
-      RemotingConnection conn1 = ((ClientSessionImpl)session).getConnection();
+      RemotingConnection conn1 = ((ClientSessionInternal)session).getConnection();
 
       // Simulate failure on connection
       // We fail on the replicating connection and the client connection

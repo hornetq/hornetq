@@ -32,6 +32,7 @@ import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
 import org.jboss.messaging.core.client.impl.ClientSessionFactoryInternal;
 import org.jboss.messaging.core.client.impl.ClientSessionImpl;
+import org.jboss.messaging.core.client.impl.ClientSessionInternal;
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
@@ -122,7 +123,7 @@ public class ActivationTimeoutTest extends UnitTestCase
 
       long start = System.currentTimeMillis();
 
-      RemotingConnection conn1 = ((ClientSessionImpl)session1).getConnection();
+      RemotingConnection conn1 = ((ClientSessionInternal)session1).getConnection();
 
       // Now we fail ONLY the connections on sf1, not on sf2
       conn1.fail(new MessagingException(MessagingException.NOT_CONNECTED));
@@ -158,7 +159,7 @@ public class ActivationTimeoutTest extends UnitTestCase
 
       session1.close();
 
-      RemotingConnection conn2 = ((ClientSessionImpl)session2).getConnection();
+      RemotingConnection conn2 = ((ClientSessionInternal)session2).getConnection();
 
       conn2.fail(new MessagingException(MessagingException.NOT_CONNECTED));
 
@@ -210,7 +211,7 @@ public class ActivationTimeoutTest extends UnitTestCase
 
          long start = System.currentTimeMillis();
 
-         RemotingConnection conn1 = ((ClientSessionImpl)session1).getConnection();
+         RemotingConnection conn1 = ((ClientSessionInternal)session1).getConnection();
 
          // Now we fail ONLY the connections on sf1, not on sf2
          conn1.fail(new MessagingException(MessagingException.NOT_CONNECTED));
@@ -250,7 +251,7 @@ public class ActivationTimeoutTest extends UnitTestCase
 
          session1.close();
 
-         RemotingConnection conn2 = ((ClientSessionImpl)session2).getConnection();
+         RemotingConnection conn2 = ((ClientSessionInternal)session2).getConnection();
 
          conn2.fail(new MessagingException(MessagingException.NOT_CONNECTED));
 

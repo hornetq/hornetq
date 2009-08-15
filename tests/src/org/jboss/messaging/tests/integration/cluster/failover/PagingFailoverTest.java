@@ -32,6 +32,7 @@ import org.jboss.messaging.core.client.ClientProducer;
 import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.ClientSessionFactory;
 import org.jboss.messaging.core.client.impl.ClientSessionImpl;
+import org.jboss.messaging.core.client.impl.ClientSessionInternal;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.paging.PagingManager;
@@ -168,7 +169,7 @@ public class PagingFailoverTest extends FailoverTestBase
          session = sf1.createSession(null, null, false, true, true, false, 0);
          session.start();
 
-         final RemotingConnection conn = ((ClientSessionImpl)session).getConnection();
+         final RemotingConnection conn = ((ClientSessionInternal)session).getConnection();
 
          assertEquals("GloblSize", pmLive.getTotalMemory(), pmBackup.getTotalMemory());
 
@@ -253,7 +254,7 @@ public class PagingFailoverTest extends FailoverTestBase
    
    protected void fail(final ClientSession session) throws Exception
    {
-      RemotingConnectionImpl conn = (RemotingConnectionImpl)((ClientSessionImpl)session).getConnection();
+      RemotingConnectionImpl conn = (RemotingConnectionImpl)((ClientSessionInternal)session).getConnection();
       System.out.println("Forcing a failure");
       conn.fail(new MessagingException(MessagingException.NOT_CONNECTED, "blah"));
 

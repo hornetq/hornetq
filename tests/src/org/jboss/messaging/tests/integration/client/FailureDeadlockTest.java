@@ -26,7 +26,7 @@ import javax.jms.ExceptionListener;
 import javax.jms.JMSException;
 import javax.jms.Session;
 
-import org.jboss.messaging.core.client.impl.ClientSessionImpl;
+import org.jboss.messaging.core.client.impl.ClientSessionInternal;
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
@@ -110,12 +110,12 @@ public class FailureDeadlockTest extends UnitTestCase
          final Connection conn1 = cf1.createConnection();
 
          Session sess1 = conn1.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         RemotingConnection rc1 = ((ClientSessionImpl)((JBossSession)sess1).getCoreSession()).getConnection();
+         RemotingConnection rc1 = ((ClientSessionInternal)((JBossSession)sess1).getCoreSession()).getConnection();
 
          final Connection conn2 = cf2.createConnection();
 
          Session sess2 = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         RemotingConnection rc2 = ((ClientSessionImpl)((JBossSession)sess2).getCoreSession()).getConnection();
+         RemotingConnection rc2 = ((ClientSessionInternal)((JBossSession)sess2).getCoreSession()).getConnection();
 
          ExceptionListener listener1 = new ExceptionListener()
          {
@@ -179,7 +179,7 @@ public class FailureDeadlockTest extends UnitTestCase
          final Connection conn1 = cf1.createConnection();
    
          Session sess1 = conn1.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         RemotingConnection rc1 = ((ClientSessionImpl)((JBossSession)sess1).getCoreSession()).getConnection();      
+         RemotingConnection rc1 = ((ClientSessionInternal)((JBossSession)sess1).getCoreSession()).getConnection();      
    
          rc1.fail(new MessagingException(MessagingException.NOT_CONNECTED, "blah"));
    

@@ -29,6 +29,7 @@ import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
 import org.jboss.messaging.core.client.impl.ClientSessionFactoryInternal;
 import org.jboss.messaging.core.client.impl.ClientSessionImpl;
+import org.jboss.messaging.core.client.impl.ClientSessionInternal;
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
@@ -115,7 +116,7 @@ public class ReconnectTest extends UnitTestCase
 
          ClientConsumer consumer = session.createConsumer(ADDRESS);
 
-         RemotingConnection conn = ((ClientSessionImpl)session).getConnection();
+         RemotingConnection conn = ((ClientSessionInternal)session).getConnection();
 
          conn.fail(new MessagingException(MessagingException.NOT_CONNECTED));
 
@@ -190,7 +191,7 @@ public class ReconnectTest extends UnitTestCase
 
       InVMConnector.failOnCreateConnection = true;
 
-      RemotingConnection conn = ((ClientSessionImpl)session).getConnection();
+      RemotingConnection conn = ((ClientSessionInternal)session).getConnection();
 
       Thread t = new Thread()
       {
@@ -303,9 +304,9 @@ public class ReconnectTest extends UnitTestCase
       //We can't use the same connection since RemotingConnectionImpl only allows one fail to be in process
       //at same time
       
-      final RemotingConnection conn = ((ClientSessionImpl)session).getConnection();
+      final RemotingConnection conn = ((ClientSessionInternal)session).getConnection();
       
-      final RemotingConnection conn2 = ((ClientSessionImpl)session2).getConnection();
+      final RemotingConnection conn2 = ((ClientSessionInternal)session2).getConnection();
       
       assertTrue(conn != conn2);
 
@@ -399,7 +400,7 @@ public class ReconnectTest extends UnitTestCase
 
       InVMConnector.failOnCreateConnection = true;
 
-      RemotingConnection conn = ((ClientSessionImpl)session).getConnection();
+      RemotingConnection conn = ((ClientSessionInternal)session).getConnection();
 
       // Sleep for longer than max retries so should fail to reconnect
 
@@ -476,7 +477,7 @@ public class ReconnectTest extends UnitTestCase
       InVMConnector.failOnCreateConnection = true;
       InVMConnector.numberOfFailures = reconnectAttempts - 1;
 
-      RemotingConnection conn = ((ClientSessionImpl)session).getConnection();
+      RemotingConnection conn = ((ClientSessionInternal)session).getConnection();
 
       conn.fail(new MessagingException(MessagingException.NOT_CONNECTED));
 
@@ -542,7 +543,7 @@ public class ReconnectTest extends UnitTestCase
 
       InVMConnector.failOnCreateConnection = true;
 
-      RemotingConnection conn = ((ClientSessionImpl)session).getConnection();
+      RemotingConnection conn = ((ClientSessionInternal)session).getConnection();
 
       long start = System.currentTimeMillis();
 
@@ -633,7 +634,7 @@ public class ReconnectTest extends UnitTestCase
 
       InVMConnector.failOnCreateConnection = true;
 
-      RemotingConnection conn = ((ClientSessionImpl)session).getConnection();
+      RemotingConnection conn = ((ClientSessionInternal)session).getConnection();
 
       long start = System.currentTimeMillis();
 

@@ -372,7 +372,7 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
 
                   sessionChannel.setHandler(handler);
 
-                  return session;
+                  return new DelegatingSession(session);
                }
             }
             catch (Throwable t)
@@ -425,7 +425,7 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
       // Should never get here
       throw new IllegalStateException("Oh my God it's full of stars!");
    }
-
+   
    // Must be synchronized to prevent it happening concurrently with failover which can lead to
    // inconsistencies
    public void removeSession(final ClientSessionInternal session)
@@ -435,11 +435,8 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
       {
          synchronized (failoverLock)
          {
-            if (sessions.remove(session) == null)
-            {
-               throw new IllegalStateException("Cannot find session to remove " + session);
-            }
-
+            sessions.remove(session);
+            
             returnConnection(session.getConnection().getID());
          }
       }
@@ -487,15 +484,6 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
 
    // Public
    // ---------------------------------------------------------------------------------------
-
-   @Override
-   protected void finalize() throws Throwable
-   {
-      // In case user forgets to close it explicitly
-      causeExit();
-
-      super.finalize();
-   }
 
    private volatile boolean stopPingingAfterOne;
 
@@ -1037,7 +1025,7 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
       {
          refCount--;
       }
-
+      
       if (entry != null)
       {
          checkCloseConnections();

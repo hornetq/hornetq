@@ -59,4 +59,8 @@ public interface ClientSessionInternal extends ClientSession
    void cleanUp() throws Exception;
 
    void returnBlocking();
+   
+   void setForceNotSameRM(boolean force);
+   
+   ConnectionManager getConnectionManager();
 }

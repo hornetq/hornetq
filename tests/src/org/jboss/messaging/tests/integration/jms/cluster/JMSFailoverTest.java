@@ -36,6 +36,7 @@ import javax.jms.TextMessage;
 
 import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.impl.ClientSessionImpl;
+import org.jboss.messaging.core.client.impl.ClientSessionInternal;
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
@@ -104,7 +105,7 @@ public class JMSFailoverTest extends UnitTestCase
 
       ClientSession coreSession = ((JBossSession)sess).getCoreSession();
 
-      RemotingConnection coreConn = ((ClientSessionImpl)coreSession).getConnection();
+      RemotingConnection coreConn = ((ClientSessionInternal)coreSession).getConnection();
 
       SimpleString jmsQueueName = new SimpleString(JBossQueue.JMS_QUEUE_ADDRESS_PREFIX + "myqueue");
 
@@ -172,7 +173,7 @@ public class JMSFailoverTest extends UnitTestCase
 
       ClientSession coreSessionLive = ((JBossSession)sessLive).getCoreSession();
 
-      RemotingConnection coreConnLive = ((ClientSessionImpl)coreSessionLive).getConnection();
+      RemotingConnection coreConnLive = ((ClientSessionInternal)coreSessionLive).getConnection();
 
       SimpleString jmsQueueName = new SimpleString(JBossQueue.JMS_QUEUE_ADDRESS_PREFIX + "myqueue");
 

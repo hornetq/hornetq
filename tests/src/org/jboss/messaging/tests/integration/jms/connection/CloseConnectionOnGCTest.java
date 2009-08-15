@@ -21,36 +21,29 @@
  */
 package org.jboss.messaging.tests.integration.jms.connection;
 
-import org.jboss.messaging.core.client.ClientSession;
+import javax.jms.Connection;
+import javax.jms.Session;
+
 import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
-import org.jboss.messaging.core.client.impl.ClientSessionInternal;
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
-import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.server.Messaging;
 import org.jboss.messaging.core.server.MessagingServer;
-import org.jboss.messaging.jms.client.JBossConnection;
 import org.jboss.messaging.jms.client.JBossConnectionFactory;
-import org.jboss.messaging.jms.client.JBossSession;
 import org.jboss.messaging.jms.server.impl.JMSServerManagerImpl;
 import org.jboss.messaging.tests.integration.jms.server.management.NullInitialContext;
 import org.jboss.messaging.tests.util.UnitTestCase;
 
-import javax.jms.Connection;
-import javax.jms.ExceptionListener;
-import javax.jms.JMSException;
-import javax.jms.Session;
-
 /**
  * 
- * A ExceptionListenerTest
+ * A CloseConnectionOnGCTest
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  *
  */
-public class ExceptionListenerTest extends UnitTestCase
+public class CloseConnectionOnGCTest extends UnitTestCase
 {
    private MessagingServer server;
 
@@ -105,64 +98,6 @@ public class ExceptionListenerTest extends UnitTestCase
       super.tearDown();
    }
    
-   private class MyExceptionListener implements ExceptionListener
-   {
-      volatile int numCalls;
-      
-      public synchronized void onException(JMSException arg0)
-      {
-         numCalls++;
-      }      
-   }
-
-   public void testListenerCalledForOneConnection() throws Exception
-   {
-      Connection conn = cf.createConnection();
-      
-      MyExceptionListener listener = new MyExceptionListener();
-      
-      conn.setExceptionListener(listener);
-      
-      ClientSessionInternal coreSession = (ClientSessionInternal)((JBossConnection)conn).getInitialSession();
-      
-      coreSession.getConnection().fail(new MessagingException(MessagingException.INTERNAL_ERROR, "blah"));
-      
-      assertEquals(1, listener.numCalls);                  
-   }
-   
-   public void testListenerCalledForOneConnectionAndSessions() throws Exception
-   {
-      Connection conn = cf.createConnection();
-      
-      MyExceptionListener listener = new MyExceptionListener();
-      
-      conn.setExceptionListener(listener);
-      
-      Session sess1 = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-      
-      Session sess2 = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-      
-      Session sess3 = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-      
-      ClientSessionInternal coreSession0 = (ClientSessionInternal)((JBossConnection)conn).getInitialSession();
-      
-      ClientSessionInternal coreSession1 = (ClientSessionInternal)((JBossSession)sess1).getCoreSession();
-      
-      ClientSessionInternal coreSession2 = (ClientSessionInternal)((JBossSession)sess2).getCoreSession();
-      
-      ClientSessionInternal coreSession3 = (ClientSessionInternal)((JBossSession)sess3).getCoreSession();
-      
-      coreSession0.getConnection().fail(new MessagingException(MessagingException.INTERNAL_ERROR, "blah"));
-      
-      coreSession1.getConnection().fail(new MessagingException(MessagingException.INTERNAL_ERROR, "blah"));
-      
-      coreSession2.getConnection().fail(new MessagingException(MessagingException.INTERNAL_ERROR, "blah"));
-      
-      coreSession3.getConnection().fail(new MessagingException(MessagingException.INTERNAL_ERROR, "blah"));
-      
-      //Listener should only be called once even if all sessions connections die
-      assertEquals(1, listener.numCalls);                  
-   }
    
    public void testCloseOneConnectionOnGC() throws Exception
    {
@@ -181,7 +116,7 @@ public class ExceptionListenerTest extends UnitTestCase
       assertEquals(0, server.getRemotingService().getConnections().size());
    }
    
-   public void testCloseSeveralSessionOnGC() throws Exception
+   public void testCloseSeveralConnectionOnGC() throws Exception
    {
       Connection conn1 = cf.createConnection();
       Connection conn2 = cf.createConnection();
@@ -193,6 +128,37 @@ public class ExceptionListenerTest extends UnitTestCase
       conn2 = null;
       conn3 = null;
 
+      System.gc();
+      System.gc();
+      System.gc();
+      
+      Thread.sleep(2000);
+                     
+      assertEquals(0, server.getRemotingService().getConnections().size());
+   }
+   
+   public void testCloseSeveralConnectionsWithSessionsOnGC() throws Exception
+   {
+      Connection conn1 = cf.createConnection();
+      Connection conn2 = cf.createConnection();
+      Connection conn3 = cf.createConnection();    
+      
+      Session sess1 = conn1.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      Session sess2 = conn1.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      Session sess3 = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      Session sess4 = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      Session sess5 = conn3.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      Session sess6 = conn3.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      Session sess7 = conn3.createSession(false, Session.AUTO_ACKNOWLEDGE);
+            
+      assertEquals(ClientSessionFactoryImpl.DEFAULT_MAX_CONNECTIONS, server.getRemotingService().getConnections().size());
+      
+      sess1 = sess2 = sess3 = sess4 = sess5 = sess6 = sess7 = null;
+      
+      conn1 = null;
+      conn2 = null;
+      conn3 = null;
+      
       System.gc();
       System.gc();
       System.gc();

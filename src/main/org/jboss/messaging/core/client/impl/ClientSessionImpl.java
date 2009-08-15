@@ -152,7 +152,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
    private final boolean blockOnPersistentSend;
 
    private final int minLargeMessageSize;
-   
+
    private final boolean cacheLargeMessageClient;
 
    private final Channel channel;
@@ -228,7 +228,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
       this.blockOnNonPersistentSend = blockOnNonPersistentSend;
 
       this.blockOnPersistentSend = blockOnPersistentSend;
-      
+
       this.cacheLargeMessageClient = cacheLargeMessageClient;
 
       this.minLargeMessageSize = minLargeMessageSize;
@@ -556,7 +556,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
 
    public void addFailureListener(final FailureListener listener)
    {
-      connectionManager.addFailureListener(listener);      
+      connectionManager.addFailureListener(listener);
    }
 
    public boolean removeFailureListener(final FailureListener listener)
@@ -571,12 +571,12 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
 
    // ClientSessionInternal implementation
    // ------------------------------------------------------------
-   
+
    public int getMinLargeMessageSize()
    {
       return minLargeMessageSize;
    }
-   
+
    /**
     * @return the cacheLargeMessageClient
     */
@@ -797,6 +797,11 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
    {
       channel.returnBlocking();
    }
+   
+   public ConnectionManager getConnectionManager()
+   {
+      return connectionManager;
+   }
 
    // CommandConfirmationHandler implementation ------------------------------------
 
@@ -919,7 +924,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
    {
       checkXA();
 
-      if (!(xares instanceof ClientSessionImpl))
+      if (!(xares instanceof ClientSessionInternal))
       {
          return false;
       }
@@ -929,9 +934,9 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
          return false;
       }
 
-      ClientSessionImpl other = (ClientSessionImpl)xares;
+      ClientSessionInternal other = (ClientSessionInternal)xares;
 
-      return connectionManager == other.connectionManager;
+      return connectionManager == other.getConnectionManager();
    }
 
    public int prepare(final Xid xid) throws XAException
@@ -1272,7 +1277,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
          channel.close();
       }
 
-      connectionManager.removeSession(this);      
+      connectionManager.removeSession(this);
    }
 
    private void cleanUpChildren() throws Exception

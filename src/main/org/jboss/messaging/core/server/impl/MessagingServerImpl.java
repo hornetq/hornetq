@@ -289,6 +289,21 @@ public class MessagingServerImpl implements MessagingServer
 
       log.info("JBoss Messaging Server version " + getVersion().getFullVersion() + " started");
    }
+   
+   @Override
+   protected void finalize() throws Throwable
+   {
+      if (started)
+      {
+         log.warn("MessagingServer is being finalized and has not been stopped. Please remember to stop the " +
+                  "server before letting it go out of scope");
+         
+         stop();         
+      }
+      
+      super.finalize();
+   }
+    
 
    public synchronized void stop() throws Exception
    {      

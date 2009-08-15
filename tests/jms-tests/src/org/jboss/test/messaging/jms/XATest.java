@@ -46,7 +46,7 @@ import javax.transaction.xa.Xid;
 
 import com.arjuna.ats.internal.jta.transaction.arjunacore.TransactionManagerImple;
 
-import org.jboss.messaging.core.client.impl.ClientSessionImpl;
+import org.jboss.messaging.core.client.impl.ClientSessionInternal;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.test.messaging.JBMServerTestCase;
 import org.jboss.tm.TxUtils;
@@ -1111,9 +1111,9 @@ public class XATest extends JBMServerTestCase
 
          //Create 2 sessions and enlist them
          XASession sess1 = conn.createXASession();
-         ClientSessionImpl res1 = (ClientSessionImpl)sess1.getXAResource();
+         ClientSessionInternal res1 = (ClientSessionInternal)sess1.getXAResource();
          XASession sess2 = conn.createXASession();
-         ClientSessionImpl res2 = (ClientSessionImpl)sess2.getXAResource();
+         ClientSessionInternal res2 = (ClientSessionInternal)sess2.getXAResource();
          res1.setForceNotSameRM(true);
          res2.setForceNotSameRM(true);
 
@@ -1195,9 +1195,9 @@ public class XATest extends JBMServerTestCase
 
          //Create 2 sessions and enlist them
          XASession sess1 = conn.createXASession();
-         ClientSessionImpl res1 = (ClientSessionImpl)sess1.getXAResource();
+         ClientSessionInternal res1 = (ClientSessionInternal)sess1.getXAResource();
          XASession sess2 = conn.createXASession();
-         ClientSessionImpl res2 = (ClientSessionImpl)sess2.getXAResource();
+         ClientSessionInternal res2 = (ClientSessionInternal)sess2.getXAResource();
 
          Transaction tx = tm.getTransaction();
          tx.enlistResource(res1);
@@ -1355,9 +1355,9 @@ public class XATest extends JBMServerTestCase
 
          //Create 2 sessions and enlist them
          XASession sess1 = conn.createXASession();
-         ClientSessionImpl res1 = (ClientSessionImpl)sess1.getXAResource();
+         ClientSessionInternal res1 = (ClientSessionInternal)sess1.getXAResource();
          XASession sess2 = conn.createXASession();
-         ClientSessionImpl res2 = (ClientSessionImpl)sess2.getXAResource();
+         ClientSessionInternal res2 = (ClientSessionInternal)sess2.getXAResource();
          res1.setForceNotSameRM(true);
          res2.setForceNotSameRM(true);
 
@@ -1708,9 +1708,9 @@ public class XATest extends JBMServerTestCase
 
          //Create 2 sessions and enlist them
          XASession sess1 = conn.createXASession();
-         ClientSessionImpl res1 = (ClientSessionImpl)sess1.getXAResource();
+         ClientSessionInternal res1 = (ClientSessionInternal)sess1.getXAResource();
          XASession sess2 = conn.createXASession();
-         ClientSessionImpl res2 = (ClientSessionImpl)sess2.getXAResource();
+         ClientSessionInternal res2 = (ClientSessionInternal)sess2.getXAResource();
          res1.setForceNotSameRM(true);
          res2.setForceNotSameRM(true);
 
@@ -1843,9 +1843,9 @@ public class XATest extends JBMServerTestCase
 
          //Create 2 sessions and enlist them
          XASession sess1 = conn.createXASession();
-         ClientSessionImpl res1 = (ClientSessionImpl)sess1.getXAResource();
+         ClientSessionInternal res1 = (ClientSessionInternal)sess1.getXAResource();
          XASession sess2 = conn.createXASession();
-         ClientSessionImpl res2 = (ClientSessionImpl)sess2.getXAResource();
+         ClientSessionInternal res2 = (ClientSessionInternal)sess2.getXAResource();
          res1.setForceNotSameRM(true);
          res2.setForceNotSameRM(true);
 
