@@ -113,7 +113,7 @@ public class JBossConnection implements Connection, QueueConnection, TopicConnec
 
    private final String password;
 
-   private final FailureListener listener = new JMSFailureListener();
+   private final FailureListener listener = new JMSFailureListener(this);
 
    private final Version thisVersion;
 
@@ -534,6 +534,11 @@ public class JBossConnection implements Connection, QueueConnection, TopicConnec
    private static class JMSFailureListener implements FailureListener
    {
       private WeakReference<JBossConnection> connectionRef;
+      
+      JMSFailureListener(final JBossConnection connection)
+      {
+         connectionRef = new WeakReference<JBossConnection>(connection);
+      }
       
       public synchronized void connectionFailed(final MessagingException me)
       {
