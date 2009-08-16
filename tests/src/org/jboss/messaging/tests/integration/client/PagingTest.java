@@ -669,10 +669,6 @@ public class PagingTest extends ServiceTestBase
 
             producer.send(message);
          }
-         
-         session.close();
-
-         session = sf.createSession(null, null, false, true, true, false, 0);
 
          ClientConsumer consumer = session.createConsumer(ADDRESS);
 

@@ -179,6 +179,7 @@ public class BridgeControlUsingCoreTest extends ManagementTestBase
    @Override
    protected void tearDown() throws Exception
    {
+      session.close();
       server_0.stop();
       server_1.stop();
 

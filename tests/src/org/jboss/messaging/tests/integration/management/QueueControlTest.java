@@ -1024,7 +1024,7 @@ public class QueueControlTest extends ManagementTestBase
       consumeMessages(1, session, deadLetterQueue);
 
       session.deleteQueue(queue);
-      session.deleteQueue(deadLetterQueue);
+      session.deleteQueue(deadLetterQueue);           
    }
 
    public void testChangeMessagePriority() throws Exception

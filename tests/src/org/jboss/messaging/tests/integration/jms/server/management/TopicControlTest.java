@@ -348,6 +348,8 @@ public class TopicControlTest extends ManagementTestBase
       Map<String, Object>[] messages = topicControl.listMessagesForSubscription(JBossTopic.createQueueNameForDurableSubscription(clientID,
                                                                                                                                  subscriptionName));
       assertEquals(3, messages.length);
+      
+      connection.close();
    }
 
    public void testListMessagesForSubscriptionAsJSON() throws Exception
@@ -368,6 +370,8 @@ public class TopicControlTest extends ManagementTestBase
       {
          assertEquals(ids[i], array.getJSONObject(i).get("JMSMessageID"));
       }
+      
+      connection.close();
    }
 
    public void testListMessagesForSubscriptionWithUnknownClientID() throws Exception

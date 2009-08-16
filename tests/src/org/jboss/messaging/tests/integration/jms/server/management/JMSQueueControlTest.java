@@ -477,7 +477,7 @@ public class JMSQueueControlTest extends ManagementTestBase
       assertEquals(2, queueControl.countMessages(key + " =" + matchingValue));
       assertEquals(1, queueControl.countMessages(key + " =" + unmatchingValue));
 
-      session.close();
+      connection.close();
    }
 
    public void testGetDeadLetterAddress() throws Exception

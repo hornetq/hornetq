@@ -63,6 +63,8 @@ public class ReplicationAwareJMSQueueControlWrapperTest extends ReplicationAware
 
    private JBossQueue otherQueue;
 
+   private Connection connection;
+   
    private Session session;
 
    private JMSQueueControl liveQueueControl;
@@ -308,7 +310,7 @@ public class ReplicationAwareJMSQueueControlWrapperTest extends ReplicationAware
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
-   
+         
    @Override
    protected void setUp() throws Exception
    {
@@ -332,7 +334,7 @@ public class ReplicationAwareJMSQueueControlWrapperTest extends ReplicationAware
       backupServerManager.createQueue(otherQueueName, otherQueueName, null, true);
       otherQueue = new JBossQueue(otherQueueName);
       
-      Connection connection = JMSUtil.createConnection(InVMConnectorFactory.class.getName());
+      connection = JMSUtil.createConnection(InVMConnectorFactory.class.getName());
       session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
       
       liveQueueControl = createJMSQueueControl(queue.getQueueName(), liveMBeanServer);
@@ -344,7 +346,7 @@ public class ReplicationAwareJMSQueueControlWrapperTest extends ReplicationAware
    @Override
    protected void tearDown() throws Exception
    {
-      session.close();
+      connection.close();           
       
       liveServerManager = null;
       

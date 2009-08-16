@@ -321,6 +321,9 @@
       <delete dir="${test.jms.build.dir}"/>
       <delete dir="${test.joram.build.dir}"/>
       <delete dir="${thirdparty.dir}"/>
+      <delete>
+         <fileset dir="${logs.dir}" includes="*"/>
+      </delete>
       <ant antfile="${examples.dir}/build.xml" target="clean" inheritall="false"/>
    </target>
 

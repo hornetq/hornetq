@@ -104,21 +104,22 @@ public class JBossConnectionFactoryTest extends UnitTestCase
                           ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL_MULTIPLIER,
                           ClientSessionFactoryImpl.DEFAULT_RECONNECT_ATTEMPTS,
                           ClientSessionFactoryImpl.DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN);
+      Connection conn = null;
+      
       try
       {
-         Connection conn = cf.createConnection();
+         conn = cf.createConnection();
 
          Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-         fail("Should throw exception");
-
-         conn.close();
+         fail("Should throw exception");        
       }
       catch (Exception e)
       {
          e.printStackTrace();
          // Ok
       }
+      conn.close();
 
       log.info("Got here");
 
@@ -128,7 +129,7 @@ public class JBossConnectionFactoryTest extends UnitTestCase
       staticConnectors.add(pair0);
       cf.setStaticConnectors(staticConnectors);
 
-      Connection conn = cf.createConnection();
+      conn = cf.createConnection();
 
       Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 

@@ -578,7 +578,10 @@ public class JBossConnection implements Connection, QueueConnection, TopicConnec
             }
             catch (JMSException e)
             {
-               log.error("Failed to get exception listener");
+               if (!conn.closed)
+               {
+                  log.error("Failed to get exception listener", e);
+               }
             }
          }
       }

@@ -172,6 +172,17 @@ public class LVQRecoveryTest extends ServiceTestBase
             //
          }
       }
+      if (clientSessionXa != null)
+      {
+         try
+         {
+            clientSessionXa.close();
+         }
+         catch (MessagingException e1)
+         {
+            //
+         }
+      }
       if (server != null && server.isStarted())
       {
          try

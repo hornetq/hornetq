@@ -131,6 +131,8 @@ public class SecurityNotificationTest extends UnitTestCase
       assertEquals("guest", notifications[0].getProperty(ManagementHelper.HDR_USER).toString());
       assertEquals(address.toString(), notifications[0].getProperty(ManagementHelper.HDR_ADDRESS).toString());
       assertEquals(CheckType.CREATE_DURABLE_QUEUE.toString(), notifications[0].getProperty(ManagementHelper.HDR_CHECK_TYPE).toString());
+      
+      guestSession.close();
    }
    
    // Package protected ---------------------------------------------

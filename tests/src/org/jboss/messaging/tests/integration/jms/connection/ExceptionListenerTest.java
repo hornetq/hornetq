@@ -21,8 +21,11 @@
  */
 package org.jboss.messaging.tests.integration.jms.connection;
 
-import org.jboss.messaging.core.client.ClientSession;
-import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
+import javax.jms.Connection;
+import javax.jms.ExceptionListener;
+import javax.jms.JMSException;
+import javax.jms.Session;
+
 import org.jboss.messaging.core.client.impl.ClientSessionInternal;
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.TransportConfiguration;
@@ -36,11 +39,6 @@ import org.jboss.messaging.jms.client.JBossSession;
 import org.jboss.messaging.jms.server.impl.JMSServerManagerImpl;
 import org.jboss.messaging.tests.integration.jms.server.management.NullInitialContext;
 import org.jboss.messaging.tests.util.UnitTestCase;
-
-import javax.jms.Connection;
-import javax.jms.ExceptionListener;
-import javax.jms.JMSException;
-import javax.jms.Session;
 
 /**
  * 
@@ -127,7 +125,9 @@ public class ExceptionListenerTest extends UnitTestCase
       
       coreSession.getConnection().fail(new MessagingException(MessagingException.INTERNAL_ERROR, "blah"));
       
-      assertEquals(1, listener.numCalls);                  
+      assertEquals(1, listener.numCalls);
+      
+      conn.close();
    }
    
    public void testListenerCalledForOneConnectionAndSessions() throws Exception
@@ -161,45 +161,10 @@ public class ExceptionListenerTest extends UnitTestCase
       coreSession3.getConnection().fail(new MessagingException(MessagingException.INTERNAL_ERROR, "blah"));
       
       //Listener should only be called once even if all sessions connections die
-      assertEquals(1, listener.numCalls);                  
+      assertEquals(1, listener.numCalls);    
+      
+      conn.close();
    }
    
-   public void testCloseOneConnectionOnGC() throws Exception
-   {
-      Connection conn = cf.createConnection();
-           
-      assertEquals(1, server.getRemotingService().getConnections().size());
-      
-      conn = null;
-
-      System.gc();
-      System.gc();
-      System.gc();
-      
-      Thread.sleep(2000);
-                  
-      assertEquals(0, server.getRemotingService().getConnections().size());
-   }
-   
-   public void testCloseSeveralSessionOnGC() throws Exception
-   {
-      Connection conn1 = cf.createConnection();
-      Connection conn2 = cf.createConnection();
-      Connection conn3 = cf.createConnection();     
-      
-      assertEquals(3, server.getRemotingService().getConnections().size());
-      
-      conn1 = null;
-      conn2 = null;
-      conn3 = null;
-
-      System.gc();
-      System.gc();
-      System.gc();
-      
-      Thread.sleep(2000);
-                     
-      assertEquals(0, server.getRemotingService().getConnections().size());
-   }
    
 }

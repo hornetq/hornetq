@@ -125,7 +125,7 @@ public class ConsumerTest extends UnitTestCase
       SimpleString queueName = new SimpleString(JBossQueue.JMS_QUEUE_ADDRESS_PREFIX + Q_NAME);
       assertEquals(0, ((Queue)server.getPostOffice().getBinding(queueName).getBindable()).getDeliveringCount());
       assertEquals(0, ((Queue)server.getPostOffice().getBinding(queueName).getBindable()).getMessageCount());
-      session.close();
+      conn.close();
    }
 
    public void testPreCommitAcksWithMessageExpiry() throws Exception
@@ -153,6 +153,6 @@ public class ConsumerTest extends UnitTestCase
       SimpleString queueName = new SimpleString(JBossQueue.JMS_QUEUE_ADDRESS_PREFIX + Q_NAME);
       assertEquals(0, ((Queue)server.getPostOffice().getBinding(queueName).getBindable()).getDeliveringCount());
       assertEquals(0, ((Queue)server.getPostOffice().getBinding(queueName).getBindable()).getMessageCount());
-      session.close();
+      conn.close();
    }
 }

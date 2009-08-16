@@ -297,6 +297,8 @@ public class TopicControlUsingJMSTest extends ManagementTestBase
                                                       JBossTopic.createQueueNameForDurableSubscription(clientID,
                                                                                                        subscriptionName));
       assertEquals(3, data.length);
+      
+      connection.close();
    }
 
    public void testListMessagesForSubscriptionWithUnknownClientID() throws Exception

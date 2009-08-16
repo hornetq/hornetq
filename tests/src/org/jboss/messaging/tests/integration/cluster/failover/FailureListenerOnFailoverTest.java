@@ -411,6 +411,8 @@ public class FailureListenerOnFailoverTest extends UnitTestCase
          session.deleteQueue("testaddress" + i);
          i++;
       }
+      
+      csession.close();
 
       // Now fail again and fail to reconnect
 

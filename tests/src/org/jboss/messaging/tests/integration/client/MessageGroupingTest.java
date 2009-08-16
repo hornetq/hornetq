@@ -383,6 +383,7 @@ public class MessageGroupingTest extends UnitTestCase
       }
       consumer = this.clientSession.createConsumer(qName);
       assertNull(consumer.receive(500));
+      clientSession.close();
    }
 
    public void testMultipleGroupingXACommit() throws Exception

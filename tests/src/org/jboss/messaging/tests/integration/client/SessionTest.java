@@ -64,8 +64,8 @@ public class SessionTest extends ServiceTestBase
                latch.countDown();
             }
          });
-
-         clientSession.close();
+         
+         //Make sure failure listener is closed if server is stopped without session being closed first
          server.stop();
          assertTrue(latch.await(5, TimeUnit.SECONDS));
          
