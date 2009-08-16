@@ -182,7 +182,7 @@ public class HeuristicXATest extends ServiceTestBase
       finally
       {
          if (server.isStarted())
-         {
+         {            
             server.stop();
          }
       }

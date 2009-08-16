@@ -92,6 +92,7 @@ public class ProducerTest  extends ServiceTestBase
       message.getBody().writeBytes(body);
       producer.send(message);
       assertTrue(latch.await(5, TimeUnit.SECONDS));
+      session.close();
    }
 
 }

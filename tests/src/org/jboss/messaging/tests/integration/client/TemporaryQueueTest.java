@@ -208,6 +208,8 @@ public class TemporaryQueueTest extends ServiceTestBase
       latch.await(2 * CONNECTION_TTL, TimeUnit.MILLISECONDS);
 
       assertEquals(0, server.getConnectionCount());
+      
+      session.close();
 
       sf.close();
       sf = new ClientSessionFactoryImpl(new TransportConfiguration(InVMConnectorFactory.class.getName()));

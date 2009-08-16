@@ -213,6 +213,8 @@ public class ExpiryAddressTest extends UnitTestCase
          Long actualExpiryTime = (Long)tm.getProperty(HDR_ACTUAL_EXPIRY_TIME);
          assertTrue(actualExpiryTime >= expiration);
       }
+      
+      sendSession.close();
 
    }
    

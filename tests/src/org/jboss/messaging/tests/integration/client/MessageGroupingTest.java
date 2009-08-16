@@ -314,6 +314,7 @@ public class MessageGroupingTest extends UnitTestCase
       consumer2.close();
       consumer = this.clientSession.createConsumer(qName);
       assertNull(consumer.receive(500));
+      clientSession.close();
    }
 
    public void testMultipleGroupingTXRollback() throws Exception
@@ -438,6 +439,7 @@ public class MessageGroupingTest extends UnitTestCase
       consumer2.close();
       consumer = this.clientSession.createConsumer(qName);
       assertNull(consumer.receive(500));
+      clientSession.close();
    }
 
    public void testMultipleGroupingXARollback() throws Exception
@@ -514,6 +516,7 @@ public class MessageGroupingTest extends UnitTestCase
       }
       consumer = this.clientSession.createConsumer(qName);
       assertNull(consumer.receive(500));
+      clientSession.close();
    }
 
    protected void tearDown() throws Exception

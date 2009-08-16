@@ -216,9 +216,10 @@ public class RedeliveryConsumerTest extends ServiceTestBase
       if (!strictUpdate)
       {
          // If non Strict, at least rollback/cancel should still update the delivery-counts
-         session.rollback(true);
-         session.close();
+         session.rollback(true);         
       }
+      
+      session.close();
 
       server.stop();
 

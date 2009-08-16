@@ -65,8 +65,10 @@ public class SessionTest extends ServiceTestBase
             }
          });
 
+         clientSession.close();
          server.stop();
          assertTrue(latch.await(5, TimeUnit.SECONDS));
+         
       }
       finally
       {
@@ -99,6 +101,7 @@ public class SessionTest extends ServiceTestBase
          clientSession.addFailureListener(listener);
 
          assertTrue(clientSession.removeFailureListener(listener));
+         clientSession.close();
          server.stop();
          assertFalse(listener.called);
       }

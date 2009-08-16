@@ -122,6 +122,8 @@ public class JBossConnection implements Connection, QueueConnection, TopicConnec
    private final int transactionBatchSize;
 
    private ClientSession initialSession;
+   
+   private final Exception creationStack;
 
    // Constructors ---------------------------------------------------------------------------------
 
@@ -150,6 +152,8 @@ public class JBossConnection implements Connection, QueueConnection, TopicConnec
       this.dupsOKBatchSize = dupsOKBatchSize;
 
       this.transactionBatchSize = transactionBatchSize;
+      
+      this.creationStack = new Exception();
    }
 
    // Connection implementation --------------------------------------------------------------------
@@ -436,8 +440,10 @@ public class JBossConnection implements Connection, QueueConnection, TopicConnec
    {
       if (!closed)
       {
-         log.warn("I'm closing a connection you left open. Please make sure you close all connections explicitly " +
+         log.warn("I'm closing a JMS connection you left open. Please make sure you close all JMS connections explicitly " +
                   "before letting them go out of scope!");
+         
+         log.warn("The JMS connection you didn't close was created here:", creationStack);
          
          close();
       }

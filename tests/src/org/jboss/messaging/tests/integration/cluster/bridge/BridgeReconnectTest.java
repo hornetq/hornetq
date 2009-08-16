@@ -658,6 +658,7 @@ public class BridgeReconnectTest extends BridgeTestBase
       }
 
       session0.close();
+      session1.close();
 
       server0.stop();
       server1.stop();

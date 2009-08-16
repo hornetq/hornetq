@@ -32,5 +32,5 @@ public interface ReplicationOperationInvoker
 {
    Object invoke(String resourceName, String operationName, Object... parameters) throws Exception;
 
-   void stop();
+   void stop() throws Exception;
 }

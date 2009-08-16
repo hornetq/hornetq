@@ -82,7 +82,7 @@ public class MessageRateTest extends ServiceTestBase
 
          assertTrue("TotalTime = " + (end - start), end - start >= 1000);
          
-
+         session.close();
       }
       finally
       {
@@ -133,7 +133,7 @@ public class MessageRateTest extends ServiceTestBase
 
          assertTrue("TotalTime = " + (end - start), end - start >= 1000);
          
-
+         session.close();
       }
       finally
       {
@@ -202,7 +202,7 @@ public class MessageRateTest extends ServiceTestBase
          
          assertTrue("TotalTime = " + (end - start), end - start >= 1000);
          
-
+         session.close();
       }
       finally
       {

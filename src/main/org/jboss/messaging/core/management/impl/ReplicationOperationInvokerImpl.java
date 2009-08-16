@@ -125,19 +125,11 @@ public class ReplicationOperationInvokerImpl implements ReplicationOperationInvo
       }
    }
 
-   public void stop()
+   public void stop() throws Exception
    {
-      if (requestor != null && !clientSession.isClosed())
+      if (clientSession != null)
       {
-         try
-         {
-            requestor.close();
-         }
-         catch (Exception e)
-         {
-            // this will happen if the remoting server is stopped before this method is called
-            log.warn("Got Exception while closing requestor", e);
-         }
+         clientSession.close();
       }
    }
    // Package protected ---------------------------------------------

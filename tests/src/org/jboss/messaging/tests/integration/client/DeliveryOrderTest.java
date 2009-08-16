@@ -81,6 +81,7 @@ public class DeliveryOrderTest extends ServiceTestBase
                assertNotNull(cm);
                assertEquals(i, cm.getBody().readInt());
             }
+            sendSession.close();
          }
          finally
          {

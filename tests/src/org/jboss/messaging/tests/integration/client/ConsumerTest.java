@@ -283,6 +283,7 @@ public class ConsumerTest extends ServiceTestBase
       });
       sessionRec.start();
       assertTrue(latch.await(5, TimeUnit.SECONDS));
+      sessionRec.close();
    }
 
 }

@@ -232,10 +232,14 @@ public class FailureListenerOnFailoverTest extends UnitTestCase
       List<MyListener> listeners = new ArrayList<MyListener>();
 
       RemotingConnection conn = null;
+      
+      Set<ClientSession> sessions = new HashSet<ClientSession>();
 
       for (int i = 0; i < numSessions; i++)
       {
          ClientSession session = sf.createSession(false, true, true);
+         
+         sessions.add(session);
 
          if (conn == null)
          {
@@ -254,6 +258,11 @@ public class FailureListenerOnFailoverTest extends UnitTestCase
       for (MyListener listener : listeners)
       {
          assertEquals(1, listener.getFailCount());
+      }
+      
+      for (ClientSession session : sessions)
+      {
+         session.close();
       }
 
       sf.close();
@@ -281,10 +290,14 @@ public class FailureListenerOnFailoverTest extends UnitTestCase
       List<MyListener> listeners = new ArrayList<MyListener>();
 
       RemotingConnection conn = null;
+      
+      Set<ClientSession> sessions = new HashSet<ClientSession>();
 
       for (int i = 0; i < numSessions; i++)
       {
          ClientSession session = sf.createSession(false, true, true);
+         
+         sessions.add(session);
 
          if (conn == null)
          {
@@ -306,6 +319,11 @@ public class FailureListenerOnFailoverTest extends UnitTestCase
       for (MyListener listener : listeners)
       {
          assertEquals(1, listener.getFailCount());
+      }
+      
+      for (ClientSession session : sessions)
+      {
+         session.close();
       }
 
       sf.close();
@@ -412,6 +430,11 @@ public class FailureListenerOnFailoverTest extends UnitTestCase
       }
 
       csession.close();
+      
+      for (ClientSession session : sessions)
+      {
+         session.close();
+      }
 
       sf.close();
    }
@@ -442,9 +465,13 @@ public class FailureListenerOnFailoverTest extends UnitTestCase
 
       RemotingConnection conn = null;
 
+      Set<ClientSession> sessions = new HashSet<ClientSession>();
+      
       for (int i = 0; i < numSessions; i++)
       {
          ClientSession session = sf.createSession(false, true, true);
+         
+         sessions.add(session);
 
          if (conn == null)
          {
@@ -465,6 +492,11 @@ public class FailureListenerOnFailoverTest extends UnitTestCase
       for (MyListener listener : listeners)
       {
          assertEquals(1, listener.getFailCount());
+      }
+      
+      for (ClientSession session: sessions)
+      {
+         session.close();
       }
 
       sf.close();

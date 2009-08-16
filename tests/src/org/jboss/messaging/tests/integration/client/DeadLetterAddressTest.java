@@ -232,6 +232,8 @@ public class DeadLetterAddressTest extends UnitTestCase
 
          assertEquals(origId, origMessageId);
       }
+      
+      sendSession.close();
 
    }
 

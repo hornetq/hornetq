@@ -328,7 +328,7 @@ public class OrderingOnBackupTest extends FailoverTestBase
             catch (Throwable e)
             {
                e.printStackTrace();
-               errors.incrementAndGet();
+               errors.incrementAndGet();               
             }
             finally
             {
