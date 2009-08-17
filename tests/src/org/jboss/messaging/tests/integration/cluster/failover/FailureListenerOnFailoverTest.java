@@ -207,17 +207,22 @@ public class FailureListenerOnFailoverTest extends UnitTestCase
          assertEquals(0, listener.getFailCount());
       }
 
-      // Do some stuff to make sure sessions failed over/reconnected ok
-      int i = 0;
-      for (ClientSession session : sessions)
+      try
       {
-         session.createQueue("testaddress" + i, "testaddress" + i, false);
-         session.deleteQueue("testaddress" + i);
-         i++;
-         session.close();
+         // Do some stuff to make sure sessions failed over/reconnected ok
+         int i = 0;
+         for (ClientSession session : sessions)
+         {
+            session.createQueue("testaddress" + i, "testaddress" + i, false);
+            session.deleteQueue("testaddress" + i);
+            i++;
+            session.close();
+         }
       }
-
-      sf.close();
+      finally
+      {
+         sf.close();
+      }
    }
 
    /*
