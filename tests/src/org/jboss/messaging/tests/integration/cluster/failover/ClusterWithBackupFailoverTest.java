@@ -131,6 +131,10 @@ public class ClusterWithBackupFailoverTest extends ClusterTestBase
       send(0, "queues.testaddress", 10, false, null);
       verifyReceiveRoundRobinInSomeOrder(10, 0, 1, 2);
 
+      removeConsumer(0);
+      removeConsumer(1);
+      removeConsumer(2);
+      
       stopServers();
       
       log.info("*** test done");
