@@ -30,7 +30,6 @@ import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.integration.transports.netty.NettyAcceptorFactory;
-import org.jboss.messaging.integration.transports.netty.NettyConnectorFactory;
 import org.jboss.messaging.tests.util.ServiceTestBase;
 import org.jboss.messaging.utils.SimpleString;
 
@@ -94,8 +93,6 @@ public class SessionCloseOnGCTest extends ServiceTestBase
          factory = null;
 
          checkWeakReferences(fref, wrs1, wrs2);
-
-         assertNull(fref.get());
       }
       finally
       {
@@ -139,8 +136,6 @@ public class SessionCloseOnGCTest extends ServiceTestBase
          factory = null;
 
          checkWeakReferences(fref, wrs1, wrs2);
-
-         assertNull(fref.get());
       }
       finally
       {
@@ -180,8 +175,6 @@ public class SessionCloseOnGCTest extends ServiceTestBase
          factory = null;
 
          checkWeakReferences(fref, wrs1, wrs2);
-
-         assertNull(fref.get());
       }
       finally
       {
@@ -218,8 +211,6 @@ public class SessionCloseOnGCTest extends ServiceTestBase
          factory = null;
 
          checkWeakReferences(fref, wrs1, wrs2);
-
-         assertNull(fref.get());
       }
       finally
       {
@@ -266,16 +257,14 @@ public class SessionCloseOnGCTest extends ServiceTestBase
       ClientSessionFactoryImpl sf = (ClientSessionFactoryImpl)createInVMFactory();
 
       ClientSession session = sf.createSession(false, true, true);
+      
+      WeakReference<ClientSession> wses = new WeakReference<ClientSession>(session);
 
       assertEquals(1, server.getRemotingService().getConnections().size());
 
       session = null;
 
-      System.gc();
-      System.gc();
-      System.gc();
-
-      Thread.sleep(2000);
+      checkWeakReferences(wses);
 
       assertEquals(0, sf.numSessions());
       assertEquals(0, sf.numConnections());
@@ -292,15 +281,16 @@ public class SessionCloseOnGCTest extends ServiceTestBase
 
       assertEquals(3, server.getRemotingService().getConnections().size());
 
+      WeakReference<ClientSession> ref1 = new WeakReference<ClientSession> (session1); 
+      WeakReference<ClientSession> ref2 = new WeakReference<ClientSession> (session2); 
+      WeakReference<ClientSession> ref3 = new WeakReference<ClientSession> (session3); 
+
       session1 = null;
       session2 = null;
       session3 = null;
+      
 
-      System.gc();
-      System.gc();
-      System.gc();
-
-      Thread.sleep(2000);
+      checkWeakReferences(ref1, ref2, ref3);
 
       assertEquals(0, sf.numSessions());
       assertEquals(0, sf.numConnections());

@@ -94,14 +94,14 @@ public class ServiceTestBase extends UnitTestCase
    // verify if these weak references are released after a few GCs
    public static void checkWeakReferences(WeakReference<?>... references)
    {
- 
+
       int i = 0;
       boolean hasValue = false;
-      
+
       do
       {
          hasValue = false;
-         
+
          if (i > 0)
          {
             forceGC();
@@ -115,7 +115,12 @@ public class ServiceTestBase extends UnitTestCase
             }
          }
       }
-      while (i++ <= 10 && hasValue);
+      while (i++ <= 30 && hasValue);
+
+      for (WeakReference<?> ref : references)
+      {
+         assertNull(ref.get());
+      }
    }
 
    // Constructors --------------------------------------------------
@@ -202,23 +207,29 @@ public class ServiceTestBase extends UnitTestCase
 
    protected MessagingServer createServer(final boolean realFiles, final Configuration configuration)
    {
-      return createServer(realFiles, configuration,  -1, -1, new HashMap<String, AddressSettings>());
+      return createServer(realFiles, configuration, -1, -1, new HashMap<String, AddressSettings>());
    }
 
-   protected MessagingServer createServer(final boolean realFiles, final Configuration configuration,
+   protected MessagingServer createServer(final boolean realFiles,
+                                          final Configuration configuration,
                                           final JBMSecurityManager securityManager)
    {
       MessagingServer server;
 
       if (realFiles)
       {
-         server = Messaging.newMessagingServer(configuration, ManagementFactory.getPlatformMBeanServer(), securityManager);
+         server = Messaging.newMessagingServer(configuration,
+                                               ManagementFactory.getPlatformMBeanServer(),
+                                               securityManager);
       }
       else
       {
-         server = Messaging.newMessagingServer(configuration, ManagementFactory.getPlatformMBeanServer(), securityManager, false);
+         server = Messaging.newMessagingServer(configuration,
+                                               ManagementFactory.getPlatformMBeanServer(),
+                                               securityManager,
+                                               false);
       }
-      
+
       Map<String, AddressSettings> settings = new HashMap<String, AddressSettings>();
 
       for (Map.Entry<String, AddressSettings> setting : settings.entrySet())
@@ -238,7 +249,9 @@ public class ServiceTestBase extends UnitTestCase
                                                              final Map<String, Object> params)
    {
       return createServer(realFiles,
-                          createClusteredDefaultConfig(index, params, INVM_ACCEPTOR_FACTORY), -1, -1,
+                          createClusteredDefaultConfig(index, params, INVM_ACCEPTOR_FACTORY),
+                          -1,
+                          -1,
                           new HashMap<String, AddressSettings>());
    }
 
@@ -283,7 +296,6 @@ public class ServiceTestBase extends UnitTestCase
       configuration.setLargeMessagesDirectory(getLargeMessagesDir(index, false));
       configuration.setJournalCompactMinFiles(0);
       configuration.setJournalCompactPercentage(0);
-
 
       configuration.getAcceptorConfigurations().clear();
 
