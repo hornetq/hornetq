@@ -23,8 +23,6 @@
 package org.jboss.messaging.core.server.impl;
 
 import java.lang.management.ManagementFactory;
-import java.lang.management.MemoryMXBean;
-import java.lang.management.MemoryUsage;
 import java.lang.management.ThreadMXBean;
 import java.util.Date;
 
@@ -65,18 +63,19 @@ public class ServerInfo
 
    public String dump()
    {
-      MemoryMXBean memory = ManagementFactory.getMemoryMXBean();
-      MemoryUsage heapMemory = memory.getHeapMemoryUsage();
-      MemoryUsage nonHeapMemory = memory.getHeapMemoryUsage();
+      long maxMemory = Runtime.getRuntime().maxMemory();
+      long totalMemory = Runtime.getRuntime().totalMemory();
+      long freeMemory = Runtime.getRuntime().freeMemory();
+      long availableMemory = freeMemory + (maxMemory - totalMemory);                              
+      double availableMemoryPercent = 100.0 * (double)availableMemory / maxMemory;     
       ThreadMXBean threadMXBean = ManagementFactory.getThreadMXBean();
+
       String info = "\n**** Server Dump ****\n";
       info += String.format("date:            %s\n", new Date());
-      info += String.format("heap memory:     used=%s, max=%s\n",
-                            SizeFormatterUtil.sizeof(heapMemory.getUsed()),
-                            SizeFormatterUtil.sizeof(heapMemory.getMax()));
-      info += String.format("non-heap memory: used=%s, max=%s\n",
-                            SizeFormatterUtil.sizeof(nonHeapMemory.getUsed()),
-                            SizeFormatterUtil.sizeof(nonHeapMemory.getMax()));
+      info += String.format("free memory:      %s\n", SizeFormatterUtil.sizeof(freeMemory));
+      info += String.format("max memory:       %s\n", SizeFormatterUtil.sizeof(maxMemory));
+      info += String.format("total memory:     %s\n", SizeFormatterUtil.sizeof(totalMemory));
+      info += String.format("available memory: %.2f%%\n", availableMemoryPercent);
       info += appendPagingInfos();
       info += String.format("# of thread:     %d\n", threadMXBean.getThreadCount());
       info += String.format("# of conns:      %d\n", server.getConnectionCount());

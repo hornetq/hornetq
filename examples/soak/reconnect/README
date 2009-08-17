@@ -22,26 +22,22 @@ To run a server with the same configuration but on a different host, change:
 Configure Server Dump
 =====================
 
-A POJO is created by JBoss Microcontainer to "dump" server info at regular interval:
+The server can "dump" info at regular interval. In jbm-configuration.xml, set
+
+   <server-dump-interval>10000</server-dump-interval>
+
+to have infos every 10s:
 
 **** Server Dump ****
-date:            Wed Aug 12 10:22:08 EDT 2009
-heap memory:     used=1.44 GB, max=1.99 GB
-non-heap memory: used=1.44 GB, max=1.99 GB
-# of thread:     33
-# of conns:      28
-JMS queues:
-	soakQueue: delivering 13 msgs to 7 consumers (13 msgs in memory, 22849506 added)
+date:            Mon Aug 17 18:19:07 CEST 2009
+free memory:      500,79 MiB
+max memory:       1,95 GiB
+total memory:     507,13 MiB
+available memory: 99,68%
+total paging memory:   0,00 B
+# of thread:     19
+# of conns:      0
 ********************
-
-The POJO is configured in the server dir's jbm-jboss-beans.xml:
-
-<bean name="Dump" class="org.jboss.jms.soak.example.reconnect.ServerDump">
-   <constructor>
-      <!-- dump interval in minutes -->
-      <parameter>1</parameter>
-   </constructor>
-</bean>
 
 Run The Client
 ==============
