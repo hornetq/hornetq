@@ -119,8 +119,11 @@ public class JBossConnectionFactoryTest extends UnitTestCase
          e.printStackTrace();
          // Ok
       }
-      conn.close();
-
+      if (conn != null)
+      {
+         conn.close();
+      }
+      
       log.info("Got here");
 
       final List<Pair<TransportConfiguration, TransportConfiguration>> staticConnectors = new ArrayList<Pair<TransportConfiguration, TransportConfiguration>>();
