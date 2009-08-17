@@ -144,36 +144,51 @@ public class FailoverScheduledMessageTest extends UnitTestCase
       };
       
       t.start();
-                   
-      for (int i = 0; i < numMessages; i++)
+
+      ClientSession session2 = null;
+      try
       {
+         for (int i = 0; i < numMessages; i++)
+         {
+            ClientMessage message = consumer1.receive(delay * 2);
+
+            assertNotNull(message);
+
+            message.acknowledge();
+         }      
+
          ClientMessage message = consumer1.receive(delay * 2);
-                           
-         assertNotNull(message);
-            
-         message.acknowledge();
-      }      
-      
-      ClientMessage message = consumer1.receive(delay * 2);
-      
-      assertNull(message);
-      
-      t.join();
-                   
-      session1.close();
-      
-      //Make sure no more messages
-      ClientSession session2 = sf1.createSession(false, true, true);
-      
-      session2.start();
-      
-      ClientConsumer consumer2 = session2.createConsumer(ADDRESS);
-      
-      message = consumer2.receive(1000);
-      
-      assertNull(message);
-      
-      session2.close();      
+
+         assertNull(message);
+
+         t.join();
+
+         session1.close();
+
+         //Make sure no more messages
+         session2 = sf1.createSession(false, true, true);
+
+         session2.start();
+
+         ClientConsumer consumer2 = session2.createConsumer(ADDRESS);
+
+         message = consumer2.receive(1000);
+
+         assertNull(message);
+
+         session2.close(); 
+      }
+      finally 
+      {
+         if (session1 != null)
+         {
+            session1.close();
+         }
+         if (session2 != null)
+         {
+            session2.close();
+         }
+      }
    }
    
    // Package protected ---------------------------------------------
