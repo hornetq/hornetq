@@ -21,6 +21,8 @@
  */
 package org.jboss.messaging.tests.integration.client;
 
+import java.lang.ref.WeakReference;
+
 import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.ClientSessionFactory;
 import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
@@ -56,6 +58,52 @@ public class SessionCloseOnGCTest extends ServiceTestBase
 
       super.tearDown();
    }
+   
+   /** Make sure Sessions are not leaking after closed..
+    *  Also... we want to make sure the SessionFactory will close itself when there are not references into it */
+   public void testValidateLeakWithClosedSessions() throws Exception
+   {
+      try
+      {
+         ClientSessionFactory factory = createInVMFactory();
+         
+         ClientSession s1 = factory.createSession();
+         ClientSession s2 = factory.createSession();
+         
+         s1.close();
+         s2.close();
+         
+         WeakReference<ClientSession> wrs1 = new WeakReference<ClientSession>(s1);
+         WeakReference<ClientSession> wrs2 = new WeakReference<ClientSession>(s2);
+         
+         s1 = null;
+         
+         s2 = null;
+         
+         checkWeakReferences(wrs1, wrs2);
+         
+         WeakReference<ClientSessionFactory> fref = new WeakReference<ClientSessionFactory>(factory);
+         
+         factory = null;
+         
+         checkWeakReferences(fref, wrs1, wrs2);
+         
+      }
+      finally
+      {
+         try
+         {
+            server.stop();
+         }
+         catch (Throwable ignored)
+         {
+            
+         }
+      }
+      
+   }
+   
+   
 
    public void testCloseOneSessionOnGC() throws Exception
    {

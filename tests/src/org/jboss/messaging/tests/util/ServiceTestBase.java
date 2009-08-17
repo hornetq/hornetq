@@ -76,8 +76,8 @@ public class ServiceTestBase extends UnitTestCase
 
    public static void forceGC()
    {
-      WeakReference dumbReference = new WeakReference(new Object());
-      // A loopt that will wait GC, using the minimal time as possible
+      WeakReference<Object> dumbReference = new WeakReference<Object>(new Object());
+      // A loop that will wait GC, using the minimal time as possible
       while (dumbReference.get() != null)
       {
          System.gc();
@@ -89,6 +89,33 @@ public class ServiceTestBase extends UnitTestCase
          {
          }
       }
+   }
+
+   // verify if these weak references are released after a few GCs
+   public static void checkWeakReferences(WeakReference<?>... references)
+   {
+ 
+      int i = 0;
+      boolean hasValue = false;
+      
+      do
+      {
+         hasValue = false;
+         
+         if (i > 0)
+         {
+            forceGC();
+         }
+
+         for (WeakReference<?> ref : references)
+         {
+            if (ref.get() != null)
+            {
+               hasValue = true;
+            }
+         }
+      }
+      while (i++ <= 10 && hasValue);
    }
 
    // Constructors --------------------------------------------------
