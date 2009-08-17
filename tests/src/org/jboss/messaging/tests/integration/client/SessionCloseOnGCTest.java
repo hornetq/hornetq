@@ -26,8 +26,11 @@ import java.lang.ref.WeakReference;
 import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.ClientSessionFactory;
 import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
+import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.logging.Logger;
 import org.jboss.messaging.core.server.MessagingServer;
+import org.jboss.messaging.integration.transports.netty.NettyAcceptorFactory;
+import org.jboss.messaging.integration.transports.netty.NettyConnectorFactory;
 import org.jboss.messaging.tests.util.ServiceTestBase;
 import org.jboss.messaging.utils.SimpleString;
 
@@ -45,6 +48,9 @@ public class SessionCloseOnGCTest extends ServiceTestBase
       super.setUp();
 
       server = createServer(false);
+      server.getConfiguration()
+            .getAcceptorConfigurations()
+            .add(new TransportConfiguration(NettyAcceptorFactory.class.getCanonicalName()));
 
       server.start();
    }
@@ -58,36 +64,38 @@ public class SessionCloseOnGCTest extends ServiceTestBase
 
       super.tearDown();
    }
-   
+
    /** Make sure Sessions are not leaking after closed..
     *  Also... we want to make sure the SessionFactory will close itself when there are not references into it */
-   public void testValidateLeakWithClosedSessions() throws Exception
+   public void testValidateFactoryGC1() throws Exception
    {
       try
       {
-         ClientSessionFactory factory = createInVMFactory();
+         ClientSessionFactory factory = this.createInVMFactory();
          
          ClientSession s1 = factory.createSession();
          ClientSession s2 = factory.createSession();
-         
+
          s1.close();
          s2.close();
-         
+
          WeakReference<ClientSession> wrs1 = new WeakReference<ClientSession>(s1);
          WeakReference<ClientSession> wrs2 = new WeakReference<ClientSession>(s2);
-         
+
          s1 = null;
-         
          s2 = null;
-         
+
          checkWeakReferences(wrs1, wrs2);
-         
+
          WeakReference<ClientSessionFactory> fref = new WeakReference<ClientSessionFactory>(factory);
-         
+
+         factory.close();
+
          factory = null;
-         
+
          checkWeakReferences(fref, wrs1, wrs2);
-         
+
+         assertNull(fref.get());
       }
       finally
       {
@@ -97,35 +105,183 @@ public class SessionCloseOnGCTest extends ServiceTestBase
          }
          catch (Throwable ignored)
          {
-            
+
          }
       }
-      
+   }
+
+   public void testValidateFactoryGC2() throws Exception
+   {
+      try
+      {
+         ClientSessionFactory factory = this.createInVMFactory();
+
+         factory.setUseGlobalPools(false);
+
+         ClientSession s1 = factory.createSession();
+         ClientSession s2 = factory.createSession();
+
+         s1.close();
+         s2.close();
+
+         WeakReference<ClientSession> wrs1 = new WeakReference<ClientSession>(s1);
+         WeakReference<ClientSession> wrs2 = new WeakReference<ClientSession>(s2);
+
+         s1 = null;
+         s2 = null;
+
+         checkWeakReferences(wrs1, wrs2);
+
+         WeakReference<ClientSessionFactory> fref = new WeakReference<ClientSessionFactory>(factory);
+
+         factory.close();
+
+         factory = null;
+
+         checkWeakReferences(fref, wrs1, wrs2);
+
+         assertNull(fref.get());
+      }
+      finally
+      {
+         try
+         {
+            server.stop();
+         }
+         catch (Throwable ignored)
+         {
+
+         }
+      }
+   }
+
+   public void testValidateFactoryGC3() throws Exception
+   {
+      try
+      {
+         ClientSessionFactory factory = this.createInVMFactory();
+
+         ClientSession s1 = factory.createSession();
+         ClientSession s2 = factory.createSession();
+
+         s1.close();
+         s2.close();
+
+         WeakReference<ClientSession> wrs1 = new WeakReference<ClientSession>(s1);
+         WeakReference<ClientSession> wrs2 = new WeakReference<ClientSession>(s2);
+
+         s1 = null;
+         s2 = null;
+
+         checkWeakReferences(wrs1, wrs2);
+
+         WeakReference<ClientSessionFactory> fref = new WeakReference<ClientSessionFactory>(factory);
+
+         factory = null;
+
+         checkWeakReferences(fref, wrs1, wrs2);
+
+         assertNull(fref.get());
+      }
+      finally
+      {
+         try
+         {
+            server.stop();
+         }
+         catch (Throwable ignored)
+         {
+
+         }
+      }
    }
    
+   public void testValidateFactoryGC4() throws Exception
+   {
+      try
+      {
+         ClientSessionFactory factory = this.createInVMFactory();
+
+         ClientSession s1 = factory.createSession();
+         ClientSession s2 = factory.createSession();
+         
+         WeakReference<ClientSession> wrs1 = new WeakReference<ClientSession>(s1);
+         WeakReference<ClientSession> wrs2 = new WeakReference<ClientSession>(s2);
+
+         s1 = null;
+         s2 = null;
+
+         checkWeakReferences(wrs1, wrs2);
+
+         WeakReference<ClientSessionFactory> fref = new WeakReference<ClientSessionFactory>(factory);
+
+         factory = null;
+
+         checkWeakReferences(fref, wrs1, wrs2);
+
+         assertNull(fref.get());
+      }
+      finally
+      {
+         try
+         {
+            server.stop();
+         }
+         catch (Throwable ignored)
+         {
+
+         }
+      }
+   }
    
+   public void testValidateFactoryGC5() throws Exception
+   {
+      try
+      {
+         ClientSessionFactory factory = this.createInVMFactory();
+         
+         WeakReference<ClientSessionFactory> fref = new WeakReference<ClientSessionFactory>(factory);
+
+         factory = null;
+
+         checkWeakReferences(fref);
+
+         assertNull(fref.get());
+      }
+      finally
+      {
+         try
+         {
+            server.stop();
+         }
+         catch (Throwable ignored)
+         {
+
+         }
+      }
+   }
 
    public void testCloseOneSessionOnGC() throws Exception
    {
       ClientSessionFactoryImpl sf = (ClientSessionFactoryImpl)createInVMFactory();
 
       ClientSession session = sf.createSession(false, true, true);
-      
+
       assertEquals(1, server.getRemotingService().getConnections().size());
-      
+
       session = null;
 
       System.gc();
       System.gc();
       System.gc();
-      
+
       Thread.sleep(2000);
-            
+
       assertEquals(0, sf.numSessions());
-      assertEquals(0, sf.numConnections());           
+      assertEquals(0, sf.numConnections());
       assertEquals(0, server.getRemotingService().getConnections().size());
    }
-   
+
    public void testCloseSeveralSessionOnGC() throws Exception
    {
       ClientSessionFactoryImpl sf = (ClientSessionFactoryImpl)createInVMFactory();
@@ -133,9 +289,9 @@ public class SessionCloseOnGCTest extends ServiceTestBase
       ClientSession session1 = sf.createSession(false, true, true);
       ClientSession session2 = sf.createSession(false, true, true);
       ClientSession session3 = sf.createSession(false, true, true);
-      
+
       assertEquals(3, server.getRemotingService().getConnections().size());
-      
+
       session1 = null;
       session2 = null;
       session3 = null;
@@ -143,11 +299,11 @@ public class SessionCloseOnGCTest extends ServiceTestBase
       System.gc();
       System.gc();
       System.gc();
-      
+
       Thread.sleep(2000);
-            
+
       assertEquals(0, sf.numSessions());
-      assertEquals(0, sf.numConnections());           
+      assertEquals(0, sf.numConnections());
       assertEquals(0, server.getRemotingService().getConnections().size());
    }
 

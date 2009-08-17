@@ -25,6 +25,7 @@ package org.jboss.messaging.core.client.impl;
 import java.io.IOException;
 import java.io.OutputStream;
 
+import org.jboss.messaging.core.buffers.ChannelBuffers;
 import org.jboss.messaging.core.client.LargeMessageBuffer;
 import org.jboss.messaging.core.exception.MessagingException;
 import org.jboss.messaging.core.message.impl.MessageImpl;
@@ -51,7 +52,6 @@ public class ClientMessageImpl extends MessageImpl implements ClientMessageInter
    private boolean largeMessage;
 
    private int flowControlSize = -1;
-
 
    /*
     * Constructor for when reading from network
@@ -85,9 +85,10 @@ public class ClientMessageImpl extends MessageImpl implements ClientMessageInter
    {
       super((byte)0, durable, 0, System.currentTimeMillis(), (byte)4, body);
    }
-
-   public ClientMessageImpl()
+   
+   public ClientMessageImpl(final boolean durable)
    {
+      super((byte)0, durable, 0, System.currentTimeMillis(), (byte)4, ChannelBuffers.dynamicBuffer(1024));
    }
 
    public void onReceipt(final ClientConsumerInternal consumer)

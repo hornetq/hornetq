@@ -108,7 +108,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
    public static final int DEFAULT_THREAD_POOL_MAX_SIZE = -1;
 
    public static final int DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE = 5;
-   
+
    public static final boolean DEFAULT_CACHE_LARGE_MESSAGE_CLIENT = false;
 
    // Attributes
@@ -131,7 +131,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
    private boolean readOnly;
 
    // Settable attributes:
-   
+
    private boolean cacheLargeMessagesClient = DEFAULT_CACHE_LARGE_MESSAGE_CLIENT;
 
    private List<Pair<TransportConfiguration, TransportConfiguration>> staticConnectors;
@@ -249,9 +249,9 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
    }
 
    private void initialise() throws Exception
-   {            
+   {
       setThreadPools();
-      
+
       instantiateLoadBalancingPolicy();
 
       if (discoveryAddress != null)
@@ -399,8 +399,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
    {
       this.cacheLargeMessagesClient = cached;
    }
-   
-   
+
    public synchronized List<Pair<TransportConfiguration, TransportConfiguration>> getStaticConnectors()
    {
       return staticConnectors;
@@ -809,11 +808,6 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
          }
       }
 
-      for (ConnectionManager connectionManager : connectionManagerMap.values())
-      {
-         connectionManager.causeExit();
-      }
-
       connectionManagerMap.clear();
 
       if (!useGlobalPools)
@@ -910,6 +904,14 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
    }
 
    // Protected ------------------------------------------------------------------------------
+
+   @Override
+   protected void finalize() throws Throwable
+   {
+      close();
+
+      super.finalize();
+   }
 
    // Private --------------------------------------------------------------------------------
 

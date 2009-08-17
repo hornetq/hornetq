@@ -24,6 +24,7 @@ package org.jboss.messaging.core.client.impl;
 
 import static org.jboss.messaging.core.remoting.impl.wireformat.PacketImpl.EARLY_RESPONSE;
 
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -89,9 +90,8 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
    // Attributes
    // -----------------------------------------------------------------------------------
 
-   // We need to keep the reference to prevent the factory getting gc'd before the sessions are finished being used
-   private final ClientSessionFactory factory;
-
+   private final ClientSessionFactory sessionFactory;
+   
    private final TransportConfiguration connectorConfig;
 
    private final TransportConfiguration backupConfig;
@@ -142,8 +142,6 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
 
    private boolean failoverOnServerShutdown;
 
-   private volatile boolean closed;
-
    private Set<FailureListener> listeners = new ConcurrentHashSet<FailureListener>();
 
    private Connector connector;
@@ -171,7 +169,7 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
    // Constructors
    // ---------------------------------------------------------------------------------
 
-   public ConnectionManagerImpl(final ClientSessionFactory factory,
+   public ConnectionManagerImpl(final ClientSessionFactory sessionFactory,
                                 final TransportConfiguration connectorConfig,
                                 final TransportConfiguration backupConfig,
                                 final boolean failoverOnServerShutdown,
@@ -185,8 +183,8 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
                                 final ExecutorService threadPool,
                                 final ScheduledExecutorService scheduledThreadPool)
    {
-      this.factory = factory;
-
+      this.sessionFactory = sessionFactory;
+      
       this.connectorConfig = connectorConfig;
 
       this.backupConfig = backupConfig;
@@ -452,26 +450,6 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
       return sessions.size();
    }
 
-   public void causeExit()
-   {
-      closed = true;
-   }
-
-   public void close()
-   {
-      synchronized (failoverLock)
-      {
-         synchronized (createSessionLock)
-         {
-            refCount = 0;
-
-            checkCloseConnections();
-         }
-      }
-
-      closed = true;
-   }
-
    public void addFailureListener(FailureListener listener)
    {
       listeners.add(listener);
@@ -598,7 +576,6 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
                oldConnections.add(entry.connection);
             }
 
-            // closePingers();
 
             connections.clear();
 
@@ -792,11 +769,6 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
 
       while (true)
       {
-         if (closed)
-         {
-            return null;
-         }
-
          RemotingConnection connection = getConnection(initialRefCount);
 
          if (connection == null)
@@ -849,8 +821,8 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
          {
             pingRunnable.cancel();
 
-            pingerFuture.cancel(false);
-
+            boolean ok = pingerFuture.cancel(false);
+            
             pingRunnable = null;
 
             pingerFuture = null;
@@ -881,12 +853,13 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
          catch (Throwable ignore)
          {
          }
+         
 
          connector = null;
       }
 
    }
-
+   
    public RemotingConnection getConnection(final int initialRefCount)
    {
       RemotingConnection conn;
@@ -987,7 +960,7 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
          {
             pingRunnable = new PingRunnable();
 
-            pingerFuture = scheduledThreadPool.scheduleWithFixedDelay(pingRunnable,
+            pingerFuture = scheduledThreadPool.scheduleWithFixedDelay(new ActualScheduled(pingRunnable),
                                                                       0,
                                                                       clientFailureCheckPeriod,
                                                                       TimeUnit.MILLISECONDS);
@@ -1219,13 +1192,34 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
          }
       }
    }
+   
+   private static final class ActualScheduled implements Runnable
+   {
+      private final WeakReference<PingRunnable> pingRunnable;
+      
+      ActualScheduled(final PingRunnable runnable)
+      {
+         this.pingRunnable = new WeakReference<PingRunnable>(runnable);
+      }
+      
+      public void run()
+      {
+         PingRunnable runnable = pingRunnable.get();
+         
+         if (runnable != null)
+         {
+            runnable.run();
+         }
+      }
+      
+   }
 
-   private class PingRunnable implements Runnable
+   private final class PingRunnable implements Runnable
    {
       private boolean cancelled;
 
       private boolean first;
-
+      
       public synchronized void run()
       {
          if (cancelled || (stopPingingAfterOne && !first))
@@ -1277,7 +1271,7 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
             }
          }
       }
-
+      
       public synchronized void cancel()
       {
          cancelled = true;

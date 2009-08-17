@@ -406,8 +406,8 @@ public class ClientConsumerImpl implements ClientConsumerInternal
 
       // Flow control for the first packet, we will have others
       flowControl(packet.getPacketSize(), false);
-
-      currentChunkMessage = new ClientMessageImpl();
+            
+      currentChunkMessage = new ClientMessageImpl(packet.getDeliveryCount());
 
       currentChunkMessage.decodeProperties(ChannelBuffers.wrappedBuffer(packet.getLargeMessageHeader()));
 

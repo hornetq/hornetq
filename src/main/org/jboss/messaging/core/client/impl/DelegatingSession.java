@@ -20,7 +20,6 @@
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
 
-
 package org.jboss.messaging.core.client.impl;
 
 import javax.transaction.xa.XAException;
@@ -55,31 +54,30 @@ import org.jboss.messaging.utils.SimpleString;
 public class DelegatingSession implements ClientSessionInternal
 {
    private static final Logger log = Logger.getLogger(DelegatingSession.class);
-   
+
    private final ClientSessionInternal session;
-   
+
    private Exception creationStack;
-   
+
    @Override
    protected void finalize() throws Throwable
    {
       if (!session.isClosed())
       {
          log.warn("I'm closing a core ClientSession you left open. Please make sure you close all ClientSessions explicitly " + "before letting them go out of scope!");
-         
+
          log.warn("The ClientSession you didn't close was created here:", creationStack);
-         
+
          close();
       }
 
       super.finalize();
    }
 
-   
    public DelegatingSession(final ClientSessionInternal session)
    {
       this.session = session;
-      
+
       this.creationStack = new Exception();
    }
 
@@ -237,6 +235,11 @@ public class DelegatingSession implements ClientSessionInternal
       return session.createProducer(address);
    }
 
+   public void createQueue(String address, String queueName) throws MessagingException
+   {
+      session.createQueue(address, queueName);
+   }
+   
    public void createQueue(SimpleString address, SimpleString queueName, boolean durable) throws MessagingException
    {
       session.createQueue(address, queueName, durable);
@@ -470,5 +473,5 @@ public class DelegatingSession implements ClientSessionInternal
    public void setForceNotSameRM(boolean force)
    {
       session.setForceNotSameRM(force);
-   }   
+   }
 }

@@ -237,6 +237,11 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
    // ClientSession implementation
    // -----------------------------------------------------------------
 
+   public void createQueue(final SimpleString address, final SimpleString queueName) throws MessagingException
+   {
+      internalCreateQueue(address, queueName, null, false, false);
+   }
+   
    public void createQueue(final SimpleString address, final SimpleString queueName, final boolean durable) throws MessagingException
    {
       internalCreateQueue(address, queueName, null, durable, false);
@@ -325,7 +330,12 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
    {
       return createConsumer(queueName, filterString, consumerWindowSize, consumerMaxRate, false);
    }
-
+   
+   public void createQueue(final String address, final String queueName) throws MessagingException
+   {
+      internalCreateQueue(toSimpleString(address), toSimpleString(queueName), null, false, false);
+   }
+   
    public ClientConsumer createConsumer(final String queueName, final String filterString) throws MessagingException
    {
       return createConsumer(toSimpleString(queueName), toSimpleString(filterString));

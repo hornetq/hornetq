@@ -174,11 +174,11 @@ public class MessagingServerImpl implements MessagingServer
    private RemotingService remotingService;
 
    private ManagementService managementService;
-   
+
    private MemoryManager memoryManager;
 
    private DeploymentManager deploymentManager;
-      
+
    private Deployer basicUserCredentialsDeployer;
 
    private Deployer addressSettingsDeployer;
@@ -196,13 +196,12 @@ public class MessagingServerImpl implements MessagingServer
    private final Object initialiseLock = new Object();
 
    private boolean initialised;
-   
+
    private ConnectionManager replicatingConnectionManager;
 
    private int managementConnectorID;
-   
+
    private static AtomicInteger managementConnectorSequence = new AtomicInteger(0);
-   
 
    // Constructors
    // ---------------------------------------------------------------------------------
@@ -226,7 +225,7 @@ public class MessagingServerImpl implements MessagingServer
    {
       this(configuration, null, securityManager);
    }
-   
+
    public MessagingServerImpl(Configuration configuration,
                               MBeanServer mbeanServer,
                               final JBMSecurityManager securityManager)
@@ -255,16 +254,16 @@ public class MessagingServerImpl implements MessagingServer
       this.addressSettingsRepository = new HierarchicalObjectRepository<AddressSettings>();
 
       addressSettingsRepository.setDefault(new AddressSettings());
-      
+
       this.managementConnectorID = managementConnectorSequence.decrementAndGet();
    }
-   
+
    // lifecycle methods
    // ----------------------------------------------------------------
 
    public synchronized void start() throws Exception
    {
-      log.info((configuration.isBackup() ? "backup":"live") + " server is starting..");
+      log.info((configuration.isBackup() ? "backup" : "live") + " server is starting..");
 
       if (started)
       {
@@ -289,24 +288,22 @@ public class MessagingServerImpl implements MessagingServer
 
       log.info("JBoss Messaging Server version " + getVersion().getFullVersion() + " started");
    }
-   
+
    @Override
    protected void finalize() throws Throwable
    {
       if (started)
       {
-         log.warn("MessagingServer is being finalized and has not been stopped. Please remember to stop the " +
-                  "server before letting it go out of scope");
-         
-         stop();         
+         log.warn("MessagingServer is being finalized and has not been stopped. Please remember to stop the " + "server before letting it go out of scope");
+
+         stop();
       }
-      
+
       super.finalize();
    }
-    
 
    public synchronized void stop() throws Exception
-   {      
+   {
       if (!started)
       {
          return;
@@ -369,8 +366,7 @@ public class MessagingServerImpl implements MessagingServer
 
          replicatingConnection = null;
          replicatingChannel = null;
-         
-         replicatingConnectionManager.close();
+         replicatingConnectionManager = null;
       }
 
       resourceManager.stop();
@@ -402,7 +398,7 @@ public class MessagingServerImpl implements MessagingServer
       threadPool = null;
 
       pagingManager.stop();
-      
+
       memoryManager.stop();
 
       pagingManager = null;
@@ -562,7 +558,7 @@ public class MessagingServerImpl implements MessagingServer
                                                      final int sendWindowSize) throws Exception
    {
       checkActivate(connection);
-      
+
       return doCreateSession(name,
                              channelID,
                              replicatedChannelID,
@@ -623,7 +619,7 @@ public class MessagingServerImpl implements MessagingServer
       {
          throw new IllegalArgumentException("node id is null");
       }
-      
+
       synchronized (initialiseLock)
       {
          if (initialised)
@@ -643,9 +639,12 @@ public class MessagingServerImpl implements MessagingServer
          {
             initialised = false;
 
-            throw new IllegalStateException("Live and backup unique ids different (" + liveUniqueID + ":" + backupID + "). You're probably trying to restart a live backup pair after a crash");
+            throw new IllegalStateException("Live and backup unique ids different (" + liveUniqueID +
+                                            ":" +
+                                            backupID +
+                                            "). You're probably trying to restart a live backup pair after a crash");
          }
-         
+
          log.info("Backup server is now operational");
       }
    }
@@ -659,7 +658,7 @@ public class MessagingServerImpl implements MessagingServer
    {
       return remotingService.getConnections().size();
    }
-   
+
    public PostOffice getPostOffice()
    {
       return postOffice;
@@ -770,7 +769,7 @@ public class MessagingServerImpl implements MessagingServer
    {
       activateCallbacks.remove(callback);
    }
-   
+
    public ExecutorFactory getExecutorFactory()
    {
       return executorFactory;
@@ -790,7 +789,7 @@ public class MessagingServerImpl implements MessagingServer
       return new PagingManagerImpl(new PagingStoreFactoryNIO(configuration.getPagingDirectory(), executorFactory),
                                    storageManager,
                                    addressSettingsRepository,
-                                    configuration.isJournalSyncNonTransactional(),
+                                   configuration.isJournalSyncNonTransactional(),
                                    configuration.isBackup());
    }
 
@@ -810,7 +809,7 @@ public class MessagingServerImpl implements MessagingServer
       if (configuration.isBackup())
       {
          log.info("A connection has been made to the backup server so it will be activated! This will result in the live server being considered failed.");
-         
+
          synchronized (this)
          {
             freezeBackupConnection();
@@ -830,7 +829,7 @@ public class MessagingServerImpl implements MessagingServer
             {
                clusterManager.activate();
             }
-            
+
             if (configuration.isFileDeploymentEnabled())
             {
                queueDeployer = new QueueDeployer(deploymentManager, messagingServerControl);
@@ -900,14 +899,19 @@ public class MessagingServerImpl implements MessagingServer
                                                                                                      false));
 
       managementService = new ManagementServiceImpl(mbeanServer, configuration, managementConnectorID);
-      
-      remotingService = new RemotingServiceImpl(configuration, this, managementService, threadPool, scheduledPool, managementConnectorID);      
-      
+
+      remotingService = new RemotingServiceImpl(configuration,
+                                                this,
+                                                managementService,
+                                                threadPool,
+                                                scheduledPool,
+                                                managementConnectorID);
+
       memoryManager = new MemoryManagerImpl();
-      
+
       memoryManager.start();
    }
-   
+
    private void initialisePart2() throws Exception
    {
       // Create the hard-wired components
@@ -1017,8 +1021,9 @@ public class MessagingServerImpl implements MessagingServer
       deployQueuesFromConfiguration();
 
       // Deploy any predefined queues
-      
-      // We don't activate queue deployer on the backup - all queues deployed on live are deployed on backup by replicating them
+
+      // We don't activate queue deployer on the backup - all queues deployed on live are deployed on backup by
+      // replicating them
       if (configuration.isFileDeploymentEnabled() && !configuration.isBackup())
       {
          queueDeployer = new QueueDeployer(deploymentManager, messagingServerControl);
@@ -1152,7 +1157,7 @@ public class MessagingServerImpl implements MessagingServer
                   }
                });
 
-               //This may take a while especially if the journal is large
+               // This may take a while especially if the journal is large
                boolean ok = future.await(60000);
 
                if (!ok)
@@ -1164,12 +1169,12 @@ public class MessagingServerImpl implements MessagingServer
             {
                log.warn("Backup server MUST be started before live server. Initialisation will not proceed.");
 
-               return false; 
+               return false;
             }
          }
       }
 
-      return true;      
+      return true;
    }
 
    private void loadJournal() throws Exception
@@ -1224,15 +1229,15 @@ public class MessagingServerImpl implements MessagingServer
    }
 
    private void setNodeID() throws Exception
-   {      
+   {
       if (!configuration.isBackup())
-      {         
+      {
          if (uuid == null)
-         {            
+         {
             uuid = storageManager.getPersistentID();
-            
+
             if (uuid == null)
-            {               
+            {
                uuid = UUIDGenerator.getInstance().generateUUID();
 
                storageManager.setPersistentID(uuid);
@@ -1242,9 +1247,9 @@ public class MessagingServerImpl implements MessagingServer
          }
       }
       else
-      {         
+      {
          UUID currentUUID = storageManager.getPersistentID();
-         
+
          if (currentUUID != null)
          {
             if (!currentUUID.equals(uuid))
@@ -1381,10 +1386,12 @@ public class MessagingServerImpl implements MessagingServer
    {
       if (version.getIncrementingVersion() != incrementingVersion)
       {
-         log.warn("Client with version " + incrementingVersion + " is not compatible with server version " +
-                                      version.getFullVersion()  + ". " +
-                                      "Please ensure all clients and servers are upgraded to the same version for them to " +
-                                      "interoperate");
+         log.warn("Client with version " + incrementingVersion +
+                  " is not compatible with server version " +
+                  version.getFullVersion() +
+                  ". " +
+                  "Please ensure all clients and servers are upgraded to the same version for them to " +
+                  "interoperate");
          return null;
       }
 

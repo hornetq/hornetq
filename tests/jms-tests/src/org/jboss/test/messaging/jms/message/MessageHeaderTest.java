@@ -829,6 +829,12 @@ public class MessageHeaderTest extends MessageHeaderTestBase
 
    class FakeSession implements ClientSession
    {
+      public void createQueue(String address, String queueName) throws MessagingException
+      {
+         // TODO Auto-generated method stub
+         
+      }
+
       private final ClientMessage message;
 
       public FakeSession(ClientMessage message)

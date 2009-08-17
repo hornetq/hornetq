@@ -50,6 +50,8 @@ public interface ClientSession extends XAResource
    /**
     * Queues created by this method are <em>not</em> temporary
     */
+   void createQueue(String address, String queueName) throws MessagingException;
+   
    void createQueue(String address, String queueName, boolean durable) throws MessagingException;
 
    void createQueue(SimpleString address, SimpleString queueName, SimpleString filterString, boolean durable) throws MessagingException;
