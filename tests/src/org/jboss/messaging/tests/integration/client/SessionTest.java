@@ -65,10 +65,13 @@ public class SessionTest extends ServiceTestBase
             }
          });
          
-         //Make sure failure listener is closed if server is stopped without session being closed first
+         //Make sure failure listener is called if server is stopped without session being closed first
          server.stop();
          assertTrue(latch.await(5, TimeUnit.SECONDS));
-         
+
+         // not really part of the test,
+         // we still clean up resources left in the VM
+         clientSession.close();
       }
       finally
       {
