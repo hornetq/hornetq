@@ -346,6 +346,8 @@ public class MessagingServerImpl implements MessagingServer
          deploymentManager.stop();
       }
 
+      managementService.unregisterServer();
+
       managementService.stop();
 
       storageManager.stop();
