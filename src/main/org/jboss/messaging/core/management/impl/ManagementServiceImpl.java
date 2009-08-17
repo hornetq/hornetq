@@ -613,7 +613,19 @@ public class ManagementServiceImpl implements ManagementService
       {
          if (!registeredNames.isEmpty())
          {
-            log.warn("On ManagementService stop, there are " + registeredNames.size() + " MBeans");
+            List<String> unexpectedResourceNames = new ArrayList<String>();
+            for (String name : resourceNames)
+            {
+               // only addresses and queues should still be registered
+               if (!(name.startsWith(ResourceNames.CORE_ADDRESS) || name.startsWith(ResourceNames.CORE_QUEUE)))
+               {
+                  unexpectedResourceNames.add(name);
+               }
+            }
+            if (!unexpectedResourceNames.isEmpty())
+            {
+               log.warn("On ManagementService stop, there are " + registeredNames.size() + " unexpected registered MBeans");
+            }
 
             for (ObjectName on : this.registeredNames)
             {
