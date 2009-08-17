@@ -250,9 +250,18 @@ public class TemporaryQueueTest extends ServiceTestBase
    @Override
    protected void tearDown() throws Exception
    {
+      
+      sf.close();
+      
       session.close();
 
       server.stop();
+      
+      session = null;
+      
+      server = null;
+      
+      sf = null;
 
       super.tearDown();
    }

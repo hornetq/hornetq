@@ -55,6 +55,8 @@ public class MessagePriorityTest extends UnitTestCase
    private MessagingServer server;
 
    private ClientSession session;
+   
+   private ClientSessionFactory sf;
 
    // Static --------------------------------------------------------
 
@@ -228,7 +230,7 @@ public class MessagePriorityTest extends UnitTestCase
       server = Messaging.newMessagingServer(config, false);
       server.start();
 
-      ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration(InVMConnectorFactory.class.getName()));
+      sf = new ClientSessionFactoryImpl(new TransportConfiguration(InVMConnectorFactory.class.getName()));
       sf.setBlockOnNonPersistentSend(true);
       sf.setBlockOnPersistentSend(true);
       session = sf.createSession(false, true, true);
@@ -237,9 +239,17 @@ public class MessagePriorityTest extends UnitTestCase
    @Override
    protected void tearDown() throws Exception
    {
+      sf.close();
+      
       session.close();
 
       server.stop();
+      
+      sf = null;
+      
+      session = null;
+      
+      server = null;
 
       super.tearDown();
    }

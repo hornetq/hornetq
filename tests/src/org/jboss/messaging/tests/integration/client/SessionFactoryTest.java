@@ -70,6 +70,24 @@ public class SessionFactoryTest extends ServiceTestBase
 
    private TransportConfiguration backupTC;
    
+   protected void tearDown() throws Exception
+   {
+      if (liveService != null && liveService.isStarted())
+      {
+         liveService.stop();
+      }
+      if (backupService != null && backupService.isStarted())
+      {
+         liveService.stop();
+      }
+      liveService = null;
+      backupService = null;
+      liveTC = null;
+      backupTC = null;
+      
+      super.tearDown();
+   }
+   
    public void testSerializable() throws Exception
    {
       ClientSessionFactory cf = new ClientSessionFactoryImpl();

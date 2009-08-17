@@ -61,6 +61,8 @@ public class SessionCloseTest extends UnitTestCase
 
    private MessagingServer server;
 
+   private ClientSessionFactory sf;
+
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
@@ -70,7 +72,6 @@ public class SessionCloseTest extends UnitTestCase
    public void testCanNotUseAClosedSession() throws Exception
    {
 
-      ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration(InVMConnectorFactory.class.getName()));
       final ClientSession session = sf.createSession(false, true, true);
 
       session.close();
@@ -140,7 +141,7 @@ public class SessionCloseTest extends UnitTestCase
             session.rollback();
          }
       });
-      
+
       expectMessagingException(MessagingException.OBJECT_CLOSED, new MessagingAction()
       {
          public void run() throws MessagingException
@@ -148,7 +149,7 @@ public class SessionCloseTest extends UnitTestCase
             session.queueQuery(randomSimpleString());
          }
       });
-      
+
       expectMessagingException(MessagingException.OBJECT_CLOSED, new MessagingAction()
       {
          public void run() throws MessagingException
@@ -158,11 +159,10 @@ public class SessionCloseTest extends UnitTestCase
       });
 
    }
-   
+
    public void testCanNotUseXAWithClosedSession() throws Exception
    {
 
-      ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration(InVMConnectorFactory.class.getName()));
       final ClientSession session = sf.createSession(true, false, false);
 
       session.close();
@@ -177,7 +177,7 @@ public class SessionCloseTest extends UnitTestCase
             session.commit(randomXid(), randomBoolean());
          }
       });
-      
+
       expectXAException(XAException.XAER_RMERR, new MessagingAction()
       {
          public void run() throws XAException
@@ -233,7 +233,6 @@ public class SessionCloseTest extends UnitTestCase
       SimpleString address = randomSimpleString();
       SimpleString queue = randomSimpleString();
 
-      ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration(InVMConnectorFactory.class.getName()));
       ClientSession session = sf.createSession(false, true, true);
 
       session.createQueue(address, queue, false);
@@ -262,14 +261,29 @@ public class SessionCloseTest extends UnitTestCase
       config.getAcceptorConfigurations().add(new TransportConfiguration(InVMAcceptorFactory.class.getCanonicalName()));
       config.setSecurityEnabled(false);
       server = Messaging.newMessagingServer(config, false);
-      
+
       server.start();
+
+      sf = new ClientSessionFactoryImpl(new TransportConfiguration(InVMConnectorFactory.class.getName()));
+
    }
 
    @Override
    protected void tearDown() throws Exception
    {
-      server.stop();
+      if (sf != null)
+      {
+         sf.close();
+      }
+
+      if (server != null)
+      {
+         server.stop();
+      }
+
+      sf = null;
+
+      server = null;
 
       super.tearDown();
    }

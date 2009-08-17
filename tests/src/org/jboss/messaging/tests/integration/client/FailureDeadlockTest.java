@@ -82,6 +82,11 @@ public class FailureDeadlockTest extends UnitTestCase
    @Override
    protected void tearDown() throws Exception
    {
+      if (jmsServer != null && jmsServer.isStarted())
+      {
+         jmsServer.stop();
+      }
+
       if (server != null && server.isStarted())
       {
          try
@@ -92,9 +97,17 @@ public class FailureDeadlockTest extends UnitTestCase
          {
             e.printStackTrace();
          }
-         server = null;
 
       }
+
+      server = null;
+      
+      jmsServer = null;
+      
+      cf1 = null;
+      
+      cf2 = null;
+      
 
       super.tearDown();
    }

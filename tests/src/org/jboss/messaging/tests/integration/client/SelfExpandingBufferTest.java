@@ -138,6 +138,8 @@ public class SelfExpandingBufferTest extends ServiceTestBase
       {
          service.stop();
       }
+      
+      service = null;
 
       super.tearDown();
    }

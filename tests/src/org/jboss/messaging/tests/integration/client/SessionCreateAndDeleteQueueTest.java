@@ -157,6 +157,8 @@ public class SessionCreateAndDeleteQueueTest extends ServiceTestBase
          server.stop();
       }
       
+      server = null;
+      
       super.tearDown();
 
    }

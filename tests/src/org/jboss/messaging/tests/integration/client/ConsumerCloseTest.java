@@ -188,6 +188,10 @@ public class ConsumerCloseTest extends ServiceTestBase
       sf.close();
 
       server.stop();
+      
+      session = null;
+      sf = null;
+      server = null;
 
       super.tearDown();
    }

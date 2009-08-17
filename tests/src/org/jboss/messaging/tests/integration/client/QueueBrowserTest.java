@@ -111,6 +111,8 @@ public class QueueBrowserTest extends ServiceTestBase
       consumer.close();
 
       session.close();
+      
+      sf.close();
 
    }
 
@@ -158,6 +160,8 @@ public class QueueBrowserTest extends ServiceTestBase
 
       session.close();
 
+      sf.close();
+
    }
 
    public void testConsumerBrowserWithStringSelector() throws Exception
@@ -193,6 +197,8 @@ public class QueueBrowserTest extends ServiceTestBase
       }
 
       session.close();
+
+      sf.close();
 
    }
 
@@ -230,6 +236,7 @@ public class QueueBrowserTest extends ServiceTestBase
       }
 
       session.close();
+      sf.close();
 
    }
 
@@ -274,6 +281,9 @@ public class QueueBrowserTest extends ServiceTestBase
       }
 
       session.close();
+      
+      
+      sf.close();
 
    }
 
@@ -318,6 +328,8 @@ public class QueueBrowserTest extends ServiceTestBase
       assertEquals(100, ((Queue)server.getPostOffice().getBinding(QUEUE).getBindable()).getMessageCount());
 
       session.close();
+      
+      sf.close();
    }
 
    public void testConsumerBrowserMessageAckDoesNothing() throws Exception
@@ -353,6 +365,8 @@ public class QueueBrowserTest extends ServiceTestBase
       assertEquals(100, ((Queue)server.getPostOffice().getBinding(QUEUE).getBindable()).getMessageCount());
 
       session.close();
+      
+      sf.close();
    }
 
 }

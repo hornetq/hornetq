@@ -128,6 +128,7 @@ public class CommitRollbackTest extends ServiceTestBase
          assertEquals(numMessages, q.getDeliveringCount());
          session.close();
          sendSession.close();
+         cf.close();
       }
       finally
       {
@@ -243,6 +244,7 @@ public class CommitRollbackTest extends ServiceTestBase
          assertEquals(0, q.getMessageCount());
          sendSession.close();
          session.close();
+         cf.close();
       }
       finally
       {
@@ -289,6 +291,7 @@ public class CommitRollbackTest extends ServiceTestBase
          assertTrue(latch.await(5, TimeUnit.SECONDS));
          sendSession.close();
          session.close();
+         cf.close();
       }
       finally
       {

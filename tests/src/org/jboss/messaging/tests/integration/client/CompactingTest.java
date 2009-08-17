@@ -311,10 +311,12 @@ public class CompactingTest extends ServiceTestBase
       sf.close();
 
       server.stop();
+      
+      server = null;
+      
+      sf = null;
 
-      // We don't super.tearDown here because in case of failure, the data may be useful for debug
-      // so, we only clear data on setup.
-      // super.tearDown();
+      super.tearDown();
    }
 
    // Package protected ---------------------------------------------

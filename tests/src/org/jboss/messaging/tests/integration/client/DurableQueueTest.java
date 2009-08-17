@@ -166,6 +166,14 @@ public class DurableQueueTest extends ServiceTestBase
       session.close();
 
       server.stop();
+      
+      sf.close();
+      
+      session = null;
+      
+      server = null;
+      
+      sf = null;
 
       super.tearDown();
    }

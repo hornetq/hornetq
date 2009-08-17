@@ -61,6 +61,8 @@ public class MessageExpirationTest extends ServiceTestBase
    private MessagingServer server;
 
    private ClientSession session;
+   
+   private ClientSessionFactory sf;
 
    // Static --------------------------------------------------------
 
@@ -146,16 +148,24 @@ public class MessageExpirationTest extends ServiceTestBase
       server = createServer(false);
       server.start();
 
-      ClientSessionFactory sf = createInVMFactory();
+      sf = createInVMFactory();
       session = sf.createSession(false, true, true);
    }
 
    @Override
    protected void tearDown() throws Exception
    {
+      sf.close();
+      
       session.close();
 
       server.stop();
+      
+      session = null;
+      
+      server = null;
+      
+      sf = null;
 
       super.tearDown();
    }

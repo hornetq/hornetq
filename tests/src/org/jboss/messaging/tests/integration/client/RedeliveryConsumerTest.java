@@ -269,10 +269,21 @@ public class RedeliveryConsumerTest extends ServiceTestBase
    @Override
    protected void tearDown() throws Exception
    {
+
+      if (factory != null)
+      {
+         factory.close();
+      }
+      
       if (server != null && server.isStarted())
       {
          server.stop();
       }
+      
+      
+      factory = null;
+      
+      server = null;
       
       super.tearDown();
    }

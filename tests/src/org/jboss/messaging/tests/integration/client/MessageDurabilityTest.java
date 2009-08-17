@@ -202,9 +202,17 @@ public class MessageDurabilityTest extends ServiceTestBase
    @Override
    protected void tearDown() throws Exception
    {
+      sf.close();
+      
       session.close();
 
       server.stop();
+      
+      server = null;
+      
+      session = null;
+      
+      sf = null;
 
       super.tearDown();
    }

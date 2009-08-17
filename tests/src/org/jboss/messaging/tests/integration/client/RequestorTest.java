@@ -57,6 +57,8 @@ public class RequestorTest extends UnitTestCase
    // Attributes ----------------------------------------------------
 
    private MessagingServer service;
+   
+   private ClientSessionFactory sf;
 
    // Static --------------------------------------------------------
 
@@ -71,7 +73,6 @@ public class RequestorTest extends UnitTestCase
       SimpleString requestAddress = randomSimpleString();
       SimpleString requestQueue = randomSimpleString();
 
-      ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration(InVMConnectorFactory.class.getName()));
       final ClientSession session = sf.createSession(false, true, true);
 
       session.start();
@@ -228,12 +229,20 @@ public class RequestorTest extends UnitTestCase
       conf.getAcceptorConfigurations().add(new TransportConfiguration(InVMAcceptorFactory.class.getName()));
       service = Messaging.newMessagingServer(conf, false);
       service.start();
+      
+      sf = new ClientSessionFactoryImpl(new TransportConfiguration(InVMConnectorFactory.class.getName()));
    }
 
    @Override
    protected void tearDown() throws Exception
    {
       service.stop();
+      
+      sf.close();
+      
+      sf = null;
+      
+      service = null;
 
       super.tearDown();
    }
