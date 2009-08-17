@@ -22,11 +22,6 @@
 
 package org.jboss.messaging.tests.integration.client;
 
-import static org.jboss.messaging.tests.util.RandomUtil.randomSimpleString;
-
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-
 import org.jboss.messaging.core.client.ClientConsumer;
 import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.client.ClientProducer;
@@ -43,8 +38,12 @@ import org.jboss.messaging.core.remoting.RemotingConnection;
 import org.jboss.messaging.core.remoting.impl.RemotingConnectionImpl;
 import org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory;
 import org.jboss.messaging.core.server.MessagingServer;
+import static org.jboss.messaging.tests.util.RandomUtil.randomSimpleString;
 import org.jboss.messaging.tests.util.ServiceTestBase;
 import org.jboss.messaging.utils.SimpleString;
+
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 /**
  * A TemporaryQueueTest
@@ -205,8 +204,8 @@ public class TemporaryQueueTest extends ServiceTestBase
 
 
       // let some time for the server to clean the connections
-      latch.await(2 * CONNECTION_TTL, TimeUnit.MILLISECONDS);
-
+      latch.await(2 * CONNECTION_TTL + 1, TimeUnit.MILLISECONDS);
+      Thread.sleep(5000);
       assertEquals(0, server.getConnectionCount());
       
       session.close();
