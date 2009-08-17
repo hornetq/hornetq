@@ -151,9 +151,14 @@ public class FailoverPreAcknowledgeTest extends UnitTestCase
 
       ClientMessage message = consumer2.receive(1000);
 
-      assertNull(message);
-
-      session2.close();
+      try 
+      {
+         assertNull(message);
+      }
+      finally 
+      {
+         session2.close();
+      }
    }
 
    // Package protected ---------------------------------------------
