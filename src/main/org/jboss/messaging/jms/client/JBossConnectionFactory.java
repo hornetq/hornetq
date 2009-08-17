@@ -532,7 +532,21 @@ public class JBossConnectionFactory implements ConnectionFactory, QueueConnectio
                                                        transactionBatchSize,
                                                        sessionFactory);
 
-      connection.authorize();
+      
+      try {
+         connection.authorize();
+      } 
+      catch (JMSException e)
+      {
+         try
+         {
+            connection.close();
+         }
+         catch (JMSException me)
+         {
+         }
+         throw e;
+      }
 
       return connection;
    }
