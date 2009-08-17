@@ -246,6 +246,8 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
 
       connections.clear();
 
+      managementService.unregisterAcceptors();
+
       started = false;
    }
 

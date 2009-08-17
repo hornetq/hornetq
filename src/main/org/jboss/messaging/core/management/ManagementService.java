@@ -112,7 +112,7 @@ public interface ManagementService extends NotificationService, MessagingCompone
 
    void registerAcceptor(Acceptor acceptor, TransportConfiguration configuration) throws Exception;
 
-   void unregisterAcceptor(String name) throws Exception;
+   void unregisterAcceptors();
 
    void registerDivert(Divert divert, DivertConfiguration config) throws Exception;
 
@@ -137,4 +137,5 @@ public interface ManagementService extends NotificationService, MessagingCompone
    Object getResource(String resourceName);
 
    ServerMessage handleMessage(ServerMessage message) throws Exception;
+
 }

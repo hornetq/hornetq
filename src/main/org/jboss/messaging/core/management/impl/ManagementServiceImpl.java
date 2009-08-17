@@ -26,12 +26,13 @@ package org.jboss.messaging.core.management.impl;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.atomic.AtomicLong;
 
 import javax.management.MBeanServer;
 import javax.management.NotificationBroadcasterSupport;
@@ -319,6 +320,31 @@ public class ManagementServiceImpl implements ManagementService
       registerInRegistry(ResourceNames.CORE_ACCEPTOR + configuration.getName(), control);
    }
 
+   public void unregisterAcceptors()
+   {
+      List<String> acceptors = new ArrayList<String>();      
+      for (String resourceName : registry.keySet())
+      {
+         if (resourceName.startsWith(ResourceNames.CORE_ACCEPTOR))
+         {
+            acceptors.add(resourceName);
+         }
+      }
+      
+      for (String acceptor : acceptors)
+      {
+         String name = acceptor.substring(ResourceNames.CORE_ACCEPTOR.length());
+         try
+         {
+            unregisterAcceptor(name);
+         }
+         catch (Exception e)
+         {
+            e.printStackTrace();
+         }
+      }
+   }
+   
    public synchronized void unregisterAcceptor(final String name) throws Exception
    {
       ObjectName objectName = ObjectNames.getAcceptorObjectName(name);
