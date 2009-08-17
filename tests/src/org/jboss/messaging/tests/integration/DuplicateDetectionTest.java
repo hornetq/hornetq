@@ -1892,6 +1892,8 @@ public class DuplicateDetectionTest extends ServiceTestBase
       {
          messagingService.stop();
       }
+      
+      messagingService = null;
             
       super.tearDown();
    }

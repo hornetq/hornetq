@@ -81,6 +81,25 @@ public class LargeMessageTestBase extends ServiceTestBase
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
+   
+   protected void tearDown() throws Exception
+   {
+      if (server != null && server.isStarted())
+      {
+         try
+         {
+            server.stop();
+         }
+         catch (Exception e)
+         {
+            log.warn(e.getMessage(), e);
+         }
+      }
+      
+      server = null;
+      
+      super.tearDown();
+   }
 
    protected void testChunks(final boolean isXA,
                              final boolean rollbackFirstSend,

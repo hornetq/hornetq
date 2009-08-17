@@ -231,6 +231,10 @@ public class String64KLimitTest extends UnitTestCase
       sf.close();
 
       server.stop();
+      
+      server = null;
+      sf = null;
+      session = null;
 
       super.tearDown();
    }
