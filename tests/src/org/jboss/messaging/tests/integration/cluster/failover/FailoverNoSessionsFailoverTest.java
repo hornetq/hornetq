@@ -154,24 +154,29 @@ public class FailoverNoSessionsFailoverTest extends UnitTestCase
                  
       session2.start();
       
-      for (int i = 0; i < numMessages; i++)
+      try
       {
+         for (int i = 0; i < numMessages; i++)
+         {
+            ClientMessage message2 = consumer2.receive(1000);
+
+            assertNotNull(message2);
+
+            assertEquals("aardvarks", message2.getBody().readString());
+
+            assertEquals(i, message2.getProperty(new SimpleString("count")));
+
+            message2.acknowledge();
+         }
+
          ClientMessage message2 = consumer2.receive(1000);
-         
-         assertNotNull(message2);
-         
-         assertEquals("aardvarks", message2.getBody().readString());
 
-         assertEquals(i, message2.getProperty(new SimpleString("count")));
-
-         message2.acknowledge();
+         assertNull(message2);
       }
-      
-      ClientMessage message2 = consumer2.receive(1000);
-      
-      assertNull(message2);
-      
-      session2.close();
+      finally
+      {
+         session2.close();
+      }
    }
    
    // Package protected ---------------------------------------------
