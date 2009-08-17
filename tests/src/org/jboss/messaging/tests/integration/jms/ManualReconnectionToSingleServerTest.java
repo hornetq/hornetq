@@ -24,6 +24,9 @@ package org.jboss.messaging.tests.integration.jms;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_AUTO_GROUP;
+import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_ACKNOWLEDGE;
+import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND;
+import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_PERSISTENT_SEND;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CACHE_LARGE_MESSAGE_CLIENT;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD;
 import static org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME;
@@ -56,6 +59,8 @@ import javax.jms.Session;
 import javax.jms.Topic;
 import javax.naming.Context;
 
+import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
+import org.jboss.messaging.core.client.impl.ClientSessionImpl;
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
@@ -268,9 +273,9 @@ public class ManualReconnectionToSingleServerTest extends UnitTestCase
                                             DEFAULT_CONSUMER_MAX_RATE,
                                             DEFAULT_PRODUCER_WINDOW_SIZE,
                                             DEFAULT_PRODUCER_MAX_RATE,
-                                            true,
-                                            true,
-                                            true,
+                                            DEFAULT_BLOCK_ON_ACKNOWLEDGE,
+                                            DEFAULT_BLOCK_ON_PERSISTENT_SEND,
+                                            DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND,
                                             DEFAULT_AUTO_GROUP,
                                             DEFAULT_PRE_ACKNOWLEDGE,
                                             DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME,
