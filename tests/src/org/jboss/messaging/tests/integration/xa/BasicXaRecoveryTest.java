@@ -116,7 +116,19 @@ public class BasicXaRecoveryTest extends ServiceTestBase
          }
       }
       server = null;
+
       clientSession = null;
+
+      server = null;
+
+      clientProducer = null;
+
+      clientConsumer = null;
+
+      sessionFactory = null;
+
+      configuration = null;
+      
 
       super.tearDown();
    }
