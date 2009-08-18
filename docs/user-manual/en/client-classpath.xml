@@ -21,7 +21,7 @@
         <title>JMS Client</title>
         <para>If you're using JMS on the client side, then you will need <literal
                 >jbm-core-client.jar</literal>, <literal>jbm-jms-client.jar</literal> and <literal
-                >jbm-jms-api.jar</literal>. Note that <literal>jbm-jms-api.jar</literal> just
+                >jboss-jms-api.jar</literal>. Note that <literal>jboss-jms-api.jar</literal> just
             contains Java EE API interface classes needed for the <literal>javax.jms.*</literal>
             classes, so if you already have a jar with these interface classes on your classpath you
             won't need it.</para>
