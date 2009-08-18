@@ -12,8 +12,6 @@
       <reconnect-attempts>-1</reconnect-attempts> 
       <failover-on-server-shutdown>true</failover-on-server-shutdown> 
       <call-timeout>5000</call-timeout> 
-<block-on-non-persistent-send>true</block-on-non-persistent-send>
-<block-on-persistent-send>true</block-on-persistent-send>
    </connection-factory>
    
    <queue name="soakQueue">

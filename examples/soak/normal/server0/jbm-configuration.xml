@@ -27,7 +27,8 @@
    
    <security-enabled>false</security-enabled>
    
-   <persistence-enabled>true</persistence-enabled>
+   <persistence-enabled>false</persistence-enabled>
+   <server-dump-interval>30000</server-dump-interval>
    
    <queues>
 	   <queue name="soakQueue">
