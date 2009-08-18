@@ -190,6 +190,8 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
          context.close();
       }
 
+      jmsManagementService.unregisterJMSServer();
+
       server.stop();
 
       started = false;
