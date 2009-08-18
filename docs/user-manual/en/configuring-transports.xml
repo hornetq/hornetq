@@ -414,4 +414,19 @@ etc
                 servlet ssl example shipped with JBoss Messaging for more detail.</para>
         </section>
     </section>
+    <section>
+        <title>Configuring Asynchronous Connection Execution</title>
+        <para>By default, as packets are received by on the server side, they are handed off to a thread from the internal
+        thread pool for processing, rather than processing them on the remoting thread.</para>
+        <para>This prevents remoting threads being tied up for too long, especially if the operation takes a significant time to
+        complete. It's dangerous for remoting threads to be tied up for too long, since then they might not be able to handle pings
+        from the client, resulting in reply pings being sent back to the client late and the client erroneously thinking a problem
+        has happened on the connection.</para>
+        <para>Processing operations asynchronously on another thread does however add a little more latency, so we allow this to be
+            configured using the parameter <literal>async-connection-execution-enabled</literal> in <literal>jbm-configuration.xml</literal>.
+        The default value for this parameter is <literal>true</literal>.</para>
+        <para>If you do set this parameter to <literal>false</literal> please do so with caution.</para>
+            
+       
+        </section>
 </chapter>

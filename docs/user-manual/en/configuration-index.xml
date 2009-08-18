@@ -33,7 +33,7 @@
                         </row>
                         <row>
                             <entry><link linkend="configuring.live.backup"
-                                >backup-connector-ref</link></entry>
+                                    >backup-connector-ref</link></entry>
                             <entry>String</entry>
                             <entry>the name of the remoting connector to connect to the backup
                                 node</entry>
@@ -41,7 +41,7 @@
                         </row>
                         <row>
                             <entry><link linkend="configuring.bindings.journal"
-                                >bindings-directory</link></entry>
+                                    >bindings-directory</link></entry>
                             <entry>String</entry>
                             <entry>the directory to store the persisted bindings to</entry>
                             <entry>data/bindings</entry>
@@ -62,7 +62,7 @@
                         </row>
                         <row>
                             <entry><link linkend="configuring.bindings.journal"
-                                >create-bindings-dir</link></entry>
+                                    >create-bindings-dir</link></entry>
                             <entry>Boolean</entry>
                             <entry>true means that the server will create the bindings directory on
                                 start up</entry>
@@ -70,7 +70,7 @@
                         </row>
                         <row>
                             <entry><link linkend="configuring.message.journal.create-journal-dir"
-                                >create-journal-dir</link></entry>
+                                    >create-journal-dir</link></entry>
                             <entry>Boolean</entry>
                             <entry>true means that the journal directory will be created</entry>
                             <entry>true</entry>
@@ -91,60 +91,65 @@
                         </row>
                         <row>
                             <entry><link
-                                linkend="configuring.message.journal.journal-aio-buffer-size"
-                                >journal-aio-buffer-size</link></entry>
+                                    linkend="configuring.message.journal.journal-aio-buffer-size"
+                                    >journal-aio-buffer-size</link></entry>
                             <entry>Long</entry>
                             <entry>The size of the internal buffer on AIO.</entry>
                             <entry>128 KiB</entry>
                         </row>
                         <row>
                             <entry><link
-                                linkend="configuring.message.journal.journal-aio-buffer-timeout"
-                                >journal-aio-buffer-timeout</link></entry>
+                                    linkend="configuring.message.journal.journal-aio-buffer-timeout"
+                                    >journal-aio-buffer-timeout</link></entry>
                             <entry>Long</entry>
-                            <entry>The timeout (in nanoseconds) used to flush internal buffers.</entry>
+                            <entry>The timeout (in nanoseconds) used to flush internal
+                                buffers.</entry>
                             <entry>20000</entry>
                         </row>
                         <row>
                             <entry><link
-                                linkend="configuring.message.journal.journal-aio-flush-on-sync"
-                                >journal-aio-flush-on-sync</link></entry>
+                                    linkend="configuring.message.journal.journal-aio-flush-on-sync"
+                                    >journal-aio-flush-on-sync</link></entry>
                             <entry>Boolean</entry>
                             <entry>If true, transactions will ignore timeouts and be persisted
                                 immediately</entry>
                             <entry>False</entry>
                         </row>
                         <row>
-                            <entry><link linkend="configuring.message.journal.journal-compact-min-files"
-                                >journal-compact-min-files</link></entry>
+                            <entry><link
+                                    linkend="configuring.message.journal.journal-compact-min-files"
+                                    >journal-compact-min-files</link></entry>
                             <entry>Integer</entry>
-                            <entry>The minimal number of data files before we can start compacting</entry>
+                            <entry>The minimal number of data files before we can start
+                                compacting</entry>
                             <entry>10</entry>
-                        </row>                                              
+                        </row>
                         <row>
-                            <entry><link linkend="configuring.message.journal.journal-compact-percentage"
-                                >journal-compact-percentage</link></entry>
+                            <entry><link
+                                    linkend="configuring.message.journal.journal-compact-percentage"
+                                    >journal-compact-percentage</link></entry>
                             <entry>Integer</entry>
-                            <entry>The percentage of live data on which we consider compacting the journal</entry>
+                            <entry>The percentage of live data on which we consider compacting the
+                                journal</entry>
                             <entry>30</entry>
-                        </row>                                              
+                        </row>
                         <row>
                             <entry><link linkend="configuring.message.journal.journal-directory"
-                                >journal-directory</link></entry>
+                                    >journal-directory</link></entry>
                             <entry>String</entry>
                             <entry>the directory to store the journal files in</entry>
                             <entry>data/journal</entry>
-                        </row>                                               
+                        </row>
                         <row>
                             <entry><link linkend="configuring.message.journal.journal-file-size"
-                                >journal-file-size</link></entry>
+                                    >journal-file-size</link></entry>
                             <entry>Long</entry>
                             <entry>the size (in bytes) of each journal file</entry>
                             <entry>128 * 1024</entry>
                         </row>
                         <row>
                             <entry><link linkend="configuring.message.journal.journal-max-aio"
-                                >journal-max-aio</link></entry>
+                                    >journal-max-aio</link></entry>
                             <entry>Integer</entry>
                             <entry>the maximum number of write requests that can be in the AIO queue
                                 at any one time</entry>
@@ -152,15 +157,15 @@
                         </row>
                         <row>
                             <entry><link linkend="configuring.message.journal.journal-min-files"
-                                >journal-min-files</link></entry>
+                                    >journal-min-files</link></entry>
                             <entry>Integer</entry>
                             <entry>how many journal files to pre-create</entry>
                             <entry>2</entry>
-                        </row>                                              
+                        </row>
                         <row>
                             <entry><link
-                                linkend="configuring.message.journal.journal-sync-transactional"
-                                >journal-sync-transactional</link></entry>
+                                    linkend="configuring.message.journal.journal-sync-transactional"
+                                    >journal-sync-transactional</link></entry>
                             <entry>Boolean</entry>
                             <entry>if true wait for transaction data to be synchronized to the
                                 journal before returning response to client</entry>
@@ -168,8 +173,8 @@
                         </row>
                         <row>
                             <entry><link
-                                linkend="configuring.message.journal.journal-sync-non-transactional"
-                                >journal-sync-non-transactional</link></entry>
+                                    linkend="configuring.message.journal.journal-sync-non-transactional"
+                                    >journal-sync-non-transactional</link></entry>
                             <entry>Boolean</entry>
                             <entry>if true wait for non transaction data to be synced to the journal
                                 before returning response to client.</entry>
@@ -177,28 +182,28 @@
                         </row>
                         <row>
                             <entry><link linkend="configuring.message.journal.journal-type"
-                                >journal-type</link></entry>
+                                    >journal-type</link></entry>
                             <entry>ASYNCIO|NIO</entry>
                             <entry>the type of journal to use</entry>
                             <entry>ASYNCIO</entry>
                         </row>
                         <row>
                             <entry><link linkend="management.jmx.configuration"
-                                >jmx-management-enabled</link></entry>
+                                    >jmx-management-enabled</link></entry>
                             <entry>Boolean</entry>
                             <entry>true means that the management API is available via JMX</entry>
                             <entry>true</entry>
                         </row>
                         <row>
                             <entry><link linkend="large.message.configuring"
-                                >large-messages-directory</link></entry>
+                                    >large-messages-directory</link></entry>
                             <entry>String</entry>
                             <entry>the directory to store large messages</entry>
                             <entry>data/largemessages</entry>
                         </row>
                         <row>
                             <entry><link linkend="management.core.configuration"
-                                >management-address</link></entry>
+                                    >management-address</link></entry>
                             <entry>String</entry>
                             <entry>the name of the management address to send management messages
                                 to</entry>
@@ -206,15 +211,15 @@
                         </row>
                         <row>
                             <entry><link linkend="management.replication"
-                                >management-cluster-user</link></entry>
+                                    >management-cluster-user</link></entry>
                             <entry>String</entry>
-                            <entry>the user used to for replicating management operations
-                                between clustered nodes</entry>
+                            <entry>the user used to for replicating management operations between
+                                clustered nodes</entry>
                             <entry>JBM.MANAGEMENT.ADMIN.USER</entry>
                         </row>
                         <row>
                             <entry><link linkend="management.replication"
-                                >management-cluster-password</link></entry>
+                                    >management-cluster-password</link></entry>
                             <entry>String</entry>
                             <entry>the password used to for replicating management operations
                                 between clustered nodes</entry>
@@ -222,16 +227,15 @@
                         </row>
                         <row>
                             <entry><link linkend="management.notifications.core.configuration"
-                                >management-notification-address</link></entry>
+                                    >management-notification-address</link></entry>
                             <entry>String</entry>
                             <entry>the name of the address that consumers bind to receive management
                                 notifications</entry>
                             <entry>jbm.notifications</entry>
                         </row>
-                        
                         <row>
                             <entry><link linkend="management.replication"
-                                >management-request-timeout</link></entry>
+                                    >management-request-timeout</link></entry>
                             <entry>Long</entry>
                             <entry>how long (in ms) to wait for a reply to a management
                                 request</entry>
@@ -239,35 +243,35 @@
                         </row>
                         <row>
                             <entry><link linkend="configuring.message.counters"
-                                >message-counter-enabled</link></entry>
+                                    >message-counter-enabled</link></entry>
                             <entry>Boolean</entry>
                             <entry>true means that message counters are enabled</entry>
                             <entry>false</entry>
                         </row>
                         <row>
                             <entry><link linkend="configuring.message.counters"
-                                >message-counter-max-day-history</link></entry>
+                                    >message-counter-max-day-history</link></entry>
                             <entry>Integer</entry>
                             <entry>how many days to keep message counter history</entry>
                             <entry>10</entry>
                         </row>
                         <row>
                             <entry><link linkend="configuring.message.counters"
-                                >message-counter-sample-period</link></entry>
+                                    >message-counter-sample-period</link></entry>
                             <entry>Long</entry>
                             <entry>the sample period (in ms) to use for message counters</entry>
                             <entry>10000</entry>
                         </row>
                         <row>
                             <entry><link linkend="configuring.expiry.reaper"
-                                >message-expiry-scan-period</link></entry>
+                                    >message-expiry-scan-period</link></entry>
                             <entry>Long</entry>
                             <entry>how often (in ms) to scan for expired messages</entry>
                             <entry>30000</entry>
                         </row>
                         <row>
                             <entry><link linkend="configuring.expiry.reaper"
-                                >message-expiry-thread-priority</link></entry>
+                                    >message-expiry-thread-priority</link></entry>
                             <entry>Integer</entry>
                             <entry>the priority of the thread expiring messages</entry>
                             <entry>3</entry>
@@ -281,7 +285,7 @@
                         </row>
                         <row>
                             <entry><link linkend="configuring.delivery.count.persistence">
-                                persist-delivery-count-before-delivery</link></entry>
+                                    persist-delivery-count-before-delivery</link></entry>
                             <entry>Boolean</entry>
                             <entry>true means that the delivery count is persisted before delivery.
                                 False means that this only happens after a message has been
@@ -305,7 +309,7 @@
                         </row>
                         <row>
                             <entry><link linkend="queue.activation.timeout"
-                                >queue-activation-timeout</link></entry>
+                                    >queue-activation-timeout</link></entry>
                             <entry>Long</entry>
                             <entry>after failover occurs, this timeout specifies how long (in ms) to
                                 wait for consumers to re-attach before starting delivery</entry>
@@ -342,6 +346,15 @@
                             <entry>-1</entry>
                         </row>
                         <row>
+                            <entry><link linkend="connection-ttl.async-connection-execution"
+                                    >async-connection-execution-enabled</link></entry>
+                            <entry>Boolean</entry>
+                            <entry>Should incoming packets on the server be handed off to a thread
+                                from the thread pool for processing or should they be handled on the
+                                remoting thread?</entry>
+                            <entry>true</entry>
+                        </row>
+                        <row>
                             <entry><link linkend="transaction-config"
                                 >transaction-timeout</link></entry>
                             <entry>Long</entry>
@@ -351,12 +364,11 @@
                         </row>
                         <row>
                             <entry><link linkend="transaction-config"
-                                >transaction-timeout-scan-period</link></entry>
+                                    >transaction-timeout-scan-period</link></entry>
                             <entry>Long</entry>
                             <entry>how often (in ms) to scan for timeout transactions</entry>
                             <entry>1000</entry>
                         </row>
-                        
                         <row>
                             <entry><link linkend="wildcard-routing"
                                 >wild-card-routing-enabled</link></entry>
@@ -364,30 +376,6 @@
                             <entry>true means that the server supports wild card routing</entry>
                             <entry>true</entry>
                         </row>
-                        
-                        
-                        
-                        
-                        
-                        
-                        
-                        
-                        
-                        
-                        
-                        
-                        
-                        
-                        
-                        
-                        
-                        
-                        
-                        
-                        
-                        
-                        
-                        
                         <row>
                             <entry><link linkend="configuring-transports.acceptors"
                                 >acceptors</link></entry>
@@ -409,8 +397,6 @@
                             <entry>a list of remoting connectors configurations to create</entry>
                             <entry/>
                         </row>
-                        
-                        
                         <row>
                             <entry><link linkend="clusters.discovery-groups"
                                 >discovery-groups</link></entry>
@@ -815,21 +801,21 @@
                         </row>
                         <row>
                             <entry><link linkend="message-grouping.jmsconfigure"
-                                >connection-factory.auto-group</link></entry>
+                                    >connection-factory.auto-group</link></entry>
                             <entry>Boolean</entry>
                             <entry>whether or not message grouping is automatically used</entry>
                             <entry>false</entry>
                         </row>
                         <row>
                             <entry><link linkend="send-guarantees.nontrans.acks"
-                                >connection-factory.block-on-acknowledge</link></entry>
+                                    >connection-factory.block-on-acknowledge</link></entry>
                             <entry>Boolean</entry>
                             <entry>whether or not messages are acknowledged synchronously</entry>
                             <entry>false</entry>
                         </row>
                         <row>
                             <entry><link linkend="non-transactional-sends"
-                                >connection-factory.block-on-non-persistent-send</link></entry>
+                                    >connection-factory.block-on-non-persistent-send</link></entry>
                             <entry>Boolean</entry>
                             <entry>whether or not non persistent messages are sent
                                 synchronously</entry>
@@ -837,7 +823,7 @@
                         </row>
                         <row>
                             <entry><link linkend="non-transactional-sends"
-                                >connection-factory.block-on-persistent-send</link></entry>
+                                    >connection-factory.block-on-persistent-send</link></entry>
                             <entry>Boolean</entry>
                             <entry>whether or not persistent messages are sent synchronously</entry>
                             <entry>false</entry>
@@ -850,7 +836,7 @@
                         </row>
                         <row>
                             <entry><link linkend="dead.connections"
-                                >connection-factory.client-failure-check-period</link></entry>
+                                    >connection-factory.client-failure-check-period</link></entry>
                             <entry>Long</entry>
                             <entry>the period (in ms) after which the client will consider the
                                 connection failed after not receiving packets from the
@@ -866,7 +852,7 @@
                         </row>
                         <row>
                             <entry><link linkend="clusters.client.loadbalancing"
-                                >connection-factory.connection-load-balancing-policy-class-name</link></entry>
+                                    >connection-factory.connection-load-balancing-policy-class-name</link></entry>
                             <entry>String</entry>
                             <entry>the name of the load balancing class</entry>
                             <entry>org.jboss.messaging.core.client.impl.RoundRobinConnectionLoadBalancingPolicy</entry>
@@ -880,7 +866,7 @@
                         </row>
                         <row>
                             <entry><link linkend="flow-control.rate.core.api"
-                                >connection-factory.consumer-max-rate</link></entry>
+                                    >connection-factory.consumer-max-rate</link></entry>
                             <entry>Integer</entry>
                             <entry>the fastest rate a consumer may consume messages per
                                 second</entry>
@@ -888,14 +874,14 @@
                         </row>
                         <row>
                             <entry><link linkend="flow-control.core.api"
-                                >connection-factory.consumer-window-size</link></entry>
+                                    >connection-factory.consumer-window-size</link></entry>
                             <entry>Integer</entry>
                             <entry>the window size (in bytes) for consumer flow control</entry>
                             <entry>1024 * 1024</entry>
                         </row>
                         <row>
                             <entry><link linkend="clusters-discovery.groups.clientside"
-                                >connection-factory.discovery-initial-wait-timeout</link></entry>
+                                    >connection-factory.discovery-initial-wait-timeout</link></entry>
                             <entry>Long</entry>
                             <entry>the initial time to wait (in ms) for discovery groups to wait for
                                 broadcasts</entry>
@@ -903,7 +889,7 @@
                         </row>
                         <row>
                             <entry><link linkend="using-jms.dupsokbatchsize"
-                                >connection-factory.dups-ok-batch-size</link></entry>
+                                    >connection-factory.dups-ok-batch-size</link></entry>
                             <entry>Integer</entry>
                             <entry>the batch size (in bytes) between acknowledgements when using
                                 DUPS_OK_ACKNOWLEDGE mode</entry>
@@ -911,7 +897,7 @@
                         </row>
                         <row>
                             <entry><link linkend="ha.client.automatic"
-                                >connection-factory.failover-on-server-shutdown</link></entry>
+                                    >connection-factory.failover-on-server-shutdown</link></entry>
                             <entry>Boolean</entry>
                             <entry>whether or not to failover on server shutdown</entry>
                             <entry>false</entry>
@@ -934,12 +920,13 @@
                             <entry><link linkend="large-messages.cache.client"
                                     >connection-factory.cache-large-message-client</link></entry>
                             <entry>Boolean</entry>
-                            <entry>If true clients using this connection factory will hold the large message body on temporary files.</entry>
+                            <entry>If true clients using this connection factory will hold the large
+                                message body on temporary files.</entry>
                             <entry>false</entry>
                         </row>
                         <row>
                             <entry><link linkend="pre-acknowledge.configure"
-                                >connection-factory.pre-acknowledge</link></entry>
+                                    >connection-factory.pre-acknowledge</link></entry>
                             <entry>Boolean</entry>
                             <entry>whether messages are pre acknowledged by the server before
                                 sending</entry>
@@ -947,7 +934,7 @@
                         </row>
                         <row>
                             <entry><link linkend="flow-control.producer.rate.core.api"
-                                >connection-factory.producer-max-rate</link></entry>
+                                    >connection-factory.producer-max-rate</link></entry>
                             <entry>Integer</entry>
                             <entry>the maximum rate of messages per second that can be sent</entry>
                             <entry>-1</entry>
@@ -961,55 +948,47 @@
                         </row>
                         <row>
                             <entry><link linkend="client-reconnection"
-                                >connection-factory.reconnect-attempts</link></entry>
+                                    >connection-factory.reconnect-attempts</link></entry>
                             <entry>Integer</entry>
                             <entry>maximum number of retry attempts, -1 signifies infinite</entry>
                             <entry>0</entry>
                         </row>
                         <row>
                             <entry><link linkend="client-reconnection"
-                                >connection-factory.retry-interval</link></entry>
+                                    >connection-factory.retry-interval</link></entry>
                             <entry>Long</entry>
                             <entry>the time (in ms) to retry a connection after failing</entry>
                             <entry>2000</entry>
                         </row>
                         <row>
                             <entry><link linkend="client-reconnection"
-                                >connection-factory.retry-interval-multiplier</link></entry>
+                                    >connection-factory.retry-interval-multiplier</link></entry>
                             <entry>Double</entry>
                             <entry>multiplier to apply to successive retry intervals</entry>
                             <entry>1d</entry>
                         </row>
                         <row>
                             <entry><link linkend="thread-pooling.client.side"
-                                >connection-factory.scheduled-thread-pool-max-size</link></entry>
+                                    >connection-factory.scheduled-thread-pool-max-size</link></entry>
                             <entry>Integer</entry>
                             <entry>the size of the scheduled thread pool</entry>
                             <entry>2</entry>
                         </row>
                         <row>
                             <entry><link linkend="thread-pooling.client.side"
-                                >connection-factory.thread-pool-max-size</link></entry>
+                                    >connection-factory.thread-pool-max-size</link></entry>
                             <entry>Integer</entry>
                             <entry>the size of the thread pool</entry>
                             <entry>-1</entry>
                         </row>
                         <row>
                             <entry><link linkend="using-jms.txbatchsize"
-                                >connection-factory.transaction-batch-size</link></entry>
+                                    >connection-factory.transaction-batch-size</link></entry>
                             <entry>Integer</entry>
                             <entry>the batch size (in bytes) between acknowledgements when using a
                                 transactional session</entry>
                             <entry>1024 * 1024</entry>
                         </row>
-                        
-                        
-                        
-                        
-                        
-                       
-                        
-                        
                         <row>
                             <entry><link linkend="thread-pooling.client.side"
                                     >connection-factory.use-global-pools</link></entry>
@@ -1017,12 +996,6 @@
                             <entry>whether or not to use a global thread pool for threads</entry>
                             <entry>true</entry>
                         </row>
-                        
-                       
-                        
-                        
-                        
-                        
                         <row>
                             <entry><link linkend="using-jms.server.configuration"
                                 >queue</link></entry>
