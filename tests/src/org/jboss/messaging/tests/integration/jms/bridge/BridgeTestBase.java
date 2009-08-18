@@ -75,18 +75,16 @@ public abstract class BridgeTestBase extends UnitTestCase
 {
    private static final Logger log = Logger.getLogger(BridgeTestBase.class);
 
-   protected static ConnectionFactoryFactory cff0, cff1;
+   protected ConnectionFactoryFactory cff0, cff1;
 
-   protected static ConnectionFactory cf0, cf1;
+   protected ConnectionFactory cf0, cf1;
 
-   protected static DestinationFactory sourceQueueFactory, targetQueueFactory, localTargetQueueFactory,
+   protected DestinationFactory sourceQueueFactory, targetQueueFactory, localTargetQueueFactory,
             sourceTopicFactory;
 
-   protected static Queue sourceQueue, targetQueue, localTargetQueue;
+   protected Queue sourceQueue, targetQueue, localTargetQueue;
 
-   protected static Topic sourceTopic;
-
-   protected static boolean firstTime = true;
+   protected Topic sourceTopic;
 
    protected MessagingServer server0;
 
@@ -129,6 +127,7 @@ public abstract class BridgeTestBase extends UnitTestCase
       server1 = Messaging.newMessagingServer(conf1, false);
 
       context1 = new InVMContext();
+      
       jmsServer1 = new JMSServerManagerImpl(server1);
       jmsServer1.setContext(context1);
       jmsServer1.start();
@@ -147,8 +146,6 @@ public abstract class BridgeTestBase extends UnitTestCase
       // We need a local transaction and recovery manager
       // We must start this after the remote servers have been created or it won't
       // have deleted the database and the recovery manager may attempt to recover transactions
-
-      firstTime = false;
 
    }
 
@@ -171,15 +168,38 @@ public abstract class BridgeTestBase extends UnitTestCase
       // Check no subscriptions left lying around
 
       checkNoSubscriptions(sourceTopic, 0);
+      
+      
+      jmsServer0.stop();
+      
+      jmsServer1.stop();
 
       server1.stop();
+
       server0.stop();
-      
-      server1 = null;
+
+      cff0 = cff1 = null;
+
+      cf0 = cf1 = null;
+
+      sourceQueueFactory = targetQueueFactory = localTargetQueueFactory = sourceTopicFactory = null;
+
+      sourceQueue = targetQueue = localTargetQueue = null;
+
+      sourceTopic = null;
+
       server0 = null;
+
       jmsServer0 = null;
+
+      server1 = null;
+
       jmsServer1 = null;
-      context0 = context1 = null;
+
+      context0 = null;
+
+      context1 = null;
+
      
 
       super.tearDown();

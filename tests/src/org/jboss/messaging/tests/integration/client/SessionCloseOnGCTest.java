@@ -236,8 +236,6 @@ public class SessionCloseOnGCTest extends ServiceTestBase
          factory = null;
 
          checkWeakReferences(fref);
-
-         assertNull(fref.get());
       }
       finally
       {
