@@ -72,6 +72,8 @@ public class SessionSendAcknowledgementHandlerTest extends ServiceTestBase
          server.stop();
       }
       
+      server = null;
+      
       super.tearDown();
    }
 

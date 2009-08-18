@@ -105,6 +105,10 @@ public class ProducerCloseTest extends ServiceTestBase
       sf.close();
 
       server.stop();
+      
+      server = null;
+      
+      session = null;      
 
       super.tearDown();
    }
