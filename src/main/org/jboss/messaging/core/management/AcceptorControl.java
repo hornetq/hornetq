@@ -37,4 +37,8 @@ public interface AcceptorControl extends MessagingComponentControl
    String getFactoryClassName();
 
    Map<String, Object> getParameters();
+   
+   void pause() throws Exception;
+   
+   void resume() throws Exception;
 }

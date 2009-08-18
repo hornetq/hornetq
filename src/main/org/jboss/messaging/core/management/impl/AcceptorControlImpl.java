@@ -83,19 +83,19 @@ public class AcceptorControlImpl implements AcceptorControl
       acceptor.start();
    }
    
-//   public void pause()
-//   {
-//      acceptor.pause();
-//   }
-//   
-//   public void resume()
-//   {
-//      acceptor.resume();
-//   }
-
+   public void pause()
+   {
+      acceptor.pause();
+   }
+   
    public void stop() throws Exception
    {
       acceptor.stop();
+   }
+   
+   public void resume() throws Exception
+   {
+      acceptor.resume();
    }
 
    // Public --------------------------------------------------------

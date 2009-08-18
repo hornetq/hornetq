@@ -807,6 +807,11 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
             log.error("Failed to stop discovery group", e);
          }
       }
+      
+      for (ConnectionManager connectionManager : connectionManagerMap.values())
+      {
+         connectionManager.causeExit();
+      }
 
       connectionManagerMap.clear();
 

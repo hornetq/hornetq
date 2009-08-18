@@ -67,4 +67,6 @@ public interface ConnectionManager
    void addFailureListener(FailureListener listener);
 
    boolean removeFailureListener(FailureListener listener);
+   
+   void causeExit();
 }

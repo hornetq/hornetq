@@ -57,6 +57,8 @@ public class InVMAcceptor implements Acceptor
    private volatile boolean started;
 
    private final ExecutorFactory executorFactory;
+   
+   private boolean paused;
 
    public InVMAcceptor(final Map<String, Object> configuration,
                        final BufferHandler handler,
@@ -82,6 +84,8 @@ public class InVMAcceptor implements Acceptor
       InVMRegistry.instance.registerAcceptor(id, this);
 
       started = true;
+      
+      paused = false;
    }
 
    public synchronized void stop()
@@ -91,7 +95,10 @@ public class InVMAcceptor implements Acceptor
          return;
       }
 
-      InVMRegistry.instance.unregisterAcceptor(id);
+      if (!paused)
+      {
+         InVMRegistry.instance.unregisterAcceptor(id);
+      }
 
       for (Connection connection : connections.values())
       {
@@ -101,11 +108,40 @@ public class InVMAcceptor implements Acceptor
       connections.clear();
 
       started = false;
+      
+      paused = false;
    }
 
-   public boolean isStarted()
+   public synchronized boolean isStarted()
    {
       return started;
+   }
+   
+   /*
+    * Stop accepting new connections
+    */
+   public synchronized void pause()
+   {      
+      if (!started || paused)
+      {
+         return;
+      }
+      
+      InVMRegistry.instance.unregisterAcceptor(id);   
+      
+      paused = true;
+   }
+   
+   public synchronized void resume()
+   {
+      if (!paused || !started)
+      {
+         return;
+      }
+      
+      InVMRegistry.instance.registerAcceptor(id, this);
+      
+      paused = false;
    }
 
    public BufferHandler getHandler()

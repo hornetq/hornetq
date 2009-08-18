@@ -303,7 +303,7 @@ public class NettyAcceptor implements Acceptor
 
       startServerChannels();
 
-      // paused = false;
+      paused = false;
    }
 
    private void startServerChannels()
@@ -364,11 +364,54 @@ public class NettyAcceptor implements Acceptor
       }
 
       connections.clear();
+      
+      paused = false;
    }
 
    public boolean isStarted()
    {
       return (channelFactory != null);
+   }
+
+   private boolean paused;
+
+   public synchronized void pause()
+   {
+      if (paused)
+      {
+         return;
+      }
+
+      if (channelFactory == null)
+      {
+         return;
+      }
+
+      // We *pause* the acceptor so no new connections are made
+
+      serverChannelGroup.close().awaitUninterruptibly();
+
+      try
+      {
+         Thread.sleep(500);
+      }
+      catch (Exception e)
+      {
+      }
+
+      paused = true;
+   }
+
+   public synchronized void resume()
+   {
+      if (!paused)
+      {
+         return;
+      }
+
+      startServerChannels();
+
+      paused = false;
    }
 
    // Inner classes -----------------------------------------------------------------------------

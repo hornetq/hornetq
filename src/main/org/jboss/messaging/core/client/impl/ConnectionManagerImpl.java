@@ -91,7 +91,7 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
    // -----------------------------------------------------------------------------------
 
    private final ClientSessionFactory sessionFactory;
-   
+
    private final TransportConfiguration connectorConfig;
 
    private final TransportConfiguration backupConfig;
@@ -149,6 +149,8 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
    private Future<?> pingerFuture;
 
    private PingRunnable pingRunnable;
+   
+   private volatile boolean exitLoop;
 
    // debug
 
@@ -184,7 +186,7 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
                                 final ScheduledExecutorService scheduledThreadPool)
    {
       this.sessionFactory = sessionFactory;
-      
+
       this.connectorConfig = connectorConfig;
 
       this.backupConfig = backupConfig;
@@ -288,7 +290,11 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
 
                   if (connection == null)
                   {
-                     // This can happen if the connection manager gets closed - e.g. the server gets shut down
+                     if (exitLoop)
+                     {                        
+                        return null;
+                     }
+                     // This can happen if the connection manager gets exitLoop - e.g. the server gets shut down
 
                      throw new MessagingException(MessagingException.NOT_CONNECTED,
                                                   "Unable to connect to server using configuration " + connectorConfig);
@@ -423,7 +429,7 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
       // Should never get here
       throw new IllegalStateException("Oh my God it's full of stars!");
    }
-   
+
    // Must be synchronized to prevent it happening concurrently with failover which can lead to
    // inconsistencies
    public void removeSession(final ClientSessionInternal session)
@@ -434,7 +440,7 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
          synchronized (failoverLock)
          {
             sessions.remove(session);
-            
+
             returnConnection(session.getConnection().getID());
          }
       }
@@ -458,6 +464,13 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
    public boolean removeFailureListener(FailureListener listener)
    {
       return listeners.remove(listener);
+   }
+   
+   
+   
+   public void causeExit()
+   {
+      exitLoop = true;
    }
 
    // Public
@@ -494,7 +507,7 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
          {
             // We already failed over/reconnected - probably the first failure came in, all the connections were failed
             // over then a async connection exception or disconnect
-            // came in for one of the already closed connections, so we return true - we don't want to call the
+            // came in for one of the already exitLoop connections, so we return true - we don't want to call the
             // listeners again
 
             return;
@@ -525,9 +538,14 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
          // It can then release the channel 1 lock, and retry (which will cause locking on failoverLock
          // until failover is complete
 
-         boolean attemptFailover = (backupConnectorFactory) != null && (failoverOnServerShutdown || me.getCode() != MessagingException.DISCONNECTED);
+         boolean serverShutdown = me.getCode() == MessagingException.DISCONNECTED;
 
-         if (attemptFailover || reconnectAttempts != 0)
+         boolean attemptFailoverOrReconnect = (backupConnectorFactory != null || reconnectAttempts != 0)
+                                                && (failoverOnServerShutdown || !serverShutdown);
+         
+         log.info("Attempting failover or reconnect " + attemptFailoverOrReconnect);
+
+         if (attemptFailoverOrReconnect)
          {
             lockAllChannel1s();
 
@@ -576,7 +594,6 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
                oldConnections.add(entry.connection);
             }
 
-
             connections.clear();
 
             refCount = 0;
@@ -593,7 +610,7 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
 
             connector = null;
 
-            if (attemptFailover)
+            if (backupConnectorFactory != null)
             {
                // Now try failing over to backup
 
@@ -632,6 +649,8 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
          }
          else
          {
+            log.info("Just closing connections and calling failure listeners");
+            
             closeConnectionsAndCallFailureListeners(me);
          }
       }
@@ -769,6 +788,11 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
 
       while (true)
       {
+         if (exitLoop)
+         {
+            return null;
+         }
+         
          RemotingConnection connection = getConnection(initialRefCount);
 
          if (connection == null)
@@ -822,7 +846,7 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
             pingRunnable.cancel();
 
             boolean ok = pingerFuture.cancel(false);
-            
+
             pingRunnable = null;
 
             pingerFuture = null;
@@ -853,13 +877,12 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
          catch (Throwable ignore)
          {
          }
-         
 
          connector = null;
       }
 
    }
-   
+
    public RemotingConnection getConnection(final int initialRefCount)
    {
       RemotingConnection conn;
@@ -998,14 +1021,14 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
       {
          refCount--;
       }
-      
+
       if (entry != null)
       {
          checkCloseConnections();
       }
       else
       {
-         // Can be legitimately null if session was closed before then went to remove session from csf
+         // Can be legitimately null if session was exitLoop before then went to remove session from csf
          // and locked since failover had started then after failover removes it but it's already been failed
       }
    }
@@ -1082,6 +1105,7 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
 
          if (type == PacketImpl.DISCONNECT)
          {
+            log.info("Got a disconnect message");
             threadPool.execute(new Runnable()
             {
                // Must be executed on new thread since cannot block the netty thread for a long time and fail can
@@ -1089,10 +1113,10 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
                public void run()
                {
                   conn.fail(new MessagingException(MessagingException.DISCONNECTED,
-                                                   "The connection was closed by the server"));
+                                                   "The connection was exitLoop by the server"));
                }
             });
-         }         
+         }
       }
    }
 
@@ -1192,26 +1216,26 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
          }
       }
    }
-   
+
    private static final class ActualScheduled implements Runnable
    {
       private final WeakReference<PingRunnable> pingRunnable;
-      
+
       ActualScheduled(final PingRunnable runnable)
       {
          this.pingRunnable = new WeakReference<PingRunnable>(runnable);
       }
-      
+
       public void run()
       {
          PingRunnable runnable = pingRunnable.get();
-         
+
          if (runnable != null)
          {
             runnable.run();
          }
       }
-      
+
    }
 
    private final class PingRunnable implements Runnable
@@ -1219,14 +1243,14 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
       private boolean cancelled;
 
       private boolean first;
-      
+
       public synchronized void run()
       {
          if (cancelled || (stopPingingAfterOne && !first))
          {
             return;
          }
-         
+
          first = false;
 
          synchronized (connections)
@@ -1236,7 +1260,7 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
             for (ConnectionEntry entry : connections.values())
             {
                final RemotingConnection connection = entry.connection;
-               
+
                if (entry.expiryPeriod != -1 && now >= entry.lastCheck + entry.expiryPeriod)
                {
                   if (!connection.checkDataReceived())
@@ -1252,7 +1276,7 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
                            connection.fail(me);
                         }
                      });
-                     
+
                      return;
                   }
                   else
@@ -1260,7 +1284,7 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
                      entry.lastCheck = now;
                   }
                }
-               
+
                // Send a ping
 
                Ping ping = new Ping(connectionTTL);
@@ -1271,7 +1295,7 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
             }
          }
       }
-      
+
       public synchronized void cancel()
       {
          cancelled = true;

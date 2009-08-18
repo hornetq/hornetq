@@ -277,6 +277,8 @@ public class BridgeImpl implements Bridge, FailureListener, SendAcknowledgementH
 
    public void stop() throws Exception
    {
+      log.info("Stopping bridge " + name);
+      
       if (started)
       {
          // We need to stop the csf here otherwise the stop runnable never runs since the createobjectsrunnable is
@@ -306,6 +308,8 @@ public class BridgeImpl implements Bridge, FailureListener, SendAcknowledgementH
             log.warn("unable to send notification when broadcast group is stopped", e);
          }
       }
+      log.info("Stopped bridge " + name);
+      
    }
 
    public boolean isStarted()
@@ -510,6 +514,8 @@ public class BridgeImpl implements Bridge, FailureListener, SendAcknowledgementH
 
    public void connectionFailed(final MessagingException me)
    {
+      log.info("bridge " + name + " failed " + me);
+      
       fail();
    }
 
@@ -535,7 +541,7 @@ public class BridgeImpl implements Bridge, FailureListener, SendAcknowledgementH
    }
 
    private void fail()
-   {
+   {      
       if (started)
       {
          executor.execute(new FailRunnable());
@@ -757,6 +763,8 @@ public class BridgeImpl implements Bridge, FailureListener, SendAcknowledgementH
          {
             log.error("Failed to stop", e);
          }
+         
+         log.info("Bridge " + name + " closed objects");
 
          if (!createObjects())
          {

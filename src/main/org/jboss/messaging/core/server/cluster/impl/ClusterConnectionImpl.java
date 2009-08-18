@@ -246,8 +246,7 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
    }
 
    public synchronized void stop() throws Exception
-   {
-      if (!started)
+   {      if (!started)
       {
          return;
       }
