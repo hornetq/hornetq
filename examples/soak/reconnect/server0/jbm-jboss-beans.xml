@@ -36,13 +36,5 @@
             <inject bean="MessagingServer"/>
          </parameter>
       </constructor>
-   </bean>
-
-   <bean name="Dump" class="org.jboss.jms.soak.example.reconnect.ServerDump">
-      <constructor>
-         <!-- dump interval in minutes -->
-         <parameter>1</parameter>
-      </constructor>
-   </bean>
-   
+   </bean>   
 </deployment>
