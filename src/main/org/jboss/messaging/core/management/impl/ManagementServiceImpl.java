@@ -624,7 +624,7 @@ public class ManagementServiceImpl implements ManagementService
             }
             if (!unexpectedResourceNames.isEmpty())
             {
-               log.warn("On ManagementService stop, there are " + registeredNames.size() + " unexpected registered MBeans");
+               log.warn("On ManagementService stop, there are " + unexpectedResourceNames.size() + " unexpected registered MBeans");
             }
 
             for (ObjectName on : this.registeredNames)
