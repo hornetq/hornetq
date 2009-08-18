@@ -977,6 +977,10 @@ public class SimpleAutomaticFailoverTest extends UnitTestCase
       stopServers();
 
       InVMConnector.resetFailures();
+      
+      liveService = null;
+      
+      backupService = null;
 
       super.tearDown();
    }
