@@ -246,6 +246,14 @@
       <maximumStackSize value="32" />
       <properties />
     </buildFile>
+    <buildFile url="file://$PROJECT_DIR$/examples/soak/normal/build.xml">
+      <additionalClassPath />
+      <antReference projectDefault="true" />
+      <customJdkName value="" />
+      <maximumHeapSize value="128" />
+      <maximumStackSize value="32" />
+      <properties />
+    </buildFile>
   </component>
   <component name="BuildJarProjectSettings">
     <option name="BUILD_JARS_ON_MAKE" value="false" />
@@ -278,7 +286,15 @@
     </wildcardResourcePatterns>
   </component>
   <component name="CopyrightManager" default="">
-    <module2copyright />
+    <copyright>
+      <option name="notice" value="Copyright (c) &amp;#36;today.year. Lorem ipsum dolor sit amet, consectetur adipiscing elit. &#10;Morbi non lorem porttitor neque feugiat blandit. Ut vitae ipsum eget quam lacinia accumsan. &#10;Etiam sed turpis ac ipsum condimentum fringilla. Maecenas magna. &#10;Proin dapibus sapien vel ante. Aliquam erat volutpat. Pellentesque sagittis ligula eget metus. &#10;Vestibulum commodo. Ut rhoncus gravida arcu." />
+      <option name="keyword" value="Copyright" />
+      <option name="myName" value="new" />
+      <option name="myLocal" value="true" />
+    </copyright>
+    <module2copyright>
+      <element module="All" copyright="new" />
+    </module2copyright>
   </component>
   <component name="CppTools.Loader" reportImplicitCastToBool="false" warnedAboutFileOutOfSourceRoot="true" version="1" currentProject="$PROJECT_DIR$/native/Makefile" />
   <component name="DependenciesAnalyzeManager">
@@ -567,13 +583,13 @@
   </component>
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file:///home/andy/projects/maven-buildmagic-thirdparty-plugin-2.1.2/maven-buildmagic-thirdparty-plugin-2.1.2.iml" filepath="/home/andy/projects/maven-buildmagic-thirdparty-plugin-2.1.2/maven-buildmagic-thirdparty-plugin-2.1.2.iml" />
       <module fileurl="file://$PROJECT_DIR$/messaging.iml" filepath="$PROJECT_DIR$/messaging.iml" />
       <module fileurl="file://$PROJECT_DIR$/examples/core/messaging-core-examples.iml" filepath="$PROJECT_DIR$/examples/core/messaging-core-examples.iml" />
       <module fileurl="file://$PROJECT_DIR$/examples/javaee/messaging-javaee-examples.iml" filepath="$PROJECT_DIR$/examples/javaee/messaging-javaee-examples.iml" />
       <module fileurl="file://$PROJECT_DIR$/examples/jms/messaging-jms-examples.iml" filepath="$PROJECT_DIR$/examples/jms/messaging-jms-examples.iml" />
       <module fileurl="file://$PROJECT_DIR$/tests/jms-tests/messaging-jms-tests.iml" filepath="$PROJECT_DIR$/tests/jms-tests/messaging-jms-tests.iml" />
       <module fileurl="file://$PROJECT_DIR$/tests/joram-tests/messaging-joram-tests.iml" filepath="$PROJECT_DIR$/tests/joram-tests/messaging-joram-tests.iml" />
+      <module fileurl="file://$PROJECT_DIR$/messaging-soak-examples/messaging-soak-examples.iml" filepath="$PROJECT_DIR$/messaging-soak-examples/messaging-soak-examples.iml" />
       <module fileurl="file://$PROJECT_DIR$/tests/messaging-tests.iml" filepath="$PROJECT_DIR$/tests/messaging-tests.iml" />
     </modules>
   </component>
@@ -618,7 +634,6 @@
   <component name="VcsDirectoryMappings">
     <mapping directory="" vcs="" />
     <mapping directory="$PROJECT_DIR$" vcs="svn" />
-    <mapping directory="/home/andy/projects/maven-buildmagic-thirdparty-plugin-2.1.2" vcs="svn" />
   </component>
   <component name="WebServicesPlugin" addRequiredLibraries="true" />
   <component name="com.intellij.jsf.UserDefinedFacesConfigs">
