@@ -47,14 +47,15 @@ Parameters are specified in soak.properties.
 The duration of the tests is configured by duration-in-minutes (defaults to 2 minutes, set to 
 -1 to run the test indefinitely).
 
+To configure the soak properties to run the client, use the system property soak.props.
 To specify the JNDI server to connect to, use the system property jndi.address
 (defaults to localhost) and jndi.port (defaults to 1099)
 
-To run a receiver connected to the local server:
+To run a receiver connected to the local server with soak.properties
   $  ant runReceiver
 
-To run a sender connected to another server: 
-  $ ant runSender -Djndi.address=172.16.8.10 -Djndi.port=2099
+To run a sender connected to another server using settings in paging-soak.properties:
+  $ ant runSender -Djndi.address=172.16.8.10 -Djndi.port=2099 -Dsoak.props=paging-soak.properties
 
 Every 1000th message, the clients will display their recent activity:
 

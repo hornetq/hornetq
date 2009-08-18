@@ -35,7 +35,8 @@
     <property name="server.dir" value="server0" />
     <property name="jndi.address" value="localhost" />
     <property name="jndi.port" value="1099" />
-
+    <property name="soak.props" value="soak.properties" />
+	
 	<path id="extra.classpath">
 		<path location="${server.dir}" />
 		<fileset dir="extra-libs">
@@ -50,7 +51,7 @@
 
 	<target name="runSender" depends="compile">
 	    <property name="jndi.url" value="jnp://${jndi.address}:${jndi.port}" />
-		<java classname="org.jboss.jms.soak.example.reconnect.SoakReconnectableSender" fork="true" resultproperty="example-result">
+		<java classname="org.jboss.jms.soak.example.SoakSender" fork="true" resultproperty="example-result">
 			<jvmarg value="-Xms512M" />
 			<jvmarg value="-Xmx512M" />
 			<jvmarg value="-XX:+UseParallelGC" />
@@ -62,13 +63,13 @@
              -->
 			<jvmarg value="-Djava.util.logging.config.file=${config.dir}/logging.properties" />
 			<classpath refid="the.classpath" />
-			<arg line="${jndi.url}" />
+			<arg line="${jndi.url} ${soak.props}" />
 		</java>
 	</target>
 
 	<target name="runReceiver" depends="compile">
 	    <property name="jndi.url" value="jnp://${jndi.address}:${jndi.port}" />
-		<java classname="org.jboss.jms.soak.example.reconnect.SoakReconnectableReceiver" fork="true" resultproperty="example-result">
+		<java classname="org.jboss.jms.soak.example.SoakReceiver" fork="true" resultproperty="example-result">
 			<jvmarg value="-Xms512M" />
 			<jvmarg value="-Xmx512M" />
 			<jvmarg value="-XX:+UseParallelGC" />
@@ -80,7 +81,7 @@
              -->
 			<jvmarg value="-Djava.util.logging.config.file=${config.dir}/logging.properties" />
 			<classpath refid="the.classpath" />
-			<arg line="${jndi.url}" />
+			<arg line="${jndi.url} ${soak.props}" />
 		</java>
 	</target>
 

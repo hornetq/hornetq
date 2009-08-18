@@ -19,7 +19,7 @@
    * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
    * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
    */
-package org.jboss.jms.soak.example.reconnect;
+package org.jboss.jms.soak.example;
 
 import java.io.FileInputStream;
 import java.io.InputStream;
@@ -62,7 +62,7 @@ public class SoakBase
    {
       String fileName;
 
-      if (args.length > 2)
+      if (args.length > 1)
       {
          fileName = args[1];
       }
@@ -70,7 +70,6 @@ public class SoakBase
       {
          fileName = DEFAULT_SOAK_PROPERTIES_FILE_NAME;
       }
-
       return fileName;
    }
 

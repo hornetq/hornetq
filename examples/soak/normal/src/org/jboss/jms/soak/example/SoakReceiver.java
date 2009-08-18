@@ -19,31 +19,30 @@
    * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
    * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
    */
-package org.jboss.jms.soak.example.reconnect;
+package org.jboss.jms.soak.example;
 
 import java.util.Hashtable;
+import java.util.UUID;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Logger;
 
-import javax.jms.BytesMessage;
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
-import javax.jms.DeliveryMode;
 import javax.jms.Destination;
 import javax.jms.ExceptionListener;
 import javax.jms.JMSException;
-import javax.jms.MessageProducer;
+import javax.jms.Message;
+import javax.jms.MessageConsumer;
+import javax.jms.MessageListener;
 import javax.jms.Session;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
-import org.jboss.messaging.utils.TokenBucketLimiter;
-import org.jboss.messaging.utils.TokenBucketLimiterImpl;
-
-public class SoakReconnectableSender
+public class SoakReceiver
 {
-   private static final Logger log = Logger.getLogger(SoakReconnectableSender.class.getName());
+   private static final Logger log = Logger.getLogger(SoakReceiver.class.getName());
 
+   private static final String EOF = UUID.randomUUID().toString();
 
    public static void main(String[] args)
    {
@@ -58,6 +57,7 @@ public class SoakReconnectableSender
       }
       
       System.out.println("Connecting to JNDI at " + jndiURL);
+      
       try
       {
          String fileName = SoakBase.getPerfFileName(args);
@@ -69,18 +69,18 @@ public class SoakReconnectableSender
          jndiProps.put("java.naming.factory.initial", "org.jnp.interfaces.NamingContextFactory");
          jndiProps.put("java.naming.factory.url.pkgs", "org.jboss.naming:org.jnp.interfaces");
 
-         final SoakReconnectableSender sender = new SoakReconnectableSender(jndiProps, params);
+         final SoakReceiver receiver = new SoakReceiver(jndiProps, params);
 
          Runtime.getRuntime().addShutdownHook(new Thread()
          {
             @Override
             public void run()
             {
-               sender.disconnect();
+               receiver.disconnect();
             }
          });
 
-         sender.run();
+         receiver.run();
       }
       catch (Exception e)
       {
@@ -88,28 +88,60 @@ public class SoakReconnectableSender
       }
    }
 
-   private final SoakParams perfParams;
-
    private final Hashtable<String, String> jndiProps;
 
-   private Connection connection;
-
-   private Session session;
-
-   private MessageProducer producer;
+   private final SoakParams perfParams;
 
    private final ExceptionListener exceptionListener = new ExceptionListener()
    {
       public void onException(JMSException e)
       {
-         System.out.println("SoakReconnectableSender.exceptionListener.new ExceptionListener() {...}.onException()");
          disconnect();
          connect();
       }
-
    };
 
-   private SoakReconnectableSender(final Hashtable<String, String> jndiProps, final SoakParams perfParams)
+   private final MessageListener listener = new MessageListener()
+   {
+      int modulo = 10000;
+
+      private final AtomicLong count = new AtomicLong(0);
+
+      private long start = System.currentTimeMillis();
+      long moduloStart = start;
+
+      public void onMessage(Message msg)
+      {
+         long totalDuration = System.currentTimeMillis() - start;
+
+         try
+         {
+            if (EOF.equals(msg.getStringProperty("eof")))
+            {
+               log.info(String.format("Received %s messages in %.2f minutes", count, (1.0 * totalDuration) / SoakBase.TO_MILLIS));
+               log.info("END OF RUN");
+
+               return;
+            }
+         }
+         catch (JMSException e1)
+         {
+            e1.printStackTrace();
+         }
+         if (count.incrementAndGet() % modulo == 0)
+         {
+            double duration = (1.0 * System.currentTimeMillis() - moduloStart) / 1000;
+            moduloStart = System.currentTimeMillis();
+            log.info(String.format("received %s messages in %2.2fs (total: %.0fs)", modulo, duration, totalDuration / 1000.0));
+         }
+      }
+   };
+
+   private Session session;
+
+   private Connection connection;
+
+   private SoakReceiver(final Hashtable<String, String> jndiProps, final SoakParams perfParams)
    {
       this.jndiProps = jndiProps;
       this.perfParams = perfParams;
@@ -120,78 +152,31 @@ public class SoakReconnectableSender
       connect();
 
       boolean runInfinitely = (perfParams.getDurationInMinutes() == -1);
-      
-      BytesMessage message = session.createBytesMessage();
 
-      byte[] payload = SoakBase.randomByteArray(perfParams.getMessageSize());
-
-      message.writeBytes(payload);
-
-      final int modulo = 10000;
-
-      TokenBucketLimiter tbl = perfParams.getThrottleRate() != -1 ? new TokenBucketLimiterImpl(perfParams.getThrottleRate(),
-                                                                                               false)
-                                                                 : null;
-
-      boolean transacted = perfParams.isSessionTransacted();
-      int txBatchSize = perfParams.getBatchSize();
-      boolean display = true;
-
-      long start = System.currentTimeMillis();
-      long moduleStart = start;
-      AtomicLong count = new AtomicLong(0);
-      while (true)
+      if (!runInfinitely)
       {
-         try
+         Thread.sleep(perfParams.getDurationInMinutes() * SoakBase.TO_MILLIS);
+
+         // send EOF message
+         Message eof = session.createMessage();
+         eof.setStringProperty("eof", EOF);
+         listener.onMessage(eof);
+         
+         if (connection != null)
          {
-            producer.send(message);
-            count.incrementAndGet();
-
-            if (transacted)
-            {
-               if (count.longValue() % txBatchSize == 0)
-               {
-                  session.commit();
-               }
-            }
-
-            long totalDuration = System.currentTimeMillis() - start;
-
-            if (display && (count.longValue() % modulo == 0))
-            {
-               double duration = (1.0 * System.currentTimeMillis() - moduleStart) / 1000;
-               moduleStart = System.currentTimeMillis();
-               log.info(String.format("sent %s messages in %2.2fs (time: %.0fs)", modulo, duration, totalDuration / 1000.0));
-            }
-
-            if (tbl != null)
-            {
-               tbl.limit();
-            }
-            
-            if (!runInfinitely && totalDuration > perfParams.getDurationInMinutes() * SoakBase.TO_MILLIS)
-            {
-               break;
-            }
+            connection.close();
+            connection = null;
          }
-         catch (Exception e)
-         {
-            e.printStackTrace();
-         }
-      }
-      
-      log.info(String.format("Sent %s messages in %s minutes", count, perfParams.getDurationInMinutes()));
-      log.info("END OF RUN");
-
-      
-      if (connection != null)
+      } else
       {
-         connection.close();
-         connection = null;
+         while (true)
+         {
+            Thread.sleep(500);
+         }
       }
    }
 
-   private synchronized void disconnect()
+   private void disconnect()
    {
       if (connection != null)
       {
@@ -223,20 +208,16 @@ public class SoakReconnectableSender
          Destination destination = (Destination)ic.lookup(perfParams.getDestinationLookup());
 
          connection = factory.createConnection();
+         connection.setExceptionListener(exceptionListener);
 
          session = connection.createSession(perfParams.isSessionTransacted(),
-                                            perfParams.isDupsOK() ? Session.DUPS_OK_ACKNOWLEDGE
-                                                                 : Session.AUTO_ACKNOWLEDGE);
+                                                    perfParams.isDupsOK() ? Session.DUPS_OK_ACKNOWLEDGE
+                                                                         : Session.AUTO_ACKNOWLEDGE);
 
-         producer = session.createProducer(destination);
+         MessageConsumer messageConsumer = session.createConsumer(destination);
+         messageConsumer.setMessageListener(listener);
 
-         producer.setDeliveryMode(perfParams.isDurable() ? DeliveryMode.PERSISTENT : DeliveryMode.NON_PERSISTENT);
-
-         producer.setDisableMessageID(perfParams.isDisableMessageID());
-
-         producer.setDisableMessageTimestamp(perfParams.isDisableTimestamp());
-
-         connection.setExceptionListener(exceptionListener);
+         connection.start();
       }
       catch (Exception e)
       {
