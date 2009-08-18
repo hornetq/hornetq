@@ -33,7 +33,6 @@ import org.jboss.messaging.core.client.ClientProducer;
 import org.jboss.messaging.core.client.ClientSession;
 import org.jboss.messaging.core.client.impl.ClientSessionFactoryImpl;
 import org.jboss.messaging.core.client.impl.ClientSessionFactoryInternal;
-import org.jboss.messaging.core.client.impl.ClientSessionImpl;
 import org.jboss.messaging.core.client.impl.ClientSessionInternal;
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.TransportConfiguration;
@@ -65,7 +64,7 @@ import org.jboss.messaging.utils.SimpleString;
  */
 public class SplitBrainTest extends UnitTestCase
 {
-   private static final Logger log = Logger.getLogger(FailBackupServerTest.class);
+   private static final Logger log = Logger.getLogger(SplitBrainTest.class);
 
    // Constants -----------------------------------------------------
 
