@@ -80,6 +80,8 @@ public class ConsumerTest extends UnitTestCase
    @Override
    protected void tearDown() throws Exception
    {
+      jmsServer.stop();
+      
       cf = null;
       if (server != null && server.isStarted())
       {

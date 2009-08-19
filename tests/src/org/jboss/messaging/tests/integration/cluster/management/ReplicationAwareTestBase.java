@@ -143,9 +143,13 @@ public abstract class ReplicationAwareTestBase extends UnitTestCase
    @Override
    protected void tearDown() throws Exception
    {
-      backupServer.stop();
-
       liveServer.stop();
+
+      backupServer.stop();
+      
+      MBeanServerFactory.releaseMBeanServer(backupMBeanServer);
+      
+      MBeanServerFactory.releaseMBeanServer(liveMBeanServer);
       
       backupServer = null;
       

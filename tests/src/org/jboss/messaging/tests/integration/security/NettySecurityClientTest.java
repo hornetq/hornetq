@@ -93,6 +93,8 @@ public class NettySecurityClientTest extends UnitTestCase
    {
       messagingService.stop();
 
+      messagingService = null;
+      
       super.tearDown();
    }
    

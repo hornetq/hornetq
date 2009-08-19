@@ -77,6 +77,8 @@ public class SynchronousCloseTest extends ServiceTestBase
    protected void tearDown() throws Exception
    {
       server.stop();
+      
+      server = null;
 
       super.tearDown();
    }

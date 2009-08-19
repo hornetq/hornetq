@@ -745,7 +745,19 @@ public class JMSQueueControlTest extends ManagementTestBase
    @Override
    protected void tearDown() throws Exception
    {
+      serverManager.stop();
+
       server.stop();
+
+      serverManager = null;
+
+      server = null;
+
+      queue = null;
+
+      context.close();
+
+      context = null;
 
       super.tearDown();
    }

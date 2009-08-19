@@ -123,6 +123,9 @@ public class FloodServerTest extends UnitTestCase
    @Override
    protected void tearDown() throws Exception
    {
+      
+      serverManager.stop();
+      
       server.stop();
 
       server = null;
