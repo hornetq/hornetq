@@ -21,6 +21,9 @@
  */
 package org.jboss.messaging.tests.integration.client;
 
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+
 import org.jboss.messaging.core.client.ClientConsumer;
 import org.jboss.messaging.core.client.ClientMessage;
 import org.jboss.messaging.core.client.ClientProducer;
@@ -37,9 +40,6 @@ import org.jboss.messaging.core.server.MessagingServer;
 import org.jboss.messaging.core.server.Queue;
 import org.jboss.messaging.tests.util.ServiceTestBase;
 import org.jboss.messaging.utils.SimpleString;
-
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
@@ -284,6 +284,62 @@ public class ConsumerTest extends ServiceTestBase
       sessionRec.start();
       assertTrue(latch.await(5, TimeUnit.SECONDS));
       sessionRec.close();
+   }
+   
+   public void testClearListener() throws Exception
+   {
+      ClientSessionFactory sf = createInVMFactory();
+
+      ClientSession session = sf.createSession(false, true, true);
+
+      session.createQueue(QUEUE, QUEUE, null, false);
+
+      ClientConsumer consumer = session.createConsumer(QUEUE);
+      
+      consumer.setMessageHandler(new MessageHandler()
+      {
+         public void onMessage(ClientMessage msg)
+         {
+         }
+      });
+
+      consumer.setMessageHandler(null);
+      consumer.receiveImmediate();
+   }
+   
+   public void testNoReceiveWithListener() throws Exception
+   {
+      ClientSessionFactory sf = createInVMFactory();
+
+      ClientSession session = sf.createSession(false, true, true);
+
+      session.createQueue(QUEUE, QUEUE, null, false);
+
+      ClientConsumer consumer = session.createConsumer(QUEUE);
+      
+      consumer.setMessageHandler(new MessageHandler()
+      {
+         public void onMessage(ClientMessage msg)
+         {
+         }
+      });
+
+      try
+      {
+         consumer.receiveImmediate();
+         fail("Should throw exception");
+      }
+      catch (MessagingException me)
+      {
+         if (me.getCode() == MessagingException.ILLEGAL_STATE)
+         {
+            //Ok
+         }
+         else
+         {
+            fail("Wrong exception code");
+         }
+      }
    }
 
 }

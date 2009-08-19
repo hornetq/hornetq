@@ -21,6 +21,15 @@
  */
 package org.jboss.messaging.tests.integration.jms.consumer;
 
+import javax.jms.Connection;
+import javax.jms.JMSException;
+import javax.jms.Message;
+import javax.jms.MessageConsumer;
+import javax.jms.MessageListener;
+import javax.jms.MessageProducer;
+import javax.jms.Session;
+import javax.jms.TextMessage;
+
 import org.jboss.messaging.core.config.Configuration;
 import org.jboss.messaging.core.config.TransportConfiguration;
 import org.jboss.messaging.core.config.impl.ConfigurationImpl;
@@ -34,13 +43,6 @@ import org.jboss.messaging.jms.server.impl.JMSServerManagerImpl;
 import org.jboss.messaging.tests.integration.jms.server.management.NullInitialContext;
 import org.jboss.messaging.tests.util.UnitTestCase;
 import org.jboss.messaging.utils.SimpleString;
-
-import javax.jms.Connection;
-import javax.jms.Message;
-import javax.jms.MessageConsumer;
-import javax.jms.MessageProducer;
-import javax.jms.Session;
-import javax.jms.TextMessage;
 
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
@@ -61,20 +63,20 @@ public class ConsumerTest extends UnitTestCase
    protected void setUp() throws Exception
    {
       super.setUp();
-      
+
       Configuration conf = new ConfigurationImpl();
       conf.setSecurityEnabled(false);
       conf.setJMXManagementEnabled(true);
       conf.getAcceptorConfigurations()
           .add(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory"));
-      server = Messaging.newMessagingServer(conf, false);      
+      server = Messaging.newMessagingServer(conf, false);
       jmsServer = new JMSServerManagerImpl(server);
       jmsServer.setContext(new NullInitialContext());
-      jmsServer.start();      
+      jmsServer.start();
       jmsServer.createQueue(Q_NAME, Q_NAME, null, true);
       cf = new JBossConnectionFactory(new TransportConfiguration("org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"));
       cf.setBlockOnPersistentSend(true);
-      cf.setPreAcknowledge(true);          
+      cf.setPreAcknowledge(true);
    }
 
    @Override
@@ -95,12 +97,12 @@ public class ConsumerTest extends UnitTestCase
          }
          server = null;
       }
-      
+
       server = null;
       jmsServer = null;
       cf = null;
       jBossQueue = null;
-      
+
       super.tearDown();
    }
 
@@ -144,7 +146,7 @@ public class ConsumerTest extends UnitTestCase
          producer.setTimeToLive(1);
          producer.send(textMessage);
       }
-                                                                    
+
       conn.start();
       for (int i = 0; i < noOfMessages; i++)
       {
@@ -156,5 +158,46 @@ public class ConsumerTest extends UnitTestCase
       assertEquals(0, ((Queue)server.getPostOffice().getBinding(queueName).getBindable()).getDeliveringCount());
       assertEquals(0, ((Queue)server.getPostOffice().getBinding(queueName).getBindable()).getMessageCount());
       conn.close();
+   }
+
+   public void testClearExceptionListener() throws Exception
+   {
+      Connection conn = cf.createConnection();
+      Session session = conn.createSession(false, JBossSession.PRE_ACKNOWLEDGE);
+      jBossQueue = new JBossQueue(Q_NAME);
+      MessageConsumer consumer = session.createConsumer(jBossQueue);
+      consumer.setMessageListener(new MessageListener()
+      {
+         public void onMessage(Message msg)
+         {
+         }
+      });
+
+      consumer.setMessageListener(null);
+      consumer.receiveNoWait();
+   }
+   
+   public void testCantReceiveWhenListenerIsSet() throws Exception
+   {
+      Connection conn = cf.createConnection();
+      Session session = conn.createSession(false, JBossSession.PRE_ACKNOWLEDGE);
+      jBossQueue = new JBossQueue(Q_NAME);
+      MessageConsumer consumer = session.createConsumer(jBossQueue);
+      consumer.setMessageListener(new MessageListener()
+      {
+         public void onMessage(Message msg)
+         {
+         }
+      });
+
+      try
+      {
+         consumer.receiveNoWait();
+         fail("Should throw exception");
+      }
+      catch (JMSException e)
+      {
+         //Ok
+      }
    }
 }

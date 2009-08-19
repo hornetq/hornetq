@@ -119,7 +119,7 @@ public class JBossMessageConsumer implements MessageConsumer, QueueReceiver, Top
    {
       this.listener = listener;
 
-      coreListener = new JMSMessageListenerWrapper(session, consumer, listener, ackMode);
+      coreListener = listener == null ? null : new JMSMessageListenerWrapper(session, consumer, listener, ackMode);
 
       try
       {
