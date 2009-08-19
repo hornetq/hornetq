@@ -51,7 +51,7 @@
 
 	<target name="runSender" depends="compile">
 	    <property name="jndi.url" value="jnp://${jndi.address}:${jndi.port}" />
-		<java classname="org.jboss.jms.soak.example.SoakSender" fork="true" resultproperty="example-result">
+		<java classname="org.hornetq.jms.soak.example.SoakSender" fork="true" resultproperty="example-result">
 			<jvmarg value="-Xms512M" />
 			<jvmarg value="-Xmx512M" />
 			<jvmarg value="-XX:+UseParallelGC" />
@@ -69,7 +69,7 @@
 
 	<target name="runReceiver" depends="compile">
 	    <property name="jndi.url" value="jnp://${jndi.address}:${jndi.port}" />
-		<java classname="org.jboss.jms.soak.example.SoakReceiver" fork="true" resultproperty="example-result">
+		<java classname="org.hornetq.jms.soak.example.SoakReceiver" fork="true" resultproperty="example-result">
 			<jvmarg value="-Xms512M" />
 			<jvmarg value="-Xmx512M" />
 			<jvmarg value="-XX:+UseParallelGC" />

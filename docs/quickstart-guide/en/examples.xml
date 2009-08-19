@@ -153,7 +153,7 @@ deploy-ear:
      [exec] 16:01:04,607 INFO  [JBossASKernel] Added bean(jboss.j2ee:ear=mdb-example.ear,
      jar=mdb-example.jar,name=MessageMDBExample,service=EJB3) to KernelDeployment of: 
      mdb-example.jar
-     [exec] 16:01:04,702 INFO  [EJBContainer] STARTED EJB: org.jboss.javaee.example.server
+     [exec] 16:01:04,702 INFO  [EJBContainer] STARTED EJB: org.hornetq.javaee.example.server
      .MDBExample ejbName: MessageMDBExample
      [exec] 16:01:09,496 INFO  [TomcatDeployment] deploy, ctxPath=/mdb-example
      [exec] 16:01:09,812 WARNING [config] Unable to process deployment descriptor for cont
@@ -210,7 +210,7 @@ Total time: 1 second
 </programlisting>
       <para>You can verify that the application has been undeployed by checking the output from the
          JBoss Application Server, in this isntance it will be something like:</para>
-      <programlisting>16:36:45,277 INFO  [EJBContainer] STOPPED EJB: org.jboss.javaee.example.server.MDBExample 
+      <programlisting>16:36:45,277 INFO  [EJBContainer] STOPPED EJB: org.hornetq.javaee.example.server.MDBExample 
          ejbName: MessageMDBExample
 </programlisting>
       <para>Congratulations! you have sucessfully deployed and run a Java EE example.</para>

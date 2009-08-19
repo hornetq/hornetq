@@ -40,7 +40,7 @@
    
    <target name="run">
       <antcall target="runExample">
-         <param name="example.classname" value="org.jboss.javaee.example.EJBClientExample"/>
+         <param name="example.classname" value="org.hornetq.javaee.example.EJBClientExample"/>
       </antcall>
    </target>
 

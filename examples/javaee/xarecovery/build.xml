@@ -39,7 +39,7 @@
    
    <target name="run">
       <antcall target="runExample">
-         <param name="example.classname" value="org.jboss.javaee.example.XARecoveryExample"/>
+         <param name="example.classname" value="org.hornetq.javaee.example.XARecoveryExample"/>
       </antcall>
    </target>
 

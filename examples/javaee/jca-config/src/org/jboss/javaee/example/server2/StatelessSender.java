@@ -21,7 +21,7 @@
  */
 
 
-package org.jboss.javaee.example.server2;
+package org.hornetq.javaee.example.server2;
 
 import org.hornetq.jms.JBossQueue;
 
@@ -53,7 +53,7 @@ public class StatelessSender implements StatelessSenderService
    
 
    /* (non-Javadoc)
-    * @see org.jboss.javaee.example.server.StatelessSenderService#sendHello(java.lang.String)
+    * @see org.hornetq.javaee.example.server.StatelessSenderService#sendHello(java.lang.String)
     */
    public void sendHello(String message) throws Exception
    {

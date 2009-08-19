@@ -21,7 +21,7 @@
  */
 
 
-package org.jboss.javaee.example.server2;
+package org.hornetq.javaee.example.server2;
 
 /**
  * A StatelessSenderService

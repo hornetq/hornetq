@@ -31,7 +31,7 @@
 
    <target name="run">
       <antcall target="runExample">
-         <param name="example.classname" value="org.jboss.javaee.example.JMSBridgeExample"/>
+         <param name="example.classname" value="org.hornetq.javaee.example.JMSBridgeExample"/>
       </antcall>
    </target>
 

@@ -120,7 +120,7 @@
 
    <target name="run">
       <antcall target="runExample">
-         <param name="example.classname" value="org.jboss.javaee.example.MDBRemoteClientExample"/>
+         <param name="example.classname" value="org.hornetq.javaee.example.MDBRemoteClientExample"/>
       </antcall>
    </target>
 
