@@ -1191,14 +1191,10 @@
                     haltonerror="${junit.batchtest.haltonerror}">
             <formatter type="plain" usefile="${junit.formatter.usefile}"/>
             <fileset dir="${test.jms.classes.dir}">
-               <include name="**/messaging/**/${test-mask}.class"/>
-               <include name="**/jms/**/${test-mask}.class"/>
-               <include name="**/messaging/util/**/${test-mask}.class"/>
-               <exclude name="**/jms/XARecoveryTest.class"/>
+               <include name="**/jmstests/**/${test-mask}.class"/>
+               <exclude name="**/jmstests/XARecoveryTest.class"/>
                <exclude name="**/jms/XAResourceRecoveryTest.class"/>
                <exclude name="**/jms/XATest.class"/>
-               <exclude name="**/jms/stress/**"/>
-               <exclude name="**/jms/manual/**"/>
             </fileset>
          </batchtest>
       </junit>
