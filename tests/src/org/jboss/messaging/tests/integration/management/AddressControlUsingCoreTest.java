@@ -315,6 +315,10 @@ public class AddressControlUsingCoreTest extends ManagementTestBase
       session.close();
 
       server.stop();
+      
+      session = null;
+      
+      server = null;
 
       super.tearDown();
    }

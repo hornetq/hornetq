@@ -96,6 +96,8 @@ public abstract class ManagementTestBase extends UnitTestCase
    {
       MBeanServerFactory.releaseMBeanServer(mbeanServer);
       
+      mbeanServer = null;
+      
       super.tearDown();
    }
 

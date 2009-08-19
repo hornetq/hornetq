@@ -201,6 +201,13 @@ public class BridgeControlTest extends ManagementTestBase
    {
       server_0.stop();
       server_1.stop();
+      
+      server_0 = null;
+
+      bridgeConfig = null;
+
+      server_1 = null;
+
 
       super.tearDown();
    }

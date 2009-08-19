@@ -324,6 +324,10 @@ public class MessagingServerControlTest extends ManagementTestBase
       {
          server.stop();
       }
+      
+      server = null;
+      
+      connectorConfig = null;
 
       super.tearDown();
    }

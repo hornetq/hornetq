@@ -163,6 +163,7 @@ public class BroadcastGroupControlTest extends ManagementTestBase
       {
          service.stop();
       }
+      service = null;
 
       super.tearDown();
    }

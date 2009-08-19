@@ -373,9 +373,24 @@ public class TopicControlUsingJMSTest extends ManagementTestBase
    @Override
    protected void tearDown() throws Exception
    {
+      
+      session.close();
+      
       connection.close();
 
+      serverManager.stop();
+      
       server.stop();
+      
+      serverManager = null;
+      
+      server = null;
+      
+      session = null;
+      
+      connection = null;
+      
+      proxy = null;
 
       super.tearDown();
    }

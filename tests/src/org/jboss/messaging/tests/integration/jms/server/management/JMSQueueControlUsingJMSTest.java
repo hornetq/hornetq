@@ -77,6 +77,10 @@ public class JMSQueueControlUsingJMSTest extends JMSQueueControlTest
    {
       connection.close();
 
+      connection = null;
+      
+      session = null;
+      
       super.tearDown();
    }
 

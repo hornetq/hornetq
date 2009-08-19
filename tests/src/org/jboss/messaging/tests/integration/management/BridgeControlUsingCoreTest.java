@@ -183,6 +183,13 @@ public class BridgeControlUsingCoreTest extends ManagementTestBase
       server_0.stop();
       server_1.stop();
 
+      session = null;
+      
+      server_0 = null;
+      
+      server_1 = null;
+      
+      
       super.tearDown();
    }
    

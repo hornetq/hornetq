@@ -124,6 +124,10 @@ public class DivertControlTest extends ManagementTestBase
       service.stop();
 
       checkNoResource(ObjectNames.getDivertObjectName(new SimpleString(divertConfig.getName())));
+      
+      service = null;
+      
+      divertConfig = null;
 
       super.tearDown();
    }

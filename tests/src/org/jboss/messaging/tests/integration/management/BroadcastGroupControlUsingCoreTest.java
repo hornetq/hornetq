@@ -129,6 +129,8 @@ public class BroadcastGroupControlUsingCoreTest extends BroadcastGroupControlTes
       {
          session.close();
       }
+      
+      session = null;
 
       super.tearDown();
    }

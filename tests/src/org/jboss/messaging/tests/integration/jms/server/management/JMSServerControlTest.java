@@ -71,7 +71,8 @@ public class JMSServerControlTest extends ManagementTestBase
    // Attributes ----------------------------------------------------
 
    protected InVMContext context;
-
+   private MessagingServer server;
+   
    private JMSServerManagerImpl serverManager;
 
    // Static --------------------------------------------------------
@@ -553,7 +554,7 @@ public class JMSServerControlTest extends ManagementTestBase
       conf.setSecurityEnabled(false);
       conf.setJMXManagementEnabled(true);
       conf.getAcceptorConfigurations().add(new TransportConfiguration(InVMAcceptorFactory.class.getName()));
-      MessagingServer server = Messaging.newMessagingServer(conf, mbeanServer, false);
+      server = Messaging.newMessagingServer(conf, mbeanServer, false);
 
       context = new InVMContext();
       serverManager = new JMSServerManagerImpl(server);
@@ -566,6 +567,12 @@ public class JMSServerControlTest extends ManagementTestBase
    protected void tearDown() throws Exception
    {
       serverManager.stop();
+      
+      server.stop();
+      
+      serverManager = null;
+      
+      server = null;
 
       super.tearDown();
    }

@@ -118,6 +118,8 @@ public class DiscoveryGroupControlTest extends ManagementTestBase
          service.stop();
       }
 
+      service = null;
+      
       super.tearDown();
    }
    

@@ -73,6 +73,8 @@ public abstract class SecurityManagementTestBase extends UnitTestCase
    protected void tearDown() throws Exception
    {
       service.stop();
+      
+      service = null;
 
       super.tearDown();
    }

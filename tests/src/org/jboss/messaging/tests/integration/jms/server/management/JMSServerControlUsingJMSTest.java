@@ -74,6 +74,10 @@ public class JMSServerControlUsingJMSTest extends JMSServerControlTest
    protected void tearDown() throws Exception
    {
       connection.close();
+      
+      connection = null;
+      
+      session = null;
 
       super.tearDown();
    }

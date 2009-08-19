@@ -369,6 +369,11 @@ public class AddressControlTest extends ManagementTestBase
       session.close();
 
       server.stop();
+      
+      server = null;
+      
+      session = null;
+      
 
       super.tearDown();
    }

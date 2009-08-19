@@ -276,6 +276,8 @@ public class QueueControlUsingCoreTest extends QueueControlTest
          session.close();
       }
       
+      session = null;
+      
       super.tearDown();
    }
    

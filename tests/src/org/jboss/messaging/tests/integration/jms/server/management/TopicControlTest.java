@@ -441,7 +441,15 @@ public class TopicControlTest extends ManagementTestBase
    @Override
    protected void tearDown() throws Exception
    {
+      serverManager.stop();
+      
       server.stop();
+
+      serverManager = null;
+      
+      server = null;
+      
+      topic = null;
 
       super.tearDown();
    }

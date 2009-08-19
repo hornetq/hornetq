@@ -122,6 +122,16 @@ public class XaTimeoutTest extends UnitTestCase
       messagingService = null;
       clientSession = null;
       
+
+      clientProducer = null;;
+
+      clientConsumer = null;
+
+      sessionFactory = null;
+
+      configuration = null;;
+      
+      
       super.tearDown();
    }
 

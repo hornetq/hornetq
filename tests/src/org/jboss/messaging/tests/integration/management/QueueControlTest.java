@@ -1287,6 +1287,10 @@ public class QueueControlTest extends ManagementTestBase
       session.close();
 
       server.stop();
+      
+      session = null;
+      
+      server = null;
 
       super.tearDown();
    }

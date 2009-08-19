@@ -70,26 +70,28 @@ public class JMSServerControl2Test extends ManagementTestBase
 
    // Attributes ----------------------------------------------------
 
+   private MessagingServer server;
+   
+   JMSServerManagerImpl serverManager;
+   
    private InVMContext context;
 
    // Static --------------------------------------------------------
 
-   private MessagingServer startMessagingServer(String acceptorFactory) throws Exception
+   private void startMessagingServer(String acceptorFactory) throws Exception
    {
       Configuration conf = new ConfigurationImpl();
       conf.setSecurityEnabled(false);
       conf.setJMXManagementEnabled(true);
       conf.getAcceptorConfigurations().add(new TransportConfiguration(acceptorFactory));
-      MessagingServer server = Messaging.newMessagingServer(conf, mbeanServer, false);
+      server = Messaging.newMessagingServer(conf, mbeanServer, false);
       server.start();
 
       context = new InVMContext();
-      JMSServerManagerImpl serverManager = new JMSServerManagerImpl(server);
+      serverManager = new JMSServerManagerImpl(server);
       serverManager.setContext(context);
       serverManager.start();
       serverManager.activated();
-
-      return server;
    }
 
    // Constructors --------------------------------------------------
@@ -154,15 +156,23 @@ public class JMSServerControl2Test extends ManagementTestBase
    {
       return ManagementControlHelper.createJMSServerControl(mbeanServer);
    }
+   
+   protected void tearDown() throws Exception
+   {
+      serverManager = null;
+      
+      server = null;
+      
+      super.tearDown();
+   }
 
    // Private -------------------------------------------------------
 
    private void doListConnectionIDs(String acceptorFactory, String connectorFactory) throws Exception
    {
-      MessagingServer server = null;
       try
       {
-         server = startMessagingServer(acceptorFactory);
+         startMessagingServer(acceptorFactory);
 
          JMSServerControl control = createManagementControl();
 
@@ -193,6 +203,11 @@ public class JMSServerControl2Test extends ManagementTestBase
       }
       finally
       {
+         if (serverManager != null)
+         {
+            serverManager.stop();
+         }
+         
          if (server != null)
          {
             server.stop();
@@ -202,10 +217,9 @@ public class JMSServerControl2Test extends ManagementTestBase
 
    private void doListSessions(String acceptorFactory, String connectorFactory) throws Exception
    {
-      MessagingServer server = null;
       try
       {
-         server = startMessagingServer(acceptorFactory);
+         startMessagingServer(acceptorFactory);
 
          JMSServerControl control = createManagementControl();
 
@@ -232,6 +246,12 @@ public class JMSServerControl2Test extends ManagementTestBase
       }
       finally
       {
+         if (serverManager != null)
+         {
+            serverManager.stop();
+         }
+         
+         
          if (server != null)
          {
             server.stop();
@@ -241,10 +261,9 @@ public class JMSServerControl2Test extends ManagementTestBase
 
    private void doListClientConnections(String acceptorFactory, String connectorFactory) throws Exception
    {
-      MessagingServer server = null;
       try
       {
-         server = startMessagingServer(acceptorFactory);
+         startMessagingServer(acceptorFactory);
 
          JMSServerControl control = createManagementControl();
 
@@ -270,6 +289,12 @@ public class JMSServerControl2Test extends ManagementTestBase
       }
       finally
       {
+         if (serverManager != null)
+         {
+            serverManager.stop();
+         }
+         
+         
          if (server != null)
          {
             server.stop();
@@ -279,10 +304,9 @@ public class JMSServerControl2Test extends ManagementTestBase
 
    private void doCloseConnectionsForAddress(String acceptorFactory, String connectorFactory) throws Exception
    {
-      MessagingServer server = null;
       try
       {
-         server = startMessagingServer(acceptorFactory);
+         startMessagingServer(acceptorFactory);
 
          JMSServerControl control = createManagementControl();
 
@@ -320,6 +344,11 @@ public class JMSServerControl2Test extends ManagementTestBase
       }
       finally
       {
+         if (serverManager != null)
+         {
+            serverManager.stop();
+         }
+         
          if (server != null)
          {
             server.stop();
@@ -331,11 +360,9 @@ public class JMSServerControl2Test extends ManagementTestBase
    {
       String unknownAddress = randomString();
 
-      MessagingServer server = null;
-
       try
       {
-         server = startMessagingServer(acceptorFactory);
+         startMessagingServer(acceptorFactory);
 
          JMSServerControl control = createManagementControl();
 
@@ -371,6 +398,11 @@ public class JMSServerControl2Test extends ManagementTestBase
       }
       finally
       {
+         if (serverManager != null)
+         {
+            serverManager.stop();
+         }
+         
          if (server != null)
          {
             server.stop();

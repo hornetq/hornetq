@@ -140,6 +140,8 @@ public class ClusterConnectionControlUsingCoreTest extends ClusterConnectionCont
       {
          session.close();
       }
+      
+      session = null;
 
       super.tearDown();
    }

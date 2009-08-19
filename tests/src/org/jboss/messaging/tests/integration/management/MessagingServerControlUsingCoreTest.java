@@ -68,6 +68,8 @@ public class MessagingServerControlUsingCoreTest extends MessagingServerControlT
    protected void tearDown() throws Exception
    {
       session.close();
+      
+      session = null;
 
       super.tearDown();
    }
