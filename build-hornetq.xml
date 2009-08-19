@@ -1,0 +1,1461 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE project [
+      <!ENTITY libraries SYSTEM "thirdparty/libraries.ent">
+      ]>
+
+<!-- =========================================================================================== -->
+<!--                                                                                             -->
+<!-- JBoss, Home of Professional Open Source                                                     -->
+<!-- Copyright 2005, JBoss Inc., and individual contributors as indicated                        -->
+<!-- by the @authors tag. See the copyright.txt in the distribution for a                        -->
+<!-- full listing of individual contributors.                                                    -->
+<!--                                                                                             -->
+<!-- This is free software; you can redistribute it and/or modify it                             -->
+<!-- under the terms of the GNU Lesser General Public License as                                 -->
+<!-- published by the Free Software Foundation; either version 2.1 of                            -->
+<!-- the License, or (at your option) any later version.                                         -->
+<!--                                                                                             -->
+<!-- This software is distributed in the hope that it will be useful,                            -->
+<!-- but WITHOUT ANY WARRANTY; without even the implied warranty of                              -->
+<!-- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU                            -->
+<!-- Lesser General Public License for more details.                                             -->
+<!--                                                                                             -->
+<!-- You should have received a copy of the GNU Lesser General Public                            -->
+<!-- License along with this software; if not, write to the Free                                 -->
+<!-- Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA                          -->
+<!-- 02110-1301 USA, or see the FSF site: http://www.fsf.org.                                    -->
+<!--                                                                                             -->
+<!-- $Id: build.xml 4036 2008-04-11 12:43:24Z ataylor $                                          -->
+<!-- =========================================================================================== -->
+
+<project default="jar" name="The HornetQ Project">
+
+	
+   <!-- ======================================================================================== -->
+   <!-- javac + junit properties                                                                 -->
+   <!-- ======================================================================================== -->
+
+   <property file="build-hornetq.properties" />
+
+   <!-- ======================================================================================== -->
+   <!-- Module name(s) & version                                                                 -->
+   <!-- ======================================================================================== -->
+
+   <property name="module.name" value="HornetQ"/>
+   <!-- Version properties are read from jboss-messaging-version.properties instead of duplicating them here -->
+   <property file="src/config/common/jboss-messaging-version.properties"/>
+   <property name="messaging.version.revision" value="0" />
+   <property name="messaging.version.svnurl" value="https://svn.jboss.org/repos/messaging/trunk"/>
+   <property name="messaging.version.string"
+             value="${messaging.version.majorVersion}.${messaging.version.minorVersion}.${messaging.version.microVersion}.${messaging.version.versionSuffix} (${messaging.version.versionName}, ${messaging.version.incrementingVersion})"/>
+   <property name="module.version"
+             value="${messaging.version.majorVersion}.${messaging.version.minorVersion}.${messaging.version.revision}.${messaging.versionTag}"/>
+   <property name="build.artifact"
+             value="${module.name}-${messaging.version.majorVersion}.${messaging.version.minorVersion}.${messaging.version.microVersion}.${messaging.version.versionSuffix}"/>
+
+   <!-- ======================================================================================== -->
+   <!-- Jar names                                                                                -->
+   <!-- ======================================================================================== -->
+
+   <property name="core.jar.name" value="jbm-core.jar"/>
+   <property name="jms.jar.name" value="jbm-jms.jar"/>
+   <property name="jms.client.jar.name" value="jbm-jms-client.jar"/>
+   <property name="jnp.client.jar.name" value="jnp-client.jar"/>
+   <property name="transports.jar.name" value="jbm-transports.jar"/>
+   <property name="security.jar.name" value="jbm-jboss-as-security.jar"/>
+   <property name="bootstrap.jar.name" value="jbm-bootstrap.jar"/>
+   <property name="logging.jar.name" value="jbm-logging.jar"/>
+   <property name="core.client.jar.name" value="jbm-core-client.jar"/>
+   <property name="ra.jar.name" value="jbm-ra.jar"/>
+   <property name="ra.rar.name" value="jbm-ra.rar"/>
+   <property name="netty.jar.name" value="netty.jar"/>
+   <property name="mc.jar.name" value="jboss-mc.jar"/>
+   <property name="resources.jar.name" value="jbm-resources.jar"/>
+
+   <!--source and build dirs-->
+   <property name="build.dir" value="build"/>
+   <property name="build.classes.dir" value="${build.dir}/classes"/>
+   <property name="build.core.classes.dir" value="${build.dir}/classes/core"/>
+   <property name="build.jms.classes.dir" value="${build.dir}/classes/jms"/>
+   <property name="build.transports.classes.dir" value="${build.dir}/classes/transports"/>
+   <property name="build.security.classes.dir" value="${build.dir}/classes/security"/>
+   <property name="build.bootstrap.classes.dir" value="${build.dir}/classes/bootstrap"/>
+   <property name="build.logging.classes.dir" value="${build.dir}/classes/logging"/>
+   <property name="build.ra.classes.dir" value="${build.dir}/classes/ra"/>
+   <property name="build.jars.dir" value="${build.dir}/jars"/>   
+   <property name="build.src.dir" value="${build.dir}/src"/>
+   <property name="src.dir" value="src"/>
+   <property name="src.main.dir" value="${src.dir}/main"/>
+   <property name="src.config.dir" value="${src.dir}/config"/>
+   <property name="src.config.standalone.non-clustered.dir" value="${src.dir}/config/stand-alone/non-clustered"/>
+   <property name="src.config.standalone.clustered.dir" value="${src.dir}/config/stand-alone/clustered"/>
+   <property name="src.config.trunk.non-clustered.dir" value="${src.dir}/config/trunk/non-clustered"/>
+   <property name="src.config.trunk.clustered.dir" value="${src.dir}/config/trunk/clustered"/>
+   <property name="src.config.jbossas.non-clustered.dir" value="${src.dir}/config/jboss-as/non-clustered"/>    
+   <property name="src.config.jbossas.clustered.dir" value="${src.dir}/config/jboss-as/clustered"/>
+   <property name="src.schema.dir" value="${src.config.dir}/common/schema"/>
+   <property name="src.bin.dir" value="${src.dir}/bin"/>
+   <property name="doc.dir" value="docs"/>
+   <property name="logs.dir" value="logs"/>
+   <property name="licenses.dir" value="licenses"/>
+   <property name="doc.examples.dir" value="examples"/>
+   <property name="user-manual.build.dir" value="${doc.dir}/user-manual/build"/>
+   <property name="quickstart-guide.build.dir" value="${doc.dir}/quickstart-guide/build"/>
+   <property name="build.api.dir" value="${build.dir}/api"/>
+   <property name="native.bin.dir" value="native/bin"/>
+   <property name="examples.dir" value="examples"/>
+
+   <property name="build.distro.dir"
+             value="${build.dir}/${build.artifact}"/>
+   <property name="build.distro.lib.dir" value="${build.distro.dir}/lib"/>
+   <property name="build.distro.native.dir" value="${build.distro.dir}/native-src"/>
+   <property name="build.distro.client.dir" value="${build.distro.dir}/client"/>
+   <property name="build.distro.config.dir" value="${build.distro.dir}/config"/>
+   <property name="build.distro.schema.dir" value="${build.distro.dir}/schemas"/>
+   <property name="build.distro.bin.dir" value="${build.distro.dir}/bin"/>
+   <property name="build.distro.api.dir" value="${build.distro.dir}/docs/api"/>
+   <property name="build.distro.examples.dir" value="${build.distro.dir}/examples"/>
+   <property name="build.distro.licenses.dir" value="${build.distro.dir}/licenses"/>
+   <property name="artifacts.dir" value="${build.dir}/artifacts"/>
+
+   <!--default clustering server settings-->   
+   <property name="jbm.remoting.netty.port" value="5445"/>
+   <property name="jnp.port" value="1099"/>
+   <property name="jnp.rmiPort" value="1098"/>
+   <property name="jbm.data.dir" value="data1"/>
+    
+   <!-- ======================================================================================== -->
+   <!-- Thirdparty Dependency                                                                    -->
+   <!-- ======================================================================================== -->
+
+   <property name="project.thirdparty" value="thirdparty"/>
+   <property name="sun.javacc.lib" value="${project.thirdparty}/net/java/dev/javacc/lib/"/>
+   &libraries;
+
+   <!--
+        Setting "external.project" to true makes jbossbuild use the current directory, and not its
+        parent, as project root. DO NOT change this.
+   -->
+   <property name="external.project" value="true"/>
+   <!--
+        Setting "nodownload" to true inhibits downloading of up-to-date dependencies.
+   -->
+   <property name="nodownload" value="false"/>
+   
+   <!-- ======================================================================================== -->
+   <!-- Test properties                                                                          -->
+   <!-- ======================================================================================== -->
+
+   <property name="test.dir" value="tests"/>
+   <property name="thirdparty.dir" value="thirdparty"/>
+   <property name="test.build.dir" value="${test.dir}/build"/>
+   <property name="test.src.dir" value="${test.dir}/src"/>
+   <property name="test-mask" value="*Test"/>
+   <property name="test.classes.dir" value="${test.build.dir}/classes"/>
+   <property name="test.output.dir" value="${test.dir}/build"/>
+   <property name="test.reports.dir" value="${test.output.dir}/reports"/>
+   <property name="test.stylesheets.dir" value="${test.output.dir}/stylesheets"/>
+   <property name="test.src.stylesheets.dir" value="${test.src.dir}/stylesheets"/>
+   <property name="test.jms.dir" value="${test.dir}/jms-tests"/>
+   <property name="test.jms.build.dir" value="${test.jms.dir}/build"/>
+   <property name="test.jms.src.dir" value="${test.jms.dir}/src"/>
+   <property name="test.jms.classes.dir" value="${test.jms.dir}/build/classes"/>
+   <property name="test.joram.dir" value="${test.dir}/joram-tests"/>
+   <property name="test.joram.src.dir" value="${test.joram.dir}/src"/>
+   <property name="test.joram.config.dir" value="${test.joram.dir}/config"/>
+   <property name="test.joram.build.dir" value="${test.joram.dir}/build"/>
+   <property name="test.joram.classes.dir" value="${test.joram.build.dir}/classes"/>
+
+   <!-- ======================================================================================== -->
+   <!-- Classpath definition                                                                     -->
+   <!-- ======================================================================================== -->
+
+   <path id="jms.compilation.classpath">
+      <path location="${build.core.classes.dir}"/>
+      <path refid="org.jboss.javaee.classpath"/>
+      <path refid="org.jboss.integration.classpath"/>
+      <path refid="jboss.jbossts.classpath"/>
+      <path refid="org.jboss.naming.classpath"/>
+   </path>
+
+   <path id="transports.compilation.classpath">
+      <path location="${build.core.classes.dir}"/>
+      <path refid="org.jboss.javaee.classpath"/>
+      <path refid="org.jboss.netty.classpath"/>
+   </path>
+
+   <path id="security.compilation.classpath">
+      <path location="${build.core.classes.dir}"/>
+      <path refid="org.jboss.security.classpath"/>
+   </path>
+
+   <path id="bootstrap.compilation.classpath">
+      <path location="${build.core.classes.dir}"/>
+      <path refid="org.jboss.microcontainer.classpath"/>
+      <path refid="org.jboss.classpath"/>
+   </path>
+
+   <path id="logging.compilation.classpath">
+      <path refid="log4j.log4j.classpath"/>
+      <path refid="org.jboss.logging.classpath"/>
+   </path>
+
+   <path id="javadoc.classpath">
+      <path refid="jms.compilation.classpath"/>
+      <path location="${build.classes.dir}"/>
+   </path>
+
+   <path id="test.compilation.classpath">
+      <path refid="jms.compilation.classpath"/>
+      <path refid="transports.compilation.classpath"/>
+      <path refid="security.compilation.classpath"/>
+      <path refid="bootstrap.compilation.classpath"/>
+      <path refid="junit.junit.classpath"/>
+      <path location="${build.jars.dir}/${ra.jar.name}"/>
+      <path location="${build.jars.dir}/${jms.jar.name}"/>
+      <path location="${build.jars.dir}/${transports.jar.name}"/>
+      <path location="${build.jars.dir}/${security.jar.name}"/>
+      <path location="${build.jars.dir}/${bootstrap.jar.name}"/>
+      <path location="${build.jars.dir}/${logging.jar.name}"/>
+   </path>
+
+   <path id="jms.test.compilation.classpath">
+      <path refid="transports.compilation.classpath"/>
+      <path refid="security.compilation.classpath"/>
+      <path refid="bootstrap.compilation.classpath"/>
+      <path refid="jms.compilation.classpath"/>
+      <path refid="junit.junit.classpath"/>
+      <path refid="org.jboss.security.classpath"/>
+      <path location="${build.jars.dir}/${core.jar.name}"/>
+      <path location="${build.jars.dir}/${jms.jar.name}"/>
+      <path location="${build.jars.dir}/${transports.jar.name}"/>
+      <path location="${build.jars.dir}/${security.jar.name}"/>
+      <path location="${build.jars.dir}/${bootstrap.jar.name}"/>
+      <path location="${build.jars.dir}/${logging.jar.name}"/>
+   </path>
+
+   <path id="joram.test.compilation.classpath">
+      <path refid="jms.test.compilation.classpath"/>
+      <path location="${test.jms.classes.dir}" />
+      <path location="${test.classes.dir}" />
+      <path refid="org.jboss.naming.classpath"/>
+      <path refid="org.jboss.logging.classpath"/>
+   </path>
+   
+   <path id="findbugs.classpath">
+      <path refid="jms.compilation.classpath"/>
+      <path location="${build.jars.dir}/jboss-${module.name}.jar"/>
+      <path refid="junit.junit.classpath"/>
+   </path>
+
+   <path id="unit.test.execution.classpath">
+      <!-- ensure that the core client jar is included for
+           tests security tests which needs to read jboss-messaging-version.properties
+	       from inside this jar
+	  -->
+      <fileset dir="${build.jars.dir}">
+         <include name="${core.client.jar.name}"/>
+      </fileset>
+      <pathelement location="${test.dir}/config"/>
+      <pathelement location="${test.dir}/tmpfiles"/>
+      <pathelement location="${test.classes.dir}"/>
+      <pathelement location="${src.config.dir}/common"/>
+      <pathelement location="${src.schema.dir}"/>
+      <path refid="test.compilation.classpath"/>
+      <path refid="sun.jaxb.classpath"/>
+      <path refid="org.jboss.logging.classpath"/>
+      <path refid="jboss.jbossts.classpath"/>
+      <path refid="apache.xerces.classpath"/>
+      <path refid="apache.logging.classpath"/>
+      <path refid="log4j.log4j.classpath"/>
+   </path>
+
+   <path id="emma.unit.test.execution.classpath">
+      <pathelement location="${test.dir}/config"/>
+      <pathelement location="${test.dir}/tmpfiles"/>
+      <pathelement location="${test.classes.dir}"/>
+      <pathelement location="${src.config.dir}/common"/>
+      <pathelement location="${src.schema.dir}"/>
+      <path refid="test.compilation.classpath"/>
+      <path refid="apache.xerces.classpath"/>
+   </path>
+   
+   <path id="jms.test.execution.classpath">
+      <pathelement location="${test.dir}/config"/>
+      <pathelement location="${src.config.dir}/common"/>
+      <pathelement location="${src.schema.dir}"/>
+      <pathelement location="${test.jms.dir}/config"/>
+      <pathelement location="${test.jms.classes.dir}"/>
+      <path location="${build.jars.dir}/${transports.jar.name}"/>
+      <path refid="jms.test.compilation.classpath"/>
+      <path refid="sun.jaxb.classpath"/>
+      <path refid="org.jboss.logging.classpath"/>
+      <path refid="org.jboss.naming.classpath"/>
+      <path refid="jboss.jbossts.classpath"/>
+      <path refid="apache.xerces.classpath"/>
+      <path refid="apache.logging.classpath"/>
+      <path refid="log4j.log4j.classpath"/>
+   </path>
+    
+   <path id="joram.test.execution.classpath">
+      <pathelement location="${test.joram.classes.dir}"/>
+      <pathelement location="${test.joram.config.dir}"/>
+      <path refid="joram.test.compilation.classpath"/>
+      <path refid="jms.test.execution.classpath"/>
+   </path>
+
+   <path id="jms.standalone.server.classpath">
+      <pathelement location="${src.schema.dir}"/>
+      <path location="${build.jars.dir}/${transports.jar.name}"/>
+      <path refid="jms.test.execution.classpath"/>
+      <path refid="org.jboss.naming.classpath"/>
+      <!--<path refid="jboss.jboss.reflect.classpath"/>
+      <path refid="jboss.jboss.mdr.classpath"/>
+      <path refid="jboss.jboss.common.logging.spi.classpath"/>
+      <path refid="jboss.jboss.common.logging.log4j.classpath"/>-->
+   </path>
+
+   <target name="clean">
+      <delete dir="${build.dir}"/>
+      <delete dir="${test.build.dir}"/>
+      <delete dir="${test.output.dir}"/>
+      <delete dir="${test.jms.build.dir}"/>
+      <delete dir="${test.joram.build.dir}"/>
+      <delete dir="${thirdparty.dir}"/>
+      <delete>
+         <fileset dir="${logs.dir}" includes="*"/>
+      </delete>
+      <ant antfile="${examples.dir}/build.xml" target="clean" inheritall="false"/>
+   </target>
+
+   <target name="init" depends="createthirdparty">
+      <mkdir dir="${build.dir}"/>
+      <mkdir dir="${build.classes.dir}"/>
+      <mkdir dir="${build.core.classes.dir}"/>
+      <mkdir dir="${build.jms.classes.dir}"/>
+      <mkdir dir="${build.transports.classes.dir}"/>
+      <mkdir dir="${build.security.classes.dir}"/>
+      <mkdir dir="${build.bootstrap.classes.dir}"/>
+      <mkdir dir="${build.logging.classes.dir}"/>
+      <mkdir dir="${build.ra.classes.dir}"/>
+      <mkdir dir="${build.jars.dir}"/>
+      <mkdir dir="${build.src.dir}"/>
+   </target>
+   
+   
+   <target name="createthirdparty" unless="inhibit.downloads" depends="check.inhibit.downloads">
+      <ant antfile="build-thirdparty.xml" target="maven-install"/>
+   </target>
+
+   <target name="check.inhibit.downloads">
+      <condition property="inhibit.downloads">
+         <or>
+            <uptodate property="dependencies.current"
+                      srcfile="build-thirdparty.xml"
+                      targetfile="./thirdparty/libraries.ent"/>
+            <istrue value="${nodownload}"/>
+         </or>
+      </condition>
+   </target>
+
+   <!-- ================================= -->
+   <!-- Compilation targets               -->
+   <!-- ================================= -->
+ 
+   <target name="compile" depends="compile-jms"/>
+
+   <target name="compile-core" depends="init">
+      <mkdir dir="${build.src.dir}/org/hornetq/core/filter/impl"/>
+      <javacc target="${src.main.dir}/org/hornetq/core/filter/impl/FilterParser.jj"
+              outputdirectory="${build.src.dir}/org/hornetq/core/filter/impl"
+              javacchome="${sun.javacc.lib}"
+              static="false"/>
+      <javac destdir="${build.core.classes.dir}"
+             target="${javac.target}"
+             source="${javac.source}"
+             optimize="${javac.optimize}"
+             debug="${javac.debug}"
+             depend="${javac.depend}"
+             verbose="${javac.verbose}"
+             deprecation="${javac.deprecation}"
+             includeAntRuntime="${javac.include.ant.runtime}"
+             includeJavaRuntime="${javac.include.java.runtime}"
+             failonerror="${javac.fail.onerror}">
+         <src>
+            <pathelement path="${build.src.dir}"/>
+            <pathelement path="${src.main.dir}"/>
+         </src>
+         <include name="**/hornetq/core/**/*.java"/>
+         <include name="**/hornetq/utils/**/*.java"/>
+      </javac>
+      <javah class="org.hornetq.core.asyncio.impl.AsynchronousFileImpl"
+             classpath="${build.core.classes.dir}" destdir="./native/src"/>
+
+      <copy file="${src.config.dir}/common/jboss-messaging-version.properties"
+            tofile="${build.core.classes.dir}/jboss-messaging-version.properties"/>
+
+   </target>
+
+   <target name="compile-jms" depends="compile-core">
+      <javac destdir="${build.jms.classes.dir}"
+             target="${javac.target}"
+             source="${javac.source}"
+             optimize="${javac.optimize}"
+             debug="${javac.debug}"
+             depend="${javac.depend}"
+             verbose="${javac.verbose}"
+             deprecation="${javac.deprecation}"
+             includeAntRuntime="${javac.include.ant.runtime}"
+             includeJavaRuntime="${javac.include.java.runtime}"
+             failonerror="${javac.fail.onerror}">
+         <src>
+            <pathelement path="${src.main.dir}"/>
+         </src>
+         <include name="**/jms/**/*.java"/>
+         <classpath refid="jms.compilation.classpath"/>
+      </javac>
+   </target>
+
+   <target name="compile-transports" depends="compile-core">
+      <javac destdir="${build.transports.classes.dir}"
+             target="${javac.target}"
+             source="${javac.source}"
+             optimize="${javac.optimize}"
+             debug="${javac.debug}"
+             depend="${javac.depend}"
+             verbose="${javac.verbose}"
+             deprecation="${javac.deprecation}"
+             includeAntRuntime="${javac.include.ant.runtime}"
+             includeJavaRuntime="${javac.include.java.runtime}"
+             failonerror="${javac.fail.onerror}">
+         <src>
+            <pathelement path="${src.main.dir}"/>
+         </src>
+         <include name="org/hornetq/integration/transports/**/*.java"/>
+         <classpath refid="transports.compilation.classpath"/>
+      </javac>
+   </target>
+
+   <target name="compile-security" depends="compile-core">
+      <javac destdir="${build.security.classes.dir}"
+             target="${javac.target}"
+             source="${javac.source}"
+             optimize="${javac.optimize}"
+             debug="${javac.debug}"
+             depend="${javac.depend}"
+             verbose="${javac.verbose}"
+             deprecation="${javac.deprecation}"
+             includeAntRuntime="${javac.include.ant.runtime}"
+             includeJavaRuntime="${javac.include.java.runtime}"
+             failonerror="${javac.fail.onerror}">
+         <src>
+            <pathelement path="${src.main.dir}"/>
+         </src>
+         <include name="org/hornetq/integration/security/**/*.java"/>
+         <classpath refid="security.compilation.classpath"/>
+      </javac>
+   </target>
+
+   <target name="compile-bootstrap" depends="compile-core">
+      <javac destdir="${build.bootstrap.classes.dir}"
+             target="${javac.target}"
+             source="${javac.source}"
+             optimize="${javac.optimize}"
+             debug="${javac.debug}"
+             depend="${javac.depend}"
+             verbose="${javac.verbose}"
+             deprecation="${javac.deprecation}"
+             includeAntRuntime="${javac.include.ant.runtime}"
+             includeJavaRuntime="${javac.include.java.runtime}"
+             failonerror="${javac.fail.onerror}">
+         <src>
+            <pathelement path="${src.main.dir}"/>
+         </src>
+         <include name="org/hornetq/integration/bootstrap/**/*.java"/>
+         <classpath refid="bootstrap.compilation.classpath"/>
+      </javac>
+   </target>
+
+   <target name="compile-logging" depends="init">
+      <javac destdir="${build.logging.classes.dir}"
+             target="${javac.target}"
+             source="${javac.source}"
+             optimize="${javac.optimize}"
+             debug="${javac.debug}"
+             depend="${javac.depend}"
+             verbose="${javac.verbose}"
+             deprecation="${javac.deprecation}"
+             includeAntRuntime="${javac.include.ant.runtime}"
+             includeJavaRuntime="${javac.include.java.runtime}"
+             failonerror="${javac.fail.onerror}">
+         <src>
+            <pathelement path="${src.main.dir}"/>
+         </src>
+         <include name="org/hornetq/integration/logging/**/*.java"/>
+         <classpath refid="logging.compilation.classpath"/>
+      </javac>
+   </target>
+
+   <target name="compile-ra" depends="init">
+      <javac destdir="${build.ra.classes.dir}"
+             target="${javac.target}"
+             source="${javac.source}"
+             optimize="${javac.optimize}"
+             debug="${javac.debug}"
+             depend="${javac.depend}"
+             verbose="${javac.verbose}"
+             deprecation="${javac.deprecation}"
+             includeAntRuntime="${javac.include.ant.runtime}"
+             includeJavaRuntime="${javac.include.java.runtime}"
+             failonerror="${javac.fail.onerror}">
+         <src>
+            <pathelement path="${build.src.dir}"/>
+            <pathelement path="${src.main.dir}"/>
+         </src>
+         <include name="**org/hornetq/ra/**/*.java"/>
+         <classpath refid="jms.compilation.classpath"/>
+      </javac>
+   </target>
+
+   <target name="build-native" depends="jar">
+      <exec dir="native" executable="bash">
+         <arg line="bootstrap"/>
+      </exec>
+   </target>
+    
+   <target name="validate-configuration">
+      <antcall target="-validate-configuration">
+         <param name="conf.dir" value="${src.config.standalone.non-clustered.dir}"/>
+      </antcall>
+      <!-- user configuration is only for standalone -->
+      <schemavalidate file="${src.config.standalone.non-clustered.dir}/jbm-users.xml">
+         <schema namespace="urn:jboss:messaging" 
+                 file="${src.schema.dir}/jbm-users.xsd"/>
+      </schemavalidate>
+
+      <antcall target="-validate-configuration">
+         <param name="conf.dir" value="${src.config.standalone.clustered.dir}"/>
+      </antcall>
+      <!-- user configuration is only for standalone -->
+      <schemavalidate file="${src.config.standalone.clustered.dir}/jbm-users.xml">
+         <schema namespace="urn:jboss:messaging" 
+                 file="${src.schema.dir}/jbm-users.xsd"/>
+      </schemavalidate>
+      
+      <antcall target="-validate-configuration">
+         <param name="conf.dir" value="${src.config.jbossas.non-clustered.dir}"/>
+      </antcall>
+      
+      <antcall target="-validate-configuration">
+         <param name="conf.dir" value="${src.config.jbossas.clustered.dir}"/>
+      </antcall>
+   </target>
+    
+   <target name="-validate-configuration">
+      <echo>validating configuration from ${conf.dir}</echo>
+      <schemavalidate file="${conf.dir}/jbm-configuration.xml">
+         <schema namespace="urn:jboss:messaging" 
+                 file="${src.schema.dir}/jbm-configuration.xsd"/>
+      </schemavalidate>
+      <schemavalidate file="${conf.dir}/jbm-jms.xml">
+         <schema namespace="urn:jboss:messaging" 
+                 file="${src.schema.dir}/jbm-jms.xsd"/>
+      </schemavalidate>
+   </target>
+   
+   <!-- ======================================================================================== -->
+   <!-- Jar Targets                                                                              -->
+   <!-- ======================================================================================== -->
+
+   <target name="jar"
+           depends="jar-core, jar-core-client, jar-jms, jar-jms-client, jar-transports, jar-security, jar-bootstrap, jar-logging, jar-ra, jar-mc, jar-jnp-client">
+   </target>
+   <target name="jar-jnp-client" depends="init">
+      <jar jarfile="${build.jars.dir}/${jnp.client.jar.name}">
+         <zipfileset src="${org.jboss.naming.lib}/jnpserver.jar">
+            <include name="org/jnp/interfaces/**/*.class"/>
+            <include name="org/jboss/naming/**/*.class"/>
+            <include name="org/jnp/server/NamingServer_Stub.class"/>
+         </zipfileset>
+         <zipfileset src="${org.jboss.logging.lib}/jboss-logging-spi.jar">
+            <include name="org/jboss/logging/**/*.class"/>
+         </zipfileset>
+      </jar>
+   </target>
+   
+   <target name="jar-mc" depends="init">
+      <jar jarfile="${build.jars.dir}/${mc.jar.name}">
+         <zipfileset src="./thirdparty/org/jboss/logging/lib/jboss-logging-spi.jar"/>
+         <zipfileset src="./thirdparty/org/jboss/microcontainer/lib/jboss-kernel.jar"/>
+         <zipfileset src="./thirdparty/org/jboss/microcontainer/lib/jboss-dependency.jar"/>
+         <zipfileset src="./thirdparty/org/jboss/lib/jboss-reflect.jar"/>
+         <zipfileset src="./thirdparty/org/jboss/lib/jboss-common-core.jar"/>
+         <zipfileset src="./thirdparty/org/jboss/lib/jboss-mdr.jar"/>
+         <zipfileset src="./thirdparty/org/jboss/lib/jbossxb.jar"/>
+         <zipfileset src="./thirdparty/sun-jaxb/lib/jaxb-api.jar"/>
+      </jar>         
+   </target>   
+         
+   <target name="jar-core" depends="compile-core">
+
+      <jar jarfile="${build.jars.dir}/${core.jar.name}">
+         <fileset dir="${build.core.classes.dir}" includes="**"/>
+         <fileset dir="${src.config.dir}/common">
+            <include name="**/*.xsd"/>
+            <exclude name="**/jbm-jms.xsd"/>
+         </fileset>
+         <manifest>
+            <attribute name="JBossMessaging-Version" value="${messaging.version.string}"/>
+            <attribute name="JBossMessaging-SVN-URL" value="${messaging.version.svnurl}"/>
+         </manifest>
+      </jar>
+
+   </target>
+
+   <target name="jar-jms" depends="compile-jms">
+
+      <jar jarfile="${build.jars.dir}/${jms.jar.name}">
+         <fileset dir="${build.jms.classes.dir}" includes="**"/>
+         <fileset dir="${src.config.dir}/common">
+            <include name="**/jbm-jms.xsd"/>
+         </fileset>
+      </jar>
+
+   </target>
+   
+   <target name="jar-jms-client" depends="compile-jms">
+	   
+      <jar jarfile="${build.jars.dir}/${jms.client.jar.name}">         
+         <fileset dir="${build.jms.classes.dir}" includes="org/hornetq/jms/*.class"/>
+	      <fileset dir="${build.jms.classes.dir}" includes="org/hornetq/jms/client/*.class"/>
+         <fileset dir="${build.jms.classes.dir}" includes="org/hornetq/jms/referenceable/*.class"/>
+         <fileset dir="${build.jms.classes.dir}" includes="org/hornetq/jms/server/management/*.class"/>
+         <fileset dir="${build.jms.classes.dir}" includes="org/hornetq/jms/server/management/impl/JMSManagementHelper.class"/>
+      </jar>
+	   
+   </target>
+   
+   <target name="jar-transports" depends="compile-transports">
+
+      <jar jarfile="${build.jars.dir}/${transports.jar.name}">
+         <fileset dir="${build.transports.classes.dir}" includes="**"/>
+      </jar>
+
+   </target>
+
+   <target name="jar-security" depends="compile-security">
+
+      <jar jarfile="${build.jars.dir}/${security.jar.name}">
+         <fileset dir="${build.security.classes.dir}" includes="**"/>
+      </jar>
+
+   </target>
+
+   <target name="jar-bootstrap" depends="compile-bootstrap">
+
+      <jar jarfile="${build.jars.dir}/${bootstrap.jar.name}">
+         <fileset dir="${build.bootstrap.classes.dir}" includes="**"/>
+      </jar>
+
+   </target>
+
+   <target name="jar-logging" depends="compile-logging">
+
+      <jar jarfile="${build.jars.dir}/${logging.jar.name}">
+         <fileset dir="${build.logging.classes.dir}" includes="**"/>
+      </jar>
+
+   </target>
+
+   <target name="jar-core-client" depends="compile-core">
+      <jar jarfile="${build.jars.dir}/${core.client.jar.name}">
+         <fileset dir="${build.core.classes.dir}">
+            <include name="jboss-messaging-version.properties"/>
+            <include name="org/hornetq/core/client/**/*.class"/>
+            <include name="org/hornetq/core/filter/**/*.class"/>
+            <include name="org/hornetq/core/buffers/**/*.class"/>
+            <include name="org/hornetq/core/exception/**/*.class"/>
+            <include name="org/hornetq/core/logging/**/*.class"/>
+            <include name="org/hornetq/core/remoting/**/*.class"/>
+            <include name="org/hornetq/utils/**/*.class"/>
+             <include name="org/hornetq/core/cluster/**/*.class"/>
+            <include name="org/hornetq/core/config/**/*.class"/>
+            <include name="org/hornetq/core/list/**/*.class"/>
+            <include name="org/hornetq/core/message/**/*.class"/>
+            <include name="org/hornetq/core/version/**/*.class"/>
+            <include name="org/hornetq/core/management/**/*.class"/>
+            <!-- FIXME - why are these classes in the client jar ??? -->
+            <include name="org/hornetq/core/server/MessagingComponent.class"/>
+            <include name="org/hornetq/core/server/JournalType.class"/>
+            <include name="org/hornetq/core/journal/EncodingSupport.class"/>
+            <include name="org/hornetq/core/server/ServerMessage.class"/>
+            <include name="org/hornetq/core/ping/**/*.class"/>
+         </fileset>
+      </jar>
+
+   </target>
+
+   <target name="jar-ra" depends="jar-core-client, jar-jms-client, compile-ra">
+      <jar jarfile="${build.jars.dir}/${ra.jar.name}">
+         <fileset dir="${build.ra.classes.dir}">
+           <include name="org/hornetq/ra/**/*.class"/>
+         </fileset>
+      </jar>
+      <jar jarfile="${build.jars.dir}/${ra.rar.name}">
+         <metainf dir="${src.config.dir}" includes="ra.xml"/>
+         <fileset file="${build.jars.dir}/${ra.jar.name}"/>
+         <fileset file="${build.jars.dir}/${core.client.jar.name}"/>
+         <fileset file="${build.jars.dir}/${jms.jar.name}"/>
+      </jar>
+   </target>
+
+   <property name="build.examples.dir" value="${build.dir}/examples"/>
+   <target name="jar-resources" depends="clean,init">
+      <jar jarfile="${build.jars.dir}/${resources.jar.name}">
+         <fileset dir=".">
+           <include name="examples/**"/>
+           <exclude name="**/build"/>
+           <exclude name="**/data"/>
+         </fileset>
+         <fileset dir="${src.config.dir}">
+           <include  name="jboss-as/**"/>
+           <include name="ra.xml"/>
+           <exclude  name="**/build.xml"/>
+         </fileset>
+         <fileset dir="${native.bin.dir}">
+           <include  name="**/*.so"/>
+         </fileset>
+      </jar>
+   </target>
+
+   <!-- ======================================================================================== -->
+   <!-- Distribution targets                                                                     -->
+   <!-- ======================================================================================== -->
+
+   <target name="bin-distro" depends="createthirdparty, jar, jar-core-client, jar-jms-client, validate-configuration">
+      
+      <mkdir dir="${build.distro.dir}"/>
+      <mkdir dir="${build.distro.lib.dir}"/>
+      <mkdir dir="${build.distro.client.dir}"/>
+      <mkdir dir="${build.distro.config.dir}"/>
+      <mkdir dir="${build.distro.bin.dir}"/>
+      <mkdir dir="${build.distro.api.dir}"/>
+      <mkdir dir="${build.distro.licenses.dir}"/>
+
+      <copy todir="${build.distro.lib.dir}">
+         <fileset dir="${build.jars.dir}">
+            <include name="${core.jar.name}"/>
+            <include name="${jms.jar.name}"/>
+            <include name="${transports.jar.name}"/>
+            <include name="${security.jar.name}"/>
+            <include name="${bootstrap.jar.name}"/>
+            <include name="${logging.jar.name}"/>
+            <include name="${mc.jar.name}"/>
+            <include name="${ra.rar.name}"/>
+         </fileset>
+         <fileset dir="${org.jboss.naming.lib}">
+            <include name="jnpserver.jar"/>
+         </fileset>
+         <fileset dir="${org.jboss.javaee.lib}">
+            <include name="jboss-jms-api.jar"/>
+         </fileset>
+      </copy>
+      <copy file="${org.jboss.netty.lib}/${netty.jar.name}" tofile="${build.distro.lib.dir}/netty.jar"/>
+      <copy todir="${build.distro.client.dir}">
+         <fileset dir="${build.jars.dir}">
+            <include name="${core.client.jar.name}"/>
+            <include name="${jms.client.jar.name}"/>
+            <include name="${jnp.client.jar.name}"/>
+         </fileset>
+      </copy>
+      <copy todir="${build.distro.config.dir}">
+         <fileset dir="${src.config.dir}">
+            <include name="*.xml"/>
+            <include name="jndi.properties"/>
+            <include name="logging.properties"/>
+            <include name="stand-alone/**"/>
+            <include name="jboss-as/**"/>
+            <exclude name="common/jboss-messaging-version.properties" />
+            <exclude name="*examples-ant.properties"/>
+            <exclude name="trunk"/>
+         </fileset>
+      </copy>
+   	  <copy todir="${build.distro.native.dir}">
+   	     <fileset dir="./native" includes="**/*" excludes="**/bin/**"/>
+   	  </copy>
+      <copy todir="${build.distro.schema.dir}">
+         <fileset dir="${src.schema.dir}">
+            <include name="*.xsd"/>
+         </fileset>
+      </copy>
+      <copy todir="${build.distro.bin.dir}">
+         <fileset dir="${src.bin.dir}">
+            <include name="run.sh"/>
+            <include name="run.bat"/>
+            <include name="stop.sh"/>
+            <include name="stop.bat"/>
+         </fileset>
+      </copy>
+      <chmod file="${build.distro.bin.dir}/run.sh" perm="ugo+rx"/>
+      <chmod file="${build.distro.bin.dir}/stop.sh" perm="ugo+rx"/>
+      <copy todir="${build.distro.bin.dir}">
+         <fileset dir="${native.bin.dir}">
+            <include name="*.so"/>
+         </fileset>
+      </copy>
+
+      <copy todir="${build.distro.dir}/docs/">
+         <fileset dir="${doc.dir}">
+            <include name="README.html"/>
+         </fileset>
+      </copy>
+
+      <antcall target="dist-doc"/>
+   	
+      <copy todir="${build.distro.licenses.dir}/">
+         <fileset dir="${licenses.dir}">
+            <include name="**"/>
+         </fileset>
+      </copy>
+
+      <mkdir dir="${build.distro.examples.dir}"/>
+      <copy todir="${build.distro.examples.dir}">
+         <fileset dir="${doc.examples.dir}">
+            <exclude name="build.properties"/>
+            <exclude name="**/build/**"/>
+            <exclude name="**/data**"/>
+            <exclude name="**/logs/**"/>
+            <exclude name="**/*.dat"/>
+            <exclude name="**/*.svn"/>
+            <exclude name="**/*.iml"/>
+            <exclude name="**/*.*~"/>
+         </fileset>
+      </copy>
+      
+      <!-- examples-ant.properties allow the examples to be run from the source or from the distribution -->
+      <!-- by configuring the correct lib/config location                                                -->
+      <copy tofile="${build.distro.examples.dir}/common/config/ant.properties" file="src/config/examples-ant.properties" overwrite="true" />
+      <copy tofile="${build.distro.examples.dir}/javaee/common/config/ant.properties" file="src/config/javaee-examples-ant.properties" overwrite="true" />
+
+      <zip basedir="${build.dir}"
+           destfile="${build.dir}/${build.artifact}.zip">
+         <include name="${build.artifact}/**"/>
+         <!-- add run.sh & stop.sh using a zipfileset to preserve file permissions -->
+         <exclude name="${build.artifact}/bin/*.sh"/>
+         <zipfileset dir="${build.dir}/${build.artifact}/bin"
+                     includes="*.sh" filemode="755" prefix="${build.artifact}/bin"/>
+      </zip>
+
+      <tar basedir="${build.dir}"
+           destfile="${build.dir}/${build.artifact}.tar"
+           longfile="gnu">
+         <include name="${build.artifact}/**"/>
+         <!-- add run.sh & stop.sh using a tarfileset to preserve file permissions -->
+         <exclude name="${build.artifact}/bin/*.sh"/>
+         <tarfileset dir="${build.dir}/${build.artifact}/bin"
+                     includes="*.sh" filemode="755" prefix="${build.artifact}/bin"/>
+      </tar>
+      <gzip src="${build.dir}/${build.artifact}.tar"
+            destfile="${build.dir}/${build.artifact}.tar.gz"/>
+   </target>
+
+
+   <target name="source-distro">
+      <mkdir dir="${build.dir}"/>
+      <zip destfile="${build.dir}/${build.artifact}-src.zip">
+         <zipfileset dir="${basedir}" prefix="${build.artifact}-src">
+            <exclude name="**/.svn"/>
+            <exclude name="*.iml"/>
+            <exclude name="*.ipr"/>
+            <exclude name="*.iws"/>
+            <exclude name="**/output/**"/>
+            <exclude name="eclipse-output/**"/>
+            <exclude name="**/build/**"/>
+            <exclude name="**/target/**"/>
+            <exclude name="**/data/**"/>
+            <exclude name="**/logs/**"/>
+            <exclude name="**/ObjectStore/**"/>
+            <exclude name="junit*.properties"/>
+         </zipfileset>
+      </zip>
+   </target>
+
+   <!-- ======================================================================================== -->
+   <!-- Documentation Targets                                                                    -->
+   <!-- ======================================================================================== -->
+
+   <target name="dist-doc" unless="no-doc">
+    <antcall target="userdoc"/>
+    <copy todir="${build.distro.dir}/docs/user-manual">
+       <fileset dir="${user-manual.build.dir}">
+          <include name="**"/>
+       </fileset>
+    </copy>
+    <copy todir="${build.distro.dir}/docs/quickstart-guide">
+       <fileset dir="${quickstart-guide.build.dir}">
+          <include name="**"/>
+       </fileset>
+    </copy>
+    <antcall target="javadoc"/>
+    <copy todir="${build.distro.api.dir}/">
+       <fileset dir="${build.api.dir}">
+          <include name="**"/>
+       </fileset>
+    </copy>
+   </target>
+
+	
+   <target name="userdoc">
+      <ant dir="./docs/user-manual" antfile="build.xml" target="all"/>
+      <ant dir="./docs/quickstart-guide" antfile="build.xml" target="all"/>
+    </target>
+
+   <target name="javadoc">
+
+      <javadoc destdir="${build.api.dir}" author="true" version="true" use="true"
+               windowtitle="JBoss Messaging ${module.version}">
+
+         <packageset dir="${src.main.dir}" defaultexcludes="yes">
+            <include name="org/jboss/**"/>
+         </packageset>
+         <classpath refid="javadoc.classpath"/>
+         <doctitle><![CDATA[<h2>JBoss Messaging  ${module.version}</h2>]]></doctitle>
+         <bottom><![CDATA[<i>Copyright &#169; 2006 JBoss Inc. All Rights Reserved.</i>]]></bottom>
+         <tag name="todo" scope="all" description="To do:"/>
+         <group title="JMS Facade" packages="org.jboss.jms.*"/>
+         <group title="Messaging Core" packages="org.jboss.messaging.*"/>
+      </javadoc>
+   </target>
+
+   <target name="artifacts" depends="jar">
+      <delete dir="${artifacts.dir}"/>
+
+      <antcall target="artifact">
+         <param name="artifact.name" value="jbm-core"/>
+      </antcall>
+
+      <antcall target="artifact">
+         <param name="artifact.name" value="jbm-core-client"/>
+      </antcall>
+
+      <antcall target="artifact">
+         <param name="artifact.name" value="jbm-transports"/>
+      </antcall>
+
+      <antcall target="artifact">
+         <param name="artifact.name" value="jbm-jms"/>
+      </antcall>
+
+      <antcall target="artifact">
+         <param name="artifact.name" value="jbm-jboss-as-security"/>     
+      </antcall>
+
+      <antcall target="artifact">
+         <param name="artifact.name" value="jbm-logging"/>     
+      </antcall>
+
+      <property name="build.resources.dir" value="${build.dir}/resources"/>
+      <mkdir dir="${build.resources.dir}"/>
+      <copy todir="${build.resources.dir}">
+         <fileset dir="${src.config.dir}">
+            <exclude name="*cluster*"/>
+            <exclude name="*standalone*"/>
+            <exclude name="*.properties"/>
+            <exclude name="*multiplexer*"/>
+            <exclude name="ra.xml"/>
+         </fileset>
+      </copy>
+      <jar jarfile="${build.jars.dir}/jbm-resources.jar">
+         <fileset dir="${build.core.classes.dir}" includes="**"/>
+      </jar>
+
+       <antcall target="artifact">
+         <param name="artifact.name" value="jbm-resources"/>     
+      </antcall>
+
+   </target>
+
+   <target name="artifact">
+      <echo message="${artifact.name}"/>
+      <property name="artifacts.version" value="${messaging.version.majorVersion}.${messaging.version.minorVersion}.${messaging.version.microVersion}.${messaging.version.versionSuffix}"/>
+      <property name="artifact.dir" value="${artifacts.dir}/${artifact.name}/${artifacts.version}"/>
+      <mkdir dir="${artifact.dir}"/>
+      <copy tofile="${artifact.dir}/${artifact.name}-${artifacts.version}.jar"
+            file="${build.jars.dir}/${artifact.name}.jar">
+        <!-- <globmapper from="jbm-core" to="jbm-core-${messaging.version.major}.${messaging.version.minor}.${messaging.version.micro}.${messaging.version.suffix}*"/>-->
+      </copy>
+      <copy file="pom.xml" tofile="${artifact.dir}/${artifact.name}-${artifacts.version}.pom">
+         <filterset>
+            <filter token="artifactid" value="${artifact.name}"/>
+            <filter token="version" value="${artifacts.version}"/>
+         </filterset>
+      </copy>
+      <checksum algorithm="MD5">
+         <fileset dir="${artifact.dir}"/>
+      </checksum>
+       <checksum algorithm="SHA1">
+         <fileset dir="${artifact.dir}">
+            <exclude name="*.MD5"/>
+         </fileset>
+      </checksum>
+   </target>
+
+   <!-- ======================================================================================== -->
+   <!-- Tests Targets (compilation + execution)                                                  -->
+   <!-- ======================================================================================== -->
+
+   <target name="compile-unit-tests">
+      <mkdir dir="${test.classes.dir}"/>
+      <javac target="${javac.target}"
+             source="${javac.source}"
+             optimize="${javac.optimize}"
+             debug="${javac.debug}"
+             depend="${javac.depend}"
+             verbose="${javac.verbose}"
+             deprecation="${javac.deprecation}"
+             includeAntRuntime="${javac.include.ant.runtime}"
+             includeJavaRuntime="${javac.include.java.runtime}"
+             failonerror="${javac.fail.onerror}"
+             srcdir="${test.src.dir}"
+             destdir="${test.classes.dir}">
+         <classpath refid="test.compilation.classpath"/>
+      </javac>
+   </target>
+
+   <target name="compile-jms-tests">
+      <mkdir dir="${test.jms.classes.dir}"/>
+      <javac target="${javac.target}"
+             source="${javac.source}"
+             optimize="${javac.optimize}"
+             debug="${javac.debug}"
+             depend="${javac.depend}"
+             verbose="${javac.verbose}"
+             deprecation="${javac.deprecation}"
+             includeAntRuntime="true"
+             includeJavaRuntime="${javac.include.java.runtime}"
+             failonerror="${javac.fail.onerror}"
+             srcdir="${test.jms.src.dir}"
+             destdir="${test.jms.classes.dir}">
+         <classpath refid="jms.test.compilation.classpath"/>
+      </javac>
+   </target>
+    
+   <target name="compile-joram-tests" depends="compile-jms-tests, compile-unit-tests">
+      <mkdir dir="${test.joram.classes.dir}"/>
+      <javac target="${javac.target}"
+             source="${javac.source}"
+             optimize="${javac.optimize}"
+             debug="${javac.debug}"
+             depend="${javac.depend}"
+             verbose="${javac.verbose}"
+             deprecation="${javac.deprecation}"
+             includeAntRuntime="true"
+             includeJavaRuntime="${javac.include.java.runtime}"
+             failonerror="${javac.fail.onerror}"
+             srcdir="${test.joram.src.dir}"
+             destdir="${test.joram.classes.dir}">
+          <classpath refid="joram.test.compilation.classpath"/>
+      </javac>
+   </target>
+
+   <target name="performance-tests" depends="jar, compile-unit-tests">
+      <antcall inheritall="true" inheritrefs="true" target="tests">
+         <param name="tests.param" value="**/org/hornetq/tests/performance/**/*${test-mask}.class"/>
+      </antcall>
+   </target>
+
+   <target name="integration-tests" depends="jar, compile-unit-tests">
+      <antcall inheritall="true" inheritrefs="true" target="tests">
+         <param name="tests.param" value="**/org/hornetq/tests/integration/**/*${test-mask}.class"/>
+      </antcall>
+   </target>
+   
+   <target name="failover-tests" depends="jar, compile-unit-tests">
+      <antcall inheritall="true" inheritrefs="true" target="tests">
+         <param name="tests.param" value="**/org/hornetq/tests/integration/cluster/failover/**/*${test-mask}.class"/>
+      </antcall>
+   </target>
+   
+   <target name="distribution-tests" depends="jar, compile-unit-tests">
+      <antcall inheritall="true" inheritrefs="true" target="tests">
+         <param name="tests.param" value="**/org/hornetq/tests/integration/cluster/distribution/**/*${test-mask}.class"/>
+      </antcall>
+   </target>   
+
+   <target name="concurrent-tests" depends="jar, compile-unit-tests">
+      <antcall inheritall="true" inheritrefs="true" target="tests">
+         <param name="tests.param" value="**/org/hornetq/tests/concurrent/**/*${test-mask}.class"/>
+      </antcall>
+   </target>
+
+   <target name="unit-tests" depends="jar, compile-unit-tests">
+      <antcall inheritall="true" inheritrefs="true" target="tests">
+         <param name="tests.param" value="**/org/hornetq/tests/unit/**/*${test-mask}.class"/>
+         <!-- if tests.validate.error is defined, it will fail the build in case of any test failure -->
+         <!-- <param name="tests.validate.error" value="Defined!"/> -->
+      </antcall>
+   </target>
+
+   <target name="timing-tests" depends="jar, compile-unit-tests">
+      <antcall inheritall="true" inheritrefs="true" target="tests">
+         <param name="tests.param" value="**/org/hornetq/tests/timing/**/*${test-mask}.class"/>
+      </antcall>
+   </target>
+
+   <target name="tests" depends="jar, compile-unit-tests">
+      <echo message=""/>
+      <echo message="Running unit tests, fork=${junit.fork}, junit.batchtest.fork=${junit.batchtest.fork}"/>
+      <echo message="classpath is:${toString:unit.test.execution.classpath}"/>
+      <echo message=""/>
+      <mkdir dir="${test.output.dir}"/>
+      <mkdir dir="${test.reports.dir}"/>
+      <mkdir dir="${logs.dir}"/>
+      <junit printsummary="${junit.printsummary}"
+             fork="on"
+             forkMode="once"
+             includeantruntime="${junit.includeantruntime}"
+             haltonerror="${junit.haltonerror}"
+             haltonfailure="${junit.haltonfailure}"
+             showoutput="${junit.showoutput}"
+             timeout="${junit.timeout}">
+         <sysproperty key="user.home" value="${user.home}"/>
+         <sysproperty key="java.io.tmpdir" value="${java.io.tmpdir}"/>
+         <jvmarg value="-Djava.library.path=native/bin"/>
+         <jvmarg value="-Dmodule.output=./"/>
+         <jvmarg value="-Djava.util.logging.config.file=src/config/trunk/non-clustered/logging.properties"/>
+         <jvmarg
+               value="-Dorg.jboss.logging.Logger.pluginClass=org.hornetq.integration.logging.JBMLoggerPlugin"/>
+         <jvmarg value="-XX:+PrintClassHistogram"/>
+         <jvmarg value="-Xmx1024M"/>
+      	 <jvmarg value="-verbose:gc"/>
+         <!--
+         <jvmarg line="-Xmx512M -Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=5005"/>
+         -->
+         <!--<jvmarg value="-ea"/>-->
+         <classpath refid="unit.test.execution.classpath"/>
+         <formatter type="xml" usefile="${junit.formatter.usefile}"/>
+         <batchtest todir="${test.reports.dir}"
+                    haltonfailure="${junit.batchtest.haltonfailure}"
+                    haltonerror="${junit.batchtest.haltonerror}"
+                    failureproperty="tests.failed">
+            <formatter type="plain" usefile="${junit.formatter.usefile}"/>
+            <fileset dir="${test.classes.dir}">
+               <!-- <exclude name="**/integration/http/*" /> -->
+               <include name="${tests.param}"/>
+            </fileset>
+         </batchtest>
+      </junit>
+      <antcall target="tests-validate-error" inheritall="true" inheritrefs="true"/>
+   </target>
+
+   <!-- ifs on ant are convoluted by definition... this will throw a BUILD FAILED if tests.validate.error was defined and if a error (tests.failed) happened -->
+   <target name="tests-validate-error" if="tests.validate.error">
+      <antcall target="tests-onerror" inheritall="true" inheritrefs="true"/>
+   </target>
+
+   <!-- ifs on ant are convoluted by definition... this will throw a BUILD FAILED if tests.validate.error was defined and if a error (tests.failed) happened -->
+   <target name="tests-onerror" if="tests.failed">
+      <antcall target="compile-reports"/>
+      <fail message="Test suite failed!"/>
+   </target>
+
+   <target name="jms-tests" depends="jar, compile-jms-tests">
+      <echo message=""/>
+      <echo message="Running jms tests, fork=${junit.fork}, junit.batchtest.fork=${junit.batchtest.fork}"/>
+      <echo message="classpath is:${toString:jms.test.execution.classpath}"/>
+      <echo message=""/>
+      <mkdir dir="${test.output.dir}"/>
+      <mkdir dir="${test.reports.dir}"/>
+      <junit printsummary="${junit.printsummary}"
+             fork="on"
+             forkMode="once"
+             includeantruntime="${junit.includeantruntime}"
+             haltonerror="${junit.haltonerror}"
+             haltonfailure="${junit.haltonfailure}"
+             showoutput="${junit.showoutput}"
+             timeout="${junit.timeout}">
+
+         <jvmarg value="-Xmx1024M"/>
+         <jvmarg value="-Djava.library.path=native/bin"/>
+         <jvmarg value="-Dmodule.output=./"/>
+         <jvmarg value="-Djava.util.logging.config.file=src/config/trunk/non-clustered/logging.properties"/>
+         <jvmarg
+               value="-Dorg.jboss.logging.Logger.pluginClass=org.hornetq.integration.logging.JBMLoggerPlugin"/>
+         <!--<jvmarg line="-Xmx512M -Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=5005"/>-->
+         <!--<jvmarg value="-ea"/>-->
+        <sysproperty key="java.io.tmpdir" value="${java.io.tmpdir}"/>
+         <classpath refid="jms.test.execution.classpath"/>
+         <formatter type="xml" usefile="${junit.formatter.usefile}"/>
+         <batchtest todir="${test.reports.dir}"
+                    haltonfailure="${junit.batchtest.haltonfailure}"
+                    haltonerror="${junit.batchtest.haltonerror}">
+            <formatter type="plain" usefile="${junit.formatter.usefile}"/>
+            <fileset dir="${test.jms.classes.dir}">
+               <include name="**/messaging/**/${test-mask}.class"/>
+               <include name="**/jms/**/${test-mask}.class"/>
+               <include name="**/messaging/util/**/${test-mask}.class"/>
+               <exclude name="**/jms/XARecoveryTest.class"/>
+               <exclude name="**/jms/XAResourceRecoveryTest.class"/>
+               <exclude name="**/jms/XATest.class"/>
+               <exclude name="**/jms/stress/**"/>
+               <exclude name="**/jms/manual/**"/>
+            </fileset>
+         </batchtest>
+      </junit>
+   </target>
+    
+   <target name="joram-tests" depends="jar, compile-joram-tests">
+      <echo message=""/>
+      <echo message="Running JORAM tests, fork=${junit.fork}, junit.batchtest.fork=${junit.batchtest.fork}"/>
+      <echo message=""/>
+      <mkdir dir="${test.output.dir}"/>
+      <mkdir dir="${test.reports.dir}"/>
+      <junit printsummary="${junit.printsummary}"
+             fork="on"
+             forkMode="once"
+             includeantruntime="${junit.includeantruntime}"
+             haltonerror="${junit.haltonerror}"
+             haltonfailure="${junit.haltonfailure}"
+             showoutput="${junit.showoutput}"
+             timeout="${junit.timeout}">
+
+         <jvmarg value="-Xmx1024M"/>
+         <jvmarg value="-Djava.library.path=native/bin"/>
+         <jvmarg value="-Dmodule.output=./"/>
+         <!--<jvmarg line="-Xmx512M -Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=5005"/>-->
+         <!--<jvmarg value="-ea"/>-->
+        <sysproperty key="java.io.tmpdir" value="${java.io.tmpdir}"/>
+         <classpath refid="joram.test.execution.classpath"/>
+         <formatter type="xml" usefile="${junit.formatter.usefile}"/>
+         <batchtest todir="${test.reports.dir}"
+                    haltonfailure="${junit.batchtest.haltonfailure}"
+                    haltonerror="${junit.batchtest.haltonerror}">
+            <formatter type="plain" usefile="${junit.formatter.usefile}"/>
+            <fileset dir="${test.joram.classes.dir}">
+               <include name="**/${test-mask}.class"/>
+            </fileset>
+         </batchtest>
+      </junit>
+   </target>  
+
+   <target name="stress-tests" depends="jar, compile-unit-tests">
+      <echo message=""/>
+      <echo message="Running unit tests, fork=${junit.fork}, junit.batchtest.fork=${junit.batchtest.fork}"/>
+      <echo message=""/>
+      <mkdir dir="${test.output.dir}"/>
+      <mkdir dir="${test.reports.dir}"/>
+      <junit printsummary="${junit.printsummary}"
+             fork="on"
+             forkMode="perTest"
+             includeantruntime="${junit.includeantruntime}"
+             haltonerror="${junit.haltonerror}"
+             haltonfailure="${junit.haltonfailure}"
+             showoutput="${junit.showoutput}"
+             timeout="${stress.junit.timeout}">
+
+          <sysproperty key="user.home" value="${user.home}"/>
+          <sysproperty key="java.io.tmpdir" value="${java.io.tmpdir}"/>
+         <jvmarg value="-Xmx1024M"/>
+         <jvmarg value="-Dmodule.output=./"/>
+         <jvmarg value="-Djava.util.logging.config.file=src/config/logging.properties"/>
+         <jvmarg value="-Dorg.jboss.logging.Logger.pluginClass=org.hornetq.integration.logging.JBMLoggerPlugin"/>
+      	
+         <jvmarg value="-Djava.library.path=native/bin"/>
+         <!--<jvmarg line="-Xmx512M -Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=5005"/>-->
+         <!--<jvmarg value="-ea"/>-->
+         <classpath refid="unit.test.execution.classpath"/>
+         <formatter type="xml" usefile="${junit.formatter.usefile}"/>
+         <batchtest todir="${test.reports.dir}"
+                    haltonfailure="${junit.batchtest.haltonfailure}"
+                    haltonerror="${junit.batchtest.haltonerror}">
+            <formatter type="plain" usefile="${junit.formatter.usefile}"/>
+            <fileset dir="${test.classes.dir}">
+               <include name="**/org/hornetq/tests/stress/**/*${test-mask}.class"/>
+            </fileset>
+         </batchtest>
+      </junit>
+   </target>
+
+   <target name="all-tests" depends="unit-tests, integration-tests, concurrent-tests, stress-tests, jms-tests, joram-tests"/>
+
+   <target name="hudson-tests" depends="unit-tests, integration-tests, concurrent-tests, timing-tests, jms-tests, joram-tests"/>
+
+   <target name="compile-reports">
+      <mkdir dir="${test.stylesheets.dir}"/>
+      <copy todir="${test.stylesheets.dir}" filtering="yes">
+         <fileset dir="${test.src.stylesheets.dir}">
+            <include name="**/*"/>
+         </fileset>
+      </copy>
+      <mkdir dir="${test.reports.dir}/html"/>
+      <junitreport todir="${test.reports.dir}">
+         <fileset dir="${test.reports.dir}">
+            <include name="TEST-*.xml"/>
+         </fileset>
+         <report format="frames"
+                 todir="${test.reports.dir}/html"
+                 styledir="${test.stylesheets.dir}"/>
+      </junitreport>
+   </target>
+
+   <!-- ======================================================================================== -->
+   <!-- Code coverage + find bugs targets                                                        -->
+   <!-- ======================================================================================== -->
+
+   <target name="emma" depends="jar, compile-unit-tests">
+      <property name="emma.dir" location="${build.dir}/emma"/>
+
+      <path id="emma.lib">
+         <pathelement location="${test.dir}/lib/emma.jar"/>
+         <pathelement location="${test.dir}/lib/emma_ant.jar"/>
+      </path>
+
+      <taskdef resource="emma_ant.properties" classpathref="emma.lib"/>
+      <!-- Instrument the .class files. -->
+      <mkdir dir="${build.dir}/emmaclasses"/>
+      <emma enabled="true">
+         <instr instrpath="${build.dir}/classes"
+                destdir="${build.dir}/classes"
+                metadatafile="${emma.dir}/metadata.emma"
+                merge="true" mode="overwrite">
+         </instr>
+      </emma>
+
+      <path id="emma.execution.classpath">
+         <path refid="emma.lib"/>
+         <path refid="emma.unit.test.execution.classpath"/>
+      </path>
+
+      <echo message=""/>
+      <echo message="Running unit tests, fork=${junit.fork}, junit.batchtest.fork=${junit.batchtest.fork}"/>
+      <echo message=""/>
+      <mkdir dir="${test.output.dir}"/>
+      <mkdir dir="${test.reports.dir}"/>
+      <junit printsummary="${junit.printsummary}"
+             fork="on"
+             forkMode="once"
+             includeantruntime="${junit.includeantruntime}"
+             haltonerror="${junit.haltonerror}"
+             haltonfailure="${junit.haltonfailure}"
+             showoutput="${junit.showoutput}"
+             timeout="${junit.timeout}">
+         <sysproperty key="user.home" value="${user.home}"/>
+         <sysproperty key="emma.coverage.out.file" value="${emma.dir}/coverage.emma"/>
+         <sysproperty key="emma.coverage.out.merge" value="true"/>
+         <jvmarg value="-Djava.library.path=native/bin"/>
+         <jvmarg value="-Xmx1024M"/>
+         <!--<jvmarg line="-Xmx512M -Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=5005"/>-->
+         <!--<jvmarg value="-ea"/>-->
+         <classpath refid="emma.execution.classpath"/>
+         <formatter type="xml" usefile="${junit.formatter.usefile}"/>
+         <batchtest todir="${test.reports.dir}"
+                    haltonfailure="${junit.batchtest.haltonfailure}"
+                    haltonerror="${junit.batchtest.haltonerror}">
+            <formatter type="plain" usefile="${junit.formatter.usefile}"/>
+            <fileset dir="${test.classes.dir}">
+               <include name="${test-mask}"/>
+               <include name="**/org/hornetq/tests/integration/**/${test-mask}.class"/>
+               <include name="**/org/hornetq/tests/unit/**/${test-mask}.class"/>
+               <exclude name="**/org/hornetq/tests/local/**/${test-mask}.class"/>
+               <exclude name="**/org/hornetq/tests/performance/**/${test-mask}.class"/>
+            </fileset>
+         </batchtest>
+      </junit>
+
+      <!-- Generate Emma reports. -->
+      <emma enabled="true">
+         <report sourcepath="${src.main.dir}"
+                 sort="+name"
+                 metrics="method:70,block:80,line:80,class:100">
+            <fileset dir="${emma.dir}">
+               <include name="*.emma"/>
+            </fileset>
+            <xml outfile="${test.reports.dir}/emma/coverage.xml" depth="method"/>
+            <html outfile="${test.reports.dir}/emma/coverage.html"
+                  depth="method" columns="name,class,method,block,line"/>
+         </report>
+      </emma>
+
+   </target>
+   
+
+   <target name="findbugs" depends="jar">
+      <taskdef name="findbugs" classname="edu.umd.cs.findbugs.anttask.FindBugsTask"/>
+      <findbugs home="${findbugs.home}"
+                output="html"
+                outputFile="bugs.html">
+         <auxClasspath refid="findbugs.classpath"/>
+         <sourcePath path="${src.main.dir}"/>
+         <class location="${build.jars.dir}/jboss-${module.name}.jar"/>
+      </findbugs>
+   </target>
+
+   <!-- ======================================================================================== -->
+   <!-- Server execution targets                                                                 -->
+   <!-- ======================================================================================== -->
+
+   <target name="runServer" depends="jar">
+      <mkdir dir="logs"/>
+      <java classname="org.hornetq.integration.bootstrap.JBMBootstrapServer" fork="true">
+         <jvmarg value="-XX:+UseParallelGC"/>
+         <jvmarg value="-Xms512M"/>
+         <jvmarg value="-Xmx2048M"/>
+         <jvmarg value="-XX:+AggressiveOpts"/>
+         <jvmarg value="-XX:+UseFastAccessorMethods"/>
+         <jvmarg value="-Dcom.sun.management.jmxremote"/>
+         <jvmarg value="-Djava.util.logging.config.file=${src.config.trunk.non-clustered.dir}/logging.properties"/>
+         <jvmarg value="-Djava.library.path=${native.bin.dir}"/>
+         <!--<jvmarg line="-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=8000"/>-->
+         <arg line="jbm-jboss-beans.xml"/>
+         <classpath path="${src.config.trunk.non-clustered.dir}" />
+         <classpath refid="jms.standalone.server.classpath"/>
+      </java>
+   </target>
+
+   <target name="runClusteredServer" depends="jar">
+      <mkdir dir="logs"/>
+      <java classname="org.hornetq.integration.bootstrap.JBMBootstrapServer" fork="true">
+         <jvmarg value="-XX:+UseParallelGC"/>
+         <jvmarg value="-Xms512M"/>
+         <jvmarg value="-Xmx2048M"/>
+         <jvmarg value="-XX:+AggressiveOpts"/>
+         <jvmarg value="-XX:+UseFastAccessorMethods"/>
+         <jvmarg value="-Dcom.sun.management.jmxremote"/>
+         <jvmarg value="-Djava.util.logging.config.file=${src.config.trunk.clustered.dir}/logging.properties"/>
+         <jvmarg
+               value="-Dorg.jboss.logging.Logger.pluginClass=org.hornetq.integration.logging.JBMLoggerPlugin"/>
+         <jvmarg value="-Djava.library.path=${native.bin.dir}"/>
+         <jvmarg value="-Djbm.remoting.netty.port=${jbm.remoting.netty.port}"/>
+         <jvmarg value="-Djnp.port=${jnp.port}"/>
+         <jvmarg value="-Djnp.rmiPort=${jnp.rmiPort}"/>
+         <jvmarg value="-Djbm.data.dir=${jbm.data.dir}"/>
+         <arg line="jbm-jboss-beans.xml"/>
+         <classpath path="${src.config.trunk.clustered.dir}" />
+         <classpath refid="jms.standalone.server.classpath"/>
+      </java>
+   </target>
+
+   <target name="debugServer" depends="jar">
+      <java classname="org.hornetq.integration.bootstrap.JBMBootstrapServer" fork="true">
+         <jvmarg value="-XX:+UseParallelGC"/>
+         <jvmarg value="-Xms512M"/>
+         <jvmarg value="-Xmx2048M"/>
+         <jvmarg value="-XX:+AggressiveOpts"/>
+         <jvmarg value="-XX:+UseFastAccessorMethods"/>
+         <jvmarg value="-Xdebug"/>
+         <jvmarg value="-Xnoagent"/>
+         <jvmarg value="-Djava.compiler=NONE"/>
+         <jvmarg value="-Dcom.sun.management.jmxremote"/>
+         <jvmarg value="-Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=8000"/>
+         <jvmarg value="-Djava.util.logging.config.file=${src.config.standalone.non-clustered.dir}/logging.properties"/>
+         <jvmarg
+               value="-Dorg.jboss.logging.Logger.pluginClass=org.hornetq.integration.logging.JBMLoggerPlugin"/>
+         <jvmarg value="-Djava.library.path=${native.bin.dir}"/>
+         <jvmarg value="-Djava.naming.factory.initial=org.jnp.interfaces.NamingContextFactory"/>
+         <jvmarg value="-Djava.naming.factory.url.pkgs=org.jboss.naming:org.jnp.interfaces"/>
+         <arg line="jbm-jboss-beans.xml"/>
+         <classpath path="${src.config.standalone.non-clustered.dir}" />
+      </java>
+   </target>
+
+</project>

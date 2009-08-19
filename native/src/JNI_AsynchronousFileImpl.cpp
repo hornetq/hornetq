@@ -26,7 +26,7 @@
 #include <time.h>
 
 
-#include "org_jboss_messaging_core_asyncio_impl_AsynchronousFileImpl.h"
+#include "org_hornetq_core_asyncio_impl_AsynchronousFileImpl.h"
 
 
 #include "JavaUtilities.h"
@@ -45,7 +45,7 @@ struct timespec nanoTime;
  * Method:    init
  * Signature: (Ljava/lang/String;Ljava/lang/Class;)J
  */
-JNIEXPORT jlong JNICALL Java_org_jboss_messaging_core_asyncio_impl_AsynchronousFileImpl_init
+JNIEXPORT jlong JNICALL Java_org_hornetq_core_asyncio_impl_AsynchronousFileImpl_init
   (JNIEnv * env, jclass clazz, jstring jstrFileName, jint maxIO, jobject logger)
 {
 	AIOController * controller = 0;
@@ -54,10 +54,10 @@ JNIEXPORT jlong JNICALL Java_org_jboss_messaging_core_asyncio_impl_AsynchronousF
 		std::string fileName = convertJavaString(env, jstrFileName);
 
 		controller = new AIOController(fileName, (int) maxIO);
-		controller->done = env->GetMethodID(clazz,"callbackDone","(Lorg/jboss/messaging/core/asyncio/AIOCallback;Ljava/nio/ByteBuffer;)V");
+		controller->done = env->GetMethodID(clazz,"callbackDone","(Lorg/hornetq/core/asyncio/AIOCallback;Ljava/nio/ByteBuffer;)V");
 		if (!controller->done) return 0;
 
-		controller->error = env->GetMethodID(clazz, "callbackError", "(Lorg/jboss/messaging/core/asyncio/AIOCallback;Ljava/nio/ByteBuffer;ILjava/lang/String;)V");
+		controller->error = env->GetMethodID(clazz, "callbackError", "(Lorg/hornetq/core/asyncio/AIOCallback;Ljava/nio/ByteBuffer;ILjava/lang/String;)V");
         if (!controller->error) return 0;
 
         jclass loggerClass = env->GetObjectClass(logger);
@@ -83,7 +83,7 @@ JNIEXPORT jlong JNICALL Java_org_jboss_messaging_core_asyncio_impl_AsynchronousF
 	}
 }
 
-JNIEXPORT void JNICALL Java_org_jboss_messaging_core_asyncio_impl_AsynchronousFileImpl_read
+JNIEXPORT void JNICALL Java_org_hornetq_core_asyncio_impl_AsynchronousFileImpl_read
   (JNIEnv *env, jobject objThis, jlong controllerAddress, jlong position, jlong size, jobject jbuffer, jobject callback)
 {
 	try
@@ -115,7 +115,7 @@ JNIEXPORT void JNICALL Java_org_jboss_messaging_core_asyncio_impl_AsynchronousFi
 
 
 // Fast memset on buffer
-JNIEXPORT void JNICALL Java_org_jboss_messaging_core_asyncio_impl_AsynchronousFileImpl_resetBuffer
+JNIEXPORT void JNICALL Java_org_hornetq_core_asyncio_impl_AsynchronousFileImpl_resetBuffer
   (JNIEnv *env, jclass, jobject jbuffer, jint size)
 {
 	void * buffer = env->GetDirectBufferAddress(jbuffer);
@@ -130,14 +130,14 @@ JNIEXPORT void JNICALL Java_org_jboss_messaging_core_asyncio_impl_AsynchronousFi
 
 }
 
-JNIEXPORT void JNICALL Java_org_jboss_messaging_core_asyncio_impl_AsynchronousFileImpl_destroyBuffer
+JNIEXPORT void JNICALL Java_org_hornetq_core_asyncio_impl_AsynchronousFileImpl_destroyBuffer
   (JNIEnv * env, jclass, jobject jbuffer)
 {
 	void *  buffer = env->GetDirectBufferAddress(jbuffer);
 	free(buffer);
 }
 
-JNIEXPORT jobject JNICALL Java_org_jboss_messaging_core_asyncio_impl_AsynchronousFileImpl_newNativeBuffer
+JNIEXPORT jobject JNICALL Java_org_hornetq_core_asyncio_impl_AsynchronousFileImpl_newNativeBuffer
   (JNIEnv * env, jclass, jlong size)
 {
 	try
@@ -171,7 +171,7 @@ JNIEXPORT jobject JNICALL Java_org_jboss_messaging_core_asyncio_impl_Asynchronou
 	}
 }
 
-JNIEXPORT void JNICALL Java_org_jboss_messaging_core_asyncio_impl_AsynchronousFileImpl_write
+JNIEXPORT void JNICALL Java_org_hornetq_core_asyncio_impl_AsynchronousFileImpl_write
   (JNIEnv *env, jobject objThis, jlong controllerAddress, jlong position, jlong size, jobject jbuffer, jobject callback)
 {
 	try
@@ -198,7 +198,7 @@ JNIEXPORT void JNICALL Java_org_jboss_messaging_core_asyncio_impl_AsynchronousFi
 
 
 
-JNIEXPORT void Java_org_jboss_messaging_core_asyncio_impl_AsynchronousFileImpl_internalPollEvents
+JNIEXPORT void Java_org_hornetq_core_asyncio_impl_AsynchronousFileImpl_internalPollEvents
   (JNIEnv *env, jclass, jlong controllerAddress)
 {
 	try
@@ -212,7 +212,7 @@ JNIEXPORT void Java_org_jboss_messaging_core_asyncio_impl_AsynchronousFileImpl_i
 	}
 }
 
-JNIEXPORT void JNICALL Java_org_jboss_messaging_core_asyncio_impl_AsynchronousFileImpl_stopPoller
+JNIEXPORT void JNICALL Java_org_hornetq_core_asyncio_impl_AsynchronousFileImpl_stopPoller
   (JNIEnv *env, jclass, jlong controllerAddress)
 {
 	try
@@ -226,7 +226,7 @@ JNIEXPORT void JNICALL Java_org_jboss_messaging_core_asyncio_impl_AsynchronousFi
 	}
 }
 
-JNIEXPORT void JNICALL Java_org_jboss_messaging_core_asyncio_impl_AsynchronousFileImpl_closeInternal
+JNIEXPORT void JNICALL Java_org_hornetq_core_asyncio_impl_AsynchronousFileImpl_closeInternal
   (JNIEnv *env, jclass, jlong controllerAddress)
 {
 	try
@@ -245,7 +245,7 @@ JNIEXPORT void JNICALL Java_org_jboss_messaging_core_asyncio_impl_AsynchronousFi
 }
 
 
-JNIEXPORT void JNICALL Java_org_jboss_messaging_core_asyncio_impl_AsynchronousFileImpl_fill
+JNIEXPORT void JNICALL Java_org_hornetq_core_asyncio_impl_AsynchronousFileImpl_fill
   (JNIEnv * env, jclass, jlong controllerAddress, jlong position, jint blocks, jlong size, jbyte fillChar)
 {
 	try
@@ -264,7 +264,7 @@ JNIEXPORT void JNICALL Java_org_jboss_messaging_core_asyncio_impl_AsynchronousFi
 
 
 /** It does nothing... just return true to make sure it has all the binary dependencies */
-JNIEXPORT jint JNICALL Java_org_jboss_messaging_core_asyncio_impl_AsynchronousFileImpl_getNativeVersion
+JNIEXPORT jint JNICALL Java_org_hornetq_core_asyncio_impl_AsynchronousFileImpl_getNativeVersion
   (JNIEnv *, jclass)
 
 {
@@ -272,7 +272,7 @@ JNIEXPORT jint JNICALL Java_org_jboss_messaging_core_asyncio_impl_AsynchronousFi
 }
 
 
-JNIEXPORT jlong JNICALL Java_org_jboss_messaging_core_asyncio_impl_AsynchronousFileImpl_size0
+JNIEXPORT jlong JNICALL Java_org_hornetq_core_asyncio_impl_AsynchronousFileImpl_size0
   (JNIEnv * env, jobject, jlong controllerAddress)
 {
 	try
@@ -296,11 +296,11 @@ JNIEXPORT jlong JNICALL Java_org_jboss_messaging_core_asyncio_impl_AsynchronousF
 }
 
 /*
- * Class:     org_jboss_messaging_core_asyncio_impl_AsynchronousFileImpl
+ * Class:     org_hornetq_core_asyncio_impl_AsynchronousFileImpl
  * Method:    setNanoSleepInterval
  * Signature: (I)V
  */
-JNIEXPORT void JNICALL Java_org_jboss_messaging_core_asyncio_impl_AsynchronousFileImpl_setNanoSleepInterval
+JNIEXPORT void JNICALL Java_org_hornetq_core_asyncio_impl_AsynchronousFileImpl_setNanoSleepInterval
   (JNIEnv *, jclass, jint nanotime)
 {
 	nanoTime.tv_sec = 0;
@@ -308,11 +308,11 @@ JNIEXPORT void JNICALL Java_org_jboss_messaging_core_asyncio_impl_AsynchronousFi
 }
 
 /*
- * Class:     org_jboss_messaging_core_asyncio_impl_AsynchronousFileImpl
+ * Class:     org_hornetq_core_asyncio_impl_AsynchronousFileImpl
  * Method:    nanoSleep
  * Signature: ()V
  */
-JNIEXPORT void JNICALL Java_org_jboss_messaging_core_asyncio_impl_AsynchronousFileImpl_nanoSleep
+JNIEXPORT void JNICALL Java_org_hornetq_core_asyncio_impl_AsynchronousFileImpl_nanoSleep
   (JNIEnv *, jclass)
 {
 	if (nanoTime.tv_nsec != 0)

@@ -21,7 +21,7 @@
      <pre>
          <code>
             &lt;!-- The security manager using JAAS --&gt;
-            &lt;bean name="JBMSecurityManager" class="org.jboss.messaging.integration.security.JAASSecurityManager"&gt;
+            &lt;bean name="JBMSecurityManager" class="org.hornetq.integration.security.JAASSecurityManager"&gt;
                &lt;property name="configurationName"&gt;org.jboss.jms.example.ExampleLoginModule&lt;/property&gt;
                &lt;property name="configuration"&gt;
                   &lt;inject bean="ExampleConfiguration"/&gt;

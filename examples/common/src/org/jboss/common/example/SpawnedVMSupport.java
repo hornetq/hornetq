@@ -22,7 +22,7 @@
 
 package org.jboss.common.example;
 
-import org.jboss.messaging.core.logging.Logger;
+import org.hornetq.core.logging.Logger;
 
 import java.io.BufferedReader;
 import java.io.File;

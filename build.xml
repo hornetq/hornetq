@@ -63,55 +63,55 @@
    </target>
 
    <target name="clean" depends="createthirdparty">
-      <ant antfile="build-messaging.xml" target="clean"/>
+      <ant antfile="build-hornetq.xml" target="clean"/>
    </target>
 
    <target name="init" depends="createthirdparty">
-      <ant antfile="build-messaging.xml" target="init"/>
+      <ant antfile="build-hornetq.xml" target="init"/>
    </target>
 
    <target name="compile" depends="createthirdparty">
-      <ant antfile="build-messaging.xml" target="compile"/>
+      <ant antfile="build-hornetq.xml" target="compile"/>
    </target>
    
    <target name="compile-core" depends="createthirdparty">
-      <ant antfile="build-messaging.xml" target="compile-core"/>
+      <ant antfile="build-hornetq.xml" target="compile-core"/>
    </target>
    
    <target name="compile-jms" depends="createthirdparty">
-      <ant antfile="build-messaging.xml" target="compile-jms"/>
+      <ant antfile="build-hornetq.xml" target="compile-jms"/>
    </target>   
    
    <target name="compile-transports" depends="createthirdparty">
-      <ant antfile="build-messaging.xml" target="compile-transports"/>
+      <ant antfile="build-hornetq.xml" target="compile-transports"/>
    </target>   
    
    <target name="compile-security" depends="createthirdparty">
-      <ant antfile="build-messaging.xml" target="compile-security"/>
+      <ant antfile="build-hornetq.xml" target="compile-security"/>
    </target>
    
    <target name="compile-boostrap" depends="createthirdparty">
-      <ant antfile="build-messaging.xml" target="compile-bootstrap"/>
+      <ant antfile="build-hornetq.xml" target="compile-bootstrap"/>
    </target>  
    
    <target name="compile-logging" depends="createthirdparty">
-      <ant antfile="build-messaging.xml" target="compile-logging"/>
+      <ant antfile="build-hornetq.xml" target="compile-logging"/>
    </target>
 
    <target name="compile-ra" depends="createthirdparty">
-      <ant antfile="build-messaging.xml" target="compile-ra"/>
+      <ant antfile="build-hornetq.xml" target="compile-ra"/>
    </target>
 
    <target name="build-native" depends="createthirdparty">
-      <ant antfile="build-messaging.xml" target="build-native"/>
+      <ant antfile="build-hornetq.xml" target="build-native"/>
    </target>
 
    <target name="userdoc">
-      <ant antfile="build-messaging.xml" target="userdoc"/>
+      <ant antfile="build-hornetq.xml" target="userdoc"/>
    </target>
     
    <target name="validate-configuration">
-      <ant antfile="build-messaging.xml" target="validate-configuration"/>
+      <ant antfile="build-hornetq.xml" target="validate-configuration"/>
    </target>
 
    <!-- ======================================================================================== -->
@@ -119,80 +119,80 @@
    <!-- ======================================================================================== -->
 
    <target name="jar" depends="createthirdparty">
-      <ant antfile="build-messaging.xml" target="jar"/>
+      <ant antfile="build-hornetq.xml" target="jar"/>
    </target>
    
    <target name="jar-core" depends="createthirdparty">
-      <ant antfile="build-messaging.xml" target="jar-core"/>
+      <ant antfile="build-hornetq.xml" target="jar-core"/>
    </target>  
    
    <target name="jar-jms" depends="createthirdparty">
-      <ant antfile="build-messaging.xml" target="jar-jms"/>
+      <ant antfile="build-hornetq.xml" target="jar-jms"/>
    </target>
    
    <target name="jar-jms-api" depends="createthirdparty">
-      <ant antfile="build-messaging.xml" target="jar-jms-api"/>
+      <ant antfile="build-hornetq.xml" target="jar-jms-api"/>
    </target>
    
    <target name="jar-jms-client" depends="createthirdparty">
-      <ant antfile="build-messaging.xml" target="jar-jms-client"/>
+      <ant antfile="build-hornetq.xml" target="jar-jms-client"/>
    </target> 
    
    <target name="jar-transports" depends="createthirdparty">
-      <ant antfile="build-messaging.xml" target="jar-transports"/>
+      <ant antfile="build-hornetq.xml" target="jar-transports"/>
    </target>   
    
    <target name="jar-security" depends="createthirdparty">
-      <ant antfile="build-messaging.xml" target="jar-security"/>
+      <ant antfile="build-hornetq.xml" target="jar-security"/>
    </target> 
    
    <target name="jar-bootstrap" depends="createthirdparty">
-      <ant antfile="build-messaging.xml" target="jar-bootstrap"/>
+      <ant antfile="build-hornetq.xml" target="jar-bootstrap"/>
    </target> 
    
    <target name="jar-logging" depends="createthirdparty">
-      <ant antfile="build-messaging.xml" target="jar-logging"/>
+      <ant antfile="build-hornetq.xml" target="jar-logging"/>
    </target> 
 
    <target name="jar-core-client" depends="createthirdparty">
-      <ant antfile="build-messaging.xml" target="jar-core-client"/>
+      <ant antfile="build-hornetq.xml" target="jar-core-client"/>
    </target>
 
    <target name="jar-ra" depends="createthirdparty">
-      <ant antfile="build-messaging.xml" target="jar-ra"/>
+      <ant antfile="build-hornetq.xml" target="jar-ra"/>
    </target>
    
    <target name="jar-mc" depends="createthirdparty">
-         <ant antfile="build-messaging.xml" target="jar-mc"/>
+         <ant antfile="build-hornetq.xml" target="jar-mc"/>
    </target>
       
    <!-- ======================================================================================== -->
    <!-- Distro Tasks                                                                           -->
    <!-- ======================================================================================== -->
    <target name="deploy-jboss" depends="createthirdparty">
-      <ant antfile="build-messaging.xml" target="deploy-jboss"/>
+      <ant antfile="build-hornetq.xml" target="deploy-jboss"/>
    </target>
 
    <target name="deploy" depends="createthirdparty">
-      <ant antfile="build-messaging.xml" target="deploy"/>
+      <ant antfile="build-hornetq.xml" target="deploy"/>
    </target>
 
     <target name="build.sar" depends="createthirdparty">
-      <ant antfile="build-messaging.xml" target="build.sar"/>
+      <ant antfile="build-hornetq.xml" target="build.sar"/>
    </target>
 
    <target name="distro" depends="bin-distro, source-distro" />
 	
    <target name="bin-distro" depends="createthirdparty">
-      <ant antfile="build-messaging.xml" target="bin-distro"/>
+      <ant antfile="build-hornetq.xml" target="bin-distro"/>
    </target>
 
    <target name="source-distro" depends="createthirdparty">
-      <ant antfile="build-messaging.xml" target="source-distro"/>
+      <ant antfile="build-hornetq.xml" target="source-distro"/>
    </target>
 
 	<target name="artifacts" depends="createthirdparty">
-      <ant antfile="build-messaging.xml" target="artifacts"/>
+      <ant antfile="build-hornetq.xml" target="artifacts"/>
    </target>
 
 
@@ -200,113 +200,113 @@
 
 
    <target name="compile-unit-tests" depends="createthirdparty">
-      <ant antfile="build-messaging.xml" target="compile-unit-tests"/>
+      <ant antfile="build-hornetq.xml" target="compile-unit-tests"/>
    </target>
 
    <target name="compile-jms-tests" depends="createthirdparty">
-      <ant antfile="build-messaging.xml" target="compile"/>
+      <ant antfile="build-hornetq.xml" target="compile"/>
    </target>
 
    <target name="compile-joram-tests" depends="createthirdparty">
-      <ant antfile="build-messaging.xml" target="compile"/>
+      <ant antfile="build-hornetq.xml" target="compile"/>
    </target>
 
    <target name="unit-tests" depends="createthirdparty">
-      <ant antfile="build-messaging.xml" target="unit-tests"/>
-      <ant antfile="build-messaging.xml" target="compile-reports"/>
+      <ant antfile="build-hornetq.xml" target="unit-tests"/>
+      <ant antfile="build-hornetq.xml" target="compile-reports"/>
    </target>
 
    <target name="timing-tests" depends="createthirdparty">
-      <ant antfile="build-messaging.xml" target="timing-tests"/>
-      <ant antfile="build-messaging.xml" target="compile-reports"/>
+      <ant antfile="build-hornetq.xml" target="timing-tests"/>
+      <ant antfile="build-hornetq.xml" target="compile-reports"/>
    </target>
 
    <target name="integration-tests" depends="createthirdparty">
-      <ant antfile="build-messaging.xml" target="integration-tests"/>
-      <ant antfile="build-messaging.xml" target="compile-reports"/>
+      <ant antfile="build-hornetq.xml" target="integration-tests"/>
+      <ant antfile="build-hornetq.xml" target="compile-reports"/>
    </target>
    
    <target name="failover-tests" depends="createthirdparty">
-	   <ant antfile="build-messaging.xml" target="failover-tests"/>
-	   <ant antfile="build-messaging.xml" target="compile-reports"/>
+	   <ant antfile="build-hornetq.xml" target="failover-tests"/>
+	   <ant antfile="build-hornetq.xml" target="compile-reports"/>
    </target>   
    
    <target name="distribution-tests" depends="createthirdparty">
-	   <ant antfile="build-messaging.xml" target="distribution-tests"/>
-	   <ant antfile="build-messaging.xml" target="compile-reports"/>
+	   <ant antfile="build-hornetq.xml" target="distribution-tests"/>
+	   <ant antfile="build-hornetq.xml" target="compile-reports"/>
    </target>
 
     <target name="concurrent-tests" depends="createthirdparty">
-      <ant antfile="build-messaging.xml" target="concurrent-tests"/>
-      <ant antfile="build-messaging.xml" target="compile-reports"/>
+      <ant antfile="build-hornetq.xml" target="concurrent-tests"/>
+      <ant antfile="build-hornetq.xml" target="compile-reports"/>
    </target>
 
     <target name="performance-tests" depends="createthirdparty">
-      <ant antfile="build-messaging.xml" target="performance-tests"/>
-      <ant antfile="build-messaging.xml" target="compile-reports"/>
+      <ant antfile="build-hornetq.xml" target="performance-tests"/>
+      <ant antfile="build-hornetq.xml" target="compile-reports"/>
    </target>
    
    <target name="stress-tests" depends="createthirdparty">
-      <ant antfile="build-messaging.xml" target="stress-tests"/>
-      <ant antfile="build-messaging.xml" target="compile-reports"/>
+      <ant antfile="build-hornetq.xml" target="stress-tests"/>
+      <ant antfile="build-hornetq.xml" target="compile-reports"/>
    </target>
    
    <target name="jms-tests" depends="createthirdparty">
-      <ant antfile="build-messaging.xml" target="jms-tests"/>
-      <ant antfile="build-messaging.xml" target="compile-reports"/>
+      <ant antfile="build-hornetq.xml" target="jms-tests"/>
+      <ant antfile="build-hornetq.xml" target="compile-reports"/>
    </target>
     
    <target name="joram-tests" depends="createthirdparty">
-      <ant antfile="build-messaging.xml" target="joram-tests"/>
-      <ant antfile="build-messaging.xml" target="compile-reports"/>
+      <ant antfile="build-hornetq.xml" target="joram-tests"/>
+      <ant antfile="build-hornetq.xml" target="compile-reports"/>
    </target>
 
    <target name="all-tests" depends="createthirdparty">
-      <ant antfile="build-messaging.xml" target="all-tests"/>
-      <ant antfile="build-messaging.xml" target="compile-reports"/>
+      <ant antfile="build-hornetq.xml" target="all-tests"/>
+      <ant antfile="build-hornetq.xml" target="compile-reports"/>
    </target>
    
    <target name="hudson-tests" depends="createthirdparty">
-      <ant antfile="build-messaging.xml" target="hudson-tests"/>
+      <ant antfile="build-hornetq.xml" target="hudson-tests"/>
    </target>
 
    <target name="dev-tests" depends="createthirdparty">
    	  <mkdir dir="./tmp"/>
-      <ant antfile="build-messaging.xml" target="hudson-tests">
+      <ant antfile="build-hornetq.xml" target="hudson-tests">
       	<property name="java.io.tmpdir" value="./tmp"/>
    	  </ant>
-      <ant antfile="build-messaging.xml" target="compile-reports"/>
+      <ant antfile="build-hornetq.xml" target="compile-reports"/>
    </target>
 
    <target name="tests" depends="createthirdparty">
-      <ant antfile="build-messaging.xml" target="tests"/>
-      <ant antfile="build-messaging.xml" target="compile-reports"/>
+      <ant antfile="build-hornetq.xml" target="tests"/>
+      <ant antfile="build-hornetq.xml" target="compile-reports"/>
    </target>
 
    <target name="compile-reports" depends="createthirdparty">
-      <ant antfile="build-messaging.xml" target="compile-reports"/>
+      <ant antfile="build-hornetq.xml" target="compile-reports"/>
    </target>
 
    <target name="emma" depends="createthirdparty">
-      <ant antfile="build-messaging.xml" target="emma"/>
+      <ant antfile="build-hornetq.xml" target="emma"/>
    </target>
 
    <!--server-->
 
    <target name="runServer" depends="createthirdparty">
-      <ant antfile="build-messaging.xml" target="runServer"/>
+      <ant antfile="build-hornetq.xml" target="runServer"/>
    </target>
 
    <target name="runClusteredServer" depends="createthirdparty">
-      <ant antfile="build-messaging.xml" target="runClusteredServer"/>
+      <ant antfile="build-hornetq.xml" target="runClusteredServer"/>
    </target>
 
    <target name="debugServer" depends="createthirdparty">
-      <ant antfile="build-messaging.xml" target="debugServer"/>
+      <ant antfile="build-hornetq.xml" target="debugServer"/>
    </target>
 
     <target name="findbugs" depends="createthirdparty">
-       <ant antfile="build-messaging.xml" target="findbugs"/>
+       <ant antfile="build-hornetq.xml" target="findbugs"/>
     </target>
   
 </project>

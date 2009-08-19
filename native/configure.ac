@@ -1,7 +1,7 @@
 #                                               -*- Autoconf -*-
 # Process this file with autoconf to produce a configure script.
 
-AC_INIT([jboss-messaging-native], [1.0.Alpha],[clebert.suconic@jboss.org])
+AC_INIT([hornetq-native], [2.0],[clebert.suconic@jboss.org])
 AC_CONFIG_AUX_DIR([build-aux])
 
 AM_INIT_AUTOMAKE([dist-bzip2])

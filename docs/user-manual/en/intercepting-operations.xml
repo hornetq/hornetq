@@ -9,7 +9,7 @@
       <title>Implementing The Interceptors</title>
       <para>A interceptor must implement the <literal>Interceptor interface</literal>:</para>
       <programlisting>
-package org.jboss.messaging.core.remoting;
+package org.hornetq.core.remoting;
 
 public interface Interceptor
 {   

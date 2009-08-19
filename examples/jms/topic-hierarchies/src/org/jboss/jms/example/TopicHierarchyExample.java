@@ -31,8 +31,8 @@ import javax.jms.TextMessage;
 import javax.jms.Topic;
 import javax.naming.InitialContext;
 
+import org.hornetq.jms.JBossTopic;
 import org.jboss.common.example.JBMExample;
-import org.jboss.messaging.jms.JBossTopic;
 
 /**
  * This example demonstrates how a JMS TopicSubscriber can be created to subscribe to a wild-card Topic.

@@ -1,4 +1,4 @@
-For classes org.jboss.messaging.utils.json.*
+For classes org.hornetq.utils.json.*
 
 Copyright (c) 2002 JSON.org
 

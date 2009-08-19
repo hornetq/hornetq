@@ -22,13 +22,13 @@
 
 package org.jboss.jms.example;
 
-import org.jboss.messaging.core.exception.MessagingException;
-import org.jboss.messaging.core.message.Message;
-import org.jboss.messaging.core.remoting.Interceptor;
-import org.jboss.messaging.core.remoting.Packet;
-import org.jboss.messaging.core.remoting.RemotingConnection;
-import org.jboss.messaging.core.remoting.impl.wireformat.SessionSendMessage;
-import org.jboss.messaging.utils.SimpleString;
+import org.hornetq.core.exception.MessagingException;
+import org.hornetq.core.message.Message;
+import org.hornetq.core.remoting.Interceptor;
+import org.hornetq.core.remoting.Packet;
+import org.hornetq.core.remoting.RemotingConnection;
+import org.hornetq.core.remoting.impl.wireformat.SessionSendMessage;
+import org.hornetq.utils.SimpleString;
 
 /**
  * A simple Interceptor implementation

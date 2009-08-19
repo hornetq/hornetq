@@ -20,8 +20,8 @@
         <para>Create the configuration object - this contains configuration information for a JBoss
             Messaging server. If you want to configure it from a file on the classpath, use <literal
                 >FileConfigurationImpl</literal></para>
-        <programlisting>import org.jboss.messaging.core.config.Configuration;
-import org.jboss.messaging.core.config.impl.FileConfiguration;
+        <programlisting>import org.hornetq.core.config.Configuration;
+import org.hornetq.core.config.impl.FileConfiguration;
 
 ...
 
@@ -35,8 +35,8 @@ config.start();</programlisting>
         <para>The acceptors are configured through <literal>ConfigurationImpl</literal>. Just add
             the <literal>NettyAcceptorFactory</literal> on the transports the same way you would
             through the main configuration file.</para>
-        <programlisting>import org.jboss.messaging.core.config.Configuration;
-import org.jboss.messaging.core.config.impl.ConfigurationImpl;
+        <programlisting>import org.hornetq.core.config.Configuration;
+import org.hornetq.core.config.impl.ConfigurationImpl;
 
 ...
 
@@ -48,10 +48,10 @@ transports.add(new TransportConfiguration(InVMAcceptorFactory.class.getName()));
 
 config.setAcceptorConfigurations(transports);</programlisting>
         <para>You need to instantiate and start JBoss Messaging server. The class <literal
-                >org.jboss.messaging.core.serverMessaging</literal> has a few static methods for
+                >org.hornetq.core.serverMessaging</literal> has a few static methods for
             creating servers with common configurations.</para>
-        <programlisting>import org.jboss.messaging.core.server.Messaging;
-import org.jboss.messaging.core.server.MessagingServer;
+        <programlisting>import org.hornetq.core.server.Messaging;
+import org.hornetq.core.server.MessagingServer;
 
 ...
 
@@ -82,12 +82,12 @@ server.start();</programlisting>
    
    &lt;!-- The core configuration -->
    &lt;bean name="Configuration" 
-         class="org.jboss.messaging.core.config.impl.FileConfiguration">
+         class="org.hornetq.core.config.impl.FileConfiguration">
    &lt;/bean>
 
    	&lt;!-- The core server -->
    &lt;bean name="MessagingServer" 
-         class="org.jboss.messaging.core.server.impl.MessagingServerImpl">      
+         class="org.hornetq.core.server.impl.MessagingServerImpl">      
       &lt;constructor>
          &lt;parameter>
             &lt;inject bean="Configuration"/>

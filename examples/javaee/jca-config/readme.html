@@ -23,7 +23,7 @@
                         @ActivationConfigProperty(propertyName = "destinationType", propertyValue = "javax.jms.Queue"),
                         @ActivationConfigProperty(propertyName = "destination", propertyValue = "queue/testQueue"),
                         @ActivationConfigProperty(propertyName = "acknowledgeMode", propertyValue = "Auto-acknowledge"),
-                        @ActivationConfigProperty(propertyName = "ConnectorClassName", propertyValue = "org.jboss.messaging.integration.transports.netty.NettyConnectorFactory"),
+                        @ActivationConfigProperty(propertyName = "ConnectorClassName", propertyValue = "org.hornetq.integration.transports.netty.NettyConnectorFactory"),
                         @ActivationConfigProperty(propertyName = "ConnectionParameters", propertyValue = "jbm.remoting.netty.port=5545")
                      })
             public class MDBRemoteExample implements MessageListener
@@ -67,9 +67,9 @@ public class MDBRemoteExample implements MessageListener
       &lt;jndi-name&gt;RemoteJmsXA&lt;/jndi-name&gt;
       &lt;xa-transaction/&gt;
       &lt;rar-name&gt;jms-ra.rar&lt;/rar-name&gt;
-      &lt;connection-definition&gt;org.jboss.messaging.ra.JBMConnectionFactory&lt;/connection-definition&gt;
+      &lt;connection-definition&gt;org.hornetq.ra.JBMConnectionFactory&lt;/connection-definition&gt;
       &lt;config-property name="SessionDefaultType" type="java.lang.String"&gt;javax.jms.Topic&lt;/config-property&gt;
-      &lt;config-property name="ConnectorClassName" type="java.lang.String"&gt;org.jboss.messaging.integration.transports.netty.NettyConnectorFactory&lt;/config-property&gt;
+      &lt;config-property name="ConnectorClassName" type="java.lang.String"&gt;org.hornetq.integration.transports.netty.NettyConnectorFactory&lt;/config-property&gt;
       &lt;config-property name="ConnectionParameters" type="java.lang.String"&gt;jbm.remoting.netty.port=5545&lt;/config-property&gt;
       &lt;max-pool-size>20&lt;/max-pool-size&gt;
    &lt;/tx-connection-factory&gt;
@@ -98,12 +98,12 @@ public class MDBRemoteExample implements MessageListener
 
 
    &lt;resourceadapter&gt;
-      &lt;resourceadapter-class&gt;org.jboss.messaging.ra.JBMResourceAdapter&lt;/resourceadapter-class&gt;
+      &lt;resourceadapter-class&gt;org.hornetq.ra.JBMResourceAdapter&lt;/resourceadapter-class&gt;
       &lt;config-property&gt;
          &lt;description&gt;The transport type&lt;/description&gt;
          &lt;config-property-name&gt;ConnectorClassName&lt;/config-property-name&gt;
          &lt;config-property-type&gt;java.lang.String&lt;/config-property-type&gt;
-         &lt;config-property-value&gt;org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory&lt;/config-property-value&gt;
+         &lt;config-property-value&gt;org.hornetq.core.remoting.impl.invm.InVMConnectorFactory&lt;/config-property-value&gt;
       &lt;/config-property&gt;
       &lt;config-property&gt;
          &lt;description&gt;The transport configuration. These values must be in the form of key=val;key=val;&lt;/description&gt;

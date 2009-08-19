@@ -32,7 +32,7 @@ void throwRuntimeException(JNIEnv * env, const char * message)
 
 void throwException(JNIEnv * env, const int code, const char * message)
 {
-  jclass exceptionClass = env->FindClass("org/jboss/messaging/core/exception/MessagingException");
+  jclass exceptionClass = env->FindClass("org/hornetq/core/exception/MessagingException");
   if (exceptionClass==NULL) 
   {
      std::cerr << "Couldn't throw exception message:= " << message << "\n";

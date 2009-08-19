@@ -2,7 +2,7 @@
 
 <deployment xmlns="urn:jboss:bean-deployer:2.0">
 
-       <bean name="JMSBridge" class="org.jboss.messaging.jms.bridge.impl.JMSBridgeImpl">
+       <bean name="JMSBridge" class="org.hornetq.jms.bridge.impl.JMSBridgeImpl">
            <!-- JBoss Messaging must be started before the bridge -->
            <depends>MessagingServer</depends>
            <constructor>
@@ -55,7 +55,7 @@
        </bean>
 
        <!-- SourceCFF describes the ConnectionFactory used to connect to the source destination -->
-       <bean name="SourceCFF" class="org.jboss.messaging.jms.bridge.impl.JNDIConnectionFactoryFactory">
+       <bean name="SourceCFF" class="org.hornetq.jms.bridge.impl.JNDIConnectionFactoryFactory">
            <constructor>
                <parameter>
                    <inject bean="JNDI" />
@@ -65,7 +65,7 @@
        </bean>
 
        <!-- TargetCFF describes the ConnectionFactory used to connect to the target destination -->
-       <bean name="TargetCFF" class="org.jboss.messaging.jms.bridge.impl.JNDIConnectionFactoryFactory">
+       <bean name="TargetCFF" class="org.hornetq.jms.bridge.impl.JNDIConnectionFactoryFactory">
            <constructor>
                <parameter>
                    <inject bean="JNDI" />
@@ -75,7 +75,7 @@
        </bean>
 
        <!-- SourceDestinationFactory describes the Destination used as the source -->
-       <bean name="SourceDestinationFactory" class="org.jboss.messaging.jms.bridge.impl.JNDIDestinationFactory">
+       <bean name="SourceDestinationFactory" class="org.hornetq.jms.bridge.impl.JNDIDestinationFactory">
            <constructor>
                <parameter>
                    <inject bean="JNDI" />
@@ -85,7 +85,7 @@
        </bean>
 
        <!-- TargetDestinationFactory describes the Destination used as the target -->
-       <bean name="TargetDestinationFactory" class="org.jboss.messaging.jms.bridge.impl.JNDIDestinationFactory">
+       <bean name="TargetDestinationFactory" class="org.hornetq.jms.bridge.impl.JNDIDestinationFactory">
            <constructor>
                <parameter>
                    <inject bean="JNDI" />

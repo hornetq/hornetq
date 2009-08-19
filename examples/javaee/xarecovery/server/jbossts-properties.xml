@@ -240,7 +240,7 @@
 			com.arjuna.ats.internal.jta.transaction.jts.UserTransactionImple
 			-->
 			<property name="com.arjuna.ats.jta.recovery.XAResourceRecovery.JBMESSAGING1"
-                   value="org.jboss.messaging.jms.server.recovery.MessagingXAResourceRecovery;org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"/>
+                   value="org.hornetq.jms.server.recovery.MessagingXAResourceRecovery;org.hornetq.core.remoting.impl.invm.InVMConnectorFactory"/>
     </properties>
     <properties depends="arjuna,txoj,jta" name="recoverymanager">
         <!--

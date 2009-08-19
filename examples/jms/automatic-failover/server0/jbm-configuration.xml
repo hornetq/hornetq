@@ -9,7 +9,7 @@
 
    <connectors>
       <connector name="netty-connector">
-         <factory-class>org.jboss.messaging.integration.transports.netty.NettyConnectorFactory</factory-class>
+         <factory-class>org.hornetq.integration.transports.netty.NettyConnectorFactory</factory-class>
          <param key="jbm.remoting.netty.port" value="5445" type="Integer"/>
       </connector>
    </connectors>      
@@ -17,7 +17,7 @@
    <!-- Acceptors -->
    <acceptors>
       <acceptor name="netty-acceptor">
-         <factory-class>org.jboss.messaging.integration.transports.netty.NettyAcceptorFactory</factory-class>
+         <factory-class>org.hornetq.integration.transports.netty.NettyAcceptorFactory</factory-class>
          <param key="jbm.remoting.netty.port" value="5445" type="Integer"/>
       </acceptor>
    </acceptors>

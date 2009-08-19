@@ -17,7 +17,7 @@
       <pre>
       <code>
       &lt;connector name=&quot;netty-connector&quot;&gt;
-         &lt;factory-class&gt;org.jboss.messaging.integration.transports.netty.NettyConnectorFactory&lt;/factory-class&gt;
+         &lt;factory-class&gt;org.hornetq.integration.transports.netty.NettyConnectorFactory&lt;/factory-class&gt;
          &lt;param key=&quot;jbm.remoting.netty.httpenabled&quot; value=&quot;true&quot; type=&quot;Boolean&quot;/&gt;
          &lt;param key=&quot;jbm.remoting.netty.port&quot; value=&quot;8080&quot; type=&quot;Integer&quot;/&gt;
       &lt;/connector&gt;
@@ -25,7 +25,7 @@
       &lt;!-- Acceptors --&gt;
 
       &lt;acceptor name=&quot;netty-acceptor&quot;&gt;
-         &lt;factory-class&gt;org.jboss.messaging.integration.transports.netty.NettyAcceptorFactory&lt;/factory-class&gt;
+         &lt;factory-class&gt;org.hornetq.integration.transports.netty.NettyAcceptorFactory&lt;/factory-class&gt;
          &lt;param key=&quot;jbm.remoting.netty.httpenabled&quot; value=&quot;true&quot; type=&quot;Boolean&quot;/&gt;
          &lt;param key=&quot;jbm.remoting.netty.port&quot; value=&quot;8080&quot; type=&quot;Integer&quot;/&gt;
       &lt;/acceptor&gt;

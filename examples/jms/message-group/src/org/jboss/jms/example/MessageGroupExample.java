@@ -36,8 +36,8 @@ import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.naming.InitialContext;
 
+import org.hornetq.jms.client.JBossMessage;
 import org.jboss.common.example.JBMExample;
-import org.jboss.messaging.jms.client.JBossMessage;
 
 /**
  * A simple JMS Queue example that sends and receives message groups.

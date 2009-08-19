@@ -21,10 +21,10 @@
    */
 package org.jboss.jms.example;
 
+import org.hornetq.jms.JBossQueue;
+import org.hornetq.jms.JBossTopic;
+import org.hornetq.jms.client.JBossConnectionFactory;
 import org.jboss.common.example.JBMExample;
-import org.jboss.messaging.jms.JBossQueue;
-import org.jboss.messaging.jms.JBossTopic;
-import org.jboss.messaging.jms.client.JBossConnectionFactory;
 
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;

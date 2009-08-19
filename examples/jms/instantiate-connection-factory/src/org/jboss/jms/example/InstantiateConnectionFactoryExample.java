@@ -21,7 +21,7 @@
    */
 package org.jboss.jms.example;
 
-import static org.jboss.messaging.integration.transports.netty.TransportConstants.PORT_PROP_NAME;
+import static org.hornetq.integration.transports.netty.TransportConstants.PORT_PROP_NAME;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -34,11 +34,11 @@ import javax.jms.Queue;
 import javax.jms.Session;
 import javax.jms.TextMessage;
 
+import org.hornetq.core.config.TransportConfiguration;
+import org.hornetq.integration.transports.netty.NettyConnectorFactory;
+import org.hornetq.jms.JBossQueue;
+import org.hornetq.jms.client.JBossConnectionFactory;
 import org.jboss.common.example.JBMExample;
-import org.jboss.messaging.core.config.TransportConfiguration;
-import org.jboss.messaging.integration.transports.netty.NettyConnectorFactory;
-import org.jboss.messaging.jms.JBossQueue;
-import org.jboss.messaging.jms.client.JBossConnectionFactory;
 
 /**
  * 

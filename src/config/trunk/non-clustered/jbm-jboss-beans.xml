@@ -22,17 +22,17 @@
    </bean> 
 
    <!-- The core configuration -->
-   <bean name="Configuration" class="org.jboss.messaging.core.config.impl.FileConfiguration">
+   <bean name="Configuration" class="org.hornetq.core.config.impl.FileConfiguration">
    </bean>
 
 	<!-- The security manager -->
-   <bean name="JBMSecurityManager" class="org.jboss.messaging.core.security.impl.JBMSecurityManagerImpl">
+   <bean name="JBMSecurityManager" class="org.hornetq.core.security.impl.JBMSecurityManagerImpl">
       <start ignored="true"/>
       <stop ignored="true"/>
    </bean>
 
 	<!-- The core server -->
-   <bean name="MessagingServer" class="org.jboss.messaging.core.server.impl.MessagingServerImpl">
+   <bean name="MessagingServer" class="org.hornetq.core.server.impl.MessagingServerImpl">
       <constructor>
          <parameter>
             <inject bean="Configuration"/>
@@ -49,7 +49,7 @@
    </bean>
    
    <!-- The JMS server -->
-   <bean name="JMSServerManager" class="org.jboss.messaging.jms.server.impl.JMSServerManagerImpl">
+   <bean name="JMSServerManager" class="org.hornetq.jms.server.impl.JMSServerManagerImpl">
       <constructor>         
          <parameter>
             <inject bean="MessagingServer"/>

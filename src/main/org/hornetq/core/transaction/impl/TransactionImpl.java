@@ -1,0 +1,387 @@
+/*
+ * JBoss, Home of Professional Open Source Copyright 2005-2008, Red Hat Middleware LLC, and individual contributors by
+ * the @authors tag. See the copyright.txt in the distribution for a full listing of individual contributors. This is
+ * free software; you can redistribute it and/or modify it under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of the License, or (at your option) any later version.
+ * This software is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+ * details. You should have received a copy of the GNU Lesser General Public License along with this software; if not,
+ * write to the Free Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301 USA, or see the FSF
+ * site: http://www.fsf.org.
+ */
+
+package org.hornetq.core.transaction.impl;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import javax.transaction.xa.Xid;
+
+import org.hornetq.core.exception.MessagingException;
+import org.hornetq.core.logging.Logger;
+import org.hornetq.core.persistence.StorageManager;
+import org.hornetq.core.postoffice.PostOffice;
+import org.hornetq.core.server.Queue;
+import org.hornetq.core.transaction.Transaction;
+import org.hornetq.core.transaction.TransactionOperation;
+import org.hornetq.core.transaction.TransactionPropertyIndexes;
+
+/**
+ * A TransactionImpl
+ *
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * @author <a href="mailto:andy.taylor@jboss.org>Andy Taylor</a>
+ * 
+ */
+public class TransactionImpl implements Transaction
+{
+   private List<TransactionOperation> operations;
+
+   private static final Logger log = Logger.getLogger(TransactionImpl.class);
+
+   private static final int INITIAL_NUM_PROPERTIES = 10;
+
+   private Object[] properties = new Object[INITIAL_NUM_PROPERTIES];
+
+   private final StorageManager storageManager;
+
+   private final Xid xid;
+
+   private final long id;
+
+   private volatile State state = State.ACTIVE;
+
+   private MessagingException messagingException;
+
+   private final Object timeoutLock = new Object();
+
+   private final long createTime;
+
+   public TransactionImpl(final StorageManager storageManager)
+   {
+      this.storageManager = storageManager;
+
+      xid = null;
+
+      id = storageManager.generateUniqueID();
+
+      createTime = System.currentTimeMillis();
+   }
+
+   public TransactionImpl(final Xid xid, final StorageManager storageManager, final PostOffice postOffice)
+   {
+      this.storageManager = storageManager;
+
+      this.xid = xid;
+
+      id = storageManager.generateUniqueID();
+
+      createTime = System.currentTimeMillis();
+   }
+
+   public TransactionImpl(final long id, final Xid xid, final StorageManager storageManager)
+   {
+      this.storageManager = storageManager;
+
+      this.xid = xid;
+
+      this.id = id;
+
+      createTime = System.currentTimeMillis();
+   }
+
+   // Transaction implementation
+   // -----------------------------------------------------------
+
+   public Set<Queue> getDistinctQueues()
+   {
+      HashSet<Queue> queues = new HashSet<Queue>();
+
+      if (operations != null)
+      {
+         for (TransactionOperation op : operations)
+         {
+            Collection<Queue> q = op.getDistinctQueues();
+            if (q == null)
+            {
+               log.warn("Operation " + op + " returned null getDistinctQueues");
+            }
+            else
+            {
+               queues.addAll(q);
+            }
+         }
+      }
+
+      return queues;
+   }
+
+   public long getID()
+   {
+      return id;
+   }
+
+   public long getCreateTime()
+   {
+      return createTime;
+   }
+
+   public void prepare() throws Exception
+   {
+      synchronized (timeoutLock)
+      {
+         if (state == State.ROLLBACK_ONLY)
+         {
+            if (messagingException != null)
+            {
+               throw messagingException;
+            }
+            else
+            {
+               // Do nothing
+               return;
+            }
+         }
+         else if (state != State.ACTIVE)
+         {
+            throw new IllegalStateException("Transaction is in invalid state " + state);
+         }
+
+         if (xid == null)
+         {
+            throw new IllegalStateException("Cannot prepare non XA transaction");
+         }
+
+         if (operations != null)
+         {
+            for (TransactionOperation operation : operations)
+            {
+               operation.beforePrepare(this);
+            }
+         }
+
+         storageManager.prepare(id, xid);
+
+         state = State.PREPARED;
+
+         if (operations != null)
+         {
+            for (TransactionOperation operation : operations)
+            {
+               operation.afterPrepare(this);
+            }
+         }
+      }
+   }
+
+   public void commit() throws Exception
+   {
+      commit(true);
+   }
+
+   public void commit(boolean onePhase) throws Exception
+   {
+      synchronized (timeoutLock)
+      {
+         if (state == State.ROLLBACK_ONLY)
+         {
+            if (messagingException != null)
+            {
+               throw messagingException;
+            }
+            else
+            {
+               // Do nothing
+               return;
+            }
+         }
+
+         if (xid != null)
+         {
+            if (onePhase)
+            {
+               if (state == State.ACTIVE)
+               {
+                  prepare();
+               }
+            }
+            if (state != State.PREPARED)
+            {
+               throw new IllegalStateException("Transaction is in invalid state " + state);
+            }
+         }
+         else
+         {
+            if (state != State.ACTIVE)
+            {
+               throw new IllegalStateException("Transaction is in invalid state " + state);
+            }
+         }
+
+         if (operations != null)
+         {
+            for (TransactionOperation operation : operations)
+            {
+               operation.beforeCommit(this);
+            }
+         }
+
+         if ((getProperty(TransactionPropertyIndexes.CONTAINS_PERSISTENT) != null) || (xid != null && state == State.PREPARED))
+         {
+            storageManager.commit(id);
+         }
+
+         state = State.COMMITTED;
+
+         if (operations != null)
+         {
+            for (TransactionOperation operation : operations)
+            {
+               operation.afterCommit(this);
+            }
+         }
+      }
+   }
+
+   public void rollback() throws Exception
+   {
+      synchronized (timeoutLock)
+      {
+         if (xid != null)
+         {
+            if (state != State.PREPARED && state != State.ACTIVE)
+            {
+               throw new IllegalStateException("Transaction is in invalid state " + state);
+            }
+         }
+         else
+         {
+            if (state != State.ACTIVE && state != State.ROLLBACK_ONLY)
+            {
+               throw new IllegalStateException("Transaction is in invalid state " + state);
+            }
+         }
+
+         if (operations != null)
+         {
+            for (TransactionOperation operation : operations)
+            {
+               operation.beforeRollback(this);
+            }
+         }
+
+         doRollback();
+
+         state = State.ROLLEDBACK;
+
+         if (operations != null)
+         {
+            for (TransactionOperation operation : operations)
+            {
+               operation.afterRollback(this);
+            }
+         }
+      }
+   }
+
+   public void suspend()
+   {
+      if (state != State.ACTIVE)
+      {
+         throw new IllegalStateException("Can only suspend active transaction");
+      }
+      state = State.SUSPENDED;
+   }
+
+   public void resume()
+   {
+      if (state != State.SUSPENDED)
+      {
+         throw new IllegalStateException("Can only resume a suspended transaction");
+      }
+      state = State.ACTIVE;
+   }
+
+   public Transaction.State getState()
+   {
+      return state;
+   }
+
+   public void setState(final State state)
+   {
+      this.state = state;
+   }
+
+   public Xid getXid()
+   {
+      return xid;
+   }
+
+   public void markAsRollbackOnly(final MessagingException messagingException)
+   {
+      state = State.ROLLBACK_ONLY;
+
+      this.messagingException = messagingException;
+   }
+
+   public synchronized void addOperation(final TransactionOperation operation)
+   {
+      checkCreateOperations();
+
+      operations.add(operation);
+   }
+
+   public void removeOperation(final TransactionOperation operation)
+   {
+      checkCreateOperations();
+
+      operations.remove(operation);
+   }
+
+   public int getOperationsCount()
+   {
+      return operations.size();
+   }
+
+   public void putProperty(final int index, final Object property)
+   {
+      if (index >= properties.length)
+      {
+         Object[] newProperties = new Object[index];
+
+         System.arraycopy(properties, 0, newProperties, 0, properties.length);
+
+         properties = newProperties;
+      }
+
+      properties[index] = property;
+   }
+
+   public Object getProperty(int index)
+   {
+      return properties[index];
+   }
+
+   // Private
+   // -------------------------------------------------------------------
+
+   private void doRollback() throws Exception
+   {
+      if ((getProperty(TransactionPropertyIndexes.CONTAINS_PERSISTENT) != null) || (xid != null && state == State.PREPARED))
+      {
+         storageManager.rollback(id);
+      }
+   }
+
+   private void checkCreateOperations()
+   {
+      if (operations == null)
+      {
+         operations = new ArrayList<TransactionOperation>();
+      }
+   }
+
+}

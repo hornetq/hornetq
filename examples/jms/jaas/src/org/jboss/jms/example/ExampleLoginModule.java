@@ -36,7 +36,7 @@ import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.login.LoginException;
 import javax.security.auth.spi.LoginModule;
 
-import org.jboss.messaging.core.security.impl.JAASSecurityManager;
+import org.hornetq.core.security.impl.JAASSecurityManager;
 
 /**
  * A ExampleLoginModule

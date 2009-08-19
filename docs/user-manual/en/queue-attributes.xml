@@ -59,7 +59,7 @@
         <title>Using the API</title>
         <para>Queues can also be created using the core API or the management API.</para>
         <para>For the core API, queues can be created via the <literal
-                >org.jboss.messaging.core.client.ClientSession</literal> interface. There are
+                >org.hornetq.core.client.ClientSession</literal> interface. There are
             multiple <literal>createQueue</literal> methods that support setting all of the
             previously mentioned attributes. There is one extra attribute that can be set via this
             API which is <literal>temporary</literal>. setting this to true means that the queue
@@ -79,7 +79,7 @@
         &lt;redelivery-delay>5000&lt;/redelivery-delay>
         &lt;expiry-address>jms.queue.expiryQueue&lt;/expiry-address>
         &lt;last-value-queue>true&lt;/last-value-queue>
-        &lt;distribution-policy-class>org.jboss.messaging.core.server.impl.RoundRobinDistributor&lt;/distribution-policy-class>
+        &lt;distribution-policy-class>org.hornetq.core.server.impl.RoundRobinDistributor&lt;/distribution-policy-class>
         &lt;max-size-bytes>100000&lt;/max-size-bytes>
         &lt;page-size-bytes>20000&lt;/page-size-bytes>
         &lt;redistribution-delay>0&lt;/redistribution-delay>
@@ -100,7 +100,7 @@
             not. see <link linkend="last-value-queues">here</link>.</para>
         <para><literal>distribution-policy-class</literal> define the class to use for distribution
             of messages by a queue to consumers. By default this is <literal
-                >org.jboss.messaging.core.server.impl.RoundRobinDistributor</literal>.</para>
+                >org.hornetq.core.server.impl.RoundRobinDistributor</literal>.</para>
         <para><literal>max-size-bytes</literal> and <literal>page-size-bytes</literal> are used to
             set paging on an address. This is explained <link linkend="paging">here</link>.</para>
         <para><literal>redistribution-delay</literal> defines how long to wait when the last

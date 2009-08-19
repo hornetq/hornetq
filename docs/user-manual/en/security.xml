@@ -174,18 +174,18 @@
         <para>Let's take a look at a snippet from the default beans file:</para>
         <programlisting>           
 &lt;bean name="JBMSecurityManager" 
-      class="org.jboss.messaging.core.security.impl.JBMSecurityManagerImpl"&gt;
+      class="org.hornetq.core.security.impl.JBMSecurityManagerImpl"&gt;
     &lt;start ignored="true"/&gt;
     &lt;stop ignored="true"/&gt;
 &lt;/bean&gt;            
         </programlisting>
         <para>The class <literal
-                >org.jboss.messaging.core.security.impl.JBMSecurityManagerImpl</literal> is the
+                >org.hornetq.core.security.impl.JBMSecurityManagerImpl</literal> is the
             default security manager that reads used by the standalone server.</para>
         <para>JBoss Messaging ships with two other security manager implementations you can use
             off-the-shelf; one a JAAS security manager and another for integrating with JBoss
             Application Sever security, alternatively you could write your own implementation by
-            implementing the <literal>org.jboss.messaging.core.security.SecurityManager</literal>
+            implementing the <literal>org.hornetq.core.security.SecurityManager</literal>
             interface, and specifying the classname of your implementation in the <literal
                 >jbm-jboss-beans.xml</literal> file.</para>
         <para>These two implementations are discussed in the next two sections.</para>
@@ -200,7 +200,7 @@
             the beans file. Here's an example:</para>
         <programlisting>
 &lt;bean name="JBMSecurityManager" 
-      class="org.jboss.messaging.integration.security.JAASSecurityManager"&gt;      
+      class="org.hornetq.integration.security.JAASSecurityManager"&gt;      
     &lt;start ignored="true"/&gt;
     &lt;stop ignored="true"/&gt;
     
@@ -240,7 +240,7 @@
             Application server. This allows tight integration with the JBoss Application Server's
             security model.</para>
         <para>The class name of this security manager is <literal
-                >org.jboss.messaging.integration.security.JBossASSecurityManager</literal></para>
+                >org.hornetq.integration.security.JBossASSecurityManager</literal></para>
         <para>Take a look at one of the default <literal>jbm-jboss-beans.xml</literal> files for
             JBoss Application Server that are bundled in the distribution for an example of how this
             is configured.</para>

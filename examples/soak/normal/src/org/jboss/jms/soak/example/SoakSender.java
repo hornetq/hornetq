@@ -37,8 +37,8 @@ import javax.jms.Session;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
-import org.jboss.messaging.utils.TokenBucketLimiter;
-import org.jboss.messaging.utils.TokenBucketLimiterImpl;
+import org.hornetq.utils.TokenBucketLimiter;
+import org.hornetq.utils.TokenBucketLimiterImpl;
 
 public class SoakSender
 {

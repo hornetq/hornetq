@@ -21,7 +21,7 @@
  */
 package org.jboss.common.example;
 
-import org.jboss.messaging.utils.Base64;
+import org.hornetq.utils.Base64;
 
 import javax.transaction.xa.Xid;
 

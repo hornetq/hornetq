@@ -21,9 +21,9 @@
    */
 package org.jboss.jms.example;
 
+import org.hornetq.core.management.MessagingServerControl;
+import org.hornetq.core.management.ObjectNames;
 import org.jboss.common.example.JBMExample;
-import org.jboss.messaging.core.management.MessagingServerControl;
-import org.jboss.messaging.core.management.ObjectNames;
 
 import javax.jms.ExceptionListener;
 import javax.jms.JMSException;

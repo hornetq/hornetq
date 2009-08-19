@@ -41,12 +41,12 @@
    </license>
 
    <resourceadapter>
-      <resourceadapter-class>org.jboss.messaging.ra.JBMResourceAdapter</resourceadapter-class>
+      <resourceadapter-class>org.hornetq.ra.JBMResourceAdapter</resourceadapter-class>
       <config-property>
          <description>The transport type</description>
          <config-property-name>ConnectorClassName</config-property-name>
          <config-property-type>java.lang.String</config-property-type>
-         <config-property-value>org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory</config-property-value>
+         <config-property-value>org.hornetq.core.remoting.impl.invm.InVMConnectorFactory</config-property-value>
       </config-property>
       <config-property>
          <description>The transport configuration. These values must be in the form of key=val;key=val;</description>
@@ -243,7 +243,7 @@
 
       <outbound-resourceadapter>
          <connection-definition>
-            <managedconnectionfactory-class>org.jboss.messaging.ra.JBMManagedConnectionFactory</managedconnectionfactory-class>
+            <managedconnectionfactory-class>org.hornetq.ra.JBMManagedConnectionFactory</managedconnectionfactory-class>
 
             <config-property>
                <description>The default session type</description>
@@ -258,10 +258,10 @@
                <config-property-value>0</config-property-value>
             </config-property>
 
-            <connectionfactory-interface>org.jboss.messaging.ra.JBMConnectionFactory</connectionfactory-interface>
-            <connectionfactory-impl-class>org.jboss.messaging.ra.JBMConnectionFactoryImpl</connectionfactory-impl-class>
+            <connectionfactory-interface>org.hornetq.ra.JBMConnectionFactory</connectionfactory-interface>
+            <connectionfactory-impl-class>org.hornetq.ra.JBMConnectionFactoryImpl</connectionfactory-impl-class>
             <connection-interface>javax.jms.Session</connection-interface>
-            <connection-impl-class>org.jboss.messaging.ra.JBMSession</connection-impl-class>
+            <connection-impl-class>org.hornetq.ra.JBMSession</connection-impl-class>
          </connection-definition>
          <transaction-support>XATransaction</transaction-support>
          <authentication-mechanism>
@@ -276,7 +276,7 @@
             <messagelistener>
                <messagelistener-type>javax.jms.MessageListener</messagelistener-type>
                <activationspec>
-                  <activationspec-class>org.jboss.messaging.ra.inflow.JBMActivationSpec</activationspec-class>
+                  <activationspec-class>org.hornetq.ra.inflow.JBMActivationSpec</activationspec-class>
                   <required-config-property>
                       <config-property-name>destination</config-property-name>
                   </required-config-property>

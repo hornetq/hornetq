@@ -670,9 +670,9 @@
 
    <target name="display-warnings-and-errors">
 
-      <java classname="org.jboss.test.messaging.tools.ant.DisplayWarningsAndErrors">
+      <java classname="org.hornetq.jmstests.tools.ant.DisplayWarningsAndErrors">
          <arg value="${jboss.home}/server/${jboss.configuration}/log/server.log"/>
-         <arg value="WARN  [org.jboss.messaging.core.plugin.JDBCPersistenceManager] "/>
+         <arg value="WARN  [org.hornetq.core.plugin.JDBCPersistenceManager] "/>
          <arg value="ejb3.deployer/"/> <!-- EJB3 doesn't deploy with java 1.4 -->
          <arg value="ejb3-interceptors-aop.xml"/> <!-- EJB3 doesn't deploy with java 1.4 -->
          <arg value="WARN  [org.jboss.system.ServiceController] Problem creating service jboss.aop:service=AspectManager"/>
@@ -692,7 +692,7 @@
 
    <target name="fail-on-serialization-debug-output">
 
-      <java classname="org.jboss.test.messaging.tools.ant.FailOnSerializationDebugOutput">
+      <java classname="org.hornetq.jmstests.tools.ant.FailOnSerializationDebugOutput">
          <arg value="${jboss.home}/server/${jboss.configuration}/log/server.log"/>
          <classpath>
             <pathelement location="../output/classes"/>
@@ -703,7 +703,7 @@
 
    <target name="report">
 
-      <java classname="org.jboss.test.messaging.tools.ant.GenerateSmokeReport">
+      <java classname="org.hornetq.jmstests.tools.ant.GenerateSmokeReport">
          <arg value="-inputfile"/>
          <arg value="./output/smoke.log"/>
          <arg value="-outputdir"/>

@@ -157,7 +157,7 @@
             files. by replacing a value with the name of a system property. Here is an example of
             this with a connector configuration:</para>
         <programlisting>&lt;connector name="netty">
-         &lt;factory-class>org.jboss.messaging.integration.transports.netty.NettyConnectorFactory&lt;/factory-class>
+         &lt;factory-class>org.hornetq.integration.transports.netty.NettyConnectorFactory&lt;/factory-class>
          &lt;param key="jbm.remoting.netty.host"  value="${jbm.remoting.netty.host:localhost}" type="String"/>
          &lt;param key="jbm.remoting.netty.port"  value="${jbm.remoting.netty.port:5445}" type="Integer"/>
 &lt;/connector></programlisting>
@@ -204,18 +204,18 @@
 &lt;/bean&gt; 
 
 &lt;!-- The core configuration --&gt;
-&lt;bean name="Configuration" class="org.jboss.messaging.core.config.impl.FileConfiguration"&gt;
+&lt;bean name="Configuration" class="org.hornetq.core.config.impl.FileConfiguration"&gt;
 &lt;/bean&gt;
 
 &lt;!-- The security manager --&gt;
 &lt;bean name="JBMSecurityManager" 
-      class="org.jboss.messaging.core.security.impl.JBMSecurityManagerImpl"&gt;
+      class="org.hornetq.core.security.impl.JBMSecurityManagerImpl"&gt;
    &lt;start ignored="true"/&gt;
    &lt;stop ignored="true"/&gt;
 &lt;/bean&gt;
 
 &lt;!-- The core server --&gt;
-&lt;bean name="MessagingServer" class="org.jboss.messaging.core.server.impl.MessagingServerImpl"&gt;
+&lt;bean name="MessagingServer" class="org.hornetq.core.server.impl.MessagingServerImpl"&gt;
    &lt;start ignored="true"/&gt;
    &lt;stop ignored="true"/&gt;  
    &lt;constructor&gt;
@@ -233,7 +233,7 @@
 
 &lt;!-- The JMS server --&gt;
 &lt;bean name="JMSServerManager" 
-      class="org.jboss.messaging.jms.server.impl.JMSServerManagerImpl"&gt;
+      class="org.hornetq.jms.server.impl.JMSServerManagerImpl"&gt;
    &lt;constructor&gt;         
       &lt;parameter&gt;
          &lt;inject bean="MessagingServer"/&gt;

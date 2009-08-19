@@ -33,8 +33,8 @@ import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.naming.InitialContext;
 
+import org.hornetq.core.message.impl.MessageImpl;
 import org.jboss.common.example.JBMExample;
-import org.jboss.messaging.core.message.impl.MessageImpl;
 
 /**
  * A simple JMS scheduled delivery example that delivers a message in 5 seconds.

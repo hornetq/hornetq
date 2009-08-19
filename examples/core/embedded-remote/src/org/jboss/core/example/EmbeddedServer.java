@@ -25,12 +25,12 @@ package org.jboss.core.example;
 
 import java.util.HashSet;
 
-import org.jboss.messaging.core.config.Configuration;
-import org.jboss.messaging.core.config.TransportConfiguration;
-import org.jboss.messaging.core.config.impl.ConfigurationImpl;
-import org.jboss.messaging.core.server.Messaging;
-import org.jboss.messaging.core.server.MessagingServer;
-import org.jboss.messaging.integration.transports.netty.NettyAcceptorFactory;
+import org.hornetq.core.config.Configuration;
+import org.hornetq.core.config.TransportConfiguration;
+import org.hornetq.core.config.impl.ConfigurationImpl;
+import org.hornetq.core.server.Messaging;
+import org.hornetq.core.server.MessagingServer;
+import org.hornetq.integration.transports.netty.NettyAcceptorFactory;
 
 /**
  * A EmbeddedServer

@@ -21,10 +21,10 @@
    */
 package org.jboss.jms.example;
 
+import org.hornetq.core.management.MessageCounterInfo;
+import org.hornetq.core.management.ObjectNames;
+import org.hornetq.jms.server.management.JMSQueueControl;
 import org.jboss.common.example.JBMExample;
-import org.jboss.messaging.core.management.MessageCounterInfo;
-import org.jboss.messaging.core.management.ObjectNames;
-import org.jboss.messaging.jms.server.management.JMSQueueControl;
 
 import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;

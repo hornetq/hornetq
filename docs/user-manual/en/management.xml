@@ -35,11 +35,11 @@
       <itemizedlist>
          <listitem>
             <para><emphasis>Core</emphasis> resources are located in the <literal
-                  >org.jboss.messaging.core.management</literal> package</para>
+                  >org.hornetq.core.management</literal> package</para>
          </listitem>
          <listitem>
             <para><emphasis>JMS</emphasis> resources are located in the <literal
-                  >org.jboss.messaging.jms.server.management</literal> package</para>
+                  >org.hornetq.jms.server.management</literal> package</para>
          </listitem>
       </itemizedlist>
       <para>The way to invoke a <emphasis>management operations</emphasis> depends whether JMX, core
@@ -459,10 +459,10 @@
       </programlisting>
       <para>and the MBean is:</para>
       <programlisting>
-   org.jboss.messaging.jms.server.management.JMSQueueControl   
+   org.hornetq.jms.server.management.JMSQueueControl   
       </programlisting>
       <para>The MBean's <literal>ObjectName</literal> are built using the helper class <literal
-            >org.jboss.messaging.core.management.ObjectNames</literal>. You can also use <literal
+            >org.hornetq.core.management.ObjectNames</literal>. You can also use <literal
             >jconsole</literal> to find the <literal>ObjectName</literal> of the MBeans you want to
          manage. </para>
       <para>Managing JBoss Messaging using JMX is identical to management of any Java Applications
@@ -541,7 +541,7 @@
          retrieve the result of the operation (if any) stored in the reply's body. For portability,
          results are returned as a <ulink url="http://json.org">JSON</ulink> String rather than Java
          Serialization (the <literal
-            >org.jboss.messaging.core.client.management.impl.ManagementHelper</literal> can be used
+            >org.hornetq.core.client.management.impl.ManagementHelper</literal> can be used
          to convert the JSON string to Java objects).</para>
       <para>These steps can be simplified to make it easier to invoke management operations using
          Core messages:</para>
@@ -555,7 +555,7 @@
          </listitem>
          <listitem>
             <para>Use the helper class <literal
-                  >org.jboss.messaging.core.client.management.impl.ManagementHelper</literal> to
+                  >org.hornetq.core.client.management.impl.ManagementHelper</literal> to
                fill the message with the management properties</para>
          </listitem>
          <listitem>
@@ -563,7 +563,7 @@
          </listitem>
          <listitem>
             <para>Use the helper class <literal
-                  >org.jboss.messaging.core.client.management.impl.ManagementHelper</literal> to
+                  >org.hornetq.core.client.management.impl.ManagementHelper</literal> to
                retrieve the operation result from the management reply</para>
          </listitem>
       </orderedlist>
@@ -581,7 +581,7 @@
       <para>Management operation name and parameters must conform to the Java interfaces defined in
          the <literal>management</literal> packages.</para>
       <para>Names of the resources are built using the helper class <literal
-            >org.jboss.messaging.core.management.ResourceNames</literal> and are straightforward
+            >org.hornetq.core.management.ResourceNames</literal> and are straightforward
             (<literal>core.queue.exampleQueue</literal> for the Core Queue <literal
             >exampleQueue</literal>, <literal>jms.topic.exampleTopic</literal> for the JMS Topic
             <literal>exampleTopic</literal>, etc.).</para>
@@ -627,7 +627,7 @@
          </listitem>
          <listitem>
             <para>use the helper class <literal
-                  >org.jboss.messaging.jms.server.management.impl.JMSManagementHelper</literal> to
+                  >org.hornetq.jms.server.management.impl.JMSManagementHelper</literal> to
                fill the message with the management properties</para>
          </listitem>
          <listitem>
@@ -635,7 +635,7 @@
          </listitem>
          <listitem>
             <para>use the helper class <literal
-                  >org.jboss.messaging.jms.server.management.impl.JMSManagementHelper</literal> to
+                  >org.hornetq.jms.server.management.impl.JMSManagementHelper</literal> to
                retrieve the operation result from the management reply</para>
          </listitem>
       </orderedlist>

@@ -17,7 +17,7 @@
       <jndi-name>JmsXA</jndi-name>
       <xa-transaction/>
       <rar-name>jms-ra.rar</rar-name>
-      <connection-definition>org.jboss.messaging.ra.JBMConnectionFactory</connection-definition>
+      <connection-definition>org.hornetq.ra.JBMConnectionFactory</connection-definition>
       <config-property name="SessionDefaultType" type="java.lang.String">javax.jms.Topic</config-property>
       <config-property name="JmsProviderAdapterJNDI" type="java.lang.String">java:/DefaultJMSProvider</config-property>
       <max-pool-size>20</max-pool-size>

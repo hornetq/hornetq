@@ -23,7 +23,7 @@
 
 package org.jboss.javaee.example.server2;
 
-import org.jboss.messaging.jms.JBossQueue;
+import org.hornetq.jms.JBossQueue;
 
 import javax.annotation.Resource;
 import javax.ejb.Remote;

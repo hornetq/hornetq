@@ -29,7 +29,7 @@
         is added:</p>
      <pre>
          <code>&lt;property name="com.arjuna.ats.jta.recovery.XAResourceRecovery.JBMESSAGING1"
-                      value="org.jboss.messaging.jms.server.recovery.MessagingXAResourceRecovery;org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory"/&gt;</code>
+                      value="org.hornetq.jms.server.recovery.MessagingXAResourceRecovery;org.hornetq.core.remoting.impl.invm.InVMConnectorFactory"/&gt;</code>
      </pre>
 
      <p>This informs the Recovery Manager that it can recovers JBoss Messaging XA Resources by connecting to the server using an <code>InVMConnectorFactory</code>.

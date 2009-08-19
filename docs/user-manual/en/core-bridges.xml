@@ -87,7 +87,7 @@
             <listitem>
                 <para><literal>transformer-class-name</literal>. An optional transformer-class-name
                     can be specified. This is the name of a user-defined class which implements the
-                        <literal>org.jboss.messaging.core.server.cluster.Transformer</literal>
+                        <literal>org.hornetq.core.server.cluster.Transformer</literal>
                     interface.</para>
                 <para>If this is specified then the transformer's <literal>transform()</literal>
                     method will be invoked with the message before it is forwarded. This gives you

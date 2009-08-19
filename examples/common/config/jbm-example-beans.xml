@@ -15,21 +15,21 @@
       <property name="rmiBindAddress">localhost</property>
    </bean>
 
-   <bean name="DeploymentManager" class="org.jboss.messaging.core.deployers.impl.FileDeploymentManager">
+   <bean name="DeploymentManager" class="org.hornetq.core.deployers.impl.FileDeploymentManager">
       <constructor>
          <!-- The scan time in milliseconds -->
          <parameter>5000</parameter>
       </constructor>
    </bean>
    
-   <bean name="Configuration" class="org.jboss.messaging.core.config.impl.FileConfiguration"/>
+   <bean name="Configuration" class="org.hornetq.core.config.impl.FileConfiguration"/>
 
-   <!--<bean name="JBMSecurityManager" class="org.jboss.messaging.core.security.impl.JBossASSecurityManager"/>-->
+   <!--<bean name="JBMSecurityManager" class="org.hornetq.core.security.impl.JBossASSecurityManager"/>-->
 
-   <bean name="JBMSecurityManager" class="org.jboss.messaging.core.security.impl.JBMSecurityManagerImpl">
+   <bean name="JBMSecurityManager" class="org.hornetq.core.security.impl.JBMSecurityManagerImpl">
    </bean>
 
-   <bean name="BasicSecurityDeployer" class="org.jboss.messaging.core.deployers.impl.BasicUserCredentialsDeployer">
+   <bean name="BasicSecurityDeployer" class="org.hornetq.core.deployers.impl.BasicUserCredentialsDeployer">
       <constructor>
          <parameter>
             <inject bean="DeploymentManager"/>
@@ -40,7 +40,7 @@
       </property>
    </bean>
 
-   <bean name="MessagingServer" class="org.jboss.messaging.core.server.impl.MessagingServerImpl">
+   <bean name="MessagingServer" class="org.hornetq.core.server.impl.MessagingServerImpl">
       <depends>AddressSettingsDeployer</depends>
       <depends>QueueDeployer</depends>
       
@@ -61,7 +61,7 @@
       </property>      
    </bean>
 
-   <bean name="StorageManager" class="org.jboss.messaging.core.persistence.impl.journal.JournalStorageManager">
+   <bean name="StorageManager" class="org.hornetq.core.persistence.impl.journal.JournalStorageManager">
       <constructor>
          <parameter>
             <inject bean="Configuration"/>
@@ -69,7 +69,7 @@
       </constructor>
    </bean>
 
-   <bean name="RemotingService" class="org.jboss.messaging.core.remoting.server.impl.RemotingServiceImpl">
+   <bean name="RemotingService" class="org.hornetq.core.remoting.server.impl.RemotingServiceImpl">
       <constructor>
          <parameter>
             <inject bean="Configuration"/>
@@ -80,7 +80,7 @@
       </property>
    </bean>
    
-   <bean name="JMSServerManager" class="org.jboss.messaging.jms.server.impl.JMSServerManagerImpl">
+   <bean name="JMSServerManager" class="org.hornetq.jms.server.impl.JMSServerManagerImpl">
       <constructor>
          <parameter>
             <inject bean="MessagingServer" property="serverManagement"/>
@@ -91,7 +91,7 @@
       </constructor>
    </bean>
 
-   <bean name="JMSServerDeployer" class="org.jboss.messaging.jms.server.impl.JMSServerDeployer">
+   <bean name="JMSServerDeployer" class="org.hornetq.jms.server.impl.JMSServerDeployer">
       <constructor>
          <parameter>
             <inject bean="DeploymentManager"/>
@@ -105,7 +105,7 @@
       </property>
    </bean>
 
-   <bean name="AddressSettingsDeployer" class="org.jboss.messaging.core.deployers.impl.AddressSettingsDeployer">
+   <bean name="AddressSettingsDeployer" class="org.hornetq.core.deployers.impl.AddressSettingsDeployer">
       <constructor>
          <parameter>
             <inject bean="DeploymentManager"/>
@@ -116,7 +116,7 @@
       </constructor>
    </bean>
 
-   <bean name="QueueDeployer" class="org.jboss.messaging.core.deployers.impl.QueueDeployer">
+   <bean name="QueueDeployer" class="org.hornetq.core.deployers.impl.QueueDeployer">
       <constructor>
          <parameter>
             <inject bean="DeploymentManager"/>
@@ -127,7 +127,7 @@
       </constructor>
    </bean>
    
-   <bean name="SecurityDeployer" class="org.jboss.messaging.core.deployers.impl.SecurityDeployer">
+   <bean name="SecurityDeployer" class="org.hornetq.core.deployers.impl.SecurityDeployer">
       <constructor>
          <parameter>
             <inject bean="DeploymentManager"/>
@@ -138,7 +138,7 @@
       </constructor>
    </bean>
 
-   <bean name="ManagementService" class="org.jboss.messaging.core.management.impl.ManagementServiceImpl">
+   <bean name="ManagementService" class="org.hornetq.core.management.impl.ManagementServiceImpl">
       <constructor>
          <parameter>
             <inject bean="MBeanServer"/>
@@ -149,7 +149,7 @@
       </constructor>
    </bean>
    
-   <bean name="JMSManagementService" class="org.jboss.messaging.jms.server.management.impl.JMSManagementServiceImpl">
+   <bean name="JMSManagementService" class="org.hornetq.jms.server.management.impl.JMSManagementServiceImpl">
       <constructor>
          <parameter>
             <inject bean="ManagementService"/>

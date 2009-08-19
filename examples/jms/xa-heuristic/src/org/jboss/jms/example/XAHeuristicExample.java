@@ -21,10 +21,10 @@
    */
 package org.jboss.jms.example;
 
+import org.hornetq.core.management.ObjectNames;
+import org.hornetq.utils.UUIDGenerator;
 import org.jboss.common.example.DummyXid;
 import org.jboss.common.example.JBMExample;
-import org.jboss.messaging.core.management.ObjectNames;
-import org.jboss.messaging.utils.UUIDGenerator;
 
 import javax.jms.JMSException;
 import javax.jms.Message;

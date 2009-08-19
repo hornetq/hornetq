@@ -22,10 +22,10 @@
    </bean> 
 
    <!-- The core configuration -->
-   <bean name="Configuration" class="org.jboss.messaging.core.config.impl.FileConfiguration"/>
+   <bean name="Configuration" class="org.hornetq.core.config.impl.FileConfiguration"/>
 
    <!-- The security manager using JAAS -->
-   <bean name="JBMSecurityManager" class="org.jboss.messaging.core.security.impl.JAASSecurityManager">
+   <bean name="JBMSecurityManager" class="org.hornetq.core.security.impl.JAASSecurityManager">
       <property name="configurationName">org.jboss.jms.example.ExampleLoginModule</property>
       <property name="configuration">
          <inject bean="ExampleConfiguration"/>
@@ -64,7 +64,7 @@
    <bean name="ExampleCallbackHandler" class="org.jboss.jms.example.ExampleCallbackHandler" />                 
       
    <!-- The core server -->
-   <bean name="MessagingServer" class="org.jboss.messaging.core.server.impl.MessagingServerImpl">
+   <bean name="MessagingServer" class="org.hornetq.core.server.impl.MessagingServerImpl">
       <constructor>
          <parameter>
             <inject bean="Configuration"/>
@@ -81,7 +81,7 @@
    </bean>
    
    <!-- The JMS server -->
-   <bean name="JMSServerManager" class="org.jboss.messaging.jms.server.impl.JMSServerManagerImpl">
+   <bean name="JMSServerManager" class="org.hornetq.jms.server.impl.JMSServerManagerImpl">
       <constructor>         
          <parameter>
             <inject bean="MessagingServer"/>

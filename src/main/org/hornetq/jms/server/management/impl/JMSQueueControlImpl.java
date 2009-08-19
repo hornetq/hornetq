@@ -1,0 +1,320 @@
+/*
+ * JBoss, Home of Professional Open Source
+ * Copyright 2008, Red Hat Middleware LLC, and individual contributors
+ * by the @authors tag. See the copyright.txt in the distribution for a
+ * full listing of individual contributors.
+ *
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ */
+
+package org.hornetq.jms.server.management.impl;
+
+import java.util.Map;
+
+import org.hornetq.core.exception.MessagingException;
+import org.hornetq.core.logging.Logger;
+import org.hornetq.core.management.MessageCounterInfo;
+import org.hornetq.core.management.QueueControl;
+import org.hornetq.core.messagecounter.MessageCounter;
+import org.hornetq.core.messagecounter.impl.MessageCounterHelper;
+import org.hornetq.jms.JBossQueue;
+import org.hornetq.jms.client.JBossMessage;
+import org.hornetq.jms.client.SelectorTranslator;
+import org.hornetq.jms.server.management.JMSQueueControl;
+import org.hornetq.utils.json.JSONArray;
+import org.hornetq.utils.json.JSONObject;
+
+/**
+ * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
+ * 
+ * @version <tt>$Revision$</tt>
+ * 
+ */
+public class JMSQueueControlImpl implements JMSQueueControl
+{
+   // Constants -----------------------------------------------------
+
+   private static final Logger log = Logger.getLogger(JMSQueueControlImpl.class);
+
+   // Attributes ----------------------------------------------------
+
+   private final JBossQueue managedQueue;
+
+   private final QueueControl coreQueueControl;
+
+   private final String binding;
+
+   private final MessageCounter counter;
+
+   // Static --------------------------------------------------------
+
+   /**
+    * Returns null if the string is null or empty
+    */
+   public static String createFilterFromJMSSelector(final String selectorStr) throws MessagingException
+   {
+      return (selectorStr == null || selectorStr.trim().length() == 0) ? null : SelectorTranslator.convertToJBMFilterString(selectorStr);
+   }
+
+   private static String createFilterForJMSMessageID(String jmsMessageID) throws Exception
+   {
+      return JBossMessage.JBM_MESSAGE_ID + " = '" + jmsMessageID + "'";
+   }
+
+   static String toJSON(Map<String, Object>[] messages)
+   {
+      JSONArray array = new JSONArray();
+      for (int i = 0; i < messages.length; i++)
+      {
+         Map<String, Object> message = messages[i];
+         array.put(new JSONObject(message));         
+      }
+      return array.toString();
+   }
+
+   // Constructors --------------------------------------------------
+
+   public JMSQueueControlImpl(final JBossQueue managedQueue,
+                          final QueueControl coreQueueControl,
+                          final String jndiBinding,
+                          final MessageCounter counter)
+   {
+      this.managedQueue = managedQueue;
+      this.coreQueueControl = coreQueueControl;
+      this.binding = jndiBinding;
+      this.counter = counter;
+   }
+
+   // Public --------------------------------------------------------
+
+   // ManagedJMSQueueMBean implementation ---------------------------
+
+   public String getName()
+   {
+      return managedQueue.getName();
+   }
+
+   public String getAddress()
+   {
+      return managedQueue.getAddress();
+   }
+
+   public boolean isTemporary()
+   {
+      return managedQueue.isTemporary();
+   }
+
+   public int getMessageCount()
+   {
+      return coreQueueControl.getMessageCount();
+   }
+
+   public int getMessagesAdded()
+   {
+      return coreQueueControl.getMessagesAdded();
+   }
+
+   public int getConsumerCount()
+   {
+      return coreQueueControl.getConsumerCount();
+   }
+
+   public int getDeliveringCount()
+   {
+      return coreQueueControl.getDeliveringCount();
+   }
+
+   public long getScheduledCount()
+   {
+      return coreQueueControl.getScheduledCount();
+   }
+
+   public boolean isDurable()
+   {
+      return coreQueueControl.isDurable();
+   }
+
+   public String getJNDIBinding()
+   {
+      return binding;
+   }
+
+   public String getDeadLetterAddress()
+   {
+      return coreQueueControl.getDeadLetterAddress();
+   }
+
+   public void setDeadLetterAddress(String deadLetterAddress) throws Exception
+   {
+      coreQueueControl.setDeadLetterAddress(deadLetterAddress);
+   }
+
+   public String getExpiryAddress()
+   {
+      return coreQueueControl.getExpiryAddress();
+   }
+
+   public void setExpiryAddress(String expiryAddres) throws Exception
+   {
+      coreQueueControl.setExpiryAddress(expiryAddres);
+   }
+
+   public boolean removeMessage(final String messageID) throws Exception
+   {
+      String filter = createFilterForJMSMessageID(messageID);
+      int removed = coreQueueControl.removeMessages(filter);
+      if (removed != 1)
+      {
+         throw new IllegalArgumentException("No message found for JMSMessageID: " + messageID);
+      }
+      return true;
+   }
+
+   public int removeMessages(String filterStr) throws Exception
+   {
+      String filter = createFilterFromJMSSelector(filterStr);
+      return coreQueueControl.removeMessages(filter);
+   }
+
+   public Map<String, Object>[] listMessages(final String filterStr) throws Exception
+   {
+      try
+      {
+         String filter = createFilterFromJMSSelector(filterStr);
+         Map<String, Object>[] coreMessages = coreQueueControl.listMessages(filter);
+
+         Map<String, Object>[] jmsMessages = new Map[coreMessages.length]; 
+         
+         int i = 0;
+         
+         for (Map<String, Object> coreMessage : coreMessages)
+         {
+            Map<String, Object> jmsMessage = JBossMessage.coreMaptoJMSMap(coreMessage);
+            jmsMessages[i++] = jmsMessage;
+         }
+         return jmsMessages;
+      }
+      catch (MessagingException e)
+      {
+         throw new IllegalStateException(e.getMessage());
+      }
+   }
+   
+   public String listMessagesAsJSON(String filter) throws Exception
+   {
+      return toJSON(listMessages(filter));
+   }
+
+   public int countMessages(final String filterStr) throws Exception
+   {
+      String filter = createFilterFromJMSSelector(filterStr);
+      return coreQueueControl.countMessages(filter);
+   }
+
+   public boolean expireMessage(final String messageID) throws Exception
+   {
+      String filter = createFilterForJMSMessageID(messageID);
+      int expired = coreQueueControl.expireMessages(filter);
+      if (expired != 1)
+      {
+         throw new IllegalArgumentException("No message found for JMSMessageID: " + messageID);
+      }
+      return true;
+   }
+
+   public int expireMessages(final String filterStr) throws Exception
+   {
+      String filter = createFilterFromJMSSelector(filterStr);
+      return coreQueueControl.expireMessages(filter);
+   }
+
+   public boolean sendMessageToDeadLetterAddress(final String messageID) throws Exception
+   {
+      String filter = createFilterForJMSMessageID(messageID);
+      int dead = coreQueueControl.sendMessagesToDeadLetterAddress(filter);
+      if (dead != 1)
+      {
+         throw new IllegalArgumentException("No message found for JMSMessageID: " + messageID);
+      }
+      return true;
+   }
+
+   public boolean changeMessagePriority(final String messageID, final int newPriority) throws Exception
+   {
+      String filter = createFilterForJMSMessageID(messageID);
+      int changed = coreQueueControl.changeMessagesPriority(filter, newPriority);
+      if (changed != 1)
+      {
+         throw new IllegalArgumentException("No message found for JMSMessageID: " + messageID);
+      }
+      return true;
+   }
+
+   public boolean moveMessage(String messageID, String otherQueueName) throws Exception
+   {
+      String filter = createFilterForJMSMessageID(messageID);
+      JBossQueue otherQueue = new JBossQueue(otherQueueName);
+      int moved = coreQueueControl.moveMessages(filter, otherQueue.getAddress());
+      if (moved != 1)
+      {
+         throw new IllegalArgumentException("No message found for JMSMessageID: " + messageID);
+      }
+
+      return true;
+   }
+
+   public int moveMessages(String filterStr, String otherQueueName) throws Exception
+   {
+      String filter = createFilterFromJMSSelector(filterStr);
+      JBossQueue otherQueue = new JBossQueue(otherQueueName);
+      return coreQueueControl.moveMessages(filter, otherQueue.getAddress());
+   }
+
+   public String listMessageCounter()
+   {
+      try
+      {
+         return MessageCounterInfo.toJSon(counter);
+      }
+      catch (Exception e)
+      {
+         throw new IllegalStateException(e);
+      }
+   }
+
+   public String listMessageCounterAsHTML()
+   {
+      return MessageCounterHelper.listMessageCounterAsHTML(new MessageCounter[] { counter });
+   }
+
+   public String listMessageCounterHistory() throws Exception
+   {
+      return MessageCounterHelper.listMessageCounterHistory(counter);
+   }
+
+   public String listMessageCounterHistoryAsHTML()
+   {
+      return MessageCounterHelper.listMessageCounterHistoryAsHTML(new MessageCounter[] { counter });
+   }
+
+   // Package protected ---------------------------------------------
+
+   // Protected -----------------------------------------------------
+
+   // Private -------------------------------------------------------
+
+   // Inner classes -------------------------------------------------
+}

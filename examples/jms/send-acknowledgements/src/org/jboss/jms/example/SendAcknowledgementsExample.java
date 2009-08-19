@@ -29,11 +29,11 @@ import javax.jms.Queue;
 import javax.jms.Session;
 import javax.naming.InitialContext;
 
+import org.hornetq.core.client.ClientSession;
+import org.hornetq.core.client.SendAcknowledgementHandler;
+import org.hornetq.core.message.Message;
+import org.hornetq.jms.client.JBossSession;
 import org.jboss.common.example.JBMExample;
-import org.jboss.messaging.core.client.ClientSession;
-import org.jboss.messaging.core.client.SendAcknowledgementHandler;
-import org.jboss.messaging.core.message.Message;
-import org.jboss.messaging.jms.client.JBossSession;
 
 /**
  * 

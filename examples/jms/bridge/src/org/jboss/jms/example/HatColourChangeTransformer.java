@@ -23,9 +23,9 @@
 
 package org.jboss.jms.example;
 
-import org.jboss.messaging.core.server.ServerMessage;
-import org.jboss.messaging.core.server.cluster.Transformer;
-import org.jboss.messaging.utils.SimpleString;
+import org.hornetq.core.server.ServerMessage;
+import org.hornetq.core.server.cluster.Transformer;
+import org.hornetq.utils.SimpleString;
 
 /**
  * A HatColourChangeTransformer

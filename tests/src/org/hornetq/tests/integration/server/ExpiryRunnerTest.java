@@ -1,0 +1,385 @@
+/*
+ * JBoss, Home of Professional Open Source
+ * Copyright 2005-2008, Red Hat Middleware LLC, and individual contributors
+ * by the @authors tag. See the copyright.txt in the distribution for a
+ * full listing of individual contributors.
+ *
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ */
+package org.hornetq.tests.integration.server;
+
+import junit.framework.TestResult;
+import junit.framework.TestSuite;
+import junit.textui.TestRunner;
+
+import org.hornetq.core.client.ClientConsumer;
+import org.hornetq.core.client.ClientMessage;
+import org.hornetq.core.client.ClientProducer;
+import org.hornetq.core.client.ClientSession;
+import org.hornetq.core.client.ClientSessionFactory;
+import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
+import org.hornetq.core.config.TransportConfiguration;
+import org.hornetq.core.config.impl.ConfigurationImpl;
+import org.hornetq.core.exception.MessagingException;
+import org.hornetq.core.server.Messaging;
+import org.hornetq.core.server.MessagingServer;
+import org.hornetq.core.server.Queue;
+import org.hornetq.core.settings.impl.AddressSettings;
+import org.hornetq.tests.util.UnitTestCase;
+import org.hornetq.utils.SimpleString;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+
+/**
+ * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
+ */
+public class ExpiryRunnerTest extends UnitTestCase
+{
+   private MessagingServer server;
+
+   private ClientSession clientSession;
+
+   private SimpleString qName = new SimpleString("ExpiryRunnerTestQ");
+
+   private SimpleString qName2 = new SimpleString("ExpiryRunnerTestQ2");
+
+   private SimpleString expiryQueue;
+
+   private SimpleString expiryAddress;
+
+   public void testBasicExpire() throws Exception
+   {
+      ClientProducer producer = clientSession.createProducer(qName);
+      int numMessages = 100;
+      long expiration = System.currentTimeMillis();
+      for (int i = 0; i < numMessages; i++)
+      {
+         ClientMessage m = createTextMessage("m" + i, clientSession);
+         m.setExpiration(expiration);
+         producer.send(m);
+      }
+      Thread.sleep(1600);
+      assertEquals(0, ((Queue)server.getPostOffice().getBinding(qName).getBindable()).getMessageCount());
+      assertEquals(0, ((Queue)server.getPostOffice().getBinding(qName).getBindable()).getDeliveringCount());
+
+      ClientConsumer consumer = clientSession.createConsumer(expiryQueue);
+      clientSession.start();
+      for (int i = 0; i < numMessages; i++)
+      {
+         ClientMessage cm = consumer.receive(500);
+         assertNotNull(cm);
+         //assertEquals("m" + i, cm.getBody().getString());
+      }
+      consumer.close();
+   }
+
+   public void testExpireFromMultipleQueues() throws Exception
+   {
+      ClientProducer producer = clientSession.createProducer(qName);
+      clientSession.createQueue(qName2, qName2, null, false);
+      AddressSettings addressSettings = new AddressSettings();
+      addressSettings.setExpiryAddress(expiryAddress);
+      server.getAddressSettingsRepository().addMatch(qName2.toString(), addressSettings);
+      ClientProducer producer2 = clientSession.createProducer(qName2);
+      int numMessages = 100;
+      long expiration = System.currentTimeMillis();
+      for (int i = 0; i < numMessages; i++)
+      {
+         ClientMessage m = createTextMessage("m" + i, clientSession);
+         m.setExpiration(expiration);
+         producer.send(m);
+         m = createTextMessage("m" + i, clientSession);
+         m.setExpiration(expiration);
+         producer2.send(m);
+      }
+      Thread.sleep(1600);
+      assertEquals(0, ((Queue)server.getPostOffice().getBinding(qName).getBindable()).getMessageCount());
+      assertEquals(0, ((Queue)server.getPostOffice().getBinding(qName).getBindable()).getDeliveringCount());
+
+      ClientConsumer consumer = clientSession.createConsumer(expiryQueue);
+      clientSession.start();
+      for (int i = 0; i < numMessages * 2; i++)
+      {
+         ClientMessage cm = consumer.receive(500);
+         assertNotNull(cm);
+         //assertEquals("m" + i, cm.getBody().getString());
+      }
+      consumer.close();
+   }
+
+   public void testExpireHalf() throws Exception
+   {
+      ClientProducer producer = clientSession.createProducer(qName);
+      int numMessages = 100;
+      long expiration = System.currentTimeMillis();
+      for (int i = 0; i < numMessages; i++)
+      {
+         ClientMessage m = createTextMessage("m" + i, clientSession);
+         if (i % 2 == 0)
+         {
+            m.setExpiration(expiration);
+         }
+         producer.send(m);
+      }
+      Thread.sleep(1600);
+      assertEquals(numMessages / 2, ((Queue)server.getPostOffice().getBinding(qName).getBindable()).getMessageCount());
+      assertEquals(0, ((Queue)server.getPostOffice().getBinding(qName).getBindable()).getDeliveringCount());
+
+      ClientConsumer consumer = clientSession.createConsumer(expiryQueue);
+      clientSession.start();
+      for (int i = 0; i < numMessages; i += 2)
+      {
+         ClientMessage cm = consumer.receive(500);
+         assertNotNull(cm);
+         //assertEquals("m" + i, cm.getBody().getString());
+      }
+      consumer.close();
+   }
+
+   public void testExpireConsumeHalf() throws Exception
+   {
+      ClientProducer producer = clientSession.createProducer(qName);
+      int numMessages = 100;
+      long expiration = System.currentTimeMillis() + 1000;
+      for (int i = 0; i < numMessages; i++)
+      {
+         ClientMessage m = createTextMessage("m" + i, clientSession);
+         m.setExpiration(expiration);
+         producer.send(m);
+      }
+      ClientConsumer consumer = clientSession.createConsumer(qName);
+      clientSession.start();
+      for (int i = 0; i < numMessages / 2; i++)
+      {
+         ClientMessage cm = consumer.receive(500);
+         assertNotNull("message not received " + i, cm);
+         cm.acknowledge();
+         assertEquals("m" + i, cm.getBody().readString());
+      }
+      consumer.close();
+      Thread.sleep(2100);
+      assertEquals(0, ((Queue)server.getPostOffice().getBinding(qName).getBindable()).getMessageCount());
+      assertEquals(0, ((Queue)server.getPostOffice().getBinding(qName).getBindable()).getDeliveringCount());
+
+      consumer = clientSession.createConsumer(expiryQueue);
+      clientSession.start();
+      for (int i = 50; i < numMessages; i++)
+      {
+         ClientMessage cm = consumer.receive(500);
+         assertNotNull(cm);
+         //assertEquals("m" + i, cm.getBody().getString());
+      }
+      consumer.close();
+   }
+
+   public void testExpireToMultipleQueues() throws Exception
+   {
+      clientSession.createQueue(qName, qName2, null, false);
+      AddressSettings addressSettings = new AddressSettings();
+      addressSettings.setExpiryAddress(expiryAddress);
+      server.getAddressSettingsRepository().addMatch(qName2.toString(), addressSettings);
+      ClientProducer producer = clientSession.createProducer(qName);
+      int numMessages = 100;
+      long expiration = System.currentTimeMillis();
+      for (int i = 0; i < numMessages; i++)
+      {
+         ClientMessage m = createTextMessage("m" + i, clientSession);
+         m.setExpiration(expiration);
+         producer.send(m);
+      }
+      Thread.sleep(1600);
+      assertEquals(0, ((Queue)server.getPostOffice().getBinding(qName).getBindable()).getMessageCount());
+      assertEquals(0, ((Queue)server.getPostOffice().getBinding(qName).getBindable()).getDeliveringCount());
+
+      ClientConsumer consumer = clientSession.createConsumer(expiryQueue);
+      clientSession.start();
+      for (int i = 0; i < numMessages; i++)
+      {
+         ClientMessage cm = consumer.receive(500);
+         assertNotNull(cm);
+         //assertEquals("m" + i, cm.getBody().getString());
+      }
+      for (int i = 0; i < numMessages; i++)
+      {
+         ClientMessage cm = consumer.receive(500);
+         assertNotNull(cm);
+         //assertEquals("m" + i, cm.getBody().getString());
+      }
+      consumer.close();
+   }
+
+   public void testExpireWhilstConsuming() throws Exception
+   {
+      ClientProducer producer = clientSession.createProducer(qName);
+      ClientConsumer consumer = clientSession.createConsumer(qName);
+      CountDownLatch latch = new CountDownLatch(1);
+      DummyMessageHandler dummyMessageHandler = new DummyMessageHandler(consumer, latch);
+      clientSession.start();
+      new Thread(dummyMessageHandler).start();
+      long expiration = System.currentTimeMillis() + 1000;
+      int numMessages = 0;
+      long sendMessagesUntil = System.currentTimeMillis() + 2000;
+      do
+      {
+         ClientMessage m = createTextMessage("m" + (numMessages++), clientSession);
+         m.setExpiration(expiration);
+         producer.send(m);
+         Thread.sleep(100);
+      }
+      while (System.currentTimeMillis() < sendMessagesUntil);
+      assertTrue(latch.await(10000, TimeUnit.MILLISECONDS));
+      consumer.close();
+
+      consumer = clientSession.createConsumer(expiryQueue);
+      do
+      {
+         ClientMessage cm = consumer.receive(2000);
+         if(cm == null)
+         {
+            break;
+         }
+         String text = cm.getBody().readString();
+         cm.acknowledge();
+         assertFalse(dummyMessageHandler.payloads.contains(text));
+         dummyMessageHandler.payloads.add(text);
+      } while(true);
+
+      for(int i = 0; i < numMessages; i++)
+      {
+         assertTrue(dummyMessageHandler.payloads.remove("m" + i));
+      }
+      assertTrue(dummyMessageHandler.payloads.isEmpty());
+      consumer.close();
+   }
+
+   public static void main(String[] args) throws Exception
+   {
+      for (int i = 0; i < 1000; i++)
+      {
+         TestSuite suite = new TestSuite();
+         ExpiryRunnerTest expiryRunnerTest = new ExpiryRunnerTest();
+         expiryRunnerTest.setName("testExpireWhilstConsuming");
+         suite.addTest(expiryRunnerTest);
+
+         TestResult result = TestRunner.run(suite);
+         if(result.errorCount() > 0 || result.failureCount() > 0)
+         {
+            System.exit(1);
+         }
+      }
+   }
+
+   @Override
+   protected void setUp() throws Exception
+   {
+      super.setUp();
+      
+      ConfigurationImpl configuration = new ConfigurationImpl();
+      configuration.setSecurityEnabled(false);
+      configuration.setMessageExpiryScanPeriod(1000);
+      TransportConfiguration transportConfig = new TransportConfiguration(INVM_ACCEPTOR_FACTORY);
+      configuration.getAcceptorConfigurations().add(transportConfig);
+      server = Messaging.newMessagingServer(configuration, false);
+      // start the server
+      server.start();
+      // then we create a client as normal
+      ClientSessionFactory sessionFactory = new ClientSessionFactoryImpl(new TransportConfiguration(INVM_CONNECTOR_FACTORY));
+      sessionFactory.setBlockOnAcknowledge(true);
+      clientSession = sessionFactory.createSession(false, true, true);
+      clientSession.createQueue(qName, qName, null, false);
+      expiryAddress = new SimpleString("EA");
+      expiryQueue = new SimpleString("expiryQ");
+      AddressSettings addressSettings = new AddressSettings();
+      addressSettings.setExpiryAddress(expiryAddress);
+      server.getAddressSettingsRepository().addMatch(qName.toString(), addressSettings);
+      server.getAddressSettingsRepository().addMatch(qName2.toString(), addressSettings);
+      clientSession.createQueue(expiryAddress, expiryQueue, null, false);
+   }
+
+   @Override
+   protected void tearDown() throws Exception
+   {
+      if (clientSession != null)
+      {
+         try
+         {
+            clientSession.close();
+         }
+         catch (MessagingException e1)
+         {
+            //
+         }
+      }
+      if (server != null && server.isStarted())
+      {
+         try
+         {
+            server.stop();
+         }
+         catch (Exception e1)
+         {
+            //
+         }
+      }
+      server = null;
+      clientSession = null;
+      
+      super.tearDown();
+   }
+
+   private static class DummyMessageHandler implements Runnable
+   {
+      List<String> payloads = new ArrayList<String>();
+
+      private final ClientConsumer consumer;
+
+      private final CountDownLatch latch;
+
+      public DummyMessageHandler(ClientConsumer consumer, CountDownLatch latch)
+      {
+         this.consumer = consumer;
+         this.latch = latch;
+      }
+
+      public void run()
+      {
+         while (true)
+         {
+            try
+            {
+               ClientMessage message = consumer.receive(5000);
+               if (message == null)
+               {
+                  break;
+               }
+               message.acknowledge();
+               payloads.add(message.getBody().readString());
+
+               Thread.sleep(110);
+            }
+            catch (Exception e)
+            {
+               e.printStackTrace();
+            }
+         }
+         latch.countDown();
+
+      }
+   }
+}

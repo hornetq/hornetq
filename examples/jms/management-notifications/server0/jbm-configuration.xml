@@ -13,14 +13,14 @@
 
    <connectors>
       <connector name="netty">
-         <factory-class>org.jboss.messaging.integration.transports.netty.NettyConnectorFactory</factory-class>
+         <factory-class>org.hornetq.integration.transports.netty.NettyConnectorFactory</factory-class>
       </connector>
    </connectors>
    
    <!-- Netty standard TCP acceptor -->
    <acceptors>
       <acceptor name="netty">
-         <factory-class>org.jboss.messaging.integration.transports.netty.NettyAcceptorFactory</factory-class>
+         <factory-class>org.hornetq.integration.transports.netty.NettyAcceptorFactory</factory-class>
       </acceptor>
    </acceptors>
 

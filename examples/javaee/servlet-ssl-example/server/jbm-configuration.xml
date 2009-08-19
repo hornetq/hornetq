@@ -13,7 +13,7 @@
    <connectors>
 
       <connector name="netty-servlet">
-         <factory-class>org.jboss.messaging.integration.transports.netty.NettyConnectorFactory</factory-class>
+         <factory-class>org.hornetq.integration.transports.netty.NettyConnectorFactory</factory-class>
          <param key="jbm.remoting.netty.host" value="localhost" type="String"/>
          <param key="jbm.remoting.netty.port" value="8443" type="Integer"/>
          <param key="jbm.remoting.netty.useservlet" value="true" type="Boolean"/>
@@ -28,13 +28,13 @@
    <acceptors>
 
       <acceptor name="netty-servlet">
-         <factory-class>org.jboss.messaging.integration.transports.netty.NettyAcceptorFactory</factory-class>
+         <factory-class>org.hornetq.integration.transports.netty.NettyAcceptorFactory</factory-class>
          <param key="jbm.remoting.netty.useinvm" value="true" type="Boolean"/>
          <param key="jbm.remoting.netty.host" value="org.jboss.jbm" type="String"/>
       </acceptor>
 
       <acceptor name="netty-invm">
-         <factory-class>org.jboss.messaging.integration.transports.netty.NettyAcceptorFactory</factory-class>
+         <factory-class>org.hornetq.integration.transports.netty.NettyAcceptorFactory</factory-class>
          <param key="jbm.remoting.netty.useinvm" value="true" type="Boolean"/>
          <param key="jbm.remoting.netty.host" value="org.jboss.jbm" type="String"/>
       </acceptor>
@@ -58,7 +58,7 @@
          <redelivery-delay>0</redelivery-delay>
          <max-size-bytes>-1</max-size-bytes>
          <page-size-bytes>10485760</page-size-bytes>
-         <distribution-policy-class>org.jboss.messaging.core.server.impl.RoundRobinDistributor</distribution-policy-class>
+         <distribution-policy-class>org.hornetq.core.server.impl.RoundRobinDistributor</distribution-policy-class>
          <message-counter-history-day-limit>10</message-counter-history-day-limit>
       </address-setting>
    </address-settings>

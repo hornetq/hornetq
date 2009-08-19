@@ -21,7 +21,7 @@
  */
 package org.jboss.common.example;
 
-import org.jboss.messaging.integration.bootstrap.JBMBootstrapServer;
+import org.hornetq.integration.bootstrap.JBMBootstrapServer;
 
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
@@ -39,7 +39,7 @@ public class SpawnedJBMServer
          
          System.setProperty("java.naming.factory.initial", "org.jnp.interfaces.NamingContextFactory");
          System.setProperty("java.naming.factory.url.pkgs", "org.jboss.naming:org.jnp.interfaces");
-         System.setProperty("org.jboss.logging.Logger.pluginClass", "org.jboss.messaging.integration.logging.JBMLoggerPlugin");
+         System.setProperty("org.jboss.logging.Logger.pluginClass", "org.hornetq.integration.logging.JBMLoggerPlugin");
          bootstrap = new JBMBootstrapServer(args);
          bootstrap.run();
          System.out.println("STARTED::");

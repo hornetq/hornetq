@@ -30,16 +30,16 @@ import javax.jms.Queue;
 import javax.jms.Session;
 import javax.jms.TextMessage;
 
-import org.jboss.messaging.core.client.ClientSession;
-import org.jboss.messaging.core.config.Configuration;
-import org.jboss.messaging.core.config.TransportConfiguration;
-import org.jboss.messaging.core.config.impl.ConfigurationImpl;
-import org.jboss.messaging.core.remoting.impl.invm.InVMAcceptorFactory;
-import org.jboss.messaging.core.remoting.impl.invm.InVMConnectorFactory;
-import org.jboss.messaging.core.server.Messaging;
-import org.jboss.messaging.core.server.MessagingServer;
-import org.jboss.messaging.jms.JBossQueue;
-import org.jboss.messaging.jms.client.JBossConnectionFactory;
+import org.hornetq.core.client.ClientSession;
+import org.hornetq.core.config.Configuration;
+import org.hornetq.core.config.TransportConfiguration;
+import org.hornetq.core.config.impl.ConfigurationImpl;
+import org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory;
+import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
+import org.hornetq.core.server.Messaging;
+import org.hornetq.core.server.MessagingServer;
+import org.hornetq.jms.JBossQueue;
+import org.hornetq.jms.client.JBossConnectionFactory;
 
 /**
  * This example demonstrates how to run a JBoss Messaging embedded with JMS

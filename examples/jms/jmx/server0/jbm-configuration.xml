@@ -8,14 +8,14 @@
    <!-- Connectors -->
    <connectors>
       <connector name="netty">
-         <factory-class>org.jboss.messaging.integration.transports.netty.NettyConnectorFactory</factory-class>         
+         <factory-class>org.hornetq.integration.transports.netty.NettyConnectorFactory</factory-class>         
       </connector>
    </connectors>
    
    <!-- Acceptors -->
    <acceptors>
       <acceptor name="netty">
-         <factory-class>org.jboss.messaging.integration.transports.netty.NettyAcceptorFactory</factory-class>         
+         <factory-class>org.hornetq.integration.transports.netty.NettyAcceptorFactory</factory-class>         
       </acceptor>
    </acceptors>
 
