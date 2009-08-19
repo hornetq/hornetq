@@ -31,6 +31,7 @@ class AIOController;
 
 class CallbackAdapter;
 
+/** Author: Clebert Suconic at Redhat dot com*/
 class AsyncFile
 {
 private:
