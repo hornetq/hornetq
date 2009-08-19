@@ -1,13 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <chapter id="appserver-integration">
     <title>Application Server Integration and Java EE</title>
-    <para>JBoss Messaging can be easily installed in JBoss Application Server 5.1 or JBoss
-        Enterprise Application Platform 5.1 or later. For details on installing JBoss Messaging in
-        the JBoss Application Server refer to quick-start guide.</para>
-    <para>JBoss Messaging can also be integrated with any other JEE compliant application server by
-        using the JBoss Messaging JCA adapter. A JCA Adapter basically controls the incoming of
-        messages to Message Driven Beans and the outgoing of messages from other J2EE
-        components.</para>
+    <para>JBoss Messaging can be easily installed in JBoss Application Server 5.1 or later. For
+        details on installing JBoss Messaging in the JBoss Application Server refer to quick-start
+        guide.</para>
+    <para>Since JBoss Messaging also provides a JCA adaptor, it should also be possible to integrate
+        JBoss Messaging as a JMS provider in other JEE compliant app servers. For instructions on
+        how to integrate a remote JCA adaptor into another application sever, please consult that
+        application server's instructions.</para>
+    <para>A JCA Adapter basically controls the incoming of messages to Message Driven Beans and the
+        outgoing of messages from other JEE components.</para>
     <para>This section explains the basics behind configuring the different JEE components in the
         AS.</para>
     <section>
@@ -166,7 +168,7 @@ public class MDBMessageSelectorExample implements MessageListener
         </section>
     </section>
     <section>
-        <title>Sending Messages from within J2EE components</title>
+        <title>Sending Messages from within JEE components</title>
         <para>The JCA adapter can also be used for sending messages. The Connection Factory to use
             is configured by default in the <literal>jms-ds.xml</literal> file and is mapped to
                 <literal>java:/JmsXA</literal>. Using this from within a J2EE component will mean
@@ -233,7 +235,7 @@ public class MDBMessageSendTxExample implements MessageListener
 }</programlisting>
     </section>
     <section>
-        <title>Configuring the JCA Adapter</title>
+        <title>Configuring the JCA Adaptor</title>
         <para>The Java Connector Architecture (JCA) Adapter is what allows JBM to be integrated with
             JEE components such as MDB's and EJB's. It configures how components such as MDB's
             consume messages from the JBM server and also how components such as EJB's or Servlet's
