@@ -48,7 +48,7 @@
 
    <target name="run" depends="compile">   	
 
-    <java classname="org.jboss.jms.example.EmbeddedExample" fork="true" resultproperty="example-result">
+    <java classname="org.hornetq.jms.example.EmbeddedExample" fork="true" resultproperty="example-result">
        <jvmarg value="-Xms50M"/>
        <jvmarg value="-Xmx50M"/>
        <classpath refid="local.classpath"/>

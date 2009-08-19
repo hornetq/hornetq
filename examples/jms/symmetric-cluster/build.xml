@@ -34,7 +34,7 @@
    <property file="ant.properties"/>
    <target name="run" depends="delete-files">
       <antcall target="runExample">
-         <param name="example.classname" value="org.jboss.jms.example.SymmetricClusterExample"/>
+         <param name="example.classname" value="org.hornetq.jms.example.SymmetricClusterExample"/>
          <param name="jbm.example.beans.file" value="server3 server4 server5 server0 server1 server2"/>
          
      	   <param name="java-min-memory" value="50M"/>
@@ -44,7 +44,7 @@
 
    <target name="runRemote" depends="delete-files">
       <antcall target="runExample">
-         <param name="example.classname" value="org.jboss.jms.example.SymmetricClusterExample"/>
+         <param name="example.classname" value="org.hornetq.jms.example.SymmetricClusterExample"/>
          <param name="jbm.example.runServer" value="false"/>
       </antcall>
    </target>

@@ -21,9 +21,9 @@
    */
 package org.jboss.jms.example;
 
+import org.hornetq.common.example.DummyXid;
+import org.hornetq.common.example.JBMExample;
 import org.hornetq.utils.UUIDGenerator;
-import org.jboss.common.example.DummyXid;
-import org.jboss.common.example.JBMExample;
 
 import javax.jms.JMSException;
 import javax.jms.Message;

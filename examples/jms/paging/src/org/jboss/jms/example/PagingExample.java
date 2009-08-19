@@ -21,7 +21,7 @@
    */
 package org.jboss.jms.example;
 
-import org.jboss.common.example.JBMExample;
+import org.hornetq.common.example.JBMExample;
 
 import javax.jms.BytesMessage;
 import javax.jms.Connection;

@@ -43,7 +43,7 @@
     &lt;forwarding-address&gt;jms.queue.priceForwarding&lt;/forwarding-address&gt;    
     &lt;filter string="office='New York'"/&gt;
     &lt;transformer-class-name&gt;
-        org.jboss.jms.example.AddForwardingTimeTransformer
+        org.hornetq.jms.example.AddForwardingTimeTransformer
     &lt;/transformer-class-name&gt;     
     &lt;exclusive&gt;true&lt;/exclusive&gt;
 &lt;/divert&gt;                        

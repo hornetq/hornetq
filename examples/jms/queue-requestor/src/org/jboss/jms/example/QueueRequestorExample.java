@@ -31,7 +31,7 @@ import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.naming.InitialContext;
 
-import org.jboss.common.example.JBMExample;
+import org.hornetq.common.example.JBMExample;
 
 /**
  * A simple JMS example that shows how to use queues requestors.

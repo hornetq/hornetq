@@ -204,7 +204,7 @@
     &lt;start ignored="true"/&gt;
     &lt;stop ignored="true"/&gt;
     
-    &lt;property name="ConfigurationName"&gt;org.jboss.jms.example.ExampleLoginModule&lt;/property&gt;
+    &lt;property name="ConfigurationName"&gt;org.hornetq.jms.example.ExampleLoginModule&lt;/property&gt;
     &lt;property name="Configuration"&gt;
        &lt;inject bean="ExampleConfiguration"/&gt;
     &lt;/property&gt;

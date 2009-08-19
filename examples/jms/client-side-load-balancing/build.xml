@@ -34,14 +34,14 @@
 
    <target name="run">
       <antcall target="runExample">
-         <param name="example.classname" value="org.jboss.jms.example.ClientSideLoadBalancingExample"/>
+         <param name="example.classname" value="org.hornetq.jms.example.ClientSideLoadBalancingExample"/>
          <param name="jbm.example.beans.file" value="server0 server1 server2"/>
       </antcall>
    </target>
 
    <target name="runRemote">
       <antcall target="runExample">
-         <param name="example.classname" value="org.jboss.jms.example.ClientSideLoadBalancingExample"/>
+         <param name="example.classname" value="org.hornetq.jms.example.ClientSideLoadBalancingExample"/>
          <param name="jbm.example.runServer" value="false"/>
       </antcall>
    </target>

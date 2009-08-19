@@ -34,7 +34,7 @@
    <property file="ant.properties"/>
    <target name="run">
       <antcall target="runExample">
-         <param name="example.classname" value="org.jboss.jms.example.PagingExample"/>
+         <param name="example.classname" value="org.hornetq.jms.example.PagingExample"/>
 
          <!-- We limit the client to running in only 50MB of RAM -->
     	   <param name="java-min-memory" value="50M"/>
@@ -44,7 +44,7 @@
 
    <target name="runRemote">
       <antcall target="runExample">
-         <param name="example.classname" value="org.jboss.jms.example.PagingExample"/>
+         <param name="example.classname" value="org.hornetq.jms.example.PagingExample"/>
          <param name="jbm.example.runServer" value="false"/>
       </antcall>
    </target>

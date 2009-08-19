@@ -35,7 +35,7 @@ import javax.jms.TemporaryQueue;
 import javax.jms.TextMessage;
 import javax.naming.InitialContext;
 
-import org.jboss.common.example.JBMExample;
+import org.hornetq.common.example.JBMExample;
 
 import java.util.HashMap;
 import java.util.Map;

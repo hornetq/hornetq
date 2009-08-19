@@ -87,7 +87,7 @@
 
 	<target name="runServer" depends="compile">
 	    <echo message="Using server configuration from server.dir: ${server.dir}" />
-		<java classname="org.jboss.common.example.SpawnedJBMServer" fork="true" clonevm="true" resultproperty="example-result">
+		<java classname="org.hornetq.common.example.SpawnedJBMServer" fork="true" clonevm="true" resultproperty="example-result">
 			<jvmarg value="-Xms2048M" />
 			<jvmarg value="-Xmx2048M" />
 			<jvmarg value="-XX:+UseParallelGC" />

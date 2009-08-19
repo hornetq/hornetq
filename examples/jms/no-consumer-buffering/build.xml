@@ -34,13 +34,13 @@
 
    <target name="run">
       <antcall target="runExample">
-         <param name="example.classname" value="org.jboss.jms.example.NoConsumerBufferingExample"/>
+         <param name="example.classname" value="org.hornetq.jms.example.NoConsumerBufferingExample"/>
       </antcall>
    </target>
 
    <target name="runRemote">
       <antcall target="runExample">
-         <param name="example.classname" value="org.jboss.jms.example.NoConsumerBufferingExample"/>
+         <param name="example.classname" value="org.hornetq.jms.example.NoConsumerBufferingExample"/>
          <param name="jbm.example.runServer" value="false"/>
       </antcall>
    </target>

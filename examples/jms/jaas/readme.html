@@ -22,7 +22,7 @@
          <code>
             &lt;!-- The security manager using JAAS --&gt;
             &lt;bean name="JBMSecurityManager" class="org.hornetq.integration.security.JAASSecurityManager"&gt;
-               &lt;property name="configurationName"&gt;org.jboss.jms.example.ExampleLoginModule&lt;/property&gt;
+               &lt;property name="configurationName"&gt;org.hornetq.jms.example.ExampleLoginModule&lt;/property&gt;
                &lt;property name="configuration"&gt;
                   &lt;inject bean="ExampleConfiguration"/&gt;
                &lt;/property&gt;
@@ -33,9 +33,9 @@
 
             &lt;!-- JAAS uses a simple LoginModule where the user credentials and roles  are
                  specified as options in the constructor --&gt;
-            &lt;bean name="ExampleConfiguration" class="org.jboss.jms.example.ExampleConfiguration"&gt;
+            &lt;bean name="ExampleConfiguration" class="org.hornetq.jms.example.ExampleConfiguration"&gt;
                &lt;constructor&gt;
-                  &lt;parameter&gt;org.jboss.jms.example.ExampleLoginModule&lt;/parameter&gt;
+                  &lt;parameter&gt;org.hornetq.jms.example.ExampleLoginModule&lt;/parameter&gt;
                   &lt;parameter&gt;
                     &lt;map class="java.util.HashMap" keyClass="java.lang.String"
                                                    valueClass="java.lang.String"&gt;
@@ -57,7 +57,7 @@
             &lt;/bean&gt;
 
             &lt;!-- the CallbackHandler does nothing as we don't have any user interaction --&gt;
-            &lt;bean name="ExampleCallbackHandler" class="org.jboss.jms.example.ExampleCallbackHandler" /&gt;                             
+            &lt;bean name="ExampleCallbackHandler" class="org.hornetq.jms.example.ExampleCallbackHandler" /&gt;                             
          </code>
      </pre>
      

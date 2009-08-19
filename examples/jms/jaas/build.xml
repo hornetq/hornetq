@@ -38,13 +38,13 @@
    </path>
    <target name="run">
       <antcall target="runExample">
-         <param name="example.classname" value="org.jboss.jms.example.JAASExample"/>
+         <param name="example.classname" value="org.hornetq.jms.example.JAASExample"/>
       </antcall>
    </target>
 
    <target name="runRemote">
       <antcall target="runExample">
-         <param name="example.classname" value="org.jboss.jms.example.QueueExample"/>
+         <param name="example.classname" value="org.hornetq.jms.example.QueueExample"/>
          <param name="jbm.example.runServer" value="false"/>
       </antcall>
    </target>

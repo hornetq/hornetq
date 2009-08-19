@@ -47,7 +47,7 @@
    </path>
    
    <target name="runSender" depends="compile">
-      <java classname="org.jboss.jms.example.PerfSender" fork="true" resultproperty="example-result">
+      <java classname="org.hornetq.jms.example.PerfSender" fork="true" resultproperty="example-result">
 		   <jvmarg value="-Xms512M"/>
 		   <jvmarg value="-Xmx512M"/>
          <jvmarg value="-XX:+UseParallelGC"/>
@@ -60,7 +60,7 @@
    </target>
 
    <target name="runListener" depends="compile">
-      <java classname="org.jboss.jms.example.PerfListener" fork="true" resultproperty="example-result">         
+      <java classname="org.hornetq.jms.example.PerfListener" fork="true" resultproperty="example-result">         
          <jvmarg value="-Xms512M"/>
 		   <jvmarg value="-Xmx512M"/>
          <jvmarg value="-XX:+UseParallelGC"/>
@@ -73,7 +73,7 @@
    </target>
 
    <target name="runServer" depends="compile">
-      <java classname="org.jboss.common.example.SpawnedJBMServer" fork="true" resultproperty="example-result">
+      <java classname="org.hornetq.common.example.SpawnedJBMServer" fork="true" resultproperty="example-result">
          <jvmarg value="-Xms2048M"/>
 		   <jvmarg value="-Xmx2048M"/>
          <jvmarg value="-XX:+UseParallelGC"/> 

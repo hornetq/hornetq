@@ -3,7 +3,7 @@
             xsi:schemaLocation="urn:jboss:messaging /schema/jbm-configuration.xsd">
 
    <remoting-interceptors>
-      <class-name>org.jboss.jms.example.SimpleInterceptor</class-name>
+      <class-name>org.hornetq.jms.example.SimpleInterceptor</class-name>
    </remoting-interceptors>
 
    <!-- Connectors -->

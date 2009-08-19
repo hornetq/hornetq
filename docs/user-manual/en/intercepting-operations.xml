@@ -34,8 +34,8 @@ public interface Interceptor
       <para>The interceptors are configured in <literal>jbm-configuration.xml</literal>:</para>
       <programlisting>
 &lt;remoting-interceptors&gt;
-   &lt;class-name&gt;org.jboss.jms.example.LoginInterceptor&lt;/class-name&gt;
-   &lt;class-name&gt;org.jboss.jms.example.AdditionalPropertyInterceptor&lt;/class-name&gt;
+   &lt;class-name&gt;org.hornetq.jms.example.LoginInterceptor&lt;/class-name&gt;
+   &lt;class-name&gt;org.hornetq.jms.example.AdditionalPropertyInterceptor&lt;/class-name&gt;
 &lt;/remoting-interceptors&gt;
          </programlisting>
       <para>The interceptors classes (and their dependencies) must be added to the server classpath

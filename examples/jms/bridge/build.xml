@@ -34,14 +34,14 @@
 
    <target name="run" depends="delete-files">
       <antcall target="runExample">
-         <param name="example.classname" value="org.jboss.jms.example.BridgeExample"/>
+         <param name="example.classname" value="org.hornetq.jms.example.BridgeExample"/>
          <param name="jbm.example.beans.file" value="server0 server1"/>
       </antcall>
    </target>
 
    <target name="runRemote" depends="delete-files">
       <antcall target="runExample">
-         <param name="example.classname" value="org.jboss.jms.example.BridgeExample"/>
+         <param name="example.classname" value="org.hornetq.jms.example.BridgeExample"/>
          <param name="jbm.example.runServer" value="false"/>
       </antcall>
    </target>

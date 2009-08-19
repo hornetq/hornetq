@@ -36,7 +36,7 @@
     &lt;forwarding-address&gt;jms.queue.mincing-machine&lt;/forwarding-address&gt;
     &lt;filter-string="name='aardvark'"/&gt;
     &lt;transformer-class-name&gt;
-        org.jboss.jms.example.HatColourChangeTransformer
+        org.hornetq.jms.example.HatColourChangeTransformer
     &lt;/transformer-class-name&gt;
     &lt;retry-interval&gt;1000&lt;/retry-interval&gt;
     &lt;retry-interval-multiplier&gt;1.0&lt;/retry-interval-multiplier&gt;

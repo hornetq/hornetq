@@ -1,0 +1,124 @@
+/*
+   * JBoss, Home of Professional Open Source
+   * Copyright 2005-2008, Red Hat Middleware LLC, and individual contributors
+   * by the @authors tag. See the copyright.txt in the distribution for a
+   * full listing of individual contributors.
+   *
+   * This is free software; you can redistribute it and/or modify it
+   * under the terms of the GNU Lesser General Public License as
+   * published by the Free Software Foundation; either version 2.1 of
+   * the License, or (at your option) any later version.
+   *
+   * This software is distributed in the hope that it will be useful,
+   * but WITHOUT ANY WARRANTY; without even the implied warranty of
+   * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+   * Lesser General Public License for more details.
+   *
+   * You should have received a copy of the GNU Lesser General Public
+   * License along with this software; if not, write to the Free
+   * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+   * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+   */
+package org.hornetq.core.example;
+
+import java.util.Date;
+
+import org.hornetq.core.client.ClientConsumer;
+import org.hornetq.core.client.ClientMessage;
+import org.hornetq.core.client.ClientProducer;
+import org.hornetq.core.client.ClientSession;
+import org.hornetq.core.client.ClientSessionFactory;
+import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
+import org.hornetq.core.config.TransportConfiguration;
+import org.hornetq.integration.bootstrap.JBMBootstrapServer;
+import org.hornetq.integration.transports.netty.NettyConnectorFactory;
+
+
+/**
+ * 
+ * This exammple shows how to run a JBoss Messaging core client and server embedded in your
+ * own application
+ *
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ *
+ */
+public class EmbeddedMicroContainerExample
+{
+
+   public static void main(String[] args)
+   {
+
+      JBMBootstrapServer jbm = null;
+      try
+      {
+         
+         // Step 1. Start the server         
+         jbm = new JBMBootstrapServer("./server0/jbm-jboss-beans.xml");
+         jbm.run();
+         
+         // Step 2. As we are not using a JNDI environment we instantiate the objects directly         
+         ClientSessionFactory sf = new ClientSessionFactoryImpl (new TransportConfiguration(NettyConnectorFactory.class.getName()));
+         
+         // Step 3. Create a core queue
+         ClientSession coreSession = sf.createSession(false, false, false);
+         
+         final String queueName = "queue.exampleQueue";
+         
+         coreSession.createQueue(queueName, queueName, true);
+         
+         coreSession.close();
+                  
+         ClientSession session = null;
+   
+         try
+         {
+   
+            // Step 4. Create the session, and producer
+            session = sf.createSession();
+                                   
+            ClientProducer producer = session.createProducer(queueName);
+   
+            // Step 5. Create and send a message
+            ClientMessage message = session.createClientMessage(false);
+            
+            final String propName = "myprop";
+            
+            message.putStringProperty(propName, "Hello sent at " + new Date());
+            
+            System.out.println("Sending the message.");
+            
+            producer.send(message);
+
+            // Step 6. Create the message consumer and start the connection
+            ClientConsumer messageConsumer = session.createConsumer(queueName);
+            session.start();
+   
+            // Step 7. Receive the message. 
+            ClientMessage messageReceived = messageConsumer.receive(1000);
+            
+            System.out.println("Received TextMessage:" + messageReceived.getProperty(propName));
+         }
+         finally
+         {
+            // Step 8. Be sure to close our resources!
+            if (session != null)
+            {
+               session.close();
+            }
+
+            // Step 9. Shutdown the container
+            if (jbm != null)
+            {
+               jbm.shutDown();
+            }
+         }
+      }
+      catch (Exception e)
+      {
+         e.printStackTrace();
+         System.exit(-1);
+      }
+   }
+
+ 
+}

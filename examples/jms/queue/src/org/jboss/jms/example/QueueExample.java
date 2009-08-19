@@ -30,7 +30,7 @@ import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.naming.InitialContext;
 
-import org.jboss.common.example.JBMExample;
+import org.hornetq.common.example.JBMExample;
 
 /**
  * A simple JMS Queue example that creates a producer and consumer on a queue and sends then receives a message.
