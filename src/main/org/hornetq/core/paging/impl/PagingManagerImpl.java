@@ -33,7 +33,6 @@ import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.utils.SimpleString;
 
 /**
- *  <p>Look at the <a href="http://www.jboss.org/community/wiki/JBossMessaging2Paging">WIKI</a> for more information.</p>
  * 
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>

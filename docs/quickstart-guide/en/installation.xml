@@ -69,8 +69,7 @@
                Messaging</para>
          </listitem>
          <listitem>
-            <para><literal>config</literal> -- configuration files needed to configure JBoss
-               Messaging. This contains configurations to run HornetQ either in stand-alone
+            <para><literal>config</literal> -- configuration files needed to configure HornetQ. This contains configurations to run HornetQ either in stand-alone
                or inside JBoss AS 5. Please refer to the reference guide for details on
                configuration. </para>
          </listitem>

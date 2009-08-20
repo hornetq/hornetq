@@ -1,7 +1,7 @@
 <project name="hornetq.user-manual" default="all" basedir=".">
 
   <property name="build.dir" value="build"/>
-  <property name="pdf.name"  value="JBossMessaging_UserManual.pdf"/>
+  <property name="pdf.name"  value="HornetQ_UserManual.pdf"/>
   <import file="${basedir}/../../lib/docbook-support/support.xml"/>
 
   <target name="all" depends="clean">

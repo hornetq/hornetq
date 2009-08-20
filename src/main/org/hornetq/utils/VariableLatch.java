@@ -23,7 +23,7 @@ import java.util.concurrent.locks.AbstractQueuedSynchronizer;
  * 
  * <p>The idea is, instead of providing each user specific Latch/Synchronization, java.util.concurrent provides the framework for reuses, based on an AtomicInteger (getState())</p>
  * 
- * <p>On JBossMessaging we have the requirement of increment and decrement a counter until the user fires a ready event (commit). At that point we just act as a regular countDown.</p>
+ * <p>On HornetQ we have the requirement of increment and decrement a counter until the user fires a ready event (commit). At that point we just act as a regular countDown.</p>
  * 
  * <p>Note: This latch is reusable. Once it reaches zero, you can call up again, and reuse it on further waits.</p>
  * 

@@ -32,8 +32,6 @@ import org.hornetq.core.logging.Logger;
  * <p>2) All pos that correspond to any neg in file Fn, must all live in any file Fm where 0 <= m <= n
  * which are also marked for deletion in the same pass of the algorithm.</p>
  * 
- * <p>WIKI Page: <a href="http://wiki.jboss.org/wiki/JBossMessaging2Reclaiming">http://wiki.jboss.org/wiki/JBossMessaging2Reclaiming</a></p>
- * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */

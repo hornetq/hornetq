@@ -17,8 +17,6 @@ import java.util.List;
 
 /**
  * 
- * <p>Look at the <a href="http://wiki.jboss.org/wiki/JBossMessaging2Paging">WIKI</a> for more information.</p>
- *  
  * @see PagingManager
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
  *

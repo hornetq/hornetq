@@ -75,7 +75,7 @@ public class SecurityExample extends HornetQExample
          billConnection = null;
          try
          {
-            billConnection = createConnection("bill", "jbossmessaging1", cf);
+            billConnection = createConnection("bill", "hornetq1", cf);
             result = false;
          }
          catch (JMSException e)
@@ -84,19 +84,19 @@ public class SecurityExample extends HornetQExample
          }
          
          //Step 6. bill makes a good connection.
-         billConnection = createConnection("bill", "jbossmessaging", cf);
+         billConnection = createConnection("bill", "hornetq", cf);
          billConnection.start();
          
          //Step 7. andrew makes a good connection.
-         andrewConnection = createConnection("andrew", "jbossmessaging1", cf);
+         andrewConnection = createConnection("andrew", "hornetq1", cf);
          andrewConnection.start();
          
          //Step 8. frank makes a good connection.
-         frankConnection = createConnection("frank", "jbossmessaging2", cf);
+         frankConnection = createConnection("frank", "hornetq2", cf);
          frankConnection.start();
          
          //Step 9. sam makes a good connection.
-         samConnection = createConnection("sam", "jbossmessaging3", cf);
+         samConnection = createConnection("sam", "hornetq3", cf);
          samConnection.start();
          
          //Step 10. Check every user can publish/subscribe genericTopics.

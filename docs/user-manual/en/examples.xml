@@ -183,8 +183,7 @@
         <section id="examples.interceptor">
             <title>Interceptor</title>
             <para>HornetQ allows an application to use an interceptor to hook into the
-                messaging system. Interceptors allow you to handle various message events in JBoss
-                Messaging.</para>
+                messaging system. Interceptors allow you to handle various message events in HornetQ.</para>
         </section>
         <section id="examples.jaas">
             <title>JAAS</title>

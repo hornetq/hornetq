@@ -1008,7 +1008,7 @@ initialContext = new InitialContext(jndiParameters);</programlisting>
 &lt;properties depends="arjuna" name="jta"&gt;
    ...
                      
-   &lt;property name="com.arjuna.ats.jta.recovery.XAResourceRecovery.JBMESSAGING1"
+   &lt;property name="com.arjuna.ats.jta.recovery.XAResourceRecovery.HORNETQ1"
                 value="org.hornetq.jms.server.recovery.HornetQXAResourceRecovery;[connection configuration]"/&gt;
 &lt;/properties&gt;
             </programlisting>
@@ -1018,8 +1018,7 @@ initialContext = new InitialContext(jndiParameters);</programlisting>
             <itemizedlist>
                 <listitem>
                     <para><literal>[connector factory class name]</literal> corresponds to the name
-                        of the <literal>ConnectorFactory</literal> used to connect to JBoss
-                        Messaging. Values can be <literal
+                        of the <literal>ConnectorFactory</literal> used to connect to HornetQ. Values can be <literal
                             >org.hornetq.core.remoting.impl.invm.InVMConnectorFactory</literal> or
                             <literal
                             >org.hornetq.integration.transports.netty.NettyConnectorFactory</literal></para>

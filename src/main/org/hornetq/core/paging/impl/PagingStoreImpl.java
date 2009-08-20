@@ -777,9 +777,6 @@ public class PagingStoreImpl implements TestSupportPageStore
          {
             final PageTransactionInfo pageTransactionInfo = pagingManager.getTransaction(transactionIdDuringPaging);
 
-            // http://wiki.jboss.org/wiki/JBossMessaging2Paging
-            // This is the Step D described on the "Transactions on Paging"
-            // section
             if (pageTransactionInfo == null)
             {
                log.warn("Transaction " + pagedMessage.getTransactionID() +
@@ -841,7 +838,6 @@ public class PagingStoreImpl implements TestSupportPageStore
 
          if (pageWithTransaction.getNumberOfMessages() == 0)
          {
-            // http://wiki.jboss.org/wiki/JBossMessaging2Paging
             // numberOfReads==numberOfWrites -> We delete the record
             storageManager.deletePageTransactional(depageTransaction.getID(), pageWithTransaction.getRecordID());
             pagingManager.removeTransaction(pageWithTransaction.getTransactionID());

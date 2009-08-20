@@ -8,7 +8,7 @@
      <br>
      <p>This example shows how HornetQ would avoid running out of resources by paging messages.</p>
      <p>A maxSize could be specified per Destination on the destinations settings (hornetq-configuration.xml).</p>
-     <p>When the buffered messages are consuming too much memory, JBossMessaging starts writing messages on the file-system, and as the memory is released by message acknowledgement or transaction commits those messages are recovered from disk and placed in memory</p>
+     <p>When the buffered messages are consuming too much memory, HornetQ starts writing messages on the file-system, and as the memory is released by message acknowledgement or transaction commits those messages are recovered from disk and placed in memory</p>
      <p>Acknowledgement plays an important factor on paging as messages will stay on the file system until the memory is released</p> 
        
      <p>A Queue is used to send messages point to point, from a producer to a consumer. The queue guarantees message ordering between these 2 points.</p>

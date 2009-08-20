@@ -61,9 +61,6 @@ import org.hornetq.utils.concurrent.LinkedBlockingDeque;
  * 
  * <p>A JournalImpl</p
  * 
- * <p>WIKI Page: <a href="http://wiki.jboss.org/wiki/JBossMessaging2Journal"> http://wiki.jboss.org/wiki/JBossMessaging2Journal</a></p>
- * 
- * 
  * <p>Look at {@link JournalImpl#load(LoaderCallback)} for the file layout
  * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>

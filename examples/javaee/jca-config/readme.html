@@ -11,7 +11,7 @@
      <p>MDBQueueB is connected to a different HornetQ resource-adapter, and it will receive the message sent by the main Class.</p>
      <p>All the MDBs and JMS Connections are referring to the remote server</p> 
      <p>A Resource Adapter is a way to connect any system provider to an application server, and is integral part of the Java Connectors Architecture specification.</p>
-     <p>JBossMessaging provides its own adapter and this example will provide you a quick tutorial on how to configure some of the default properties, and how to change the default values on MDB Inbound Properties, or on ConnectionFactory Outbound Properties.</p>
+     <p>HornetQ provides its own adapter and this example will provide you a quick tutorial on how to configure some of the default properties, and how to change the default values on MDB Inbound Properties, or on ConnectionFactory Outbound Properties.</p>
      <p>This ResourceAdapter is what provides integration for Message Drive Beans (MDBs) or DataSource integration on the application server.</p>
      <h2>MDB Properties</h2>
      <p>You can configure the adapter through ActivactionConfigProperties on the MDB. Example:</p>
@@ -80,7 +80,7 @@ public class MDBRemoteExample implements MessageListener
 </pre>     
 
      <h2>Resource Adapter Global Properties</h2>
-     <p>It is possible to also change global configuration at the JBossMessaging resource adapter. The default installation script will install the HornetQ resource adapter at $JBOSS_HOME/server/<i>YOUR-SERVER</i>/deploy/hornetq-ra.rar.</p>
+     <p>It is possible to also change global configuration at the HornetQ resource adapter. The default installation script will install the HornetQ resource adapter at $JBOSS_HOME/server/<i>YOUR-SERVER</i>/deploy/hornetq-ra.rar.</p>
      <p>To change these properties, open the ra.xml under jms-ra.rar/META-INF</p>
      <p>Example for ra.xml:</p>
 <pre>
@@ -131,7 +131,7 @@ public class MDBRemoteExample implements MessageListener
      
      <p>Refer to the <i>Resource Adapter</i> Chapter on the <i>HornetQ Documentation</i> for more information about configuring the ra.xml properties.
             
-     <p>You may choose to deploy multiple JBossMessaging Resource adapters on the same application server, for example if you are connecting to different HornetQ servers and if you wish to have a higher control of properties on each server you are connecting to. You will be able to determine which rar you are using individually at each <i>MDB</i> and <i>ConnectionFactory</i> as specified before here. Just copy the directory jms-ra.rar in your application as any other name with the extension .rar and use that file name at your deployments.</p>
+     <p>You may choose to deploy multiple HornetQ resource adapters on the same application server, for example if you are connecting to different HornetQ servers and if you wish to have a higher control of properties on each server you are connecting to. You will be able to determine which rar you are using individually at each <i>MDB</i> and <i>ConnectionFactory</i> as specified before here. Just copy the directory jms-ra.rar in your application as any other name with the extension .rar and use that file name at your deployments.</p>
 
      <p>Please refer to HornetQ Quickstart guide to <a href="../../../docs/quickstart-guide/en/html_single/index.html#installation.jboss">install it in JBoss AS 5<a></p>
 

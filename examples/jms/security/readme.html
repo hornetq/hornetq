@@ -26,22 +26,22 @@
      
      <pre>
      <code>
-		   &lt;user name=&quot;bill&quot; password=&quot;jbossmessaging&quot;&gt;
+		   &lt;user name=&quot;bill&quot; password=&quot;hornetq&quot;&gt;
 		      &lt;role name=&quot;user&quot;/&gt;
 		   &lt;/user&gt;
 		  
-		   &lt;user name=&quot;andrew&quot; password=&quot;jbossmessaging1&quot;&gt;
+		   &lt;user name=&quot;andrew&quot; password=&quot;hornetq1&quot;&gt;
 		      &lt;role name=&quot;europe-user&quot;/&gt;
 		      &lt;role name=&quot;user&quot;/&gt;
 		   &lt;/user&gt;
 		   
-		   &lt;user name=&quot;frank&quot; password=&quot;jbossmessaging2&quot;&gt;
+		   &lt;user name=&quot;frank&quot; password=&quot;hornetq2&quot;&gt;
 		      &lt;role name=&quot;us-user&quot;/&gt;
 		      &lt;role name=&quot;news-user&quot;/&gt;
 		      &lt;role name=&quot;user&quot;/&gt;
 		   &lt;/user&gt;
 		   
-		   &lt;user name=&quot;sam&quot; password=&quot;jbossmessaging3&quot;&gt;
+		   &lt;user name=&quot;sam&quot; password=&quot;hornetq3&quot;&gt;
 		      &lt;role name=&quot;news-user&quot;/&gt;
 		      &lt;role name=&quot;user&quot;/&gt;
 		   &lt;/user&gt;
@@ -158,7 +158,7 @@
            billConnection = null;
            try
            {
-              billConnection = createConnection("bill", "jbossmessaging1", cf);
+              billConnection = createConnection("bill", "hornetq1", cf);
               result = false;
            }
            catch (JMSException e)
@@ -171,7 +171,7 @@
         <li>Bill makes a good connection.</li>
         <pre>
           <code>
-           billConnection = createConnection("bill", "jbossmessaging", cf);
+           billConnection = createConnection("bill", "hornetq", cf);
            billConnection.start();
           </code>
        </pre>
@@ -179,7 +179,7 @@
         <li>Andrew makes a good connection</li>
          <pre>
            <code>
-           andrewConnection = createConnection("andrew", "jbossmessaging1", cf);
+           andrewConnection = createConnection("andrew", "hornetq1", cf);
            andrewConnection.start();
            </code>
          </pre>
@@ -187,7 +187,7 @@
         <li>Frank makes a good connection</li>
         <pre>
            <code>
-           frankConnection = createConnection("frank", "jbossmessaging2", cf);
+           frankConnection = createConnection("frank", "hornetq2", cf);
            frankConnection.start();
            </code>
         </pre>
@@ -195,7 +195,7 @@
         <li>Sam makes a good connection</li>
         <pre>
            <code>
-           samConnection = createConnection("sam", "jbossmessaging3", cf);
+           samConnection = createConnection("sam", "hornetq3", cf);
            samConnection.start();
            </code>
         </pre>

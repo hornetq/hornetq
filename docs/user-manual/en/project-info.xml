@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <chapter id="project-info">
     <title>Project Information</title>
-    <para>The HornetQ project page is <ulink url="http://www.jboss.org/jbossmessaging/"
+    <para>The HornetQ project page is <ulink url="http://www.hornetq.org"
             >here</ulink>. You can download any releases from there.</para>
     <para>If you have any user questions please use our <ulink
             url="http://www.jboss.org/index.html?module=bb&amp;op=viewforum&amp;f=238">user
@@ -9,7 +9,7 @@
     <para>If you have development related questions, please use our <ulink
         url="http://www.jboss.org/index.html?module=bb&amp;op=viewforum&amp;f=153">development
         forum</ulink></para>
-    <para>Pop in and chat to us in our <ulink url="irc://irc.freenode.net:6667/jbossmessaging">IRC channel</ulink></para>  
+    <para>Pop in and chat to us in our <ulink url="irc://irc.freenode.net:6667/hornetq">IRC channel</ulink></para>  
     <para>HornetQ Subversion TRUNK is <ulink url="http://anonsvn.jboss.org/repos/messaging/trunk">here</ulink></para>
     <para>All our release tags are <ulink url="http://anonsvn.jboss.org/repos/messaging/tags">here</ulink></para>
     <para>Red Hat kindly employs developers to work full time on HornetQ, the motley crew are:

@@ -30,7 +30,7 @@ public interface TestSupportPageStore extends PagingStore
     * @return
     * @throws Exception
     * 
-    * Note: This should still be part of the interface, even though JBossMessaging only uses through the 
+    * Note: This should still be part of the interface, even though HornetQ only uses through the 
     */
    Page depage() throws Exception;
 

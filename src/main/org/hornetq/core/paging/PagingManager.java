@@ -23,7 +23,6 @@ import org.hornetq.utils.SimpleString;
 
 /**
  * 
- * <p>Look at the <a href="http://wiki.jboss.org/wiki/JBossMessaging2Paging">WIKI</a> for more information.</p>
  * 
 <PRE>
 

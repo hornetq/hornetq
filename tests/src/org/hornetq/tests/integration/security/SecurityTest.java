@@ -1108,10 +1108,10 @@ public class SecurityTest extends ServiceTestBase
          server.start();
          HornetQSecurityManager securityManager = server.getSecurityManager();
          securityManager.addUser("all", "all");
-         securityManager.addUser("bill", "jbossmessaging");
-         securityManager.addUser("andrew", "jbossmessaging1");
-         securityManager.addUser("frank", "jbossmessaging2");
-         securityManager.addUser("sam", "jbossmessaging3");
+         securityManager.addUser("bill", "hornetq");
+         securityManager.addUser("andrew", "hornetq1");
+         securityManager.addUser("frank", "hornetq2");
+         securityManager.addUser("sam", "hornetq3");
          securityManager.addRole("all", "all");
          securityManager.addRole("bill", "user");
          securityManager.addRole("andrew", "europe-user");
@@ -1168,7 +1168,7 @@ public class SecurityTest extends ServiceTestBase
          //Step 5. bill tries to make a connection using wrong password
          try
          {
-            billConnection = factory.createSession("bill", "jbossmessaging1", false, true, true, false, -1);
+            billConnection = factory.createSession("bill", "hornetq1", false, true, true, false, -1);
             fail("should throw exception");
          }
          catch (HornetQException e)
@@ -1177,16 +1177,16 @@ public class SecurityTest extends ServiceTestBase
          }
 
          //Step 6. bill makes a good connection.
-         billConnection = factory.createSession("bill", "jbossmessaging", false, true, true, false, -1);
+         billConnection = factory.createSession("bill", "hornetq", false, true, true, false, -1);
 
          //Step 7. andrew makes a good connection.
-         andrewConnection = factory.createSession("andrew", "jbossmessaging1", false, true, true, false, -1);
+         andrewConnection = factory.createSession("andrew", "hornetq1", false, true, true, false, -1);
 
          //Step 8. frank makes a good connection.
-         frankConnection = factory.createSession("frank", "jbossmessaging2", false, true, true, false, -1);
+         frankConnection = factory.createSession("frank", "hornetq2", false, true, true, false, -1);
 
          //Step 9. sam makes a good connection.
-         samConnection = factory.createSession("sam", "jbossmessaging3", false, true, true, false, -1);
+         samConnection = factory.createSession("sam", "hornetq3", false, true, true, false, -1);
 
          checkUserSendAndReceive(genericQueueName, billConnection);
          checkUserSendAndReceive(genericQueueName, andrewConnection);
@@ -1236,10 +1236,10 @@ public class SecurityTest extends ServiceTestBase
          server.start();
          HornetQSecurityManager securityManager = server.getSecurityManager();
          securityManager.addUser("all", "all");
-         securityManager.addUser("bill", "jbossmessaging");
-         securityManager.addUser("andrew", "jbossmessaging1");
-         securityManager.addUser("frank", "jbossmessaging2");
-         securityManager.addUser("sam", "jbossmessaging3");
+         securityManager.addUser("bill", "hornetq");
+         securityManager.addUser("andrew", "hornetq1");
+         securityManager.addUser("frank", "hornetq2");
+         securityManager.addUser("sam", "hornetq3");
          securityManager.addRole("all", "all");
          securityManager.addRole("bill", "user");
          securityManager.addRole("andrew", "europe-user");
@@ -1296,7 +1296,7 @@ public class SecurityTest extends ServiceTestBase
          //Step 5. bill tries to make a connection using wrong password
          try
          {
-            billConnection = factory.createSession("bill", "jbossmessaging1", false, true, true, false, -1);
+            billConnection = factory.createSession("bill", "hornetq1", false, true, true, false, -1);
             fail("should throw exception");
          }
          catch (HornetQException e)
@@ -1305,16 +1305,16 @@ public class SecurityTest extends ServiceTestBase
          }
 
          //Step 6. bill makes a good connection.
-         billConnection = factory.createSession("bill", "jbossmessaging", false, true, true, false, -1);
+         billConnection = factory.createSession("bill", "hornetq", false, true, true, false, -1);
 
          //Step 7. andrew makes a good connection.
-         andrewConnection = factory.createSession("andrew", "jbossmessaging1", false, true, true, false, -1);
+         andrewConnection = factory.createSession("andrew", "hornetq1", false, true, true, false, -1);
 
          //Step 8. frank makes a good connection.
-         frankConnection = factory.createSession("frank", "jbossmessaging2", false, true, true, false, -1);
+         frankConnection = factory.createSession("frank", "hornetq2", false, true, true, false, -1);
 
          //Step 9. sam makes a good connection.
-         samConnection = factory.createSession("sam", "jbossmessaging3", false, true, true, false, -1);
+         samConnection = factory.createSession("sam", "hornetq3", false, true, true, false, -1);
 
          checkUserSendAndReceive(genericQueueName, billConnection);
          checkUserSendAndReceive(genericQueueName, andrewConnection);

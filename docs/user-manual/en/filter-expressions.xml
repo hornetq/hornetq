@@ -7,7 +7,7 @@
         different. For documentation on JMS selector syntax please the JMS javadoc for <ulink
             url="http://java.sun.com/javaee/5/docs/api/javax/jms/Message.html"
             >javax.jms.Message</ulink>.</para>
-    <para>Filter expressions are used in several places in JBossMessaging</para>
+    <para>Filter expressions are used in several places in HornetQ</para>
     <itemizedlist>
         <listitem>
             <para>Predefined Queues. When pre-defining a queue, either in <literal

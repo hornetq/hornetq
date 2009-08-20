@@ -72,8 +72,8 @@ public class ManifestTest extends UnitTestCase
          // Compare the value from ConnectionMetaData and MANIFEST.MF
          Attributes attrs = manifest.getMainAttributes();
 
-         assertEquals(meta.getProviderVersion(), attrs.getValue("JBossMessaging-Version"));
-         assertEquals("https://svn.jboss.org/repos/messaging/trunk", attrs.getValue("JBossMessaging-SVN-URL"));
+         assertEquals(meta.getProviderVersion(), attrs.getValue("HornetQ-Version"));
+         assertEquals("https://svn.jboss.org/repos/hornetq/trunk", attrs.getValue("HornetQ-SVN-URL"));
       }
       finally
       {

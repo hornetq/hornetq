@@ -6,8 +6,7 @@
         JBoss Microcontainer, Spring or Google Guice. It also means that if you have an application
         that could use messaging functionality internally, then it can <emphasis>directly
             instantiate</emphasis> HornetQ clients and servers in its own application code
-        to perform that functionality. We call this <emphasis>embedding</emphasis> JBoss
-        Messaging.</para>
+        to perform that functionality. We call this <emphasis>embedding</emphasis> HornetQ.</para>
     <para>Examples of applications that might want to do this include any application that needs
         very high performance, transactional, persistent messaging but doesn't want the hassle of
         writing it all from scratch.</para>
@@ -54,7 +53,7 @@ import org.hornetq.core.server.HornetQServer;
 
 ...
 
-HornetQServer server = Messaging.newHornetQServer(config);
+HornetQServer server = HornetQ.newHornetQServer(config);
 
 server.start();</programlisting>
         <para>You also have the option of instantiating <literal>HornetQServerImpl</literal>

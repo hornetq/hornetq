@@ -1066,8 +1066,6 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
             boolean first = true;
             for (ServerMessage message : messagesToPage)
             {
-               // http://wiki.jboss.org/wiki/JBossMessaging2Paging
-               // Explained under Transaction On Paging. (This is the item B)
                if (pagingManager.page(message, tx.getID(), first))
                {
                   if (message.isDurable())
