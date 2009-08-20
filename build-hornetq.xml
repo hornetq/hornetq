@@ -16,7 +16,7 @@
   ~ permissions and limitations under the License.
   -->
 
-<project default="jar" name="The HornetQ Project">
+<project default="unit-tests" name="The HornetQ Project">
 
    <!-- ======================================================================================== -->
    <!-- javac + junit properties                                                                 -->
