@@ -72,7 +72,7 @@
             
         <li>We create the JMS management queue. This is a <em>special</em> queue which is not looked up from JNDI but instantiated directly</li>
         <pre>
-            <code>Queue managementQueue = new JBossQueue("hornetq.management", "hornetq.management");</code>
+            <code>Queue managementQueue = new HornetQQueue("hornetq.management", "hornetq.management");</code>
         </pre>
 
         <li>We create a <code>QueueRequestor</code> to send messages to the management queue and receive replies (see <a href="../queue-requestor/readme.html">queue-requestor example</a>)</li>

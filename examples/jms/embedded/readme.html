@@ -31,8 +31,8 @@
 
         <li>As we are not using a JNDI environment we instantiate the objects directly</li>
         <pre>
-           <code>Queue queue = new JBossQueue("exampleQueue");</code>
-           <code>JBossConnectionFactory cf = new JBossConnectionFactory (new TransportConfiguration(InVMConnectorFactory.class.getName()));</code>
+           <code>Queue queue = new HornetQQueue("exampleQueue");</code>
+           <code>HornetQConnectionFactory cf = new HornetQConnectionFactory (new TransportConfiguration(InVMConnectorFactory.class.getName()));</code>
         </pre>
 
         <li>Create a JMS Destination by using the Core API</li>

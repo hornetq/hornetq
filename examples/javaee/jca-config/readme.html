@@ -161,8 +161,8 @@ public class MDBRemoteExample implements MessageListener
 
          <li>On the second server we invoke the EJB StatelessSender: This will send 2 messages to server 1 using the configured outbound adapter</li>
          <pre><code>
-         JBossQueue destQueueA = new JBossQueue("A");
-         JBossQueue destQueueB = new JBossQueue("B");
+         HornetQQueue destQueueA = new HornetQQueue("A");
+         HornetQQueue destQueueB = new HornetQQueue("B");
          </code></pre>
       
          <li>Create a connection to a remote server using a connection-factory (look at the deployed file jms-remote-ds.xml). JCA will actually manage this thorugh a <i>Connection Pool</i></li>

@@ -58,7 +58,7 @@
             expose that as a messaging server you can directly instantiate and embed messaging
             servers in your own application.</para>
         <para>For more information on embedding HornetQ, see <xref
-                linkend="embedding-jbm" />.</para>
+                linkend="embedding-hornetq" />.</para>
     </section>
     <section>
         <title>HornetQ integrated with a JEE application server</title>

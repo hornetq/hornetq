@@ -3,8 +3,7 @@
     <title>Duplicate Message Detection</title>
     <para>HornetQ includes powerful automatic duplicate message detection, filtering out
         duplicate messages without you having to code your own fiddly duplicate detection logic at
-        the application level. This chapter will explain what duplicate detection is, how JBoss
-        Messaging uses it and how and where to configure it.</para>
+        the application level. This chapter will explain what duplicate detection is, how HornetQ uses it and how and where to configure it.</para>
     <para>When sending messages from a client to a server, or indeed from a server to another
         server, if the target server or connection fails sometime after sending the message, but
         before the sender receives a response that the send (or commit) was processed successfully

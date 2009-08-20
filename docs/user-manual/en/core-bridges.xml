@@ -81,8 +81,7 @@
             <listitem>
                 <para><literal>filter-string</literal>. An optional filter string can be supplied.
                     If specified then only messages which match the filter expression specified in
-                    the filter string will be forwarded. The filter string follows the JBoss
-                    Messaging filter expression syntax described in <xref linkend="filter-expressions" />.</para>
+                    the filter string will be forwarded. The filter string follows the HornetQ filter expression syntax described in <xref linkend="filter-expressions" />.</para>
             </listitem>
             <listitem>
                 <para><literal>transformer-class-name</literal>. An optional transformer-class-name

@@ -30,8 +30,7 @@
     <para>The journal also fully supports transactional operation if required, supporting both local
         and XA transactions.</para>
     <para>The majority of the journal is written in Java, however we abstract out the interaction
-        with the actual file system to allow different pluggable implementations. We ship JBoss
-        Messaging with two implementations:</para>
+        with the actual file system to allow different pluggable implementations. We ship HornetQ with two implementations:</para>
     <itemizedlist>
         <listitem>
             <para>Java <ulink url="http://en.wikipedia.org/wiki/New_I/O">NIO</ulink>.</para>

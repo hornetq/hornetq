@@ -273,7 +273,7 @@ public class InVMContext implements Context, Serializable
    {
       Hashtable env = new Hashtable();
       env.put("java.naming.factory.initial",
-              "org.hornetq.jmstests.tools.container.InVMInitialContextFactory");
+              "org.hornetq.jms.tests.tools.container.InVMInitialContextFactory");
       env.put("java.naming.provider.url", "org.jboss.naming:org.jnp.interface");
       return env;
    }

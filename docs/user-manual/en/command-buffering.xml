@@ -17,7 +17,7 @@
         connection factory instances into JNDI then this parameter can be configured in <literal
             >hornetq-jms.xml</literal> using the element <literal>producer-window-size</literal> a. If
         you're using JMS but not using JNDI then you can set these values directly on the <literal
-            >JBossConnectionFactory</literal> instance using the appropriate setter method.</para>
+            >HornetQConnectionFactory</literal> instance using the appropriate setter method.</para>
     <para>If you're using core you can set these values directly on the <literal
             >ClientSessionFactory</literal> instance using the appropriate setter method.</para>
     <para>The send window is specified in bytes, and has a default value of <literal

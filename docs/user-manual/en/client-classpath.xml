@@ -30,8 +30,7 @@
     </section>
     <section>
         <title>JNDI</title>
-        <para>If you're looking up JNDI objects from the JNDI server co-located with the JBoss
-            Messaging standalone server you'll also need the jar <literal>jnp-client.jar</literal>
+        <para>If you're looking up JNDI objects from the JNDI server co-located with the HornetQ standalone server you'll also need the jar <literal>jnp-client.jar</literal>
             jar on your client classpath as well as any other jars mentioned previously.</para>
     </section>
 </chapter>

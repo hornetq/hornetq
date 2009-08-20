@@ -935,12 +935,12 @@ public class HornetQRAManagedConnectionFactory implements ManagedConnectionFacto
     *
     * @return The factory
     */
-   protected synchronized org.hornetq.jms.client.HornetQConnectionFactory getJBossConnectionFactory() throws ResourceException
+   protected synchronized org.hornetq.jms.client.HornetQConnectionFactory getHornetQConnectionFactory() throws ResourceException
    {
 
       if(connectionFactory == null)
       {
-         connectionFactory = ra.createJBossConnectionFactory(mcfProperties);
+         connectionFactory = ra.createHornetQConnectionFactory(mcfProperties);
       }
       return connectionFactory;
    }

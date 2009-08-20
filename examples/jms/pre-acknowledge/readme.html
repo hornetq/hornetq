@@ -23,7 +23,7 @@
      update message will arrive soon, overriding the previous price.</p>
      <p>In order to use pre-acknowledge functionality with HornetQ the session has to be created with
      a special, HornetQ specific acknowledgement mode, given by the value of
-     <code>JBossSession.PRE_ACKNOWLEDGE</code>.     
+     <code>HornetQSession.PRE_ACKNOWLEDGE</code>.     
      <h2>Example step-by-step</h2>
      <p><i>To run the example, simply type <code>ant</code> from this directory</i></p>
      <br>
@@ -49,7 +49,7 @@
            <code>
      connection = cf.createConnection();
 
-     Session session = connection.createSession(false, JBossSession.PRE_ACKNOWLEDGE);
+     Session session = connection.createSession(false, HornetQSession.PRE_ACKNOWLEDGE);
 
      MessageProducer producer = session.createProducer(queue);
          

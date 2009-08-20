@@ -38,12 +38,12 @@
       &lt;pre-acknowledge>true&lt;/pre-acknowledge>
 &lt;/connection-factory></programlisting>
       <para>Alternatively use pre-acknowledgement mode using the JMS API, create a JMS Session with
-         the <literal>JBossSession.PRE_ACKNOWLEDGE</literal> constant.</para>
+         the <literal>HornetQSession.PRE_ACKNOWLEDGE</literal> constant.</para>
       <programlisting>
 // messages will be acknowledge on the server *before* being delivered to the client
-Session session = connection.createSession(false, JBossSession.PRE_ACKNOWLEDGE);
+Session session = connection.createSession(false, HornetQSession.PRE_ACKNOWLEDGE);
       </programlisting>
-      <para>Or you can set pre-acknowledge directly on the <literal>JBossConnectionFactory</literal>
+      <para>Or you can set pre-acknowledge directly on the <literal>HornetQConnectionFactory</literal>
          instance using the setter method.</para>
       <para>To use pre-acknowledgement mode using the core API you can set it directly on the
             <literal>ClientSessionFactory</literal> instance using the setter method.</para>

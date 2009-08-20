@@ -124,12 +124,11 @@
         <para>Sometimes you want a client to failover onto a backup server even if the live server
             is just cleanly shutdown rather than having crashed or the connection failed. To
             configure this you can set the property <literal>FailoverOnServerShutdown</literal> to
-            false either on the <literal>JBossConnectionFactory</literal> if you're using JMS or in
+            false either on the <literal>HornetQConnectionFactory</literal> if you're using JMS or in
             the <literal>hornetq-jms.xml</literal> file when you define the connection factory, or if
             using core by setting the property directly on the <literal
                 >ClientSessionFactoryImpl</literal> instance after creation. The default value for
-            this property is <literal>false</literal>, this means that by default <emphasis>JBoss
-                Messaging clients will not failover to a backup server if the live server is simply
+            this property is <literal>false</literal>, this means that by default <emphasis>HornetQ clients will not failover to a backup server if the live server is simply
                 shutdown cleanly.</emphasis></para>
         <para>For a fully functional example of automatic failover, please see <xref
                 linkend="automatic-failover"/>.</para>

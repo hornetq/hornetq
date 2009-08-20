@@ -55,7 +55,7 @@
     </programlisting>
     <para>If you're using JMS, but instantiating your JMS connection factory directly, you can
         specify the parameters using the appropriate setter methods on the <literal
-            >JBossConnectionFactory</literal> immediately after creating it.</para>
+            >HornetQConnectionFactory</literal> immediately after creating it.</para>
     <para>If you're using the core API and instantiating the <literal>ClientSessionFactory</literal>
         instance directly you can also specify the parameters using the appropriate setter methods on the
             <literal>ClientSessionFactory</literal> immediately after creating it.</para>

@@ -89,11 +89,11 @@ yStoreImpl] It has been detected that the cluster admin password which is used t
 ate management operation from one node to the other has not had its password changed fro
 m the installation default. Please see the HornetQ user guide for instructions o
 n how to do this.
-     [java] org.hornetq.jms.example.SpawnedJMSServer out:10:41:10,941 INFO  @main [JBossCo
+     [java] org.hornetq.jms.example.SpawnedJMSServer out:10:41:10,941 INFO  @main [HornetQCo
 nnectionFactory] read only is false
-     [java] org.hornetq.jms.example.SpawnedJMSServer out:10:41:10,941 INFO  @main [JBossCo
+     [java] org.hornetq.jms.example.SpawnedJMSServer out:10:41:10,941 INFO  @main [HornetQCo
 nnectionFactory] read only is false
-     [java] org.hornetq.jms.example.SpawnedJMSServer out:10:41:10,941 INFO  @main [JBossCo
+     [java] org.hornetq.jms.example.SpawnedJMSServer out:10:41:10,941 INFO  @main [HornetQCo
 nnectionFactory] read only is false
      [java] org.hornetq.jms.example.SpawnedJMSServer out:10:41:10,991 WARN  @main [JMSServ
 erManagerImpl] Binding for java:/ConnectionFactory already exists

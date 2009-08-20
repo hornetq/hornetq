@@ -29,8 +29,7 @@
         </listitem>
     </itemizedlist>
     <para>There are some differences between JMS selector expressions and HornetQ core
-        filter expressions. Whereas JMS selector expressions operate on a JMS message, JBoss
-        Messaging core filter expressions operate on a core message.</para>
+        filter expressions. Whereas JMS selector expressions operate on a JMS message, HornetQ core filter expressions operate on a core message.</para>
     <para>The following identifiers can be used in a core filter expressions to refer to attributes
         of the core message in an expression:</para>
     <itemizedlist>

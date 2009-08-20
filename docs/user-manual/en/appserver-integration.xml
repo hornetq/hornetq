@@ -38,7 +38,7 @@ public class MDBExample implements MessageListener
             <para>When an MDB is using Container Managed Transactions, the delivery of the message
                 is done within the scope of an XA transaction. The commit or rollback of this
                 transaction is controlled by the container itself. If the transaction is rolled back
-                then the JBoss Message delivery semantics will kick in (by default this is to try
+                then the HornetQ Message delivery semantics will kick in (by default this is to try
                 and redeliver the message up to 10 times before sending to a DLQ). Using annotations
                 this would be configured as follows:</para>
             <programlisting>@MessageDriven(name = "MDB_CMP_TxRequiredExample",
@@ -541,7 +541,7 @@ public class MDBMessageSendTxExample implements MessageListener
                 factories that are used by Java EE components. These Connection Factories can be
                 defined inside a configuration file that matches the name <literal
                     >*-ds.xml</literal>. You'll find a default <literal>jms-ds.xml</literal>
-                configuration under the <literal>hornetq.sar</literal> directory in the Jboss AS
+                configuration under the <literal>hornetq.sar</literal> directory in the JBoss AS
                 deployment. The connection factories defined in the config file inherit their
                 properties from the main <literal>ra.xml</literal> configuration but can also be
                 overridden, the following example show how to define one.</para>
@@ -913,8 +913,7 @@ initialContext = new InitialContext(jndiParameters);</programlisting>
             <para>The source and target connection factory factories are used to create the
                 connection factory used to create the connection for the source or target
                 server.</para>
-            <para>The configuration example above uses the default implementation provided by JBoss
-                Messaging that looks up the connection factory using JNDI. For other Application
+            <para>The configuration example above uses the default implementation provided by HornetQ that looks up the connection factory using JNDI. For other Application
                 Servers or JMS providers a new implementation may have to be provided. This can
                 easily be done by implementing the interface <literal
                     >org.hornetq.jms.bridge.ConnectionFactoryFactory</literal>.</para>
@@ -922,8 +921,7 @@ initialContext = new InitialContext(jndiParameters);</programlisting>
         <section>
             <title>Source and Target Destination Factories</title>
             <para>Again, similarly, these are used to create or lookup up the destinations.</para>
-            <para>In the configuration example above, we have used the default provided by JBoss
-                Messaging that looks up the destination using JNDI.</para>
+            <para>In the configuration example above, we have used the default provided by HornetQ that looks up the destination using JNDI.</para>
             <para>A new implementation can be provided by implementing <literal
                     >org.hornetq.jms.bridge.DestinationFactory</literal> interface.</para>
         </section>

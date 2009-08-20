@@ -80,7 +80,7 @@ public class HornetQResourceAdapter implements ResourceAdapter
     */
    private final Map<ActivationSpec, HornetQActivation> activations;
 
-   private org.hornetq.jms.client.HornetQConnectionFactory defaultJBossConnectionFactory;
+   private org.hornetq.jms.client.HornetQConnectionFactory defaultHornetQConnectionFactory;
 
    /**
     * Constructor
@@ -1373,11 +1373,11 @@ public class HornetQResourceAdapter implements ResourceAdapter
     */
    protected void setup() throws HornetQException
    {
-      defaultJBossConnectionFactory = createJBossConnectionFactory(raProperties);
-      sessionFactory = defaultJBossConnectionFactory.getCoreFactory();
+      defaultHornetQConnectionFactory = createHornetQConnectionFactory(raProperties);
+      sessionFactory = defaultHornetQConnectionFactory.getCoreFactory();
    }
 
-   public org.hornetq.jms.client.HornetQConnectionFactory getDefaultJBossConnectionFactory() throws ResourceException
+   public org.hornetq.jms.client.HornetQConnectionFactory getDefaultHornetQConnectionFactory() throws ResourceException
    {
       if (!configured.getAndSet(true))
       {
@@ -1390,10 +1390,10 @@ public class HornetQResourceAdapter implements ResourceAdapter
             throw new ResourceException("Unable to create activation", e);
          }
       }
-      return defaultJBossConnectionFactory;
+      return defaultHornetQConnectionFactory;
    }
 
-   public org.hornetq.jms.client.HornetQConnectionFactory createJBossConnectionFactory(ConnectionFactoryProperties overrideProperties)
+   public org.hornetq.jms.client.HornetQConnectionFactory createHornetQConnectionFactory(ConnectionFactoryProperties overrideProperties)
    {
       org.hornetq.jms.client.HornetQConnectionFactory cf;
       String connectorClassName = overrideProperties.getConnectorClassName() != null ? overrideProperties.getConnectorClassName()

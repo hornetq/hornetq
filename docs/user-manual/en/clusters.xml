@@ -21,8 +21,7 @@
         <para>Nodes can be connected together to form a cluster in many different topologies, we
             will discuss a couple of the more common topologies later in this chapter.</para>
         <para>We'll also discuss client side load balancing, where we can balance client connections
-            across the nodes of the cluster, and we'll consider message redistribution where JBoss
-            Messaging will redistribute messages between nodes to avoid starvation.</para>
+            across the nodes of the cluster, and we'll consider message redistribution where HornetQ will redistribute messages between nodes to avoid starvation.</para>
         <para>Another important part of clustering is <emphasis>server discovery</emphasis> where
             servers can broadcast their connection details so clients or other servers can connect
             to them with the minimum of configuration.</para>
@@ -222,7 +221,7 @@
 final int groupPort = 9876;
 
 ConnectionFactory jmsConnectionFactory = 
-        new JBossConnectionFactory(groupAddress, groupPort);
+        new HornetQConnectionFactory(groupAddress, groupPort);
 
 Connection jmsConnection1 = jmsConnectionFactory.createConnection();
 
@@ -404,8 +403,7 @@ Connection jmsConnection2 = jmsConnectionFactory.createConnection();</programlis
             connections created using a single factory can be made to different nodes of the
             cluster. This allows connections to spread smoothly across the nodes of a cluster and
             not be "clumped" on any particular node.</para>
-        <para>The load balancing policy to be used by the client factory is configurable. JBoss
-            Messaging provides two out-of-the-box load balancing policies and you can also implement
+        <para>The load balancing policy to be used by the client factory is configurable. HornetQ provides two out-of-the-box load balancing policies and you can also implement
             your own and use that.</para>
         <para>The out-of-the-box policies are</para>
         <itemizedlist>
@@ -442,9 +440,9 @@ Connection jmsConnection2 = jmsConnectionFactory.createConnection();</programlis
             balancing policy. </para>
         <para>If you're using JMS but you're instantiating your connection factory directly on the
             client side then you can set the load balancing policy using the setter on the <literal
-                >JBossConnectionFactory</literal> before using it:
+                >HornetQConnectionFactory</literal> before using it:
             <programlisting>
-ConnectionFactory jmsConnectionFactory = new JBossConnectionFactory(...);
+ConnectionFactory jmsConnectionFactory = new HornetQConnectionFactory(...);
 jmsConnectionFactory.setLoadBalancingPolicyClassName("com.acme.MyLoadBalancingPolicy");
         </programlisting></para>
         <para>If you're using the core API, you can set the load balancing policy directly on the
@@ -506,7 +504,7 @@ factory.setLoadBalancingPolicyClassName("com.acme.MyLoadBalancingPolicy");
                     on the client side when creating connections to the cluster.</para>
                 <para>If you're using JMS but you're not using JNDI then you can also specify the
                     list of [connector, backup connector] pairs directly when instantiating the
-                        <literal>JBossConnectionFactory</literal>, here's an
+                        <literal>HornetQConnectionFactory</literal>, here's an
                     example:<programlisting>List&lt;Pair&lt;TransportConfiguration, TransportConfiguration>> serverList = 
         new ArrayList&lt;Pair&lt;TransportConfiguration, TransportConfiguration>>();
 
@@ -517,7 +515,7 @@ serverList.add(new Pair&lt;TransportConfiguration,
 serverList.add(new Pair&lt;TransportConfiguration, 
         TransportConfiguration>(liveTC2, backupTC2));
 
-ConnectionFactory jmsConnectionFactory = new JBossConnectionFactory(serverList);
+ConnectionFactory jmsConnectionFactory = new HornetQConnectionFactory(serverList);
 
 Connection jmsConnection1 = jmsConnectionFactory.createConnection();
 
@@ -526,7 +524,7 @@ Connection jmsConnection2 = jmsConnectionFactory.createConnection();</programlis
                         >TransportConfiguration</literal> objects. Each <literal
                         >TransportConfiguration</literal> object contains knowledge of how to make a
                     connection to a specific server.</para>
-                <para>A <literal>JBossConnectionFactory</literal> instance is then created passing
+                <para>A <literal>HornetQConnectionFactory</literal> instance is then created passing
                     the list of servers in the constructor. Any connections subsequently created by
                     this factory will create connections according to the client connection load
                     balancing policy applied to that list of servers.</para>
@@ -601,8 +599,7 @@ ClientSession session2 = factory.createClientSession(...);</programlisting>
             it doesn't solve: What happens if the consumers on a queue close after the messages have
             been sent to the node? If there are no consumers on the queue the message won't get
             consumed and we have a <emphasis>starvation</emphasis> situation.</para>
-        <para>This is where message redistribution comes in. With message redistribution JBoss
-            Messaging can be configured to automatically <emphasis>redistribute</emphasis> messages
+        <para>This is where message redistribution comes in. With message redistribution HornetQ can be configured to automatically <emphasis>redistribute</emphasis> messages
             from queues which have no consumers back to other nodes in the cluster which do have
             matching consumers.</para>
         <para>Message redistribution can be configured to kick in immediately after the last

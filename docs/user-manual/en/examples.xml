@@ -50,8 +50,7 @@
         </section>
         <section>
             <title>Automatic Reconnect</title>
-            <para>The <literal>reconnect-same-node</literal> example demonstrates how JBoss
-                Messaging connections can be configured to be resilient to temporary network
+            <para>The <literal>reconnect-same-node</literal> example demonstrates how HornetQ connections can be configured to be resilient to temporary network
                 failures.</para>
             <para> In the case of a network failure being detected, either as a result of a failure
                 to read/write to the connection, or the failure of a pong to arrive back from the
@@ -166,8 +165,7 @@
         </section>
         <section>
             <title>HTTP Transport</title>
-            <para>The <literal>http-transport</literal> example shows you how to configure JBoss
-                Messaging to use the HTTP protocol as its transport layer.</para>
+            <para>The <literal>http-transport</literal> example shows you how to configure HornetQ to use the HTTP protocol as its transport layer.</para>
         </section>
         <section>
             <title>Instantiate JMS Objects Directly</title>
@@ -287,8 +285,7 @@
         </section>
         <section id="producer-rate-limiting-example">
             <title>Message Producer Rate Limiting</title>
-            <para>The <literal>producer-rte-limit</literal> example demonstrates how, with JBoss
-                Messaging, you can specify a maximum send rate at which a JMS message producer will
+            <para>The <literal>producer-rte-limit</literal> example demonstrates how, with HornetQ, you can specify a maximum send rate at which a JMS message producer will
                 send messages.</para>
         </section>
         <section id="examples.message-priority">
@@ -315,8 +312,7 @@
             <para>By default, HornetQ consumers buffer messages from the server in a client
                 side buffer before you actually receive them on the client side. This improves
                 performance since otherwise every time you called receive() or had processed the
-                last message in a <literal>MessageListener onMessage()</literal> method, the JBoss
-                Messaging client would have to go the server to request the next message, which
+                last message in a <literal>MessageListener onMessage()</literal> method, the HornetQ client would have to go the server to request the next message, which
                 would then get sent to the client side, if one was available.</para>
             <para>This would involve a network round trip for every message and really reduce
                 performance. Therefore, by default, HornetQ pre-fetches messages into a
@@ -373,15 +369,13 @@
         </section>
         <section id="asynchronous-send-acknowledgements-example">
             <title>Send Acknowledgements</title>
-            <para>The <literal>send-acknowledgements</literal> example shows you how to use JBoss
-                Messaging's advanced <emphasis>asynchronous send acknowledgements</emphasis> feature
+            <para>The <literal>send-acknowledgements</literal> example shows you how to use HornetQ's advanced <emphasis>asynchronous send acknowledgements</emphasis> feature
                 to obtain acknowledgement from the server that sends have been received and
                 processed in a separate stream to the sent messages. </para>
         </section>
         <section>
             <title>Static Message Selector</title>
-            <para>The <literal>static-selector</literal> example shows you how to configure a JBoss
-                Messaging core queue with static message selectors (filters).</para>
+            <para>The <literal>static-selector</literal> example shows you how to configure a HornetQ core queue with static message selectors (filters).</para>
         </section>
         <section>
             <title>Static Message Selector Using JMS</title>
@@ -390,8 +384,7 @@
         </section>
         <section>
             <title>SSL Transport</title>
-            <para>The <literal>ssl-enabled</literal> shows you how to configure SSL with JBoss
-                Messaging to send and receive message.</para>
+            <para>The <literal>ssl-enabled</literal> shows you how to configure SSL with HornetQ to send and receive message.</para>
         </section>
         <section>
             <title>Symmetric Cluster</title>
@@ -422,8 +415,7 @@
         <section>
             <title>Topic Selector 1</title>
             <para>The <literal>topic-selector-example1</literal> example shows you how to send
-                message to a JMS Topic, and subscribe them using selectors with JBoss
-                Messaging.</para>
+                message to a JMS Topic, and subscribe them using selectors with HornetQ.</para>
         </section>
         <section>
             <title>Topic Selector 2</title>
@@ -485,8 +477,7 @@
         </section>
         <section>
             <title>Resource Adapter Configuration</title>
-            <para>This example demonstrates how to configure several properties on the JBoss
-                Messaging JCA resource adaptor.</para>
+            <para>This example demonstrates how to configure several properties on the HornetQ JCA resource adaptor.</para>
         </section>
         <section id="jms-bridge-example">
             <title>JMS Bridge</title>

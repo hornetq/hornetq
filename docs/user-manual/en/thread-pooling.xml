@@ -87,12 +87,12 @@ myFactory.setUseGlobalPools(false);
 myFactory.setScheduledThreadPoolMaxSize(10);
 myFactory.setThreadPoolMaxSize(-1);   </programlisting>
         <para>If you're using the JMS API, you can set the same parameters directly on the <literal
-                >JBossConnectionFactory</literal> instance, for example:</para>
-        <programlisting>JBossConnectionFactory myFactory = new JBossConnectionFactory(...);
+                >HornetQConnectionFactory</literal> instance, for example:</para>
+        <programlisting>HornetQConnectionFactory myFactory = new HornetQConnectionFactory(...);
 myFactory.setUseGlobalPools(false);
 myFactory.setScheduledThreadPoolMaxSize(10);
 myFactory.setThreadPoolMaxSize(-1);        </programlisting>
-        <para>If you're using JNDI to instantiate <literal>JBossConnectionFactory</literal>
+        <para>If you're using JNDI to instantiate <literal>HornetQConnectionFactory</literal>
             instances, you can also set these parameters in the <literal>hornetq-jms.xml</literal> file
             where you describe your connection factory, for example:</para>
         <programlisting>&lt;connection-factory name="ConnectionFactory"&gt;

@@ -23,8 +23,7 @@
                 and others you won't find anywhere else.</para>
         </listitem>
         <listitem>
-            <para>Elegant POJO based design with minimal third party dependencies. Run JBoss
-                Messaging stand-alone, run it in integrated in your favourite JEE application
+            <para>Elegant POJO based design with minimal third party dependencies. Run HornetQ stand-alone, run it in integrated in your favourite JEE application
                 server, or run it embedded inside your own product.</para>
         </listitem>
         <listitem>

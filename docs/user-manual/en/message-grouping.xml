@@ -43,7 +43,7 @@
  producer.send(message);          
        </programlisting>
       <para>Alternatively, you can set <literal>autogroup</literal> to true on the <literal
-            >JBossConnectonFactory</literal> which will pick a random unique id.  This can also be
+            >HornetQConnectionFactory</literal> which will pick a random unique id.  This can also be
          set in the <literal>hornetq-jms.xml</literal> file like this:</para>
       <programlisting>&lt;connection-factory name="ConnectionFactory">
       &lt;connector-ref connector-name="netty-connector"/>

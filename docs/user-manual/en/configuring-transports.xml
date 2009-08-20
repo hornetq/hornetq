@@ -77,7 +77,7 @@ org.hornetq.integration.transports.netty.NettyAcceptorFactory
             <listitem>
                 <para>If you're using JMS and the server side JMS service to instantiate JMS
                     ConnectionFactory instances and bind them in JNDI, then when creating the
-                        <literal>JBossConnectionFactory</literal> it needs to know what server that
+                        <literal>HornetQConnectionFactory</literal> it needs to know what server that
                     connection factory will create connections to.</para>
                 <para>That's defined by the <literal>connector-ref</literal> element in the <literal
                         >hornetq-jms.xml</literal>file on the server side. Let's take a look at a
@@ -139,7 +139,7 @@ TransportConfiguration transportConfiguration =
     "org.hornetq.integration.transports.netty.NettyConnectorFactory", 
     connectionParams);
 
-ConnectionFactory connectionFactory = new JBossConnectionFactory(transportConfiguration);
+ConnectionFactory connectionFactory = new HornetQConnectionFactory(transportConfiguration);
 
 Connection jmsConnection = connectionFactory.createConnection();
 

@@ -449,8 +449,7 @@
       <para>HornetQ can be managed using <ulink
             url="http://java.sun.com/javase/technologies/core/mntr-mgmt/javamanagement/"
          >JMX</ulink>. </para>
-      <para>The management API is exposed by HornetQ using MBeans interfaces. JBoss
-         Messaging registers its resources with the domain <literal
+      <para>The management API is exposed by HornetQ using MBeans interfaces. HornetQ registers its resources with the domain <literal
          >org.hornetq</literal>.</para>
       <para>For example, the <literal>ObjectName</literal> to manage a JMS Queue <literal
             >exampleQueue</literal> is:</para>
@@ -613,7 +612,7 @@
       <para>The <emphasis>management queue</emphasis> is a special queue and needs to be
          instantiated directly by the client:</para>
       <programlisting>
-   Queue managementQueue = new JBossQueue("hornetq.management", "hornetq.management");   
+   Queue managementQueue = new HornetQQueue("hornetq.management", "hornetq.management");   
       </programlisting>
       <para>All the other steps are the same than for the Core API but they use JMS API
          instead:</para>
@@ -642,7 +641,7 @@
       <para>For example, to know the number of messages in the JMS queue <literal
             >exampleQueue</literal>:</para>
       <programlisting>
-   Queue managementQueue = new JBossQueue("hornetq.management", "hornetq.management");   
+   Queue managementQueue = new HornetQQueue("hornetq.management", "hornetq.management");   
    
    QueueSession session = ...      
    QueueRequestor requestor = new QueueRequestor(session, managementQueue);
@@ -763,12 +762,12 @@
             is that JMS requires a JMS Destination to receive the messages (preferably a
             Topic):</para>
          <programlisting>
-   Topic notificationsTopic = new JBossTopic("hornetq.notifications", "hornetq.notifications");
+   Topic notificationsTopic = new HornetQTopic("hornetq.notifications", "hornetq.notifications");
          </programlisting>
          <para>Once the notification topic is created, you can receive messages from it or set a
                <literal>MessageListener</literal>:</para>
          <programlisting>
-   Topic notificationsTopic = new JBossTopic("hornetq.notifications", "hornetq.notifications");
+   Topic notificationsTopic = new HornetQTopic("hornetq.notifications", "hornetq.notifications");
 
    Session session = ...
    MessageConsumer notificationConsumer = session.createConsumer(notificationsTopic);

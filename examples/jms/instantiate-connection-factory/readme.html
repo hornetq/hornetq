@@ -33,7 +33,7 @@
         the server.</li>
         <pre>
            <code>
-     Queue queue = new JBossQueue("exampleQueue");</code>
+     Queue queue = new HornetQQueue("exampleQueue");</code>
         </pre>
 
         <li>Instantiate the TransportConfiguration object. The TransportConfiguration instance encapsulates
@@ -54,7 +54,7 @@
         <li>Directly instantiate the JMS ConnectionFactory object using that TransportConfiguration.</li>
         <pre>
            <code>
-     ConnectionFactory cf = new JBossConnectionFactory(transportConfiguration);           
+     ConnectionFactory cf = new HornetQConnectionFactory(transportConfiguration);           
            </code>
         </pre>
 

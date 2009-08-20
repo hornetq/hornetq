@@ -67,7 +67,7 @@ public class ResourceAdapterTest extends ServiceTestBase
    {
       HornetQResourceAdapter ra = new HornetQResourceAdapter();
       ra.setConnectorClassName(InVMConnector.class.getName());
-      HornetQConnectionFactory factory = ra.getDefaultJBossConnectionFactory();
+      HornetQConnectionFactory factory = ra.getDefaultHornetQConnectionFactory();
       assertEquals(factory.getCallTimeout(), ClientSessionFactoryImpl.DEFAULT_CALL_TIMEOUT);
       assertEquals(factory.getClientFailureCheckPeriod(), ClientSessionFactoryImpl.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD);
       assertEquals(factory.getClientID(), null);
@@ -103,8 +103,8 @@ public class ResourceAdapterTest extends ServiceTestBase
    {
       HornetQResourceAdapter ra = new HornetQResourceAdapter();
       ra.setConnectorClassName(InVMConnector.class.getName());
-      HornetQConnectionFactory factory = ra.getDefaultJBossConnectionFactory();
-      HornetQConnectionFactory factory2 = ra.getDefaultJBossConnectionFactory();
+      HornetQConnectionFactory factory = ra.getDefaultHornetQConnectionFactory();
+      HornetQConnectionFactory factory2 = ra.getDefaultHornetQConnectionFactory();
       assertEquals(factory, factory2);
    }
 
@@ -112,7 +112,7 @@ public class ResourceAdapterTest extends ServiceTestBase
    {
       HornetQResourceAdapter ra = new HornetQResourceAdapter();
       ra.setConnectorClassName(InVMConnector.class.getName());
-      HornetQConnectionFactory factory = ra.createJBossConnectionFactory(new ConnectionFactoryProperties());
+      HornetQConnectionFactory factory = ra.createHornetQConnectionFactory(new ConnectionFactoryProperties());
       assertEquals(factory.getCallTimeout(), ClientSessionFactoryImpl.DEFAULT_CALL_TIMEOUT);
       assertEquals(factory.getClientFailureCheckPeriod(), ClientSessionFactoryImpl.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD);
       assertEquals(factory.getClientID(), null);
@@ -175,7 +175,7 @@ public class ResourceAdapterTest extends ServiceTestBase
       ra.setThreadPoolMaxSize(17);
       ra.setTransactionBatchSize(18);
       ra.setUseGlobalPools(!ClientSessionFactoryImpl.DEFAULT_USE_GLOBAL_POOLS);
-      HornetQConnectionFactory factory = ra.getDefaultJBossConnectionFactory();
+      HornetQConnectionFactory factory = ra.getDefaultHornetQConnectionFactory();
       assertEquals(factory.getCallTimeout(), 1);
       assertEquals(factory.getClientFailureCheckPeriod(), 2);
       assertEquals(factory.getClientID(), "myid");
@@ -239,7 +239,7 @@ public class ResourceAdapterTest extends ServiceTestBase
       connectionFactoryProperties.setThreadPoolMaxSize(17);
       connectionFactoryProperties.setTransactionBatchSize(18);
       connectionFactoryProperties.setUseGlobalPools(!ClientSessionFactoryImpl.DEFAULT_USE_GLOBAL_POOLS);
-      HornetQConnectionFactory factory = ra.createJBossConnectionFactory(connectionFactoryProperties);
+      HornetQConnectionFactory factory = ra.createHornetQConnectionFactory(connectionFactoryProperties);
       assertEquals(factory.getCallTimeout(), 1);
       assertEquals(factory.getClientFailureCheckPeriod(), 2);
       assertEquals(factory.getClientID(), "myid");
@@ -277,8 +277,8 @@ public class ResourceAdapterTest extends ServiceTestBase
       ra.setConnectorClassName(InVMConnector.class.getName());
       ConnectionFactoryProperties connectionFactoryProperties = new ConnectionFactoryProperties();
       connectionFactoryProperties.setConnectorClassName(NettyConnector.class.getName());
-      HornetQConnectionFactory factory = ra.createJBossConnectionFactory(connectionFactoryProperties);
-      HornetQConnectionFactory defaultFactory = ra.getDefaultJBossConnectionFactory();
+      HornetQConnectionFactory factory = ra.createHornetQConnectionFactory(connectionFactoryProperties);
+      HornetQConnectionFactory defaultFactory = ra.getDefaultHornetQConnectionFactory();
       assertNotSame(factory, defaultFactory);
    }
 
@@ -289,8 +289,8 @@ public class ResourceAdapterTest extends ServiceTestBase
       ConnectionFactoryProperties connectionFactoryProperties = new ConnectionFactoryProperties();
       connectionFactoryProperties.setDiscoveryAddress("myhost");
       connectionFactoryProperties.setDiscoveryPort(5678);
-      HornetQConnectionFactory factory = ra.createJBossConnectionFactory(connectionFactoryProperties);
-      HornetQConnectionFactory defaultFactory = ra.getDefaultJBossConnectionFactory();
+      HornetQConnectionFactory factory = ra.createHornetQConnectionFactory(connectionFactoryProperties);
+      HornetQConnectionFactory defaultFactory = ra.getDefaultHornetQConnectionFactory();
       assertNotSame(factory, defaultFactory);
    }
 
@@ -300,7 +300,7 @@ public class ResourceAdapterTest extends ServiceTestBase
       ConnectionFactoryProperties connectionFactoryProperties = new ConnectionFactoryProperties();
       try
       {
-         HornetQConnectionFactory factory = ra.createJBossConnectionFactory(connectionFactoryProperties);
+         HornetQConnectionFactory factory = ra.createHornetQConnectionFactory(connectionFactoryProperties);
          fail("should throw exception");
       }
       catch (IllegalArgumentException e)
@@ -377,7 +377,7 @@ public class ResourceAdapterTest extends ServiceTestBase
          ra.setPassword("passwordGlobal");
          ra.start(fakeCTX);
 
-         Connection conn = ra.getDefaultJBossConnectionFactory().createConnection();
+         Connection conn = ra.getDefaultHornetQConnectionFactory().createConnection();
          
          conn.close();
          
@@ -421,7 +421,7 @@ public class ResourceAdapterTest extends ServiceTestBase
       /*public HornetQRAConnectionFactory createRemoteFactory(String connectorClassName,
                                                         Map<String, Object> connectionParameters)
       {
-         HornetQRAConnectionFactory factory = super.createJBossConnectionFactory(connectionParameters);
+         HornetQRAConnectionFactory factory = super.createHornetQConnectionFactory(connectionParameters);
 
          return factory;
       }*/

@@ -1049,11 +1049,11 @@ public class HornetQRAManagedConnection implements ManagedConnection, ExceptionL
             {
                if (userName != null && password != null)
                {
-                  xaConnection = mcf.getJBossConnectionFactory().createXATopicConnection(userName, password);
+                  xaConnection = mcf.getHornetQConnectionFactory().createXATopicConnection(userName, password);
                }
                else
                {
-                  xaConnection = mcf.getJBossConnectionFactory().createXATopicConnection();
+                  xaConnection = mcf.getHornetQConnectionFactory().createXATopicConnection();
                }
 
                xaConnection.setExceptionListener(this);
@@ -1065,11 +1065,11 @@ public class HornetQRAManagedConnection implements ManagedConnection, ExceptionL
             {
                if (userName != null && password != null)
                {
-                  connection = mcf.getJBossConnectionFactory().createTopicConnection(userName, password);
+                  connection = mcf.getHornetQConnectionFactory().createTopicConnection(userName, password);
                }
                else
                {
-                  connection = mcf.getJBossConnectionFactory().createTopicConnection();
+                  connection = mcf.getHornetQConnectionFactory().createTopicConnection();
                }
 
                connection.setExceptionListener(this);
@@ -1083,11 +1083,11 @@ public class HornetQRAManagedConnection implements ManagedConnection, ExceptionL
             {
                if (userName != null && password != null)
                {
-                  xaConnection = mcf.getJBossConnectionFactory().createXAQueueConnection(userName, password);
+                  xaConnection = mcf.getHornetQConnectionFactory().createXAQueueConnection(userName, password);
                }
                else
                {
-                  xaConnection = mcf.getJBossConnectionFactory().createXAQueueConnection();
+                  xaConnection = mcf.getHornetQConnectionFactory().createXAQueueConnection();
                }
 
                xaConnection.setExceptionListener(this);
@@ -1099,11 +1099,11 @@ public class HornetQRAManagedConnection implements ManagedConnection, ExceptionL
             {
                if (userName != null && password != null)
                {
-                  connection = mcf.getJBossConnectionFactory().createQueueConnection(userName, password);
+                  connection = mcf.getHornetQConnectionFactory().createQueueConnection(userName, password);
                }
                else
                {
-                  connection = mcf.getJBossConnectionFactory().createQueueConnection();
+                  connection = mcf.getHornetQConnectionFactory().createQueueConnection();
                }
 
                connection.setExceptionListener(this);
@@ -1117,11 +1117,11 @@ public class HornetQRAManagedConnection implements ManagedConnection, ExceptionL
             {
                if (userName != null && password != null)
                {
-                  xaConnection = mcf.getJBossConnectionFactory().createXAConnection(userName, password);
+                  xaConnection = mcf.getHornetQConnectionFactory().createXAConnection(userName, password);
                }
                else
                {
-                  xaConnection = mcf.getJBossConnectionFactory().createXAConnection();
+                  xaConnection = mcf.getHornetQConnectionFactory().createXAConnection();
                }
 
                xaConnection.setExceptionListener(this);
@@ -1133,11 +1133,11 @@ public class HornetQRAManagedConnection implements ManagedConnection, ExceptionL
             {
                if (userName != null && password != null)
                {
-                  connection = mcf.getJBossConnectionFactory().createConnection(userName, password);
+                  connection = mcf.getHornetQConnectionFactory().createConnection(userName, password);
                }
                else
                {
-                  connection = mcf.getJBossConnectionFactory().createConnection();
+                  connection = mcf.getHornetQConnectionFactory().createConnection();
                }
 
                connection.setExceptionListener(this);

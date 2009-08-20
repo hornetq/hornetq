@@ -99,7 +99,7 @@
 &lt;/connection-factory&gt;
             </programlisting>
             <para>If the connection factory is directly instantiated, the consumer window size is
-               specified by <literal>JBossConnectionFactory.setConsumerWindowSize()</literal>
+               specified by <literal>HornetQConnectionFactory.setConsumerWindowSize()</literal>
                method.</para>
             <para>Please see <xref linkend="examples.no-consumer-buffering" /> for an example which shows how to configure
                HornetQ to prevent consumer buffering when dealing with slow
@@ -139,7 +139,7 @@
       &lt;consumer-max-rate>10&lt;/consumer-max-rate>
  &lt;/connection-factory></programlisting>
             <para>If the connection factory is directly instantiated, the max rate size can be set
-               via the <literal>JBossConnectionFactory.setConsumerMaxRate(int
+               via the <literal>HornetQConnectionFactory.setConsumerMaxRate(int
                   consumerMaxRate)</literal> method.</para>
             <note>
                <para>Rate limited flow control can be used in conjunction with window based flow
@@ -198,7 +198,7 @@
       &lt;producer-max-rate>10&lt;/producer-max-rate>
  &lt;/connection-factory></programlisting>
             <para>If the connection factory is directly instantiated, the max rate size can be set
-               via the <literal>JBossConnectionFactory.setProducerMaxRate(int
+               via the <literal>HornetQConnectionFactory.setProducerMaxRate(int
                   consumerMaxRate)</literal> method.</para>
          </section>
       </section>

@@ -64,16 +64,16 @@
         
         <pre>
            <code>
-   ConnectionFactory cf = new JBossConnectionFactory("231.7.7.7", 9876); 
+   ConnectionFactory cf = new HornetQConnectionFactory("231.7.7.7", 9876); 
    </code>
         </pre>
 
         <li>Directly instantiate JMS Queue and Topic objects</li>
         <pre>
            <code>
-   Queue queue = new JBossQueue("exampleQueue");
+   Queue queue = new HornetQQueue("exampleQueue");
          
-   Topic topic = new JBossTopic("exampleTopic");           
+   Topic topic = new HornetQTopic("exampleTopic");           
            </code>
         </pre>
 

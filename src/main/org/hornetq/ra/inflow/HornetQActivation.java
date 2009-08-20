@@ -320,11 +320,11 @@ public class HornetQActivation
    {
       if(spec.isHasBeenUpdated())
       {
-         factory = ra.createJBossConnectionFactory(spec);
+         factory = ra.createHornetQConnectionFactory(spec);
       }
       else
       {
-         factory = ra.getDefaultJBossConnectionFactory();
+         factory = ra.getDefaultHornetQConnectionFactory();
       }
    }
 

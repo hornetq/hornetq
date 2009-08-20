@@ -61,7 +61,7 @@
         <li>Set the handler on the underlying core session</li>
         <pre>
            <code>
-         ClientSession coreSession = ((JBossSession)session).getCoreSession();
+         ClientSession coreSession = ((HornetQSession)session).getCoreSession();
          
          coreSession.setSendAcknowledgementHandler(new MySendAcknowledgementsHandler());
            

@@ -17,8 +17,7 @@
         <programlisting>java.naming.factory.initial=org.jnp.interfaces.NamingContextFactory
 java.naming.provider.url=jnp://localhost:1099
 java.naming.factory.url.pkgs=org.jboss.naming:org.jnp.interfaces</programlisting>
-        <para>Make sure this file is in the classpath along with the StompConnect jar and the JBoss
-            Messaging jars and simply run <literal>java
+        <para>Make sure this file is in the classpath along with the StompConnect jar and the HornetQ jars and simply run <literal>java
             org.codehaus.stomp.jms.Main</literal>.</para>
         <para>HornetQ will shortly be implementing the Stomp protocol directly, so you won't
             have to use StompConnect to be able to use HornetQ with Stomp clients.</para>

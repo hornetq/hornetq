@@ -72,7 +72,7 @@ factory.setMinLargeMessageSize(25 * 1024);</programlisting>
 ...</programlisting>
             <para>If the connection factory is being instantiated directly, the minimum large
                 message size is specified by <literal
-                    >JBossConnectionFactory.setMinLargeMessageSize</literal>.</para>
+                    >HornetQConnectionFactory.setMinLargeMessageSize</literal>.</para>
         </section>
     </section>
     <section>

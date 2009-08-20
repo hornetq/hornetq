@@ -22,8 +22,7 @@
             </listitem>
             <listitem>
                 <para><literal>journal-aio-flush-on-sync</literal>. If you don't have many producers
-                    in your system you may consider setting journal-aio-flush-on-sync to true. JBoss
-                    Messaging by default is optimized by the case where you have many producers. We
+                    in your system you may consider setting journal-aio-flush-on-sync to true. HornetQ by default is optimized by the case where you have many producers. We
                     try to combine multiple writes in a single OS operation. However if that's not
                     your case setting this option to true will give you a performance boost.</para>
                 <para>On the other hand when you have multiple producers, keeping <literal
