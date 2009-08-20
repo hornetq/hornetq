@@ -11,7 +11,7 @@
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="module" module-name="messaging" />
+    <orderEntry type="module" module-name="hornetq" />
     <orderEntry type="library" name="messaging-jms-tests" level="project" />
     <orderEntry type="library" name="messaging_jars" level="project" />
   </component>

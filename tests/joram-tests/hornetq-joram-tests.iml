@@ -10,8 +10,8 @@
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="module" module-name="messaging" />
-    <orderEntry type="module" module-name="messaging-tests" />
+    <orderEntry type="module" module-name="hornetq" />
+    <orderEntry type="module" module-name="hornetq-tests" />
     <orderEntry type="library" name="messaging_jars" level="project" />
     <orderEntry type="library" name="messaging-joram-tests" level="project" />
   </component>
