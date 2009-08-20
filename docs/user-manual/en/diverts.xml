@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <chapter id="diverts">
     <title>Diverting and Splitting Message Flows</title>
-    <para>JBoss Messaging allows you to configure objects called <emphasis>diverts</emphasis> with
+    <para>HornetQ allows you to configure objects called <emphasis>diverts</emphasis> with
         some simple server configuration.</para>
     <para>Diverts allow you to transparently divert messages routed to one address to some other
         address, without making any changes to any client application logic.</para>

@@ -15,7 +15,7 @@
   ~ permissions and limitations under the License.
   -->
 
-<project default="run" name="JBoss Messaging JMS Queue Selector Example">
+<project default="run" name="HornetQ JMS Queue Selector Example">
 
    <import file="../../common/build.xml"/>
 

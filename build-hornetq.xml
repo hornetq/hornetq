@@ -18,7 +18,6 @@
 
 <project default="jar" name="The HornetQ Project">
 
-
    <!-- ======================================================================================== -->
    <!-- javac + junit properties                                                                 -->
    <!-- ======================================================================================== -->
@@ -901,17 +900,17 @@
    <target name="javadoc">
 
       <javadoc destdir="${build.api.dir}" author="true" version="true" use="true"
-               windowtitle="JBoss Messaging ${module.version}">
+               windowtitle="HornetQ ${module.version}">
 
          <packageset dir="${src.main.dir}" defaultexcludes="yes">
             <include name="org/jboss/**"/>
          </packageset>
          <classpath refid="javadoc.classpath"/>
-         <doctitle><![CDATA[<h2>JBoss Messaging  ${module.version}</h2>]]></doctitle>
-         <bottom><![CDATA[<i>Copyright &#169; 2006 JBoss Inc. All Rights Reserved.</i>]]></bottom>
+         <doctitle><![CDATA[<h2>HornetQ  ${module.version}</h2>]]></doctitle>
+         <bottom><![CDATA[<i>Copyright &#169; 2009 Red Hat Inc. All Rights Reserved.</i>]]></bottom>
          <tag name="todo" scope="all" description="To do:"/>
          <group title="JMS Facade" packages="org.jboss.jms.*"/>
-         <group title="Messaging Core" packages="org.hornetq.*"/>
+         <group title="HornetQ Core" packages="org.hornetq.*"/>
       </javadoc>
    </target>
 

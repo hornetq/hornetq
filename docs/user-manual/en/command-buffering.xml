@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <chapter id="command-buffering">
     <title>Command Buffering</title>
-    <para>As JBoss Messaging clients send commands to their servers they store each sent command in
+    <para>As HornetQ clients send commands to their servers they store each sent command in
         an in-memory buffer. In the case that connection failure occurs and the client subsequently
         reconnects to the same server or fails over onto a replica server, as part of the
         reconnection protocol the server informs the client during reconnection with the id of the

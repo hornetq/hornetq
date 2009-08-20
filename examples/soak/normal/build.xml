@@ -16,7 +16,7 @@ Copyright 2009 Red Hat, Inc.
  permissions and limitations under the License.
   -->
 
-<project name="JBoss Messaging JMS Soak Example">
+<project name="HornetQ JMS Soak Example">
 
 	<import file="../../common/build.xml" />
 

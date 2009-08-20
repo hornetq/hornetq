@@ -17,7 +17,7 @@ import org.hornetq.core.exception.MessagingException;
 
 /**
  *
- * This is class is a simple way to intercepting server calls on JBoss Messaging.
+ * This is class is a simple way to intercepting server calls on HornetQ.
  * 
  * To Add this interceptor, you have to modify hornetq-configuration.xml
  * 

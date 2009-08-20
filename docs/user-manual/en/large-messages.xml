@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <chapter id="large-messages">
     <title>Large Messages</title>
-    <para>JBoss Messaging supports sending and receiving of huge messages, even when the client and
+    <para>HornetQ supports sending and receiving of huge messages, even when the client and
         server are running with limited memory. The only limit to the size of a message that can be
         sent or consumed is the amount of disk space you have available. We have tested sending and
         consuming messages up to 8 GiB in size with a client and server running in just 50MiB of
         RAM!</para>
     <para>To send a large message, the user can set an <literal>InputStream</literal> on a message
-        body, and when that message is sent, JBoss Messaging will read the <literal
+        body, and when that message is sent, HornetQ will read the <literal
             >InputStream</literal>. A <literal>FileInputStream</literal> could be used for example
         to send a huge message from a huge file on disk.</para>
     <para>As the <literal>InputStream</literal> is read the data is sent to the server as a stream
@@ -46,7 +46,7 @@
         <para>The default value  is 100KiB.</para>
         <section id="large-messages.core.config">
             <title>Using Core API</title>
-            <para>If the JBoss Messaging Core API is used, the minimal large message size is
+            <para>If the HornetQ Core API is used, the minimal large message size is
                 specified by <literal>ClientSessionFactory.setMinLargeMessageSize</literal>.</para>
             <programlisting>ClientSessionFactory factory = 
             new ClientSessionFactoryImpl(new 
@@ -77,7 +77,7 @@ factory.setMinLargeMessageSize(25 * 1024);</programlisting>
     </section>
     <section>
         <title>Streaming large messages</title>
-        <para>JBoss Messaging supports setting the body of messages using input and output streams
+        <para>HornetQ supports setting the body of messages using input and output streams
                 (<literal>java.lang.io</literal>)</para>
         <para>These streams are then used directly for sending (input streams) and receiving (output
             streams) messages.</para>
@@ -160,7 +160,7 @@ msg.setInputStream(dataInputStream);
         </section>
         <section id="large-messages.streaming.over.jms">
             <title>Streaming over JMS</title>
-            <para>When using JMS, JBoss Messaging maps the streaming methods on the core API (see
+            <para>When using JMS, HornetQ maps the streaming methods on the core API (see
                     <xref linkend="large-messages.ClientMessageAPI"/>) by setting object properties
                 . You can use the method <literal>Message.setObjectProperty</literal> to set the
                 input and output streams.</para>
@@ -205,7 +205,7 @@ messageReceived.setObjectProperty("JMS_HQ_InputStream", bufferedOutput);
     <section>
         <title>Streaming Alternative</title>
         <para>If you choose not to use the <literal>InputStream</literal> or <literal
-                >OutputStream</literal> capability of JBoss Messaging You could still access the
+                >OutputStream</literal> capability of HornetQ You could still access the
             data directly in an alternative fashion.</para>
         <para>On the Core API just get the bytes of the body as you normally would.</para>
         <programlisting>ClientMessage msg = consumer.receive();

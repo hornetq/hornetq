@@ -1,16 +1,16 @@
 <html>
   <head>
-    <title>JBoss Messaging JMS XA Send Example</title>
+    <title>HornetQ JMS XA Send Example</title>
     <link rel="stylesheet" type="text/css" href="../../common/common.css">
   </head>
   <body>
      <h1>JMS XA Send Example</h1>
      <br>
-     <p>This example shows you how message sending behaves in an XA transaction in JBoss Messaging. In an XA
+     <p>This example shows you how message sending behaves in an XA transaction in HornetQ. In an XA
      Transaction, only if the associated XAResource are commited, will the messages be sent to the queue. 
      Otherwise, the messages to be sent will be discarded.</p>
      
-     <p>JBoss Messaging is JTA aware, meaning you can use JBoss Messaging in a XA transactional environment
+     <p>HornetQ is JTA aware, meaning you can use HornetQ in a XA transactional environment
      and participate in XA transactions. It provides the javax.transaction.xa.XAResource interface for that
      purpose. Users can get a XAConnectionFactory to create XAConnections and XASessions.</p>
      

@@ -15,7 +15,7 @@
   ~ permissions and limitations under the License.
   -->
 
-<project default="run" name="JBoss Messaging JMX Example">
+<project default="run" name="HornetQ JMX Example">
 
    <import file="../../common/build.xml"/>
    <property file="ant.properties"/>

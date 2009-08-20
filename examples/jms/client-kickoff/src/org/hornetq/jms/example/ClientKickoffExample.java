@@ -31,7 +31,7 @@ import java.util.HashMap;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
- * An example that shows how to kick off a client connected to JBoss Messagingby using JMX.
+ * An example that shows how to kick off a client connected to HornetQby using JMX.
  *
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  */

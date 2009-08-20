@@ -1,16 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <chapter id="installation">
    <title>Installation</title>
-   <para>This section describes how to install JBoss Messaging. </para>
+   <para>This section describes how to install HornetQ. </para>
    <section id="installation.prerequisites">
       <title>Prerequisites</title>
       <note>
-         <para>JBoss Messaging only runs on Java 5 or later. We highly recommend to use Java
+         <para>HornetQ only runs on Java 5 or later. We highly recommend to use Java
             6.</para>
       </note>
-      <para>By default, JBoss Messaging server is run with 1GB of memory. If your computer has less
+      <para>By default, HornetQ server is run with 1GB of memory. If your computer has less
          memory, modify the value in <literal>bin/run.sh</literal> accordingly.</para>
-      <para>For persistence, JBoss Messaging uses its own fast journal file, which you can configure
+      <para>For persistence, HornetQ uses its own fast journal file, which you can configure
          to use libaio (which is the default when running on Linux) or Java NIO. In order to use the
          libaio module on Linux, it's required to install libaio.</para>
       <para>If you're not running on Linux then you don't need to worry about this.</para>
@@ -23,7 +23,7 @@
          profiles for JBoss AS 5 and run the examples.</para>
    </section>
    <section id="installation.standalone">
-      <title>Standalone JBoss Messaging Server</title>
+      <title>Standalone HornetQ Server</title>
       <para>After downloading the distribution, unzip it into your chosen directory. At this point
          it should be possible to <link linkend="running.standalone">run straight out of the
             box</link>, the following describes the directory structure: </para>
@@ -51,34 +51,34 @@
          </listitem>
          <listitem>
             <para><literal>config</literal> -- configuration files needed to configure JBoss
-               Messaging. This contains configurations to run JBoss Messaging either in stand-alone
+               Messaging. This contains configurations to run HornetQ either in stand-alone
                or inside JBoss AS 5. Please refer to the reference guide for details on
                configuration. </para>
          </listitem>
          <listitem>
-            <para><literal>docs</literal> -- guides and javadocs for JBoss Messaging </para>
+            <para><literal>docs</literal> -- guides and javadocs for HornetQ </para>
          </listitem>
          <listitem>
             <para><literal>examples</literal> -- JMS and Java EE examples. Please refer to the
                'running examples' chapter for details on how to run them. </para>
          </listitem>
          <listitem>
-            <para><literal>lib</literal> -- jars and libraries needed to run JBoss Messaging </para>
+            <para><literal>lib</literal> -- jars and libraries needed to run HornetQ </para>
          </listitem>
          <listitem>
-            <para><literal>licenses</literal> -- licenses for JBoss Messaging </para>
+            <para><literal>licenses</literal> -- licenses for HornetQ </para>
          </listitem>
          <listitem>
-            <para><literal>schemas</literal> -- XML Schemas used to validate JBoss Messaging
+            <para><literal>schemas</literal> -- XML Schemas used to validate HornetQ
                configuration files</para>
          </listitem>
       </itemizedlist>
    </section>
    <section id="installation.jboss">
-      <title>JBoss Messaging In JBoss AS 5</title>
-      <para>JBoss Messaging 2.0 can be deployed in <ulink url="http://www.jboss.org/jbossas/">JBoss
+      <title>HornetQ In JBoss AS 5</title>
+      <para>HornetQ 2.0 can be deployed in <ulink url="http://www.jboss.org/jbossas/">JBoss
             AS 5</ulink>. It is not shipped by default with the application server and you need to
-         create new AS 5 profiles to run AS 5 with JBoss Messaging.</para>
+         create new AS 5 profiles to run AS 5 with HornetQ.</para>
       <para>To create AS 5 profiles:</para>
       <orderedlist>
          <listitem>
@@ -89,7 +89,7 @@
                directory where you installed JBoss AS 5</para>
          </listitem>
          <listitem>
-            <para>run <literal>ant</literal> in JBoss Messaging's <literal>config/jboss-as</literal>
+            <para>run <literal>ant</literal> in HornetQ's <literal>config/jboss-as</literal>
                directory</para>
          </listitem>
       </orderedlist>
@@ -97,12 +97,12 @@
       <itemizedlist>
          <listitem>
             <para><literal>default-with-hornetq</literal> -- it corresponds to AS 5 <literal
-                  >default</literal> profile with JBoss Messaging 2 as its JMS provider. In this
-               profile, JBoss Messaging is <emphasis>non-clustered</emphasis></para>
+                  >default</literal> profile with HornetQ 2 as its JMS provider. In this
+               profile, HornetQ is <emphasis>non-clustered</emphasis></para>
          </listitem>
          <listitem>
             <para><literal>all-with-hornetq</literal> -- it corresponds to AS 5 <literal>all</literal>
-               profile with JBoss Messaging 2 as its JMS provider. In this profile, JBoss Messaging
+               profile with HornetQ 2 as its JMS provider. In this profile, HornetQ
                is <emphasis>clustered</emphasis></para>
          </listitem>
       </itemizedlist>

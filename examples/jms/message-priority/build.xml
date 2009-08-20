@@ -15,7 +15,7 @@
   ~ permissions and limitations under the License.
   -->
 
-<project default="run" name="JBoss Messaging JMS Message Priority Example">
+<project default="run" name="HornetQ JMS Message Priority Example">
 
    <import file="../../common/build.xml"/>
 

@@ -14,7 +14,7 @@
   ~ implied.  See the License for the specific language governing
   ~ permissions and limitations under the License.
   -->
-<project default="run" name="JBoss Messaging JMS Symmetric Cluster Example">
+<project default="run" name="HornetQ JMS Symmetric Cluster Example">
 
    <import file="../../common/build.xml"/>
    <property file="ant.properties"/>

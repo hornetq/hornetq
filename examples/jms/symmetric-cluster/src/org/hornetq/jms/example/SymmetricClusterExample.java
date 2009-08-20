@@ -33,7 +33,7 @@ import javax.jms.Topic;
  * This is probably the most obvious clustering topology and the one most people will be familiar with from
  * using clustering in an app server, where every node has pretty much identical configuration to every other node.
  * 
- * By clustering nodes symmetrically, JBoss Messaging can give the impression of clustered queues, topics and
+ * By clustering nodes symmetrically, HornetQ can give the impression of clustered queues, topics and
  * durable subscriptions.
  * 
  * In this example we send some messages to a distributed queue and topic and kill all the live servers at different

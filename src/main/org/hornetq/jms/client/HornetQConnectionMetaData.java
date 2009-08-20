@@ -224,7 +224,7 @@ public class HornetQConnectionMetaData implements ConnectionMetaData
 {
    // Constants -----------------------------------------------------
 
-   public static final String JBOSS_MESSAGING = "JBoss Messaging";
+   public static final String JBOSS_MESSAGING = "HornetQ";
 
    // Static --------------------------------------------------------
 

@@ -1,16 +1,16 @@
 <html>
   <head>
-    <title>JBoss Messaging JMX Management Example</title>
+    <title>HornetQ JMX Management Example</title>
     <link rel="stylesheet" type="text/css" href="../../common/common.css">
   </head>
   <body>
      <h1>JMX Management Example</h1>
      <br>
-     <p>This example shows how to manage JBoss Messaging using <a href="http://java.sun.com/javase/technologies/core/mntr-mgmt/javamanagement/">JMX</a></p>
+     <p>This example shows how to manage HornetQ using <a href="http://java.sun.com/javase/technologies/core/mntr-mgmt/javamanagement/">JMX</a></p>
 
      <h2>Example configuration</h2>
 
-     <p>JBoss Messaging exposes its managed resources by default on the platform MBeanServer.</p>
+     <p>HornetQ exposes its managed resources by default on the platform MBeanServer.</p>
      <p>To access this MBeanServer remotely, the Java Virtual machine must be started with system properties:
          <pre>
              <code>-Dcom.sun.management.jmxremote
@@ -20,7 +20,7 @@
         </pre>
         <p>These properties are explained in the Java 5 <a href="http://java.sun.com/j2se/1.5.0/docs/guide/management/agent.html#remote">Management guide</a>
             (please note that for this example, we will disable user authentication for simplicity sake).</p>        
-        <p>With these properties, JBoss Messaging server will be manageable remotely using standard JMX URL on port <code>3000</code>.</p> 
+        <p>With these properties, HornetQ server will be manageable remotely using standard JMX URL on port <code>3000</code>.</p> 
      </p>
          
      <h2>Example step-by-step</h2>
@@ -154,10 +154,10 @@
      <ul>
         <li>User Manual's <a href="../../../docs/user-manual/en/html_single/index.html#management.jmx">Using Management Via JMX chapter</a></li>
         <li><a href="http://java.sun.com/j2se/1.5.0/docs/guide/management/agent.html">Java 5 Management guide</a></li>
-        <li>JBoss Messaging defines a set of MBeans for this core 
+        <li>HornetQ defines a set of MBeans for this core 
             API (<a href="../../../docs/api/org/jboss/messaging/core/management/package-summary.html">org.hornetq.core.management</a>
              package) and its JMS API (in the <a href="../../../docs/api/org/jboss/messaging/jms/server/management/package-summary.html">org.hornetq.jms.server.management</a> package)
-        <li><a href="../../../docs/api/org/jboss/messaging/core/management/ObjectNames.html">ObjectNames</a> is a helper class used to build the ObjectName of JBoss Messaging manageable resources</li>
+        <li><a href="../../../docs/api/org/jboss/messaging/core/management/ObjectNames.html">ObjectNames</a> is a helper class used to build the ObjectName of HornetQ manageable resources</li>
      </ul>
   </body>
 </html>

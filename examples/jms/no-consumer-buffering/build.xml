@@ -15,7 +15,7 @@
   ~ permissions and limitations under the License.
   -->
 
-<project default="run" name="JBoss Messaging JMS No Consumer Buffering Example">
+<project default="run" name="HornetQ JMS No Consumer Buffering Example">
 
    <import file="../../common/build.xml"/>
 

@@ -14,7 +14,7 @@
   ~ implied.  See the License for the specific language governing
   ~ permissions and limitations under the License.
   -->
-<project default="run" name="JBoss Messaging Send Acknowledgements Example">
+<project default="run" name="HornetQ Send Acknowledgements Example">
 
    <import file="../../common/build.xml"/>
 

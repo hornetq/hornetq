@@ -24,7 +24,7 @@ import javax.naming.InitialContext;
 import org.hornetq.common.example.HornetQExample;
 
 /**
- * This example demonstrates how JBoss Messaging consumers can be configured to not buffer any messages from
+ * This example demonstrates how HornetQ consumers can be configured to not buffer any messages from
  * the server.
  *
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>

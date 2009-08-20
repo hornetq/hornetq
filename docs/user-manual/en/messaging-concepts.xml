@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <chapter id="messaging-concepts">
     <title>Messaging Concepts</title>
-    <para>JBoss Messaging is an asynchronous messaging system, an example of <ulink
+    <para>HornetQ is an asynchronous messaging system, an example of <ulink
             url="http://en.wikipedia.org/wiki/Message_oriented_middleware">Message Oriented
             Middleware</ulink> , we'll just call them messaging systems in the remainder of this
         book.</para>
@@ -114,7 +114,7 @@
     <section>
         <title>Transactions</title>
         <para>Messaging systems typically support the sending and acknowledgement of multiple
-            messages in a single local transaction. JBoss Messaging also supports the sending and
+            messages in a single local transaction. HornetQ also supports the sending and
             acknowledgement of message as part of a large global transaction - using the Java
             mapping of XA, JTA.</para>
     </section>
@@ -148,7 +148,7 @@
             <para>JMS does not define a standard wire format - it only defines a programmatic API so
                 JMS clients and servers from different vendors cannot interoperate since they will
                 most likely use the vendor's own internal wire protocol.</para>
-            <para>JBoss Messaging provides a fully compliant JMS 1.1 API.</para>
+            <para>HornetQ provides a fully compliant JMS 1.1 API.</para>
         </section>
         <section>
             <title>System specific APIs</title>
@@ -157,7 +157,7 @@
                 functionality to be exposed to the client application. API's like JMS are not
                 normally rich enough to expose all the extra features that most messaging systems
                 provide.</para>
-            <para>JBoss Messaging provides its own core client API for clients to use if they wish
+            <para>HornetQ provides its own core client API for clients to use if they wish
                 to have access to functionality over and above that accessible via the JMS
                 API.</para>
         </section>
@@ -169,10 +169,10 @@
                 systems. It defines a wire format, so theoretically any STOMP client can work with
                 any messaging system that supports STOMP. STOMP clients are available in many
                 different programming languages.</para>
-            <para>JBoss Messaging can be used by any STOMP client when using the <ulink
+            <para>HornetQ can be used by any STOMP client when using the <ulink
                     url="http://stomp.codehaus.org/StompConnect">StompConnect</ulink> broker which
                 translates the STOMP protocol to the JMS API.</para>
-            <para>JBoss Messaging will be shortly implementing the STOMP protocol on the broker, thus
+            <para>HornetQ will be shortly implementing the STOMP protocol on the broker, thus
                 avoiding having to use StompConnect.</para>
         </section>
         <section>
@@ -181,7 +181,7 @@
                 standard for interoperable messaging. It also defines a wire format, so any AMQP
                 client can work with any messaging system that supports AMQP. AMQP clients are
                 available in many different programming languages.</para>
-            <para>JBoss Messaging will shortly be implementing AMQP.</para>
+            <para>HornetQ will shortly be implementing AMQP.</para>
         </section>
         <section>
             <title>REST</title>
@@ -193,7 +193,7 @@
                 protocol.</para>
             <para>The advantage of a REST approach with HTTP is in its simplicity and the fact the
                 internet is already tuned to deal with HTTP optimally.</para>
-            <para>JBoss Messaging will shortly be implementing REST.</para>
+            <para>HornetQ will shortly be implementing REST.</para>
         </section>
     </section>
     <section>
@@ -204,8 +204,8 @@
         <para>Some messaging systems require you to deal with server side failure by writing some
             client side code which gets called on event of server failure, and in which you are
             supposed to recreate your connections to another server.</para>
-        <para>JBoss Messaging provides 100% transparent failover where you don't have have to write
-            any special client side code to deal with failure. On failover JBoss Messaging will
+        <para>HornetQ provides 100% transparent failover where you don't have have to write
+            any special client side code to deal with failure. On failover HornetQ will
             automatically fail over your client connections to another server, and your client
             sessions can continue as if nothing happened.</para>
         <para>For more information on HA, please see <xref linkend="ha" />.</para>
@@ -219,10 +219,10 @@
         <para>Degrees of support for clusters varies between messaging systems, with some systems
             having fairly basic clusters with the cluster members being hardly aware of each
             other.</para>
-        <para>JBoss Messaging provides very configurable state of the art clustering where messages
+        <para>HornetQ provides very configurable state of the art clustering where messages
             can be intelligently load balanced between the servers in the cluster, according to the
             number of consumers on each node, and whether they are ready for messages.</para>
-        <para>JBoss Messaging also has the ability to automatically redistribute messages between
+        <para>HornetQ also has the ability to automatically redistribute messages between
             nodes of a cluster to prevent starvation on any particular node.</para>
         <para>For full details on clustering, please see <xref linkend="clusters"/>.</para>
     </section>
@@ -233,9 +233,9 @@
         <para>A bridge normally consumes from a queue on one server and forwards messages to another
             queue on a different server. Bridges cope with unreliable connections, automatically
             reconnecting when the connections becomes available again.</para>
-        <para>JBoss Messaging bridges can be configured with filter expressions to only forward
+        <para>HornetQ bridges can be configured with filter expressions to only forward
             certain messages, and transformation can also be hooked in.</para>
-        <para>JBoss Messaging also allows routing between queues to be configured in server side
+        <para>HornetQ also allows routing between queues to be configured in server side
             configuration. This allows complex routing networks to be set up forwarding or copying
             messages from one destination to another, forming a global network of interconnected
             brokers.</para>

@@ -6,15 +6,15 @@
         availability is <emphasis>failover</emphasis> which we define as the <emphasis>ability for
             client connections to migrate from one server to another in event of server failure so
             client applications can continue to operate</emphasis>.</para>
-    <para>JBoss Messaging provides high availability by replicating servers in pairs. It also
+    <para>HornetQ provides high availability by replicating servers in pairs. It also
         provides both 100% transparent client failover and application-level client failover.</para>
     <section>
         <title>Server replication</title>
-        <para>JBoss Messaging allows pairs of servers to be linked together as <emphasis>live -
+        <para>HornetQ allows pairs of servers to be linked together as <emphasis>live -
                 backup</emphasis> pairs. In this release there is a single backup server for each
             live server. Backup servers are not operational until failover occurs. In later releases
             we will most likely support replication onto multiple backup servers.</para>
-        <para>When a <emphasis>live - backup</emphasis> pair is configured, JBoss Messaging ensures
+        <para>When a <emphasis>live - backup</emphasis> pair is configured, HornetQ ensures
             that the live server state is replicated to the backup server. Replicated state includes
             session state, and also global state such as the set of queues and addresses on the
             server. </para>
@@ -75,7 +75,7 @@
                 may diverge. After such a failure, at the next available opportunity the <literal
                     >B</literal> server should be taken down, and its <literal>data</literal>
                 directory copied back to the <literal>L</literal> server. Live and backup servers
-                can then be restarted. In this release of JBoss Messaging we do not provide any
+                can then be restarted. In this release of HornetQ we do not provide any
                 automatic facility for re-assigning a backup node with a live node while it is
                 running.</para>
             <para>For a backup server to function correctly it's also important that it has the same
@@ -100,23 +100,23 @@
     </section>
     <section id="ha.client.automatic">
         <title>Automatic client failover</title>
-        <para>JBoss Messaging clients can be configured with knowledge of live and backup servers,
+        <para>HornetQ clients can be configured with knowledge of live and backup servers,
             so that in event of connection failure of the client - live server connection, the
             client will detect this and reconnect its sessions to the backup server. Because of
             server replication, then backup server will already have those sessions in the same
             state they were left on the live server and the client will be able to reconnect them
             and resume them 100% transparently as if nothing happened.</para>
-        <para>For automatic failover JBoss Messaging requires <emphasis>zero</emphasis> coding of
+        <para>For automatic failover HornetQ requires <emphasis>zero</emphasis> coding of
             special failover code on the client or server. This differs from other messaging systems
-            which intrusively require you to code special failover handling code. JBoss Messaging
+            which intrusively require you to code special failover handling code. HornetQ
             automatic failover preserves all your normal JMS or core API semantics and allows your
             client code to continue 100% uninterrupted on event of connection failure and failover
             from a live to a backup server.</para>
-        <para>JBoss Messaging clients detect connection failure when it has not received packets
+        <para>HornetQ clients detect connection failure when it has not received packets
             from the server within the time given by <literal>client-failure-check-period</literal>
             as explained in section <xref linkend="connection-ttl"/>. If the client does not receive
             data in good time, it will assume the connection has failed and attempt failover.</para>
-        <para>JBoss Messaging clients can be configured with the list of live-backup server pairs in
+        <para>HornetQ clients can be configured with the list of live-backup server pairs in
             a number of different ways. They can be configured explicitly or probably the most
             common way of doing this is to use <emphasis>server discovery</emphasis> for the client
             to automatically discover the list. For full details on how to configure clients please
@@ -147,7 +147,7 @@
             live server.</para>
         <para>To implement application-level failover, if you're using JMS then you need to code an
                 <literal>ExceptionListener</literal> class on the JMS connection. The <literal
-                >ExceptionListener</literal> will be called by JBoss Messaging in the event that
+                >ExceptionListener</literal> will be called by HornetQ in the event that
             connection failure is detected. In your <literal>ExceptionListener</literal> you would
             close your old JMS connections, potentially look up new connection factory instances
             from JNDI and creating new connections. In this case you may well be using 

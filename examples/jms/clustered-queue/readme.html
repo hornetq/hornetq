@@ -1,16 +1,16 @@
 <html>
   <head>
-    <title>JBoss Messaging JMS Load Balanced Queue Example</title>
+    <title>HornetQ JMS Load Balanced Queue Example</title>
     <link rel="stylesheet" type="text/css" href="../../common/common.css">
   </head>
   <body>
-     <h1>JBoss Messaging JMS Load Balanced Clustered Queue Example</h1>
+     <h1>HornetQ JMS Load Balanced Clustered Queue Example</h1>
      <br>
      <p>This example demonstrates a JMS queue deployed on two different nodes. The two nodes are configured to form a cluster.</p>
      <p>We then create a consumer on the queue on each node, and we create a producer on only one of the nodes.</p>
      <p>We then send some messages via the producer, and we verify that <b>both</b> consumers receive the sent messages
      in a round-robin fashion.</p>
-     <p>In other words, JBoss Messaging <b>load balances</b> the sent messages across all consumers on the cluster</p>
+     <p>In other words, HornetQ <b>load balances</b> the sent messages across all consumers on the cluster</p>
      <p>This example uses JNDI to lookup the JMS Queue and ConnectionFactory objects. If you prefer not to use
      JNDI, these could be instantiated directly.</p>     
      <p>Here's the relevant snippet from the server configuration, which tells the server to form a cluster between the two nodes
@@ -26,7 +26,7 @@
      &lt;/cluster-connection&gt;
      </code>
      </pre>    
-     <p>For more information on JBoss Messaging load balancing, and clustering in general, please see the clustering
+     <p>For more information on HornetQ load balancing, and clustering in general, please see the clustering
      section of the user manual.</p>      
      <h2>Example step-by-step</h2>
      <p><i>To run the example, simply type <code>ant</code> from this directory</i></p>
@@ -130,8 +130,8 @@
         
         <li>We now consume those messages on *both* server 0 and server 1.
          We note the messages have been distributed between servers in a round robin fashion.
-         JBoss Messaging has <b>load balanced</b> the messages between the available consumers on the different nodes.
-         JBoss Messaging can be configured to always load balance messages to all nodes, or to only balance messages
+         HornetQ has <b>load balanced</b> the messages between the available consumers on the different nodes.
+         HornetQ can be configured to always load balance messages to all nodes, or to only balance messages
          to nodes which have consumers with no or matching selectors. See the user manual for more details.</li>
          JMS Queues implement point-to-point message where each message is only ever consumed by a
          maximum of one consumer.

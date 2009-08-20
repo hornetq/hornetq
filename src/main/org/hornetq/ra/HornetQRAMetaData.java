@@ -252,7 +252,7 @@ public class HornetQRAMetaData implements ManagedConnectionMetaData
          log.trace("getEISProductName()");
       }
 
-      return "JBoss Messaging";
+      return "HornetQ";
    }
 
    /**

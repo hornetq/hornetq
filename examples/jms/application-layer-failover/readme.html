@@ -1,24 +1,24 @@
 <html>
   <head>
-    <title>JBoss Messaging Application-Layer Failover Example</title>
+    <title>HornetQ Application-Layer Failover Example</title>
     <link rel="stylesheet" type="text/css" href="../../common/common.css">
   </head>
   <body>
-     <h1>JBoss Messaging Application-Layer Failover Example</h1>
+     <h1>HornetQ Application-Layer Failover Example</h1>
      <br>
-     <p>JBoss Messaging implements fully transparent <b>automatic</b> failover of connections from a live to backup node, this requires
+     <p>HornetQ implements fully transparent <b>automatic</b> failover of connections from a live to backup node, this requires
      no special coding for failover, and is described in a different example. Automatic failover requires server replication.</p>
-     <p>However, JBoss Messaging also supports <b>Application-Layer</b> failover, useful in the case that replication is not enabled
+     <p>However, HornetQ also supports <b>Application-Layer</b> failover, useful in the case that replication is not enabled
      on the server side.</p>
-     <p>With Application-Layer failover, it's up to the application to register a JMS ExceptionListener with JBoss Messaging which will be 
-     called by JBoss Messaging in the event that connection failure is detected.</p>
+     <p>With Application-Layer failover, it's up to the application to register a JMS ExceptionListener with HornetQ which will be 
+     called by HornetQ in the event that connection failure is detected.</p>
      <p>The code in the ExceptionListener then recreates the JMS Connection, Session, etc on another node and the application
      can continue.</p>
      <p>Application-Layer failover is an alternative approach to High Availabilty (HA).</p>
      <p>Application-Layer failover differs from automatic failover in that some client side coding is required in order
      to implement this. Also, with Application-Layer failover, since the old Session object dies and a new is created, any uncommitted
      work in the old Session will be lost, and any unacknowledged messages might be redelivered.</p>    
-     <p>For more information on JBoss Messaging failover and HA, and clustering in general, please see the clustering
+     <p>For more information on HornetQ failover and HA, and clustering in general, please see the clustering
      section of the user manual.</p>      
      <h2>Example step-by-step</h2>
      <p><i>To run the example, simply type <code>ant</code> from this directory</i></p>

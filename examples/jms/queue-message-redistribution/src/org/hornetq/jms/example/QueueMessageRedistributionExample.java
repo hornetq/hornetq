@@ -134,7 +134,7 @@ public class QueueMessageRedistributionExample extends HornetQExample
          session1.close();
          
          // Step 17. Since there is no more consumer on node 1, the messages on node 1 are now stranded (no local consumers)
-         // so JBoss Messaging will redistribute them to node 0 so they can be consumed.
+         // so HornetQ will redistribute them to node 0 so they can be consumed.
          
          for (int i = 0; i < numMessages; i += 2)
          {

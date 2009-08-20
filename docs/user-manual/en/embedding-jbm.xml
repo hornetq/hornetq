@@ -1,18 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <chapter id="embedding-jbm">
-    <title>Embedding JBoss Messaging</title>
-    <para>JBoss Messaging is designed as set of simple Plain Old Java Objects (POJOs). This means
-        JBoss Messaging can be instantiated and run in any dependency injection framework such as
+    <title>Embedding HornetQ</title>
+    <para>HornetQ is designed as set of simple Plain Old Java Objects (POJOs). This means
+        HornetQ can be instantiated and run in any dependency injection framework such as
         JBoss Microcontainer, Spring or Google Guice. It also means that if you have an application
         that could use messaging functionality internally, then it can <emphasis>directly
-            instantiate</emphasis> JBoss Messaging clients and servers in its own application code
+            instantiate</emphasis> HornetQ clients and servers in its own application code
         to perform that functionality. We call this <emphasis>embedding</emphasis> JBoss
         Messaging.</para>
     <para>Examples of applications that might want to do this include any application that needs
         very high performance, transactional, persistent messaging but doesn't want the hassle of
         writing it all from scratch.</para>
     <para>Embedding JBM can be done in very few easy steps. Instantiate the configuration object,
-        instantiate the server, start it, and you have a JBoss Messaging running in your virtual
+        instantiate the server, start it, and you have a HornetQ running in your virtual
         machine. It's as simple and easy as that.</para>
     <section>
         <title>POJO instantiation</title>
@@ -47,7 +47,7 @@ transports.add(new TransportConfiguration(NettyAcceptorFactory.class.getName()))
 transports.add(new TransportConfiguration(InVMAcceptorFactory.class.getName()));
 
 config.setAcceptorConfigurations(transports);</programlisting>
-        <para>You need to instantiate and start JBoss Messaging server. The class <literal
+        <para>You need to instantiate and start HornetQ server. The class <literal
                 >org.hornetq.core.serverMessaging</literal> has a few static methods for
             creating servers with common configurations.</para>
         <programlisting>import org.hornetq.core.server.Messaging;
@@ -68,9 +68,9 @@ server.start();</programlisting>
         <title>Dependency Frameworks</title>
         <para>You may also choose to use a dependency injection framework such as <trademark>JBoss
                 Micro Container</trademark> or <trademark>Spring Framework</trademark>.</para>
-        <para>JBoss Messaging standalone uses JBoss Micro Container as the injection framework.
+        <para>HornetQ standalone uses JBoss Micro Container as the injection framework.
                 <literal>HornetQBootstrapServer</literal> and <literal>hornetq-jboss-beans.xml</literal>
-            which are part of the JBoss Messaging distribution provide a very complete
+            which are part of the HornetQ distribution provide a very complete
             implementation of what's needed to bootstrap the server using JBoss Micro Container. </para>
         <para>When using JBoss Micro Container, you need to provide a XML declaring the <literal
                 >MessagingServer</literal> and <literal>Configuration</literal> object, you can also
@@ -102,8 +102,8 @@ server.start();</programlisting>
         bootStrap.run();</programlisting>
     </section>
     <section>
-        <title>Connecting to the Embedded JBoss Messaging</title>
-        <para>To connect clients to JBoss Messaging you just create the factories as normal:</para>
+        <title>Connecting to the Embedded HornetQ</title>
+        <para>To connect clients to HornetQ you just create the factories as normal:</para>
         <section>
             <title>Core API</title>
             <para>If using the core API, just create the <literal>ClientSessionFactory</literal> and
@@ -136,7 +136,7 @@ session.close();</programlisting>
         </section>
         <section>
             <title>JMS API</title>
-            <para>Connection on an Embedded JBoss Messaging through JMS is also simple. Just
+            <para>Connection on an Embedded HornetQ through JMS is also simple. Just
                 instantiate <literal>JBossConnectionFactory</literal> directly. The following
                 example illustrates that.</para>
             <programlisting>JBossConnectionFactory cf = 
@@ -171,6 +171,6 @@ conn.close();</programlisting>
     <section>
         <title>JMS Embedding Example</title>
         <para>Please see <xref linkend="examples.embedded" /> for an example which shows how
-            to setup and run JBoss Messaging embedded with JMS.</para>
+            to setup and run HornetQ embedded with JMS.</para>
     </section>
 </chapter>

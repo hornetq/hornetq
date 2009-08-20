@@ -12,11 +12,11 @@
   </head>
   <body>
   
-<p>Provides management for JBoss Messaging</p>
+<p>Provides management for HornetQ</p>
 
 <h2>Usage</h2>
 
-<p>JBoss Messaging can be managed by sending well-formatted <em>messages</em> to a well-known <em>management address</em>.
+<p>HornetQ can be managed by sending well-formatted <em>messages</em> to a well-known <em>management address</em>.
 The invocation of management operations (and retrieval of management attributes) is based on JMX semantics. Managed resources are identified
 by <code>ObjectNames</code> (defined in <code>ManagementServiceImpl.getXXXObjectName()</code> methods).</p>
 
@@ -33,20 +33,20 @@ If a reply is expected (when the operation returns a value or when retrieving an
       &lt;management-address&gt;admin.management&lt;/management-address&gt;
       &lt;management-notification-address&gt;admin.notification&lt;/management-notification-address&gt;      
 
-      &lt;!-- true to expose JBoss Messaging resources through JMX --&gt;
+      &lt;!-- true to expose HornetQ resources through JMX --&gt;
       &lt;jmx-management-enabled&gt;true&lt;/jmx-management-enabled&gt;
 </code></pre>
 
 <h2>Management using JMX</h2>
 
-<p>In addition to using messages, JBoss Messaging can also be managed using JMX (if the configuration property 
+<p>In addition to using messages, HornetQ can also be managed using JMX (if the configuration property 
 <code>jmx-management-enabled</code> is set to <code>true</code>).<br />
-JBoss Messaging is run in standalone to allow remote JMX management from the same machine (<code>-Dcom.sun.management.jmxremote</code>).
-A JMX client (e.g. <code>jconsole</code>) can be used locally to manage JBoss Messaging.</p>
+HornetQ is run in standalone to allow remote JMX management from the same machine (<code>-Dcom.sun.management.jmxremote</code>).
+A JMX client (e.g. <code>jconsole</code>) can be used locally to manage HornetQ.</p>
 
 <h2>Design</h2>
 
-<p>The core of the management support in JBoss Messaging is the ManagementServiceImpl class.<br />
+<p>The core of the management support in HornetQ is the ManagementServiceImpl class.<br />
 This class is responsible to:</p>
 
 <ul>
@@ -63,7 +63,7 @@ validation, type conversion, etc. and delegates to the real resource.</p>
 
 <h2>Management in a clustered environment and JMX</h2>
 
-<p>Using core messages to manage JBoss Messaging also works in a clustered environment: the management messages are 
+<p>Using core messages to manage HornetQ also works in a clustered environment: the management messages are 
 replicated on the nodes of the cluster, ensuring that the state is replicated on all the nodes.</p>
 
 <p>To allow JMX to work in a clustered environment, the MBean implementation do not delegates directly to the resources

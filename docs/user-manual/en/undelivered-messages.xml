@@ -35,7 +35,7 @@
         &lt;redelivery-delay&gt;5000&lt;/redelivery-delay&gt;
      &lt;/address-setting&gt;
              </programlisting>
-         <para>If a <literal>redelivery-delay</literal> is specified, JBoss Messaging will wait this
+         <para>If a <literal>redelivery-delay</literal> is specified, HornetQ will wait this
             delay before redelivering the messages</para>
          <para>By default, there is no redelivery delay (<literal>redelivery-delay</literal>is set
             to 0).</para>
@@ -56,7 +56,7 @@
          queue and send instead to a dead letter address. </para>
       <para>Any dead letter messages can then be diverted to queue(s) where they can later be
          perused by the system administrator for action to be taken.</para>
-      <para>JBoss Messaging's addresses can be assigned a dead letter address. Once the messages
+      <para>HornetQ's addresses can be assigned a dead letter address. Once the messages
          have be unsuccessfully delivered for a given number of attempts, they are removed from the
          queue and sent to the dead letter address. These <emphasis>dead letter</emphasis> messages
          can later be consumed for further inspection.</para>
@@ -102,7 +102,7 @@
    </section>
    <section id="configuring.delivery.count.persistence">
       <title>Delivery Count Persistence</title>
-      <para>In normal use, JBoss Messaging does not update delivery count
+      <para>In normal use, HornetQ does not update delivery count
             <emphasis>persistently</emphasis> until a message is rolled back (i.e. the delivery
          count is not updated <emphasis>before</emphasis> the message is delivered to the consumer).
          In most messaging use cases, the messages are consumed, acknowledged and forgotten as soon
@@ -114,7 +114,7 @@
          not have been reflected in the delivery count. During the recovery phase, the server will
          not have knowledge of that and will deliver the message with <literal>redelivered</literal>
          set to <literal>false</literal> while it should be <literal>true</literal>. </para>
-      <para>As this behavior breaks strict JMS semantics, JBoss Messaging allows to persist delivery
+      <para>As this behavior breaks strict JMS semantics, HornetQ allows to persist delivery
          count before message delivery but disabled it by default for performance
          implications.</para>
       <para>To enable it, set <literal>persist-delivery-count-before-delivery</literal> to <literal

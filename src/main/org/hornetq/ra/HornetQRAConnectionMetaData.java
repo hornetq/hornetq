@@ -289,7 +289,7 @@ public class HornetQRAConnectionMetaData implements ConnectionMetaData
          log.trace("getJMSProviderName()");
       }
 
-      return "JBoss Messaging";
+      return "HornetQ";
    }
 
    /**

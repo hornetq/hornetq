@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <chapter id="using-core">
     <title>Using Core</title>
-    <para>JBoss Messaging core is a completely JMS-agnostic messaging system with its own core
+    <para>HornetQ core is a completely JMS-agnostic messaging system with its own core
         API.</para>
     <para>If you don't want to use JMS you can use the core API directly. The core API provides all
         the functionality of JMS but without much of the complexity. It also provides features that
@@ -28,9 +28,9 @@
                 will survive a server crash or restart. Non durable messages will never survive a
                 server crash or restart.</para>
             <para>Messages can be specified with a priority value between 0 and 9. 0 represents the
-                highest priority and 9 represents the lowest. JBoss Messaging will attempt to
+                highest priority and 9 represents the lowest. HornetQ will attempt to
                 deliver higher priority messages before lower priority ones.</para>
-            <para>Messages can be specified with an optional expiry time. JBoss Messaging will not
+            <para>Messages can be specified with an optional expiry time. HornetQ will not
                 deliver messages after its expiry time has been exceeded.</para>
             <para>Messages also have an optional timestamp which represents the time the message was
                 sent.</para>

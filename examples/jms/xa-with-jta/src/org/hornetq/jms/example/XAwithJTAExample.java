@@ -31,7 +31,7 @@ import com.arjuna.ats.jta.TransactionManager;
 import org.hornetq.common.example.HornetQExample;
 
 /**
- * A simple JMS example showing the JBoss Messaging XA support with JTA.
+ * A simple JMS example showing the HornetQ XA support with JTA.
  *
  * @author <a href="hgao@redhat.com">Howard Gao</a>
  */

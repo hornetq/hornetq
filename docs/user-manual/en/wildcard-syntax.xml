@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <chapter id="wildcard-syntax">
-    <title>Understanding the JBoss Messaging Wildcard Syntax</title>
-    <para>JBoss Messaging uses a specific syntax for representing wildcards in security settings,
+    <title>Understanding the HornetQ Wildcard Syntax</title>
+    <para>HornetQ uses a specific syntax for representing wildcards in security settings,
         address settings and when creating consumers.</para>
     <para>The syntax is similar to that used by <ulink url="www.amqp.org">AMQP</ulink>.</para>
-    <para>A JBoss Messaging wildcard expression contains words delimited by the character '<literal
+    <para>A HornetQ wildcard expression contains words delimited by the character '<literal
             >.</literal>' (full stop).</para>
     <para>The special characters '<literal>#</literal>' and '<literal>*</literal>' also have special
         meaning and can take the place of a word.</para>

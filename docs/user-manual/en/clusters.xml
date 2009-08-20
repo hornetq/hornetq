@@ -3,9 +3,9 @@
     <title>Clusters</title>    
     <section>
         <title>Clusters Overview</title>
-        <para>JBoss Messaging clusters allow groups of JBoss Messaging servers to be grouped
+        <para>HornetQ clusters allow groups of HornetQ servers to be grouped
             together in order to share message processing load. Each active node in the cluster is
-            an active JBoss Messaging server which manages its own messages and handles its own
+            an active HornetQ server which manages its own messages and handles its own
             connections. A server must be configured to be clustered, you will need to set the
                 <literal>clustered</literal> element in the <literal>hornetq-configuration.xml</literal>
             configuration file to <literal>true</literal>, this is <literal>false</literal> by
@@ -134,7 +134,7 @@
                 particular server it updates its entry in the list for that server.</para>
             <para>If it has not received a broadcast from a particular server for a length of time
                 it will remove that server's entry from its list.</para>
-            <para>Discovery groups are used in two places in JBoss Messaging:</para>
+            <para>Discovery groups are used in two places in HornetQ:</para>
             <itemizedlist>
                 <listitem>
                     <para>By cluster connections so they know what other servers in the cluster they
@@ -151,7 +151,7 @@
             <para>For cluster connections, discovery groups are defined in the server side
                 configuration file <literal>hornetq-configuration.xml</literal>. All discovery groups
                 must be defined inside a <literal>discovery-groups</literal> element. There can be
-                many discovery groups defined by JBoss Messaging server. Let's look at an
+                many discovery groups defined by HornetQ server. Let's look at an
                 example:</para>
             <programlisting>&lt;discovery-groups>
    &lt;discovery-group name="my-discovery-group">
@@ -192,7 +192,7 @@
         </section>
         <section id="clusters-discovery.groups.clientside">
             <title>Discovery Groups on the Client Side</title>
-            <para>Let's discuss how to configure a JBoss Messaging client to use discovery to
+            <para>Let's discuss how to configure a HornetQ client to use discovery to
                 discover a list of servers to which it can connect. The way to do this differs
                 depending on whether you're using JMS or the core API.</para>
             <section>
@@ -263,7 +263,7 @@ Connection jmsConnection2 = jmsConnectionFactory.createConnection();</programlis
     </section>
     <section>
         <title>Server-Side Message Load Balancing</title>
-        <para>If cluster connections are defined between nodes of a cluster, then JBoss Messaging
+        <para>If cluster connections are defined between nodes of a cluster, then HornetQ
             will load balance messages arriving from at a particular node from a client.</para>
         <para>Let's take a simple example of a cluster of four nodes A, B, C, and D arranged in a
                 <emphasis>symmetric cluster</emphasis> (described in <xref linkend="symmetric-cluster" />).
@@ -282,7 +282,7 @@ Connection jmsConnection2 = jmsConnectionFactory.createConnection();</programlis
         <para>For example, messages arriving on node A might be distributed in the following order
             between the nodes: B, D, C, A, B, D, C, A, B, D. The exact order depends on the order
             the nodes started up, but the algorithm used is round robin.</para>
-        <para>JBoss Messaging cluster connections can be configured to always blindly load balance
+        <para>HornetQ cluster connections can be configured to always blindly load balance
             messages in a round robin fashion irrespective of whether there are any matching
             consumers on other nodes, but they can be a bit cleverer than that and also be
             configured to only distribute to other nodes if they have matching consumers. We'll look
@@ -294,7 +294,7 @@ Connection jmsConnection2 = jmsConnectionFactory.createConnection();</programlis
                 balanced between the nodes of the cluster. Let's take a look at a typical cluster
                 connection. Cluster connections are always defined in <literal
                     >hornetq-configuration.xml</literal> inside a <literal>cluster-connection</literal>
-                element. There can be zero or more cluster connections defined per JBoss Messaging
+                element. There can be zero or more cluster connections defined per HornetQ
                 server.</para>
             <programlisting>
 &lt;cluster-connections&gt;
@@ -322,7 +322,7 @@ Connection jmsConnection2 = jmsConnectionFactory.createConnection();</programlis
                         with different values of <literal>address</literal>, simultaneously
                         balancing messages for those addresses, potentially to different clusters of
                         servers. By having multiple cluster connections on different addresses a
-                        single JBoss Messaging Server can effectively take part in multiple clusters
+                        single HornetQ Server can effectively take part in multiple clusters
                         simultaneously.</para>
                     <para>By careful not to have multiple cluster connections with overlapping
                         values of <literal>address</literal>, e.g. "europe" and "europe.news" since
@@ -365,11 +365,11 @@ Connection jmsConnection2 = jmsConnectionFactory.createConnection();</programlis
                     <para>If this is set to <literal>true</literal> then each incoming message will
                         be round robin'd even though the same queues on the other nodes of the
                         cluster may have no consumers at all, or they may have consumers that have
-                        non matching message filters (selectors). Note that JBoss Messaging will
+                        non matching message filters (selectors). Note that HornetQ will
                             <emphasis>not</emphasis> forward messages to other nodes if there are no
                             <emphasis>queues</emphasis> of the same name on the other nodes, even if
                         this parameter is set to <literal>true</literal>.</para>
-                    <para>If this is set to <literal>false</literal> then JBoss Messaging will only
+                    <para>If this is set to <literal>false</literal> then HornetQ will only
                         forward messages to other nodes of the cluster if the address to which they
                         are being forwarded has queues which have consumers, and if those consumers
                         have message filters (selectors) at least one of those selectors must match
@@ -380,15 +380,15 @@ Connection jmsConnection2 = jmsConnectionFactory.createConnection();</programlis
                 <listitem>
                     <para><literal>max-hops</literal>. When a cluster connection decides the set of
                         nodes to which it might load balance a message, those nodes do not have to
-                        be directly connected to it via a cluster connection. JBoss Messaging can be
+                        be directly connected to it via a cluster connection. HornetQ can be
                         configured to also load balance messages to nodes which might be connected
-                        to it only indirectly with other JBoss Messaging servers as intermediates in
+                        to it only indirectly with other HornetQ servers as intermediates in
                         a chain.</para>
-                    <para>This allows JBoss Messaging to be configured in more complex topologies
+                    <para>This allows HornetQ to be configured in more complex topologies
                         and still provide message load balancing. We'll discuss this more later in
                         this chapter.</para>
                     <para>The default value for this parameter is <literal>1</literal>, which means
-                        messages are only load balanced to other JBoss Messaging serves which are
+                        messages are only load balanced to other HornetQ serves which are
                         directly connected to this server. This parameter is optional.</para>
                 </listitem>
                 <listitem>
@@ -401,7 +401,7 @@ Connection jmsConnection2 = jmsConnectionFactory.createConnection();</programlis
     </section>
     <section id="clusters.client.loadbalancing">
         <title>Client-Side Load balancing</title>
-        <para>With JBoss Messaging client-side connection load balancing, subsequent client
+        <para>With HornetQ client-side connection load balancing, subsequent client
             connections created using a single factory can be made to different nodes of the
             cluster. This allows connections to spread smoothly across the nodes of a cluster and
             not be "clumped" on any particular node.</para>
@@ -626,7 +626,7 @@ ClientSession session2 = factory.createClientSession(...);</programlisting>
             to addresses that start with "jms.", so the above would enable instant (no delay)
             redistribution for all JMS queues and topic subscriptions.</para>
         <para>The attribute <literal>match</literal> can be an exact match or it can be a string
-            that conforms to the JBoss Messaging wildcard syntax (described in <xref linkend="wildcard-syntax"
+            that conforms to the HornetQ wildcard syntax (described in <xref linkend="wildcard-syntax"
             />).</para>
         <para>The element <literal>redistribution-delay</literal> defines the delay in milliseconds
             after the last consumer is closed on a queue before redistributing messages from that
@@ -641,7 +641,7 @@ ClientSession session2 = factory.createClientSession(...);</programlisting>
     </section>
     <section>
         <title>Cluster topologies</title>
-        <para>JBoss Messaging clusters can be connected together in many different topologies, let's
+        <para>HornetQ clusters can be connected together in many different topologies, let's
             consider the two most common ones here</para>
         <section id="symmetric-cluster">
             <title>Symmetric cluster</title>

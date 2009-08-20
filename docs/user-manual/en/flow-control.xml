@@ -13,14 +13,14 @@
          keep building up and are not processed for a long time. </para>
       <section id="flow-control.consumer.window">
          <title>Window-Based Flow Control</title>
-         <para>By default, JBoss Messaging consumers buffer messages from the server in a client
+         <para>By default, HornetQ consumers buffer messages from the server in a client
             side buffer before the client consumes them. This improves performance: otherwise every
-            time the client consumes a message, JBoss Messaging would have to go the server to
+            time the client consumes a message, HornetQ would have to go the server to
             request the next message. In turn, this message would then get sent to the client side,
             if one was available.</para>
          <para>A network round trip would be involved for <emphasis>every</emphasis> message and
             considerably reduce performance.</para>
-         <para>To prevent this, JBoss Messaging pre-fetches messages into a buffer on each consumer.
+         <para>To prevent this, HornetQ pre-fetches messages into a buffer on each consumer.
             The total maximum size of messages (in bytes) that will be buffered on each consumer is
             determined by the <literal>consumer-window-size</literal> parameter.</para>
          <para>By default, the <literal>consumer-window-size</literal> is set to 1 MiB (1024 * 1024
@@ -79,7 +79,7 @@
             find the optimal value, but a value of 1MiB is fine in most cases.</para>
          <section id="flow-control.core.api">
             <title>Using Core API</title>
-            <para>If JBoss Messaging Core API is used, the consumer window size is specified by
+            <para>If HornetQ Core API is used, the consumer window size is specified by
                   <literal>ClientSessionFactory.setConsumerWindowSize()</literal> method and some of
                the <literal>ClientSession.createConsumer()</literal> methods.</para>
          </section>
@@ -102,7 +102,7 @@
                specified by <literal>JBossConnectionFactory.setConsumerWindowSize()</literal>
                method.</para>
             <para>Please see <xref linkend="examples.no-consumer-buffering" /> for an example which shows how to configure
-               JBoss Messaging to prevent consumer buffering when dealing with slow
+               HornetQ to prevent consumer buffering when dealing with slow
                consumers.</para>
          </section>
       </section>
@@ -119,7 +119,7 @@
          of limiting consumer rate.</para>
          <section id="flow-control.rate.core.api">
             <title>Using Core API</title>
-            <para>If the JBoss Messaging core API is being used the rate can be set via the <literal
+            <para>If the HornetQ core API is being used the rate can be set via the <literal
                   >ClientSessionFactory.setConsumerMaxRate(int consumerMaxRate)</literal> method or
                alternatively via some of the <literal>ClientSession.createConsumer()</literal>
                methods. </para>
@@ -149,26 +149,26 @@
                   soon fill up with messages.</para>
             </note>
             <para>Please see <xref linkend="examples.consumer-rate-limit" /> for an example which shows
-               how to configure JBoss Messaging to prevent consumer buffering when dealing with slow
+               how to configure HornetQ to prevent consumer buffering when dealing with slow
                consumers.</para>
          </section>
       </section>
    </section>
    <section>
       <title>Producer flow control</title>
-      <para>JBoss Messaging also can limit the amount of data sent from a client to a server to
+      <para>HornetQ also can limit the amount of data sent from a client to a server to
          prevent the server being overwhelmed.</para>
       <section>
          <title>Window based flow control</title>
-         <para>JBoss Messaging clients maintain a buffer of commands that have been sent to the
+         <para>HornetQ clients maintain a buffer of commands that have been sent to the
             server, thus provides a form of flow control. Please see <xref
                linkend="command-buffering"/> for more information on
             this.</para>
       </section>
       <section>
          <title>Rate limited flow control</title>
-         <para>JBoss Messaging also allows the rate a producer can emit message to be limited, in
-            units of messages per second. By specifying such a rate, JBoss Messaging will ensure
+         <para>HornetQ also allows the rate a producer can emit message to be limited, in
+            units of messages per second. By specifying such a rate, HornetQ will ensure
             that producer never produces messages at a rate higher than that specified.</para>
          <para>The rate must be a positive integer to enable and is the maximum desired message
             consumption rate specified in units of messages per second. Setting this to <literal
@@ -178,7 +178,7 @@
             for a working example of limiting producer rate.</para>
          <section id="flow-control.producer.rate.core.api">
             <title>Using Core API</title>
-            <para>If the JBoss Messaging core API is being used the rate can be set via the <literal
+            <para>If the HornetQ core API is being used the rate can be set via the <literal
                   >ClientSessionFactory.setProducerMaxRate(int consumerMaxRate)</literal> method or
                alternatively via some of the <literal>ClientSession.createProducer()</literal>
                methods. </para>

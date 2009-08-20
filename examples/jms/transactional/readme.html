@@ -1,12 +1,12 @@
 <html>
   <head>
-    <title>JBoss Messaging JMS Transactional Session Example</title>
+    <title>HornetQ JMS Transactional Session Example</title>
     <link rel="stylesheet" type="text/css" href="../../common/common.css">
   </head>
   <body>
      <h1>JMS Transactional Session Example</h1>
      <br>
-     <p>This example shows you how to use a transactional Session with JBoss Messaging. It creates a transactional session. At first it sends out two messages and tries to receive without session commit. Then it commits the sending session and receives only one messages before it rolls back the receiving session. It then receives all the messages and commits the session.</p>
+     <p>This example shows you how to use a transactional Session with HornetQ. It creates a transactional session. At first it sends out two messages and tries to receive without session commit. Then it commits the sending session and receives only one messages before it rolls back the receiving session. It then receives all the messages and commits the session.</p>
 
      <p>Messages can be sent and received over transactional sessions. Messages in a transactional session will not be sent or acknowledged until the session is committed. It a session is rolled back, the produced messages will be destroyed and consumed messages will be recovered. Please consult the JMS 1.1 specification for full details.</p>
 

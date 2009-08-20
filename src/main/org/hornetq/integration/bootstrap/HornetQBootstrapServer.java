@@ -66,7 +66,7 @@ public class HornetQBootstrapServer extends BasicBootstrap
     */
    public static void main(final String[] args) throws Exception
    {
-      log.info("Starting JBoss Messaging Server");
+      log.info("Starting HornetQ Server");
 
       final HornetQBootstrapServer bootstrap = new HornetQBootstrapServer(args);
 
@@ -96,7 +96,7 @@ public class HornetQBootstrapServer extends BasicBootstrap
             {
                try
                {
-                  log.info("Stopping JBoss Messaging Server");
+                  log.info("Stopping HornetQ Server");
                   shutDown();
                   timer.cancel();
                }

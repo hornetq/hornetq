@@ -287,7 +287,7 @@ public class MessagingServerImpl implements MessagingServer
       // so it can be initialised by the live node
       remotingService.start();
 
-      log.info("JBoss Messaging Server version " + getVersion().getFullVersion() + " started");
+      log.info("HornetQ Server version " + getVersion().getFullVersion() + " started");
    }
 
    @Override
@@ -419,7 +419,7 @@ public class MessagingServerImpl implements MessagingServer
       initialised = false;
       uuid = null;
       nodeID = null;
-      log.info("JBoss Messaging Server version " + getVersion().getFullVersion() + " stopped");
+      log.info("HornetQ Server version " + getVersion().getFullVersion() + " stopped");
    }
 
    // MessagingServer implementation

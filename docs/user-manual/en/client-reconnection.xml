@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <chapter id="client-reconnection">
     <title>Client Reconnection</title>
-    <para>JBoss Messaging clients can be configured to automatically reconnect to the server in the
+    <para>HornetQ clients can be configured to automatically reconnect to the server in the
         event that a failure is detected in the connection between the client and the server. If the
         client successfully reconnects, and the server still has a record of the clients session
         (i.e. the server was not restarted) then the client will transparently re-attach to the

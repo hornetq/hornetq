@@ -139,7 +139,7 @@ public class ManagementServiceImpl implements ManagementService
       if (ConfigurationImpl.DEFAULT_MANAGEMENT_CLUSTER_USER.equals(user) && ConfigurationImpl.DEFAULT_MANAGEMENT_CLUSTER_PASSWORD.equals(password))
       {
          log.warn("It has been detected that the cluster admin user and password which are used to " + "replicate management operation from one node to the other have not been changed from the installation default. "
-                  + "Please see the JBoss Messaging user guide for instructions on how to do this.");
+                  + "Please see the HornetQ user guide for instructions on how to do this.");
       }
    }
 

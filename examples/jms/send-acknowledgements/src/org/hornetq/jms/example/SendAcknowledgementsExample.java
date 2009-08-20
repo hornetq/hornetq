@@ -28,7 +28,7 @@ import org.hornetq.jms.client.HornetQSession;
 
 /**
  * 
- * Asynchronous Send Acknowledgements are an advanced feature of JBoss Messaging which allow you to
+ * Asynchronous Send Acknowledgements are an advanced feature of HornetQ which allow you to
  * receive acknowledgements that messages were successfully received at the server in a separate stream
  * to the stream of messages being sent to the server.
  * For more information please see the readme.html file

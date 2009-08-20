@@ -1,7 +1,7 @@
 <configuration xmlns="urn:hornetq"
             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
             xsi:schemaLocation="urn:hornetq /schema/hornetq-configuration.xsd">
-    <!-- true to expose JBoss Messaging resources through JMX -->
+    <!-- true to expose HornetQ resources through JMX -->
     <jmx-management-enabled>true</jmx-management-enabled>
 
    <!-- Connectors -->

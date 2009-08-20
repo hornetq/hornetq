@@ -15,7 +15,7 @@
   ~ permissions and limitations under the License.
   -->
 
-<project default="run" name="JBoss Messaging Delayed Redelivery Example">
+<project default="run" name="HornetQ Delayed Redelivery Example">
 
    <import file="../../common/build.xml"/>
 

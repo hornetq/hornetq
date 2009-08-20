@@ -1,16 +1,16 @@
 <html>
   <head>
-    <title>JBoss Messaging Management Example</title>
+    <title>HornetQ Management Example</title>
     <link rel="stylesheet" type="text/css" href="../../common/common.css">
   </head>
   <body>
      <h1> Management Example</h1>
-     <p>This example shows how to manage JBoss Messaging using JMS Messages to invoke management operations on the server.</a></p>
-     <p>To manage JBoss Messaging using JMX, see the <a href="../jmx/readme.html">JMX</a> example.</p>
+     <p>This example shows how to manage HornetQ using JMS Messages to invoke management operations on the server.</a></p>
+     <p>To manage HornetQ using JMX, see the <a href="../jmx/readme.html">JMX</a> example.</p>
      
      <h2>Example configuration</h2>
 
-     <p>JBoss Messaging can be managed by sending JMS messages with specific properties to its <em>management</em> queue.</p>
+     <p>HornetQ can be managed by sending JMS messages with specific properties to its <em>management</em> queue.</p>
      </p>By default, the management name is called <code>hornetq.management</code> but this can be configured in <a href="server0/hornetq-configuration.xml">hornetq-configuration.xml</a>
      <pre>
          <code>&lt;management-address&gt;hornetq.management&lt;/management-address&gt;</code>
@@ -90,7 +90,7 @@
             <code>Message m = session.createMessage();</code>
         </pre>
         
-        <li>a <em>management</em> message has well-defined properties that JBoss Messaging server needs to know to perform management operations.<br />
+        <li>a <em>management</em> message has well-defined properties that HornetQ server needs to know to perform management operations.<br />
             We use a helper class <a href="../../../docs/api/org/jboss/messaging/jms/server/management/impl/JMSManagementHelper.html">JMSManagementHelper</a> to fill these properties:
             <ul>
                 <li>The name of the resource to manage <code>jms.queue.exampleQueue</code> 
@@ -182,10 +182,10 @@
      
      <ul>
         <li>User Manual's <a href="../../../docs/user-manual/en/html_single/index.html#management.jms">Using Management Via JMS chapter</a></li>
-        <li>JBoss Messaging defines a set of resources for this core 
+        <li>HornetQ defines a set of resources for this core 
             API (<a href="../../../docs/api/org/jboss/messaging/core/management/package-summary.html">org.hornetq.core.management</a>
              package) and its JMS API (in the <a href="../../../docs/api/org/jboss/messaging/jms/server/management/package-summary.html">org.hornetq.jms.server.management</a> package)
-         <li><a href="../../../docs/api/org/jboss/messaging/core/management/ResourceNames.html">ResourceNames</a> is a helper class used to build the name of JBoss Messaging resources by messages<br />
+         <li><a href="../../../docs/api/org/jboss/messaging/core/management/ResourceNames.html">ResourceNames</a> is a helper class used to build the name of HornetQ resources by messages<br />
             The convention is simple: <code>jms.queue.</code> followed by the name of the queue for a JMS queue, <code>jms.topic.</code> followed by the name of a topic for a JMS topic, etc.<br />
             The name for the JMS server resource is <code>jms.server</code></li>
      </p>

@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <chapter id="persistence">
     <title>Persistence</title>
-    <para>In this chapter we will describe how persistence works with JBoss Messaging and how to
+    <para>In this chapter we will describe how persistence works with HornetQ and how to
         configure it.</para>
-    <para>JBoss Messaging ships with a high performance journal. This journal has been implemented
-        by the JBoss Messaging team with a view to providing high performance in a messaging system.
-        Since JBoss Messaging handles its own persistence, rather than relying on a database or
+    <para>HornetQ ships with a high performance journal. This journal has been implemented
+        by the HornetQ team with a view to providing high performance in a messaging system.
+        Since HornetQ handles its own persistence, rather than relying on a database or
         other 3rd party persistence engine, we have been able to tune the journal to gain optimal
         performance for the persistence of messages and transactions.</para>
-    <para>A JBoss Messaging journal is an <emphasis>append only</emphasis> journal. It consists of a
+    <para>A HornetQ journal is an <emphasis>append only</emphasis> journal. It consists of a
         set of files on disk. Each file is pre-created to a fixed size and initially filled with
         padding. As operations are performed on the server, e.g. add message, update message, delete
         message, records are appended to the journal. When one journal file is full we move to the
@@ -21,11 +21,11 @@
         by minimising the number of disk cylinders the file is using, we can minimise the amount of
         disk head movement, since an entire disk cylinder is accessible simply by the disk rotating
         - the head does not have to move.</para>
-    <para>As delete records are added to the journal, JBoss Messaging has a sophisticated file
+    <para>As delete records are added to the journal, HornetQ has a sophisticated file
         garbage collection algorithm which can determine if a particular journal file is needed any
         more - i.e. has all it's data been deleted in the same or other files. If so, the file can
         be reclaimed and re-used. </para>
-    <para>JBoss Messaging also has a compaction algorithm which removes dead space from the journal
+    <para>HornetQ also has a compaction algorithm which removes dead space from the journal
         and compresses up the data so it takes up less files on disk.</para>
     <para>The journal also fully supports transactional operation if required, supporting both local
         and XA transactions.</para>
@@ -47,7 +47,7 @@
                 transaction boundary to be synced to disk. Most disks can only support a limited
                 number of syncs per second, so a syncing approach does not scale well when the
                 number of concurrent transactions needed to be committed grows too large. With AIO,
-                JBoss Messaging will be called back when the data has made it to disk, allowing us
+                HornetQ will be called back when the data has made it to disk, allowing us
                 to avoid explicit syncs altogether and simply send back confirmation of completion
                 when AIO informs us that the data has been persisted.</para>
             <para>The AIO journal is only available when running Linux kernel 2.6 or later and after
@@ -57,7 +57,7 @@
             <para>libaio is part of the kernel project.</para>
         </listitem>
     </itemizedlist>
-    <para>The standard JBoss Messaging core server uses two instances of the journal:</para>
+    <para>The standard HornetQ core server uses two instances of the journal:</para>
     <itemizedlist>
         <listitem>
             <para>Bindings journal.</para>
@@ -71,17 +71,17 @@
             <para>Message journal.</para>
             <para>This journal instance stores all message related data, including the message
                 themselves and also duplicate id caches.</para>
-            <para>By default JBoss Messaging will try and use an AIO journal. If AIO is not
+            <para>By default HornetQ will try and use an AIO journal. If AIO is not
                 available, e.g. the platform is not Linux with the correct kernel version or AIO has
                 not been installed then it will automatically fall back to using Java NIO which is
                 available on any Java platform.</para>
         </listitem>
     </itemizedlist>
-    <para>For large messages, JBoss Messaging persists them outside the message journal. This is
+    <para>For large messages, HornetQ persists them outside the message journal. This is
         discussed in <xref linkend="large-messages"/>.</para>
-    <para>JBoss Messaging also pages messages to disk in low memory situations. This is discussed in
+    <para>HornetQ also pages messages to disk in low memory situations. This is discussed in
             <xref linkend="paging"/>.</para>
-    <para>If no persistence is required at all, JBoss Messaging can also be configured not to
+    <para>If no persistence is required at all, HornetQ can also be configured not to
         persist any data at all to storage as discussed in <xref linkend="persistence.enabled"
         />.</para>
     <section id="configuring.bindings.journal">
@@ -134,18 +134,18 @@
                 <para>Choosing <literal>NIO</literal> chooses the Java NIO journal. Choosing
                         <literal>AIO</literal> chooses the Linux asynchronous IO journal. If you
                     choose <literal>AIO</literal> but are not running Linux or you do not have
-                    libaio installed then JBoss Messaging will detect this and automatically fall
+                    libaio installed then HornetQ will detect this and automatically fall
                     back to using <literal>NIO</literal>.</para>
             </listitem>
             <listitem id="configuring.message.journal.journal-sync-transactional">
                 <para><literal>journal-sync-transactional</literal></para>
-                <para>If this is set to true then JBoss Messaging will wait for all transaction data
+                <para>If this is set to true then HornetQ will wait for all transaction data
                     to be persisted to disk on a commit before sending a commit response OK back to
                     the client. The default value is <literal>true</literal>.</para>
             </listitem>
             <listitem id="configuring.message.journal.journal-sync-non-transactional">
                 <para><literal>journal-sync-non-transactional</literal></para>
-                <para>If this is set to true then JBoss Messaging will wait for any non
+                <para>If this is set to true then HornetQ will wait for any non
                     transactional data to be persisted to disk on a send before sending the response
                     back to the client. The default value for this is <literal
                     >false</literal>.</para>
@@ -157,8 +157,8 @@
             </listitem>
             <listitem id="configuring.message.journal.journal-min-files">
                 <para><literal>journal-min-files</literal></para>
-                <para>The minimum number of files the journal will maintain. When JBoss Messaging
-                    starts and there is no initial message data, JBoss Messaging will pre-create
+                <para>The minimum number of files the journal will maintain. When HornetQ
+                    starts and there is no initial message data, HornetQ will pre-create
                         <literal>journal-min-files</literal> number of files.</para>
                 <para>Creating journal files and filling them with padding is a fairly expensive
                     operation and we want to minimise doing this at run-time as files get filled. By
@@ -170,7 +170,7 @@
             <listitem id="configuring.message.journal.journal-max-aio">
                 <para><literal>journal-max-aio</literal></para>
                 <para>When using an AIO journal, write requests are queued up before being submitted
-                    to AIO for execution. Then when AIO has completed them it calls JBoss Messaging
+                    to AIO for execution. Then when AIO has completed them it calls HornetQ
                     back. This parameter controls the maximum number of write requests that can be
                     in the AIO queue at any one time. If the queue becomes full then writes will
                     block until space is freed up. This parameter has no meaning when using the NIO
@@ -195,7 +195,7 @@
                     sync request is performed. Sync requests are performed on transactions if
                         <literal>journal-sync-transactional</literal> is true, or on sending regular
                     messages if <literal>journalsync-non-transactional</literal> is true.</para>
-                <para>JBoss Messaging was made to scale up to hundreds of producers. We try to use
+                <para>HornetQ was made to scale up to hundreds of producers. We try to use
                     most of the hardware resources by scheduling multiple writes and syncs in a
                     single OS call.</para>
                 <para>However in some use cases it may be better to not wait any data and just flush
@@ -224,7 +224,7 @@
     </section>
     <section id="installing-aio">
         <title>Installing AIO</title>
-        <para>The Java NIO journal gives great performance, but If you are running JBoss Messaging
+        <para>The Java NIO journal gives great performance, but If you are running HornetQ
             using Linux Kernel 2.6 or later, we highly recommend you use the <literal>AIO</literal>
             journal for the best persistence performance especially under high concurrency.</para>
         <para>It's not possible to use the AIO journal under other operating systems or earlier
@@ -238,9 +238,9 @@
             <programlisting>sudo apt-get install libaio</programlisting></para>
     </section>
     <section id="persistence.enabled">
-        <title>Configuring JBoss Messaging for Zero Persistence</title>
+        <title>Configuring HornetQ for Zero Persistence</title>
         <para> In some situations, zero persistence is sometimes required for a messaging system.
-            Configuring JBoss Messaging to perform zero persistence is straightforward. Simply set
+            Configuring HornetQ to perform zero persistence is straightforward. Simply set
             the parameter <literal>persistence-enabled</literal> in <literal
                 >hornetq-configuration.xml</literal> to <literal>false</literal>. </para>
         <para>Please note that if you set this parameter to false, then <emphasis>zero</emphasis>

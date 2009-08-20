@@ -12,7 +12,7 @@
   ~ permissions and limitations under the License.
   -->
 
-<project default="run" name="JBoss Messaging Servlet Transport Example">
+<project default="run" name="HornetQ Servlet Transport Example">
 
    <import file="../common/build.xml"/>
    

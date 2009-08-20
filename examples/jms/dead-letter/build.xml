@@ -15,7 +15,7 @@
   ~ permissions and limitations under the License.
   -->
 
-<project default="run" name="JBoss Messaging Dead Letter Example">
+<project default="run" name="HornetQ Dead Letter Example">
 
    <import file="../../common/build.xml"/>
 

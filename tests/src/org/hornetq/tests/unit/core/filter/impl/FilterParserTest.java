@@ -25,7 +25,7 @@ import org.hornetq.utils.SimpleString;
 import org.hornetq.core.filter.impl.FilterParser;
 
 /**
- Tests of the JavaCC LL(1) parser for the JBoss Messaging filters
+ Tests of the JavaCC LL(1) parser for the HornetQ filters
  
  @author Scott.Stark@jboss.org
  @author d_jencks@users.sourceforge.net

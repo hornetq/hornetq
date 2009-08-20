@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <chapter id="about">
-   <title>About JBoss Messaging</title>
-    <para>The goal of JBoss Messaging is simple and uncompromising: to bring unrivaled levels of
+   <title>About HornetQ</title>
+    <para>The goal of HornetQ is simple and uncompromising: to bring unrivaled levels of
         performance and reliability to messaging, and to be the fastest, best featured, and most
         scalable multi-protocol messaging system.</para>
-    <para>Why use JBoss Messaging? Here are a few of the reasons:</para>
+    <para>Why use HornetQ? Here are a few of the reasons:</para>
     <itemizedlist>
         <listitem>
             <para>100% open source software.</para>

@@ -12,7 +12,7 @@
   ~ permissions and limitations under the License.
   -->
 
-<project default="run" name="JBoss Messaging Java EE EJB using JMS Example">
+<project default="run" name="HornetQ Java EE EJB using JMS Example">
 
    <import file="../common/build.xml"/>
 

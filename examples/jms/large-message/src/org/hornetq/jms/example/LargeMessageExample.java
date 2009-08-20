@@ -31,7 +31,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 
 /**
- * This example demonstrates the ability of JBoss Messaging to send and consume a very large message, much
+ * This example demonstrates the ability of HornetQ to send and consume a very large message, much
  * bigger than can fit in RAM.
  * 
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
@@ -45,7 +45,7 @@ public class LargeMessageExample extends HornetQExample
    }
 
    // The message we will send is size 256MB, even though we are only running in 50MB of RAM on both client and server.
-   // JBoss Messaging will support much larger message sizes, but we use 512MB so the example runs in reasonable time.
+   // HornetQ will support much larger message sizes, but we use 512MB so the example runs in reasonable time.
    private final long FILE_SIZE = 256 * 1024 * 1024;
 
    public boolean runExample() throws Exception

@@ -15,7 +15,7 @@
   ~ permissions and limitations under the License.
   -->
 
-<project default="run" name="JBoss Messaging JMS Client Side Load Balancing Example">
+<project default="run" name="HornetQ JMS Client Side Load Balancing Example">
 
    <import file="../../common/build.xml"/>
 

@@ -1,6 +1,6 @@
 <html>
   <head>
-    <title>JBoss Messaging Message Expiration Example</title>
+    <title>HornetQ Message Expiration Example</title>
     <link rel="stylesheet" type="text/css" href="../../common/common.css">
   </head>
   <body>
@@ -9,7 +9,7 @@
      <p>This example shows you how to define and deal with message expiration.</p>
      <p>Messages can be retained in the messaging system for a limited period of time before being removed.
          JMS specification states that clients should not receive messages that have been expired (but it does not guarantee this will not happen).</p>
-     <p>JBoss Messaging can assign a <em>expiry destination</em> to a given queue so that when messages are expired, they are removed from the queue and sent
+     <p>HornetQ can assign a <em>expiry destination</em> to a given queue so that when messages are expired, they are removed from the queue and sent
          to the expiry destination. These "expired" messages can later be consumed from the expiry destination for further inspection.
      <p>
          The example will send 1 message with a short <em>time-to-live</em> to a queue. We will wait for the message to expire and checks that the message
@@ -25,7 +25,7 @@
          </code>
      </pre>          
      <p>This configuration will moved expired messages from the <code>exampleQueue</code> to the <code>expiryQueue</code></p>
-     <p>JBoss Messaging allows to specify either a <code>Queue</code> by prefixing the <code>expiry-address</code> with <code>jms.queue.</code>
+     <p>HornetQ allows to specify either a <code>Queue</code> by prefixing the <code>expiry-address</code> with <code>jms.queue.</code>
          or a <code>Topic</code> by prefixing with <code>jms.topic.</code>.<br />
          In this example, we will use a <code>Queue</code> to hold the expired messages.</p>
      <p>Since we want to consume messages from this expiryQueue, we also need to add a JNDI binding to perform a lookup.
@@ -107,7 +107,7 @@
            System.out.println("Received message from " + queue.getQueueName() + ": " + messageReceived);</code>
         </pre>
         
-        <p>However, we have configured JBoss Messaging to send any expired messages to the <code>expiryQueue</code>.
+        <p>However, we have configured HornetQ to send any expired messages to the <code>expiryQueue</code>.
             We will now consume messages from this expiry queue and receives the <em>expired</em> message.</p>
             
         <li>We look up the JMS <em>expiry queue</em> object from JNDI</li>
@@ -133,7 +133,7 @@
         <p>JMS does not specify the notion of expiry queue. From JMS point of view, the message received from the expiry queue
             is a <strong>different</strong> message than the message expired from the queue: the two messages have the same content (properties and body) but
             their JMS headers differ.<br />
-            JBoss Messaging defines additional properties to correlate the message received from the expiry queue with the 
+            HornetQ defines additional properties to correlate the message received from the expiry queue with the 
             message expired from the queue</p>
             
         <li>The expired message's destination is the expiry queue</li>

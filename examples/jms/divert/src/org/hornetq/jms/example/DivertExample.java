@@ -26,7 +26,7 @@ import javax.naming.InitialContext;
 import org.hornetq.common.example.HornetQExample;
 
 /**
- * This examples demonstrates the use of JBoss Messaging "Diverts" to transparently divert or copy messages
+ * This examples demonstrates the use of HornetQ "Diverts" to transparently divert or copy messages
  * from one address to another.
  * 
  * Please see the readme.html for more information.

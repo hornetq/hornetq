@@ -1,26 +1,26 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <chapter id="management">
    <title>Management</title>
-   <para>JBoss Messaging has an extensive management API that allows a user to modify a server
+   <para>HornetQ has an extensive management API that allows a user to modify a server
       configuration, create new resources (e.g. JMS queues and topics), inspect these resources
       (e.g. how many messages are currently held in a queue) and interact with it (e.g. to remove
       messages from a queue). All the operations allows a client to <emphasis>manage</emphasis>
-      JBoss Messaging. It also allows clients to subscribe to management notifications.</para>
-   <para>There are 3 ways to manage JBoss Messaging:</para>
+      HornetQ. It also allows clients to subscribe to management notifications.</para>
+   <para>There are 3 ways to manage HornetQ:</para>
    <itemizedlist>
       <listitem>
          <para>Using JMX -- JMX is the standard way to manage Java applications</para>
       </listitem>
       <listitem>
-         <para>Using the core API -- management operations are sent to JBoss Messaging server using
+         <para>Using the core API -- management operations are sent to HornetQ server using
                <emphasis>core messages</emphasis></para>
       </listitem>
       <listitem>
-         <para>Using the JMS API -- management operations are sent to JBoss Messaging server using
+         <para>Using the JMS API -- management operations are sent to HornetQ server using
                <emphasis>JMS messages</emphasis></para>
       </listitem>
    </itemizedlist>
-   <para>Although there are 3 different ways to manage JBoss Messaging each API supports the same
+   <para>Although there are 3 different ways to manage HornetQ each API supports the same
       functionality. If it is possible to manage a resource using JMX it is also possible to achieve
       the same result using Core messages or JMS messages.</para>
    <para>This choice depends on your requirements, your application settings and your environment to
@@ -31,7 +31,7 @@
          management API is the same.</para>
       <para>For each <emphasis>managed resource</emphasis>, there exists a Java interface describing
          what can be invoked for this type of resource.</para>
-      <para>JBoss Messaging exposes its managed resources in 2 packages:</para>
+      <para>HornetQ exposes its managed resources in 2 packages:</para>
       <itemizedlist>
          <listitem>
             <para><emphasis>Core</emphasis> resources are located in the <literal
@@ -54,7 +54,7 @@
          
       <section>
          <title>Core Management API</title>
-         <para>JBoss Messaging defines a core management API to manage core resources. For full
+         <para>HornetQ defines a core management API to manage core resources. For full
             details of the API please consult the javadoc. In summary:</para>
          <section>
             <title>Core Server Management</title>
@@ -101,7 +101,7 @@
                </listitem>
                <listitem>
                   <para>Retrieving the server configuration and attributes</para>
-                  <para>The <literal>MessagingServerControl</literal> exposes JBoss Messaging
+                  <para>The <literal>MessagingServerControl</literal> exposes HornetQ
                      server configuration through all its attributes (e.g. <literal
                         >getVersion()</literal> method to retrieve the server's version,
                      etc.)</para>
@@ -197,7 +197,7 @@
          </section>
          <section>
             <title>Other Core Resources Management</title>
-            <para>JBoss Messaging allows to start and stop its remote resources (acceptors, diverts,
+            <para>HornetQ allows to start and stop its remote resources (acceptors, diverts,
                bridges, etc.) so that a server can be taken off line for a given period of time
                without stopping it completely (e.g. if other management operations must be performed
                such as resolving heuristic transactions). These resources are:</para>
@@ -276,7 +276,7 @@
       </section>
       <section>
          <title>JMS Management API</title>
-         <para>JBoss Messaging defines a JMS Management API to manage JMS <emphasis>administrated
+         <para>HornetQ defines a JMS Management API to manage JMS <emphasis>administrated
                objects</emphasis> (i.e. JMS queues, topics and connection factories).</para>
          <section>
             <title>JMS Server Management</title>
@@ -446,10 +446,10 @@
    </section>
    <section id="management.jmx">
       <title>Using Management Via JMX</title>
-      <para>JBoss Messaging can be managed using <ulink
+      <para>HornetQ can be managed using <ulink
             url="http://java.sun.com/javase/technologies/core/mntr-mgmt/javamanagement/"
          >JMX</ulink>. </para>
-      <para>The management API is exposed by JBoss Messaging using MBeans interfaces. JBoss
+      <para>The management API is exposed by HornetQ using MBeans interfaces. JBoss
          Messaging registers its resources with the domain <literal
          >org.jboss.messaging</literal>.</para>
       <para>For example, the <literal>ObjectName</literal> to manage a JMS Queue <literal
@@ -465,18 +465,18 @@
             >org.hornetq.core.management.ObjectNames</literal>. You can also use <literal
             >jconsole</literal> to find the <literal>ObjectName</literal> of the MBeans you want to
          manage. </para>
-      <para>Managing JBoss Messaging using JMX is identical to management of any Java Applications
+      <para>Managing HornetQ using JMX is identical to management of any Java Applications
          using JMX. It can be done by reflection or by creating proxies of the MBeans.</para>
       <section id="management.jmx.configuration">
          <title>Configuring JMX</title>
-         <para>By default, JMX is enabled to manage JBoss Messaging. It can be disabled by setting
+         <para>By default, JMX is enabled to manage HornetQ. It can be disabled by setting
                <literal>jmx-management-enabled</literal> to <literal>false</literal> in <literal
                >hornetq-configuration.xml</literal>:</para>
          <programlisting>
-&lt;!-- false to disable JMX management for JBoss Messaging --&gt;
+&lt;!-- false to disable JMX management for HornetQ --&gt;
 &lt;jmx-management-enabled&gt;false&lt;/jmx-management-enabled&gt;            
          </programlisting>
-         <para>If JMX is enabled, JBoss Messaging can be managed locally using <literal
+         <para>If JMX is enabled, HornetQ can be managed locally using <literal
                >jconsole</literal>. Remote connections to JMX are not enabled by default for
             security reasons. Please refer to <ulink
                url="http://java.sun.com/j2se/1.5.0/docs/guide/management/agent.html#remote">Java
@@ -487,7 +487,7 @@
          <section>
             <title>MBeanServer configuration</title>
             
-            <para>When JBoss Messaging is run in standalone, it uses the Java Virtual Machine's <literal>Platform
+            <para>When HornetQ is run in standalone, it uses the Java Virtual Machine's <literal>Platform
                MBeanServer</literal> to register its MBeans. This is configured in JBoss
             Microcontainer Beans file (see <xref linkend="server.microcontainer.configuration"
             />):</para>
@@ -513,12 +513,12 @@
          <title>Example</title>
          <para>See <xref linkend="examples.jmx" /> for an example which 
             shows how to use a remote connection to JMX and MBean proxies to
-            manage JBoss Messaging.</para>
+            manage HornetQ.</para>
       </section>
    </section>
    <section>
       <title>Using Management Via Core API</title>
-      <para>The core management API in JBoss Messaging is called by sending Core messages to a
+      <para>The core management API in HornetQ is called by sending Core messages to a
          special address, the <emphasis>management address</emphasis>.</para>
       <para><emphasis>Management messages</emphasis> are regular Core messages with well-known
          properties that the server needs to understand to interact with the management API:</para>
@@ -533,7 +533,7 @@
             <para>The parameters of the management operation</para>
          </listitem>
       </itemizedlist>
-      <para>When such a management message is sent to the management address, JBoss Messaging server
+      <para>When such a management message is sent to the management address, HornetQ server
          will handle it, extract the information, invoke the operation on the managed resources and
          send a <emphasis>management reply</emphasis> to the management message's reply-to address
          (specified by <literal>ClientMessageImpl.REPLYTO_HEADER_NAME</literal>). </para>
@@ -598,7 +598,7 @@
             is also configured in hornetq-configuration.xml:</para>
          <programlisting>
    &lt;!-- users with the admin role will be allowed to manage --&gt; 
-   &lt;!-- JBoss Messaging using management messages        --&gt;
+   &lt;!-- HornetQ using management messages        --&gt;
    &lt;security-setting match="jbm.management"&gt;
       &lt;permission type="manage" roles="admin" /&gt;
    &lt;/security-setting&gt;
@@ -607,7 +607,7 @@
    </section>
    <section id="management.jms">
       <title>Using Management Via JMS</title>
-      <para>Using JMS messages to manage JBoss Messaging is very similar to using core API.</para>
+      <para>Using JMS messages to manage HornetQ is very similar to using core API.</para>
       <para>An important difference is that JMS requires a JMS queue to send the messages to
          (instead of an address for the core API).</para>
       <para>The <emphasis>management queue</emphasis> is a special queue and needs to be
@@ -661,25 +661,25 @@
       <section>
          <title>Example</title>
          <para>See <xref linkend="examples.management" /> for an example which shows how to use 
-            JMS messages to manage JBoss Messaging server.</para>
+            JMS messages to manage HornetQ server.</para>
       </section>
    </section>
    <section id="management.replication">
       <title>Management Cluster Credentials</title>
-      <para>JBoss Messaging allows <emphasis>replication</emphasis> of a live server to a backup
+      <para>HornetQ allows <emphasis>replication</emphasis> of a live server to a backup
          server. This impacts management as resources created on the live server (e.g. a core
          address) must also be created on the backup server. Otherwise, when failover occurs, the
          backup server will not be able to handle messages sent to this address since its resources
          will have been created on the live server only and not on the backup.</para>
-      <para>JBoss Messaging <emphasis>replicates management operations</emphasis> regardless of the
+      <para>HornetQ <emphasis>replicates management operations</emphasis> regardless of the
          management API used (JMX, Core messages, JMS messages). Any management operation invoked on
          a live server will also be invoked on its backup server to ensure a proper replication of
          resources and state. For example, you only need to manage the live server: if a queue is
-         created on the live server, JBoss Messaging will ensure that the same resource will also be
+         created on the live server, HornetQ will ensure that the same resource will also be
          created on the backup server.</para>
       <para>If core or JMS messages are used to invoke management operations, replication is handled
-         automatically by JBoss Messaging.</para>
-      <para>To allow this management replication with JMX, JBoss Messaging defines 
+         automatically by HornetQ.</para>
+      <para>To allow this management replication with JMX, HornetQ defines 
             <emphasis>management cluster credentials</emphasis>: this special user/password <emphasis>must
             be shared by all nodes</emphasis>. To configure it, change the value in <literal
             >hornetq-configuration.xml</literal>:</para>
@@ -688,12 +688,12 @@
    &lt;management-cluster-password&gt;CHANGE ME!!&lt;/management-cluster-password&gt;
       </programlisting>
       <para>It is strongly suggested to
-         change these values from their default. If they are not changed from the default, JBoss Messaging will
+         change these values from their default. If they are not changed from the default, HornetQ will
          detect this and pester you with a warning on every start-up.</para>
-      <para>JBoss Messaging internally uses Core messages to replicate management operations between
+      <para>HornetQ internally uses Core messages to replicate management operations between
          the live and backup server when JMX is used. By default, there is a timeout of 5s (5000ms)
          to send a management request from the live server to the backup server and wait for a
-         reply. If a reply is not received before the timeout is hit, JBoss Messaging considers the
+         reply. If a reply is not received before the timeout is hit, HornetQ considers the
          replication has failed. This timeout can be configured in <literal
             >hornetq-configuration.xml</literal>:</para>
       <programlisting>
@@ -702,7 +702,7 @@
    </section>
    <section id="management.notifications">
       <title>Management Notifications</title>
-      <para>JBoss Messaging emits <emphasis>notifications</emphasis> to inform listeners of
+      <para>HornetQ emits <emphasis>notifications</emphasis> to inform listeners of
          potentially interesting events (creation of new resources, security violation,
          etc.).</para>
       <para>These notifications can be received by 3 different ways:</para>
@@ -734,7 +734,7 @@
       </section>
       <section>
          <title>Core Messages Notifications</title>
-         <para>JBoss Messaging defines a special <emphasis>management notification
+         <para>HornetQ defines a special <emphasis>management notification
                address</emphasis>. Core queues can be bound to this address so that clients will
             receive management notifications as Core messages</para>
          <para>A Core client which wants to receive management notifications must create a core
@@ -758,7 +758,7 @@
       </section>
       <section>
          <title>JMS Messages Notifications</title>
-         <para>JBoss Messaging's notifications can also be received using JMS messages.</para>
+         <para>HornetQ's notifications can also be received using JMS messages.</para>
          <para>It is similar to receiving notifications using Core API but an important difference
             is that JMS requires a JMS Destination to receive the messages (preferably a
             Topic):</para>
@@ -806,7 +806,7 @@
    <section id="management.message-counters">
       <title>Message Counters</title>
       <para>Message counters can be used to obtain information on queues <emphasis>over
-            time</emphasis> as JBoss Messaging keeps a history on queue metrics.</para>
+            time</emphasis> as HornetQ keeps a history on queue metrics.</para>
       <para>They can be used to show <emphasis>trends</emphasis> on queues. For example, using the
          management API, it would be possible to query the number of messages in a queue at regular
          interval. However, this would not be enough to know if the queue is used: the number of
@@ -870,7 +870,7 @@
          <para>Message counters can be retrieved using the Management API. For example, to retrieve
             message counters on a JMS Queue using JMX:</para>
          <programlisting>
-// retrieve a connection to JBoss Messaging's MBeanServer
+// retrieve a connection to HornetQ's MBeanServer
 MBeanServerConnection mbsc = ...
 JMSQueueControlMBean queueControl = (JMSQueueControl)MBeanServerInvocationHandler.newProxyInstance(mbsc,
    on,

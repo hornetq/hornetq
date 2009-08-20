@@ -27,7 +27,7 @@ import org.hornetq.integration.transports.netty.NettyConnectorFactory;
 
 /**
  * 
- * This exammple shows how to run a JBoss Messaging core client and server embedded in your
+ * This exammple shows how to run a HornetQ core client and server embedded in your
  * own application
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>

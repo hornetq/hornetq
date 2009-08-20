@@ -16,7 +16,7 @@
   -->
 
 
-<project default="run" name="JBoss Messaging JMS Topic Example">
+<project default="run" name="HornetQ JMS Topic Example">
 
    <import file="../../common/build.xml"/>
 

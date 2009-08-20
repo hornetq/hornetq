@@ -1,14 +1,14 @@
 <html>
   <head>
-    <title>JBoss Messaging Topic Hierarchy Example</title>
+    <title>HornetQ Topic Hierarchy Example</title>
     <link rel="stylesheet" type="text/css" href="../../common/common.css">
   </head>
   <body>
-     <h1>JBoss Messaging Topic Hierarchy Example</h1>
+     <h1>HornetQ Topic Hierarchy Example</h1>
      <br>
-     <p>JBoss Messaging supports topic hierarchies. With a topic hierarchy you can register a subscriber with a wild-card
+     <p>HornetQ supports topic hierarchies. With a topic hierarchy you can register a subscriber with a wild-card
      and that subscriber will receive any messages sent to an address that matches the wildcard.</p>
-     <p>JBoss Messaging wild-cards can use the character '#' which means "match any number of words", and
+     <p>HornetQ wild-cards can use the character '#' which means "match any number of words", and
      the character '*' which means "match a single word". Words are delimited by the character "."</p>
      <p>For example if I subscribe using the wild-card "news.europe.#", then that matches messages sent to the addresses
      "news.europe", "news.europe.sport" and "news.europe.entertainment", but it does not match messages sent to the

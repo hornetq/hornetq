@@ -10,7 +10,7 @@
             Consequently, using StompConnect it is possible to turn JBM into a Stomp Broker and use
             any of the available stomp clients. These include clients written in C, C++, c# and .net
             etc.</para>
-        <para>To run StompConnect first start the JBoss Messaging server and make sure that it is
+        <para>To run StompConnect first start the HornetQ server and make sure that it is
             using JNDI.</para>
         <para>Stomp requires the file <literal>jndi.properties</literal> to be available on the
             classpath. This should look something like:</para>
@@ -20,8 +20,8 @@ java.naming.factory.url.pkgs=org.jboss.naming:org.jnp.interfaces</programlisting
         <para>Make sure this file is in the classpath along with the StompConnect jar and the JBoss
             Messaging jars and simply run <literal>java
             org.codehaus.stomp.jms.Main</literal>.</para>
-        <para>JBoss Messaging will shortly be implementing the Stomp protocol directly, so you won't
-            have to use StompConnect to be able to use JBoss Messaging with Stomp clients.</para>
+        <para>HornetQ will shortly be implementing the Stomp protocol directly, so you won't
+            have to use StompConnect to be able to use HornetQ with Stomp clients.</para>
     </section>
     <section>
         <title>AMQP</title>

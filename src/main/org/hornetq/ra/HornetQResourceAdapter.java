@@ -36,7 +36,7 @@ import org.hornetq.ra.inflow.HornetQActivation;
 import org.hornetq.ra.inflow.HornetQActivationSpec;
 
 /**
- * The resource adapter for JBoss Messaging
+ * The resource adapter for HornetQ
  *
  * @author <a href="adrian@jboss.com">Adrian Brock</a>
  * @author <a href="jesper.pedersen@jboss.org">Jesper Pedersen</a>
@@ -181,7 +181,7 @@ public class HornetQResourceAdapter implements ResourceAdapter
 
       this.ctx = ctx;
 
-      log.info("JBoss Messaging resource adaptor started");
+      log.info("HornetQ resource adaptor started");
    }
 
    /**
@@ -208,7 +208,7 @@ public class HornetQResourceAdapter implements ResourceAdapter
 
       activations.clear();
 
-      log.info("JBoss Messaging resource adapter stopped");
+      log.info("HornetQ resource adapter stopped");
    }
 
    public void setConnectorClassName(final String connectorClassName)

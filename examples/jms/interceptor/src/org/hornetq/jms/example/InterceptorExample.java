@@ -24,7 +24,7 @@ import javax.naming.InitialContext;
 import org.hornetq.common.example.HornetQExample;
 
 /**
- * A simple JMS example that shows how to implement and use interceptors with JBoss Messaging.
+ * A simple JMS example that shows how to implement and use interceptors with HornetQ.
  *
  * @author <a href="hgao@redhat.com">Howard Gao</a>
  */

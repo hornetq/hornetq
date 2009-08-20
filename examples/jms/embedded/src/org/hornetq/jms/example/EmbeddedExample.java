@@ -33,7 +33,7 @@ import org.hornetq.jms.HornetQQueue;
 import org.hornetq.jms.client.HornetQConnectionFactory;
 
 /**
- * This example demonstrates how to run a JBoss Messaging embedded with JMS
+ * This example demonstrates how to run a HornetQ embedded with JMS
  * 
  * @author <a href="clebert.suconic@jboss.com">Clebert Suconic</a>
  */

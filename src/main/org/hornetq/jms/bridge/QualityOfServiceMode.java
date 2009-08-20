@@ -39,7 +39,7 @@ package org.hornetq.jms.bridge;
  * 
  * This QoS mode ensures messages will reach the destination from the source
  * once and only once. (Sometimes this mode is known as "exactly once"). If both
- * the source and the destination are on the same JBoss Messaging server
+ * the source and the destination are on the same HornetQ server
  * instance then this can be achieved by sending and acknowledging the messages
  * in the same local transaction. If the source and destination are on different
  * servers this is achieved by enlisting the sending and consuming sessions in a

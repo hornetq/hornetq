@@ -24,7 +24,7 @@ import org.hornetq.utils.SimpleString;
 import org.hornetq.core.filter.impl.FilterParser;
 
 /**
-* This class implements a JBoss Messaging filter
+* This class implements a HornetQ filter
 * 
 * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
 * @author <a href="jmesnil@redhat.com">Jeff Mesnil</a>

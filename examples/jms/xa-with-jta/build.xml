@@ -15,7 +15,7 @@
   ~ permissions and limitations under the License.
   -->
 
-<project default="run" name="JBoss Messaging JMS XA with JTA Example">
+<project default="run" name="HornetQ JMS XA with JTA Example">
 
    <import file="../../common/build.xml"/>
 

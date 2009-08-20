@@ -29,7 +29,7 @@ import org.hornetq.jms.HornetQQueue;
 import org.hornetq.jms.server.management.impl.JMSManagementHelper;
 
 /**
- * An example that shows how to manage JBoss Messaging using JMS messages.
+ * An example that shows how to manage HornetQ using JMS messages.
  *
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  */

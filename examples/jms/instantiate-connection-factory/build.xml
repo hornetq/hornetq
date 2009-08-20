@@ -15,7 +15,7 @@
   ~ permissions and limitations under the License.
   -->
 
-<project default="run" name="JBoss Messaging Instantiate ConnectionFactory Example">
+<project default="run" name="HornetQ Instantiate ConnectionFactory Example">
 
    <import file="../../common/build.xml"/>
 

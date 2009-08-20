@@ -1,21 +1,21 @@
 <html>
   <head>
-    <title>JBoss Messaging Client Kickoff Example</title>
+    <title>HornetQ Client Kickoff Example</title>
     <link rel="stylesheet" type="text/css" href="../../common/common.css">
   </head>
   <body>
      <h1>Client Kickoff Example</h1>
 
-     <p>This example shows how to kick off a client connected to JBoss Messaging 
+     <p>This example shows how to kick off a client connected to HornetQ 
          using <a href="http://java.sun.com/javase/technologies/core/mntr-mgmt/javamanagement/">JMX</a></p>
 
-     <p>The example will connect to JBoss Messaging. Using JMX, we will list the remote addresses connected to the 
-         server and close the corresponding connections. The client will be kicked off from JBoss Messaging and receives
+     <p>The example will connect to HornetQ. Using JMX, we will list the remote addresses connected to the 
+         server and close the corresponding connections. The client will be kicked off from HornetQ and receives
          an exception that its JMS connection was interrupted.</p>
 
      <h2>Example configuration</h2>
 
-     <p>JBoss Messaging exposes its managed resources by default on the platform MBeanServer.</p>
+     <p>HornetQ exposes its managed resources by default on the platform MBeanServer.</p>
      <p>To access this MBeanServer remotely, the Java Virtual machine must be started with system properties:
          <pre>
              <code>-Dcom.sun.management.jmxremote
@@ -25,7 +25,7 @@
         </pre>
         <p>These properties are explained in the Java 5 <a href="http://java.sun.com/j2se/1.5.0/docs/guide/management/agent.html#remote">Management guide</a>
             (please note that for this example, we will disable user authentication for simplicity sake).</p>        
-        <p>With these properties, JBoss Messaging server will be manageable remotely using standard JMX URL on port <code>3000</code>.</p> 
+        <p>With these properties, HornetQ server will be manageable remotely using standard JMX URL on port <code>3000</code>.</p> 
      </p>
          
      <h2>Example step-by-step</h2>
@@ -63,7 +63,7 @@
             <code>connection.start();</code>
        </pre>
 
-        <li>We create a MBean proxy to the MessagingServerControlMBean used to manage JBoss Messaging server
+        <li>We create a MBean proxy to the MessagingServerControlMBean used to manage HornetQ server
             (see <a href="../jmx/readme.html">JMX example</a> for a complete explanation of the different steps)</li>
         <pre>
             <code>ObjectName on = ObjectNames.getMessagingServerObjectName();
@@ -130,10 +130,10 @@
      
      <ul>
         <li><a href="http://java.sun.com/j2se/1.5.0/docs/guide/management/agent.html">Java 5 Management guide</a></li>
-        <li>JBoss Messaging defines a set of MBeans for this core 
+        <li>HornetQ defines a set of MBeans for this core 
             API (<a href="../../../docs/api/org/jboss/messaging/core/management/package-summary.html">org.hornetq.core.management</a>
              package) and its JMS API (in the <a href="../../../docs/api/org/jboss/messaging/jms/server/management/package-summary.html">org.hornetq.jms.server.management</a> package)
-        <li><a href="../../../docs/api/org/jboss/messaging/core/management/ObjectNames.html">ObjectNames</a> is a helper class used to build the ObjectName of JBoss Messaging manageable resources</li>
+        <li><a href="../../../docs/api/org/jboss/messaging/core/management/ObjectNames.html">ObjectNames</a> is a helper class used to build the ObjectName of HornetQ manageable resources</li>
      </ul>
   </body>
 </html>

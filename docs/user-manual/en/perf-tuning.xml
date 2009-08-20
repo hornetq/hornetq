@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <chapter id="perf-tuning">
     <title>Performance Tuning</title>
-    <para>In this chapter we'll discuss how to tune JBoss Messaging for optimum performance.</para>
+    <para>In this chapter we'll discuss how to tune HornetQ for optimum performance.</para>
     <section>
         <title>Tuning the journal</title>
         <itemizedlist>
@@ -78,7 +78,7 @@
     </section>
     <section>
         <title>Other Tunings</title>
-        <para>There are various other places in JBoss Messaging where we can perform some
+        <para>There are various other places in HornetQ where we can perform some
             tuning:</para>
         <itemizedlist>
             <listitem>
@@ -167,7 +167,7 @@ serveruser     hard    nofile  20000
                         >-XX:+UseParallelGC</literal> on Sun JDKs.</para>
             </listitem>
             <listitem>
-                <para>Memory settings. Give as much memory as you can to the server. JBoss Messaging
+                <para>Memory settings. Give as much memory as you can to the server. HornetQ
                     can run in low memory by using paging (described in <xref linkend="paging"/>)
                     but if it can run with all queues in RAM this will improve performance. The
                     amount of memory you require will depend on the size and number of your queues
@@ -199,7 +199,7 @@ serveruser     hard    nofile  20000
                 <note>
                     <para>Some popular libraries such as the Spring JMS Template are known to use
                         these anti-patterns. If you're using Spring JMS Template and you're getting
-                        poor performance you know why. Don't blame JBoss Messaging!</para>
+                        poor performance you know why. Don't blame HornetQ!</para>
                 </note>
             </listitem>
             <listitem>
@@ -215,7 +215,7 @@ serveruser     hard    nofile  20000
                     entire queue has to be scanned for matching messages.</para>
                 <para>This anti-pattern can normally be avoided by instead using a topic with many
                     durable subscriptions, each subscription defines a message selector. With topic
-                    subscriptions the selector expression is evaluated by JBoss Messaging before the
+                    subscriptions the selector expression is evaluated by HornetQ before the
                     message goes into the subscription, so no scanning is involved.</para>
             </listitem>
             <listitem>

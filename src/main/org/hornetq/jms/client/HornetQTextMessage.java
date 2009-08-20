@@ -264,7 +264,7 @@ public class HornetQTextMessage extends HornetQMessage implements TextMessage
    }
    
    /**
-    * A copy constructor for non-JBoss Messaging JMS TextMessages.
+    * A copy constructor for non-HornetQ JMS TextMessages.
     */
    public HornetQTextMessage(final TextMessage foreign, final ClientSession session) throws JMSException
    {

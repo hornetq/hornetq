@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <chapter id="configuring-transports">
     <title>Configuring the Transport</title>
-    <para>JBoss Messaging has a fully pluggable and highly flexible transport layer and defines its
+    <para>HornetQ has a fully pluggable and highly flexible transport layer and defines its
         own Service Provider Interface (SPI) to make plugging in a new transport provider relatively
         straightforward.</para>
-    <para>In this chapter we'll describe the concepts required for understanding JBoss Messaging
+    <para>In this chapter we'll describe the concepts required for understanding HornetQ
         transports and where and how they're configured.</para>
     <section id="configuring-transports.acceptors">
         <title>Understanding Acceptors</title>
-        <para>One of the most important concepts in JBoss Messaging transports is the
+        <para>One of the most important concepts in HornetQ transports is the
                 <emphasis>acceptor</emphasis>. Let's dive straight in and take a look at an acceptor
             defined in xml in the configuration file <literal
             >hornetq-configuration.xml</literal>.</para>
@@ -25,7 +25,7 @@ org.hornetq.integration.transports.netty.NettyAcceptorFactory
         <para>Acceptors are always defined inside an <literal>acceptors</literal> element. There can
             be one or more acceptors defined in the <literal>acceptors</literal> element. There's no
             upper limit to the number of acceptors per server.</para>
-        <para>Each acceptor defines a way in which connections can be made to the JBoss Messaging
+        <para>Each acceptor defines a way in which connections can be made to the HornetQ
             server.</para>
         <para>In the above example we're defining an acceptor that uses Netty to listen for
             connections at port <literal>5446</literal>. </para>
@@ -148,7 +148,7 @@ etc
     </section>
     <section>
         <title>Configuring the Netty transport</title>
-        <para>Out of the box, JBoss Messaging currently uses <ulink
+        <para>Out of the box, HornetQ currently uses <ulink
                 url="http://www.jboss.org/netty/">Netty</ulink>, a high performance low level
             network library.</para>
         <para>Our Netty transport can be configured in several different ways; to use old (blocking)
@@ -295,15 +295,15 @@ etc
         </section>
         <section>
             <title>Configuring Netty Servlet</title>
-            <para>We also provide a Netty servlet transport for use with JBoss Messaging. The
-                servlet transport allows JBoss Messaging traffic to be tunneled over HTTP to a
+            <para>We also provide a Netty servlet transport for use with HornetQ. The
+                servlet transport allows HornetQ traffic to be tunneled over HTTP to a
                 servlet running in a servlet engine which then redirects it to an in-VM JBoss
                 Messaging server.</para>
             <para>The servlet transport differs from the Netty HTTP transport in that, with the HTTP
-                transport JBoss Messaging effectively acts a web server listening for HTTP traffic
+                transport HornetQ effectively acts a web server listening for HTTP traffic
                 on, e.g. port 80 or 8080, whereas with the servlet transport JBM traffic is proxied
                 through a servlet engine which may already be serving web site or other
-                applications. This allows JBoss Messaging to be used where corporate policies may
+                applications. This allows HornetQ to be used where corporate policies may
                 only allow a single web server listening on an HTTP port, and this needs to serve
                 all applications including messaging.</para>
             <para>Please see the examples for a full working example of the servlet transport being
@@ -411,7 +411,7 @@ etc
 
 </programlisting>In
                 both cases you will need to provide a keystore and password. Take a look at the
-                servlet ssl example shipped with JBoss Messaging for more detail.</para>
+                servlet ssl example shipped with HornetQ for more detail.</para>
         </section>
     </section>
 

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <chapter id="filter-expressions">
     <title>Filter Expressions</title>
-    <para>JBoss Messaging provides a powerful filter language based on a subset of the SQL 92
+    <para>HornetQ provides a powerful filter language based on a subset of the SQL 92
         expression syntax.</para>
     <para>It is the same as the syntax used for JMS selectors, but the predefined identifiers are
         different. For documentation on JMS selector syntax please the JMS javadoc for <ulink
@@ -28,7 +28,7 @@
                 several places as described in <xref linkend="management"/>.</para>
         </listitem>
     </itemizedlist>
-    <para>There are some differences between JMS selector expressions and JBoss Messaging core
+    <para>There are some differences between JMS selector expressions and HornetQ core
         filter expressions. Whereas JMS selector expressions operate on a JMS message, JBoss
         Messaging core filter expressions operate on a core message.</para>
     <para>The following identifiers can be used in a core filter expressions to refer to attributes

@@ -12,7 +12,7 @@
   ~ permissions and limitations under the License.
   -->
 
-<project default="run" name="JBoss Messaging Java EE JCA Config Example">
+<project default="run" name="HornetQ Java EE JCA Config Example">
 
    <import file="../common/build.xml"/>
 

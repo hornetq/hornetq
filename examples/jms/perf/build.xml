@@ -15,7 +15,7 @@
   ~ permissions and limitations under the License.
   -->
 
-<project name="JBoss Messaging JMS Perf Example">
+<project name="HornetQ JMS Perf Example">
 
    <import file="../../common/build.xml"/>
 

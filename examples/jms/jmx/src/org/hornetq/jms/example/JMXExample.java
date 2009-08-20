@@ -34,7 +34,7 @@ import javax.naming.InitialContext;
 import java.util.HashMap;
 
 /**
- * An example that shows how to manage JBoss Messaging using JMX.
+ * An example that shows how to manage HornetQ using JMX.
  *
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  */

@@ -24,7 +24,7 @@ import org.hornetq.tests.util.UnitTestCase;
 import org.hornetq.utils.SimpleString;
 
 /**
- * Tests the compliance with the JBoss Messaging Filter syntax.
+ * Tests the compliance with the HornetQ Filter syntax.
  *
  * @author <a href="mailto:jason@planet57.com">Jason Dillon</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>

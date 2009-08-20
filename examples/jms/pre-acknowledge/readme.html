@@ -1,10 +1,10 @@
 <html>
   <head>
-    <title>JBoss Messaging JMS Pre-Acknowledge Example</title>
+    <title>HornetQ JMS Pre-Acknowledge Example</title>
     <link rel="stylesheet" type="text/css" href="../../common/common.css">
   </head>
   <body>
-     <h1>JBoss Messaging JMS Pre-Acknowledge Example</h1>
+     <h1>HornetQ JMS Pre-Acknowledge Example</h1>
      <br>
      <p>Standard JMS supports three acknowledgement modes: AUTO_ACKNOWLEDGE, CLIENT_ACKNOWLEDGE, and
      DUPS_OK_ACKNOWLEDGE. For a full description on these modes please consult the JMS specification, or any
@@ -21,8 +21,8 @@
      <p>An example of a use-case where it might be a good idea to use pre-acknowledge, is for stock price update
      messages. With these messages it might be ok to lose a message in event of crash, since the next price
      update message will arrive soon, overriding the previous price.</p>
-     <p>In order to use pre-acknowledge functionality with JBoss Messaging the session has to be created with
-     a special, JBoss Messaging specific acknowledgement mode, given by the value of
+     <p>In order to use pre-acknowledge functionality with HornetQ the session has to be created with
+     a special, HornetQ specific acknowledgement mode, given by the value of
      <code>JBossSession.PRE_ACKNOWLEDGE</code>.     
      <h2>Example step-by-step</h2>
      <p><i>To run the example, simply type <code>ant</code> from this directory</i></p>

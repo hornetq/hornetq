@@ -15,7 +15,7 @@
   ~ implied.  See the License for the specific language governing
   ~ permissions and limitations under the License.
   -->
-<project default="run" name="JBoss Messaging Example with Micro Container">
+<project default="run" name="HornetQ Example with Micro Container">
 
    <import file="../../common/build.xml"/>
 

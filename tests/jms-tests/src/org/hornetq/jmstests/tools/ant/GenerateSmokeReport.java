@@ -329,10 +329,10 @@ public class GenerateSmokeReport
       try
       {
          pw.println("<html>");
-         pw.println("<head><title>JBoss Messaging Smoke Test Results</title></head>");
+         pw.println("<head><title>HornetQ Smoke Test Results</title></head>");
          pw.println("<body>");
 
-         pw.println("<h1>JBoss Messaging Smoke Test Results</h1>");
+         pw.println("<h1>HornetQ Smoke Test Results</h1>");
 
          pw.print("Java version: ");
          pw.print(System.getProperty("java.version"));

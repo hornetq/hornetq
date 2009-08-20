@@ -15,7 +15,7 @@
   ~ permissions and limitations under the License.
   -->
 
-<project default="run" name="JBoss Messaging Static Selector Example jms">
+<project default="run" name="HornetQ Static Selector Example jms">
 
    <import file="../../common/build.xml"/>
 

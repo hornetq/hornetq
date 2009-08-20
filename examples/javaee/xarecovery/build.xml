@@ -11,7 +11,7 @@
   ~ implied.  See the License for the specific language governing
   ~ permissions and limitations under the License.
   -->
-<project default="run" name="JBoss Messaging XA Recovery Example">
+<project default="run" name="HornetQ XA Recovery Example">
 
    <import file="../common/build.xml"/>
 

@@ -15,7 +15,7 @@
   ~ permissions and limitations under the License.
   -->
 
-<project default="run" name="JBoss Messaging JMS Transactional Example">
+<project default="run" name="HornetQ JMS Transactional Example">
 
    <import file="../../common/build.xml"/>
 

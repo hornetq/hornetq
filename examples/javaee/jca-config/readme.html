@@ -1,14 +1,14 @@
 <html>
   <head>
-    <title>JBoss Messaging Java EE JCA Configuration Example</title>
+    <title>HornetQ Java EE JCA Configuration Example</title>
     <link rel="stylesheet" type="text/css" href="../../common/common.css">
   </head>
   <body>
      <h1>Java EE Resource Adapter Configuration Example</h1>
-     <p>This example demonstrates how to configure several properties on the JBoss Messaging Resource Adapter. We setup two JBoss Servers. The enterprise application is being deployed in one application server while the MDBs and JMS Connections are pointing to a remote server</p>
+     <p>This example demonstrates how to configure several properties on the HornetQ Resource Adapter. We setup two JBoss Servers. The enterprise application is being deployed in one application server while the MDBs and JMS Connections are pointing to a remote server</p>
      <p>This example is composed by two MDBs (MDBQueueA and MDBQueueB) and a StatlessSessionBean (StatelessSender). The main class (MDBRemoteClientExample) will call a method on StatelessSender and send a Message to Queue B.<p>
      <p>StatelessSender will send a message to Queue A and it is getting the connection out of the JavaConnectionArchitecture (JCA) ConnectionFactory, and sending a message to QueueA which will be received on MDBQueueA.</p>
-     <p>MDBQueueB is connected to a different JBoss Messaging resource-adapter, and it will receive the message sent by the main Class.</p>
+     <p>MDBQueueB is connected to a different HornetQ resource-adapter, and it will receive the message sent by the main Class.</p>
      <p>All the MDBs and JMS Connections are referring to the remote server</p> 
      <p>A Resource Adapter is a way to connect any system provider to an application server, and is integral part of the Java Connectors Architecture specification.</p>
      <p>JBossMessaging provides its own adapter and this example will provide you a quick tutorial on how to configure some of the default properties, and how to change the default values on MDB Inbound Properties, or on ConnectionFactory Outbound Properties.</p>
@@ -129,11 +129,11 @@ public class MDBRemoteExample implements MessageListener
 </code>
 </pre>
      
-     <p>Refer to the <i>Resource Adapter</i> Chapter on the <i>JBoss Messaging Documentation</i> for more information about configuring the ra.xml properties.
+     <p>Refer to the <i>Resource Adapter</i> Chapter on the <i>HornetQ Documentation</i> for more information about configuring the ra.xml properties.
             
      <p>You may choose to deploy multiple JBossMessaging Resource adapters on the same application server, for example if you are connecting to different HornetQ servers and if you wish to have a higher control of properties on each server you are connecting to. You will be able to determine which rar you are using individually at each <i>MDB</i> and <i>ConnectionFactory</i> as specified before here. Just copy the directory jms-ra.rar in your application as any other name with the extension .rar and use that file name at your deployments.</p>
 
-     <p>Please refer to JBoss Messaging Quickstart guide to <a href="../../../docs/quickstart-guide/en/html_single/index.html#installation.jboss">install it in JBoss AS 5<a></p>
+     <p>Please refer to HornetQ Quickstart guide to <a href="../../../docs/quickstart-guide/en/html_single/index.html#installation.jboss">install it in JBoss AS 5<a></p>
 
      
      <h2>Example step-by-step</h2>

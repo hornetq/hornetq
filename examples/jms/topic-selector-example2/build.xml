@@ -15,7 +15,7 @@
   ~ permissions and limitations under the License.
   -->
 
-<project default="run" name="JBoss Messaging JMS Topic Selector Example 2">
+<project default="run" name="HornetQ JMS Topic Selector Example 2">
 
    <import file="../../common/build.xml"/>
 

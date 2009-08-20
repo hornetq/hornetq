@@ -1,18 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <chapter id="client-classpath">
     <title>The Client Classpath</title>
-    <para>In this chapter we explain which jars you need on the Java classpath of a JBoss Messaging
+    <para>In this chapter we explain which jars you need on the Java classpath of a HornetQ
         client application. This depends on various factors including whether you're using just
         core, JMS, JNDI or Netty. We explain which jars are needed in each case.</para>
     <note>
         <para>All the jars mentioned here can be found in the <literal>lib</literal> directory of
-            the JBoss Messaging distribution. Be sure you only use the jars from the correct version
+            the HornetQ distribution. Be sure you only use the jars from the correct version
             of the release, you <emphasis>must not</emphasis> mix and match versions of jars from
-            different JBoss Messaging versions.</para>
+            different HornetQ versions.</para>
     </note>
     <section>
         <title>Pure Core Client</title>
-        <para>If you're using just a pure JBoss Messaging core client (i.e. no JMS) then you need
+        <para>If you're using just a pure HornetQ core client (i.e. no JMS) then you need
                 <literal>hornetq-core-client.jar</literal> on your client classpath.</para>
         <para>If you're using a Netty transport then you will also netty <literal
                 >netty.jar</literal> and <literal>hornetq-transports.jar</literal>.</para>

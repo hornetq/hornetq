@@ -15,7 +15,7 @@
   ~ permissions and limitations under the License.
   -->
 
-<project default="run" name="JBoss Messaging Management Notifications Example">
+<project default="run" name="HornetQ Management Notifications Example">
 
    <import file="../../common/build.xml"/>
 

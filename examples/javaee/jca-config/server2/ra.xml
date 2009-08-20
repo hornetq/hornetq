@@ -10,8 +10,8 @@
            http://java.sun.com/xml/ns/j2ee/connector_1_5.xsd"
            version="1.5">
 
-   <description>JBoss Messaging 2.0 Resource Adapter Alternate Configuration</description>
-   <display-name>JBoss Messaging 2.0 Resource Adapter Alternate Configuration</display-name>
+   <description>HornetQ 2.0 Resource Adapter Alternate Configuration</description>
+   <display-name>HornetQ 2.0 Resource Adapter Alternate Configuration</display-name>
 
    <vendor-name>Red Hat Middleware LLC</vendor-name>
    <eis-type>JMS 1.1 Server</eis-type>

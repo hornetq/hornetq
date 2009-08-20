@@ -15,7 +15,7 @@
   ~ permissions and limitations under the License.
   -->
 
-<project default="run" name="JBoss Messaging Embedded Example">
+<project default="run" name="HornetQ Embedded Example">
 
    <import file="../../common/build.xml"/>
 	

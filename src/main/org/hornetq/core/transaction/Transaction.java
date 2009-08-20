@@ -21,7 +21,7 @@ import org.hornetq.core.exception.MessagingException;
 import org.hornetq.core.server.Queue;
 
 /**
- * A JBoss Messaging internal transaction
+ * A HornetQ internal transaction
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:andy.taylor@jboss.org>Andy Taylor</a>

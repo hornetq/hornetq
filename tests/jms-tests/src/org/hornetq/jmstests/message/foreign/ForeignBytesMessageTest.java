@@ -37,7 +37,7 @@ public class ForeignBytesMessageTest extends ForeignMessageTest
         
         log.debug("creating JMS Message type " + m.getClass().getName());
         
-        String bytes = "jboss messaging";
+        String bytes = "HornetQ";
         m.writeBytes(bytes.getBytes());
         return m;
     }
@@ -56,6 +56,6 @@ public class ForeignBytesMessageTest extends ForeignMessageTest
            sb.append(new String(buffer,0,n));
            n = byteMsg.readBytes(buffer);
         }
-        assertEquals("jboss messaging",sb.toString());     
+        assertEquals("HornetQ",sb.toString());     
     }
 }

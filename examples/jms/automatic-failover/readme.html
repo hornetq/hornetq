@@ -1,21 +1,21 @@
 <html>
   <head>
-    <title>JBoss Messaging JMS Automatic (Transparent) Failover Example</title>
+    <title>HornetQ JMS Automatic (Transparent) Failover Example</title>
     <link rel="stylesheet" type="text/css" href="../../common/common.css">
   </head>
   <body>
-     <h1>JBoss Messaging JMS Automatic (Transparent) Failover (HA) Example</h1>
+     <h1>HornetQ JMS Automatic (Transparent) Failover (HA) Example</h1>
      <br>
      <p>This example demonstrates two servers coupled as a live-backup pair for high availability (HA), and a client
      connection transparently failing over from live to backup when the live server is crashed.</p>
-     <p>JBoss Messaging implements seamless, transparent failover of client connections between live and backup servers.
+     <p>HornetQ implements seamless, transparent failover of client connections between live and backup servers.
      This is implemented by the replication of state between live and backup nodes. When replication is configured and a
      live node crashes, the client connections can carry on as if <i>nothing happened</i> and carry on sending and
      consuming messages.</p>
-     <p><b>With JBoss Messaging there is no need to code any special client side failover logic in order to benefit from
+     <p><b>With HornetQ there is no need to code any special client side failover logic in order to benefit from
      failover and HA. There is no need to refactor your messaging applications to work in an HA environment.</b></p>
-     <p>JBoss Messaging also supports manual failover which is covered in a separate example.</p> 
-     <p>For more information on JBoss Messaging failover and HA, and clustering in general, please see the clustering
+     <p>HornetQ also supports manual failover which is covered in a separate example.</p> 
+     <p>For more information on HornetQ failover and HA, and clustering in general, please see the clustering
      section of the user manual.</p>      
      <h2>Example step-by-step</h2>
      <p><i>To run the example, simply type <code>ant</code> from this directory</i></p>

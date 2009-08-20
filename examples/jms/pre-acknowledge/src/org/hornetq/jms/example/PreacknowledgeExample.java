@@ -32,7 +32,7 @@ import org.hornetq.jms.server.management.impl.JMSManagementHelper;
 
 /**
  * 
- * This example demonstrates the use of JBoss Messaging "pre-acknowledge" functionality where
+ * This example demonstrates the use of HornetQ "pre-acknowledge" functionality where
  * messages are acknowledged before they are delivered to the consumer.
  * 
  * Please see the readme.html for more details.

@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <chapter id="paging">
     <title>Paging</title>
-    <para>JBoss Messaging transparently supports huge queues containing millions of messages while
+    <para>HornetQ transparently supports huge queues containing millions of messages while
         the server is running with limited memory.</para>
     <para>In such a situation it's not possible to store all of the queues in memory at any one
-        time, so JBoss Messaging transparently <emphasis>pages</emphasis> messages into and out of
+        time, so HornetQ transparently <emphasis>pages</emphasis> messages into and out of
         memory as they are needed, thus allowing massive queues with a low memory footprint.</para>
-    <para>JBoss Messaging will start paging messages to disk, when either the size of the queue
+    <para>HornetQ will start paging messages to disk, when either the size of the queue
         reaches a total configured maximum size.</para>
     <section>
         <title>Page Files</title>
@@ -47,7 +47,7 @@
                     <tbody>
                         <row>
                             <entry><literal>paging-directory</literal></entry>
-                            <entry>Where page files are stored. JBoss Messaging will create one
+                            <entry>Where page files are stored. HornetQ will create one
                                 folder for each address being paged under this configured
                                 location.</entry>
                             <entry>data/paging</entry>
@@ -143,6 +143,6 @@
     <section>
         <title>Example</title>
         <para>See <xref linkend="examples.paging"/> for an example which shows how to use paging
-            with JBoss Messaging.</para>
+            with HornetQ.</para>
     </section>
 </chapter>

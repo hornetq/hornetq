@@ -1,14 +1,14 @@
 <html>
   <head>
-    <title>JBoss Messaging JMS Message Consumer Rate Limiting</title>
+    <title>HornetQ JMS Message Consumer Rate Limiting</title>
     <link rel="stylesheet" type="text/css" href="../../common/common.css">
   </head>
   <body>
-     <h1>JBoss Messaging <br>JMS Message Consumer Rate Limiting</h1>
+     <h1>HornetQ <br>JMS Message Consumer Rate Limiting</h1>
      <br><br>
-     <p>With JBoss Messaging you can specify a maximum consume rate at which a JMS MessageConsumer will consume messages.
+     <p>With HornetQ you can specify a maximum consume rate at which a JMS MessageConsumer will consume messages.
      This can be specified when creating or deploying the connection factory. See <code>hornetq-jms.xml</code></p>
-     <p>If this value is specified then JBoss Messaging will ensure that messages are never consumed at a rate higher than
+     <p>If this value is specified then HornetQ will ensure that messages are never consumed at a rate higher than
      the specified rate. This is a form of consumer <i>throttling</i>.</p>     
      <h2>Example step-by-step</h2>
      <p>In this example we specify a <code>consumer-max-rate</code> of <code>10</code> messages per second in the <code>hornetq-jms.xml</code>

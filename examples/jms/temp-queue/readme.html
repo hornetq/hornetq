@@ -1,12 +1,12 @@
 <html>
   <head>
-    <title>JBoss Messaging JMS Temporary Queue Example</title>
+    <title>HornetQ JMS Temporary Queue Example</title>
     <link rel="stylesheet" type="text/css" href="../../common/common.css">
   </head>
   <body>
      <h1>JMS Temporary Queue Example</h1>
      <br>
-     <p>This example shows you how to use a TemporaryQueue object with JBoss Messaging. First it creates a temporary queue to send and receive a message, then delete it. Then it creates another temporary queue and tries to use it after its connection is closed -- to illustrate its scope.</p>
+     <p>This example shows you how to use a TemporaryQueue object with HornetQ. First it creates a temporary queue to send and receive a message, then delete it. Then it creates another temporary queue and tries to use it after its connection is closed -- to illustrate its scope.</p>
      <p>TemporaryQueue is a JMS queue that lives within lifetime of its connection. It is often used in request-reply type messaging where the reply is sent through a temporary destination. The temporary queue is often created as a server resource, so after using, the user should call delete() method to release the resources. Please consult the JMS 1.1 specification for full details.</p>
      <br>
      <h2>Example step-by-step</h2>

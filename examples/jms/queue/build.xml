@@ -14,7 +14,7 @@
   ~ implied.  See the License for the specific language governing
   ~ permissions and limitations under the License.
   -->
-<project default="run" name="JBoss Messaging JMS Queue Example">
+<project default="run" name="HornetQ JMS Queue Example">
 
    <import file="../../common/build.xml"/>
 

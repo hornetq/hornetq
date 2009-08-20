@@ -99,7 +99,7 @@ public class ExpiryExample extends HornetQExample
 
          // The message received from the expiry queue has the same content than the expired message but its JMS headers differ
          // (from JMS point of view, it's not the same message).
-         // JBoss Messaging defines additional properties to correlate the message received from the expiry queue with the 
+         // HornetQ defines additional properties to correlate the message received from the expiry queue with the 
          // message expired from the queue
          
          System.out.println();

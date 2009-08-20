@@ -68,7 +68,7 @@ a NIO. If your platform is Linux, install LibAIO to enable the AIO journal
      [java] org.hornetq.jms.example.SpawnedJMSServer out:10:41:08,437 WARN  @main [Securit
 yStoreImpl] It has been detected that the cluster admin password which is used to replic
 ate management operation from one node to the other has not had its password changed fro
-m the installation default. Please see the JBoss Messaging user guide for instructions o
+m the installation default. Please see the HornetQ user guide for instructions o
 n how to do this.
      [java] org.hornetq.jms.example.SpawnedJMSServer out:10:41:10,941 INFO  @main [JBossCo
 nnectionFactory] read only is false
@@ -81,9 +81,9 @@ erManagerImpl] Binding for java:/ConnectionFactory already exists
      [java] org.hornetq.jms.example.SpawnedJMSServer out:10:41:10,991 WARN  @main [JMSServ
 erManagerImpl] Binding for java:/XAConnectionFactory already exists
      [java] org.hornetq.jms.example.SpawnedJMSServer out:10:41:11,241 INFO  @main [Messagi
-ngServerImpl] JBoss Messaging Server version 2.0.0.BETA1-SNAPSHOT (Stilton, 101) started
+ngServerImpl] HornetQ Server version 2.0.0.BETA1-SNAPSHOT (Stilton, 101) started
      [java] org.hornetq.jms.example.SpawnedJMSServer out:10:41:11,241 INFO  @main [HornetQBoot
-strapServer] JBoss Messaging server started
+strapServer] HornetQ server started
      [java] org.hornetq.jms.example.SpawnedJMSServer out:STARTED::
      [java] 10:41:11,276 INFO  @main [JMSExample] using server0/client-jndi.properties f
 or jndi
@@ -97,7 +97,7 @@ or jndi
 BUILD SUCCESSFUL
 Total time: 13 seconds
 </programlisting>
-      <para>Congratulations! You have succesfully run your first Jboss Messaging example. Try some
+      <para>Congratulations! You have succesfully run your first HornetQ example. Try some
          of the others.</para>
    </section>
    <section id="examples.messaging">

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <chapter id="security">
     <title>Security</title>
-    <para>This chapter describes how security works with JBoss Messaging and how you can configure
+    <para>This chapter describes how security works with HornetQ and how you can configure
         it. To disable security completely simply set the <literal>security-enabled</literal>
         property to false in the <literal>hornetq-configuration.xml</literal> file.</para>
     <para>For performance reasons security is cached and invalidated every so long. To change this
@@ -9,13 +9,13 @@
         milliseconds. The default is <literal>10000</literal> ms.</para>
     <section id="security.settings.roles">
         <title>Role based security for addresses</title>
-        <para>JBoss Messaging contains a flexible role-based security model for applying security to
+        <para>HornetQ contains a flexible role-based security model for applying security to
             queues, based on their addresses.</para>
-        <para>As explained in <xref linkend="using-core" />, JBoss Messaging core consists
+        <para>As explained in <xref linkend="using-core" />, HornetQ core consists
             mainly of sets of queues bound to addresses. A message is sent to an address and the
             server looks up the set of queues that are bound to that address, the server then routes
             the message to those set of queues.</para>
-        <para>JBoss Messaging allows sets of permissions to be defined against the queues based on
+        <para>HornetQ allows sets of permissions to be defined against the queues based on
             their address. An exact match on the address can be used or a wildcard match can be used
             using the wildcard characters '<literal>#</literal>' and '<literal>*</literal>'.</para>
         <para>Seven different permissions can be given to the set of queues which match the address.
@@ -82,7 +82,7 @@
             can send messages to these addresses or consume messages from queues bound to an address
             that starts with the string "globalqueues.europe."</para>
         <para>The mapping between a user and what roles they have is handled by the security
-            manager. JBoss Messaging ships with a user manager that reads user credentials from a
+            manager. HornetQ ships with a user manager that reads user credentials from a
             file on disk, and can also plug into JAAS or JBoss Application Server security.</para>
         <para>For more information on configuring the security manager, please see <xref
                 linkend="change-security-manager" />.</para>
@@ -117,14 +117,14 @@
     <section>
         <title>Secure Sockets Layer (SSL) Transport</title>
         <para>When messaging clients are connected to servers, or servers are connected to other
-            servers (e.g. via bridges) over an untrusted network then JBoss Messaging allows that
+            servers (e.g. via bridges) over an untrusted network then HornetQ allows that
             traffic to be encrypted using the Secure Sockets Layer (SSL) transport.</para>
         <para>For more information on configuring the SSL transport, please see <xref
                 linkend="configuring-transports" />.</para>
     </section>
     <section>
         <title>Basic user credentials</title>
-        <para> JBoss Messaging ships with a security manager implementation that reads user
+        <para> HornetQ ships with a security manager implementation that reads user
             credentials, i.e. user names, passwords and role information from an xml file on the
             classpath called <literal>hornetq-users.xml</literal>. This is the default security
             manager.</para>
@@ -182,7 +182,7 @@
         <para>The class <literal
                 >org.hornetq.core.security.impl.HornetQSecurityManagerImpl</literal> is the
             default security manager that reads used by the standalone server.</para>
-        <para>JBoss Messaging ships with two other security manager implementations you can use
+        <para>HornetQ ships with two other security manager implementations you can use
             off-the-shelf; one a JAAS security manager and another for integrating with JBoss
             Application Sever security, alternatively you could write your own implementation by
             implementing the <literal>org.hornetq.core.security.SecurityManager</literal>
@@ -231,12 +231,12 @@
         <section>
             <title>Example</title>
             <para>See <xref linkend="examples.jaas" /> for an example which
-               shows how JBoss Messaging can be configured to use JAAS.</para>
+               shows how HornetQ can be configured to use JAAS.</para>
         </section>
     </section>
     <section>
         <title>JBoss AS Security Manager</title>
-        <para>The JBoss AS security manager is used when running JBoss Messaging inside the JBoss
+        <para>The JBoss AS security manager is used when running HornetQ inside the JBoss
             Application server. This allows tight integration with the JBoss Application Server's
             security model.</para>
         <para>The class name of this security manager is <literal
