@@ -1,7 +1,7 @@
-<project name="hornetq.quickstart.documentation" default="all" basedir=".">
+<project name="HornetQ QuickStart Guide" default="all" basedir=".">
 
   <property name="build.dir" value="build"/>
-  <property name="pdf.name"  value="JBossMessaging_QuickStartGuide.pdf"/>
+  <property name="pdf.name"  value="HornetQ_QuickStartGuide.pdf"/>
   <import file="${basedir}/../../lib/docbook-support/support.xml"/>
 
   <target name="all" depends="clean">

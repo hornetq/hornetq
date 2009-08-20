@@ -1,4 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+ ~ Copyright © 2009 Red Hat, Inc. and others.
+ ~
+ ~ The text of and illustrations in this document are licensed by Red Hat under
+ ~ a Creative Commons Attribution–Share Alike 3.0 Unported license ("CC-BY-SA").
+ ~
+ ~ An explanation of CC-BY-SA is available at 
+ ~
+ ~            http://creativecommons.org/licenses/by-sa/3.0/. 
+ ~
+ ~ In accordance with CC-BY-SA, if you distribute this document or an adaptation
+ ~ of it, you must provide the URL for the original version.
+ ~
+ ~ Red Hat, as the licensor of this document, waives the right to enforce, 
+ ~ and agrees not to assert, Section 4d of CC-BY-SA to the fullest extent 
+ ~ permitted by applicable law.
+-->
+
 <chapter id="running">
    <title>Starting The Server</title>
    <section id="running.standalone">
@@ -12,7 +31,7 @@
          15:05:54,108 INFO  @main [HornetQBootstrapServer] Starting HornetQ server
          ...
          15:06:02,566 INFO  @main [MessagingServerImpl] HornetQ Server version 
-         2.0.0.BETA1-SNAPSHOT (Stilton, 101) started
+         2.0.0.BETA5 (buzz-buzz, 107) started
       </programlisting>
       <para>HornetQ is now running. If any errors are displayed or if the server was not
          started properly, please refer to the troubleshooting guide for help</para>
@@ -36,7 +55,7 @@
         SVNTag=JBoss_5_1_0_CR1 date=200904091504)
         ...
         15:19:30,305 INFO  [MessagingServerImpl] HornetQ Server version 
-        2.0.0.BETA1-SNAPSHOT (Stilton, 101) started
+        2.0.0.BETA5 (buzz-buzz, 107) started
         ...
         15:19:43,601 INFO  [ServerImpl] JBoss (Microcontainer) [5.1.0.CR1 (build: 
         SVNTag=JBoss_5_1_0_CR1 date=200904091504)] Started in 1m:8s:121ms

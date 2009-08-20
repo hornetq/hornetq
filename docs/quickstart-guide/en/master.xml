@@ -1,4 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+ ~ Copyright © 2009 Red Hat, Inc. and others.
+ ~
+ ~ The text of and illustrations in this document are licensed by Red Hat under
+ ~ a Creative Commons Attribution–Share Alike 3.0 Unported license ("CC-BY-SA").
+ ~
+ ~ An explanation of CC-BY-SA is available at 
+ ~
+ ~            http://creativecommons.org/licenses/by-sa/3.0/. 
+ ~
+ ~ In accordance with CC-BY-SA, if you distribute this document or an adaptation
+ ~ of it, you must provide the URL for the original version.
+ ~
+ ~ Red Hat, as the licensor of this document, waives the right to enforce, 
+ ~ and agrees not to assert, Section 4d of CC-BY-SA to the fullest extent 
+ ~ permitted by applicable law.
+-->
+
 <!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.3CR3//EN"
         "../../../lib/docbook-support/support/docbook-dtd/docbookx.dtd" [
         <!ENTITY about        SYSTEM "about.xml">
@@ -10,8 +29,28 @@
         ]>
 <book lang="en">
    <bookinfo>
-      <title>HornetQ 2.0 Quickstart Guide</title>
-      <subtitle>Setting the Standard for High Performance Messaging</subtitle>
+      <title>HornetQ Quickstart Guide</title>
+      <subtitle>Putting the buzz in messaging</subtitle>
+      <legalnotice>
+          <para>Copyright © 2009 Red Hat, Inc. and others.</para>
+          <para>The text of and illustrations in this document are licensed by Red Hat under
+              a Creative Commons Attribution–Share Alike 3.0 Unported license ("CC-BY-SA").</para>
+          <para>An explanation of CC-BY-SA is available at 
+              <ulink url="http://creativecommons.org/licenses/by-sa/3.0/">http://creativecommons.org/licenses/by-sa/3.0/</ulink>. 
+              In accordance with CC-BY-SA, if you distribute this document or an adaptation
+              of it, you must provide the URL for the original version.</para>
+          <para>Red Hat, as the licensor of this document, waives the right to enforce, 
+              and agrees not to assert, Section 4d of CC-BY-SA to the fullest extent 
+              permitted by applicable law.</para>
+      </legalnotice>
+      <mediaobject>
+        <imageobject>
+          <imagedata fileref="images/hornetQ_logo_600px.png" format="PNG"/>
+        </imageobject>
+        <textobject>
+          <phrase>HornetQ - Putting the buzz in messaging</phrase>
+        </textobject>
+      </mediaobject>
    </bookinfo>
 
    <toc></toc>

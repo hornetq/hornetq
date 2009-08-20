@@ -1,4 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+ ~ Copyright © 2009 Red Hat, Inc. and others.
+ ~
+ ~ The text of and illustrations in this document are licensed by Red Hat under
+ ~ a Creative Commons Attribution–Share Alike 3.0 Unported license ("CC-BY-SA").
+ ~
+ ~ An explanation of CC-BY-SA is available at 
+ ~
+ ~            http://creativecommons.org/licenses/by-sa/3.0/. 
+ ~
+ ~ In accordance with CC-BY-SA, if you distribute this document or an adaptation
+ ~ of it, you must provide the URL for the original version.
+ ~
+ ~ Red Hat, as the licensor of this document, waives the right to enforce, 
+ ~ and agrees not to assert, Section 4d of CC-BY-SA to the fullest extent 
+ ~ permitted by applicable law.
+-->
+
 <chapter id="examples">
    <title>Running the Examples</title>
    <para>In the directory <literal>examples</literal> there are 2 sets of examples, these are </para>
@@ -48,8 +67,8 @@ run:
 init:
 
 compile:
-     [echo] src.example.dir=/home/andy/projects/HornetQTrunk/examples/jms/queue/src
-    [javac] Compiling 5 source files to /home/andy/projects/HornetQTrunk/examples/jms/queue
+     [echo] src.example.dir=/home/andy/projects/hornetq/trunk/examples/jms/queue/src
+    [javac] Compiling 5 source files to /home/andy/projects/hornetq/trunk/examples/jms/queue
 /build/classes
 
 runExample:
@@ -58,7 +77,7 @@ runExample:
  logServerOutput true
      [java] 10:41:04,149 INFO  @main [JMSExample] and vm args: -Xms512M,-Xmx512M,-XX:+U
 seParallelGC,-XX:+AggressiveOpts,-XX:+UseFastAccessorMethods,-Djava.util.logging.config.
-file=/home/andy/projects/HornetQTrunk/examples/jms/common/../../../src/config/stand-alone/no
+file=/home/andy/projects/hornetq/trunk/examples/jms/common/../../../src/config/stand-alone/no
 n-clustered/logging.properties
      [java] org.hornetq.jms.example.SpawnedJMSServer out:10:41:08,437 INFO  @main [Journal
 StorageManager] AIO journal selected
@@ -81,7 +100,7 @@ erManagerImpl] Binding for java:/ConnectionFactory already exists
      [java] org.hornetq.jms.example.SpawnedJMSServer out:10:41:10,991 WARN  @main [JMSServ
 erManagerImpl] Binding for java:/XAConnectionFactory already exists
      [java] org.hornetq.jms.example.SpawnedJMSServer out:10:41:11,241 INFO  @main [Messagi
-ngServerImpl] HornetQ Server version 2.0.0.BETA1-SNAPSHOT (Stilton, 101) started
+ngServerImpl] HornetQ Server version 2.0.0.BETA5 (buzz-buzz, 107) started
      [java] org.hornetq.jms.example.SpawnedJMSServer out:10:41:11,241 INFO  @main [HornetQBoot
 strapServer] HornetQ server started
      [java] org.hornetq.jms.example.SpawnedJMSServer out:STARTED::
@@ -97,7 +116,7 @@ or jndi
 BUILD SUCCESSFUL
 Total time: 13 seconds
 </programlisting>
-      <para>Congratulations! You have succesfully run your first HornetQ example. Try some
+      <para>Congratulations! You have successfully run your first HornetQ example. Try some
          of the others.</para>
    </section>
    <section id="examples.messaging">
@@ -136,11 +155,11 @@ init:
 compile:
 
 jar:
-      [jar] Building jar: /home/andy/projects/HornetQTrunk/examples/javaee/mdb/build/mdb-exa
+      [jar] Building jar: /home/andy/projects/hornetq/trunk/examples/javaee/mdb/build/mdb-exa
       mple.jar
 
 ear:
-      [jar] Building jar: /home/andy/projects/HornetQTrunk/examples/javaee/mdb/build/mdb-exa
+      [jar] Building jar: /home/andy/projects/hornetq/trunk/examples/javaee/mdb/build/mdb-exa
       mple.ear
 
 deploy-ear:
@@ -209,10 +228,10 @@ BUILD SUCCESSFUL
 Total time: 1 second
 </programlisting>
       <para>You can verify that the application has been undeployed by checking the output from the
-         JBoss Application Server, in this isntance it will be something like:</para>
-      <programlisting>16:36:45,277 INFO  [EJBContainer] STOPPED EJB: org.hornetq.javaee.example.server.MDBExample 
+         JBoss Application Server, in this instance it will be something like:</para>
+      <programlisting>16:36:45,277 INFO  [EJBContainer] STOPPED EJB: org.jboss.javaee.example.server.MDBExample 
          ejbName: MessageMDBExample
 </programlisting>
-      <para>Congratulations! you have sucessfully deployed and run a Java EE example.</para>
+      <para>Congratulations! you have successfully deployed and run a Java EE example.</para>
    </section>
 </chapter>

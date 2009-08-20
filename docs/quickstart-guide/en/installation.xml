@@ -1,4 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+ ~ Copyright © 2009 Red Hat, Inc. and others.
+ ~
+ ~ The text of and illustrations in this document are licensed by Red Hat under
+ ~ a Creative Commons Attribution–Share Alike 3.0 Unported license ("CC-BY-SA").
+ ~
+ ~ An explanation of CC-BY-SA is available at 
+ ~
+ ~            http://creativecommons.org/licenses/by-sa/3.0/. 
+ ~
+ ~ In accordance with CC-BY-SA, if you distribute this document or an adaptation
+ ~ of it, you must provide the URL for the original version.
+ ~
+ ~ Red Hat, as the licensor of this document, waives the right to enforce, 
+ ~ and agrees not to assert, Section 4d of CC-BY-SA to the fullest extent 
+ ~ permitted by applicable law.
+-->
+
 <chapter id="installation">
    <title>Installation</title>
    <para>This section describes how to install HornetQ. </para>
@@ -76,7 +95,7 @@
    </section>
    <section id="installation.jboss">
       <title>HornetQ In JBoss AS 5</title>
-      <para>HornetQ 2.0 can be deployed in <ulink url="http://www.jboss.org/jbossas/">JBoss
+      <para>HornetQ can be deployed in <ulink url="http://www.jboss.org/jbossas/">JBoss
             AS 5</ulink>. It is not shipped by default with the application server and you need to
          create new AS 5 profiles to run AS 5 with HornetQ.</para>
       <para>To create AS 5 profiles:</para>
@@ -97,12 +116,12 @@
       <itemizedlist>
          <listitem>
             <para><literal>default-with-hornetq</literal> -- it corresponds to AS 5 <literal
-                  >default</literal> profile with HornetQ 2 as its JMS provider. In this
+                  >default</literal> profile with HornetQ as its JMS provider. In this
                profile, HornetQ is <emphasis>non-clustered</emphasis></para>
          </listitem>
          <listitem>
             <para><literal>all-with-hornetq</literal> -- it corresponds to AS 5 <literal>all</literal>
-               profile with HornetQ 2 as its JMS provider. In this profile, HornetQ
+               profile with HornetQ as its JMS provider. In this profile, HornetQ
                is <emphasis>clustered</emphasis></para>
          </listitem>
       </itemizedlist>
