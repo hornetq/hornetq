@@ -672,7 +672,7 @@
             <include name="org/hornetq/core/version/**/*.class"/>
             <include name="org/hornetq/core/management/**/*.class"/>
             <!-- FIXME - why are these classes in the client jar ??? -->
-            <include name="org/hornetq/core/server/MessagingComponent.class"/>
+            <include name="org/hornetq/core/server/HornetQComponent.class"/>
             <include name="org/hornetq/core/server/JournalType.class"/>
             <include name="org/hornetq/core/journal/EncodingSupport.class"/>
             <include name="org/hornetq/core/server/ServerMessage.class"/>
