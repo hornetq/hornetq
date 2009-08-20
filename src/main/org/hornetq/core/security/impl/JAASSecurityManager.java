@@ -230,8 +230,6 @@ import java.util.Set;
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="jmesnil@redhat.com">Jeff Mesnil</a>
- * @author <a href="on@ibis.odessa.ua">Oleg Nitz</a>
- * @author Scott.Stark@jboss.org
  */
 public class JAASSecurityManager implements JBMSecurityManager, MessagingComponent
 {

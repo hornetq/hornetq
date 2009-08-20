@@ -233,11 +233,6 @@ import org.hornetq.utils.TypedProperties;
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
  *
- * Parts based on old version by:
- *
- * @author Peter Antman
- * @author <a href="mailto:Scott.Stark@jboss.org">Scott Stark</a>
- * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  *
  * @version $Revision$
  *

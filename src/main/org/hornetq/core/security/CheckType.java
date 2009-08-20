@@ -205,8 +205,6 @@
 package org.hornetq.core.security;
 
 /**
- * @author Peter Antman
- * @author <a href="mailto:Scott.Stark@jboss.org">Scott Stark</a>
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  * @author <a href="mailto:andy.taylor@jboss.org>Andy Taylor</a>
  * @version $Revision: 2925 $
