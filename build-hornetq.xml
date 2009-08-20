@@ -1193,8 +1193,10 @@
             <fileset dir="${test.jms.classes.dir}">
                <include name="**/jmstests/**/${test-mask}.class"/>
                <exclude name="**/jmstests/XARecoveryTest.class"/>
-               <exclude name="**/jms/XAResourceRecoveryTest.class"/>
-               <exclude name="**/jms/XATest.class"/>
+               <exclude name="**/jmstests/XAResourceRecoveryTest.class"/>
+               <exclude name="**/jmstests/XATest.class"/>
+               <exclude name="**/jmstests/stress/**"/>
+               <exclude name="**/jmstests/manual/**"/>
             </fileset>
          </batchtest>
       </junit>
