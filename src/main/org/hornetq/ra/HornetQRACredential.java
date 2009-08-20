@@ -223,13 +223,13 @@ import org.hornetq.core.logging.Logger;
  * @author <a href="mailto:jesper.pedersen@jboss.org">Jesper Pedersen</a>
  * @version $Revision: 71554 $
  */
-public class HornetQCredential implements Serializable
+public class HornetQRACredential implements Serializable
 {
    /** Serial version UID */
    static final long serialVersionUID = 210476602237497193L;
 
    /** The logger */
-   private static final Logger log = Logger.getLogger(HornetQCredential.class);
+   private static final Logger log = Logger.getLogger(HornetQRACredential.class);
 
    /** Trace enabled */
    private static boolean trace = log.isTraceEnabled();
@@ -243,7 +243,7 @@ public class HornetQCredential implements Serializable
    /**
     * Private constructor
     */
-   private HornetQCredential()
+   private HornetQRACredential()
    {
       if (trace)
       {
@@ -315,7 +315,7 @@ public class HornetQCredential implements Serializable
     * @return The credentials
     * @exception SecurityException Thrown if the credentials cant be retrieved
     */
-   public static HornetQCredential getCredential(final ManagedConnectionFactory mcf,
+   public static HornetQRACredential getCredential(final ManagedConnectionFactory mcf,
                                              final Subject subject,
                                              final ConnectionRequestInfo info) throws SecurityException
    {
@@ -324,11 +324,11 @@ public class HornetQCredential implements Serializable
          log.trace("getCredential(" + mcf + ", " + subject + ", " + info + ")");
       }
 
-      HornetQCredential jc = new HornetQCredential();
+      HornetQRACredential jc = new HornetQRACredential();
       if (subject == null && info != null)
       {
-         jc.setUserName(((HornetQConnectionRequestInfo)info).getUserName());
-         jc.setPassword(((HornetQConnectionRequestInfo)info).getPassword());
+         jc.setUserName(((HornetQRAConnectionRequestInfo)info).getUserName());
+         jc.setPassword(((HornetQRAConnectionRequestInfo)info).getPassword());
       }
       else if (subject != null)
       {

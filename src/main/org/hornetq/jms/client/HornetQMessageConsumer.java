@@ -371,7 +371,7 @@ public class HornetQMessageConsumer implements MessageConsumer, QueueReceiver, T
 
    public String toString()
    {
-      return "HornetQMessageConsumer->" + consumer;
+      return "HornetQRAMessageConsumer->" + consumer;
    }
 
    // Package protected ---------------------------------------------

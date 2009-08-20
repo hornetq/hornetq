@@ -213,7 +213,7 @@ import org.hornetq.integration.transports.netty.NettyConnector;
 import org.hornetq.jms.HornetQQueue;
 import org.hornetq.jms.client.HornetQConnectionFactory;
 import org.hornetq.ra.ConnectionFactoryProperties;
-import org.hornetq.ra.HornetQManagedConnectionFactory;
+import org.hornetq.ra.HornetQRAManagedConnectionFactory;
 import org.hornetq.ra.HornetQResourceAdapter;
 import org.hornetq.ra.inflow.HornetQActivation;
 import org.hornetq.ra.inflow.HornetQActivationSpec;
@@ -503,7 +503,7 @@ public class ResourceAdapterTest extends ServiceTestBase
    public void testValidateProperties() throws Exception
    {
       validateGettersAndSetters(new HornetQResourceAdapter(), "backupTransportConfiguration");
-      validateGettersAndSetters(new HornetQManagedConnectionFactory(), "connectionParameters", "sessionDefaultType", "backupConnectionParameters");
+      validateGettersAndSetters(new HornetQRAManagedConnectionFactory(), "connectionParameters", "sessionDefaultType", "backupConnectionParameters");
       validateGettersAndSetters(new HornetQActivationSpec(),
                                 "connectionParameters",
                                 "acknowledgeMode",
@@ -609,10 +609,10 @@ public class ResourceAdapterTest extends ServiceTestBase
 
    class MockHornetQResourceAdapter extends HornetQResourceAdapter
    {
-      /*public HornetQConnectionFactory createRemoteFactory(String connectorClassName,
+      /*public HornetQRAConnectionFactory createRemoteFactory(String connectorClassName,
                                                         Map<String, Object> connectionParameters)
       {
-         HornetQConnectionFactory factory = super.createJBossConnectionFactory(connectionParameters);
+         HornetQRAConnectionFactory factory = super.createJBossConnectionFactory(connectionParameters);
 
          return factory;
       }*/

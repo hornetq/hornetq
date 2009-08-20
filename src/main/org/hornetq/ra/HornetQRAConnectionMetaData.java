@@ -203,55 +203,144 @@
  */
 package org.hornetq.ra;
 
-import javax.jms.JMSException;
-import javax.jms.Queue;
-import javax.jms.QueueReceiver;
+import java.util.Enumeration;
+import java.util.Vector;
+
+import javax.jms.ConnectionMetaData;
 
 import org.hornetq.core.logging.Logger;
 
 /**
- * A wrapper for a queue receiver
- *
- * @author <a href="mailto:adrian@jboss.com">Adrian Brock</a>
+ * This class implements javax.jms.ConnectionMetaData
+ * 
+ * @author <a href="mailto:adrian@jboss.org">Adrian Brock</a>
  * @author <a href="mailto:jesper.pedersen@jboss.org">Jesper Pedersen</a>
  * @version $Revision: $
  */
-public class HornetQQueueReceiver extends HornetQMessageConsumer implements QueueReceiver
+public class HornetQRAConnectionMetaData implements ConnectionMetaData
 {
    /** The logger */
-   private static final Logger log = Logger.getLogger(HornetQQueueReceiver.class);
+   private static final Logger log = Logger.getLogger(HornetQRAConnectionMetaData.class);
 
-   /** Whether trace is enabled */
+   /** Trace enabled */
    private static boolean trace = log.isTraceEnabled();
 
    /**
-    * Create a new wrapper
-    * @param consumer the queue receiver
-    * @param session the session
+    * Constructor
     */
-   public HornetQQueueReceiver(final QueueReceiver consumer, final HornetQSession session)
+   public HornetQRAConnectionMetaData()
    {
-      super(consumer, session);
-
       if (trace)
       {
-         log.trace("constructor(" + consumer + ", " + session + ")");
+         log.trace("constructor()");
       }
    }
 
    /**
-    * Get queue
-    * @return The queue
-    * @exception JMSException Thrown if an error occurs
+    * Get the JMS version
+    * @return The version
     */
-   public Queue getQueue() throws JMSException
+   public String getJMSVersion()
    {
       if (trace)
       {
-         log.trace("getQueue()");
+         log.trace("getJMSVersion()");
       }
 
-      checkState();
-      return ((QueueReceiver)consumer).getQueue();
+      return "1.1";
+   }
+
+   /**
+    * Get the JMS major version
+    * @return The major version
+    */
+   public int getJMSMajorVersion()
+   {
+      if (trace)
+      {
+         log.trace("getJMSMajorVersion()");
+      }
+
+      return 1;
+   }
+
+   /**
+    * Get the JMS minor version
+    * @return The minor version
+    */
+   public int getJMSMinorVersion()
+   {
+      if (trace)
+      {
+         log.trace("getJMSMinorVersion()");
+      }
+
+      return 1;
+   }
+
+   /**
+    * Get the JMS provider name
+    * @return The name
+    */
+   public String getJMSProviderName()
+   {
+      if (trace)
+      {
+         log.trace("getJMSProviderName()");
+      }
+
+      return "JBoss Messaging";
+   }
+
+   /**
+    * Get the provider version
+    * @return The version
+    */
+   public String getProviderVersion()
+   {
+      if (trace)
+      {
+         log.trace("getJMSProviderName()");
+      }
+
+      return "2.0";
+   }
+
+   /**
+    * Get the provider major version
+    * @return The version
+    */
+   public int getProviderMajorVersion()
+   {
+      if (trace)
+      {
+         log.trace("getProviderMajorVersion()");
+      }
+
+      return 2;
+   }
+
+   /**
+    * Get the provider minor version
+    * @return The version
+    */
+   public int getProviderMinorVersion()
+   {
+      if (trace)
+      {
+         log.trace("getProviderMinorVersion()");
+      }
+
+      return 0;
+   }
+
+   /**
+    * Get the JMS XPropertyNames
+    * @return The names
+    */
+   public Enumeration<Object> getJMSXPropertyNames()
+   {
+      Vector<Object> v = new Vector<Object>();
+      return v.elements();
    }
 }

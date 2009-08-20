@@ -426,7 +426,7 @@
 
       <outbound-resourceadapter>
          <connection-definition>
-            <managedconnectionfactory-class>org.hornetq.ra.HornetQManagedConnectionFactory</managedconnectionfactory-class>
+            <managedconnectionfactory-class>org.hornetq.ra.HornetQRAManagedConnectionFactory</managedconnectionfactory-class>
 
             <config-property>
                <description>The default session type</description>
@@ -441,10 +441,10 @@
                <config-property-value>0</config-property-value>
             </config-property>
 
-            <connectionfactory-interface>org.hornetq.ra.HornetQConnectionFactory</connectionfactory-interface>
-            <connectionfactory-impl-class>org.hornetq.ra.HornetQConnectionFactoryImpl</connectionfactory-impl-class>
+            <connectionfactory-interface>org.hornetq.ra.HornetQRAConnectionFactory</connectionfactory-interface>
+            <connectionfactory-impl-class>org.hornetq.ra.HornetQRAConnectionFactoryImpl</connectionfactory-impl-class>
             <connection-interface>javax.jms.Session</connection-interface>
-            <connection-impl-class>org.hornetq.ra.HornetQSession</connection-impl-class>
+            <connection-impl-class>org.hornetq.ra.HornetQRASession</connection-impl-class>
          </connection-definition>
          <transaction-support>XATransaction</transaction-support>
          <authentication-mechanism>

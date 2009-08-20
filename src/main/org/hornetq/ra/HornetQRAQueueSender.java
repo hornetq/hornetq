@@ -203,40 +203,132 @@
  */
 package org.hornetq.ra;
 
-import java.io.Serializable;
+import javax.jms.JMSException;
+import javax.jms.Message;
+import javax.jms.Queue;
+import javax.jms.QueueSender;
 
-import javax.jms.ConnectionFactory;
-import javax.jms.QueueConnectionFactory;
-import javax.jms.TopicConnectionFactory;
-import javax.jms.XAConnectionFactory;
-import javax.jms.XAQueueConnectionFactory;
-import javax.jms.XATopicConnectionFactory;
+import org.hornetq.core.logging.Logger;
 
 /**
- * An aggregate interface for the JMS connection factories
- *
- * @author <a href="mailto:adrian@jboss.com">Adrian Brock</a>
- * @author <a href="mailto:jesper.pedersen@jboss.com">Jesper Pedersen</a>
+ * JBMQueueSender.
+ * 
+ * @author <a href="adrian@jboss.com">Adrian Brock</a>
+ * @author <a href="jesper.pedersen@jboss.org">Jesper Pedersen</a>
  * @version $Revision: $
  */
-public interface HornetQConnectionFactory extends ConnectionFactory, TopicConnectionFactory, QueueConnectionFactory,
-         XAConnectionFactory, XAQueueConnectionFactory, XATopicConnectionFactory, Serializable
+public class HornetQRAQueueSender extends HornetQRAMessageProducer implements QueueSender
 {
-   /** Connection factory capable of handling connections */
-   public static final int CONNECTION = 0;
+   /** The logger */
+   private static final Logger log = Logger.getLogger(HornetQRAQueueSender.class);
 
-   /** Connection factory capable of handling queues */
-   public static final int QUEUE_CONNECTION = 1;
+   /** Whether trace is enabled */
+   private static boolean trace = log.isTraceEnabled();
 
-   /** Connection factory capable of handling topics */
-   public static final int TOPIC_CONNECTION = 2;
+   /**
+    * Create a new wrapper
+    * @param producer the producer
+    * @param session the session
+    */
+   public HornetQRAQueueSender(final QueueSender producer, final HornetQRASession session)
+   {
+      super(producer, session);
 
-   /** Connection factory capable of handling XA connections */
-   public static final int XA_CONNECTION = 3;
+      if (trace)
+      {
+         log.trace("constructor(" + producer + ", " + session + ")");
+      }
+   }
 
-   /** Connection factory capable of handling XA queues */
-   public static final int XA_QUEUE_CONNECTION = 4;
+   /**
+    * Get queue
+    * @return The queue
+    * @exception JMSException Thrown if an error occurs
+    */
+   public Queue getQueue() throws JMSException
+   {
+      if (trace)
+      {
+         log.trace("getQueue()");
+      }
 
-   /** Connection factory capable of handling XA topics */
-   public static final int XA_TOPIC_CONNECTION = 5;
+      return ((QueueSender)producer).getQueue();
+   }
+
+   /**
+    * Send message
+    * @param destination The destination
+    * @param message The message
+    * @param deliveryMode The delivery mode
+    * @param priority The priority
+    * @param timeToLive The time to live
+    * @exception JMSException Thrown if an error occurs
+    */
+   public void send(final Queue destination,
+                    final Message message,
+                    final int deliveryMode,
+                    final int priority,
+                    final long timeToLive) throws JMSException
+   {
+      session.lock();
+      try
+      {
+         if (trace)
+         {
+            log.trace("send " + this +
+                      " destination=" +
+                      destination +
+                      " message=" +
+                      message +
+                      " deliveryMode=" +
+                      deliveryMode +
+                      " priority=" +
+                      priority +
+                      " ttl=" +
+                      timeToLive);
+         }
+
+         checkState();
+         producer.send(destination, message, deliveryMode, priority, timeToLive);
+
+         if (trace)
+         {
+            log.trace("sent " + this + " result=" + message);
+         }
+      }
+      finally
+      {
+         session.unlock();
+      }
+   }
+
+   /**
+    * Send message
+    * @param destination The destination
+    * @param message The message
+    * @exception JMSException Thrown if an error occurs
+    */
+   public void send(final Queue destination, final Message message) throws JMSException
+   {
+      session.lock();
+      try
+      {
+         if (trace)
+         {
+            log.trace("send " + this + " destination=" + destination + " message=" + message);
+         }
+
+         checkState();
+         producer.send(destination, message);
+
+         if (trace)
+         {
+            log.trace("sent " + this + " result=" + message);
+         }
+      }
+      finally
+      {
+         session.unlock();
+      }
+   }
 }

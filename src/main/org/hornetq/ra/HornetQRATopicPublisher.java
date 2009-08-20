@@ -203,123 +203,91 @@
  */
 package org.hornetq.ra;
 
-import javax.jms.BytesMessage;
 import javax.jms.JMSException;
-import javax.jms.MapMessage;
 import javax.jms.Message;
-import javax.jms.MessageConsumer;
-import javax.jms.MessageListener;
-import javax.jms.ObjectMessage;
-import javax.jms.StreamMessage;
-import javax.jms.TextMessage;
+import javax.jms.Topic;
+import javax.jms.TopicPublisher;
 
 import org.hornetq.core.logging.Logger;
 
 /**
- * A wrapper for a message consumer
- *
- * @author <a href="mailto:adrian@jboss.com">Adrian Brock</a>
- * @author <a href="mailto:jesper.pedersen@jboss.org">Jesper Pedersen</a>
- * @version $Revision: $
+ * JBMQueueSender.
+ * 
+ * @author <a href="adrian@jboss.com">Adrian Brock</a>
+ * @author <a href="jesper.pedersen@jboss.org">Jesper Pedersen</a>
+ * @version $Revision:  $
  */
-public class HornetQMessageConsumer implements MessageConsumer
+public class HornetQRATopicPublisher extends HornetQRAMessageProducer implements TopicPublisher
 {
    /** The logger */
-   private static final Logger log = Logger.getLogger(HornetQMessageConsumer.class);
+   private static final Logger log = Logger.getLogger(HornetQRATopicPublisher.class);
 
    /** Whether trace is enabled */
    private static boolean trace = log.isTraceEnabled();
 
-   /** The wrapped message consumer */
-   protected MessageConsumer consumer;
-
-   /** The session for this consumer */
-   protected HornetQSession session;
-
    /**
     * Create a new wrapper
-    * @param consumer the consumer
+    * @param producer the producer
     * @param session the session
     */
-   public HornetQMessageConsumer(final MessageConsumer consumer, final HornetQSession session)
+   public HornetQRATopicPublisher(final TopicPublisher producer, final HornetQRASession session)
    {
-      this.consumer = consumer;
-      this.session = session;
+      super(producer, session);
 
       if (trace)
       {
-         log.trace("new JBMMessageConsumer " + this + " consumer=" + consumer + " session=" + session);
+         log.trace("constructor(" + producer + ", " + session + ")");
       }
    }
 
    /**
-    * Close
+    * Get the topic
+    * @return The topic
     * @exception JMSException Thrown if an error occurs
     */
-   public void close() throws JMSException
+   public Topic getTopic() throws JMSException
    {
       if (trace)
       {
-         log.trace("close " + this);
+         log.trace("getTopic()");
       }
-      try
-      {
-         closeConsumer();
-      }
-      finally
-      {
-         session.removeConsumer(this);
-      }
+
+      return ((TopicPublisher)producer).getTopic();
    }
 
    /**
-    * Check state
+    * Publish message
+    * @param message The message
+    * @param deliveryMode The delivery mode
+    * @param priority The priority
+    * @param timeToLive The time to live
     * @exception JMSException Thrown if an error occurs
     */
-   void checkState() throws JMSException
-   {
-      if (trace)
-      {
-         log.trace("checkState()");
-      }
-   }
-
-   /**
-    * Get message listener
-    * @return The listener
-    * @exception JMSException Thrown if an error occurs
-    */
-   public MessageListener getMessageListener() throws JMSException
-   {
-      if (trace)
-      {
-         log.trace("getMessageListener()");
-      }
-
-      checkState();
-      session.checkStrict();
-      return consumer.getMessageListener();
-   }
-
-   /**
-    * Set message listener
-    * @param listener The listener
-    * @exception JMSException Thrown if an error occurs
-    */
-   public void setMessageListener(final MessageListener listener) throws JMSException
+   public void publish(final Message message, final int deliveryMode, final int priority, final long timeToLive) throws JMSException
    {
       session.lock();
       try
       {
-         checkState();
-         session.checkStrict();
-         if (listener == null)
+         if (trace)
          {
-            consumer.setMessageListener(null);
+            log.trace("send " + this +
+                      " message=" +
+                      message +
+                      " deliveryMode=" +
+                      deliveryMode +
+                      " priority=" +
+                      priority +
+                      " ttl=" +
+                      timeToLive);
          }
-         else
+
+         checkState();
+
+         ((TopicPublisher)producer).publish(message, deliveryMode, priority, timeToLive);
+
+         if (trace)
          {
-            consumer.setMessageListener(wrapMessageListener(listener));
+            log.trace("sent " + this + " result=" + message);
          }
       }
       finally
@@ -329,51 +297,27 @@ public class HornetQMessageConsumer implements MessageConsumer
    }
 
    /**
-    * Get message selector
-    * @return The selector
+    * Publish message
+    * @param message The message
     * @exception JMSException Thrown if an error occurs
     */
-   public String getMessageSelector() throws JMSException
-   {
-      if (trace)
-      {
-         log.trace("getMessageSelector()");
-      }
-
-      checkState();
-      return consumer.getMessageSelector();
-   }
-
-   /**
-    * Receive
-    * @return The message
-    * @exception JMSException Thrown if an error occurs
-    */
-   public Message receive() throws JMSException
+   public void publish(final Message message) throws JMSException
    {
       session.lock();
       try
       {
          if (trace)
          {
-            log.trace("receive " + this);
+            log.trace("send " + this + " message=" + message);
          }
 
          checkState();
-         Message message = consumer.receive();
+
+         ((TopicPublisher)producer).publish(message);
 
          if (trace)
          {
-            log.trace("received " + this + " result=" + message);
-         }
-
-         if (message == null)
-         {
-            return null;
-         }
-         else
-         {
-            return wrapMessage(message);
+            log.trace("sent " + this + " result=" + message);
          }
       }
       finally
@@ -383,36 +327,45 @@ public class HornetQMessageConsumer implements MessageConsumer
    }
 
    /**
-    * Receive
-    * @param timeout The timeout value
-    * @return The message
+    * Publish message
+    * @param destination The destination
+    * @param message The message
+    * @param deliveryMode The delivery mode
+    * @param priority The priority
+    * @param timeToLive The time to live
     * @exception JMSException Thrown if an error occurs
     */
-   public Message receive(final long timeout) throws JMSException
+   public void publish(final Topic destination,
+                       final Message message,
+                       final int deliveryMode,
+                       final int priority,
+                       final long timeToLive) throws JMSException
    {
       session.lock();
       try
       {
          if (trace)
          {
-            log.trace("receive " + this + " timeout=" + timeout);
+            log.trace("send " + this +
+                      " destination=" +
+                      destination +
+                      " message=" +
+                      message +
+                      " deliveryMode=" +
+                      deliveryMode +
+                      " priority=" +
+                      priority +
+                      " ttl=" +
+                      timeToLive);
          }
 
          checkState();
-         Message message = consumer.receive(timeout);
+
+         ((TopicPublisher)producer).publish(destination, message, deliveryMode, priority, timeToLive);
 
          if (trace)
          {
-            log.trace("received " + this + " result=" + message);
-         }
-
-         if (message == null)
-         {
-            return null;
-         }
-         else
-         {
-            return wrapMessage(message);
+            log.trace("sent " + this + " result=" + message);
          }
       }
       finally
@@ -422,104 +375,33 @@ public class HornetQMessageConsumer implements MessageConsumer
    }
 
    /**
-    * Receive
-    * @return The message
+    * Publish message
+    * @param destination The destination
+    * @param message The message
     * @exception JMSException Thrown if an error occurs
     */
-   public Message receiveNoWait() throws JMSException
+   public void publish(final Topic destination, final Message message) throws JMSException
    {
       session.lock();
       try
       {
          if (trace)
          {
-            log.trace("receiveNoWait " + this);
+            log.trace("send " + this + " destination=" + destination + " message=" + message);
          }
 
          checkState();
-         Message message = consumer.receiveNoWait();
+
+         ((TopicPublisher)producer).publish(destination, message);
 
          if (trace)
          {
-            log.trace("received " + this + " result=" + message);
-         }
-
-         if (message == null)
-         {
-            return null;
-         }
-         else
-         {
-            return wrapMessage(message);
+            log.trace("sent " + this + " result=" + message);
          }
       }
       finally
       {
          session.unlock();
       }
-   }
-
-   /**
-    * Close consumer
-    * @exception JMSException Thrown if an error occurs
-    */
-   void closeConsumer() throws JMSException
-   {
-      if (trace)
-      {
-         log.trace("closeConsumer()");
-      }
-
-      consumer.close();
-   }
-
-   /**
-    * Wrap message
-    * @param message The message to be wrapped
-    * @return The wrapped message
-    */
-   Message wrapMessage(final Message message)
-   {
-      if (trace)
-      {
-         log.trace("wrapMessage(" + message + ")");
-      }
-
-      if (message instanceof BytesMessage)
-      {
-         return new HornetQBytesMessage((BytesMessage)message, session);
-      }
-      else if (message instanceof MapMessage)
-      {
-         return new HornetQMapMessage((MapMessage)message, session);
-      }
-      else if (message instanceof ObjectMessage)
-      {
-         return new HornetQObjectMessage((ObjectMessage)message, session);
-      }
-      else if (message instanceof StreamMessage)
-      {
-         return new HornetQStreamMessage((StreamMessage)message, session);
-      }
-      else if (message instanceof TextMessage)
-      {
-         return new HornetQTextMessage((TextMessage)message, session);
-      }
-      return new HornetQMessage(message, session);
-   }
-
-   /**
-    * Wrap message listener
-    * @param listener The listener to be wrapped
-    * @return The wrapped listener
-    */
-   MessageListener wrapMessageListener(final MessageListener listener)
-   {
-      if (trace)
-      {
-         log.trace("getMessageSelector()");
-      }
-
-      return new HornetQMessageListener(listener, this);
    }
 }

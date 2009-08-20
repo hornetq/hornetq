@@ -229,7 +229,7 @@ import org.hornetq.core.client.ClientSession;
  * 
  * @version $Revision: 3412 $
  *
- * $Id: HornetQObjectMessage.java 3412 2007-12-05 19:41:47Z timfox $
+ * $Id: HornetQRAObjectMessage.java 3412 2007-12-05 19:41:47Z timfox $
  */
 public class HornetQObjectMessage extends HornetQMessage implements ObjectMessage
 {

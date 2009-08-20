@@ -203,132 +203,100 @@
  */
 package org.hornetq.ra;
 
-import javax.jms.JMSException;
-import javax.jms.Message;
-import javax.jms.Queue;
-import javax.jms.QueueSender;
+import javax.resource.ResourceException;
+import javax.resource.spi.ManagedConnectionMetaData;
 
 import org.hornetq.core.logging.Logger;
 
 /**
- * JBMQueueSender.
- * 
- * @author <a href="adrian@jboss.com">Adrian Brock</a>
- * @author <a href="jesper.pedersen@jboss.org">Jesper Pedersen</a>
- * @version $Revision: $
+ * Managed connection meta data
+ *
+ * @author <a href="mailto:adrian@jboss.com">Adrian Brock</a>
+ * @author <a href="mailto:jesper.pedersen@jboss.org">Jesper Pedersen</a>
+ * @version $Revision:  $
  */
-public class HornetQQueueSender extends HornetQMessageProducer implements QueueSender
+public class HornetQRAMetaData implements ManagedConnectionMetaData
 {
    /** The logger */
-   private static final Logger log = Logger.getLogger(HornetQQueueSender.class);
+   private static final Logger log = Logger.getLogger(HornetQRAMetaData.class);
 
-   /** Whether trace is enabled */
+   /** Trace enabled */
    private static boolean trace = log.isTraceEnabled();
 
-   /**
-    * Create a new wrapper
-    * @param producer the producer
-    * @param session the session
-    */
-   public HornetQQueueSender(final QueueSender producer, final HornetQSession session)
-   {
-      super(producer, session);
-
-      if (trace)
-      {
-         log.trace("constructor(" + producer + ", " + session + ")");
-      }
-   }
+   /** The managed connection */
+   private final HornetQRAManagedConnection mc;
 
    /**
-    * Get queue
-    * @return The queue
-    * @exception JMSException Thrown if an error occurs
+    * Constructor
+    * @param mc The managed connection
     */
-   public Queue getQueue() throws JMSException
+   public HornetQRAMetaData(final HornetQRAManagedConnection mc)
    {
       if (trace)
       {
-         log.trace("getQueue()");
+         log.trace("constructor(" + mc + ")");
       }
 
-      return ((QueueSender)producer).getQueue();
+      this.mc = mc;
    }
 
    /**
-    * Send message
-    * @param destination The destination
-    * @param message The message
-    * @param deliveryMode The delivery mode
-    * @param priority The priority
-    * @param timeToLive The time to live
-    * @exception JMSException Thrown if an error occurs
+    * Get the EIS product name
+    * @return The name
+    * @exception ResourceException Thrown if operation fails
     */
-   public void send(final Queue destination,
-                    final Message message,
-                    final int deliveryMode,
-                    final int priority,
-                    final long timeToLive) throws JMSException
+   public String getEISProductName() throws ResourceException
    {
-      session.lock();
-      try
+      if (trace)
       {
-         if (trace)
-         {
-            log.trace("send " + this +
-                      " destination=" +
-                      destination +
-                      " message=" +
-                      message +
-                      " deliveryMode=" +
-                      deliveryMode +
-                      " priority=" +
-                      priority +
-                      " ttl=" +
-                      timeToLive);
-         }
-
-         checkState();
-         producer.send(destination, message, deliveryMode, priority, timeToLive);
-
-         if (trace)
-         {
-            log.trace("sent " + this + " result=" + message);
-         }
+         log.trace("getEISProductName()");
       }
-      finally
-      {
-         session.unlock();
-      }
+
+      return "JBoss Messaging";
    }
 
    /**
-    * Send message
-    * @param destination The destination
-    * @param message The message
-    * @exception JMSException Thrown if an error occurs
+    * Get the EIS product version
+    * @return The version
+    * @exception ResourceException Thrown if operation fails
     */
-   public void send(final Queue destination, final Message message) throws JMSException
+   public String getEISProductVersion() throws ResourceException
    {
-      session.lock();
-      try
+      if (trace)
       {
-         if (trace)
-         {
-            log.trace("send " + this + " destination=" + destination + " message=" + message);
-         }
-
-         checkState();
-         producer.send(destination, message);
-
-         if (trace)
-         {
-            log.trace("sent " + this + " result=" + message);
-         }
+         log.trace("getEISProductVersion()");
       }
-      finally
+
+      return "2.0";
+   }
+
+   /**
+    * Get the maximum number of connections -- RETURNS 0
+    * @return The number
+    * @exception ResourceException Thrown if operation fails
+    */
+   public int getMaxConnections() throws ResourceException
+   {
+      if (trace)
       {
-         session.unlock();
+         log.trace("getMaxConnections()");
       }
+
+      return 0;
+   }
+
+   /**
+    * Get the user name
+    * @return The user name
+    * @exception ResourceException Thrown if operation fails
+    */
+   public String getUserName() throws ResourceException
+   {
+      if (trace)
+      {
+         log.trace("getUserName()");
+      }
+
+      return mc.getUserName();
    }
 }

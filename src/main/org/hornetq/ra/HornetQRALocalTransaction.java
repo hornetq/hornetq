@@ -216,22 +216,22 @@ import org.hornetq.core.logging.Logger;
  * @author <a href="mailto:jesper.pedersen@jboss.org">Jesper Pedersen</a>
  * @version $Revision: $
  */
-public class HornetQLocalTransaction implements LocalTransaction
+public class HornetQRALocalTransaction implements LocalTransaction
 {
    /** The logger */
-   private static final Logger log = Logger.getLogger(HornetQLocalTransaction.class);
+   private static final Logger log = Logger.getLogger(HornetQRALocalTransaction.class);
 
    /** Trace enabled */
    private static boolean trace = log.isTraceEnabled();
 
    /** The managed connection */
-   private final HornetQManagedConnection mc;
+   private final HornetQRAManagedConnection mc;
 
    /**
     * Constructor
     * @param mc The managed connection
     */
-   public HornetQLocalTransaction(final HornetQManagedConnection mc)
+   public HornetQRALocalTransaction(final HornetQRAManagedConnection mc)
    {
       if (trace)
       {

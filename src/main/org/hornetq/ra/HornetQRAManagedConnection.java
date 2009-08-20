@@ -250,19 +250,19 @@ import org.hornetq.core.logging.Logger;
  * @author <a href="mailto:jesper.pedersen@jboss.org">Jesper Pedersen</a>
  * @version $Revision:  $
  */
-public class HornetQManagedConnection implements ManagedConnection, ExceptionListener
+public class HornetQRAManagedConnection implements ManagedConnection, ExceptionListener
 {
    /** The logger */
-   private static final Logger log = Logger.getLogger(HornetQManagedConnection.class);
+   private static final Logger log = Logger.getLogger(HornetQRAManagedConnection.class);
 
    /** Trace enabled */
    private static boolean trace = log.isTraceEnabled();
 
    /** The managed connection factory */
-   private final HornetQManagedConnectionFactory mcf;
+   private final HornetQRAManagedConnectionFactory mcf;
 
    /** The connection request information */
-   private final HornetQConnectionRequestInfo cri;
+   private final HornetQRAConnectionRequestInfo cri;
 
    /** The user name */
    private final String userName;
@@ -277,7 +277,7 @@ public class HornetQManagedConnection implements ManagedConnection, ExceptionLis
    private final List<ConnectionEventListener> eventListeners;
 
    /** Handles */
-   private final Set<HornetQSession> handles;
+   private final Set<HornetQRASession> handles;
 
    /** Lock */
    private ReentrantLock lock = new ReentrantLock();
@@ -308,8 +308,8 @@ public class HornetQManagedConnection implements ManagedConnection, ExceptionLis
     * @param userName The user name
     * @param password The password
     */
-   public HornetQManagedConnection(final HornetQManagedConnectionFactory mcf,
-                               final HornetQConnectionRequestInfo cri,
+   public HornetQRAManagedConnection(final HornetQRAManagedConnectionFactory mcf,
+                               final HornetQRAConnectionRequestInfo cri,
                                final String userName,
                                final String password) throws ResourceException
    {
@@ -323,7 +323,7 @@ public class HornetQManagedConnection implements ManagedConnection, ExceptionLis
       this.userName = userName;
       this.password = password;
       eventListeners = Collections.synchronizedList(new ArrayList<ConnectionEventListener>());
-      handles = Collections.synchronizedSet(new HashSet<HornetQSession>());
+      handles = Collections.synchronizedSet(new HashSet<HornetQRASession>());
 
       connection = null;
       xaConnection = null;
@@ -367,7 +367,7 @@ public class HornetQManagedConnection implements ManagedConnection, ExceptionLis
       }
 
       // Check user first
-      HornetQCredential credential = HornetQCredential.getCredential(mcf, subject, cxRequestInfo);
+      HornetQRACredential credential = HornetQRACredential.getCredential(mcf, subject, cxRequestInfo);
 
       // Null users are allowed!
       if (userName != null && !userName.equals(credential.getUserName()))
@@ -385,7 +385,7 @@ public class HornetQManagedConnection implements ManagedConnection, ExceptionLis
          throw new IllegalStateException("The managed connection is already destroyed");
       }
 
-      HornetQSession session = new HornetQSession(this, (HornetQConnectionRequestInfo)cxRequestInfo);
+      HornetQRASession session = new HornetQRASession(this, (HornetQRAConnectionRequestInfo)cxRequestInfo);
       handles.add(session);
       return session;
    }
@@ -418,7 +418,7 @@ public class HornetQManagedConnection implements ManagedConnection, ExceptionLis
          log.trace("Ignored error stopping connection", t);
       }
 
-      for (HornetQSession session : handles)
+      for (HornetQRASession session : handles)
       {
          session.destroy();
       }
@@ -555,9 +555,9 @@ public class HornetQManagedConnection implements ManagedConnection, ExceptionLis
          log.trace("associateConnection(" + obj + ")");
       }
 
-      if (!isDestroyed.get() && obj instanceof HornetQSession)
+      if (!isDestroyed.get() && obj instanceof HornetQRASession)
       {
-         HornetQSession h = (HornetQSession)obj;
+         HornetQRASession h = (HornetQRASession)obj;
          h.setManagedConnection(this);
          handles.add(h);
       }
@@ -693,7 +693,7 @@ public class HornetQManagedConnection implements ManagedConnection, ExceptionLis
          log.trace("XAResource=" + xaResource);
       }
 
-      xaResource = new HornetQXAResource(this, xaResource);
+      xaResource = new HornetQRAXAResource(this, xaResource);
       return xaResource;
    }
 
@@ -709,7 +709,7 @@ public class HornetQManagedConnection implements ManagedConnection, ExceptionLis
          log.trace("getLocalTransaction()");
       }
 
-      LocalTransaction tx = new HornetQLocalTransaction(this);
+      LocalTransaction tx = new HornetQRALocalTransaction(this);
 
       if (trace)
       {
@@ -737,7 +737,7 @@ public class HornetQManagedConnection implements ManagedConnection, ExceptionLis
          throw new IllegalStateException("The managed connection is already destroyed");
       }
 
-      return new HornetQMetaData(this);
+      return new HornetQRAMetaData(this);
    }
 
    /**
@@ -931,7 +931,7 @@ public class HornetQManagedConnection implements ManagedConnection, ExceptionLis
     * Remove a handle from the handle map.
     * @param handle The handle to remove.
     */
-   protected void removeHandle(final HornetQSession handle)
+   protected void removeHandle(final HornetQRASession handle)
    {
       if (trace)
       {
@@ -945,7 +945,7 @@ public class HornetQManagedConnection implements ManagedConnection, ExceptionLis
     * Get the request info for this connection.
     * @return The connection request info for this connection.
     */
-   protected HornetQConnectionRequestInfo getCRI()
+   protected HornetQRAConnectionRequestInfo getCRI()
    {
       if (trace)
       {
@@ -959,7 +959,7 @@ public class HornetQManagedConnection implements ManagedConnection, ExceptionLis
     * Get the connection factory for this connection.
     * @return The connection factory for this connection.
     */
-   protected HornetQManagedConnectionFactory getManagedConnectionFactory()
+   protected HornetQRAManagedConnectionFactory getManagedConnectionFactory()
    {
       if (trace)
       {
@@ -1043,7 +1043,7 @@ public class HornetQManagedConnection implements ManagedConnection, ExceptionLis
          boolean transacted = cri.isTransacted();
          int acknowledgeMode = Session.AUTO_ACKNOWLEDGE;
 
-         if (cri.getType() == HornetQConnectionFactory.TOPIC_CONNECTION)
+         if (cri.getType() == HornetQRAConnectionFactory.TOPIC_CONNECTION)
          {
             if (cri.isUseXA())
             {
@@ -1077,7 +1077,7 @@ public class HornetQManagedConnection implements ManagedConnection, ExceptionLis
                topicSession = ((TopicConnection)connection).createTopicSession(transacted, acknowledgeMode);
             }
          }
-         else if (cri.getType() == HornetQConnectionFactory.QUEUE_CONNECTION)
+         else if (cri.getType() == HornetQRAConnectionFactory.QUEUE_CONNECTION)
          {
             if (cri.isUseXA())
             {

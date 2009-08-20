@@ -229,7 +229,7 @@ import org.hornetq.utils.DataConstants;
  * 
  * @version $Revision: 3412 $
  *
- * $Id: HornetQStreamMessage.java 3412 2007-12-05 19:41:47Z timfox $
+ * $Id: HornetQRAStreamMessage.java 3412 2007-12-05 19:41:47Z timfox $
  */
 public class HornetQStreamMessage extends HornetQMessage implements StreamMessage
 {
@@ -736,7 +736,7 @@ public class HornetQStreamMessage extends HornetQMessage implements StreamMessag
       getBody().resetReaderIndex();
    }
 
-   // HornetQMessage overrides ----------------------------------------
+   // HornetQRAMessage overrides ----------------------------------------
   
    public void clearBody() throws JMSException
    {

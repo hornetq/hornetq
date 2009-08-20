@@ -203,71 +203,393 @@
  */
 package org.hornetq.ra;
 
+import javax.jms.Connection;
 import javax.jms.JMSException;
-import javax.jms.Topic;
-import javax.jms.TopicSubscriber;
+import javax.jms.QueueConnection;
+import javax.jms.TopicConnection;
+import javax.jms.XAConnection;
+import javax.jms.XAQueueConnection;
+import javax.jms.XATopicConnection;
+import javax.naming.Reference;
+import javax.resource.Referenceable;
+import javax.resource.spi.ConnectionManager;
 
 import org.hornetq.core.logging.Logger;
 
 /**
- * A wrapper for a topic subscriber
- *
+ * The connection factory
+ * 
  * @author <a href="mailto:adrian@jboss.com">Adrian Brock</a>
  * @author <a href="mailto:jesper.pedersen@jboss.org">Jesper Pedersen</a>
- * @version $Revision: $
+ * @version $Revision:  $
  */
-public class HornetQTopicSubscriber extends HornetQMessageConsumer implements TopicSubscriber
+public class HornetQRAConnectionFactoryImpl implements HornetQRAConnectionFactory, Referenceable
 {
-   /** The logger */
-   private static final Logger log = Logger.getLogger(HornetQTopicSubscriber.class);
+   /** Serial version UID */
+   static final long serialVersionUID = 7981708919479859360L;
 
-   /** Whether trace is enabled */
+   /** The logger */
+   private static final Logger log = Logger.getLogger(HornetQRAConnectionFactoryImpl.class);
+
+   /** Trace enabled */
    private static boolean trace = log.isTraceEnabled();
 
+   /** The managed connection factory */
+   private final HornetQRAManagedConnectionFactory mcf;
+
+   /** The connection manager */
+   private ConnectionManager cm;
+
+   /** Naming reference */
+   private Reference reference;
+
    /**
-    * Create a new wrapper
-    * @param consumer the topic subscriber
-    * @param session the session
+    * Constructor
+    * @param mcf The managed connection factory
+    * @param cm The connection manager
     */
-   public HornetQTopicSubscriber(final TopicSubscriber consumer, final HornetQSession session)
+   public HornetQRAConnectionFactoryImpl(final HornetQRAManagedConnectionFactory mcf, final ConnectionManager cm)
    {
-      super(consumer, session);
+      if (trace)
+      {
+         log.trace("constructor(" + mcf + ", " + cm + ")");
+      }
+
+      this.mcf = mcf;
+
+      if (cm == null)
+      {
+         // This is standalone usage, no appserver
+         this.cm = new HornetQRAConnectionManager();
+         if (trace)
+         {
+            log.trace("Created new ConnectionManager=" + this.cm);
+         }
+      }
+      else
+      {
+         this.cm = cm;
+      }
 
       if (trace)
       {
-         log.trace("constructor(" + consumer + ", " + session + ")");
+         log.trace("Using ManagedConnectionFactory=" + mcf + ", ConnectionManager=" + cm);
       }
    }
 
    /**
-    * Get the no local value
-    * @return The value
-    * @exception JMSException Thrown if an error occurs
+    * Set the reference
+    * @param reference The reference
     */
-   public boolean getNoLocal() throws JMSException
+   public void setReference(final Reference reference)
    {
       if (trace)
       {
-         log.trace("getNoLocal()");
+         log.trace("setReference(" + reference + ")");
       }
 
-      checkState();
-      return ((TopicSubscriber)consumer).getNoLocal();
+      this.reference = reference;
    }
 
    /**
-    * Get the topic
-    * @return The topic
-    * @exception JMSException Thrown if an error occurs
+    * Get the reference
+    * @return The reference
     */
-   public Topic getTopic() throws JMSException
+   public Reference getReference()
    {
       if (trace)
       {
-         log.trace("getTopic()");
+         log.trace("getReference()");
       }
 
-      checkState();
-      return ((TopicSubscriber)consumer).getTopic();
+      return reference;
+   }
+
+   /**
+    * Create a queue connection
+    * @return The connection
+    * @exception JMSException Thrown if the operation fails
+    */
+   public QueueConnection createQueueConnection() throws JMSException
+   {
+      if (trace)
+      {
+         log.trace("createQueueConnection()");
+      }
+
+      HornetQRASessionFactoryImpl s = new HornetQRASessionFactoryImpl(mcf, cm, QUEUE_CONNECTION);
+
+      if (trace)
+      {
+         log.trace("Created queue connection: " + s);
+      }
+
+      return s;
+   }
+
+   /**
+    * Create a queue connection
+    * @param userName The user name
+    * @param password The password
+    * @return The connection
+    * @exception JMSException Thrown if the operation fails
+    */
+   public QueueConnection createQueueConnection(final String userName, final String password) throws JMSException
+   {
+      if (trace)
+      {
+         log.trace("createQueueConnection(" + userName + ", ****)");
+      }
+
+      HornetQRASessionFactoryImpl s = new HornetQRASessionFactoryImpl(mcf, cm, QUEUE_CONNECTION);
+      s.setUserName(userName);
+      s.setPassword(password);
+
+      if (trace)
+      {
+         log.trace("Created queue connection: " + s);
+      }
+
+      return s;
+   }
+
+   /**
+    * Create a topic connection
+    * @return The connection
+    * @exception JMSException Thrown if the operation fails
+    */
+   public TopicConnection createTopicConnection() throws JMSException
+   {
+      if (trace)
+      {
+         log.trace("createTopicConnection()");
+      }
+
+      HornetQRASessionFactoryImpl s = new HornetQRASessionFactoryImpl(mcf, cm, TOPIC_CONNECTION);
+
+      if (trace)
+      {
+         log.trace("Created topic connection: " + s);
+      }
+
+      return s;
+   }
+
+   /**
+    * Create a topic connection
+    * @param userName The user name
+    * @param password The password
+    * @return The connection
+    * @exception JMSException Thrown if the operation fails
+    */
+   public TopicConnection createTopicConnection(final String userName, final String password) throws JMSException
+   {
+      if (trace)
+      {
+         log.trace("createTopicConnection(" + userName + ", ****)");
+      }
+
+      HornetQRASessionFactoryImpl s = new HornetQRASessionFactoryImpl(mcf, cm, TOPIC_CONNECTION);
+      s.setUserName(userName);
+      s.setPassword(password);
+
+      if (trace)
+      {
+         log.trace("Created topic connection: " + s);
+      }
+
+      return s;
+   }
+
+   /**
+    * Create a connection
+    * @return The connection
+    * @exception JMSException Thrown if the operation fails
+    */
+   public Connection createConnection() throws JMSException
+   {
+      if (trace)
+      {
+         log.trace("createConnection()");
+      }
+
+      HornetQRASessionFactoryImpl s = new HornetQRASessionFactoryImpl(mcf, cm, CONNECTION);
+
+      if (trace)
+      {
+         log.trace("Created connection: " + s);
+      }
+
+      return s;
+   }
+
+   /**
+    * Create a connection
+    * @param userName The user name
+    * @param password The password
+    * @return The connection
+    * @exception JMSException Thrown if the operation fails
+    */
+   public Connection createConnection(final String userName, final String password) throws JMSException
+   {
+      if (trace)
+      {
+         log.trace("createConnection(" + userName + ", ****)");
+      }
+
+      HornetQRASessionFactoryImpl s = new HornetQRASessionFactoryImpl(mcf, cm, CONNECTION);
+      s.setUserName(userName);
+      s.setPassword(password);
+
+      if (trace)
+      {
+         log.trace("Created connection: " + s);
+      }
+
+      return s;
+   }
+
+   /**
+    * Create a XA queue connection
+    * @return The connection
+    * @exception JMSException Thrown if the operation fails
+    */
+   public XAQueueConnection createXAQueueConnection() throws JMSException
+   {
+      if (trace)
+      {
+         log.trace("createXAQueueConnection()");
+      }
+
+      HornetQRASessionFactoryImpl s = new HornetQRASessionFactoryImpl(mcf, cm, XA_QUEUE_CONNECTION);
+
+      if (trace)
+      {
+         log.trace("Created queue connection: " + s);
+      }
+
+      return s;
+   }
+
+   /**
+    * Create a XA  queue connection
+    * @param userName The user name
+    * @param password The password
+    * @return The connection
+    * @exception JMSException Thrown if the operation fails
+    */
+   public XAQueueConnection createXAQueueConnection(final String userName, final String password) throws JMSException
+   {
+      if (trace)
+      {
+         log.trace("createXAQueueConnection(" + userName + ", ****)");
+      }
+
+      HornetQRASessionFactoryImpl s = new HornetQRASessionFactoryImpl(mcf, cm, XA_QUEUE_CONNECTION);
+      s.setUserName(userName);
+      s.setPassword(password);
+
+      if (trace)
+      {
+         log.trace("Created queue connection: " + s);
+      }
+
+      return s;
+   }
+
+   /**
+    * Create a XA topic connection
+    * @return The connection
+    * @exception JMSException Thrown if the operation fails
+    */
+   public XATopicConnection createXATopicConnection() throws JMSException
+   {
+      if (trace)
+      {
+         log.trace("createXATopicConnection()");
+      }
+
+      HornetQRASessionFactoryImpl s = new HornetQRASessionFactoryImpl(mcf, cm, XA_TOPIC_CONNECTION);
+
+      if (trace)
+      {
+         log.trace("Created topic connection: " + s);
+      }
+
+      return s;
+   }
+
+   /**
+    * Create a XA topic connection
+    * @param userName The user name
+    * @param password The password
+    * @return The connection
+    * @exception JMSException Thrown if the operation fails
+    */
+   public XATopicConnection createXATopicConnection(final String userName, final String password) throws JMSException
+   {
+      if (trace)
+      {
+         log.trace("createXATopicConnection(" + userName + ", ****)");
+      }
+
+      HornetQRASessionFactoryImpl s = new HornetQRASessionFactoryImpl(mcf, cm, XA_TOPIC_CONNECTION);
+      s.setUserName(userName);
+      s.setPassword(password);
+
+      if (trace)
+      {
+         log.trace("Created topic connection: " + s);
+      }
+
+      return s;
+   }
+
+   /**
+    * Create a XA connection
+    * @return The connection
+    * @exception JMSException Thrown if the operation fails
+    */
+   public XAConnection createXAConnection() throws JMSException
+   {
+      if (trace)
+      {
+         log.trace("createXAConnection()");
+      }
+
+      HornetQRASessionFactoryImpl s = new HornetQRASessionFactoryImpl(mcf, cm, XA_CONNECTION);
+
+      if (trace)
+      {
+         log.trace("Created connection: " + s);
+      }
+
+      return s;
+   }
+
+   /**
+    * Create a XA connection
+    * @param userName The user name
+    * @param password The password
+    * @return The connection
+    * @exception JMSException Thrown if the operation fails
+    */
+   public XAConnection createXAConnection(final String userName, final String password) throws JMSException
+   {
+      if (trace)
+      {
+         log.trace("createXAConnection(" + userName + ", ****)");
+      }
+
+      HornetQRASessionFactoryImpl s = new HornetQRASessionFactoryImpl(mcf, cm, XA_CONNECTION);
+      s.setUserName(userName);
+      s.setPassword(password);
+
+      if (trace)
+      {
+         log.trace("Created connection: " + s);
+      }
+
+      return s;
    }
 }

@@ -203,65 +203,200 @@
  */
 package org.hornetq.ra;
 
-import javax.resource.ResourceException;
-import javax.resource.spi.ConnectionManager;
-import javax.resource.spi.ConnectionRequestInfo;
-import javax.resource.spi.ManagedConnection;
-import javax.resource.spi.ManagedConnectionFactory;
-
 import org.hornetq.core.logging.Logger;
 
+import javax.jms.Queue;
+import javax.jms.Topic;
+import java.io.Serializable;
+
 /**
- * The connection manager used in non-managed environments.
- * 
+ * The MCF default properties - these are set in the <tx-connection-factory> at the jms-ds.xml
+ *
  * @author <a href="mailto:adrian@jboss.com">Adrian Brock</a>
  * @author <a href="mailto:jesper.pedersen@jboss.org">Jesper Pedersen</a>
+ * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
+ * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
  * @version $Revision: $
  */
-public class HornetQConnectionManager implements ConnectionManager
+public class HornetQRAMCFProperties extends ConnectionFactoryProperties implements Serializable
 {
-   /** Serial version UID */
-   static final long serialVersionUID = 4409118162975011014L;
+   /**
+    * Serial version UID
+    */
+   static final long serialVersionUID = -5951352236582886862L;
 
-   /** The logger */
-   private static final Logger log = Logger.getLogger(HornetQConnectionManager.class);
+   /**
+    * The logger
+    */
+   private static final Logger log = Logger.getLogger(HornetQRAMCFProperties.class);
 
-   /** Trace enabled */
+   /**
+    * Trace enabled
+    */
    private static boolean trace = log.isTraceEnabled();
+
+   /**
+    * The queue type
+    */
+   private static final String QUEUE_TYPE = Queue.class.getName();
+
+   /**
+    * The topic type
+    */
+   private static final String TOPIC_TYPE = Topic.class.getName();
+
+
+
+   public String strConnectionParameters;
+
+   public String strBackupConnectionParameters;
+
+   /**
+    * The connection type
+    */
+   private int type = HornetQRAConnectionFactory.CONNECTION;
+
+   /**
+    * Use tryLock
+    */
+   private Integer useTryLock;
 
    /**
     * Constructor
     */
-   public HornetQConnectionManager()
+   public HornetQRAMCFProperties()
    {
       if (trace)
       {
          log.trace("constructor()");
       }
+
+      useTryLock = null;
    }
 
    /**
-    * Allocates a connection
-    * @param mcf The managed connection factory
-    * @param cxRequestInfo The connection request information 
-    * @return The connection
-    * @exception ResourceException Thrown if there is a problem obtaining the connection
+    * Get the connection type
+    *
+    * @return The type
     */
-   public Object allocateConnection(final ManagedConnectionFactory mcf, final ConnectionRequestInfo cxRequestInfo) throws ResourceException
+   public int getType()
    {
       if (trace)
       {
-         log.trace("allocateConnection(" + mcf + ", " + cxRequestInfo + ")");
+         log.trace("getType()");
       }
 
-      ManagedConnection mc = mcf.createManagedConnection(null, cxRequestInfo);
-      Object c = mc.getConnection(null, cxRequestInfo);
+      return type;
+   }
 
+   /**
+    * @return the connectionParameters
+    */
+   public String getStrConnectionParameters()
+   {
+      return strConnectionParameters;
+   }
+
+
+   public void setConnectionParameters(final String configuration)
+   {
+      strConnectionParameters = configuration;
+      setParsedConnectionParameters(Util.parseConfig(configuration));
+   }
+
+   /**
+    * @return the connectionParameters
+    */
+   public String getBackupConnectionParameters()
+   {
+      return strBackupConnectionParameters;
+   }
+
+   public void setBackupConnectionParameters(final String configuration)
+   {
+      strBackupConnectionParameters = configuration;
+      setParsedBackupConnectionParameters(Util.parseConfig(configuration));
+   }
+   
+   /**
+    * Set the default session type.
+    *
+    * @param defaultType either javax.jms.Topic or javax.jms.Queue
+    */
+   public void setSessionDefaultType(final String defaultType)
+   {
       if (trace)
       {
-         log.trace("Allocated connection: " + c + ", with managed connection: " + mc);
+         log.trace("setSessionDefaultType(" + type + ")");
       }
 
-      return c;
+      if (defaultType.equals(QUEUE_TYPE))
+      {
+         type = HornetQRAConnectionFactory.QUEUE_CONNECTION;
+      }
+      else if (defaultType.equals(TOPIC_TYPE))
+      {
+         type = HornetQRAConnectionFactory.TOPIC_CONNECTION;
+      }
+      else
+      {
+         type = HornetQRAConnectionFactory.CONNECTION;
+      }
+   }
+
+   /**
+    * Get the default session type.
+    *
+    * @return The default session type
+    */
+   public String getSessionDefaultType()
+   {
+      if (trace)
+      {
+         log.trace("getSessionDefaultType()");
+      }
+
+      if (type == HornetQRAConnectionFactory.CONNECTION)
+      {
+         return "BOTH";
+      }
+      else if (type == HornetQRAConnectionFactory.QUEUE_CONNECTION)
+      {
+         return TOPIC_TYPE;
+      }
+      else
+      {
+         return QUEUE_TYPE;
+      }
+   }
+
+   /**
+    * Get the useTryLock.
+    *
+    * @return the useTryLock.
+    */
+   public Integer getUseTryLock()
+   {
+      if (trace)
+      {
+         log.trace("getUseTryLock()");
+      }
+
+      return useTryLock;
+   }
+
+   /**
+    * Set the useTryLock.
+    *
+    * @param useTryLock the useTryLock.
+    */
+   public void setUseTryLock(final Integer useTryLock)
+   {
+      if (trace)
+      {
+         log.trace("setUseTryLock(" + useTryLock + ")");
+      }
+
+      this.useTryLock = useTryLock;
    }
 }

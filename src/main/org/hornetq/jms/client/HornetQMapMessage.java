@@ -229,7 +229,7 @@ import org.hornetq.utils.TypedProperties;
  * 
  * @version $Revision: 3412 $
  *
- * $Id: HornetQMapMessage.java 3412 2007-12-05 19:41:47Z timfox $
+ * $Id: HornetQRAMapMessage.java 3412 2007-12-05 19:41:47Z timfox $
  */
 public class HornetQMapMessage extends HornetQMessage implements MapMessage
 {
@@ -614,7 +614,7 @@ public class HornetQMapMessage extends HornetQMessage implements MapMessage
       return map.containsProperty(new SimpleString(name));
    }
 
-   // HornetQMessage overrides ----------------------------------------
+   // HornetQRAMessage overrides ----------------------------------------
 
    public void clearBody() throws JMSException
    {

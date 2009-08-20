@@ -203,45 +203,55 @@
  */
 package org.hornetq.ra;
 
-import javax.jms.Connection;
 import javax.jms.JMSException;
-import javax.jms.QueueConnection;
-import javax.jms.TemporaryQueue;
-import javax.jms.TemporaryTopic;
-import javax.jms.TopicConnection;
-import javax.jms.XAConnection;
-import javax.jms.XAQueueConnection;
-import javax.jms.XATopicConnection;
+import javax.jms.Queue;
+import javax.jms.QueueReceiver;
+
+import org.hornetq.core.logging.Logger;
 
 /**
- * A joint interface for all connection types
+ * A wrapper for a queue receiver
  *
  * @author <a href="mailto:adrian@jboss.com">Adrian Brock</a>
  * @author <a href="mailto:jesper.pedersen@jboss.org">Jesper Pedersen</a>
- * @version $Revision: 71554 $
+ * @version $Revision: $
  */
-public interface HornetQSessionFactory extends Connection, TopicConnection, QueueConnection, XAConnection,
-         XATopicConnection, XAQueueConnection
+public class HornetQRAQueueReceiver extends HornetQRAMessageConsumer implements QueueReceiver
 {
-   /** Error message for strict behaviour */
-   String ISE = "This method is not applicable inside the application server. See the J2EE spec, e.g. J2EE1.4 Section 6.6";
+   /** The logger */
+   private static final Logger log = Logger.getLogger(HornetQRAQueueReceiver.class);
+
+   /** Whether trace is enabled */
+   private static boolean trace = log.isTraceEnabled();
 
    /**
-    * Add a temporary queue
-    * @param temp The temporary queue
+    * Create a new wrapper
+    * @param consumer the queue receiver
+    * @param session the session
     */
-   void addTemporaryQueue(TemporaryQueue temp);
+   public HornetQRAQueueReceiver(final QueueReceiver consumer, final HornetQRASession session)
+   {
+      super(consumer, session);
+
+      if (trace)
+      {
+         log.trace("constructor(" + consumer + ", " + session + ")");
+      }
+   }
 
    /**
-    * Add a temporary topic
-    * @param temp The temporary topic
+    * Get queue
+    * @return The queue
+    * @exception JMSException Thrown if an error occurs
     */
-   void addTemporaryTopic(TemporaryTopic temp);
+   public Queue getQueue() throws JMSException
+   {
+      if (trace)
+      {
+         log.trace("getQueue()");
+      }
 
-   /** 
-    * Notification that a session is closed
-    * @param session The session
-    * @throws JMSException for any error 
-    */
-   void closeSession(HornetQSession session) throws JMSException;
+      checkState();
+      return ((QueueReceiver)consumer).getQueue();
+   }
 }

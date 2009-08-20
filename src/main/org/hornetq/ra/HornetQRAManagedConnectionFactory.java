@@ -227,7 +227,7 @@ import org.hornetq.core.logging.Logger;
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
  * @version $Revision: $
  */
-public class HornetQManagedConnectionFactory implements ManagedConnectionFactory, ResourceAdapterAssociation
+public class HornetQRAManagedConnectionFactory implements ManagedConnectionFactory, ResourceAdapterAssociation
 {
    /**
     * Serial version UID
@@ -237,7 +237,7 @@ public class HornetQManagedConnectionFactory implements ManagedConnectionFactory
    /**
     * The logger
     */
-   private static final Logger log = Logger.getLogger(HornetQManagedConnectionFactory.class);
+   private static final Logger log = Logger.getLogger(HornetQRAManagedConnectionFactory.class);
 
    /**
     * Trace enabled
@@ -257,7 +257,7 @@ public class HornetQManagedConnectionFactory implements ManagedConnectionFactory
    /**
     * The managed connection factory properties
     */
-   private final HornetQMCFProperties mcfProperties;
+   private final HornetQRAMCFProperties mcfProperties;
 
    /**
     * Connection Factory used if properties are set
@@ -267,7 +267,7 @@ public class HornetQManagedConnectionFactory implements ManagedConnectionFactory
    /**
     * Constructor
     */
-   public HornetQManagedConnectionFactory()
+   public HornetQRAManagedConnectionFactory()
    {
       if (trace)
       {
@@ -276,7 +276,7 @@ public class HornetQManagedConnectionFactory implements ManagedConnectionFactory
 
       ra = null;
       cm = null;
-      mcfProperties = new HornetQMCFProperties();
+      mcfProperties = new HornetQRAMCFProperties();
    }
 
    /**
@@ -292,7 +292,7 @@ public class HornetQManagedConnectionFactory implements ManagedConnectionFactory
          log.debug("createConnectionFactory()");
       }
 
-      return createConnectionFactory(new HornetQConnectionManager());
+      return createConnectionFactory(new HornetQRAConnectionManager());
    }
 
    /**
@@ -311,7 +311,7 @@ public class HornetQManagedConnectionFactory implements ManagedConnectionFactory
 
       cm = cxManager;
 
-      HornetQConnectionFactory cf = new HornetQConnectionFactoryImpl(this, cm);
+      HornetQRAConnectionFactory cf = new HornetQRAConnectionFactoryImpl(this, cm);
 
       if (trace)
       {
@@ -336,16 +336,16 @@ public class HornetQManagedConnectionFactory implements ManagedConnectionFactory
          log.trace("createManagedConnection(" + subject + ", " + cxRequestInfo + ")");
       }
 
-      HornetQConnectionRequestInfo cri = getCRI((HornetQConnectionRequestInfo) cxRequestInfo);
+      HornetQRAConnectionRequestInfo cri = getCRI((HornetQRAConnectionRequestInfo) cxRequestInfo);
 
-      HornetQCredential credential = HornetQCredential.getCredential(this, subject, cri);
+      HornetQRACredential credential = HornetQRACredential.getCredential(this, subject, cri);
 
       if (trace)
       {
          log.trace("jms credential: " + credential);
       }
 
-      HornetQManagedConnection mc = new HornetQManagedConnection(this, cri, credential.getUserName(), credential.getPassword());
+      HornetQRAManagedConnection mc = new HornetQRAManagedConnection(this, cri, credential.getUserName(), credential.getPassword());
 
       if (trace)
       {
@@ -373,8 +373,8 @@ public class HornetQManagedConnectionFactory implements ManagedConnectionFactory
          log.trace("matchManagedConnections(" + connectionSet + ", " + subject + ", " + cxRequestInfo + ")");
       }
 
-      HornetQConnectionRequestInfo cri = getCRI((HornetQConnectionRequestInfo) cxRequestInfo);
-      HornetQCredential credential = HornetQCredential.getCredential(this, subject, cri);
+      HornetQRAConnectionRequestInfo cri = getCRI((HornetQRAConnectionRequestInfo) cxRequestInfo);
+      HornetQRACredential credential = HornetQRACredential.getCredential(this, subject, cri);
 
       if (trace)
       {
@@ -387,9 +387,9 @@ public class HornetQManagedConnectionFactory implements ManagedConnectionFactory
       {
          Object obj = connections.next();
 
-         if (obj instanceof HornetQManagedConnection)
+         if (obj instanceof HornetQRAManagedConnection)
          {
-            HornetQManagedConnection mc = (HornetQManagedConnection) obj;
+            HornetQRAManagedConnection mc = (HornetQRAManagedConnection) obj;
             ManagedConnectionFactory mcf = mc.getManagedConnectionFactory();
 
             if ((mc.getUserName() == null || mc.getUserName() != null && mc.getUserName()
@@ -501,9 +501,9 @@ public class HornetQManagedConnectionFactory implements ManagedConnectionFactory
          return false;
       }
 
-      if (obj instanceof HornetQManagedConnectionFactory)
+      if (obj instanceof HornetQRAManagedConnectionFactory)
       {
-         HornetQManagedConnectionFactory other = (HornetQManagedConnectionFactory) obj;
+         HornetQRAManagedConnectionFactory other = (HornetQRAManagedConnectionFactory) obj;
 
          return mcfProperties.equals(other.getProperties()) && ra.equals(other.getResourceAdapter());
       }
@@ -927,7 +927,7 @@ public class HornetQManagedConnectionFactory implements ManagedConnectionFactory
          log.trace("getMetadata()");
       }
 
-      return new HornetQConnectionMetaData();
+      return new HornetQRAConnectionMetaData();
    }
 
    /**
@@ -950,7 +950,7 @@ public class HornetQManagedConnectionFactory implements ManagedConnectionFactory
     *
     * @return The properties
     */
-   protected HornetQMCFProperties getProperties()
+   protected HornetQRAMCFProperties getProperties()
    {
       if (trace)
       {
@@ -966,7 +966,7 @@ public class HornetQManagedConnectionFactory implements ManagedConnectionFactory
     * @param info The instance that should be updated; may be <code>null</code>
     * @return The instance
     */
-   private HornetQConnectionRequestInfo getCRI(final HornetQConnectionRequestInfo info)
+   private HornetQRAConnectionRequestInfo getCRI(final HornetQRAConnectionRequestInfo info)
    {
       if (trace)
       {
@@ -976,7 +976,7 @@ public class HornetQManagedConnectionFactory implements ManagedConnectionFactory
       if (info == null)
       {
          // Create a default one
-         return new HornetQConnectionRequestInfo(ra.getProperties(), mcfProperties.getType());
+         return new HornetQRAConnectionRequestInfo(ra.getProperties(), mcfProperties.getType());
       }
       else
       {

@@ -249,7 +249,7 @@ import org.hornetq.utils.SimpleString;
  * @author <a href="mailto:adrian@jboss.org">Adrian Brock</a>
  * @author <a href="mailto:ataylor@redhat.com">Andy Taylor</a> 
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a> 
- * $Id: HornetQMessage.java 3466 2007-12-10 18:44:52Z timfox $
+ * $Id: HornetQRAMessage.java 3466 2007-12-10 18:44:52Z timfox $
  */
 public class HornetQMessage implements javax.jms.Message
 {
@@ -1264,7 +1264,7 @@ public class HornetQMessage implements javax.jms.Message
 
    public String toString()
    {
-      StringBuffer sb = new StringBuffer("HornetQMessage[");
+      StringBuffer sb = new StringBuffer("HornetQRAMessage[");
       sb.append("");
       sb.append(getJMSMessageID());
       sb.append("]:");

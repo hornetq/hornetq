@@ -1042,7 +1042,7 @@ public class HornetQSession implements Session, XASession, QueueSession, XAQueue
 
    public String toString()
    {
-      return "HornetQSession->" + session;
+      return "HornetQRASession->" + session;
    }
 
    public ClientSession getCoreSession()

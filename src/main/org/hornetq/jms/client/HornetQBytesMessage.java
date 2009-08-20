@@ -225,7 +225,7 @@ import org.hornetq.core.remoting.spi.MessagingBuffer;
  * 
  * @version $Revision: 3412 $
  * 
- * $Id: HornetQBytesMessage.java 3412 2007-12-05 19:41:47Z timfox $
+ * $Id: HornetQRABytesMessage.java 3412 2007-12-05 19:41:47Z timfox $
  */
 public class HornetQBytesMessage extends HornetQMessage implements BytesMessage
 {
@@ -590,7 +590,7 @@ public class HornetQBytesMessage extends HornetQMessage implements BytesMessage
       }
    }
 
-   // HornetQMessage overrides ----------------------------------------
+   // HornetQRAMessage overrides ----------------------------------------
 
    public void clearBody() throws JMSException
    {

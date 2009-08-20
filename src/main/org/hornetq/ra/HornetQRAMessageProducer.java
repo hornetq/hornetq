@@ -217,10 +217,10 @@ import org.hornetq.core.logging.Logger;
  * @author <a href="jesper.pedersen@jboss.org">Jesper Pedersen</a>
  * @version $Revision:  $
  */
-public class HornetQMessageProducer implements MessageProducer
+public class HornetQRAMessageProducer implements MessageProducer
 {
    /** The logger */
-   private static final Logger log = Logger.getLogger(HornetQMessageProducer.class);
+   private static final Logger log = Logger.getLogger(HornetQRAMessageProducer.class);
 
    /** Whether trace is enabled */
    private static boolean trace = log.isTraceEnabled();
@@ -229,14 +229,14 @@ public class HornetQMessageProducer implements MessageProducer
    protected MessageProducer producer;
 
    /** The session for this consumer */
-   protected HornetQSession session;
+   protected HornetQRASession session;
 
    /**
     * Create a new wrapper
     * @param producer the producer
     * @param session the session
     */
-   public HornetQMessageProducer(final MessageProducer producer, final HornetQSession session)
+   public HornetQRAMessageProducer(final MessageProducer producer, final HornetQRASession session)
    {
       this.producer = producer;
       this.session = session;

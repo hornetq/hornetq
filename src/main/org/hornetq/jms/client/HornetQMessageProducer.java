@@ -491,7 +491,7 @@ public class HornetQMessageProducer implements MessageProducer, QueueSender, Top
 
    public String toString()
    {
-      return "HornetQMessageProducer->" + producer;
+      return "HornetQRAMessageProducer->" + producer;
    }
 
    // Package protected ---------------------------------------------

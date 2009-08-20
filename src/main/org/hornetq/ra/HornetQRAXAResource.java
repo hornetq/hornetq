@@ -203,59 +203,227 @@
  */
 package org.hornetq.ra;
 
-import javax.jms.Message;
-import javax.jms.MessageListener;
+import javax.transaction.xa.XAException;
+import javax.transaction.xa.XAResource;
+import javax.transaction.xa.Xid;
 
 import org.hornetq.core.logging.Logger;
 
 /**
- * A wrapper for a message listener
- * @author <a href="mailto:adrian@jboss.com">Adrian Brock</a>
- * @author <a href="mailto:jesper.pedersen@jboss.org">Jesper Pedersen</a>
+ * JBMXAResource.
+ * 
+ * @author <a href="adrian@jboss.com">Adrian Brock</a>
+ * @author <a href="jesper.pedersen@jboss.org">Jesper Pedersen</a>
  * @version $Revision: $
  */
-public class HornetQMessageListener implements MessageListener
+public class HornetQRAXAResource implements XAResource
 {
    /** The logger */
-   private static final Logger log = Logger.getLogger(HornetQMessageListener.class);
+   private static final Logger log = Logger.getLogger(HornetQRAXAResource.class);
 
-   /** Whether trace is enabled */
+   /** Trace enabled */
    private static boolean trace = log.isTraceEnabled();
 
-   /** The message listener */
-   private final MessageListener listener;
+   /** The managed connection */
+   private final HornetQRAManagedConnection managedConnection;
 
-   /** The consumer */
-   private final HornetQMessageConsumer consumer;
+   /** The resource */
+   private final XAResource xaResource;
 
    /**
-    * Create a new wrapper
-    * @param listener the listener
-    * @param consumer the consumer
+    * Create a new JBMXAResource.
+    * @param managedConnection the managed connection
+    * @param xaResource the xa resource
     */
-   public HornetQMessageListener(final MessageListener listener, final HornetQMessageConsumer consumer)
+   public HornetQRAXAResource(final HornetQRAManagedConnection managedConnection, final XAResource xaResource)
    {
       if (trace)
       {
-         log.trace("constructor(" + listener + ", " + consumer + ")");
+         log.trace("constructor(" + managedConnection + ", " + xaResource + ")");
       }
 
-      this.listener = listener;
-      this.consumer = consumer;
+      this.managedConnection = managedConnection;
+      this.xaResource = xaResource;
    }
 
    /**
-    * On message
-    * @param message The message
+    * Start
+    * @param xid A global transaction identifier
+    * @param flags One of TMNOFLAGS, TMJOIN, or TMRESUME
+    * @exception XAException An error has occurred
     */
-   public void onMessage(Message message)
+   public void start(final Xid xid, final int flags) throws XAException
    {
       if (trace)
       {
-         log.trace("onMessage(" + message + ")");
+         log.trace("start(" + xid + ", " + flags + ")");
       }
 
-      message = consumer.wrapMessage(message);
-      listener.onMessage(message);
+      managedConnection.lock();
+      try
+      {
+         xaResource.start(xid, flags);
+      }
+      finally
+      {
+         managedConnection.unlock();
+      }
+   }
+
+   /**
+    * End
+    * @param xid A global transaction identifier
+    * @param flags One of TMSUCCESS, TMFAIL, or TMSUSPEND.
+    * @exception XAException An error has occurred
+    */
+   public void end(final Xid xid, final int flags) throws XAException
+   {
+      if (trace)
+      {
+         log.trace("end(" + xid + ", " + flags + ")");
+      }
+
+      managedConnection.lock();
+      try
+      {
+         xaResource.end(xid, flags);
+      }
+      finally
+      {
+         managedConnection.unlock();
+      }
+   }
+
+   /**
+    * Prepare
+    * @param xid A global transaction identifier
+    * @return XA_RDONLY or XA_OK
+    * @exception XAException An error has occurred
+    */
+   public int prepare(final Xid xid) throws XAException
+   {
+      if (trace)
+      {
+         log.trace("prepare(" + xid + ")");
+      }
+
+      return xaResource.prepare(xid);
+   }
+
+   /**
+    * Commit
+    * @param xid A global transaction identifier
+    * @param onePhase If true, the resource manager should use a one-phase commit protocol to commit the work done on behalf of xid. 
+    * @exception XAException An error has occurred
+    */
+   public void commit(final Xid xid, final boolean onePhase) throws XAException
+   {
+      if (trace)
+      {
+         log.trace("commit(" + xid + ", " + onePhase + ")");
+      }
+
+      xaResource.commit(xid, onePhase);
+   }
+
+   /**
+    * Rollback
+    * @param xid A global transaction identifier
+    * @exception XAException An error has occurred
+    */
+   public void rollback(final Xid xid) throws XAException
+   {
+      if (trace)
+      {
+         log.trace("rollback(" + xid + ")");
+      }
+
+      xaResource.rollback(xid);
+   }
+
+   /**
+    * Forget
+    * @param xid A global transaction identifier
+    * @exception XAException An error has occurred
+    */
+   public void forget(final Xid xid) throws XAException
+   {
+      if (trace)
+      {
+         log.trace("forget(" + xid + ")");
+      }
+
+      managedConnection.lock();
+      try
+      {
+         xaResource.forget(xid);
+      }
+      finally
+      {
+         managedConnection.unlock();
+      }
+   }
+
+   /**
+    * IsSameRM
+    * @param xaRes An XAResource object whose resource manager instance is to be compared with the resource manager instance of the target object. 
+    * @return True if its the same RM instance; otherwise false. 
+    * @exception XAException An error has occurred
+    */
+   public boolean isSameRM(final XAResource xaRes) throws XAException
+   {
+      if (trace)
+      {
+         log.trace("isSameRM(" + xaRes + ")");
+      }
+
+      return xaResource.isSameRM(xaRes);
+   }
+
+   /**
+    * Recover 
+    * @param flags One of TMSTARTRSCAN, TMENDRSCAN, TMNOFLAGS
+    * @return Zero or more XIDs
+    * @exception XAException An error has occurred
+    */
+   public Xid[] recover(final int flag) throws XAException
+   {
+      if (trace)
+      {
+         log.trace("recover(" + flag + ")");
+      }
+
+      return xaResource.recover(flag);
+   }
+
+   /**
+    * Get the transaction timeout in seconds
+    * @return The transaction timeout
+    * @exception XAException An error has occurred
+    */
+   public int getTransactionTimeout() throws XAException
+   {
+      if (trace)
+      {
+         log.trace("getTransactionTimeout()");
+      }
+
+      return xaResource.getTransactionTimeout();
+   }
+
+   /**
+    * Set the transaction timeout
+    * @param seconds The number of seconds
+    * @return True if the transaction timeout value is set successfully; otherwise false. 
+    * @exception XAException An error has occurred
+    */
+   public boolean setTransactionTimeout(final int seconds) throws XAException
+   {
+      if (trace)
+      {
+         log.trace("setTransactionTimeout(" + seconds + ")");
+      }
+
+      return xaResource.setTransactionTimeout(seconds);
    }
 }

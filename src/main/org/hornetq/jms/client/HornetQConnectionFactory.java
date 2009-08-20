@@ -749,7 +749,7 @@ public class HornetQConnectionFactory implements ConnectionFactory, QueueConnect
    {
       if (readOnly)
       {
-         throw new IllegalStateException("Cannot set attribute on HornetQConnectionFactory after it has been used");
+         throw new IllegalStateException("Cannot set attribute on HornetQRAConnectionFactory after it has been used");
       }
    }
 

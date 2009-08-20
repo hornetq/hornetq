@@ -235,7 +235,7 @@ public class HornetQConnectionMetaData implements ConnectionMetaData
    // Constructors --------------------------------------------------
 
    /**
-    * Create a new HornetQConnectionMetaData object.
+    * Create a new HornetQRAConnectionMetaData object.
     */
    public HornetQConnectionMetaData(final Version serverVersion)
    {

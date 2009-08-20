@@ -230,15 +230,15 @@ public class ConnectionFactoryObjectFactoryTest extends UnitTestCase
    
 //   public void testReference() throws Exception
 //   {
-//      HornetQConnectionFactory cf =
-//         new HornetQConnectionFactory(null, null, 123, 123, randomString(), 1, 1, 1, 1, 1, true, true, true);
+//      HornetQRAConnectionFactory cf =
+//         new HornetQRAConnectionFactory(null, null, 123, 123, randomString(), 1, 1, 1, 1, 1, true, true, true);
 //      Reference reference = cf.getReference();
 //
 //      ConnectionFactoryObjectFactory factory = new ConnectionFactoryObjectFactory();
 //      
 //      Object object = factory.getObjectInstance(reference, null, null, null);
 //      assertNotNull(object);
-//      assertTrue(object instanceof HornetQConnectionFactory);
+//      assertTrue(object instanceof HornetQRAConnectionFactory);
 //   }
    
    // Package protected ---------------------------------------------

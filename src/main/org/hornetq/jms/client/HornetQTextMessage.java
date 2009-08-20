@@ -224,7 +224,7 @@ import org.hornetq.core.logging.Logger;
  * 
  * @version $Revision: 3412 $
  *
- * $Id: HornetQTextMessage.java 3412 2007-12-05 19:41:47Z timfox $
+ * $Id: HornetQRATextMessage.java 3412 2007-12-05 19:41:47Z timfox $
  */
 public class HornetQTextMessage extends HornetQMessage implements TextMessage
 {
@@ -302,7 +302,7 @@ public class HornetQTextMessage extends HornetQMessage implements TextMessage
       text = null;
    }
 
-   // HornetQMessage override -----------------------------------------
+   // HornetQRAMessage override -----------------------------------------
    
    public void doBeforeSend() throws Exception
    {

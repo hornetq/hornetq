@@ -262,7 +262,7 @@ public class MDBMessageSendTxExample implements MessageListener
 
       &lt;outbound-resourceadapter>
          &lt;connection-definition>
-            &lt;managedconnectionfactory-class>org.hornetq.ra.HornetQManagedConnection
+            &lt;managedconnectionfactory-class>org.hornetq.ra.HornetQRAManagedConnection
             Factory&lt;/managedconnectionfactory-class>
 
             &lt;config-property>
@@ -279,12 +279,12 @@ public class MDBMessageSendTxExample implements MessageListener
                &lt;config-property-value>0&lt;/config-property-value>
             &lt;/config-property>
 
-            &lt;connectionfactory-interface>org.hornetq.ra.HornetQConnectionFactory
+            &lt;connectionfactory-interface>org.hornetq.ra.HornetQRAConnectionFactory
             &lt;/connectionfactory-interface>
             &lt;connectionfactororg.hornetq.ra.HornetQConnectionFactoryImplonFactoryImpl
             &lt;/connectionfactory-impl-class>
             &lt;connection-interface>javax.jms.Session&lt;/connection-interface>
-            &lt;connection-impl-class>org.hornetq.ra.HornetQSession
+            &lt;connection-impl-class>org.hornetq.ra.HornetQRASession
             &lt;/connection-impl-class>
          &lt;/connection-definition>
          &lt;transaction-support>XATransaction&lt;/transaction-support>
@@ -555,7 +555,7 @@ public class MDBMessageSendTxExample implements MessageListener
       &lt;jndi-name>RemoteJmsXA&lt;/jndi-name>
       &lt;xa-transaction/>
       &lt;rar-name>jms-ra.rar&lt;/rar-name>
-      &lt;connection-definition>org.hornetq.ra.HornetQConnectionFactory
+      &lt;connection-definition>org.hornetq.ra.HornetQRAConnectionFactory
 &lt;/connection-definition>
       &lt;config-property name="SessionDefaultType" type="String">javax.jms.Topic
       &lt;/config-property>

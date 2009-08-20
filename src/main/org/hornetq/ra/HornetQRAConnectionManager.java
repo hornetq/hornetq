@@ -203,324 +203,65 @@
  */
 package org.hornetq.ra;
 
-import javax.jms.Session;
+import javax.resource.ResourceException;
+import javax.resource.spi.ConnectionManager;
 import javax.resource.spi.ConnectionRequestInfo;
+import javax.resource.spi.ManagedConnection;
+import javax.resource.spi.ManagedConnectionFactory;
 
 import org.hornetq.core.logging.Logger;
 
 /**
- * Connection request information
- *
+ * The connection manager used in non-managed environments.
+ * 
  * @author <a href="mailto:adrian@jboss.com">Adrian Brock</a>
  * @author <a href="mailto:jesper.pedersen@jboss.org">Jesper Pedersen</a>
- * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
- * @version $Revision:  $
+ * @version $Revision: $
  */
-public class HornetQConnectionRequestInfo implements ConnectionRequestInfo
+public class HornetQRAConnectionManager implements ConnectionManager
 {
+   /** Serial version UID */
+   static final long serialVersionUID = 4409118162975011014L;
+
    /** The logger */
-   private static final Logger log = Logger.getLogger(HornetQConnectionRequestInfo.class);
+   private static final Logger log = Logger.getLogger(HornetQRAConnectionManager.class);
 
    /** Trace enabled */
    private static boolean trace = log.isTraceEnabled();
 
-   /** The user name */
-   private String userName;
-
-   /** The password */
-   private String password;
-
-   /** The client id */
-   private String clientID;
-
-   /** Use XA */
-   private boolean useXA;
-
-   /** The type */
-   private final int type;
-
-   /** Use transactions */
-   private final boolean transacted;
-
-   /** The acknowledge mode */
-   private final int acknowledgeMode;
-
    /**
     * Constructor
-    * @param prop The resource adapter properties
-    * @param type The connection type
     */
-   public HornetQConnectionRequestInfo(final HornetQRAProperties prop, final int type)
+   public HornetQRAConnectionManager()
    {
       if (trace)
       {
-         log.trace("constructor(" + prop + ")");
-      }
-
-      userName = prop.getUserName();
-      password = prop.getPassword();
-      clientID = prop.getClientID();
-      useXA = prop.isUseXA();
-      this.type = type;
-      transacted = true;
-      acknowledgeMode = Session.AUTO_ACKNOWLEDGE;
-   }
-
-   /**
-    * Constructor
-    * @param type The connection type
-    */
-   public HornetQConnectionRequestInfo(final int type)
-   {
-      if (trace)
-      {
-         log.trace("constructor(" + type + ")");
-      }
-
-      this.type = type;
-      transacted = true;
-      acknowledgeMode = Session.AUTO_ACKNOWLEDGE;
-   }
-
-   /**
-    * Constructor
-    * @param transacted Use transactions
-    * @param acknowledgeMode The acknowledge mode
-    * @param type The connection type
-    */
-   public HornetQConnectionRequestInfo(final boolean transacted, final int acknowledgeMode, final int type)
-   {
-      if (trace)
-      {
-         log.trace("constructor(" + transacted + ", " + acknowledgeMode + ", " + type + ")");
-      }
-
-      this.transacted = transacted;
-      this.acknowledgeMode = acknowledgeMode;
-      this.type = type;
-   }
-
-   /**
-    * Fill in default values if they are missing
-    * @param prop The resource adapter properties
-    */
-   public void setDefaults(final HornetQRAProperties prop)
-   {
-      if (trace)
-      {
-         log.trace("setDefaults(" + prop + ")");
-      }
-
-      if (userName == null)
-      {
-         userName = prop.getUserName();
-      }
-      if (password == null)
-      {
-         password = prop.getPassword();
-      }
-      if (clientID == null)
-      {
-         clientID = prop.getClientID();
-      }
-      useXA = prop.isUseXA();
-   }
-
-   /**
-    * Get the user name
-    * @return The value
-    */
-   public String getUserName()
-   {
-      if (trace)
-      {
-         log.trace("getUserName()");
-      }
-
-      return userName;
-   }
-
-   /**
-    * Set the user name
-    * @param userName The value
-    */
-   public void setUserName(final String userName)
-   {
-      if (trace)
-      {
-         log.trace("setUserName(" + userName + ")");
-      }
-
-      this.userName = userName;
-   }
-
-   /**
-    * Get the password
-    * @return The value
-    */
-   public String getPassword()
-   {
-      if (trace)
-      {
-         log.trace("getPassword()");
-      }
-
-      return password;
-   }
-
-   /**
-    * Set the password
-    * @param password The value
-    */
-   public void setPassword(final String password)
-   {
-      if (trace)
-      {
-         log.trace("setPassword(****)");
-      }
-
-      this.password = password;
-   }
-
-   /**
-    * Get the client id
-    * @return The value
-    */
-   public String getClientID()
-   {
-      if (trace)
-      {
-         log.trace("getClientID()");
-      }
-
-      return clientID;
-   }
-
-   /**
-    * Set the client id
-    * @param clientID The value
-    */
-   public void setClientID(final String clientID)
-   {
-      if (trace)
-      {
-         log.trace("setClientID(" + clientID + ")");
-      }
-
-      this.clientID = clientID;
-   }
-
-   /**
-    * Get the connection type
-    * @return The type
-    */
-   public int getType()
-   {
-      if (trace)
-      {
-         log.trace("getType()");
-      }
-
-      return type;
-   }
-
-   /**
-    * Use XA communication
-    * @return True if XA; otherwise false
-    */
-   public boolean isUseXA()
-   {
-      if (trace)
-      {
-         log.trace("isUseXA()");
-      }
-
-      return useXA;
-   }
-
-   /**
-    * Use transactions
-    * @return True if transacted; otherwise false
-    */
-   public boolean isTransacted()
-   {
-      if (trace)
-      {
-         log.trace("isTransacted()");
-      }
-
-      return transacted;
-   }
-
-   /**
-    * Get the acknowledge mode
-    * @return The mode
-    */
-   public int getAcknowledgeMode()
-   {
-      if (trace)
-      {
-         log.trace("getAcknowledgeMode()");
-      }
-
-      return acknowledgeMode;
-   }
-
-   /**
-    * Indicates whether some other object is "equal to" this one.
-    * @param obj Object with which to compare
-    * @return True if this object is the same as the obj argument; false otherwise.
-    */
-   @Override
-   public boolean equals(final Object obj)
-   {
-      if (trace)
-      {
-         log.trace("equals(" + obj + ")");
-      }
-
-      if (obj == null)
-      {
-         return false;
-      }
-
-      if (obj instanceof HornetQConnectionRequestInfo)
-      {
-         HornetQConnectionRequestInfo you = (HornetQConnectionRequestInfo)obj;
-         return Util.compare(userName, you.getUserName()) && Util.compare(password, you.getPassword()) &&
-                Util.compare(clientID, you.getClientID()) &&
-                type == you.getType() &&
-                useXA == you.isUseXA() &&
-                transacted == you.isTransacted() &&
-                acknowledgeMode == you.getAcknowledgeMode();
-      }
-      else
-      {
-         return false;
+         log.trace("constructor()");
       }
    }
 
    /**
-    * Return the hash code for the object
-    * @return The hash code
+    * Allocates a connection
+    * @param mcf The managed connection factory
+    * @param cxRequestInfo The connection request information 
+    * @return The connection
+    * @exception ResourceException Thrown if there is a problem obtaining the connection
     */
-   @Override
-   public int hashCode()
+   public Object allocateConnection(final ManagedConnectionFactory mcf, final ConnectionRequestInfo cxRequestInfo) throws ResourceException
    {
       if (trace)
       {
-         log.trace("hashCode()");
+         log.trace("allocateConnection(" + mcf + ", " + cxRequestInfo + ")");
       }
 
-      int hash = 7;
+      ManagedConnection mc = mcf.createManagedConnection(null, cxRequestInfo);
+      Object c = mc.getConnection(null, cxRequestInfo);
 
-      hash += 31 * hash + (userName != null ? userName.hashCode() : 0);
-      hash += 31 * hash + (password != null ? password.hashCode() : 0);
-      hash += 31 * hash + Integer.valueOf(type).hashCode();
-      hash += 31 * hash + (useXA ? 1 : 0);
-      hash += 31 * hash + (transacted ? 1 : 0);
-      hash += 31 * hash + Integer.valueOf(acknowledgeMode).hashCode();
+      if (trace)
+      {
+         log.trace("Allocated connection: " + c + ", with managed connection: " + mc);
+      }
 
-      return hash;
+      return c;
    }
 }

@@ -217,10 +217,10 @@ import org.hornetq.core.logging.Logger;
  * @author <a href="mailto:jesper.pedersen@jboss.org">Jesper Pedersen</a>
  * @version $Revision: $
  */
-public class HornetQMessage implements Message
+public class HornetQRAMessage implements Message
 {
    /** The logger */
-   private static final Logger log = Logger.getLogger(HornetQMessage.class);
+   private static final Logger log = Logger.getLogger(HornetQRAMessage.class);
 
    /** Whether trace is enabled */
    private static boolean trace = log.isTraceEnabled();
@@ -229,14 +229,14 @@ public class HornetQMessage implements Message
    protected Message message;
 
    /** The session */
-   protected HornetQSession session;
+   protected HornetQRASession session;
 
    /**
     * Create a new wrapper
     * @param message the message
     * @param session the session
     */
-   public HornetQMessage(final Message message, final HornetQSession session)
+   public HornetQRAMessage(final Message message, final HornetQRASession session)
    {
       if (trace)
       {
@@ -967,9 +967,9 @@ public class HornetQMessage implements Message
          log.trace("equals(" + object + ")");
       }
 
-      if (object != null && object instanceof HornetQMessage)
+      if (object != null && object instanceof HornetQRAMessage)
       {
-         return message.equals(((HornetQMessage)object).message);
+         return message.equals(((HornetQRAMessage)object).message);
       }
       else
       {

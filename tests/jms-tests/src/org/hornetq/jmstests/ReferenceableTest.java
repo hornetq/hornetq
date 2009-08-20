@@ -269,9 +269,9 @@ public class ReferenceableTest extends JMSTestCase
       
       Object instance = factory.getObjectInstance(cfRef, null, null, null);
       
-      assertTrue(instance instanceof HornetQConnectionFactory);
+      assertTrue(instance instanceof HornetQRAConnectionFactory);
       
-      HornetQConnectionFactory cf2 = (HornetQConnectionFactory)instance;
+      HornetQRAConnectionFactory cf2 = (HornetQRAConnectionFactory)instance;
       
       simpleSendReceive(cf2, queue);
    }

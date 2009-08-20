@@ -249,22 +249,22 @@ import org.hornetq.core.logging.Logger;
  * @author <a href="mailto:jesper.pedersen@jboss.org">Jesper Pedersen</a>
  * @version $Revision: $
  */
-public class HornetQSession implements Session, QueueSession, TopicSession, XASession, XAQueueSession, XATopicSession
+public class HornetQRASession implements Session, QueueSession, TopicSession, XASession, XAQueueSession, XATopicSession
 {
    /** The logger */
-   private static final Logger log = Logger.getLogger(HornetQSession.class);
+   private static final Logger log = Logger.getLogger(HornetQRASession.class);
 
    /** Trace enabled */
    private static boolean trace = log.isTraceEnabled();
 
    /** The managed connection */
-   private HornetQManagedConnection mc;
+   private HornetQRAManagedConnection mc;
 
    /** The connection request info */
-   private final HornetQConnectionRequestInfo cri;
+   private final HornetQRAConnectionRequestInfo cri;
 
    /** The session factory */
-   private HornetQSessionFactory sf;
+   private HornetQRASessionFactory sf;
 
    /** The message consumers */
    private final Set consumers;
@@ -277,7 +277,7 @@ public class HornetQSession implements Session, QueueSession, TopicSession, XASe
     * @param mc The managed connection
     * @param cri The connection request info
     */
-   public HornetQSession(final HornetQManagedConnection mc, final HornetQConnectionRequestInfo cri)
+   public HornetQRASession(final HornetQRAManagedConnection mc, final HornetQRAConnectionRequestInfo cri)
    {
       if (trace)
       {
@@ -295,7 +295,7 @@ public class HornetQSession implements Session, QueueSession, TopicSession, XASe
     * Set the session factory
     * @param sf The session factory
     */
-   public void setJBMSessionFactory(final HornetQSessionFactory sf)
+   public void setJBMSessionFactory(final HornetQRASessionFactory sf)
    {
       if (trace)
       {
@@ -317,7 +317,7 @@ public class HornetQSession implements Session, QueueSession, TopicSession, XASe
          log.trace("lock()");
       }
 
-      HornetQManagedConnection mc = this.mc;
+      HornetQRAManagedConnection mc = this.mc;
       if (mc != null)
       {
          mc.tryLock();
@@ -338,7 +338,7 @@ public class HornetQSession implements Session, QueueSession, TopicSession, XASe
          log.trace("unlock()");
       }
 
-      HornetQManagedConnection mc = this.mc;
+      HornetQRAManagedConnection mc = this.mc;
       if (mc != null)
       {
          mc.unlock();
@@ -568,8 +568,8 @@ public class HornetQSession implements Session, QueueSession, TopicSession, XASe
     */
    public void commit() throws JMSException
    {
-      if (cri.getType() == HornetQConnectionFactory.XA_CONNECTION || cri.getType() == HornetQConnectionFactory.XA_QUEUE_CONNECTION ||
-          cri.getType() == HornetQConnectionFactory.XA_TOPIC_CONNECTION)
+      if (cri.getType() == HornetQRAConnectionFactory.XA_CONNECTION || cri.getType() == HornetQRAConnectionFactory.XA_QUEUE_CONNECTION ||
+          cri.getType() == HornetQRAConnectionFactory.XA_TOPIC_CONNECTION)
       {
          throw new TransactionInProgressException("XA connection");
       }
@@ -603,8 +603,8 @@ public class HornetQSession implements Session, QueueSession, TopicSession, XASe
     */
    public void rollback() throws JMSException
    {
-      if (cri.getType() == HornetQConnectionFactory.XA_CONNECTION || cri.getType() == HornetQConnectionFactory.XA_QUEUE_CONNECTION ||
-          cri.getType() == HornetQConnectionFactory.XA_TOPIC_CONNECTION)
+      if (cri.getType() == HornetQRAConnectionFactory.XA_CONNECTION || cri.getType() == HornetQRAConnectionFactory.XA_QUEUE_CONNECTION ||
+          cri.getType() == HornetQRAConnectionFactory.XA_TOPIC_CONNECTION)
       {
          throw new TransactionInProgressException("XA connection");
       }
@@ -669,7 +669,7 @@ public class HornetQSession implements Session, QueueSession, TopicSession, XASe
     */
    public Topic createTopic(final String topicName) throws JMSException
    {
-      if (cri.getType() == HornetQConnectionFactory.QUEUE_CONNECTION || cri.getType() == HornetQConnectionFactory.XA_QUEUE_CONNECTION)
+      if (cri.getType() == HornetQRAConnectionFactory.QUEUE_CONNECTION || cri.getType() == HornetQRAConnectionFactory.XA_QUEUE_CONNECTION)
       {
          throw new IllegalStateException("Cannot create topic for javax.jms.QueueSession");
       }
@@ -710,7 +710,7 @@ public class HornetQSession implements Session, QueueSession, TopicSession, XASe
          }
 
          TopicSubscriber result = session.createSubscriber(topic);
-         result = new HornetQTopicSubscriber(result, this);
+         result = new HornetQRATopicSubscriber(result, this);
 
          if (trace)
          {
@@ -754,7 +754,7 @@ public class HornetQSession implements Session, QueueSession, TopicSession, XASe
          }
 
          TopicSubscriber result = session.createSubscriber(topic, messageSelector, noLocal);
-         result = new HornetQTopicSubscriber(result, this);
+         result = new HornetQRATopicSubscriber(result, this);
 
          if (trace)
          {
@@ -780,7 +780,7 @@ public class HornetQSession implements Session, QueueSession, TopicSession, XASe
     */
    public TopicSubscriber createDurableSubscriber(final Topic topic, final String name) throws JMSException
    {
-      if (cri.getType() == HornetQConnectionFactory.QUEUE_CONNECTION || cri.getType() == HornetQConnectionFactory.XA_QUEUE_CONNECTION)
+      if (cri.getType() == HornetQRAConnectionFactory.QUEUE_CONNECTION || cri.getType() == HornetQRAConnectionFactory.XA_QUEUE_CONNECTION)
       {
          throw new IllegalStateException("Cannot create durable subscriber from javax.jms.QueueSession");
       }
@@ -796,7 +796,7 @@ public class HornetQSession implements Session, QueueSession, TopicSession, XASe
          }
 
          TopicSubscriber result = session.createDurableSubscriber(topic, name);
-         result = new HornetQTopicSubscriber(result, this);
+         result = new HornetQRATopicSubscriber(result, this);
 
          if (trace)
          {
@@ -846,7 +846,7 @@ public class HornetQSession implements Session, QueueSession, TopicSession, XASe
          }
 
          TopicSubscriber result = session.createDurableSubscriber(topic, name, messageSelector, noLocal);
-         result = new HornetQTopicSubscriber(result, this);
+         result = new HornetQRATopicSubscriber(result, this);
 
          if (trace)
          {
@@ -882,7 +882,7 @@ public class HornetQSession implements Session, QueueSession, TopicSession, XASe
          }
 
          TopicPublisher result = session.createPublisher(topic);
-         result = new HornetQTopicPublisher(result, this);
+         result = new HornetQRATopicPublisher(result, this);
 
          if (trace)
          {
@@ -906,7 +906,7 @@ public class HornetQSession implements Session, QueueSession, TopicSession, XASe
     */
    public TemporaryTopic createTemporaryTopic() throws JMSException
    {
-      if (cri.getType() == HornetQConnectionFactory.QUEUE_CONNECTION || cri.getType() == HornetQConnectionFactory.XA_QUEUE_CONNECTION)
+      if (cri.getType() == HornetQRAConnectionFactory.QUEUE_CONNECTION || cri.getType() == HornetQRAConnectionFactory.XA_QUEUE_CONNECTION)
       {
          throw new IllegalStateException("Cannot create temporary topic for javax.jms.QueueSession");
       }
@@ -945,7 +945,7 @@ public class HornetQSession implements Session, QueueSession, TopicSession, XASe
     */
    public void unsubscribe(final String name) throws JMSException
    {
-      if (cri.getType() == HornetQConnectionFactory.QUEUE_CONNECTION || cri.getType() == HornetQConnectionFactory.XA_QUEUE_CONNECTION)
+      if (cri.getType() == HornetQRAConnectionFactory.QUEUE_CONNECTION || cri.getType() == HornetQRAConnectionFactory.XA_QUEUE_CONNECTION)
       {
          throw new IllegalStateException("Cannot unsubscribe for javax.jms.QueueSession");
       }
@@ -976,7 +976,7 @@ public class HornetQSession implements Session, QueueSession, TopicSession, XASe
     */
    public QueueBrowser createBrowser(final Queue queue) throws JMSException
    {
-      if (cri.getType() == HornetQConnectionFactory.TOPIC_CONNECTION || cri.getType() == HornetQConnectionFactory.XA_TOPIC_CONNECTION)
+      if (cri.getType() == HornetQRAConnectionFactory.TOPIC_CONNECTION || cri.getType() == HornetQRAConnectionFactory.XA_TOPIC_CONNECTION)
       {
          throw new IllegalStateException("Cannot create browser for javax.jms.TopicSession");
       }
@@ -1007,7 +1007,7 @@ public class HornetQSession implements Session, QueueSession, TopicSession, XASe
     */
    public QueueBrowser createBrowser(final Queue queue, final String messageSelector) throws JMSException
    {
-      if (cri.getType() == HornetQConnectionFactory.TOPIC_CONNECTION || cri.getType() == HornetQConnectionFactory.XA_TOPIC_CONNECTION)
+      if (cri.getType() == HornetQRAConnectionFactory.TOPIC_CONNECTION || cri.getType() == HornetQRAConnectionFactory.XA_TOPIC_CONNECTION)
       {
          throw new IllegalStateException("Cannot create browser for javax.jms.TopicSession");
       }
@@ -1037,7 +1037,7 @@ public class HornetQSession implements Session, QueueSession, TopicSession, XASe
     */
    public Queue createQueue(final String queueName) throws JMSException
    {
-      if (cri.getType() == HornetQConnectionFactory.TOPIC_CONNECTION || cri.getType() == HornetQConnectionFactory.XA_TOPIC_CONNECTION)
+      if (cri.getType() == HornetQRAConnectionFactory.TOPIC_CONNECTION || cri.getType() == HornetQRAConnectionFactory.XA_TOPIC_CONNECTION)
       {
          throw new IllegalStateException("Cannot create browser or javax.jms.TopicSession");
       }
@@ -1078,7 +1078,7 @@ public class HornetQSession implements Session, QueueSession, TopicSession, XASe
          }
 
          QueueReceiver result = session.createReceiver(queue);
-         result = new HornetQQueueReceiver(result, this);
+         result = new HornetQRAQueueReceiver(result, this);
 
          if (trace)
          {
@@ -1115,7 +1115,7 @@ public class HornetQSession implements Session, QueueSession, TopicSession, XASe
          }
 
          QueueReceiver result = session.createReceiver(queue, messageSelector);
-         result = new HornetQQueueReceiver(result, this);
+         result = new HornetQRAQueueReceiver(result, this);
 
          if (trace)
          {
@@ -1151,7 +1151,7 @@ public class HornetQSession implements Session, QueueSession, TopicSession, XASe
          }
 
          QueueSender result = session.createSender(queue);
-         result = new HornetQQueueSender(result, this);
+         result = new HornetQRAQueueSender(result, this);
 
          if (trace)
          {
@@ -1175,7 +1175,7 @@ public class HornetQSession implements Session, QueueSession, TopicSession, XASe
     */
    public TemporaryQueue createTemporaryQueue() throws JMSException
    {
-      if (cri.getType() == HornetQConnectionFactory.TOPIC_CONNECTION || cri.getType() == HornetQConnectionFactory.XA_TOPIC_CONNECTION)
+      if (cri.getType() == HornetQRAConnectionFactory.TOPIC_CONNECTION || cri.getType() == HornetQRAConnectionFactory.XA_TOPIC_CONNECTION)
       {
          throw new IllegalStateException("Cannot create temporary queue for javax.jms.TopicSession");
       }
@@ -1226,7 +1226,7 @@ public class HornetQSession implements Session, QueueSession, TopicSession, XASe
          }
 
          MessageConsumer result = session.createConsumer(destination);
-         result = new HornetQMessageConsumer(result, this);
+         result = new HornetQRAMessageConsumer(result, this);
 
          if (trace)
          {
@@ -1263,7 +1263,7 @@ public class HornetQSession implements Session, QueueSession, TopicSession, XASe
          }
 
          MessageConsumer result = session.createConsumer(destination, messageSelector);
-         result = new HornetQMessageConsumer(result, this);
+         result = new HornetQRAMessageConsumer(result, this);
 
          if (trace)
          {
@@ -1309,7 +1309,7 @@ public class HornetQSession implements Session, QueueSession, TopicSession, XASe
          }
 
          MessageConsumer result = session.createConsumer(destination, messageSelector, noLocal);
-         result = new HornetQMessageConsumer(result, this);
+         result = new HornetQRAMessageConsumer(result, this);
 
          if (trace)
          {
@@ -1345,7 +1345,7 @@ public class HornetQSession implements Session, QueueSession, TopicSession, XASe
          }
 
          MessageProducer result = session.createProducer(destination);
-         result = new HornetQMessageProducer(result, this);
+         result = new HornetQRAMessageProducer(result, this);
 
          if (trace)
          {
@@ -1390,8 +1390,8 @@ public class HornetQSession implements Session, QueueSession, TopicSession, XASe
          log.trace("getXAResource()");
       }
 
-      if (cri.getType() == HornetQConnectionFactory.CONNECTION || cri.getType() == HornetQConnectionFactory.QUEUE_CONNECTION ||
-          cri.getType() == HornetQConnectionFactory.TOPIC_CONNECTION)
+      if (cri.getType() == HornetQRAConnectionFactory.CONNECTION || cri.getType() == HornetQRAConnectionFactory.QUEUE_CONNECTION ||
+          cri.getType() == HornetQRAConnectionFactory.TOPIC_CONNECTION)
       {
          return null;
       }
@@ -1426,8 +1426,8 @@ public class HornetQSession implements Session, QueueSession, TopicSession, XASe
          log.trace("getSession()");
       }
 
-      if (cri.getType() == HornetQConnectionFactory.CONNECTION || cri.getType() == HornetQConnectionFactory.QUEUE_CONNECTION ||
-          cri.getType() == HornetQConnectionFactory.TOPIC_CONNECTION)
+      if (cri.getType() == HornetQRAConnectionFactory.CONNECTION || cri.getType() == HornetQRAConnectionFactory.QUEUE_CONNECTION ||
+          cri.getType() == HornetQRAConnectionFactory.TOPIC_CONNECTION)
       {
          throw new IllegalStateException("Non XA connection");
       }
@@ -1455,8 +1455,8 @@ public class HornetQSession implements Session, QueueSession, TopicSession, XASe
          log.trace("getQueueSession()");
       }
 
-      if (cri.getType() == HornetQConnectionFactory.CONNECTION || cri.getType() == HornetQConnectionFactory.QUEUE_CONNECTION ||
-          cri.getType() == HornetQConnectionFactory.TOPIC_CONNECTION)
+      if (cri.getType() == HornetQRAConnectionFactory.CONNECTION || cri.getType() == HornetQRAConnectionFactory.QUEUE_CONNECTION ||
+          cri.getType() == HornetQRAConnectionFactory.TOPIC_CONNECTION)
       {
          throw new IllegalStateException("Non XA connection");
       }
@@ -1484,8 +1484,8 @@ public class HornetQSession implements Session, QueueSession, TopicSession, XASe
          log.trace("getTopicSession()");
       }
 
-      if (cri.getType() == HornetQConnectionFactory.CONNECTION || cri.getType() == HornetQConnectionFactory.QUEUE_CONNECTION ||
-          cri.getType() == HornetQConnectionFactory.TOPIC_CONNECTION)
+      if (cri.getType() == HornetQRAConnectionFactory.CONNECTION || cri.getType() == HornetQRAConnectionFactory.QUEUE_CONNECTION ||
+          cri.getType() == HornetQRAConnectionFactory.TOPIC_CONNECTION)
       {
          throw new IllegalStateException("Non XA connection");
       }
@@ -1505,7 +1505,7 @@ public class HornetQSession implements Session, QueueSession, TopicSession, XASe
     * Set the managed connection
     * @param managedConnection The managed connection
     */
-   void setManagedConnection(final HornetQManagedConnection managedConnection)
+   void setManagedConnection(final HornetQRAManagedConnection managedConnection)
    {
       if (trace)
       {
@@ -1580,7 +1580,7 @@ public class HornetQSession implements Session, QueueSession, TopicSession, XASe
 
       if (mc != null)
       {
-         throw new IllegalStateException(HornetQSessionFactory.ISE);
+         throw new IllegalStateException(HornetQRASessionFactory.ISE);
       }
    }
 
@@ -1607,7 +1607,7 @@ public class HornetQSession implements Session, QueueSession, TopicSession, XASe
          {
             for (Iterator i = consumers.iterator(); i.hasNext();)
             {
-               HornetQMessageConsumer consumer = (HornetQMessageConsumer)i.next();
+               HornetQRAMessageConsumer consumer = (HornetQRAMessageConsumer)i.next();
                try
                {
                   consumer.closeConsumer();
@@ -1624,7 +1624,7 @@ public class HornetQSession implements Session, QueueSession, TopicSession, XASe
          {
             for (Iterator i = producers.iterator(); i.hasNext();)
             {
-               HornetQMessageProducer producer = (HornetQMessageProducer)i.next();
+               HornetQRAMessageProducer producer = (HornetQRAMessageProducer)i.next();
                try
                {
                   producer.closeProducer();

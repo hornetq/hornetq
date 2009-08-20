@@ -215,7 +215,7 @@ public class ConnectionFactoryProperties
    /**
     * The logger
     */
-   private static final Logger log = Logger.getLogger(HornetQMCFProperties.class);
+   private static final Logger log = Logger.getLogger(HornetQRAMCFProperties.class);
 
    /**
     * Trace enabled

@@ -203,393 +203,447 @@
  */
 package org.hornetq.ra;
 
-import javax.jms.Connection;
+import javax.jms.BytesMessage;
 import javax.jms.JMSException;
-import javax.jms.QueueConnection;
-import javax.jms.TopicConnection;
-import javax.jms.XAConnection;
-import javax.jms.XAQueueConnection;
-import javax.jms.XATopicConnection;
-import javax.naming.Reference;
-import javax.resource.Referenceable;
-import javax.resource.spi.ConnectionManager;
 
 import org.hornetq.core.logging.Logger;
 
 /**
- * The connection factory
- * 
+ * A wrapper for a message
+ *
  * @author <a href="mailto:adrian@jboss.com">Adrian Brock</a>
  * @author <a href="mailto:jesper.pedersen@jboss.org">Jesper Pedersen</a>
- * @version $Revision:  $
+ * @version $Revision: $
  */
-public class HornetQConnectionFactoryImpl implements HornetQConnectionFactory, Referenceable
+public class HornetQRABytesMessage extends HornetQRAMessage implements BytesMessage
 {
-   /** Serial version UID */
-   static final long serialVersionUID = 7981708919479859360L;
-
    /** The logger */
-   private static final Logger log = Logger.getLogger(HornetQConnectionFactoryImpl.class);
+   private static final Logger log = Logger.getLogger(HornetQRABytesMessage.class);
 
-   /** Trace enabled */
+   /** Whether trace is enabled */
    private static boolean trace = log.isTraceEnabled();
 
-   /** The managed connection factory */
-   private final HornetQManagedConnectionFactory mcf;
-
-   /** The connection manager */
-   private ConnectionManager cm;
-
-   /** Naming reference */
-   private Reference reference;
-
    /**
-    * Constructor
-    * @param mcf The managed connection factory
-    * @param cm The connection manager
+    * Create a new wrapper
+    * @param message the message
+    * @param session the session
     */
-   public HornetQConnectionFactoryImpl(final HornetQManagedConnectionFactory mcf, final ConnectionManager cm)
+   public HornetQRABytesMessage(final BytesMessage message, final HornetQRASession session)
    {
-      if (trace)
-      {
-         log.trace("constructor(" + mcf + ", " + cm + ")");
-      }
-
-      this.mcf = mcf;
-
-      if (cm == null)
-      {
-         // This is standalone usage, no appserver
-         this.cm = new HornetQConnectionManager();
-         if (trace)
-         {
-            log.trace("Created new ConnectionManager=" + this.cm);
-         }
-      }
-      else
-      {
-         this.cm = cm;
-      }
+      super(message, session);
 
       if (trace)
       {
-         log.trace("Using ManagedConnectionFactory=" + mcf + ", ConnectionManager=" + cm);
+         log.trace("constructor(" + message + ", " + session + ")");
       }
    }
 
    /**
-    * Set the reference
-    * @param reference The reference
+    * Get body length
+    * @return The value
+    * @exception JMSException Thrown if an error occurs
     */
-   public void setReference(final Reference reference)
+   public long getBodyLength() throws JMSException
    {
       if (trace)
       {
-         log.trace("setReference(" + reference + ")");
+         log.trace("getBodyLength()");
       }
 
-      this.reference = reference;
+      return ((BytesMessage)message).getBodyLength();
    }
 
    /**
-    * Get the reference
-    * @return The reference
+    * Read
+    * @return The value
+    * @exception JMSException Thrown if an error occurs
     */
-   public Reference getReference()
+   public boolean readBoolean() throws JMSException
    {
       if (trace)
       {
-         log.trace("getReference()");
+         log.trace("readBoolean()");
       }
 
-      return reference;
+      return ((BytesMessage)message).readBoolean();
    }
 
    /**
-    * Create a queue connection
-    * @return The connection
-    * @exception JMSException Thrown if the operation fails
+    * Read
+    * @return The value
+    * @exception JMSException Thrown if an error occurs
     */
-   public QueueConnection createQueueConnection() throws JMSException
+   public byte readByte() throws JMSException
    {
       if (trace)
       {
-         log.trace("createQueueConnection()");
+         log.trace("readByte()");
       }
 
-      HornetQSessionFactoryImpl s = new HornetQSessionFactoryImpl(mcf, cm, QUEUE_CONNECTION);
-
-      if (trace)
-      {
-         log.trace("Created queue connection: " + s);
-      }
-
-      return s;
+      return ((BytesMessage)message).readByte();
    }
 
    /**
-    * Create a queue connection
-    * @param userName The user name
-    * @param password The password
-    * @return The connection
-    * @exception JMSException Thrown if the operation fails
+    * Read
+    * @param value The value
+    * @param length The length
+    * @return The result
+    * @exception JMSException Thrown if an error occurs
     */
-   public QueueConnection createQueueConnection(final String userName, final String password) throws JMSException
+   public int readBytes(final byte[] value, final int length) throws JMSException
    {
       if (trace)
       {
-         log.trace("createQueueConnection(" + userName + ", ****)");
+         log.trace("readBytes(" + value + ", " + length + ")");
       }
 
-      HornetQSessionFactoryImpl s = new HornetQSessionFactoryImpl(mcf, cm, QUEUE_CONNECTION);
-      s.setUserName(userName);
-      s.setPassword(password);
-
-      if (trace)
-      {
-         log.trace("Created queue connection: " + s);
-      }
-
-      return s;
+      return ((BytesMessage)message).readBytes(value, length);
    }
 
    /**
-    * Create a topic connection
-    * @return The connection
-    * @exception JMSException Thrown if the operation fails
+    * Read
+    * @param value The value
+    * @return The result
+    * @exception JMSException Thrown if an error occurs
     */
-   public TopicConnection createTopicConnection() throws JMSException
+   public int readBytes(final byte[] value) throws JMSException
    {
       if (trace)
       {
-         log.trace("createTopicConnection()");
+         log.trace("readBytes(" + value + ")");
       }
 
-      HornetQSessionFactoryImpl s = new HornetQSessionFactoryImpl(mcf, cm, TOPIC_CONNECTION);
-
-      if (trace)
-      {
-         log.trace("Created topic connection: " + s);
-      }
-
-      return s;
+      return ((BytesMessage)message).readBytes(value);
    }
 
    /**
-    * Create a topic connection
-    * @param userName The user name
-    * @param password The password
-    * @return The connection
-    * @exception JMSException Thrown if the operation fails
+    * Read
+    * @return The value
+    * @exception JMSException Thrown if an error occurs
     */
-   public TopicConnection createTopicConnection(final String userName, final String password) throws JMSException
+   public char readChar() throws JMSException
    {
       if (trace)
       {
-         log.trace("createTopicConnection(" + userName + ", ****)");
+         log.trace("readChar()");
       }
 
-      HornetQSessionFactoryImpl s = new HornetQSessionFactoryImpl(mcf, cm, TOPIC_CONNECTION);
-      s.setUserName(userName);
-      s.setPassword(password);
-
-      if (trace)
-      {
-         log.trace("Created topic connection: " + s);
-      }
-
-      return s;
+      return ((BytesMessage)message).readChar();
    }
 
    /**
-    * Create a connection
-    * @return The connection
-    * @exception JMSException Thrown if the operation fails
+    * Read
+    * @return The value
+    * @exception JMSException Thrown if an error occurs
     */
-   public Connection createConnection() throws JMSException
+   public double readDouble() throws JMSException
    {
       if (trace)
       {
-         log.trace("createConnection()");
+         log.trace("readDouble()");
       }
 
-      HornetQSessionFactoryImpl s = new HornetQSessionFactoryImpl(mcf, cm, CONNECTION);
-
-      if (trace)
-      {
-         log.trace("Created connection: " + s);
-      }
-
-      return s;
+      return ((BytesMessage)message).readDouble();
    }
 
    /**
-    * Create a connection
-    * @param userName The user name
-    * @param password The password
-    * @return The connection
-    * @exception JMSException Thrown if the operation fails
+    * Read
+    * @return The value
+    * @exception JMSException Thrown if an error occurs
     */
-   public Connection createConnection(final String userName, final String password) throws JMSException
+   public float readFloat() throws JMSException
    {
       if (trace)
       {
-         log.trace("createConnection(" + userName + ", ****)");
+         log.trace("readFloat()");
       }
 
-      HornetQSessionFactoryImpl s = new HornetQSessionFactoryImpl(mcf, cm, CONNECTION);
-      s.setUserName(userName);
-      s.setPassword(password);
-
-      if (trace)
-      {
-         log.trace("Created connection: " + s);
-      }
-
-      return s;
+      return ((BytesMessage)message).readFloat();
    }
 
    /**
-    * Create a XA queue connection
-    * @return The connection
-    * @exception JMSException Thrown if the operation fails
+    * Read
+    * @return The value
+    * @exception JMSException Thrown if an error occurs
     */
-   public XAQueueConnection createXAQueueConnection() throws JMSException
+   public int readInt() throws JMSException
    {
       if (trace)
       {
-         log.trace("createXAQueueConnection()");
+         log.trace("readInt()");
       }
 
-      HornetQSessionFactoryImpl s = new HornetQSessionFactoryImpl(mcf, cm, XA_QUEUE_CONNECTION);
-
-      if (trace)
-      {
-         log.trace("Created queue connection: " + s);
-      }
-
-      return s;
+      return ((BytesMessage)message).readInt();
    }
 
    /**
-    * Create a XA  queue connection
-    * @param userName The user name
-    * @param password The password
-    * @return The connection
-    * @exception JMSException Thrown if the operation fails
+    * Read
+    * @return The value
+    * @exception JMSException Thrown if an error occurs
     */
-   public XAQueueConnection createXAQueueConnection(final String userName, final String password) throws JMSException
+   public long readLong() throws JMSException
    {
       if (trace)
       {
-         log.trace("createXAQueueConnection(" + userName + ", ****)");
+         log.trace("readLong()");
       }
 
-      HornetQSessionFactoryImpl s = new HornetQSessionFactoryImpl(mcf, cm, XA_QUEUE_CONNECTION);
-      s.setUserName(userName);
-      s.setPassword(password);
-
-      if (trace)
-      {
-         log.trace("Created queue connection: " + s);
-      }
-
-      return s;
+      return ((BytesMessage)message).readLong();
    }
 
    /**
-    * Create a XA topic connection
-    * @return The connection
-    * @exception JMSException Thrown if the operation fails
+    * Read
+    * @return The value
+    * @exception JMSException Thrown if an error occurs
     */
-   public XATopicConnection createXATopicConnection() throws JMSException
+   public short readShort() throws JMSException
    {
       if (trace)
       {
-         log.trace("createXATopicConnection()");
+         log.trace("readShort()");
       }
 
-      HornetQSessionFactoryImpl s = new HornetQSessionFactoryImpl(mcf, cm, XA_TOPIC_CONNECTION);
-
-      if (trace)
-      {
-         log.trace("Created topic connection: " + s);
-      }
-
-      return s;
+      return ((BytesMessage)message).readShort();
    }
 
    /**
-    * Create a XA topic connection
-    * @param userName The user name
-    * @param password The password
-    * @return The connection
-    * @exception JMSException Thrown if the operation fails
+    * Read
+    * @return The value
+    * @exception JMSException Thrown if an error occurs
     */
-   public XATopicConnection createXATopicConnection(final String userName, final String password) throws JMSException
+   public int readUnsignedByte() throws JMSException
    {
       if (trace)
       {
-         log.trace("createXATopicConnection(" + userName + ", ****)");
+         log.trace("readUnsignedByte()");
       }
 
-      HornetQSessionFactoryImpl s = new HornetQSessionFactoryImpl(mcf, cm, XA_TOPIC_CONNECTION);
-      s.setUserName(userName);
-      s.setPassword(password);
-
-      if (trace)
-      {
-         log.trace("Created topic connection: " + s);
-      }
-
-      return s;
+      return ((BytesMessage)message).readUnsignedByte();
    }
 
    /**
-    * Create a XA connection
-    * @return The connection
-    * @exception JMSException Thrown if the operation fails
+    * Read
+    * @return The value
+    * @exception JMSException Thrown if an error occurs
     */
-   public XAConnection createXAConnection() throws JMSException
+   public int readUnsignedShort() throws JMSException
    {
       if (trace)
       {
-         log.trace("createXAConnection()");
+         log.trace("readUnsignedShort()");
       }
 
-      HornetQSessionFactoryImpl s = new HornetQSessionFactoryImpl(mcf, cm, XA_CONNECTION);
-
-      if (trace)
-      {
-         log.trace("Created connection: " + s);
-      }
-
-      return s;
+      return ((BytesMessage)message).readUnsignedShort();
    }
 
    /**
-    * Create a XA connection
-    * @param userName The user name
-    * @param password The password
-    * @return The connection
-    * @exception JMSException Thrown if the operation fails
+    * Read
+    * @return The value
+    * @exception JMSException Thrown if an error occurs
     */
-   public XAConnection createXAConnection(final String userName, final String password) throws JMSException
+   public String readUTF() throws JMSException
    {
       if (trace)
       {
-         log.trace("createXAConnection(" + userName + ", ****)");
+         log.trace("readUTF()");
       }
 
-      HornetQSessionFactoryImpl s = new HornetQSessionFactoryImpl(mcf, cm, XA_CONNECTION);
-      s.setUserName(userName);
-      s.setPassword(password);
+      return ((BytesMessage)message).readUTF();
+   }
 
+   /**
+    * Reset
+    * @exception JMSException Thrown if an error occurs
+    */
+   public void reset() throws JMSException
+   {
       if (trace)
       {
-         log.trace("Created connection: " + s);
+         log.trace("reset()");
       }
 
-      return s;
+      ((BytesMessage)message).reset();
+   }
+
+   /**
+    * Write
+    * @param value The value 
+    * @exception JMSException Thrown if an error occurs
+    */
+   public void writeBoolean(final boolean value) throws JMSException
+   {
+      if (trace)
+      {
+         log.trace("writeBoolean(" + value + ")");
+      }
+
+      ((BytesMessage)message).writeBoolean(value);
+   }
+
+   /**
+    * Write
+    * @param value The value 
+    * @exception JMSException Thrown if an error occurs
+    */
+   public void writeByte(final byte value) throws JMSException
+   {
+      if (trace)
+      {
+         log.trace("writeByte(" + value + ")");
+      }
+
+      ((BytesMessage)message).writeByte(value);
+   }
+
+   /**
+    * Write
+    * @param value The value 
+    * @param offset The offset
+    * @param length The length
+    * @exception JMSException Thrown if an error occurs
+    */
+   public void writeBytes(final byte[] value, final int offset, final int length) throws JMSException
+   {
+      if (trace)
+      {
+         log.trace("writeBytes(" + value + ", " + offset + ", " + length + ")");
+      }
+
+      ((BytesMessage)message).writeBytes(value, offset, length);
+   }
+
+   /**
+    * Write
+    * @param value The value 
+    * @exception JMSException Thrown if an error occurs
+    */
+   public void writeBytes(final byte[] value) throws JMSException
+   {
+      if (trace)
+      {
+         log.trace("writeBytes(" + value + ")");
+      }
+
+      ((BytesMessage)message).writeBytes(value);
+   }
+
+   /**
+    * Write
+    * @param value The value 
+    * @exception JMSException Thrown if an error occurs
+    */
+   public void writeChar(final char value) throws JMSException
+   {
+      if (trace)
+      {
+         log.trace("writeChar(" + value + ")");
+      }
+
+      ((BytesMessage)message).writeChar(value);
+   }
+
+   /**
+    * Write
+    * @param value The value 
+    * @exception JMSException Thrown if an error occurs
+    */
+   public void writeDouble(final double value) throws JMSException
+   {
+      if (trace)
+      {
+         log.trace("writeDouble(" + value + ")");
+      }
+
+      ((BytesMessage)message).writeDouble(value);
+   }
+
+   /**
+    * Write
+    * @param value The value 
+    * @exception JMSException Thrown if an error occurs
+    */
+   public void writeFloat(final float value) throws JMSException
+   {
+      if (trace)
+      {
+         log.trace("writeFloat(" + value + ")");
+      }
+
+      ((BytesMessage)message).writeFloat(value);
+   }
+
+   /**
+    * Write
+    * @param value The value 
+    * @exception JMSException Thrown if an error occurs
+    */
+   public void writeInt(final int value) throws JMSException
+   {
+      if (trace)
+      {
+         log.trace("writeInt(" + value + ")");
+      }
+
+      ((BytesMessage)message).writeInt(value);
+   }
+
+   /**
+    * Write
+    * @param value The value 
+    * @exception JMSException Thrown if an error occurs
+    */
+   public void writeLong(final long value) throws JMSException
+   {
+      if (trace)
+      {
+         log.trace("writeLong(" + value + ")");
+      }
+
+      ((BytesMessage)message).writeLong(value);
+   }
+
+   /**
+    * Write
+    * @param value The value 
+    * @exception JMSException Thrown if an error occurs
+    */
+   public void writeObject(final Object value) throws JMSException
+   {
+      if (trace)
+      {
+         log.trace("writeObject(" + value + ")");
+      }
+
+      ((BytesMessage)message).writeObject(value);
+   }
+
+   /**
+    * Write
+    * @param value The value 
+    * @exception JMSException Thrown if an error occurs
+    */
+   public void writeShort(final short value) throws JMSException
+   {
+      if (trace)
+      {
+         log.trace("writeShort(" + value + ")");
+      }
+
+      ((BytesMessage)message).writeShort(value);
+   }
+
+   /**
+    * Write
+    * @param value The value 
+    * @exception JMSException Thrown if an error occurs
+    */
+   public void writeUTF(final String value) throws JMSException
+   {
+      if (trace)
+      {
+         log.trace("writeUTF(" + value + ")");
+      }
+
+      ((BytesMessage)message).writeUTF(value);
    }
 }

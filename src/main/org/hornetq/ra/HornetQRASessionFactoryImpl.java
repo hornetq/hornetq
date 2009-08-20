@@ -231,16 +231,16 @@ import javax.resource.spi.ConnectionManager;
 import org.hornetq.core.logging.Logger;
 
 /**
- * Implements the JMS Connection API and produces {@link HornetQSession} objects.
+ * Implements the JMS Connection API and produces {@link HornetQRASession} objects.
  *
  * @author <a href="mailto:adrian@jboss.com">Adrian Brock</a>
  * @author <a href="mailto:jesper.pedersen@jboss.org">Jesper Pedersen</a>
  * @version $Revision:  $
  */
-public class HornetQSessionFactoryImpl implements HornetQSessionFactory, Referenceable
+public class HornetQRASessionFactoryImpl implements HornetQRASessionFactory, Referenceable
 {
    /** The logger */
-   private static final Logger log = Logger.getLogger(HornetQSessionFactoryImpl.class);
+   private static final Logger log = Logger.getLogger(HornetQRASessionFactoryImpl.class);
 
    /** Trace enabled */
    private static boolean trace = log.isTraceEnabled();
@@ -267,7 +267,7 @@ public class HornetQSessionFactoryImpl implements HornetQSessionFactory, Referen
    private boolean started = false;
 
    /** The managed connection factory */
-   private final HornetQManagedConnectionFactory mcf;
+   private final HornetQRAManagedConnectionFactory mcf;
 
    /** The connection manager */
    private ConnectionManager cm;
@@ -287,13 +287,13 @@ public class HornetQSessionFactoryImpl implements HornetQSessionFactory, Referen
     * @param cm The connection manager
     * @param type The connection type
     */
-   public HornetQSessionFactoryImpl(final HornetQManagedConnectionFactory mcf, final ConnectionManager cm, final int type)
+   public HornetQRASessionFactoryImpl(final HornetQRAManagedConnectionFactory mcf, final ConnectionManager cm, final int type)
    {
       this.mcf = mcf;
 
       if (cm == null)
       {
-         this.cm = new HornetQConnectionManager();
+         this.cm = new HornetQRAConnectionManager();
       }
       else
       {
@@ -417,7 +417,7 @@ public class HornetQSessionFactoryImpl implements HornetQSessionFactory, Referen
 
       checkClosed();
 
-      if (type == HornetQConnectionFactory.TOPIC_CONNECTION || type == HornetQConnectionFactory.XA_TOPIC_CONNECTION)
+      if (type == HornetQRAConnectionFactory.TOPIC_CONNECTION || type == HornetQRAConnectionFactory.XA_TOPIC_CONNECTION)
       {
          throw new IllegalStateException("Can not get a queue session from a topic connection");
       }
@@ -439,8 +439,8 @@ public class HornetQSessionFactoryImpl implements HornetQSessionFactory, Referen
 
       checkClosed();
 
-      if (type == HornetQConnectionFactory.CONNECTION || type == HornetQConnectionFactory.TOPIC_CONNECTION ||
-          type == HornetQConnectionFactory.XA_TOPIC_CONNECTION)
+      if (type == HornetQRAConnectionFactory.CONNECTION || type == HornetQRAConnectionFactory.TOPIC_CONNECTION ||
+          type == HornetQRAConnectionFactory.XA_TOPIC_CONNECTION)
       {
          throw new IllegalStateException("Can not get a topic session from a queue connection");
       }
@@ -493,7 +493,7 @@ public class HornetQSessionFactoryImpl implements HornetQSessionFactory, Referen
 
       checkClosed();
 
-      if (type == HornetQConnectionFactory.QUEUE_CONNECTION || type == HornetQConnectionFactory.XA_QUEUE_CONNECTION)
+      if (type == HornetQRAConnectionFactory.QUEUE_CONNECTION || type == HornetQRAConnectionFactory.XA_QUEUE_CONNECTION)
       {
          throw new IllegalStateException("Can not get a topic session from a queue connection");
       }
@@ -515,8 +515,8 @@ public class HornetQSessionFactoryImpl implements HornetQSessionFactory, Referen
 
       checkClosed();
 
-      if (type == HornetQConnectionFactory.CONNECTION || type == HornetQConnectionFactory.QUEUE_CONNECTION ||
-          type == HornetQConnectionFactory.XA_QUEUE_CONNECTION)
+      if (type == HornetQRAConnectionFactory.CONNECTION || type == HornetQRAConnectionFactory.QUEUE_CONNECTION ||
+          type == HornetQRAConnectionFactory.XA_QUEUE_CONNECTION)
       {
          throw new IllegalStateException("Can not get a topic session from a queue connection");
       }
@@ -730,7 +730,7 @@ public class HornetQSessionFactoryImpl implements HornetQSessionFactory, Referen
          started = true;
          for (Iterator i = sessions.iterator(); i.hasNext();)
          {
-            HornetQSession session = (HornetQSession)i.next();
+            HornetQRASession session = (HornetQRASession)i.next();
             session.start();
          }
       }
@@ -772,7 +772,7 @@ public class HornetQSessionFactoryImpl implements HornetQSessionFactory, Referen
       {
          for (Iterator i = sessions.iterator(); i.hasNext();)
          {
-            HornetQSession session = (HornetQSession)i.next();
+            HornetQRASession session = (HornetQRASession)i.next();
             try
             {
                session.closeSession();
@@ -833,7 +833,7 @@ public class HornetQSessionFactoryImpl implements HornetQSessionFactory, Referen
     * @param session The session
     * @exception JMSException Thrown if an error occurs
     */
-   public void closeSession(final HornetQSession session) throws JMSException
+   public void closeSession(final HornetQRASession session) throws JMSException
    {
       if (trace)
       {
@@ -886,7 +886,7 @@ public class HornetQSessionFactoryImpl implements HornetQSessionFactory, Referen
     * @return The session 
     * @exception JMSException Thrown if an error occurs
     */
-   protected HornetQSession allocateConnection(final int sessionType) throws JMSException
+   protected HornetQRASession allocateConnection(final int sessionType) throws JMSException
    {
       if (trace)
       {
@@ -902,7 +902,7 @@ public class HornetQSessionFactoryImpl implements HornetQSessionFactory, Referen
                throw new IllegalStateException("Only allowed one session per connection. See the J2EE spec, e.g. J2EE1.4 Section 6.6");
             }
 
-            HornetQConnectionRequestInfo info = new HornetQConnectionRequestInfo(sessionType);
+            HornetQRAConnectionRequestInfo info = new HornetQRAConnectionRequestInfo(sessionType);
             info.setUserName(userName);
             info.setPassword(password);
             info.setClientID(clientID);
@@ -913,7 +913,7 @@ public class HornetQSessionFactoryImpl implements HornetQSessionFactory, Referen
                log.trace("Allocating session for " + this + " with request info=" + info);
             }
 
-            HornetQSession session = (HornetQSession)cm.allocateConnection(mcf, info);
+            HornetQRASession session = (HornetQRASession)cm.allocateConnection(mcf, info);
 
             try
             {
@@ -971,7 +971,7 @@ public class HornetQSessionFactoryImpl implements HornetQSessionFactory, Referen
     * @return The session 
     * @exception JMSException Thrown if an error occurs
     */
-   protected HornetQSession allocateConnection(final boolean transacted, int acknowledgeMode, final int sessionType) throws JMSException
+   protected HornetQRASession allocateConnection(final boolean transacted, int acknowledgeMode, final int sessionType) throws JMSException
    {
       if (trace)
       {
@@ -992,7 +992,7 @@ public class HornetQSessionFactoryImpl implements HornetQSessionFactory, Referen
                acknowledgeMode = Session.SESSION_TRANSACTED;
             }
 
-            HornetQConnectionRequestInfo info = new HornetQConnectionRequestInfo(transacted, acknowledgeMode, sessionType);
+            HornetQRAConnectionRequestInfo info = new HornetQRAConnectionRequestInfo(transacted, acknowledgeMode, sessionType);
             info.setUserName(userName);
             info.setPassword(password);
             info.setClientID(clientID);
@@ -1002,7 +1002,7 @@ public class HornetQSessionFactoryImpl implements HornetQSessionFactory, Referen
                log.trace("Allocating session for " + this + " with request info=" + info);
             }
 
-            HornetQSession session = (HornetQSession)cm.allocateConnection(mcf, info);
+            HornetQRASession session = (HornetQRASession)cm.allocateConnection(mcf, info);
 
             try
             {
