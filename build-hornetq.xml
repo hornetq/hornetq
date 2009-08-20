@@ -42,8 +42,8 @@
    <!-- ======================================================================================== -->
 
    <property name="module.name" value="HornetQ"/>
-   <!-- Version properties are read from jboss-messaging-version.properties instead of duplicating them here -->
-   <property file="src/config/common/jboss-messaging-version.properties"/>
+	   <!-- Version properties are read from hornetq-version.properties instead of duplicating them here -->
+   <property file="src/config/common/hornetq-version.properties"/>
    <property name="messaging.version.revision" value="0" />
    <property name="messaging.version.svnurl" value="https://svn.jboss.org/repos/messaging/trunk"/>
    <property name="messaging.version.string"
@@ -250,7 +250,7 @@
 
    <path id="unit.test.execution.classpath">
       <!-- ensure that the core client jar is included for
-           tests security tests which needs to read jboss-messaging-version.properties
+           tests security tests which needs to read hornetq-version.properties
 	       from inside this jar
 	  -->
       <fileset dir="${build.jars.dir}">
@@ -391,8 +391,8 @@
       <javah class="org.hornetq.core.asyncio.impl.AsynchronousFileImpl"
              classpath="${build.core.classes.dir}" destdir="./native/src"/>
 
-      <copy file="${src.config.dir}/common/jboss-messaging-version.properties"
-            tofile="${build.core.classes.dir}/jboss-messaging-version.properties"/>
+      <copy file="${src.config.dir}/common/hornetq-version.properties"
+            tofile="${build.core.classes.dir}/hornetq-version.properties"/>
 
    </target>
 
@@ -670,7 +670,7 @@
    <target name="jar-core-client" depends="compile-core">
       <jar jarfile="${build.jars.dir}/${core.client.jar.name}">
          <fileset dir="${build.core.classes.dir}">
-            <include name="jboss-messaging-version.properties"/>
+            <include name="hornetq-version.properties"/>
             <include name="org/hornetq/core/client/**/*.class"/>
             <include name="org/hornetq/core/filter/**/*.class"/>
             <include name="org/hornetq/core/buffers/**/*.class"/>
@@ -775,7 +775,7 @@
             <include name="logging.properties"/>
             <include name="stand-alone/**"/>
             <include name="jboss-as/**"/>
-            <exclude name="common/jboss-messaging-version.properties" />
+            <exclude name="common/hornetq-version.properties" />
             <exclude name="*examples-ant.properties"/>
             <exclude name="trunk"/>
          </fileset>

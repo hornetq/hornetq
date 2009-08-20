@@ -42,7 +42,7 @@ public class VersionLoader
 
    private static final Logger log = Logger.getLogger(VersionLoader.class);
 
-   public static final String PROP_FILE_NAME = "jboss-messaging-version.properties";
+   public static final String PROP_FILE_NAME = "hornetq-version.properties";
    
    private static Version version;
    
