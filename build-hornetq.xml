@@ -903,7 +903,7 @@
                windowtitle="HornetQ ${module.version}">
 
          <packageset dir="${src.main.dir}" defaultexcludes="yes">
-            <include name="org/jboss/**"/>
+            <include name="org/hornetq/**"/>
          </packageset>
          <classpath refid="javadoc.classpath"/>
          <doctitle><![CDATA[<h2>HornetQ  ${module.version}</h2>]]></doctitle>
