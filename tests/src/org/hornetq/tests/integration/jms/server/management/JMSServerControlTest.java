@@ -477,7 +477,7 @@ public class JMSServerControlTest extends ManagementTestBase
 
       // restart the server with a discovery group configuration
       serverManager.stop();
-      startMessagingServer(8765);
+      startHornetQServer(8765);
 
       for (String cfJNDIBinding : cfJNDIBindings)
       {
@@ -545,7 +545,7 @@ public class JMSServerControlTest extends ManagementTestBase
       conf.setSecurityEnabled(false);
       conf.setJMXManagementEnabled(true);
       conf.getAcceptorConfigurations().add(new TransportConfiguration(InVMAcceptorFactory.class.getName()));
-      server = HornetQ.newMessagingServer(conf, mbeanServer, false);
+      server = HornetQ.newHornetQServer(conf, mbeanServer, false);
 
       context = new InVMContext();
       serverManager = new JMSServerManagerImpl(server);
@@ -601,7 +601,7 @@ public class JMSServerControlTest extends ManagementTestBase
       checkResource(ObjectNames.getConnectionFactoryObjectName(cfName));
    }
 
-   private JMSServerManager startMessagingServer(int discoveryPort) throws Exception
+   private JMSServerManager startHornetQServer(int discoveryPort) throws Exception
    {
       Configuration conf = new ConfigurationImpl();
       conf.setSecurityEnabled(false);
@@ -612,7 +612,7 @@ public class JMSServerControlTest extends ManagementTestBase
                                                "231.7.7.7",
                                                discoveryPort,
                                                ConfigurationImpl.DEFAULT_BROADCAST_REFRESH_TIMEOUT));
-      HornetQServer server = HornetQ.newMessagingServer(conf, mbeanServer, false);
+      HornetQServer server = HornetQ.newHornetQServer(conf, mbeanServer, false);
 
       context = new InVMContext();
       JMSServerManagerImpl serverManager = new JMSServerManagerImpl(server);

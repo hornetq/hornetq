@@ -413,7 +413,7 @@ public class TopicControlTest extends ManagementTestBase
       conf.setJMXManagementEnabled(true);
       conf.getAcceptorConfigurations()
           .add(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory"));
-      server = HornetQ.newMessagingServer(conf, mbeanServer, false);
+      server = HornetQ.newHornetQServer(conf, mbeanServer, false);
       server.start();
 
       serverManager = new JMSServerManagerImpl(server);

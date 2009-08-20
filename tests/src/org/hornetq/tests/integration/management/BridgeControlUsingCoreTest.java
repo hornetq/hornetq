@@ -156,10 +156,10 @@ public class BridgeControlUsingCoreTest extends ManagementTestBase
       conf_0.getQueueConfigurations().add(sourceQueueConfig);
       conf_0.getBridgeConfigurations().add(bridgeConfig);
 
-      server_1 = HornetQ.newMessagingServer(conf_1, MBeanServerFactory.createMBeanServer(), false);
+      server_1 = HornetQ.newHornetQServer(conf_1, MBeanServerFactory.createMBeanServer(), false);
       server_1.start();
 
-      server_0 = HornetQ.newMessagingServer(conf_0, mbeanServer, false);
+      server_0 = HornetQ.newHornetQServer(conf_0, mbeanServer, false);
       server_0.start();
       
       ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration(InVMConnectorFactory.class.getName()));

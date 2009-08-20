@@ -381,7 +381,7 @@ public class PagingFailoverMultiThreadTest extends MultiThreadFailoverSupport
 
          backupConf.setJournalType(JournalType.ASYNCIO);
 
-         backupServer = HornetQ.newMessagingServer(backupConf);
+         backupServer = HornetQ.newHornetQServer(backupConf);
 
          AddressSettings defaultSetting = new AddressSettings();
          defaultSetting.setPageSizeBytes(pageSize);
@@ -392,7 +392,7 @@ public class PagingFailoverMultiThreadTest extends MultiThreadFailoverSupport
       }
       else
       {
-         backupServer = HornetQ.newMessagingServer(backupConf, false);
+         backupServer = HornetQ.newHornetQServer(backupConf, false);
       }
 
       backupServer.start();
@@ -424,7 +424,7 @@ public class PagingFailoverMultiThreadTest extends MultiThreadFailoverSupport
 
          liveConf.setJournalType(JournalType.ASYNCIO);
 
-         liveServer = HornetQ.newMessagingServer(liveConf);
+         liveServer = HornetQ.newHornetQServer(liveConf);
 
          AddressSettings defaultSetting = new AddressSettings();
          defaultSetting.setPageSizeBytes(pageSize);
@@ -435,7 +435,7 @@ public class PagingFailoverMultiThreadTest extends MultiThreadFailoverSupport
       }
       else
       {
-         liveServer = HornetQ.newMessagingServer(liveConf, false);
+         liveServer = HornetQ.newHornetQServer(liveConf, false);
       }
 
       AddressSettings settings = new AddressSettings();

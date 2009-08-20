@@ -100,7 +100,7 @@ public class SynchronousCloseTest extends ServiceTestBase
     */
    public void testSynchronousClose() throws Exception
    {
-      assertEquals(0, server.getMessagingServerControl().listRemoteAddresses().length);
+      assertEquals(0, server.getHornetQServerControl().listRemoteAddresses().length);
 
       ClientSessionFactory sf = createSessionFactory();
 

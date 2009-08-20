@@ -642,7 +642,7 @@ initialContext = new InitialContext(jndiParameters);</programlisting>
 
        &lt;bean name="JMSBridge" class="org.hornetq.jms.bridge.impl.JMSBridgeImpl">
            &lt;!-- HornetQ must be started before the bridge -->
-           &lt;depends>MessagingServer&lt;/depends>
+           &lt;depends>HornetQServer&lt;/depends>
            &lt;constructor>
                &lt;!-- Source ConnectionFactory Factory -->
                &lt;parameter>

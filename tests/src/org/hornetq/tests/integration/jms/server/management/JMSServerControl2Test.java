@@ -69,13 +69,13 @@ public class JMSServerControl2Test extends ManagementTestBase
 
    // Static --------------------------------------------------------
 
-   private void startMessagingServer(String acceptorFactory) throws Exception
+   private void startHornetQServer(String acceptorFactory) throws Exception
    {
       Configuration conf = new ConfigurationImpl();
       conf.setSecurityEnabled(false);
       conf.setJMXManagementEnabled(true);
       conf.getAcceptorConfigurations().add(new TransportConfiguration(acceptorFactory));
-      server = HornetQ.newMessagingServer(conf, mbeanServer, false);
+      server = HornetQ.newHornetQServer(conf, mbeanServer, false);
       server.start();
 
       context = new InVMContext();
@@ -163,7 +163,7 @@ public class JMSServerControl2Test extends ManagementTestBase
    {
       try
       {
-         startMessagingServer(acceptorFactory);
+         startHornetQServer(acceptorFactory);
 
          JMSServerControl control = createManagementControl();
 
@@ -210,7 +210,7 @@ public class JMSServerControl2Test extends ManagementTestBase
    {
       try
       {
-         startMessagingServer(acceptorFactory);
+         startHornetQServer(acceptorFactory);
 
          JMSServerControl control = createManagementControl();
 
@@ -254,7 +254,7 @@ public class JMSServerControl2Test extends ManagementTestBase
    {
       try
       {
-         startMessagingServer(acceptorFactory);
+         startHornetQServer(acceptorFactory);
 
          JMSServerControl control = createManagementControl();
 
@@ -297,7 +297,7 @@ public class JMSServerControl2Test extends ManagementTestBase
    {
       try
       {
-         startMessagingServer(acceptorFactory);
+         startHornetQServer(acceptorFactory);
 
          JMSServerControl control = createManagementControl();
 
@@ -353,7 +353,7 @@ public class JMSServerControl2Test extends ManagementTestBase
 
       try
       {
-         startMessagingServer(acceptorFactory);
+         startHornetQServer(acceptorFactory);
 
          JMSServerControl control = createManagementControl();
 

@@ -251,7 +251,7 @@ public class SessionCloseTest extends UnitTestCase
       Configuration config = new ConfigurationImpl();
       config.getAcceptorConfigurations().add(new TransportConfiguration(InVMAcceptorFactory.class.getCanonicalName()));
       config.setSecurityEnabled(false);
-      server = HornetQ.newMessagingServer(config, false);
+      server = HornetQ.newHornetQServer(config, false);
 
       server.start();
 

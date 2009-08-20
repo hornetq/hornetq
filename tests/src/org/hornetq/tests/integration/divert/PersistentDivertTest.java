@@ -73,7 +73,7 @@ public class PersistentDivertTest extends ServiceTestBase
       
       conf.setDivertConfigurations(divertConfs);
       
-      HornetQServer messagingService = HornetQ.newMessagingServer(conf);
+      HornetQServer messagingService = HornetQ.newHornetQServer(conf);
            
       messagingService.start();
       
@@ -209,7 +209,7 @@ public class PersistentDivertTest extends ServiceTestBase
       
       conf.setDivertConfigurations(divertConfs);
       
-      HornetQServer messagingService = HornetQ.newMessagingServer(conf);
+      HornetQServer messagingService = HornetQ.newHornetQServer(conf);
            
       messagingService.start();
       

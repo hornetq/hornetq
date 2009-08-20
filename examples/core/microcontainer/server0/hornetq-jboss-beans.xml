@@ -18,7 +18,7 @@
    </bean>
 
    <!-- The core server -->
-   <bean name="MessagingServer" class="org.hornetq.core.server.impl.HornetQServerImpl">
+   <bean name="HornetQServer" class="org.hornetq.core.server.impl.HornetQServerImpl">
       <constructor>
          <parameter>
             <inject bean="Configuration"/>

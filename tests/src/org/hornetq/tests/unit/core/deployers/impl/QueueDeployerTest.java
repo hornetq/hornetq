@@ -511,7 +511,7 @@ public class QueueDeployerTest extends UnitTestCase
       }
 
       /* (non-Javadoc)
-       * @see org.hornetq.core.management.MessagingServerControlMBean#getAIOBufferSize()
+       * @see org.hornetq.core.management.HornetQServerControlMBean#getAIOBufferSize()
        */
       public int getAIOBufferSize()
       {
@@ -520,7 +520,7 @@ public class QueueDeployerTest extends UnitTestCase
       }
 
       /* (non-Javadoc)
-       * @see org.hornetq.core.management.MessagingServerControlMBean#getAIOBufferTimeout()
+       * @see org.hornetq.core.management.HornetQServerControlMBean#getAIOBufferTimeout()
        */
       public int getAIOBufferTimeout()
       {
@@ -528,7 +528,7 @@ public class QueueDeployerTest extends UnitTestCase
       }
 
       /* (non-Javadoc)
-       * @see org.hornetq.core.management.MessagingServerControlMBean#getAIOFlushOnSync()
+       * @see org.hornetq.core.management.HornetQServerControlMBean#getAIOFlushOnSync()
        */
       public boolean isAIOFlushOnSync()
       {

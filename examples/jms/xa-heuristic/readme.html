@@ -170,7 +170,7 @@
         <li>We list the prepared transactions</li>
         <pre>
           <code>
-          ObjectName serverObject = ObjectNames.getMessagingServerObjectName();
+          ObjectName serverObject = ObjectNames.getHornetQServerObjectName();
           String[] infos = (String[])mbsc.invoke(serverObject, "listPreparedTransactions", null, null);
          
           System.out.println("Prepared transactions: ");

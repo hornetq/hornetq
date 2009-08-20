@@ -69,7 +69,7 @@ public class SpawnedJMSServer
          conf.setFileDeploymentEnabled(false);
 
          // disable server persistence since JORAM tests do not restart server
-         final HornetQServer server = HornetQ.newMessagingServer(conf, false);
+         final HornetQServer server = HornetQ.newHornetQServer(conf, false);
 
          Hashtable<String, String> env = new Hashtable<String, String>();
          env.put("java.naming.factory.initial", "org.jnp.interfaces.NamingContextFactory");

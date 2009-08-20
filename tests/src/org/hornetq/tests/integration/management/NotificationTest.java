@@ -200,7 +200,7 @@ public class NotificationTest extends UnitTestCase
       conf.setJMXManagementEnabled(false);
       conf.getAcceptorConfigurations()
           .add(new TransportConfiguration(InVMAcceptorFactory.class.getName()));
-      service = HornetQ.newMessagingServer(conf, false);
+      service = HornetQ.newHornetQServer(conf, false);
       service.start();
       
       ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration(InVMConnectorFactory.class.getName()));

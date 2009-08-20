@@ -219,7 +219,7 @@ public class RequestorTest extends UnitTestCase
       Configuration conf = new ConfigurationImpl();
       conf.setSecurityEnabled(false);
       conf.getAcceptorConfigurations().add(new TransportConfiguration(InVMAcceptorFactory.class.getName()));
-      service = HornetQ.newMessagingServer(conf, false);
+      service = HornetQ.newHornetQServer(conf, false);
       service.start();
       
       sf = new ClientSessionFactoryImpl(new TransportConfiguration(InVMConnectorFactory.class.getName()));

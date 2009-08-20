@@ -92,9 +92,9 @@ public class ManagementControlHelper
                                                         mbeanServer);
    }
 
-   public static HornetQServerControl createMessagingServerControl(MBeanServer mbeanServer) throws Exception
+   public static HornetQServerControl createHornetQServerControl(MBeanServer mbeanServer) throws Exception
    {
-      return (HornetQServerControl)createProxy(ObjectNames.getMessagingServerObjectName(),
+      return (HornetQServerControl)createProxy(ObjectNames.getHornetQServerObjectName(),
                                                       HornetQServerControl.class,
                                                       mbeanServer);
    }

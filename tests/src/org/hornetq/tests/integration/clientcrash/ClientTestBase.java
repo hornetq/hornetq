@@ -66,7 +66,7 @@ public abstract class ClientTestBase extends ServiceTestBase
 
    protected void assertActiveConnections(int expectedActiveConnections) throws Exception
    {
-      assertEquals(expectedActiveConnections, server.getMessagingServerControl().getConnectionCount());
+      assertEquals(expectedActiveConnections, server.getHornetQServerControl().getConnectionCount());
    }
 
    protected void assertActiveSession(int expectedActiveSession) throws Exception

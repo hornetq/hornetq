@@ -954,11 +954,11 @@ public class ClusterTestBase extends ServiceTestBase
 
       if (fileStorage)
       {
-         server = HornetQ.newMessagingServer(configuration);
+         server = HornetQ.newHornetQServer(configuration);
       }
       else
       {
-         server = HornetQ.newMessagingServer(configuration, false);
+         server = HornetQ.newHornetQServer(configuration, false);
       }
       servers[node] = server;
    }
@@ -1085,11 +1085,11 @@ public class ClusterTestBase extends ServiceTestBase
 
       if (fileStorage)
       {
-         server = HornetQ.newMessagingServer(configuration);
+         server = HornetQ.newHornetQServer(configuration);
       }
       else
       {
-         server = HornetQ.newMessagingServer(configuration, false);
+         server = HornetQ.newHornetQServer(configuration, false);
       }
       servers[node] = server;
    }

@@ -36,11 +36,11 @@ public class HornetQ
 {
    private static final Logger log = Logger.getLogger(HornetQ.class);
 
-   public static HornetQServer newMessagingServer(final Configuration config, boolean enablePersistence)
+   public static HornetQServer newHornetQServer(final Configuration config, boolean enablePersistence)
    {
       HornetQSecurityManager securityManager = new HornetQSecurityManagerImpl();
 
-      HornetQServer server = newMessagingServer(config,
+      HornetQServer server = newHornetQServer(config,
                                                   ManagementFactory.getPlatformMBeanServer(),
                                                   securityManager,
                                                   enablePersistence);
@@ -48,37 +48,37 @@ public class HornetQ
       return server;
    }
 
-   public static HornetQServer newMessagingServer(final Configuration config)
+   public static HornetQServer newHornetQServer(final Configuration config)
    {
-      return newMessagingServer(config, config.isPersistenceEnabled());
+      return newHornetQServer(config, config.isPersistenceEnabled());
    }
 
-   public static HornetQServer newMessagingServer(final Configuration config,
+   public static HornetQServer newHornetQServer(final Configuration config,
                                                     final MBeanServer mbeanServer,
                                                     final boolean enablePersistence)
    {
       HornetQSecurityManager securityManager = new HornetQSecurityManagerImpl();
 
-      HornetQServer server = newMessagingServer(config, mbeanServer, securityManager, enablePersistence);
+      HornetQServer server = newHornetQServer(config, mbeanServer, securityManager, enablePersistence);
 
       return server;
    }
 
-   public static HornetQServer newMessagingServer(final Configuration config, final MBeanServer mbeanServer)
+   public static HornetQServer newHornetQServer(final Configuration config, final MBeanServer mbeanServer)
    {
-      return newMessagingServer(config, mbeanServer, true);
+      return newHornetQServer(config, mbeanServer, true);
    }
 
-   public static HornetQServer newMessagingServer(final Configuration config,
+   public static HornetQServer newHornetQServer(final Configuration config,
                                                     final MBeanServer mbeanServer,
                                                     final HornetQSecurityManager securityManager)
    {
-      HornetQServer server = newMessagingServer(config, mbeanServer, securityManager, true);
+      HornetQServer server = newHornetQServer(config, mbeanServer, securityManager, true);
 
       return server;
    }
 
-   public static HornetQServer newMessagingServer(final Configuration config,
+   public static HornetQServer newHornetQServer(final Configuration config,
                                                     final MBeanServer mbeanServer,
                                                     final HornetQSecurityManager securityManager,
                                                     final boolean enablePersistence)

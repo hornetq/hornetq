@@ -60,7 +60,7 @@ public class DiscoveryGroupControlTest extends ManagementTestBase
       conf.setClustered(true);
       conf.getDiscoveryGroupConfigurations().put(discoveryGroupConfig.getName(), discoveryGroupConfig);
       conf.getAcceptorConfigurations().add(new TransportConfiguration(InVMAcceptorFactory.class.getName()));
-      service = HornetQ.newMessagingServer(conf, mbeanServer, false);
+      service = HornetQ.newHornetQServer(conf, mbeanServer, false);
       service.start();
 
       DiscoveryGroupControl discoveryGroupControl = createManagementControl(discoveryGroupConfig.getName());
@@ -81,7 +81,7 @@ public class DiscoveryGroupControlTest extends ManagementTestBase
       conf.setClustered(true);
       conf.getDiscoveryGroupConfigurations().put(discoveryGroupConfig.getName(), discoveryGroupConfig);
       conf.getAcceptorConfigurations().add(new TransportConfiguration(InVMAcceptorFactory.class.getName()));
-      service = HornetQ.newMessagingServer(conf, mbeanServer, false);
+      service = HornetQ.newHornetQServer(conf, mbeanServer, false);
       service.start();
 
       DiscoveryGroupControl discoveryGroupControl = createManagementControl(discoveryGroupConfig.getName());

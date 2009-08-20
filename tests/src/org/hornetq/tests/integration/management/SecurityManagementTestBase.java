@@ -57,7 +57,7 @@ public abstract class SecurityManagementTestBase extends UnitTestCase
    {
       super.setUp();
       
-      service = setupAndStartMessagingServer();
+      service = setupAndStartHornetQServer();
    }
 
    @Override
@@ -70,7 +70,7 @@ public abstract class SecurityManagementTestBase extends UnitTestCase
       super.tearDown();
    }
 
-   protected abstract HornetQServer setupAndStartMessagingServer() throws Exception;
+   protected abstract HornetQServer setupAndStartHornetQServer() throws Exception;
    
    protected void doSendManagementMessage(String user, String password, boolean expectSuccess) throws Exception
    {

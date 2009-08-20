@@ -172,14 +172,14 @@ public class SimpleManualFailoverTest extends UnitTestCase
       server1Conf.getAcceptorConfigurations()
                  .add(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory",
                                                  server1Params));
-      server1Service = HornetQ.newMessagingServer(server1Conf, false);
+      server1Service = HornetQ.newHornetQServer(server1Conf, false);
       server1Service.start();
 
       Configuration server0Conf = new ConfigurationImpl();
       server0Conf.setSecurityEnabled(false);
       server0Conf.getAcceptorConfigurations()
                  .add(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory"));
-      server0Service = HornetQ.newMessagingServer(server0Conf, false);
+      server0Service = HornetQ.newHornetQServer(server0Conf, false);
       server0Service.start();
    }
 

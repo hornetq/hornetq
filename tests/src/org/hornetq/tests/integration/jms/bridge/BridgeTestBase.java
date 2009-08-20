@@ -101,7 +101,7 @@ public abstract class BridgeTestBase extends UnitTestCase
       conf0.setSecurityEnabled(false);
       conf0.getAcceptorConfigurations()
            .add(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory"));
-      server0 = HornetQ.newMessagingServer(conf0, false);
+      server0 = HornetQ.newHornetQServer(conf0, false);
 
       context0 = new InVMContext();
       jmsServer0 = new JMSServerManagerImpl(server0);
@@ -116,7 +116,7 @@ public abstract class BridgeTestBase extends UnitTestCase
       conf1.getAcceptorConfigurations()
            .add(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory", params1));
 
-      server1 = HornetQ.newMessagingServer(conf1, false);
+      server1 = HornetQ.newHornetQServer(conf1, false);
 
       context1 = new InVMContext();
       

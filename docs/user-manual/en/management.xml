@@ -64,7 +64,7 @@
                   <para>Core queues can be created or destroyed using the management operations
                         <literal>createQueue()</literal> or <literal>deployQueue()</literal> or
                         <literal>destroyQueue()</literal>)on the <literal
-                        >MessagingServerControl</literal> (with the ObjectName <literal
+                        >HornetQServerControl</literal> (with the ObjectName <literal
                         >org.hornetq:module=Core,type=Server</literal> or the resource name
                         <literal>core.server</literal>)</para>
                   <para><literal>createQueue</literal> will fail if the queue already exists while
@@ -101,7 +101,7 @@
                </listitem>
                <listitem>
                   <para>Retrieving the server configuration and attributes</para>
-                  <para>The <literal>MessagingServerControl</literal> exposes HornetQ
+                  <para>The <literal>HornetQServerControl</literal> exposes HornetQ
                      server configuration through all its attributes (e.g. <literal
                         >getVersion()</literal> method to retrieve the server's version,
                      etc.)</para>

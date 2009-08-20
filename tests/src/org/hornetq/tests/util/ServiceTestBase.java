@@ -143,11 +143,11 @@ public class ServiceTestBase extends UnitTestCase
 
       if (realFiles)
       {
-         server = HornetQ.newMessagingServer(configuration);
+         server = HornetQ.newHornetQServer(configuration);
       }
       else
       {
-         server = HornetQ.newMessagingServer(configuration, false);
+         server = HornetQ.newHornetQServer(configuration, false);
       }
 
       for (Map.Entry<String, AddressSettings> setting : settings.entrySet())
@@ -173,11 +173,11 @@ public class ServiceTestBase extends UnitTestCase
 
       if (realFiles)
       {
-         server = HornetQ.newMessagingServer(configuration, mbeanServer);
+         server = HornetQ.newHornetQServer(configuration, mbeanServer);
       }
       else
       {
-         server = HornetQ.newMessagingServer(configuration, mbeanServer, false);
+         server = HornetQ.newHornetQServer(configuration, mbeanServer, false);
       }
 
       for (Map.Entry<String, AddressSettings> setting : settings.entrySet())
@@ -209,13 +209,13 @@ public class ServiceTestBase extends UnitTestCase
 
       if (realFiles)
       {
-         server = HornetQ.newMessagingServer(configuration,
+         server = HornetQ.newHornetQServer(configuration,
                                                ManagementFactory.getPlatformMBeanServer(),
                                                securityManager);
       }
       else
       {
-         server = HornetQ.newMessagingServer(configuration,
+         server = HornetQ.newHornetQServer(configuration,
                                                ManagementFactory.getPlatformMBeanServer(),
                                                securityManager,
                                                false);

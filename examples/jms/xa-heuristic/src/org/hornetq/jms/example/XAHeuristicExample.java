@@ -147,7 +147,7 @@ public class XAHeuristicExample extends HornetQExample
          MBeanServerConnection mbsc = connector.getMBeanServerConnection();
          
          //Step 27. List the prepared transactions
-         ObjectName serverObject = ObjectNames.getMessagingServerObjectName();
+         ObjectName serverObject = ObjectNames.getHornetQServerObjectName();
          String[] infos = (String[])mbsc.invoke(serverObject, "listPreparedTransactions", null, null);
          
          System.out.println("Prepared transactions: ");

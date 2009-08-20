@@ -181,7 +181,7 @@ public interface Server extends Remote
 
    void configureSecurityForDestination(String destName, boolean isQueue, Set<Role> roles) throws Exception;
 
-   HornetQServer getMessagingServer() throws Exception;
+   HornetQServer getHornetQServer() throws Exception;
 
    InitialContext getInitialContext() throws Exception;
 

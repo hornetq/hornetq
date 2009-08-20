@@ -13,7 +13,7 @@
 
 package org.hornetq.tests.integration.cluster.management;
 
-import static org.hornetq.tests.integration.management.ManagementControlHelper.createMessagingServerControl;
+import static org.hornetq.tests.integration.management.ManagementControlHelper.createHornetQServerControl;
 import static org.hornetq.tests.integration.management.ManagementControlHelper.createQueueControl;
 import static org.hornetq.tests.util.RandomUtil.randomLong;
 import static org.hornetq.tests.util.RandomUtil.randomPositiveLong;
@@ -61,7 +61,7 @@ public class ReplicationAwareHornetQServerControlWrapperTest extends Replication
       SimpleString address = randomSimpleString();
       SimpleString name = randomSimpleString();
 
-      HornetQServerControl liveServerControl = createMessagingServerControl(liveMBeanServer);
+      HornetQServerControl liveServerControl = createHornetQServerControl(liveMBeanServer);
       ObjectName queueON = ObjectNames.getQueueObjectName(address, name);
 
       assertResourceNotExists(liveMBeanServer, queueON);
@@ -78,7 +78,7 @@ public class ReplicationAwareHornetQServerControlWrapperTest extends Replication
       SimpleString address = randomSimpleString();
       SimpleString name = randomSimpleString();
 
-      HornetQServerControl liveServerControl = createMessagingServerControl(liveMBeanServer);
+      HornetQServerControl liveServerControl = createHornetQServerControl(liveMBeanServer);
       ObjectName queueON = ObjectNames.getQueueObjectName(address, name);
 
       assertResourceNotExists(liveMBeanServer, queueON);
@@ -99,8 +99,8 @@ public class ReplicationAwareHornetQServerControlWrapperTest extends Replication
 
    public void testEnableMessageCounters() throws Exception
    {
-      HornetQServerControl liveServerControl = createMessagingServerControl(liveMBeanServer);
-      HornetQServerControl backupServerControl = createMessagingServerControl(backupMBeanServer);
+      HornetQServerControl liveServerControl = createHornetQServerControl(liveMBeanServer);
+      HornetQServerControl backupServerControl = createHornetQServerControl(backupMBeanServer);
 
       assertFalse(liveServerControl.isMessageCounterEnabled());
       assertFalse(backupServerControl.isMessageCounterEnabled());
@@ -113,8 +113,8 @@ public class ReplicationAwareHornetQServerControlWrapperTest extends Replication
 
    public void testDisableMessageCounters() throws Exception
    {
-      HornetQServerControl liveServerControl = createMessagingServerControl(liveMBeanServer);
-      HornetQServerControl backupServerControl = createMessagingServerControl(backupMBeanServer);
+      HornetQServerControl liveServerControl = createHornetQServerControl(liveMBeanServer);
+      HornetQServerControl backupServerControl = createHornetQServerControl(backupMBeanServer);
 
       assertFalse(liveServerControl.isMessageCounterEnabled());
       assertFalse(backupServerControl.isMessageCounterEnabled());
@@ -134,7 +134,7 @@ public class ReplicationAwareHornetQServerControlWrapperTest extends Replication
 
    public void testResetAllMessageCounters() throws Exception
    {
-      HornetQServerControl liveServerControl = createMessagingServerControl(liveMBeanServer);
+      HornetQServerControl liveServerControl = createHornetQServerControl(liveMBeanServer);
       liveServerControl.enableMessageCounters();
       liveServerControl.setMessageCounterSamplePeriod(2000);
 
@@ -173,8 +173,8 @@ public class ReplicationAwareHornetQServerControlWrapperTest extends Replication
    {
       long newPeriod = randomPositiveLong();
 
-      HornetQServerControl liveServerControl = createMessagingServerControl(liveMBeanServer);
-      HornetQServerControl backupServerControl = createMessagingServerControl(backupMBeanServer);
+      HornetQServerControl liveServerControl = createHornetQServerControl(liveMBeanServer);
+      HornetQServerControl backupServerControl = createHornetQServerControl(backupMBeanServer);
 
       assertEquals(liveServerControl.getMessageCounterSamplePeriod(),
                    backupServerControl.getMessageCounterSamplePeriod());
@@ -189,8 +189,8 @@ public class ReplicationAwareHornetQServerControlWrapperTest extends Replication
    {
       int newCount = RandomUtil.randomPositiveInt();
 
-      HornetQServerControl liveServerControl = createMessagingServerControl(liveMBeanServer);
-      HornetQServerControl backupServerControl = createMessagingServerControl(backupMBeanServer);
+      HornetQServerControl liveServerControl = createHornetQServerControl(liveMBeanServer);
+      HornetQServerControl backupServerControl = createHornetQServerControl(backupMBeanServer);
 
       assertEquals(liveServerControl.getMessageCounterMaxDayCount(), backupServerControl.getMessageCounterMaxDayCount());
 

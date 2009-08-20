@@ -141,7 +141,7 @@ public class SecurityNotificationTest extends UnitTestCase
       conf.setJMXManagementEnabled(false);
       conf.getAcceptorConfigurations()
           .add(new TransportConfiguration(InVMAcceptorFactory.class.getName()));
-      server = HornetQ.newMessagingServer(conf, false);
+      server = HornetQ.newHornetQServer(conf, false);
       server.start();
 
       notifQueue = randomSimpleString();

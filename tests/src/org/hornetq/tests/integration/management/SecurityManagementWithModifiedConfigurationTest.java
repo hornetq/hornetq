@@ -66,13 +66,13 @@ public class SecurityManagementWithModifiedConfigurationTest extends SecurityMan
    // Protected -----------------------------------------------------
 
    @Override
-   protected HornetQServer setupAndStartMessagingServer() throws Exception
+   protected HornetQServer setupAndStartHornetQServer() throws Exception
    {
       ConfigurationImpl conf = new ConfigurationImpl();
       conf.setSecurityEnabled(true);
       conf.setManagementClusterPassword(configuredClusterPassword);
       conf.getAcceptorConfigurations().add(new TransportConfiguration(InVMAcceptorFactory.class.getName()));
-      HornetQServer server = HornetQ.newMessagingServer(conf, false);
+      HornetQServer server = HornetQ.newHornetQServer(conf, false);
       server.start();
       
       return server;

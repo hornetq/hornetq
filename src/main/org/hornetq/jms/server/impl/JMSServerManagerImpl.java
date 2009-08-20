@@ -190,7 +190,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
 
    public boolean isStarted()
    {
-      return server.getMessagingServerControl().isStarted();
+      return server.getHornetQServerControl().isStarted();
    }
 
    // JMSServerManager implementation -------------------------------
@@ -206,7 +206,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
    {
       checkInitialised();
 
-      return server.getMessagingServerControl().getVersion();
+      return server.getHornetQServerControl().getVersion();
    }
 
    public synchronized boolean createQueue(final String queueName,
@@ -225,7 +225,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
          coreFilterString = SelectorTranslator.convertToHornetQFilterString(selectorString);
       }
 
-      server.getMessagingServerControl().deployQueue(jBossQueue.getAddress(),
+      server.getHornetQServerControl().deployQueue(jBossQueue.getAddress(),
                                                      jBossQueue.getAddress(),
                                                      coreFilterString,
                                                      durable);
@@ -249,7 +249,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
       // checks when routing messages to a topic that
       // does not exist - otherwise we would not be able to distinguish from a non existent topic and one with no
       // subscriptions - core has no notion of a topic
-      server.getMessagingServerControl().deployQueue(jBossTopic.getAddress(),
+      server.getHornetQServerControl().deployQueue(jBossTopic.getAddress(),
                                                      jBossTopic.getAddress(),
                                                      REJECT_FILTER,
                                                      true);
@@ -290,7 +290,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
 
       destinations.remove(name);
       jmsManagementService.unregisterQueue(name);
-      server.getMessagingServerControl().destroyQueue(HornetQQueue.createAddressFromName(name).toString());
+      server.getHornetQServerControl().destroyQueue(HornetQQueue.createAddressFromName(name).toString());
 
       return true;
    }
@@ -302,7 +302,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
 
       destinations.remove(name);
       jmsManagementService.unregisterTopic(name);
-      server.getMessagingServerControl().destroyQueue(HornetQTopic.createAddressFromName(name).toString());
+      server.getHornetQServerControl().destroyQueue(HornetQTopic.createAddressFromName(name).toString());
 
       return true;
    }
@@ -601,30 +601,30 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
    public String[] listRemoteAddresses() throws Exception
    {
       checkInitialised();
-      return server.getMessagingServerControl().listRemoteAddresses();
+      return server.getHornetQServerControl().listRemoteAddresses();
    }
 
    public String[] listRemoteAddresses(final String ipAddress) throws Exception
    {
       checkInitialised();
-      return server.getMessagingServerControl().listRemoteAddresses(ipAddress);
+      return server.getHornetQServerControl().listRemoteAddresses(ipAddress);
    }
 
    public boolean closeConnectionsForAddress(final String ipAddress) throws Exception
    {
       checkInitialised();
-      return server.getMessagingServerControl().closeConnectionsForAddress(ipAddress);
+      return server.getHornetQServerControl().closeConnectionsForAddress(ipAddress);
    }
 
    public String[] listConnectionIDs() throws Exception
    {
-      return server.getMessagingServerControl().listConnectionIDs();
+      return server.getHornetQServerControl().listConnectionIDs();
    }
 
    public String[] listSessions(final String connectionID) throws Exception
    {
       checkInitialised();
-      return server.getMessagingServerControl().listSessions(connectionID);
+      return server.getHornetQServerControl().listSessions(connectionID);
    }
 
    // Public --------------------------------------------------------

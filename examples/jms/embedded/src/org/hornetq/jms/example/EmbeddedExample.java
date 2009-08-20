@@ -52,7 +52,7 @@ public class EmbeddedExample
          configuration.getAcceptorConfigurations().add(new TransportConfiguration(InVMAcceptorFactory.class.getName()));
          
          // Step 2. Create and start the server
-         HornetQServer server = HornetQ.newMessagingServer(configuration);
+         HornetQServer server = HornetQ.newHornetQServer(configuration);
          server.start();
    
    

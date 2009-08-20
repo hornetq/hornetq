@@ -209,7 +209,7 @@ public class ManagementServiceImpl implements ManagementService
                                                               messagingServer,
                                                               messageCounterManager,
                                                               broadcaster);
-      ObjectName objectName = ObjectNames.getMessagingServerObjectName();
+      ObjectName objectName = ObjectNames.getHornetQServerObjectName();
       registerInJMX(objectName, new ReplicationAwareHornetQServerControlWrapper(messagingServerControl,
                                                                                   replicationInvoker));
       registerInRegistry(ResourceNames.CORE_SERVER, messagingServerControl);
@@ -219,7 +219,7 @@ public class ManagementServiceImpl implements ManagementService
 
    public synchronized void unregisterServer() throws Exception
    {
-      ObjectName objectName = ObjectNames.getMessagingServerObjectName();
+      ObjectName objectName = ObjectNames.getHornetQServerObjectName();
       unregisterFromJMX(objectName);
       unregisterFromRegistry(ResourceNames.CORE_SERVER);
    }

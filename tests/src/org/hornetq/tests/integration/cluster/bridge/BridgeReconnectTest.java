@@ -55,13 +55,13 @@ public class BridgeReconnectTest extends BridgeTestBase
    public void testFailoverAndReconnectImmediately() throws Exception
    {
       Map<String, Object> server0Params = new HashMap<String, Object>();
-      HornetQServer server0 = createMessagingServer(0, server0Params);
+      HornetQServer server0 = createHornetQServer(0, server0Params);
 
       Map<String, Object> server1Params = new HashMap<String, Object>();
-      HornetQServer server1 = createMessagingServer(1, server1Params);
+      HornetQServer server1 = createHornetQServer(1, server1Params);
 
       Map<String, Object> server2Params = new HashMap<String, Object>();
-      HornetQServer service2 = createMessagingServer(2, server2Params, true);
+      HornetQServer service2 = createHornetQServer(2, server2Params, true);
 
       TransportConfiguration server0tc = new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory",
                                                                     server0Params,
@@ -180,13 +180,13 @@ public class BridgeReconnectTest extends BridgeTestBase
    public void testFailoverAndReconnectAfterAFewTries() throws Exception
    {
       Map<String, Object> server0Params = new HashMap<String, Object>();
-      HornetQServer server0 = createMessagingServer(0, server0Params);
+      HornetQServer server0 = createHornetQServer(0, server0Params);
 
       Map<String, Object> server1Params = new HashMap<String, Object>();
-      HornetQServer server1 = createMessagingServer(1, server1Params);
+      HornetQServer server1 = createHornetQServer(1, server1Params);
 
       Map<String, Object> server2Params = new HashMap<String, Object>();
-      HornetQServer service2 = createMessagingServer(2, server2Params, true);
+      HornetQServer service2 = createHornetQServer(2, server2Params, true);
 
       TransportConfiguration server0tc = new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory",
                                                                     server0Params,
@@ -310,10 +310,10 @@ public class BridgeReconnectTest extends BridgeTestBase
    public void testReconnectSameNode() throws Exception
    {
       Map<String, Object> server0Params = new HashMap<String, Object>();
-      HornetQServer server0 = createMessagingServer(0, server0Params);
+      HornetQServer server0 = createHornetQServer(0, server0Params);
 
       Map<String, Object> server1Params = new HashMap<String, Object>();
-      HornetQServer server1 = createMessagingServer(1, server1Params);
+      HornetQServer server1 = createHornetQServer(1, server1Params);
 
       TransportConfiguration server0tc = new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory",
                                                                     server0Params,
@@ -424,10 +424,10 @@ public class BridgeReconnectTest extends BridgeTestBase
    public void testShutdownServerCleanlyAndReconnectSameNode() throws Exception
    {
       Map<String, Object> server0Params = new HashMap<String, Object>();
-      HornetQServer server0 = createMessagingServer(0, server0Params);
+      HornetQServer server0 = createHornetQServer(0, server0Params);
 
       Map<String, Object> server1Params = new HashMap<String, Object>();
-      HornetQServer server1 = createMessagingServer(1, server1Params);
+      HornetQServer server1 = createHornetQServer(1, server1Params);
 
       TransportConfiguration server0tc = new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory",
                                                                     server0Params,
@@ -531,10 +531,10 @@ public class BridgeReconnectTest extends BridgeTestBase
    public void testFailoverThenFailAgainAndReconnect() throws Exception
    {
       Map<String, Object> server0Params = new HashMap<String, Object>();
-      HornetQServer server0 = createMessagingServer(0, server0Params);
+      HornetQServer server0 = createHornetQServer(0, server0Params);
 
       Map<String, Object> server1Params = new HashMap<String, Object>();
-      HornetQServer server1 = createMessagingServer(1, server1Params);
+      HornetQServer server1 = createHornetQServer(1, server1Params);
 
       TransportConfiguration server0tc = new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory",
                                                                     server0Params,

@@ -86,7 +86,7 @@ public class BroadcastGroupControlTest extends ManagementTestBase
       conf.getConnectorConfigurations().put(connectorConfiguration.getName(), connectorConfiguration);
       conf.getBroadcastGroupConfigurations().add(broadcastGroupConfig);
       conf.getAcceptorConfigurations().add(new TransportConfiguration(InVMAcceptorFactory.class.getName()));
-      service = HornetQ.newMessagingServer(conf, mbeanServer, false);
+      service = HornetQ.newHornetQServer(conf, mbeanServer, false);
       service.start();
 
       BroadcastGroupControl broadcastGroupControl = createManagementControl(broadcastGroupConfig.getName());
@@ -128,7 +128,7 @@ public class BroadcastGroupControlTest extends ManagementTestBase
       conf.getConnectorConfigurations().put(connectorConfiguration.getName(), connectorConfiguration);
       conf.getBroadcastGroupConfigurations().add(broadcastGroupConfig);
       conf.getAcceptorConfigurations().add(new TransportConfiguration(InVMAcceptorFactory.class.getName()));
-      service = HornetQ.newMessagingServer(conf, mbeanServer, false);
+      service = HornetQ.newHornetQServer(conf, mbeanServer, false);
       service.start();
 
       BroadcastGroupControl broadcastGroupControl = createManagementControl(broadcastGroupConfig.getName());

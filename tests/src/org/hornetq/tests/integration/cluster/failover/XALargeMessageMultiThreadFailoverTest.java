@@ -85,7 +85,7 @@ public class XALargeMessageMultiThreadFailoverTest extends XAMultiThreadRandomFa
                 .add(new TransportConfiguration(InVMAcceptorFactory.class.getCanonicalName(), backupParams));
       backupConf.setBackup(true);
 
-      backupService = HornetQ.newMessagingServer(backupConf);
+      backupService = HornetQ.newHornetQServer(backupConf);
       backupService.start();
 
       Configuration liveConf = new ConfigurationImpl();
@@ -111,7 +111,7 @@ public class XALargeMessageMultiThreadFailoverTest extends XAMultiThreadRandomFa
       connectors.put(backupTC.getName(), backupTC);
       liveConf.setConnectorConfigurations(connectors);
       liveConf.setBackupConnectorName(backupTC.getName());
-      liveService = HornetQ.newMessagingServer(liveConf);
+      liveService = HornetQ.newHornetQServer(liveConf);
 
       liveService.start();
 

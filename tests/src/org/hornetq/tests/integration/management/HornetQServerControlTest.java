@@ -303,7 +303,7 @@ public class HornetQServerControlTest extends ManagementTestBase
       conf.setJMXManagementEnabled(true);
       conf.getAcceptorConfigurations().add(new TransportConfiguration(InVMAcceptorFactory.class.getName()));
       
-      server = HornetQ.newMessagingServer(conf, mbeanServer, false);
+      server = HornetQ.newHornetQServer(conf, mbeanServer, false);
       conf.getConnectorConfigurations().put(connectorConfig.getName(), connectorConfig);
       server.start();
    }
@@ -325,7 +325,7 @@ public class HornetQServerControlTest extends ManagementTestBase
 
    protected HornetQServerControl createManagementControl() throws Exception
    {
-      return ManagementControlHelper.createMessagingServerControl(mbeanServer);
+      return ManagementControlHelper.createHornetQServerControl(mbeanServer);
    }
 
    // Private -------------------------------------------------------

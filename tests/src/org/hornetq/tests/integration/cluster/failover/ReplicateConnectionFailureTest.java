@@ -139,7 +139,7 @@ public class ReplicateConnectionFailureTest extends UnitTestCase
                 .add(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory",
                                                 backupParams));
       backupConf.setBackup(true);
-      backupServer = HornetQ.newMessagingServer(backupConf, false);
+      backupServer = HornetQ.newHornetQServer(backupConf, false);
       backupServer.start();
 
       Configuration liveConf = new ConfigurationImpl();    
@@ -153,7 +153,7 @@ public class ReplicateConnectionFailureTest extends UnitTestCase
       connectors.put(backupTC.getName(), backupTC);
       liveConf.setConnectorConfigurations(connectors);
       liveConf.setBackupConnectorName(backupTC.getName());
-      liveServer = HornetQ.newMessagingServer(liveConf, false);
+      liveServer = HornetQ.newHornetQServer(liveConf, false);
       liveServer.start();
    }
 

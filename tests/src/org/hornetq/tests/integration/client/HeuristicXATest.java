@@ -73,7 +73,7 @@ public class HeuristicXATest extends ServiceTestBase
       {
          server.start();
 
-         HornetQServerControl jmxServer = ManagementControlHelper.createMessagingServerControl(mbeanServer);
+         HornetQServerControl jmxServer = ManagementControlHelper.createHornetQServerControl(mbeanServer);
 
          assertFalse(jmxServer.commitPreparedTransaction("Nananananana"));
       }
@@ -130,7 +130,7 @@ public class HeuristicXATest extends ServiceTestBase
 
          session.close();
 
-         HornetQServerControl jmxServer = ManagementControlHelper.createMessagingServerControl(mbeanServer);
+         HornetQServerControl jmxServer = ManagementControlHelper.createHornetQServerControl(mbeanServer);
 
          String preparedTransactions[] = jmxServer.listPreparedTransactions();
 

@@ -30,7 +30,7 @@
          
          15:05:54,108 INFO  @main [HornetQBootstrapServer] Starting HornetQ server
          ...
-         15:06:02,566 INFO  @main [MessagingServerImpl] HornetQ Server version 
+         15:06:02,566 INFO  @main [HornetQServerImpl] HornetQ Server version 
          2.0.0.BETA5 (buzz-buzz, 107) started
       </programlisting>
       <para>HornetQ is now running. If any errors are displayed or if the server was not
@@ -54,7 +54,7 @@
         15:18:35,462 INFO  [ServerImpl] Release ID: JBoss [The Oracle] 5.1.0.CR1 (build: 
         SVNTag=JBoss_5_1_0_CR1 date=200904091504)
         ...
-        15:19:30,305 INFO  [MessagingServerImpl] HornetQ Server version 
+        15:19:30,305 INFO  [HornetQServerImpl] HornetQ Server version 
         2.0.0.BETA5 (buzz-buzz, 107) started
         ...
         15:19:43,601 INFO  [ServerImpl] JBoss (Microcontainer) [5.1.0.CR1 (build: 

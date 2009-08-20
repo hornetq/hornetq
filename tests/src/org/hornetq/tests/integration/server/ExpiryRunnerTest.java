@@ -286,7 +286,7 @@ public class ExpiryRunnerTest extends UnitTestCase
       configuration.setMessageExpiryScanPeriod(1000);
       TransportConfiguration transportConfig = new TransportConfiguration(INVM_ACCEPTOR_FACTORY);
       configuration.getAcceptorConfigurations().add(transportConfig);
-      server = HornetQ.newMessagingServer(configuration, false);
+      server = HornetQ.newHornetQServer(configuration, false);
       // start the server
       server.start();
       // then we create a client as normal

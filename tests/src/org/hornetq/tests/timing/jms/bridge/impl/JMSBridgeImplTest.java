@@ -446,7 +446,7 @@ public class JMSBridgeImplTest extends UnitTestCase
       config.setSecurityEnabled(false);
       config.getAcceptorConfigurations().add(new TransportConfiguration(InVMAcceptorFactory.class.getName()));
       InVMContext context = new InVMContext();
-      jmsServer = new JMSServerManagerImpl(HornetQ.newMessagingServer(config, false));
+      jmsServer = new JMSServerManagerImpl(HornetQ.newHornetQServer(config, false));
       jmsServer.setContext(context);
       jmsServer.start();
 

@@ -269,7 +269,7 @@ public class ActivationTimeoutTest extends UnitTestCase
                 .add(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory",
                                                 backupParams));
       backupConf.setBackup(true);
-      backupService = HornetQ.newMessagingServer(backupConf, false);
+      backupService = HornetQ.newHornetQServer(backupConf, false);
       backupService.start();
 
       Configuration liveConf = new ConfigurationImpl();
@@ -283,7 +283,7 @@ public class ActivationTimeoutTest extends UnitTestCase
       connectors.put(backupTC.getName(), backupTC);
       liveConf.setConnectorConfigurations(connectors);
       liveConf.setBackupConnectorName(backupTC.getName());
-      liveService = HornetQ.newMessagingServer(liveConf, false);
+      liveService = HornetQ.newHornetQServer(liveConf, false);
       liveService.start();
    }
    

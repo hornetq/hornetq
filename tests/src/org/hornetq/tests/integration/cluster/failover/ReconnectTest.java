@@ -692,7 +692,7 @@ public class ReconnectTest extends UnitTestCase
       liveConf.setSecurityEnabled(false);
       liveConf.getAcceptorConfigurations()
               .add(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory"));
-      service = HornetQ.newMessagingServer(liveConf, false);
+      service = HornetQ.newHornetQServer(liveConf, false);
       service.start();
    }
 

@@ -55,7 +55,7 @@ public class ManagementServiceImplTest extends UnitTestCase
       Configuration conf = new ConfigurationImpl();
       conf.setJMXManagementEnabled(false);
       
-      HornetQServer server = HornetQ.newMessagingServer(conf, false);
+      HornetQServer server = HornetQ.newHornetQServer(conf, false);
       server.start();
 
       // invoke attribute and operation on the server
@@ -80,7 +80,7 @@ public class ManagementServiceImplTest extends UnitTestCase
       Configuration conf = new ConfigurationImpl();
       conf.setJMXManagementEnabled(false);
       
-      HornetQServer server = HornetQ.newMessagingServer(conf, false);
+      HornetQServer server = HornetQ.newHornetQServer(conf, false);
       server.start();
 
       // invoke attribute and operation on the server
@@ -104,7 +104,7 @@ public class ManagementServiceImplTest extends UnitTestCase
       Configuration conf = new ConfigurationImpl();
       conf.setJMXManagementEnabled(false);
       
-      HornetQServer server = HornetQ.newMessagingServer(conf, false);
+      HornetQServer server = HornetQ.newHornetQServer(conf, false);
       server.start();
 
       // invoke attribute and operation on the server
@@ -128,7 +128,7 @@ public class ManagementServiceImplTest extends UnitTestCase
       Configuration conf = new ConfigurationImpl();
       conf.setJMXManagementEnabled(false);
       
-      HornetQServer server = HornetQ.newMessagingServer(conf, false);
+      HornetQServer server = HornetQ.newHornetQServer(conf, false);
       server.start();
 
       // invoke attribute and operation on the server

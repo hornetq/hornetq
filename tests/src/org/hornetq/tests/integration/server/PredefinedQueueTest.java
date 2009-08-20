@@ -74,7 +74,7 @@ public class PredefinedQueueTest extends ServiceTestBase
       
       conf.setQueueConfigurations(queueConfs);
       
-      HornetQServer server = HornetQ.newMessagingServer(conf, false);
+      HornetQServer server = HornetQ.newHornetQServer(conf, false);
            
       server.start();
       
@@ -144,7 +144,7 @@ public class PredefinedQueueTest extends ServiceTestBase
       
       conf.setQueueConfigurations(queueConfs);
       
-      HornetQServer server = HornetQ.newMessagingServer(conf, false);
+      HornetQServer server = HornetQ.newHornetQServer(conf, false);
            
       server.start();
       
@@ -212,7 +212,7 @@ public class PredefinedQueueTest extends ServiceTestBase
       
       final String queueName3 = "queue3";
                  
-      HornetQServer server = HornetQ.newMessagingServer(conf);
+      HornetQServer server = HornetQ.newHornetQServer(conf);
            
       server.start();
       
@@ -325,7 +325,7 @@ public class PredefinedQueueTest extends ServiceTestBase
       
       conf.setQueueConfigurations(queueConfs);
       
-      HornetQServer server = HornetQ.newMessagingServer(conf);
+      HornetQServer server = HornetQ.newHornetQServer(conf);
            
       server.start();
       
@@ -411,7 +411,7 @@ public class PredefinedQueueTest extends ServiceTestBase
 
       conf.setQueueConfigurations(queueConfs);
       
-      HornetQServer server = HornetQ.newMessagingServer(conf, false);
+      HornetQServer server = HornetQ.newHornetQServer(conf, false);
            
       server.start();
       

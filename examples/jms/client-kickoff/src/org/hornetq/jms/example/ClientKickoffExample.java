@@ -72,8 +72,8 @@ public class ClientKickoffExample extends HornetQExample
          // Step 5. We start the connection
          connection.start();
 
-         // Step 6. Create a MessagingServerControlMBean proxy to manage the server
-         ObjectName on = ObjectNames.getMessagingServerObjectName();
+         // Step 6. Create a HornetQServerControlMBean proxy to manage the server
+         ObjectName on = ObjectNames.getHornetQServerObjectName();
          JMXConnector connector = JMXConnectorFactory.connect(new JMXServiceURL(JMX_URL), new HashMap<String, String>());
          MBeanServerConnection mbsc = connector.getMBeanServerConnection();
          HornetQServerControl serverControl = (HornetQServerControl)MBeanServerInvocationHandler.newProxyInstance(mbsc,

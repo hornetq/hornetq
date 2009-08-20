@@ -103,7 +103,7 @@ public class CoreClientOverSSLTest extends UnitTestCase
 //      Map<String, Object> params = new HashMap<String, Object>();
 //      params.put(TransportConstants.SSL_ENABLED_PROP_NAME, true);
 //      config.getAcceptorInfos().add(new TransportConfiguration("org.hornetq.integration.transports.netty.NettyAcceptorFactory", params));
-//      server = HornetQServerImpl.newNullStorageMessagingServer(config);      
+//      server = HornetQServerImpl.newNullStorageHornetQServer(config);      
 //      server.start();
 //      ConnectorFactory cf = new NettyConnectorFactory();
 //      ClientSessionFactory sf = new ClientSessionFactoryImpl(cf);    

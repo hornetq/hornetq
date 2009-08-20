@@ -105,7 +105,7 @@ public class DivertControlTest extends ManagementTestBase
       conf.getAcceptorConfigurations().add(new TransportConfiguration(InVMAcceptorFactory.class.getName()));
       conf.getConnectorConfigurations().put(connectorConfig.getName(), connectorConfig);
 
-      service = HornetQ.newMessagingServer(conf, mbeanServer, false);
+      service = HornetQ.newHornetQServer(conf, mbeanServer, false);
       service.start();
    }
 

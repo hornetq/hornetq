@@ -63,7 +63,7 @@ public class JMSTestCase extends HornetQServerTestCase
 
    protected String overrideConf;
 
-   protected boolean startMessagingServer = true;
+   protected boolean startHornetQServer = true;
 
    protected void setUp() throws Exception
    {

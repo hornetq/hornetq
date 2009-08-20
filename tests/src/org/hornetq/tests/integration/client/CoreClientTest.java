@@ -66,7 +66,7 @@ public class CoreClientTest extends UnitTestCase
       
       conf.getAcceptorConfigurations().add(new TransportConfiguration(acceptorFactoryClassName));
             
-      HornetQServer server = HornetQ.newMessagingServer(conf, false);   
+      HornetQServer server = HornetQ.newHornetQServer(conf, false);   
            
       server.start();
       

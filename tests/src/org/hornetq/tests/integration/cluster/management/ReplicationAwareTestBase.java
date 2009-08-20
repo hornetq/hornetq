@@ -104,7 +104,7 @@ public abstract class ReplicationAwareTestBase extends UnitTestCase
                                                                             backupParams));
       backupConf.setBackup(true);
       backupConf.setJMXManagementEnabled(true);
-      backupServer = HornetQ.newMessagingServer(backupConf, backupMBeanServer, false);
+      backupServer = HornetQ.newHornetQServer(backupConf, backupMBeanServer, false);
       if (startServers)
       {
          backupServer.start();
@@ -122,7 +122,7 @@ public abstract class ReplicationAwareTestBase extends UnitTestCase
       liveConf.setConnectorConfigurations(connectors);
       liveConf.setBackupConnectorName(backupTC.getName());
       liveConf.setJMXManagementEnabled(true);
-      liveServer = HornetQ.newMessagingServer(liveConf, liveMBeanServer, false);
+      liveServer = HornetQ.newHornetQServer(liveConf, liveMBeanServer, false);
       if (startServers)
       {
          liveServer.start();

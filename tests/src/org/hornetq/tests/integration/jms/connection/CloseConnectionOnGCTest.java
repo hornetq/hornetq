@@ -54,7 +54,7 @@ public class CloseConnectionOnGCTest extends UnitTestCase
       conf.setJMXManagementEnabled(true);
       conf.getAcceptorConfigurations()
           .add(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory"));
-      server = HornetQ.newMessagingServer(conf, false);
+      server = HornetQ.newHornetQServer(conf, false);
       jmsServer = new JMSServerManagerImpl(server);
       jmsServer.setContext(new NullInitialContext());
       jmsServer.start();     

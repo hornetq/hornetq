@@ -59,12 +59,12 @@ public class SecurityManagementWithDefaultConfigurationTest extends SecurityMana
    // Protected -----------------------------------------------------
 
    @Override
-   protected HornetQServer setupAndStartMessagingServer() throws Exception
+   protected HornetQServer setupAndStartHornetQServer() throws Exception
    {
       Configuration conf = new ConfigurationImpl();
       conf.setSecurityEnabled(true);
       conf.getAcceptorConfigurations().add(new TransportConfiguration(InVMAcceptorFactory.class.getName()));
-      HornetQServer server = HornetQ.newMessagingServer(conf, false);
+      HornetQServer server = HornetQ.newHornetQServer(conf, false);
       server.start();
       
       return server;

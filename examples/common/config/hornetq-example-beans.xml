@@ -40,7 +40,7 @@
       </property>
    </bean>
 
-   <bean name="MessagingServer" class="org.hornetq.core.server.impl.HornetQServerImpl">
+   <bean name="HornetQServer" class="org.hornetq.core.server.impl.HornetQServerImpl">
       <depends>AddressSettingsDeployer</depends>
       <depends>QueueDeployer</depends>
       
@@ -83,7 +83,7 @@
    <bean name="JMSServerManager" class="org.hornetq.jms.server.impl.JMSServerManagerImpl">
       <constructor>
          <parameter>
-            <inject bean="MessagingServer" property="serverManagement"/>
+            <inject bean="HornetQServer" property="serverManagement"/>
          </parameter>
          <parameter>
             <inject bean="JMSManagementService"/>
@@ -111,7 +111,7 @@
             <inject bean="DeploymentManager"/>
          </parameter>
          <parameter>
-            <inject bean="MessagingServer" property="addressSettingsRepository" state="Configured"/>
+            <inject bean="HornetQServer" property="addressSettingsRepository" state="Configured"/>
          </parameter>
       </constructor>
    </bean>
@@ -133,7 +133,7 @@
             <inject bean="DeploymentManager"/>
          </parameter>
          <parameter>
-            <inject bean="MessagingServer" property="securityRepository"/>
+            <inject bean="HornetQServer" property="securityRepository"/>
          </parameter>
       </constructor>
    </bean>

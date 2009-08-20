@@ -55,13 +55,13 @@ import org.hornetq.core.server.HornetQServer;
 
 ...
 
-MessagingServer server = Messaging.newMessagingServer(config);
+HornetQServer server = Messaging.newHornetQServer(config);
 
 server.start();</programlisting>
-        <para>You also have the option of instantiating <literal>MessagingServerImpl</literal>
+        <para>You also have the option of instantiating <literal>HornetQServerImpl</literal>
             directly:</para>
-        <programlisting>MessagingServer server = 
-        new MessagingServerImpl(config);
+        <programlisting>HornetQServer server = 
+        new HornetQServerImpl(config);
 server.start();</programlisting>
     </section>
     <section>
@@ -73,7 +73,7 @@ server.start();</programlisting>
             which are part of the HornetQ distribution provide a very complete
             implementation of what's needed to bootstrap the server using JBoss Micro Container. </para>
         <para>When using JBoss Micro Container, you need to provide a XML declaring the <literal
-                >MessagingServer</literal> and <literal>Configuration</literal> object, you can also
+                >HornetQServer</literal> and <literal>Configuration</literal> object, you can also
             inject a security manager and a MBean server if you want, but those are optional.</para>
         <para>A very basic XML Bean declaration for the JBoss Micro Container would be:</para>
         <programlisting>&lt;?xml version="1.0" encoding="UTF-8"?>
@@ -86,7 +86,7 @@ server.start();</programlisting>
    &lt;/bean>
 
    	&lt;!-- The core server -->
-   &lt;bean name="MessagingServer" 
+   &lt;bean name="HornetQServer" 
          class="org.hornetq.core.server.impl.HornetQServerImpl">      
       &lt;constructor>
          &lt;parameter>

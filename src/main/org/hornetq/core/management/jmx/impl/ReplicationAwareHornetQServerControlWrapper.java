@@ -50,7 +50,7 @@ public class ReplicationAwareHornetQServerControlWrapper extends ReplicationAwar
       this.localControl = localControl;
    }
 
-   // MessagingServerControlMBean implementation ------------------------------
+   // HornetQServerControlMBean implementation ------------------------------
 
    public String getBackupConnectorName()
    {

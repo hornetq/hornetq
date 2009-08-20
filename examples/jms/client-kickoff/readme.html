@@ -63,15 +63,15 @@
             <code>connection.start();</code>
        </pre>
 
-        <li>We create a MBean proxy to the MessagingServerControlMBean used to manage HornetQ server
+        <li>We create a MBean proxy to the HornetQServerControlMBean used to manage HornetQ server
             (see <a href="../jmx/readme.html">JMX example</a> for a complete explanation of the different steps)</li>
         <pre>
-            <code>ObjectName on = ObjectNames.getMessagingServerObjectName();
+            <code>ObjectName on = ObjectNames.getHornetQServerObjectName();
             JMXConnector connector = JMXConnectorFactory.connect(new JMXServiceURL(JMX_URL), new HashMap<String, String>());
             MBeanServerConnection mbsc = connector.getMBeanServerConnection();
-            MessagingServerControlMBean serverControl = (MessagingServerControlMBean)MBeanServerInvocationHandler.newProxyInstance(mbsc,
+            HornetQServerControlMBean serverControl = (HornetQServerControlMBean)MBeanServerInvocationHandler.newProxyInstance(mbsc,
                                                                                                 on,
-                                                                                                MessagingServerControlMBean.class,
+                                                                                                HornetQServerControlMBean.class,
                                                                                                 false);
             </code>
         </pre>

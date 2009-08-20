@@ -99,7 +99,7 @@ public class LargeMessageMultiThreadFailoverTest extends MultiThreadRandomFailov
                 .add(new TransportConfiguration(InVMAcceptorFactory.class.getCanonicalName(), backupParams));
       backupConf.setBackup(true);
 
-      backupServer = HornetQ.newMessagingServer(backupConf);
+      backupServer = HornetQ.newHornetQServer(backupConf);
       backupServer.start();
 
       Configuration liveConf = new ConfigurationImpl();
@@ -125,7 +125,7 @@ public class LargeMessageMultiThreadFailoverTest extends MultiThreadRandomFailov
       connectors.put(backupTC.getName(), backupTC);
       liveConf.setConnectorConfigurations(connectors);
       liveConf.setBackupConnectorName(backupTC.getName());
-      liveServer = HornetQ.newMessagingServer(liveConf);
+      liveServer = HornetQ.newHornetQServer(liveConf);
 
       liveServer.start();
 

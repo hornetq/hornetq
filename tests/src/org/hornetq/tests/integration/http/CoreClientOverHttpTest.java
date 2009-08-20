@@ -46,7 +46,7 @@ public class CoreClientOverHttpTest extends UnitTestCase
       params.put("hornetq.remoting.netty.httpenabled", true);
       conf.getAcceptorConfigurations().add(new TransportConfiguration(NETTY_ACCEPTOR_FACTORY, params));
 
-      HornetQServer server = HornetQ.newMessagingServer(conf, false);
+      HornetQServer server = HornetQ.newHornetQServer(conf, false);
       
       server.start();
 
@@ -98,7 +98,7 @@ public class CoreClientOverHttpTest extends UnitTestCase
       params.put("hornetq.remoting.netty.httpenabled", true);
       conf.getAcceptorConfigurations().add(new TransportConfiguration(NETTY_ACCEPTOR_FACTORY, params));
 
-      HornetQServer server = HornetQ.newMessagingServer(conf, false);
+      HornetQServer server = HornetQ.newHornetQServer(conf, false);
       
       server.start();
 

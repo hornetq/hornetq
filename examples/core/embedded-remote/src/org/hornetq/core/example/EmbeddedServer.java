@@ -60,7 +60,7 @@ public class EmbeddedServer
          configuration.setAcceptorConfigurations(setTransp);
          
          // Step 3. Create and start the server
-         HornetQServer server = HornetQ.newMessagingServer(configuration);
+         HornetQServer server = HornetQ.newHornetQServer(configuration);
          server.start();
          System.out.println("STARTED::");
       }

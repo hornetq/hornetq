@@ -650,7 +650,7 @@ public class HornetQServerImpl implements HornetQServer
       }
    }
 
-   public HornetQServerControlImpl getMessagingServerControl()
+   public HornetQServerControlImpl getHornetQServerControl()
    {
       return messagingServerControl;
    }

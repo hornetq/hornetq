@@ -35,12 +35,12 @@ import org.hornetq.tests.util.UnitTestCase;
  */
 public abstract class BridgeTestBase extends UnitTestCase
 {
-   protected HornetQServer createMessagingServerNIO(final int id, final Map<String, Object> params)
+   protected HornetQServer createHornetQServerNIO(final int id, final Map<String, Object> params)
    {
-      return createMessagingServerNIO(id, params, false);
+      return createHornetQServerNIO(id, params, false);
    }
 
-   protected HornetQServer createMessagingServerNIO(final int id,
+   protected HornetQServer createHornetQServerNIO(final int id,
                                                       final Map<String, Object> params,
                                                       final boolean backup)
    {
@@ -54,16 +54,16 @@ public abstract class BridgeTestBase extends UnitTestCase
       serviceConf.getAcceptorConfigurations()
                  .add(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory",
                                                  params));
-      HornetQServer service = HornetQ.newMessagingServer(serviceConf);
+      HornetQServer service = HornetQ.newHornetQServer(serviceConf);
       return service;
    }
 
-   protected HornetQServer createMessagingServer(final int id, final Map<String, Object> params)
+   protected HornetQServer createHornetQServer(final int id, final Map<String, Object> params)
    {
-      return createMessagingServer(id, params, false);
+      return createHornetQServer(id, params, false);
    }
 
-   protected HornetQServer createMessagingServer(final int id, final Map<String, Object> params, final boolean backup)
+   protected HornetQServer createHornetQServer(final int id, final Map<String, Object> params, final boolean backup)
    {
       Configuration serviceConf = new ConfigurationImpl();
       serviceConf.setClustered(true);
@@ -73,12 +73,12 @@ public abstract class BridgeTestBase extends UnitTestCase
       serviceConf.getAcceptorConfigurations()
                  .add(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory",
                                                  params));
-      HornetQServer service = HornetQ.newMessagingServer(serviceConf, false);
+      HornetQServer service = HornetQ.newHornetQServer(serviceConf, false);
       return service;
    }
 
-   protected HornetQServer createMessagingServer(final int id)
+   protected HornetQServer createHornetQServer(final int id)
    {
-      return this.createMessagingServer(id, new HashMap<String, Object>());
+      return this.createHornetQServer(id, new HashMap<String, Object>());
    }
 }

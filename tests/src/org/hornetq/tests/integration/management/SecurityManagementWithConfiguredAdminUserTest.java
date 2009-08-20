@@ -83,12 +83,12 @@ public class SecurityManagementWithConfiguredAdminUserTest extends SecurityManag
 
    // Protected -----------------------------------------------------
 
-   protected HornetQServer setupAndStartMessagingServer() throws Exception
+   protected HornetQServer setupAndStartHornetQServer() throws Exception
    {
       Configuration conf = new ConfigurationImpl();
       conf.setSecurityEnabled(true);
       conf.getAcceptorConfigurations().add(new TransportConfiguration(InVMAcceptorFactory.class.getName()));
-      HornetQServer server = HornetQ.newMessagingServer(conf, false);
+      HornetQServer server = HornetQ.newHornetQServer(conf, false);
       server.start();
       HierarchicalRepository<Set<Role>> securityRepository = server.getSecurityRepository();
       HornetQSecurityManagerImpl securityManager = (HornetQSecurityManagerImpl)server.getSecurityManager();

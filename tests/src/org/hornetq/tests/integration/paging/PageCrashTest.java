@@ -123,7 +123,7 @@ public class PageCrashTest extends ServiceTestBase
       clearData();
       Configuration config = createDefaultConfig();
 
-      HornetQServer server = newMessagingServer(config);
+      HornetQServer server = newHornetQServer(config);
 
       server.start();
 
@@ -208,7 +208,7 @@ public class PageCrashTest extends ServiceTestBase
 
    // Private -------------------------------------------------------
 
-   private HornetQServer newMessagingServer(final Configuration configuration)
+   private HornetQServer newHornetQServer(final Configuration configuration)
    {
       HornetQSecurityManager securityManager = new HornetQSecurityManagerImpl();
 

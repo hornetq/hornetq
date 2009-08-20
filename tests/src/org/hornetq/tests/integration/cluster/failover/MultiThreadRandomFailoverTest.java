@@ -41,7 +41,7 @@ public class MultiThreadRandomFailoverTest extends MultiThreadRandomFailoverTest
                 .add(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory",
                                                 backupParams));
       backupConf.setBackup(true);
-      backupServer = HornetQ.newMessagingServer(backupConf, false);
+      backupServer = HornetQ.newHornetQServer(backupConf, false);
       backupServer.start();
 
       Configuration liveConf = new ConfigurationImpl();
@@ -55,7 +55,7 @@ public class MultiThreadRandomFailoverTest extends MultiThreadRandomFailoverTest
       connectors.put(backupTC.getName(), backupTC);
       liveConf.setConnectorConfigurations(connectors);
       liveConf.setBackupConnectorName(backupTC.getName());
-      liveServer = HornetQ.newMessagingServer(liveConf, false);
+      liveServer = HornetQ.newHornetQServer(liveConf, false);
       liveServer.start();
    }
 

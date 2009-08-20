@@ -161,10 +161,10 @@ public class ClusterConnectionControlTest extends ManagementTestBase
       conf_0.getConnectorConfigurations().put(connectorConfig.getName(), connectorConfig);
       conf_0.getClusterConfigurations().add(clusterConnectionConfig);
 
-      server_1 = HornetQ.newMessagingServer(conf_1, MBeanServerFactory.createMBeanServer(), false);
+      server_1 = HornetQ.newHornetQServer(conf_1, MBeanServerFactory.createMBeanServer(), false);
       server_1.start();
 
-      server_0 = HornetQ.newMessagingServer(conf_0, mbeanServer, false);
+      server_0 = HornetQ.newHornetQServer(conf_0, mbeanServer, false);
       server_0.start();
    }
 

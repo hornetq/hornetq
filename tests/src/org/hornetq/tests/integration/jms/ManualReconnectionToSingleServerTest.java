@@ -190,7 +190,7 @@ public class ManualReconnectionToSingleServerTest extends UnitTestCase
       conf.setSecurityEnabled(false);
       conf.setJMXManagementEnabled(true);
       conf.getAcceptorConfigurations().add(new TransportConfiguration(NettyAcceptorFactory.class.getName()));
-      server = HornetQ.newMessagingServer(conf, false);
+      server = HornetQ.newHornetQServer(conf, false);
       server.start();
 
       serverManager = new JMSServerManagerImpl(server);

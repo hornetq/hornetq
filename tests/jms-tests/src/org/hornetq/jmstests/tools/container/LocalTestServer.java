@@ -190,13 +190,13 @@ public class LocalTestServer implements Server, Runnable
    public synchronized void startServerPeer() throws Exception
    {
       System.setProperty(Constants.SERVER_INDEX_PROPERTY_NAME, "" + getServerID());
-      getMessagingServer().start();
+      getHornetQServer().start();
    }
 
    public synchronized void stopServerPeer() throws Exception
    {
       System.setProperty(Constants.SERVER_INDEX_PROPERTY_NAME, "" + getServerID());
-      getMessagingServer().stop();
+      getHornetQServer().stop();
       // also unbind everything
       unbindAll();
    }
@@ -218,7 +218,7 @@ public class LocalTestServer implements Server, Runnable
     */
    public HornetQServer getServerPeer()
    {
-      return getMessagingServer();
+      return getHornetQServer();
    }
 
    public void destroyQueue(String name, String jndiName) throws Exception
@@ -352,11 +352,11 @@ public class LocalTestServer implements Server, Runnable
       String destination = (isQueue ? "jms.queue." : "jms.topic.") + destName;
       if (roles != null)
       {
-         getMessagingServer().getSecurityRepository().addMatch(destination, roles);
+         getHornetQServer().getSecurityRepository().addMatch(destination, roles);
       }
       else
       {
-         getMessagingServer().getSecurityRepository().removeMatch(destination);
+         getHornetQServer().getSecurityRepository().removeMatch(destination);
       }
    }
 
@@ -368,7 +368,7 @@ public class LocalTestServer implements Server, Runnable
 
    // Private --------------------------------------------------------------------------------------
 
-   public HornetQServer getMessagingServer()
+   public HornetQServer getHornetQServer()
    {
       return (HornetQServer)bootstrap.getKernel().getRegistry().getEntry("HornetQServer").getTarget();
    }
@@ -411,7 +411,7 @@ public class LocalTestServer implements Server, Runnable
 
    public Integer getMessageCountForQueue(String queueName) throws Exception
    {
-      JMSQueueControl queue = (JMSQueueControl)getMessagingServer().getManagementService()
+      JMSQueueControl queue = (JMSQueueControl)getHornetQServer().getManagementService()
                                                                              .getResource(ResourceNames.JMS_QUEUE + queueName);
       if (queue != null)
       {
@@ -430,7 +430,7 @@ public class LocalTestServer implements Server, Runnable
       {
          address = HornetQTopic.createAddressFromName(destination);
       }
-      Binding binding = getMessagingServer().getPostOffice().getBinding(address);
+      Binding binding = getHornetQServer().getPostOffice().getBinding(address);
       if (binding != null && binding.getType() == BindingType.LOCAL_QUEUE)
       {
          ((Queue)binding.getBindable()).deleteAllReferences();
@@ -456,13 +456,13 @@ public class LocalTestServer implements Server, Runnable
 
    public Set<Role> getSecurityConfig() throws Exception
    {
-      return getMessagingServer().getSecurityRepository().getMatch("*");
+      return getHornetQServer().getSecurityRepository().getMatch("*");
    }
 
    public void setSecurityConfig(Set<Role> defConfig) throws Exception
    {
-      getMessagingServer().getSecurityRepository().removeMatch("#");
-      getMessagingServer().getSecurityRepository().addMatch("#", defConfig);
+      getHornetQServer().getSecurityRepository().removeMatch("#");
+      getHornetQServer().getSecurityRepository().addMatch("#", defConfig);
    }
 
    // Inner classes --------------------------------------------------------------------------------

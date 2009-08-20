@@ -207,7 +207,7 @@ public class String64KLimitTest extends UnitTestCase
       Configuration config = new ConfigurationImpl();
       config.setSecurityEnabled(false);
       config.getAcceptorConfigurations().add(new TransportConfiguration(InVMAcceptorFactory.class.getName()));
-      server = HornetQ.newMessagingServer(config, false);
+      server = HornetQ.newHornetQServer(config, false);
       server.start();
 
       sf = new ClientSessionFactoryImpl(new TransportConfiguration(InVMConnectorFactory.class.getName()));      

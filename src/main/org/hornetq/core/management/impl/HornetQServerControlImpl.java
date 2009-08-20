@@ -111,7 +111,7 @@ public class HornetQServerControlImpl implements HornetQServerControl, Notificat
       return configuration;
    }
 
-   // MessagingServerControlMBean implementation --------------------
+   // HornetQServerControlMBean implementation --------------------
 
    public boolean isStarted()
    {

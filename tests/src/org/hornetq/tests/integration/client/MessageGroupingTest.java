@@ -549,7 +549,7 @@ public class MessageGroupingTest extends UnitTestCase
       configuration.setSecurityEnabled(false);
       TransportConfiguration transportConfig = new TransportConfiguration(INVM_ACCEPTOR_FACTORY);
       configuration.getAcceptorConfigurations().add(transportConfig);
-      server = HornetQ.newMessagingServer(configuration, false);
+      server = HornetQ.newHornetQServer(configuration, false);
       // start the server
       server.start();
 

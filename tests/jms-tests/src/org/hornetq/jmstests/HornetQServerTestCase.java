@@ -254,7 +254,7 @@ public class HornetQServerTestCase extends ProxyAssertSupport
 
    protected HornetQServer getJmsServer() throws Exception
    {
-      return servers.get(0).getMessagingServer();
+      return servers.get(0).getHornetQServer();
    }
 
    protected JMSServerManager getJmsServerManager() throws Exception
@@ -413,7 +413,7 @@ public class HornetQServerTestCase extends ProxyAssertSupport
    protected static void assertActiveConnectionsOnTheServer(int expectedSize)
    throws Exception
    {
-      assertEquals(expectedSize, servers.get(0).getMessagingServer().getMessagingServerControl().getConnectionCount());
+      assertEquals(expectedSize, servers.get(0).getHornetQServer().getHornetQServerControl().getConnectionCount());
    }
 
    public static void deployConnectionFactory(String clientId, String objectName,

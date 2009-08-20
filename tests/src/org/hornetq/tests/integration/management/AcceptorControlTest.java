@@ -67,7 +67,7 @@ public class AcceptorControlTest extends ManagementTestBase
       conf.setSecurityEnabled(false);
       conf.setJMXManagementEnabled(true);
       conf.getAcceptorConfigurations().add(acceptorConfig);
-      service = HornetQ.newMessagingServer(conf, mbeanServer, false);
+      service = HornetQ.newHornetQServer(conf, mbeanServer, false);
       service.start();
 
       AcceptorControl acceptorControl = createManagementControl(acceptorConfig.getName());
@@ -85,7 +85,7 @@ public class AcceptorControlTest extends ManagementTestBase
       conf.setSecurityEnabled(false);
       conf.setJMXManagementEnabled(true);
       conf.getAcceptorConfigurations().add(acceptorConfig);
-      service = HornetQ.newMessagingServer(conf, mbeanServer, false);
+      service = HornetQ.newHornetQServer(conf, mbeanServer, false);
       service.start();
 
       AcceptorControl acceptorControl = createManagementControl(acceptorConfig.getName());

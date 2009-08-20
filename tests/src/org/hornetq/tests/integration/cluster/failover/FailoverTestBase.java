@@ -118,11 +118,11 @@ public class FailoverTestBase extends ServiceTestBase
 
          backupConf.setJournalType(JournalType.ASYNCIO);
          
-         backupServer = HornetQ.newMessagingServer(backupConf);
+         backupServer = HornetQ.newHornetQServer(backupConf);
       }
       else
       {
-         backupServer = HornetQ.newMessagingServer(backupConf, false);
+         backupServer = HornetQ.newHornetQServer(backupConf, false);
       }
 
       backupServer.start();
@@ -158,11 +158,11 @@ public class FailoverTestBase extends ServiceTestBase
 
       if (fileBased)
       {
-         liveServer = HornetQ.newMessagingServer(liveConf);
+         liveServer = HornetQ.newHornetQServer(liveConf);
       }
       else
       {
-         liveServer = HornetQ.newMessagingServer(liveConf, false);
+         liveServer = HornetQ.newHornetQServer(liveConf, false);
       }
 
       AddressSettings settings = new AddressSettings();
@@ -201,12 +201,12 @@ public class FailoverTestBase extends ServiceTestBase
 
          backupConf.setJournalType(JournalType.ASYNCIO);
 
-         backupServer = HornetQ.newMessagingServer(backupConf);
+         backupServer = HornetQ.newHornetQServer(backupConf);
          
       }
       else
       {
-         backupServer = HornetQ.newMessagingServer(backupConf, false);
+         backupServer = HornetQ.newHornetQServer(backupConf, false);
       }
       
       backupServer.start();
@@ -252,14 +252,14 @@ public class FailoverTestBase extends ServiceTestBase
          liveConf.setJournalFileSize(100 * 1024);
 
          liveConf.setJournalType(JournalType.ASYNCIO);
-         liveServer = HornetQ.newMessagingServer(liveConf);
+         liveServer = HornetQ.newHornetQServer(liveConf);
       }
       else
       {
-         liveServer = HornetQ.newMessagingServer(liveConf, false);
+         liveServer = HornetQ.newHornetQServer(liveConf, false);
       }
 
-      liveServer = HornetQ.newMessagingServer(liveConf, false);
+      liveServer = HornetQ.newHornetQServer(liveConf, false);
       liveServer.start();
 
    }

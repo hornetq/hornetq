@@ -42,7 +42,7 @@ public class ObjectNames
 
    // Static --------------------------------------------------------
 
-   public static ObjectName getMessagingServerObjectName() throws Exception
+   public static ObjectName getHornetQServerObjectName() throws Exception
    {
       return getInstance(DOMAIN + ":module=Core,type=Server");
    }

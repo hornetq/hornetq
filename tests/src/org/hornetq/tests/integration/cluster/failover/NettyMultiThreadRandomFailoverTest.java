@@ -47,7 +47,7 @@ public class NettyMultiThreadRandomFailoverTest extends MultiThreadRandomFailove
                 .add(new TransportConfiguration("org.hornetq.integration.transports.netty.NettyAcceptorFactory",
                                                 backupParams));
       backupConf.setBackup(true);
-      backupServer = HornetQ.newMessagingServer(backupConf, false);
+      backupServer = HornetQ.newHornetQServer(backupConf, false);
       backupServer.start();
 
       Configuration liveConf = new ConfigurationImpl();
@@ -63,7 +63,7 @@ public class NettyMultiThreadRandomFailoverTest extends MultiThreadRandomFailove
       connectors.put(backupTC.getName(), backupTC);
       liveConf.setConnectorConfigurations(connectors);
       liveConf.setBackupConnectorName(backupTC.getName());
-      liveServer = HornetQ.newMessagingServer(liveConf, false);
+      liveServer = HornetQ.newHornetQServer(liveConf, false);
       liveServer.start();
    }
 
