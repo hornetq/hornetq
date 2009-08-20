@@ -47,9 +47,9 @@ public class SSLSupportTest extends UnitTestCase
    {
       super.setUp();
       
-      keyStorePath = "messaging.keystore";
+      keyStorePath = "hornetq.keystore";
       keyStorePassword = "secureexample";
-      trustStorePath = "messaging.truststore";
+      trustStorePath = "hornetq.truststore";
       trustStorePassword = keyStorePassword;
    }
 
@@ -97,7 +97,7 @@ public class SSLSupportTest extends UnitTestCase
          return;
       }
       
-      SSLSupport.createServerContext("config/messaging.keystore",
+      SSLSupport.createServerContext("config/hornetq.keystore",
             keyStorePassword, trustStorePath, trustStorePassword);
    }
    

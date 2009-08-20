@@ -60,8 +60,7 @@
                 connection settings for a live and (optional) backup server and broadcasts them on
                 the network. It also defines the UDP address and port settings. </para>
             <para>Broadcast groups are defined in the server configuration file <literal
-                    >hornetq-configuration.xml</literal>. There can be many broadcast groups per JBoss
-                Messaging server. All broadcast groups must be defined in a <literal
+                    >hornetq-configuration.xml</literal>. There can be many broadcast groups per HornetQ server. All broadcast groups must be defined in a <literal
                     >broadcast-groups</literal> element.</para>
             <para>Let's take a look at an example broadcast group from <literal
                     >hornetq-configuration.xml</literal>:</para>

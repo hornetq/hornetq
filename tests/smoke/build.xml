@@ -44,13 +44,13 @@
    <property file="./smoke.properties"/>
    <property name="sleep.interval" value="60"/>
    <property name="jnpPort" value="1099"/>
-   <property name="messaging.server.artifact.name" value="jboss-messaging.sar"/>
-   <property name="messaging.server.artifact.path" value="../../output/lib"/>
+   <property name="hornetq.server.artifact.name" value="hornetq.sar"/>
+   <property name="hornetq.server.artifact.path" value="../../output/lib"/>
    <property name="relative.client.jar.location" value="../../util"/>
-   <property name="messaging.client.jar.name" value="jboss-messaging-client.jar"/>
+   <property name="hornetq.client.jar.name" value="hornetq-client.jar"/>
    <property name="release.admin.target" value="default"/>
    <property name="jboss.configuration" value="messaging"/>
-   <property name="messaging.client.jar.path" value="${basedir}/../../output/lib"/>
+   <property name="hornetq.client.jar.path" value="${basedir}/../../output/lib"/>
    <property name="smoke.test.type" value="installation"/>
    <property name="clustered" value="false"/>
 
@@ -523,31 +523,31 @@
    <target name="old-server-compatibility-test" depends="check-jboss-availability">
 
       <echo message="Checking current client's compatibility with a ${jboss.hornetq.version} server"/>
-      <unzip src="${jboss.compatibility.home}/../jboss-messaging-${jboss.hornetq.version}.zip" dest="./output">
+      <unzip src="${jboss.compatibility.home}/../hornetq-${jboss.hornetq.version}.zip" dest="./output">
          <patternset>
-            <include name="jboss-messaging-${jboss.hornetq.version}/jboss-messaging.sar"/>
+            <include name="hornetq-${jboss.hornetq.version}/jboss-hornetq.sar"/>
          </patternset>
       </unzip>
 
       <antcall target="run-all-examples">
          <param name="jboss.configuration" value="messaging-${jboss.hornetq.version}"/>
       </antcall>
-      <delete dir="./output/jboss-messaging-${jboss.hornetq.version}"/>
+      <delete dir="./output/hornetq-${jboss.hornetq.version}"/>
 
    </target>
 
    <target name="old-client-compatibility-test" depends="check-jboss-availability">
 
       <echo message="Checking current server's compatibility with a ${jboss.hornetq.version} client"/>
-      <unzip src="${jboss.compatibility.home}/../jboss-messaging-${jboss.hornetq.version}.zip" dest="./output">
+      <unzip src="${jboss.compatibility.home}/../hornetq-${jboss.hornetq.version}.zip" dest="./output">
          <patternset>
-            <include name="jboss-messaging-${jboss.hornetq.version}/jboss-messaging-client.jar"/>
+            <include name="hornetq-${jboss.hornetq.version}/hornetq-client.jar"/>
          </patternset>
       </unzip>
       <antcall target="run-all-examples">
-         <param name="messaging.client.jar.path" value="${basedir}/output/jboss-messaging-${jboss.hornetq.version}"/>
+         <param name="hornetq.client.jar.path" value="${basedir}/output/hornetq-${jboss.hornetq.version}"/>
       </antcall>
-      <delete dir="./output/jboss-messaging-${jboss.hornetq.version}"/>
+      <delete dir="./output/hornetq-${jboss.hornetq.version}"/>
 
    </target>
 
@@ -560,7 +560,7 @@
       <antcall target="fail-on-serialization-debug-output"/>
 
       <!-- record successful run -->
-      <echo message="TEST_TYPE=${smoke.test.type} JBOSS_HOME=${jboss.home} JBOSS_CONFIGURATION=${jboss.configuration} CLIENT_VERSION=${jboss.hornetq.version} INSTALLATION_TYPE=${release.admin.target} SERVER_ARTIFACT_NAME=${messaging.server.artifact.name} EXAMPLE_NAME=${example.name}  CLUSTERED=${clustered}${line.separator}"
+      <echo message="TEST_TYPE=${smoke.test.type} JBOSS_HOME=${jboss.home} JBOSS_CONFIGURATION=${jboss.configuration} CLIENT_VERSION=${jboss.hornetq.version} INSTALLATION_TYPE=${release.admin.target} SERVER_ARTIFACT_NAME=${hornetq.server.artifact.name} EXAMPLE_NAME=${example.name}  CLUSTERED=${clustered}${line.separator}"
             file="./output/smoke.log" append="yes"/>
 
    </target>
@@ -587,7 +587,7 @@
       </antcall>
 
       <!-- record successful run -->
-      <echo message="TEST_TYPE=${smoke.test.type} JBOSS_HOME=${jboss.home} JBOSS_CONFIGURATION=${jboss.configuration}-node0 CLIENT_VERSION=${jboss.hornetq.version} INSTALLATION_TYPE=${release.admin.target} SERVER_ARTIFACT_NAME=${messaging.server.artifact.name} EXAMPLE_NAME=${example.name} CLUSTERED=true${line.separator}"
+      <echo message="TEST_TYPE=${smoke.test.type} JBOSS_HOME=${jboss.home} JBOSS_CONFIGURATION=${jboss.configuration}-node0 CLIENT_VERSION=${jboss.hornetq.version} INSTALLATION_TYPE=${release.admin.target} SERVER_ARTIFACT_NAME=${hornetq.server.artifact.name} EXAMPLE_NAME=${example.name} CLUSTERED=true${line.separator}"
             file="./output/smoke.log" append="yes"/>
 
    </target>

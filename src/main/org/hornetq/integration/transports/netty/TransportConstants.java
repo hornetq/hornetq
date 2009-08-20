@@ -72,11 +72,11 @@ public class TransportConstants
 
    public static final int DEFAULT_PORT = 5445;
 
-   public static final String DEFAULT_KEYSTORE_PATH = "messaging.keystore";
+   public static final String DEFAULT_KEYSTORE_PATH = "hornetq.keystore";
 
    public static final String DEFAULT_KEYSTORE_PASSWORD = "secureexample";
 
-   public static final String DEFAULT_TRUSTSTORE_PATH = "messaging.truststore";
+   public static final String DEFAULT_TRUSTSTORE_PATH = "hornetq.truststore";
 
    public static final String DEFAULT_TRUSTSTORE_PASSWORD = "secureexample";
 

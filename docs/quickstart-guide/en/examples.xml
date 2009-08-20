@@ -146,9 +146,9 @@ deploy:
 
 deploy-resources:
      [copy] Copying 1 file to /home/andy/projects/jbossas5.1/build/output/jboss-5.1.0.GA
-     /server/default-with-hornetq/deploy/messaging.sar
+     /server/default-with-hornetq/deploy/hornetq.sar
      [copy] Copying 1 file to /home/andy/projects/jbossas5.1/build/output/jboss-5.1.0.GA
-     /server/default-with-hornetq/deploy/messaging.sar
+     /server/default-with-hornetq/deploy/hornetq.sar
 
 init:
 
@@ -220,9 +220,9 @@ undeploy-misc:
    [delete] Deleting: /home/andy/projects/jbossas5.1/build/output/jboss-5.1.0.GA
    /server/default-with-hornetq/deploy/mdb-example.ear
    [delete] Deleting: /home/andy/projects/jbossas5.1/build/output/jboss-5.1.0.GA
-   /server/default-with-hornetq/deploy/messaging.sar/hornetq-queues.xml
+   /server/default-with-hornetq/deploy/hornetq.sar/hornetq-queues.xml
    [delete] Deleting: /home/andy/projects/jbossas5.1/build/output/jboss-5.1.0.GA
-   /server/default-with-hornetq/deploy/messaging.sar/hornetq-jms.xml
+   /server/default-with-hornetq/deploy/hornetq.sar/hornetq-jms.xml
 
 BUILD SUCCESSFUL
 Total time: 1 second

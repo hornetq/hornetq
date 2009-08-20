@@ -42,7 +42,7 @@ import org.hornetq.utils.UUID;
 /**
  * This interface defines the internal interface of the HornetQ Server exposed to other components of the server. The
  * external management interface of the HornetQ Server is defined by the HornetQServerManagement interface This
- * interface is never exposed outside the messaging server, e.g. by JMX or other means
+ * interface is never exposed outside the HornetQ server, e.g. by JMX or other means
  * 
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>

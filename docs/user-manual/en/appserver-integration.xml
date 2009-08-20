@@ -541,7 +541,7 @@ public class MDBMessageSendTxExample implements MessageListener
                 factories that are used by Java EE components. These Connection Factories can be
                 defined inside a configuration file that matches the name <literal
                     >*-ds.xml</literal>. You'll find a default <literal>jms-ds.xml</literal>
-                configuration under the <literal>messaging.sar</literal> directory in the Jboss AS
+                configuration under the <literal>hornetq.sar</literal> directory in the Jboss AS
                 deployment. The connection factories defined in the config file inherit their
                 properties from the main <literal>ra.xml</literal> configuration but can also be
                 overridden, the following example show how to define one.</para>

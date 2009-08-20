@@ -297,8 +297,7 @@ etc
             <title>Configuring Netty Servlet</title>
             <para>We also provide a Netty servlet transport for use with HornetQ. The
                 servlet transport allows HornetQ traffic to be tunneled over HTTP to a
-                servlet running in a servlet engine which then redirects it to an in-VM JBoss
-                Messaging server.</para>
+                servlet running in a servlet engine which then redirects it to an in-VM HornetQ server.</para>
             <para>The servlet transport differs from the Netty HTTP transport in that, with the HTTP
                 transport HornetQ effectively acts a web server listening for HTTP traffic
                 on, e.g. port 80 or 8080, whereas with the servlet transport JBM traffic is proxied

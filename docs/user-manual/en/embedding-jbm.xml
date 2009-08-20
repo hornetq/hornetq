@@ -17,8 +17,7 @@
     <section>
         <title>POJO instantiation</title>
         <para>You can follow this step-by-step guide:</para>
-        <para>Create the configuration object - this contains configuration information for a JBoss
-            Messaging server. If you want to configure it from a file on the classpath, use <literal
+        <para>Create the configuration object - this contains configuration information for a HornetQ server. If you want to configure it from a file on the classpath, use <literal
                 >FileConfigurationImpl</literal></para>
         <programlisting>import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.impl.FileConfiguration;

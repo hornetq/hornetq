@@ -63,8 +63,7 @@
             change the messages body or properties before it is diverted. In this example the
             transformer simply adds a header that records the time the divert happened.</para>
         <para>This example is actually diverting messages to a local store and forward queue, which
-            is configured with a bridge which forwards the message to an address on another JBoss
-            Messaging server. Please see the example for more details.</para>
+            is configured with a bridge which forwards the message to an address on another HornetQ server. Please see the example for more details.</para>
     </section>
     <section>
         <title>Non-exclusive Divert</title>

@@ -23,17 +23,17 @@ Copyright 2009 Red Hat, Inc.
        <!-- created from JBoss AS 5 default profile -->
        <param name="jbossas.profile.source" value="default"/>
        <!-- based on HornetQ jbossas/non-clustered config -->
-       <param name="messaging.config.dir" value="./non-clustered"/>
+       <param name="hornetq.config.dir" value="./non-clustered"/>
        <!-- new profile is named default-with-hornetq -->
-       <param name="messaging.profile.target" value="default-with-hornetq"/>
+       <param name="hornetq.profile.target" value="default-with-hornetq"/>
     </antcall>
     <antcall target="create-profile">
        <!-- created from JBoss AS 5 all profile -->
        <param name="jbossas.profile.source" value="all"/>
        <!-- based on HornetQ jbossas/clustered config -->
-       <param name="messaging.config.dir" value="clustered"/>
+       <param name="hornetq.config.dir" value="clustered"/>
        <!-- new profile is named all-with-hornetq -->
-       <param name="messaging.profile.target" value="all-with-hornetq"/>
+       <param name="hornetq.profile.target" value="all-with-hornetq"/>
     </antcall>
    <mkdir dir="${dest.bin.dir}/META-INF/lib/linux2/x86"/>
    <mkdir dir="${dest.bin.dir}/META-INF/lib/linux2/x64"/>
@@ -46,7 +46,7 @@ Copyright 2009 Red Hat, Inc.
    <target name="create-profile">
       <antcall target="validate-jboss"/>
       <property name="src.dir" value="${jboss.home}/server/${jbossas.profile.source}"/>
-      <property name="dest.dir" value="${jboss.home}/server/${messaging.profile.target}"/>
+      <property name="dest.dir" value="${jboss.home}/server/${hornetq.profile.target}"/>
       
       <mkdir dir="${dest.dir}"/>
       <copy todir="${dest.dir}">
@@ -57,12 +57,12 @@ Copyright 2009 Red Hat, Inc.
          </fileset>
       </copy>
       <copy todir="${dest.dir}/conf">
-         <fileset dir="${messaging.config.dir}">
+         <fileset dir="${hornetq.config.dir}">
             <include name="login-config.xml"/>
          </fileset>
       </copy>
       <copy todir="${dest.dir}/conf/props">
-         <fileset dir="${messaging.config.dir}">
+         <fileset dir="${hornetq.config.dir}">
             <include name="hornetq-users.properties"/>
             <include name="hornetq-roles.properties"/>
          </fileset>
@@ -73,10 +73,10 @@ Copyright 2009 Red Hat, Inc.
             <include name="netty*.jar"/>
          </fileset>
       </copy>
-      <property name="messaging.sar.dir" value="${dest.dir}/deploy/messaging.sar"/>
-      <mkdir dir="${messaging.sar.dir}"/>
-      <copy todir="${messaging.sar.dir}">
-        <fileset dir="${messaging.config.dir}" includes="*"/>
+      <property name="hornetq.sar.dir" value="${dest.dir}/deploy/hornetq.sar"/>
+      <mkdir dir="${hornetq.sar.dir}"/>
+      <copy todir="${hornetq.sar.dir}">
+        <fileset dir="${hornetq.config.dir}" includes="*"/>
       </copy>
    	  <unzip src="${lib.dir}/hornetq-ra.rar" dest="${dest.dir}/deploy/jms-ra.rar"/>
    </target>
@@ -87,9 +87,9 @@ Copyright 2009 Red Hat, Inc.
       <fail unless="ENV.JBOSS_HOME" message="JBOSS_HOME environment variable not set! Set it and try again."/>
       <available property="source-profile" type="dir" file="${jboss.home}/server/${jbossas.profile.source}"/>
       <fail unless="source-profile" message="${jboss.home}/server/${jbossas.profile.source} profile not found!"/>
-      <available property="target-profile" type="dir" file="${jboss.home}/server/${messaging.profile.target}"/>
+      <available property="target-profile" type="dir" file="${jboss.home}/server/${hornetq.profile.target}"/>
       <fail if="target-profile"
-            message="'${messaging.profile.target}' profile already exists! Delete it manually and try again."/>
+            message="'${hornetq.profile.target}' profile already exists! Delete it manually and try again."/>
    </target>
 
 </project>

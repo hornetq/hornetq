@@ -111,7 +111,7 @@ import org.hornetq.utils.UUIDGenerator;
 import org.hornetq.utils.VersionLoader;
 
 /**
- * The messaging server implementation
+ * The HornetQ server implementation
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:ataylor@redhat.com>Andy Taylor</a>

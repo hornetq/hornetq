@@ -112,7 +112,7 @@
 
    <target name="deploy" depends="validate-jboss, copy-profile, copy-resources, ear">
       <property name="example-profile" value="${jboss.home}/server/${example.name}-example-profile"/>
-      <copy todir="${example-profile}/deploy/messaging.sar">
+      <copy todir="${example-profile}/deploy/hornetq.sar">
          <fileset dir="${example.server.dir}"/>
       </copy>
       <copy todir="${example-profile}/deploy/">

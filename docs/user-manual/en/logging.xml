@@ -13,7 +13,7 @@
             >logging.properties</literal> file can be found under the <literal>config</literal>
         directory of the JBM installation. </para>
     <para>By default the standalone server is configured to use the standard console handler and a
-        file handler that logs to <literal>bin/logs/messaging.log</literal>.</para>
+        file handler that logs to <literal>bin/logs/hornetq.log</literal>.</para>
     <para>Because some of the third party components used to bootstrap HornetQ, i.e. the
         Microcontainer, use the JBoss Logging framework we have supplied a plugin class that
         redirects this to the JUL logger. This is set via a system property, <literal
