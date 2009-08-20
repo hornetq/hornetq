@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<chapter id="embedding-jbm">
+<chapter id="embedding-hornetq">
     <title>Embedding HornetQ</title>
     <para>HornetQ is designed as set of simple Plain Old Java Objects (POJOs). This means
         HornetQ can be instantiated and run in any dependency injection framework such as

@@ -50,57 +50,8 @@
         ]>
 <book lang="en">
    <bookinfo>
-      <title>HornetQ 2.0 User Manual</title>
-      <subtitle>Setting the Standard for High Performance Messaging</subtitle>
+      <graphic fileref="images/hornetQ-banner_final.png" align="center"/>
+      <title>HornetQ 2.0 User Manual </title>      
    </bookinfo>
-
-   <toc></toc>
-
-   &preface;
-   &messaging-concepts;        
-   &architecture;
-   &using-server;
-   &using-jms;
-   &using-core;
-   &jms-core-mapping;
-   &client-classpath;  
-   &examples;
-   &wildcard-routing;
-   &wildcard-syntax;
-   &filter-expressions;   
-   &persistence;        
-   &configuring-transports;
-   &connection-ttl;
-   &transaction-config;
-   &flow-control;
-   &command-buffering;
-   &send-guarantees;
-   &undelivered-messages;
-   &message-expiry;     
-   &large-messages;
-   &paging;
-   &queue-attributes;              
-   &scheduled-messages;
-   &last-value-queues;
-   &message-grouping;
-   &pre-acknowledge;   
-   &management;
-   &security;   
-   &appserver-integration;   
-   &client-reconnection;
-   &diverts;
-   &core-bridges;
-   &duplicate-detection;
-   &clusters;
-   &ha;   
-   &libaio;
-   &thread-pooling;
-   &logging;
-   &embedding-hornetq;
-   &intercepting-operations;
-   &interoperability;
-   &perf-tuning;
-   &configuration-index;
-   &project-info;
-   
+   <toc/>&preface;&messaging-concepts;&architecture;&using-server;&using-jms;&using-core;&jms-core-mapping;&client-classpath;&examples;&wildcard-routing;&wildcard-syntax;&filter-expressions;&persistence;&configuring-transports;&connection-ttl;&transaction-config;&flow-control;&command-buffering;&send-guarantees;&undelivered-messages;&message-expiry;&large-messages;&paging;&queue-attributes;&scheduled-messages;&last-value-queues;&message-grouping;&pre-acknowledge;&management;&security;&appserver-integration;&client-reconnection;&diverts;&core-bridges;&duplicate-detection;&clusters;&ha;&libaio;&thread-pooling;&logging;&embedding-hornetq;&intercepting-operations;&interoperability;&perf-tuning;&configuration-index;&project-info;
 </book>
