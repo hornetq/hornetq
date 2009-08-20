@@ -20,13 +20,13 @@ import org.hornetq.core.client.ClientSessionFactory;
 import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.TransportConfiguration;
-import org.hornetq.core.exception.MessagingException;
+import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.remoting.Interceptor;
 import org.hornetq.core.remoting.Packet;
 import org.hornetq.core.remoting.RemotingConnection;
 import org.hornetq.core.remoting.impl.wireformat.PacketImpl;
-import org.hornetq.core.server.MessagingServer;
+import org.hornetq.core.server.HornetQServer;
 import org.hornetq.tests.integration.remoting.PingTest;
 import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.tests.util.ServiceTestBase;
@@ -46,7 +46,7 @@ public class PingStressTest extends ServiceTestBase
 
    // Attributes ----------------------------------------------------
 
-   private MessagingServer server;
+   private HornetQServer server;
 
    // Static --------------------------------------------------------
 
@@ -103,7 +103,7 @@ public class PingStressTest extends ServiceTestBase
 
       Interceptor noPongInterceptor = new Interceptor()
       {
-         public boolean intercept(final Packet packet, final RemotingConnection conn) throws MessagingException
+         public boolean intercept(final Packet packet, final RemotingConnection conn) throws HornetQException
          {
             log.info("In interceptor, packet is " + packet.getType());
             if (packet.getType() == PacketImpl.PING)

@@ -22,11 +22,11 @@ import org.hornetq.core.client.impl.ClientSessionFactoryInternal;
 import org.hornetq.core.client.impl.ConnectionManagerImpl;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.TransportConfiguration;
-import org.hornetq.core.exception.MessagingException;
+import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.remoting.FailureListener;
 import org.hornetq.core.remoting.RemotingConnection;
-import org.hornetq.core.server.MessagingServer;
+import org.hornetq.core.server.HornetQServer;
 import org.hornetq.tests.util.ServiceTestBase;
 
 /**
@@ -46,7 +46,7 @@ public class PingTest extends ServiceTestBase
 
    // Attributes ----------------------------------------------------
 
-   private MessagingServer server;
+   private HornetQServer server;
 
    // Static --------------------------------------------------------
 
@@ -73,14 +73,14 @@ public class PingTest extends ServiceTestBase
 
    class Listener implements FailureListener
    {
-      volatile MessagingException me;
+      volatile HornetQException me;
 
-      public void connectionFailed(MessagingException me)
+      public void connectionFailed(HornetQException me)
       {
          this.me = me;
       }
 
-      public MessagingException getException()
+      public HornetQException getException()
       {
          return me;
       }

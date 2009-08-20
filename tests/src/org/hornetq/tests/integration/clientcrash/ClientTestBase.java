@@ -14,7 +14,7 @@
 package org.hornetq.tests.integration.clientcrash;
 
 import org.hornetq.core.config.Configuration;
-import org.hornetq.core.server.MessagingServer;
+import org.hornetq.core.server.HornetQServer;
 import org.hornetq.tests.util.ServiceTestBase;
 
 /**
@@ -31,7 +31,7 @@ public abstract class ClientTestBase extends ServiceTestBase
 
    // Attributes ----------------------------------------------------
 
-   private MessagingServer server;
+   private HornetQServer server;
 
    // Static --------------------------------------------------------
 

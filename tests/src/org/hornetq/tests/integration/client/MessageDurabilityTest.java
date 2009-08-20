@@ -19,8 +19,8 @@ import org.hornetq.core.client.ClientConsumer;
 import org.hornetq.core.client.ClientProducer;
 import org.hornetq.core.client.ClientSession;
 import org.hornetq.core.client.ClientSessionFactory;
-import org.hornetq.core.exception.MessagingException;
-import org.hornetq.core.server.MessagingServer;
+import org.hornetq.core.exception.HornetQException;
+import org.hornetq.core.server.HornetQServer;
 import org.hornetq.tests.util.ServiceTestBase;
 import org.hornetq.utils.SimpleString;
 
@@ -38,7 +38,7 @@ public class MessageDurabilityTest extends ServiceTestBase
 
    // Attributes ----------------------------------------------------
 
-   private MessagingServer server;
+   private HornetQServer server;
 
    private ClientSession session;
 
@@ -69,9 +69,9 @@ public class MessageDurabilityTest extends ServiceTestBase
       {
          session.createConsumer(queue);
       }
-      catch (MessagingException e)
+      catch (HornetQException e)
       {
-         assertEquals(MessagingException.QUEUE_DOES_NOT_EXIST, e.getCode());
+         assertEquals(HornetQException.QUEUE_DOES_NOT_EXIST, e.getCode());
       }
    }
 
@@ -138,9 +138,9 @@ public class MessageDurabilityTest extends ServiceTestBase
 
       session.start();
       
-      expectMessagingException(MessagingException.QUEUE_DOES_NOT_EXIST, new MessagingAction()
+      expectHornetQException(HornetQException.QUEUE_DOES_NOT_EXIST, new MessagingAction()
       {
-         public void run() throws MessagingException
+         public void run() throws HornetQException
          {
             session.createConsumer(queue);
          }
@@ -165,9 +165,9 @@ public class MessageDurabilityTest extends ServiceTestBase
       restart();
 
       session.start();
-      expectMessagingException(MessagingException.QUEUE_DOES_NOT_EXIST, new MessagingAction()
+      expectHornetQException(HornetQException.QUEUE_DOES_NOT_EXIST, new MessagingAction()
       {
-         public void run() throws MessagingException
+         public void run() throws HornetQException
          {
             session.createConsumer(queue);
          }

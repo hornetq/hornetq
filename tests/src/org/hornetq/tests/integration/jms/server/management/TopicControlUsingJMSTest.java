@@ -28,8 +28,8 @@ import org.hornetq.core.config.TransportConfiguration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.management.ResourceNames;
 import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
-import org.hornetq.core.server.Messaging;
-import org.hornetq.core.server.MessagingServer;
+import org.hornetq.core.server.HornetQ;
+import org.hornetq.core.server.HornetQServer;
 import org.hornetq.jms.HornetQQueue;
 import org.hornetq.jms.HornetQTopic;
 import org.hornetq.jms.client.HornetQConnectionFactory;
@@ -43,7 +43,7 @@ public class TopicControlUsingJMSTest extends ManagementTestBase
 
    // Attributes ----------------------------------------------------
 
-   private MessagingServer server;
+   private HornetQServer server;
 
    private JMSServerManagerImpl serverManager;
 
@@ -336,7 +336,7 @@ public class TopicControlUsingJMSTest extends ManagementTestBase
       conf.setJMXManagementEnabled(true);
       conf.getAcceptorConfigurations()
           .add(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory"));
-      server = Messaging.newMessagingServer(conf, mbeanServer, false);
+      server = HornetQ.newMessagingServer(conf, mbeanServer, false);
       server.start();
 
       serverManager = new JMSServerManagerImpl(server);

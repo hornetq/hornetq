@@ -18,11 +18,11 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import org.hornetq.core.exception.MessagingException;
+import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.management.AddressControl;
 import org.hornetq.core.management.ManagementService;
-import org.hornetq.core.management.MessagingServerControl;
+import org.hornetq.core.management.HornetQServerControl;
 import org.hornetq.core.management.QueueControl;
 import org.hornetq.core.management.ResourceNames;
 import org.hornetq.jms.HornetQTopic;
@@ -57,7 +57,7 @@ public class TopicControlImpl implements TopicControl
 
    // Static --------------------------------------------------------
 
-   public static String createFilterFromJMSSelector(final String selectorStr) throws MessagingException
+   public static String createFilterFromJMSSelector(final String selectorStr) throws HornetQException
    {
       return (selectorStr == null || selectorStr.trim().length() == 0) ? null : SelectorTranslator.convertToHornetQFilterString(selectorStr);
    }
@@ -217,13 +217,13 @@ public class TopicControlImpl implements TopicControl
       {
          throw new IllegalArgumentException("No subscriptions with name " + queueName + " for clientID " + clientID);
       }
-      MessagingServerControl serverControl = (MessagingServerControl)managementService.getResource(ResourceNames.CORE_SERVER);
+      HornetQServerControl serverControl = (HornetQServerControl)managementService.getResource(ResourceNames.CORE_SERVER);
       serverControl.destroyQueue(queueName);
    }
 
    public void dropAllSubscriptions() throws Exception
    {
-      MessagingServerControl serverControl = (MessagingServerControl)managementService.getResource(ResourceNames.CORE_SERVER);
+      HornetQServerControl serverControl = (HornetQServerControl)managementService.getResource(ResourceNames.CORE_SERVER);
       String[] queues = addressControl.getQueueNames();
       for (String queue : queues)
       {

@@ -13,7 +13,7 @@
 
 package org.hornetq.core.remoting.impl.wireformat;
 
-import org.hornetq.core.remoting.spi.MessagingBuffer;
+import org.hornetq.core.remoting.spi.HornetQBuffer;
 import org.hornetq.utils.DataConstants;
 
 
@@ -84,7 +84,7 @@ public class SessionSendContinuationMessage extends SessionContinuationMessage
    }
 
    @Override
-   public void encodeBody(final MessagingBuffer buffer)
+   public void encodeBody(final HornetQBuffer buffer)
    {
       buffer.writeInt(bodyLength);
       buffer.writeBytes(body, 0, bodyLength);
@@ -93,7 +93,7 @@ public class SessionSendContinuationMessage extends SessionContinuationMessage
    }
 
    @Override
-   public void decodeBody(final MessagingBuffer buffer)
+   public void decodeBody(final HornetQBuffer buffer)
    {
       bodyLength = buffer.readInt();
       body = new byte[bodyLength];

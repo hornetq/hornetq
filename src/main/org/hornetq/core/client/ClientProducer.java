@@ -13,7 +13,7 @@
 
 package org.hornetq.core.client;
 
-import org.hornetq.core.exception.MessagingException;
+import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.message.Message;
 import org.hornetq.utils.SimpleString;
 
@@ -25,13 +25,13 @@ public interface ClientProducer
 {        
 	SimpleString getAddress();
 	
-	void send(Message message) throws MessagingException;
+	void send(Message message) throws HornetQException;
 	
-   void send(SimpleString address, Message message) throws MessagingException;
+   void send(SimpleString address, Message message) throws HornetQException;
    
-   void send(String address, Message message) throws MessagingException;
+   void send(String address, Message message) throws HornetQException;
 
-   void close() throws MessagingException;
+   void close() throws HornetQException;
    
    boolean isClosed();   
    

@@ -25,9 +25,9 @@ import org.hornetq.core.client.ClientProducer;
 import org.hornetq.core.client.ClientSession;
 import org.hornetq.core.client.ClientSessionFactory;
 import org.hornetq.core.config.Configuration;
-import org.hornetq.core.exception.MessagingException;
+import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.logging.Logger;
-import org.hornetq.core.server.MessagingServer;
+import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.core.transaction.impl.XidImpl;
 import org.hornetq.jms.client.HornetQBytesMessage;
@@ -46,7 +46,7 @@ public class BasicXaRecoveryTest extends ServiceTestBase
 
    private final Map<String, AddressSettings> addressSettings = new HashMap<String, AddressSettings>();
 
-   private MessagingServer server;
+   private HornetQServer server;
 
    private ClientSession clientSession;
 
@@ -90,7 +90,7 @@ public class BasicXaRecoveryTest extends ServiceTestBase
          {
             clientSession.close();
          }
-         catch (MessagingException e1)
+         catch (HornetQException e1)
          {
             //
          }
@@ -1266,12 +1266,12 @@ public class BasicXaRecoveryTest extends ServiceTestBase
       return message;
    }
 
-   private void createClients() throws MessagingException
+   private void createClients() throws HornetQException
    {
       createClients(false, true);
    }
 
-   private void createClients(final boolean createQueue, final boolean commitACKs) throws MessagingException
+   private void createClients(final boolean createQueue, final boolean commitACKs) throws HornetQException
    {
 
       sessionFactory = createInVMFactory();

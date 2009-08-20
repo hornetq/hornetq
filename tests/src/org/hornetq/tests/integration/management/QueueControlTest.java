@@ -34,14 +34,14 @@ import org.hornetq.core.config.TransportConfiguration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.management.DayCounterInfo;
 import org.hornetq.core.management.MessageCounterInfo;
-import org.hornetq.core.management.MessagingServerControl;
+import org.hornetq.core.management.HornetQServerControl;
 import org.hornetq.core.management.QueueControl;
 import org.hornetq.core.message.impl.MessageImpl;
 import org.hornetq.core.messagecounter.impl.MessageCounterManagerImpl;
 import org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
-import org.hornetq.core.server.Messaging;
-import org.hornetq.core.server.MessagingServer;
+import org.hornetq.core.server.HornetQ;
+import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.utils.SimpleString;
 import org.hornetq.utils.json.JSONArray;
@@ -59,7 +59,7 @@ public class QueueControlTest extends ManagementTestBase
 
    // Attributes ----------------------------------------------------
 
-   protected MessagingServer server;
+   protected HornetQServer server;
 
    protected ClientSession session;
 
@@ -1100,7 +1100,7 @@ public class QueueControlTest extends ManagementTestBase
       session.createQueue(address, queue, null, false);
       QueueControl queueControl = createManagementControl(address, queue);
       
-      MessagingServerControl serverControl = createMessagingServerControl(mbeanServer);
+      HornetQServerControl serverControl = createMessagingServerControl(mbeanServer);
       serverControl.enableMessageCounters();
       serverControl.setMessageCounterSamplePeriod(MessageCounterManagerImpl.MIN_SAMPLE_PERIOD);
 
@@ -1152,7 +1152,7 @@ public class QueueControlTest extends ManagementTestBase
       session.createQueue(address, queue, null, false);
       QueueControl queueControl = createManagementControl(address, queue);
       
-      MessagingServerControl serverControl = createMessagingServerControl(mbeanServer);
+      HornetQServerControl serverControl = createMessagingServerControl(mbeanServer);
       serverControl.enableMessageCounters();
       serverControl.setMessageCounterSamplePeriod(MessageCounterManagerImpl.MIN_SAMPLE_PERIOD);
 
@@ -1219,7 +1219,7 @@ public class QueueControlTest extends ManagementTestBase
       session.createQueue(address, queue, null, false);
       QueueControl queueControl = createManagementControl(address, queue);
       
-      MessagingServerControl serverControl = createMessagingServerControl(mbeanServer);
+      HornetQServerControl serverControl = createMessagingServerControl(mbeanServer);
       serverControl.enableMessageCounters();
       serverControl.setMessageCounterSamplePeriod(counterPeriod);
 
@@ -1239,7 +1239,7 @@ public class QueueControlTest extends ManagementTestBase
       session.createQueue(address, queue, null, false);
       QueueControl queueControl = createManagementControl(address, queue);
       
-      MessagingServerControl serverControl = createMessagingServerControl(mbeanServer);
+      HornetQServerControl serverControl = createMessagingServerControl(mbeanServer);
       serverControl.enableMessageCounters();
       serverControl.setMessageCounterSamplePeriod(counterPeriod);
 
@@ -1262,7 +1262,7 @@ public class QueueControlTest extends ManagementTestBase
       conf.setSecurityEnabled(false);
       conf.setJMXManagementEnabled(true);
       conf.getAcceptorConfigurations().add(new TransportConfiguration(InVMAcceptorFactory.class.getName()));
-      server = Messaging.newMessagingServer(conf, mbeanServer, false);
+      server = HornetQ.newMessagingServer(conf, mbeanServer, false);
       server.start();
 
       ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration(InVMConnectorFactory.class.getName()));

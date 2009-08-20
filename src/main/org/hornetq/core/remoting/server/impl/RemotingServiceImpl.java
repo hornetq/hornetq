@@ -27,7 +27,7 @@ import java.util.concurrent.ScheduledExecutorService;
 
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.TransportConfiguration;
-import org.hornetq.core.exception.MessagingException;
+import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.management.ManagementService;
 import org.hornetq.core.remoting.Channel;
@@ -47,9 +47,9 @@ import org.hornetq.core.remoting.spi.AcceptorFactory;
 import org.hornetq.core.remoting.spi.BufferHandler;
 import org.hornetq.core.remoting.spi.Connection;
 import org.hornetq.core.remoting.spi.ConnectionLifeCycleListener;
-import org.hornetq.core.remoting.spi.MessagingBuffer;
-import org.hornetq.core.server.MessagingServer;
-import org.hornetq.core.server.impl.MessagingServerPacketHandler;
+import org.hornetq.core.remoting.spi.HornetQBuffer;
+import org.hornetq.core.server.HornetQServer;
+import org.hornetq.core.server.impl.HornetQPacketHandler;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -81,7 +81,7 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
 
    private final Configuration config;
 
-   private volatile MessagingServer server;
+   private volatile HornetQServer server;
 
    private ManagementService managementService;
 
@@ -100,7 +100,7 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
    // Constructors --------------------------------------------------
 
    public RemotingServiceImpl(final Configuration config,
-                              final MessagingServer server,
+                              final HornetQServer server,
                               final ManagementService managementService,
                               final Executor threadPool,
                               final ScheduledExecutorService scheduledThreadPool,
@@ -313,7 +313,7 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
 
       Channel channel1 = rc.getChannel(1, -1, false);
 
-      ChannelHandler handler = new MessagingServerPacketHandler(server, channel1, rc);
+      ChannelHandler handler = new HornetQPacketHandler(server, channel1, rc);
 
       channel1.setHandler(handler);
 
@@ -370,7 +370,7 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
       }
    }
 
-   public void connectionException(final Object connectionID, final MessagingException me)
+   public void connectionException(final Object connectionID, final HornetQException me)
    {
       // We DO NOT call fail on connection exception, otherwise in event of real connection failure, the
       // connection will be failed, the session will be closed and won't be able to reconnect
@@ -404,7 +404,7 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
 
    private final class DelegatingBufferHandler extends AbstractBufferHandler
    {
-      public void bufferReceived(final Object connectionID, final MessagingBuffer buffer)
+      public void bufferReceived(final Object connectionID, final HornetQBuffer buffer)
       {
          ConnectionEntry conn = connections.get(connectionID);
 
@@ -494,7 +494,7 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
             {
                RemotingConnection conn = removeConnection(id);
 
-               MessagingException me = new MessagingException(MessagingException.CONNECTION_TIMEDOUT,
+               HornetQException me = new HornetQException(HornetQException.CONNECTION_TIMEDOUT,
                                                               "Did not receive ping from " + conn.getRemoteAddress() +
                                                                        ". It is likely the client has exited or crashed without " +
                                                                        "closing its connection, or the network between the server and client has failed. The connection will now be closed.");

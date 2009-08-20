@@ -35,7 +35,7 @@ import java.util.concurrent.locks.Lock;
 import org.hornetq.core.client.ClientSession;
 import org.hornetq.core.client.ClientSessionFactory;
 import org.hornetq.core.config.TransportConfiguration;
-import org.hornetq.core.exception.MessagingException;
+import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.remoting.Channel;
 import org.hornetq.core.remoting.ChannelHandler;
@@ -52,7 +52,7 @@ import org.hornetq.core.remoting.spi.Connection;
 import org.hornetq.core.remoting.spi.ConnectionLifeCycleListener;
 import org.hornetq.core.remoting.spi.Connector;
 import org.hornetq.core.remoting.spi.ConnectorFactory;
-import org.hornetq.core.remoting.spi.MessagingBuffer;
+import org.hornetq.core.remoting.spi.HornetQBuffer;
 import org.hornetq.core.version.Version;
 import org.hornetq.utils.ConcurrentHashSet;
 import org.hornetq.utils.ExecutorFactory;
@@ -230,10 +230,10 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
 
    public void connectionDestroyed(final Object connectionID)
    {
-      failConnection(connectionID, new MessagingException(MessagingException.NOT_CONNECTED, "Channel disconnected"));
+      failConnection(connectionID, new HornetQException(HornetQException.NOT_CONNECTED, "Channel disconnected"));
    }
 
-   public void connectionException(final Object connectionID, final MessagingException me)
+   public void connectionException(final Object connectionID, final HornetQException me)
    {
       failConnection(connectionID, me);
    }
@@ -256,7 +256,7 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
                                       final int producerMaxRate,
                                       final int consumerMaxRate,
                                       final boolean blockOnNonPersistentSend,
-                                      final boolean blockOnPersistentSend) throws MessagingException
+                                      final boolean blockOnPersistentSend) throws HornetQException
    {
       synchronized (createSessionLock)
       {
@@ -287,7 +287,7 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
                      }
                      // This can happen if the connection manager gets exitLoop - e.g. the server gets shut down
 
-                     throw new MessagingException(MessagingException.NOT_CONNECTED,
+                     throw new HornetQException(HornetQException.NOT_CONNECTED,
                                                   "Unable to connect to server using configuration " + connectorConfig);
                   }
 
@@ -384,13 +384,13 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
                   returnConnection(connection.getID());
                }
 
-               if (t instanceof MessagingException)
+               if (t instanceof HornetQException)
                {
-                  throw (MessagingException)t;
+                  throw (HornetQException)t;
                }
                else
                {
-                  MessagingException me = new MessagingException(MessagingException.INTERNAL_ERROR,
+                  HornetQException me = new HornetQException(HornetQException.INTERNAL_ERROR,
                                                                  "Failed to create session");
 
                   me.initCause(t);
@@ -483,12 +483,12 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
    // Private
    // --------------------------------------------------------------------------------------
 
-   private void handleConnectionFailure(final MessagingException me, final Object connectionID)
+   private void handleConnectionFailure(final HornetQException me, final Object connectionID)
    {
       failoverOrReconnect(me, connectionID);
    }
 
-   private void failoverOrReconnect(final MessagingException me, final Object connectionID)
+   private void failoverOrReconnect(final HornetQException me, final Object connectionID)
    {
       boolean done = false;
 
@@ -524,12 +524,12 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
          // The calling thread must get the failoverLock and get its' connections when this is locked.
          // While this is still locked it must then get the channel1 lock
          // It can then release the failoverLock
-         // It should catch MessagingException.INTERRUPTED in the call to channel.sendBlocking
+         // It should catch HornetQException.INTERRUPTED in the call to channel.sendBlocking
          // It should then return its connections, with channel 1 lock still held
          // It can then release the channel 1 lock, and retry (which will cause locking on failoverLock
          // until failover is complete
 
-         boolean serverShutdown = me.getCode() == MessagingException.DISCONNECTED;
+         boolean serverShutdown = me.getCode() == HornetQException.DISCONNECTED;
 
          boolean attemptFailoverOrReconnect = (backupConnectorFactory != null || reconnectAttempts != 0)
                                                 && (failoverOnServerShutdown || !serverShutdown);
@@ -647,7 +647,7 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
       }
    }
 
-   private void closeConnectionsAndCallFailureListeners(final MessagingException me)
+   private void closeConnectionsAndCallFailureListeners(final HornetQException me)
    {
       refCount = 0;
       mapIterator = null;
@@ -664,7 +664,7 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
       // });
    }
 
-   private void callFailureListeners(final MessagingException me)
+   private void callFailureListeners(final HornetQException me)
    {
       final List<FailureListener> listenersClone = new ArrayList<FailureListener>(listeners);
 
@@ -1069,7 +1069,7 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
       }
    }
 
-   private void failConnection(final Object connectionID, final MessagingException me)
+   private void failConnection(final Object connectionID, final HornetQException me)
    {
       ConnectionEntry entry = connections.get(connectionID);
 
@@ -1103,7 +1103,7 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
                // cause reconnect loop
                public void run()
                {
-                  conn.fail(new MessagingException(MessagingException.DISCONNECTED,
+                  conn.fail(new HornetQException(HornetQException.DISCONNECTED,
                                                    "The connection was exitLoop by the server"));
                }
             });
@@ -1138,7 +1138,7 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
 
    private class DelegatingBufferHandler extends AbstractBufferHandler
    {
-      public void bufferReceived(final Object connectionID, final MessagingBuffer buffer)
+      public void bufferReceived(final Object connectionID, final HornetQBuffer buffer)
       {
          ConnectionEntry entry = connections.get(connectionID);
 
@@ -1158,7 +1158,7 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
          this.connectionID = connectionID;
       }
 
-      public void connectionFailed(final MessagingException me)
+      public void connectionFailed(final HornetQException me)
       {
          handleConnectionFailure(me, connectionID);
       }
@@ -1203,7 +1203,7 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
       {
          for (RemotingConnection conn : conns)
          {
-            conn.fail(new MessagingException(MessagingException.INTERNAL_ERROR, "blah"));
+            conn.fail(new HornetQException(HornetQException.INTERNAL_ERROR, "blah"));
          }
       }
    }
@@ -1256,7 +1256,7 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
                {
                   if (!connection.checkDataReceived())
                   {
-                     final MessagingException me = new MessagingException(MessagingException.CONNECTION_TIMEDOUT,
+                     final HornetQException me = new HornetQException(HornetQException.CONNECTION_TIMEDOUT,
                                                                           "Did not receive data from server for " + connection.getTransportConnection());
 
                      threadPool.execute(new Runnable()

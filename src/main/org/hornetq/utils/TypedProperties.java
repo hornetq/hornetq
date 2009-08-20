@@ -41,7 +41,7 @@ import java.util.Set;
 import java.util.Map.Entry;
 
 import org.hornetq.core.logging.Logger;
-import org.hornetq.core.remoting.spi.MessagingBuffer;
+import org.hornetq.core.remoting.spi.HornetQBuffer;
 
 /**
  * 
@@ -180,7 +180,7 @@ public class TypedProperties
       }
    }
 
-   public synchronized void decode(final MessagingBuffer buffer)
+   public synchronized void decode(final HornetQBuffer buffer)
    {
       byte b = buffer.readByte();
 
@@ -283,7 +283,7 @@ public class TypedProperties
       }
    }
 
-   public synchronized void encode(final MessagingBuffer buffer)
+   public synchronized void encode(final HornetQBuffer buffer)
    {
       if (properties == null)
       {
@@ -403,7 +403,7 @@ public class TypedProperties
    {
       abstract Object getValue();
 
-      abstract void write(MessagingBuffer buffer);
+      abstract void write(HornetQBuffer buffer);
 
       abstract int encodeSize();
       
@@ -425,7 +425,7 @@ public class TypedProperties
          return null;
       }
 
-      public void write(final MessagingBuffer buffer)
+      public void write(final HornetQBuffer buffer)
       {
          buffer.writeByte(NULL);
       }
@@ -446,7 +446,7 @@ public class TypedProperties
          this.val = val;
       }
 
-      public BooleanValue(final MessagingBuffer buffer)
+      public BooleanValue(final HornetQBuffer buffer)
       {
          val = buffer.readBoolean();
       }
@@ -456,7 +456,7 @@ public class TypedProperties
          return val;
       }
 
-      public void write(final MessagingBuffer buffer)
+      public void write(final HornetQBuffer buffer)
       {
          buffer.writeByte(BOOLEAN);
          buffer.writeBoolean(val);
@@ -478,7 +478,7 @@ public class TypedProperties
          this.val = val;
       }
 
-      public ByteValue(final MessagingBuffer buffer)
+      public ByteValue(final HornetQBuffer buffer)
       {
          val = buffer.readByte();
       }
@@ -488,7 +488,7 @@ public class TypedProperties
          return val;
       }
 
-      public void write(final MessagingBuffer buffer)
+      public void write(final HornetQBuffer buffer)
       {
          buffer.writeByte(BYTE);
          buffer.writeByte(val);
@@ -509,7 +509,7 @@ public class TypedProperties
          this.val = val;
       }
 
-      public BytesValue(final MessagingBuffer buffer)
+      public BytesValue(final HornetQBuffer buffer)
       {
          int len = buffer.readInt();
          val = new byte[len];
@@ -521,7 +521,7 @@ public class TypedProperties
          return val;
       }
 
-      public void write(final MessagingBuffer buffer)
+      public void write(final HornetQBuffer buffer)
       {
          buffer.writeByte(BYTES);
          buffer.writeInt(val.length);
@@ -544,7 +544,7 @@ public class TypedProperties
          this.val = val;
       }
 
-      public ShortValue(final MessagingBuffer buffer)
+      public ShortValue(final HornetQBuffer buffer)
       {
          val = buffer.readShort();
       }
@@ -554,7 +554,7 @@ public class TypedProperties
          return val;
       }
 
-      public void write(final MessagingBuffer buffer)
+      public void write(final HornetQBuffer buffer)
       {
          buffer.writeByte(SHORT);
          buffer.writeShort(val);
@@ -575,7 +575,7 @@ public class TypedProperties
          this.val = val;
       }
 
-      public IntValue(final MessagingBuffer buffer)
+      public IntValue(final HornetQBuffer buffer)
       {
          val = buffer.readInt();
       }
@@ -585,7 +585,7 @@ public class TypedProperties
          return val;
       }
 
-      public void write(final MessagingBuffer buffer)
+      public void write(final HornetQBuffer buffer)
       {
          buffer.writeByte(INT);
          buffer.writeInt(val);
@@ -606,7 +606,7 @@ public class TypedProperties
          this.val = val;
       }
 
-      public LongValue(final MessagingBuffer buffer)
+      public LongValue(final HornetQBuffer buffer)
       {
          val = buffer.readLong();
       }
@@ -616,7 +616,7 @@ public class TypedProperties
          return val;
       }
 
-      public void write(final MessagingBuffer buffer)
+      public void write(final HornetQBuffer buffer)
       {
          buffer.writeByte(LONG);
          buffer.writeLong(val);
@@ -637,7 +637,7 @@ public class TypedProperties
          this.val = val;
       }
 
-      public FloatValue(final MessagingBuffer buffer)
+      public FloatValue(final HornetQBuffer buffer)
       {
          val = buffer.readFloat();
       }
@@ -647,7 +647,7 @@ public class TypedProperties
          return val;
       }
 
-      public void write(final MessagingBuffer buffer)
+      public void write(final HornetQBuffer buffer)
       {
          buffer.writeByte(FLOAT);
          buffer.writeFloat(val);
@@ -669,7 +669,7 @@ public class TypedProperties
          this.val = val;
       }
 
-      public DoubleValue(final MessagingBuffer buffer)
+      public DoubleValue(final HornetQBuffer buffer)
       {
          val = buffer.readDouble();
       }
@@ -679,7 +679,7 @@ public class TypedProperties
          return val;
       }
 
-      public void write(final MessagingBuffer buffer)
+      public void write(final HornetQBuffer buffer)
       {
          buffer.writeByte(DOUBLE);
          buffer.writeDouble(val);
@@ -700,7 +700,7 @@ public class TypedProperties
          this.val = val;
       }
 
-      public CharValue(final MessagingBuffer buffer)
+      public CharValue(final HornetQBuffer buffer)
       {
          val = buffer.readChar();
       }
@@ -710,7 +710,7 @@ public class TypedProperties
          return val;
       }
 
-      public void write(final MessagingBuffer buffer)
+      public void write(final HornetQBuffer buffer)
       {
          buffer.writeByte(CHAR);
          buffer.writeChar(val);
@@ -731,7 +731,7 @@ public class TypedProperties
          this.val = val;
       }
 
-      public StringValue(final MessagingBuffer buffer)
+      public StringValue(final HornetQBuffer buffer)
       {
          val = buffer.readSimpleString();
       }
@@ -741,7 +741,7 @@ public class TypedProperties
          return val;
       }
 
-      public void write(final MessagingBuffer buffer)
+      public void write(final HornetQBuffer buffer)
       {
          buffer.writeByte(STRING);
          buffer.writeSimpleString(val);

@@ -25,11 +25,11 @@ import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.TransportConfiguration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
-import org.hornetq.core.exception.MessagingException;
+import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
-import org.hornetq.core.server.Messaging;
-import org.hornetq.core.server.MessagingServer;
+import org.hornetq.core.server.HornetQ;
+import org.hornetq.core.server.HornetQServer;
 import org.hornetq.tests.util.UnitTestCase;
 import org.hornetq.utils.SimpleString;
 
@@ -48,7 +48,7 @@ public class RequestorTest extends UnitTestCase
 
    // Attributes ----------------------------------------------------
 
-   private MessagingServer service;
+   private HornetQServer service;
    
    private ClientSessionFactory sf;
 
@@ -160,7 +160,7 @@ public class RequestorTest extends UnitTestCase
 
       session.close();
 
-      expectMessagingException("ClientRequestor's session must not be closed", MessagingException.OBJECT_CLOSED, new MessagingAction(){
+      expectHornetQException("ClientRequestor's session must not be closed", HornetQException.OBJECT_CLOSED, new MessagingAction(){
          public void run() throws Exception
          {
             new ClientRequestor(session, requestAddress);
@@ -198,7 +198,7 @@ public class RequestorTest extends UnitTestCase
 
       requestor.close();
 
-      expectMessagingException("can not send a request on a closed ClientRequestor", MessagingException.OBJECT_CLOSED, new MessagingAction(){
+      expectHornetQException("can not send a request on a closed ClientRequestor", HornetQException.OBJECT_CLOSED, new MessagingAction(){
 
          public void run() throws Exception
          {
@@ -219,7 +219,7 @@ public class RequestorTest extends UnitTestCase
       Configuration conf = new ConfigurationImpl();
       conf.setSecurityEnabled(false);
       conf.getAcceptorConfigurations().add(new TransportConfiguration(InVMAcceptorFactory.class.getName()));
-      service = Messaging.newMessagingServer(conf, false);
+      service = HornetQ.newMessagingServer(conf, false);
       service.start();
       
       sf = new ClientSessionFactoryImpl(new TransportConfiguration(InVMConnectorFactory.class.getName()));
@@ -267,7 +267,7 @@ public class RequestorTest extends UnitTestCase
             replyProducer.send(reply);
             request.acknowledge();
          }
-         catch (MessagingException e)
+         catch (HornetQException e)
          {
             e.printStackTrace();
          }

@@ -21,10 +21,10 @@ import org.hornetq.core.config.Configuration;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.security.HornetQSecurityManager;
 import org.hornetq.core.security.impl.HornetQSecurityManagerImpl;
-import org.hornetq.core.server.impl.MessagingServerImpl;
+import org.hornetq.core.server.impl.HornetQServerImpl;
 
 /**
- * A Messaging
+ * A HornetQ
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * 
@@ -32,15 +32,15 @@ import org.hornetq.core.server.impl.MessagingServerImpl;
  *
  *
  */
-public class Messaging
+public class HornetQ
 {
-   private static final Logger log = Logger.getLogger(Messaging.class);
+   private static final Logger log = Logger.getLogger(HornetQ.class);
 
-   public static MessagingServer newMessagingServer(final Configuration config, boolean enablePersistence)
+   public static HornetQServer newMessagingServer(final Configuration config, boolean enablePersistence)
    {
       HornetQSecurityManager securityManager = new HornetQSecurityManagerImpl();
 
-      MessagingServer server = newMessagingServer(config,
+      HornetQServer server = newMessagingServer(config,
                                                   ManagementFactory.getPlatformMBeanServer(),
                                                   securityManager,
                                                   enablePersistence);
@@ -48,44 +48,44 @@ public class Messaging
       return server;
    }
 
-   public static MessagingServer newMessagingServer(final Configuration config)
+   public static HornetQServer newMessagingServer(final Configuration config)
    {
       return newMessagingServer(config, config.isPersistenceEnabled());
    }
 
-   public static MessagingServer newMessagingServer(final Configuration config,
+   public static HornetQServer newMessagingServer(final Configuration config,
                                                     final MBeanServer mbeanServer,
                                                     final boolean enablePersistence)
    {
       HornetQSecurityManager securityManager = new HornetQSecurityManagerImpl();
 
-      MessagingServer server = newMessagingServer(config, mbeanServer, securityManager, enablePersistence);
+      HornetQServer server = newMessagingServer(config, mbeanServer, securityManager, enablePersistence);
 
       return server;
    }
 
-   public static MessagingServer newMessagingServer(final Configuration config, final MBeanServer mbeanServer)
+   public static HornetQServer newMessagingServer(final Configuration config, final MBeanServer mbeanServer)
    {
       return newMessagingServer(config, mbeanServer, true);
    }
 
-   public static MessagingServer newMessagingServer(final Configuration config,
+   public static HornetQServer newMessagingServer(final Configuration config,
                                                     final MBeanServer mbeanServer,
                                                     final HornetQSecurityManager securityManager)
    {
-      MessagingServer server = newMessagingServer(config, mbeanServer, securityManager, true);
+      HornetQServer server = newMessagingServer(config, mbeanServer, securityManager, true);
 
       return server;
    }
 
-   public static MessagingServer newMessagingServer(final Configuration config,
+   public static HornetQServer newMessagingServer(final Configuration config,
                                                     final MBeanServer mbeanServer,
                                                     final HornetQSecurityManager securityManager,
                                                     final boolean enablePersistence)
    {
       config.setPersistenceEnabled(enablePersistence);
 
-      MessagingServer server = new MessagingServerImpl(config, mbeanServer, securityManager);
+      HornetQServer server = new HornetQServerImpl(config, mbeanServer, securityManager);
 
       return server;
    }

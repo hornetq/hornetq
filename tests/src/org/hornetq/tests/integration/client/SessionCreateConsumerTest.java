@@ -15,8 +15,8 @@ package org.hornetq.tests.integration.client;
 import org.hornetq.core.client.ClientConsumer;
 import org.hornetq.core.client.ClientSessionFactory;
 import org.hornetq.core.client.impl.ClientSessionInternal;
-import org.hornetq.core.exception.MessagingException;
-import org.hornetq.core.server.MessagingServer;
+import org.hornetq.core.exception.HornetQException;
+import org.hornetq.core.server.HornetQServer;
 import org.hornetq.tests.util.ServiceTestBase;
 
 /**
@@ -28,7 +28,7 @@ public class SessionCreateConsumerTest extends ServiceTestBase
 
    public void testCreateConsumer() throws Exception
    {
-      MessagingServer service = createServer(false);
+      HornetQServer service = createServer(false);
       try
       {
          service.start();
@@ -50,7 +50,7 @@ public class SessionCreateConsumerTest extends ServiceTestBase
 
    public void testCreateConsumerNoQ() throws Exception
    {
-      MessagingServer service = createServer(false);
+      HornetQServer service = createServer(false);
       try
       {
          service.start();
@@ -64,9 +64,9 @@ public class SessionCreateConsumerTest extends ServiceTestBase
             clientSession.createConsumer(queueName);
             fail("should throw exception");
          }
-         catch (MessagingException e)
+         catch (HornetQException e)
          {
-            assertEquals(e.getCode(), MessagingException.QUEUE_DOES_NOT_EXIST);
+            assertEquals(e.getCode(), HornetQException.QUEUE_DOES_NOT_EXIST);
          }
          clientSession.close();
       }
@@ -78,7 +78,7 @@ public class SessionCreateConsumerTest extends ServiceTestBase
 
    public void testCreateConsumerWithFilter() throws Exception
    {
-      MessagingServer service = createServer(false);
+      HornetQServer service = createServer(false);
       try
       {
          service.start();
@@ -100,7 +100,7 @@ public class SessionCreateConsumerTest extends ServiceTestBase
 
    public void testCreateConsumerWithInvalidFilter() throws Exception
    {
-      MessagingServer service = createServer(false);
+      HornetQServer service = createServer(false);
       try
       {
          service.start();
@@ -115,9 +115,9 @@ public class SessionCreateConsumerTest extends ServiceTestBase
             clientSession.createConsumer(queueName, "foobar");
             fail("should throw exception");
          }
-         catch (MessagingException e)
+         catch (HornetQException e)
          {
-            assertEquals(e.getCode(), MessagingException.INVALID_FILTER_EXPRESSION);
+            assertEquals(e.getCode(), HornetQException.INVALID_FILTER_EXPRESSION);
          }
          clientSession.close();
       }
@@ -129,7 +129,7 @@ public class SessionCreateConsumerTest extends ServiceTestBase
 
    public void testCreateConsumerWithBrowseOnly() throws Exception
    {
-      MessagingServer service = createServer(false);
+      HornetQServer service = createServer(false);
       try
       {
          service.start();
@@ -151,7 +151,7 @@ public class SessionCreateConsumerTest extends ServiceTestBase
 
    public void testCreateConsumerWithOverrides() throws Exception
    {
-      MessagingServer service = createServer(false);
+      HornetQServer service = createServer(false);
       try
       {
          service.start();

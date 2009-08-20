@@ -14,7 +14,7 @@
 package org.hornetq.tests.unit.core.filter.impl;
 
 import org.hornetq.core.buffers.ChannelBuffers;
-import org.hornetq.core.exception.MessagingException;
+import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.filter.Filter;
 import org.hornetq.core.filter.impl.FilterImpl;
 import org.hornetq.core.server.ServerMessage;
@@ -647,9 +647,9 @@ public class FilterTest  extends UnitTestCase
          
          fail("Should throw exception");
       }
-      catch (MessagingException e)
+      catch (HornetQException e)
       {
-         assertEquals(MessagingException.INVALID_FILTER_EXPRESSION, e.getCode());
+         assertEquals(HornetQException.INVALID_FILTER_EXPRESSION, e.getCode());
       }            
    }
    

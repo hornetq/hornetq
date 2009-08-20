@@ -17,7 +17,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.message.impl.MessageImpl;
-import org.hornetq.core.remoting.spi.MessagingBuffer;
+import org.hornetq.core.remoting.spi.HornetQBuffer;
 import org.hornetq.core.server.MessageReference;
 import org.hornetq.core.server.Queue;
 import org.hornetq.core.server.ServerMessage;
@@ -78,7 +78,7 @@ public class ServerMessageImpl extends MessageImpl implements ServerMessage
                             final long expiration,
                             final long timestamp,
                             final byte priority,
-                            final MessagingBuffer buffer)
+                            final HornetQBuffer buffer)
    {
       super(type, durable, expiration, timestamp, priority, buffer);
    }

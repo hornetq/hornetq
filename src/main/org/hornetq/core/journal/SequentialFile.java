@@ -15,7 +15,7 @@ package org.hornetq.core.journal;
 
 import java.nio.ByteBuffer;
 
-import org.hornetq.core.remoting.spi.MessagingBuffer;
+import org.hornetq.core.remoting.spi.HornetQBuffer;
 
 /**
  * 
@@ -55,9 +55,9 @@ public interface SequentialFile
 
    void delete() throws Exception;
 
-   void write(MessagingBuffer bytes, boolean sync, IOCallback callback) throws Exception;
+   void write(HornetQBuffer bytes, boolean sync, IOCallback callback) throws Exception;
 
-   void write(MessagingBuffer bytes, boolean sync) throws Exception;
+   void write(HornetQBuffer bytes, boolean sync) throws Exception;
 
    void write(ByteBuffer bytes, boolean sync, IOCallback callback) throws Exception;
 

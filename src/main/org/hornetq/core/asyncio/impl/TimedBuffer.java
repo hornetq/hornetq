@@ -24,7 +24,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.hornetq.core.asyncio.AIOCallback;
 import org.hornetq.core.buffers.ChannelBuffers;
 import org.hornetq.core.logging.Logger;
-import org.hornetq.core.remoting.spi.MessagingBuffer;
+import org.hornetq.core.remoting.spi.HornetQBuffer;
 import org.hornetq.utils.VariableLatch;
 
 /**
@@ -52,7 +52,7 @@ public class TimedBuffer
 
    private final int bufferSize;
 
-   private final MessagingBuffer buffer;
+   private final HornetQBuffer buffer;
 
    private int bufferLimit = 0;
 

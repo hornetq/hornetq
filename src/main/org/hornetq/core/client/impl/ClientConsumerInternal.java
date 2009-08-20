@@ -15,7 +15,7 @@ package org.hornetq.core.client.impl;
 
 import org.hornetq.core.client.ClientConsumer;
 import org.hornetq.core.client.ClientMessage;
-import org.hornetq.core.exception.MessagingException;
+import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.remoting.impl.wireformat.SessionReceiveContinuationMessage;
 import org.hornetq.core.remoting.impl.wireformat.SessionReceiveMessage;
 
@@ -36,7 +36,7 @@ public interface ClientConsumerInternal extends ClientConsumer
    
    void handleLargeMessageContinuation(SessionReceiveContinuationMessage continuation) throws Exception;
    
-   void flowControl(final int messageBytes, final boolean discountSlowConsumer) throws MessagingException;
+   void flowControl(final int messageBytes, final boolean discountSlowConsumer) throws HornetQException;
 
    void clear();
 
@@ -44,13 +44,13 @@ public interface ClientConsumerInternal extends ClientConsumer
 
    int getBufferSize();
 
-   void cleanUp() throws MessagingException;
+   void cleanUp() throws HornetQException;
    
-   void acknowledge(ClientMessage message) throws MessagingException;
+   void acknowledge(ClientMessage message) throws HornetQException;
    
-   void flushAcks() throws MessagingException;
+   void flushAcks() throws HornetQException;
 
-   void stop() throws MessagingException;
+   void stop() throws HornetQException;
 
    void start();
 }

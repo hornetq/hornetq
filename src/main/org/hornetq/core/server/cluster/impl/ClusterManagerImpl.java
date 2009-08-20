@@ -38,7 +38,7 @@ import org.hornetq.core.management.ManagementService;
 import org.hornetq.core.postoffice.Binding;
 import org.hornetq.core.postoffice.PostOffice;
 import org.hornetq.core.remoting.Channel;
-import org.hornetq.core.server.MessagingServer;
+import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.Queue;
 import org.hornetq.core.server.cluster.Bridge;
 import org.hornetq.core.server.cluster.BroadcastGroup;
@@ -72,7 +72,7 @@ public class ClusterManagerImpl implements ClusterManager
 
    private final org.hornetq.utils.ExecutorFactory executorFactory;
    
-   private final MessagingServer server;
+   private final HornetQServer server;
 
    private final PostOffice postOffice;
 
@@ -91,7 +91,7 @@ public class ClusterManagerImpl implements ClusterManager
    private boolean backup;
 
    public ClusterManagerImpl(final org.hornetq.utils.ExecutorFactory executorFactory,
-                             final MessagingServer server,
+                             final HornetQServer server,
                              final PostOffice postOffice,
                              final ScheduledExecutorService scheduledExecutor,
                              final ManagementService managementService,

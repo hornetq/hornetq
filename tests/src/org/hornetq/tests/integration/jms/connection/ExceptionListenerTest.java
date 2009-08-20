@@ -21,9 +21,9 @@ import org.hornetq.core.client.impl.ClientSessionInternal;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.TransportConfiguration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
-import org.hornetq.core.exception.MessagingException;
-import org.hornetq.core.server.Messaging;
-import org.hornetq.core.server.MessagingServer;
+import org.hornetq.core.exception.HornetQException;
+import org.hornetq.core.server.HornetQ;
+import org.hornetq.core.server.HornetQServer;
 import org.hornetq.jms.client.HornetQConnection;
 import org.hornetq.jms.client.HornetQConnectionFactory;
 import org.hornetq.jms.client.HornetQSession;
@@ -41,7 +41,7 @@ import org.hornetq.tests.util.UnitTestCase;
  */
 public class ExceptionListenerTest extends UnitTestCase
 {
-   private MessagingServer server;
+   private HornetQServer server;
 
    private JMSServerManagerImpl jmsServer;
 
@@ -59,7 +59,7 @@ public class ExceptionListenerTest extends UnitTestCase
       conf.setJMXManagementEnabled(true);
       conf.getAcceptorConfigurations()
           .add(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory"));
-      server = Messaging.newMessagingServer(conf, false);
+      server = HornetQ.newMessagingServer(conf, false);
       jmsServer = new JMSServerManagerImpl(server);
       jmsServer.setContext(new NullInitialContext());
       jmsServer.start();     
@@ -115,7 +115,7 @@ public class ExceptionListenerTest extends UnitTestCase
       
       ClientSessionInternal coreSession = (ClientSessionInternal)((HornetQConnection)conn).getInitialSession();
       
-      coreSession.getConnection().fail(new MessagingException(MessagingException.INTERNAL_ERROR, "blah"));
+      coreSession.getConnection().fail(new HornetQException(HornetQException.INTERNAL_ERROR, "blah"));
       
       assertEquals(1, listener.numCalls);
       
@@ -144,13 +144,13 @@ public class ExceptionListenerTest extends UnitTestCase
       
       ClientSessionInternal coreSession3 = (ClientSessionInternal)((HornetQSession)sess3).getCoreSession();
       
-      coreSession0.getConnection().fail(new MessagingException(MessagingException.INTERNAL_ERROR, "blah"));
+      coreSession0.getConnection().fail(new HornetQException(HornetQException.INTERNAL_ERROR, "blah"));
       
-      coreSession1.getConnection().fail(new MessagingException(MessagingException.INTERNAL_ERROR, "blah"));
+      coreSession1.getConnection().fail(new HornetQException(HornetQException.INTERNAL_ERROR, "blah"));
       
-      coreSession2.getConnection().fail(new MessagingException(MessagingException.INTERNAL_ERROR, "blah"));
+      coreSession2.getConnection().fail(new HornetQException(HornetQException.INTERNAL_ERROR, "blah"));
       
-      coreSession3.getConnection().fail(new MessagingException(MessagingException.INTERNAL_ERROR, "blah"));
+      coreSession3.getConnection().fail(new HornetQException(HornetQException.INTERNAL_ERROR, "blah"));
       
       //Listener should only be called once even if all sessions connections die
       assertEquals(1, listener.numCalls);    

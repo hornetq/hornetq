@@ -27,7 +27,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.hornetq.core.asyncio.AIOCallback;
 import org.hornetq.core.asyncio.BufferCallback;
 import org.hornetq.core.asyncio.impl.AsynchronousFileImpl;
-import org.hornetq.core.exception.MessagingException;
+import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.utils.HornetQThreadFactory;
 
@@ -288,7 +288,7 @@ public class AsynchronousFileTest extends AIOTestBase
 
             fail("An exception was supposed to be thrown");
          }
-         catch (MessagingException ignored)
+         catch (HornetQException ignored)
          {
          }
 
@@ -317,7 +317,7 @@ public class AsynchronousFileTest extends AIOTestBase
          {
             controller.close();
          }
-         catch (MessagingException ignored)
+         catch (HornetQException ignored)
          {
          }
 

@@ -20,10 +20,10 @@ import java.util.LinkedList;
 import java.util.List;
 
 import org.hornetq.core.buffers.ChannelBuffers;
-import org.hornetq.core.exception.MessagingException;
+import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.remoting.spi.Connection;
 import org.hornetq.core.remoting.spi.ConnectionLifeCycleListener;
-import org.hornetq.core.remoting.spi.MessagingBuffer;
+import org.hornetq.core.remoting.spi.HornetQBuffer;
 import org.hornetq.integration.transports.netty.NettyConnection;
 import org.hornetq.tests.util.UnitTestCase;
 import org.jboss.netty.channel.Channel;
@@ -52,7 +52,7 @@ public class NettyConnectionTest extends UnitTestCase
 
     public void testWrite() throws Exception
     {
-       MessagingBuffer buff = ChannelBuffers.wrappedBuffer(ByteBuffer.allocate(128));
+       HornetQBuffer buff = ChannelBuffers.wrappedBuffer(ByteBuffer.allocate(128));
        SimpleChannel channel = new SimpleChannel(randomInt());
    
        assertEquals(0, channel.getWritten().size());
@@ -71,7 +71,7 @@ public class NettyConnectionTest extends UnitTestCase
 
       final int size = 1234;
 
-      MessagingBuffer buff = conn.createBuffer(size);
+      HornetQBuffer buff = conn.createBuffer(size);
       buff.writeByte((byte)0x00); // Netty buffer does lazy initialization.
       assertEquals(size, buff.capacity());
 
@@ -229,7 +229,7 @@ public class NettyConnectionTest extends UnitTestCase
 
       }
 
-      public void connectionException(Object connectionID, MessagingException me)
+      public void connectionException(Object connectionID, HornetQException me)
       {
 
       }

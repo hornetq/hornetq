@@ -15,7 +15,7 @@ package org.hornetq.tests.integration.client;
 import org.hornetq.core.client.ClientProducer;
 import org.hornetq.core.client.ClientSession;
 import org.hornetq.core.client.ClientSessionFactory;
-import org.hornetq.core.server.MessagingServer;
+import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.Queue;
 import org.hornetq.tests.util.ServiceTestBase;
 import org.hornetq.utils.SimpleString;
@@ -36,7 +36,7 @@ public class SendTest extends ServiceTestBase
 
    public void testSendWithCommit() throws Exception
    {
-      MessagingServer server = createServer(false);
+      HornetQServer server = createServer(false);
       try
       {
          server.start();
@@ -74,7 +74,7 @@ public class SendTest extends ServiceTestBase
 
    public void testSendWithRollback() throws Exception
    {
-      MessagingServer server = createServer(false);
+      HornetQServer server = createServer(false);
       try
       {
          server.start();

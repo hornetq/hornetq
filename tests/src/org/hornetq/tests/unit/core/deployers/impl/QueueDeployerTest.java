@@ -17,7 +17,7 @@ import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.cluster.QueueConfiguration;
 import org.hornetq.core.deployers.DeploymentManager;
 import org.hornetq.core.deployers.impl.QueueDeployer;
-import org.hornetq.core.management.MessagingServerControl;
+import org.hornetq.core.management.HornetQServerControl;
 import org.hornetq.tests.util.UnitTestCase;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -126,7 +126,7 @@ public class QueueDeployerTest extends UnitTestCase
 
    // Inner classes -------------------------------------------------
 
-   private class FakeServerControl implements MessagingServerControl
+   private class FakeServerControl implements HornetQServerControl
    {
 
       public int getThreadPoolMaxSize()

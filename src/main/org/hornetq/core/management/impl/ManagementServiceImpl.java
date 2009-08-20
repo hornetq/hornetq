@@ -64,7 +64,7 @@ import org.hornetq.core.remoting.server.RemotingService;
 import org.hornetq.core.remoting.spi.Acceptor;
 import org.hornetq.core.security.Role;
 import org.hornetq.core.server.Divert;
-import org.hornetq.core.server.MessagingServer;
+import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.Queue;
 import org.hornetq.core.server.QueueFactory;
 import org.hornetq.core.server.ServerMessage;
@@ -102,13 +102,13 @@ public class ManagementServiceImpl implements ManagementService
 
    private StorageManager storageManager;
 
-   private MessagingServer messagingServer;
+   private HornetQServer messagingServer;
 
    private HierarchicalRepository<Set<Role>> securityRepository;
 
    private HierarchicalRepository<AddressSettings> addressSettingsRepository;
 
-   private MessagingServerControlImpl messagingServerControl;
+   private HornetQServerControlImpl messagingServerControl;
 
    private MessageCounterManager messageCounterManager;
 
@@ -180,14 +180,14 @@ public class ManagementServiceImpl implements ManagementService
       return messageCounterManager;
    }
 
-   public MessagingServerControlImpl registerServer(final PostOffice postOffice,
+   public HornetQServerControlImpl registerServer(final PostOffice postOffice,
                                                     final StorageManager storageManager,
                                                     final Configuration configuration,
                                                     final HierarchicalRepository<AddressSettings> addressSettingsRepository,
                                                     final HierarchicalRepository<Set<Role>> securityRepository,
                                                     final ResourceManager resourceManager,
                                                     final RemotingService remotingService,
-                                                    final MessagingServer messagingServer,
+                                                    final HornetQServer messagingServer,
                                                     final QueueFactory queueFactory,
                                                     final ScheduledExecutorService scheduledThreadPool,
                                                     final boolean backup) throws Exception
@@ -202,7 +202,7 @@ public class ManagementServiceImpl implements ManagementService
       messageCounterManager.setMaxDayCount(configuration.getMessageCounterMaxDayHistory());
       messageCounterManager.reschedule(configuration.getMessageCounterSamplePeriod());
 
-      messagingServerControl = new MessagingServerControlImpl(postOffice,
+      messagingServerControl = new HornetQServerControlImpl(postOffice,
                                                               configuration,
                                                               resourceManager,
                                                               remotingService,

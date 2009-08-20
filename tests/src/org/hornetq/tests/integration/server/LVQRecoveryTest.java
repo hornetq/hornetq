@@ -23,9 +23,9 @@ import org.hornetq.core.client.ClientSessionFactory;
 import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.TransportConfiguration;
-import org.hornetq.core.exception.MessagingException;
+import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.message.impl.MessageImpl;
-import org.hornetq.core.server.MessagingServer;
+import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.core.transaction.impl.XidImpl;
 import org.hornetq.tests.util.ServiceTestBase;
@@ -36,7 +36,7 @@ import org.hornetq.utils.SimpleString;
  */
 public class LVQRecoveryTest extends ServiceTestBase
 {
-   private MessagingServer server;
+   private HornetQServer server;
 
    private ClientSession clientSession;
 
@@ -158,7 +158,7 @@ public class LVQRecoveryTest extends ServiceTestBase
          {
             clientSession.close();
          }
-         catch (MessagingException e1)
+         catch (HornetQException e1)
          {
             //
          }
@@ -169,7 +169,7 @@ public class LVQRecoveryTest extends ServiceTestBase
          {
             clientSessionXa.close();
          }
-         catch (MessagingException e1)
+         catch (HornetQException e1)
          {
             //
          }

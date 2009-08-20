@@ -45,7 +45,7 @@ import org.hornetq.core.asyncio.impl.AsynchronousFileImpl;
 import org.hornetq.core.buffers.ChannelBuffers;
 import org.hornetq.core.client.ClientMessage;
 import org.hornetq.core.client.ClientSession;
-import org.hornetq.core.exception.MessagingException;
+import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.postoffice.Binding;
 import org.hornetq.core.postoffice.Bindings;
@@ -54,7 +54,7 @@ import org.hornetq.core.postoffice.QueueBinding;
 import org.hornetq.core.postoffice.impl.LocalQueueBinding;
 import org.hornetq.core.remoting.impl.invm.InVMRegistry;
 import org.hornetq.core.server.MessageReference;
-import org.hornetq.core.server.MessagingServer;
+import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.Queue;
 import org.hornetq.core.server.ServerMessage;
 import org.hornetq.core.server.impl.ServerMessageImpl;
@@ -405,7 +405,7 @@ public class UnitTestCase extends TestCase
       return testDir + "/temp";
    }
 
-   protected static void expectMessagingException(String message, int errorCode, MessagingAction action)
+   protected static void expectHornetQException(String message, int errorCode, MessagingAction action)
    {
       try
       {
@@ -414,14 +414,14 @@ public class UnitTestCase extends TestCase
       }
       catch (Exception e)
       {
-         assertTrue(e instanceof MessagingException);
-         assertEquals(errorCode, ((MessagingException)e).getCode());
+         assertTrue(e instanceof HornetQException);
+         assertEquals(errorCode, ((HornetQException)e).getCode());
       }
    }
    
-   protected static void expectMessagingException(int errorCode, MessagingAction action)
+   protected static void expectHornetQException(int errorCode, MessagingAction action)
    {
-      expectMessagingException("must throw a MessagingException with the expected errorCode: " + errorCode, errorCode, action);
+      expectHornetQException("must throw a HornetQException with the expected errorCode: " + errorCode, errorCode, action);
    }
    
    protected static void expectXAException(int errorCode, MessagingAction action)
@@ -795,7 +795,7 @@ public class UnitTestCase extends TestCase
    }
    
 
-   protected int getMessageCount(final MessagingServer service, final String address) throws Exception
+   protected int getMessageCount(final HornetQServer service, final String address) throws Exception
    {
       return getMessageCount(service.getPostOffice(), address);
    }

@@ -31,13 +31,13 @@ import org.hornetq.core.client.impl.ClientSessionInternal;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.TransportConfiguration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
-import org.hornetq.core.exception.MessagingException;
+import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.remoting.RemotingConnection;
 import org.hornetq.core.remoting.impl.invm.InVMRegistry;
 import org.hornetq.core.remoting.impl.invm.TransportConstants;
-import org.hornetq.core.server.Messaging;
-import org.hornetq.core.server.MessagingServer;
+import org.hornetq.core.server.HornetQ;
+import org.hornetq.core.server.HornetQServer;
 import org.hornetq.jms.HornetQQueue;
 import org.hornetq.jms.client.HornetQConnectionFactory;
 import org.hornetq.jms.client.HornetQSession;
@@ -65,9 +65,9 @@ public class JMSFailoverTest extends UnitTestCase
 
    // Attributes ----------------------------------------------------
 
-   private MessagingServer liveService;
+   private HornetQServer liveService;
 
-   private MessagingServer backupService;
+   private HornetQServer backupService;
 
    private Map<String, Object> backupParams = new HashMap<String, Object>();
 
@@ -119,7 +119,7 @@ public class JMSFailoverTest extends UnitTestCase
 
       conn.start();
 
-      MessagingException me = new MessagingException(MessagingException.NOT_CONNECTED);
+      HornetQException me = new HornetQException(HornetQException.NOT_CONNECTED);
 
       coreConn.fail(me);
 
@@ -185,7 +185,7 @@ public class JMSFailoverTest extends UnitTestCase
 
       // Note we block on P send to make sure all messages get to server before failover
 
-      MessagingException me = new MessagingException(MessagingException.NOT_CONNECTED);
+      HornetQException me = new HornetQException(HornetQException.NOT_CONNECTED);
 
       coreConnLive.fail(me);
 
@@ -242,7 +242,7 @@ public class JMSFailoverTest extends UnitTestCase
                 .add(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory",
                                                 backupParams));
       backupConf.setBackup(true);
-      backupService = Messaging.newMessagingServer(backupConf, false);
+      backupService = HornetQ.newMessagingServer(backupConf, false);
       backupService.start();
 
       Configuration liveConf = new ConfigurationImpl();
@@ -256,7 +256,7 @@ public class JMSFailoverTest extends UnitTestCase
       connectors.put(backupTC.getName(), backupTC);
       liveConf.setConnectorConfigurations(connectors);
       liveConf.setBackupConnectorName(backupTC.getName());
-      liveService = Messaging.newMessagingServer(liveConf, false);
+      liveService = HornetQ.newMessagingServer(liveConf, false);
       liveService.start();
    }
 

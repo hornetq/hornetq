@@ -22,7 +22,7 @@ import org.hornetq.core.remoting.impl.invm.InVMConnector;
 import org.hornetq.core.remoting.spi.BufferHandler;
 import org.hornetq.core.remoting.spi.Connection;
 import org.hornetq.core.remoting.spi.ConnectionLifeCycleListener;
-import org.hornetq.core.remoting.spi.MessagingBuffer;
+import org.hornetq.core.remoting.spi.HornetQBuffer;
 
 /**
  * A MockConnector
@@ -77,7 +77,7 @@ public class MockConnector extends InVMConnector
 
    public static interface MockCallback
    {
-      void onWrite(final MessagingBuffer buffer);
+      void onWrite(final HornetQBuffer buffer);
    }
 
    class MockConnection extends InVMConnection
@@ -92,7 +92,7 @@ public class MockConnector extends InVMConnector
       }
 
       @Override
-      public void write(final MessagingBuffer buffer, final boolean flush)
+      public void write(final HornetQBuffer buffer, final boolean flush)
       {
          log.info("calling mock connection write");
          if (callback != null)

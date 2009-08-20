@@ -102,7 +102,7 @@ public class QueueTest extends JMSTestCase
 	      
 	      startNoDelete();
 	      
-	      // Messaging server restart implies new ConnectionFactory lookup
+	      // HornetQ server restart implies new ConnectionFactory lookup
 	      deployAndLookupAdministeredObjects();
 	      
 	      conn = cf.createConnection();

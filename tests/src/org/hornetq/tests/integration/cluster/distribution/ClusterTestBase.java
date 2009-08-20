@@ -43,8 +43,8 @@ import org.hornetq.core.postoffice.PostOffice;
 import org.hornetq.core.postoffice.QueueBinding;
 import org.hornetq.core.postoffice.impl.LocalQueueBinding;
 import org.hornetq.core.server.JournalType;
-import org.hornetq.core.server.Messaging;
-import org.hornetq.core.server.MessagingServer;
+import org.hornetq.core.server.HornetQ;
+import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.cluster.ClusterConnection;
 import org.hornetq.core.server.cluster.RemoteQueueBinding;
 import org.hornetq.integration.transports.netty.TransportConstants;
@@ -131,7 +131,7 @@ public class ClusterTestBase extends ServiceTestBase
 
    private static final int MAX_SERVERS = 10;
 
-   private MessagingServer[] servers = new MessagingServer[MAX_SERVERS];
+   private HornetQServer[] servers = new HornetQServer[MAX_SERVERS];
 
    private ClientSessionFactory[] sfs = new ClientSessionFactory[MAX_SERVERS];
 
@@ -142,7 +142,7 @@ public class ClusterTestBase extends ServiceTestBase
 
    protected void waitForMessages(int node, final String address, final int count) throws Exception
    {
-      MessagingServer server = this.servers[node];
+      HornetQServer server = this.servers[node];
 
       if (server == null)
       {
@@ -193,7 +193,7 @@ public class ClusterTestBase extends ServiceTestBase
 //               consumerCount +
 //               " local " +
 //               local);
-      MessagingServer server = this.servers[node];
+      HornetQServer server = this.servers[node];
 
       if (server == null)
       {
@@ -867,7 +867,7 @@ public class ClusterTestBase extends ServiceTestBase
       this.setupSessionFactory(node, backupNode, netty, true);
    }
 
-   protected MessagingServer getServer(int node)
+   protected HornetQServer getServer(int node)
    {
       if (servers[node] == null)
       {
@@ -950,15 +950,15 @@ public class ClusterTestBase extends ServiceTestBase
          configuration.getAcceptorConfigurations().add(nettytc);
       }
 
-      MessagingServer server;
+      HornetQServer server;
 
       if (fileStorage)
       {
-         server = Messaging.newMessagingServer(configuration);
+         server = HornetQ.newMessagingServer(configuration);
       }
       else
       {
-         server = Messaging.newMessagingServer(configuration, false);
+         server = HornetQ.newMessagingServer(configuration, false);
       }
       servers[node] = server;
    }
@@ -1081,15 +1081,15 @@ public class ClusterTestBase extends ServiceTestBase
 
       configuration.getDiscoveryGroupConfigurations().put(dcConfig.getName(), dcConfig);
 
-      MessagingServer server;
+      HornetQServer server;
 
       if (fileStorage)
       {
-         server = Messaging.newMessagingServer(configuration);
+         server = HornetQ.newMessagingServer(configuration);
       }
       else
       {
-         server = Messaging.newMessagingServer(configuration, false);
+         server = HornetQ.newMessagingServer(configuration, false);
       }
       servers[node] = server;
    }
@@ -1137,7 +1137,7 @@ public class ClusterTestBase extends ServiceTestBase
                                          int maxHops,
                                          boolean netty)
    {
-      MessagingServer serverFrom = servers[nodeFrom];
+      HornetQServer serverFrom = servers[nodeFrom];
 
       if (serverFrom == null)
       {
@@ -1186,7 +1186,7 @@ public class ClusterTestBase extends ServiceTestBase
                                          int nodeFrom,
                                          int... nodesTo)
    {
-      MessagingServer serverFrom = servers[nodeFrom];
+      HornetQServer serverFrom = servers[nodeFrom];
 
       if (serverFrom == null)
       {
@@ -1239,7 +1239,7 @@ public class ClusterTestBase extends ServiceTestBase
                                                     int[] nodesTo,
                                                     int[] backupsTo)
    {
-      MessagingServer serverFrom = servers[nodeFrom];
+      HornetQServer serverFrom = servers[nodeFrom];
 
       if (serverFrom == null)
       {
@@ -1308,7 +1308,7 @@ public class ClusterTestBase extends ServiceTestBase
                                                   int maxHops,
                                                   boolean netty)
    {
-      MessagingServer server = servers[node];
+      HornetQServer server = servers[node];
 
       if (server == null)
       {

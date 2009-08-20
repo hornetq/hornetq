@@ -34,7 +34,7 @@ import org.hornetq.core.cluster.DiscoveryGroup;
 import org.hornetq.core.cluster.DiscoveryListener;
 import org.hornetq.core.cluster.impl.DiscoveryGroupImpl;
 import org.hornetq.core.config.TransportConfiguration;
-import org.hornetq.core.exception.MessagingException;
+import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.utils.HornetQThreadFactory;
 import org.hornetq.utils.Pair;
@@ -716,7 +716,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
                                       final boolean autoCommitSends,
                                       final boolean autoCommitAcks,
                                       final boolean preAcknowledge,
-                                      final int ackBatchSize) throws MessagingException
+                                      final int ackBatchSize) throws HornetQException
    {
       return createSessionInternal(username,
                                    password,
@@ -727,22 +727,22 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
                                    ackBatchSize);
    }
 
-   public ClientSession createXASession() throws MessagingException
+   public ClientSession createXASession() throws HornetQException
    {
       return createSessionInternal(null, null, true, false, false, preAcknowledge, this.ackBatchSize);
    }
 
-   public ClientSession createTransactedSession() throws MessagingException
+   public ClientSession createTransactedSession() throws HornetQException
    {
       return createSessionInternal(null, null, false, false, false, preAcknowledge, this.ackBatchSize);
    }
 
-   public ClientSession createSession() throws MessagingException
+   public ClientSession createSession() throws HornetQException
    {
       return createSessionInternal(null, null, false, true, true, preAcknowledge, this.ackBatchSize);
    }
 
-   public ClientSession createSession(final boolean autoCommitSends, final boolean autoCommitAcks) throws MessagingException
+   public ClientSession createSession(final boolean autoCommitSends, final boolean autoCommitAcks) throws HornetQException
    {
       return createSessionInternal(null,
                                    null,
@@ -753,7 +753,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
                                    this.ackBatchSize);
    }
 
-   public ClientSession createSession(final boolean xa, final boolean autoCommitSends, final boolean autoCommitAcks) throws MessagingException
+   public ClientSession createSession(final boolean xa, final boolean autoCommitSends, final boolean autoCommitAcks) throws HornetQException
    {
       return createSessionInternal(null, null, xa, autoCommitSends, autoCommitAcks, preAcknowledge, this.ackBatchSize);
    }
@@ -761,7 +761,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
    public ClientSession createSession(final boolean xa,
                                       final boolean autoCommitSends,
                                       final boolean autoCommitAcks,
-                                      final boolean preAcknowledge) throws MessagingException
+                                      final boolean preAcknowledge) throws HornetQException
    {
       return createSessionInternal(null, null, xa, autoCommitSends, autoCommitAcks, preAcknowledge, this.ackBatchSize);
    }
@@ -935,7 +935,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
                                                final boolean autoCommitSends,
                                                final boolean autoCommitAcks,
                                                final boolean preAcknowledge,
-                                               final int ackBatchSize) throws MessagingException
+                                               final int ackBatchSize) throws HornetQException
    {
       if (closed)
       {
@@ -950,7 +950,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
          }
          catch (Exception e)
          {
-            throw new MessagingException(MessagingException.INTERNAL_ERROR, "Failed to initialise session factory", e);
+            throw new HornetQException(HornetQException.INTERNAL_ERROR, "Failed to initialise session factory", e);
          }
 
          readOnly = true;
@@ -962,7 +962,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
 
          if (!ok)
          {
-            throw new MessagingException(MessagingException.CONNECTION_TIMEDOUT,
+            throw new HornetQException(HornetQException.CONNECTION_TIMEDOUT,
                                          "Timed out waiting to receive initial broadcast from discovery group");
          }
       }

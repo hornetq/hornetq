@@ -21,8 +21,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.hornetq.core.exception.MessagingException;
-import org.hornetq.core.remoting.spi.MessagingBuffer;
+import org.hornetq.core.exception.HornetQException;
+import org.hornetq.core.remoting.spi.HornetQBuffer;
 import org.hornetq.utils.DataConstants;
 import org.hornetq.utils.Pair;
 
@@ -185,7 +185,7 @@ public class JournalTransaction
     * @param currentFile
     * @param bb
     */
-   public void fillNumberOfRecords(final JournalFile currentFile, final MessagingBuffer bb)
+   public void fillNumberOfRecords(final JournalFile currentFile, final HornetQBuffer bb)
    {
       bb.writerIndex(DataConstants.SIZE_BYTE + DataConstants.SIZE_INT + DataConstants.SIZE_LONG);
 
@@ -245,7 +245,7 @@ public class JournalTransaction
 
       if (currentCallback.getErrorMessage() != null)
       {
-         throw new MessagingException(currentCallback.getErrorCode(), currentCallback.getErrorMessage());
+         throw new HornetQException(currentCallback.getErrorCode(), currentCallback.getErrorMessage());
       }
 
       currentCallback.countUp();

@@ -12,7 +12,7 @@
  */
 package org.hornetq.core.remoting.spi;
 
-import org.hornetq.core.exception.MessagingException;
+import org.hornetq.core.exception.HornetQException;
 
 /**
  *
@@ -27,5 +27,5 @@ public interface ConnectionLifeCycleListener
 
    void connectionDestroyed(Object connectionID);
 
-   void connectionException(Object connectionID, MessagingException me);
+   void connectionException(Object connectionID, HornetQException me);
 }

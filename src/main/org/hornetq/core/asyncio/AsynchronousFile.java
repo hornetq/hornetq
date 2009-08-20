@@ -15,7 +15,7 @@ package org.hornetq.core.asyncio;
 
 import java.nio.ByteBuffer;
 
-import org.hornetq.core.exception.MessagingException;
+import org.hornetq.core.exception.HornetQException;
 
 /**
  * 
@@ -31,22 +31,22 @@ public interface AsynchronousFile
     * Note: If you are using a native Linux implementation, maxIO can't be higher than what's defined on /proc/sys/fs/aio-max-nr, or you would get an error 
     * @param fileName
     * @param maxIO The number of max concurrent asynchrnous IO operations. It has to be balanced between the size of your writes and the capacity of your disk.
-    * @throws MessagingException 
+    * @throws HornetQException 
     */
-   void open(String fileName, int maxIO) throws MessagingException;
+   void open(String fileName, int maxIO) throws HornetQException;
 
    /** 
     * Warning: This function will perform a synchronous IO, probably translating to a fstat call
-    * @throws MessagingException 
+    * @throws HornetQException 
     * */
-   long size() throws MessagingException;
+   long size() throws HornetQException;
 
    /** Any error will be reported on the callback interface */ 
    void write(long position, long size, ByteBuffer directByteBuffer, AIOCallback aioCallback);
 
-   void read(long position, long size, ByteBuffer directByteBuffer, AIOCallback aioCallback) throws MessagingException;
+   void read(long position, long size, ByteBuffer directByteBuffer, AIOCallback aioCallback) throws HornetQException;
 
-   void fill(long position, int blocks, long size, byte fillChar) throws MessagingException;
+   void fill(long position, int blocks, long size, byte fillChar) throws HornetQException;
 
    void setBufferCallback(BufferCallback callback);
 

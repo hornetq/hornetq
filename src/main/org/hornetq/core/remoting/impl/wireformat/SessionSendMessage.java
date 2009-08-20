@@ -14,7 +14,7 @@
 package org.hornetq.core.remoting.impl.wireformat;
 
 import org.hornetq.core.message.Message;
-import org.hornetq.core.remoting.spi.MessagingBuffer;
+import org.hornetq.core.remoting.spi.HornetQBuffer;
 import org.hornetq.core.server.ServerMessage;
 import org.hornetq.core.server.impl.ServerMessageImpl;
 import org.hornetq.utils.DataConstants;
@@ -74,7 +74,7 @@ public class SessionSendMessage extends PacketImpl
    }
 
    @Override
-   public void encodeBody(final MessagingBuffer buffer)
+   public void encodeBody(final HornetQBuffer buffer)
    {
       if (clientMessage != null)
       {
@@ -90,7 +90,7 @@ public class SessionSendMessage extends PacketImpl
    }
 
    @Override
-   public void decodeBody(final MessagingBuffer buffer)
+   public void decodeBody(final HornetQBuffer buffer)
    {
       // TODO can be optimised
 

@@ -14,7 +14,7 @@
 package org.hornetq.core.client.impl;
 
 import org.hornetq.core.client.ClientSession;
-import org.hornetq.core.exception.MessagingException;
+import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.remoting.FailureListener;
 import org.hornetq.core.remoting.RemotingConnection;
 
@@ -45,7 +45,7 @@ public interface ConnectionManager
                                final int producerMaxRate,
                                final int consumerMaxRate,
                                final boolean blockOnNonPersistentSend,
-                               final boolean blockOnPersistentSend) throws MessagingException;
+                               final boolean blockOnPersistentSend) throws HornetQException;
 
    void removeSession(final ClientSessionInternal session);
 

@@ -30,10 +30,10 @@ import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.TransportConfiguration;
 import org.hornetq.core.config.cluster.BroadcastGroupConfiguration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
-import org.hornetq.core.exception.MessagingException;
+import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.remoting.impl.invm.TransportConstants;
-import org.hornetq.core.server.Messaging;
-import org.hornetq.core.server.MessagingServer;
+import org.hornetq.core.server.HornetQ;
+import org.hornetq.core.server.HornetQServer;
 import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.tests.util.ServiceTestBase;
 import org.hornetq.utils.Pair;
@@ -53,9 +53,9 @@ public class SessionFactoryTest extends ServiceTestBase
 
    private final int groupPort = 8765;
 
-   private MessagingServer liveService;
+   private HornetQServer liveService;
 
-   private MessagingServer backupService;
+   private HornetQServer backupService;
 
    private TransportConfiguration liveTC;
 
@@ -142,7 +142,7 @@ public class SessionFactoryTest extends ServiceTestBase
             ClientSession session = cf.createSession(false, true, true);
             fail("Should throw exception");
          }
-         catch (MessagingException e)
+         catch (HornetQException e)
          {
             // Ok
          }
@@ -873,7 +873,7 @@ public class SessionFactoryTest extends ServiceTestBase
                 .add(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory",
                                                 backupParams));
       backupConf.setBackup(true);
-      backupService = Messaging.newMessagingServer(backupConf, false);
+      backupService = HornetQ.newMessagingServer(backupConf, false);
       backupService.start();
 
       Configuration liveConf = new ConfigurationImpl();
@@ -911,7 +911,7 @@ public class SessionFactoryTest extends ServiceTestBase
       bcConfigs1.add(bcConfig1);
       liveConf.setBroadcastGroupConfigurations(bcConfigs1);
 
-      liveService = Messaging.newMessagingServer(liveConf, false);
+      liveService = HornetQ.newMessagingServer(liveConf, false);
       liveService.start();
    }
 }

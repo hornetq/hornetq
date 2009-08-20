@@ -21,7 +21,7 @@ import java.nio.channels.GatheringByteChannel;
 import java.nio.channels.ScatteringByteChannel;
 
 import org.hornetq.core.logging.Logger;
-import org.hornetq.core.remoting.spi.MessagingBuffer;
+import org.hornetq.core.remoting.spi.HornetQBuffer;
 import org.hornetq.utils.DataConstants;
 import org.hornetq.utils.SimpleString;
 import org.hornetq.utils.UTF8Util;
@@ -445,7 +445,7 @@ public abstract class AbstractChannelBuffer implements ChannelBuffer
    }
 
 
-   public void writeBytes(final MessagingBuffer src, final int srcIndex, final int length)
+   public void writeBytes(final HornetQBuffer src, final int srcIndex, final int length)
    {
       writeBytes((ChannelBuffer)src, srcIndex, length);
    }
@@ -585,7 +585,7 @@ public abstract class AbstractChannelBuffer implements ChannelBuffer
    }
 
    /* (non-Javadoc)
-    * @see org.hornetq.core.remoting.spi.MessagingBuffer#readBoolean()
+    * @see org.hornetq.core.remoting.spi.HornetQBuffer#readBoolean()
     */
    public boolean readBoolean()
    {
@@ -593,7 +593,7 @@ public abstract class AbstractChannelBuffer implements ChannelBuffer
    }
 
    /* (non-Javadoc)
-    * @see org.hornetq.core.remoting.spi.MessagingBuffer#readChar()
+    * @see org.hornetq.core.remoting.spi.HornetQBuffer#readChar()
     */
    public char readChar()
    {
@@ -601,7 +601,7 @@ public abstract class AbstractChannelBuffer implements ChannelBuffer
    }
 
    /* (non-Javadoc)
-    * @see org.hornetq.core.remoting.spi.MessagingBuffer#readDouble()
+    * @see org.hornetq.core.remoting.spi.HornetQBuffer#readDouble()
     */
    public double readDouble()
    {
@@ -609,7 +609,7 @@ public abstract class AbstractChannelBuffer implements ChannelBuffer
    }
 
    /* (non-Javadoc)
-    * @see org.hornetq.core.remoting.spi.MessagingBuffer#readFloat()
+    * @see org.hornetq.core.remoting.spi.HornetQBuffer#readFloat()
     */
    public float readFloat()
    {
@@ -617,7 +617,7 @@ public abstract class AbstractChannelBuffer implements ChannelBuffer
    }
 
    /* (non-Javadoc)
-    * @see org.hornetq.core.remoting.spi.MessagingBuffer#readNullableSimpleString()
+    * @see org.hornetq.core.remoting.spi.HornetQBuffer#readNullableSimpleString()
     */
    public SimpleString readNullableSimpleString()
    {
@@ -633,7 +633,7 @@ public abstract class AbstractChannelBuffer implements ChannelBuffer
    }
 
    /* (non-Javadoc)
-    * @see org.hornetq.core.remoting.spi.MessagingBuffer#readNullableString()
+    * @see org.hornetq.core.remoting.spi.HornetQBuffer#readNullableString()
     */
    public String readNullableString()
    {
@@ -649,7 +649,7 @@ public abstract class AbstractChannelBuffer implements ChannelBuffer
    }
 
    /* (non-Javadoc)
-    * @see org.hornetq.core.remoting.spi.MessagingBuffer#readSimpleString()
+    * @see org.hornetq.core.remoting.spi.HornetQBuffer#readSimpleString()
     */
    public SimpleString readSimpleString()
    {
@@ -660,7 +660,7 @@ public abstract class AbstractChannelBuffer implements ChannelBuffer
    }
 
    /* (non-Javadoc)
-    * @see org.hornetq.core.remoting.spi.MessagingBuffer#readString()
+    * @see org.hornetq.core.remoting.spi.HornetQBuffer#readString()
     */
    public String readString()
    {
@@ -675,7 +675,7 @@ public abstract class AbstractChannelBuffer implements ChannelBuffer
    }
 
    /* (non-Javadoc)
-    * @see org.hornetq.core.remoting.spi.MessagingBuffer#readUTF()
+    * @see org.hornetq.core.remoting.spi.HornetQBuffer#readUTF()
     */
    public String readUTF() throws Exception
    {
@@ -683,7 +683,7 @@ public abstract class AbstractChannelBuffer implements ChannelBuffer
    }
 
    /* (non-Javadoc)
-    * @see org.hornetq.core.remoting.spi.MessagingBuffer#writeBoolean(boolean)
+    * @see org.hornetq.core.remoting.spi.HornetQBuffer#writeBoolean(boolean)
     */
    public void writeBoolean(final boolean val)
    {
@@ -691,7 +691,7 @@ public abstract class AbstractChannelBuffer implements ChannelBuffer
    }
 
    /* (non-Javadoc)
-    * @see org.hornetq.core.remoting.spi.MessagingBuffer#writeChar(char)
+    * @see org.hornetq.core.remoting.spi.HornetQBuffer#writeChar(char)
     */
    public void writeChar(final char val)
    {
@@ -699,7 +699,7 @@ public abstract class AbstractChannelBuffer implements ChannelBuffer
    }
 
    /* (non-Javadoc)
-    * @see org.hornetq.core.remoting.spi.MessagingBuffer#writeDouble(double)
+    * @see org.hornetq.core.remoting.spi.HornetQBuffer#writeDouble(double)
     */
    public void writeDouble(final double val)
    {
@@ -708,7 +708,7 @@ public abstract class AbstractChannelBuffer implements ChannelBuffer
    }
 
    /* (non-Javadoc)
-    * @see org.hornetq.core.remoting.spi.MessagingBuffer#writeFloat(float)
+    * @see org.hornetq.core.remoting.spi.HornetQBuffer#writeFloat(float)
     */
    public void writeFloat(final float val)
    {
@@ -717,7 +717,7 @@ public abstract class AbstractChannelBuffer implements ChannelBuffer
    }
 
    /* (non-Javadoc)
-    * @see org.hornetq.core.remoting.spi.MessagingBuffer#writeNullableSimpleString(org.hornetq.util.SimpleString)
+    * @see org.hornetq.core.remoting.spi.HornetQBuffer#writeNullableSimpleString(org.hornetq.util.SimpleString)
     */
    public void writeNullableSimpleString(final SimpleString val)
    {
@@ -733,7 +733,7 @@ public abstract class AbstractChannelBuffer implements ChannelBuffer
    }
 
    /* (non-Javadoc)
-    * @see org.hornetq.core.remoting.spi.MessagingBuffer#writeNullableString(java.lang.String)
+    * @see org.hornetq.core.remoting.spi.HornetQBuffer#writeNullableString(java.lang.String)
     */
    public void writeNullableString(final String val)
    {      
@@ -749,7 +749,7 @@ public abstract class AbstractChannelBuffer implements ChannelBuffer
    }
 
    /* (non-Javadoc)
-    * @see org.hornetq.core.remoting.spi.MessagingBuffer#writeSimpleString(org.hornetq.util.SimpleString)
+    * @see org.hornetq.core.remoting.spi.HornetQBuffer#writeSimpleString(org.hornetq.util.SimpleString)
     */
    public void writeSimpleString(final SimpleString val)
    {
@@ -759,7 +759,7 @@ public abstract class AbstractChannelBuffer implements ChannelBuffer
    }
 
    /* (non-Javadoc)
-    * @see org.hornetq.core.remoting.spi.MessagingBuffer#writeString(java.lang.String)
+    * @see org.hornetq.core.remoting.spi.HornetQBuffer#writeString(java.lang.String)
     */
    public void writeString(final String val)
    {
@@ -771,7 +771,7 @@ public abstract class AbstractChannelBuffer implements ChannelBuffer
    }
 
    /* (non-Javadoc)
-    * @see org.hornetq.core.remoting.spi.MessagingBuffer#writeUTF(java.lang.String)
+    * @see org.hornetq.core.remoting.spi.HornetQBuffer#writeUTF(java.lang.String)
     */
    public void writeUTF(final String utf) throws Exception
    {

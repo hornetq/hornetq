@@ -56,8 +56,8 @@ import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.TransportConfiguration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.logging.Logger;
-import org.hornetq.core.server.Messaging;
-import org.hornetq.core.server.MessagingServer;
+import org.hornetq.core.server.HornetQ;
+import org.hornetq.core.server.HornetQServer;
 import org.hornetq.integration.transports.netty.NettyAcceptorFactory;
 import org.hornetq.integration.transports.netty.NettyConnectorFactory;
 import org.hornetq.jms.server.impl.JMSServerManagerImpl;
@@ -115,7 +115,7 @@ public class ManualReconnectionToSingleServerTest extends UnitTestCase
       }
    };
 
-   private MessagingServer server;
+   private HornetQServer server;
 
    private JMSServerManagerImpl serverManager;
 
@@ -190,7 +190,7 @@ public class ManualReconnectionToSingleServerTest extends UnitTestCase
       conf.setSecurityEnabled(false);
       conf.setJMXManagementEnabled(true);
       conf.getAcceptorConfigurations().add(new TransportConfiguration(NettyAcceptorFactory.class.getName()));
-      server = Messaging.newMessagingServer(conf, false);
+      server = HornetQ.newMessagingServer(conf, false);
       server.start();
 
       serverManager = new JMSServerManagerImpl(server);

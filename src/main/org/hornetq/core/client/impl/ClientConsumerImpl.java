@@ -19,7 +19,7 @@ import java.util.concurrent.Executor;
 import org.hornetq.core.buffers.ChannelBuffers;
 import org.hornetq.core.client.ClientMessage;
 import org.hornetq.core.client.MessageHandler;
-import org.hornetq.core.exception.MessagingException;
+import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.list.PriorityLinkedList;
 import org.hornetq.core.list.impl.PriorityLinkedListImpl;
 import org.hornetq.core.logging.Logger;
@@ -138,7 +138,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
    // ClientConsumer implementation
    // -----------------------------------------------------------------
 
-   public ClientMessage receive(long timeout) throws MessagingException
+   public ClientMessage receive(long timeout) throws HornetQException
    {
       checkClosed();
 
@@ -156,7 +156,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
 
       if (handler != null)
       {
-         throw new MessagingException(MessagingException.ILLEGAL_STATE,
+         throw new HornetQException(HornetQException.ILLEGAL_STATE,
                                       "Cannot call receive(...) - a MessageHandler is set");
       }
 
@@ -260,17 +260,17 @@ public class ClientConsumerImpl implements ClientConsumerInternal
       }
    }
 
-   public ClientMessage receive() throws MessagingException
+   public ClientMessage receive() throws HornetQException
    {
       return receive(0);
    }
 
-   public ClientMessage receiveImmediate() throws MessagingException
+   public ClientMessage receiveImmediate() throws HornetQException
    {
       return receive(-1);
    }
 
-   public MessageHandler getMessageHandler() throws MessagingException
+   public MessageHandler getMessageHandler() throws HornetQException
    {
       checkClosed();
 
@@ -279,13 +279,13 @@ public class ClientConsumerImpl implements ClientConsumerInternal
 
    // Must be synchronized since messages may be arriving while handler is being set and might otherwise end
    // up not queueing enough executors - so messages get stranded
-   public synchronized void setMessageHandler(final MessageHandler theHandler) throws MessagingException
+   public synchronized void setMessageHandler(final MessageHandler theHandler) throws HornetQException
    {
       checkClosed();
 
       if (receiverThread != null)
       {
-         throw new MessagingException(MessagingException.ILLEGAL_STATE,
+         throw new HornetQException(HornetQException.ILLEGAL_STATE,
                                       "Cannot set MessageHandler - consumer is in receive(...)");
       }
 
@@ -311,7 +311,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
       }
    }
 
-   public void close() throws MessagingException
+   public void close() throws HornetQException
    {
       doCleanUp(true);
    }
@@ -322,7 +322,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
       {
          doCleanUp(false);
       }
-      catch (MessagingException e)
+      catch (HornetQException e)
       {
          log.warn("problem cleaning up: " + this);
       }
@@ -333,7 +333,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
       return closed;
    }
 
-   public void stop() throws MessagingException
+   public void stop() throws HornetQException
    {
       waitForOnMessageToComplete();
 
@@ -462,7 +462,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
       return buffer.size();
    }
 
-   public void acknowledge(final ClientMessage message) throws MessagingException
+   public void acknowledge(final ClientMessage message) throws HornetQException
    {
       ackBytes += message.getEncodeSize();
 
@@ -476,7 +476,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
       }
    }
 
-   public void flushAcks() throws MessagingException
+   public void flushAcks() throws HornetQException
    {
       if (lastAckedMessage != null)
       {
@@ -491,7 +491,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
     * 
     * @parameter discountSlowConsumer When dealing with slowConsumers, we need to discount one credit that was pre-sent when the first receive was called. For largeMessage that is only done at the latest packet
     * */
-   public void flowControl(final int messageBytes, final boolean discountSlowConsumer) throws MessagingException
+   public void flowControl(final int messageBytes, final boolean discountSlowConsumer) throws HornetQException
    {
       if (clientWindowSize >= 0)
       {
@@ -612,11 +612,11 @@ public class ClientConsumerImpl implements ClientConsumerInternal
       }
    }
 
-   private void checkClosed() throws MessagingException
+   private void checkClosed() throws HornetQException
    {
       if (closed)
       {
-         throw new MessagingException(MessagingException.OBJECT_CLOSED, "Consumer is closed");
+         throw new HornetQException(HornetQException.OBJECT_CLOSED, "Consumer is closed");
       }
    }
 
@@ -690,9 +690,9 @@ public class ClientConsumerImpl implements ClientConsumerInternal
 
    /**
     * @param message
-    * @throws MessagingException
+    * @throws HornetQException
     */
-   private void flowControlBeforeConsumption(final ClientMessageInternal message) throws MessagingException
+   private void flowControlBeforeConsumption(final ClientMessageInternal message) throws HornetQException
    {
       // Chunk messages will execute the flow control while receiving the chunks
       if (message.getFlowControlSize() != 0)
@@ -701,7 +701,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
       }
    }
 
-   private void doCleanUp(final boolean sendCloseMessage) throws MessagingException
+   private void doCleanUp(final boolean sendCloseMessage) throws HornetQException
    {
       try
       {
@@ -759,7 +759,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
       buffer.clear();
    }
 
-   private void doAck(final ClientMessage message) throws MessagingException
+   private void doAck(final ClientMessage message) throws HornetQException
    {
       ackBytes = 0;
 

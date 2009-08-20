@@ -16,7 +16,7 @@ package org.hornetq.core.management.impl;
 import java.util.List;
 import java.util.Map;
 
-import org.hornetq.core.exception.MessagingException;
+import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.filter.Filter;
 import org.hornetq.core.filter.impl.FilterImpl;
 import org.hornetq.core.management.MessageCounterInfo;
@@ -73,7 +73,7 @@ public class QueueControlImpl implements QueueControl
    /**
     * Returns null if the string is null or empty
     */
-   public static Filter createFilter(final String filterStr) throws MessagingException
+   public static Filter createFilter(final String filterStr) throws HornetQException
    {
       if (filterStr == null || filterStr.trim().length() == 0)
       {
@@ -249,7 +249,7 @@ public class QueueControlImpl implements QueueControl
          }
          return messages;
       }
-      catch (MessagingException e)
+      catch (HornetQException e)
       {
          throw new IllegalStateException(e.getMessage());
       }
@@ -273,7 +273,7 @@ public class QueueControlImpl implements QueueControl
       {
          return queue.deleteReference(messageID);
       }
-      catch (MessagingException e)
+      catch (HornetQException e)
       {
          throw new IllegalStateException(e.getMessage());
       }
@@ -297,7 +297,7 @@ public class QueueControlImpl implements QueueControl
          Filter filter = createFilter(filterStr);
          return queue.expireReferences(filter);
       }
-      catch (MessagingException e)
+      catch (HornetQException e)
       {
          throw new IllegalStateException(e.getMessage());
       }

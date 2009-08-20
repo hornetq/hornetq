@@ -21,9 +21,9 @@ import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.management.ResourceNames;
-import org.hornetq.core.remoting.spi.MessagingBuffer;
-import org.hornetq.core.server.Messaging;
-import org.hornetq.core.server.MessagingServer;
+import org.hornetq.core.remoting.spi.HornetQBuffer;
+import org.hornetq.core.server.HornetQ;
+import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.ServerMessage;
 import org.hornetq.core.server.impl.ServerMessageImpl;
 import org.hornetq.tests.util.UnitTestCase;
@@ -55,12 +55,12 @@ public class ManagementServiceImplTest extends UnitTestCase
       Configuration conf = new ConfigurationImpl();
       conf.setJMXManagementEnabled(false);
       
-      MessagingServer server = Messaging.newMessagingServer(conf, false);
+      HornetQServer server = HornetQ.newMessagingServer(conf, false);
       server.start();
 
       // invoke attribute and operation on the server
       ServerMessage message = new ServerMessageImpl();
-      MessagingBuffer body = ChannelBuffers.buffer(2048);
+      HornetQBuffer body = ChannelBuffers.buffer(2048);
       message.setBody(body);
       ManagementHelper.putOperationInvocation(message,
                                               ResourceNames.CORE_SERVER,
@@ -80,12 +80,12 @@ public class ManagementServiceImplTest extends UnitTestCase
       Configuration conf = new ConfigurationImpl();
       conf.setJMXManagementEnabled(false);
       
-      MessagingServer server = Messaging.newMessagingServer(conf, false);
+      HornetQServer server = HornetQ.newMessagingServer(conf, false);
       server.start();
 
       // invoke attribute and operation on the server
       ServerMessage message = new ServerMessageImpl();
-      MessagingBuffer body = ChannelBuffers.buffer(2048);
+      HornetQBuffer body = ChannelBuffers.buffer(2048);
       message.setBody(body);
       ManagementHelper.putOperationInvocation(message,
                                               ResourceNames.CORE_SERVER,
@@ -104,12 +104,12 @@ public class ManagementServiceImplTest extends UnitTestCase
       Configuration conf = new ConfigurationImpl();
       conf.setJMXManagementEnabled(false);
       
-      MessagingServer server = Messaging.newMessagingServer(conf, false);
+      HornetQServer server = HornetQ.newMessagingServer(conf, false);
       server.start();
 
       // invoke attribute and operation on the server
       ServerMessage message = new ServerMessageImpl();
-      MessagingBuffer body = ChannelBuffers.buffer(2048);
+      HornetQBuffer body = ChannelBuffers.buffer(2048);
       message.setBody(body);
       ManagementHelper.putOperationInvocation(message,
                                               "Resouce.Does.Not.Exist",
@@ -128,12 +128,12 @@ public class ManagementServiceImplTest extends UnitTestCase
       Configuration conf = new ConfigurationImpl();
       conf.setJMXManagementEnabled(false);
       
-      MessagingServer server = Messaging.newMessagingServer(conf, false);
+      HornetQServer server = HornetQ.newMessagingServer(conf, false);
       server.start();
 
       // invoke attribute and operation on the server
       ServerMessage message = new ServerMessageImpl();
-      MessagingBuffer body = ChannelBuffers.buffer(2048);
+      HornetQBuffer body = ChannelBuffers.buffer(2048);
       message.setBody(body);
       ManagementHelper.putAttribute(message, ResourceNames.CORE_SERVER, "attribute.Does.Not.Exist");
       

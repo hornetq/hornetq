@@ -13,7 +13,7 @@
 
 package org.hornetq.core.remoting.impl.wireformat;
 
-import org.hornetq.core.remoting.spi.MessagingBuffer;
+import org.hornetq.core.remoting.spi.HornetQBuffer;
 import org.hornetq.utils.DataConstants;
 
 /**
@@ -66,7 +66,7 @@ public class SessionExpiredMessage extends PacketImpl
    }
 
    @Override
-   public void encodeBody(final MessagingBuffer buffer)
+   public void encodeBody(final HornetQBuffer buffer)
    {
       buffer.writeLong(consumerID);
 
@@ -74,7 +74,7 @@ public class SessionExpiredMessage extends PacketImpl
    }
 
    @Override
-   public void decodeBody(final MessagingBuffer buffer)
+   public void decodeBody(final HornetQBuffer buffer)
    {
       consumerID = buffer.readLong();
 

@@ -19,7 +19,7 @@ import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.deployers.DeploymentManager;
 import org.hornetq.core.deployers.impl.FileDeploymentManager;
 import org.hornetq.core.logging.Logger;
-import org.hornetq.core.server.MessagingServer;
+import org.hornetq.core.server.HornetQServer;
 import org.hornetq.integration.transports.netty.NettyConnectorFactory;
 import org.hornetq.jms.client.HornetQConnectionFactory;
 import org.hornetq.jms.server.JMSServerManager;
@@ -239,7 +239,7 @@ public class JMSServerDeployerTest extends ServiceTestBase
       config = new ConfigurationImpl();
       config.getConnectorConfigurations().put("netty",
                                               new TransportConfiguration(NettyConnectorFactory.class.getName()));
-      MessagingServer server = createServer(false, config);
+      HornetQServer server = createServer(false, config);
 
       deploymentManager = new FileDeploymentManager(config.getFileDeployerScanPeriod());
 

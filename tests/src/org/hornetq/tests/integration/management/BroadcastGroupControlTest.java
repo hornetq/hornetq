@@ -25,8 +25,8 @@ import org.hornetq.core.config.cluster.BroadcastGroupConfiguration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.management.BroadcastGroupControl;
 import org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory;
-import org.hornetq.core.server.Messaging;
-import org.hornetq.core.server.MessagingServer;
+import org.hornetq.core.server.HornetQ;
+import org.hornetq.core.server.HornetQServer;
 import org.hornetq.integration.transports.netty.NettyConnectorFactory;
 import org.hornetq.utils.Pair;
 import org.hornetq.utils.json.JSONArray;
@@ -48,7 +48,7 @@ public class BroadcastGroupControlTest extends ManagementTestBase
 
    // Attributes ----------------------------------------------------
 
-   private MessagingServer service;
+   private HornetQServer service;
 
    // Static --------------------------------------------------------
 
@@ -86,7 +86,7 @@ public class BroadcastGroupControlTest extends ManagementTestBase
       conf.getConnectorConfigurations().put(connectorConfiguration.getName(), connectorConfiguration);
       conf.getBroadcastGroupConfigurations().add(broadcastGroupConfig);
       conf.getAcceptorConfigurations().add(new TransportConfiguration(InVMAcceptorFactory.class.getName()));
-      service = Messaging.newMessagingServer(conf, mbeanServer, false);
+      service = HornetQ.newMessagingServer(conf, mbeanServer, false);
       service.start();
 
       BroadcastGroupControl broadcastGroupControl = createManagementControl(broadcastGroupConfig.getName());
@@ -128,7 +128,7 @@ public class BroadcastGroupControlTest extends ManagementTestBase
       conf.getConnectorConfigurations().put(connectorConfiguration.getName(), connectorConfiguration);
       conf.getBroadcastGroupConfigurations().add(broadcastGroupConfig);
       conf.getAcceptorConfigurations().add(new TransportConfiguration(InVMAcceptorFactory.class.getName()));
-      service = Messaging.newMessagingServer(conf, mbeanServer, false);
+      service = HornetQ.newMessagingServer(conf, mbeanServer, false);
       service.start();
 
       BroadcastGroupControl broadcastGroupControl = createManagementControl(broadcastGroupConfig.getName());

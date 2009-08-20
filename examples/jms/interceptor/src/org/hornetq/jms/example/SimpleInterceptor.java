@@ -13,7 +13,7 @@
 
 package org.hornetq.jms.example;
 
-import org.hornetq.core.exception.MessagingException;
+import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.message.Message;
 import org.hornetq.core.remoting.Interceptor;
 import org.hornetq.core.remoting.Packet;
@@ -29,7 +29,7 @@ import org.hornetq.utils.SimpleString;
 public class SimpleInterceptor implements Interceptor
 {
    
-   public boolean intercept(Packet packet, RemotingConnection connection) throws MessagingException
+   public boolean intercept(Packet packet, RemotingConnection connection) throws HornetQException
    {
       System.out.println("SimpleInterceptor gets called!");
       System.out.println("Packet: " + packet.getClass().getName());

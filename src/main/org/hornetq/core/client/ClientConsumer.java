@@ -13,7 +13,7 @@
 
 package org.hornetq.core.client;
 
-import org.hornetq.core.exception.MessagingException;
+import org.hornetq.core.exception.HornetQException;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -22,17 +22,17 @@ import org.hornetq.core.exception.MessagingException;
  */
 public interface ClientConsumer
 {
-   ClientMessage receive() throws MessagingException;
+   ClientMessage receive() throws HornetQException;
 
-   ClientMessage receive(long timeout) throws MessagingException;
+   ClientMessage receive(long timeout) throws HornetQException;
 
-   ClientMessage receiveImmediate() throws MessagingException;
+   ClientMessage receiveImmediate() throws HornetQException;
 
-   MessageHandler getMessageHandler() throws MessagingException;
+   MessageHandler getMessageHandler() throws HornetQException;
 
-   void setMessageHandler(MessageHandler handler) throws MessagingException;
+   void setMessageHandler(MessageHandler handler) throws HornetQException;
 
-   void close() throws MessagingException;
+   void close() throws HornetQException;
    
    boolean isClosed();   
    

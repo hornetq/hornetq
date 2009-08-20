@@ -46,7 +46,7 @@ import org.hornetq.core.persistence.QueueBindingInfo;
 import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.core.postoffice.Binding;
 import org.hornetq.core.postoffice.PostOffice;
-import org.hornetq.core.remoting.spi.MessagingBuffer;
+import org.hornetq.core.remoting.spi.HornetQBuffer;
 import org.hornetq.core.server.LargeServerMessage;
 import org.hornetq.core.server.MessageReference;
 import org.hornetq.core.server.Queue;
@@ -103,7 +103,7 @@ public class PagingStoreImplTest extends UnitTestCase
 
       assertEquals(nr1, trans.getNumberOfMessages());
 
-      MessagingBuffer buffer = ChannelBuffers.buffer(trans.getEncodeSize());
+      HornetQBuffer buffer = ChannelBuffers.buffer(trans.getEncodeSize());
 
       trans.encode(buffer);
 
@@ -189,9 +189,9 @@ public class PagingStoreImplTest extends UnitTestCase
 
       assertEquals(1, storeImpl.getNumberOfPages());
 
-      List<MessagingBuffer> buffers = new ArrayList<MessagingBuffer>();
+      List<HornetQBuffer> buffers = new ArrayList<HornetQBuffer>();
 
-      MessagingBuffer buffer = createRandomBuffer(0, 10);
+      HornetQBuffer buffer = createRandomBuffer(0, 10);
 
       buffers.add(buffer);
       SimpleString destination = new SimpleString("test");
@@ -244,12 +244,12 @@ public class PagingStoreImplTest extends UnitTestCase
 
       storeImpl.startPaging();
 
-      List<MessagingBuffer> buffers = new ArrayList<MessagingBuffer>();
+      List<HornetQBuffer> buffers = new ArrayList<HornetQBuffer>();
 
       for (int i = 0; i < 10; i++)
       {
 
-         MessagingBuffer buffer = createRandomBuffer(i + 1l, 10);
+         HornetQBuffer buffer = createRandomBuffer(i + 1l, 10);
 
          buffers.add(buffer);
 
@@ -309,12 +309,12 @@ public class PagingStoreImplTest extends UnitTestCase
 
       assertEquals(1, storeImpl.getNumberOfPages());
 
-      List<MessagingBuffer> buffers = new ArrayList<MessagingBuffer>();
+      List<HornetQBuffer> buffers = new ArrayList<HornetQBuffer>();
 
       for (int i = 0; i < 10; i++)
       {
 
-         MessagingBuffer buffer = createRandomBuffer(i + 1l, 10);
+         HornetQBuffer buffer = createRandomBuffer(i + 1l, 10);
 
          buffers.add(buffer);
 
@@ -678,7 +678,7 @@ public class PagingStoreImplTest extends UnitTestCase
       return new FakePostOffice();
    }
 
-   private PagedMessageImpl createMessage(final SimpleString destination, final MessagingBuffer buffer)
+   private PagedMessageImpl createMessage(final SimpleString destination, final HornetQBuffer buffer)
    {
       ServerMessage msg = new ServerMessageImpl((byte)1, true, 0, System.currentTimeMillis(), (byte)0, buffer);
 
@@ -686,9 +686,9 @@ public class PagingStoreImplTest extends UnitTestCase
       return new PagedMessageImpl(msg);
    }
 
-   private MessagingBuffer createRandomBuffer(final long id, final int size)
+   private HornetQBuffer createRandomBuffer(final long id, final int size)
    {
-      MessagingBuffer buffer = ChannelBuffers.buffer(size + 8);
+      HornetQBuffer buffer = ChannelBuffers.buffer(size + 8);
 
       buffer.writeLong(id);
 

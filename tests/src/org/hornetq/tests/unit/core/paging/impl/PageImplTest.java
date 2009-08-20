@@ -24,7 +24,7 @@ import org.hornetq.core.journal.impl.NIOSequentialFileFactory;
 import org.hornetq.core.paging.PagedMessage;
 import org.hornetq.core.paging.impl.PageImpl;
 import org.hornetq.core.paging.impl.PagedMessageImpl;
-import org.hornetq.core.remoting.spi.MessagingBuffer;
+import org.hornetq.core.remoting.spi.HornetQBuffer;
 import org.hornetq.core.server.ServerMessage;
 import org.hornetq.core.server.impl.ServerMessageImpl;
 import org.hornetq.tests.unit.core.journal.impl.fakes.FakeSequentialFileFactory;
@@ -87,7 +87,7 @@ public class PageImplTest extends UnitTestCase
 
       SimpleString simpleDestination = new SimpleString("Test");
 
-      ArrayList<MessagingBuffer> buffers = addPageElements(simpleDestination, impl, numberOfElements);
+      ArrayList<HornetQBuffer> buffers = addPageElements(simpleDestination, impl, numberOfElements);
 
       impl.sync();
       impl.close();
@@ -134,7 +134,7 @@ public class PageImplTest extends UnitTestCase
 
       SimpleString simpleDestination = new SimpleString("Test");
 
-      ArrayList<MessagingBuffer> buffers = addPageElements(simpleDestination, impl, numberOfElements);
+      ArrayList<HornetQBuffer> buffers = addPageElements(simpleDestination, impl, numberOfElements);
 
       impl.sync();
 
@@ -199,15 +199,15 @@ public class PageImplTest extends UnitTestCase
     * @return
     * @throws Exception
     */
-   protected ArrayList<MessagingBuffer> addPageElements(SimpleString simpleDestination, PageImpl page, int numberOfElements) throws Exception
+   protected ArrayList<HornetQBuffer> addPageElements(SimpleString simpleDestination, PageImpl page, int numberOfElements) throws Exception
    {
-      ArrayList<MessagingBuffer> buffers = new ArrayList<MessagingBuffer>();
+      ArrayList<HornetQBuffer> buffers = new ArrayList<HornetQBuffer>();
       
       int initialNumberOfMessages = page.getNumberOfMessages();
 
       for (int i = 0; i < numberOfElements; i++)
       {
-         MessagingBuffer buffer = ChannelBuffers.buffer(10); 
+         HornetQBuffer buffer = ChannelBuffers.buffer(10); 
 
          for (int j = 0; j < buffer.capacity(); j++)
          {

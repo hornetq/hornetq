@@ -29,7 +29,7 @@ import org.hornetq.core.client.ClientProducer;
 import org.hornetq.core.client.ClientSession;
 import org.hornetq.core.client.ClientSessionFactory;
 import org.hornetq.core.client.MessageHandler;
-import org.hornetq.core.exception.MessagingException;
+import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.paging.Page;
 import org.hornetq.core.paging.PagedMessage;
@@ -643,7 +643,7 @@ public class OrderingOnBackupTest extends FailoverTestBase
                {
                   sess.commit();
                }
-               catch (MessagingException e)
+               catch (HornetQException e)
                {
                   e.printStackTrace();
                }

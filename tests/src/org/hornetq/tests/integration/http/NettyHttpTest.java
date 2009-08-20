@@ -21,12 +21,12 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import org.hornetq.core.config.impl.ConfigurationImpl;
-import org.hornetq.core.exception.MessagingException;
+import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.remoting.impl.AbstractBufferHandler;
 import org.hornetq.core.remoting.spi.BufferHandler;
 import org.hornetq.core.remoting.spi.Connection;
 import org.hornetq.core.remoting.spi.ConnectionLifeCycleListener;
-import org.hornetq.core.remoting.spi.MessagingBuffer;
+import org.hornetq.core.remoting.spi.HornetQBuffer;
 import org.hornetq.integration.transports.netty.NettyAcceptor;
 import org.hornetq.integration.transports.netty.NettyConnector;
 import org.hornetq.integration.transports.netty.TransportConstants;
@@ -107,11 +107,11 @@ public class NettyHttpTest extends UnitTestCase
       connCreatedLatch.await(5, TimeUnit.SECONDS);
       for (int i = 0; i < numPackets; i++)
       {
-         MessagingBuffer buff = conn.createBuffer(8);
+         HornetQBuffer buff = conn.createBuffer(8);
          buff.writeInt(4);
          buff.writeInt(i);
          conn.write(buff);
-         MessagingBuffer buff2 = conn.createBuffer(8);
+         HornetQBuffer buff2 = conn.createBuffer(8);
          buff2.writeInt(4);
          buff2.writeInt(i);
          acceptorListener.connection.write(buff2);
@@ -157,14 +157,14 @@ public class NettyHttpTest extends UnitTestCase
       connCreatedLatch.await(5, TimeUnit.SECONDS);
       for (int i = 0; i < numPackets; i++)
       {
-         MessagingBuffer buff = conn.createBuffer(8);
+         HornetQBuffer buff = conn.createBuffer(8);
          buff.writeInt(4);
          buff.writeInt(i);
          conn.write(buff);
       }
       for (int i = 0; i < numPackets; i++)
       {
-         MessagingBuffer buff = conn.createBuffer(8);
+         HornetQBuffer buff = conn.createBuffer(8);
          buff.writeInt(4);
          buff.writeInt(i);
          acceptorListener.connection.write(buff);
@@ -210,7 +210,7 @@ public class NettyHttpTest extends UnitTestCase
       connCreatedLatch.await(5, TimeUnit.SECONDS);
       for (int i = 0; i < numPackets; i++)
       {
-         MessagingBuffer buff = conn.createBuffer(8);
+         HornetQBuffer buff = conn.createBuffer(8);
          buff.writeInt(4);
          buff.writeInt(i);
          acceptorListener.connection.write(buff);
@@ -218,7 +218,7 @@ public class NettyHttpTest extends UnitTestCase
 
       for (int i = 0; i < numPackets; i++)
       {
-         MessagingBuffer buff = conn.createBuffer(8);
+         HornetQBuffer buff = conn.createBuffer(8);
          buff.writeInt(4);
          buff.writeInt(i);
          conn.write(buff);
@@ -264,13 +264,13 @@ public class NettyHttpTest extends UnitTestCase
       connCreatedLatch.await(5, TimeUnit.SECONDS);
       for (int i = 0; i < numPackets; i++)
       {
-         MessagingBuffer buff = conn.createBuffer(8);
+         HornetQBuffer buff = conn.createBuffer(8);
          buff.writeInt(4);
          buff.writeInt(i);
          acceptorListener.connection.write(buff);
       }
 
-      MessagingBuffer buff = conn.createBuffer(8);
+      HornetQBuffer buff = conn.createBuffer(8);
       buff.writeInt(4);
       buff.writeInt(0);
       conn.write(buff);
@@ -317,7 +317,7 @@ public class NettyHttpTest extends UnitTestCase
       connCreatedLatch.await(5, TimeUnit.SECONDS);
       for (int i = 0; i < numPackets; i++)
       {
-         MessagingBuffer buff = conn.createBuffer(8);
+         HornetQBuffer buff = conn.createBuffer(8);
          buff.writeInt(4);
          buff.writeInt(i);
          acceptorListener.connection.write(buff);
@@ -366,7 +366,7 @@ public class NettyHttpTest extends UnitTestCase
       connCreatedLatch.await(5, TimeUnit.SECONDS);
       for (int i = 0; i < numPackets; i++)
       {
-         MessagingBuffer buff = conn.createBuffer(8);
+         HornetQBuffer buff = conn.createBuffer(8);
          buff.writeInt(4);
          buff.writeInt(i);
          conn.write(buff);
@@ -408,7 +408,7 @@ public class NettyHttpTest extends UnitTestCase
       connCreatedLatch.await(5, TimeUnit.SECONDS);
       for (int i = 0; i < numPackets; i++)
       {
-         MessagingBuffer buff = conn.createBuffer(8);
+         HornetQBuffer buff = conn.createBuffer(8);
          buff.writeInt(4);
          buff.writeInt(i);
          conn.write(buff);
@@ -440,7 +440,7 @@ public class NettyHttpTest extends UnitTestCase
          this.latch = latch;
       }
 
-      public void bufferReceived(Object connectionID, MessagingBuffer buffer)
+      public void bufferReceived(Object connectionID, HornetQBuffer buffer)
       {
          int i = buffer.readInt();
          messages.add(i);
@@ -461,7 +461,7 @@ public class NettyHttpTest extends UnitTestCase
          this.latch = latch;
       }
 
-      public void bufferReceived(Object connectionID, MessagingBuffer buffer)
+      public void bufferReceived(Object connectionID, HornetQBuffer buffer)
       {
          int i = buffer.readInt();
 
@@ -489,12 +489,12 @@ public class NettyHttpTest extends UnitTestCase
          this.latch = latch;
       }
 
-      public int isReadyToHandle(MessagingBuffer buffer)
+      public int isReadyToHandle(HornetQBuffer buffer)
       {
          return 0;
       }
 
-      public void bufferReceived(Object connectionID, MessagingBuffer buffer)
+      public void bufferReceived(Object connectionID, HornetQBuffer buffer)
       {
          int i = buffer.readInt();
          messages.add(i);
@@ -527,7 +527,7 @@ public class NettyHttpTest extends UnitTestCase
       {
       }
 
-      public void connectionException(Object connectionID, MessagingException me)
+      public void connectionException(Object connectionID, HornetQException me)
       {
          me.printStackTrace();
       }

@@ -17,7 +17,7 @@ import java.io.InputStream;
 import java.util.Map;
 import java.util.Set;
 
-import org.hornetq.core.remoting.spi.MessagingBuffer;
+import org.hornetq.core.remoting.spi.HornetQBuffer;
 import org.hornetq.utils.SimpleString;
 import org.hornetq.utils.TypedProperties;
 
@@ -63,16 +63,16 @@ public interface Message
    
    int getEncodeSize();
 
-   void encode(MessagingBuffer buffer);
+   void encode(HornetQBuffer buffer);
    
-   void decode(MessagingBuffer buffer);
+   void decode(HornetQBuffer buffer);
    
    
    int getPropertiesEncodeSize();
    
-   void encodeProperties(MessagingBuffer buffer);
+   void encodeProperties(HornetQBuffer buffer);
    
-   void decodeProperties(MessagingBuffer buffer);
+   void decodeProperties(HornetQBuffer buffer);
       
    int getBodySize();
 
@@ -81,7 +81,7 @@ public interface Message
    long getLargeBodySize();
          
    // Used on Message chunk
-   void encodeBody(MessagingBuffer buffer, long start, int size);
+   void encodeBody(HornetQBuffer buffer, long start, int size);
    
    /** Set the InputStream used on a message that will be sent over a producer */
    void setBodyInputStream(InputStream stream);
@@ -90,9 +90,9 @@ public interface Message
    InputStream getBodyInputStream();
    
    
-   void encodeBody(MessagingBuffer buffer);
+   void encodeBody(HornetQBuffer buffer);
    
-   void decodeBody(MessagingBuffer buffer);
+   void decodeBody(HornetQBuffer buffer);
       
    // Properties
    // ------------------------------------------------------------------
@@ -158,8 +158,8 @@ public interface Message
    // Body
    // ---------------------------------------------------------------------------------
    
-   MessagingBuffer getBody();
+   HornetQBuffer getBody();
    
-   void setBody(MessagingBuffer body);
+   void setBody(HornetQBuffer body);
    
 }

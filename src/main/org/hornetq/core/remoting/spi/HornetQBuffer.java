@@ -18,12 +18,12 @@ import org.hornetq.utils.SimpleString;
 
 /**
  *
- * A MessagingBuffer
+ * A HornetQBuffer
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */
-public interface MessagingBuffer
+public interface HornetQBuffer
 {
    void writeByte(byte val);
 
@@ -31,7 +31,7 @@ public interface MessagingBuffer
 
    void writeBytes(byte[] bytes, int offset, int length);
    
-   void writeBytes(MessagingBuffer src, int srcIndex, int length);
+   void writeBytes(HornetQBuffer src, int srcIndex, int length);
 
    void writeInt(int val);
 

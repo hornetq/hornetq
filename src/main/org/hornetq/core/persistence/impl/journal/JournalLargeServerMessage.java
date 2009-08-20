@@ -17,10 +17,10 @@ import static org.hornetq.utils.DataConstants.SIZE_INT;
 
 import java.nio.ByteBuffer;
 
-import org.hornetq.core.exception.MessagingException;
+import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.journal.SequentialFile;
 import org.hornetq.core.logging.Logger;
-import org.hornetq.core.remoting.spi.MessagingBuffer;
+import org.hornetq.core.remoting.spi.HornetQBuffer;
 import org.hornetq.core.server.LargeServerMessage;
 import org.hornetq.core.server.ServerMessage;
 import org.hornetq.core.server.impl.ServerMessageImpl;
@@ -104,7 +104,7 @@ public class JournalLargeServerMessage extends ServerMessageImpl implements Larg
    }
 
    @Override
-   public synchronized void encodeBody(final MessagingBuffer bufferOut, final long start, final int size)
+   public synchronized void encodeBody(final HornetQBuffer bufferOut, final long start, final int size)
    {
       try
       {
@@ -170,13 +170,13 @@ public class JournalLargeServerMessage extends ServerMessageImpl implements Larg
    }
 
    @Override
-   public void encode(final MessagingBuffer buffer)
+   public void encode(final HornetQBuffer buffer)
    {
       encodeProperties(buffer);
    }
 
    @Override
-   public void decode(final MessagingBuffer buffer)
+   public void decode(final HornetQBuffer buffer)
    {
       file = null;
       complete = true;

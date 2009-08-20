@@ -16,7 +16,7 @@ package org.hornetq.core.client;
 import java.util.List;
 
 import org.hornetq.core.config.TransportConfiguration;
-import org.hornetq.core.exception.MessagingException;
+import org.hornetq.core.exception.HornetQException;
 import org.hornetq.utils.Pair;
 
 /**
@@ -26,15 +26,15 @@ import org.hornetq.utils.Pair;
  */
 public interface ClientSessionFactory
 {
-   ClientSession createXASession() throws MessagingException;
+   ClientSession createXASession() throws HornetQException;
    
-   ClientSession createTransactedSession() throws MessagingException;
+   ClientSession createTransactedSession() throws HornetQException;
    
-   ClientSession createSession() throws MessagingException;
+   ClientSession createSession() throws HornetQException;
    
-   ClientSession createSession(boolean autoCommitSends, boolean autoCommitAcks) throws MessagingException;
+   ClientSession createSession(boolean autoCommitSends, boolean autoCommitAcks) throws HornetQException;
    
-   ClientSession createSession(boolean xa, boolean autoCommitSends, boolean autoCommitAcks) throws MessagingException;
+   ClientSession createSession(boolean xa, boolean autoCommitSends, boolean autoCommitAcks) throws HornetQException;
 
    ClientSession createSession(String username,
                                String password,
@@ -42,9 +42,9 @@ public interface ClientSessionFactory
                                boolean autoCommitSends,
                                boolean autoCommitAcks,
                                boolean preAcknowledge,
-                               int ackBatchSize) throws MessagingException;
+                               int ackBatchSize) throws HornetQException;
 
-   ClientSession createSession(boolean xa, boolean autoCommitSends, boolean autoCommitAcks, boolean preAcknowledge) throws MessagingException;
+   ClientSession createSession(boolean xa, boolean autoCommitSends, boolean autoCommitAcks, boolean preAcknowledge) throws HornetQException;
  
    List<Pair<TransportConfiguration, TransportConfiguration>> getStaticConnectors();
    

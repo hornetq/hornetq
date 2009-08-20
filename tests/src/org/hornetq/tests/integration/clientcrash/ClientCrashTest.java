@@ -27,7 +27,7 @@ import org.hornetq.tests.util.SpawnedVMSupport;
 import org.hornetq.utils.SimpleString;
 
 /**
- * A test that makes sure that a Messaging server cleans up the associated
+ * A test that makes sure that a HornetQ server cleans up the associated
  * resources when one of its client crashes.
  *
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>

@@ -38,7 +38,7 @@ import org.hornetq.core.remoting.Packet;
 import org.hornetq.core.remoting.impl.wireformat.SessionReceiveContinuationMessage;
 import org.hornetq.core.remoting.impl.wireformat.SessionReceiveMessage;
 import org.hornetq.core.remoting.impl.wireformat.replication.SessionReplicateDeliveryMessage;
-import org.hornetq.core.remoting.spi.MessagingBuffer;
+import org.hornetq.core.remoting.spi.HornetQBuffer;
 import org.hornetq.core.server.HandleStatus;
 import org.hornetq.core.server.LargeServerMessage;
 import org.hornetq.core.server.MessageReference;
@@ -819,7 +819,7 @@ public class ServerConsumerImpl implements ServerConsumer
             {
                sentFirstMessage = true;
 
-               MessagingBuffer headerBuffer = ChannelBuffers.buffer(pendingLargeMessage.getPropertiesEncodeSize());
+               HornetQBuffer headerBuffer = ChannelBuffers.buffer(pendingLargeMessage.getPropertiesEncodeSize());
 
                pendingLargeMessage.encodeProperties(headerBuffer);
 
@@ -993,7 +993,7 @@ public class ServerConsumerImpl implements ServerConsumer
 
          localChunkLen = (int)Math.min(sizePendingLargeMessage - positionPendingLargeMessage, minLargeMessageSize);
 
-         MessagingBuffer bodyBuffer = ChannelBuffers.buffer(localChunkLen);
+         HornetQBuffer bodyBuffer = ChannelBuffers.buffer(localChunkLen);
 
          pendingLargeMessage.encodeBody(bodyBuffer, positionPendingLargeMessage, localChunkLen);
 

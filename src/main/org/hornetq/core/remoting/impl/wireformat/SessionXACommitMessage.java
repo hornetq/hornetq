@@ -15,7 +15,7 @@ package org.hornetq.core.remoting.impl.wireformat;
 
 import javax.transaction.xa.Xid;
 
-import org.hornetq.core.remoting.spi.MessagingBuffer;
+import org.hornetq.core.remoting.spi.HornetQBuffer;
 import org.hornetq.utils.DataConstants;
 
 /**
@@ -68,14 +68,14 @@ public class SessionXACommitMessage extends PacketImpl
    }
 
    @Override
-   public void encodeBody(final MessagingBuffer buffer)
+   public void encodeBody(final HornetQBuffer buffer)
    {
       XidCodecSupport.encodeXid(xid, buffer);
       buffer.writeBoolean(onePhase);
    }
 
    @Override
-   public void decodeBody(final MessagingBuffer buffer)
+   public void decodeBody(final HornetQBuffer buffer)
    {
       xid = XidCodecSupport.decodeXid(buffer);
       onePhase = buffer.readBoolean();

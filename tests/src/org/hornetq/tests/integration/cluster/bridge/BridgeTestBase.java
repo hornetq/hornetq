@@ -20,8 +20,8 @@ import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.TransportConfiguration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.remoting.impl.invm.TransportConstants;
-import org.hornetq.core.server.Messaging;
-import org.hornetq.core.server.MessagingServer;
+import org.hornetq.core.server.HornetQ;
+import org.hornetq.core.server.HornetQServer;
 import org.hornetq.tests.util.UnitTestCase;
 
 /**
@@ -35,12 +35,12 @@ import org.hornetq.tests.util.UnitTestCase;
  */
 public abstract class BridgeTestBase extends UnitTestCase
 {
-   protected MessagingServer createMessagingServerNIO(final int id, final Map<String, Object> params)
+   protected HornetQServer createMessagingServerNIO(final int id, final Map<String, Object> params)
    {
       return createMessagingServerNIO(id, params, false);
    }
 
-   protected MessagingServer createMessagingServerNIO(final int id,
+   protected HornetQServer createMessagingServerNIO(final int id,
                                                       final Map<String, Object> params,
                                                       final boolean backup)
    {
@@ -54,16 +54,16 @@ public abstract class BridgeTestBase extends UnitTestCase
       serviceConf.getAcceptorConfigurations()
                  .add(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory",
                                                  params));
-      MessagingServer service = Messaging.newMessagingServer(serviceConf);
+      HornetQServer service = HornetQ.newMessagingServer(serviceConf);
       return service;
    }
 
-   protected MessagingServer createMessagingServer(final int id, final Map<String, Object> params)
+   protected HornetQServer createMessagingServer(final int id, final Map<String, Object> params)
    {
       return createMessagingServer(id, params, false);
    }
 
-   protected MessagingServer createMessagingServer(final int id, final Map<String, Object> params, final boolean backup)
+   protected HornetQServer createMessagingServer(final int id, final Map<String, Object> params, final boolean backup)
    {
       Configuration serviceConf = new ConfigurationImpl();
       serviceConf.setClustered(true);
@@ -73,11 +73,11 @@ public abstract class BridgeTestBase extends UnitTestCase
       serviceConf.getAcceptorConfigurations()
                  .add(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory",
                                                  params));
-      MessagingServer service = Messaging.newMessagingServer(serviceConf, false);
+      HornetQServer service = HornetQ.newMessagingServer(serviceConf, false);
       return service;
    }
 
-   protected MessagingServer createMessagingServer(final int id)
+   protected HornetQServer createMessagingServer(final int id)
    {
       return this.createMessagingServer(id, new HashMap<String, Object>());
    }

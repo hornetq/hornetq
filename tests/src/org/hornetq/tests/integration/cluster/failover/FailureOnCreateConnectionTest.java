@@ -24,13 +24,13 @@ import org.hornetq.core.client.impl.ClientSessionInternal;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.TransportConfiguration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
-import org.hornetq.core.exception.MessagingException;
+import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.remoting.RemotingConnection;
 import org.hornetq.core.remoting.impl.invm.InVMConnector;
 import org.hornetq.core.remoting.impl.invm.InVMRegistry;
-import org.hornetq.core.server.Messaging;
-import org.hornetq.core.server.MessagingServer;
+import org.hornetq.core.server.HornetQ;
+import org.hornetq.core.server.HornetQServer;
 import org.hornetq.jms.client.HornetQTextMessage;
 import org.hornetq.tests.util.UnitTestCase;
 import org.hornetq.utils.SimpleString;
@@ -55,7 +55,7 @@ public class FailureOnCreateConnectionTest extends UnitTestCase
 
    private static final SimpleString ADDRESS = new SimpleString("FailoverTestAddress");
 
-   private MessagingServer service;
+   private HornetQServer service;
 
    // Static --------------------------------------------------------
 
@@ -88,7 +88,7 @@ public class FailureOnCreateConnectionTest extends UnitTestCase
       liveConf.setSecurityEnabled(false);
       liveConf.getAcceptorConfigurations()
               .add(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory"));
-      service = Messaging.newMessagingServer(liveConf, false);
+      service = HornetQ.newMessagingServer(liveConf, false);
       service.start();
    }
 
@@ -150,7 +150,7 @@ public class FailureOnCreateConnectionTest extends UnitTestCase
 
       RemotingConnection conn = ((ClientSessionInternal)session).getConnection();
 
-      conn.fail(new MessagingException(MessagingException.NOT_CONNECTED));
+      conn.fail(new HornetQException(HornetQException.NOT_CONNECTED));
 
       session.start();
 

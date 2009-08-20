@@ -20,7 +20,7 @@ import org.hornetq.core.client.ClientSession;
 import org.hornetq.core.client.ClientSessionFactory;
 import org.hornetq.core.client.impl.ClientSessionImpl;
 import org.hornetq.core.client.impl.ClientSessionInternal;
-import org.hornetq.core.exception.MessagingException;
+import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.remoting.Interceptor;
 import org.hornetq.core.remoting.Packet;
@@ -81,14 +81,14 @@ public class PreserveOrderDuringFailoverTest extends FailoverTestBase
       {
          int msg = 0;
 
-         public boolean intercept(final Packet packet, final RemotingConnection conn) throws MessagingException
+         public boolean intercept(final Packet packet, final RemotingConnection conn) throws HornetQException
          {
             if (packet instanceof SessionSendMessage)
             {
                if (msg++ == 554)
                {
                   // Simulate failure on connection
-                  conn1.fail(new MessagingException(MessagingException.NOT_CONNECTED));
+                  conn1.fail(new HornetQException(HornetQException.NOT_CONNECTED));
                   return false;
                }
             }

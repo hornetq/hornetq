@@ -21,7 +21,7 @@ import static org.hornetq.core.remoting.impl.wireformat.PacketImpl.REATTACH_SESS
 import static org.hornetq.core.remoting.impl.wireformat.PacketImpl.REPLICATE_CREATESESSION;
 import static org.hornetq.core.remoting.impl.wireformat.PacketImpl.REPLICATE_STARTUP_INFO;
 
-import org.hornetq.core.exception.MessagingException;
+import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.management.Notification;
 import org.hornetq.core.postoffice.Binding;
@@ -31,7 +31,7 @@ import org.hornetq.core.remoting.Packet;
 import org.hornetq.core.remoting.RemotingConnection;
 import org.hornetq.core.remoting.impl.wireformat.CreateQueueMessage;
 import org.hornetq.core.remoting.impl.wireformat.CreateSessionMessage;
-import org.hornetq.core.remoting.impl.wireformat.MessagingExceptionMessage;
+import org.hornetq.core.remoting.impl.wireformat.HornetQExceptionMessage;
 import org.hornetq.core.remoting.impl.wireformat.PacketImpl;
 import org.hornetq.core.remoting.impl.wireformat.ReattachSessionMessage;
 import org.hornetq.core.remoting.impl.wireformat.ReplicateCreateSessionMessage;
@@ -43,7 +43,7 @@ import org.hornetq.core.remoting.impl.wireformat.replication.ReplicateRemoteCons
 import org.hornetq.core.remoting.impl.wireformat.replication.ReplicateRemoteConsumerRemovedMessage;
 import org.hornetq.core.remoting.impl.wireformat.replication.ReplicateStartupInfoMessage;
 import org.hornetq.core.server.MessageReference;
-import org.hornetq.core.server.MessagingServer;
+import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.Queue;
 import org.hornetq.core.server.cluster.ClusterConnection;
 import org.hornetq.core.server.cluster.RemoteQueueBinding;
@@ -57,17 +57,17 @@ import org.hornetq.core.transaction.impl.TransactionImpl;
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
  */
-public class MessagingServerPacketHandler implements ChannelHandler
+public class HornetQPacketHandler implements ChannelHandler
 {
-   private static final Logger log = Logger.getLogger(MessagingServerPacketHandler.class);
+   private static final Logger log = Logger.getLogger(HornetQPacketHandler.class);
 
-   private final MessagingServer server;
+   private final HornetQServer server;
 
    private final Channel channel1;
 
    private final RemotingConnection connection;
    
-   public MessagingServerPacketHandler(final MessagingServer server,
+   public HornetQPacketHandler(final HornetQServer server,
                                        final Channel channel1,
                                        final RemotingConnection connection)
    {
@@ -216,20 +216,20 @@ public class MessagingServerPacketHandler implements ChannelHandler
          
          if (response == null)
          {
-            response = new MessagingExceptionMessage(new MessagingException(MessagingException.INCOMPATIBLE_CLIENT_SERVER_VERSIONS));
+            response = new HornetQExceptionMessage(new HornetQException(HornetQException.INCOMPATIBLE_CLIENT_SERVER_VERSIONS));
          }
       }
       catch (Exception e)
       {
          log.error("Failed to create session", e);
 
-         if (e instanceof MessagingException)
+         if (e instanceof HornetQException)
          {
-            response = new MessagingExceptionMessage((MessagingException)e);
+            response = new HornetQExceptionMessage((HornetQException)e);
          }
          else
          {
-            response = new MessagingExceptionMessage(new MessagingException(MessagingException.INTERNAL_ERROR));
+            response = new HornetQExceptionMessage(new HornetQException(HornetQException.INTERNAL_ERROR));
          }
       }
       
@@ -307,13 +307,13 @@ public class MessagingServerPacketHandler implements ChannelHandler
       {
          log.error("Failed to reattach session", e);
 
-         if (e instanceof MessagingException)
+         if (e instanceof HornetQException)
          {
-            response = new MessagingExceptionMessage((MessagingException)e);
+            response = new HornetQExceptionMessage((HornetQException)e);
          }
          else
          {
-            response = new MessagingExceptionMessage(new MessagingException(MessagingException.INTERNAL_ERROR));
+            response = new HornetQExceptionMessage(new HornetQException(HornetQException.INTERNAL_ERROR));
          }
       }
 

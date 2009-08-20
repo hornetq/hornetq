@@ -24,7 +24,7 @@ import org.hornetq.core.client.ClientSession;
 import org.hornetq.core.client.ClientSessionFactory;
 import org.hornetq.core.client.impl.ClientSessionImpl;
 import org.hornetq.core.client.impl.ClientSessionInternal;
-import org.hornetq.core.exception.MessagingException;
+import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.paging.PagingManager;
 import org.hornetq.core.paging.PagingStore;
@@ -175,7 +175,7 @@ public class PagingFailoverTest extends FailoverTestBase
 
             if (fail && i == numMessages / 2)
             {
-               conn.fail(new MessagingException(MessagingException.NOT_CONNECTED));
+               conn.fail(new HornetQException(HornetQException.NOT_CONNECTED));
             }
 
             ClientMessage message = consumer.receive(RECEIVE_TIMEOUT);
@@ -247,7 +247,7 @@ public class PagingFailoverTest extends FailoverTestBase
    {
       RemotingConnectionImpl conn = (RemotingConnectionImpl)((ClientSessionInternal)session).getConnection();
       System.out.println("Forcing a failure");
-      conn.fail(new MessagingException(MessagingException.NOT_CONNECTED, "blah"));
+      conn.fail(new HornetQException(HornetQException.NOT_CONNECTED, "blah"));
 
    }
 
@@ -424,12 +424,12 @@ public class PagingFailoverTest extends FailoverTestBase
 
    /**
     * @throws Exception
-    * @throws MessagingException
+    * @throws HornetQException
     * @throws InterruptedException
     * @throws Throwable
     */
    protected int multiThreadProducer(final int numberOfThreads, final boolean failover) throws Exception,
-                                                          MessagingException,
+                                                          HornetQException,
                                                           InterruptedException,
                                                           Throwable
    {

@@ -214,7 +214,7 @@ import javax.jms.QueueBrowser;
 import org.hornetq.core.client.ClientConsumer;
 import org.hornetq.core.client.ClientMessage;
 import org.hornetq.core.client.ClientSession;
-import org.hornetq.core.exception.MessagingException;
+import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.jms.HornetQQueue;
 import org.hornetq.utils.SimpleString;
@@ -267,9 +267,9 @@ public class HornetQQueueBrowser implements QueueBrowser
          {
             consumer.close();
          }
-         catch (MessagingException e)
+         catch (HornetQException e)
          {
-            throw JMSExceptionHelper.convertFromMessagingException(e);
+            throw JMSExceptionHelper.convertFromHornetQException(e);
          }
       }
    }
@@ -284,9 +284,9 @@ public class HornetQQueueBrowser implements QueueBrowser
 
          return new BrowserEnumeration();
       }
-      catch (MessagingException e)
+      catch (HornetQException e)
       {
-         throw JMSExceptionHelper.convertFromMessagingException(e);
+         throw JMSExceptionHelper.convertFromHornetQException(e);
       }
 
    }
@@ -330,7 +330,7 @@ public class HornetQQueueBrowser implements QueueBrowser
                // https://jira.jboss.org/jira/browse/JBMESSAGING-1432 is completed
                current = consumer.receive(NEXT_MESSAGE_TIMEOUT);
             }
-            catch (MessagingException e)
+            catch (HornetQException e)
             {
                return false;
             }

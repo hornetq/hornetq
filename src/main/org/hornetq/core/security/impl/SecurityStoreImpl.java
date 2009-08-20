@@ -20,7 +20,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 import org.hornetq.core.client.management.impl.ManagementHelper;
-import org.hornetq.core.exception.MessagingException;
+import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.management.Notification;
 import org.hornetq.core.management.NotificationService;
@@ -113,7 +113,7 @@ public class SecurityStoreImpl implements SecurityStore, HierarchicalRepositoryC
             // The special user cluster user is used for creating sessions that replicate management operation between nodes
             if (!managementClusterPassword.equals(password))
             {
-               throw new MessagingException(MessagingException.SECURITY_EXCEPTION, "Unable to validate user: " + user);                 
+               throw new HornetQException(HornetQException.SECURITY_EXCEPTION, "Unable to validate user: " + user);                 
             }
             else
             {
@@ -134,7 +134,7 @@ public class SecurityStoreImpl implements SecurityStore, HierarchicalRepositoryC
                notificationService.sendNotification(notification);
             }
 
-            throw new MessagingException(MessagingException.SECURITY_EXCEPTION, "Unable to validate user: " + user);  
+            throw new HornetQException(HornetQException.SECURITY_EXCEPTION, "Unable to validate user: " + user);  
          }
       }
    }
@@ -177,7 +177,7 @@ public class SecurityStoreImpl implements SecurityStore, HierarchicalRepositoryC
                notificationService.sendNotification(notification);
             }
 
-            throw new MessagingException(MessagingException.SECURITY_EXCEPTION, "Unable to validate user: " + session.getUsername() + " for check type " + checkType + " for address " + saddress);
+            throw new HornetQException(HornetQException.SECURITY_EXCEPTION, "Unable to validate user: " + session.getUsername() + " for check type " + checkType + " for address " + saddress);
          }
          // if we get here we're granted, add to the cache
          ConcurrentHashSet<SimpleString> set = new ConcurrentHashSet<SimpleString>();

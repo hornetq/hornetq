@@ -22,14 +22,14 @@ import java.util.Map;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.TransportConfiguration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
-import org.hornetq.core.management.MessagingServerControl;
+import org.hornetq.core.management.HornetQServerControl;
 import org.hornetq.core.management.ObjectNames;
 import org.hornetq.core.management.QueueControl;
 import org.hornetq.core.messagecounter.impl.MessageCounterManagerImpl;
 import org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
-import org.hornetq.core.server.Messaging;
-import org.hornetq.core.server.MessagingServer;
+import org.hornetq.core.server.HornetQ;
+import org.hornetq.core.server.HornetQServer;
 import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.utils.SimpleString;
 import org.hornetq.utils.json.JSONArray;
@@ -51,7 +51,7 @@ public class MessagingServerControlTest extends ManagementTestBase
 
    // Attributes ----------------------------------------------------
 
-   private MessagingServer server;
+   private HornetQServer server;
 
    private Configuration conf;
 
@@ -65,7 +65,7 @@ public class MessagingServerControlTest extends ManagementTestBase
 
    public void testGetAttributes() throws Exception
    {
-      MessagingServerControl serverControl = createManagementControl();
+      HornetQServerControl serverControl = createManagementControl();
 
       assertEquals(server.getVersion().getFullVersion(), serverControl.getVersion());
 
@@ -109,7 +109,7 @@ public class MessagingServerControlTest extends ManagementTestBase
 
    public void testGetConnectors() throws Exception
    {
-      MessagingServerControl serverControl = createManagementControl();
+      HornetQServerControl serverControl = createManagementControl();
 
       Object[] connectorData = serverControl.getConnectors();
       assertNotNull(connectorData);
@@ -122,7 +122,7 @@ public class MessagingServerControlTest extends ManagementTestBase
    
    public void testGetConnectorsAsJSON() throws Exception
    {
-      MessagingServerControl serverControl = createManagementControl();
+      HornetQServerControl serverControl = createManagementControl();
 
       String jsonString = serverControl.getConnectorsAsJSON();
       assertNotNull(jsonString);
@@ -139,7 +139,7 @@ public class MessagingServerControlTest extends ManagementTestBase
       SimpleString address = RandomUtil.randomSimpleString();
       SimpleString name = RandomUtil.randomSimpleString();
 
-      MessagingServerControl serverControl = createManagementControl();
+      HornetQServerControl serverControl = createManagementControl();
 
       checkNoResource(ObjectNames.getQueueObjectName(address, name));
 
@@ -165,7 +165,7 @@ public class MessagingServerControlTest extends ManagementTestBase
       String filter = "color = 'green'";
       boolean durable = true;
 
-      MessagingServerControl serverControl = createManagementControl();
+      HornetQServerControl serverControl = createManagementControl();
 
       checkNoResource(ObjectNames.getQueueObjectName(address, name));
 
@@ -191,7 +191,7 @@ public class MessagingServerControlTest extends ManagementTestBase
       String filter = null;
       boolean durable = true;
 
-      MessagingServerControl serverControl = createManagementControl();
+      HornetQServerControl serverControl = createManagementControl();
 
       checkNoResource(ObjectNames.getQueueObjectName(address, name));
 
@@ -212,7 +212,7 @@ public class MessagingServerControlTest extends ManagementTestBase
 
    public void testMessageCounterMaxDayCount() throws Exception
    {
-      MessagingServerControl serverControl = createManagementControl();
+      HornetQServerControl serverControl = createManagementControl();
 
       assertEquals(MessageCounterManagerImpl.DEFAULT_MAX_DAY_COUNT, serverControl.getMessageCounterMaxDayCount());
 
@@ -244,7 +244,7 @@ public class MessagingServerControlTest extends ManagementTestBase
 
    public void testGetMessageCounterSamplePeriod() throws Exception
    {
-      MessagingServerControl serverControl = createManagementControl();
+      HornetQServerControl serverControl = createManagementControl();
 
       assertEquals(MessageCounterManagerImpl.DEFAULT_SAMPLE_PERIOD, serverControl.getMessageCounterSamplePeriod());
 
@@ -303,7 +303,7 @@ public class MessagingServerControlTest extends ManagementTestBase
       conf.setJMXManagementEnabled(true);
       conf.getAcceptorConfigurations().add(new TransportConfiguration(InVMAcceptorFactory.class.getName()));
       
-      server = Messaging.newMessagingServer(conf, mbeanServer, false);
+      server = HornetQ.newMessagingServer(conf, mbeanServer, false);
       conf.getConnectorConfigurations().put(connectorConfig.getName(), connectorConfig);
       server.start();
    }
@@ -323,7 +323,7 @@ public class MessagingServerControlTest extends ManagementTestBase
       super.tearDown();
    }
 
-   protected MessagingServerControl createManagementControl() throws Exception
+   protected HornetQServerControl createManagementControl() throws Exception
    {
       return ManagementControlHelper.createMessagingServerControl(mbeanServer);
    }

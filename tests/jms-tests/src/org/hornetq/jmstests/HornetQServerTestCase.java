@@ -17,7 +17,7 @@ import com.arjuna.ats.internal.jta.transaction.arjunacore.TransactionManagerImpl
 
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.security.Role;
-import org.hornetq.core.server.MessagingServer;
+import org.hornetq.core.server.HornetQServer;
 import org.hornetq.jms.server.JMSServerManager;
 import org.hornetq.jmstests.tools.ServerManagement;
 import org.hornetq.jmstests.tools.container.Server;
@@ -252,7 +252,7 @@ public class HornetQServerTestCase extends ProxyAssertSupport
       return new String[]{"test-beans.xml"};
    }
 
-   protected MessagingServer getJmsServer() throws Exception
+   protected HornetQServer getJmsServer() throws Exception
    {
       return servers.get(0).getMessagingServer();
    }

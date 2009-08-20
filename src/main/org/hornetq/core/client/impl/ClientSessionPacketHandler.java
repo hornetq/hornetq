@@ -21,7 +21,7 @@ import org.hornetq.core.logging.Logger;
 import org.hornetq.core.remoting.Channel;
 import org.hornetq.core.remoting.ChannelHandler;
 import org.hornetq.core.remoting.Packet;
-import org.hornetq.core.remoting.impl.wireformat.MessagingExceptionMessage;
+import org.hornetq.core.remoting.impl.wireformat.HornetQExceptionMessage;
 import org.hornetq.core.remoting.impl.wireformat.SessionReceiveContinuationMessage;
 import org.hornetq.core.remoting.impl.wireformat.SessionReceiveMessage;
 
@@ -81,7 +81,7 @@ public class ClientSessionPacketHandler implements ChannelHandler
             {
                //TODO - we can provide a means for async exceptions to get back to to client
                //For now we just log it
-               MessagingExceptionMessage mem = (MessagingExceptionMessage)packet;
+               HornetQExceptionMessage mem = (HornetQExceptionMessage)packet;
                
                log.error("Received exception asynchronously from server", mem.getException());
                

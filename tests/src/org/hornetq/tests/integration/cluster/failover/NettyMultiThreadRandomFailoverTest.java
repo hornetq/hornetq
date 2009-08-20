@@ -21,7 +21,7 @@ import org.hornetq.core.client.impl.ClientSessionFactoryInternal;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.TransportConfiguration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
-import org.hornetq.core.server.Messaging;
+import org.hornetq.core.server.HornetQ;
 import org.hornetq.integration.transports.netty.TransportConstants;
 
 /**
@@ -47,7 +47,7 @@ public class NettyMultiThreadRandomFailoverTest extends MultiThreadRandomFailove
                 .add(new TransportConfiguration("org.hornetq.integration.transports.netty.NettyAcceptorFactory",
                                                 backupParams));
       backupConf.setBackup(true);
-      backupServer = Messaging.newMessagingServer(backupConf, false);
+      backupServer = HornetQ.newMessagingServer(backupConf, false);
       backupServer.start();
 
       Configuration liveConf = new ConfigurationImpl();
@@ -63,7 +63,7 @@ public class NettyMultiThreadRandomFailoverTest extends MultiThreadRandomFailove
       connectors.put(backupTC.getName(), backupTC);
       liveConf.setConnectorConfigurations(connectors);
       liveConf.setBackupConnectorName(backupTC.getName());
-      liveServer = Messaging.newMessagingServer(liveConf, false);
+      liveServer = HornetQ.newMessagingServer(liveConf, false);
       liveServer.start();
    }
 

@@ -17,7 +17,7 @@ import java.util.Set;
 
 import javax.transaction.xa.Xid;
 
-import org.hornetq.core.exception.MessagingException;
+import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.server.Queue;
 
 /**
@@ -50,7 +50,7 @@ public interface Transaction
    
    void setState(State state);
 
-   void markAsRollbackOnly(MessagingException messagingException);
+   void markAsRollbackOnly(HornetQException exception);
 
    long getCreateTime();
 

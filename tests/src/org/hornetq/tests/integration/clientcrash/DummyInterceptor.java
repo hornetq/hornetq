@@ -15,7 +15,7 @@ package org.hornetq.tests.integration.clientcrash;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.hornetq.core.exception.MessagingException;
+import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.remoting.Interceptor;
 import org.hornetq.core.remoting.Packet;
@@ -44,13 +44,13 @@ public class DummyInterceptor implements Interceptor
       syncCounter.set(0);
    }
    
-   public boolean intercept(final Packet packet, final RemotingConnection conn) throws MessagingException
+   public boolean intercept(final Packet packet, final RemotingConnection conn) throws HornetQException
    {
       log.debug("DummyFilter packet = " + packet.getClass().getName());
       syncCounter.addAndGet(1);
       if (sendException)
       {
-         throw new MessagingException(MessagingException.INTERNAL_ERROR);
+         throw new HornetQException(HornetQException.INTERNAL_ERROR);
       }
       if (changeMessage)
       {

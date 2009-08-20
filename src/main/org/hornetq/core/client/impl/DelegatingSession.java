@@ -21,7 +21,7 @@ import org.hornetq.core.client.ClientConsumer;
 import org.hornetq.core.client.ClientMessage;
 import org.hornetq.core.client.ClientProducer;
 import org.hornetq.core.client.SendAcknowledgementHandler;
-import org.hornetq.core.exception.MessagingException;
+import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.remoting.FailureListener;
 import org.hornetq.core.remoting.RemotingConnection;
@@ -29,7 +29,7 @@ import org.hornetq.core.remoting.impl.wireformat.SessionBindingQueryResponseMess
 import org.hornetq.core.remoting.impl.wireformat.SessionQueueQueryResponseMessage;
 import org.hornetq.core.remoting.impl.wireformat.SessionReceiveContinuationMessage;
 import org.hornetq.core.remoting.impl.wireformat.SessionReceiveMessage;
-import org.hornetq.core.remoting.spi.MessagingBuffer;
+import org.hornetq.core.remoting.spi.HornetQBuffer;
 import org.hornetq.utils.SimpleString;
 
 /**
@@ -72,7 +72,7 @@ public class DelegatingSession implements ClientSessionInternal
       this.creationStack = new Exception();
    }
 
-   public void acknowledge(long consumerID, long messageID) throws MessagingException
+   public void acknowledge(long consumerID, long messageID) throws HornetQException
    {
       session.acknowledge(consumerID, messageID);
    }
@@ -92,7 +92,7 @@ public class DelegatingSession implements ClientSessionInternal
       session.addProducer(producer);
    }
 
-   public SessionBindingQueryResponseMessage bindingQuery(SimpleString address) throws MessagingException
+   public SessionBindingQueryResponseMessage bindingQuery(SimpleString address) throws HornetQException
    {
       return session.bindingQuery(address);
    }
@@ -102,12 +102,12 @@ public class DelegatingSession implements ClientSessionInternal
       session.cleanUp();
    }
 
-   public void close() throws MessagingException
+   public void close() throws HornetQException
    {
       session.close();
    }
 
-   public void commit() throws MessagingException
+   public void commit() throws HornetQException
    {
       session.commit();
    }
@@ -117,7 +117,7 @@ public class DelegatingSession implements ClientSessionInternal
       session.commit(xid, onePhase);
    }
 
-   public MessagingBuffer createBuffer(int size)
+   public HornetQBuffer createBuffer(int size)
    {
       return session.createBuffer(size);
    }
@@ -137,7 +137,7 @@ public class DelegatingSession implements ClientSessionInternal
       return session.createClientMessage(type, durable);
    }
 
-   public ClientConsumer createConsumer(SimpleString queueName, SimpleString filterString, boolean browseOnly) throws MessagingException
+   public ClientConsumer createConsumer(SimpleString queueName, SimpleString filterString, boolean browseOnly) throws HornetQException
    {
       return session.createConsumer(queueName, filterString, browseOnly);
    }
@@ -146,22 +146,22 @@ public class DelegatingSession implements ClientSessionInternal
                                         SimpleString filterString,
                                         int windowSize,
                                         int maxRate,
-                                        boolean browseOnly) throws MessagingException
+                                        boolean browseOnly) throws HornetQException
    {
       return session.createConsumer(queueName, filterString, windowSize, maxRate, browseOnly);
    }
 
-   public ClientConsumer createConsumer(SimpleString queueName, SimpleString filterString) throws MessagingException
+   public ClientConsumer createConsumer(SimpleString queueName, SimpleString filterString) throws HornetQException
    {
       return session.createConsumer(queueName, filterString);
    }
 
-   public ClientConsumer createConsumer(SimpleString queueName) throws MessagingException
+   public ClientConsumer createConsumer(SimpleString queueName) throws HornetQException
    {
       return session.createConsumer(queueName);
    }
 
-   public ClientConsumer createConsumer(String queueName, String filterString, boolean browseOnly) throws MessagingException
+   public ClientConsumer createConsumer(String queueName, String filterString, boolean browseOnly) throws HornetQException
    {
       return session.createConsumer(queueName, filterString, browseOnly);
    }
@@ -170,22 +170,22 @@ public class DelegatingSession implements ClientSessionInternal
                                         String filterString,
                                         int windowSize,
                                         int maxRate,
-                                        boolean browseOnly) throws MessagingException
+                                        boolean browseOnly) throws HornetQException
    {
       return session.createConsumer(queueName, filterString, windowSize, maxRate, browseOnly);
    }
 
-   public ClientConsumer createConsumer(String queueName, String filterString) throws MessagingException
+   public ClientConsumer createConsumer(String queueName, String filterString) throws HornetQException
    {
       return session.createConsumer(queueName, filterString);
    }
 
-   public ClientConsumer createConsumer(String queueName) throws MessagingException
+   public ClientConsumer createConsumer(String queueName) throws HornetQException
    {
       return session.createConsumer(queueName);
    }
 
-   public ClientProducer createProducer() throws MessagingException
+   public ClientProducer createProducer() throws HornetQException
    {
       return session.createProducer();
    }
@@ -193,17 +193,17 @@ public class DelegatingSession implements ClientSessionInternal
    public ClientProducer createProducer(SimpleString address,
                                         int maxRate,
                                         boolean blockOnNonPersistentSend,
-                                        boolean blockOnPersistentSend) throws MessagingException
+                                        boolean blockOnPersistentSend) throws HornetQException
    {
       return session.createProducer(address, maxRate, blockOnNonPersistentSend, blockOnPersistentSend);
    }
 
-   public ClientProducer createProducer(SimpleString address, int rate) throws MessagingException
+   public ClientProducer createProducer(SimpleString address, int rate) throws HornetQException
    {
       return session.createProducer(address, rate);
    }
 
-   public ClientProducer createProducer(SimpleString address) throws MessagingException
+   public ClientProducer createProducer(SimpleString address) throws HornetQException
    {
       return session.createProducer(address);
    }
@@ -211,72 +211,72 @@ public class DelegatingSession implements ClientSessionInternal
    public ClientProducer createProducer(String address,
                                         int maxRate,
                                         boolean blockOnNonPersistentSend,
-                                        boolean blockOnPersistentSend) throws MessagingException
+                                        boolean blockOnPersistentSend) throws HornetQException
    {
       return session.createProducer(address, maxRate, blockOnNonPersistentSend, blockOnPersistentSend);
    }
 
-   public ClientProducer createProducer(String address, int rate) throws MessagingException
+   public ClientProducer createProducer(String address, int rate) throws HornetQException
    {
       return session.createProducer(address, rate);
    }
 
-   public ClientProducer createProducer(String address) throws MessagingException
+   public ClientProducer createProducer(String address) throws HornetQException
    {
       return session.createProducer(address);
    }
 
-   public void createQueue(String address, String queueName) throws MessagingException
+   public void createQueue(String address, String queueName) throws HornetQException
    {
       session.createQueue(address, queueName);
    }
    
-   public void createQueue(SimpleString address, SimpleString queueName, boolean durable) throws MessagingException
+   public void createQueue(SimpleString address, SimpleString queueName, boolean durable) throws HornetQException
    {
       session.createQueue(address, queueName, durable);
    }
 
-   public void createQueue(SimpleString address, SimpleString queueName, SimpleString filterString, boolean durable) throws MessagingException
+   public void createQueue(SimpleString address, SimpleString queueName, SimpleString filterString, boolean durable) throws HornetQException
    {
       session.createQueue(address, queueName, filterString, durable);
    }
 
-   public void createQueue(String address, String queueName, boolean durable) throws MessagingException
+   public void createQueue(String address, String queueName, boolean durable) throws HornetQException
    {
       session.createQueue(address, queueName, durable);
    }
 
-   public void createQueue(String address, String queueName, String filterString, boolean durable) throws MessagingException
+   public void createQueue(String address, String queueName, String filterString, boolean durable) throws HornetQException
    {
       session.createQueue(address, queueName, filterString, durable);
    }
 
-   public void createTemporaryQueue(SimpleString address, SimpleString queueName, SimpleString filter) throws MessagingException
+   public void createTemporaryQueue(SimpleString address, SimpleString queueName, SimpleString filter) throws HornetQException
    {
       session.createTemporaryQueue(address, queueName, filter);
    }
 
-   public void createTemporaryQueue(SimpleString address, SimpleString queueName) throws MessagingException
+   public void createTemporaryQueue(SimpleString address, SimpleString queueName) throws HornetQException
    {
       session.createTemporaryQueue(address, queueName);
    }
 
-   public void createTemporaryQueue(String address, String queueName, String filter) throws MessagingException
+   public void createTemporaryQueue(String address, String queueName, String filter) throws HornetQException
    {
       session.createTemporaryQueue(address, queueName, filter);
    }
 
-   public void createTemporaryQueue(String address, String queueName) throws MessagingException
+   public void createTemporaryQueue(String address, String queueName) throws HornetQException
    {
       session.createTemporaryQueue(address, queueName);
    }
 
-   public void deleteQueue(SimpleString queueName) throws MessagingException
+   public void deleteQueue(SimpleString queueName) throws HornetQException
    {
       session.deleteQueue(queueName);
    }
 
-   public void deleteQueue(String queueName) throws MessagingException
+   public void deleteQueue(String queueName) throws HornetQException
    {
       session.deleteQueue(queueName);
    }
@@ -286,7 +286,7 @@ public class DelegatingSession implements ClientSessionInternal
       session.end(xid, flags);
    }
 
-   public void expire(long consumerID, long messageID) throws MessagingException
+   public void expire(long consumerID, long messageID) throws HornetQException
    {
       session.expire(consumerID, messageID);
    }
@@ -386,7 +386,7 @@ public class DelegatingSession implements ClientSessionInternal
       return session.prepare(xid);
    }
 
-   public SessionQueueQueryResponseMessage queueQuery(SimpleString queueName) throws MessagingException
+   public SessionQueueQueryResponseMessage queueQuery(SimpleString queueName) throws HornetQException
    {
       return session.queueQuery(queueName);
    }
@@ -396,7 +396,7 @@ public class DelegatingSession implements ClientSessionInternal
       return session.recover(flag);
    }
 
-   public void removeConsumer(ClientConsumerInternal consumer) throws MessagingException
+   public void removeConsumer(ClientConsumerInternal consumer) throws HornetQException
    {
       session.removeConsumer(consumer);
    }
@@ -416,12 +416,12 @@ public class DelegatingSession implements ClientSessionInternal
       session.returnBlocking();
    }
 
-   public void rollback() throws MessagingException
+   public void rollback() throws HornetQException
    {
       session.rollback();
    }
 
-   public void rollback(boolean considerLastMessageAsDelivered) throws MessagingException
+   public void rollback(boolean considerLastMessageAsDelivered) throws HornetQException
    {
       session.rollback(considerLastMessageAsDelivered);
    }
@@ -441,7 +441,7 @@ public class DelegatingSession implements ClientSessionInternal
       return session.setTransactionTimeout(seconds);
    }
 
-   public void start() throws MessagingException
+   public void start() throws HornetQException
    {
       session.start();
    }
@@ -451,7 +451,7 @@ public class DelegatingSession implements ClientSessionInternal
       session.start(xid, flags);
    }
 
-   public void stop() throws MessagingException
+   public void stop() throws HornetQException
    {
       session.stop();
    }

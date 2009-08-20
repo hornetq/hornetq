@@ -13,7 +13,7 @@
 
 package org.hornetq.core.remoting;
 
-import org.hornetq.core.exception.MessagingException;
+import org.hornetq.core.exception.HornetQException;
 
 /**
  *
@@ -32,7 +32,7 @@ public interface Interceptor
     * @param connection
     * @return true to process the next interceptor and handle the packet,
     *         false to abort processing of the packet
-    * @throws MessagingException
+    * @throws HornetQException
     */
-   boolean intercept(Packet packet, RemotingConnection connection) throws MessagingException;
+   boolean intercept(Packet packet, RemotingConnection connection) throws HornetQException;
 }

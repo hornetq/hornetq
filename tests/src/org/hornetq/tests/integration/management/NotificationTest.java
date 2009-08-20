@@ -34,11 +34,11 @@ import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.TransportConfiguration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
-import org.hornetq.core.exception.MessagingException;
+import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
-import org.hornetq.core.server.Messaging;
-import org.hornetq.core.server.MessagingServer;
+import org.hornetq.core.server.HornetQ;
+import org.hornetq.core.server.HornetQServer;
 import org.hornetq.tests.util.UnitTestCase;
 import org.hornetq.utils.SimpleString;
 
@@ -55,7 +55,7 @@ public class NotificationTest extends UnitTestCase
 
    // Attributes ----------------------------------------------------
 
-   private MessagingServer service;
+   private HornetQServer service;
    private ClientSession session;
    private ClientConsumer notifConsumer;
    private SimpleString notifQueue;
@@ -200,7 +200,7 @@ public class NotificationTest extends UnitTestCase
       conf.setJMXManagementEnabled(false);
       conf.getAcceptorConfigurations()
           .add(new TransportConfiguration(InVMAcceptorFactory.class.getName()));
-      service = Messaging.newMessagingServer(conf, false);
+      service = HornetQ.newMessagingServer(conf, false);
       service.start();
       
       ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration(InVMConnectorFactory.class.getName()));
@@ -230,7 +230,7 @@ public class NotificationTest extends UnitTestCase
    // Private -------------------------------------------------------
 
    
-   private static void flush(ClientConsumer notifConsumer) throws MessagingException
+   private static void flush(ClientConsumer notifConsumer) throws HornetQException
    {
       ClientMessage message = null;
       do

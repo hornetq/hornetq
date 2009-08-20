@@ -22,8 +22,8 @@ import org.hornetq.core.management.ManagementService;
 import org.hornetq.core.management.ResourceNames;
 import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
 import org.hornetq.core.remoting.impl.invm.TransportConstants;
-import org.hornetq.core.server.Messaging;
-import org.hornetq.core.server.MessagingServer;
+import org.hornetq.core.server.HornetQ;
+import org.hornetq.core.server.HornetQServer;
 import org.hornetq.jms.bridge.ConnectionFactoryFactory;
 import org.hornetq.jms.bridge.DestinationFactory;
 import org.hornetq.jms.bridge.QualityOfServiceMode;
@@ -78,11 +78,11 @@ public abstract class BridgeTestBase extends UnitTestCase
 
    protected Topic sourceTopic;
 
-   protected MessagingServer server0;
+   protected HornetQServer server0;
 
    protected JMSServerManager jmsServer0;
 
-   protected MessagingServer server1;
+   protected HornetQServer server1;
 
    protected JMSServerManager jmsServer1;
 
@@ -101,7 +101,7 @@ public abstract class BridgeTestBase extends UnitTestCase
       conf0.setSecurityEnabled(false);
       conf0.getAcceptorConfigurations()
            .add(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory"));
-      server0 = Messaging.newMessagingServer(conf0, false);
+      server0 = HornetQ.newMessagingServer(conf0, false);
 
       context0 = new InVMContext();
       jmsServer0 = new JMSServerManagerImpl(server0);
@@ -116,7 +116,7 @@ public abstract class BridgeTestBase extends UnitTestCase
       conf1.getAcceptorConfigurations()
            .add(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory", params1));
 
-      server1 = Messaging.newMessagingServer(conf1, false);
+      server1 = HornetQ.newMessagingServer(conf1, false);
 
       context1 = new InVMContext();
       

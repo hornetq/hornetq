@@ -15,7 +15,7 @@ package org.hornetq.core.journal.impl;
 
 import java.util.concurrent.CountDownLatch;
 
-import org.hornetq.core.exception.MessagingException;
+import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.journal.IOCallback;
 import org.hornetq.core.logging.Logger;
 
@@ -64,7 +64,7 @@ public class SimpleWaitIOCallback implements IOCallback
       latch.await();
       if (errorMessage != null)
       {
-         throw new MessagingException(errorCode, errorMessage);
+         throw new HornetQException(errorCode, errorMessage);
       }
       return;
    }

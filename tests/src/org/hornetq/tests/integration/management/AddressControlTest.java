@@ -32,8 +32,8 @@ import org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
 import org.hornetq.core.security.CheckType;
 import org.hornetq.core.security.Role;
-import org.hornetq.core.server.Messaging;
-import org.hornetq.core.server.MessagingServer;
+import org.hornetq.core.server.HornetQ;
+import org.hornetq.core.server.HornetQServer;
 import org.hornetq.utils.SimpleString;
 
 /**
@@ -49,7 +49,7 @@ public class AddressControlTest extends ManagementTestBase
 
    // Attributes ----------------------------------------------------
 
-   private MessagingServer server;
+   private HornetQServer server;
 
    protected ClientSession session;
 
@@ -344,7 +344,7 @@ public class AddressControlTest extends ManagementTestBase
       conf.setSecurityEnabled(false);
       conf.setJMXManagementEnabled(true);
       conf.getAcceptorConfigurations().add(new TransportConfiguration(InVMAcceptorFactory.class.getName()));
-      server = Messaging.newMessagingServer(conf, mbeanServer, false);
+      server = HornetQ.newMessagingServer(conf, mbeanServer, false);
       server.start();
 
       ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration(InVMConnectorFactory.class.getName()));

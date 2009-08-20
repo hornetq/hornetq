@@ -26,8 +26,8 @@ import org.hornetq.core.config.TransportConfiguration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
-import org.hornetq.core.server.Messaging;
-import org.hornetq.core.server.MessagingServer;
+import org.hornetq.core.server.HornetQ;
+import org.hornetq.core.server.HornetQServer;
 import org.hornetq.tests.util.UnitTestCase;
 import org.hornetq.utils.SimpleString;
 
@@ -52,7 +52,7 @@ public class String64KLimitTest extends UnitTestCase
 
    // Attributes ----------------------------------------------------
 
-   private MessagingServer server;
+   private HornetQServer server;
 
    private ClientSession session;
 
@@ -207,7 +207,7 @@ public class String64KLimitTest extends UnitTestCase
       Configuration config = new ConfigurationImpl();
       config.setSecurityEnabled(false);
       config.getAcceptorConfigurations().add(new TransportConfiguration(InVMAcceptorFactory.class.getName()));
-      server = Messaging.newMessagingServer(config, false);
+      server = HornetQ.newMessagingServer(config, false);
       server.start();
 
       sf = new ClientSessionFactoryImpl(new TransportConfiguration(InVMConnectorFactory.class.getName()));      

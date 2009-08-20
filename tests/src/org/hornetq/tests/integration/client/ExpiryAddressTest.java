@@ -23,10 +23,10 @@ import org.hornetq.core.client.ClientSessionFactory;
 import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
 import org.hornetq.core.config.TransportConfiguration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
-import org.hornetq.core.exception.MessagingException;
+import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.logging.Logger;
-import org.hornetq.core.server.Messaging;
-import org.hornetq.core.server.MessagingServer;
+import org.hornetq.core.server.HornetQ;
+import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.tests.util.UnitTestCase;
 import org.hornetq.utils.SimpleString;
@@ -38,7 +38,7 @@ public class ExpiryAddressTest extends UnitTestCase
 {
    private static final Logger log = Logger.getLogger(ExpiryAddressTest.class);
 
-   private MessagingServer server;
+   private HornetQServer server;
 
    private ClientSession clientSession;
 
@@ -320,7 +320,7 @@ public class ExpiryAddressTest extends UnitTestCase
       configuration.setSecurityEnabled(false);
       TransportConfiguration transportConfig = new TransportConfiguration(INVM_ACCEPTOR_FACTORY);
       configuration.getAcceptorConfigurations().add(transportConfig);
-      server = Messaging.newMessagingServer(configuration, false);
+      server = HornetQ.newMessagingServer(configuration, false);
       // start the server
       server.start();
       // then we create a client as normal
@@ -338,7 +338,7 @@ public class ExpiryAddressTest extends UnitTestCase
          {
             clientSession.close();
          }
-         catch (MessagingException e1)
+         catch (HornetQException e1)
          {
             //
          }

@@ -18,8 +18,8 @@ import org.hornetq.core.client.ClientMessage;
 import org.hornetq.core.client.ClientProducer;
 import org.hornetq.core.client.ClientSession;
 import org.hornetq.core.client.ClientSessionFactory;
-import org.hornetq.core.remoting.spi.MessagingBuffer;
-import org.hornetq.core.server.MessagingServer;
+import org.hornetq.core.remoting.spi.HornetQBuffer;
+import org.hornetq.core.server.HornetQServer;
 import org.hornetq.tests.util.ServiceTestBase;
 import org.hornetq.utils.SimpleString;
 
@@ -39,7 +39,7 @@ public class SelfExpandingBufferTest extends ServiceTestBase
 
    // Attributes ----------------------------------------------------
 
-   MessagingServer service;
+   HornetQServer service;
 
    SimpleString ADDRESS = new SimpleString("Address");
 
@@ -84,7 +84,7 @@ public class SelfExpandingBufferTest extends ServiceTestBase
 
          ClientMessage msg = session.createClientMessage(true);
 
-         MessagingBuffer buffer = msg.getBody();
+         HornetQBuffer buffer = msg.getBody();
 
          for (int i = 0; i < 10; i++)
          {

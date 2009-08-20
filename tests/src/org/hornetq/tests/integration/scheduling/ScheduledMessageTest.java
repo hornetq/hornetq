@@ -25,7 +25,7 @@ import org.hornetq.core.client.ClientSessionFactory;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.message.impl.MessageImpl;
-import org.hornetq.core.server.MessagingServer;
+import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.core.transaction.impl.XidImpl;
 import org.hornetq.jms.client.HornetQTextMessage;
@@ -46,7 +46,7 @@ public class ScheduledMessageTest extends ServiceTestBase
 
    private Configuration configuration;
 
-   private MessagingServer server;
+   private HornetQServer server;
 
    @Override
    protected void setUp() throws Exception

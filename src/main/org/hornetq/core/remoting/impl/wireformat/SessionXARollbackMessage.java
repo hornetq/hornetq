@@ -15,7 +15,7 @@ package org.hornetq.core.remoting.impl.wireformat;
 
 import javax.transaction.xa.Xid;
 
-import org.hornetq.core.remoting.spi.MessagingBuffer;
+import org.hornetq.core.remoting.spi.HornetQBuffer;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -59,13 +59,13 @@ public class SessionXARollbackMessage extends PacketImpl
    }
 
    @Override
-   public void encodeBody(final MessagingBuffer buffer)
+   public void encodeBody(final HornetQBuffer buffer)
    {
       XidCodecSupport.encodeXid(xid, buffer);
    }
 
    @Override
-   public void decodeBody(final MessagingBuffer buffer)
+   public void decodeBody(final HornetQBuffer buffer)
    {
       xid = XidCodecSupport.decodeXid(buffer);
    }

@@ -16,7 +16,7 @@ package org.hornetq.core.remoting.impl.wireformat.replication;
 import static org.hornetq.utils.UUID.TYPE_TIME_BASED;
 
 import org.hornetq.core.remoting.impl.wireformat.PacketImpl;
-import org.hornetq.core.remoting.spi.MessagingBuffer;
+import org.hornetq.core.remoting.spi.HornetQBuffer;
 import org.hornetq.utils.DataConstants;
 import org.hornetq.utils.UUID;
 
@@ -68,14 +68,14 @@ public class ReplicateStartupInfoMessage extends PacketImpl
    }
 
    @Override
-   public void encodeBody(final MessagingBuffer buffer)
+   public void encodeBody(final HornetQBuffer buffer)
    {
       buffer.writeBytes(nodeID.asBytes());
       buffer.writeLong(currentMessageID);
    }
 
    @Override
-   public void decodeBody(final MessagingBuffer buffer)
+   public void decodeBody(final HornetQBuffer buffer)
    {
       byte[] bytes = new byte[16];
       buffer.readBytes(bytes);

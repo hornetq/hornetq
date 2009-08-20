@@ -44,7 +44,7 @@ import org.hornetq.core.remoting.impl.wireformat.replication.ReplicateRemoteBind
 import org.hornetq.core.remoting.impl.wireformat.replication.ReplicateRemoteBindingRemovedMessage;
 import org.hornetq.core.remoting.impl.wireformat.replication.ReplicateRemoteConsumerAddedMessage;
 import org.hornetq.core.remoting.impl.wireformat.replication.ReplicateRemoteConsumerRemovedMessage;
-import org.hornetq.core.server.MessagingServer;
+import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.Queue;
 import org.hornetq.core.server.cluster.Bridge;
 import org.hornetq.core.server.cluster.ClusterConnection;
@@ -71,7 +71,7 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
 
    private final org.hornetq.utils.ExecutorFactory executorFactory;
 
-   private final MessagingServer server;
+   private final HornetQServer server;
 
    private final PostOffice postOffice;
 
@@ -116,7 +116,7 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
                                 final boolean useDuplicateDetection,
                                 final boolean routeWhenNoConsumers,
                                 final org.hornetq.utils.ExecutorFactory executorFactory,
-                                final MessagingServer server,
+                                final HornetQServer server,
                                 final PostOffice postOffice,
                                 final ManagementService managementService,
                                 final ScheduledExecutorService scheduledExecutor,
@@ -178,7 +178,7 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
                                 final boolean useDuplicateDetection,
                                 final boolean routeWhenNoConsumers,
                                 final ExecutorFactory executorFactory,
-                                final MessagingServer server,
+                                final HornetQServer server,
                                 final PostOffice postOffice,
                                 final ManagementService managementService,
                                 final ScheduledExecutorService scheduledExecutor,

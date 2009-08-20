@@ -24,14 +24,14 @@ import org.hornetq.core.client.impl.ClientSessionInternal;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.TransportConfiguration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
-import org.hornetq.core.exception.MessagingException;
+import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.remoting.FailureListener;
 import org.hornetq.core.remoting.RemotingConnection;
 import org.hornetq.core.remoting.impl.invm.InVMConnector;
 import org.hornetq.core.remoting.impl.invm.InVMRegistry;
-import org.hornetq.core.server.Messaging;
-import org.hornetq.core.server.MessagingServer;
+import org.hornetq.core.server.HornetQ;
+import org.hornetq.core.server.HornetQServer;
 import org.hornetq.jms.client.HornetQTextMessage;
 import org.hornetq.tests.util.UnitTestCase;
 import org.hornetq.utils.SimpleString;
@@ -56,7 +56,7 @@ public class ReconnectTest extends UnitTestCase
 
    private static final SimpleString ADDRESS = new SimpleString("FailoverTestAddress");
 
-   private MessagingServer service;
+   private HornetQServer service;
 
    // Static --------------------------------------------------------
 
@@ -109,7 +109,7 @@ public class ReconnectTest extends UnitTestCase
 
          RemotingConnection conn = ((ClientSessionInternal)session).getConnection();
 
-         conn.fail(new MessagingException(MessagingException.NOT_CONNECTED));
+         conn.fail(new HornetQException(HornetQException.NOT_CONNECTED));
 
          session.start();
 
@@ -202,7 +202,7 @@ public class ReconnectTest extends UnitTestCase
 
       t.start();
 
-      conn.fail(new MessagingException(MessagingException.NOT_CONNECTED));
+      conn.fail(new HornetQException(HornetQException.NOT_CONNECTED));
 
       session.start();
 
@@ -255,7 +255,7 @@ public class ReconnectTest extends UnitTestCase
       {
          volatile boolean failed;
          
-         public void connectionFailed(MessagingException me)
+         public void connectionFailed(HornetQException me)
          {
             failed = true;
          }
@@ -315,13 +315,13 @@ public class ReconnectTest extends UnitTestCase
             
             log.info("calling fail async");
 
-            conn2.fail(new MessagingException(MessagingException.NOT_CONNECTED, "Did not receive pong from server"));
+            conn2.fail(new HornetQException(HornetQException.NOT_CONNECTED, "Did not receive pong from server"));
          }
       };
 
       t.start();
       
-      conn.fail(new MessagingException(MessagingException.NOT_CONNECTED));
+      conn.fail(new HornetQException(HornetQException.NOT_CONNECTED));
       
       assertFalse(listener.failed);
       
@@ -413,7 +413,7 @@ public class ReconnectTest extends UnitTestCase
 
       t.start();
 
-      conn.fail(new MessagingException(MessagingException.NOT_CONNECTED));
+      conn.fail(new HornetQException(HornetQException.NOT_CONNECTED));
 
       session.start();
 
@@ -470,7 +470,7 @@ public class ReconnectTest extends UnitTestCase
 
       RemotingConnection conn = ((ClientSessionInternal)session).getConnection();
 
-      conn.fail(new MessagingException(MessagingException.NOT_CONNECTED));
+      conn.fail(new HornetQException(HornetQException.NOT_CONNECTED));
 
       session.start();
 
@@ -555,7 +555,7 @@ public class ReconnectTest extends UnitTestCase
 
       t.start();
 
-      conn.fail(new MessagingException(MessagingException.NOT_CONNECTED));
+      conn.fail(new HornetQException(HornetQException.NOT_CONNECTED));
 
       session.start();
 
@@ -647,7 +647,7 @@ public class ReconnectTest extends UnitTestCase
 
       t.start();
 
-      conn.fail(new MessagingException(MessagingException.NOT_CONNECTED));
+      conn.fail(new HornetQException(HornetQException.NOT_CONNECTED));
 
       session.start();
 
@@ -692,7 +692,7 @@ public class ReconnectTest extends UnitTestCase
       liveConf.setSecurityEnabled(false);
       liveConf.getAcceptorConfigurations()
               .add(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory"));
-      service = Messaging.newMessagingServer(liveConf, false);
+      service = HornetQ.newMessagingServer(liveConf, false);
       service.start();
    }
 

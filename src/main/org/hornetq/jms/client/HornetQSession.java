@@ -244,7 +244,7 @@ import javax.transaction.xa.XAResource;
 import org.hornetq.core.client.ClientConsumer;
 import org.hornetq.core.client.ClientProducer;
 import org.hornetq.core.client.ClientSession;
-import org.hornetq.core.exception.MessagingException;
+import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.filter.impl.FilterImpl;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.remoting.impl.wireformat.SessionBindingQueryResponseMessage;
@@ -421,9 +421,9 @@ public class HornetQSession implements Session, XASession, QueueSession, XAQueue
       {
          session.commit();
       }
-      catch (MessagingException e)
+      catch (HornetQException e)
       {
-         throw JMSExceptionHelper.convertFromMessagingException(e);
+         throw JMSExceptionHelper.convertFromHornetQException(e);
       }
    }
 
@@ -442,9 +442,9 @@ public class HornetQSession implements Session, XASession, QueueSession, XAQueue
       {
          session.rollback();
       }
-      catch (MessagingException e)
+      catch (HornetQException e)
       {
-         throw JMSExceptionHelper.convertFromMessagingException(e);
+         throw JMSExceptionHelper.convertFromHornetQException(e);
       }
    }
 
@@ -461,9 +461,9 @@ public class HornetQSession implements Session, XASession, QueueSession, XAQueue
 
          connection.removeSession(this);
       }
-      catch (MessagingException e)
+      catch (HornetQException e)
       {
-         throw JMSExceptionHelper.convertFromMessagingException(e);
+         throw JMSExceptionHelper.convertFromHornetQException(e);
       }
    }
 
@@ -478,9 +478,9 @@ public class HornetQSession implements Session, XASession, QueueSession, XAQueue
       {
          session.rollback();
       }
-      catch (MessagingException e)
+      catch (HornetQException e)
       {
-         throw JMSExceptionHelper.convertFromMessagingException(e);
+         throw JMSExceptionHelper.convertFromHornetQException(e);
       }
 
       recoverCalled = true;
@@ -540,9 +540,9 @@ public class HornetQSession implements Session, XASession, QueueSession, XAQueue
 
          return new HornetQMessageProducer(connection, producer, jbd, session);
       }
-      catch (MessagingException e)
+      catch (HornetQException e)
       {
-         throw JMSExceptionHelper.convertFromMessagingException(e);
+         throw JMSExceptionHelper.convertFromHornetQException(e);
       }
    }
 
@@ -605,9 +605,9 @@ public class HornetQSession implements Session, XASession, QueueSession, XAQueue
             return queue;
          }
       }
-      catch (MessagingException e)
+      catch (HornetQException e)
       {
-         throw JMSExceptionHelper.convertFromMessagingException(e);
+         throw JMSExceptionHelper.convertFromHornetQException(e);
       }
    }
 
@@ -634,9 +634,9 @@ public class HornetQSession implements Session, XASession, QueueSession, XAQueue
             return topic;
          }
       }
-      catch (MessagingException e)
+      catch (HornetQException e)
       {
-         throw JMSExceptionHelper.convertFromMessagingException(e);
+         throw JMSExceptionHelper.convertFromHornetQException(e);
       }
    }
 
@@ -817,9 +817,9 @@ public class HornetQSession implements Session, XASession, QueueSession, XAQueue
 
          return jbc;
       }
-      catch (MessagingException e)
+      catch (HornetQException e)
       {
-         throw JMSExceptionHelper.convertFromMessagingException(e);
+         throw JMSExceptionHelper.convertFromHornetQException(e);
       }
    }
 
@@ -853,9 +853,9 @@ public class HornetQSession implements Session, XASession, QueueSession, XAQueue
       {
          FilterImpl.createFilter(filterString);
       }
-      catch (MessagingException e)
+      catch (HornetQException e)
       {
-         throw JMSExceptionHelper.convertFromMessagingException(e);
+         throw JMSExceptionHelper.convertFromHornetQException(e);
       }
 
       HornetQQueue jbq = (HornetQQueue)queue;
@@ -868,9 +868,9 @@ public class HornetQSession implements Session, XASession, QueueSession, XAQueue
             throw new InvalidDestinationException(jbq.getAddress() + " does not exist");
          }
       }
-      catch (MessagingException e)
+      catch (HornetQException e)
       {
-         throw JMSExceptionHelper.convertFromMessagingException(e);
+         throw JMSExceptionHelper.convertFromHornetQException(e);
       }
 
       return new HornetQQueueBrowser(jbq, filterString, session);
@@ -899,9 +899,9 @@ public class HornetQSession implements Session, XASession, QueueSession, XAQueue
 
          return queue;
       }
-      catch (MessagingException e)
+      catch (HornetQException e)
       {
-         throw JMSExceptionHelper.convertFromMessagingException(e);
+         throw JMSExceptionHelper.convertFromHornetQException(e);
       }
    }
 
@@ -932,9 +932,9 @@ public class HornetQSession implements Session, XASession, QueueSession, XAQueue
 
          return topic;
       }
-      catch (MessagingException e)
+      catch (HornetQException e)
       {
-         throw JMSExceptionHelper.convertFromMessagingException(e);
+         throw JMSExceptionHelper.convertFromHornetQException(e);
       }
    }
 
@@ -967,9 +967,9 @@ public class HornetQSession implements Session, XASession, QueueSession, XAQueue
 
          session.deleteQueue(queueName);
       }
-      catch (MessagingException e)
+      catch (HornetQException e)
       {
-         throw JMSExceptionHelper.convertFromMessagingException(e);
+         throw JMSExceptionHelper.convertFromHornetQException(e);
       }
    }
 
@@ -1084,9 +1084,9 @@ public class HornetQSession implements Session, XASession, QueueSession, XAQueue
 
          connection.removeTemporaryQueue(address);
       }
-      catch (MessagingException e)
+      catch (HornetQException e)
       {
-         throw JMSExceptionHelper.convertFromMessagingException(e);
+         throw JMSExceptionHelper.convertFromHornetQException(e);
       }
    }
 
@@ -1114,9 +1114,9 @@ public class HornetQSession implements Session, XASession, QueueSession, XAQueue
 
          connection.removeTemporaryQueue(address);
       }
-      catch (MessagingException e)
+      catch (HornetQException e)
       {
-         throw JMSExceptionHelper.convertFromMessagingException(e);
+         throw JMSExceptionHelper.convertFromHornetQException(e);
       }
    }
 
@@ -1126,9 +1126,9 @@ public class HornetQSession implements Session, XASession, QueueSession, XAQueue
       {
          session.deleteQueue(queueName);
       }
-      catch (MessagingException e)
+      catch (HornetQException e)
       {
-         throw JMSExceptionHelper.convertFromMessagingException(e);
+         throw JMSExceptionHelper.convertFromHornetQException(e);
       }
    }
 
@@ -1138,9 +1138,9 @@ public class HornetQSession implements Session, XASession, QueueSession, XAQueue
       {
          session.start();
       }
-      catch (MessagingException e)
+      catch (HornetQException e)
       {
-         throw JMSExceptionHelper.convertFromMessagingException(e);
+         throw JMSExceptionHelper.convertFromHornetQException(e);
       }
    }
 
@@ -1150,9 +1150,9 @@ public class HornetQSession implements Session, XASession, QueueSession, XAQueue
       {
          session.stop();
       }
-      catch (MessagingException e)
+      catch (HornetQException e)
       {
-         throw JMSExceptionHelper.convertFromMessagingException(e);
+         throw JMSExceptionHelper.convertFromHornetQException(e);
       }
    }
 

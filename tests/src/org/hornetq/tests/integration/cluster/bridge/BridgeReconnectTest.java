@@ -27,11 +27,11 @@ import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
 import org.hornetq.core.config.TransportConfiguration;
 import org.hornetq.core.config.cluster.BridgeConfiguration;
 import org.hornetq.core.config.cluster.QueueConfiguration;
-import org.hornetq.core.exception.MessagingException;
+import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.remoting.RemotingConnection;
 import org.hornetq.core.remoting.impl.invm.InVMConnector;
-import org.hornetq.core.server.MessagingServer;
+import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.cluster.Bridge;
 import org.hornetq.core.server.cluster.impl.BridgeImpl;
 import org.hornetq.utils.Pair;
@@ -55,13 +55,13 @@ public class BridgeReconnectTest extends BridgeTestBase
    public void testFailoverAndReconnectImmediately() throws Exception
    {
       Map<String, Object> server0Params = new HashMap<String, Object>();
-      MessagingServer server0 = createMessagingServer(0, server0Params);
+      HornetQServer server0 = createMessagingServer(0, server0Params);
 
       Map<String, Object> server1Params = new HashMap<String, Object>();
-      MessagingServer server1 = createMessagingServer(1, server1Params);
+      HornetQServer server1 = createMessagingServer(1, server1Params);
 
       Map<String, Object> server2Params = new HashMap<String, Object>();
-      MessagingServer service2 = createMessagingServer(2, server2Params, true);
+      HornetQServer service2 = createMessagingServer(2, server2Params, true);
 
       TransportConfiguration server0tc = new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory",
                                                                     server0Params,
@@ -143,7 +143,7 @@ public class BridgeReconnectTest extends BridgeTestBase
       // Now we will simulate a failure of the bridge connection between server0 and server1
       Bridge bridge = server0.getClusterManager().getBridges().get(bridgeName);
       RemotingConnection forwardingConnection = getForwardingConnection(bridge);
-      forwardingConnection.fail(new MessagingException(MessagingException.NOT_CONNECTED));
+      forwardingConnection.fail(new HornetQException(HornetQException.NOT_CONNECTED));
 
       final int numMessages = 10;
 
@@ -180,13 +180,13 @@ public class BridgeReconnectTest extends BridgeTestBase
    public void testFailoverAndReconnectAfterAFewTries() throws Exception
    {
       Map<String, Object> server0Params = new HashMap<String, Object>();
-      MessagingServer server0 = createMessagingServer(0, server0Params);
+      HornetQServer server0 = createMessagingServer(0, server0Params);
 
       Map<String, Object> server1Params = new HashMap<String, Object>();
-      MessagingServer server1 = createMessagingServer(1, server1Params);
+      HornetQServer server1 = createMessagingServer(1, server1Params);
 
       Map<String, Object> server2Params = new HashMap<String, Object>();
-      MessagingServer service2 = createMessagingServer(2, server2Params, true);
+      HornetQServer service2 = createMessagingServer(2, server2Params, true);
 
       TransportConfiguration server0tc = new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory",
                                                                     server0Params,
@@ -270,10 +270,10 @@ public class BridgeReconnectTest extends BridgeTestBase
       RemotingConnection forwardingConnection = getForwardingConnection(bridge);
       InVMConnector.failOnCreateConnection = true;
       InVMConnector.numberOfFailures = reconnectAttempts - 1;
-      forwardingConnection.fail(new MessagingException(MessagingException.NOT_CONNECTED));
+      forwardingConnection.fail(new HornetQException(HornetQException.NOT_CONNECTED));
 
       forwardingConnection = getForwardingConnection(bridge);      
-      forwardingConnection.fail(new MessagingException(MessagingException.NOT_CONNECTED));
+      forwardingConnection.fail(new HornetQException(HornetQException.NOT_CONNECTED));
 
       final int numMessages = 10;
 
@@ -310,10 +310,10 @@ public class BridgeReconnectTest extends BridgeTestBase
    public void testReconnectSameNode() throws Exception
    {
       Map<String, Object> server0Params = new HashMap<String, Object>();
-      MessagingServer server0 = createMessagingServer(0, server0Params);
+      HornetQServer server0 = createMessagingServer(0, server0Params);
 
       Map<String, Object> server1Params = new HashMap<String, Object>();
-      MessagingServer server1 = createMessagingServer(1, server1Params);
+      HornetQServer server1 = createMessagingServer(1, server1Params);
 
       TransportConfiguration server0tc = new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory",
                                                                     server0Params,
@@ -387,10 +387,10 @@ public class BridgeReconnectTest extends BridgeTestBase
       RemotingConnection forwardingConnection = getForwardingConnection(bridge);
       InVMConnector.failOnCreateConnection = true;
       InVMConnector.numberOfFailures = reconnectAttempts - 1;
-      forwardingConnection.fail(new MessagingException(MessagingException.NOT_CONNECTED));
+      forwardingConnection.fail(new HornetQException(HornetQException.NOT_CONNECTED));
 
       forwardingConnection = getForwardingConnection(bridge);      
-      forwardingConnection.fail(new MessagingException(MessagingException.NOT_CONNECTED));
+      forwardingConnection.fail(new HornetQException(HornetQException.NOT_CONNECTED));
 
       final int numMessages = 10;
 
@@ -424,10 +424,10 @@ public class BridgeReconnectTest extends BridgeTestBase
    public void testShutdownServerCleanlyAndReconnectSameNode() throws Exception
    {
       Map<String, Object> server0Params = new HashMap<String, Object>();
-      MessagingServer server0 = createMessagingServer(0, server0Params);
+      HornetQServer server0 = createMessagingServer(0, server0Params);
 
       Map<String, Object> server1Params = new HashMap<String, Object>();
-      MessagingServer server1 = createMessagingServer(1, server1Params);
+      HornetQServer server1 = createMessagingServer(1, server1Params);
 
       TransportConfiguration server0tc = new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory",
                                                                     server0Params,
@@ -531,10 +531,10 @@ public class BridgeReconnectTest extends BridgeTestBase
    public void testFailoverThenFailAgainAndReconnect() throws Exception
    {
       Map<String, Object> server0Params = new HashMap<String, Object>();
-      MessagingServer server0 = createMessagingServer(0, server0Params);
+      HornetQServer server0 = createMessagingServer(0, server0Params);
 
       Map<String, Object> server1Params = new HashMap<String, Object>();
-      MessagingServer server1 = createMessagingServer(1, server1Params);
+      HornetQServer server1 = createMessagingServer(1, server1Params);
 
       TransportConfiguration server0tc = new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory",
                                                                     server0Params,
@@ -606,7 +606,7 @@ public class BridgeReconnectTest extends BridgeTestBase
       RemotingConnection forwardingConnection = getForwardingConnection(bridge);
       InVMConnector.failOnCreateConnection = true;
       InVMConnector.numberOfFailures = reconnectAttempts - 1;
-      forwardingConnection.fail(new MessagingException(MessagingException.NOT_CONNECTED));
+      forwardingConnection.fail(new HornetQException(HornetQException.NOT_CONNECTED));
 
       final int numMessages = 10;
 
@@ -631,7 +631,7 @@ public class BridgeReconnectTest extends BridgeTestBase
       forwardingConnection = ((BridgeImpl)bridge).getForwardingConnection();
       InVMConnector.failOnCreateConnection = true;
       InVMConnector.numberOfFailures = reconnectAttempts - 1;
-      forwardingConnection.fail(new MessagingException(MessagingException.NOT_CONNECTED));
+      forwardingConnection.fail(new HornetQException(HornetQException.NOT_CONNECTED));
       
       for (int i = 0; i < numMessages; i++)
       {

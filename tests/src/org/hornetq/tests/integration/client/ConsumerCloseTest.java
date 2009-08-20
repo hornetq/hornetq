@@ -24,12 +24,12 @@ import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.TransportConfiguration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
-import org.hornetq.core.exception.MessagingException;
+import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
-import org.hornetq.core.server.Messaging;
-import org.hornetq.core.server.MessagingServer;
+import org.hornetq.core.server.HornetQ;
+import org.hornetq.core.server.HornetQServer;
 import org.hornetq.tests.util.ServiceTestBase;
 import org.hornetq.utils.SimpleString;
 
@@ -46,7 +46,7 @@ public class ConsumerCloseTest extends ServiceTestBase
 
    // Attributes ----------------------------------------------------
 
-   private MessagingServer server;
+   private HornetQServer server;
 
    private ClientSession session;
 
@@ -68,25 +68,25 @@ public class ConsumerCloseTest extends ServiceTestBase
 
       assertTrue(consumer.isClosed());
 
-      expectMessagingException(MessagingException.OBJECT_CLOSED, new MessagingAction()
+      expectHornetQException(HornetQException.OBJECT_CLOSED, new MessagingAction()
       {
-         public void run() throws MessagingException
+         public void run() throws HornetQException
          {
             consumer.receive();
          }
       });
 
-      expectMessagingException(MessagingException.OBJECT_CLOSED, new MessagingAction()
+      expectHornetQException(HornetQException.OBJECT_CLOSED, new MessagingAction()
       {
-         public void run() throws MessagingException
+         public void run() throws HornetQException
          {
             consumer.receiveImmediate();
          }
       });
 
-      expectMessagingException(MessagingException.OBJECT_CLOSED, new MessagingAction()
+      expectHornetQException(HornetQException.OBJECT_CLOSED, new MessagingAction()
       {
-         public void run() throws MessagingException
+         public void run() throws HornetQException
          {
             consumer.setMessageHandler(new MessageHandler()
             {
@@ -155,7 +155,7 @@ public class ConsumerCloseTest extends ServiceTestBase
       Configuration config = new ConfigurationImpl();
       config.getAcceptorConfigurations().add(new TransportConfiguration(InVMAcceptorFactory.class.getCanonicalName()));
       config.setSecurityEnabled(false);
-      server = Messaging.newMessagingServer(config, false);
+      server = HornetQ.newMessagingServer(config, false);
       server.start();
 
       address = randomSimpleString();

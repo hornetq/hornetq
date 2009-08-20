@@ -21,11 +21,11 @@ import org.hornetq.core.client.ClientMessage;
 import org.hornetq.core.client.ClientProducer;
 import org.hornetq.core.client.ClientSession;
 import org.hornetq.core.client.ClientSessionFactory;
-import org.hornetq.core.exception.MessagingException;
+import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.remoting.FailureListener;
 import org.hornetq.core.remoting.impl.wireformat.SessionBindingQueryResponseMessage;
 import org.hornetq.core.remoting.impl.wireformat.SessionQueueQueryResponseMessage;
-import org.hornetq.core.server.MessagingServer;
+import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.Queue;
 import org.hornetq.tests.util.ServiceTestBase;
 import org.hornetq.utils.SimpleString;
@@ -41,7 +41,7 @@ public class SessionTest extends ServiceTestBase
 
    public void testFailureListener() throws Exception
    {
-      MessagingServer server = createServer(false);
+      HornetQServer server = createServer(false);
       try
       {
          server.start();
@@ -50,7 +50,7 @@ public class SessionTest extends ServiceTestBase
          final CountDownLatch latch = new CountDownLatch(1);
          clientSession.addFailureListener(new FailureListener()
          {
-            public void connectionFailed(MessagingException me)
+            public void connectionFailed(HornetQException me)
             {
                latch.countDown();
             }
@@ -75,7 +75,7 @@ public class SessionTest extends ServiceTestBase
 
    public void testFailureListenerRemoved() throws Exception
    {
-      MessagingServer server = createServer(false);
+      HornetQServer server = createServer(false);
       try
       {
          server.start();
@@ -85,7 +85,7 @@ public class SessionTest extends ServiceTestBase
          {
             boolean called = false;
 
-            public void connectionFailed(MessagingException me)
+            public void connectionFailed(HornetQException me)
             {
                called = true;
             }
@@ -110,7 +110,7 @@ public class SessionTest extends ServiceTestBase
 
    public void testBindingQuery() throws Exception
    {
-      MessagingServer server = createServer(false);
+      HornetQServer server = createServer(false);
       try
       {
          server.start();
@@ -148,7 +148,7 @@ public class SessionTest extends ServiceTestBase
 
    public void testQueueQuery() throws Exception
    {
-      MessagingServer server = createServer(false);
+      HornetQServer server = createServer(false);
       try
       {
          server.start();
@@ -178,7 +178,7 @@ public class SessionTest extends ServiceTestBase
 
    public void testQueueQueryWithFilter() throws Exception
    {
-      MessagingServer server = createServer(false);
+      HornetQServer server = createServer(false);
       try
       {
          server.start();
@@ -205,7 +205,7 @@ public class SessionTest extends ServiceTestBase
 
     public void testQueueQueryNoQ() throws Exception
    {
-      MessagingServer server = createServer(false);
+      HornetQServer server = createServer(false);
       try
       {
          server.start();
@@ -227,7 +227,7 @@ public class SessionTest extends ServiceTestBase
 
    public void testClose() throws Exception
    {
-      MessagingServer server = createServer(false);
+      HornetQServer server = createServer(false);
       try
       {
          server.start();
@@ -256,7 +256,7 @@ public class SessionTest extends ServiceTestBase
 
    public void testCreateClientMessageNonDurable() throws Exception
    {
-      MessagingServer server = createServer(false);
+      HornetQServer server = createServer(false);
       try
       {
          server.start();
@@ -277,7 +277,7 @@ public class SessionTest extends ServiceTestBase
 
    public void testCreateClientMessageDurable() throws Exception
    {
-      MessagingServer server = createServer(false);
+      HornetQServer server = createServer(false);
       try
       {
          server.start();
@@ -298,7 +298,7 @@ public class SessionTest extends ServiceTestBase
 
    public void testCreateClientMessageType() throws Exception
    {
-      MessagingServer server = createServer(false);
+      HornetQServer server = createServer(false);
       try
       {
          server.start();
@@ -319,7 +319,7 @@ public class SessionTest extends ServiceTestBase
 
    public void testCreateClientMessageOverrides() throws Exception
    {
-      MessagingServer server = createServer(false);
+      HornetQServer server = createServer(false);
       try
       {
          server.start();
@@ -343,7 +343,7 @@ public class SessionTest extends ServiceTestBase
 
    public void testGetVersion() throws Exception
    {
-      MessagingServer server = createServer(false);
+      HornetQServer server = createServer(false);
       try
       {
          server.start();
@@ -363,7 +363,7 @@ public class SessionTest extends ServiceTestBase
 
    public void testStart() throws Exception
    {
-      MessagingServer server = createServer(false);
+      HornetQServer server = createServer(false);
       try
       {
          server.start();
@@ -384,7 +384,7 @@ public class SessionTest extends ServiceTestBase
 
    public void testStop() throws Exception
    {
-      MessagingServer server = createServer(false);
+      HornetQServer server = createServer(false);
       try
       {
          server.start();
@@ -406,7 +406,7 @@ public class SessionTest extends ServiceTestBase
 
    public void testCommitWithSend() throws Exception
    {
-      MessagingServer server = createServer(false);
+      HornetQServer server = createServer(false);
       try
       {
          server.start();
@@ -441,7 +441,7 @@ public class SessionTest extends ServiceTestBase
 
    public void testRollbackWithSend() throws Exception
    {
-      MessagingServer server = createServer(false);
+      HornetQServer server = createServer(false);
       try
       {
          server.start();
@@ -479,7 +479,7 @@ public class SessionTest extends ServiceTestBase
 
    public void testCommitWithReceive() throws Exception
    {
-      MessagingServer server = createServer(false);
+      HornetQServer server = createServer(false);
       try
       {
          server.start();
@@ -550,7 +550,7 @@ public class SessionTest extends ServiceTestBase
 
    public void testRollbackWithReceive() throws Exception
    {
-      MessagingServer server = createServer(false);
+      HornetQServer server = createServer(false);
       try
       {
          server.start();

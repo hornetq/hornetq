@@ -20,7 +20,7 @@ import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.TransportConfiguration;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
-import org.hornetq.core.server.MessagingServer;
+import org.hornetq.core.server.HornetQServer;
 import org.hornetq.integration.transports.netty.NettyConnectorFactory;
 import org.hornetq.tests.util.ServiceTestBase;
 
@@ -41,7 +41,7 @@ public class SynchronousCloseTest extends ServiceTestBase
 
    // Attributes ----------------------------------------------------
 
-   private MessagingServer server;
+   private HornetQServer server;
 
    // Static --------------------------------------------------------
 

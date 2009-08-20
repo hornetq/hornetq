@@ -228,10 +228,10 @@ import org.hornetq.core.buffers.ChannelBuffers;
 import org.hornetq.core.client.ClientMessage;
 import org.hornetq.core.client.ClientSession;
 import org.hornetq.core.client.impl.ClientMessageImpl;
-import org.hornetq.core.exception.MessagingException;
+import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.message.impl.MessageImpl;
-import org.hornetq.core.remoting.spi.MessagingBuffer;
+import org.hornetq.core.remoting.spi.HornetQBuffer;
 import org.hornetq.jms.HornetQDestination;
 import org.hornetq.utils.SimpleString;
 
@@ -1169,9 +1169,9 @@ public class HornetQMessage implements javax.jms.Message
          {
             session.commit();
          }
-         catch (MessagingException e)
+         catch (HornetQException e)
          {
-            throw JMSExceptionHelper.convertFromMessagingException(e);
+            throw JMSExceptionHelper.convertFromHornetQException(e);
          }
       }
    }
@@ -1190,7 +1190,7 @@ public class HornetQMessage implements javax.jms.Message
 
    public void doBeforeReceive() throws Exception
    {
-      MessagingBuffer body = message.getBody();
+      HornetQBuffer body = message.getBody();
       if (body != null)
       {
          body.resetReaderIndex();
@@ -1225,9 +1225,9 @@ public class HornetQMessage implements javax.jms.Message
       {
          message.setOutputStream(output);
       }
-      catch (MessagingException e)
+      catch (HornetQException e)
       {
-         throw JMSExceptionHelper.convertFromMessagingException(e);
+         throw JMSExceptionHelper.convertFromHornetQException(e);
       }
    }
 
@@ -1243,9 +1243,9 @@ public class HornetQMessage implements javax.jms.Message
       {
          message.saveToOutputStream(output);
       }
-      catch (MessagingException e)
+      catch (HornetQException e)
       {
-         throw JMSExceptionHelper.convertFromMessagingException(e);
+         throw JMSExceptionHelper.convertFromHornetQException(e);
       }
    }
 
@@ -1256,9 +1256,9 @@ public class HornetQMessage implements javax.jms.Message
       {
          return message.waitOutputStreamCompletion(timeWait);
       }
-      catch (MessagingException e)
+      catch (HornetQException e)
       {
-         throw JMSExceptionHelper.convertFromMessagingException(e);
+         throw JMSExceptionHelper.convertFromHornetQException(e);
       }
    }
 
@@ -1292,7 +1292,7 @@ public class HornetQMessage implements javax.jms.Message
       }
    }
 
-   protected MessagingBuffer getBody()
+   protected HornetQBuffer getBody()
    {
       return message.getBody();
    }

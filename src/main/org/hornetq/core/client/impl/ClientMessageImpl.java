@@ -18,9 +18,9 @@ import java.io.OutputStream;
 
 import org.hornetq.core.buffers.ChannelBuffers;
 import org.hornetq.core.client.LargeMessageBuffer;
-import org.hornetq.core.exception.MessagingException;
+import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.message.impl.MessageImpl;
-import org.hornetq.core.remoting.spi.MessagingBuffer;
+import org.hornetq.core.remoting.spi.HornetQBuffer;
 import org.hornetq.utils.SimpleString;
 
 /**
@@ -62,17 +62,17 @@ public class ClientMessageImpl extends MessageImpl implements ClientMessageInter
                             final long expiration,
                             final long timestamp,
                             final byte priority,
-                            final MessagingBuffer body)
+                            final HornetQBuffer body)
    {
       super(type, durable, expiration, timestamp, priority, body);
    }
 
-   public ClientMessageImpl(final byte type, final boolean durable, final MessagingBuffer body)
+   public ClientMessageImpl(final byte type, final boolean durable, final HornetQBuffer body)
    {
       super(type, durable, 0, System.currentTimeMillis(), (byte)4, body);
    }
 
-   public ClientMessageImpl(final boolean durable, final MessagingBuffer body)
+   public ClientMessageImpl(final boolean durable, final HornetQBuffer body)
    {
       super((byte)0, durable, 0, System.currentTimeMillis(), (byte)4, body);
    }
@@ -97,7 +97,7 @@ public class ClientMessageImpl extends MessageImpl implements ClientMessageInter
       return deliveryCount;
    }
 
-   public void acknowledge() throws MessagingException
+   public void acknowledge() throws HornetQException
    {
       if (consumer != null)
       {
@@ -161,7 +161,7 @@ public class ClientMessageImpl extends MessageImpl implements ClientMessageInter
    /* (non-Javadoc)
     * @see org.hornetq.core.client.ClientMessage#saveToOutputStream(java.io.OutputStream)
     */
-   public void saveToOutputStream(final OutputStream out) throws MessagingException
+   public void saveToOutputStream(final OutputStream out) throws HornetQException
    {
       if (largeMessage)
       {
@@ -175,7 +175,7 @@ public class ClientMessageImpl extends MessageImpl implements ClientMessageInter
          }
          catch (IOException e)
          {
-            throw new MessagingException(MessagingException.LARGE_MESSAGE_ERROR_BODY, "Error saving the message body", e);
+            throw new HornetQException(HornetQException.LARGE_MESSAGE_ERROR_BODY, "Error saving the message body", e);
          }
       }
       
@@ -184,7 +184,7 @@ public class ClientMessageImpl extends MessageImpl implements ClientMessageInter
    /* (non-Javadoc)
     * @see org.hornetq.core.client.ClientMessage#setOutputStream(java.io.OutputStream)
     */
-   public void setOutputStream(final OutputStream out) throws MessagingException
+   public void setOutputStream(final OutputStream out) throws HornetQException
    {
       if (largeMessage)
       {
@@ -200,7 +200,7 @@ public class ClientMessageImpl extends MessageImpl implements ClientMessageInter
    /* (non-Javadoc)
     * @see org.hornetq.core.client.ClientMessage#waitOutputStreamCompletion()
     */
-   public boolean waitOutputStreamCompletion(final long timeMilliseconds) throws MessagingException
+   public boolean waitOutputStreamCompletion(final long timeMilliseconds) throws HornetQException
    {
       if (largeMessage)
       {

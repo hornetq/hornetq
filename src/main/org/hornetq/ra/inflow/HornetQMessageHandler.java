@@ -27,7 +27,7 @@ import org.hornetq.core.client.ClientConsumer;
 import org.hornetq.core.client.ClientMessage;
 import org.hornetq.core.client.ClientSession;
 import org.hornetq.core.client.MessageHandler;
-import org.hornetq.core.exception.MessagingException;
+import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.remoting.impl.wireformat.SessionQueueQueryResponseMessage;
 import org.hornetq.jms.HornetQTopic;
@@ -357,7 +357,7 @@ public class HornetQMessageHandler implements MessageHandler
                session.rollback();
                rolledBack = true;
             }
-            catch (MessagingException e)
+            catch (HornetQException e)
             {
                log.error("Failed to rollback session transaction", e);
             }
@@ -382,7 +382,7 @@ public class HornetQMessageHandler implements MessageHandler
                {
                   session.commit();
                }
-               catch (MessagingException e)
+               catch (HornetQException e)
                {
                   log.error("Failed to commit session transaction", e);
                }

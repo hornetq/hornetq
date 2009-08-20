@@ -29,8 +29,8 @@ import org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.hornetq.core.remoting.impl.invm.InVMRegistry;
 import org.hornetq.core.remoting.impl.invm.TransportConstants;
 import org.hornetq.core.server.JournalType;
-import org.hornetq.core.server.Messaging;
-import org.hornetq.core.server.MessagingServer;
+import org.hornetq.core.server.HornetQ;
+import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.tests.util.ServiceTestBase;
 import org.hornetq.utils.Pair;
@@ -53,9 +53,9 @@ public class FailoverTestBase extends ServiceTestBase
 
    protected Map<String, Object> backupParams = new HashMap<String, Object>();
 
-   protected MessagingServer liveServer;
+   protected HornetQServer liveServer;
 
-   protected MessagingServer backupServer;
+   protected HornetQServer backupServer;
 
    // Static --------------------------------------------------------
 
@@ -118,11 +118,11 @@ public class FailoverTestBase extends ServiceTestBase
 
          backupConf.setJournalType(JournalType.ASYNCIO);
          
-         backupServer = Messaging.newMessagingServer(backupConf);
+         backupServer = HornetQ.newMessagingServer(backupConf);
       }
       else
       {
-         backupServer = Messaging.newMessagingServer(backupConf, false);
+         backupServer = HornetQ.newMessagingServer(backupConf, false);
       }
 
       backupServer.start();
@@ -158,11 +158,11 @@ public class FailoverTestBase extends ServiceTestBase
 
       if (fileBased)
       {
-         liveServer = Messaging.newMessagingServer(liveConf);
+         liveServer = HornetQ.newMessagingServer(liveConf);
       }
       else
       {
-         liveServer = Messaging.newMessagingServer(liveConf, false);
+         liveServer = HornetQ.newMessagingServer(liveConf, false);
       }
 
       AddressSettings settings = new AddressSettings();
@@ -201,12 +201,12 @@ public class FailoverTestBase extends ServiceTestBase
 
          backupConf.setJournalType(JournalType.ASYNCIO);
 
-         backupServer = Messaging.newMessagingServer(backupConf);
+         backupServer = HornetQ.newMessagingServer(backupConf);
          
       }
       else
       {
-         backupServer = Messaging.newMessagingServer(backupConf, false);
+         backupServer = HornetQ.newMessagingServer(backupConf, false);
       }
       
       backupServer.start();
@@ -252,14 +252,14 @@ public class FailoverTestBase extends ServiceTestBase
          liveConf.setJournalFileSize(100 * 1024);
 
          liveConf.setJournalType(JournalType.ASYNCIO);
-         liveServer = Messaging.newMessagingServer(liveConf);
+         liveServer = HornetQ.newMessagingServer(liveConf);
       }
       else
       {
-         liveServer = Messaging.newMessagingServer(liveConf, false);
+         liveServer = HornetQ.newMessagingServer(liveConf, false);
       }
 
-      liveServer = Messaging.newMessagingServer(liveConf, false);
+      liveServer = HornetQ.newMessagingServer(liveConf, false);
       liveServer.start();
 
    }

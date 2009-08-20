@@ -37,8 +37,8 @@ import org.hornetq.core.management.ObjectNames;
 import org.hornetq.core.management.ResourceNames;
 import org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
-import org.hornetq.core.server.Messaging;
-import org.hornetq.core.server.MessagingServer;
+import org.hornetq.core.server.HornetQ;
+import org.hornetq.core.server.HornetQServer;
 import org.hornetq.utils.Pair;
 
 /**
@@ -56,11 +56,11 @@ public class BridgeControlUsingCoreTest extends ManagementTestBase
 
    // Attributes ----------------------------------------------------
 
-   private MessagingServer server_0;
+   private HornetQServer server_0;
 
    private BridgeConfiguration bridgeConfig;
 
-   private MessagingServer server_1;
+   private HornetQServer server_1;
    
    private ClientSession session;
 
@@ -156,10 +156,10 @@ public class BridgeControlUsingCoreTest extends ManagementTestBase
       conf_0.getQueueConfigurations().add(sourceQueueConfig);
       conf_0.getBridgeConfigurations().add(bridgeConfig);
 
-      server_1 = Messaging.newMessagingServer(conf_1, MBeanServerFactory.createMBeanServer(), false);
+      server_1 = HornetQ.newMessagingServer(conf_1, MBeanServerFactory.createMBeanServer(), false);
       server_1.start();
 
-      server_0 = Messaging.newMessagingServer(conf_0, mbeanServer, false);
+      server_0 = HornetQ.newMessagingServer(conf_0, mbeanServer, false);
       server_0.start();
       
       ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration(InVMConnectorFactory.class.getName()));

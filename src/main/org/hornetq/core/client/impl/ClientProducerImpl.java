@@ -19,7 +19,7 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import org.hornetq.core.buffers.ChannelBuffers;
-import org.hornetq.core.exception.MessagingException;
+import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.message.Message;
 import org.hornetq.core.message.impl.MessageImpl;
@@ -27,7 +27,7 @@ import org.hornetq.core.remoting.Channel;
 import org.hornetq.core.remoting.impl.wireformat.SessionSendContinuationMessage;
 import org.hornetq.core.remoting.impl.wireformat.SessionSendLargeMessage;
 import org.hornetq.core.remoting.impl.wireformat.SessionSendMessage;
-import org.hornetq.core.remoting.spi.MessagingBuffer;
+import org.hornetq.core.remoting.spi.HornetQBuffer;
 import org.hornetq.utils.SimpleString;
 import org.hornetq.utils.TokenBucketLimiter;
 import org.hornetq.utils.UUIDGenerator;
@@ -114,26 +114,26 @@ public class ClientProducerImpl implements ClientProducerInternal
       return address;
    }
 
-   public void send(final Message msg) throws MessagingException
+   public void send(final Message msg) throws HornetQException
    {
       checkClosed();
 
       doSend(null, msg);
    }
 
-   public void send(final SimpleString address, final Message msg) throws MessagingException
+   public void send(final SimpleString address, final Message msg) throws HornetQException
    {
       checkClosed();
 
       doSend(address, msg);
    }
 
-   public void send(String address, Message message) throws MessagingException
+   public void send(String address, Message message) throws HornetQException
    {
       send(toSimpleString(address), message);
    }
 
-   public synchronized void close() throws MessagingException
+   public synchronized void close() throws HornetQException
    {
       if (closed)
       {
@@ -188,7 +188,7 @@ public class ClientProducerImpl implements ClientProducerInternal
       closed = true;
    }
 
-   private void doSend(final SimpleString address, final Message msg) throws MessagingException
+   private void doSend(final SimpleString address, final Message msg) throws HornetQException
    {
       if (address != null)
       {
@@ -231,15 +231,15 @@ public class ClientProducerImpl implements ClientProducerInternal
 
    /**
     * @param msg
-    * @throws MessagingException
+    * @throws HornetQException
     */
-   private void sendMessageInChunks(final boolean sendBlocking, final Message msg) throws MessagingException
+   private void sendMessageInChunks(final boolean sendBlocking, final Message msg) throws HornetQException
    {
       int headerSize = msg.getPropertiesEncodeSize();
 
       if (headerSize >= minLargeMessageSize)
       {
-         throw new MessagingException(MessagingException.ILLEGAL_STATE, "Header size (" + headerSize +
+         throw new HornetQException(HornetQException.ILLEGAL_STATE, "Header size (" + headerSize +
                                                                         ") is too big, use the messageBody for large data, or increase minLargeMessageSize");
       }
 
@@ -249,7 +249,7 @@ public class ClientProducerImpl implements ClientProducerInternal
          msg.getBody().readerIndex(0);
       }
 
-      MessagingBuffer headerBuffer = ChannelBuffers.buffer(headerSize);
+      HornetQBuffer headerBuffer = ChannelBuffers.buffer(headerSize);
       msg.encodeProperties(headerBuffer);
 
       SessionSendLargeMessage initialChunk = new SessionSendLargeMessage(headerBuffer.array());
@@ -271,7 +271,7 @@ public class ClientProducerImpl implements ClientProducerInternal
             }
             catch (IOException e)
             {
-               throw new MessagingException(MessagingException.LARGE_MESSAGE_ERROR_BODY,
+               throw new HornetQException(HornetQException.LARGE_MESSAGE_ERROR_BODY,
                                             "Error reading the LargeMessageBody",
                                             e);
             }
@@ -304,7 +304,7 @@ public class ClientProducerImpl implements ClientProducerInternal
          }
          catch (IOException e)
          {
-            throw new MessagingException(MessagingException.LARGE_MESSAGE_ERROR_BODY,
+            throw new HornetQException(HornetQException.LARGE_MESSAGE_ERROR_BODY,
                                          "Error closing stream from LargeMessageBody",
                                          e);
          }
@@ -319,7 +319,7 @@ public class ClientProducerImpl implements ClientProducerInternal
 
             final int chunkLength = Math.min((int)(bodySize - pos), minLargeMessageSize);
 
-            final MessagingBuffer bodyBuffer = ChannelBuffers.buffer(chunkLength);
+            final HornetQBuffer bodyBuffer = ChannelBuffers.buffer(chunkLength);
 
             msg.encodeBody(bodyBuffer, pos, chunkLength);
 
@@ -345,11 +345,11 @@ public class ClientProducerImpl implements ClientProducerInternal
       }
    }
 
-   private void checkClosed() throws MessagingException
+   private void checkClosed() throws HornetQException
    {
       if (closed)
       {
-         throw new MessagingException(MessagingException.OBJECT_CLOSED, "Producer is closed");
+         throw new HornetQException(HornetQException.OBJECT_CLOSED, "Producer is closed");
       }
    }
 

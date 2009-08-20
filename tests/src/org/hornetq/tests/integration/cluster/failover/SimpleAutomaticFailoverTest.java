@@ -32,7 +32,7 @@ import org.hornetq.core.client.impl.ClientSessionInternal;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.TransportConfiguration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
-import org.hornetq.core.exception.MessagingException;
+import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.remoting.FailureListener;
 import org.hornetq.core.remoting.RemotingConnection;
@@ -40,8 +40,8 @@ import org.hornetq.core.remoting.impl.invm.InVMConnector;
 import org.hornetq.core.remoting.impl.invm.InVMRegistry;
 import org.hornetq.core.remoting.impl.invm.TransportConstants;
 import org.hornetq.core.remoting.spi.ConnectionLifeCycleListener;
-import org.hornetq.core.server.Messaging;
-import org.hornetq.core.server.MessagingServer;
+import org.hornetq.core.server.HornetQ;
+import org.hornetq.core.server.HornetQServer;
 import org.hornetq.jms.client.HornetQTextMessage;
 import org.hornetq.tests.util.UnitTestCase;
 import org.hornetq.utils.SimpleString;
@@ -63,9 +63,9 @@ public class SimpleAutomaticFailoverTest extends UnitTestCase
 
    private static final SimpleString ADDRESS = new SimpleString("FailoverTestAddress");
 
-   private MessagingServer liveService;
+   private HornetQServer liveService;
 
-   private MessagingServer backupService;
+   private HornetQServer backupService;
 
    private final Map<String, Object> backupParams = new HashMap<String, Object>();
 
@@ -153,7 +153,7 @@ public class SimpleAutomaticFailoverTest extends UnitTestCase
       RemotingConnection conn1 = ((ClientSessionInternal)session).getConnection();
 
       // Simulate failure on connection
-      conn1.fail(new MessagingException(MessagingException.NOT_CONNECTED));
+      conn1.fail(new HornetQException(HornetQException.NOT_CONNECTED));
 
       ClientConsumer consumer = session.createConsumer(ADDRESS);
 
@@ -231,7 +231,7 @@ public class SimpleAutomaticFailoverTest extends UnitTestCase
       RemotingConnection conn = ((ClientSessionInternal)session).getConnection();
 
       // Simulate failure on connection
-      conn.fail(new MessagingException(MessagingException.NOT_CONNECTED));
+      conn.fail(new HornetQException(HornetQException.NOT_CONNECTED));
 
       ClientConsumer consumer = session.createConsumer(ADDRESS);
 
@@ -312,7 +312,7 @@ public class SimpleAutomaticFailoverTest extends UnitTestCase
       RemotingConnection conn = ((ClientSessionInternal)session).getConnection();
 
       // Simulate failure on connection
-      conn.fail(new MessagingException(MessagingException.NOT_CONNECTED));
+      conn.fail(new HornetQException(HornetQException.NOT_CONNECTED));
 
       ClientConsumer consumer = session.createConsumer(ADDRESS);
 
@@ -380,7 +380,7 @@ public class SimpleAutomaticFailoverTest extends UnitTestCase
       RemotingConnection conn = ((ClientSessionInternal)session).getConnection();
 
       // Simulate failure on connection
-      conn.fail(new MessagingException(MessagingException.NOT_CONNECTED));
+      conn.fail(new HornetQException(HornetQException.NOT_CONNECTED));
 
       ClientConsumer consumer = session.createConsumer(ADDRESS);
 
@@ -471,7 +471,7 @@ public class SimpleAutomaticFailoverTest extends UnitTestCase
       RemotingConnection conn = ((ClientSessionInternal)session).getConnection();
 
       // Simulate failure on connection
-      conn.fail(new MessagingException(MessagingException.NOT_CONNECTED));
+      conn.fail(new HornetQException(HornetQException.NOT_CONNECTED));
 
       for (int i = 0; i < numSessions; i++)
       {
@@ -560,7 +560,7 @@ public class SimpleAutomaticFailoverTest extends UnitTestCase
       RemotingConnection conn = ((ClientSessionInternal)sessions.get(0)).getConnection();
 
       // Simulate failure on connection
-      conn.fail(new MessagingException(MessagingException.NOT_CONNECTED));
+      conn.fail(new HornetQException(HornetQException.NOT_CONNECTED));
 
       for (int i = 0; i < numSessions; i++)
       {
@@ -617,7 +617,7 @@ public class SimpleAutomaticFailoverTest extends UnitTestCase
       RemotingConnection conn = ((ClientSessionInternal)session).getConnection();
 
       // Simulate failure on connection
-      conn.fail(new MessagingException(MessagingException.NOT_CONNECTED));
+      conn.fail(new HornetQException(HornetQException.NOT_CONNECTED));
 
       ClientConsumer consumer = session.createConsumer(ADDRESS);
 
@@ -642,7 +642,7 @@ public class SimpleAutomaticFailoverTest extends UnitTestCase
 
       class MyListener implements FailureListener
       {
-         public void connectionFailed(final MessagingException me)
+         public void connectionFailed(final HornetQException me)
          {
             latch.countDown();
          }
@@ -653,7 +653,7 @@ public class SimpleAutomaticFailoverTest extends UnitTestCase
       assertFalse(conn == conn2);
 
       InVMConnector.failOnCreateConnection = true;
-      conn2.fail(new MessagingException(MessagingException.NOT_CONNECTED));
+      conn2.fail(new HornetQException(HornetQException.NOT_CONNECTED));
 
       boolean ok = latch.await(1000, TimeUnit.MILLISECONDS);
 
@@ -665,9 +665,9 @@ public class SimpleAutomaticFailoverTest extends UnitTestCase
 
          fail("Should throw exception");
       }
-      catch (MessagingException me)
+      catch (HornetQException me)
       {
-         assertEquals(MessagingException.NOT_CONNECTED, me.getCode());
+         assertEquals(HornetQException.NOT_CONNECTED, me.getCode());
       }
 
       session.close();
@@ -793,7 +793,7 @@ public class SimpleAutomaticFailoverTest extends UnitTestCase
       RemotingConnection conn = ((ClientSessionInternal)sess).getConnection();
 
       // Simulate failure on connection
-      conn.fail(new MessagingException(MessagingException.NOT_CONNECTED));
+      conn.fail(new HornetQException(HornetQException.NOT_CONNECTED));
 
       sess.start();
 
@@ -850,7 +850,7 @@ public class SimpleAutomaticFailoverTest extends UnitTestCase
       // Simulate failure on connection
       // We fail on the replicating connection and the client connection
 
-      MessagingException me = new MessagingException(MessagingException.NOT_CONNECTED);
+      HornetQException me = new HornetQException(HornetQException.NOT_CONNECTED);
       
       //Note we call the remoting service impl handler which is what would happen in event
       //of real connection failure
@@ -861,7 +861,7 @@ public class SimpleAutomaticFailoverTest extends UnitTestCase
             
       ((ConnectionLifeCycleListener)backupService.getRemotingService()).connectionException(serverSideReplicatingConnection.getID(), me);
 
-      conn1.fail(new MessagingException(MessagingException.NOT_CONNECTED));
+      conn1.fail(new HornetQException(HornetQException.NOT_CONNECTED));
 
       ClientConsumer consumer = session.createConsumer(ADDRESS);
 
@@ -921,7 +921,7 @@ public class SimpleAutomaticFailoverTest extends UnitTestCase
                 .add(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory",
                                                 backupParams));
       backupConf.setBackup(true);
-      backupService = Messaging.newMessagingServer(backupConf, false);
+      backupService = HornetQ.newMessagingServer(backupConf, false);
       backupService.start();
 
       Configuration liveConf = new ConfigurationImpl();
@@ -935,7 +935,7 @@ public class SimpleAutomaticFailoverTest extends UnitTestCase
       connectors.put(backupTC.getName(), backupTC);
       liveConf.setConnectorConfigurations(connectors);
       liveConf.setBackupConnectorName(backupTC.getName());
-      liveService = Messaging.newMessagingServer(liveConf, false);
+      liveService = HornetQ.newMessagingServer(liveConf, false);
       liveService.start();
    }
 

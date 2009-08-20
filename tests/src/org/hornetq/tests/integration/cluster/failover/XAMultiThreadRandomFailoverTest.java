@@ -35,12 +35,12 @@ import org.hornetq.core.client.impl.ClientSessionFactoryInternal;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.TransportConfiguration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
-import org.hornetq.core.exception.MessagingException;
+import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.remoting.impl.invm.InVMRegistry;
 import org.hornetq.core.remoting.impl.invm.TransportConstants;
-import org.hornetq.core.server.Messaging;
-import org.hornetq.core.server.MessagingServer;
+import org.hornetq.core.server.HornetQ;
+import org.hornetq.core.server.HornetQServer;
 import org.hornetq.jms.client.HornetQBytesMessage;
 import org.hornetq.utils.SimpleString;
 
@@ -58,9 +58,9 @@ public class XAMultiThreadRandomFailoverTest extends MultiThreadFailoverSupport
 
    private final Logger log = Logger.getLogger(getClass());
 
-   protected MessagingServer liveService;
+   protected HornetQServer liveService;
 
-   protected MessagingServer backupService;
+   protected HornetQServer backupService;
 
    protected Map<String, Object> backupParams = new HashMap<String, Object>();
 
@@ -544,11 +544,11 @@ public class XAMultiThreadRandomFailoverTest extends MultiThreadFailoverSupport
     * @param numMessages
     * @param sessSend
     * @throws XAException
-    * @throws MessagingException
+    * @throws HornetQException
     * @throws Exception
     */
    private void transactionallySendMessages(final int threadNum, final int numMessages, ClientSession sessSend) throws XAException,
-                                                                                                               MessagingException,
+                                                                                                               HornetQException,
                                                                                                                Exception
    {
       Xid xid = newXID();
@@ -635,7 +635,7 @@ public class XAMultiThreadRandomFailoverTest extends MultiThreadFailoverSupport
                 .add(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory",
                                                 backupParams));
       backupConf.setBackup(true);
-      backupService = Messaging.newMessagingServer(backupConf, false);
+      backupService = HornetQ.newMessagingServer(backupConf, false);
       backupService.start();
 
       Configuration liveConf = new ConfigurationImpl();
@@ -649,7 +649,7 @@ public class XAMultiThreadRandomFailoverTest extends MultiThreadFailoverSupport
       connectors.put(backupTC.getName(), backupTC);
       liveConf.setConnectorConfigurations(connectors);
       liveConf.setBackupConnectorName(backupTC.getName());
-      liveService = Messaging.newMessagingServer(liveConf, false);
+      liveService = HornetQ.newMessagingServer(liveConf, false);
       liveService.start();
    }
 
@@ -861,7 +861,7 @@ public class XAMultiThreadRandomFailoverTest extends MultiThreadFailoverSupport
          {
             message.acknowledge();
          }
-         catch (MessagingException me)
+         catch (HornetQException me)
          {
             log.error("Failed to process", me);
          }

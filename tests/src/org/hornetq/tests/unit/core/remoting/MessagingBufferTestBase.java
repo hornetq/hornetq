@@ -21,7 +21,7 @@ import static org.hornetq.tests.util.RandomUtil.randomInt;
 import static org.hornetq.tests.util.RandomUtil.randomLong;
 import static org.hornetq.tests.util.RandomUtil.randomString;
 
-import org.hornetq.core.remoting.spi.MessagingBuffer;
+import org.hornetq.core.remoting.spi.HornetQBuffer;
 import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.tests.util.UnitTestCase;
 import org.hornetq.utils.SimpleString;
@@ -43,7 +43,7 @@ public abstract class MessagingBufferTestBase extends UnitTestCase
 
    // Public --------------------------------------------------------
 
-   private MessagingBuffer wrapper;
+   private HornetQBuffer wrapper;
 
    @Override
    protected void setUp() throws Exception
@@ -61,7 +61,7 @@ public abstract class MessagingBufferTestBase extends UnitTestCase
       super.tearDown();
    }
 
-   protected abstract MessagingBuffer createBuffer();
+   protected abstract HornetQBuffer createBuffer();
 
    public void testNullString() throws Exception
    {

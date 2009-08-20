@@ -70,9 +70,9 @@ public class ClientConsumerImplTest extends UnitTestCase
 //         
 //         fail("Should throw exception");
 //      }
-//      catch (MessagingException e)
+//      catch (HornetQException e)
 //      {
-//         assertEquals(MessagingException.ILLEGAL_STATE, e.getCode());
+//         assertEquals(HornetQException.ILLEGAL_STATE, e.getCode());
 //      } 
 //      finally
 //      {

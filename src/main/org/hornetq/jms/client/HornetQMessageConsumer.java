@@ -218,7 +218,7 @@ import javax.jms.TopicSubscriber;
 import org.hornetq.core.client.ClientConsumer;
 import org.hornetq.core.client.ClientMessage;
 import org.hornetq.core.client.MessageHandler;
-import org.hornetq.core.exception.MessagingException;
+import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.jms.HornetQDestination;
 import org.hornetq.utils.SimpleString;
@@ -307,9 +307,9 @@ public class HornetQMessageConsumer implements MessageConsumer, QueueReceiver, T
       {
          consumer.setMessageHandler(coreListener);
       }
-      catch (MessagingException e)
+      catch (HornetQException e)
       {
-         throw JMSExceptionHelper.convertFromMessagingException(e);
+         throw JMSExceptionHelper.convertFromHornetQException(e);
       }
    }
 
@@ -342,9 +342,9 @@ public class HornetQMessageConsumer implements MessageConsumer, QueueReceiver, T
 
          session.removeConsumer(this);
       }
-      catch (MessagingException e)
+      catch (HornetQException e)
       {
-         throw JMSExceptionHelper.convertFromMessagingException(e);
+         throw JMSExceptionHelper.convertFromHornetQException(e);
       }
    }
 
@@ -417,9 +417,9 @@ public class HornetQMessageConsumer implements MessageConsumer, QueueReceiver, T
 
          return msg;
       }
-      catch (MessagingException e)
+      catch (HornetQException e)
       {
-         throw JMSExceptionHelper.convertFromMessagingException(e);
+         throw JMSExceptionHelper.convertFromHornetQException(e);
       }
    }
 

@@ -13,7 +13,7 @@
 
 package org.hornetq.core.remoting.spi;
 
-import org.hornetq.core.exception.MessagingException;
+import org.hornetq.core.exception.HornetQException;
 
 /**
  *
@@ -24,17 +24,17 @@ import org.hornetq.core.exception.MessagingException;
  */
 public interface Connection
 {
-   MessagingBuffer createBuffer(int size);
+   HornetQBuffer createBuffer(int size);
 
    Object getID();
 
-   void write(MessagingBuffer buffer);
+   void write(HornetQBuffer buffer);
    
-   void write(MessagingBuffer buffer, boolean flush);
+   void write(HornetQBuffer buffer, boolean flush);
 
    void close();
 
    String getRemoteAddress();
 
-   void fail(MessagingException me);
+   void fail(HornetQException me);
 }

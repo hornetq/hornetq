@@ -16,7 +16,7 @@ package org.hornetq.core.remoting.impl.wireformat;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.hornetq.core.remoting.spi.MessagingBuffer;
+import org.hornetq.core.remoting.spi.HornetQBuffer;
 import org.hornetq.utils.DataConstants;
 import org.hornetq.utils.SimpleString;
 
@@ -64,7 +64,7 @@ public class SessionBindingQueryResponseMessage extends PacketImpl
    }
 
    @Override
-   public void encodeBody(final MessagingBuffer buffer)
+   public void encodeBody(final HornetQBuffer buffer)
    {
       buffer.writeBoolean(exists);
       buffer.writeInt(queueNames.size());
@@ -75,7 +75,7 @@ public class SessionBindingQueryResponseMessage extends PacketImpl
    }
 
    @Override
-   public void decodeBody(final MessagingBuffer buffer)
+   public void decodeBody(final HornetQBuffer buffer)
    {
       exists = buffer.readBoolean();
       int numQueues = buffer.readInt();

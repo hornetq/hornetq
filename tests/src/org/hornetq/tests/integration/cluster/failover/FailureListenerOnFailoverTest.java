@@ -28,15 +28,15 @@ import org.hornetq.core.client.impl.ClientSessionInternal;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.TransportConfiguration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
-import org.hornetq.core.exception.MessagingException;
+import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.remoting.FailureListener;
 import org.hornetq.core.remoting.RemotingConnection;
 import org.hornetq.core.remoting.impl.invm.InVMConnector;
 import org.hornetq.core.remoting.impl.invm.InVMRegistry;
 import org.hornetq.core.remoting.impl.invm.TransportConstants;
-import org.hornetq.core.server.Messaging;
-import org.hornetq.core.server.MessagingServer;
+import org.hornetq.core.server.HornetQ;
+import org.hornetq.core.server.HornetQServer;
 import org.hornetq.tests.util.UnitTestCase;
 
 /**
@@ -59,9 +59,9 @@ public class FailureListenerOnFailoverTest extends UnitTestCase
 
    // Attributes ----------------------------------------------------
 
-   private MessagingServer liveService;
+   private HornetQServer liveService;
 
-   private MessagingServer backupService;
+   private HornetQServer backupService;
 
    private Map<String, Object> backupParams = new HashMap<String, Object>();
 
@@ -82,7 +82,7 @@ public class FailureListenerOnFailoverTest extends UnitTestCase
 
       int failCount;
 
-      public synchronized void connectionFailed(final MessagingException me)
+      public synchronized void connectionFailed(final HornetQException me)
       {
          failCount++;
       }
@@ -128,7 +128,7 @@ public class FailureListenerOnFailoverTest extends UnitTestCase
          sessions.add(session);
       }
 
-      conn.fail(new MessagingException(MessagingException.NOT_CONNECTED));
+      conn.fail(new HornetQException(HornetQException.NOT_CONNECTED));
 
       for (MyListener listener : listeners)
       {
@@ -191,7 +191,7 @@ public class FailureListenerOnFailoverTest extends UnitTestCase
          sessions.add(session);
       }
 
-      conn.fail(new MessagingException(MessagingException.NOT_CONNECTED));
+      conn.fail(new HornetQException(HornetQException.NOT_CONNECTED));
 
       for (MyListener listener : listeners)
       {
@@ -249,7 +249,7 @@ public class FailureListenerOnFailoverTest extends UnitTestCase
          listeners.add(listener);
       }
 
-      conn.fail(new MessagingException(MessagingException.NOT_CONNECTED));
+      conn.fail(new HornetQException(HornetQException.NOT_CONNECTED));
 
       for (MyListener listener : listeners)
       {
@@ -309,7 +309,7 @@ public class FailureListenerOnFailoverTest extends UnitTestCase
 
       InVMConnector.failOnCreateConnection = true;
 
-      conn.fail(new MessagingException(MessagingException.NOT_CONNECTED));
+      conn.fail(new HornetQException(HornetQException.NOT_CONNECTED));
 
       int i = 0;
       for (MyListener listener : listeners)
@@ -373,7 +373,7 @@ public class FailureListenerOnFailoverTest extends UnitTestCase
 
       // Fail once to failover ok
 
-      conn.fail(new MessagingException(MessagingException.NOT_CONNECTED));
+      conn.fail(new HornetQException(HornetQException.NOT_CONNECTED));
 
       for (MyListener listener : listeners)
       {
@@ -398,7 +398,7 @@ public class FailureListenerOnFailoverTest extends UnitTestCase
       InVMConnector.failOnCreateConnection = true;
       InVMConnector.numberOfFailures = reconnectAttempts - 1;
 
-      conn.fail(new MessagingException(MessagingException.NOT_CONNECTED));
+      conn.fail(new HornetQException(HornetQException.NOT_CONNECTED));
 
       i = 0;
       for (ClientSession session : sessions)
@@ -419,7 +419,7 @@ public class FailureListenerOnFailoverTest extends UnitTestCase
       InVMConnector.failOnCreateConnection = true;
       InVMConnector.numberOfFailures = -1;
 
-      conn.fail(new MessagingException(MessagingException.NOT_CONNECTED));
+      conn.fail(new HornetQException(HornetQException.NOT_CONNECTED));
 
       i = 0;
       for (MyListener listener : listeners)
@@ -485,7 +485,7 @@ public class FailureListenerOnFailoverTest extends UnitTestCase
 
       InVMConnector.failOnCreateConnection = true;
 
-      conn.fail(new MessagingException(MessagingException.NOT_CONNECTED));
+      conn.fail(new HornetQException(HornetQException.NOT_CONNECTED));
 
       for (MyListener listener : listeners)
       {
@@ -516,7 +516,7 @@ public class FailureListenerOnFailoverTest extends UnitTestCase
                 .add(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory",
                                                 backupParams));
       backupConf.setBackup(true);
-      backupService = Messaging.newMessagingServer(backupConf, false);
+      backupService = HornetQ.newMessagingServer(backupConf, false);
       backupService.start();
 
       Configuration liveConf = new ConfigurationImpl();
@@ -530,7 +530,7 @@ public class FailureListenerOnFailoverTest extends UnitTestCase
       connectors.put(backupTC.getName(), backupTC);
       liveConf.setConnectorConfigurations(connectors);
       liveConf.setBackupConnectorName(backupTC.getName());
-      liveService = Messaging.newMessagingServer(liveConf, false);
+      liveService = HornetQ.newMessagingServer(liveConf, false);
       liveService.start();
    }
 

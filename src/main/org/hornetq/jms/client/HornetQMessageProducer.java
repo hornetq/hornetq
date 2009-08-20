@@ -226,7 +226,7 @@ import javax.jms.TopicPublisher;
 import org.hornetq.core.client.ClientMessage;
 import org.hornetq.core.client.ClientProducer;
 import org.hornetq.core.client.ClientSession;
-import org.hornetq.core.exception.MessagingException;
+import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.jms.HornetQDestination;
 import org.hornetq.utils.SimpleString;
@@ -383,9 +383,9 @@ public class HornetQMessageProducer implements MessageProducer, QueueSender, Top
       {
          producer.close();
       }
-      catch (MessagingException e)
+      catch (HornetQException e)
       {
-         throw JMSExceptionHelper.convertFromMessagingException(e);
+         throw JMSExceptionHelper.convertFromHornetQException(e);
       }
    }
 
@@ -628,9 +628,9 @@ public class HornetQMessageProducer implements MessageProducer, QueueSender, Top
       {
          producer.send(address, coreMessage);
       }
-      catch (MessagingException e)
+      catch (HornetQException e)
       {
-         throw JMSExceptionHelper.convertFromMessagingException(e);
+         throw JMSExceptionHelper.convertFromHornetQException(e);
       }
    }
 

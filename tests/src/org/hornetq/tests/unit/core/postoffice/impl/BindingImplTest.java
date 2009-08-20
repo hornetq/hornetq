@@ -23,13 +23,13 @@ import java.util.concurrent.Executor;
 
 import javax.transaction.xa.Xid;
 
-import org.hornetq.core.exception.MessagingException;
+import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.filter.Filter;
 import org.hornetq.core.postoffice.Binding;
 import org.hornetq.core.postoffice.BindingType;
 import org.hornetq.core.postoffice.impl.BindingsImpl;
 import org.hornetq.core.remoting.Channel;
-import org.hornetq.core.remoting.spi.MessagingBuffer;
+import org.hornetq.core.remoting.spi.HornetQBuffer;
 import org.hornetq.core.server.Bindable;
 import org.hornetq.core.server.Consumer;
 import org.hornetq.core.server.Distributor;
@@ -205,9 +205,9 @@ public class BindingImplTest extends UnitTestCase
       }
 
       /* (non-Javadoc)
-       * @see org.hornetq.core.transaction.Transaction#markAsRollbackOnly(org.hornetq.core.exception.MessagingException)
+       * @see org.hornetq.core.transaction.Transaction#markAsRollbackOnly(org.hornetq.core.exception.HornetQException)
        */
-      public void markAsRollbackOnly(final MessagingException messagingException)
+      public void markAsRollbackOnly(final HornetQException exception)
       {
 
       }
@@ -411,57 +411,57 @@ public class BindingImplTest extends UnitTestCase
       }
 
       /* (non-Javadoc)
-       * @see org.hornetq.core.message.Message#decode(org.hornetq.core.remoting.spi.MessagingBuffer)
+       * @see org.hornetq.core.message.Message#decode(org.hornetq.core.remoting.spi.HornetQBuffer)
        */
-      public void decode(final MessagingBuffer buffer)
+      public void decode(final HornetQBuffer buffer)
       {
 
       }
 
       /* (non-Javadoc)
-       * @see org.hornetq.core.message.Message#decodeBody(org.hornetq.core.remoting.spi.MessagingBuffer)
+       * @see org.hornetq.core.message.Message#decodeBody(org.hornetq.core.remoting.spi.HornetQBuffer)
        */
-      public void decodeBody(final MessagingBuffer buffer)
+      public void decodeBody(final HornetQBuffer buffer)
       {
 
       }
 
       /* (non-Javadoc)
-       * @see org.hornetq.core.message.Message#decodeProperties(org.hornetq.core.remoting.spi.MessagingBuffer)
+       * @see org.hornetq.core.message.Message#decodeProperties(org.hornetq.core.remoting.spi.HornetQBuffer)
        */
-      public void decodeProperties(final MessagingBuffer buffer)
+      public void decodeProperties(final HornetQBuffer buffer)
       {
 
       }
 
       /* (non-Javadoc)
-       * @see org.hornetq.core.message.Message#encode(org.hornetq.core.remoting.spi.MessagingBuffer)
+       * @see org.hornetq.core.message.Message#encode(org.hornetq.core.remoting.spi.HornetQBuffer)
        */
-      public void encode(final MessagingBuffer buffer)
+      public void encode(final HornetQBuffer buffer)
       {
 
       }
 
       /* (non-Javadoc)
-       * @see org.hornetq.core.message.Message#encodeBody(org.hornetq.core.remoting.spi.MessagingBuffer, long, int)
+       * @see org.hornetq.core.message.Message#encodeBody(org.hornetq.core.remoting.spi.HornetQBuffer, long, int)
        */
-      public void encodeBody(final MessagingBuffer buffer, final long start, final int size)
+      public void encodeBody(final HornetQBuffer buffer, final long start, final int size)
       {
 
       }
 
       /* (non-Javadoc)
-       * @see org.hornetq.core.message.Message#encodeBody(org.hornetq.core.remoting.spi.MessagingBuffer)
+       * @see org.hornetq.core.message.Message#encodeBody(org.hornetq.core.remoting.spi.HornetQBuffer)
        */
-      public void encodeBody(final MessagingBuffer buffer)
+      public void encodeBody(final HornetQBuffer buffer)
       {
 
       }
 
       /* (non-Javadoc)
-       * @see org.hornetq.core.message.Message#encodeProperties(org.hornetq.core.remoting.spi.MessagingBuffer)
+       * @see org.hornetq.core.message.Message#encodeProperties(org.hornetq.core.remoting.spi.HornetQBuffer)
        */
-      public void encodeProperties(final MessagingBuffer buffer)
+      public void encodeProperties(final HornetQBuffer buffer)
       {
 
       }
@@ -469,7 +469,7 @@ public class BindingImplTest extends UnitTestCase
       /* (non-Javadoc)
        * @see org.hornetq.core.message.Message#getBody()
        */
-      public MessagingBuffer getBody()
+      public HornetQBuffer getBody()
       {
 
          return null;
@@ -691,9 +691,9 @@ public class BindingImplTest extends UnitTestCase
       }
 
       /* (non-Javadoc)
-       * @see org.hornetq.core.message.Message#setBody(org.hornetq.core.remoting.spi.MessagingBuffer)
+       * @see org.hornetq.core.message.Message#setBody(org.hornetq.core.remoting.spi.HornetQBuffer)
        */
-      public void setBody(final MessagingBuffer body)
+      public void setBody(final HornetQBuffer body)
       {
 
       }

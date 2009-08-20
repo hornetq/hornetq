@@ -29,7 +29,7 @@ import org.hornetq.core.journal.SequentialFile;
 import org.hornetq.core.journal.SequentialFileFactory;
 import org.hornetq.core.journal.impl.JournalImpl.JournalRecord;
 import org.hornetq.core.logging.Logger;
-import org.hornetq.core.remoting.spi.MessagingBuffer;
+import org.hornetq.core.remoting.spi.HornetQBuffer;
 import org.hornetq.utils.ConcurrentHashSet;
 import org.hornetq.utils.DataConstants;
 
@@ -98,7 +98,7 @@ public class JournalCompactor implements JournalReaderCallback
          renameBuffer.writeInt(-1);
          renameBuffer.writeInt(-1);
 
-         MessagingBuffer filesToRename = ChannelBuffers.dynamicBuffer(1);
+         HornetQBuffer filesToRename = ChannelBuffers.dynamicBuffer(1);
 
          // DataFiles first
 

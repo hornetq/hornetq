@@ -13,7 +13,7 @@
 
 package org.hornetq.core.remoting.impl.wireformat;
 
-import org.hornetq.core.remoting.spi.MessagingBuffer;
+import org.hornetq.core.remoting.spi.HornetQBuffer;
 import org.hornetq.utils.DataConstants;
 import org.hornetq.utils.SimpleString;
 
@@ -121,7 +121,7 @@ public class SessionQueueQueryResponseMessage extends PacketImpl
       SimpleString.sizeofNullableString(address); // buffer.writeNullableSimpleString(address);
    }
 
-   public void encodeBody(final MessagingBuffer buffer)
+   public void encodeBody(final HornetQBuffer buffer)
    {
       buffer.writeBoolean(exists);
       buffer.writeBoolean(durable);
@@ -131,7 +131,7 @@ public class SessionQueueQueryResponseMessage extends PacketImpl
       buffer.writeNullableSimpleString(address);
    }
 
-   public void decodeBody(final MessagingBuffer buffer)
+   public void decodeBody(final HornetQBuffer buffer)
    {
       exists = buffer.readBoolean();
       durable = buffer.readBoolean();

@@ -28,10 +28,10 @@ import org.hornetq.core.client.MessageHandler;
 import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
 import org.hornetq.core.config.TransportConfiguration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
-import org.hornetq.core.exception.MessagingException;
+import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.message.impl.MessageImpl;
-import org.hornetq.core.server.Messaging;
-import org.hornetq.core.server.MessagingServer;
+import org.hornetq.core.server.HornetQ;
+import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.core.transaction.impl.XidImpl;
 import org.hornetq.tests.util.UnitTestCase;
@@ -42,7 +42,7 @@ import org.hornetq.utils.SimpleString;
  */
 public class MessageGroupingTest extends UnitTestCase
 {
-   private MessagingServer server;
+   private HornetQServer server;
 
    private ClientSession clientSession;
 
@@ -519,7 +519,7 @@ public class MessageGroupingTest extends UnitTestCase
          {
             clientSession.close();
          }
-         catch (MessagingException e1)
+         catch (HornetQException e1)
          {
             //
          }
@@ -549,7 +549,7 @@ public class MessageGroupingTest extends UnitTestCase
       configuration.setSecurityEnabled(false);
       TransportConfiguration transportConfig = new TransportConfiguration(INVM_ACCEPTOR_FACTORY);
       configuration.getAcceptorConfigurations().add(transportConfig);
-      server = Messaging.newMessagingServer(configuration, false);
+      server = HornetQ.newMessagingServer(configuration, false);
       // start the server
       server.start();
 
@@ -582,7 +582,7 @@ public class MessageGroupingTest extends UnitTestCase
          {
             message.acknowledge();
          }
-         catch (MessagingException e)
+         catch (HornetQException e)
             {
                //ignore
             }

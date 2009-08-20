@@ -29,7 +29,7 @@ import org.hornetq.core.buffers.ChannelBuffers;
 import org.hornetq.core.journal.EncodingSupport;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.message.Message;
-import org.hornetq.core.remoting.spi.MessagingBuffer;
+import org.hornetq.core.remoting.spi.HornetQBuffer;
 import org.hornetq.core.server.impl.ServerMessageImpl;
 import org.hornetq.tests.util.UnitTestCase;
 import org.hornetq.utils.SimpleString;
@@ -44,7 +44,7 @@ public abstract class MessageImplTestBase extends UnitTestCase
    private static final Logger log = Logger.getLogger(MessageImplTestBase.class);
 
    protected abstract Message createMessage(final byte type, final boolean durable, final long expiration,
-                                   final long timestamp, final byte priority, MessagingBuffer buffer);
+                                   final long timestamp, final byte priority, HornetQBuffer buffer);
       
    protected abstract Message createMessage();
       
@@ -57,14 +57,14 @@ public abstract class MessageImplTestBase extends UnitTestCase
          {
             bytes[i] = randomByte();
          }
-         MessagingBuffer body = ChannelBuffers.wrappedBuffer(bytes);      
+         HornetQBuffer body = ChannelBuffers.wrappedBuffer(bytes);      
          Message message = createMessage(randomByte(), randomBoolean(), randomLong(),
                                          randomLong(), randomByte(), body);
          message.setDestination(new SimpleString("oasoas"));
          
          message.putStringProperty(new SimpleString("prop1"), new SimpleString("blah1"));
          message.putStringProperty(new SimpleString("prop2"), new SimpleString("blah2"));      
-         MessagingBuffer buffer = ChannelBuffers.buffer(message.getEncodeSize()); 
+         HornetQBuffer buffer = ChannelBuffers.buffer(message.getEncodeSize()); 
          message.encode(buffer);      
          Message message2 = createMessage();      
          message2.decode(buffer);      
@@ -81,7 +81,7 @@ public abstract class MessageImplTestBase extends UnitTestCase
          {
             bytes[i] = randomByte();
          }
-         MessagingBuffer body = ChannelBuffers.wrappedBuffer(bytes);      
+         HornetQBuffer body = ChannelBuffers.wrappedBuffer(bytes);      
          
          final byte type = randomByte();
          final boolean durable = randomBoolean();
@@ -328,7 +328,7 @@ public abstract class MessageImplTestBase extends UnitTestCase
    
    private void checkSizes(final Message obj, final EncodingSupport newObject)
    {
-      MessagingBuffer buffer = ChannelBuffers.buffer(1024);
+      HornetQBuffer buffer = ChannelBuffers.buffer(1024);
       obj.encode(buffer);
       assertEquals (buffer.writerIndex(), obj.getEncodeSize());
       int originalSize = buffer.writerIndex();
@@ -337,7 +337,7 @@ public abstract class MessageImplTestBase extends UnitTestCase
       newObject.decode(buffer);
       
 
-      MessagingBuffer newBuffer = ChannelBuffers.buffer(1024);
+      HornetQBuffer newBuffer = ChannelBuffers.buffer(1024);
       
       newObject.encode(newBuffer);
       

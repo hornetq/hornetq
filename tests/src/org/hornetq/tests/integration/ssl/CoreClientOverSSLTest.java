@@ -16,7 +16,7 @@ package org.hornetq.tests.integration.ssl;
 import org.hornetq.core.client.ClientConsumer;
 import org.hornetq.core.client.ClientSession;
 import org.hornetq.core.logging.Logger;
-import org.hornetq.core.server.MessagingServer;
+import org.hornetq.core.server.HornetQServer;
 import org.hornetq.tests.util.UnitTestCase;
 import org.hornetq.utils.SimpleString;
 
@@ -41,7 +41,7 @@ public class CoreClientOverSSLTest extends UnitTestCase
 
    // Attributes ----------------------------------------------------
 
-   private MessagingServer messagingService;
+   private HornetQServer messagingService;
 
    private ClientSession session;
 
@@ -103,7 +103,7 @@ public class CoreClientOverSSLTest extends UnitTestCase
 //      Map<String, Object> params = new HashMap<String, Object>();
 //      params.put(TransportConstants.SSL_ENABLED_PROP_NAME, true);
 //      config.getAcceptorInfos().add(new TransportConfiguration("org.hornetq.integration.transports.netty.NettyAcceptorFactory", params));
-//      server = MessagingServerImpl.newNullStorageMessagingServer(config);      
+//      server = HornetQServerImpl.newNullStorageMessagingServer(config);      
 //      server.start();
 //      ConnectorFactory cf = new NettyConnectorFactory();
 //      ClientSessionFactory sf = new ClientSessionFactoryImpl(cf);    

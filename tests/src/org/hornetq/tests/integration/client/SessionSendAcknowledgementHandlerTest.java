@@ -20,7 +20,7 @@ import org.hornetq.core.client.ClientSessionFactory;
 import org.hornetq.core.client.SendAcknowledgementHandler;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.message.Message;
-import org.hornetq.core.server.MessagingServer;
+import org.hornetq.core.server.HornetQServer;
 import org.hornetq.tests.util.ServiceTestBase;
 import org.hornetq.utils.SimpleString;
 
@@ -40,7 +40,7 @@ public class SessionSendAcknowledgementHandlerTest extends ServiceTestBase
 {
    private static final Logger log = Logger.getLogger(SessionSendAcknowledgementHandlerTest.class);
 
-   private MessagingServer server;
+   private HornetQServer server;
 
    private SimpleString address = new SimpleString("address");
 

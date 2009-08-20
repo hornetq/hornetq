@@ -29,7 +29,7 @@ import org.hornetq.core.client.ClientSessionFactory;
 import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.TransportConfiguration;
-import org.hornetq.core.server.MessagingServer;
+import org.hornetq.core.server.HornetQServer;
 import org.hornetq.tests.util.ServiceTestBase;
 
 /**
@@ -190,7 +190,7 @@ public abstract class NetworkAddressTestBase extends ServiceTestBase
 
       Configuration config = createDefaultConfig(true);
       config.setAcceptorConfigurations(transportConfigs);
-      MessagingServer messagingService = createServer(false, config);
+      HornetQServer messagingService = createServer(false, config);
       messagingService.start();
 
       params = new HashMap<String, Object>();

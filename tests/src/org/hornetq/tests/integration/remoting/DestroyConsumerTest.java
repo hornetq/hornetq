@@ -35,7 +35,7 @@ public class DestroyConsumerTest extends ServiceTestBase
    
 //   public void testDestroyConsumer() throws Exception
 //   {
-//      MessagingServer server = createService(false, false, createDefaultConfig(), new HashMap<String, AddressSettings>());
+//      HornetQServer server = createService(false, false, createDefaultConfig(), new HashMap<String, AddressSettings>());
 //      server.start();
 //      
 //      SimpleString queue = new SimpleString("add1");

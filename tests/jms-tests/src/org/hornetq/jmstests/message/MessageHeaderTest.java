@@ -40,11 +40,11 @@ import org.hornetq.core.client.ClientProducer;
 import org.hornetq.core.client.ClientSession;
 import org.hornetq.core.client.SendAcknowledgementHandler;
 import org.hornetq.core.client.impl.ClientMessageImpl;
-import org.hornetq.core.exception.MessagingException;
+import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.remoting.FailureListener;
 import org.hornetq.core.remoting.impl.wireformat.SessionBindingQueryResponseMessage;
 import org.hornetq.core.remoting.impl.wireformat.SessionQueueQueryResponseMessage;
-import org.hornetq.core.remoting.spi.MessagingBuffer;
+import org.hornetq.core.remoting.spi.HornetQBuffer;
 import org.hornetq.jms.client.HornetQBytesMessage;
 import org.hornetq.jms.client.HornetQMapMessage;
 import org.hornetq.jms.client.HornetQMessage;
@@ -671,7 +671,7 @@ public class MessageHeaderTest extends MessageHeaderTestBase
 
    public void testCopyOnJBossMessage() throws JMSException
    {
-      MessagingBuffer body = ChannelBuffers.buffer(1024);
+      HornetQBuffer body = ChannelBuffers.buffer(1024);
       ClientMessage clientMessage = new ClientMessageImpl(HornetQTextMessage.TYPE, true, 0, System.currentTimeMillis(), (byte)4, body);
       ClientSession session = new FakeSession(clientMessage);
       HornetQMessage jbossMessage = new HornetQMessage();
@@ -686,7 +686,7 @@ public class MessageHeaderTest extends MessageHeaderTestBase
 
    public void testCopyOnForeignMessage() throws JMSException
    {
-      MessagingBuffer body = ChannelBuffers.buffer(1024);
+      HornetQBuffer body = ChannelBuffers.buffer(1024);
       ClientMessage clientMessage = new ClientMessageImpl(HornetQTextMessage.TYPE, true, 0, System.currentTimeMillis(), (byte)4, body);
       ClientSession session = new FakeSession(clientMessage);
 
@@ -700,7 +700,7 @@ public class MessageHeaderTest extends MessageHeaderTestBase
    
    public void testCopyOnForeignBytesMessage() throws JMSException
    {
-     MessagingBuffer body = ChannelBuffers.buffer(1024);
+     HornetQBuffer body = ChannelBuffers.buffer(1024);
       ClientMessage clientMessage = new ClientMessageImpl(HornetQTextMessage.TYPE, true, 0, System.currentTimeMillis(), (byte)4, body);
       ClientSession session = new FakeSession(clientMessage);
 
@@ -720,7 +720,7 @@ public class MessageHeaderTest extends MessageHeaderTestBase
   
    public void testCopyOnForeignMapMessage() throws JMSException
    {
-      MessagingBuffer body = ChannelBuffers.buffer(1024);
+      HornetQBuffer body = ChannelBuffers.buffer(1024);
       ClientMessage clientMessage = new ClientMessageImpl(HornetQTextMessage.TYPE, true, 0, System.currentTimeMillis(), (byte)4, body);
       ClientSession session = new FakeSession(clientMessage);
       MapMessage foreignMapMessage = new SimpleJMSMapMessage();
@@ -735,7 +735,7 @@ public class MessageHeaderTest extends MessageHeaderTestBase
 
    public void testCopyOnForeignObjectMessage() throws JMSException
    {
-      MessagingBuffer body = ChannelBuffers.buffer(1024);
+      HornetQBuffer body = ChannelBuffers.buffer(1024);
       ClientMessage clientMessage = new ClientMessageImpl(HornetQTextMessage.TYPE, true, 0, System.currentTimeMillis(), (byte)4, body);
       ClientSession session = new FakeSession(clientMessage);
 
@@ -749,7 +749,7 @@ public class MessageHeaderTest extends MessageHeaderTestBase
 
    public void testCopyOnForeignStreamMessage() throws JMSException
    {
-      MessagingBuffer body = ChannelBuffers.buffer(1024);
+      HornetQBuffer body = ChannelBuffers.buffer(1024);
       ClientMessage clientMessage = new ClientMessageImpl(HornetQTextMessage.TYPE, true, 0, System.currentTimeMillis(), (byte)4, body);
       ClientSession session = new FakeSession(clientMessage);
 
@@ -766,7 +766,7 @@ public class MessageHeaderTest extends MessageHeaderTestBase
 
    public void testCopyOnForeignTextMessage() throws JMSException
    {
-      MessagingBuffer body = ChannelBuffers.buffer(1024);
+      HornetQBuffer body = ChannelBuffers.buffer(1024);
       ClientMessage clientMessage = new ClientMessageImpl(HornetQTextMessage.TYPE, true, 0, System.currentTimeMillis(), (byte)4, body);
       ClientSession session = new FakeSession(clientMessage);
       TextMessage foreignTextMessage = new SimpleJMSTextMessage();
@@ -821,7 +821,7 @@ public class MessageHeaderTest extends MessageHeaderTestBase
 
    class FakeSession implements ClientSession
    {
-      public void createQueue(String address, String queueName) throws MessagingException
+      public void createQueue(String address, String queueName) throws HornetQException
       {
          // TODO Auto-generated method stub
          
@@ -834,175 +834,175 @@ public class MessageHeaderTest extends MessageHeaderTestBase
          this.message = message;
       }
 
-      public void createQueue(SimpleString address, SimpleString queueName, SimpleString filterString, boolean durable) throws MessagingException
+      public void createQueue(SimpleString address, SimpleString queueName, SimpleString filterString, boolean durable) throws HornetQException
       {
       }
       
-      public void createQueue(SimpleString address, SimpleString queueName, boolean durable) throws MessagingException
+      public void createQueue(SimpleString address, SimpleString queueName, boolean durable) throws HornetQException
       {
       }
 
-      public void createQueue(String address, String queueName, boolean durable) throws MessagingException
+      public void createQueue(String address, String queueName, boolean durable) throws HornetQException
       {
       }
 
-      public void createQueue(SimpleString address, SimpleString queueName, boolean durable, boolean temporary) throws MessagingException
+      public void createQueue(SimpleString address, SimpleString queueName, boolean durable, boolean temporary) throws HornetQException
       {
       }
 
-      public void createQueue(String address, String queueName, boolean durable, boolean temporary) throws MessagingException
+      public void createQueue(String address, String queueName, boolean durable, boolean temporary) throws HornetQException
       {
       }
 
-      public void createQueue(String address, String queueName, String filterString, boolean durable) throws MessagingException
+      public void createQueue(String address, String queueName, String filterString, boolean durable) throws HornetQException
       {
       }
 
-      public void createTemporaryQueue(SimpleString address, SimpleString queueName) throws MessagingException
+      public void createTemporaryQueue(SimpleString address, SimpleString queueName) throws HornetQException
       {
       }
 
-      public void createTemporaryQueue(String address, String queueName) throws MessagingException
+      public void createTemporaryQueue(String address, String queueName) throws HornetQException
       {
       }
 
-      public void createTemporaryQueue(SimpleString address, SimpleString queueName, SimpleString filter) throws MessagingException
+      public void createTemporaryQueue(SimpleString address, SimpleString queueName, SimpleString filter) throws HornetQException
       {
       }
 
-      public void createTemporaryQueue(String address, String queueName, String filter) throws MessagingException
+      public void createTemporaryQueue(String address, String queueName, String filter) throws HornetQException
       {
       }
 
-      public void deleteQueue(SimpleString queueName) throws MessagingException
+      public void deleteQueue(SimpleString queueName) throws HornetQException
       {
       }
 
-      public void deleteQueue(String queueName) throws MessagingException
+      public void deleteQueue(String queueName) throws HornetQException
       {
       }
 
-      public ClientConsumer createConsumer(SimpleString queueName) throws MessagingException
-      {
-         return null;
-      }
-
-      public ClientConsumer createConsumer(SimpleString queueName, SimpleString filterString) throws MessagingException
+      public ClientConsumer createConsumer(SimpleString queueName) throws HornetQException
       {
          return null;
       }
 
-      public ClientConsumer createConsumer(SimpleString queueName, SimpleString filterString, boolean browseOnly) throws MessagingException
+      public ClientConsumer createConsumer(SimpleString queueName, SimpleString filterString) throws HornetQException
       {
          return null;
       }
 
-      public ClientConsumer createConsumer(SimpleString queueName, SimpleString filterString, int windowSize, int maxRate, boolean browseOnly) throws MessagingException
+      public ClientConsumer createConsumer(SimpleString queueName, SimpleString filterString, boolean browseOnly) throws HornetQException
       {
          return null;
       }
 
-      public ClientConsumer createConsumer(String queueName) throws MessagingException
+      public ClientConsumer createConsumer(SimpleString queueName, SimpleString filterString, int windowSize, int maxRate, boolean browseOnly) throws HornetQException
       {
          return null;
       }
 
-      public ClientConsumer createConsumer(String queueName, String filterString) throws MessagingException
+      public ClientConsumer createConsumer(String queueName) throws HornetQException
       {
          return null;
       }
 
-      public ClientConsumer createConsumer(String queueName, String filterString, boolean browseOnly) throws MessagingException
+      public ClientConsumer createConsumer(String queueName, String filterString) throws HornetQException
       {
          return null;
       }
 
-      public ClientConsumer createConsumer(String queueName, String filterString, int windowSize, int maxRate, boolean browseOnly) throws MessagingException
+      public ClientConsumer createConsumer(String queueName, String filterString, boolean browseOnly) throws HornetQException
       {
          return null;
       }
 
-      public ClientConsumer createFileConsumer(File directory, SimpleString queueName) throws MessagingException
+      public ClientConsumer createConsumer(String queueName, String filterString, int windowSize, int maxRate, boolean browseOnly) throws HornetQException
       {
          return null;
       }
 
-      public ClientConsumer createFileConsumer(File directory, SimpleString queueName, SimpleString filterString) throws MessagingException
+      public ClientConsumer createFileConsumer(File directory, SimpleString queueName) throws HornetQException
       {
          return null;
       }
 
-      public ClientConsumer createFileConsumer(File directory, SimpleString queueName, SimpleString filterString, boolean browseOnly) throws MessagingException
+      public ClientConsumer createFileConsumer(File directory, SimpleString queueName, SimpleString filterString) throws HornetQException
       {
          return null;
       }
 
-      public ClientConsumer createFileConsumer(File directory, SimpleString queueName, SimpleString filterString, int windowSize, int maxRate, boolean browseOnly) throws MessagingException
+      public ClientConsumer createFileConsumer(File directory, SimpleString queueName, SimpleString filterString, boolean browseOnly) throws HornetQException
       {
          return null;
       }
 
-      public ClientConsumer createFileConsumer(File directory, String queueName) throws MessagingException
+      public ClientConsumer createFileConsumer(File directory, SimpleString queueName, SimpleString filterString, int windowSize, int maxRate, boolean browseOnly) throws HornetQException
       {
          return null;
       }
 
-      public ClientConsumer createFileConsumer(File directory, String queueName, String filterString) throws MessagingException
+      public ClientConsumer createFileConsumer(File directory, String queueName) throws HornetQException
       {
          return null;
       }
 
-      public ClientConsumer createFileConsumer(File directory, String queueName, String filterString, boolean browseOnly) throws MessagingException
+      public ClientConsumer createFileConsumer(File directory, String queueName, String filterString) throws HornetQException
       {
          return null;
       }
 
-      public ClientConsumer createFileConsumer(File directory, String queueName, String filterString, int windowSize, int maxRate, boolean browseOnly) throws MessagingException
+      public ClientConsumer createFileConsumer(File directory, String queueName, String filterString, boolean browseOnly) throws HornetQException
       {
          return null;
       }
 
-      public ClientProducer createProducer() throws MessagingException
+      public ClientConsumer createFileConsumer(File directory, String queueName, String filterString, int windowSize, int maxRate, boolean browseOnly) throws HornetQException
       {
          return null;
       }
 
-      public ClientProducer createProducer(SimpleString address) throws MessagingException
+      public ClientProducer createProducer() throws HornetQException
       {
          return null;
       }
 
-      public ClientProducer createProducer(SimpleString address, int rate) throws MessagingException
+      public ClientProducer createProducer(SimpleString address) throws HornetQException
       {
          return null;
       }
 
-      public ClientProducer createProducer(SimpleString address, int maxRate, boolean blockOnNonPersistentSend, boolean blockOnPersistentSend) throws MessagingException
+      public ClientProducer createProducer(SimpleString address, int rate) throws HornetQException
       {
          return null;
       }
 
-      public ClientProducer createProducer(String address) throws MessagingException
+      public ClientProducer createProducer(SimpleString address, int maxRate, boolean blockOnNonPersistentSend, boolean blockOnPersistentSend) throws HornetQException
       {
          return null;
       }
 
-      public ClientProducer createProducer(String address, int rate) throws MessagingException
+      public ClientProducer createProducer(String address) throws HornetQException
       {
          return null;
       }
 
-      public ClientProducer createProducer(String address, int maxRate, boolean blockOnNonPersistentSend, boolean blockOnPersistentSend) throws MessagingException
+      public ClientProducer createProducer(String address, int rate) throws HornetQException
       {
          return null;
       }
 
-      public SessionQueueQueryResponseMessage queueQuery(SimpleString queueName) throws MessagingException
+      public ClientProducer createProducer(String address, int maxRate, boolean blockOnNonPersistentSend, boolean blockOnPersistentSend) throws HornetQException
       {
          return null;
       }
 
-      public SessionBindingQueryResponseMessage bindingQuery(SimpleString address) throws MessagingException
+      public SessionQueueQueryResponseMessage queueQuery(SimpleString queueName) throws HornetQException
+      {
+         return null;
+      }
+
+      public SessionBindingQueryResponseMessage bindingQuery(SimpleString address) throws HornetQException
       {
          return null;
       }
@@ -1012,19 +1012,19 @@ public class MessageHeaderTest extends MessageHeaderTestBase
          return null;
       }
 
-      public void commit() throws MessagingException
+      public void commit() throws HornetQException
       {
       }
 
-      public void rollback() throws MessagingException
+      public void rollback() throws HornetQException
       {
       }
 
-      public void rollback(boolean considerLastMessageAsDelivered) throws MessagingException
+      public void rollback(boolean considerLastMessageAsDelivered) throws HornetQException
       {
       }
 
-      public void close() throws MessagingException
+      public void close() throws HornetQException
       {
       }
 
@@ -1068,11 +1068,11 @@ public class MessageHeaderTest extends MessageHeaderTestBase
          return message;
       }
 
-      public void start() throws MessagingException
+      public void start() throws HornetQException
       {
       }
 
-      public void stop() throws MessagingException
+      public void stop() throws HornetQException
       {
       }
 

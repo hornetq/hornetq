@@ -26,7 +26,7 @@ import java.util.Set;
 import org.hornetq.core.buffers.ChannelBuffers;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.message.Message;
-import org.hornetq.core.remoting.spi.MessagingBuffer;
+import org.hornetq.core.remoting.spi.HornetQBuffer;
 import org.hornetq.utils.SimpleString;
 import org.hornetq.utils.TypedProperties;
 
@@ -87,7 +87,7 @@ public abstract class MessageImpl implements Message
 
    private byte priority;
 
-   private MessagingBuffer body;
+   private HornetQBuffer body;
 
    /** Used on LargeMessages */
    private InputStream bodyInputStream;
@@ -100,7 +100,7 @@ public abstract class MessageImpl implements Message
    }
 
    /**
-    * overridden by the client message, we need access to the connection so we can create the appropriate MessagingBuffer.
+    * overridden by the client message, we need access to the connection so we can create the appropriate HornetQBuffer.
     * @param type
     * @param durable
     * @param expiration
@@ -113,7 +113,7 @@ public abstract class MessageImpl implements Message
                          final long expiration,
                          final long timestamp,
                          final byte priority,
-                         final MessagingBuffer body)
+                         final HornetQBuffer body)
    {
       this();
       this.type = type;
@@ -167,7 +167,7 @@ public abstract class MessageImpl implements Message
 
    // Message implementation ----------------------------------------
 
-   public void encode(final MessagingBuffer buffer)
+   public void encode(final HornetQBuffer buffer)
    {
       encodeProperties(buffer);
       buffer.writeInt(getBodySize());
@@ -195,7 +195,7 @@ public abstract class MessageImpl implements Message
       return body.writerIndex();
    }
 
-   public void encodeProperties(MessagingBuffer buffer)
+   public void encodeProperties(HornetQBuffer buffer)
    {
       buffer.writeLong(messageID);
       buffer.writeSimpleString(destination);
@@ -207,26 +207,26 @@ public abstract class MessageImpl implements Message
       properties.encode(buffer);
    }
 
-   public void encodeBody(MessagingBuffer buffer)
+   public void encodeBody(HornetQBuffer buffer)
    {
-      MessagingBuffer localBody = getBody();
+      HornetQBuffer localBody = getBody();
       buffer.writeBytes(localBody.array(), 0, localBody.writerIndex());
    }
 
    // Used on Message chunk
-   public void encodeBody(MessagingBuffer buffer, long start, int size)
+   public void encodeBody(HornetQBuffer buffer, long start, int size)
    {
       buffer.writeBytes(body, (int)start, size);
    }
 
-   public void decode(final MessagingBuffer buffer)
+   public void decode(final HornetQBuffer buffer)
    {
       decodeProperties(buffer);
 
       decodeBody(buffer);
    }
 
-   public void decodeProperties(final MessagingBuffer buffer)
+   public void decodeProperties(final HornetQBuffer buffer)
    {
       messageID = buffer.readLong();
       destination = buffer.readSimpleString();
@@ -238,7 +238,7 @@ public abstract class MessageImpl implements Message
       properties.decode(buffer);
    }
 
-   public void decodeBody(final MessagingBuffer buffer)
+   public void decodeBody(final HornetQBuffer buffer)
    {
       int len = buffer.readInt();
       byte[] bytes = new byte[len];
@@ -494,12 +494,12 @@ public abstract class MessageImpl implements Message
    // Body
    // -------------------------------------------------------------------------------------
 
-   public MessagingBuffer getBody()
+   public HornetQBuffer getBody()
    {
       return body;
    }
 
-   public void setBody(final MessagingBuffer body)
+   public void setBody(final HornetQBuffer body)
    {
       this.body = body;
    }

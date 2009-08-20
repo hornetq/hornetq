@@ -21,11 +21,11 @@ import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.TransportConfiguration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
-import org.hornetq.core.exception.MessagingException;
+import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
-import org.hornetq.core.server.Messaging;
-import org.hornetq.core.server.MessagingServer;
+import org.hornetq.core.server.HornetQ;
+import org.hornetq.core.server.HornetQServer;
 import org.hornetq.tests.util.ServiceTestBase;
 
 /**
@@ -39,7 +39,7 @@ public class ProducerCloseTest extends ServiceTestBase
 
    // Attributes ----------------------------------------------------
 
-   private MessagingServer server;
+   private HornetQServer server;
 
    private ClientSession session;
 
@@ -59,9 +59,9 @@ public class ProducerCloseTest extends ServiceTestBase
 
       assertTrue(producer.isClosed());
 
-      expectMessagingException(MessagingException.OBJECT_CLOSED, new MessagingAction()
+      expectHornetQException(HornetQException.OBJECT_CLOSED, new MessagingAction()
       {
-         public void run() throws MessagingException
+         public void run() throws HornetQException
          {
             producer.send(session.createClientMessage(false));
          }
@@ -79,7 +79,7 @@ public class ProducerCloseTest extends ServiceTestBase
       Configuration config = new ConfigurationImpl();
       config.getAcceptorConfigurations().add(new TransportConfiguration(InVMAcceptorFactory.class.getCanonicalName()));
       config.setSecurityEnabled(false);
-      server = Messaging.newMessagingServer(config, false);
+      server = HornetQ.newMessagingServer(config, false);
       server.start();
 
       sf = new ClientSessionFactoryImpl(new TransportConfiguration(InVMConnectorFactory.class.getName()));

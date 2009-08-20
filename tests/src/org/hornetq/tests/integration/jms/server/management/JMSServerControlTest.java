@@ -33,8 +33,8 @@ import org.hornetq.core.management.ObjectNames;
 import org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
 import org.hornetq.core.remoting.impl.invm.TransportConstants;
-import org.hornetq.core.server.Messaging;
-import org.hornetq.core.server.MessagingServer;
+import org.hornetq.core.server.HornetQ;
+import org.hornetq.core.server.HornetQServer;
 import org.hornetq.integration.transports.netty.NettyAcceptorFactory;
 import org.hornetq.integration.transports.netty.NettyConnectorFactory;
 import org.hornetq.jms.server.JMSServerManager;
@@ -62,7 +62,7 @@ public class JMSServerControlTest extends ManagementTestBase
    // Attributes ----------------------------------------------------
 
    protected InVMContext context;
-   private MessagingServer server;
+   private HornetQServer server;
    
    private JMSServerManagerImpl serverManager;
 
@@ -545,7 +545,7 @@ public class JMSServerControlTest extends ManagementTestBase
       conf.setSecurityEnabled(false);
       conf.setJMXManagementEnabled(true);
       conf.getAcceptorConfigurations().add(new TransportConfiguration(InVMAcceptorFactory.class.getName()));
-      server = Messaging.newMessagingServer(conf, mbeanServer, false);
+      server = HornetQ.newMessagingServer(conf, mbeanServer, false);
 
       context = new InVMContext();
       serverManager = new JMSServerManagerImpl(server);
@@ -612,7 +612,7 @@ public class JMSServerControlTest extends ManagementTestBase
                                                "231.7.7.7",
                                                discoveryPort,
                                                ConfigurationImpl.DEFAULT_BROADCAST_REFRESH_TIMEOUT));
-      MessagingServer server = Messaging.newMessagingServer(conf, mbeanServer, false);
+      HornetQServer server = HornetQ.newMessagingServer(conf, mbeanServer, false);
 
       context = new InVMContext();
       JMSServerManagerImpl serverManager = new JMSServerManagerImpl(server);

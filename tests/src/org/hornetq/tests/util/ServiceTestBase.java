@@ -32,8 +32,8 @@ import org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
 import org.hornetq.core.security.HornetQSecurityManager;
 import org.hornetq.core.server.JournalType;
-import org.hornetq.core.server.Messaging;
-import org.hornetq.core.server.MessagingServer;
+import org.hornetq.core.server.HornetQ;
+import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.integration.transports.netty.NettyAcceptorFactory;
 import org.hornetq.integration.transports.netty.NettyConnectorFactory;
@@ -133,21 +133,21 @@ public class ServiceTestBase extends UnitTestCase
       return config;
    }
 
-   protected MessagingServer createServer(final boolean realFiles,
+   protected HornetQServer createServer(final boolean realFiles,
                                           final Configuration configuration,
                                           int pageSize,
                                           int maxAddressSize,
                                           final Map<String, AddressSettings> settings)
    {
-      MessagingServer server;
+      HornetQServer server;
 
       if (realFiles)
       {
-         server = Messaging.newMessagingServer(configuration);
+         server = HornetQ.newMessagingServer(configuration);
       }
       else
       {
-         server = Messaging.newMessagingServer(configuration, false);
+         server = HornetQ.newMessagingServer(configuration, false);
       }
 
       for (Map.Entry<String, AddressSettings> setting : settings.entrySet())
@@ -164,20 +164,20 @@ public class ServiceTestBase extends UnitTestCase
       return server;
    }
 
-   protected MessagingServer createServer(final boolean realFiles,
+   protected HornetQServer createServer(final boolean realFiles,
                                           final Configuration configuration,
                                           final MBeanServer mbeanServer,
                                           final Map<String, AddressSettings> settings)
    {
-      MessagingServer server;
+      HornetQServer server;
 
       if (realFiles)
       {
-         server = Messaging.newMessagingServer(configuration, mbeanServer);
+         server = HornetQ.newMessagingServer(configuration, mbeanServer);
       }
       else
       {
-         server = Messaging.newMessagingServer(configuration, mbeanServer, false);
+         server = HornetQ.newMessagingServer(configuration, mbeanServer, false);
       }
 
       for (Map.Entry<String, AddressSettings> setting : settings.entrySet())
@@ -191,31 +191,31 @@ public class ServiceTestBase extends UnitTestCase
       return server;
    }
 
-   protected MessagingServer createServer(final boolean realFiles)
+   protected HornetQServer createServer(final boolean realFiles)
    {
       return createServer(realFiles, createDefaultConfig(), -1, -1, new HashMap<String, AddressSettings>());
    }
 
-   protected MessagingServer createServer(final boolean realFiles, final Configuration configuration)
+   protected HornetQServer createServer(final boolean realFiles, final Configuration configuration)
    {
       return createServer(realFiles, configuration, -1, -1, new HashMap<String, AddressSettings>());
    }
 
-   protected MessagingServer createServer(final boolean realFiles,
+   protected HornetQServer createServer(final boolean realFiles,
                                           final Configuration configuration,
                                           final HornetQSecurityManager securityManager)
    {
-      MessagingServer server;
+      HornetQServer server;
 
       if (realFiles)
       {
-         server = Messaging.newMessagingServer(configuration,
+         server = HornetQ.newMessagingServer(configuration,
                                                ManagementFactory.getPlatformMBeanServer(),
                                                securityManager);
       }
       else
       {
-         server = Messaging.newMessagingServer(configuration,
+         server = HornetQ.newMessagingServer(configuration,
                                                ManagementFactory.getPlatformMBeanServer(),
                                                securityManager,
                                                false);
@@ -235,7 +235,7 @@ public class ServiceTestBase extends UnitTestCase
       return server;
    }
 
-   protected MessagingServer createClusteredServerWithParams(final int index,
+   protected HornetQServer createClusteredServerWithParams(final int index,
                                                              final boolean realFiles,
                                                              final Map<String, Object> params)
    {

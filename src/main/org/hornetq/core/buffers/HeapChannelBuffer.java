@@ -305,7 +305,7 @@ public class HeapChannelBuffer extends AbstractChannelBuffer
    }
 
    /* (non-Javadoc)
-    * @see org.hornetq.core.remoting.spi.MessagingBuffer#array()
+    * @see org.hornetq.core.remoting.spi.HornetQBuffer#array()
     */
    public byte[] array()
    {

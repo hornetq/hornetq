@@ -21,7 +21,7 @@ import java.nio.channels.GatheringByteChannel;
 import java.nio.channels.ScatteringByteChannel;
 import java.nio.charset.UnsupportedCharsetException;
 
-import org.hornetq.core.remoting.spi.MessagingBuffer;
+import org.hornetq.core.remoting.spi.HornetQBuffer;
 
 /**
  * A random and sequential accessible sequence of zero or more bytes (octets).
@@ -221,7 +221,7 @@ import org.hornetq.core.remoting.spi.MessagingBuffer;
  *
  * @apiviz.landmark
  */
-public interface ChannelBuffer extends Comparable<ChannelBuffer>, MessagingBuffer
+public interface ChannelBuffer extends Comparable<ChannelBuffer>, HornetQBuffer
 {
 
    /**

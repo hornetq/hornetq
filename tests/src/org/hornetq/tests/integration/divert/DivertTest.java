@@ -26,8 +26,8 @@ import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.TransportConfiguration;
 import org.hornetq.core.config.cluster.DivertConfiguration;
 import org.hornetq.core.logging.Logger;
-import org.hornetq.core.server.Messaging;
-import org.hornetq.core.server.MessagingServer;
+import org.hornetq.core.server.HornetQ;
+import org.hornetq.core.server.HornetQServer;
 import org.hornetq.tests.util.ServiceTestBase;
 import org.hornetq.utils.SimpleString;
 
@@ -68,7 +68,7 @@ public class DivertTest extends ServiceTestBase
 
       conf.setDivertConfigurations(divertConfs);
 
-      MessagingServer messagingService = Messaging.newMessagingServer(conf, false);
+      HornetQServer messagingService = HornetQ.newMessagingServer(conf, false);
 
       messagingService.start();
 
@@ -162,7 +162,7 @@ public class DivertTest extends ServiceTestBase
 
       conf.setDivertConfigurations(divertConfs);
 
-      MessagingServer messagingService = Messaging.newMessagingServer(conf, false);
+      HornetQServer messagingService = HornetQ.newMessagingServer(conf, false);
 
       messagingService.start();
 
@@ -294,7 +294,7 @@ public class DivertTest extends ServiceTestBase
 
       conf.setDivertConfigurations(divertConfs);
 
-      MessagingServer messagingService = Messaging.newMessagingServer(conf, false);
+      HornetQServer messagingService = HornetQ.newMessagingServer(conf, false);
 
       messagingService.start();
 
@@ -369,7 +369,7 @@ public class DivertTest extends ServiceTestBase
 
       conf.setDivertConfigurations(divertConfs);
 
-      MessagingServer messagingService = Messaging.newMessagingServer(conf, false);
+      HornetQServer messagingService = HornetQ.newMessagingServer(conf, false);
 
       messagingService.start();
 
@@ -486,7 +486,7 @@ public class DivertTest extends ServiceTestBase
 
       conf.setDivertConfigurations(divertConfs);
 
-      MessagingServer messagingService = Messaging.newMessagingServer(conf, false);
+      HornetQServer messagingService = HornetQ.newMessagingServer(conf, false);
 
       messagingService.start();
 
@@ -638,7 +638,7 @@ public class DivertTest extends ServiceTestBase
 
       conf.setDivertConfigurations(divertConfs);
 
-      MessagingServer messagingService = Messaging.newMessagingServer(conf, false);
+      HornetQServer messagingService = HornetQ.newMessagingServer(conf, false);
 
       messagingService.start();
 
@@ -779,7 +779,7 @@ public class DivertTest extends ServiceTestBase
 
       conf.setDivertConfigurations(divertConfs);
 
-      MessagingServer messagingService = Messaging.newMessagingServer(conf, false);
+      HornetQServer messagingService = HornetQ.newMessagingServer(conf, false);
 
       messagingService.start();
 
@@ -912,7 +912,7 @@ public class DivertTest extends ServiceTestBase
 
       conf.setDivertConfigurations(divertConfs);
 
-      MessagingServer messagingService = Messaging.newMessagingServer(conf, false);
+      HornetQServer messagingService = HornetQ.newMessagingServer(conf, false);
 
       messagingService.start();
 
@@ -1096,7 +1096,7 @@ public class DivertTest extends ServiceTestBase
 
       conf.setDivertConfigurations(divertConfs);
 
-      MessagingServer messagingService = Messaging.newMessagingServer(conf, false);
+      HornetQServer messagingService = HornetQ.newMessagingServer(conf, false);
 
       messagingService.start();
 
@@ -1256,7 +1256,7 @@ public class DivertTest extends ServiceTestBase
 
       conf.setDivertConfigurations(divertConfs);
 
-      MessagingServer messagingService = Messaging.newMessagingServer(conf, false);
+      HornetQServer messagingService = HornetQ.newMessagingServer(conf, false);
 
       messagingService.start();
 

@@ -13,14 +13,14 @@
 
 package org.hornetq.integration.transports.netty;
 
-import org.hornetq.core.remoting.spi.MessagingBuffer;
+import org.hornetq.core.remoting.spi.HornetQBuffer;
 import org.hornetq.utils.DataConstants;
 import org.hornetq.utils.SimpleString;
 import org.hornetq.utils.UTF8Util;
 import org.jboss.netty.buffer.ChannelBuffer;
 
 /**
- * Wraps Netty {@link ChannelBuffer} with {@link MessagingBuffer}.
+ * Wraps Netty {@link ChannelBuffer} with {@link HornetQBuffer}.
  * Because there's neither {@code position()} nor {@code limit()} in a Netty
  * buffer.  {@link ChannelBuffer#readerIndex()} and {@link ChannelBuffer#writerIndex()}
  * are used as {@code position} and {@code limit} of the buffer respectively
@@ -33,7 +33,7 @@ import org.jboss.netty.buffer.ChannelBuffer;
  *
  * @version $Rev$, $Date$
  */
-public class ChannelBufferWrapper implements MessagingBuffer
+public class ChannelBufferWrapper implements HornetQBuffer
 {
 
    private final ChannelBuffer buffer;
@@ -157,7 +157,7 @@ public class ChannelBufferWrapper implements MessagingBuffer
       buffer.writeBytes(src, srcIndex, length);
    }
    
-   public void writeBytes(MessagingBuffer src, int srcIndex, int length)
+   public void writeBytes(HornetQBuffer src, int srcIndex, int length)
    {
       byte bytes[] = new byte[length];
       src.readBytes(bytes, srcIndex, length);
@@ -195,7 +195,7 @@ public class ChannelBufferWrapper implements MessagingBuffer
    }
 
    /* (non-Javadoc)
-    * @see org.hornetq.core.remoting.spi.MessagingBuffer#array()
+    * @see org.hornetq.core.remoting.spi.HornetQBuffer#array()
     */
    public byte[] array()
    {
@@ -203,7 +203,7 @@ public class ChannelBufferWrapper implements MessagingBuffer
    }
 
    /* (non-Javadoc)
-    * @see org.hornetq.core.remoting.spi.MessagingBuffer#readBoolean()
+    * @see org.hornetq.core.remoting.spi.HornetQBuffer#readBoolean()
     */
    public boolean readBoolean()
    {
@@ -211,7 +211,7 @@ public class ChannelBufferWrapper implements MessagingBuffer
    }
 
    /* (non-Javadoc)
-    * @see org.hornetq.core.remoting.spi.MessagingBuffer#readChar()
+    * @see org.hornetq.core.remoting.spi.HornetQBuffer#readChar()
     */
    public char readChar()
    {
@@ -219,7 +219,7 @@ public class ChannelBufferWrapper implements MessagingBuffer
    }
 
    /* (non-Javadoc)
-    * @see org.hornetq.core.remoting.spi.MessagingBuffer#readDouble()
+    * @see org.hornetq.core.remoting.spi.HornetQBuffer#readDouble()
     */
    public double readDouble()
    {
@@ -227,7 +227,7 @@ public class ChannelBufferWrapper implements MessagingBuffer
    }
 
    /* (non-Javadoc)
-    * @see org.hornetq.core.remoting.spi.MessagingBuffer#readFloat()
+    * @see org.hornetq.core.remoting.spi.HornetQBuffer#readFloat()
     */
    public float readFloat()
    {
@@ -235,7 +235,7 @@ public class ChannelBufferWrapper implements MessagingBuffer
    }
 
    /* (non-Javadoc)
-    * @see org.hornetq.core.remoting.spi.MessagingBuffer#readNullableSimpleString()
+    * @see org.hornetq.core.remoting.spi.HornetQBuffer#readNullableSimpleString()
     */
    public SimpleString readNullableSimpleString()
    {
@@ -251,7 +251,7 @@ public class ChannelBufferWrapper implements MessagingBuffer
    }
 
    /* (non-Javadoc)
-    * @see org.hornetq.core.remoting.spi.MessagingBuffer#readNullableString()
+    * @see org.hornetq.core.remoting.spi.HornetQBuffer#readNullableString()
     */
    public String readNullableString()
    {
@@ -267,7 +267,7 @@ public class ChannelBufferWrapper implements MessagingBuffer
    }
 
    /* (non-Javadoc)
-    * @see org.hornetq.core.remoting.spi.MessagingBuffer#readSimpleString()
+    * @see org.hornetq.core.remoting.spi.HornetQBuffer#readSimpleString()
     */
    public SimpleString readSimpleString()
    {
@@ -278,7 +278,7 @@ public class ChannelBufferWrapper implements MessagingBuffer
    }
 
    /* (non-Javadoc)
-    * @see org.hornetq.core.remoting.spi.MessagingBuffer#readString()
+    * @see org.hornetq.core.remoting.spi.HornetQBuffer#readString()
     */
    public String readString()
    {
@@ -292,7 +292,7 @@ public class ChannelBufferWrapper implements MessagingBuffer
    }
 
    /* (non-Javadoc)
-    * @see org.hornetq.core.remoting.spi.MessagingBuffer#readUTF()
+    * @see org.hornetq.core.remoting.spi.HornetQBuffer#readUTF()
     */
    public String readUTF() throws Exception
    {
@@ -300,7 +300,7 @@ public class ChannelBufferWrapper implements MessagingBuffer
    }
 
    /* (non-Javadoc)
-    * @see org.hornetq.core.remoting.spi.MessagingBuffer#writeBoolean(boolean)
+    * @see org.hornetq.core.remoting.spi.HornetQBuffer#writeBoolean(boolean)
     */
    public void writeBoolean(final boolean val)
    {
@@ -308,7 +308,7 @@ public class ChannelBufferWrapper implements MessagingBuffer
    }
 
    /* (non-Javadoc)
-    * @see org.hornetq.core.remoting.spi.MessagingBuffer#writeChar(char)
+    * @see org.hornetq.core.remoting.spi.HornetQBuffer#writeChar(char)
     */
    public void writeChar(final char val)
    {
@@ -316,7 +316,7 @@ public class ChannelBufferWrapper implements MessagingBuffer
    }
 
    /* (non-Javadoc)
-    * @see org.hornetq.core.remoting.spi.MessagingBuffer#writeDouble(double)
+    * @see org.hornetq.core.remoting.spi.HornetQBuffer#writeDouble(double)
     */
    public void writeDouble(final double val)
    {
@@ -325,7 +325,7 @@ public class ChannelBufferWrapper implements MessagingBuffer
    }
 
    /* (non-Javadoc)
-    * @see org.hornetq.core.remoting.spi.MessagingBuffer#writeFloat(float)
+    * @see org.hornetq.core.remoting.spi.HornetQBuffer#writeFloat(float)
     */
    public void writeFloat(final float val)
    {
@@ -334,7 +334,7 @@ public class ChannelBufferWrapper implements MessagingBuffer
    }
 
    /* (non-Javadoc)
-    * @see org.hornetq.core.remoting.spi.MessagingBuffer#writeNullableSimpleString(org.hornetq.util.SimpleString)
+    * @see org.hornetq.core.remoting.spi.HornetQBuffer#writeNullableSimpleString(org.hornetq.util.SimpleString)
     */
    public void writeNullableSimpleString(final SimpleString val)
    {
@@ -350,7 +350,7 @@ public class ChannelBufferWrapper implements MessagingBuffer
    }
 
    /* (non-Javadoc)
-    * @see org.hornetq.core.remoting.spi.MessagingBuffer#writeNullableString(java.lang.String)
+    * @see org.hornetq.core.remoting.spi.HornetQBuffer#writeNullableString(java.lang.String)
     */
    public void writeNullableString(final String val)
    {
@@ -366,7 +366,7 @@ public class ChannelBufferWrapper implements MessagingBuffer
    }
 
    /* (non-Javadoc)
-    * @see org.hornetq.core.remoting.spi.MessagingBuffer#writeSimpleString(org.hornetq.util.SimpleString)
+    * @see org.hornetq.core.remoting.spi.HornetQBuffer#writeSimpleString(org.hornetq.util.SimpleString)
     */
    public void writeSimpleString(final SimpleString val)
    {
@@ -376,7 +376,7 @@ public class ChannelBufferWrapper implements MessagingBuffer
    }
 
    /* (non-Javadoc)
-    * @see org.hornetq.core.remoting.spi.MessagingBuffer#writeString(java.lang.String)
+    * @see org.hornetq.core.remoting.spi.HornetQBuffer#writeString(java.lang.String)
     */
    public void writeString(final String val)
    {
@@ -388,7 +388,7 @@ public class ChannelBufferWrapper implements MessagingBuffer
    }
 
    /* (non-Javadoc)
-    * @see org.hornetq.core.remoting.spi.MessagingBuffer#writeUTF(java.lang.String)
+    * @see org.hornetq.core.remoting.spi.HornetQBuffer#writeUTF(java.lang.String)
     */
    public void writeUTF(final String utf) throws Exception
    {
@@ -396,7 +396,7 @@ public class ChannelBufferWrapper implements MessagingBuffer
    }
 
    /* (non-Javadoc)
-    * @see org.hornetq.core.remoting.spi.MessagingBuffer#getUnderlyingBuffer()
+    * @see org.hornetq.core.remoting.spi.HornetQBuffer#getUnderlyingBuffer()
     */
    public Object getUnderlyingBuffer()
    {

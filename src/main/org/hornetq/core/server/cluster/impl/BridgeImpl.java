@@ -30,7 +30,7 @@ import org.hornetq.core.client.impl.ClientSessionImpl;
 import org.hornetq.core.client.impl.ClientSessionInternal;
 import org.hornetq.core.client.management.impl.ManagementHelper;
 import org.hornetq.core.config.TransportConfiguration;
-import org.hornetq.core.exception.MessagingException;
+import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.filter.Filter;
 import org.hornetq.core.filter.impl.FilterImpl;
 import org.hornetq.core.logging.Logger;
@@ -503,7 +503,7 @@ public class BridgeImpl implements Bridge, FailureListener, SendAcknowledgementH
 
    // FailureListener implementation --------------------------------
 
-   public void connectionFailed(final MessagingException me)
+   public void connectionFailed(final HornetQException me)
    {
       log.info("bridge " + name + " failed " + me);
       
@@ -632,9 +632,9 @@ public class BridgeImpl implements Bridge, FailureListener, SendAcknowledgementH
             {
                session.createQueue(managementNotificationAddress, notifQueueName, filter, false);
             }
-            catch (MessagingException me)
+            catch (HornetQException me)
             {
-               if (me.getCode() == MessagingException.QUEUE_EXISTS)
+               if (me.getCode() == HornetQException.QUEUE_EXISTS)
                {
                   //Ok
                }

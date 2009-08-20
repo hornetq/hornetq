@@ -75,7 +75,7 @@ import org.hornetq.core.remoting.Packet;
 import org.hornetq.core.remoting.impl.wireformat.CreateQueueMessage;
 import org.hornetq.core.remoting.impl.wireformat.CreateSessionMessage;
 import org.hornetq.core.remoting.impl.wireformat.CreateSessionResponseMessage;
-import org.hornetq.core.remoting.impl.wireformat.MessagingExceptionMessage;
+import org.hornetq.core.remoting.impl.wireformat.HornetQExceptionMessage;
 import org.hornetq.core.remoting.impl.wireformat.NullResponseMessage;
 import org.hornetq.core.remoting.impl.wireformat.PacketImpl;
 import org.hornetq.core.remoting.impl.wireformat.PacketsConfirmedMessage;
@@ -122,7 +122,7 @@ import org.hornetq.core.remoting.impl.wireformat.replication.ReplicateRemoteCons
 import org.hornetq.core.remoting.impl.wireformat.replication.ReplicateRemoteConsumerRemovedMessage;
 import org.hornetq.core.remoting.impl.wireformat.replication.ReplicateStartupInfoMessage;
 import org.hornetq.core.remoting.impl.wireformat.replication.SessionReplicateDeliveryMessage;
-import org.hornetq.core.remoting.spi.MessagingBuffer;
+import org.hornetq.core.remoting.spi.HornetQBuffer;
 
 /**
  * A PacketDecoder
@@ -133,7 +133,7 @@ import org.hornetq.core.remoting.spi.MessagingBuffer;
  */
 public class PacketDecoder
 {
-   public Packet decode(final MessagingBuffer in)
+   public Packet decode(final HornetQBuffer in)
    {
       final byte packetType = in.readByte();
 
@@ -153,7 +153,7 @@ public class PacketDecoder
          }
          case EXCEPTION:
          {
-            packet = new MessagingExceptionMessage();
+            packet = new HornetQExceptionMessage();
             break;
          }
          case PACKETS_CONFIRMED:

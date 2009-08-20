@@ -26,7 +26,7 @@ import org.hornetq.core.management.BroadcastGroupControl;
 import org.hornetq.core.management.ClusterConnectionControl;
 import org.hornetq.core.management.DiscoveryGroupControl;
 import org.hornetq.core.management.DivertControl;
-import org.hornetq.core.management.MessagingServerControl;
+import org.hornetq.core.management.HornetQServerControl;
 import org.hornetq.core.management.ObjectNames;
 import org.hornetq.core.management.QueueControl;
 import org.hornetq.jms.server.management.ConnectionFactoryControl;
@@ -92,10 +92,10 @@ public class ManagementControlHelper
                                                         mbeanServer);
    }
 
-   public static MessagingServerControl createMessagingServerControl(MBeanServer mbeanServer) throws Exception
+   public static HornetQServerControl createMessagingServerControl(MBeanServer mbeanServer) throws Exception
    {
-      return (MessagingServerControl)createProxy(ObjectNames.getMessagingServerObjectName(),
-                                                      MessagingServerControl.class,
+      return (HornetQServerControl)createProxy(ObjectNames.getMessagingServerObjectName(),
+                                                      HornetQServerControl.class,
                                                       mbeanServer);
    }
 

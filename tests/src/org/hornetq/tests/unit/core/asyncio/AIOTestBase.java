@@ -15,7 +15,7 @@ package org.hornetq.tests.unit.core.asyncio;
 
 import org.hornetq.core.asyncio.AIOCallback;
 import org.hornetq.core.asyncio.impl.AsynchronousFileImpl;
-import org.hornetq.core.exception.MessagingException;
+import org.hornetq.core.exception.HornetQException;
 import org.hornetq.tests.util.UnitTestCase;
 
 import java.io.File;
@@ -76,7 +76,7 @@ public abstract class AIOTestBase extends UnitTestCase
 
    }
 
-   protected void preAlloc(final AsynchronousFileImpl controller, final long size) throws MessagingException
+   protected void preAlloc(final AsynchronousFileImpl controller, final long size) throws HornetQException
    {
       controller.fill(0l, 1, size, (byte)0);
    }

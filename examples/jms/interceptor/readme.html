@@ -14,7 +14,7 @@
      <code>
          public interface Interceptor
          {   
-            boolean intercept(Packet packet, RemotingConnection connection) throws MessagingException;
+            boolean intercept(Packet packet, RemotingConnection connection) throws HornetQException;
          }
      </code>
      </pre>
@@ -128,7 +128,7 @@
            <code>
            public class SimpleInterceptor implements Interceptor
            {
-              public boolean intercept(Packet packet, RemotingConnection connection) throws MessagingException
+              public boolean intercept(Packet packet, RemotingConnection connection) throws HornetQException
               {
                  System.out.println("SimpleInterceptor gets called!");
                  System.out.println("Packet: " + packet.getClass().getName());

@@ -32,7 +32,7 @@ import org.hornetq.core.logging.Logger;
 import org.hornetq.core.management.Notification;
 import org.hornetq.core.management.NotificationService;
 import org.hornetq.core.management.NotificationType;
-import org.hornetq.core.remoting.spi.MessagingBuffer;
+import org.hornetq.core.remoting.spi.HornetQBuffer;
 import org.hornetq.utils.Pair;
 import org.hornetq.utils.SimpleString;
 import org.hornetq.utils.TypedProperties;
@@ -328,7 +328,7 @@ public class DiscoveryGroupImpl implements Runnable, DiscoveryGroup
                }
             }
 
-            MessagingBuffer buffer = ChannelBuffers.wrappedBuffer(data);
+            HornetQBuffer buffer = ChannelBuffers.wrappedBuffer(data);
 
             String originatingNodeID = buffer.readString();
             

@@ -14,7 +14,7 @@ package org.hornetq.core.remoting;
 public interface Interceptor
 {   
    boolean intercept(Packet packet, RemotingConnection connection) 
-                throws MessagingException;
+                throws HornetQException;
 }
          </programlisting>
       <para>The returned boolean value is important:</para>

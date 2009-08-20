@@ -20,7 +20,7 @@ import javax.management.MBeanServer;
 
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.management.ManagementService;
-import org.hornetq.core.management.impl.MessagingServerControlImpl;
+import org.hornetq.core.management.impl.HornetQServerControlImpl;
 import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.core.postoffice.PostOffice;
 import org.hornetq.core.remoting.Channel;
@@ -40,14 +40,14 @@ import org.hornetq.utils.SimpleString;
 import org.hornetq.utils.UUID;
 
 /**
- * This interface defines the internal interface of the Messaging Server exposed to other components of the server. The
- * external management interface of the Messaging Server is defined by the MessagingServerManagement interface This
+ * This interface defines the internal interface of the HornetQ Server exposed to other components of the server. The
+ * external management interface of the HornetQ Server is defined by the MessagingServerManagement interface This
  * interface is never exposed outside the messaging server, e.g. by JMX or other means
  * 
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
  */
-public interface MessagingServer extends MessagingComponent
+public interface HornetQServer extends MessagingComponent
 {
    Configuration getConfiguration();
 
@@ -63,7 +63,7 @@ public interface MessagingServer extends MessagingComponent
 
    Version getVersion();
 
-   MessagingServerControlImpl getMessagingServerControl();
+   HornetQServerControlImpl getMessagingServerControl();
 
    void registerActivateCallback(ActivateCallback callback);
 

@@ -24,9 +24,9 @@ import org.hornetq.core.client.ClientSession;
 import org.hornetq.core.client.ClientSessionFactory;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
-import org.hornetq.core.exception.MessagingException;
+import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.server.JournalType;
-import org.hornetq.core.server.MessagingServer;
+import org.hornetq.core.server.HornetQServer;
 import org.hornetq.tests.util.ServiceTestBase;
 
 /**
@@ -51,7 +51,7 @@ public class CompactingTest extends ServiceTestBase
 
    private static final String Q2 = "q2";
 
-   private MessagingServer server;
+   private HornetQServer server;
 
    private ClientSessionFactory sf;
 
@@ -255,9 +255,9 @@ public class CompactingTest extends ServiceTestBase
 
    /**
     * @throws Exception
-    * @throws MessagingException
+    * @throws HornetQException
     */
-   private void setupServer(JournalType journalType) throws Exception, MessagingException
+   private void setupServer(JournalType journalType) throws Exception, HornetQException
    {
       Configuration config = createDefaultConfig();
       config.setJournalFileSize(ConfigurationImpl.DEFAULT_JOURNAL_FILE_SIZE);

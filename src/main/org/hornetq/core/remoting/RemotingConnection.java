@@ -13,10 +13,10 @@
 
 package org.hornetq.core.remoting;
 
-import org.hornetq.core.exception.MessagingException;
+import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.remoting.spi.BufferHandler;
 import org.hornetq.core.remoting.spi.Connection;
-import org.hornetq.core.remoting.spi.MessagingBuffer;
+import org.hornetq.core.remoting.spi.HornetQBuffer;
 
 import java.util.List;
 
@@ -52,9 +52,9 @@ public interface RemotingConnection extends BufferHandler
 
    void setFailureListeners(List<FailureListener> listeners);
 
-   MessagingBuffer createBuffer(int size);
+   HornetQBuffer createBuffer(int size);
 
-   void fail(MessagingException me);
+   void fail(HornetQException me);
 
    void destroy();
 

@@ -27,13 +27,13 @@ import org.hornetq.core.client.impl.ClientSessionInternal;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.TransportConfiguration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
-import org.hornetq.core.exception.MessagingException;
+import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.remoting.RemotingConnection;
 import org.hornetq.core.remoting.impl.invm.InVMRegistry;
 import org.hornetq.core.remoting.impl.invm.TransportConstants;
-import org.hornetq.core.server.Messaging;
-import org.hornetq.core.server.MessagingServer;
+import org.hornetq.core.server.HornetQ;
+import org.hornetq.core.server.HornetQServer;
 import org.hornetq.jms.client.HornetQTextMessage;
 import org.hornetq.tests.util.UnitTestCase;
 import org.hornetq.utils.SimpleString;
@@ -58,9 +58,9 @@ public class FailoverExpiredMessageTest extends UnitTestCase
 
    private static final SimpleString ADDRESS = new SimpleString("FailoverTestAddress");
 
-   private MessagingServer liveService;
+   private HornetQServer liveService;
 
-   private MessagingServer backupService;
+   private HornetQServer backupService;
 
    private Map<String, Object> backupParams = new HashMap<String, Object>();
 
@@ -127,7 +127,7 @@ public class FailoverExpiredMessageTest extends UnitTestCase
             {               
             }
             
-            conn1.fail(new MessagingException(MessagingException.NOT_CONNECTED));
+            conn1.fail(new HornetQException(HornetQException.NOT_CONNECTED));
          }
       };
       
@@ -215,7 +215,7 @@ public class FailoverExpiredMessageTest extends UnitTestCase
                  
       RemotingConnection conn1 = ((ClientSessionInternal)session1).getConnection();
  
-      conn1.fail(new MessagingException(MessagingException.NOT_CONNECTED));
+      conn1.fail(new HornetQException(HornetQException.NOT_CONNECTED));
                               
       ClientMessage message = consumer1.receive(1000);
       
@@ -256,7 +256,7 @@ public class FailoverExpiredMessageTest extends UnitTestCase
                 .add(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory",
                                                 backupParams));
       backupConf.setBackup(true);
-      backupService = Messaging.newMessagingServer(backupConf, false);
+      backupService = HornetQ.newMessagingServer(backupConf, false);
       backupService.start();
 
       Configuration liveConf = new ConfigurationImpl();
@@ -270,7 +270,7 @@ public class FailoverExpiredMessageTest extends UnitTestCase
       connectors.put(backupTC.getName(), backupTC);
       liveConf.setConnectorConfigurations(connectors);
       liveConf.setBackupConnectorName(backupTC.getName());
-      liveService = Messaging.newMessagingServer(liveConf, false);
+      liveService = HornetQ.newMessagingServer(liveConf, false);
       liveService.start();
    }
 

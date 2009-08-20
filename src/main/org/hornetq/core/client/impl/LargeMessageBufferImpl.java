@@ -28,10 +28,10 @@ import java.util.concurrent.TimeUnit;
 
 import org.hornetq.core.buffers.ChannelBuffer;
 import org.hornetq.core.client.LargeMessageBuffer;
-import org.hornetq.core.exception.MessagingException;
+import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.remoting.impl.wireformat.SessionReceiveContinuationMessage;
-import org.hornetq.core.remoting.spi.MessagingBuffer;
+import org.hornetq.core.remoting.spi.HornetQBuffer;
 import org.hornetq.utils.DataConstants;
 import org.hornetq.utils.SimpleString;
 import org.hornetq.utils.UTF8Util;
@@ -225,7 +225,7 @@ public class LargeMessageBufferImpl implements ChannelBuffer, LargeMessageBuffer
       }
    }
 
-   public void setOutputStream(final OutputStream output) throws MessagingException
+   public void setOutputStream(final OutputStream output) throws HornetQException
    {
 
       int totalFlowControl = 0;
@@ -256,7 +256,7 @@ public class LargeMessageBufferImpl implements ChannelBuffer, LargeMessageBuffer
       consumerInternal.flowControl(totalFlowControl, !continues);
    }
 
-   public synchronized void saveBuffer(final OutputStream output) throws MessagingException
+   public synchronized void saveBuffer(final OutputStream output) throws HornetQException
    {
       setOutputStream(output);
       waitCompletion(0);
@@ -267,7 +267,7 @@ public class LargeMessageBufferImpl implements ChannelBuffer, LargeMessageBuffer
     * @param timeWait Milliseconds to Wait. 0 means forever
     * @throws Exception
     */
-   public synchronized boolean waitCompletion(final long timeWait) throws MessagingException
+   public synchronized boolean waitCompletion(final long timeWait) throws HornetQException
    {
 
       if (outStream == null)
@@ -285,19 +285,19 @@ public class LargeMessageBufferImpl implements ChannelBuffer, LargeMessageBuffer
          }
          catch (InterruptedException e)
          {
-            throw new MessagingException(MessagingException.INTERNAL_ERROR, e.getMessage(), e);
+            throw new HornetQException(HornetQException.INTERNAL_ERROR, e.getMessage(), e);
          }
 
          if (timeWait > 0 && System.currentTimeMillis() > timeOut)
          {
-            throw new MessagingException(MessagingException.LARGE_MESSAGE_ERROR_BODY,
+            throw new HornetQException(HornetQException.LARGE_MESSAGE_ERROR_BODY,
                                          "Timeout waiting for LargeMessage Body");
          }
       }
 
       if (handledException != null)
       {
-         throw new MessagingException(MessagingException.LARGE_MESSAGE_ERROR_BODY,
+         throw new HornetQException(HornetQException.LARGE_MESSAGE_ERROR_BODY,
                                       "Error on saving LargeMessageBufferImpl",
                                       handledException);
       }
@@ -950,7 +950,7 @@ public class LargeMessageBufferImpl implements ChannelBuffer, LargeMessageBuffer
       throw new IllegalAccessError(READ_ONLY_ERROR_MESSAGE);
    }
 
-   public void writeBytes(final MessagingBuffer src, final int srcIndex, final int length)
+   public void writeBytes(final HornetQBuffer src, final int srcIndex, final int length)
    {
       throw new IllegalAccessError(READ_ONLY_ERROR_MESSAGE);
    }
@@ -1006,7 +1006,7 @@ public class LargeMessageBufferImpl implements ChannelBuffer, LargeMessageBuffer
    }
 
    /* (non-Javadoc)
-    * @see org.hornetq.core.remoting.spi.MessagingBuffer#readBoolean()
+    * @see org.hornetq.core.remoting.spi.HornetQBuffer#readBoolean()
     */
    public boolean readBoolean()
    {
@@ -1014,7 +1014,7 @@ public class LargeMessageBufferImpl implements ChannelBuffer, LargeMessageBuffer
    }
 
    /* (non-Javadoc)
-    * @see org.hornetq.core.remoting.spi.MessagingBuffer#readChar()
+    * @see org.hornetq.core.remoting.spi.HornetQBuffer#readChar()
     */
    public char readChar()
    {
@@ -1022,7 +1022,7 @@ public class LargeMessageBufferImpl implements ChannelBuffer, LargeMessageBuffer
    }
 
    /* (non-Javadoc)
-    * @see org.hornetq.core.remoting.spi.MessagingBuffer#readDouble()
+    * @see org.hornetq.core.remoting.spi.HornetQBuffer#readDouble()
     */
    public double readDouble()
    {
@@ -1030,7 +1030,7 @@ public class LargeMessageBufferImpl implements ChannelBuffer, LargeMessageBuffer
    }
 
    /* (non-Javadoc)
-    * @see org.hornetq.core.remoting.spi.MessagingBuffer#readFloat()
+    * @see org.hornetq.core.remoting.spi.HornetQBuffer#readFloat()
     */
    public float readFloat()
    {
@@ -1038,7 +1038,7 @@ public class LargeMessageBufferImpl implements ChannelBuffer, LargeMessageBuffer
    }
 
    /* (non-Javadoc)
-    * @see org.hornetq.core.remoting.spi.MessagingBuffer#readNullableSimpleString()
+    * @see org.hornetq.core.remoting.spi.HornetQBuffer#readNullableSimpleString()
     */
    public SimpleString readNullableSimpleString()
    {
@@ -1054,7 +1054,7 @@ public class LargeMessageBufferImpl implements ChannelBuffer, LargeMessageBuffer
    }
 
    /* (non-Javadoc)
-    * @see org.hornetq.core.remoting.spi.MessagingBuffer#readNullableString()
+    * @see org.hornetq.core.remoting.spi.HornetQBuffer#readNullableString()
     */
    public String readNullableString()
    {
@@ -1070,7 +1070,7 @@ public class LargeMessageBufferImpl implements ChannelBuffer, LargeMessageBuffer
    }
 
    /* (non-Javadoc)
-    * @see org.hornetq.core.remoting.spi.MessagingBuffer#readSimpleString()
+    * @see org.hornetq.core.remoting.spi.HornetQBuffer#readSimpleString()
     */
    public SimpleString readSimpleString()
    {
@@ -1081,7 +1081,7 @@ public class LargeMessageBufferImpl implements ChannelBuffer, LargeMessageBuffer
    }
 
    /* (non-Javadoc)
-    * @see org.hornetq.core.remoting.spi.MessagingBuffer#readString()
+    * @see org.hornetq.core.remoting.spi.HornetQBuffer#readString()
     */
    public String readString()
    {
@@ -1095,7 +1095,7 @@ public class LargeMessageBufferImpl implements ChannelBuffer, LargeMessageBuffer
    }
 
    /* (non-Javadoc)
-    * @see org.hornetq.core.remoting.spi.MessagingBuffer#readUTF()
+    * @see org.hornetq.core.remoting.spi.HornetQBuffer#readUTF()
     */
    public String readUTF() throws Exception
    {
@@ -1103,7 +1103,7 @@ public class LargeMessageBufferImpl implements ChannelBuffer, LargeMessageBuffer
    }
 
    /* (non-Javadoc)
-    * @see org.hornetq.core.remoting.spi.MessagingBuffer#writeBoolean(boolean)
+    * @see org.hornetq.core.remoting.spi.HornetQBuffer#writeBoolean(boolean)
     */
    public void writeBoolean(final boolean val)
    {
@@ -1111,7 +1111,7 @@ public class LargeMessageBufferImpl implements ChannelBuffer, LargeMessageBuffer
    }
 
    /* (non-Javadoc)
-    * @see org.hornetq.core.remoting.spi.MessagingBuffer#writeChar(char)
+    * @see org.hornetq.core.remoting.spi.HornetQBuffer#writeChar(char)
     */
    public void writeChar(final char val)
    {
@@ -1119,7 +1119,7 @@ public class LargeMessageBufferImpl implements ChannelBuffer, LargeMessageBuffer
    }
 
    /* (non-Javadoc)
-    * @see org.hornetq.core.remoting.spi.MessagingBuffer#writeDouble(double)
+    * @see org.hornetq.core.remoting.spi.HornetQBuffer#writeDouble(double)
     */
    public void writeDouble(final double val)
    {
@@ -1128,7 +1128,7 @@ public class LargeMessageBufferImpl implements ChannelBuffer, LargeMessageBuffer
    }
 
    /* (non-Javadoc)
-    * @see org.hornetq.core.remoting.spi.MessagingBuffer#writeFloat(float)
+    * @see org.hornetq.core.remoting.spi.HornetQBuffer#writeFloat(float)
     */
    public void writeFloat(final float val)
    {
@@ -1137,7 +1137,7 @@ public class LargeMessageBufferImpl implements ChannelBuffer, LargeMessageBuffer
    }
 
    /* (non-Javadoc)
-    * @see org.hornetq.core.remoting.spi.MessagingBuffer#writeNullableSimpleString(org.hornetq.util.SimpleString)
+    * @see org.hornetq.core.remoting.spi.HornetQBuffer#writeNullableSimpleString(org.hornetq.util.SimpleString)
     */
    public void writeNullableSimpleString(final SimpleString val)
    {
@@ -1145,7 +1145,7 @@ public class LargeMessageBufferImpl implements ChannelBuffer, LargeMessageBuffer
    }
 
    /* (non-Javadoc)
-    * @see org.hornetq.core.remoting.spi.MessagingBuffer#writeNullableString(java.lang.String)
+    * @see org.hornetq.core.remoting.spi.HornetQBuffer#writeNullableString(java.lang.String)
     */
    public void writeNullableString(final String val)
    {
@@ -1153,7 +1153,7 @@ public class LargeMessageBufferImpl implements ChannelBuffer, LargeMessageBuffer
    }
 
    /* (non-Javadoc)
-    * @see org.hornetq.core.remoting.spi.MessagingBuffer#writeSimpleString(org.hornetq.util.SimpleString)
+    * @see org.hornetq.core.remoting.spi.HornetQBuffer#writeSimpleString(org.hornetq.util.SimpleString)
     */
    public void writeSimpleString(final SimpleString val)
    {
@@ -1161,7 +1161,7 @@ public class LargeMessageBufferImpl implements ChannelBuffer, LargeMessageBuffer
    }
 
    /* (non-Javadoc)
-    * @see org.hornetq.core.remoting.spi.MessagingBuffer#writeString(java.lang.String)
+    * @see org.hornetq.core.remoting.spi.HornetQBuffer#writeString(java.lang.String)
     */
    public void writeString(final String val)
    {
@@ -1169,7 +1169,7 @@ public class LargeMessageBufferImpl implements ChannelBuffer, LargeMessageBuffer
    }
 
    /* (non-Javadoc)
-    * @see org.hornetq.core.remoting.spi.MessagingBuffer#writeUTF(java.lang.String)
+    * @see org.hornetq.core.remoting.spi.HornetQBuffer#writeUTF(java.lang.String)
     */
    public void writeUTF(final String utf) throws Exception
    {
@@ -1193,9 +1193,9 @@ public class LargeMessageBufferImpl implements ChannelBuffer, LargeMessageBuffer
    /**
     * @param output
     * @param packet
-    * @throws MessagingException
+    * @throws HornetQException
     */
-   private void sendPacketToOutput(final OutputStream output, final SessionReceiveContinuationMessage packet) throws MessagingException
+   private void sendPacketToOutput(final OutputStream output, final SessionReceiveContinuationMessage packet) throws HornetQException
    {
       try
       {
@@ -1207,7 +1207,7 @@ public class LargeMessageBufferImpl implements ChannelBuffer, LargeMessageBuffer
       }
       catch (IOException e)
       {
-         throw new MessagingException(MessagingException.LARGE_MESSAGE_ERROR_BODY, "Error writing body of message", e);
+         throw new HornetQException(HornetQException.LARGE_MESSAGE_ERROR_BODY, "Error writing body of message", e);
       }
    }
 

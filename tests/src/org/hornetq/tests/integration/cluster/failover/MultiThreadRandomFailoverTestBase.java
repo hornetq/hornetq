@@ -29,10 +29,10 @@ import org.hornetq.core.client.MessageHandler;
 import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
 import org.hornetq.core.client.impl.ClientSessionFactoryInternal;
 import org.hornetq.core.config.TransportConfiguration;
-import org.hornetq.core.exception.MessagingException;
+import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.remoting.impl.invm.InVMRegistry;
-import org.hornetq.core.server.MessagingServer;
+import org.hornetq.core.server.HornetQServer;
 import org.hornetq.jms.client.HornetQBytesMessage;
 import org.hornetq.jms.client.HornetQTextMessage;
 import org.hornetq.utils.SimpleString;
@@ -60,9 +60,9 @@ public abstract class MultiThreadRandomFailoverTestBase extends MultiThreadFailo
    // Attributes ----------------------------------------------------
    protected static final SimpleString ADDRESS = new SimpleString("FailoverTestAddress");
 
-   protected MessagingServer liveServer;
+   protected HornetQServer liveServer;
 
-   protected MessagingServer backupServer;
+   protected HornetQServer backupServer;
 
    protected Map<String, Object> backupParams = new HashMap<String, Object>();
 
@@ -1469,7 +1469,7 @@ public abstract class MultiThreadRandomFailoverTestBase extends MultiThreadFailo
          {
             message.acknowledge();
          }
-         catch (MessagingException me)
+         catch (HornetQException me)
          {
             log.error("Failed to process", me);
          }

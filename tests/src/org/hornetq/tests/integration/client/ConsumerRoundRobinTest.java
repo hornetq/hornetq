@@ -17,7 +17,7 @@ import org.hornetq.core.client.ClientMessage;
 import org.hornetq.core.client.ClientProducer;
 import org.hornetq.core.client.ClientSession;
 import org.hornetq.core.client.ClientSessionFactory;
-import org.hornetq.core.server.MessagingServer;
+import org.hornetq.core.server.HornetQServer;
 import org.hornetq.tests.util.ServiceTestBase;
 import org.hornetq.utils.SimpleString;
 
@@ -32,7 +32,7 @@ public class ConsumerRoundRobinTest extends ServiceTestBase
 
    public void testConsumersRoundRobinCorrectly() throws Exception
    {
-      MessagingServer server = createServer(false);
+      HornetQServer server = createServer(false);
       try
       {
          server.start();

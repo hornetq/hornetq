@@ -18,8 +18,8 @@ import org.hornetq.core.client.ClientProducer;
 import org.hornetq.core.client.ClientSession;
 import org.hornetq.core.client.ClientSessionFactory;
 import org.hornetq.core.client.MessageHandler;
-import org.hornetq.core.exception.MessagingException;
-import org.hornetq.core.server.MessagingServer;
+import org.hornetq.core.exception.HornetQException;
+import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.Queue;
 import org.hornetq.tests.util.ServiceTestBase;
 import org.hornetq.utils.SimpleString;
@@ -45,7 +45,7 @@ public class CommitRollbackTest extends ServiceTestBase
 
    public void testReceiveWithCommit() throws Exception
    {
-      MessagingServer server = createServer(false);
+      HornetQServer server = createServer(false);
       try
       {
          server.start();
@@ -85,7 +85,7 @@ public class CommitRollbackTest extends ServiceTestBase
 
    public void testReceiveWithRollback() throws Exception
    {
-      MessagingServer server = createServer(false);
+      HornetQServer server = createServer(false);
       try
       {
          server.start();
@@ -132,7 +132,7 @@ public class CommitRollbackTest extends ServiceTestBase
 
    public void testReceiveWithRollbackMultipleConsumersDifferentQueues() throws Exception
    {
-      MessagingServer server = createServer(false);
+      HornetQServer server = createServer(false);
       try
       {
          server.start();
@@ -185,7 +185,7 @@ public class CommitRollbackTest extends ServiceTestBase
 
    public void testAsyncConsumerCommit() throws Exception
    {
-      MessagingServer server = createServer(false);
+      HornetQServer server = createServer(false);
       try
       {
          server.start();
@@ -212,13 +212,13 @@ public class CommitRollbackTest extends ServiceTestBase
                {
                   message.acknowledge();
                }
-               catch (MessagingException e)
+               catch (HornetQException e)
                {
                   try
                   {
                      session.close();
                   }
-                  catch (MessagingException e1)
+                  catch (HornetQException e1)
                   {
                      e1.printStackTrace();
                   }
@@ -248,7 +248,7 @@ public class CommitRollbackTest extends ServiceTestBase
 
    public void testAsyncConsumerRollback() throws Exception
    {
-      MessagingServer server = createServer(false);
+      HornetQServer server = createServer(false);
       try
       {
          server.start();
@@ -311,13 +311,13 @@ public class CommitRollbackTest extends ServiceTestBase
          {
             message.acknowledge();
          }
-         catch (MessagingException e)
+         catch (HornetQException e)
          {
             try
             {
                session.close();
             }
-            catch (MessagingException e1)
+            catch (HornetQException e1)
             {
                e1.printStackTrace();
             }

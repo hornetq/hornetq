@@ -13,7 +13,7 @@
 
 package org.hornetq.core.remoting.impl.wireformat;
 
-import org.hornetq.core.remoting.spi.MessagingBuffer;
+import org.hornetq.core.remoting.spi.HornetQBuffer;
 import org.hornetq.utils.DataConstants;
 
 /**
@@ -62,12 +62,12 @@ public class SessionXAGetTimeoutResponseMessage extends PacketImpl
       return BASIC_PACKET_SIZE + DataConstants.SIZE_INT;
    }
 
-   public void encodeBody(final MessagingBuffer buffer)
+   public void encodeBody(final HornetQBuffer buffer)
    {
       buffer.writeInt(timeoutSeconds);
    }
 
-   public void decodeBody(final MessagingBuffer buffer)
+   public void decodeBody(final HornetQBuffer buffer)
    {
       timeoutSeconds = buffer.readInt();
    }

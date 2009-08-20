@@ -18,7 +18,7 @@ import org.hornetq.core.client.ClientSessionFactory;
 import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.TransportConfiguration;
-import org.hornetq.core.management.MessagingServerControl;
+import org.hornetq.core.management.HornetQServerControl;
 import org.hornetq.core.management.ResourceNames;
 import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
 
@@ -66,10 +66,10 @@ public class MessagingServerControlUsingCoreTest extends MessagingServerControlT
    }
 
    @Override
-   protected MessagingServerControl createManagementControl() throws Exception
+   protected HornetQServerControl createManagementControl() throws Exception
    {
 
-      return new MessagingServerControl()
+      return new HornetQServerControl()
       {
          private final CoreMessagingProxy proxy = new CoreMessagingProxy(session,
                                                                          ResourceNames.CORE_SERVER);

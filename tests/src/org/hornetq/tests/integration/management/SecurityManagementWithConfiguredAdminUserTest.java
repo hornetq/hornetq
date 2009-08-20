@@ -23,8 +23,8 @@ import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.hornetq.core.security.Role;
 import org.hornetq.core.security.impl.HornetQSecurityManagerImpl;
-import org.hornetq.core.server.Messaging;
-import org.hornetq.core.server.MessagingServer;
+import org.hornetq.core.server.HornetQ;
+import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.settings.HierarchicalRepository;
 
 /**
@@ -83,12 +83,12 @@ public class SecurityManagementWithConfiguredAdminUserTest extends SecurityManag
 
    // Protected -----------------------------------------------------
 
-   protected MessagingServer setupAndStartMessagingServer() throws Exception
+   protected HornetQServer setupAndStartMessagingServer() throws Exception
    {
       Configuration conf = new ConfigurationImpl();
       conf.setSecurityEnabled(true);
       conf.getAcceptorConfigurations().add(new TransportConfiguration(InVMAcceptorFactory.class.getName()));
-      MessagingServer server = Messaging.newMessagingServer(conf, false);
+      HornetQServer server = HornetQ.newMessagingServer(conf, false);
       server.start();
       HierarchicalRepository<Set<Role>> securityRepository = server.getSecurityRepository();
       HornetQSecurityManagerImpl securityManager = (HornetQSecurityManagerImpl)server.getSecurityManager();

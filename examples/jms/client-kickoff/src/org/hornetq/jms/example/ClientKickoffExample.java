@@ -13,7 +13,7 @@
 package org.hornetq.jms.example;
 
 import org.hornetq.common.example.HornetQExample;
-import org.hornetq.core.management.MessagingServerControl;
+import org.hornetq.core.management.HornetQServerControl;
 import org.hornetq.core.management.ObjectNames;
 
 import javax.jms.ExceptionListener;
@@ -76,9 +76,9 @@ public class ClientKickoffExample extends HornetQExample
          ObjectName on = ObjectNames.getMessagingServerObjectName();
          JMXConnector connector = JMXConnectorFactory.connect(new JMXServiceURL(JMX_URL), new HashMap<String, String>());
          MBeanServerConnection mbsc = connector.getMBeanServerConnection();
-         MessagingServerControl serverControl = (MessagingServerControl)MBeanServerInvocationHandler.newProxyInstance(mbsc,
+         HornetQServerControl serverControl = (HornetQServerControl)MBeanServerInvocationHandler.newProxyInstance(mbsc,
                                                                                                                                 on,
-                                                                                                                                MessagingServerControl.class,
+                                                                                                                                HornetQServerControl.class,
                                                                                                                                 false);
 
          // Step 7. List the remote address connected to the server

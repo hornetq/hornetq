@@ -21,7 +21,7 @@ import java.util.Set;
 import javax.naming.InitialContext;
 
 import org.hornetq.core.security.Role;
-import org.hornetq.core.server.MessagingServer;
+import org.hornetq.core.server.HornetQServer;
 import org.hornetq.jms.server.JMSServerManager;
 
 /**
@@ -86,7 +86,7 @@ public interface Server extends Remote
 //   /**
 //    * Only for in-VM use
 //    */
-   MessagingServer getServerPeer() throws Exception;
+   HornetQServer getServerPeer() throws Exception;
 
    void createQueue(String name, String jndiName) throws Exception;
    
@@ -181,7 +181,7 @@ public interface Server extends Remote
 
    void configureSecurityForDestination(String destName, boolean isQueue, Set<Role> roles) throws Exception;
 
-   MessagingServer getMessagingServer() throws Exception;
+   HornetQServer getMessagingServer() throws Exception;
 
    InitialContext getInitialContext() throws Exception;
 

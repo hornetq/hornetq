@@ -26,8 +26,8 @@ import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
 import org.hornetq.core.remoting.impl.invm.TransportConstants;
-import org.hornetq.core.server.Messaging;
-import org.hornetq.core.server.MessagingServer;
+import org.hornetq.core.server.HornetQ;
+import org.hornetq.core.server.HornetQServer;
 import org.hornetq.tests.util.UnitTestCase;
 
 /**
@@ -41,9 +41,9 @@ public abstract class ReplicationAwareTestBase extends UnitTestCase
 
    // Attributes ----------------------------------------------------
 
-   protected MessagingServer liveServer;
+   protected HornetQServer liveServer;
 
-   protected MessagingServer backupServer;
+   protected HornetQServer backupServer;
 
    protected Map<String, Object> backupParams = new HashMap<String, Object>();
 
@@ -104,7 +104,7 @@ public abstract class ReplicationAwareTestBase extends UnitTestCase
                                                                             backupParams));
       backupConf.setBackup(true);
       backupConf.setJMXManagementEnabled(true);
-      backupServer = Messaging.newMessagingServer(backupConf, backupMBeanServer, false);
+      backupServer = HornetQ.newMessagingServer(backupConf, backupMBeanServer, false);
       if (startServers)
       {
          backupServer.start();
@@ -122,7 +122,7 @@ public abstract class ReplicationAwareTestBase extends UnitTestCase
       liveConf.setConnectorConfigurations(connectors);
       liveConf.setBackupConnectorName(backupTC.getName());
       liveConf.setJMXManagementEnabled(true);
-      liveServer = Messaging.newMessagingServer(liveConf, liveMBeanServer, false);
+      liveServer = HornetQ.newMessagingServer(liveConf, liveMBeanServer, false);
       if (startServers)
       {
          liveServer.start();

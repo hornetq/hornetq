@@ -20,7 +20,7 @@ package org.hornetq.core.remoting.spi;
  */
 public interface BufferHandler
 {
-   void bufferReceived(Object connectionID, MessagingBuffer buffer);
+   void bufferReceived(Object connectionID, HornetQBuffer buffer);
    
-   int isReadyToHandle(MessagingBuffer buffer);
+   int isReadyToHandle(HornetQBuffer buffer);
 }

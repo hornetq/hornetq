@@ -18,11 +18,11 @@ import org.hornetq.core.client.ClientProducer;
 import org.hornetq.core.client.ClientSession;
 import org.hornetq.core.client.ClientSessionFactory;
 import org.hornetq.core.config.Configuration;
-import org.hornetq.core.exception.MessagingException;
+import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.security.HornetQSecurityManager;
 import org.hornetq.core.security.Role;
 import org.hornetq.core.security.impl.JAASSecurityManager;
-import org.hornetq.core.server.MessagingServer;
+import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.Queue;
 import org.hornetq.core.settings.HierarchicalRepository;
 import org.hornetq.tests.util.ServiceTestBase;
@@ -62,7 +62,7 @@ public class SecurityTest extends ServiceTestBase
    {
       Configuration configuration = createDefaultConfig(false);
       configuration.setSecurityEnabled(true);
-      MessagingServer server = createServer(false, configuration);
+      HornetQServer server = createServer(false, configuration);
       HornetQSecurityManager securityManager = server.getSecurityManager();
       securityManager.addUser("guest", "guest");
       securityManager.setDefaultUser("guest");
@@ -75,7 +75,7 @@ public class SecurityTest extends ServiceTestBase
          {
             ClientSession session = cf.createSession(false, true, true);
          }
-         catch (MessagingException e)
+         catch (HornetQException e)
          {
             fail("should not throw exception");
          }
@@ -93,7 +93,7 @@ public class SecurityTest extends ServiceTestBase
    {
       Configuration configuration = createDefaultConfig(false);
       configuration.setSecurityEnabled(true);
-      MessagingServer server = createServer(false, configuration);
+      HornetQServer server = createServer(false, configuration);
       try
       {
          server.start();
@@ -103,9 +103,9 @@ public class SecurityTest extends ServiceTestBase
             ClientSession session = cf.createSession(false, true, true);
             fail("should not throw exception");
          }
-         catch (MessagingException e)
+         catch (HornetQException e)
          {
-            assertEquals(MessagingException.SECURITY_EXCEPTION, e.getCode());
+            assertEquals(HornetQException.SECURITY_EXCEPTION, e.getCode());
          }
       }
       finally
@@ -121,7 +121,7 @@ public class SecurityTest extends ServiceTestBase
    {
       Configuration configuration = createDefaultConfig(false);
       configuration.setSecurityEnabled(true);
-      MessagingServer server = createServer(false, configuration);
+      HornetQServer server = createServer(false, configuration);
       HornetQSecurityManager securityManager = server.getSecurityManager();
       securityManager.addUser("newuser", "apass");
       try
@@ -134,9 +134,9 @@ public class SecurityTest extends ServiceTestBase
             ClientSession session = cf.createSession("newuser", "awrongpass", false, true, true, false, -1);
             fail("should not throw exception");
          }
-         catch (MessagingException e)
+         catch (HornetQException e)
          {
-            assertEquals(MessagingException.SECURITY_EXCEPTION, e.getCode());
+            assertEquals(HornetQException.SECURITY_EXCEPTION, e.getCode());
          }
       }
       finally
@@ -152,7 +152,7 @@ public class SecurityTest extends ServiceTestBase
    {
       Configuration configuration = createDefaultConfig(false);
       configuration.setSecurityEnabled(true);
-      MessagingServer server = createServer(false, configuration);
+      HornetQServer server = createServer(false, configuration);
       HornetQSecurityManager securityManager = server.getSecurityManager();
       securityManager.addUser("newuser", "apass");
       try
@@ -164,7 +164,7 @@ public class SecurityTest extends ServiceTestBase
          {
             ClientSession session = cf.createSession("newuser", "apass", false, true, true, false, -1);
          }
-         catch (MessagingException e)
+         catch (HornetQException e)
          {
             fail("should not throw exception");
          }
@@ -182,7 +182,7 @@ public class SecurityTest extends ServiceTestBase
    {
       Configuration configuration = createDefaultConfig(false);
       configuration.setSecurityEnabled(true);
-      MessagingServer server = createServer(false, configuration);
+      HornetQServer server = createServer(false, configuration);
 
       try
       {
@@ -213,7 +213,7 @@ public class SecurityTest extends ServiceTestBase
    {
       Configuration configuration = createDefaultConfig(false);
       configuration.setSecurityEnabled(true);
-      MessagingServer server = createServer(false, configuration);
+      HornetQServer server = createServer(false, configuration);
 
       try
       {
@@ -233,9 +233,9 @@ public class SecurityTest extends ServiceTestBase
             session.createQueue(addressA, queueA, true);
             fail("should throw exception");
          }
-         catch (MessagingException e)
+         catch (HornetQException e)
          {
-            assertEquals(MessagingException.SECURITY_EXCEPTION, e.getCode());
+            assertEquals(HornetQException.SECURITY_EXCEPTION, e.getCode());
          }
          session.close();
       }
@@ -252,7 +252,7 @@ public class SecurityTest extends ServiceTestBase
    {
       Configuration configuration = createDefaultConfig(false);
       configuration.setSecurityEnabled(true);
-      MessagingServer server = createServer(false, configuration);
+      HornetQServer server = createServer(false, configuration);
 
       try
       {
@@ -284,7 +284,7 @@ public class SecurityTest extends ServiceTestBase
    {
       Configuration configuration = createDefaultConfig(false);
       configuration.setSecurityEnabled(true);
-      MessagingServer server = createServer(false, configuration);
+      HornetQServer server = createServer(false, configuration);
 
       try
       {
@@ -305,9 +305,9 @@ public class SecurityTest extends ServiceTestBase
             session.deleteQueue(queueA);
             fail("should throw exception");
          }
-         catch (MessagingException e)
+         catch (HornetQException e)
          {
-            assertEquals(MessagingException.SECURITY_EXCEPTION, e.getCode());
+            assertEquals(HornetQException.SECURITY_EXCEPTION, e.getCode());
          }
          session.close();
       }
@@ -324,7 +324,7 @@ public class SecurityTest extends ServiceTestBase
    {
       Configuration configuration = createDefaultConfig(false);
       configuration.setSecurityEnabled(true);
-      MessagingServer server = createServer(false, configuration);
+      HornetQServer server = createServer(false, configuration);
 
       try
       {
@@ -355,7 +355,7 @@ public class SecurityTest extends ServiceTestBase
    {
       Configuration configuration = createDefaultConfig(false);
       configuration.setSecurityEnabled(true);
-      MessagingServer server = createServer(false, configuration);
+      HornetQServer server = createServer(false, configuration);
 
       try
       {
@@ -375,9 +375,9 @@ public class SecurityTest extends ServiceTestBase
             session.createQueue(addressA, queueA, false);
             fail("should throw exception");
          }
-         catch (MessagingException e)
+         catch (HornetQException e)
          {
-            assertEquals(MessagingException.SECURITY_EXCEPTION, e.getCode());
+            assertEquals(HornetQException.SECURITY_EXCEPTION, e.getCode());
          }
          session.close();
       }
@@ -394,7 +394,7 @@ public class SecurityTest extends ServiceTestBase
    {
       Configuration configuration = createDefaultConfig(false);
       configuration.setSecurityEnabled(true);
-      MessagingServer server = createServer(false, configuration);
+      HornetQServer server = createServer(false, configuration);
 
       try
       {
@@ -426,7 +426,7 @@ public class SecurityTest extends ServiceTestBase
    {
       Configuration configuration = createDefaultConfig(false);
       configuration.setSecurityEnabled(true);
-      MessagingServer server = createServer(false, configuration);
+      HornetQServer server = createServer(false, configuration);
 
       try
       {
@@ -447,9 +447,9 @@ public class SecurityTest extends ServiceTestBase
             session.deleteQueue(queueA);
             fail("should throw exception");
          }
-         catch (MessagingException e)
+         catch (HornetQException e)
          {
-            assertEquals(MessagingException.SECURITY_EXCEPTION, e.getCode());
+            assertEquals(HornetQException.SECURITY_EXCEPTION, e.getCode());
          }
          session.close();
       }
@@ -466,7 +466,7 @@ public class SecurityTest extends ServiceTestBase
    {
       Configuration configuration = createDefaultConfig(false);
       configuration.setSecurityEnabled(true);
-      MessagingServer server = createServer(false, configuration);
+      HornetQServer server = createServer(false, configuration);
 
       try
       {
@@ -500,7 +500,7 @@ public class SecurityTest extends ServiceTestBase
    {
       Configuration configuration = createDefaultConfig(false);
       configuration.setSecurityEnabled(true);
-      MessagingServer server = createServer(false, configuration);
+      HornetQServer server = createServer(false, configuration);
 
       try
       {
@@ -522,9 +522,9 @@ public class SecurityTest extends ServiceTestBase
          {
             cp.send(session.createClientMessage(false));
          }
-         catch (MessagingException e)
+         catch (HornetQException e)
          {
-            assertEquals(MessagingException.SECURITY_EXCEPTION, e.getCode());
+            assertEquals(HornetQException.SECURITY_EXCEPTION, e.getCode());
          }
          session.close();
       }
@@ -541,7 +541,7 @@ public class SecurityTest extends ServiceTestBase
    {
       Configuration configuration = createDefaultConfig(false);
       configuration.setSecurityEnabled(true);
-      MessagingServer server = createServer(false, configuration);
+      HornetQServer server = createServer(false, configuration);
 
       try
       {
@@ -577,7 +577,7 @@ public class SecurityTest extends ServiceTestBase
    {
       Configuration configuration = createDefaultConfig(false);
       configuration.setSecurityEnabled(true);
-      MessagingServer server = createServer(false, configuration);
+      HornetQServer server = createServer(false, configuration);
 
       try
       {
@@ -618,7 +618,7 @@ public class SecurityTest extends ServiceTestBase
    {
       Configuration configuration = createDefaultConfig(false);
       configuration.setSecurityEnabled(true);
-      MessagingServer server = createServer(false, configuration);
+      HornetQServer server = createServer(false, configuration);
 
       try
       {
@@ -646,9 +646,9 @@ public class SecurityTest extends ServiceTestBase
          {
             ClientConsumer cc = session.createConsumer(queueA);
          }
-         catch (MessagingException e)
+         catch (HornetQException e)
          {
-            assertEquals(MessagingException.SECURITY_EXCEPTION, e.getCode());
+            assertEquals(HornetQException.SECURITY_EXCEPTION, e.getCode());
          }
          session.close();
          senSession.close();
@@ -667,7 +667,7 @@ public class SecurityTest extends ServiceTestBase
       Configuration configuration = createDefaultConfig(false);
       configuration.setSecurityEnabled(true);
       configuration.setSecurityInvalidationInterval(10000);
-      MessagingServer server = createServer(false, configuration);
+      HornetQServer server = createServer(false, configuration);
 
       try
       {
@@ -697,9 +697,9 @@ public class SecurityTest extends ServiceTestBase
          {
             ClientConsumer cc = session.createConsumer(queueA);
          }
-         catch (MessagingException e)
+         catch (HornetQException e)
          {
-            assertEquals(MessagingException.SECURITY_EXCEPTION, e.getCode());
+            assertEquals(HornetQException.SECURITY_EXCEPTION, e.getCode());
          }
 
          securityManager.addRole("auser", "receiver");
@@ -729,7 +729,7 @@ public class SecurityTest extends ServiceTestBase
       Configuration configuration = createDefaultConfig(false);
       configuration.setSecurityEnabled(true);
       configuration.setSecurityInvalidationInterval(0);
-      MessagingServer server = createServer(false, configuration);
+      HornetQServer server = createServer(false, configuration);
 
       try
       {
@@ -759,9 +759,9 @@ public class SecurityTest extends ServiceTestBase
          {
             session.createConsumer(queueA);
          }
-         catch (MessagingException e)
+         catch (HornetQException e)
          {
-            assertEquals(MessagingException.SECURITY_EXCEPTION, e.getCode());
+            assertEquals(HornetQException.SECURITY_EXCEPTION, e.getCode());
          }
 
          securityManager.addRole("auser", "receiver");
@@ -776,9 +776,9 @@ public class SecurityTest extends ServiceTestBase
          {
             session.createConsumer(queueA);
          }
-         catch (MessagingException e)
+         catch (HornetQException e)
          {
-            assertEquals(MessagingException.SECURITY_EXCEPTION, e.getCode());
+            assertEquals(HornetQException.SECURITY_EXCEPTION, e.getCode());
          }
 
          session.close();
@@ -799,7 +799,7 @@ public class SecurityTest extends ServiceTestBase
       Configuration configuration = createDefaultConfig(false);
       configuration.setSecurityEnabled(true);
       configuration.setSecurityInvalidationInterval(-1);
-      MessagingServer server = createServer(false, configuration);
+      HornetQServer server = createServer(false, configuration);
 
       try
       {
@@ -833,9 +833,9 @@ public class SecurityTest extends ServiceTestBase
          {
             session.createConsumer(queueA);
          }
-         catch (MessagingException e)
+         catch (HornetQException e)
          {
-            assertEquals(MessagingException.SECURITY_EXCEPTION, e.getCode());
+            assertEquals(HornetQException.SECURITY_EXCEPTION, e.getCode());
          }
 
          securityManager.addRole("auser", "receiver");
@@ -855,7 +855,7 @@ public class SecurityTest extends ServiceTestBase
             sendingSession.commit();
             fail("Expected exception");
          }
-         catch (MessagingException e)
+         catch (HornetQException e)
          {
             // I would expect the commit to fail, since there were failures registered
          }
@@ -903,7 +903,7 @@ public class SecurityTest extends ServiceTestBase
    {
       Configuration configuration = createDefaultConfig(false);
       configuration.setSecurityEnabled(true);
-      MessagingServer server = createServer(false, configuration);
+      HornetQServer server = createServer(false, configuration);
 
       try
       {
@@ -936,7 +936,7 @@ public class SecurityTest extends ServiceTestBase
    {
       Configuration configuration = createDefaultConfig(false);
       configuration.setSecurityEnabled(true);
-      MessagingServer server = createServer(false, configuration);
+      HornetQServer server = createServer(false, configuration);
 
       try
       {
@@ -958,9 +958,9 @@ public class SecurityTest extends ServiceTestBase
          {
             cp.send(session.createClientMessage(false));
          }
-         catch (MessagingException e)
+         catch (HornetQException e)
          {
-            assertEquals(MessagingException.SECURITY_EXCEPTION, e.getCode());
+            assertEquals(HornetQException.SECURITY_EXCEPTION, e.getCode());
          }
          session.close();
       }
@@ -977,7 +977,7 @@ public class SecurityTest extends ServiceTestBase
    {
       Configuration configuration = createDefaultConfig(false);
       configuration.setSecurityEnabled(true);
-      MessagingServer server = createServer(false, configuration);
+      HornetQServer server = createServer(false, configuration);
 
       try
       {
@@ -1019,7 +1019,7 @@ public class SecurityTest extends ServiceTestBase
       Configuration configuration = createDefaultConfig(false);
       configuration.setSecurityEnabled(true);
       JAASSecurityManager securityManager = new JAASSecurityManager();
-      MessagingServer server = createServer(false, configuration, securityManager);
+      HornetQServer server = createServer(false, configuration, securityManager);
 
       securityManager.setConfigurationName(domainName);
       securityManager.setCallbackHandler(new CallbackHandler()
@@ -1041,7 +1041,7 @@ public class SecurityTest extends ServiceTestBase
          {
             ClientSession session = cf.createSession(false, true, true);
          }
-         catch (MessagingException e)
+         catch (HornetQException e)
          {
             fail("should not throw exception");
          }
@@ -1061,7 +1061,7 @@ public class SecurityTest extends ServiceTestBase
       Configuration configuration = createDefaultConfig(false);
       configuration.setSecurityEnabled(true);
       JAASSecurityManager securityManager = new JAASSecurityManager();
-      MessagingServer server = createServer(false, configuration, securityManager);
+      HornetQServer server = createServer(false, configuration, securityManager);
 
       securityManager.setConfigurationName(domainName);
       securityManager.setCallbackHandler(new CallbackHandler()
@@ -1084,9 +1084,9 @@ public class SecurityTest extends ServiceTestBase
             ClientSession session = cf.createSession(false, true, true);
             fail("should not throw exception");
          }
-         catch (MessagingException e)
+         catch (HornetQException e)
          {
-            assertEquals(MessagingException.SECURITY_EXCEPTION, e.getCode());
+            assertEquals(HornetQException.SECURITY_EXCEPTION, e.getCode());
          }
       }
       finally
@@ -1102,7 +1102,7 @@ public class SecurityTest extends ServiceTestBase
    {
       Configuration configuration = createDefaultConfig(false);
       configuration.setSecurityEnabled(true);
-      MessagingServer server = createServer(false, configuration);
+      HornetQServer server = createServer(false, configuration);
       try
       {
          server.start();
@@ -1160,7 +1160,7 @@ public class SecurityTest extends ServiceTestBase
             factory.createSession(false, true, true);
             fail("should throw exception");
          }
-         catch (MessagingException e)
+         catch (HornetQException e)
          {
             System.out.println("Default user cannot get a connection. Details: " + e.getMessage());
          }
@@ -1171,7 +1171,7 @@ public class SecurityTest extends ServiceTestBase
             billConnection = factory.createSession("bill", "jbossmessaging1", false, true, true, false, -1);
             fail("should throw exception");
          }
-         catch (MessagingException e)
+         catch (HornetQException e)
          {
             System.out.println("User bill failed to connect. Details: " + e.getMessage());
          }
@@ -1230,7 +1230,7 @@ public class SecurityTest extends ServiceTestBase
    {
       Configuration configuration = createDefaultConfig(false);
       configuration.setSecurityEnabled(true);
-      MessagingServer server = createServer(false, configuration);
+      HornetQServer server = createServer(false, configuration);
       try
       {
          server.start();
@@ -1288,7 +1288,7 @@ public class SecurityTest extends ServiceTestBase
             factory.createSession(false, true, true);
             fail("should throw exception");
          }
-         catch (MessagingException e)
+         catch (HornetQException e)
          {
             System.out.println("Default user cannot get a connection. Details: " + e.getMessage());
          }
@@ -1299,7 +1299,7 @@ public class SecurityTest extends ServiceTestBase
             billConnection = factory.createSession("bill", "jbossmessaging1", false, true, true, false, -1);
             fail("should throw exception");
          }
-         catch (MessagingException e)
+         catch (HornetQException e)
          {
             System.out.println("User bill failed to connect. Details: " + e.getMessage());
          }
@@ -1387,7 +1387,7 @@ public class SecurityTest extends ServiceTestBase
             prod.send(m);
             fail("should throw exception");
          }
-         catch (MessagingException e)
+         catch (HornetQException e)
          {
             //pass
          }
@@ -1417,7 +1417,7 @@ public class SecurityTest extends ServiceTestBase
             prod.send(m);
             fail("should throw exception");
          }
-         catch (MessagingException e)
+         catch (HornetQException e)
          {
             //pass
          }
@@ -1430,7 +1430,7 @@ public class SecurityTest extends ServiceTestBase
             ClientConsumer con = connection.createConsumer(queue);
             fail("should throw exception");
          }
-         catch (MessagingException e)
+         catch (HornetQException e)
          {
             //pass
          }
@@ -1453,7 +1453,7 @@ public class SecurityTest extends ServiceTestBase
          ClientConsumer con = connection.createConsumer(queue);
          fail("should throw exception");
       }
-      catch (MessagingException e)
+      catch (HornetQException e)
       {
          //pass
       }

@@ -23,11 +23,11 @@ import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.TransportConfiguration;
 import org.hornetq.core.config.cluster.QueueConfiguration;
-import org.hornetq.core.exception.MessagingException;
+import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.postoffice.Bindings;
-import org.hornetq.core.server.Messaging;
-import org.hornetq.core.server.MessagingServer;
+import org.hornetq.core.server.HornetQ;
+import org.hornetq.core.server.HornetQServer;
 import org.hornetq.tests.util.ServiceTestBase;
 import org.hornetq.utils.SimpleString;
 
@@ -74,7 +74,7 @@ public class PredefinedQueueTest extends ServiceTestBase
       
       conf.setQueueConfigurations(queueConfs);
       
-      MessagingServer server = Messaging.newMessagingServer(conf, false);
+      HornetQServer server = HornetQ.newMessagingServer(conf, false);
            
       server.start();
       
@@ -88,9 +88,9 @@ public class PredefinedQueueTest extends ServiceTestBase
          
          fail("Should throw exception");
       }
-      catch (MessagingException me)
+      catch (HornetQException me)
       {
-         assertEquals(MessagingException.QUEUE_EXISTS, me.getCode());
+         assertEquals(HornetQException.QUEUE_EXISTS, me.getCode());
       }
       try
       {
@@ -98,9 +98,9 @@ public class PredefinedQueueTest extends ServiceTestBase
          
          fail("Should throw exception");
       }
-      catch (MessagingException me)
+      catch (HornetQException me)
       {
-         assertEquals(MessagingException.QUEUE_EXISTS, me.getCode());
+         assertEquals(HornetQException.QUEUE_EXISTS, me.getCode());
       }
       try
       {
@@ -108,9 +108,9 @@ public class PredefinedQueueTest extends ServiceTestBase
          
          fail("Should throw exception");
       }
-      catch (MessagingException me)
+      catch (HornetQException me)
       {
-         assertEquals(MessagingException.QUEUE_EXISTS, me.getCode());
+         assertEquals(HornetQException.QUEUE_EXISTS, me.getCode());
       }
             
       session.close();
@@ -144,7 +144,7 @@ public class PredefinedQueueTest extends ServiceTestBase
       
       conf.setQueueConfigurations(queueConfs);
       
-      MessagingServer server = Messaging.newMessagingServer(conf, false);
+      HornetQServer server = HornetQ.newMessagingServer(conf, false);
            
       server.start();
       
@@ -212,7 +212,7 @@ public class PredefinedQueueTest extends ServiceTestBase
       
       final String queueName3 = "queue3";
                  
-      MessagingServer server = Messaging.newMessagingServer(conf);
+      HornetQServer server = HornetQ.newMessagingServer(conf);
            
       server.start();
       
@@ -325,7 +325,7 @@ public class PredefinedQueueTest extends ServiceTestBase
       
       conf.setQueueConfigurations(queueConfs);
       
-      MessagingServer server = Messaging.newMessagingServer(conf);
+      HornetQServer server = HornetQ.newMessagingServer(conf);
            
       server.start();
       
@@ -411,7 +411,7 @@ public class PredefinedQueueTest extends ServiceTestBase
 
       conf.setQueueConfigurations(queueConfs);
       
-      MessagingServer server = Messaging.newMessagingServer(conf, false);
+      HornetQServer server = HornetQ.newMessagingServer(conf, false);
            
       server.start();
       

@@ -33,14 +33,14 @@ import org.hornetq.core.client.management.impl.ManagementHelper;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.TransportConfiguration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
-import org.hornetq.core.exception.MessagingException;
+import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
 import org.hornetq.core.security.CheckType;
 import org.hornetq.core.security.HornetQSecurityManager;
 import org.hornetq.core.security.Role;
-import org.hornetq.core.server.Messaging;
-import org.hornetq.core.server.MessagingServer;
+import org.hornetq.core.server.HornetQ;
+import org.hornetq.core.server.HornetQServer;
 import org.hornetq.tests.util.UnitTestCase;
 import org.hornetq.utils.SimpleString;
 
@@ -57,7 +57,7 @@ public class SecurityNotificationTest extends UnitTestCase
 
    // Attributes ----------------------------------------------------
 
-   private MessagingServer server;
+   private HornetQServer server;
    private ClientSession adminSession;
    private ClientConsumer notifConsumer;
    private SimpleString notifQueue;
@@ -141,7 +141,7 @@ public class SecurityNotificationTest extends UnitTestCase
       conf.setJMXManagementEnabled(false);
       conf.getAcceptorConfigurations()
           .add(new TransportConfiguration(InVMAcceptorFactory.class.getName()));
-      server = Messaging.newMessagingServer(conf, false);
+      server = HornetQ.newMessagingServer(conf, false);
       server.start();
 
       notifQueue = randomSimpleString();
@@ -183,7 +183,7 @@ public class SecurityNotificationTest extends UnitTestCase
    // Private -------------------------------------------------------
 
    
-   private static void flush(ClientConsumer notifConsumer) throws MessagingException
+   private static void flush(ClientConsumer notifConsumer) throws HornetQException
    {
       ClientMessage message = null;
       do

@@ -16,7 +16,7 @@ package org.hornetq.core.remoting.impl.wireformat;
 import org.hornetq.core.client.impl.ClientMessageImpl;
 import org.hornetq.core.client.impl.ClientMessageInternal;
 import org.hornetq.core.logging.Logger;
-import org.hornetq.core.remoting.spi.MessagingBuffer;
+import org.hornetq.core.remoting.spi.HornetQBuffer;
 import org.hornetq.core.server.ServerMessage;
 import org.hornetq.utils.DataConstants;
 
@@ -153,7 +153,7 @@ public class SessionReceiveMessage extends PacketImpl
                 (serverMessage != null ? serverMessage.getEncodeSize() : clientMessage.getEncodeSize());
       }
    }
-   public void encodeBody(final MessagingBuffer buffer)
+   public void encodeBody(final HornetQBuffer buffer)
    {
       buffer.writeLong(consumerID);
       buffer.writeInt(deliveryCount);
@@ -170,7 +170,7 @@ public class SessionReceiveMessage extends PacketImpl
       }
    }
 
-   public void decodeBody(final MessagingBuffer buffer)
+   public void decodeBody(final HornetQBuffer buffer)
    {
       // TODO can be optimised
 

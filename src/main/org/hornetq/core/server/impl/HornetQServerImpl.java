@@ -47,13 +47,13 @@ import org.hornetq.core.deployers.impl.BasicUserCredentialsDeployer;
 import org.hornetq.core.deployers.impl.FileDeploymentManager;
 import org.hornetq.core.deployers.impl.QueueDeployer;
 import org.hornetq.core.deployers.impl.SecurityDeployer;
-import org.hornetq.core.exception.MessagingException;
+import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.filter.Filter;
 import org.hornetq.core.filter.impl.FilterImpl;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.management.ManagementService;
 import org.hornetq.core.management.impl.ManagementServiceImpl;
-import org.hornetq.core.management.impl.MessagingServerControlImpl;
+import org.hornetq.core.management.impl.HornetQServerControlImpl;
 import org.hornetq.core.paging.PagingManager;
 import org.hornetq.core.paging.impl.PagingManagerImpl;
 import org.hornetq.core.paging.impl.PagingStoreFactoryNIO;
@@ -85,7 +85,7 @@ import org.hornetq.core.server.ActivateCallback;
 import org.hornetq.core.server.Divert;
 import org.hornetq.core.server.MemoryManager;
 import org.hornetq.core.server.MessageReference;
-import org.hornetq.core.server.MessagingServer;
+import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.Queue;
 import org.hornetq.core.server.QueueFactory;
 import org.hornetq.core.server.ServerSession;
@@ -117,12 +117,12 @@ import org.hornetq.utils.VersionLoader;
  * @author <a href="mailto:ataylor@redhat.com>Andy Taylor</a>
  * @version <tt>$Revision: 3543 $</tt> <p/> $Id: ServerPeer.java 3543 2008-01-07 22:31:58Z clebert.suconic@jboss.com $
  */
-public class MessagingServerImpl implements MessagingServer
+public class HornetQServerImpl implements HornetQServer
 {
    // Constants
    // ------------------------------------------------------------------------------------
 
-   private static final Logger log = Logger.getLogger(MessagingServerImpl.class);
+   private static final Logger log = Logger.getLogger(HornetQServerImpl.class);
 
    // Static
    // ---------------------------------------------------------------------------------------
@@ -166,7 +166,7 @@ public class MessagingServerImpl implements MessagingServer
 
    private ResourceManager resourceManager;
 
-   private MessagingServerControlImpl messagingServerControl;
+   private HornetQServerControlImpl messagingServerControl;
 
    private ClusterManager clusterManager;
 
@@ -207,27 +207,27 @@ public class MessagingServerImpl implements MessagingServer
    // Constructors
    // ---------------------------------------------------------------------------------
 
-   public MessagingServerImpl()
+   public HornetQServerImpl()
    {
       this(null, null, null);
    }
 
-   public MessagingServerImpl(final Configuration configuration)
+   public HornetQServerImpl(final Configuration configuration)
    {
       this(configuration, null, null);
    }
 
-   public MessagingServerImpl(final Configuration configuration, MBeanServer mbeanServer)
+   public HornetQServerImpl(final Configuration configuration, MBeanServer mbeanServer)
    {
       this(configuration, mbeanServer, null);
    }
 
-   public MessagingServerImpl(final Configuration configuration, final HornetQSecurityManager securityManager)
+   public HornetQServerImpl(final Configuration configuration, final HornetQSecurityManager securityManager)
    {
       this(configuration, null, securityManager);
    }
 
-   public MessagingServerImpl(Configuration configuration,
+   public HornetQServerImpl(Configuration configuration,
                               MBeanServer mbeanServer,
                               final HornetQSecurityManager securityManager)
    {
@@ -295,7 +295,7 @@ public class MessagingServerImpl implements MessagingServer
    {
       if (started)
       {
-         log.warn("MessagingServer is being finalized and has not been stopped. Please remember to stop the " + "server before letting it go out of scope");
+         log.warn("HornetQServer is being finalized and has not been stopped. Please remember to stop the " + "server before letting it go out of scope");
 
          stop();
       }
@@ -422,7 +422,7 @@ public class MessagingServerImpl implements MessagingServer
       log.info("HornetQ Server version " + getVersion().getFullVersion() + " stopped");
    }
 
-   // MessagingServer implementation
+   // HornetQServer implementation
    // -----------------------------------------------------------
 
    public Configuration getConfiguration()
@@ -650,7 +650,7 @@ public class MessagingServerImpl implements MessagingServer
       }
    }
 
-   public MessagingServerControlImpl getMessagingServerControl()
+   public HornetQServerControlImpl getMessagingServerControl()
    {
       return messagingServerControl;
    }
@@ -728,14 +728,14 @@ public class MessagingServerImpl implements MessagingServer
 
       if (binding == null)
       {
-         throw new MessagingException(MessagingException.QUEUE_DOES_NOT_EXIST, "No such queue " + queueName);
+         throw new HornetQException(HornetQException.QUEUE_DOES_NOT_EXIST, "No such queue " + queueName);
       }
 
       Queue queue = (Queue)binding.getBindable();
 
       if (queue.getConsumerCount() != 0)
       {
-         throw new MessagingException(MessagingException.ILLEGAL_STATE, "Cannot delete queue - it has consumers");
+         throw new HornetQException(HornetQException.ILLEGAL_STATE, "Cannot delete queue - it has consumers");
       }
 
       if (session != null)
@@ -1137,7 +1137,7 @@ public class MessagingServerImpl implements MessagingServer
 
                replicatingConnection.addFailureListener(new FailureListener()
                {
-                  public void connectionFailed(MessagingException me)
+                  public void connectionFailed(HornetQException me)
                   {
                      replicatingChannel.executeOutstandingDelayedResults();
                   }
@@ -1282,7 +1282,7 @@ public class MessagingServerImpl implements MessagingServer
          }
          else
          {
-            throw new MessagingException(MessagingException.QUEUE_EXISTS);
+            throw new HornetQException(HornetQException.QUEUE_EXISTS);
          }
       }
 

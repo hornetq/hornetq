@@ -16,8 +16,8 @@ package org.hornetq.tests.integration.management;
 import org.hornetq.core.config.TransportConfiguration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory;
-import org.hornetq.core.server.Messaging;
-import org.hornetq.core.server.MessagingServer;
+import org.hornetq.core.server.HornetQ;
+import org.hornetq.core.server.HornetQServer;
 
 /**
  * A SecurityManagementTest
@@ -66,13 +66,13 @@ public class SecurityManagementWithModifiedConfigurationTest extends SecurityMan
    // Protected -----------------------------------------------------
 
    @Override
-   protected MessagingServer setupAndStartMessagingServer() throws Exception
+   protected HornetQServer setupAndStartMessagingServer() throws Exception
    {
       ConfigurationImpl conf = new ConfigurationImpl();
       conf.setSecurityEnabled(true);
       conf.setManagementClusterPassword(configuredClusterPassword);
       conf.getAcceptorConfigurations().add(new TransportConfiguration(InVMAcceptorFactory.class.getName()));
-      MessagingServer server = Messaging.newMessagingServer(conf, false);
+      HornetQServer server = HornetQ.newMessagingServer(conf, false);
       server.start();
       
       return server;

@@ -19,7 +19,7 @@ import org.hornetq.core.client.ClientSession;
 import org.hornetq.core.client.ClientSessionFactory;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.logging.Logger;
-import org.hornetq.core.server.MessagingServer;
+import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.jms.client.HornetQTextMessage;
 import org.hornetq.tests.util.ServiceTestBase;
@@ -33,7 +33,7 @@ public class DelayedMessageTest extends ServiceTestBase
 
    private Configuration configuration;
 
-   private MessagingServer server;
+   private HornetQServer server;
 
    private static final long DELAY = 3000;
    

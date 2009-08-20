@@ -20,10 +20,10 @@ import org.hornetq.core.client.ClientSession;
 import org.hornetq.core.client.ClientSessionFactory;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.TransportConfiguration;
-import org.hornetq.core.exception.MessagingException;
+import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory;
-import org.hornetq.core.server.MessagingServer;
+import org.hornetq.core.server.HornetQServer;
 import org.hornetq.tests.util.ServiceTestBase;
 import org.hornetq.utils.SimpleString;
 
@@ -46,7 +46,7 @@ public class RedeliveryConsumerTest extends ServiceTestBase
    
    // Attributes ----------------------------------------------------
 
-   MessagingServer server;
+   HornetQServer server;
 
    final SimpleString ADDRESS = new SimpleString("address");
 
@@ -234,9 +234,9 @@ public class RedeliveryConsumerTest extends ServiceTestBase
    /**
     * @param persistDeliveryCountBeforeDelivery
     * @throws Exception
-    * @throws MessagingException
+    * @throws HornetQException
     */
-   private void setUp(final boolean persistDeliveryCountBeforeDelivery) throws Exception, MessagingException
+   private void setUp(final boolean persistDeliveryCountBeforeDelivery) throws Exception, HornetQException
    {
       Configuration config = createConfigForJournal();
       config.setJournalFileSize(10 * 1024);

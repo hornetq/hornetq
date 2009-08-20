@@ -17,7 +17,7 @@ import org.hornetq.core.client.ClientMessage;
 import org.hornetq.core.client.ClientProducer;
 import org.hornetq.core.client.ClientSession;
 import org.hornetq.core.client.ClientSessionFactory;
-import org.hornetq.core.server.MessagingServer;
+import org.hornetq.core.server.HornetQServer;
 import org.hornetq.tests.util.ServiceTestBase;
 import org.hornetq.utils.SimpleString;
 
@@ -37,7 +37,7 @@ public class RoutingTest extends ServiceTestBase
 
    public void testRouteToMultipleQueues() throws Exception
    {
-      MessagingServer server = createServer(false);
+      HornetQServer server = createServer(false);
 
       try
       {
@@ -87,7 +87,7 @@ public class RoutingTest extends ServiceTestBase
 
    public void testRouteToSingleNonDurableQueue() throws Exception
    {
-      MessagingServer server = createServer(false);
+      HornetQServer server = createServer(false);
 
       try
       {
@@ -125,7 +125,7 @@ public class RoutingTest extends ServiceTestBase
 
    public void testRouteToSingleDurableQueue() throws Exception
    {
-      MessagingServer server = createServer(false);
+      HornetQServer server = createServer(false);
 
       try
       {
@@ -163,7 +163,7 @@ public class RoutingTest extends ServiceTestBase
 
    public void testRouteToSingleQueueWithFilter() throws Exception
    {
-      MessagingServer server = createServer(false);
+      HornetQServer server = createServer(false);
 
       try
       {
@@ -203,7 +203,7 @@ public class RoutingTest extends ServiceTestBase
 
    public void testRouteToMultipleQueueWithFilters() throws Exception
    {
-      MessagingServer server = createServer(false);
+      HornetQServer server = createServer(false);
 
       try
       {
@@ -266,7 +266,7 @@ public class RoutingTest extends ServiceTestBase
 
    public void testRouteToSingleTemporaryQueue() throws Exception
    {
-      MessagingServer server = createServer(false);
+      HornetQServer server = createServer(false);
 
       try
       {

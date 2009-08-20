@@ -21,7 +21,7 @@ import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.TransportConfiguration;
 import org.hornetq.core.logging.Logger;
-import org.hornetq.core.server.MessagingServer;
+import org.hornetq.core.server.HornetQServer;
 import org.hornetq.tests.util.ServiceTestBase;
 import org.hornetq.utils.SimpleString;
 /**
@@ -63,7 +63,7 @@ public class TransactionDurabilityTest extends ServiceTestBase
       
       final SimpleString queue2 = new SimpleString("queue2");
                    
-      MessagingServer server = createServer(true, conf); 
+      HornetQServer server = createServer(true, conf); 
       
       server.start();
 

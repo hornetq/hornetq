@@ -12,7 +12,7 @@
  */
 package org.hornetq.integration.transports.netty;
 
-import org.hornetq.core.exception.MessagingException;
+import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.remoting.Packet;
 import org.hornetq.core.remoting.spi.BufferHandler;
@@ -31,9 +31,9 @@ import org.jboss.netty.channel.group.ChannelGroup;
  * @author <a href="mailto:tlee@redhat.com">Trustin Lee</a>
  * @version $Rev$, $Date$
  */
-class MessagingChannelHandler extends SimpleChannelHandler
+class HornetQChannelHandler extends SimpleChannelHandler
 {
-   private static final Logger log = Logger.getLogger(MessagingChannelHandler.class);
+   private static final Logger log = Logger.getLogger(HornetQChannelHandler.class);
 
    private final ChannelGroup group;
    
@@ -43,7 +43,7 @@ class MessagingChannelHandler extends SimpleChannelHandler
 
    volatile boolean active;
 
-   MessagingChannelHandler(ChannelGroup group, BufferHandler handler, ConnectionLifeCycleListener listener)
+   HornetQChannelHandler(ChannelGroup group, BufferHandler handler, ConnectionLifeCycleListener listener)
    {
       this.group = group;
       this.handler = handler;
@@ -95,7 +95,7 @@ class MessagingChannelHandler extends SimpleChannelHandler
             return;
          }
          
-         MessagingException me = new MessagingException(MessagingException.INTERNAL_ERROR, "Netty exception");
+         HornetQException me = new HornetQException(HornetQException.INTERNAL_ERROR, "Netty exception");
          me.initCause(e.getCause());
          try
          {

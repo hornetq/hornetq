@@ -30,8 +30,8 @@ import org.hornetq.core.client.impl.ClientConsumerInternal;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.message.Message;
-import org.hornetq.core.remoting.spi.MessagingBuffer;
-import org.hornetq.core.server.MessagingServer;
+import org.hornetq.core.remoting.spi.HornetQBuffer;
+import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.Queue;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.tests.integration.largemessage.LargeMessageTestBase;
@@ -1177,7 +1177,7 @@ public class LargeMessageTest extends LargeMessageTestBase
    public void testBufferMultipleLargeMessages() throws Exception
    {
       ClientSession session = null;
-      MessagingServer server = null;
+      HornetQServer server = null;
 
       final int SIZE = 10 * 1024;
       final int NUMBER_OF_MESSAGES = 30;
@@ -1279,7 +1279,7 @@ public class LargeMessageTest extends LargeMessageTestBase
    public void testReceiveMultipleMessages() throws Exception
    {
       ClientSession session = null;
-      MessagingServer server = null;
+      HornetQServer server = null;
 
       final int SIZE = 10 * 1024;
       final int NUMBER_OF_MESSAGES = 1000;
@@ -1382,7 +1382,7 @@ public class LargeMessageTest extends LargeMessageTestBase
    public void testSendStreamingSingleMessage() throws Exception
    {
       ClientSession session = null;
-      MessagingServer server = null;
+      HornetQServer server = null;
 
       final int SIZE = 10 * 1024 * 1024;
       try
@@ -1460,7 +1460,7 @@ public class LargeMessageTest extends LargeMessageTestBase
    public void testIgnoreStreaming() throws Exception
    {
       ClientSession session = null;
-      MessagingServer server = null;
+      HornetQServer server = null;
 
       final int SIZE = 10 * 1024;
       final int NUMBER_OF_MESSAGES = 1;
@@ -1599,11 +1599,11 @@ public class LargeMessageTest extends LargeMessageTestBase
 
          ClientMessage message = null;
 
-         MessagingBuffer body = null;
+         HornetQBuffer body = null;
 
          for (int i = 0; i < 100; i++)
          {
-            MessagingBuffer bodyLocal = ChannelBuffers.buffer(DataConstants.SIZE_INT * numberOfBytes);
+            HornetQBuffer bodyLocal = ChannelBuffers.buffer(DataConstants.SIZE_INT * numberOfBytes);
 
             for (int j = 1; j <= numberOfBytes; j++)
             {
@@ -1694,7 +1694,7 @@ public class LargeMessageTest extends LargeMessageTestBase
 
    // Private -------------------------------------------------------
 
-   private void assertGlobalSize(MessagingServer server) throws InterruptedException
+   private void assertGlobalSize(HornetQServer server) throws InterruptedException
    {
       // addGlobalSize on LargeMessage is only done after the delivery, and the addSize could be asynchronous
       long timeout = System.currentTimeMillis() + 5000;

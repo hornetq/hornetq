@@ -15,7 +15,7 @@ package org.hornetq.core.client;
 
 import java.io.OutputStream;
 
-import org.hornetq.core.exception.MessagingException;
+import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.message.Message;
 
 /**
@@ -33,19 +33,19 @@ public interface ClientMessage extends Message
    void setDeliveryCount(int deliveryCount);
    
   /** Sets the OutputStream that will receive the content of a message received in a non blocking way
-    * @throws MessagingException */
-   void setOutputStream(OutputStream out) throws MessagingException;
+    * @throws HornetQException */
+   void setOutputStream(OutputStream out) throws HornetQException;
    
    /** Save the content of the message to the OutputStream. It will block until the entire content is transfered to the OutputStream. */
-   void saveToOutputStream(OutputStream out) throws MessagingException;
+   void saveToOutputStream(OutputStream out) throws HornetQException;
 
    /**
     * Wait the outputStream completion of the message.
     * @param timeMilliseconds - 0 means wait forever
     * @return true if it reached the end
-    * @throws MessagingException
+    * @throws HornetQException
     */
-   boolean waitOutputStreamCompletion(long timeMilliseconds) throws MessagingException;
+   boolean waitOutputStreamCompletion(long timeMilliseconds) throws HornetQException;
 
-   void acknowledge() throws MessagingException;   
+   void acknowledge() throws HornetQException;   
 }

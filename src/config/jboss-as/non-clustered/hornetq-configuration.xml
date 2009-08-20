@@ -2,13 +2,13 @@
                xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
                xsi:schemaLocation="urn:hornetq /schema/hornetq-configuration.xsd">
 
-   <bindings-directory>${jboss.server.data.dir}/messaging/bindings</bindings-directory>
+   <bindings-directory>${jboss.server.data.dir}/hornetq/bindings</bindings-directory>
 
-   <journal-directory>${jboss.server.data.dir}/messaging/journal</journal-directory>
+   <journal-directory>${jboss.server.data.dir}/hornetq/journal</journal-directory>
 
-   <large-messages-directory>${jboss.server.data.dir}/messaging/largemessages</large-messages-directory>
+   <large-messages-directory>${jboss.server.data.dir}/hornetq/largemessages</large-messages-directory>
 
-   <paging-directory>${jboss.server.data.dir}/messaging/paging</paging-directory>
+   <paging-directory>${jboss.server.data.dir}/hornetq/paging</paging-directory>
 
    <connectors>
       <connector name="netty">

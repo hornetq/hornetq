@@ -20,9 +20,9 @@ import org.hornetq.core.client.ClientSessionFactory;
 import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
 import org.hornetq.core.config.TransportConfiguration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
-import org.hornetq.core.exception.MessagingException;
-import org.hornetq.core.server.Messaging;
-import org.hornetq.core.server.MessagingServer;
+import org.hornetq.core.exception.HornetQException;
+import org.hornetq.core.server.HornetQ;
+import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.Queue;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.core.transaction.Transaction;
@@ -51,7 +51,7 @@ public class XaTimeoutTest extends UnitTestCase
 
    private Map<String, AddressSettings> addressSettings = new HashMap<String, AddressSettings>();
 
-   private MessagingServer messagingService;
+   private HornetQServer messagingService;
    
    private ClientSession clientSession;
 
@@ -75,7 +75,7 @@ public class XaTimeoutTest extends UnitTestCase
       configuration.setTransactionTimeoutScanPeriod(500);
       TransportConfiguration transportConfig = new TransportConfiguration(INVM_ACCEPTOR_FACTORY);
       configuration.getAcceptorConfigurations().add(transportConfig);
-      messagingService = Messaging.newMessagingServer(configuration, false);
+      messagingService = HornetQ.newMessagingServer(configuration, false);
       //start the server
       messagingService.start();
       //then we create a client as normal
@@ -94,7 +94,7 @@ public class XaTimeoutTest extends UnitTestCase
          {
             clientSession.close();
          }
-         catch (MessagingException e1)
+         catch (HornetQException e1)
          {
             //
          }

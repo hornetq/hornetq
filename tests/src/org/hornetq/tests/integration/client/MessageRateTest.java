@@ -23,7 +23,7 @@ import org.hornetq.core.client.ClientProducer;
 import org.hornetq.core.client.ClientSession;
 import org.hornetq.core.client.ClientSessionFactory;
 import org.hornetq.core.client.MessageHandler;
-import org.hornetq.core.server.MessagingServer;
+import org.hornetq.core.server.HornetQServer;
 import org.hornetq.tests.util.ServiceTestBase;
 import org.hornetq.utils.SimpleString;
 
@@ -51,7 +51,7 @@ public class MessageRateTest extends ServiceTestBase
 
    public void testProduceRate() throws Exception
    {
-      MessagingServer server = createServer(false);
+      HornetQServer server = createServer(false);
 
       try
       {
@@ -88,7 +88,7 @@ public class MessageRateTest extends ServiceTestBase
 
    public void testConsumeRate() throws Exception
    {
-      MessagingServer server = createServer(false);
+      HornetQServer server = createServer(false);
 
       try
       {
@@ -139,7 +139,7 @@ public class MessageRateTest extends ServiceTestBase
 
    public void testConsumeRateListener() throws Exception
    {
-      MessagingServer server = createServer(false);
+      HornetQServer server = createServer(false);
 
       try
       {

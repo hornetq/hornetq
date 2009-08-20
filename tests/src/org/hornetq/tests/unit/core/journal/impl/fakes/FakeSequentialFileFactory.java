@@ -24,7 +24,7 @@ import org.hornetq.core.journal.IOCallback;
 import org.hornetq.core.journal.SequentialFile;
 import org.hornetq.core.journal.SequentialFileFactory;
 import org.hornetq.core.logging.Logger;
-import org.hornetq.core.remoting.spi.MessagingBuffer;
+import org.hornetq.core.remoting.spi.HornetQBuffer;
 
 /**
  * 
@@ -597,18 +597,18 @@ public class FakeSequentialFileFactory implements SequentialFileFactory
       }
 
       /* (non-Javadoc)
-       * @see org.hornetq.core.journal.SequentialFile#write(org.hornetq.core.remoting.spi.MessagingBuffer, boolean, org.hornetq.core.journal.IOCallback)
+       * @see org.hornetq.core.journal.SequentialFile#write(org.hornetq.core.remoting.spi.HornetQBuffer, boolean, org.hornetq.core.journal.IOCallback)
        */
-      public void write(MessagingBuffer bytes, boolean sync, IOCallback callback) throws Exception
+      public void write(HornetQBuffer bytes, boolean sync, IOCallback callback) throws Exception
       {
          write(ByteBuffer.wrap(bytes.array()), sync, callback);
 
       }
 
       /* (non-Javadoc)
-       * @see org.hornetq.core.journal.SequentialFile#write(org.hornetq.core.remoting.spi.MessagingBuffer, boolean)
+       * @see org.hornetq.core.journal.SequentialFile#write(org.hornetq.core.remoting.spi.HornetQBuffer, boolean)
        */
-      public void write(MessagingBuffer bytes, boolean sync) throws Exception
+      public void write(HornetQBuffer bytes, boolean sync) throws Exception
       {
          write(ByteBuffer.wrap(bytes.array()), sync);
       }

@@ -28,15 +28,15 @@ import org.hornetq.core.client.impl.ClientSessionInternal;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.TransportConfiguration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
-import org.hornetq.core.exception.MessagingException;
+import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.remoting.RemotingConnection;
 import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
 import org.hornetq.core.remoting.impl.invm.InVMRegistry;
 import org.hornetq.core.remoting.impl.invm.TransportConstants;
 import org.hornetq.core.remoting.spi.Connection;
-import org.hornetq.core.server.Messaging;
-import org.hornetq.core.server.MessagingServer;
+import org.hornetq.core.server.HornetQ;
+import org.hornetq.core.server.HornetQServer;
 import org.hornetq.jms.client.HornetQTextMessage;
 import org.hornetq.tests.util.UnitTestCase;
 import org.hornetq.utils.SimpleString;
@@ -63,9 +63,9 @@ public class SplitBrainTest extends UnitTestCase
 
    private static final SimpleString ADDRESS = new SimpleString("FailoverTestAddress");
 
-   private MessagingServer liveServer;
+   private HornetQServer liveServer;
 
-   private MessagingServer backupServer;
+   private HornetQServer backupServer;
 
    private Map<String, Object> backupParams = new HashMap<String, Object>();
 
@@ -113,13 +113,13 @@ public class SplitBrainTest extends UnitTestCase
       {
          RemotingConnection replicatingConnection = liveServer.getReplicatingChannel().getConnection();
          Connection tcConn = replicatingConnection.getTransportConnection();
-         tcConn.fail(new MessagingException(MessagingException.INTERNAL_ERROR, "blah"));
+         tcConn.fail(new HornetQException(HornetQException.INTERNAL_ERROR, "blah"));
       }
       
       Thread.sleep(2000);
       
       //Fail client connection      
-      ((ClientSessionInternal)session).getConnection().fail(new MessagingException(MessagingException.NOT_CONNECTED, "simulated failure b/w client and live node"));
+      ((ClientSessionInternal)session).getConnection().fail(new HornetQException(HornetQException.NOT_CONNECTED, "simulated failure b/w client and live node"));
 
       ClientConsumer consumer1 = session.createConsumer(ADDRESS);
 
@@ -210,7 +210,7 @@ public class SplitBrainTest extends UnitTestCase
                 .add(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory",
                                                 backupParams));
       backupConf.setBackup(true);
-      backupServer = Messaging.newMessagingServer(backupConf, false);
+      backupServer = HornetQ.newMessagingServer(backupConf, false);
       backupServer.start();
 
       Configuration liveConf = new ConfigurationImpl();
@@ -223,7 +223,7 @@ public class SplitBrainTest extends UnitTestCase
       connectors.put(backupTC.getName(), backupTC);
       liveConf.setConnectorConfigurations(connectors);
       liveConf.setBackupConnectorName(backupTC.getName());
-      liveServer = Messaging.newMessagingServer(liveConf, false);
+      liveServer = HornetQ.newMessagingServer(liveConf, false);
       liveServer.start();
    }
 

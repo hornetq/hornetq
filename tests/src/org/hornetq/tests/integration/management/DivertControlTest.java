@@ -25,8 +25,8 @@ import org.hornetq.core.management.DivertControl;
 import org.hornetq.core.management.ObjectNames;
 import org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
-import org.hornetq.core.server.Messaging;
-import org.hornetq.core.server.MessagingServer;
+import org.hornetq.core.server.HornetQ;
+import org.hornetq.core.server.HornetQServer;
 import org.hornetq.utils.SimpleString;
 
 /**
@@ -44,7 +44,7 @@ public class DivertControlTest extends ManagementTestBase
 
    // Attributes ----------------------------------------------------
 
-   private MessagingServer service;
+   private HornetQServer service;
 
    private DivertConfiguration divertConfig;
 
@@ -105,7 +105,7 @@ public class DivertControlTest extends ManagementTestBase
       conf.getAcceptorConfigurations().add(new TransportConfiguration(InVMAcceptorFactory.class.getName()));
       conf.getConnectorConfigurations().put(connectorConfig.getName(), connectorConfig);
 
-      service = Messaging.newMessagingServer(conf, mbeanServer, false);
+      service = HornetQ.newMessagingServer(conf, mbeanServer, false);
       service.start();
    }
 

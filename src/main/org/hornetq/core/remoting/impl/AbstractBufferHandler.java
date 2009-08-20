@@ -13,7 +13,7 @@
 package org.hornetq.core.remoting.impl;
 
 import org.hornetq.core.remoting.spi.BufferHandler;
-import org.hornetq.core.remoting.spi.MessagingBuffer;
+import org.hornetq.core.remoting.spi.HornetQBuffer;
 import org.hornetq.utils.DataConstants;
 
 /**
@@ -24,7 +24,7 @@ import org.hornetq.utils.DataConstants;
  */
 public abstract class AbstractBufferHandler implements BufferHandler
 {
-   public int isReadyToHandle(final MessagingBuffer buffer)
+   public int isReadyToHandle(final HornetQBuffer buffer)
    {
       if (buffer.readableBytes() < DataConstants.SIZE_INT)
       {

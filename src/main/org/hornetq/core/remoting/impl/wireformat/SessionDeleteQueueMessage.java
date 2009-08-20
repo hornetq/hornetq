@@ -13,7 +13,7 @@
 
 package org.hornetq.core.remoting.impl.wireformat;
 
-import org.hornetq.core.remoting.spi.MessagingBuffer;
+import org.hornetq.core.remoting.spi.HornetQBuffer;
 import org.hornetq.utils.DataConstants;
 import org.hornetq.utils.SimpleString;
 
@@ -67,12 +67,12 @@ public class SessionDeleteQueueMessage extends PacketImpl
       return BASIC_PACKET_SIZE + queueName.sizeof();
    }
 
-   public void encodeBody(final MessagingBuffer buffer)
+   public void encodeBody(final HornetQBuffer buffer)
    {
       buffer.writeSimpleString(queueName);
    }
 
-   public void decodeBody(final MessagingBuffer buffer)
+   public void decodeBody(final HornetQBuffer buffer)
    {
       queueName = buffer.readSimpleString();
    }

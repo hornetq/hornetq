@@ -13,8 +13,8 @@
 
 package org.hornetq.core.remoting.impl.wireformat;
 
-import org.hornetq.core.exception.MessagingException;
-import org.hornetq.core.remoting.spi.MessagingBuffer;
+import org.hornetq.core.exception.HornetQException;
+import org.hornetq.core.remoting.spi.HornetQBuffer;
 import org.hornetq.utils.DataConstants;
 
 /**
@@ -24,26 +24,26 @@ import org.hornetq.utils.DataConstants;
  * @version <tt>$Revision$</tt>
  * 
  */
-public class MessagingExceptionMessage extends PacketImpl
+public class HornetQExceptionMessage extends PacketImpl
 {
    // Constants -----------------------------------------------------
 
    // Attributes ----------------------------------------------------
 
-   private MessagingException exception;
+   private HornetQException exception;
 
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   public MessagingExceptionMessage(final MessagingException exception)
+   public HornetQExceptionMessage(final HornetQException exception)
    {
       super(EXCEPTION);
 
       this.exception = exception;
    }
 
-   public MessagingExceptionMessage()
+   public HornetQExceptionMessage()
    {
       super(EXCEPTION);
    }
@@ -55,7 +55,7 @@ public class MessagingExceptionMessage extends PacketImpl
       return true;
    }
 
-   public MessagingException getException()
+   public HornetQException getException()
    {
       return exception;
    }
@@ -66,17 +66,17 @@ public class MessagingExceptionMessage extends PacketImpl
    }
 
 
-   public void encodeBody(final MessagingBuffer buffer)
+   public void encodeBody(final HornetQBuffer buffer)
    {
       buffer.writeInt(exception.getCode());
       buffer.writeNullableString(exception.getMessage());
    }
 
-   public void decodeBody(final MessagingBuffer buffer)
+   public void decodeBody(final HornetQBuffer buffer)
    {
       int code = buffer.readInt();
       String msg = buffer.readNullableString();
-      exception = new MessagingException(code, msg);
+      exception = new HornetQException(code, msg);
    }
 
    @Override
@@ -87,12 +87,12 @@ public class MessagingExceptionMessage extends PacketImpl
 
    public boolean equals(Object other)
    {
-      if (other instanceof MessagingExceptionMessage == false)
+      if (other instanceof HornetQExceptionMessage == false)
       {
          return false;
       }
 
-      MessagingExceptionMessage r = (MessagingExceptionMessage)other;
+      HornetQExceptionMessage r = (HornetQExceptionMessage)other;
 
       return super.equals(other) && this.exception.equals(r.exception);
    }

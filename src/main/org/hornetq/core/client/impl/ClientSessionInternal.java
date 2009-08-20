@@ -14,11 +14,11 @@
 package org.hornetq.core.client.impl;
 
 import org.hornetq.core.client.ClientSession;
-import org.hornetq.core.exception.MessagingException;
+import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.remoting.RemotingConnection;
 import org.hornetq.core.remoting.impl.wireformat.SessionReceiveContinuationMessage;
 import org.hornetq.core.remoting.impl.wireformat.SessionReceiveMessage;
-import org.hornetq.core.remoting.spi.MessagingBuffer;
+import org.hornetq.core.remoting.spi.HornetQBuffer;
 
 /**
  * A ClientSessionInternal
@@ -29,21 +29,21 @@ public interface ClientSessionInternal extends ClientSession
 {
    String getName();
 
-   void acknowledge(long consumerID, long messageID) throws MessagingException;
+   void acknowledge(long consumerID, long messageID) throws HornetQException;
 
    boolean isCacheLargeMessageClient();
 
    int getMinLargeMessageSize();
 
-   MessagingBuffer createBuffer(int size);
+   HornetQBuffer createBuffer(int size);
 
-   void expire(long consumerID, long messageID) throws MessagingException;
+   void expire(long consumerID, long messageID) throws HornetQException;
 
    void addConsumer(ClientConsumerInternal consumer);
 
    void addProducer(ClientProducerInternal producer);
 
-   void removeConsumer(ClientConsumerInternal consumer) throws MessagingException;
+   void removeConsumer(ClientConsumerInternal consumer) throws HornetQException;
 
    void removeProducer(ClientProducerInternal producer);
 

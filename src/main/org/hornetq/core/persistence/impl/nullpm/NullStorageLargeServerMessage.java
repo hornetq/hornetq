@@ -14,7 +14,7 @@
 package org.hornetq.core.persistence.impl.nullpm;
 
 import org.hornetq.core.buffers.ChannelBuffers;
-import org.hornetq.core.remoting.spi.MessagingBuffer;
+import org.hornetq.core.remoting.spi.HornetQBuffer;
 import org.hornetq.core.server.LargeServerMessage;
 import org.hornetq.core.server.impl.ServerMessageImpl;
 
@@ -57,7 +57,7 @@ public class NullStorageLargeServerMessage extends ServerMessageImpl implements 
     */
    public synchronized void addBytes(final byte[] bytes)
    {
-      MessagingBuffer buffer = getBody();
+      HornetQBuffer buffer = getBody();
 
       if (buffer != null)
       {

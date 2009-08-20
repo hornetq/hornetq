@@ -20,9 +20,9 @@ import org.hornetq.core.client.ClientSessionFactory;
 import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
 import org.hornetq.core.config.TransportConfiguration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
-import org.hornetq.core.exception.MessagingException;
-import org.hornetq.core.server.Messaging;
-import org.hornetq.core.server.MessagingServer;
+import org.hornetq.core.exception.HornetQException;
+import org.hornetq.core.server.HornetQ;
+import org.hornetq.core.server.HornetQServer;
 import org.hornetq.tests.util.UnitTestCase;
 import org.hornetq.utils.SimpleString;
 
@@ -31,7 +31,7 @@ import org.hornetq.utils.SimpleString;
  */
 public class WildCardRoutingTest extends UnitTestCase
 {
-   private MessagingServer server;
+   private HornetQServer server;
 
    private ClientSession clientSession;
 
@@ -762,7 +762,7 @@ public class WildCardRoutingTest extends UnitTestCase
       configuration.setTransactionTimeoutScanPeriod(500);
       TransportConfiguration transportConfig = new TransportConfiguration(INVM_ACCEPTOR_FACTORY);
       configuration.getAcceptorConfigurations().add(transportConfig);
-      server = Messaging.newMessagingServer(configuration, false);
+      server = HornetQ.newMessagingServer(configuration, false);
       //start the server
       server.start();
       server.getManagementService().enableNotifications(false);
@@ -780,7 +780,7 @@ public class WildCardRoutingTest extends UnitTestCase
          {
             clientSession.close();
          }
-         catch (MessagingException e1)
+         catch (HornetQException e1)
          {
             //
          }

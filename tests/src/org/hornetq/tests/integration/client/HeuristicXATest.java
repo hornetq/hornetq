@@ -27,8 +27,8 @@ import org.hornetq.core.client.ClientSession;
 import org.hornetq.core.client.ClientSessionFactory;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.logging.Logger;
-import org.hornetq.core.management.MessagingServerControl;
-import org.hornetq.core.server.MessagingServer;
+import org.hornetq.core.management.HornetQServerControl;
+import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.Queue;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.core.transaction.impl.XidImpl;
@@ -67,13 +67,13 @@ public class HeuristicXATest extends ServiceTestBase
       Configuration configuration = createDefaultConfig();
       configuration.setJMXManagementEnabled(true);
 
-      MessagingServer server = createServer(false, configuration, mbeanServer, new HashMap<String, AddressSettings>());
+      HornetQServer server = createServer(false, configuration, mbeanServer, new HashMap<String, AddressSettings>());
 
       try
       {
          server.start();
 
-         MessagingServerControl jmxServer = ManagementControlHelper.createMessagingServerControl(mbeanServer);
+         HornetQServerControl jmxServer = ManagementControlHelper.createMessagingServerControl(mbeanServer);
 
          assertFalse(jmxServer.commitPreparedTransaction("Nananananana"));
       }
@@ -102,7 +102,7 @@ public class HeuristicXATest extends ServiceTestBase
       Configuration configuration = createDefaultConfig();
       configuration.setJMXManagementEnabled(true);
 
-      MessagingServer server = createServer(false, configuration, mbeanServer, new HashMap<String, AddressSettings>());
+      HornetQServer server = createServer(false, configuration, mbeanServer, new HashMap<String, AddressSettings>());
       try
       {
          server.start();
@@ -130,7 +130,7 @@ public class HeuristicXATest extends ServiceTestBase
 
          session.close();
 
-         MessagingServerControl jmxServer = ManagementControlHelper.createMessagingServerControl(mbeanServer);
+         HornetQServerControl jmxServer = ManagementControlHelper.createMessagingServerControl(mbeanServer);
 
          String preparedTransactions[] = jmxServer.listPreparedTransactions();
 

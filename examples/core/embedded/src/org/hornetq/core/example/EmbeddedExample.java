@@ -25,8 +25,8 @@ import org.hornetq.core.config.TransportConfiguration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
-import org.hornetq.core.server.Messaging;
-import org.hornetq.core.server.MessagingServer;
+import org.hornetq.core.server.HornetQ;
+import org.hornetq.core.server.HornetQServer;
 
 /**
  * 
@@ -51,7 +51,7 @@ public class EmbeddedExample
          configuration.getAcceptorConfigurations().add(new TransportConfiguration(InVMAcceptorFactory.class.getName()));
          
          // Step 2. Create and start the server
-         MessagingServer server = Messaging.newMessagingServer(configuration);
+         HornetQServer server = HornetQ.newMessagingServer(configuration);
          server.start();
    
    

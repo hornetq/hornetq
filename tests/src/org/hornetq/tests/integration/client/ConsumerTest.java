@@ -21,13 +21,13 @@ import org.hornetq.core.client.ClientProducer;
 import org.hornetq.core.client.ClientSession;
 import org.hornetq.core.client.ClientSessionFactory;
 import org.hornetq.core.client.MessageHandler;
-import org.hornetq.core.exception.MessagingException;
+import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.remoting.Interceptor;
 import org.hornetq.core.remoting.Packet;
 import org.hornetq.core.remoting.RemotingConnection;
 import org.hornetq.core.remoting.impl.wireformat.PacketImpl;
-import org.hornetq.core.server.MessagingServer;
+import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.Queue;
 import org.hornetq.tests.util.ServiceTestBase;
 import org.hornetq.utils.SimpleString;
@@ -40,7 +40,7 @@ public class ConsumerTest extends ServiceTestBase
 {
    private static final Logger log = Logger.getLogger(ConsumerTest.class);
 
-   private MessagingServer server;
+   private HornetQServer server;
 
    private final SimpleString QUEUE = new SimpleString("ConsumerTestQueue");
 
@@ -244,7 +244,7 @@ public class ConsumerTest extends ServiceTestBase
       final CountDownLatch latch = new CountDownLatch(numMessages);
       server.getRemotingService().addInterceptor(new Interceptor()
       {
-         public boolean intercept(Packet packet, RemotingConnection connection) throws MessagingException
+         public boolean intercept(Packet packet, RemotingConnection connection) throws HornetQException
          {
             if(packet.getType() == PacketImpl.SESS_ACKNOWLEDGE)
             {
@@ -266,7 +266,7 @@ public class ConsumerTest extends ServiceTestBase
             {
                message.acknowledge();
             }
-            catch (MessagingException e)
+            catch (HornetQException e)
             {
                e.printStackTrace();
             }
@@ -320,9 +320,9 @@ public class ConsumerTest extends ServiceTestBase
          consumer.receiveImmediate();
          fail("Should throw exception");
       }
-      catch (MessagingException me)
+      catch (HornetQException me)
       {
-         if (me.getCode() == MessagingException.ILLEGAL_STATE)
+         if (me.getCode() == HornetQException.ILLEGAL_STATE)
          {
             //Ok
          }

@@ -24,7 +24,7 @@ import org.hornetq.core.client.management.impl.ManagementHelper;
 import org.hornetq.core.config.TransportConfiguration;
 import org.hornetq.core.management.ResourceNames;
 import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
-import org.hornetq.core.server.MessagingServer;
+import org.hornetq.core.server.HornetQServer;
 import org.hornetq.tests.util.UnitTestCase;
 
 /**
@@ -40,7 +40,7 @@ public abstract class SecurityManagementTestBase extends UnitTestCase
 
    // Attributes ----------------------------------------------------
 
-   private MessagingServer service;
+   private HornetQServer service;
 
    // Static --------------------------------------------------------
 
@@ -70,7 +70,7 @@ public abstract class SecurityManagementTestBase extends UnitTestCase
       super.tearDown();
    }
 
-   protected abstract MessagingServer setupAndStartMessagingServer() throws Exception;
+   protected abstract HornetQServer setupAndStartMessagingServer() throws Exception;
    
    protected void doSendManagementMessage(String user, String password, boolean expectSuccess) throws Exception
    {

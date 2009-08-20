@@ -36,8 +36,8 @@ import org.hornetq.core.paging.impl.PagingStoreFactoryNIO;
 import org.hornetq.core.paging.impl.PagingStoreImpl;
 import org.hornetq.core.security.HornetQSecurityManager;
 import org.hornetq.core.security.impl.HornetQSecurityManagerImpl;
-import org.hornetq.core.server.MessagingServer;
-import org.hornetq.core.server.impl.MessagingServerImpl;
+import org.hornetq.core.server.HornetQServer;
+import org.hornetq.core.server.impl.HornetQServerImpl;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.tests.util.ServiceTestBase;
 import org.hornetq.utils.OrderedExecutorFactory;
@@ -84,7 +84,7 @@ public class PageCrashTest extends ServiceTestBase
 
       Configuration config = createDefaultConfig();
 
-      MessagingServer messagingService = createServer(true, config, 10 * 1024, 100 * 1024, new HashMap<String, AddressSettings>());
+      HornetQServer messagingService = createServer(true, config, 10 * 1024, 100 * 1024, new HashMap<String, AddressSettings>());
 
       messagingService.start();
 
@@ -123,7 +123,7 @@ public class PageCrashTest extends ServiceTestBase
       clearData();
       Configuration config = createDefaultConfig();
 
-      MessagingServer server = newMessagingServer(config);
+      HornetQServer server = newMessagingServer(config);
 
       server.start();
 
@@ -208,11 +208,11 @@ public class PageCrashTest extends ServiceTestBase
 
    // Private -------------------------------------------------------
 
-   private MessagingServer newMessagingServer(final Configuration configuration)
+   private HornetQServer newMessagingServer(final Configuration configuration)
    {
       HornetQSecurityManager securityManager = new HornetQSecurityManagerImpl();
 
-      MessagingServer server = new FailingMessagingServerImpl(configuration, securityManager);
+      HornetQServer server = new FailingMessagingServerImpl(configuration, securityManager);
 
       AddressSettings defaultSetting = new AddressSettings();
       defaultSetting.setPageSizeBytes(10 * 1024);
@@ -225,10 +225,10 @@ public class PageCrashTest extends ServiceTestBase
 
    // Inner classes -------------------------------------------------
 
-   /** This is hacking MessagingServerImpl, 
+   /** This is hacking HornetQServerImpl, 
     *  to make sure the server will fail right 
     *  before the page-file was removed */
-   class FailingMessagingServerImpl extends MessagingServerImpl
+   class FailingMessagingServerImpl extends HornetQServerImpl
    {
       FailingMessagingServerImpl(final Configuration config, final HornetQSecurityManager securityManager)
       {

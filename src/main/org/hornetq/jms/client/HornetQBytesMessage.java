@@ -212,7 +212,7 @@ import javax.jms.MessageFormatException;
 import org.hornetq.core.client.ClientMessage;
 import org.hornetq.core.client.ClientSession;
 import org.hornetq.core.logging.Logger;
-import org.hornetq.core.remoting.spi.MessagingBuffer;
+import org.hornetq.core.remoting.spi.HornetQBuffer;
 
 /**
  * This class implements javax.jms.BytesMessage.
@@ -595,7 +595,7 @@ public class HornetQBytesMessage extends HornetQMessage implements BytesMessage
    public void clearBody() throws JMSException
    {
       super.clearBody();
-      MessagingBuffer currentBody = message.getBody();
+      HornetQBuffer currentBody = message.getBody();
       currentBody.clear();
    }
 

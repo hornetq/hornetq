@@ -16,7 +16,7 @@ package org.hornetq.core.filter.impl;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.hornetq.core.exception.MessagingException;
+import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.filter.Filter;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.server.ServerMessage;
@@ -90,9 +90,9 @@ public class FilterImpl implements Filter
 
    /**
     * @return null if <code>filterStr</code> is null or a valid filter else
-    * @throws MessagingException if the string does not correspond to a valid filter
+    * @throws HornetQException if the string does not correspond to a valid filter
     */
-   public static Filter createFilter(final String filterStr) throws MessagingException
+   public static Filter createFilter(final String filterStr) throws HornetQException
    {
       Filter filter = filterStr == null ? null : new FilterImpl(new SimpleString(filterStr));
       return filter;
@@ -100,9 +100,9 @@ public class FilterImpl implements Filter
    
    /**
     * @return null if <code>filterStr</code> is null or a valid filter else
-    * @throws MessagingException if the string does not correspond to a valid filter
+    * @throws HornetQException if the string does not correspond to a valid filter
     */
-   public static Filter createFilter(final SimpleString filterStr) throws MessagingException
+   public static Filter createFilter(final SimpleString filterStr) throws HornetQException
    {
       Filter filter = filterStr == null ? null : new FilterImpl(filterStr);
       return filter;
@@ -110,7 +110,7 @@ public class FilterImpl implements Filter
 
    // Constructors ---------------------------------------------------
 
-   public FilterImpl(final SimpleString str) throws MessagingException
+   public FilterImpl(final SimpleString str) throws HornetQException
    {
       sfilterString = str;
 
@@ -122,7 +122,7 @@ public class FilterImpl implements Filter
       {
          log.error("Invalid filter", e);
          
-         throw new MessagingException(MessagingException.INVALID_FILTER_EXPRESSION, "Invalid filter: " + sfilterString);
+         throw new HornetQException(HornetQException.INVALID_FILTER_EXPRESSION, "Invalid filter: " + sfilterString);
       }
    }
 

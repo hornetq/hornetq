@@ -15,12 +15,12 @@ package org.hornetq.core.exception;
 
 /**
  * 
- * A MessagingException
+ * A HornetQException
  * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */
-public class MessagingException extends Exception
+public class HornetQException extends Exception
 {
    private static final long serialVersionUID = -4802014152804997417L;
 
@@ -89,23 +89,23 @@ public class MessagingException extends Exception
 
    private int code;
 
-   public MessagingException()
+   public HornetQException()
    {
    }
 
-   public MessagingException(int code)
+   public HornetQException(int code)
    {
       this.code = code;
    }
 
-   public MessagingException(int code, String msg)
+   public HornetQException(int code, String msg)
    {
       super(msg);
 
       this.code = code;
    }
 
-   public MessagingException(int code, String msg, Throwable cause)
+   public HornetQException(int code, String msg, Throwable cause)
    {
       super(msg, cause);
 
@@ -119,7 +119,7 @@ public class MessagingException extends Exception
 
    public String toString()
    {
-      return "MessagingException[errorCode=" + code + " message=" + getMessage() + "]";
+      return "HornetQException[errorCode=" + code + " message=" + getMessage() + "]";
    }
 
 }

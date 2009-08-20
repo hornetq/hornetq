@@ -27,8 +27,8 @@ import org.hornetq.core.client.ClientSessionFactory;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.message.impl.MessageImpl;
-import org.hornetq.core.remoting.spi.MessagingBuffer;
-import org.hornetq.core.server.MessagingServer;
+import org.hornetq.core.remoting.spi.HornetQBuffer;
+import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.Queue;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.tests.util.ServiceTestBase;
@@ -72,7 +72,7 @@ public class PagingTest extends ServiceTestBase
 
       Configuration config = createDefaultConfig();
 
-      MessagingServer server = createServer(true, config, PAGE_SIZE, PAGE_MAX, new HashMap<String, AddressSettings>());
+      HornetQServer server = createServer(true, config, PAGE_SIZE, PAGE_MAX, new HashMap<String, AddressSettings>());
 
       server.start();
 
@@ -102,7 +102,7 @@ public class PagingTest extends ServiceTestBase
          {
             message = session.createClientMessage(true);
 
-            MessagingBuffer bodyLocal = message.getBody();
+            HornetQBuffer bodyLocal = message.getBody();
 
             for (int j = 1; j <= numberOfIntegers; j++)
             {
@@ -202,7 +202,7 @@ public class PagingTest extends ServiceTestBase
 
       Configuration config = createDefaultConfig();
 
-      MessagingServer server = createServer(true, config, PAGE_SIZE, PAGE_MAX, new HashMap<String, AddressSettings>());
+      HornetQServer server = createServer(true, config, PAGE_SIZE, PAGE_MAX, new HashMap<String, AddressSettings>());
 
       server.start();
 
@@ -222,7 +222,7 @@ public class PagingTest extends ServiceTestBase
 
          ClientProducer producer = session.createProducer(ADDRESS);
 
-         MessagingBuffer bodyLocal = ChannelBuffers.buffer(DataConstants.SIZE_INT * numberOfIntegers);
+         HornetQBuffer bodyLocal = ChannelBuffers.buffer(DataConstants.SIZE_INT * numberOfIntegers);
 
          ClientMessage message = null;
 
@@ -338,7 +338,7 @@ public class PagingTest extends ServiceTestBase
 
       Configuration config = createDefaultConfig();
 
-      MessagingServer server = createServer(true, config, PAGE_SIZE, PAGE_MAX, new HashMap<String, AddressSettings>());
+      HornetQServer server = createServer(true, config, PAGE_SIZE, PAGE_MAX, new HashMap<String, AddressSettings>());
 
       server.start();
 
@@ -460,7 +460,7 @@ public class PagingTest extends ServiceTestBase
 
       Configuration config = createDefaultConfig();
 
-      MessagingServer server = createServer(true, config, PAGE_SIZE, PAGE_MAX, new HashMap<String, AddressSettings>());
+      HornetQServer server = createServer(true, config, PAGE_SIZE, PAGE_MAX, new HashMap<String, AddressSettings>());
 
       server.start();
 
@@ -490,7 +490,7 @@ public class PagingTest extends ServiceTestBase
          {
             message = session.createClientMessage(true);
 
-            MessagingBuffer bodyLocal = message.getBody();
+            HornetQBuffer bodyLocal = message.getBody();
 
             for (int j = 1; j <= numberOfIntegers; j++)
             {
@@ -533,7 +533,7 @@ public class PagingTest extends ServiceTestBase
 
       Configuration config = createDefaultConfig();
 
-      MessagingServer server = createServer(true, config, PAGE_SIZE, PAGE_MAX, new HashMap<String, AddressSettings>());
+      HornetQServer server = createServer(true, config, PAGE_SIZE, PAGE_MAX, new HashMap<String, AddressSettings>());
 
       server.start();
 
@@ -563,7 +563,7 @@ public class PagingTest extends ServiceTestBase
          {
             message = session.createClientMessage(true);
 
-            MessagingBuffer bodyLocal = message.getBody();
+            HornetQBuffer bodyLocal = message.getBody();
 
             for (int j = 1; j <= numberOfIntegers; j++)
             {
@@ -629,7 +629,7 @@ public class PagingTest extends ServiceTestBase
 
       settings.put(ADDRESS.toString(), set);
 
-      MessagingServer server = createServer(true, config, 10 * 1024, 10 * 1024, settings);
+      HornetQServer server = createServer(true, config, 10 * 1024, 10 * 1024, settings);
 
       server.start();
 
@@ -653,7 +653,7 @@ public class PagingTest extends ServiceTestBase
 
          for (int i = 0; i < numberOfMessages; i++)
          {
-            MessagingBuffer bodyLocal = ChannelBuffers.wrappedBuffer(new byte[1024]);
+            HornetQBuffer bodyLocal = ChannelBuffers.wrappedBuffer(new byte[1024]);
 
             message = session.createClientMessage(true);
             message.setBody(bodyLocal);
@@ -681,7 +681,7 @@ public class PagingTest extends ServiceTestBase
 
          for (int i = 0; i < numberOfMessages; i++)
          {
-            MessagingBuffer bodyLocal = ChannelBuffers.wrappedBuffer(new byte[1024]);
+            HornetQBuffer bodyLocal = ChannelBuffers.wrappedBuffer(new byte[1024]);
 
             message = session.createClientMessage(true);
             message.setBody(bodyLocal);
@@ -708,7 +708,7 @@ public class PagingTest extends ServiceTestBase
 
          for (int i = 0; i < numberOfMessages; i++)
          {
-            MessagingBuffer bodyLocal = ChannelBuffers.wrappedBuffer(new byte[1024]);
+            HornetQBuffer bodyLocal = ChannelBuffers.wrappedBuffer(new byte[1024]);
 
             message = session.createClientMessage(true);
             message.setBody(bodyLocal);
@@ -762,7 +762,7 @@ public class PagingTest extends ServiceTestBase
 
       int NUMBER_OF_MESSAGES = 2;
 
-      MessagingServer server = createServer(true, config, PAGE_SIZE, PAGE_MAX, new HashMap<String, AddressSettings>());
+      HornetQServer server = createServer(true, config, PAGE_SIZE, PAGE_MAX, new HashMap<String, AddressSettings>());
 
       server.start();
 
@@ -785,7 +785,7 @@ public class PagingTest extends ServiceTestBase
 
          ClientMessage message = null;
 
-         MessagingBuffer bodyLocal = ChannelBuffers.wrappedBuffer(new byte[1024]);
+         HornetQBuffer bodyLocal = ChannelBuffers.wrappedBuffer(new byte[1024]);
 
          message = session.createClientMessage(true);
          message.setBody(bodyLocal);
@@ -880,7 +880,7 @@ public class PagingTest extends ServiceTestBase
 
       addresses.put(PAGED_ADDRESS.toString(), pagedDestination);
 
-      MessagingServer server = createServer(true, configuration, -1, -1, addresses);
+      HornetQServer server = createServer(true, configuration, -1, -1, addresses);
 
       try
       {
@@ -992,7 +992,7 @@ public class PagingTest extends ServiceTestBase
 
       addresses.put(PAGED_ADDRESS_B.toString(), pagedDestinationB);
 
-      MessagingServer server = createServer(true, configuration, -1, -1, addresses);
+      HornetQServer server = createServer(true, configuration, -1, -1, addresses);
 
       try
       {

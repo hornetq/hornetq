@@ -21,7 +21,7 @@ import java.util.Set;
 
 import javax.transaction.xa.Xid;
 
-import org.hornetq.core.exception.MessagingException;
+import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.core.postoffice.PostOffice;
@@ -55,7 +55,7 @@ public class TransactionImpl implements Transaction
 
    private volatile State state = State.ACTIVE;
 
-   private MessagingException messagingException;
+   private HornetQException exception;
 
    private final Object timeoutLock = new Object();
 
@@ -136,9 +136,9 @@ public class TransactionImpl implements Transaction
       {
          if (state == State.ROLLBACK_ONLY)
          {
-            if (messagingException != null)
+            if (exception != null)
             {
-               throw messagingException;
+               throw exception;
             }
             else
             {
@@ -189,9 +189,9 @@ public class TransactionImpl implements Transaction
       {
          if (state == State.ROLLBACK_ONLY)
          {
-            if (messagingException != null)
+            if (exception != null)
             {
-               throw messagingException;
+               throw exception;
             }
             else
             {
@@ -321,11 +321,11 @@ public class TransactionImpl implements Transaction
       return xid;
    }
 
-   public void markAsRollbackOnly(final MessagingException messagingException)
+   public void markAsRollbackOnly(final HornetQException exception)
    {
       state = State.ROLLBACK_ONLY;
 
-      this.messagingException = messagingException;
+      this.exception = exception;
    }
 
    public synchronized void addOperation(final TransactionOperation operation)

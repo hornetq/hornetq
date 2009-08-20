@@ -16,7 +16,7 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.hornetq.core.remoting.spi.MessagingBuffer;
+import org.hornetq.core.remoting.spi.HornetQBuffer;
 import org.hornetq.utils.UUIDGenerator;
 
 /**
@@ -181,7 +181,7 @@ public class TransportConfiguration implements Serializable
       return str.toString();
    }
    
-   public void encode(final MessagingBuffer buffer)
+   public void encode(final HornetQBuffer buffer)
    {
       buffer.writeString(name);
       buffer.writeString(factoryClassName);
@@ -224,7 +224,7 @@ public class TransportConfiguration implements Serializable
       }
    }
 
-   public void decode(final MessagingBuffer buffer)
+   public void decode(final HornetQBuffer buffer)
    {
       name = buffer.readString();
       factoryClassName = buffer.readString();

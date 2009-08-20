@@ -20,7 +20,7 @@ import org.hornetq.core.client.ClientSession;
 import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
 import org.hornetq.core.client.impl.ClientSessionImpl;
 import org.hornetq.core.client.impl.ClientSessionInternal;
-import org.hornetq.core.exception.MessagingException;
+import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.remoting.RemotingConnection;
 import org.hornetq.jms.client.HornetQTextMessage;
@@ -84,7 +84,7 @@ public class AutomaticFailoverWithDiscoveryTest extends FailoverTestBase
       RemotingConnection conn1 = ((ClientSessionInternal)session).getConnection();
 
       // Simulate failure on connection
-      conn1.fail(new MessagingException(MessagingException.NOT_CONNECTED));
+      conn1.fail(new HornetQException(HornetQException.NOT_CONNECTED));
 
       ClientConsumer consumer = session.createConsumer(ADDRESS);
 

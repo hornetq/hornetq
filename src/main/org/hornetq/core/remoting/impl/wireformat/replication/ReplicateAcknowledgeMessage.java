@@ -14,7 +14,7 @@
 package org.hornetq.core.remoting.impl.wireformat.replication;
 
 import org.hornetq.core.remoting.impl.wireformat.PacketImpl;
-import org.hornetq.core.remoting.spi.MessagingBuffer;
+import org.hornetq.core.remoting.spi.HornetQBuffer;
 import org.hornetq.utils.DataConstants;
 import org.hornetq.utils.SimpleString;
 
@@ -65,14 +65,14 @@ public class ReplicateAcknowledgeMessage extends PacketImpl
    }
 
    @Override
-   public void encodeBody(final MessagingBuffer buffer)
+   public void encodeBody(final HornetQBuffer buffer)
    {
       buffer.writeSimpleString(uniqueName);
       buffer.writeLong(messageID);
    }
 
    @Override
-   public void decodeBody(final MessagingBuffer buffer)
+   public void decodeBody(final HornetQBuffer buffer)
    {
       uniqueName = buffer.readSimpleString();
       messageID = buffer.readLong();

@@ -13,7 +13,7 @@
 
 package org.hornetq.core.remoting;
 
-import org.hornetq.core.remoting.spi.MessagingBuffer;
+import org.hornetq.core.remoting.spi.HornetQBuffer;
 
 /**
  * 
@@ -32,9 +32,9 @@ public interface Packet
    
    byte getType();
 
-   int encode(MessagingBuffer buffer);
+   int encode(HornetQBuffer buffer);
       
-   void decode(MessagingBuffer buffer);
+   void decode(HornetQBuffer buffer);
    
    int getPacketSize();
    

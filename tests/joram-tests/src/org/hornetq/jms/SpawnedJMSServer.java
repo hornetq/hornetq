@@ -22,8 +22,8 @@ import javax.naming.InitialContext;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.TransportConfiguration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
-import org.hornetq.core.server.Messaging;
-import org.hornetq.core.server.MessagingServer;
+import org.hornetq.core.server.HornetQ;
+import org.hornetq.core.server.HornetQServer;
 import org.hornetq.integration.transports.netty.NettyAcceptorFactory;
 import org.hornetq.jms.server.JMSServerManager;
 import org.hornetq.jms.server.impl.JMSServerManagerImpl;
@@ -69,7 +69,7 @@ public class SpawnedJMSServer
          conf.setFileDeploymentEnabled(false);
 
          // disable server persistence since JORAM tests do not restart server
-         final MessagingServer server = Messaging.newMessagingServer(conf, false);
+         final HornetQServer server = HornetQ.newMessagingServer(conf, false);
 
          Hashtable<String, String> env = new Hashtable<String, String>();
          env.put("java.naming.factory.initial", "org.jnp.interfaces.NamingContextFactory");

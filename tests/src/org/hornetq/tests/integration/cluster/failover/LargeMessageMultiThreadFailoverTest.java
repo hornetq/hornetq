@@ -27,7 +27,7 @@ import org.hornetq.core.remoting.impl.invm.InVMConnection;
 import org.hornetq.core.remoting.impl.invm.InVMRegistry;
 import org.hornetq.core.remoting.impl.invm.TransportConstants;
 import org.hornetq.core.server.JournalType;
-import org.hornetq.core.server.Messaging;
+import org.hornetq.core.server.HornetQ;
 
 /**
  * A LargeMessageMultiThreadFailoverTest
@@ -99,7 +99,7 @@ public class LargeMessageMultiThreadFailoverTest extends MultiThreadRandomFailov
                 .add(new TransportConfiguration(InVMAcceptorFactory.class.getCanonicalName(), backupParams));
       backupConf.setBackup(true);
 
-      backupServer = Messaging.newMessagingServer(backupConf);
+      backupServer = HornetQ.newMessagingServer(backupConf);
       backupServer.start();
 
       Configuration liveConf = new ConfigurationImpl();
@@ -125,7 +125,7 @@ public class LargeMessageMultiThreadFailoverTest extends MultiThreadRandomFailov
       connectors.put(backupTC.getName(), backupTC);
       liveConf.setConnectorConfigurations(connectors);
       liveConf.setBackupConnectorName(backupTC.getName());
-      liveServer = Messaging.newMessagingServer(liveConf);
+      liveServer = HornetQ.newMessagingServer(liveConf);
 
       liveServer.start();
 

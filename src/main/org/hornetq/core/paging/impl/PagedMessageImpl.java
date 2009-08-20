@@ -20,7 +20,7 @@ import static org.hornetq.utils.DataConstants.SIZE_LONG;
 import org.hornetq.core.buffers.ChannelBuffers;
 import org.hornetq.core.paging.PagedMessage;
 import org.hornetq.core.persistence.StorageManager;
-import org.hornetq.core.remoting.spi.MessagingBuffer;
+import org.hornetq.core.remoting.spi.HornetQBuffer;
 import org.hornetq.core.server.LargeServerMessage;
 import org.hornetq.core.server.ServerMessage;
 import org.hornetq.core.server.impl.ServerMessageImpl;
@@ -73,7 +73,7 @@ public class PagedMessageImpl implements PagedMessage
       if (largeMessageLazyData != null)
       {
          message = storage.createLargeMessage();
-         MessagingBuffer buffer = ChannelBuffers.dynamicBuffer(largeMessageLazyData); 
+         HornetQBuffer buffer = ChannelBuffers.dynamicBuffer(largeMessageLazyData); 
          message.decode(buffer);
          largeMessageLazyData = null;
       }
@@ -87,7 +87,7 @@ public class PagedMessageImpl implements PagedMessage
 
    // EncodingSupport implementation --------------------------------
 
-   public void decode(final MessagingBuffer buffer)
+   public void decode(final HornetQBuffer buffer)
    {
       transactionID = buffer.readLong();
 
@@ -112,7 +112,7 @@ public class PagedMessageImpl implements PagedMessage
 
    }
 
-   public void encode(final MessagingBuffer buffer)
+   public void encode(final HornetQBuffer buffer)
    {
       buffer.writeLong(transactionID);
       

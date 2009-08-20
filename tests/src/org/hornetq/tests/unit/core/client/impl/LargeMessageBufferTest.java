@@ -32,7 +32,7 @@ import org.hornetq.core.client.MessageHandler;
 import org.hornetq.core.client.impl.ClientConsumerInternal;
 import org.hornetq.core.client.impl.ClientMessageInternal;
 import org.hornetq.core.client.impl.LargeMessageBufferImpl;
-import org.hornetq.core.exception.MessagingException;
+import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.remoting.impl.wireformat.SessionReceiveContinuationMessage;
 import org.hornetq.core.remoting.impl.wireformat.SessionReceiveMessage;
 import org.hornetq.tests.util.RandomUtil;
@@ -551,7 +551,7 @@ public class LargeMessageBufferTest extends UnitTestCase
       /* (non-Javadoc)
        * @see org.hornetq.core.client.impl.ClientConsumerInternal#acknowledge(org.hornetq.core.client.ClientMessage)
        */
-      public void acknowledge(ClientMessage message) throws MessagingException
+      public void acknowledge(ClientMessage message) throws HornetQException
       {
 
       }
@@ -559,7 +559,7 @@ public class LargeMessageBufferTest extends UnitTestCase
       /* (non-Javadoc)
        * @see org.hornetq.core.client.impl.ClientConsumerInternal#cleanUp()
        */
-      public void cleanUp() throws MessagingException
+      public void cleanUp() throws HornetQException
       {
 
       }
@@ -575,7 +575,7 @@ public class LargeMessageBufferTest extends UnitTestCase
       /* (non-Javadoc)
        * @see org.hornetq.core.client.impl.ClientConsumerInternal#flowControl(int, boolean)
        */
-      public void flowControl(int messageBytes, boolean isLargeMessage) throws MessagingException
+      public void flowControl(int messageBytes, boolean isLargeMessage) throws HornetQException
       {
 
       }
@@ -583,7 +583,7 @@ public class LargeMessageBufferTest extends UnitTestCase
       /* (non-Javadoc)
        * @see org.hornetq.core.client.impl.ClientConsumerInternal#flushAcks()
        */
-      public void flushAcks() throws MessagingException
+      public void flushAcks() throws HornetQException
       {
 
       }
@@ -659,7 +659,7 @@ public class LargeMessageBufferTest extends UnitTestCase
       /* (non-Javadoc)
        * @see org.hornetq.core.client.impl.ClientConsumerInternal#stop()
        */
-      public void stop() throws MessagingException
+      public void stop() throws HornetQException
       {
 
       }
@@ -667,7 +667,7 @@ public class LargeMessageBufferTest extends UnitTestCase
       /* (non-Javadoc)
        * @see org.hornetq.core.client.ClientConsumer#close()
        */
-      public void close() throws MessagingException
+      public void close() throws HornetQException
       {
 
       }
@@ -684,7 +684,7 @@ public class LargeMessageBufferTest extends UnitTestCase
       /* (non-Javadoc)
        * @see org.hornetq.core.client.ClientConsumer#getMessageHandler()
        */
-      public MessageHandler getMessageHandler() throws MessagingException
+      public MessageHandler getMessageHandler() throws HornetQException
       {
 
          return null;
@@ -702,7 +702,7 @@ public class LargeMessageBufferTest extends UnitTestCase
       /* (non-Javadoc)
        * @see org.hornetq.core.client.ClientConsumer#receive()
        */
-      public ClientMessage receive() throws MessagingException
+      public ClientMessage receive() throws HornetQException
       {
 
          return null;
@@ -711,7 +711,7 @@ public class LargeMessageBufferTest extends UnitTestCase
       /* (non-Javadoc)
        * @see org.hornetq.core.client.ClientConsumer#receive(long)
        */
-      public ClientMessage receive(long timeout) throws MessagingException
+      public ClientMessage receive(long timeout) throws HornetQException
       {
 
          return null;
@@ -720,7 +720,7 @@ public class LargeMessageBufferTest extends UnitTestCase
       /* (non-Javadoc)
        * @see org.hornetq.core.client.ClientConsumer#receiveImmediate()
        */
-      public ClientMessage receiveImmediate() throws MessagingException
+      public ClientMessage receiveImmediate() throws HornetQException
       {
 
          return null;
@@ -729,7 +729,7 @@ public class LargeMessageBufferTest extends UnitTestCase
       /* (non-Javadoc)
        * @see org.hornetq.core.client.ClientConsumer#setMessageHandler(org.hornetq.core.client.MessageHandler)
        */
-      public void setMessageHandler(MessageHandler handler) throws MessagingException
+      public void setMessageHandler(MessageHandler handler) throws HornetQException
       {
 
       }

@@ -15,8 +15,8 @@ package org.hornetq.core.client;
 
 import java.io.OutputStream;
 
-import org.hornetq.core.exception.MessagingException;
-import org.hornetq.core.remoting.spi.MessagingBuffer;
+import org.hornetq.core.exception.HornetQException;
+import org.hornetq.core.remoting.spi.HornetQBuffer;
 
 /**
  * A LargeMessageBufferImpl
@@ -25,7 +25,7 @@ import org.hornetq.core.remoting.spi.MessagingBuffer;
  *
  *
  */
-public interface LargeMessageBuffer extends MessagingBuffer
+public interface LargeMessageBuffer extends HornetQBuffer
 {
    long getSize();
 
@@ -35,10 +35,10 @@ public interface LargeMessageBuffer extends MessagingBuffer
 
    void cancel();
 
-   void setOutputStream(final OutputStream output) throws MessagingException;
+   void setOutputStream(final OutputStream output) throws HornetQException;
 
-   void saveBuffer(final OutputStream output) throws MessagingException;
+   void saveBuffer(final OutputStream output) throws HornetQException;
 
-   boolean waitCompletion(long timeWait) throws MessagingException;
+   boolean waitCompletion(long timeWait) throws HornetQException;
 
 }

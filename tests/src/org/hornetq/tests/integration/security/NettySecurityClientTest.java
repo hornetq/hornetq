@@ -20,8 +20,8 @@ import java.net.URL;
 import org.hornetq.core.config.TransportConfiguration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.logging.Logger;
-import org.hornetq.core.server.Messaging;
-import org.hornetq.core.server.MessagingServer;
+import org.hornetq.core.server.HornetQ;
+import org.hornetq.core.server.HornetQServer;
 import org.hornetq.integration.transports.netty.NettyAcceptorFactory;
 import org.hornetq.integration.transports.netty.NettyConnectorFactory;
 import org.hornetq.tests.util.SpawnedVMSupport;
@@ -41,7 +41,7 @@ public class NettySecurityClientTest extends UnitTestCase
 
    // Attributes ----------------------------------------------------
 
-   private MessagingServer messagingService;
+   private HornetQServer messagingService;
 
    // Static --------------------------------------------------------
 
@@ -75,7 +75,7 @@ public class NettySecurityClientTest extends UnitTestCase
       ConfigurationImpl config = new ConfigurationImpl();
       config.setSecurityEnabled(false);
       config.getAcceptorConfigurations().add(new TransportConfiguration(NettyAcceptorFactory.class.getName()));
-      messagingService = Messaging.newMessagingServer(config, false);
+      messagingService = HornetQ.newMessagingServer(config, false);
       messagingService.start();
    }
 

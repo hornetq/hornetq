@@ -27,11 +27,11 @@ import org.hornetq.core.client.impl.ClientSessionImpl;
 import org.hornetq.core.client.impl.ClientSessionInternal;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.TransportConfiguration;
-import org.hornetq.core.exception.MessagingException;
+import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.remoting.impl.RemotingConnectionImpl;
 import org.hornetq.core.remoting.server.impl.RemotingServiceImpl;
-import org.hornetq.core.remoting.spi.MessagingBuffer;
+import org.hornetq.core.remoting.spi.HornetQBuffer;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.tests.integration.largemessage.mock.MockConnector;
 import org.hornetq.tests.integration.largemessage.mock.MockConnectorFactory;
@@ -108,7 +108,7 @@ public class LargeMessageCleanupTest extends LargeMessageTestBase
 
          ClientSession session;
 
-         public void onWrite(final MessagingBuffer buffer)
+         public void onWrite(final HornetQBuffer buffer)
          {
             log.info("calling cb onwrite** ");
             if (counter.incrementAndGet() == 5)
@@ -116,8 +116,8 @@ public class LargeMessageCleanupTest extends LargeMessageTestBase
                RemotingConnectionImpl conn = (RemotingConnectionImpl)((ClientSessionInternal)session).getConnection();
                RemotingServiceImpl remotingServiceImpl = (RemotingServiceImpl)server.getRemotingService();
                remotingServiceImpl.connectionException(conn.getID(),
-                                                       new MessagingException(MessagingException.NOT_CONNECTED, "blah!"));
-               conn.fail(new MessagingException(MessagingException.NOT_CONNECTED, "blah"));
+                                                       new HornetQException(HornetQException.NOT_CONNECTED, "blah!"));
+               conn.fail(new HornetQException(HornetQException.NOT_CONNECTED, "blah"));
                throw new IllegalStateException("blah");
             }
          }

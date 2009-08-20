@@ -13,17 +13,17 @@
 
 package org.hornetq.core.remoting.impl;
 
-import org.hornetq.core.exception.MessagingException;
+import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.remoting.Channel;
 import org.hornetq.core.remoting.ChannelHandler;
 import org.hornetq.core.remoting.CommandConfirmationHandler;
 import org.hornetq.core.remoting.Packet;
 import org.hornetq.core.remoting.RemotingConnection;
-import org.hornetq.core.remoting.impl.wireformat.MessagingExceptionMessage;
+import org.hornetq.core.remoting.impl.wireformat.HornetQExceptionMessage;
 import org.hornetq.core.remoting.impl.wireformat.PacketImpl;
 import org.hornetq.core.remoting.impl.wireformat.PacketsConfirmedMessage;
-import org.hornetq.core.remoting.spi.MessagingBuffer;
+import org.hornetq.core.remoting.spi.HornetQBuffer;
 
 import static org.hornetq.core.remoting.impl.wireformat.PacketImpl.EARLY_RESPONSE;
 import static org.hornetq.core.remoting.impl.wireformat.PacketImpl.PACKETS_CONFIRMED;
@@ -173,7 +173,7 @@ public class ChannelImpl implements Channel
       {
          packet.setChannelID(id);
 
-         final MessagingBuffer buffer = connection.getTransportConnection()
+         final HornetQBuffer buffer = connection.getTransportConnection()
                                                   .createBuffer(packet.getRequiredBufferSize());
 
          int size = packet.encode(buffer);
@@ -225,11 +225,11 @@ public class ChannelImpl implements Channel
       }
    }
 
-   public Packet sendBlocking(final Packet packet) throws MessagingException
+   public Packet sendBlocking(final Packet packet) throws HornetQException
    {
       if (closed)
       {
-         throw new MessagingException(MessagingException.NOT_CONNECTED, "Connection is destroyed");
+         throw new HornetQException(HornetQException.NOT_CONNECTED, "Connection is destroyed");
       }
 
       if (connection.getBlockingCallTimeout() == -1)
@@ -243,7 +243,7 @@ public class ChannelImpl implements Channel
       {
          packet.setChannelID(id);
 
-         final MessagingBuffer buffer = connection.getTransportConnection()
+         final HornetQBuffer buffer = connection.getTransportConnection()
                                                   .createBuffer(packet.getRequiredBufferSize());
 
          int size = packet.encode(buffer);
@@ -301,13 +301,13 @@ public class ChannelImpl implements Channel
 
             if (response == null)
             {
-               throw new MessagingException(MessagingException.CONNECTION_TIMEDOUT,
+               throw new HornetQException(HornetQException.CONNECTION_TIMEDOUT,
                                             "Timed out waiting for response when sending packet " + packet.getType());
             }
 
             if (response.getType() == PacketImpl.EXCEPTION)
             {
-               final MessagingExceptionMessage mem = (MessagingExceptionMessage)response;
+               final HornetQExceptionMessage mem = (HornetQExceptionMessage)response;
 
                throw mem.getException();
             }
@@ -358,7 +358,7 @@ public class ChannelImpl implements Channel
                responseActionCount++;
             }
 
-            final MessagingBuffer buffer = connection.getTransportConnection()
+            final HornetQBuffer buffer = connection.getTransportConnection()
                                                      .createBuffer(packet.getRequiredBufferSize());
 
             packet.encode(buffer);
@@ -700,7 +700,7 @@ public class ChannelImpl implements Channel
 
    private void doWrite(final Packet packet)
    {
-      final MessagingBuffer buffer = connection.getTransportConnection().createBuffer(packet.getRequiredBufferSize());
+      final HornetQBuffer buffer = connection.getTransportConnection().createBuffer(packet.getRequiredBufferSize());
 
       packet.encode(buffer);
 

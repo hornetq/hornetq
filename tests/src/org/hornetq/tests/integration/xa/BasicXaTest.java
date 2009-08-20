@@ -28,9 +28,9 @@ import org.hornetq.core.client.ClientSession;
 import org.hornetq.core.client.ClientSessionFactory;
 import org.hornetq.core.client.MessageHandler;
 import org.hornetq.core.config.Configuration;
-import org.hornetq.core.exception.MessagingException;
+import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.logging.Logger;
-import org.hornetq.core.server.MessagingServer;
+import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.core.transaction.impl.XidImpl;
 import org.hornetq.tests.util.ServiceTestBase;
@@ -47,7 +47,7 @@ public class BasicXaTest extends ServiceTestBase
 
    private final Map<String, AddressSettings> addressSettings = new HashMap<String, AddressSettings>();
 
-   private MessagingServer messagingService;
+   private HornetQServer messagingService;
 
    private ClientSession clientSession;
 
@@ -89,7 +89,7 @@ public class BasicXaTest extends ServiceTestBase
          {
             clientSession.close();
          }
-         catch (MessagingException e1)
+         catch (HornetQException e1)
          {
             //
          }
@@ -468,7 +468,7 @@ public class BasicXaTest extends ServiceTestBase
    }
 
    /**
-    * @throws MessagingException
+    * @throws HornetQException
     * @throws XAException
     */
    protected void multipleQueuesInternalTest(final boolean createQueues,
@@ -698,7 +698,7 @@ public class BasicXaTest extends ServiceTestBase
          {
             message.acknowledge();
          }
-         catch (MessagingException e)
+         catch (HornetQException e)
          {
             log.error("Failed to process message", e);
          }
@@ -715,7 +715,7 @@ public class BasicXaTest extends ServiceTestBase
             {
                session.close();
             }
-            catch (MessagingException e1)
+            catch (HornetQException e1)
             {
                //
             }

@@ -32,11 +32,11 @@ import org.hornetq.core.client.ClientProducer;
 import org.hornetq.core.client.ClientSession;
 import org.hornetq.core.client.ClientSessionFactory;
 import org.hornetq.core.client.MessageHandler;
-import org.hornetq.core.exception.MessagingException;
+import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.message.impl.MessageImpl;
-import org.hornetq.core.remoting.spi.MessagingBuffer;
-import org.hornetq.core.server.MessagingServer;
+import org.hornetq.core.remoting.spi.HornetQBuffer;
+import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.Queue;
 import org.hornetq.tests.util.ServiceTestBase;
 import org.hornetq.utils.DataConstants;
@@ -59,7 +59,7 @@ public class LargeMessageTestBase extends ServiceTestBase
 
    protected final SimpleString ADDRESS = new SimpleString("SimpleAddress");
 
-   protected MessagingServer server;
+   protected HornetQServer server;
 
    // Attributes ----------------------------------------------------
 
@@ -316,7 +316,7 @@ public class LargeMessageTestBase extends ServiceTestBase
                         else
                         {
 
-                           MessagingBuffer buffer = message.getBody();
+                           HornetQBuffer buffer = message.getBody();
                            buffer.resetReaderIndex();
                            assertEquals(numberOfBytes, buffer.writerIndex());
                            for (long b = 0; b < numberOfBytes; b++)
@@ -390,7 +390,7 @@ public class LargeMessageTestBase extends ServiceTestBase
                      assertEquals(i, ((Integer)message.getProperty(new SimpleString("counter-message"))).intValue());
                   }
 
-                  MessagingBuffer buffer = message.getBody();
+                  HornetQBuffer buffer = message.getBody();
                   buffer.resetReaderIndex();
 
                   if (useStreamOnConsume)
@@ -511,7 +511,7 @@ public class LargeMessageTestBase extends ServiceTestBase
     * @param producer
     * @throws FileNotFoundException
     * @throws IOException
-    * @throws MessagingException
+    * @throws HornetQException
     */
    private void sendMessages(final int numberOfMessages,
                              final long numberOfBytes,
@@ -557,9 +557,9 @@ public class LargeMessageTestBase extends ServiceTestBase
       }
    }
 
-   protected MessagingBuffer createLargeBuffer(final int numberOfIntegers)
+   protected HornetQBuffer createLargeBuffer(final int numberOfIntegers)
    {
-      MessagingBuffer body = ChannelBuffers.buffer(DataConstants.SIZE_INT * numberOfIntegers);
+      HornetQBuffer body = ChannelBuffers.buffer(DataConstants.SIZE_INT * numberOfIntegers);
 
       for (int i = 0; i < numberOfIntegers; i++)
       {
@@ -591,11 +591,11 @@ public class LargeMessageTestBase extends ServiceTestBase
     * @param session
     * @param queueToRead
     * @param numberOfIntegers
-    * @throws MessagingException
+    * @throws HornetQException
     * @throws FileNotFoundException
     * @throws IOException
     */
-   protected void readMessage(final ClientSession session, final SimpleString queueToRead, final int numberOfBytes) throws MessagingException,
+   protected void readMessage(final ClientSession session, final SimpleString queueToRead, final int numberOfBytes) throws HornetQException,
                                                                                                                    FileNotFoundException,
                                                                                                                    IOException
    {

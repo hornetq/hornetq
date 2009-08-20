@@ -51,7 +51,7 @@ import org.hornetq.core.journal.SequentialFile;
 import org.hornetq.core.journal.SequentialFileFactory;
 import org.hornetq.core.journal.TestableJournal;
 import org.hornetq.core.logging.Logger;
-import org.hornetq.core.remoting.spi.MessagingBuffer;
+import org.hornetq.core.remoting.spi.HornetQBuffer;
 import org.hornetq.utils.DataConstants;
 import org.hornetq.utils.Pair;
 import org.hornetq.utils.VariableLatch;
@@ -2554,7 +2554,7 @@ public class JournalImpl implements TestableJournal
     * 
     * @param completeTransaction If the appendRecord is for a prepare or commit, where we should update the number of pendingTransactions on the current file
     * */
-   private JournalFile appendRecord(final MessagingBuffer bb,
+   private JournalFile appendRecord(final HornetQBuffer bb,
                                     final boolean completeTransaction,
                                     final boolean sync,
                                     final JournalTransaction tx,
@@ -3094,11 +3094,11 @@ public class JournalImpl implements TestableJournal
 
       static NullEncoding instance = new NullEncoding();
 
-      public void decode(final MessagingBuffer buffer)
+      public void decode(final HornetQBuffer buffer)
       {
       }
 
-      public void encode(final MessagingBuffer buffer)
+      public void encode(final HornetQBuffer buffer)
       {
       }
 
@@ -3121,12 +3121,12 @@ public class JournalImpl implements TestableJournal
 
       // Public --------------------------------------------------------
 
-      public void decode(final MessagingBuffer buffer)
+      public void decode(final HornetQBuffer buffer)
       {
          throw new IllegalStateException("operation not supported");
       }
 
-      public void encode(final MessagingBuffer buffer)
+      public void encode(final HornetQBuffer buffer)
       {
          buffer.writeBytes(data);
       }
@@ -3185,7 +3185,7 @@ public class JournalImpl implements TestableJournal
          {
             lock.acquire();
 
-            MessagingBuffer bb = newBuffer(128 * 1024);
+            HornetQBuffer bb = newBuffer(128 * 1024);
 
             for (int i = 0; i < pages; i++)
             {

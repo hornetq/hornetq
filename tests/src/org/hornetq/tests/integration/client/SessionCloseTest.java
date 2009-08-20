@@ -28,11 +28,11 @@ import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.TransportConfiguration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
-import org.hornetq.core.exception.MessagingException;
+import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
-import org.hornetq.core.server.Messaging;
-import org.hornetq.core.server.MessagingServer;
+import org.hornetq.core.server.HornetQ;
+import org.hornetq.core.server.HornetQServer;
 import org.hornetq.tests.util.UnitTestCase;
 import org.hornetq.utils.SimpleString;
 
@@ -50,7 +50,7 @@ public class SessionCloseTest extends UnitTestCase
 
    // Attributes ----------------------------------------------------
 
-   private MessagingServer server;
+   private HornetQServer server;
 
    private ClientSessionFactory sf;
 
@@ -69,81 +69,81 @@ public class SessionCloseTest extends UnitTestCase
 
       assertTrue(session.isClosed());
 
-      expectMessagingException(MessagingException.OBJECT_CLOSED, new MessagingAction()
+      expectHornetQException(HornetQException.OBJECT_CLOSED, new MessagingAction()
       {
-         public void run() throws MessagingException
+         public void run() throws HornetQException
          {
             session.createProducer();
          }
       });
 
-      expectMessagingException(MessagingException.OBJECT_CLOSED, new MessagingAction()
+      expectHornetQException(HornetQException.OBJECT_CLOSED, new MessagingAction()
       {
-         public void run() throws MessagingException
+         public void run() throws HornetQException
          {
             session.createConsumer(randomSimpleString());
          }
       });
 
-      expectMessagingException(MessagingException.OBJECT_CLOSED, new MessagingAction()
+      expectHornetQException(HornetQException.OBJECT_CLOSED, new MessagingAction()
       {
-         public void run() throws MessagingException
+         public void run() throws HornetQException
          {
             session.createQueue(randomSimpleString(), randomSimpleString(), randomBoolean());
          }
       });
 
-      expectMessagingException(MessagingException.OBJECT_CLOSED, new MessagingAction()
+      expectHornetQException(HornetQException.OBJECT_CLOSED, new MessagingAction()
       {
-         public void run() throws MessagingException
+         public void run() throws HornetQException
          {
             session.createTemporaryQueue(randomSimpleString(), randomSimpleString());
          }
       });
 
-      expectMessagingException(MessagingException.OBJECT_CLOSED, new MessagingAction()
+      expectHornetQException(HornetQException.OBJECT_CLOSED, new MessagingAction()
       {
-         public void run() throws MessagingException
+         public void run() throws HornetQException
          {
             session.start();
          }
       });
 
-      expectMessagingException(MessagingException.OBJECT_CLOSED, new MessagingAction()
+      expectHornetQException(HornetQException.OBJECT_CLOSED, new MessagingAction()
       {
-         public void run() throws MessagingException
+         public void run() throws HornetQException
          {
             session.stop();
          }
       });
 
-      expectMessagingException(MessagingException.OBJECT_CLOSED, new MessagingAction()
+      expectHornetQException(HornetQException.OBJECT_CLOSED, new MessagingAction()
       {
-         public void run() throws MessagingException
+         public void run() throws HornetQException
          {
             session.commit();
          }
       });
 
-      expectMessagingException(MessagingException.OBJECT_CLOSED, new MessagingAction()
+      expectHornetQException(HornetQException.OBJECT_CLOSED, new MessagingAction()
       {
-         public void run() throws MessagingException
+         public void run() throws HornetQException
          {
             session.rollback();
          }
       });
 
-      expectMessagingException(MessagingException.OBJECT_CLOSED, new MessagingAction()
+      expectHornetQException(HornetQException.OBJECT_CLOSED, new MessagingAction()
       {
-         public void run() throws MessagingException
+         public void run() throws HornetQException
          {
             session.queueQuery(randomSimpleString());
          }
       });
 
-      expectMessagingException(MessagingException.OBJECT_CLOSED, new MessagingAction()
+      expectHornetQException(HornetQException.OBJECT_CLOSED, new MessagingAction()
       {
-         public void run() throws MessagingException
+         public void run() throws HornetQException
          {
             session.bindingQuery(randomSimpleString());
          }
@@ -251,7 +251,7 @@ public class SessionCloseTest extends UnitTestCase
       Configuration config = new ConfigurationImpl();
       config.getAcceptorConfigurations().add(new TransportConfiguration(InVMAcceptorFactory.class.getCanonicalName()));
       config.setSecurityEnabled(false);
-      server = Messaging.newMessagingServer(config, false);
+      server = HornetQ.newMessagingServer(config, false);
 
       server.start();
 

@@ -19,7 +19,7 @@ import java.util.Date;
 
 import org.hornetq.core.paging.PagingManager;
 import org.hornetq.core.paging.PagingStore;
-import org.hornetq.core.server.MessagingServer;
+import org.hornetq.core.server.HornetQServer;
 import org.hornetq.utils.SimpleString;
 import org.hornetq.utils.SizeFormatterUtil;
 
@@ -32,7 +32,7 @@ import org.hornetq.utils.SizeFormatterUtil;
  */
 public class ServerInfo
 {
-   private final MessagingServer server;
+   private final HornetQServer server;
 
    private PagingManager pagingManager;
 
@@ -44,7 +44,7 @@ public class ServerInfo
 
    // Constructors --------------------------------------------------
 
-   public ServerInfo(final MessagingServer server, final PagingManager pagingManager)
+   public ServerInfo(final HornetQServer server, final PagingManager pagingManager)
    {
       this.server = server;
       this.pagingManager = pagingManager;

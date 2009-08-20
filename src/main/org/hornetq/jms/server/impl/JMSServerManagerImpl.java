@@ -31,7 +31,7 @@ import org.hornetq.core.deployers.impl.FileDeploymentManager;
 import org.hornetq.core.deployers.impl.XmlDeployer;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.server.ActivateCallback;
-import org.hornetq.core.server.MessagingServer;
+import org.hornetq.core.server.HornetQServer;
 import org.hornetq.jms.HornetQQueue;
 import org.hornetq.jms.HornetQTopic;
 import org.hornetq.jms.client.HornetQConnectionFactory;
@@ -66,7 +66,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
 
    private final Map<String, List<String>> connectionFactoryBindings = new HashMap<String, List<String>>();
 
-   private final MessagingServer server;
+   private final HornetQServer server;
 
    private JMSManagementService jmsManagementService;
 
@@ -82,14 +82,14 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
    
    private boolean contextSet;
    
-   public JMSServerManagerImpl(final MessagingServer server) throws Exception
+   public JMSServerManagerImpl(final HornetQServer server) throws Exception
    {
       this.server = server;
       
       this.configFileName = null;
    }
 
-   public JMSServerManagerImpl(final MessagingServer server, final String configFileName) throws Exception
+   public JMSServerManagerImpl(final HornetQServer server, final String configFileName) throws Exception
    {
       this.server = server;
 

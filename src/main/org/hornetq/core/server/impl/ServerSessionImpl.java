@@ -30,7 +30,7 @@ import javax.transaction.xa.Xid;
 import org.hornetq.core.buffers.ChannelBuffers;
 import org.hornetq.core.client.impl.ClientMessageImpl;
 import org.hornetq.core.client.management.impl.ManagementHelper;
-import org.hornetq.core.exception.MessagingException;
+import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.filter.Filter;
 import org.hornetq.core.filter.impl.FilterImpl;
 import org.hornetq.core.logging.Logger;
@@ -49,7 +49,7 @@ import org.hornetq.core.remoting.FailureListener;
 import org.hornetq.core.remoting.Packet;
 import org.hornetq.core.remoting.RemotingConnection;
 import org.hornetq.core.remoting.impl.wireformat.CreateQueueMessage;
-import org.hornetq.core.remoting.impl.wireformat.MessagingExceptionMessage;
+import org.hornetq.core.remoting.impl.wireformat.HornetQExceptionMessage;
 import org.hornetq.core.remoting.impl.wireformat.NullResponseMessage;
 import org.hornetq.core.remoting.impl.wireformat.PacketImpl;
 import org.hornetq.core.remoting.impl.wireformat.PacketsConfirmedMessage;
@@ -81,12 +81,12 @@ import org.hornetq.core.remoting.impl.wireformat.SessionXASetTimeoutMessage;
 import org.hornetq.core.remoting.impl.wireformat.SessionXASetTimeoutResponseMessage;
 import org.hornetq.core.remoting.impl.wireformat.SessionXAStartMessage;
 import org.hornetq.core.remoting.impl.wireformat.replication.SessionReplicateDeliveryMessage;
-import org.hornetq.core.remoting.spi.MessagingBuffer;
+import org.hornetq.core.remoting.spi.HornetQBuffer;
 import org.hornetq.core.security.CheckType;
 import org.hornetq.core.security.SecurityStore;
 import org.hornetq.core.server.LargeServerMessage;
 import org.hornetq.core.server.MessageReference;
-import org.hornetq.core.server.MessagingServer;
+import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.Queue;
 import org.hornetq.core.server.QueueFactory;
 import org.hornetq.core.server.ServerConsumer;
@@ -175,7 +175,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
 
    private final String name;
 
-   private final MessagingServer server;
+   private final HornetQServer server;
 
    private final SimpleString managementAddress;
 
@@ -212,7 +212,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
                             final Channel channel,
                             final ManagementService managementService,
                             final QueueFactory queueFactory,
-                            final MessagingServer server,
+                            final HornetQServer server,
                             final SimpleString managementAddress,
                             final Channel replicatingChannel,
                             final boolean backup) throws Exception
@@ -1158,7 +1158,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
    // FailureListener implementation
    // --------------------------------------------------------------------
 
-   public void connectionFailed(final MessagingException me)
+   public void connectionFailed(final HornetQException me)
    {
       try
       {
@@ -1234,13 +1234,13 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
       {
          log.error("Failed to close consumer", e);
 
-         if (e instanceof MessagingException)
+         if (e instanceof HornetQException)
          {
-            response = new MessagingExceptionMessage((MessagingException)e);
+            response = new HornetQExceptionMessage((HornetQException)e);
          }
          else
          {
-            response = new MessagingExceptionMessage(new MessagingException(MessagingException.INTERNAL_ERROR));
+            response = new HornetQExceptionMessage(new HornetQException(HornetQException.INTERNAL_ERROR));
          }
       }
 
@@ -1265,7 +1265,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
 
          if (binding == null || binding.getType() != BindingType.LOCAL_QUEUE)
          {
-            throw new MessagingException(MessagingException.QUEUE_DOES_NOT_EXIST, "Binding " + name + " does not exist");
+            throw new HornetQException(HornetQException.QUEUE_DOES_NOT_EXIST, "Binding " + name + " does not exist");
          }
 
          securityStore.check(binding.getAddress(), CheckType.CONSUME, this);
@@ -1349,13 +1349,13 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
       {
          log.error("Failed to create consumer", e);
 
-         if (e instanceof MessagingException)
+         if (e instanceof HornetQException)
          {
-            response = new MessagingExceptionMessage((MessagingException)e);
+            response = new HornetQExceptionMessage((HornetQException)e);
          }
          else
          {
-            response = new MessagingExceptionMessage(new MessagingException(MessagingException.INTERNAL_ERROR));
+            response = new HornetQExceptionMessage(new HornetQException(HornetQException.INTERNAL_ERROR));
          }
       }
 
@@ -1424,13 +1424,13 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
       }
       catch (Exception e)
       {
-         if (e instanceof MessagingException)
+         if (e instanceof HornetQException)
          {
-            response = new MessagingExceptionMessage((MessagingException)e);
+            response = new HornetQExceptionMessage((HornetQException)e);
          }
          else
          {
-            response = new MessagingExceptionMessage(new MessagingException(MessagingException.INTERNAL_ERROR));
+            response = new HornetQExceptionMessage(new HornetQException(HornetQException.INTERNAL_ERROR));
          }
       }
 
@@ -1451,7 +1451,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
 
          if (binding == null || binding.getType() != BindingType.LOCAL_QUEUE)
          {
-            throw new MessagingException(MessagingException.QUEUE_DOES_NOT_EXIST);
+            throw new HornetQException(HornetQException.QUEUE_DOES_NOT_EXIST);
          }
 
          server.destroyQueue(name, this);
@@ -1462,13 +1462,13 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
       {
          log.error("Failed to delete queue", e);
 
-         if (e instanceof MessagingException)
+         if (e instanceof HornetQException)
          {
-            response = new MessagingExceptionMessage((MessagingException)e);
+            response = new HornetQExceptionMessage((HornetQException)e);
          }
          else
          {
-            response = new MessagingExceptionMessage(new MessagingException(MessagingException.INTERNAL_ERROR));
+            response = new HornetQExceptionMessage(new HornetQException(HornetQException.INTERNAL_ERROR));
          }
       }
 
@@ -1515,13 +1515,13 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
       {
          log.error("Failed to execute queue query", e);
 
-         if (e instanceof MessagingException)
+         if (e instanceof HornetQException)
          {
-            response = new MessagingExceptionMessage((MessagingException)e);
+            response = new HornetQExceptionMessage((HornetQException)e);
          }
          else
          {
-            response = new MessagingExceptionMessage(new MessagingException(MessagingException.INTERNAL_ERROR));
+            response = new HornetQExceptionMessage(new HornetQException(HornetQException.INTERNAL_ERROR));
          }
       }
 
@@ -1561,13 +1561,13 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
       {
          log.error("Failed to execute binding query", e);
 
-         if (e instanceof MessagingException)
+         if (e instanceof HornetQException)
          {
-            response = new MessagingExceptionMessage((MessagingException)e);
+            response = new HornetQExceptionMessage((HornetQException)e);
          }
          else
          {
-            response = new MessagingExceptionMessage(new MessagingException(MessagingException.INTERNAL_ERROR));
+            response = new HornetQExceptionMessage(new HornetQException(HornetQException.INTERNAL_ERROR));
          }
       }
 
@@ -1597,13 +1597,13 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
 
          if (packet.isRequiresResponse())
          {
-            if (e instanceof MessagingException)
+            if (e instanceof HornetQException)
             {
-               response = new MessagingExceptionMessage((MessagingException)e);
+               response = new HornetQExceptionMessage((HornetQException)e);
             }
             else
             {
-               response = new MessagingExceptionMessage(new MessagingException(MessagingException.INTERNAL_ERROR));
+               response = new HornetQExceptionMessage(new HornetQException(HornetQException.INTERNAL_ERROR));
             }
          }
       }
@@ -1650,13 +1650,13 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
       {
          log.error("Failed to commit", e);
 
-         if (e instanceof MessagingException)
+         if (e instanceof HornetQException)
          {
-            response = new MessagingExceptionMessage((MessagingException)e);
+            response = new HornetQExceptionMessage((HornetQException)e);
          }
          else
          {
-            response = new MessagingExceptionMessage(new MessagingException(MessagingException.INTERNAL_ERROR));
+            response = new HornetQExceptionMessage(new HornetQException(HornetQException.INTERNAL_ERROR));
          }
       }
       finally
@@ -1683,13 +1683,13 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
       {
          log.error("Failed to rollback", e);
 
-         if (e instanceof MessagingException)
+         if (e instanceof HornetQException)
          {
-            response = new MessagingExceptionMessage((MessagingException)e);
+            response = new HornetQExceptionMessage((HornetQException)e);
          }
          else
          {
-            response = new MessagingExceptionMessage(new MessagingException(MessagingException.INTERNAL_ERROR));
+            response = new HornetQExceptionMessage(new HornetQException(HornetQException.INTERNAL_ERROR));
          }
       }
 
@@ -1746,13 +1746,13 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
       {
          log.error("Failed to xa commit", e);
 
-         if (e instanceof MessagingException)
+         if (e instanceof HornetQException)
          {
-            response = new MessagingExceptionMessage((MessagingException)e);
+            response = new HornetQExceptionMessage((HornetQException)e);
          }
          else
          {
-            response = new MessagingExceptionMessage(new MessagingException(MessagingException.INTERNAL_ERROR));
+            response = new HornetQExceptionMessage(new HornetQException(HornetQException.INTERNAL_ERROR));
          }
       }
 
@@ -1820,13 +1820,13 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
       {
          log.error("Failed to xa end", e);
 
-         if (e instanceof MessagingException)
+         if (e instanceof HornetQException)
          {
-            response = new MessagingExceptionMessage((MessagingException)e);
+            response = new HornetQExceptionMessage((HornetQException)e);
          }
          else
          {
-            response = new MessagingExceptionMessage(new MessagingException(MessagingException.INTERNAL_ERROR));
+            response = new HornetQExceptionMessage(new HornetQException(HornetQException.INTERNAL_ERROR));
          }
       }
 
@@ -1883,13 +1883,13 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
       {
          log.error("Failed to xa join", e);
 
-         if (e instanceof MessagingException)
+         if (e instanceof HornetQException)
          {
-            response = new MessagingExceptionMessage((MessagingException)e);
+            response = new HornetQExceptionMessage((HornetQException)e);
          }
          else
          {
-            response = new MessagingExceptionMessage(new MessagingException(MessagingException.INTERNAL_ERROR));
+            response = new HornetQExceptionMessage(new HornetQException(HornetQException.INTERNAL_ERROR));
          }
       }
 
@@ -1945,13 +1945,13 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
       {
          log.error("Failed to xa resume", e);
 
-         if (e instanceof MessagingException)
+         if (e instanceof HornetQException)
          {
-            response = new MessagingExceptionMessage((MessagingException)e);
+            response = new HornetQExceptionMessage((HornetQException)e);
          }
          else
          {
-            response = new MessagingExceptionMessage(new MessagingException(MessagingException.INTERNAL_ERROR));
+            response = new HornetQExceptionMessage(new HornetQException(HornetQException.INTERNAL_ERROR));
          }
       }
 
@@ -2008,13 +2008,13 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
       {
          log.error("Failed to xa rollback", e);
 
-         if (e instanceof MessagingException)
+         if (e instanceof HornetQException)
          {
-            response = new MessagingExceptionMessage((MessagingException)e);
+            response = new HornetQExceptionMessage((HornetQException)e);
          }
          else
          {
-            response = new MessagingExceptionMessage(new MessagingException(MessagingException.INTERNAL_ERROR));
+            response = new HornetQExceptionMessage(new HornetQException(HornetQException.INTERNAL_ERROR));
          }
       }
 
@@ -2059,13 +2059,13 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
       {
          log.error("Failed to xa start", e);
 
-         if (e instanceof MessagingException)
+         if (e instanceof HornetQException)
          {
-            response = new MessagingExceptionMessage((MessagingException)e);
+            response = new HornetQExceptionMessage((HornetQException)e);
          }
          else
          {
-            response = new MessagingExceptionMessage(new MessagingException(MessagingException.INTERNAL_ERROR));
+            response = new HornetQExceptionMessage(new HornetQException(HornetQException.INTERNAL_ERROR));
          }
       }
 
@@ -2108,13 +2108,13 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
       {
          log.error("Failed to xa suspend", e);
 
-         if (e instanceof MessagingException)
+         if (e instanceof HornetQException)
          {
-            response = new MessagingExceptionMessage((MessagingException)e);
+            response = new HornetQExceptionMessage((HornetQException)e);
          }
          else
          {
-            response = new MessagingExceptionMessage(new MessagingException(MessagingException.INTERNAL_ERROR));
+            response = new HornetQExceptionMessage(new HornetQException(HornetQException.INTERNAL_ERROR));
          }
       }
 
@@ -2168,13 +2168,13 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
       {
          log.error("Failed to xa prepare", e);
 
-         if (e instanceof MessagingException)
+         if (e instanceof HornetQException)
          {
-            response = new MessagingExceptionMessage((MessagingException)e);
+            response = new HornetQExceptionMessage((HornetQException)e);
          }
          else
          {
-            response = new MessagingExceptionMessage(new MessagingException(MessagingException.INTERNAL_ERROR));
+            response = new HornetQExceptionMessage(new HornetQException(HornetQException.INTERNAL_ERROR));
          }
       }
 
@@ -2224,13 +2224,13 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
       {
          log.error("Failed to close", e);
 
-         if (e instanceof MessagingException)
+         if (e instanceof HornetQException)
          {
-            response = new MessagingExceptionMessage((MessagingException)e);
+            response = new HornetQExceptionMessage((HornetQException)e);
          }
          else
          {
-            response = new MessagingExceptionMessage(new MessagingException(MessagingException.INTERNAL_ERROR));
+            response = new HornetQExceptionMessage(new HornetQException(HornetQException.INTERNAL_ERROR));
          }
       }
 
@@ -2345,13 +2345,13 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
 
          if (packet.isRequiresResponse())
          {
-            if (e instanceof MessagingException)
+            if (e instanceof HornetQException)
             {
-               response = new MessagingExceptionMessage((MessagingException)e);
+               response = new HornetQExceptionMessage((HornetQException)e);
             }
             else
             {
-               response = new MessagingExceptionMessage(new MessagingException(MessagingException.INTERNAL_ERROR));
+               response = new HornetQExceptionMessage(new HornetQException(HornetQException.INTERNAL_ERROR));
             }
          }
       }
@@ -2375,7 +2375,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
       {
          if (currentLargeMessage == null)
          {
-            throw new MessagingException(MessagingException.ILLEGAL_STATE, "large-message not initialized on server");
+            throw new HornetQException(HornetQException.ILLEGAL_STATE, "large-message not initialized on server");
          }
 
          currentLargeMessage.addBytes(packet.getBody());
@@ -2402,13 +2402,13 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
 
          if (packet.isRequiresResponse())
          {
-            if (e instanceof MessagingException)
+            if (e instanceof HornetQException)
             {
-               response = new MessagingExceptionMessage((MessagingException)e);
+               response = new HornetQExceptionMessage((HornetQException)e);
             }
             else
             {
-               response = new MessagingExceptionMessage(new MessagingException(MessagingException.INTERNAL_ERROR));
+               response = new HornetQExceptionMessage(new HornetQException(HornetQException.INTERNAL_ERROR));
             }
          }
       }
@@ -2427,7 +2427,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
       {
          securityStore.check(message.getDestination(), CheckType.MANAGE, this);
       }
-      catch (MessagingException e)
+      catch (HornetQException e)
       {
          if (!autoCommitSends)
          {
@@ -2452,7 +2452,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
    {
       LargeServerMessage largeMessage = storageManager.createLargeMessage();
 
-      MessagingBuffer headerBuffer = ChannelBuffers.wrappedBuffer(header);
+      HornetQBuffer headerBuffer = ChannelBuffers.wrappedBuffer(header);
 
       largeMessage.decodeProperties(headerBuffer);
 
@@ -2512,7 +2512,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
       {
          securityStore.check(msg.getDestination(), CheckType.SEND, this);
       }
-      catch (MessagingException e)
+      catch (HornetQException e)
       {
          if (!autoCommitSends)
          {

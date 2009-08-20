@@ -54,7 +54,7 @@ import org.hornetq.core.management.ResourceNames;
 import org.hornetq.core.postoffice.Binding;
 import org.hornetq.core.postoffice.BindingType;
 import org.hornetq.core.security.Role;
-import org.hornetq.core.server.MessagingServer;
+import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.Queue;
 import org.hornetq.integration.bootstrap.HornetQBootstrapServer;
 import org.hornetq.jms.HornetQQueue;
@@ -216,7 +216,7 @@ public class LocalTestServer implements Server, Runnable
    /**
     * Only for in-VM use!
     */
-   public MessagingServer getServerPeer()
+   public HornetQServer getServerPeer()
    {
       return getMessagingServer();
    }
@@ -368,9 +368,9 @@ public class LocalTestServer implements Server, Runnable
 
    // Private --------------------------------------------------------------------------------------
 
-   public MessagingServer getMessagingServer()
+   public HornetQServer getMessagingServer()
    {
-      return (MessagingServer)bootstrap.getKernel().getRegistry().getEntry("MessagingServer").getTarget();
+      return (HornetQServer)bootstrap.getKernel().getRegistry().getEntry("HornetQServer").getTarget();
    }
 
    public JMSServerManager getJMSServerManager()

@@ -13,9 +13,9 @@
 package org.hornetq.tests.integration.client;
 
 import org.hornetq.core.client.ClientSession;
-import org.hornetq.core.exception.MessagingException;
+import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.postoffice.Binding;
-import org.hornetq.core.server.MessagingServer;
+import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.Queue;
 import org.hornetq.core.server.impl.LastValueQueue;
 import org.hornetq.core.settings.impl.AddressSettings;
@@ -27,7 +27,7 @@ import org.hornetq.utils.SimpleString;
  */
 public class SessionCreateAndDeleteQueueTest extends ServiceTestBase
 {
-   private MessagingServer server;
+   private HornetQServer server;
 
    private SimpleString address = new SimpleString("address");
 
@@ -124,9 +124,9 @@ public class SessionCreateAndDeleteQueueTest extends ServiceTestBase
         session.deleteQueue(queueName);
         fail("should throw exception");
      }
-     catch (MessagingException e)
+     catch (HornetQException e)
      {
-        assertEquals(MessagingException.QUEUE_DOES_NOT_EXIST, e.getCode());
+        assertEquals(HornetQException.QUEUE_DOES_NOT_EXIST, e.getCode());
      }
      session.close();
   }

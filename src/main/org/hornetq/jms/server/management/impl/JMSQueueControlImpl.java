@@ -15,7 +15,7 @@ package org.hornetq.jms.server.management.impl;
 
 import java.util.Map;
 
-import org.hornetq.core.exception.MessagingException;
+import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.management.MessageCounterInfo;
 import org.hornetq.core.management.QueueControl;
@@ -55,7 +55,7 @@ public class JMSQueueControlImpl implements JMSQueueControl
    /**
     * Returns null if the string is null or empty
     */
-   public static String createFilterFromJMSSelector(final String selectorStr) throws MessagingException
+   public static String createFilterFromJMSSelector(final String selectorStr) throws HornetQException
    {
       return (selectorStr == null || selectorStr.trim().length() == 0) ? null : SelectorTranslator.convertToHornetQFilterString(selectorStr);
    }
@@ -198,7 +198,7 @@ public class JMSQueueControlImpl implements JMSQueueControl
          }
          return jmsMessages;
       }
-      catch (MessagingException e)
+      catch (HornetQException e)
       {
          throw new IllegalStateException(e.getMessage());
       }

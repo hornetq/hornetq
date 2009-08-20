@@ -13,7 +13,7 @@
 
 package org.hornetq.core.journal;
 
-import org.hornetq.core.remoting.spi.MessagingBuffer;
+import org.hornetq.core.remoting.spi.HornetQBuffer;
 
 /**
  * 
@@ -28,7 +28,7 @@ public interface EncodingSupport
 {
    int getEncodeSize();
 
-   void encode(MessagingBuffer buffer);
+   void encode(HornetQBuffer buffer);
 
-   void decode(MessagingBuffer buffer);
+   void decode(HornetQBuffer buffer);
 }

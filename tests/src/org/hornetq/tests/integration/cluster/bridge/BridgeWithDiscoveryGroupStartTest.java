@@ -32,7 +32,7 @@ import org.hornetq.core.config.cluster.BroadcastGroupConfiguration;
 import org.hornetq.core.config.cluster.DiscoveryGroupConfiguration;
 import org.hornetq.core.config.cluster.QueueConfiguration;
 import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
-import org.hornetq.core.server.MessagingServer;
+import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.cluster.Bridge;
 import org.hornetq.tests.util.ServiceTestBase;
 import org.hornetq.utils.Pair;
@@ -49,11 +49,11 @@ public class BridgeWithDiscoveryGroupStartTest extends ServiceTestBase
    public void testStartStop() throws Exception
    {
       Map<String, Object> server0Params = new HashMap<String, Object>();
-      MessagingServer server0 = createClusteredServerWithParams(0, true, server0Params);
+      HornetQServer server0 = createClusteredServerWithParams(0, true, server0Params);
 
       Map<String, Object> server1Params = new HashMap<String, Object>();
       server1Params.put(SERVER_ID_PROP_NAME, 1);
-      MessagingServer server1 = createClusteredServerWithParams(1, true, server1Params);
+      HornetQServer server1 = createClusteredServerWithParams(1, true, server1Params);
 
       Map<String, TransportConfiguration> connectors = new HashMap<String, TransportConfiguration>();
       TransportConfiguration server0tc = new TransportConfiguration(InVMConnectorFactory.class.getName(), server0Params);

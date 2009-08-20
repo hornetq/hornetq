@@ -31,7 +31,7 @@ import org.hornetq.core.journal.IOCallback;
 import org.hornetq.core.journal.SequentialFile;
 import org.hornetq.core.journal.SequentialFileFactory;
 import org.hornetq.core.logging.Logger;
-import org.hornetq.core.remoting.spi.MessagingBuffer;
+import org.hornetq.core.remoting.spi.HornetQBuffer;
 
 /**
  * 
@@ -310,7 +310,7 @@ public class AIOSequentialFile implements SequentialFile
       return bytesRead;
    }
 
-   public void write(final MessagingBuffer bytes, final boolean sync, final IOCallback callback) throws Exception
+   public void write(final HornetQBuffer bytes, final boolean sync, final IOCallback callback) throws Exception
    {
       if (timedBuffer != null)
       {
@@ -324,7 +324,7 @@ public class AIOSequentialFile implements SequentialFile
       }
    }
 
-   public void write(final MessagingBuffer bytes, final boolean sync) throws Exception
+   public void write(final HornetQBuffer bytes, final boolean sync) throws Exception
    {
       if (sync)
       {

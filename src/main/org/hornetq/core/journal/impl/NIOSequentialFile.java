@@ -22,7 +22,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import org.hornetq.core.journal.IOCallback;
 import org.hornetq.core.journal.SequentialFile;
 import org.hornetq.core.logging.Logger;
-import org.hornetq.core.remoting.spi.MessagingBuffer;
+import org.hornetq.core.remoting.spi.HornetQBuffer;
 
 /**
  * 
@@ -190,12 +190,12 @@ public class NIOSequentialFile implements SequentialFile
 
    }
 
-   public void write(final MessagingBuffer bytes, final boolean sync) throws Exception
+   public void write(final HornetQBuffer bytes, final boolean sync) throws Exception
    {
       write(ByteBuffer.wrap(bytes.array()), sync);
    }
 
-   public void write(final MessagingBuffer bytes, final boolean sync, final IOCallback callback) throws Exception
+   public void write(final HornetQBuffer bytes, final boolean sync, final IOCallback callback) throws Exception
    {
       write(ByteBuffer.wrap(bytes.array()), sync, callback);
    }

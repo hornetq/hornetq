@@ -17,13 +17,13 @@ import java.util.Map;
 import java.util.concurrent.Executors;
 
 import org.hornetq.core.config.impl.ConfigurationImpl;
-import org.hornetq.core.exception.MessagingException;
+import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.remoting.impl.AbstractBufferHandler;
 import org.hornetq.core.remoting.spi.Acceptor;
 import org.hornetq.core.remoting.spi.BufferHandler;
 import org.hornetq.core.remoting.spi.Connection;
 import org.hornetq.core.remoting.spi.ConnectionLifeCycleListener;
-import org.hornetq.core.remoting.spi.MessagingBuffer;
+import org.hornetq.core.remoting.spi.HornetQBuffer;
 import org.hornetq.integration.transports.netty.NettyAcceptor;
 import org.hornetq.integration.transports.netty.NettyAcceptorFactory;
 import org.hornetq.tests.util.UnitTestCase;
@@ -45,7 +45,7 @@ public class NettyAcceptorFactoryTest extends UnitTestCase
       BufferHandler handler = new AbstractBufferHandler()
       {
          
-         public void bufferReceived(Object connectionID, MessagingBuffer buffer)
+         public void bufferReceived(Object connectionID, HornetQBuffer buffer)
          {
          }
       };
@@ -53,7 +53,7 @@ public class NettyAcceptorFactoryTest extends UnitTestCase
       ConnectionLifeCycleListener listener = new ConnectionLifeCycleListener()
       {
          
-         public void connectionException(Object connectionID, MessagingException me)
+         public void connectionException(Object connectionID, HornetQException me)
          {
          }
          

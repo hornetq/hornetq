@@ -36,7 +36,7 @@ import org.hornetq.core.client.impl.ClientSessionFactoryInternal;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.TransportConfiguration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
-import org.hornetq.core.exception.MessagingException;
+import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.postoffice.QueueBinding;
 import org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory;
@@ -44,8 +44,8 @@ import org.hornetq.core.remoting.impl.invm.InVMRegistry;
 import org.hornetq.core.remoting.impl.invm.TransportConstants;
 import org.hornetq.core.server.JournalType;
 import org.hornetq.core.server.MessageReference;
-import org.hornetq.core.server.Messaging;
-import org.hornetq.core.server.MessagingServer;
+import org.hornetq.core.server.HornetQ;
+import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.impl.QueueImpl;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.jms.client.HornetQBytesMessage;
@@ -82,9 +82,9 @@ public class PagingFailoverMultiThreadTest extends MultiThreadFailoverSupport
 
    protected static final SimpleString ADDRESS_GLOBAL = new SimpleString("FailoverTestAddress");
 
-   protected MessagingServer liveServer;
+   protected HornetQServer liveServer;
 
-   protected MessagingServer backupServer;
+   protected HornetQServer backupServer;
 
    protected Map<String, Object> backupParams = new HashMap<String, Object>();
 
@@ -381,7 +381,7 @@ public class PagingFailoverMultiThreadTest extends MultiThreadFailoverSupport
 
          backupConf.setJournalType(JournalType.ASYNCIO);
 
-         backupServer = Messaging.newMessagingServer(backupConf);
+         backupServer = HornetQ.newMessagingServer(backupConf);
 
          AddressSettings defaultSetting = new AddressSettings();
          defaultSetting.setPageSizeBytes(pageSize);
@@ -392,7 +392,7 @@ public class PagingFailoverMultiThreadTest extends MultiThreadFailoverSupport
       }
       else
       {
-         backupServer = Messaging.newMessagingServer(backupConf, false);
+         backupServer = HornetQ.newMessagingServer(backupConf, false);
       }
 
       backupServer.start();
@@ -424,7 +424,7 @@ public class PagingFailoverMultiThreadTest extends MultiThreadFailoverSupport
 
          liveConf.setJournalType(JournalType.ASYNCIO);
 
-         liveServer = Messaging.newMessagingServer(liveConf);
+         liveServer = HornetQ.newMessagingServer(liveConf);
 
          AddressSettings defaultSetting = new AddressSettings();
          defaultSetting.setPageSizeBytes(pageSize);
@@ -435,7 +435,7 @@ public class PagingFailoverMultiThreadTest extends MultiThreadFailoverSupport
       }
       else
       {
-         liveServer = Messaging.newMessagingServer(liveConf, false);
+         liveServer = HornetQ.newMessagingServer(liveConf, false);
       }
 
       AddressSettings settings = new AddressSettings();
@@ -550,7 +550,7 @@ public class PagingFailoverMultiThreadTest extends MultiThreadFailoverSupport
          {
             message.acknowledge();
          }
-         catch (MessagingException me)
+         catch (HornetQException me)
          {
             log.error("Failed to process", me);
          }

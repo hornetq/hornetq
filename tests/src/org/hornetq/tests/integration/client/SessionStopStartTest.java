@@ -22,7 +22,7 @@ import org.hornetq.core.client.ClientSession;
 import org.hornetq.core.client.ClientSessionFactory;
 import org.hornetq.core.client.MessageHandler;
 import org.hornetq.core.logging.Logger;
-import org.hornetq.core.server.MessagingServer;
+import org.hornetq.core.server.HornetQServer;
 import org.hornetq.tests.util.ServiceTestBase;
 import org.hornetq.utils.SimpleString;
 
@@ -33,7 +33,7 @@ public class SessionStopStartTest extends ServiceTestBase
 {
    private static final Logger log = Logger.getLogger(SessionStopStartTest.class);
 
-   private MessagingServer server;
+   private HornetQServer server;
 
    private final SimpleString QUEUE = new SimpleString("ConsumerTestQueue");
 

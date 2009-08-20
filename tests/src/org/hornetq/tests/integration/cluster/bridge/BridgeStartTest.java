@@ -30,7 +30,7 @@ import org.hornetq.core.config.TransportConfiguration;
 import org.hornetq.core.config.cluster.BridgeConfiguration;
 import org.hornetq.core.config.cluster.QueueConfiguration;
 import org.hornetq.core.logging.Logger;
-import org.hornetq.core.server.MessagingServer;
+import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.cluster.Bridge;
 import org.hornetq.tests.util.ServiceTestBase;
 import org.hornetq.utils.Pair;
@@ -52,11 +52,11 @@ public class BridgeStartTest extends ServiceTestBase
    public void testStartStop() throws Exception
    {
       Map<String, Object> server0Params = new HashMap<String, Object>();
-      MessagingServer server0 = createClusteredServerWithParams(0, true, server0Params);
+      HornetQServer server0 = createClusteredServerWithParams(0, true, server0Params);
 
       Map<String, Object> server1Params = new HashMap<String, Object>();
       server1Params.put(SERVER_ID_PROP_NAME, 1);
-      MessagingServer server1 = createClusteredServerWithParams(1, true, server1Params);
+      HornetQServer server1 = createClusteredServerWithParams(1, true, server1Params);
 
       final String testAddress = "testAddress";
       final String queueName0 = "queue0";
@@ -195,11 +195,11 @@ public class BridgeStartTest extends ServiceTestBase
       // to be persisted
 
       Map<String, Object> server0Params = new HashMap<String, Object>();
-      MessagingServer server0 = createClusteredServerWithParams(0, true, server0Params);
+      HornetQServer server0 = createClusteredServerWithParams(0, true, server0Params);
 
       Map<String, Object> server1Params = new HashMap<String, Object>();
       server1Params.put(SERVER_ID_PROP_NAME, 1);
-      MessagingServer server1 = createClusteredServerWithParams(1, true, server1Params);
+      HornetQServer server1 = createClusteredServerWithParams(1, true, server1Params);
 
       final String testAddress = "testAddress";
       final String queueName0 = "queue0";
@@ -375,11 +375,11 @@ public class BridgeStartTest extends ServiceTestBase
    public void testTargetServerNotAvailableNoReconnectTries() throws Exception
    {
       Map<String, Object> server0Params = new HashMap<String, Object>();
-      MessagingServer server0 = createClusteredServerWithParams(0, false, server0Params);
+      HornetQServer server0 = createClusteredServerWithParams(0, false, server0Params);
 
       Map<String, Object> server1Params = new HashMap<String, Object>();
       server1Params.put(SERVER_ID_PROP_NAME, 1);
-      MessagingServer server1 = createClusteredServerWithParams(1, false, server1Params);
+      HornetQServer server1 = createClusteredServerWithParams(1, false, server1Params);
 
       final String testAddress = "testAddress";
       final String queueName0 = "queue0";
@@ -503,11 +503,11 @@ public class BridgeStartTest extends ServiceTestBase
    public void testManualStopStart() throws Exception
    {
       Map<String, Object> server0Params = new HashMap<String, Object>();
-      MessagingServer server0 = createClusteredServerWithParams(0, false, server0Params);
+      HornetQServer server0 = createClusteredServerWithParams(0, false, server0Params);
 
       Map<String, Object> server1Params = new HashMap<String, Object>();
       server1Params.put(SERVER_ID_PROP_NAME, 1);
-      MessagingServer server1 = createClusteredServerWithParams(1, false, server1Params);
+      HornetQServer server1 = createClusteredServerWithParams(1, false, server1Params);
 
       final String testAddress = "testAddress";
       final String queueName0 = "queue0";

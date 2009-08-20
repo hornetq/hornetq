@@ -12,7 +12,7 @@
  */
 package org.hornetq.integration.transports.netty;
 
-import org.hornetq.core.exception.MessagingException;
+import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.remoting.impl.ssl.SSLSupport;
 import org.hornetq.core.remoting.spi.BufferHandler;
@@ -373,7 +373,7 @@ public class NettyConnector implements Connector
                handshakeFuture.awaitUninterruptibly();
                if (handshakeFuture.isSuccess())
                {
-                  ch.getPipeline().get(MessagingChannelHandler.class).active = true;
+                  ch.getPipeline().get(HornetQChannelHandler.class).active = true;
                }
                else
                {
@@ -389,7 +389,7 @@ public class NettyConnector implements Connector
          }
          else
          {
-            ch.getPipeline().get(MessagingChannelHandler.class).active = true;
+            ch.getPipeline().get(HornetQChannelHandler.class).active = true;
          }
 
          NettyConnection conn = new NettyConnection(ch, new Listener());
@@ -420,7 +420,7 @@ public class NettyConnector implements Connector
    // Inner classes -------------------------------------------------
 
    @ChannelPipelineCoverage("one")
-   private final class MessagingClientChannelHandler extends MessagingChannelHandler
+   private final class MessagingClientChannelHandler extends HornetQChannelHandler
    {
       MessagingClientChannelHandler(ChannelGroup group, BufferHandler handler, ConnectionLifeCycleListener listener)
       {
@@ -598,7 +598,7 @@ public class NettyConnector implements Connector
          }
       }
 
-      public void connectionException(final Object connectionID, final MessagingException me)
+      public void connectionException(final Object connectionID, final HornetQException me)
       {
          // Execute on different thread to avoid deadlocks
          new Thread()

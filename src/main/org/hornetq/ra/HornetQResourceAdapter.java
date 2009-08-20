@@ -30,7 +30,7 @@ import org.hornetq.core.client.ClientSession;
 import org.hornetq.core.client.ClientSessionFactory;
 import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
 import org.hornetq.core.config.TransportConfiguration;
-import org.hornetq.core.exception.MessagingException;
+import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.ra.inflow.HornetQActivation;
 import org.hornetq.ra.inflow.HornetQActivationSpec;
@@ -113,7 +113,7 @@ public class HornetQResourceAdapter implements ResourceAdapter
          {
             setup();
          }
-         catch (MessagingException e)
+         catch (HornetQException e)
          {
             throw new ResourceException("Unable to create activation", e);
          }
@@ -1371,7 +1371,7 @@ public class HornetQResourceAdapter implements ResourceAdapter
    /**
     * Setup the factory
     */
-   protected void setup() throws MessagingException
+   protected void setup() throws HornetQException
    {
       defaultJBossConnectionFactory = createJBossConnectionFactory(raProperties);
       sessionFactory = defaultJBossConnectionFactory.getCoreFactory();
@@ -1385,7 +1385,7 @@ public class HornetQResourceAdapter implements ResourceAdapter
          {
             setup();
          }
-         catch (MessagingException e)
+         catch (HornetQException e)
          {
             throw new ResourceException("Unable to create activation", e);
          }

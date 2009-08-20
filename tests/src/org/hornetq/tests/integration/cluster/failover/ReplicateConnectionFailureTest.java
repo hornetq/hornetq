@@ -29,8 +29,8 @@ import org.hornetq.core.logging.Logger;
 import org.hornetq.core.remoting.impl.RemotingConnectionImpl;
 import org.hornetq.core.remoting.impl.invm.InVMRegistry;
 import org.hornetq.core.remoting.impl.invm.TransportConstants;
-import org.hornetq.core.server.Messaging;
-import org.hornetq.core.server.MessagingServer;
+import org.hornetq.core.server.HornetQ;
+import org.hornetq.core.server.HornetQServer;
 import org.hornetq.tests.util.UnitTestCase;
 
 /**
@@ -53,9 +53,9 @@ public class ReplicateConnectionFailureTest extends UnitTestCase
 
    // Attributes ----------------------------------------------------
 
-   private MessagingServer liveServer;
+   private HornetQServer liveServer;
 
-   private MessagingServer backupServer;
+   private HornetQServer backupServer;
 
    private Map<String, Object> backupParams = new HashMap<String, Object>();
 
@@ -139,7 +139,7 @@ public class ReplicateConnectionFailureTest extends UnitTestCase
                 .add(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory",
                                                 backupParams));
       backupConf.setBackup(true);
-      backupServer = Messaging.newMessagingServer(backupConf, false);
+      backupServer = HornetQ.newMessagingServer(backupConf, false);
       backupServer.start();
 
       Configuration liveConf = new ConfigurationImpl();    
@@ -153,7 +153,7 @@ public class ReplicateConnectionFailureTest extends UnitTestCase
       connectors.put(backupTC.getName(), backupTC);
       liveConf.setConnectorConfigurations(connectors);
       liveConf.setBackupConnectorName(backupTC.getName());
-      liveServer = Messaging.newMessagingServer(liveConf, false);
+      liveServer = HornetQ.newMessagingServer(liveConf, false);
       liveServer.start();
    }
 

@@ -28,7 +28,7 @@ import org.hornetq.core.postoffice.Binding;
 import org.hornetq.core.postoffice.Bindings;
 import org.hornetq.core.postoffice.QueueBinding;
 import org.hornetq.core.server.Consumer;
-import org.hornetq.core.server.MessagingServer;
+import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.impl.ServerConsumerImpl;
 import org.hornetq.tests.util.ServiceTestBase;
 import org.hornetq.utils.SimpleString;
@@ -69,7 +69,7 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
    * */
    public void testSendWindowSize() throws Exception
    {
-      MessagingServer messagingService = createServer(false);
+      HornetQServer messagingService = createServer(false);
       ClientSessionFactory cf = createInVMFactory();
       try
       {
@@ -124,7 +124,7 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
 
    public void testSlowConsumerBufferingOne() throws Exception
    {
-      MessagingServer server = createServer(false);
+      HornetQServer server = createServer(false);
 
       ClientSession sessionB = null;
       ClientSession session = null;
@@ -216,7 +216,7 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
 
    private void internalTestSlowConsumerNoBuffer(final boolean largeMessages) throws Exception
    {
-      MessagingServer server = createServer(false);
+      HornetQServer server = createServer(false);
 
       ClientSession sessionB = null;
       ClientSession session = null;
@@ -346,7 +346,7 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
 
    private void internalTestSlowConsumerNoBuffer2(final boolean largeMessages) throws Exception
    {
-      MessagingServer server = createServer(false);
+      HornetQServer server = createServer(false);
 
       ClientSession session1 = null;
       ClientSession session2 = null;
@@ -529,7 +529,7 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
    public void internalTestSlowConsumerOnMessageHandlerNoBuffers(final boolean largeMessages) throws Exception
    {
 
-      MessagingServer server = createServer(false);
+      HornetQServer server = createServer(false);
 
       ClientSession sessionB = null;
       ClientSession session = null;
@@ -694,7 +694,7 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
 
    private void internalTestSlowConsumerOnMessageHandlerBufferOne(final boolean largeMessage) throws Exception
    {
-      MessagingServer server = createServer(false);
+      HornetQServer server = createServer(false);
 
       ClientSession sessionB = null;
       ClientSession session = null;
@@ -865,7 +865,7 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
    private void testNoWindowRoundRobin(final boolean largeMessages) throws Exception
    {
 
-      MessagingServer server = createServer(false);
+      HornetQServer server = createServer(false);
 
       ClientSession sessionA = null;
       ClientSession sessionB = null;

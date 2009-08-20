@@ -13,11 +13,11 @@
 
 package org.hornetq.integration.transports.netty;
 
-import org.hornetq.core.exception.MessagingException;
+import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.remoting.spi.Connection;
 import org.hornetq.core.remoting.spi.ConnectionLifeCycleListener;
-import org.hornetq.core.remoting.spi.MessagingBuffer;
+import org.hornetq.core.remoting.spi.HornetQBuffer;
 import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.ChannelFuture;
 import org.jboss.netty.channel.ChannelFutureListener;
@@ -99,7 +99,7 @@ public class NettyConnection implements Connection
       listener.connectionDestroyed(getID());
    }
 
-   public MessagingBuffer createBuffer(final int size)
+   public HornetQBuffer createBuffer(final int size)
    {
       return new ChannelBufferWrapper(org.jboss.netty.buffer.ChannelBuffers.buffer(size));
    }
@@ -109,12 +109,12 @@ public class NettyConnection implements Connection
       return channel.getId();
    }
    
-   public void write(final MessagingBuffer buffer)
+   public void write(final HornetQBuffer buffer)
    {
       write(buffer, false);
    }
    
-   public void write(final MessagingBuffer buffer, final boolean flush)
+   public void write(final HornetQBuffer buffer, final boolean flush)
    {
       ChannelFuture future = channel.write(buffer.getUnderlyingBuffer());      
       
@@ -145,7 +145,7 @@ public class NettyConnection implements Connection
       return channel.getRemoteAddress().toString();
    }
    
-   public void fail(final MessagingException me)
+   public void fail(final HornetQException me)
    {
       listener.connectionException(channel.getId(), me);
    }

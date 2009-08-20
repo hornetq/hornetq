@@ -27,8 +27,8 @@ import org.hornetq.core.logging.Logger;
 import org.hornetq.core.management.AcceptorControl;
 import org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
-import org.hornetq.core.server.Messaging;
-import org.hornetq.core.server.MessagingServer;
+import org.hornetq.core.server.HornetQ;
+import org.hornetq.core.server.HornetQServer;
 
 /**
  * A AcceptorControlTest
@@ -49,7 +49,7 @@ public class AcceptorControlTest extends ManagementTestBase
    
    // Attributes ----------------------------------------------------
 
-   private MessagingServer service;
+   private HornetQServer service;
 
    // Static --------------------------------------------------------
 
@@ -67,7 +67,7 @@ public class AcceptorControlTest extends ManagementTestBase
       conf.setSecurityEnabled(false);
       conf.setJMXManagementEnabled(true);
       conf.getAcceptorConfigurations().add(acceptorConfig);
-      service = Messaging.newMessagingServer(conf, mbeanServer, false);
+      service = HornetQ.newMessagingServer(conf, mbeanServer, false);
       service.start();
 
       AcceptorControl acceptorControl = createManagementControl(acceptorConfig.getName());
@@ -85,7 +85,7 @@ public class AcceptorControlTest extends ManagementTestBase
       conf.setSecurityEnabled(false);
       conf.setJMXManagementEnabled(true);
       conf.getAcceptorConfigurations().add(acceptorConfig);
-      service = Messaging.newMessagingServer(conf, mbeanServer, false);
+      service = HornetQ.newMessagingServer(conf, mbeanServer, false);
       service.start();
 
       AcceptorControl acceptorControl = createManagementControl(acceptorConfig.getName());

@@ -16,13 +16,13 @@ import org.hornetq.core.client.ClientMessage;
 import org.hornetq.core.client.ClientProducer;
 import org.hornetq.core.client.ClientSession;
 import org.hornetq.core.client.ClientSessionFactory;
-import org.hornetq.core.exception.MessagingException;
+import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.remoting.Interceptor;
 import org.hornetq.core.remoting.Packet;
 import org.hornetq.core.remoting.RemotingConnection;
 import org.hornetq.core.remoting.impl.wireformat.PacketImpl;
-import org.hornetq.core.server.MessagingServer;
+import org.hornetq.core.server.HornetQServer;
 import org.hornetq.tests.util.ServiceTestBase;
 import org.hornetq.utils.SimpleString;
 
@@ -36,7 +36,7 @@ public class ProducerTest  extends ServiceTestBase
 {
    private static final Logger log = Logger.getLogger(ConsumerTest.class);
 
-   private MessagingServer server;
+   private HornetQServer server;
 
    private final SimpleString QUEUE = new SimpleString("ConsumerTestQueue");
 
@@ -65,7 +65,7 @@ public class ProducerTest  extends ServiceTestBase
       final CountDownLatch latch = new CountDownLatch(1);
       server.getRemotingService().addInterceptor(new Interceptor()
       {
-         public boolean intercept(Packet packet, RemotingConnection connection) throws MessagingException
+         public boolean intercept(Packet packet, RemotingConnection connection) throws HornetQException
          {
             if(packet.getType() == PacketImpl.SESS_SEND)
             {

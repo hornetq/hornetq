@@ -18,8 +18,8 @@ import org.hornetq.core.client.ClientProducer;
 import org.hornetq.core.client.ClientSession;
 import org.hornetq.core.client.ClientSessionFactory;
 import org.hornetq.core.client.MessageHandler;
-import org.hornetq.core.exception.MessagingException;
-import org.hornetq.core.server.MessagingServer;
+import org.hornetq.core.exception.HornetQException;
+import org.hornetq.core.server.HornetQServer;
 import org.hornetq.tests.util.ServiceTestBase;
 import org.hornetq.utils.SimpleString;
 
@@ -44,7 +44,7 @@ public class DeliveryOrderTest extends ServiceTestBase
 
       public void testSendDeliveryOrderOnCommit() throws Exception
       {
-         MessagingServer server = createServer(false);
+         HornetQServer server = createServer(false);
          try
          {
             server.start();
@@ -85,7 +85,7 @@ public class DeliveryOrderTest extends ServiceTestBase
 
       public void testReceiveDeliveryOrderOnRollback() throws Exception
       {
-         MessagingServer server = createServer(false);
+         HornetQServer server = createServer(false);
          try
          {
             server.start();
@@ -130,7 +130,7 @@ public class DeliveryOrderTest extends ServiceTestBase
 
       public void testMultipleConsumersMessageOrder() throws Exception
       {
-         MessagingServer server = createServer(false);
+         HornetQServer server = createServer(false);
          try
          {
             server.start();
@@ -199,7 +199,7 @@ public class DeliveryOrderTest extends ServiceTestBase
             {
                message.acknowledge();
             }
-            catch (MessagingException e)
+            catch (HornetQException e)
             {
                e.printStackTrace();
             }

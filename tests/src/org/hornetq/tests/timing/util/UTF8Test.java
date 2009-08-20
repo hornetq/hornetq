@@ -14,7 +14,7 @@
 package org.hornetq.tests.timing.util;
 
 import org.hornetq.core.buffers.ChannelBuffers;
-import org.hornetq.core.remoting.spi.MessagingBuffer;
+import org.hornetq.core.remoting.spi.HornetQBuffer;
 import org.hornetq.tests.util.UnitTestCase;
 import org.hornetq.utils.UTF8Util;
 
@@ -47,7 +47,7 @@ public class UTF8Test extends UnitTestCase
 
    public void testWriteUTF() throws Exception
    {
-      MessagingBuffer buffer = ChannelBuffers.buffer(10 * 1024); 
+      HornetQBuffer buffer = ChannelBuffers.buffer(10 * 1024); 
 
       long start = System.currentTimeMillis();
 
@@ -72,7 +72,7 @@ public class UTF8Test extends UnitTestCase
 
    public void testReadUTF() throws Exception
    {
-      MessagingBuffer buffer = ChannelBuffers.buffer(10 * 1024); 
+      HornetQBuffer buffer = ChannelBuffers.buffer(10 * 1024); 
 
       buffer.writeUTF(str);
 

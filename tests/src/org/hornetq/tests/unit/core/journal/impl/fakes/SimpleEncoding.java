@@ -14,7 +14,7 @@
 package org.hornetq.tests.unit.core.journal.impl.fakes;
 
 import org.hornetq.core.journal.EncodingSupport;
-import org.hornetq.core.remoting.spi.MessagingBuffer;
+import org.hornetq.core.remoting.spi.HornetQBuffer;
 
 /**
  * Provides a SimpleEncoding with a Fake Payload
@@ -42,13 +42,13 @@ public class SimpleEncoding implements EncodingSupport
    }
 
    // Public --------------------------------------------------------
-   public void decode(final MessagingBuffer buffer)
+   public void decode(final HornetQBuffer buffer)
    {
       throw new UnsupportedOperationException();
 
    }
 
-   public void encode(final MessagingBuffer buffer)
+   public void encode(final HornetQBuffer buffer)
    {
       for (int i = 0; i < size; i++)
       {

@@ -14,7 +14,7 @@ package org.hornetq.core.remoting;
 
 import java.util.concurrent.locks.Lock;
 
-import org.hornetq.core.exception.MessagingException;
+import org.hornetq.core.exception.HornetQException;
 
 /**
  * A Channel A Channel *does not* support concurrent access by more than one thread!
@@ -29,7 +29,7 @@ public interface Channel
    
    void sendAndFlush(Packet packet);
    
-   Packet sendBlocking(Packet packet) throws MessagingException;
+   Packet sendBlocking(Packet packet) throws HornetQException;
 
    void replicatePacket(Packet packet, long replicatedChannelID, Runnable action);
    

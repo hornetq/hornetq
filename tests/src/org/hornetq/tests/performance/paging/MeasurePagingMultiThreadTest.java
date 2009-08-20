@@ -22,9 +22,9 @@ import org.hornetq.core.client.ClientProducer;
 import org.hornetq.core.client.ClientSession;
 import org.hornetq.core.client.ClientSessionFactory;
 import org.hornetq.core.config.Configuration;
-import org.hornetq.core.exception.MessagingException;
-import org.hornetq.core.remoting.spi.MessagingBuffer;
-import org.hornetq.core.server.MessagingServer;
+import org.hornetq.core.exception.HornetQException;
+import org.hornetq.core.remoting.spi.HornetQBuffer;
+import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.tests.util.ServiceTestBase;
 import org.hornetq.utils.SimpleString;
@@ -69,7 +69,7 @@ public class MeasurePagingMultiThreadTest extends ServiceTestBase
 
       HashMap<String, AddressSettings> settings = new HashMap<String, AddressSettings>();
 
-      MessagingServer messagingService = createServer(true, config, 10 * 1024, 20 * 1024, settings);
+      HornetQServer messagingService = createServer(true, config, 10 * 1024, 20 * 1024, settings);
       messagingService.start();
       try
       {
@@ -193,12 +193,12 @@ public class MeasurePagingMultiThreadTest extends ServiceTestBase
     * @param nMessages
     * @param messageSize
     * @param factory
-    * @throws MessagingException
+    * @throws HornetQException
     */
    private void sendInitialBatch(final SimpleString adr,
                                  final int nMessages,
                                  final int messageSize,
-                                 final ClientSessionFactory factory) throws MessagingException
+                                 final ClientSessionFactory factory) throws HornetQException
    {
       ClientSession session = factory.createSession(false, true, true);
       ClientProducer producer = session.createProducer(adr);
@@ -213,9 +213,9 @@ public class MeasurePagingMultiThreadTest extends ServiceTestBase
     * @param nMessages
     * @param producer
     * @param msg
-    * @throws MessagingException
+    * @throws HornetQException
     */
-   private void sendMessages(final int nMessages, final ClientProducer producer, final ClientMessage msg) throws MessagingException
+   private void sendMessages(final int nMessages, final ClientProducer producer, final ClientMessage msg) throws HornetQException
    {
       for (int i = 0; i < nMessages; i++)
       {
@@ -226,9 +226,9 @@ public class MeasurePagingMultiThreadTest extends ServiceTestBase
    /**
     * @param factory
     * @param adr
-    * @throws MessagingException
+    * @throws HornetQException
     */
-   private void createDestination(final ClientSessionFactory factory, final SimpleString adr) throws MessagingException
+   private void createDestination(final ClientSessionFactory factory, final SimpleString adr) throws HornetQException
    {
       {
          ClientSession session = factory.createSession(false, false, false);

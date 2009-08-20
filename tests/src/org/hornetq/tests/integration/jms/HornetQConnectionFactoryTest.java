@@ -221,8 +221,8 @@ import org.hornetq.core.config.cluster.BroadcastGroupConfiguration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.remoting.impl.invm.TransportConstants;
-import org.hornetq.core.server.Messaging;
-import org.hornetq.core.server.MessagingServer;
+import org.hornetq.core.server.HornetQ;
+import org.hornetq.core.server.HornetQServer;
 import org.hornetq.jms.client.HornetQConnectionFactory;
 import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.tests.util.UnitTestCase;
@@ -244,9 +244,9 @@ public class HornetQConnectionFactoryTest extends UnitTestCase
 
    private final int groupPort = 8765;
 
-   private MessagingServer liveService;
+   private HornetQServer liveService;
 
-   private MessagingServer backupService;
+   private HornetQServer backupService;
 
    private TransportConfiguration liveTC;
 
@@ -1074,7 +1074,7 @@ public class HornetQConnectionFactoryTest extends UnitTestCase
                 .add(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory",
                                                 backupParams));
       backupConf.setBackup(true);
-      backupService = Messaging.newMessagingServer(backupConf, false);
+      backupService = HornetQ.newMessagingServer(backupConf, false);
       backupService.start();
 
       Configuration liveConf = new ConfigurationImpl();
@@ -1112,7 +1112,7 @@ public class HornetQConnectionFactoryTest extends UnitTestCase
       bcConfigs1.add(bcConfig1);
       liveConf.setBroadcastGroupConfigurations(bcConfigs1);
 
-      liveService = Messaging.newMessagingServer(liveConf, false);
+      liveService = HornetQ.newMessagingServer(liveConf, false);
       liveService.start();
    }
 

@@ -24,8 +24,8 @@ import javax.jms.TextMessage;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.TransportConfiguration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
-import org.hornetq.core.server.Messaging;
-import org.hornetq.core.server.MessagingServer;
+import org.hornetq.core.server.HornetQ;
+import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.Queue;
 import org.hornetq.jms.HornetQQueue;
 import org.hornetq.jms.client.HornetQConnectionFactory;
@@ -40,7 +40,7 @@ import org.hornetq.utils.SimpleString;
  */
 public class ConsumerTest extends UnitTestCase
 {
-   private MessagingServer server;
+   private HornetQServer server;
 
    private JMSServerManagerImpl jmsServer;
 
@@ -60,7 +60,7 @@ public class ConsumerTest extends UnitTestCase
       conf.setJMXManagementEnabled(true);
       conf.getAcceptorConfigurations()
           .add(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory"));
-      server = Messaging.newMessagingServer(conf, false);
+      server = HornetQ.newMessagingServer(conf, false);
       jmsServer = new JMSServerManagerImpl(server);
       jmsServer.setContext(new NullInitialContext());
       jmsServer.start();

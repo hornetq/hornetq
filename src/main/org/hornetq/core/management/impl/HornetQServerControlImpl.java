@@ -34,16 +34,16 @@ import javax.transaction.xa.Xid;
 
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.TransportConfiguration;
-import org.hornetq.core.exception.MessagingException;
+import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.logging.Logger;
-import org.hornetq.core.management.MessagingServerControl;
+import org.hornetq.core.management.HornetQServerControl;
 import org.hornetq.core.management.NotificationType;
 import org.hornetq.core.messagecounter.MessageCounterManager;
 import org.hornetq.core.messagecounter.impl.MessageCounterManagerImpl;
 import org.hornetq.core.postoffice.PostOffice;
 import org.hornetq.core.remoting.RemotingConnection;
 import org.hornetq.core.remoting.server.RemotingService;
-import org.hornetq.core.server.MessagingServer;
+import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.ServerSession;
 import org.hornetq.core.transaction.ResourceManager;
 import org.hornetq.core.transaction.Transaction;
@@ -58,11 +58,11 @@ import org.hornetq.utils.json.JSONObject;
  * @version <tt>$Revision$</tt>
  * 
  */
-public class MessagingServerControlImpl implements MessagingServerControl, NotificationEmitter
+public class HornetQServerControlImpl implements HornetQServerControl, NotificationEmitter
 {
    // Constants -----------------------------------------------------
 
-   private static final Logger log = Logger.getLogger(MessagingServerControlImpl.class);
+   private static final Logger log = Logger.getLogger(HornetQServerControlImpl.class);
 
    // Attributes ----------------------------------------------------
 
@@ -74,7 +74,7 @@ public class MessagingServerControlImpl implements MessagingServerControl, Notif
 
    private final RemotingService remotingService;
 
-   private final MessagingServer server;
+   private final HornetQServer server;
 
    private final MessageCounterManager messageCounterManager;
 
@@ -86,11 +86,11 @@ public class MessagingServerControlImpl implements MessagingServerControl, Notif
 
    // Constructors --------------------------------------------------
 
-   public MessagingServerControlImpl(final PostOffice postOffice,
+   public HornetQServerControlImpl(final PostOffice postOffice,
                                  final Configuration configuration,
                                  final ResourceManager resourceManager,
                                  final RemotingService remotingService,
-                                 final MessagingServer messagingServer,
+                                 final HornetQServer messagingServer,
                                  final MessageCounterManager messageCounterManager,
                                  final NotificationBroadcasterSupport broadcaster) throws Exception
    {
@@ -421,7 +421,7 @@ public class MessagingServerControlImpl implements MessagingServerControl, Notif
          if (remoteAddress.contains(ipAddress))
          {
             remotingService.removeConnection(connection.getID());
-            connection.fail(new MessagingException(MessagingException.INTERNAL_ERROR, "connections for " + ipAddress +
+            connection.fail(new HornetQException(HornetQException.INTERNAL_ERROR, "connections for " + ipAddress +
                                                                                       " closed by management"));
             closed = true;
          }

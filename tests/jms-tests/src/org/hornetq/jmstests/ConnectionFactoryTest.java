@@ -105,7 +105,7 @@ public class ConnectionFactoryTest extends JMSTestCase
    
    public void testNoClientIDConfigured_1() throws Exception
    {
-      // the ConnectionFactories that ship with Messaging do not have their clientID
+      // the ConnectionFactories that ship with HornetQ do not have their clientID
       // administratively configured.
 
       ConnectionFactory cf = (ConnectionFactory)ic.lookup("/ConnectionFactory");
@@ -118,7 +118,7 @@ public class ConnectionFactoryTest extends JMSTestCase
 
    public void testNoClientIDConfigured_2() throws Exception
    {
-      // the ConnectionFactories that ship with Messaging do not have their clientID
+      // the ConnectionFactories that ship with HornetQ do not have their clientID
       // administratively configured.
 
       ConnectionFactory cf = (ConnectionFactory)ic.lookup("/ConnectionFactory");

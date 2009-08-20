@@ -24,7 +24,7 @@ import org.hornetq.core.client.ClientSessionFactory;
 import org.hornetq.core.client.impl.ClientSessionFactoryInternal;
 import org.hornetq.core.client.impl.ClientSessionImpl;
 import org.hornetq.core.client.impl.ClientSessionInternal;
-import org.hornetq.core.exception.MessagingException;
+import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.remoting.impl.RemotingConnectionImpl;
 import org.hornetq.core.remoting.impl.invm.InVMConnector;
@@ -258,7 +258,7 @@ public abstract class MultiThreadFailoverSupport extends ServiceTestBase
          }
          else
          {
-            conn.fail(new MessagingException(MessagingException.NOT_CONNECTED, "blah"));
+            conn.fail(new HornetQException(HornetQException.NOT_CONNECTED, "blah"));
          }
 
          log.info("** Fail complete");

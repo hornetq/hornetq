@@ -21,7 +21,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.hornetq.core.paging.PageTransactionInfo;
-import org.hornetq.core.remoting.spi.MessagingBuffer;
+import org.hornetq.core.remoting.spi.HornetQBuffer;
 
 /**
  *
@@ -100,7 +100,7 @@ public class PageTransactionInfoImpl implements PageTransactionInfo
 
    // EncodingSupport implementation
 
-   public synchronized void decode(final MessagingBuffer buffer)
+   public synchronized void decode(final HornetQBuffer buffer)
    {
       transactionID = buffer.readLong();
       numberOfMessages.set(buffer.readInt());
@@ -110,7 +110,7 @@ public class PageTransactionInfoImpl implements PageTransactionInfo
       // markIcomplete
    }
 
-   public synchronized void encode(final MessagingBuffer buffer)
+   public synchronized void encode(final HornetQBuffer buffer)
    {
       buffer.writeLong(transactionID);
       buffer.writeInt(numberOfMessages.get());

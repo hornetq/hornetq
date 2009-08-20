@@ -21,7 +21,7 @@ import org.hornetq.core.client.ClientMessage;
 import org.hornetq.core.client.ClientProducer;
 import org.hornetq.core.client.ClientSession;
 import org.hornetq.core.client.ClientSessionFactory;
-import org.hornetq.core.remoting.spi.MessagingBuffer;
+import org.hornetq.core.remoting.spi.HornetQBuffer;
 import org.hornetq.utils.SimpleString;
 
 /**
@@ -150,7 +150,7 @@ public class JustReplicationTest extends FailoverTestBase
          {
             ClientMessage message = session.createClientMessage(true);
 
-            MessagingBuffer buffer = ChannelBuffers.buffer(15000);
+            HornetQBuffer buffer = ChannelBuffers.buffer(15000);
             buffer.setInt(0, i);
             buffer.writerIndex(buffer.capacity());
             
@@ -172,7 +172,7 @@ public class JustReplicationTest extends FailoverTestBase
 
             message.acknowledge();
 
-            MessagingBuffer buffer = message.getBody();
+            HornetQBuffer buffer = message.getBody();
 
             assertEquals(numberOfBytes, buffer.writerIndex());
 

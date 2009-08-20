@@ -15,8 +15,8 @@ package org.hornetq.tests.integration.client;
 import org.hornetq.core.client.ClientProducer;
 import org.hornetq.core.client.ClientSessionFactory;
 import org.hornetq.core.client.impl.ClientSessionInternal;
-import org.hornetq.core.exception.MessagingException;
-import org.hornetq.core.server.MessagingServer;
+import org.hornetq.core.exception.HornetQException;
+import org.hornetq.core.server.HornetQServer;
 import org.hornetq.tests.util.ServiceTestBase;
 
 /**
@@ -26,7 +26,7 @@ public class SessionCreateProducerTest extends ServiceTestBase
 {
    public void testCreateAnonProducer() throws Exception
    {
-      MessagingServer service = createServer(false);
+      HornetQServer service = createServer(false);
       try
       {
          service.start();
@@ -51,7 +51,7 @@ public class SessionCreateProducerTest extends ServiceTestBase
 
    public void testCreateProducer1() throws Exception
    {
-      MessagingServer service = createServer(false);
+      HornetQServer service = createServer(false);
       try
       {
          service.start();
@@ -76,7 +76,7 @@ public class SessionCreateProducerTest extends ServiceTestBase
 
    public void testCreateProducer2() throws Exception
    {
-      MessagingServer service = createServer(false);
+      HornetQServer service = createServer(false);
       try
       {
          service.start();
@@ -102,7 +102,7 @@ public class SessionCreateProducerTest extends ServiceTestBase
 
    public void testCreateProducer3() throws Exception
    {
-      MessagingServer service = createServer(false);
+      HornetQServer service = createServer(false);
       try
       {
          service.start();
@@ -130,7 +130,7 @@ public class SessionCreateProducerTest extends ServiceTestBase
 
    public void testProducerOnClosedSession() throws Exception
       {
-         MessagingServer service = createServer(false);
+         HornetQServer service = createServer(false);
          try
          {
             service.start();
@@ -145,9 +145,9 @@ public class SessionCreateProducerTest extends ServiceTestBase
                clientSession.createProducer();
                fail("should throw exception");
             }
-            catch (MessagingException e)
+            catch (HornetQException e)
             {
-               assertEquals(e.getCode(), MessagingException.OBJECT_CLOSED);
+               assertEquals(e.getCode(), HornetQException.OBJECT_CLOSED);
             }
          }
          finally

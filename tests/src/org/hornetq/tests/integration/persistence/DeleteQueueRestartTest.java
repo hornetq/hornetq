@@ -19,8 +19,8 @@ import org.hornetq.core.client.ClientMessage;
 import org.hornetq.core.client.ClientProducer;
 import org.hornetq.core.client.ClientSession;
 import org.hornetq.core.client.ClientSessionFactory;
-import org.hornetq.core.exception.MessagingException;
-import org.hornetq.core.server.MessagingServer;
+import org.hornetq.core.exception.HornetQException;
+import org.hornetq.core.server.HornetQServer;
 import org.hornetq.tests.util.ServiceTestBase;
 
 /**
@@ -61,7 +61,7 @@ public class DeleteQueueRestartTest extends ServiceTestBase
 
    private void internalDeleteQueueAndRestart() throws Exception
    {
-      MessagingServer server = createServer(true);
+      HornetQServer server = createServer(true);
 
       server.start();
 
@@ -97,7 +97,7 @@ public class DeleteQueueRestartTest extends ServiceTestBase
                session.deleteQueue(ADDRESS);
                session.close();
             }
-            catch (MessagingException e)
+            catch (HornetQException e)
             {
             }
          }

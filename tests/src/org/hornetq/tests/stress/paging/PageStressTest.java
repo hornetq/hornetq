@@ -21,9 +21,9 @@ import org.hornetq.core.client.ClientProducer;
 import org.hornetq.core.client.ClientSession;
 import org.hornetq.core.client.ClientSessionFactory;
 import org.hornetq.core.config.Configuration;
-import org.hornetq.core.exception.MessagingException;
+import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.server.JournalType;
-import org.hornetq.core.server.MessagingServer;
+import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.tests.util.ServiceTestBase;
 import org.hornetq.utils.SimpleString;
@@ -40,7 +40,7 @@ public class PageStressTest extends ServiceTestBase
 
    // Attributes ----------------------------------------------------
 
-   private MessagingServer messagingService;
+   private HornetQServer messagingService;
 
    // Static --------------------------------------------------------
 
@@ -243,7 +243,7 @@ public class PageStressTest extends ServiceTestBase
 
    }
 
-   private int readMessages(final ClientSession session, final ClientConsumer consumer, final SimpleString queue) throws MessagingException
+   private int readMessages(final ClientSession session, final ClientConsumer consumer, final SimpleString queue) throws HornetQException
    {
       session.start();
       int msgs = 0;

@@ -24,7 +24,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.hornetq.core.asyncio.AIOCallback;
 import org.hornetq.core.asyncio.AsynchronousFile;
 import org.hornetq.core.asyncio.BufferCallback;
-import org.hornetq.core.exception.MessagingException;
+import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.utils.VariableLatch;
 
@@ -163,7 +163,7 @@ public class AsynchronousFileImpl implements AsynchronousFile
       this.pollerExecutor = pollerExecutor;
    }
 
-   public void open(final String fileName, final int maxIO) throws MessagingException
+   public void open(final String fileName, final int maxIO) throws HornetQException
    {
       writeLock.lock();
 
@@ -183,12 +183,12 @@ public class AsynchronousFileImpl implements AsynchronousFile
          {
             handler = init(fileName, this.maxIO, log);
          }
-         catch (MessagingException e)
+         catch (HornetQException e)
          {
-            MessagingException ex = null;
-            if (e.getCode() == MessagingException.NATIVE_ERROR_CANT_INITIALIZE_AIO)
+            HornetQException ex = null;
+            if (e.getCode() == HornetQException.NATIVE_ERROR_CANT_INITIALIZE_AIO)
             {
-               ex = new MessagingException(e.getCode(),
+               ex = new HornetQException(e.getCode(),
                                            "Can't initialize AIO. Currently AIO in use = " + totalMaxIO.get() +
                                                     ", trying to allocate more " +
                                                     maxIO,
@@ -278,13 +278,13 @@ public class AsynchronousFileImpl implements AsynchronousFile
                {
                   write(handler, position, size, directByteBuffer, aioCallback);
                }
-               catch (MessagingException e)
+               catch (HornetQException e)
                {
                   callbackError(aioCallback, directByteBuffer, e.getCode(), e.getMessage());
                }
                catch (RuntimeException e)
                {
-                  callbackError(aioCallback, directByteBuffer, MessagingException.INTERNAL_ERROR, e.getMessage());
+                  callbackError(aioCallback, directByteBuffer, HornetQException.INTERNAL_ERROR, e.getMessage());
                }
             }
          });
@@ -297,13 +297,13 @@ public class AsynchronousFileImpl implements AsynchronousFile
          {
             write(handler, position, size, directByteBuffer, aioCallback);
          }
-         catch (MessagingException e)
+         catch (HornetQException e)
          {
             callbackError(aioCallback, directByteBuffer, e.getCode(), e.getMessage());
          }
          catch (RuntimeException e)
          {
-            callbackError(aioCallback, directByteBuffer, MessagingException.INTERNAL_ERROR, e.getMessage());
+            callbackError(aioCallback, directByteBuffer, HornetQException.INTERNAL_ERROR, e.getMessage());
          }
       }
 
@@ -312,7 +312,7 @@ public class AsynchronousFileImpl implements AsynchronousFile
    public void read(final long position,
                     final long size,
                     final ByteBuffer directByteBuffer,
-                    final AIOCallback aioPackage) throws MessagingException
+                    final AIOCallback aioPackage) throws HornetQException
    {
       checkOpened();
       if (poller == null)
@@ -325,7 +325,7 @@ public class AsynchronousFileImpl implements AsynchronousFile
       {
          read(handler, position, size, directByteBuffer, aioPackage);
       }
-      catch (MessagingException e)
+      catch (HornetQException e)
       {
          // Release only if an exception happened
          writeSemaphore.release();
@@ -341,13 +341,13 @@ public class AsynchronousFileImpl implements AsynchronousFile
       }
    }
 
-   public long size() throws MessagingException
+   public long size() throws HornetQException
    {
       checkOpened();
       return size0(handler);
    }
 
-   public void fill(final long position, final int blocks, final long size, final byte fillChar) throws MessagingException
+   public void fill(final long position, final int blocks, final long size, final byte fillChar) throws HornetQException
    {
       checkOpened();
       fill(handler, position, blocks, size, fillChar);
@@ -488,10 +488,10 @@ public class AsynchronousFileImpl implements AsynchronousFile
    }
 
    /**
-    * @throws MessagingException
+    * @throws HornetQException
     * @throws InterruptedException
     */
-   private void stopPoller() throws MessagingException, InterruptedException
+   private void stopPoller() throws HornetQException, InterruptedException
    {
       stopPoller(handler);
       // We need to make sure we won't call close until Poller is
@@ -512,19 +512,19 @@ public class AsynchronousFileImpl implements AsynchronousFile
 
    private static native ByteBuffer newNativeBuffer(long size);
 
-   private static native long init(String fileName, int maxIO, Logger logger) throws MessagingException;
+   private static native long init(String fileName, int maxIO, Logger logger) throws HornetQException;
 
-   private native long size0(long handle) throws MessagingException;
+   private native long size0(long handle) throws HornetQException;
 
-   private native void write(long handle, long position, long size, ByteBuffer buffer, AIOCallback aioPackage) throws MessagingException;
+   private native void write(long handle, long position, long size, ByteBuffer buffer, AIOCallback aioPackage) throws HornetQException;
 
-   private native void read(long handle, long position, long size, ByteBuffer buffer, AIOCallback aioPackage) throws MessagingException;
+   private native void read(long handle, long position, long size, ByteBuffer buffer, AIOCallback aioPackage) throws HornetQException;
 
-   private static native void fill(long handle, long position, int blocks, long size, byte fillChar) throws MessagingException;
+   private static native void fill(long handle, long position, int blocks, long size, byte fillChar) throws HornetQException;
 
-   private static native void closeInternal(long handler) throws MessagingException;
+   private static native void closeInternal(long handler) throws HornetQException;
 
-   private static native void stopPoller(long handler) throws MessagingException;
+   private static native void stopPoller(long handler) throws HornetQException;
 
    /** A native method that does nothing, and just validate if the ELF dependencies are loaded and on the correct platform as this binary format */
    private static native int getNativeVersion();

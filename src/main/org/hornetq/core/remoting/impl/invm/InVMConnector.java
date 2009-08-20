@@ -17,7 +17,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Executor;
 
-import org.hornetq.core.exception.MessagingException;
+import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.remoting.spi.Acceptor;
 import org.hornetq.core.remoting.spi.BufferHandler;
@@ -196,7 +196,7 @@ public class InVMConnector implements Connector
          }
       }
 
-      public void connectionException(final Object connectionID, final MessagingException me)
+      public void connectionException(final Object connectionID, final HornetQException me)
       {                  
          // Execute on different thread to avoid deadlocks
          new Thread()

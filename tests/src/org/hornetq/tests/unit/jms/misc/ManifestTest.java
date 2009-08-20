@@ -24,8 +24,8 @@ import javax.jms.ConnectionMetaData;
 
 import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.logging.Logger;
-import org.hornetq.core.server.Messaging;
-import org.hornetq.core.server.MessagingServer;
+import org.hornetq.core.server.HornetQ;
+import org.hornetq.core.server.HornetQServer;
 import org.hornetq.jms.client.HornetQConnectionMetaData;
 import org.hornetq.tests.util.UnitTestCase;
 
@@ -65,7 +65,7 @@ public class ManifestTest extends UnitTestCase
 
       try
       {
-         MessagingServer server = Messaging.newMessagingServer(new ConfigurationImpl());
+         HornetQServer server = HornetQ.newMessagingServer(new ConfigurationImpl());
 
          ConnectionMetaData meta = new HornetQConnectionMetaData(server.getVersion());
 

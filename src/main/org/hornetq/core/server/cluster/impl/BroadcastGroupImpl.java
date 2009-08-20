@@ -27,7 +27,7 @@ import org.hornetq.core.logging.Logger;
 import org.hornetq.core.management.Notification;
 import org.hornetq.core.management.NotificationService;
 import org.hornetq.core.management.NotificationType;
-import org.hornetq.core.remoting.spi.MessagingBuffer;
+import org.hornetq.core.remoting.spi.HornetQBuffer;
 import org.hornetq.core.server.cluster.BroadcastGroup;
 import org.hornetq.utils.Pair;
 import org.hornetq.utils.SimpleString;
@@ -204,7 +204,7 @@ public class BroadcastGroupImpl implements BroadcastGroup, Runnable
          return;
       }
       
-      MessagingBuffer buff = ChannelBuffers.dynamicBuffer(4096);
+      HornetQBuffer buff = ChannelBuffers.dynamicBuffer(4096);
      
       buff.writeString(nodeID);
       

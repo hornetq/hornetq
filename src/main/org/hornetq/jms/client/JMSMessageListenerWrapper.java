@@ -19,7 +19,7 @@ import javax.jms.Session;
 import org.hornetq.core.client.ClientConsumer;
 import org.hornetq.core.client.ClientMessage;
 import org.hornetq.core.client.MessageHandler;
-import org.hornetq.core.exception.MessagingException;
+import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.logging.Logger;
 
 /**
@@ -77,7 +77,7 @@ public class JMSMessageListenerWrapper implements MessageHandler
          {
             message.acknowledge();
          }
-         catch (MessagingException e)
+         catch (HornetQException e)
          {
             log.error("Failed to process message", e);
          }
@@ -118,7 +118,7 @@ public class JMSMessageListenerWrapper implements MessageHandler
                message.acknowledge();
             }            
          }
-         catch (MessagingException e)
+         catch (HornetQException e)
          {
             log.error("Failed to process message", e);
          }

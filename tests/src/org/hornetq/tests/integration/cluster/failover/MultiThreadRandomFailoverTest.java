@@ -21,7 +21,7 @@ import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.TransportConfiguration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.remoting.impl.invm.TransportConstants;
-import org.hornetq.core.server.Messaging;
+import org.hornetq.core.server.HornetQ;
 
 /**
  * A MultiThreadRandomFailoverStressTest
@@ -41,7 +41,7 @@ public class MultiThreadRandomFailoverTest extends MultiThreadRandomFailoverTest
                 .add(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory",
                                                 backupParams));
       backupConf.setBackup(true);
-      backupServer = Messaging.newMessagingServer(backupConf, false);
+      backupServer = HornetQ.newMessagingServer(backupConf, false);
       backupServer.start();
 
       Configuration liveConf = new ConfigurationImpl();
@@ -55,7 +55,7 @@ public class MultiThreadRandomFailoverTest extends MultiThreadRandomFailoverTest
       connectors.put(backupTC.getName(), backupTC);
       liveConf.setConnectorConfigurations(connectors);
       liveConf.setBackupConnectorName(backupTC.getName());
-      liveServer = Messaging.newMessagingServer(liveConf, false);
+      liveServer = HornetQ.newMessagingServer(liveConf, false);
       liveServer.start();
    }
 

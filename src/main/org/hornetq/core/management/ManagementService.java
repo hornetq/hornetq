@@ -26,7 +26,7 @@ import org.hornetq.core.config.cluster.BroadcastGroupConfiguration;
 import org.hornetq.core.config.cluster.ClusterConnectionConfiguration;
 import org.hornetq.core.config.cluster.DiscoveryGroupConfiguration;
 import org.hornetq.core.config.cluster.DivertConfiguration;
-import org.hornetq.core.management.impl.MessagingServerControlImpl;
+import org.hornetq.core.management.impl.HornetQServerControlImpl;
 import org.hornetq.core.messagecounter.MessageCounterManager;
 import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.core.postoffice.PostOffice;
@@ -35,7 +35,7 @@ import org.hornetq.core.remoting.spi.Acceptor;
 import org.hornetq.core.security.Role;
 import org.hornetq.core.server.Divert;
 import org.hornetq.core.server.MessagingComponent;
-import org.hornetq.core.server.MessagingServer;
+import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.Queue;
 import org.hornetq.core.server.QueueFactory;
 import org.hornetq.core.server.ServerMessage;
@@ -71,14 +71,14 @@ public interface ManagementService extends NotificationService, MessagingCompone
 
    // Resource Registration
 
-   MessagingServerControlImpl registerServer(PostOffice postOffice,
+   HornetQServerControlImpl registerServer(PostOffice postOffice,
                                          StorageManager storageManager,
                                          Configuration configuration,
                                          HierarchicalRepository<AddressSettings> addressSettingsRepository,
                                          HierarchicalRepository<Set<Role>> securityRepository,
                                          ResourceManager resourceManager,
                                          RemotingService remotingService,
-                                         MessagingServer messagingServer,
+                                         HornetQServer messagingServer,
                                          QueueFactory queueFactory,
                                          ScheduledExecutorService scheduledThreadPool,
                                          boolean backup) throws Exception;

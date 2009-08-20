@@ -15,7 +15,7 @@ package org.hornetq.core.remoting.impl.wireformat;
 
 import javax.transaction.xa.Xid;
 
-import org.hornetq.core.remoting.spi.MessagingBuffer;
+import org.hornetq.core.remoting.spi.HornetQBuffer;
 import org.hornetq.core.transaction.impl.XidImpl;
 import org.hornetq.utils.DataConstants;
 
@@ -34,7 +34,7 @@ public class XidCodecSupport
 
    // Static --------------------------------------------------------
 
-   public static void encodeXid(final Xid xid, final MessagingBuffer out)
+   public static void encodeXid(final Xid xid, final HornetQBuffer out)
    {
       out.writeInt(xid.getFormatId());
       out.writeInt(xid.getBranchQualifier().length);
@@ -43,7 +43,7 @@ public class XidCodecSupport
       out.writeBytes(xid.getGlobalTransactionId());
    }
 
-   public static Xid decodeXid(final MessagingBuffer in)
+   public static Xid decodeXid(final HornetQBuffer in)
    {
       int formatID = in.readInt();
       byte[] bq = new byte[in.readInt()];

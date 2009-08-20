@@ -22,13 +22,13 @@ import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
 import org.hornetq.core.client.impl.ClientSessionInternal;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.TransportConfiguration;
-import org.hornetq.core.exception.MessagingException;
+import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.remoting.CloseListener;
 import org.hornetq.core.remoting.RemotingConnection;
 import org.hornetq.core.remoting.impl.RemotingConnectionImpl;
 import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
-import org.hornetq.core.server.MessagingServer;
+import org.hornetq.core.server.HornetQServer;
 import org.hornetq.tests.util.ServiceTestBase;
 import org.hornetq.utils.SimpleString;
 
@@ -52,7 +52,7 @@ public class TemporaryQueueTest extends ServiceTestBase
 
    // Attributes ----------------------------------------------------
 
-   private MessagingServer server;
+   private HornetQServer server;
 
    private ClientSession session;
 
@@ -134,9 +134,9 @@ public class TemporaryQueueTest extends ServiceTestBase
          session.createConsumer(queue);
          fail("temp queue must not exist after the remoting connection is closed");
       }
-      catch (MessagingException e)
+      catch (HornetQException e)
       {
-         assertEquals(MessagingException.QUEUE_DOES_NOT_EXIST, e.getCode());
+         assertEquals(HornetQException.QUEUE_DOES_NOT_EXIST, e.getCode());
       }
 
       session.close();
@@ -192,7 +192,7 @@ public class TemporaryQueueTest extends ServiceTestBase
          }
       });
       
-      ((ClientSessionInternal)session).getConnection().fail(new MessagingException(MessagingException.INTERNAL_ERROR, "simulate a client failure"));
+      ((ClientSessionInternal)session).getConnection().fail(new HornetQException(HornetQException.INTERNAL_ERROR, "simulate a client failure"));
 
 
       // let some time for the server to clean the connections
@@ -207,9 +207,9 @@ public class TemporaryQueueTest extends ServiceTestBase
       session = sf.createSession(false, true, true);
       session.start();
       
-      expectMessagingException("temp queue must not exist after the server detected the client crash", MessagingException.QUEUE_DOES_NOT_EXIST, new MessagingAction()
+      expectHornetQException("temp queue must not exist after the server detected the client crash", HornetQException.QUEUE_DOES_NOT_EXIST, new MessagingAction()
       {
-         public void run() throws MessagingException
+         public void run() throws HornetQException
          {
             session.createConsumer(queue);
          }

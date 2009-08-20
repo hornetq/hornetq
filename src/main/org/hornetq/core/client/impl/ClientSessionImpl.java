@@ -30,7 +30,7 @@ import org.hornetq.core.client.ClientConsumer;
 import org.hornetq.core.client.ClientMessage;
 import org.hornetq.core.client.ClientProducer;
 import org.hornetq.core.client.SendAcknowledgementHandler;
-import org.hornetq.core.exception.MessagingException;
+import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.remoting.Channel;
 import org.hornetq.core.remoting.CommandConfirmationHandler;
@@ -69,7 +69,7 @@ import org.hornetq.core.remoting.impl.wireformat.SessionXARollbackMessage;
 import org.hornetq.core.remoting.impl.wireformat.SessionXASetTimeoutMessage;
 import org.hornetq.core.remoting.impl.wireformat.SessionXASetTimeoutResponseMessage;
 import org.hornetq.core.remoting.impl.wireformat.SessionXAStartMessage;
-import org.hornetq.core.remoting.spi.MessagingBuffer;
+import org.hornetq.core.remoting.spi.HornetQBuffer;
 import org.hornetq.utils.ConcurrentHashSet;
 import org.hornetq.utils.IDGenerator;
 import org.hornetq.utils.SimpleIDGenerator;
@@ -182,7 +182,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
                             final RemotingConnection remotingConnection,
                             final int version,
                             final Channel channel,
-                            final Executor executor) throws MessagingException
+                            final Executor executor) throws HornetQException
    {
       this.connectionManager = connectionManager;
 
@@ -228,64 +228,64 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
    // ClientSession implementation
    // -----------------------------------------------------------------
 
-   public void createQueue(final SimpleString address, final SimpleString queueName) throws MessagingException
+   public void createQueue(final SimpleString address, final SimpleString queueName) throws HornetQException
    {
       internalCreateQueue(address, queueName, null, false, false);
    }
    
-   public void createQueue(final SimpleString address, final SimpleString queueName, final boolean durable) throws MessagingException
+   public void createQueue(final SimpleString address, final SimpleString queueName, final boolean durable) throws HornetQException
    {
       internalCreateQueue(address, queueName, null, durable, false);
    }
 
-   public void createQueue(final String address, final String queueName, final boolean durable) throws MessagingException
+   public void createQueue(final String address, final String queueName, final boolean durable) throws HornetQException
    {
       createQueue(toSimpleString(address), toSimpleString(queueName), durable);
    }
 
-   public void createQueue(SimpleString address, SimpleString queueName, SimpleString filterString, boolean durable) throws MessagingException
+   public void createQueue(SimpleString address, SimpleString queueName, SimpleString filterString, boolean durable) throws HornetQException
    {
       internalCreateQueue(address, queueName, filterString, durable, false);
    }
 
-   public void createQueue(String address, String queueName, String filterString, boolean durable) throws MessagingException
+   public void createQueue(String address, String queueName, String filterString, boolean durable) throws HornetQException
    {
       createQueue(toSimpleString(address), toSimpleString(queueName), toSimpleString(filterString), durable);
    }
 
-   public void createTemporaryQueue(SimpleString address, SimpleString queueName) throws MessagingException
+   public void createTemporaryQueue(SimpleString address, SimpleString queueName) throws HornetQException
    {
       internalCreateQueue(address, queueName, null, false, true);
    }
 
-   public void createTemporaryQueue(String address, String queueName) throws MessagingException
+   public void createTemporaryQueue(String address, String queueName) throws HornetQException
    {
       internalCreateQueue(toSimpleString(address), toSimpleString(queueName), null, false, true);
    }
 
-   public void createTemporaryQueue(SimpleString address, SimpleString queueName, SimpleString filter) throws MessagingException
+   public void createTemporaryQueue(SimpleString address, SimpleString queueName, SimpleString filter) throws HornetQException
    {
       internalCreateQueue(address, queueName, filter, false, true);
    }
 
-   public void createTemporaryQueue(String address, String queueName, String filter) throws MessagingException
+   public void createTemporaryQueue(String address, String queueName, String filter) throws HornetQException
    {
       internalCreateQueue(toSimpleString(address), toSimpleString(queueName), toSimpleString(filter), false, true);
    }
 
-   public void deleteQueue(final SimpleString queueName) throws MessagingException
+   public void deleteQueue(final SimpleString queueName) throws HornetQException
    {
       checkClosed();
 
       channel.sendBlocking(new SessionDeleteQueueMessage(queueName));
    }
 
-   public void deleteQueue(final String queueName) throws MessagingException
+   public void deleteQueue(final String queueName) throws HornetQException
    {
       deleteQueue(toSimpleString(queueName));
    }
 
-   public SessionQueueQueryResponseMessage queueQuery(final SimpleString queueName) throws MessagingException
+   public SessionQueueQueryResponseMessage queueQuery(final SimpleString queueName) throws HornetQException
    {
       checkClosed();
 
@@ -296,7 +296,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
       return response;
    }
 
-   public SessionBindingQueryResponseMessage bindingQuery(final SimpleString address) throws MessagingException
+   public SessionBindingQueryResponseMessage bindingQuery(final SimpleString address) throws HornetQException
    {
       checkClosed();
 
@@ -307,39 +307,39 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
       return response;
    }
 
-   public ClientConsumer createConsumer(final SimpleString queueName) throws MessagingException
+   public ClientConsumer createConsumer(final SimpleString queueName) throws HornetQException
    {
       return createConsumer(queueName, null, false);
    }
 
-   public ClientConsumer createConsumer(final String queueName) throws MessagingException
+   public ClientConsumer createConsumer(final String queueName) throws HornetQException
    {
       return createConsumer(toSimpleString(queueName));
    }
 
-   public ClientConsumer createConsumer(final SimpleString queueName, final SimpleString filterString) throws MessagingException
+   public ClientConsumer createConsumer(final SimpleString queueName, final SimpleString filterString) throws HornetQException
    {
       return createConsumer(queueName, filterString, consumerWindowSize, consumerMaxRate, false);
    }
    
-   public void createQueue(final String address, final String queueName) throws MessagingException
+   public void createQueue(final String address, final String queueName) throws HornetQException
    {
       internalCreateQueue(toSimpleString(address), toSimpleString(queueName), null, false, false);
    }
    
-   public ClientConsumer createConsumer(final String queueName, final String filterString) throws MessagingException
+   public ClientConsumer createConsumer(final String queueName, final String filterString) throws HornetQException
    {
       return createConsumer(toSimpleString(queueName), toSimpleString(filterString));
    }
 
    public ClientConsumer createConsumer(final SimpleString queueName,
                                         final SimpleString filterString,
-                                        final boolean browseOnly) throws MessagingException
+                                        final boolean browseOnly) throws HornetQException
    {
       return createConsumer(queueName, filterString, consumerWindowSize, consumerMaxRate, browseOnly);
    }
 
-   public ClientConsumer createConsumer(final String queueName, final String filterString, final boolean browseOnly) throws MessagingException
+   public ClientConsumer createConsumer(final String queueName, final String filterString, final boolean browseOnly) throws HornetQException
    {
       return createConsumer(toSimpleString(queueName), toSimpleString(filterString), browseOnly);
    }
@@ -356,7 +356,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
                                         final SimpleString filterString,
                                         final int windowSize,
                                         final int maxRate,
-                                        final boolean browseOnly) throws MessagingException
+                                        final boolean browseOnly) throws HornetQException
    {
       return internalCreateConsumer(queueName, filterString, windowSize, maxRate, browseOnly);
    }
@@ -365,32 +365,32 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
                                         final String filterString,
                                         final int windowSize,
                                         final int maxRate,
-                                        final boolean browseOnly) throws MessagingException
+                                        final boolean browseOnly) throws HornetQException
    {
       return createConsumer(toSimpleString(queueName), toSimpleString(filterString), windowSize, maxRate, browseOnly);
    }
 
-   public ClientProducer createProducer() throws MessagingException
+   public ClientProducer createProducer() throws HornetQException
    {
       return createProducer((SimpleString)null);
    }
 
-   public ClientProducer createProducer(final SimpleString address) throws MessagingException
+   public ClientProducer createProducer(final SimpleString address) throws HornetQException
    {
       return createProducer(address, producerMaxRate);
    }
 
-   public ClientProducer createProducer(final String address) throws MessagingException
+   public ClientProducer createProducer(final String address) throws HornetQException
    {
       return createProducer(toSimpleString(address));
    }
 
-   public ClientProducer createProducer(final SimpleString address, final int maxRate) throws MessagingException
+   public ClientProducer createProducer(final SimpleString address, final int maxRate) throws HornetQException
    {
       return createProducer(address, maxRate, blockOnNonPersistentSend, blockOnPersistentSend);
    }
 
-   public ClientProducer createProducer(final String address, final int rate) throws MessagingException
+   public ClientProducer createProducer(final String address, final int rate) throws HornetQException
    {
       return createProducer(toSimpleString(address), rate);
    }
@@ -398,7 +398,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
    public ClientProducer createProducer(final SimpleString address,
                                         final int maxRate,
                                         final boolean blockOnNonPersistentSend,
-                                        final boolean blockOnPersistentSend) throws MessagingException
+                                        final boolean blockOnPersistentSend) throws HornetQException
    {
       return internalCreateProducer(address, maxRate, blockOnNonPersistentSend, blockOnPersistentSend);
    }
@@ -406,7 +406,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
    public ClientProducer createProducer(final String address,
                                         final int maxRate,
                                         final boolean blockOnNonPersistentSend,
-                                        final boolean blockOnPersistentSend) throws MessagingException
+                                        final boolean blockOnPersistentSend) throws HornetQException
    {
       return createProducer(toSimpleString(address), maxRate, blockOnNonPersistentSend, blockOnPersistentSend);
    }
@@ -416,7 +416,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
       return this;
    }
 
-   public void commit() throws MessagingException
+   public void commit() throws HornetQException
    {
       checkClosed();
 
@@ -425,12 +425,12 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
       channel.sendBlocking(new PacketImpl(PacketImpl.SESS_COMMIT));
    }
 
-   public void rollback() throws MessagingException
+   public void rollback() throws HornetQException
    {
       rollback(false);
    }
 
-   public void rollback(final boolean isLastMessageAsDelived) throws MessagingException
+   public void rollback(final boolean isLastMessageAsDelived) throws HornetQException
    {
       checkClosed();
 
@@ -469,21 +469,21 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
                                             final long timestamp,
                                             final byte priority)
    {
-      MessagingBuffer body = createBuffer(INITIAL_MESSAGE_BODY_SIZE);
+      HornetQBuffer body = createBuffer(INITIAL_MESSAGE_BODY_SIZE);
 
       return new ClientMessageImpl(type, durable, expiration, timestamp, priority, body);
    }
 
    public ClientMessage createClientMessage(final byte type, final boolean durable)
    {
-      MessagingBuffer body = remotingConnection.createBuffer(INITIAL_MESSAGE_BODY_SIZE);
+      HornetQBuffer body = remotingConnection.createBuffer(INITIAL_MESSAGE_BODY_SIZE);
 
       return new ClientMessageImpl(type, durable, body);
    }
 
    public ClientMessage createClientMessage(final boolean durable)
    {
-      MessagingBuffer body = createBuffer(INITIAL_MESSAGE_BODY_SIZE);
+      HornetQBuffer body = createBuffer(INITIAL_MESSAGE_BODY_SIZE);
 
       return new ClientMessageImpl(durable, body);
    }
@@ -491,7 +491,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
    /* (non-Javadoc)
     * @see org.hornetq.core.client.impl.ClientSessionInternal#createBuffer(int)
     */
-   public MessagingBuffer createBuffer(final int size)
+   public HornetQBuffer createBuffer(final int size)
    {
       return ChannelBuffers.dynamicBuffer(size);
    }
@@ -521,7 +521,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
       return xa;
    }
 
-   public void start() throws MessagingException
+   public void start() throws HornetQException
    {
       checkClosed();
 
@@ -538,7 +538,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
       }
    }
 
-   public void stop() throws MessagingException
+   public void stop() throws HornetQException
    {
       checkClosed();
 
@@ -592,7 +592,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
    }
 
    // This acknowledges all messages received by the consumer so far
-   public void acknowledge(final long consumerID, final long messageID) throws MessagingException
+   public void acknowledge(final long consumerID, final long messageID) throws HornetQException
    {
       // if we're pre-acknowledging then we don't need to do anything
       if (preAcknowledge)
@@ -614,7 +614,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
       }
    }
 
-   public void expire(final long consumerID, final long messageID) throws MessagingException
+   public void expire(final long consumerID, final long messageID) throws HornetQException
    {
       checkClosed();
 
@@ -633,7 +633,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
       producers.add(producer);
    }
 
-   public void removeConsumer(final ClientConsumerInternal consumer) throws MessagingException
+   public void removeConsumer(final ClientConsumerInternal consumer) throws HornetQException
    {
       consumers.remove(consumer.getID());
    }
@@ -681,7 +681,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
       }
    }
 
-   public void close() throws MessagingException
+   public void close() throws HornetQException
    {
       if (closed)
       {
@@ -837,7 +837,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
             throw new XAException(response.getResponseCode());
          }
       }
-      catch (MessagingException e)
+      catch (HornetQException e)
       {
          // This should never occur
          throw new XAException(XAException.XAER_RMERR);
@@ -877,7 +877,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
             throw new XAException(response.getResponseCode());
          }
       }
-      catch (MessagingException e)
+      catch (HornetQException e)
       {
          log.error("Caught jmsexecptione ", e);
          // This should never occur
@@ -897,7 +897,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
             throw new XAException(response.getResponseCode());
          }
       }
-      catch (MessagingException e)
+      catch (HornetQException e)
       {
          // This should never occur
          throw new XAException(XAException.XAER_RMERR);
@@ -914,7 +914,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
 
          return response.getTimeoutSeconds();
       }
-      catch (MessagingException e)
+      catch (HornetQException e)
       {
          // This should never occur
          throw new XAException(XAException.XAER_RMERR);
@@ -962,7 +962,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
             return response.getResponseCode();
          }
       }
-      catch (MessagingException e)
+      catch (HornetQException e)
       {
          // This should never occur
          throw new XAException(XAException.XAER_RMERR);
@@ -985,7 +985,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
 
             return xidArray;
          }
-         catch (MessagingException e)
+         catch (HornetQException e)
          {
             // This should never occur
             throw new XAException(XAException.XAER_RMERR);
@@ -1032,7 +1032,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
             throw new XAException(response.getResponseCode());
          }
       }
-      catch (MessagingException e)
+      catch (HornetQException e)
       {
          // This should never occur
          throw new XAException(XAException.XAER_RMERR);
@@ -1049,7 +1049,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
 
          return response.isOK();
       }
-      catch (MessagingException e)
+      catch (HornetQException e)
       {
          // This should never occur
          throw new XAException(XAException.XAER_RMERR);
@@ -1089,7 +1089,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
             throw new XAException(response.getResponseCode());
          }
       }
-      catch (MessagingException e)
+      catch (HornetQException e)
       {
          // This should never occur
          throw new XAException(XAException.XAER_RMERR);
@@ -1098,7 +1098,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
 
    // FailureListener implementation --------------------------------------------
 
-   public void connectionFailed(final MessagingException me)
+   public void connectionFailed(final HornetQException me)
    {
       try
       {
@@ -1138,13 +1138,13 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
     * @param windowSize
     * @param browseOnly
     * @return
-    * @throws MessagingException
+    * @throws HornetQException
     */
    private ClientConsumer internalCreateConsumer(final SimpleString queueName,
                                                  final SimpleString filterString,
                                                  final int windowSize,
                                                  final int maxRate,
-                                                 final boolean browseOnly) throws MessagingException
+                                                 final boolean browseOnly) throws HornetQException
    {
       checkClosed();
 
@@ -1213,7 +1213,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
    private ClientProducer internalCreateProducer(final SimpleString address,
                                                  final int maxRate,
                                                  final boolean blockOnNonPersistentSend,
-                                                 final boolean blockOnPersistentSend) throws MessagingException
+                                                 final boolean blockOnPersistentSend) throws HornetQException
    {
       checkClosed();
 
@@ -1236,13 +1236,13 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
                                     final SimpleString queueName,
                                     final SimpleString filterString,
                                     final boolean durable,
-                                    final boolean temp) throws MessagingException
+                                    final boolean temp) throws HornetQException
    {
       checkClosed();
 
       if (durable && temp)
       {
-         throw new MessagingException(MessagingException.INTERNAL_ERROR, "Queue can not be both durable and temporay");
+         throw new HornetQException(HornetQException.INTERNAL_ERROR, "Queue can not be both durable and temporay");
       }
 
       CreateQueueMessage request = new CreateQueueMessage(address, queueName, filterString, durable, temp);
@@ -1259,11 +1259,11 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
       }
    }
 
-   private void checkClosed() throws MessagingException
+   private void checkClosed() throws HornetQException
    {
       if (closed)
       {
-         throw new MessagingException(MessagingException.OBJECT_CLOSED, "Session is closed");
+         throw new HornetQException(HornetQException.OBJECT_CLOSED, "Session is closed");
       }
    }
 
@@ -1298,7 +1298,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
       }
    }
 
-   private void closeChildren() throws MessagingException
+   private void closeChildren() throws HornetQException
    {
       Set<ClientConsumer> consumersClone = new HashSet<ClientConsumer>(consumers.values());
 
@@ -1315,7 +1315,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
       }
    }
 
-   private void flushAcks() throws MessagingException
+   private void flushAcks() throws HornetQException
    {
       for (ClientConsumerInternal consumer : consumers.values())
       {

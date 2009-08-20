@@ -42,7 +42,7 @@ import org.hornetq.core.config.TransportConfiguration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
-import org.hornetq.core.server.Messaging;
+import org.hornetq.core.server.HornetQ;
 import org.hornetq.jms.HornetQQueue;
 import org.hornetq.jms.bridge.ConnectionFactoryFactory;
 import org.hornetq.jms.bridge.DestinationFactory;
@@ -446,7 +446,7 @@ public class JMSBridgeImplTest extends UnitTestCase
       config.setSecurityEnabled(false);
       config.getAcceptorConfigurations().add(new TransportConfiguration(InVMAcceptorFactory.class.getName()));
       InVMContext context = new InVMContext();
-      jmsServer = new JMSServerManagerImpl(Messaging.newMessagingServer(config, false));
+      jmsServer = new JMSServerManagerImpl(HornetQ.newMessagingServer(config, false));
       jmsServer.setContext(context);
       jmsServer.start();
 

@@ -25,8 +25,8 @@ import org.hornetq.core.config.impl.FileConfiguration;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.security.HornetQSecurityManager;
 import org.hornetq.core.security.impl.HornetQSecurityManagerImpl;
-import org.hornetq.core.server.MessagingServer;
-import org.hornetq.core.server.impl.MessagingServerImpl;
+import org.hornetq.core.server.HornetQServer;
+import org.hornetq.core.server.impl.HornetQServerImpl;
 import org.hornetq.integration.transports.netty.NettyConnectorFactory;
 import org.hornetq.jms.client.HornetQConnectionFactory;
 import org.hornetq.jms.server.JMSServerManager;
@@ -160,7 +160,7 @@ public class JMSServerStartStopTest extends UnitTestCase
       
       HornetQSecurityManager sm = new HornetQSecurityManagerImpl();
       
-      MessagingServer liveServer = new MessagingServerImpl(fc, sm);     
+      HornetQServer liveServer = new HornetQServerImpl(fc, sm);     
       
       liveJMSServer = new JMSServerManagerImpl(liveServer, "server-start-stop-jms-config1.xml");
       

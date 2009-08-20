@@ -15,7 +15,7 @@ package org.hornetq.core.client;
 
 import javax.transaction.xa.XAResource;
 
-import org.hornetq.core.exception.MessagingException;
+import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.remoting.FailureListener;
 import org.hornetq.core.remoting.impl.wireformat.SessionBindingQueryResponseMessage;
 import org.hornetq.core.remoting.impl.wireformat.SessionQueueQueryResponseMessage;
@@ -36,50 +36,50 @@ public interface ClientSession extends XAResource
    /**
     * Queues created by this method are <em>not</em> temporary
     */
-   void createQueue(SimpleString address, SimpleString queueName, boolean durable) throws MessagingException;
+   void createQueue(SimpleString address, SimpleString queueName, boolean durable) throws HornetQException;
 
    /**
     * Queues created by this method are <em>not</em> temporary
     */
-   void createQueue(String address, String queueName) throws MessagingException;
+   void createQueue(String address, String queueName) throws HornetQException;
    
-   void createQueue(String address, String queueName, boolean durable) throws MessagingException;
+   void createQueue(String address, String queueName, boolean durable) throws HornetQException;
 
-   void createQueue(SimpleString address, SimpleString queueName, SimpleString filterString, boolean durable) throws MessagingException;
+   void createQueue(SimpleString address, SimpleString queueName, SimpleString filterString, boolean durable) throws HornetQException;
 
-   void createQueue(String address, String queueName, String filterString, boolean durable) throws MessagingException;
+   void createQueue(String address, String queueName, String filterString, boolean durable) throws HornetQException;
 
-   void createTemporaryQueue(SimpleString address, SimpleString queueName) throws MessagingException;
+   void createTemporaryQueue(SimpleString address, SimpleString queueName) throws HornetQException;
 
-   void createTemporaryQueue(String address, String queueName) throws MessagingException;
+   void createTemporaryQueue(String address, String queueName) throws HornetQException;
 
-   void createTemporaryQueue(SimpleString address, SimpleString queueName, SimpleString filter) throws MessagingException;
+   void createTemporaryQueue(SimpleString address, SimpleString queueName, SimpleString filter) throws HornetQException;
 
-   void createTemporaryQueue(String address, String queueName, String filter) throws MessagingException;
+   void createTemporaryQueue(String address, String queueName, String filter) throws HornetQException;
 
-   void deleteQueue(SimpleString queueName) throws MessagingException;
+   void deleteQueue(SimpleString queueName) throws HornetQException;
 
-   void deleteQueue(String queueName) throws MessagingException;
+   void deleteQueue(String queueName) throws HornetQException;
 
-   ClientConsumer createConsumer(SimpleString queueName) throws MessagingException;
+   ClientConsumer createConsumer(SimpleString queueName) throws HornetQException;
 
-   ClientConsumer createConsumer(SimpleString queueName, SimpleString filterString) throws MessagingException;
+   ClientConsumer createConsumer(SimpleString queueName, SimpleString filterString) throws HornetQException;
 
-   ClientConsumer createConsumer(SimpleString queueName, SimpleString filterString, boolean browseOnly) throws MessagingException;
+   ClientConsumer createConsumer(SimpleString queueName, SimpleString filterString, boolean browseOnly) throws HornetQException;
 
    ClientConsumer createConsumer(SimpleString queueName,
                                  SimpleString filterString,
                                  int windowSize,
                                  int maxRate,
-                                 boolean browseOnly) throws MessagingException;
+                                 boolean browseOnly) throws HornetQException;
 
-   ClientConsumer createConsumer(String queueName) throws MessagingException;
+   ClientConsumer createConsumer(String queueName) throws HornetQException;
 
-   ClientConsumer createConsumer(String queueName, String filterString) throws MessagingException;
+   ClientConsumer createConsumer(String queueName, String filterString) throws HornetQException;
 
-   ClientConsumer createConsumer(String queueName, String filterString, boolean browseOnly) throws MessagingException;
+   ClientConsumer createConsumer(String queueName, String filterString, boolean browseOnly) throws HornetQException;
 
-   ClientConsumer createConsumer(String queueName, String filterString, int windowSize, int maxRate, boolean browseOnly) throws MessagingException;
+   ClientConsumer createConsumer(String queueName, String filterString, int windowSize, int maxRate, boolean browseOnly) throws HornetQException;
 
    /**
     * Create a producer with no default address.
@@ -87,43 +87,43 @@ public interface ClientSession extends XAResource
     * 
     * @see ClientProducer#send(SimpleString, org.hornetq.core.message.Message)
     */
-   ClientProducer createProducer() throws MessagingException;
+   ClientProducer createProducer() throws HornetQException;
 
-   ClientProducer createProducer(SimpleString address) throws MessagingException;
+   ClientProducer createProducer(SimpleString address) throws HornetQException;
 
-   ClientProducer createProducer(SimpleString address, int rate) throws MessagingException;
+   ClientProducer createProducer(SimpleString address, int rate) throws HornetQException;
 
    ClientProducer createProducer(SimpleString address,
                                  int maxRate,
                                  boolean blockOnNonPersistentSend,
-                                 boolean blockOnPersistentSend) throws MessagingException;
+                                 boolean blockOnPersistentSend) throws HornetQException;
 
-   ClientProducer createProducer(String address) throws MessagingException;
+   ClientProducer createProducer(String address) throws HornetQException;
 
-   ClientProducer createProducer(String address, int rate) throws MessagingException;
+   ClientProducer createProducer(String address, int rate) throws HornetQException;
 
    ClientProducer createProducer(String address,
                                  int maxRate,
                                  boolean blockOnNonPersistentSend,
-                                 boolean blockOnPersistentSend) throws MessagingException;
+                                 boolean blockOnPersistentSend) throws HornetQException;
 
-   SessionQueueQueryResponseMessage queueQuery(SimpleString queueName) throws MessagingException;
+   SessionQueueQueryResponseMessage queueQuery(SimpleString queueName) throws HornetQException;
 
-   SessionBindingQueryResponseMessage bindingQuery(SimpleString address) throws MessagingException;
+   SessionBindingQueryResponseMessage bindingQuery(SimpleString address) throws HornetQException;
 
    XAResource getXAResource();
 
-   void commit() throws MessagingException;
+   void commit() throws HornetQException;
 
-   void rollback() throws MessagingException;
+   void rollback() throws HornetQException;
 
    /**
     * @param considerLastMessageAsDelivered the first message on deliveringMessage Buffer is considered as delivered
-    * @throws MessagingException
+    * @throws HornetQException
     */
-   void rollback(boolean considerLastMessageAsDelivered) throws MessagingException;
+   void rollback(boolean considerLastMessageAsDelivered) throws HornetQException;
 
-   void close() throws MessagingException;
+   void close() throws HornetQException;
 
    boolean isClosed();
 
@@ -145,9 +145,9 @@ public interface ClientSession extends XAResource
 
    ClientMessage createClientMessage(final boolean durable);
 
-   void start() throws MessagingException;
+   void start() throws HornetQException;
 
-   void stop() throws MessagingException;
+   void stop() throws HornetQException;
 
    void addFailureListener(FailureListener listener);
 

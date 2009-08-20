@@ -24,8 +24,8 @@ import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.TransportConfiguration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.logging.Logger;
-import org.hornetq.core.server.Messaging;
-import org.hornetq.core.server.MessagingServer;
+import org.hornetq.core.server.HornetQ;
+import org.hornetq.core.server.HornetQServer;
 import org.hornetq.jms.client.HornetQTextMessage;
 import org.hornetq.tests.util.UnitTestCase;
 import org.hornetq.utils.SimpleString;
@@ -66,7 +66,7 @@ public class CoreClientTest extends UnitTestCase
       
       conf.getAcceptorConfigurations().add(new TransportConfiguration(acceptorFactoryClassName));
             
-      MessagingServer server = Messaging.newMessagingServer(conf, false);   
+      HornetQServer server = HornetQ.newMessagingServer(conf, false);   
            
       server.start();
       

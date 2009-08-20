@@ -23,8 +23,8 @@ import org.hornetq.core.config.cluster.DiscoveryGroupConfiguration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.management.DiscoveryGroupControl;
 import org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory;
-import org.hornetq.core.server.Messaging;
-import org.hornetq.core.server.MessagingServer;
+import org.hornetq.core.server.HornetQ;
+import org.hornetq.core.server.HornetQServer;
 
 /**
  * A AcceptorControlTest
@@ -42,7 +42,7 @@ public class DiscoveryGroupControlTest extends ManagementTestBase
 
    // Attributes ----------------------------------------------------
 
-   private MessagingServer service;
+   private HornetQServer service;
 
    // Static --------------------------------------------------------
 
@@ -60,7 +60,7 @@ public class DiscoveryGroupControlTest extends ManagementTestBase
       conf.setClustered(true);
       conf.getDiscoveryGroupConfigurations().put(discoveryGroupConfig.getName(), discoveryGroupConfig);
       conf.getAcceptorConfigurations().add(new TransportConfiguration(InVMAcceptorFactory.class.getName()));
-      service = Messaging.newMessagingServer(conf, mbeanServer, false);
+      service = HornetQ.newMessagingServer(conf, mbeanServer, false);
       service.start();
 
       DiscoveryGroupControl discoveryGroupControl = createManagementControl(discoveryGroupConfig.getName());
@@ -81,7 +81,7 @@ public class DiscoveryGroupControlTest extends ManagementTestBase
       conf.setClustered(true);
       conf.getDiscoveryGroupConfigurations().put(discoveryGroupConfig.getName(), discoveryGroupConfig);
       conf.getAcceptorConfigurations().add(new TransportConfiguration(InVMAcceptorFactory.class.getName()));
-      service = Messaging.newMessagingServer(conf, mbeanServer, false);
+      service = HornetQ.newMessagingServer(conf, mbeanServer, false);
       service.start();
 
       DiscoveryGroupControl discoveryGroupControl = createManagementControl(discoveryGroupConfig.getName());

@@ -21,11 +21,11 @@ import org.hornetq.core.client.impl.ClientSessionInternal;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.TransportConfiguration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
-import org.hornetq.core.exception.MessagingException;
+import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.remoting.RemotingConnection;
-import org.hornetq.core.server.Messaging;
-import org.hornetq.core.server.MessagingServer;
+import org.hornetq.core.server.HornetQ;
+import org.hornetq.core.server.HornetQServer;
 import org.hornetq.jms.client.HornetQConnectionFactory;
 import org.hornetq.jms.client.HornetQSession;
 import org.hornetq.jms.server.impl.JMSServerManagerImpl;
@@ -44,7 +44,7 @@ public class FailureDeadlockTest extends UnitTestCase
 {
    private static final Logger log = Logger.getLogger(FailureDeadlockTest.class);
 
-   private MessagingServer server;
+   private HornetQServer server;
 
    private JMSServerManagerImpl jmsServer;
 
@@ -61,7 +61,7 @@ public class FailureDeadlockTest extends UnitTestCase
       conf.setSecurityEnabled(false);
       conf.getAcceptorConfigurations()
           .add(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory"));
-      server = Messaging.newMessagingServer(conf, false);
+      server = HornetQ.newMessagingServer(conf, false);
       jmsServer = new JMSServerManagerImpl(server);
       jmsServer.setContext(new NullInitialContext());
       jmsServer.start();
@@ -169,7 +169,7 @@ public class FailureDeadlockTest extends UnitTestCase
 
       public void run()
       {
-         conn.fail(new MessagingException(MessagingException.NOT_CONNECTED, "blah"));
+         conn.fail(new HornetQException(HornetQException.NOT_CONNECTED, "blah"));
       }
    }
 
@@ -185,7 +185,7 @@ public class FailureDeadlockTest extends UnitTestCase
          Session sess1 = conn1.createSession(false, Session.AUTO_ACKNOWLEDGE);
          RemotingConnection rc1 = ((ClientSessionInternal)((HornetQSession)sess1).getCoreSession()).getConnection();      
    
-         rc1.fail(new MessagingException(MessagingException.NOT_CONNECTED, "blah"));
+         rc1.fail(new HornetQException(HornetQException.NOT_CONNECTED, "blah"));
    
          Session sess2 = conn1.createSession(false, Session.AUTO_ACKNOWLEDGE);
    

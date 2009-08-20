@@ -63,11 +63,11 @@ $Revision: 76444 $
     </authentication>
   </application-policy>
 
-  <!-- A template configuration for messaging. This
+  <!-- A template configuration for HornetQ. This
     defaults to the UsersRolesLoginModule the same as other and should be
     changed to a stronger authentication mechanism as required.
   -->
-<application-policy name="messaging">
+<application-policy name="hornetq">
     <authentication>
       <login-module code="org.jboss.security.auth.spi.UsersRolesLoginModule"
         flag="required">

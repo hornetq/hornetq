@@ -32,7 +32,7 @@ import javax.transaction.xa.Xid;
 
 import org.hornetq.core.buffers.ChannelBuffers;
 import org.hornetq.core.config.Configuration;
-import org.hornetq.core.exception.MessagingException;
+import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.filter.Filter;
 import org.hornetq.core.journal.EncodingSupport;
 import org.hornetq.core.journal.Journal;
@@ -52,7 +52,7 @@ import org.hornetq.core.persistence.QueueBindingInfo;
 import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.core.postoffice.Binding;
 import org.hornetq.core.remoting.impl.wireformat.XidCodecSupport;
-import org.hornetq.core.remoting.spi.MessagingBuffer;
+import org.hornetq.core.remoting.spi.HornetQBuffer;
 import org.hornetq.core.server.JournalType;
 import org.hornetq.core.server.LargeServerMessage;
 import org.hornetq.core.server.MessageReference;
@@ -278,7 +278,7 @@ public class JournalStorageManager implements StorageManager
    {
       if (message.getMessageID() <= 0)
       {
-         throw new MessagingException(MessagingException.ILLEGAL_STATE, "MessageId was not assigned to Message");
+         throw new HornetQException(HornetQException.ILLEGAL_STATE, "MessageId was not assigned to Message");
       }
 
       // Note that we don't sync, the add reference that comes immediately after will sync
@@ -340,7 +340,7 @@ public class JournalStorageManager implements StorageManager
    {
       if (message.getMessageID() <= 0)
       {
-         throw new MessagingException(MessagingException.ILLEGAL_STATE, "MessageId was not assigned to Message");
+         throw new HornetQException(HornetQException.ILLEGAL_STATE, "MessageId was not assigned to Message");
       }
 
       if (message.isLargeMessage())
@@ -491,7 +491,7 @@ public class JournalStorageManager implements StorageManager
       {
          byte[] data = record.data;
 
-         MessagingBuffer buff = ChannelBuffers.wrappedBuffer(data);
+         HornetQBuffer buff = ChannelBuffers.wrappedBuffer(data);
 
          byte recordType = record.getUserRecordType();
 
@@ -747,7 +747,7 @@ public class JournalStorageManager implements StorageManager
          {
             byte[] data = record.data;
 
-            MessagingBuffer buff = ChannelBuffers.wrappedBuffer(data);
+            HornetQBuffer buff = ChannelBuffers.wrappedBuffer(data);
 
             byte recordType = record.getUserRecordType();
 
@@ -872,7 +872,7 @@ public class JournalStorageManager implements StorageManager
          {
             byte[] data = record.data;
 
-            MessagingBuffer buff = ChannelBuffers.wrappedBuffer(data);
+            HornetQBuffer buff = ChannelBuffers.wrappedBuffer(data);
 
             long messageID = record.id;
 
@@ -947,7 +947,7 @@ public class JournalStorageManager implements StorageManager
       {
          long id = record.id;
 
-         MessagingBuffer buffer = ChannelBuffers.wrappedBuffer(record.data);
+         HornetQBuffer buffer = ChannelBuffers.wrappedBuffer(record.data);
 
          byte rec = record.getUserRecordType();
 
@@ -1215,12 +1215,12 @@ public class JournalStorageManager implements StorageManager
          xid = XidCodecSupport.decodeXid(ChannelBuffers.wrappedBuffer(data));
       }
 
-      public void decode(final MessagingBuffer buffer)
+      public void decode(final HornetQBuffer buffer)
       {
          throw new IllegalStateException("Non Supported Operation");
       }
 
-      public void encode(final MessagingBuffer buffer)
+      public void encode(final HornetQBuffer buffer)
       {
          XidCodecSupport.encodeXid(xid, buffer);
       }
@@ -1279,14 +1279,14 @@ public class JournalStorageManager implements StorageManager
          return name;
       }
 
-      public void decode(final MessagingBuffer buffer)
+      public void decode(final HornetQBuffer buffer)
       {
          name = buffer.readSimpleString();
          address = buffer.readSimpleString();
          filterString = buffer.readNullableSimpleString();
       }
 
-      public void encode(final MessagingBuffer buffer)
+      public void encode(final HornetQBuffer buffer)
       {
          buffer.writeSimpleString(name);
          buffer.writeSimpleString(address);
@@ -1313,7 +1313,7 @@ public class JournalStorageManager implements StorageManager
       {
       }
 
-      public void decode(final MessagingBuffer buffer)
+      public void decode(final HornetQBuffer buffer)
       {
          byte[] bytes = new byte[16];
 
@@ -1322,7 +1322,7 @@ public class JournalStorageManager implements StorageManager
          uuid = new UUID(UUID.TYPE_TIME_BASED, bytes);
       }
 
-      public void encode(final MessagingBuffer buffer)
+      public void encode(final HornetQBuffer buffer)
       {
          buffer.writeBytes(uuid.asBytes());
       }
@@ -1347,12 +1347,12 @@ public class JournalStorageManager implements StorageManager
       {
       }
 
-      public void decode(final MessagingBuffer buffer)
+      public void decode(final HornetQBuffer buffer)
       {
          id = buffer.readLong();
       }
 
-      public void encode(final MessagingBuffer buffer)
+      public void encode(final HornetQBuffer buffer)
       {
          buffer.writeLong(id);
       }
@@ -1374,17 +1374,17 @@ public class JournalStorageManager implements StorageManager
       }
 
       /* (non-Javadoc)
-       * @see org.hornetq.core.journal.EncodingSupport#decode(org.hornetq.core.remoting.spi.MessagingBuffer)
+       * @see org.hornetq.core.journal.EncodingSupport#decode(org.hornetq.core.remoting.spi.HornetQBuffer)
        */
-      public void decode(final MessagingBuffer buffer)
+      public void decode(final HornetQBuffer buffer)
       {
          message.decode(buffer);
       }
 
       /* (non-Javadoc)
-       * @see org.hornetq.core.journal.EncodingSupport#encode(org.hornetq.core.remoting.spi.MessagingBuffer)
+       * @see org.hornetq.core.journal.EncodingSupport#encode(org.hornetq.core.remoting.spi.HornetQBuffer)
        */
-      public void encode(final MessagingBuffer buffer)
+      public void encode(final HornetQBuffer buffer)
       {
          message.encode(buffer);
       }
@@ -1417,13 +1417,13 @@ public class JournalStorageManager implements StorageManager
          this.count = count;
       }
 
-      public void decode(final MessagingBuffer buffer)
+      public void decode(final HornetQBuffer buffer)
       {
          queueID = buffer.readLong();
          count = buffer.readInt();
       }
 
-      public void encode(final MessagingBuffer buffer)
+      public void encode(final HornetQBuffer buffer)
       {
          buffer.writeLong(queueID);
          buffer.writeInt(count);
@@ -1450,12 +1450,12 @@ public class JournalStorageManager implements StorageManager
          super();
       }
 
-      public void decode(final MessagingBuffer buffer)
+      public void decode(final HornetQBuffer buffer)
       {
          queueID = buffer.readLong();
       }
 
-      public void encode(final MessagingBuffer buffer)
+      public void encode(final HornetQBuffer buffer)
       {
          buffer.writeLong(queueID);
       }
@@ -1512,13 +1512,13 @@ public class JournalStorageManager implements StorageManager
          return super.getEncodeSize() + 8;
       }
 
-      public void encode(MessagingBuffer buffer)
+      public void encode(HornetQBuffer buffer)
       {
          super.encode(buffer);
          buffer.writeLong(scheduledDeliveryTime);
       }
 
-      public void decode(MessagingBuffer buffer)
+      public void decode(HornetQBuffer buffer)
       {
          super.decode(buffer);
          scheduledDeliveryTime = buffer.readLong();
@@ -1542,7 +1542,7 @@ public class JournalStorageManager implements StorageManager
       {
       }
 
-      public void decode(final MessagingBuffer buffer)
+      public void decode(final HornetQBuffer buffer)
       {
          address = buffer.readSimpleString();
 
@@ -1553,7 +1553,7 @@ public class JournalStorageManager implements StorageManager
          buffer.readBytes(duplID);
       }
 
-      public void encode(final MessagingBuffer buffer)
+      public void encode(final HornetQBuffer buffer)
       {
          buffer.writeSimpleString(address);
 

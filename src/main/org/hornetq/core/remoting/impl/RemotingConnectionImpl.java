@@ -20,7 +20,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Executor;
 
-import org.hornetq.core.exception.MessagingException;
+import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.remoting.Channel;
 import org.hornetq.core.remoting.CloseListener;
@@ -30,7 +30,7 @@ import org.hornetq.core.remoting.Packet;
 import org.hornetq.core.remoting.RemotingConnection;
 import org.hornetq.core.remoting.impl.wireformat.PacketImpl;
 import org.hornetq.core.remoting.spi.Connection;
-import org.hornetq.core.remoting.spi.MessagingBuffer;
+import org.hornetq.core.remoting.spi.HornetQBuffer;
 import org.hornetq.utils.SimpleIDGenerator;
 
 /**
@@ -229,7 +229,7 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
       return closeListeners.remove(listener);
    }
 
-   public MessagingBuffer createBuffer(final int size)
+   public HornetQBuffer createBuffer(final int size)
    {
       return transportConnection.createBuffer(size);
    }
@@ -237,7 +237,7 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
    /*
     * This can be called concurrently by more than one thread so needs to be locked
     */
-   public void fail(final MessagingException me)
+   public void fail(final HornetQException me)
    {
       synchronized (failLock)
       {
@@ -338,7 +338,7 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
    // Buffer Handler implementation
    // ----------------------------------------------------
 
-   public void bufferReceived(final Object connectionID, final MessagingBuffer buffer)
+   public void bufferReceived(final Object connectionID, final HornetQBuffer buffer)
    {
       final Packet packet = decoder.decode(buffer);
 
@@ -424,7 +424,7 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
    // Private
    // --------------------------------------------------------------------------------------
 
-   private void callFailureListeners(final MessagingException me)
+   private void callFailureListeners(final HornetQException me)
    {
       final List<FailureListener> listenersClone = new ArrayList<FailureListener>(failureListeners);
 

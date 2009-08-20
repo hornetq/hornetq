@@ -18,7 +18,7 @@ import javax.jms.InvalidSelectorException;
 import javax.jms.JMSException;
 import javax.jms.JMSSecurityException;
 
-import org.hornetq.core.exception.MessagingException;
+import org.hornetq.core.exception.HornetQException;
 
 /**
  * 
@@ -33,48 +33,48 @@ public class JMSExceptionHelper
    
    // Static --------------------------------------------------------
    
-   public static JMSException convertFromMessagingException(final MessagingException me)
+   public static JMSException convertFromHornetQException(final HornetQException me)
    {
       JMSException je;
       switch (me.getCode())
       {
-         case MessagingException.CONNECTION_TIMEDOUT:
+         case HornetQException.CONNECTION_TIMEDOUT:
             je = new JMSException(me.getMessage());
             break;
 
-         case MessagingException.ILLEGAL_STATE:
+         case HornetQException.ILLEGAL_STATE:
             je = new javax.jms.IllegalStateException(me.getMessage());
             break;
          
-         case MessagingException.INTERNAL_ERROR:
+         case HornetQException.INTERNAL_ERROR:
             je =  new JMSException(me.getMessage());
             break;
             
-         case MessagingException.INVALID_FILTER_EXPRESSION:
+         case HornetQException.INVALID_FILTER_EXPRESSION:
             je = new InvalidSelectorException(me.getMessage());
             break;
             
-         case MessagingException.NOT_CONNECTED:
+         case HornetQException.NOT_CONNECTED:
             je = new JMSException(me.getMessage());
             break;
             
-         case MessagingException.OBJECT_CLOSED:
+         case HornetQException.OBJECT_CLOSED:
             je = new javax.jms.IllegalStateException(me.getMessage());
             break;
             
-         case MessagingException.QUEUE_DOES_NOT_EXIST:
+         case HornetQException.QUEUE_DOES_NOT_EXIST:
             je = new InvalidDestinationException(me.getMessage());
             break;
             
-         case MessagingException.QUEUE_EXISTS:
+         case HornetQException.QUEUE_EXISTS:
             je = new InvalidDestinationException(me.getMessage());
             break;
             
-         case MessagingException.SECURITY_EXCEPTION:
+         case HornetQException.SECURITY_EXCEPTION:
             je = new JMSSecurityException(me.getMessage());
             break;
             
-         case MessagingException.UNSUPPORTED_PACKET:
+         case HornetQException.UNSUPPORTED_PACKET:
             je =  new javax.jms.IllegalStateException(me.getMessage());
             break;
             

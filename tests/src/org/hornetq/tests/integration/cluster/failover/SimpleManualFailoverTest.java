@@ -30,14 +30,14 @@ import org.hornetq.core.client.impl.ClientSessionInternal;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.TransportConfiguration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
-import org.hornetq.core.exception.MessagingException;
+import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.remoting.FailureListener;
 import org.hornetq.core.remoting.RemotingConnection;
 import org.hornetq.core.remoting.impl.invm.InVMRegistry;
 import org.hornetq.core.remoting.impl.invm.TransportConstants;
-import org.hornetq.core.server.Messaging;
-import org.hornetq.core.server.MessagingServer;
+import org.hornetq.core.server.HornetQ;
+import org.hornetq.core.server.HornetQServer;
 import org.hornetq.jms.client.HornetQTextMessage;
 import org.hornetq.tests.util.UnitTestCase;
 import org.hornetq.utils.SimpleString;
@@ -59,9 +59,9 @@ public class SimpleManualFailoverTest extends UnitTestCase
 
    private static final SimpleString ADDRESS = new SimpleString("FailoverTestAddress");
 
-   private MessagingServer server0Service;
+   private HornetQServer server0Service;
 
-   private MessagingServer server1Service;
+   private HornetQServer server1Service;
 
    private Map<String, Object> server1Params = new HashMap<String, Object>();
 
@@ -125,7 +125,7 @@ public class SimpleManualFailoverTest extends UnitTestCase
 
       class MyListener implements FailureListener
       {
-         public void connectionFailed(MessagingException me)
+         public void connectionFailed(HornetQException me)
          {            
             latch.countDown();
          }
@@ -136,7 +136,7 @@ public class SimpleManualFailoverTest extends UnitTestCase
       conn.addFailureListener(new MyListener());
 
       // Simulate failure on connection
-      conn.fail(new MessagingException(MessagingException.NOT_CONNECTED));
+      conn.fail(new HornetQException(HornetQException.NOT_CONNECTED));
 
       // Wait to be informed of failure
 
@@ -172,14 +172,14 @@ public class SimpleManualFailoverTest extends UnitTestCase
       server1Conf.getAcceptorConfigurations()
                  .add(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory",
                                                  server1Params));
-      server1Service = Messaging.newMessagingServer(server1Conf, false);
+      server1Service = HornetQ.newMessagingServer(server1Conf, false);
       server1Service.start();
 
       Configuration server0Conf = new ConfigurationImpl();
       server0Conf.setSecurityEnabled(false);
       server0Conf.getAcceptorConfigurations()
                  .add(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory"));
-      server0Service = Messaging.newMessagingServer(server0Conf, false);
+      server0Service = HornetQ.newMessagingServer(server0Conf, false);
       server0Service.start();
    }
 

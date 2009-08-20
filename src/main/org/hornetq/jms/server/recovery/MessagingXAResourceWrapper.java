@@ -23,7 +23,7 @@ import org.hornetq.core.client.ClientSession;
 import org.hornetq.core.client.ClientSessionFactory;
 import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
 import org.hornetq.core.config.TransportConfiguration;
-import org.hornetq.core.exception.MessagingException;
+import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.remoting.FailureListener;
 
@@ -211,7 +211,7 @@ public class MessagingXAResourceWrapper implements XAResource, FailureListener
       }
    }
 
-   public void connectionFailed(MessagingException me)
+   public void connectionFailed(HornetQException me)
    {
       log.warn("Notified of connection failure in recovery connectionFactory for provider " + connectorFactoryClassName, me);
       close();

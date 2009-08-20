@@ -18,7 +18,7 @@ import java.util.List;
 
 import javax.transaction.xa.Xid;
 
-import org.hornetq.core.remoting.spi.MessagingBuffer;
+import org.hornetq.core.remoting.spi.HornetQBuffer;
 import org.hornetq.utils.DataConstants;
 
 /**
@@ -74,7 +74,7 @@ public class SessionXAGetInDoubtXidsResponseMessage extends PacketImpl
    }
 
    @Override
-   public void encodeBody(final MessagingBuffer buffer)
+   public void encodeBody(final HornetQBuffer buffer)
    {
       buffer.writeInt(xids.size());
 
@@ -85,7 +85,7 @@ public class SessionXAGetInDoubtXidsResponseMessage extends PacketImpl
    }
 
    @Override
-   public void decodeBody(final MessagingBuffer buffer)
+   public void decodeBody(final HornetQBuffer buffer)
    {
       int len = buffer.readInt();
       xids = new ArrayList<Xid>(len);

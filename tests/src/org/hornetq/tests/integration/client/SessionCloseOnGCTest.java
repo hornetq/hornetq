@@ -19,7 +19,7 @@ import org.hornetq.core.client.ClientSessionFactory;
 import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
 import org.hornetq.core.config.TransportConfiguration;
 import org.hornetq.core.logging.Logger;
-import org.hornetq.core.server.MessagingServer;
+import org.hornetq.core.server.HornetQServer;
 import org.hornetq.integration.transports.netty.NettyAcceptorFactory;
 import org.hornetq.tests.util.ServiceTestBase;
 import org.hornetq.utils.SimpleString;
@@ -28,7 +28,7 @@ public class SessionCloseOnGCTest extends ServiceTestBase
 {
    private static final Logger log = Logger.getLogger(SessionCloseOnGCTest.class);
 
-   private MessagingServer server;
+   private HornetQServer server;
 
    private final SimpleString QUEUE = new SimpleString("ConsumerTestQueue");
 

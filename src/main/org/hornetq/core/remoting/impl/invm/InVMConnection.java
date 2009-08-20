@@ -16,12 +16,12 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.RejectedExecutionException;
 
 import org.hornetq.core.buffers.ChannelBuffers;
-import org.hornetq.core.exception.MessagingException;
+import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.remoting.spi.BufferHandler;
 import org.hornetq.core.remoting.spi.Connection;
 import org.hornetq.core.remoting.spi.ConnectionLifeCycleListener;
-import org.hornetq.core.remoting.spi.MessagingBuffer;
+import org.hornetq.core.remoting.spi.HornetQBuffer;
 import org.hornetq.utils.UUIDGenerator;
 
 /**
@@ -95,7 +95,7 @@ public class InVMConnection implements Connection
       }
    }
 
-   public MessagingBuffer createBuffer(final int size)
+   public HornetQBuffer createBuffer(final int size)
    {
       return ChannelBuffers.buffer(size);
    }
@@ -105,12 +105,12 @@ public class InVMConnection implements Connection
       return id;
    }
 
-   public void write(final MessagingBuffer buffer)
+   public void write(final HornetQBuffer buffer)
    {
       write(buffer, false);
    }
 
-   public void write(final MessagingBuffer buffer, final boolean flush)
+   public void write(final HornetQBuffer buffer, final boolean flush)
    {
       try
       {
@@ -147,7 +147,7 @@ public class InVMConnection implements Connection
       return "invm:" + serverID;
    }
 
-   public void fail(final MessagingException me)
+   public void fail(final HornetQException me)
    {
       listener.connectionException(id, me);
    }

@@ -20,7 +20,7 @@ import java.io.DataOutputStream;
 import java.nio.ByteBuffer;
 
 import org.hornetq.core.buffers.ChannelBuffers;
-import org.hornetq.core.remoting.spi.MessagingBuffer;
+import org.hornetq.core.remoting.spi.HornetQBuffer;
 import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.tests.util.UnitTestCase;
 import org.hornetq.utils.DataConstants;
@@ -41,7 +41,7 @@ public class UTF8Test extends UnitTestCase
 
    public void testValidateUTF() throws Exception
    {
-      MessagingBuffer buffer = ChannelBuffers.buffer(60 * 1024); 
+      HornetQBuffer buffer = ChannelBuffers.buffer(60 * 1024); 
 
       byte[] bytes = new byte[20000];
 
@@ -79,7 +79,7 @@ public class UTF8Test extends UnitTestCase
       }
    }
 
-   private void testValidateUTFOnDataInputStream(final String str, MessagingBuffer wrap) throws Exception
+   private void testValidateUTFOnDataInputStream(final String str, HornetQBuffer wrap) throws Exception
    {
       UTF8Util.saveUTF(wrap, str);
 
@@ -94,7 +94,7 @@ public class UTF8Test extends UnitTestCase
 
       outData.writeUTF(str);
 
-      MessagingBuffer buffer = ChannelBuffers.wrappedBuffer(byteOut.toByteArray());
+      HornetQBuffer buffer = ChannelBuffers.wrappedBuffer(byteOut.toByteArray());
 
       newStr = UTF8Util.readUTF(buffer);
 
@@ -113,7 +113,7 @@ public class UTF8Test extends UnitTestCase
 
       String str = new String(chars);
 
-      MessagingBuffer buffer = ChannelBuffers.buffer(0xffff + 4);
+      HornetQBuffer buffer = ChannelBuffers.buffer(0xffff + 4);
 
       try
       {

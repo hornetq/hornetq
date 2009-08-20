@@ -14,11 +14,11 @@
 package org.hornetq.core.management.jmx.impl;
 
 import org.hornetq.core.config.Configuration;
-import org.hornetq.core.management.MessagingServerControl;
+import org.hornetq.core.management.HornetQServerControl;
 import org.hornetq.core.management.ReplicationOperationInvoker;
 import org.hornetq.core.management.ResourceNames;
 import org.hornetq.core.management.impl.MBeanInfoHelper;
-import org.hornetq.core.management.impl.MessagingServerControlImpl;
+import org.hornetq.core.management.impl.HornetQServerControlImpl;
 
 import javax.management.MBeanInfo;
 
@@ -29,23 +29,23 @@ import javax.management.MBeanInfo;
  *
  */
 public class ReplicationAwareMessagingServerControlWrapper extends ReplicationAwareStandardMBeanWrapper implements
-         MessagingServerControl
+         HornetQServerControl
 {
 
    // Constants -----------------------------------------------------
 
    // Attributes ----------------------------------------------------
 
-   private final MessagingServerControlImpl localControl;
+   private final HornetQServerControlImpl localControl;
 
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   public ReplicationAwareMessagingServerControlWrapper(final MessagingServerControlImpl localControl,
+   public ReplicationAwareMessagingServerControlWrapper(final HornetQServerControlImpl localControl,
                                                         final ReplicationOperationInvoker replicationInvoker) throws Exception
    {
-      super(ResourceNames.CORE_SERVER, MessagingServerControl.class, replicationInvoker);
+      super(ResourceNames.CORE_SERVER, HornetQServerControl.class, replicationInvoker);
 
       this.localControl = localControl;
    }
@@ -392,7 +392,7 @@ public class ReplicationAwareMessagingServerControlWrapper extends ReplicationAw
                            info.getDescription(),
                            info.getAttributes(),
                            info.getConstructors(),
-                           MBeanInfoHelper.getMBeanOperationsInfo(MessagingServerControl.class),
+                           MBeanInfoHelper.getMBeanOperationsInfo(HornetQServerControl.class),
                            localControl.getNotificationInfo());
    }
 

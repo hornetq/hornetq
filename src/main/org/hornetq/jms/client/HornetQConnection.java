@@ -232,7 +232,7 @@ import javax.jms.XATopicSession;
 
 import org.hornetq.core.client.ClientSession;
 import org.hornetq.core.client.ClientSessionFactory;
-import org.hornetq.core.exception.MessagingException;
+import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.remoting.FailureListener;
 import org.hornetq.core.version.Version;
@@ -475,9 +475,9 @@ public class HornetQConnection implements Connection, QueueConnection, TopicConn
 
          closed = true;
       }
-      catch (MessagingException e)
+      catch (HornetQException e)
       {
-         throw JMSExceptionHelper.convertFromMessagingException(e);
+         throw JMSExceptionHelper.convertFromHornetQException(e);
       }
    }
 
@@ -687,9 +687,9 @@ public class HornetQConnection implements Connection, QueueConnection, TopicConn
 
          return jbs;
       }
-      catch (MessagingException e)
+      catch (HornetQException e)
       {
-         throw JMSExceptionHelper.convertFromMessagingException(e);
+         throw JMSExceptionHelper.convertFromHornetQException(e);
       }
    }
 
@@ -711,9 +711,9 @@ public class HornetQConnection implements Connection, QueueConnection, TopicConn
 
          initialSession.addFailureListener(listener);
       }
-      catch (MessagingException me)
+      catch (HornetQException me)
       {
-         throw JMSExceptionHelper.convertFromMessagingException(me);
+         throw JMSExceptionHelper.convertFromHornetQException(me);
       }
    }
 
@@ -728,7 +728,7 @@ public class HornetQConnection implements Connection, QueueConnection, TopicConn
          connectionRef = new WeakReference<HornetQConnection>(connection);
       }
       
-      public synchronized void connectionFailed(final MessagingException me)
+      public synchronized void connectionFailed(final HornetQException me)
       {
          if (me == null)
          {

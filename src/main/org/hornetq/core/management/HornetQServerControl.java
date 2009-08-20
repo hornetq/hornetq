@@ -21,7 +21,7 @@ import static javax.management.MBeanOperationInfo.INFO;
 /**
  * This interface describes the core management interface exposed by the server
  */
-public interface MessagingServerControl
+public interface HornetQServerControl
 {
    // Attributes ----------------------------------------------------
 

@@ -37,8 +37,8 @@ import org.hornetq.core.management.NotificationType;
 import org.hornetq.core.management.ObjectNames;
 import org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
-import org.hornetq.core.server.Messaging;
-import org.hornetq.core.server.MessagingServer;
+import org.hornetq.core.server.HornetQ;
+import org.hornetq.core.server.HornetQServer;
 import org.hornetq.tests.integration.SimpleNotificationService;
 import org.hornetq.utils.Pair;
 import org.hornetq.utils.SimpleString;
@@ -58,11 +58,11 @@ public class BridgeControlTest extends ManagementTestBase
 
    // Attributes ----------------------------------------------------
 
-   private MessagingServer server_0;
+   private HornetQServer server_0;
 
    private BridgeConfiguration bridgeConfig;
 
-   private MessagingServer server_1;
+   private HornetQServer server_1;
 
    // Constructors --------------------------------------------------
 
@@ -180,10 +180,10 @@ public class BridgeControlTest extends ManagementTestBase
       conf_0.getQueueConfigurations().add(sourceQueueConfig);
       conf_0.getBridgeConfigurations().add(bridgeConfig);
 
-      server_1 = Messaging.newMessagingServer(conf_1, MBeanServerFactory.createMBeanServer(), false);
+      server_1 = HornetQ.newMessagingServer(conf_1, MBeanServerFactory.createMBeanServer(), false);
       server_1.start();
 
-      server_0 = Messaging.newMessagingServer(conf_0, mbeanServer, false);
+      server_0 = HornetQ.newMessagingServer(conf_0, mbeanServer, false);
       server_0.start();
    }
 

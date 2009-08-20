@@ -26,7 +26,7 @@ import java.util.concurrent.ConcurrentMap;
 
 import org.hornetq.core.buffers.ChannelBuffers;
 import org.hornetq.core.client.management.impl.ManagementHelper;
-import org.hornetq.core.exception.MessagingException;
+import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.filter.Filter;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.management.ManagementService;
@@ -45,7 +45,7 @@ import org.hornetq.core.postoffice.Bindings;
 import org.hornetq.core.postoffice.DuplicateIDCache;
 import org.hornetq.core.postoffice.PostOffice;
 import org.hornetq.core.postoffice.QueueInfo;
-import org.hornetq.core.server.MessagingServer;
+import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.Queue;
 import org.hornetq.core.server.QueueFactory;
 import org.hornetq.core.server.ServerMessage;
@@ -75,7 +75,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
 
    public static final SimpleString HDR_RESET_QUEUE_DATA = new SimpleString("_HQ_RESET_QUEUE_DATA");
 
-   private MessagingServer server;
+   private HornetQServer server;
 
    private final AddressManager addressManager;
 
@@ -123,7 +123,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
 
    private final HierarchicalRepository<AddressSettings> addressSettingsRepository;
 
-   public PostOfficeImpl(final MessagingServer server,
+   public PostOfficeImpl(final HornetQServer server,
                          final StorageManager storageManager,
                          final PagingManager pagingManager,
                          final QueueFactory bindableFactory,
@@ -458,7 +458,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
       boolean existed = addressManager.addBinding(binding);
 
       // TODO - why is this code here?
-      // Shouldn't it be in MessagingServerImpl::createQueue??
+      // Shouldn't it be in HornetQServerImpl::createQueue??
       if (binding.getType() == BindingType.LOCAL_QUEUE)
       {
          Queue queue = (Queue)binding.getBindable();
@@ -508,7 +508,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
 
       if (binding == null)
       {
-         throw new MessagingException(MessagingException.QUEUE_DOES_NOT_EXIST);
+         throw new HornetQException(HornetQException.QUEUE_DOES_NOT_EXIST);
       }
 
       if (binding.getType() == BindingType.LOCAL_QUEUE)

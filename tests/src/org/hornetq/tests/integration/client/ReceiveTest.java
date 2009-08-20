@@ -18,8 +18,8 @@ import org.hornetq.core.client.ClientProducer;
 import org.hornetq.core.client.ClientSession;
 import org.hornetq.core.client.ClientSessionFactory;
 import org.hornetq.core.client.MessageHandler;
-import org.hornetq.core.exception.MessagingException;
-import org.hornetq.core.server.MessagingServer;
+import org.hornetq.core.exception.HornetQException;
+import org.hornetq.core.server.HornetQServer;
 import org.hornetq.tests.util.ServiceTestBase;
 import org.hornetq.utils.SimpleString;
 
@@ -34,7 +34,7 @@ public class ReceiveTest extends ServiceTestBase
 
    public void testBasicReceive() throws Exception
    {
-      MessagingServer server = createServer(false);
+      HornetQServer server = createServer(false);
       try
       {
          server.start();
@@ -61,7 +61,7 @@ public class ReceiveTest extends ServiceTestBase
 
    public void testReceiveTimesoutCorrectly() throws Exception
    {
-      MessagingServer server = createServer(false);
+      HornetQServer server = createServer(false);
       try
       {
          server.start();
@@ -88,7 +88,7 @@ public class ReceiveTest extends ServiceTestBase
 
    public void testReceiveOnClosedException() throws Exception
    {
-      MessagingServer server = createServer(false);
+      HornetQServer server = createServer(false);
       try
       {
          server.start();
@@ -103,9 +103,9 @@ public class ReceiveTest extends ServiceTestBase
             cc.receive();
             fail("should throw exception");
          }
-         catch (MessagingException e)
+         catch (HornetQException e)
          {
-            assertEquals(MessagingException.OBJECT_CLOSED, e.getCode());
+            assertEquals(HornetQException.OBJECT_CLOSED, e.getCode());
          }
          session.close();
 
@@ -122,7 +122,7 @@ public class ReceiveTest extends ServiceTestBase
 
    public void testReceiveThrowsExceptionWhenHandlerSet() throws Exception
    {
-      MessagingServer server = createServer(false);
+      HornetQServer server = createServer(false);
       try
       {
          server.start();
@@ -142,9 +142,9 @@ public class ReceiveTest extends ServiceTestBase
             cc.receive();
             fail("should throw exception");
          }
-         catch (MessagingException e)
+         catch (HornetQException e)
          {
-            assertEquals(MessagingException.ILLEGAL_STATE, e.getCode());
+            assertEquals(HornetQException.ILLEGAL_STATE, e.getCode());
          }
          session.close();
 
@@ -161,7 +161,7 @@ public class ReceiveTest extends ServiceTestBase
 
    public void testReceiveImmediate() throws Exception
    {
-      MessagingServer server = createServer(false);
+      HornetQServer server = createServer(false);
       try
       {
          server.start();

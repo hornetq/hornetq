@@ -15,7 +15,7 @@ package org.hornetq.core.deployers.impl;
 
 import org.hornetq.core.config.cluster.QueueConfiguration;
 import org.hornetq.core.deployers.DeploymentManager;
-import org.hornetq.core.management.MessagingServerControl;
+import org.hornetq.core.management.HornetQServerControl;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
@@ -28,9 +28,9 @@ import org.w3c.dom.NodeList;
  */
 public class QueueDeployer extends XmlDeployer
 {
-   private final MessagingServerControl serverControl;
+   private final HornetQServerControl serverControl;
 
-   public QueueDeployer(final DeploymentManager deploymentManager, final MessagingServerControl serverControl)
+   public QueueDeployer(final DeploymentManager deploymentManager, final HornetQServerControl serverControl)
    {
       super(deploymentManager);
 

@@ -50,8 +50,8 @@ config.setAcceptorConfigurations(transports);</programlisting>
         <para>You need to instantiate and start HornetQ server. The class <literal
                 >org.hornetq.core.serverMessaging</literal> has a few static methods for
             creating servers with common configurations.</para>
-        <programlisting>import org.hornetq.core.server.Messaging;
-import org.hornetq.core.server.MessagingServer;
+        <programlisting>import org.hornetq.core.server.HornetQ;
+import org.hornetq.core.server.HornetQServer;
 
 ...
 
@@ -87,7 +87,7 @@ server.start();</programlisting>
 
    	&lt;!-- The core server -->
    &lt;bean name="MessagingServer" 
-         class="org.hornetq.core.server.impl.MessagingServerImpl">      
+         class="org.hornetq.core.server.impl.HornetQServerImpl">      
       &lt;constructor>
          &lt;parameter>
             &lt;inject bean="Configuration"/>
