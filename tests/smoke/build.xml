@@ -654,7 +654,7 @@
    <target name="ping-queue">
       <java classname="org.jboss.console.twiddle.Twiddle" fork="yes" failonerror="yes"
           dir="${jboss.home}/bin">
-         <arg line="-s jnp://localhost:${jnpPort} get jboss.messaging.destination:name=${example.queue.name},service=Queue Name"/>
+         <arg line="-s jnp://localhost:${jnpPort} get hornetq.destination:name=${example.queue.name},service=Queue Name"/>
          <classpath>
             <path refid="twiddle.classpath"/>
          </classpath>
@@ -674,7 +674,7 @@
    <target name="ping-topic">
       <java classname="org.jboss.console.twiddle.Twiddle" fork="yes" failonerror="yes"
           dir="${jboss.home}/bin">
-         <arg line="-s jnp://localhost:${jnpPort} get jboss.messaging.destination:name=${example.topic.name},service=Topic Name"/>
+         <arg line="-s jnp://localhost:${jnpPort} get hornetq.destination:name=${example.topic.name},service=Topic Name"/>
          <classpath>
             <path refid="twiddle.classpath"/>
          </classpath>

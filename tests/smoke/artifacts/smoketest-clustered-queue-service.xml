@@ -3,7 +3,7 @@
 <server>
 
    <mbean code="org.hornetq.jms.server.destination.QueueService"
-      name="jboss.messaging.destination:service=Queue,name=DistributedSmokeTestQueue"
+      name="hornetq.destination:service=Queue,name=DistributedSmokeTestQueue"
       xmbean-dd="xmdesc/Queue-xmbean.xml">
       <attribute name="Clustered">true</attribute>
       <depends optional-attribute-name="ServerPeer">hornetq:service=ServerPeer</depends>

@@ -70,7 +70,7 @@ public class ConfigurationHelper implements KernelControllerContextAware
    {
       Hashtable<String, Serializable> env = new Hashtable<String, Serializable>();
       env.put("java.naming.factory.initial", "org.hornetq.jmstests.tools.container.InVMInitialContextFactory");
-      env.put("jboss.messaging.test.server.index", "0");
+      env.put("hornetq.test.server.index", "0");
       return env;
    }
 

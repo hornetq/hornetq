@@ -65,7 +65,7 @@
                         <literal>createQueue()</literal> or <literal>deployQueue()</literal> or
                         <literal>destroyQueue()</literal>)on the <literal
                         >MessagingServerControl</literal> (with the ObjectName <literal
-                        >org.jboss.messaging:module=Core,type=Server</literal> or the resource name
+                        >org.hornetq:module=Core,type=Server</literal> or the resource name
                         <literal>core.server</literal>)</para>
                   <para><literal>createQueue</literal> will fail if the queue already exists while
                         <literal>deployQueue</literal> will do nothing.</para>
@@ -112,7 +112,7 @@
             <title>Core Address Management</title>
             <para>Core addresses can be managed using the <literal>AddressControl</literal>
                class (with the ObjectName <literal
-                  >org.jboss.messaging:module=Core,type=Address,name="&lt;the address
+                  >org.hornetq:module=Core,type=Address,name="&lt;the address
                   name&gt;"</literal> or the resource name <literal>core.address.&lt;the address
                   name&gt;</literal>). </para>
             <itemizedlist>
@@ -130,7 +130,7 @@
             <para>The bulk of the core management API deals with core queues. The <literal
                   >QueueControl</literal> class defines the Core queue management operations
                (with the ObjectName <literal
-                  >org.jboss.messaging:module=Core,type=Queue,address="&lt;the bound
+                  >org.hornetq:module=Core,type=Queue,address="&lt;the bound
                   address&gt;",name="&lt;the queue name&gt;"</literal> or the resource name <literal
                   >core.queue.&lt;the queue name&gt;</literal>).</para>
             <para>Most of the management operations on queues take either a single message ID (e.g.
@@ -207,7 +207,7 @@
                   <para>They can be started or stopped using the <literal>start()</literal> or.
                         <literal>stop()</literal> method on the <literal
                         >AcceptorControl</literal> class (with the ObjectName <literal
-                        >org.jboss.messaging:module=Core,type=Acceptor,name="&lt;the acceptor
+                        >org.hornetq:module=Core,type=Acceptor,name="&lt;the acceptor
                         name&gt;"</literal> or the resource name <literal>core.acceptor.&lt;the
                         address name&gt;</literal>). The acceptors parameters can be retrieved using
                      the <literal>AcceptorControl</literal> attributes (see <xref
@@ -218,7 +218,7 @@
                   <para>They can be started or stopped using the <literal>start()</literal> or
                         <literal>stop()</literal> method on the <literal
                         >DivertControl</literal> class (with the ObjectName <literal
-                        >org.jboss.messaging:module=Core,type=Divert,name=&lt;the divert
+                        >org.hornetq:module=Core,type=Divert,name=&lt;the divert
                         name&gt;</literal> or the resource name <literal>core.divert.&lt;the divert
                         name&gt;</literal>). Diverts parameters can be retrieved using the <literal
                         >DivertControl</literal> attributes (see <xref linkend="diverts"
@@ -229,7 +229,7 @@
                   <para>They can be started or stopped using the <literal>start()</literal> (resp.
                         <literal>stop()</literal>) method on the <literal
                         >BridgeControl</literal> class (with the ObjectName <literal
-                        >org.jboss.messaging:module=Core,type=Bridge,name="&lt;the bridge
+                        >org.hornetq:module=Core,type=Bridge,name="&lt;the bridge
                         name&gt;"</literal> or the resource name <literal>core.bridge.&lt;the bridge
                         name&gt;</literal>). Bridges parameters can be retrieved using the <literal
                         >BridgeControl</literal> attributes (see <xref linkend="core-bridges"
@@ -240,7 +240,7 @@
                   <para>They can be started or stopped using the <literal>start()</literal> or
                         <literal>stop()</literal> method on the <literal
                         >BroadcastGroupControl</literal> class (with the ObjectName <literal
-                        >org.jboss.messaging:module=Core,type=BroadcastGroup,name="&lt;the broadcast
+                        >org.hornetq:module=Core,type=BroadcastGroup,name="&lt;the broadcast
                         group name&gt;"</literal> or the resource name <literal
                         >core.broadcastgroup.&lt;the broadcast group name&gt;</literal>). Broadcast
                      groups parameters can be retrieved using the <literal
@@ -252,7 +252,7 @@
                   <para>They can be started or stopped using the <literal>start()</literal> or
                         <literal>stop()</literal> method on the <literal
                         >DiscoveryGroupControl</literal> class (with the ObjectName <literal
-                        >org.jboss.messaging:module=Core,type=DiscoveryGroup,name="&lt;the discovery
+                        >org.hornetq:module=Core,type=DiscoveryGroup,name="&lt;the discovery
                         group name&gt;"</literal> or the resource name <literal
                         >core.discovery.&lt;the discovery group name&gt;</literal>). Discovery
                      groups parameters can be retrieved using the <literal
@@ -264,7 +264,7 @@
                   <para>They can be started or stopped using the <literal>start()</literal> or
                         <literal>stop()</literal> method on the <literal
                         >ClusterConnectionControl</literal> class (with the ObjectName <literal
-                        >org.jboss.messaging:module=Core,type=ClusterConnection,name="&lt;the
+                        >org.hornetq:module=Core,type=ClusterConnection,name="&lt;the
                         cluster connection name&gt;"</literal> or the resource name <literal
                         >core.clusterconnection.&lt;the cluster connection name&gt;</literal>).
                      Cluster connections parameters can be retrieved using the <literal
@@ -282,7 +282,7 @@
             <title>JMS Server Management</title>
             <para>JMS Resources (connection factories and destinations) can be created using the
                   <literal>JMSServerControl</literal> class (with the ObjectName <literal
-                  >org.jboss.messaging:module=JMS,type=Server</literal> or the resource name
+                  >org.hornetq:module=JMS,type=Server</literal> or the resource name
                   <literal>jms.server</literal>).</para>
             <itemizedlist>
                <listitem>
@@ -331,7 +331,7 @@
             <title>JMS ConnectionFactory Management</title>
             <para>JMS Connection Factories can be managed using the <literal
                   >ConnectionFactoryControl</literal> class (with the ObjectName <literal
-                  >org.jboss.messaging:module=JMS,type=ConnectionFactory,name="&lt;the connection
+                  >org.hornetq:module=JMS,type=ConnectionFactory,name="&lt;the connection
                   factory name&gt;"</literal> or the resource name <literal
                   >jms.connectionfactory.&lt;the connection factory name&gt;</literal>).</para>
             <itemizedlist>
@@ -349,7 +349,7 @@
          <section>
             <title>JMS Queue Management</title>
             <para>JMS queues can be managed using the <literal>JMSQueueControl</literal> class
-               (with the ObjectName <literal>org.jboss.messaging:module=JMS,type=Queue,name="&lt;the
+               (with the ObjectName <literal>org.hornetq:module=JMS,type=Queue,name="&lt;the
                   queue name&gt;"</literal> or the resource name <literal>jms.queue.&lt;the queue
                   name&gt;</literal>). </para>
             <para><emphasis>The management operations on a JMS queue are very similar to the
@@ -414,7 +414,7 @@
          <section>
             <title>JMS Topic Management</title>
             <para>JMS Topics can be managed using the <literal>TopicControl</literal> class
-               (with the ObjectName <literal>org.jboss.messaging:module=JMS,type=Topic,name="&lt;the
+               (with the ObjectName <literal>org.hornetq:module=JMS,type=Topic,name="&lt;the
                   topic name&gt;"</literal> or the resource name <literal>jms.topic.&lt;the topic
                   name&gt;</literal>).</para>
             <itemizedlist>
@@ -451,11 +451,11 @@
          >JMX</ulink>. </para>
       <para>The management API is exposed by HornetQ using MBeans interfaces. JBoss
          Messaging registers its resources with the domain <literal
-         >org.jboss.messaging</literal>.</para>
+         >org.hornetq</literal>.</para>
       <para>For example, the <literal>ObjectName</literal> to manage a JMS Queue <literal
             >exampleQueue</literal> is:</para>
       <programlisting>
-   org.jboss.messaging:module=JMS,type=Queue,name="exampleQueue"   
+   org.hornetq:module=JMS,type=Queue,name="exampleQueue"   
       </programlisting>
       <para>and the MBean is:</para>
       <programlisting>
@@ -723,11 +723,11 @@
             notifications can be received by subscribing to 2 MBeans:</para>
          <itemizedlist>
             <listitem>
-               <para><literal>org.jboss.messaging:module=Core,type=Server</literal> for
+               <para><literal>org.hornetq:module=Core,type=Server</literal> for
                   notifications on <emphasis>Core</emphasis> resources</para>
             </listitem>
             <listitem>
-               <para><literal>org.jboss.messaging:module=JMS,type=Server</literal> for notifications
+               <para><literal>org.hornetq:module=JMS,type=Server</literal> for notifications
                   on <emphasis>JMS</emphasis> resources</para>
             </listitem>
          </itemizedlist>

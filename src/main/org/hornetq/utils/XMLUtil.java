@@ -85,13 +85,7 @@ public class XMLUtil
 
       // Quick hardcoded replace, FIXME this is a kludge - use regexp to match properly
       String s = buff.toString();
-      s = doReplace(s, "jboss.messaging.groupname", "MessagingPostOffice");
-      s = doReplace(s, "jboss.messaging.datachanneludpaddress", "228.6.6.6");
-      s = doReplace(s, "jboss.messaging.controlchanneludpaddress", "228.7.7.7");
-      s = doReplace(s, "jboss.messaging.datachanneludpport", "45567");
-      s = doReplace(s, "jboss.messaging.controlchanneludpport", "45568");
-      s = doReplace(s, "jboss.messaging.ipttl", "2");
-      s = doReplace(s, "jboss.messaging.ipttl", "8");
+
 
       StringReader sreader = new StringReader(s);
 
