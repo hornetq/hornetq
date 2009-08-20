@@ -88,7 +88,7 @@
             property:</para>
          <itemizedlist>
             <listitem>
-               <para><literal>_JBM_ORIG_DESTINATION</literal></para>
+               <para><literal>_HQ_ORIG_DESTINATION</literal></para>
                <para>a String property containing the <emphasis>original destination</emphasis> of
                   the dead letter message </para>
             </listitem>

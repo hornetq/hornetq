@@ -35,13 +35,13 @@
         of the core message in an expression:</para>
     <itemizedlist>
         <listitem>
-            <para><literal>JBMPriority</literal>. To refer to the priority of a message. Message
+            <para><literal>HQPriority</literal>. To refer to the priority of a message. Message
                 priorities are integers with valid values from <literal>0 - 9</literal>. <literal
                     >0</literal> is the lowest priority and <literal>9</literal> is the highest.
-                E.g. <literal>JBMPriority = 3 AND animal = 'aardvark'</literal></para>
+                E.g. <literal>HQPriority = 3 AND animal = 'aardvark'</literal></para>
         </listitem>
         <listitem>
-            <para><literal>JBMExpiration</literal>. To refer to the expiration time of a message.
+            <para><literal>HQExpiration</literal>. To refer to the expiration time of a message.
                 The value is a long integer.</para>
         </listitem>
         <listitem>
@@ -50,11 +50,11 @@
                     >NON_DURABLE</literal>.</para>
         </listitem>
         <listitem>
-            <para><literal>JBMTimestamp</literal>. The timestamp of when the message was created.
+            <para><literal>HQTimestamp</literal>. The timestamp of when the message was created.
                 The value is a long integer.</para>
         </listitem>
         <listitem>
-            <para><literal>JBMSize</literal>. The size of a message in bytes. The value is an
+            <para><literal>HQSize</literal>. The size of a message in bytes. The value is an
                 integer.</para>
         </listitem>
     </itemizedlist>

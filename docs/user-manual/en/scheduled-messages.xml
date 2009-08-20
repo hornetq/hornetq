@@ -7,7 +7,7 @@
    <section>
       <title>Scheduled Delivery Property</title>
       <para>The property name used to identify a scheduled message is <literal
-            >"_JBM_SCHED_DELIVERY"</literal> (or the constant <literal
+            >"_HQ_SCHED_DELIVERY"</literal> (or the constant <literal
             >MessageImpl.HDR_SCHEDULED_DELIVERY_TIME</literal>).</para>
       <para>The specified value must be a <literal>long</literal> corresponding to the time the
          message must be delivered (in milliseconds). An example of sending a scheduled message
@@ -16,7 +16,7 @@
   TextMessage message = 
    session.createTextMessage("This is a scheduled message message which will be delivered
      in 5 sec.");
-  message.setLongProperty("_JBM_SCHED_DELIVERY", System.currentTimeMillis() + 5000);
+  message.setLongProperty("_HQ_SCHED_DELIVERY", System.currentTimeMillis() + 5000);
   producer.send(message);
 
   ...

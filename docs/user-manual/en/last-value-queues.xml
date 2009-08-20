@@ -20,7 +20,7 @@
    </section>
    <section>
       <title>Using Last-Value Property</title>
-      <para>The property name used to identify the last value is <literal>"_JBM_LVQ_NAME"</literal>
+      <para>The property name used to identify the last value is <literal>"_HQ_LVQ_NAME"</literal>
          (or the constant <literal>MessageImpl.HDR_LAST_VALUE_NAME</literal> from the Core
          API).</para>
       <para>For example, if two messages with the same value for the Last-Value property are sent to
@@ -29,13 +29,13 @@
 // send 1st message with Last-Value property set to STOCK_NAME
 TextMessage message = 
   session.createTextMessage("1st message with Last-Value property set");
-message.setStringProperty("_JBM_LVQ_NAME", "STOCK_NAME");
+message.setStringProperty("_HQ_LVQ_NAME", "STOCK_NAME");
 producer.send(message);
 
 // send 2nd message with Last-Value property set to STOCK_NAME             
 message = 
   session.createTextMessage("2nd message with Last-Value property set");
-message.setStringProperty("_JBM_LVQ_NAME", "STOCK_NAME");
+message.setStringProperty("_HQ_LVQ_NAME", "STOCK_NAME");
 producer.send(message);
        
 ...

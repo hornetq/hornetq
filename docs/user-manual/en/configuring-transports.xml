@@ -300,7 +300,7 @@ etc
                 servlet running in a servlet engine which then redirects it to an in-VM HornetQ server.</para>
             <para>The servlet transport differs from the Netty HTTP transport in that, with the HTTP
                 transport HornetQ effectively acts a web server listening for HTTP traffic
-                on, e.g. port 80 or 8080, whereas with the servlet transport JBM traffic is proxied
+                on, e.g. port 80 or 8080, whereas with the servlet transport HornetQ traffic is proxied
                 through a servlet engine which may already be serving web site or other
                 applications. This allows HornetQ to be used where corporate policies may
                 only allow a single web server listening on an HTTP port, and this needs to serve
@@ -322,14 +322,14 @@ etc
       &lt;servlet-class>org.jboss.netty.channel.socket.http.HttpTunnelingServlet&lt;/servlet-class>
       &lt;init-param>
              &lt;param-name>endpoint&lt;/param-name>
-             &lt;param-value>local:org.jboss.jbm&lt;/param-value>
+             &lt;param-value>local:org.hornetq&lt;/param-value>
            &lt;/init-param>
            &lt;load-on-startup>1&lt;/load-on-startup>
    &lt;/servlet>
 
    &lt;servlet-mapping>
       &lt;servlet-name>NettyServlet&lt;/servlet-name>
-      &lt;url-pattern>/JBMServlet&lt;/url-pattern>
+      &lt;url-pattern>/HornetQServlet&lt;/url-pattern>
    &lt;/servlet-mapping>
 &lt;/web-app>
 
@@ -348,7 +348,7 @@ etc
             org.hornetq.integration.transports.netty.NettyAcceptorFactory
          &lt;/factory-class>
          &lt;param key="hornetq.remoting.netty.useinvm" value="true" type="Boolean"/>
-         &lt;param key="hornetq.remoting.netty.host" value="org.jboss.jbm" type="String"/>
+         &lt;param key="hornetq.remoting.netty.host" value="org.hornetq" type="String"/>
       &lt;/acceptor>
 
 &lt;/acceptors>                                         
@@ -367,7 +367,7 @@ etc
          &lt;param key="hornetq.remoting.netty.port" value="8080" type="Integer"/>
          &lt;param key="hornetq.remoting.netty.useservlet" value="true" type="Boolean"/>
          &lt;param key="hornetq.remoting.netty.servletpath" 
-            value="/messaging/JBMServlet" type="String"/>
+            value="/messaging/HornetQServlet" type="String"/>
       &lt;/connector>
 
  &lt;/connectors></programlisting>
@@ -392,7 +392,7 @@ etc
          &lt;param key="hornetq.remoting.netty.host" value="localhost" type="String"/>
          &lt;param key="hornetq.remoting.netty.port" value="8443" type="Integer"/>
          &lt;param key="hornetq.remoting.netty.useservlet" value="true" type="Boolean"/>
-         &lt;param key="hornetq.remoting.netty.servletpath" value="/messaging/JBMServlet" type="String"/>
+         &lt;param key="hornetq.remoting.netty.servletpath" value="/messaging/HornetQServlet" type="String"/>
          &lt;param key="hornetq.remoting.netty.sslenabled" value="true" type="Boolean"/>
          &lt;param key="hornetq.remoting.netty.keystorepath" value="path to a keystoree" type="String"/>
          &lt;param key="hornetq.remoting.netty.keystorepassword" value="keysore password" type="String"/>

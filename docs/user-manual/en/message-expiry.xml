@@ -25,12 +25,12 @@ producer.setTimeToLive(5000);
          properties:</para>
       <itemizedlist>
          <listitem>
-            <para><literal>_JBM_ORIG_DESTINATION</literal></para>
+            <para><literal>_HQ_ORIG_DESTINATION</literal></para>
             <para>a String property containing the <emphasis>original destination</emphasis> of the
                expired message </para>
          </listitem>
          <listitem>
-            <para><literal>_JBM_ACTUAL_EXPIRY</literal></para>
+            <para><literal>_HQ_ACTUAL_EXPIRY</literal></para>
             <para>a Long property containing the <emphasis>actual expiration time</emphasis> of the
                expired message</para>
          </listitem>

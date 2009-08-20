@@ -177,7 +177,7 @@ message.setObjectProperty("JMS_HQ_InputStream", bufferedInput);
 
 someProducer.send(message);</programlisting>
             <para>The <literal>OutputStream</literal> can be set through the JMS Object Property
-                JMS_JBM_SaveStream on messages being received in a blocking way.</para>
+                JMS_HQ_SaveStream on messages being received in a blocking way.</para>
             <programlisting>
 BytesMessage messageReceived = (BytesMessage)messageConsumer.receive(120000);
                 
@@ -188,7 +188,7 @@ FileOutputStream fileOutputStream = new FileOutputStream(outputFile);
 BufferedOutputStream bufferedOutput = new BufferedOutputStream(fileOutputStream);
                 
 // This will block until the entire content is saved on disk
-messageReceived.setObjectProperty("JMS_JBM_SaveStream", bufferedOutput);
+messageReceived.setObjectProperty("JMS_HQ_SaveStream", bufferedOutput);
             </programlisting>
             <para>Setting the <literal>OutputStream</literal> could also be done in a non blocking
                 way using the property JMS_HQ_InputStream.</para>

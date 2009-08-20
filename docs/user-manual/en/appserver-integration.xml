@@ -234,11 +234,11 @@ public class MDBMessageSendTxExample implements MessageListener
     </section>
     <section>
         <title>Configuring the JCA Adaptor</title>
-        <para>The Java Connector Architecture (JCA) Adapter is what allows JBM to be integrated with
+        <para>The Java Connector Architecture (JCA) Adapter is what allows HornetQ to be integrated with
             JEE components such as MDB's and EJB's. It configures how components such as MDB's
-            consume messages from the JBM server and also how components such as EJB's or Servlet's
+            consume messages from the HornetQ server and also how components such as EJB's or Servlet's
             can send messages.</para>
-        <para>The JBM JCA adapter is deployed via the <literal>jms-ra.rar</literal> archive. The
+        <para>The HornetQ JCA adapter is deployed via the <literal>jms-ra.rar</literal> archive. The
             configuration of the Adapter is found in this archive under <literal
                 >META-INF/ra.xml</literal>.</para>
         <para>The configuration will look something like the following:</para>
@@ -328,7 +328,7 @@ public class MDBMessageSendTxExample implements MessageListener
         <section>
             <title>Adapter Global properties</title>
             <para>The first element you see is <literal>resourceadapter-class</literal> which should
-                be left unchanged. This is the JBM resource adapter class.</para>
+                be left unchanged. This is the HornetQ resource adapter class.</para>
             <para>After that there is a list of configuration properties. This will be where most of
                 the configuration is done. The first 2 configure the transport used by the adapter
                 and the rest configure the connection itself.</para>
@@ -545,7 +545,7 @@ public class MDBMessageSendTxExample implements MessageListener
                 deployment. The connection factories defined in the config file inherit their
                 properties from the main <literal>ra.xml</literal> configuration but can also be
                 overridden, the following example show how to define one.</para>
-            <para>Please note that this configuration only applies to install the JBM resource
+            <para>Please note that this configuration only applies to install the HornetQ resource
                 adapter in the JBoss Application Server. If you are using another JEE application
                 server please refer to your application servers documentation for how to do
                 this.</para>
@@ -1054,7 +1054,7 @@ initialContext = new InitialContext(jndiParameters);</programlisting>
                 <para>the corresponding configuration in <literal
                         >conf/jbossts-properties.xml</literal> is:</para>
                 <programlisting>
-&lt;property name="com.arjuna.ats.jta.recovery.XAResourceRecovery.JBMESSAGING1"
+&lt;property name="com.arjuna.ats.jta.recovery.XAResourceRecovery.HORNETQ1"
    value="org.hornetq.jms.server.recovery.HornetQXAResourceRecovery;org.hornetq.core.remoting.impl.invm.InVMConnectorFactory"/>        			
                 </programlisting>
                 <para>If it is now configured with a netty acceptor on a non-default port:</para>
@@ -1067,7 +1067,7 @@ initialContext = new InitialContext(jndiParameters);</programlisting>
                 <para>the corresponding configuration in <literal
                         >conf/jbossts-properties.xml</literal> is:</para>
                 <programlisting>
-&lt;property name="com.arjuna.ats.jta.recovery.XAResourceRecovery.JBMESSAGING1"
+&lt;property name="com.arjuna.ats.jta.recovery.XAResourceRecovery.HORNETQ1"
        value="org.hornetq.jms.server.recovery.HornetQXAResourceRecovery;org.hornetq.integration.transports.netty.NettyConnectorFactory, , , hornetq.remoting.netty.port=8888"/>        			                    
                 </programlisting>
                 <note>
@@ -1077,7 +1077,7 @@ initialContext = new InitialContext(jndiParameters);</programlisting>
                 <para>If the recovery must use <literal>admin, adminpass</literal>, the
                     configuration would have been:</para>
                 <programlisting>
-                    &lt;property name="com.arjuna.ats.jta.recovery.XAResourceRecovery.JBMESSAGING1"
+                    &lt;property name="com.arjuna.ats.jta.recovery.XAResourceRecovery.HORNETQ1"
                            value="org.hornetq.jms.server.recovery.HornetQXAResourceRecovery;org.hornetq.integration.transports.netty.NettyConnectorFactory, admin, adminpass, hornetq.remoting.netty.port=8888"/>        			                    
                 </programlisting>
                 <para>Configuring HornetQ with an invm acceptor and configuring the Recovery Manager

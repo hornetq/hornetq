@@ -6,7 +6,7 @@
       <listitem>
          <para>Messages in a message group share the same group id, i.e. they have same group
             identifier property (<literal>JMSXGroupID</literal> for JMS, <literal
-               >_JBM_GROUP_ID</literal> for HornetQ Core API).</para>
+               >_HQ_GROUP_ID</literal> for HornetQ Core API).</para>
       </listitem>
       <listitem>
          <para>Messages in a message group are always consumed by the same consumer, even if there
@@ -18,7 +18,7 @@
    <section>
       <title>Using Core API</title>
       <para>The property name used to identify the message group is <literal
-            >"_JBM_GROUP_ID""</literal> (or the constant <literal
+            >"_HQ_GROUP_ID""</literal> (or the constant <literal
          >MessageImpl.HDR_GROUP_ID</literal>). Alternatively, you can set <literal
             >autogroup</literal> to true on the <literal>SessionFactory</literal> which will pick a
          random unique id. </para>

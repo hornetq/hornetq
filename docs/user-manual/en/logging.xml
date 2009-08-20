@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <chapter id="logging">
     <title>Logging</title>
-    <para>JBM uses standard <ulink url="http://java.sun.com/j2se/1.4.2/docs/guide/util/logging/">JDK
+    <para>HornetQ uses standard <ulink url="http://java.sun.com/j2se/1.4.2/docs/guide/util/logging/">JDK
             logging</ulink>, (a.k.a Java-Util-Logging: JUL), for all its logging. This means we have
         no dependencies on any third party logging framework. Users can provide their own logging
         handler to use or alternatively use the log4j handler supplied by HornetQ.</para>
@@ -9,9 +9,9 @@
         default location for this file is under the <literal>lib</literal> directory found in the
         Java home directory but it can be overridden by setting the <literal
             >java.util.logging.config.file</literal> system property to point to the appropriate
-        logging.properties file. The standalone JBM server does this and the <literal
+        logging.properties file. The standalone HornetQ server does this and the <literal
             >logging.properties</literal> file can be found under the <literal>config</literal>
-        directory of the JBM installation. </para>
+        directory of the HornetQ installation. </para>
     <para>By default the standalone server is configured to use the standard console handler and a
         file handler that logs to <literal>bin/logs/hornetq.log</literal>.</para>
     <para>Because some of the third party components used to bootstrap HornetQ, i.e. the

@@ -60,12 +60,12 @@
         <section>
             <title>Asynchronous IO</title>
             <para>Asynchronous IO has a thread pool for receiving and dispatching events out of the
-                native layer. You will find it on a thread dump with the prefix JBM-AIO-poller-pool.
+                native layer. You will find it on a thread dump with the prefix HornetQ-AIO-poller-pool.
                 HornetQ uses one thread per opened file on the journal (there is usually
                 one).</para>
             <para>There is also a single thread used to invoke writes on libaio. We do that to avoid
                 context switching on libaio what would cause performance issues. You will find this
-                thread on a thread dump with the prefix JBM-AIO-writer-pool.</para>
+                thread on a thread dump with the prefix HornetQ-AIO-writer-pool.</para>
         </section>
     </section>
     <section id="thread-pooling.client.side">

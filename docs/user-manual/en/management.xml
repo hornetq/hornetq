@@ -571,7 +571,7 @@
             >exampleQueue</literal>:</para>
       <programlisting>
    ClientSession session = ...
-   ClientRequestor requestor = new ClientRequestor(session, "jbm.management");
+   ClientRequestor requestor = new ClientRequestor(session, "hornetq.management");
    ClientMessage message = session.createClientMessage(false);
    ManagementHelper.putAttribute(message, "core.queue.exampleQueue", "messageCount");
    ClientMessage reply = requestor.request(m);
@@ -590,16 +590,16 @@
          <para>The management address to send management messages is configured in <literal
                >hornetq-configuration.xml</literal>:</para>
          <programlisting>
-   &lt;management-address&gt;jbm.management&lt;/management-address&gt;
+   &lt;management-address&gt;hornetq.management&lt;/management-address&gt;
          </programlisting>
-         <para>By default, the address is <literal>jbm.management</literal>.</para>
+         <para>By default, the address is <literal>hornetq.management</literal>.</para>
          <para>The management address requires a <emphasis>special</emphasis> user permission
                <literal>manage</literal> to be able to receive and handle management messages. This
             is also configured in hornetq-configuration.xml:</para>
          <programlisting>
    &lt;!-- users with the admin role will be allowed to manage --&gt; 
    &lt;!-- HornetQ using management messages        --&gt;
-   &lt;security-setting match="jbm.management"&gt;
+   &lt;security-setting match="hornetq.management"&gt;
       &lt;permission type="manage" roles="admin" /&gt;
    &lt;/security-setting&gt;
          </programlisting>
@@ -613,7 +613,7 @@
       <para>The <emphasis>management queue</emphasis> is a special queue and needs to be
          instantiated directly by the client:</para>
       <programlisting>
-   Queue managementQueue = new JBossQueue("jbm.management", "jbm.management");   
+   Queue managementQueue = new JBossQueue("hornetq.management", "hornetq.management");   
       </programlisting>
       <para>All the other steps are the same than for the Core API but they use JMS API
          instead:</para>
@@ -642,7 +642,7 @@
       <para>For example, to know the number of messages in the JMS queue <literal
             >exampleQueue</literal>:</para>
       <programlisting>
-   Queue managementQueue = new JBossQueue("jbm.management", "jbm.management");   
+   Queue managementQueue = new JBossQueue("hornetq.management", "hornetq.management");   
    
    QueueSession session = ...      
    QueueRequestor requestor = new QueueRequestor(session, managementQueue);
@@ -684,7 +684,7 @@
             be shared by all nodes</emphasis>. To configure it, change the value in <literal
             >hornetq-configuration.xml</literal>:</para>
       <programlisting>
-   &lt;management-cluster-user&gt;JBM.MANAGEMENT.ADMIN.USER&lt;/management-cluster-user&gt;
+   &lt;management-cluster-user&gt;HORNETQ.MANAGEMENT.ADMIN.USER&lt;/management-cluster-user&gt;
    &lt;management-cluster-password&gt;CHANGE ME!!&lt;/management-cluster-password&gt;
       </programlisting>
       <para>It is strongly suggested to
@@ -751,9 +751,9 @@
             <para>the management notification address to receive management notifications is
                configured in <literal>hornetq-configuration.xml</literal>:</para>
             <programlisting>
-               &lt;management-notification-address&gt;jbm.notifications&lt;/management-notification-address&gt;
+               &lt;management-notification-address&gt;hornetq.notifications&lt;/management-notification-address&gt;
             </programlisting>
-            <para>By default, the address is <literal>jbm.notifications</literal>.</para>
+            <para>By default, the address is <literal>hornetq.notifications</literal>.</para>
          </section>
       </section>
       <section>
@@ -763,12 +763,12 @@
             is that JMS requires a JMS Destination to receive the messages (preferably a
             Topic):</para>
          <programlisting>
-   Topic notificationsTopic = new JBossTopic("jbm.notifications", "jbm.notifications");
+   Topic notificationsTopic = new JBossTopic("hornetq.notifications", "hornetq.notifications");
          </programlisting>
          <para>Once the notification topic is created, you can receive messages from it or set a
                <literal>MessageListener</literal>:</para>
          <programlisting>
-   Topic notificationsTopic = new JBossTopic("jbm.notifications", "jbm.notifications");
+   Topic notificationsTopic = new JBossTopic("hornetq.notifications", "hornetq.notifications");
 
    Session session = ...
    MessageConsumer notificationConsumer = session.createConsumer(notificationsTopic);

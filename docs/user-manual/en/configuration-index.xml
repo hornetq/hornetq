@@ -207,7 +207,7 @@
                             <entry>String</entry>
                             <entry>the name of the management address to send management messages
                                 to</entry>
-                            <entry>jbm.management</entry>
+                            <entry>hornetq.management</entry>
                         </row>
                         <row>
                             <entry><link linkend="management.replication"
@@ -215,7 +215,7 @@
                             <entry>String</entry>
                             <entry>the user used to for replicating management operations between
                                 clustered nodes</entry>
-                            <entry>JBM.MANAGEMENT.ADMIN.USER</entry>
+                            <entry>HORNETQ.MANAGEMENT.ADMIN.USER</entry>
                         </row>
                         <row>
                             <entry><link linkend="management.replication"
@@ -231,7 +231,7 @@
                             <entry>String</entry>
                             <entry>the name of the address that consumers bind to receive management
                                 notifications</entry>
-                            <entry>jbm.notifications</entry>
+                            <entry>hornetq.notifications</entry>
                         </row>
                         <row>
                             <entry><link linkend="management.replication"

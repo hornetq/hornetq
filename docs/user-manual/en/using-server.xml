@@ -116,7 +116,7 @@
                 <para><literal>hornetq-queues.xml</literal>. This file contains predefined queues, queue
                     settings and security settings. The file is optional - all this configuration
                     can also live in <literal>hornetq-configuration.xml</literal>. In fact, the default
-                    configuration sets do not have a <literal>jbm.queues.xml</literal> file. The
+                    configuration sets do not have a <literal>hornetq-queues.xml</literal> file. The
                     purpose of allowing queues to be configured in these files is to allow you to
                     manage your queue configuration over many files instead of being forced to
                     maintain it in a single file. There can be many <literal
