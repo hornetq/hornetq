@@ -1102,7 +1102,7 @@
          <bottom><![CDATA[<i>Copyright &#169; 2006 JBoss Inc. All Rights Reserved.</i>]]></bottom>
          <tag name="todo" scope="all" description="To do:"/>
          <group title="JMS Facade" packages="org.jboss.jms.*"/>
-         <group title="Messaging Core" packages="org.jboss.messaging.*"/>
+         <group title="Messaging Core" packages="org.hornetq.*"/>
       </javadoc>
    </target>
 

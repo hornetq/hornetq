@@ -283,7 +283,7 @@
       <exec executable="mvn">
          <arg value="-s settings.xml"/>
          <arg value="deploy:deploy-file"/>
-         <arg value="-DgroupId=org.jboss.messaging"/>
+         <arg value="-DgroupId=org.hornetq"/>
          <arg value="-DartifactId=${artifact.id}"/>
          <arg value="-Dversion=${jbm.version}"/>
          <arg value="-Dpackaging=${artifact.type}"/>

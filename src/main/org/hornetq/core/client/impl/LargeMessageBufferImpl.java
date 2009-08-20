@@ -1328,7 +1328,7 @@ public class LargeMessageBufferImpl implements ChannelBuffer, LargeMessageBuffer
    }
 
    /* (non-Javadoc)
-    * @see org.hornetq.core.remoting.spi.MessagingBuffer#writeNullableSimpleString(org.jboss.messaging.util.SimpleString)
+    * @see org.hornetq.core.remoting.spi.MessagingBuffer#writeNullableSimpleString(org.hornetq.util.SimpleString)
     */
    public void writeNullableSimpleString(final SimpleString val)
    {
@@ -1344,7 +1344,7 @@ public class LargeMessageBufferImpl implements ChannelBuffer, LargeMessageBuffer
    }
 
    /* (non-Javadoc)
-    * @see org.hornetq.core.remoting.spi.MessagingBuffer#writeSimpleString(org.jboss.messaging.util.SimpleString)
+    * @see org.hornetq.core.remoting.spi.MessagingBuffer#writeSimpleString(org.hornetq.util.SimpleString)
     */
    public void writeSimpleString(final SimpleString val)
    {

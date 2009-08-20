@@ -223,7 +223,7 @@ public class ObjectNames
 
    // Constants -----------------------------------------------------
 
-   public static final String DOMAIN = "org.jboss.messaging";
+   public static final String DOMAIN = "org.hornetq";
 
    public static final String JMS_MODULE = "JMS";
 
