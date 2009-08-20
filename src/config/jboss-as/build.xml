@@ -63,8 +63,8 @@ Copyright 2009 Red Hat, Inc.
       </copy>
       <copy todir="${dest.dir}/conf/props">
          <fileset dir="${messaging.config.dir}">
-            <include name="messaging-users.properties"/>
-            <include name="messaging-roles.properties"/>
+            <include name="hornetq-users.properties"/>
+            <include name="hornetq-roles.properties"/>
          </fileset>
       </copy>
       <copy todir="${dest.dir}/lib">

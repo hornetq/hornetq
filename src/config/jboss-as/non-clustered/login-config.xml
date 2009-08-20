@@ -72,8 +72,8 @@ $Revision: 76444 $
       <login-module code="org.jboss.security.auth.spi.UsersRolesLoginModule"
         flag="required">
 	<module-option name = "unauthenticatedIdentity">guest</module-option>
-        <module-option name="usersProperties">props/messaging-users.properties</module-option>
-        <module-option name="rolesProperties">props/messaging-roles.properties</module-option>
+        <module-option name="usersProperties">props/hornetq-users.properties</module-option>
+        <module-option name="rolesProperties">props/hornetq-roles.properties</module-option>
       </login-module>
     </authentication>
   </application-policy>
