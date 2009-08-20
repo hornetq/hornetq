@@ -66,7 +66,7 @@ public class AddressSettingsDeployerTest extends UnitTestCase
    
    public void testDeployFromConfigurationFile() throws Exception
    {
-      String xml = "<configuration xmlns='urn:jboss:messaging'> " 
+      String xml = "<configuration xmlns='urn:hornetq'> " 
                  + "<address-settings>"
                  + "   <address-setting match=\"queues.*\">"
                  + "      <dead-letter-address>DLQtest</dead-letter-address>\n"

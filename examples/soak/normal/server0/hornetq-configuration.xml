@@ -1,0 +1,39 @@
+<configuration xmlns="urn:hornetq"
+            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+            xsi:schemaLocation="urn:hornetq /schema/hornetq-configuration.xsd">
+
+   <connectors>
+      <connector name="netty-connector">
+         <factory-class>org.hornetq.integration.transports.netty.NettyConnectorFactory</factory-class>    
+         <param key="hornetq.remoting.netty.tcpnodelay" value="false" type="Boolean"/>
+         <param key="hornetq.remoting.netty.tcpsendbuffersize" value="1048576" type="Integer"/>
+         <param key="hornetq.remoting.netty.tcpreceivebuffersize" value="1048576" type="Integer"/>
+         <param key="hornetq.remoting.netty.host" value="localhost" type="String"/>
+      </connector>
+   </connectors>
+   
+   <!-- Acceptors -->
+   <acceptors>
+      <acceptor name="netty-acceptor">
+         <factory-class>org.hornetq.integration.transports.netty.NettyAcceptorFactory</factory-class>    
+         <param key="hornetq.remoting.netty.tcpnodelay" value="false" type="Boolean"/>
+         <param key="hornetq.remoting.netty.tcpsendbuffersize" value="1048576" type="Integer"/>
+         <param key="hornetq.remoting.netty.tcpreceivebuffersize" value="1048576" type="Integer"/>
+         <param key="hornetq.remoting.netty.host" value="localhost" type="String"/>
+      </acceptor>
+   </acceptors>
+
+   <backup>false</backup>
+   
+   <security-enabled>false</security-enabled>
+   
+   <persistence-enabled>false</persistence-enabled>
+   <server-dump-interval>30000</server-dump-interval>
+   
+   <queues>
+	   <queue name="soakQueue">
+	   	<address>soakAddress</address>
+	   </queue>
+   </queues>
+
+</configuration>

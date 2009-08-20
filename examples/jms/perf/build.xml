@@ -60,7 +60,7 @@
    </target>
 
    <target name="runServer" depends="compile">
-      <java classname="org.hornetq.common.example.SpawnedJBMServer" fork="true" resultproperty="example-result">
+      <java classname="org.hornetq.common.example.SpawnedHornetQServer" fork="true" resultproperty="example-result">
          <jvmarg value="-Xms2048M"/>
 		   <jvmarg value="-Xmx2048M"/>
          <jvmarg value="-XX:+UseParallelGC"/> 
@@ -68,7 +68,7 @@
          <jvmarg value="-XX:+AggressiveOpts"/>
 		   <jvmarg value="-XX:+UseFastAccessorMethods"/>
          <jvmarg value="-Djava.util.logging.config.file=${config.dir}/logging.properties"/>
-         <arg line="jbm-jboss-beans.xml"/>
+         <arg line="hornetq-jboss-beans.xml"/>
          <classpath refid="server.classpath"/>
       </java>
    </target>

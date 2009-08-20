@@ -57,12 +57,12 @@ public class JMSQueueControlImpl implements JMSQueueControl
     */
    public static String createFilterFromJMSSelector(final String selectorStr) throws MessagingException
    {
-      return (selectorStr == null || selectorStr.trim().length() == 0) ? null : SelectorTranslator.convertToJBMFilterString(selectorStr);
+      return (selectorStr == null || selectorStr.trim().length() == 0) ? null : SelectorTranslator.convertToHornetQFilterString(selectorStr);
    }
 
    private static String createFilterForJMSMessageID(String jmsMessageID) throws Exception
    {
-      return HornetQMessage.JBM_MESSAGE_ID + " = '" + jmsMessageID + "'";
+      return HornetQMessage.HORNETQ_MESSAGE_ID + " = '" + jmsMessageID + "'";
    }
 
    static String toJSON(Map<String, Object>[] messages)

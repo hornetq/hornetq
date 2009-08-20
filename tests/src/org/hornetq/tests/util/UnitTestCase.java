@@ -89,7 +89,7 @@ public class UnitTestCase extends TestCase
 
    // Attributes ----------------------------------------------------
 
-   private String testDir = System.getProperty("java.io.tmpdir", "/tmp") + "/jbm-unit-test";
+   private String testDir = System.getProperty("java.io.tmpdir", "/tmp") + "/hornetq-unit-test";
 
    // Static --------------------------------------------------------
    

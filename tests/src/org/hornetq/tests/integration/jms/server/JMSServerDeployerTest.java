@@ -67,7 +67,7 @@ public class JMSServerDeployerTest extends ServiceTestBase
    {
       JMSServerDeployer deployer = new JMSServerDeployer(jmsServer, deploymentManager, config);
 
-      String xml = "<configuration xmlns='urn:jboss:messaging'> " + "</configuration>";
+      String xml = "<configuration xmlns='urn:hornetq'> " + "</configuration>";
 
       Element rootNode = org.hornetq.utils.XMLUtil.stringToElement(xml);
       deployer.validate(rootNode);
@@ -147,7 +147,7 @@ public class JMSServerDeployerTest extends ServiceTestBase
    {
       JMSServerDeployer deployer = new JMSServerDeployer(jmsServer, deploymentManager, config);
 
-      String conf = "jbm-jms-for-JMSServerDeployerTest.xml";
+      String conf = "hornetq-jms-for-JMSServerDeployerTest.xml";
       URL confURL = Thread.currentThread().getContextClassLoader().getResource(conf);
 
       String[] connectionFactoryBindings = new String[] { "/fullConfigurationConnectionFactory",

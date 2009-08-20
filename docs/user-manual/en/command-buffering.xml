@@ -15,7 +15,7 @@
         client can then free up space in the buffer.</para>
     <para>If you are using JMS and you're using the JMS service on the server to load your JMS
         connection factory instances into JNDI then this parameter can be configured in <literal
-            >jbm-jms.xml</literal> using the element <literal>producer-window-size</literal> a. If
+            >hornetq-jms.xml</literal> using the element <literal>producer-window-size</literal> a. If
         you're using JMS but not using JNDI then you can set these values directly on the <literal
             >JBossConnectionFactory</literal> instance using the appropriate setter method.</para>
     <para>If you're using core you can set these values directly on the <literal

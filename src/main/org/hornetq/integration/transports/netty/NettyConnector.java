@@ -261,7 +261,7 @@ public class NettyConnector implements Connector
       bootstrap.setOption("keepAlive", true);
       bootstrap.setOption("reuseAddress", true);
 
-      channelGroup = new DefaultChannelGroup("jbm-connector");
+      channelGroup = new DefaultChannelGroup("hornetq-connector");
 
       final SSLContext context;
       if (sslEnabled)

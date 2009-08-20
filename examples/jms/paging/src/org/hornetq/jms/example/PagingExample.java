@@ -73,7 +73,7 @@ public class PagingExample extends HornetQExample
          message.writeBytes(new byte[10 * 1024]);
 
          // Step 10. Send only 20 messages to the Queue. This will be already enough for pagingQueue. Look at
-         // ./paging/config/jbm-queues.xml for the config.
+         // ./paging/config/hornetq-queues.xml for the config.
          for (int i = 0; i < 20; i++)
          {
             pageMessageProducer.send(message);
@@ -101,7 +101,7 @@ public class PagingExample extends HornetQExample
          // Step 16. Start the JMS Connection. This step will activate the subscribers to receive messages.
          connection.start();
 
-         // Step 17. Receive the messages. It's important to ACK for messages as JBM will not read messages from paging
+         // Step 17. Receive the messages. It's important to ACK for messages as HornetQ will not read messages from paging
          // until messages are ACKed
 
          for (int i = 0; i < 30000; i++)

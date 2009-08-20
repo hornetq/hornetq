@@ -7,7 +7,7 @@
      <h1>Paging Example</h1>
      <br>
      <p>This example shows how JBoss Messaging would avoid running out of resources by paging messages.</p>
-     <p>A maxSize could be specified per Destination on the destinations settings (jbm-configuration.xml).</p>
+     <p>A maxSize could be specified per Destination on the destinations settings (hornetq-configuration.xml).</p>
      <p>When the buffered messages are consuming too much memory, JBossMessaging starts writing messages on the file-system, and as the memory is released by message acknowledgement or transaction commits those messages are recovered from disk and placed in memory</p>
      <p>Acknowledgement plays an important factor on paging as messages will stay on the file system until the memory is released</p> 
        
@@ -65,7 +65,7 @@
          </pre></code>
          
 
-         <li>Send only 20 messages to the Queue. This will be already enough for pagingQueue. Look at ./paging/config/jbm-queues.xml for the config.</li>
+         <li>Send only 20 messages to the Queue. This will be already enough for pagingQueue. Look at ./paging/config/hornetq-queues.xml for the config.</li>
          <pre><code>
          for (int i = 0; i < 20; i++)
          {
@@ -110,7 +110,7 @@
          </pre></code>
          
          
-         <li>Receive the messages. It's important to ACK for messages as JBM will not read messages from paging until messages are ACKed</li>
+         <li>Receive the messages. It's important to ACK for messages as HornetQ will not read messages from paging until messages are ACKed</li>
          
          <pre><code>
          for (int i = 0; i < 30000; i++)

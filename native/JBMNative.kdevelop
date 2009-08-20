@@ -7,7 +7,7 @@
     <projectmanagement>KDevAutoProject</projectmanagement>
     <primarylanguage>C++</primarylanguage>
     <ignoreparts/>
-    <projectname>JBMNative</projectname>
+    <projectname>HornetQNative</projectname>
   </general>
   <kdevautoproject>
     <general>

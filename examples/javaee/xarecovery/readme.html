@@ -28,13 +28,13 @@
      <p>In the <code>jta</code> section of the <code>$JBOSS_HOME/server/xarecovery-example-profile//conf/jbossts-properties.xml</code> configuration file, the following property
         is added:</p>
      <pre>
-         <code>&lt;property name="com.arjuna.ats.jta.recovery.XAResourceRecovery.JBMESSAGING1"
+         <code>&lt;property name="com.arjuna.ats.jta.recovery.XAResourceRecovery.HORNETQ1"
                       value="org.hornetq.jms.server.recovery.MessagingXAResourceRecovery;org.hornetq.core.remoting.impl.invm.InVMConnectorFactory"/&gt;</code>
      </pre>
 
      <p>This informs the Recovery Manager that it can recovers JBoss Messaging XA Resources by connecting to the server using an <code>InVMConnectorFactory</code>.
         Since the Recovery Manager is in the same server than JBoss Messaging, the examples uses intra-vm communication to recover the messaging resources.
-        JBoss Messaging must have configured an invm acceptor to accept this connection (see the "in-vm"<code>&lt;acceptor></code> in <code>jbm-configuration.xml</code>).</p>
+        JBoss Messaging must have configured an invm acceptor to accept this connection (see the "in-vm"<code>&lt;acceptor></code> in <code>hornetq-configuration.xml</code>).</p>
       
      <p>The example copies a <code>jbossts-properties.xml</code> already configured for JBoss Messaging XA Recovery, so you
         do not need to manually edit the profile's file.</p>

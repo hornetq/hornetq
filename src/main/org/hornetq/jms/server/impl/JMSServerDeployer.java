@@ -97,7 +97,7 @@ public class JMSServerDeployer extends XmlDeployer
    @Override
    public void validate(Node rootNode) throws Exception
    {
-      org.hornetq.utils.XMLUtil.validate(rootNode, "schema/jbm-jms.xsd");
+      org.hornetq.utils.XMLUtil.validate(rootNode, "schema/hornetq-jms.xsd");
    }
 
    /**
@@ -369,7 +369,7 @@ public class JMSServerDeployer extends XmlDeployer
 
    public String[] getDefaultConfigFileNames()
    {
-      return new String[] { "jbm-jms.xml" };
+      return new String[] { "hornetq-jms.xml" };
    }
 
 }

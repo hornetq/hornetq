@@ -53,7 +53,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
 {
    private static final Logger log = Logger.getLogger(JMSServerManagerImpl.class);
 
-   private static final String REJECT_FILTER = "__JBMX=-1";
+   private static final String REJECT_FILTER = "__HQX=-1";
 
    /**
     * the context to bind to
@@ -222,7 +222,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
 
       if (selectorString != null)
       {
-         coreFilterString = SelectorTranslator.convertToJBMFilterString(selectorString);
+         coreFilterString = SelectorTranslator.convertToHornetQFilterString(selectorString);
       }
 
       server.getMessagingServerControl().deployQueue(jBossQueue.getAddress(),

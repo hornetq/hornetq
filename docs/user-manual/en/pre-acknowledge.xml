@@ -28,7 +28,7 @@
       price update message will arrive soon, overriding the previous price. </para>
    <section id="pre-acknowledge.configure">
       <title>Using PRE_ACKNOWLEDGE</title>
-      <para>This can be configured in the <literal>jbm-jms.xml</literal> file on the <literal
+      <para>This can be configured in the <literal>hornetq-jms.xml</literal> file on the <literal
             >connection factory</literal> like this:</para>
       <programlisting>&lt;connection-factory name="ConnectionFactory">
       &lt;connector-ref connector-name="netty-connector"/>

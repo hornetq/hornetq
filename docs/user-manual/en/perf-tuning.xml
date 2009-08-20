@@ -98,17 +98,17 @@
             <listitem>
                 <para>Disable security. You may get a small performance boost by disabling security
                     by setting the <literal>security-enabled</literal> parameter to <literal
-                        >false</literal> in <literal>jbm-configuration.xml</literal>.</para>
+                        >false</literal> in <literal>hornetq-configuration.xml</literal>.</para>
             </listitem>
             <listitem>
                 <para>Disable persistence. If you don't need message persistence, turn it off
                     altogether by setting <literal>persistence-enabled</literal> to false in
-                        <literal>jbm-configuration.xml</literal>.</para>
+                        <literal>hornetq-configuration.xml</literal>.</para>
             </listitem>
             <listitem>
                 <para>Sync transactions lazily. Setting <literal
                         >journal-sync-transactional</literal> to <literal>false</literal> in
-                        <literal>jbm-configuration.xml</literal> can give you better transactional
+                        <literal>hornetq-configuration.xml</literal> can give you better transactional
                     persistent performance at the expense of some possibility of loss of
                     transactions on failure. See <xref linkend="send-guarantees"/> for more
                     information.</para>
@@ -127,7 +127,7 @@
                 <para>Enable <ulink url="http://en.wikipedia.org/wiki/Nagle's_algorithm">Nagle's
                         algorithm</ulink>. If you are sending many small messages, such that more
                     than one can fit in a single IP packet thus providing better performance. This
-                    is done by setting <literal>jbm.remoting.netty.tcpnodelay</literal> to false
+                    is done by setting <literal>hornetq.remoting.netty.tcpnodelay</literal> to false
                     with the Netty transports. See <xref linkend="configuring-transports"/> for more
                     information on this. </para>
             </listitem>

@@ -47,7 +47,7 @@ public class SpawnedVMSupport
                                  final String configDir,
                                  final String... args) throws Exception
    {
-      return spawnVM(classPath, "JBMServer", className, vmargs, logOutput, success, failure, configDir, args);
+      return spawnVM(classPath, "HornetQServer", className, vmargs, logOutput, success, failure, configDir, args);
    }
 
    public static Process spawnVM(String classPath,

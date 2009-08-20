@@ -58,11 +58,11 @@ public class JMSMessageListenerWrapper implements MessageHandler
     */
    public void onMessage(final ClientMessage message)
    {
-      HornetQMessage jbm = HornetQMessage.createMessage(message, session.getCoreSession());
+      HornetQMessage msg = HornetQMessage.createMessage(message, session.getCoreSession());
       
       try
       {
-         jbm.doBeforeReceive();
+         msg.doBeforeReceive();
       }
       catch (Exception e)
       {
@@ -85,7 +85,7 @@ public class JMSMessageListenerWrapper implements MessageHandler
       
       try
       {         
-         listener.onMessage(jbm);
+         listener.onMessage(msg);
       }
       catch (RuntimeException e)
       {

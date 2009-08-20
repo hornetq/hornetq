@@ -58,7 +58,7 @@ public class JAASSecurityManager implements HornetQSecurityManager, MessagingCom
 
    private Configuration config;
 
-   // JBMSecurityManager implementation -----------------------------
+   // HornetQSecurityManager implementation -----------------------------
 
    public boolean validateUser(final String user, final String password)
    {

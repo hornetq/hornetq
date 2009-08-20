@@ -17,7 +17,7 @@
    <import file="../common/build.xml"/>
 
    <target name="copy-resources">
-      <path id="keystore.location" location="${example.server.dir}/jbm.example.keystore"/>
+      <path id="keystore.location" location="${example.server.dir}/hornetq.example.keystore"/>
       <property name="keystore.loc" refid="keystore.location"/>
       <copy toFile="${jboss.home}/server/${example.name}-example-profile/deploy/jbossweb.sar/server.xml"
             file="${example.server.dir}/server.xml" overwrite="true">

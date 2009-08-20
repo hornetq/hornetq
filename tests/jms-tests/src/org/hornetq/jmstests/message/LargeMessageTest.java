@@ -63,7 +63,7 @@ public class LargeMessageTest extends JMSTestCase
 
          BytesMessage m = session.createBytesMessage();
 
-         m.setObjectProperty("JMS_JBM_InputStream", createFakeLargeStream(1024 * 1024));
+         m.setObjectProperty("JMS_HQ_InputStream", createFakeLargeStream(1024 * 1024));
 
          prod.send(m);
 
@@ -120,7 +120,7 @@ public class LargeMessageTest extends JMSTestCase
 
          BytesMessage m = session.createBytesMessage();
 
-         m.setObjectProperty("JMS_JBM_InputStream", createFakeLargeStream(10));
+         m.setObjectProperty("JMS_HQ_InputStream", createFakeLargeStream(10));
 
          prod.send(m);
 
@@ -174,7 +174,7 @@ public class LargeMessageTest extends JMSTestCase
 
          try
          {
-            msg.setObjectProperty("JMS_JBM_InputStream", createFakeLargeStream(10));
+            msg.setObjectProperty("JMS_HQ_InputStream", createFakeLargeStream(10));
             fail("Exception was expected");
          }
          catch (JMSException e)
@@ -201,7 +201,7 @@ public class LargeMessageTest extends JMSTestCase
 
          try
          {
-            rm.setObjectProperty("JMS_JBM_OutputStream", new OutputStream()
+            rm.setObjectProperty("JMS_HQ_OutputStream", new OutputStream()
             {
                @Override
                public void write(int b) throws IOException
@@ -248,7 +248,7 @@ public class LargeMessageTest extends JMSTestCase
 
          BytesMessage m = session.createBytesMessage();
 
-         m.setObjectProperty("JMS_JBM_InputStream", createFakeLargeStream(msgSize));
+         m.setObjectProperty("JMS_HQ_InputStream", createFakeLargeStream(msgSize));
 
          prod.send(m);
 
@@ -287,7 +287,7 @@ public class LargeMessageTest extends JMSTestCase
 
          };
 
-         rm.setObjectProperty("JMS_JBM_SaveStream", out);
+         rm.setObjectProperty("JMS_HQ_SaveStream", out);
 
          assertEquals(msgSize, numberOfBytes.get());
 

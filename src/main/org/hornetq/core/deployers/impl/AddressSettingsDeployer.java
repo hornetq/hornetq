@@ -73,7 +73,7 @@ public class AddressSettingsDeployer extends XmlDeployer
    @Override
    public void validate(Node rootNode) throws Exception
    {
-      org.hornetq.utils.XMLUtil.validate(rootNode, "schema/jbm-configuration.xsd");
+      org.hornetq.utils.XMLUtil.validate(rootNode, "schema/hornetq-configuration.xsd");
    }
 
    /**
@@ -146,7 +146,7 @@ public class AddressSettingsDeployer extends XmlDeployer
 
    public String[] getDefaultConfigFileNames()
    {
-      return new String[] { "jbm-configuration.xml", "jbm-queues.xml" };
+      return new String[] { "hornetq-configuration.xml", "hornetq-queues.xml" };
    }
 
    /**

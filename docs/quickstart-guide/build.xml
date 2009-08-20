@@ -1,4 +1,4 @@
-<project name="jbmessaging.quickstart.documentation" default="all" basedir=".">
+<project name="hornetq.quickstart.documentation" default="all" basedir=".">
 
   <property name="build.dir" value="build"/>
   <property name="pdf.name"  value="JBossMessaging_QuickStartGuide.pdf"/>

@@ -59,7 +59,7 @@ public class MessageCounterHelper
       if (counters == null)
          return null;
 
-      String ret = "<table class=\"jbm-message-counter\">\n" 
+      String ret = "<table class=\"hornetq-message-counter\">\n" 
                    + "<tr>"
                    + "<th>Type</th>"
                    + "<th>Name</th>"
@@ -134,7 +134,7 @@ public class MessageCounterHelper
 
          ret += "    <li>";
          // table header
-         ret += "<table class=\"jbm-message-counter-history\">\n";
+         ret += "<table class=\"hornetq-message-counter-history\">\n";
          ret += "<tr><th>Date</th>";
 
          for (int j = 0; j < 24; j++)

@@ -29,12 +29,12 @@
             before replicating the next piece of data.</para>
         <section id="configuring.live.backup">
             <title>Configuring live-backup pairs</title>
-            <para>First, on the live server, in <literal>jbm-configuration.xml</literal> configure
+            <para>First, on the live server, in <literal>hornetq-configuration.xml</literal> configure
                 the live server with knowledge of its backup server. This is done by specifying a
                     <literal>backup-connector-ref</literal> element. This element references a
                 connector, also specified on the live server which contains knowledge of how to
                 connect to the backup server. Here's a snippet from <literal
-                    >jbm-configuration.xml</literal> showing a live server configured with a backup
+                    >hornetq-configuration.xml</literal> showing a live server configured with a backup
                 server:</para>
             <programlisting>&lt;backup-connector-ref connector-name="backup-connector"/>
    
@@ -49,11 +49,11 @@
      &lt;factory-class>
         org.hornetq.integration.transports.netty.NettyConnectorFactory
      &lt;/factory-class>
-     &lt;param key="jbm.remoting.netty.port" value="5445" type="Integer"/>
+     &lt;param key="hornetq.remoting.netty.port" value="5445" type="Integer"/>
    &lt;/connector>
 
 &lt;/connectors></programlisting>
-            <para>Secondly, on the backup server, also in <literal>jbm-configuration.xml</literal> ,
+            <para>Secondly, on the backup server, also in <literal>hornetq-configuration.xml</literal> ,
                 the element <literal>backup</literal> must be set to true. I.e. :</para>
             <programlisting>&lt;backup>true&lt;/backup>
 </programlisting>
@@ -93,7 +93,7 @@
                 The queue on the backup will wait for all its consumers to reattach before
                 activating delivery on itself. If all connections have not reattached with this
                 timeout then the queue will activate regardless.</para>
-            <para>This param is defined in <literal>jbm-configuration.xml</literal> using the
+            <para>This param is defined in <literal>hornetq-configuration.xml</literal> using the
                 setting <literal>queue-activation-timeout</literal>. Its default value is <literal
                     >30000</literal> milliseconds.</para>
         </section>
@@ -125,7 +125,7 @@
             is just cleanly shutdown rather than having crashed or the connection failed. To
             configure this you can set the property <literal>FailoverOnServerShutdown</literal> to
             false either on the <literal>JBossConnectionFactory</literal> if you're using JMS or in
-            the <literal>jbm-jms.xml</literal> file when you define the connection factory, or if
+            the <literal>hornetq-jms.xml</literal> file when you define the connection factory, or if
             using core by setting the property directly on the <literal
                 >ClientSessionFactoryImpl</literal> instance after creation. The default value for
             this property is <literal>false</literal>, this means that by default <emphasis>JBoss

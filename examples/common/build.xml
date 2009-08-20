@@ -37,8 +37,8 @@
    <property name="src.dir" value="${imported.basedir}/src"/>
    <property name="src.example.dir" location="src"/>
    <property name="example.classname" value="this.shouldn't.be.run.directly"/>
-   <property name="jbm.example.runServer" value="true"/>
-   <property name="jbm.example.beans.file" value="server0"/>
+   <property name="hornetq.example.runServer" value="true"/>
+   <property name="hornetq.example.beans.file" value="server0"/>
 
    <property name="build.dir" value="build"/>
    <property name="classes.dir" value="${build.dir}/classes"/>
@@ -48,7 +48,7 @@
    </path>
 
    <path id="compilation.classpath">
-      <fileset dir="${jbm.jars.dir}">
+      <fileset dir="${hornetq.jars.dir}">
          <include name="**/*.jar"/>
       </fileset>
        <fileset dir="${jars.dir}">
@@ -58,7 +58,7 @@
    </path>
 
    <path id="client.compilation.classpath">
-      <fileset dir="${jbm.jars.dir}">
+      <fileset dir="${hornetq.jars.dir}">
          <include name="**/*client*.jar"/>
          <include  name="**/jboss-jms-api.jar"/>
       </fileset>
@@ -76,8 +76,8 @@
       <fileset dir="${client.jars.dir}">
          <include name="**/*client*.jar"/>
       </fileset>
-      <fileset dir="${jbm.jars.dir}">
-         <include  name="**/jbm-transports.jar"/>
+      <fileset dir="${hornetq.jars.dir}">
+         <include  name="**/hornetq-transports.jar"/>
       </fileset>
       <fileset dir="${jars.dir}">
          <include name="**/netty*.jar"/>
@@ -130,11 +130,11 @@
       <!--<echo>client classpath = ${clientClasspath}</echo>-->
       <property file="${imported.basedir}/config/server.properties"/>
       <java classname="${example.classname}" fork="true" resultproperty="example-result">
-         <jvmarg value="-Djbm.example.server.classpath=${serverclasspath}"/>
-         <jvmarg value="-Djbm.example.server.args=${server.args}"/>
-         <jvmarg value="-Djbm.example.logserveroutput=${jbm.example.logserveroutput}"/>
-         <jvmarg value="-Djbm.example.runServer=${jbm.example.runServer}"/>
-         <arg line="${jbm.example.beans.file}"/>
+         <jvmarg value="-Dhornetq.example.server.classpath=${serverclasspath}"/>
+         <jvmarg value="-Dhornetq.example.server.args=${server.args}"/>
+         <jvmarg value="-Dhornetq.example.logserveroutput=${hornetq.example.logserveroutput}"/>
+         <jvmarg value="-Dhornetq.example.runServer=${hornetq.example.runServer}"/>
+         <arg line="${hornetq.example.beans.file}"/>
          <sysproperty key="java.library.path" value="${java.library.path}${path.separator}${aio.library.path}"/>
          <classpath refid="client.classpath"/>
       </java>

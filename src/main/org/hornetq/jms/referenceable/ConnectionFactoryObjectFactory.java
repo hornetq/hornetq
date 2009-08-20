@@ -40,7 +40,7 @@ public class ConnectionFactoryObjectFactory implements ObjectFactory
    {
       Reference r = (Reference)ref;
       
-      byte[] bytes = (byte[])r.get("JBM-CF").getContent();
+      byte[] bytes = (byte[])r.get("HornetQ-CF").getContent();
       
       // Deserialize
       return (HornetQConnectionFactory)SerializableObjectRefAddr.deserialize(bytes);

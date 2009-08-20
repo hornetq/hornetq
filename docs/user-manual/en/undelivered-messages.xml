@@ -118,7 +118,7 @@
          count before message delivery but disabled it by default for performance
          implications.</para>
       <para>To enable it, set <literal>persist-delivery-count-before-delivery</literal> to <literal
-            >true</literal> in <literal>jbm-configuration.xml</literal>:</para>
+            >true</literal> in <literal>hornetq-configuration.xml</literal>:</para>
       <programlisting>
 &lt;persist-delivery-count-before-delivery&gt;true&lt;/persist-delivery-count-before-delivery&gt;
       </programlisting>

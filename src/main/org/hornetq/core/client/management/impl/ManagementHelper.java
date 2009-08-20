@@ -39,37 +39,37 @@ public class ManagementHelper
 
    private static final Logger log = Logger.getLogger(ManagementHelper.class);
 
-   public static final SimpleString HDR_RESOURCE_NAME = new SimpleString("_JBM_ResourceName");
+   public static final SimpleString HDR_RESOURCE_NAME = new SimpleString("_HQ_ResourceName");
 
-   public static final SimpleString HDR_ATTRIBUTE = new SimpleString("_JBM_Attribute");
+   public static final SimpleString HDR_ATTRIBUTE = new SimpleString("_HQ_Attribute");
 
-   public static final SimpleString HDR_OPERATION_NAME = new SimpleString("_JBM_OperationName");
+   public static final SimpleString HDR_OPERATION_NAME = new SimpleString("_HQ_OperationName");
 
-   public static final SimpleString HDR_OPERATION_SUCCEEDED = new SimpleString("_JBM_OperationSucceeded");
+   public static final SimpleString HDR_OPERATION_SUCCEEDED = new SimpleString("_HQ_OperationSucceeded");
 
-   public static final SimpleString HDR_NOTIFICATION_TYPE = new SimpleString("_JBM_NotifType");
+   public static final SimpleString HDR_NOTIFICATION_TYPE = new SimpleString("_HQ_NotifType");
 
-   public static final SimpleString HDR_NOTIFICATION_TIMESTAMP = new SimpleString("_JBM_NotifTimestamp");
+   public static final SimpleString HDR_NOTIFICATION_TIMESTAMP = new SimpleString("_HQ_NotifTimestamp");
 
-   public static final SimpleString HDR_ROUTING_NAME = new SimpleString("_JBM_RoutingName");
+   public static final SimpleString HDR_ROUTING_NAME = new SimpleString("_HQ_RoutingName");
 
-   public static final SimpleString HDR_CLUSTER_NAME = new SimpleString("_JBM_ClusterName");
+   public static final SimpleString HDR_CLUSTER_NAME = new SimpleString("_HQ_ClusterName");
 
-   public static final SimpleString HDR_ADDRESS = new SimpleString("_JBM_Address");
+   public static final SimpleString HDR_ADDRESS = new SimpleString("_HQ_Address");
 
-   public static final SimpleString HDR_BINDING_ID = new SimpleString("_JBM_Binding_ID");
+   public static final SimpleString HDR_BINDING_ID = new SimpleString("_HQ_Binding_ID");
 
-   public static final SimpleString HDR_BINDING_TYPE = new SimpleString("_JBM_Binding_Type");
+   public static final SimpleString HDR_BINDING_TYPE = new SimpleString("_HQ_Binding_Type");
 
-   public static final SimpleString HDR_FILTERSTRING = new SimpleString("_JBM_FilterString");
+   public static final SimpleString HDR_FILTERSTRING = new SimpleString("_HQ_FilterString");
 
-   public static final SimpleString HDR_DISTANCE = new SimpleString("_JBM_Distance");
+   public static final SimpleString HDR_DISTANCE = new SimpleString("_HQ_Distance");
 
-   public static final SimpleString HDR_CONSUMER_COUNT = new SimpleString("_JBM_ConsumerCount");
+   public static final SimpleString HDR_CONSUMER_COUNT = new SimpleString("_HQ_ConsumerCount");
 
-   public static final SimpleString HDR_USER = new SimpleString("_JBM_User");
+   public static final SimpleString HDR_USER = new SimpleString("_HQ_User");
 
-   public static final SimpleString HDR_CHECK_TYPE = new SimpleString("_JBM_CheckType");
+   public static final SimpleString HDR_CHECK_TYPE = new SimpleString("_HQ_CheckType");
 
    // Attributes ----------------------------------------------------
 

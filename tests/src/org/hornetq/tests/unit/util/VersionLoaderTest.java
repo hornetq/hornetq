@@ -45,13 +45,13 @@ public class VersionLoaderTest extends UnitTestCase
       Properties props = new Properties();
       props.load(ClassLoader.getSystemResourceAsStream(VersionLoader.PROP_FILE_NAME));
    
-      assertEquals(props.get("messaging.version.versionName"), version.getVersionName());
-      assertEquals(props.get("messaging.version.versionSuffix"), version.getVersionSuffix());
+      assertEquals(props.get("hornetq.version.versionName"), version.getVersionName());
+      assertEquals(props.get("hornetq.version.versionSuffix"), version.getVersionSuffix());
 
-      assertEquals(parseInt((String) props.get("messaging.version.majorVersion")), version.getMajorVersion());
-      assertEquals(parseInt((String) props.get("messaging.version.minorVersion")), version.getMinorVersion());
-      assertEquals(parseInt((String) props.get("messaging.version.microVersion")), version.getMicroVersion());
-      assertEquals(parseInt((String) props.get("messaging.version.incrementingVersion")), version.getIncrementingVersion());
+      assertEquals(parseInt((String) props.get("hornetq.version.majorVersion")), version.getMajorVersion());
+      assertEquals(parseInt((String) props.get("hornetq.version.minorVersion")), version.getMinorVersion());
+      assertEquals(parseInt((String) props.get("hornetq.version.microVersion")), version.getMicroVersion());
+      assertEquals(parseInt((String) props.get("hornetq.version.incrementingVersion")), version.getIncrementingVersion());
    }
    
    

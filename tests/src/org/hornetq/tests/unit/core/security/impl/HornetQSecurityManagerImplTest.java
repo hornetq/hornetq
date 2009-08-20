@@ -21,7 +21,7 @@ import org.hornetq.tests.util.UnitTestCase;
 import java.util.HashSet;
 
 /**
- * tests JBMSecurityManagerImpl
+ * tests HornetQSecurityManagerImpl
  *
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
  */

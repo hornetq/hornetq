@@ -26,7 +26,7 @@
            port="8443" address="${jboss.bind.address}"
            scheme="https" secure="true" clientAuth="false"
            keystoreFile="@KEYSTORE@"
-           keystorePass="jbmexample" sslProtocol = "TLS" />
+           keystorePass="hornetqexample" sslProtocol = "TLS" />
 
 
       <Engine name="jboss.web" defaultHost="localhost">

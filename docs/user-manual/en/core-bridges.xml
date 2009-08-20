@@ -28,7 +28,7 @@
     </note>
     <section>
         <title>Configuring Bridges</title>
-        <para>Bridges are configured in <literal>jbm-configuration.xml</literal>. Let's kick off
+        <para>Bridges are configured in <literal>hornetq-configuration.xml</literal>. Let's kick off
             with an example (this is actually from the bridge example):</para>
         <programlisting>
 &lt;bridge name="my-bridge"&gt;
@@ -49,7 +49,7 @@
         </programlisting>
         <para>Please also note that in order for bridges to be deployed on a server, the <literal
                 >clustered</literal> attribute needs to be set to <literal>true</literal> in
-                <literal>jbm-configuration.xml</literal>.</para>
+                <literal>hornetq-configuration.xml</literal>.</para>
         <para>In the above example we have shown all the parameters its possible to configure for a
             bridge. In practice you might use many of the defaults so it won't be necessary to
             specify them all explicitly.</para>
@@ -66,8 +66,8 @@
                     start-up.</para>
                 <note>
                     <para>If you're using JMS then normally the JMS configuration <literal
-                            >jbm-jms.xml</literal> is loaded after the core configuration file
-                            <literal>jbm-configuration.xml</literal> is loaded. If your bridge is
+                            >hornetq-jms.xml</literal> is loaded after the core configuration file
+                            <literal>hornetq-configuration.xml</literal> is loaded. If your bridge is
                         consuming from a JMS queue then you'll need to make sure the JMS queue is
                         also deployed as a core queue in the core configuration. Take a look at the bridge
                         example for an example of how this is done.</para>
@@ -166,14 +166,14 @@
                     <listitem>
                         <para><literal>connector-name</literal>. This references the name of a
                             connector defined in the core configuration file <literal
-                                >jbm-configuration.xml</literal>. The bridge will use this connector
+                                >hornetq-configuration.xml</literal>. The bridge will use this connector
                             to make its connection to the target server. This attribute is
                             mandatory.</para>
                     </listitem>
                     <listitem>
                         <para><literal>backup-connector-name</literal>. This optional parameter also
                             references the name of a connector defined in the core configuration
-                            file <literal>jbm-configuration.xml</literal>. It represents the
+                            file <literal>hornetq-configuration.xml</literal>. It represents the
                             connector that the bridge will fail-over onto if it detects the live
                             server connection has failed. If this is specified and <literal
                                 >failover-on-server-shutdown</literal> is set to <literal

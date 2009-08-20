@@ -471,7 +471,7 @@
          <title>Configuring JMX</title>
          <para>By default, JMX is enabled to manage JBoss Messaging. It can be disabled by setting
                <literal>jmx-management-enabled</literal> to <literal>false</literal> in <literal
-               >jbm-configuration.xml</literal>:</para>
+               >hornetq-configuration.xml</literal>:</para>
          <programlisting>
 &lt;!-- false to disable JMX management for JBoss Messaging --&gt;
 &lt;jmx-management-enabled&gt;false&lt;/jmx-management-enabled&gt;            
@@ -588,14 +588,14 @@
       <section id="management.core.configuration">
          <title>Configuring Core Management</title>
          <para>The management address to send management messages is configured in <literal
-               >jbm-configuration.xml</literal>:</para>
+               >hornetq-configuration.xml</literal>:</para>
          <programlisting>
    &lt;management-address&gt;jbm.management&lt;/management-address&gt;
          </programlisting>
          <para>By default, the address is <literal>jbm.management</literal>.</para>
          <para>The management address requires a <emphasis>special</emphasis> user permission
                <literal>manage</literal> to be able to receive and handle management messages. This
-            is also configured in jbm-configuration.xml:</para>
+            is also configured in hornetq-configuration.xml:</para>
          <programlisting>
    &lt;!-- users with the admin role will be allowed to manage --&gt; 
    &lt;!-- JBoss Messaging using management messages        --&gt;
@@ -682,7 +682,7 @@
       <para>To allow this management replication with JMX, JBoss Messaging defines 
             <emphasis>management cluster credentials</emphasis>: this special user/password <emphasis>must
             be shared by all nodes</emphasis>. To configure it, change the value in <literal
-            >jbm-configuration.xml</literal>:</para>
+            >hornetq-configuration.xml</literal>:</para>
       <programlisting>
    &lt;management-cluster-user&gt;JBM.MANAGEMENT.ADMIN.USER&lt;/management-cluster-user&gt;
    &lt;management-cluster-password&gt;CHANGE ME!!&lt;/management-cluster-password&gt;
@@ -695,7 +695,7 @@
          to send a management request from the live server to the backup server and wait for a
          reply. If a reply is not received before the timeout is hit, JBoss Messaging considers the
          replication has failed. This timeout can be configured in <literal
-            >jbm-configuration.xml</literal>:</para>
+            >hornetq-configuration.xml</literal>:</para>
       <programlisting>
          &lt;management-request-timeout&gt;5000&lt;/management-request-timeout&gt;
       </programlisting>
@@ -749,7 +749,7 @@
          <section id="management.notifications.core.configuration">
             <title>Configuring The Core Management Notification Address</title>
             <para>the management notification address to receive management notifications is
-               configured in <literal>jbm-configuration.xml</literal>:</para>
+               configured in <literal>hornetq-configuration.xml</literal>:</para>
             <programlisting>
                &lt;management-notification-address&gt;jbm.notifications&lt;/management-notification-address&gt;
             </programlisting>
@@ -853,14 +853,14 @@
             memory (the metrics are kept in memory) and CPU (the queues are sampled at regular
             interval).</para>
          <para>To enable message counters, you can set it to <literal>true</literal> in <literal
-               >jbm-configuration.xml</literal>:</para>
+               >hornetq-configuration.xml</literal>:</para>
          <programlisting>
 &lt;message-counter-enabled&gt;true&lt;/message-counter-enabled&gt;
          </programlisting>
          <para>Message counters keeps a history of the queue metrics (10 days by default) and
             samples all the queues at regular interval (10 seconds by default). If message counters
             are enabled, these values should be configured to suit your messaging use case in
-               <literal>jbm-configuration.xml</literal>:</para>
+               <literal>hornetq-configuration.xml</literal>:</para>
          <programlisting>
 &lt;!-- keep history for a week --&gt;
 &lt;message-counter-max-day-history&gt;7&lt;/message-counter-max-day-history&gt;            

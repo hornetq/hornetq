@@ -35,7 +35,7 @@ import java.sql.PreparedStatement;
 public class SendMessageBean implements SendMessageService
 {
    
-   private static final String TABLE = "jbm_example";
+   private static final String TABLE = "hornetq_example";
    
    public void createTable() throws Exception
    {

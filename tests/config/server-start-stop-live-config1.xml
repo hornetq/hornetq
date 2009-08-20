@@ -1,23 +1,23 @@
-<configuration xmlns="urn:jboss:messaging"
+<configuration xmlns="urn:hornetq"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="urn:jboss:messaging ../../../src/schema/jbm-configuration.xsd">
+         xsi:schemaLocation="urn:hornetq ../../../src/schema/hornetq-configuration.xsd">
    <clustered>true</clustered>
    
    <backup-connector-ref connector-name="backup-connector"/>
    
-   <journal-directory>/tmp/jbm-unit-test/start-stop-data-live</journal-directory>
+   <journal-directory>/tmp/hornetq-unit-test/start-stop-data-live</journal-directory>
    
    <!-- Connectors -->
 
    <connectors>
       <connector name="netty-connector">
          <factory-class>org.hornetq.integration.transports.netty.NettyConnectorFactory</factory-class>
-         <param key="jbm.remoting.netty.port" value="5445" type="Integer"/>
+         <param key="hornetq.remoting.netty.port" value="5445" type="Integer"/>
       </connector>
    
       <connector name="backup-connector">
         <factory-class>org.hornetq.integration.transports.netty.NettyConnectorFactory</factory-class>
-        <param key="jbm.remoting.netty.port" value="5446" type="Integer"/>
+        <param key="hornetq.remoting.netty.port" value="5446" type="Integer"/>
       </connector>
    </connectors>
    
@@ -25,7 +25,7 @@
    <acceptors>
       <acceptor name="netty-acceptor">
          <factory-class>org.hornetq.integration.transports.netty.NettyAcceptorFactory</factory-class>
-         <param key="jbm.remoting.netty.port" value="5445" type="Integer"/>
+         <param key="hornetq.remoting.netty.port" value="5445" type="Integer"/>
       </acceptor>
    </acceptors>
    

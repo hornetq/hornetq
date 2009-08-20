@@ -53,7 +53,7 @@ public class ManifestTest extends UnitTestCase
       log.trace("userDir is " + userDir);
 
       // The jar must be there
-      File file = new File("build/jars", "jbm-core.jar");
+      File file = new File("build/jars", "hornetq-core.jar");
       assertTrue(file.exists());
 
       // Open the jar and load MANIFEST.MF

@@ -42,7 +42,7 @@ public class VersionImplTest extends UnitTestCase
    public void testVersionImpl() throws Exception
    {
       
-      String versionName = "JBM";
+      String versionName = "HORNETQ";
       int majorVersion = 2;
       int minorVersion = 0;
       int microVersion = 1;
@@ -60,9 +60,9 @@ public class VersionImplTest extends UnitTestCase
 
    public void testEquals() throws Exception
    {
-      VersionImpl version = new VersionImpl("JBM", 2, 0, 1, 10, "suffix");  
-      VersionImpl sameVersion = new VersionImpl("JBM", 2, 0, 1, 10, "suffix");  
-      VersionImpl differentVersion = new VersionImpl("JBM", 2, 0, 1, 11, "suffix");
+      VersionImpl version = new VersionImpl("HORNETQ", 2, 0, 1, 10, "suffix");  
+      VersionImpl sameVersion = new VersionImpl("HORNETQ", 2, 0, 1, 10, "suffix");  
+      VersionImpl differentVersion = new VersionImpl("HORNETQ", 2, 0, 1, 11, "suffix");
 
       assertFalse(version.equals(new Object()));
 

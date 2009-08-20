@@ -64,7 +64,7 @@ public class AsynchronousFileTest extends AIOTestBase
    protected void setUp() throws Exception
    {
       super.setUp();
-      pollerExecutor = Executors.newCachedThreadPool(new HornetQThreadFactory("JBM-AIO-poller-pool" + System.identityHashCode(this), false));
+      pollerExecutor = Executors.newCachedThreadPool(new HornetQThreadFactory("HornetQ-AIO-poller-pool" + System.identityHashCode(this), false));
       executor = Executors.newSingleThreadExecutor();
    }
    

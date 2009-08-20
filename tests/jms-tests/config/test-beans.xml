@@ -26,7 +26,7 @@
    </bean>
 
 	<!-- The security manager -->
-   <bean name="JBMSecurityManager" class="org.hornetq.core.security.impl.HornetQSecurityManagerImpl">
+   <bean name="HornetQSecurityManager" class="org.hornetq.core.security.impl.HornetQSecurityManagerImpl">
       <start ignored="true"/>
       <stop ignored="true"/>
    </bean>
@@ -41,7 +41,7 @@
             <inject bean="MBeanServer"/>
          </parameter>
          <parameter>
-            <inject bean="JBMSecurityManager"/>
+            <inject bean="HornetQSecurityManager"/>
          </parameter>
       </constructor>
       <start ignored="true"/>

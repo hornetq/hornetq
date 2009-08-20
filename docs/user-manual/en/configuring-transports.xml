@@ -11,14 +11,14 @@
         <para>One of the most important concepts in JBoss Messaging transports is the
                 <emphasis>acceptor</emphasis>. Let's dive straight in and take a look at an acceptor
             defined in xml in the configuration file <literal
-            >jbm-configuration.xml</literal>.</para>
+            >hornetq-configuration.xml</literal>.</para>
         <programlisting>
 &lt;acceptors&gt;                
     &lt;acceptor name="netty"&gt;
         &lt;factory-class&gt;
 org.hornetq.integration.transports.netty.NettyAcceptorFactory
         &lt;/factory-class&gt;
-        &lt;param key="jbm.remoting.netty.port" value="5446" type="Integer"/&gt;
+        &lt;param key="hornetq.remoting.netty.port" value="5446" type="Integer"/&gt;
     &lt;/acceptor&gt;
 &lt;/acceptors&gt;            
         </programlisting>
@@ -49,7 +49,7 @@ org.hornetq.integration.transports.netty.NettyAcceptorFactory
         <title>Understanding Connectors</title>
         <para>Whereas acceptors are used on the server to define how we accept connections,
             connectors are used by a client to define how it connects to a server.</para>
-        <para>Let's look at a connector defined in our <literal>jbm-configuration.xml</literal>
+        <para>Let's look at a connector defined in our <literal>hornetq-configuration.xml</literal>
             file:</para>
         <programlisting>
 &lt;connectors&gt;
@@ -57,7 +57,7 @@ org.hornetq.integration.transports.netty.NettyAcceptorFactory
         &lt;factory-class&gt;
             org.hornetq.integration.transports.netty.NettyConnectorFactory
         &lt;/factory-class&gt;
-        &lt;param key="jbm.remoting.netty.port" value="5446" type="Integer"/&gt;
+        &lt;param key="hornetq.remoting.netty.port" value="5446" type="Integer"/&gt;
     &lt;/connector&gt;
 &lt;/connectors&gt;            
         </programlisting>
@@ -80,10 +80,10 @@ org.hornetq.integration.transports.netty.NettyAcceptorFactory
                         <literal>JBossConnectionFactory</literal> it needs to know what server that
                     connection factory will create connections to.</para>
                 <para>That's defined by the <literal>connector-ref</literal> element in the <literal
-                        >jbm-jms.xml</literal>file on the server side. Let's take a look at a
-                    snipped from a <literal>jbm-jms.xml</literal> file that shows a JMS connection
+                        >hornetq-jms.xml</literal>file on the server side. Let's take a look at a
+                    snipped from a <literal>hornetq-jms.xml</literal> file that shows a JMS connection
                     factory that references our netty connector defined in our <literal
-                        >jbm-configuration.xml</literal> file:</para>
+                        >hornetq-configuration.xml</literal> file:</para>
                 <programlisting>
 &lt;connection-factory name="ConnectionFactory"&gt;
     &lt;connector-ref connector-name="netty"/&gt;
@@ -128,7 +128,7 @@ etc
         </programlisting>
         <para>Similarly, if you're using JMS, you can configure the JMS connection factory directly
             on the client side without having to define a connector on the server side or define a
-            connection factory in <literal>jbm-jms.xml</literal>:</para>
+            connection factory in <literal>hornetq-jms.xml</literal>:</para>
         <programlisting>
 Map&lt;String, Object&gt; connectionParams = new HashMap&lt;String, Object&gt;();
 
@@ -173,7 +173,7 @@ etc
                 parameters can be used to configure Netty for simple TCP:</para>
             <itemizedlist>
                 <listitem>
-                    <para><literal>jbm.remoting.netty.usenio</literal>. If this is <literal
+                    <para><literal>hornetq.remoting.netty.usenio</literal>. If this is <literal
                             >true</literal> then Java non blocking NIO will be used. If set to
                             <literal>false</literal> than old blocking Java IO will be used.</para>
                     <para>We highly recommend that you use non blocking Java NIO. Java NIO does not
@@ -183,27 +183,27 @@ etc
                             <literal>true</literal>.</para>
                 </listitem>
                 <listitem>
-                    <para><literal>jbm.remoting.netty.host</literal>. This specified the host name
+                    <para><literal>hornetq.remoting.netty.host</literal>. This specified the host name
                         or ip address to connect to (when configuring a connector) or to listen on
                         (when configuring an acceptor). The default value for this property is
                             <literal>localhost</literal>. Note that if you want your servers
                         accessible from other nodes, don't bind to localhost!</para>
                 </listitem>
                 <listitem>
-                    <para><literal>jbm.remoting.netty.port</literal>. This specified the port to
+                    <para><literal>hornetq.remoting.netty.port</literal>. This specified the port to
                         connect to (when configuring a connector) or to listen on (when configuring
                         an acceptor). The default value for this property is <literal
                         >5445</literal>.</para>
                 </listitem>
                 <listitem>
-                    <para><literal>jbm.remoting.netty.tcpnodelay</literal>. If this is <literal
+                    <para><literal>hornetq.remoting.netty.tcpnodelay</literal>. If this is <literal
                             >true</literal> then <ulink
                             url="http://en.wikipedia.org/wiki/Nagle's_algorithm">Nagle's
                             algorithm</ulink> will be enabled. The default value for this property
                         is <literal>true</literal>.</para>
                 </listitem>
                 <listitem>
-                    <para><literal>jbm.remoting.netty.tcpsendbuffersize</literal>. This parameter
+                    <para><literal>hornetq.remoting.netty.tcpsendbuffersize</literal>. This parameter
                         determines the size of the TCP send buffer in bytes. The default value for
                         this property is <literal>32768</literal> bytes (32KiB).</para>
                     <para>TCP buffer sizes should be tuned according to the bandwidth and latency of
@@ -220,7 +220,7 @@ etc
                         defaults.</para>
                 </listitem>
                 <listitem>
-                    <para><literal>jbm.remoting.netty.tcpreceivebuffersize</literal>. This parameter
+                    <para><literal>hornetq.remoting.netty.tcpreceivebuffersize</literal>. This parameter
                         determines the size of the TCP receive buffer in bytes. The default value
                         for this property is <literal>32768</literal> bytes (32KiB).</para>
                 </listitem>
@@ -235,23 +235,23 @@ etc
                 additional properties:</para>
             <itemizedlist>
                 <listitem>
-                    <para><literal>jbm.remoting.netty.sslenabled</literal>. Must be <literal
+                    <para><literal>hornetq.remoting.netty.sslenabled</literal>. Must be <literal
                             >true</literal> to enable SSL.</para>
                 </listitem>
                 <listitem>
-                    <para><literal>jbm.remoting.netty.keystorepath</literal>. This is the path to
+                    <para><literal>hornetq.remoting.netty.keystorepath</literal>. This is the path to
                         the SSL key store on the client which holds the client certificates.</para>
                 </listitem>
                 <listitem>
-                    <para><literal>jbm.remoting.netty.keystorepassword</literal>. This is the
+                    <para><literal>hornetq.remoting.netty.keystorepassword</literal>. This is the
                         password for the client certificate key store on the client.</para>
                 </listitem>
                 <listitem>
-                    <para><literal>jbm.remoting.netty.truststorepath</literal>. This is the path to
+                    <para><literal>hornetq.remoting.netty.truststorepath</literal>. This is the path to
                         the trusted client certificate store on the server.</para>
                 </listitem>
                 <listitem>
-                    <para><literal>jbm.remoting.netty.truststorepassword</literal>. This is the
+                    <para><literal>hornetq.remoting.netty.truststorepassword</literal>. This is the
                         password to the trusted client certificate store on the server.</para>
                 </listitem>
             </itemizedlist>
@@ -265,29 +265,29 @@ etc
                 properties:</para>
             <itemizedlist>
                 <listitem>
-                    <para><literal>jbm.remoting.netty.httpenabled</literal>. Must be <literal
+                    <para><literal>hornetq.remoting.netty.httpenabled</literal>. Must be <literal
                             >true</literal> to enable HTTP.</para>
                 </listitem>
                 <listitem>
-                    <para><literal>jbm.remoting.netty.httpclientidletime</literal>. How long a
+                    <para><literal>hornetq.remoting.netty.httpclientidletime</literal>. How long a
                         client can be idle before sending an empty http request to keep the
                         connection alive</para>
                 </listitem>
                 <listitem>
-                    <para><literal>jbm.remoting.netty.httpclientidlescanperiod</literal>. How often,
+                    <para><literal>hornetq.remoting.netty.httpclientidlescanperiod</literal>. How often,
                         in milliseconds, to scan for idle clients</para>
                 </listitem>
                 <listitem>
-                    <para><literal>jbm.remoting.netty.httpresponsetime</literal>. How long the
+                    <para><literal>hornetq.remoting.netty.httpresponsetime</literal>. How long the
                         server can wait before sending an empty http response to keep the connection
                         alive</para>
                 </listitem>
                 <listitem>
-                    <para><literal>jbm.remoting.netty.httpserverscanperiod</literal>. How often, in
+                    <para><literal>hornetq.remoting.netty.httpserverscanperiod</literal>. How often, in
                         milliseconds, to scan for clients needing responses</para>
                 </listitem>
                 <listitem>
-                    <para><literal>jbm.remoting.netty.httprequiressessionid</literal>. If true the
+                    <para><literal>hornetq.remoting.netty.httprequiressessionid</literal>. If true the
                         client will wait after the first call to receive a session id. Used the http
                         connector is connecting to servlet acceptor (not recommended) </para>
                 </listitem>
@@ -339,7 +339,7 @@ etc
                 <listitem>
                     <para>We also need to add a special Netty invm acceptor on the server side
                         configuration.</para>
-                    <para>Here's a snippet from the <literal>jbm-configuration.xml</literal> file
+                    <para>Here's a snippet from the <literal>hornetq-configuration.xml</literal> file
                         showing that acceptor being defined:</para>
                     <programlisting>                    
 &lt;acceptors>
@@ -348,8 +348,8 @@ etc
          &lt;factory-class>
             org.hornetq.integration.transports.netty.NettyAcceptorFactory
          &lt;/factory-class>
-         &lt;param key="jbm.remoting.netty.useinvm" value="true" type="Boolean"/>
-         &lt;param key="jbm.remoting.netty.host" value="org.jboss.jbm" type="String"/>
+         &lt;param key="hornetq.remoting.netty.useinvm" value="true" type="Boolean"/>
+         &lt;param key="hornetq.remoting.netty.host" value="org.jboss.jbm" type="String"/>
       &lt;/acceptor>
 
 &lt;/acceptors>                                         
@@ -357,17 +357,17 @@ etc
                 </listitem>
                 <listitem>
                     <para>Lastly we need a connector for the client, this again will be configured
-                        in the <literal>jbm-configuration.xml</literal> file as such:</para>
+                        in the <literal>hornetq-configuration.xml</literal> file as such:</para>
                     <programlisting>&lt;connectors>
 
       &lt;connector name="netty-servlet">
          &lt;factory-class>
             org.hornetq.integration.transports.netty.NettyConnectorFactory
          &lt;/factory-class>
-         &lt;param key="jbm.remoting.netty.host" value="localhost" type="String"/>
-         &lt;param key="jbm.remoting.netty.port" value="8080" type="Integer"/>
-         &lt;param key="jbm.remoting.netty.useservlet" value="true" type="Boolean"/>
-         &lt;param key="jbm.remoting.netty.servletpath" 
+         &lt;param key="hornetq.remoting.netty.host" value="localhost" type="String"/>
+         &lt;param key="hornetq.remoting.netty.port" value="8080" type="Integer"/>
+         &lt;param key="hornetq.remoting.netty.useservlet" value="true" type="Boolean"/>
+         &lt;param key="hornetq.remoting.netty.servletpath" 
             value="/messaging/JBMServlet" type="String"/>
       &lt;/connector>
 
@@ -379,24 +379,24 @@ etc
                 <listitem>
                     <para>endpoint - This is the name of the netty acceptor that the servlet will
                         forward its packets too. You can see it matches the name of the <literal
-                            >jbm.remoting.netty.host</literal> param.</para>
+                            >hornetq.remoting.netty.host</literal> param.</para>
                 </listitem>
             </itemizedlist>
             <para>The servlet pattern configured in the <literal>web.xml</literal> is the path of
                 the URL that is used. The connector param <literal
-                    >jbm.remoting.netty.servletpath</literal> on the connector config must match
+                    >hornetq.remoting.netty.servletpath</literal> on the connector config must match
                 this using the application context of the web app if there is one.</para>
             <para>Its also possible to use the servlet transport over SSL. simply add the following
                 configuration to the
                 connector:<programlisting>    &lt;connector name="netty-servlet">
          &lt;factory-class>org.hornetq.integration.transports.netty.NettyConnectorFactory&lt;/factory-class>
-         &lt;param key="jbm.remoting.netty.host" value="localhost" type="String"/>
-         &lt;param key="jbm.remoting.netty.port" value="8443" type="Integer"/>
-         &lt;param key="jbm.remoting.netty.useservlet" value="true" type="Boolean"/>
-         &lt;param key="jbm.remoting.netty.servletpath" value="/messaging/JBMServlet" type="String"/>
-         &lt;param key="jbm.remoting.netty.sslenabled" value="true" type="Boolean"/>
-         &lt;param key="jbm.remoting.netty.keystorepath" value="path to a keystoree" type="String"/>
-         &lt;param key="jbm.remoting.netty.keystorepassword" value="keysore password" type="String"/>
+         &lt;param key="hornetq.remoting.netty.host" value="localhost" type="String"/>
+         &lt;param key="hornetq.remoting.netty.port" value="8443" type="Integer"/>
+         &lt;param key="hornetq.remoting.netty.useservlet" value="true" type="Boolean"/>
+         &lt;param key="hornetq.remoting.netty.servletpath" value="/messaging/JBMServlet" type="String"/>
+         &lt;param key="hornetq.remoting.netty.sslenabled" value="true" type="Boolean"/>
+         &lt;param key="hornetq.remoting.netty.keystorepath" value="path to a keystoree" type="String"/>
+         &lt;param key="hornetq.remoting.netty.keystorepassword" value="keysore password" type="String"/>
       &lt;/connector>
 </programlisting></para>
             <para>You will also have to configure the Application server to use a KeyStore. Edit the

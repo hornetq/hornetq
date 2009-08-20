@@ -22,7 +22,7 @@
    <target name="runRemote">
       <antcall target="runExample">
          <param name="example.classname" value="org.hornetq.jms.example.ClusteredStandaloneExample"/>
-         <param name="jbm.example.runServer" value="false"/>
+         <param name="hornetq.example.runServer" value="false"/>
       </antcall>
    </target>
 
@@ -47,8 +47,8 @@
 
       <property name="unix.arg" value="run.sh  ../config/stand-alone/clustered"/>
       <property name="windows.arg" value="/c run.bat ..\\config\\stand-alone\\clustered"/>
-      <property name="cluster.props.node2" value="-Ddata.dir=../data-server2 -Djnp.port=2099 -Djnp.rmiPort=2098 -Djbm.remoting.netty.port=6445"/>
-      <property name="cluster.props.node3" value="-Ddata.dir=../data-server3 -Djnp.port=3099 -Djnp.rmiPort=3098 -Djbm.remoting.netty.port=7445"/>
+      <property name="cluster.props.node2" value="-Ddata.dir=../data-server2 -Djnp.port=2099 -Djnp.rmiPort=2098 -Dhornetq.remoting.netty.port=6445"/>
+      <property name="cluster.props.node3" value="-Ddata.dir=../data-server3 -Djnp.port=3099 -Djnp.rmiPort=3098 -Dhornetq.remoting.netty.port=7445"/>
       <parallel>
          <sequential>
 

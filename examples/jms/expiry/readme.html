@@ -17,7 +17,7 @@
          We will instead consume it from an <em>expiry queue</em> where it was moved when it expired.
      </p>
      <h2>Example setup</h2>
-     <p>Expiry destinations are defined in the configuration file <a href="server0/jbm-configuration.xml">jbm-configuration.xml</a>:</p>
+     <p>Expiry destinations are defined in the configuration file <a href="server0/hornetq-configuration.xml">hornetq-configuration.xml</a>:</p>
      <pre>
          <code>&lt;address-setting match="jms.queue.exampleQueue"&gt;
             &lt;expiry-address&gt;jms.queue.expiryQueue&lt;/expiry-address&gt;
@@ -29,7 +29,7 @@
          or a <code>Topic</code> by prefixing with <code>jms.topic.</code>.<br />
          In this example, we will use a <code>Queue</code> to hold the expired messages.</p>
      <p>Since we want to consume messages from this expiryQueue, we also need to add a JNDI binding to perform a lookup.
-         This is configured in <a href="server0/jbm-jms.xml">jbm-jms.xml</a></p>
+         This is configured in <a href="server0/hornetq-jms.xml">hornetq-jms.xml</a></p>
      <pre>
          <code>&lt;queue name="expiryQueue"&gt;
             &lt;entry name="/queue/expiryQueue"/&gt;
@@ -148,14 +148,14 @@
         
         <p>As we have not defined a time-to-live for the expiry queue, messages sent to the expiry queue will be kept forever (their JMS Expiration value is 0)</p>
 
-        <li>The <strong>origin destination</strong> is stored in the <code>_JBM_ORIG_DESTINATION</code> property
+        <li>The <strong>origin destination</strong> is stored in the <code>_HORNETQ_ORIG_DESTINATION</code> property
         <pre>
-            <code>System.out.println("*Origin destination* of the expired message: " + messageReceived.getStringProperty("_JBM_ORIG_DESTINATION"));</code>
+            <code>System.out.println("*Origin destination* of the expired message: " + messageReceived.getStringProperty("_HORNETQ_ORIG_DESTINATION"));</code>
         </pre>
 
-        <li>The <strong>actual expiration time</strong> (when the message was expired from the queue) is stored in the <code>_JBM_ACTUAL_EXPIRY</code> property
+        <li>The <strong>actual expiration time</strong> (when the message was expired from the queue) is stored in the <code>_HORNETQ_ACTUAL_EXPIRY</code> property
         <pre>
-            <code>System.out.println("*Actual expiration time* of the expired message: " + messageReceived.getLongProperty("_JBM_ACTUAL_EXPIRY"));</code>
+            <code>System.out.println("*Actual expiration time* of the expired message: " + messageReceived.getLongProperty("_HORNETQ_ACTUAL_EXPIRY"));</code>
         </pre>
 
         </p>    

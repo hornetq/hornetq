@@ -211,7 +211,7 @@ import javax.jms.MessageProducer;
 import org.hornetq.core.logging.Logger;
 
 /**
- * JBMMessageProducer.
+ * HornetQMessageProducer.
  * 
  * @author <a href="adrian@jboss.com">Adrian Brock</a>
  * @author <a href="jesper.pedersen@jboss.org">Jesper Pedersen</a>
@@ -243,7 +243,7 @@ public class HornetQRAMessageProducer implements MessageProducer
 
       if (trace)
       {
-         log.trace("new JBMMessageProducer " + this + " producer=" + producer + " session=" + session);
+         log.trace("new HornetQMessageProducer " + this + " producer=" + producer + " session=" + session);
       }
    }
 

@@ -211,7 +211,7 @@ import javax.jms.TopicPublisher;
 import org.hornetq.core.logging.Logger;
 
 /**
- * JBMQueueSender.
+ * HornetQQueueSender.
  * 
  * @author <a href="adrian@jboss.com">Adrian Brock</a>
  * @author <a href="jesper.pedersen@jboss.org">Jesper Pedersen</a>

@@ -54,7 +54,7 @@ producer.setTimeToLive(5000);
       <para>A reaper thread is periodically inspecting the queues to check if messages have
          expired.</para>
       <para>The reaper thread can be configured with the following properties in <literal
-            >jbm-configuration.xml</literal></para>
+            >hornetq-configuration.xml</literal></para>
       <itemizedlist>
          <listitem>
             <para><literal>message-expiry-scan-period</literal></para>

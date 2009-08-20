@@ -36,7 +36,7 @@ public class SecurityDeployer extends XmlDeployer
    private static final String PERMISSION_ELEMENT_NAME = "permission";
    private static final String TYPE_ATTR_NAME = "type";
    private static final String ROLES_ATTR_NAME = "roles";
-   private static final String QUEUES_XML = "jbm-queues.xml";
+   private static final String QUEUES_XML = "hornetq-queues.xml";
    private static final String MATCH = "match";
    private static final String SECURITY_ELEMENT_NAME = "security-setting";
 
@@ -73,7 +73,7 @@ public class SecurityDeployer extends XmlDeployer
    @Override
    public void validate(Node rootNode) throws Exception
    {
-      org.hornetq.utils.XMLUtil.validate(rootNode, "schema/jbm-configuration.xsd");
+      org.hornetq.utils.XMLUtil.validate(rootNode, "schema/hornetq-configuration.xsd");
    }
    
    /**
@@ -185,6 +185,6 @@ public class SecurityDeployer extends XmlDeployer
     */
    public String[] getDefaultConfigFileNames()
    {
-      return new String[] {"jbm-configuration.xml", QUEUES_XML};
+      return new String[] {"hornetq-configuration.xml", QUEUES_XML};
    }
 }

@@ -21,9 +21,9 @@
 
    <!-- We use a minimal classpath on this example -->
    <path id="local.classpath">
-	  <fileset dir="${jbm.jars.dir}">
-	       <include name="jbm-core.jar"/>
-	       <include name="jbm-jms.jar"/>
+	  <fileset dir="${hornetq.jars.dir}">
+	       <include name="hornetq-core.jar"/>
+	       <include name="hornetq-jms.jar"/>
 	  </fileset>
 	 	
 	  <fileset dir="${jars.dir}">

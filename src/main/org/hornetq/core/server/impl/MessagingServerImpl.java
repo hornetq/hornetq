@@ -882,7 +882,7 @@ public class MessagingServerImpl implements MessagingServer
    {
       // Create the pools - we have two pools - one for non scheduled - and another for scheduled
 
-      ThreadFactory tFactory = new HornetQThreadFactory("JBM-server-threads" + System.identityHashCode(this), false);
+      ThreadFactory tFactory = new HornetQThreadFactory("HornetQ-server-threads" + System.identityHashCode(this), false);
 
       if (configuration.getThreadPoolMaxSize() == -1)
       {
@@ -896,7 +896,7 @@ public class MessagingServerImpl implements MessagingServer
       executorFactory = new OrderedExecutorFactory(threadPool);
 
       scheduledPool = new ScheduledThreadPoolExecutor(configuration.getScheduledThreadPoolMaxSize(),
-                                                      new HornetQThreadFactory("JBM-scheduled-threads",
+                                                      new HornetQThreadFactory("HornetQ-scheduled-threads",
                                                                                                      false));
 
       managementService = new ManagementServiceImpl(mbeanServer, configuration, managementConnectorID);

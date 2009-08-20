@@ -121,7 +121,7 @@ public class TimedBuffer
 
       timerRunnable = new CheckTimer();
 
-      timerThread = new Thread(timerRunnable, "jbm-aio-timer");
+      timerThread = new Thread(timerRunnable, "hornetq-aio-timer");
 
       timerThread.start();
 

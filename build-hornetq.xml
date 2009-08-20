@@ -32,33 +32,33 @@
    <property name="module.name" value="HornetQ"/>
 	   <!-- Version properties are read from hornetq-version.properties instead of duplicating them here -->
    <property file="src/config/common/hornetq-version.properties"/>
-   <property name="messaging.version.revision" value="0" />
-   <property name="messaging.version.svnurl" value="https://svn.jboss.org/repos/messaging/trunk"/>
-   <property name="messaging.version.string"
-             value="${messaging.version.majorVersion}.${messaging.version.minorVersion}.${messaging.version.microVersion}.${messaging.version.versionSuffix} (${messaging.version.versionName}, ${messaging.version.incrementingVersion})"/>
+   <property name="hornetq.version.revision" value="0" />
+   <property name="hornetq.version.svnurl" value="https://svn.jboss.org/repos/messaging/trunk"/>
+   <property name="hornetq.version.string"
+             value="${hornetq.version.majorVersion}.${hornetq.version.minorVersion}.${hornetq.version.microVersion}.${hornetq.version.versionSuffix} (${hornetq.version.versionName}, ${hornetq.version.incrementingVersion})"/>
    <property name="module.version"
-             value="${messaging.version.majorVersion}.${messaging.version.minorVersion}.${messaging.version.revision}.${messaging.versionTag}"/>
+             value="${hornetq.version.majorVersion}.${hornetq.version.minorVersion}.${hornetq.version.revision}.${hornetq.versionTag}"/>
    <property name="build.artifact"
-             value="${module.name}-${messaging.version.majorVersion}.${messaging.version.minorVersion}.${messaging.version.microVersion}.${messaging.version.versionSuffix}"/>
+             value="${module.name}-${hornetq.version.majorVersion}.${hornetq.version.minorVersion}.${hornetq.version.microVersion}.${hornetq.version.versionSuffix}"/>
 
    <!-- ======================================================================================== -->
    <!-- Jar names                                                                                -->
    <!-- ======================================================================================== -->
 
-   <property name="core.jar.name" value="jbm-core.jar"/>
-   <property name="jms.jar.name" value="jbm-jms.jar"/>
-   <property name="jms.client.jar.name" value="jbm-jms-client.jar"/>
+   <property name="core.jar.name" value="hornetq-core.jar"/>
+   <property name="jms.jar.name" value="hornetq-jms.jar"/>
+   <property name="jms.client.jar.name" value="hornetq-jms-client.jar"/>
    <property name="jnp.client.jar.name" value="jnp-client.jar"/>
-   <property name="transports.jar.name" value="jbm-transports.jar"/>
-   <property name="security.jar.name" value="jbm-jboss-as-security.jar"/>
-   <property name="bootstrap.jar.name" value="jbm-bootstrap.jar"/>
-   <property name="logging.jar.name" value="jbm-logging.jar"/>
-   <property name="core.client.jar.name" value="jbm-core-client.jar"/>
-   <property name="ra.jar.name" value="jbm-ra.jar"/>
-   <property name="ra.rar.name" value="jbm-ra.rar"/>
+   <property name="transports.jar.name" value="hornetq-transports.jar"/>
+   <property name="security.jar.name" value="hornetq-jboss-as-security.jar"/>
+   <property name="bootstrap.jar.name" value="hornetq-bootstrap.jar"/>
+   <property name="logging.jar.name" value="hornetq-logging.jar"/>
+   <property name="core.client.jar.name" value="hornetq-core-client.jar"/>
+   <property name="ra.jar.name" value="hornetq-ra.jar"/>
+   <property name="ra.rar.name" value="hornetq-ra.rar"/>
    <property name="netty.jar.name" value="netty.jar"/>
    <property name="mc.jar.name" value="jboss-mc.jar"/>
-   <property name="resources.jar.name" value="jbm-resources.jar"/>
+   <property name="resources.jar.name" value="hornetq-resources.jar"/>
 
    <!--source and build dirs-->
    <property name="build.dir" value="build"/>
@@ -107,10 +107,10 @@
    <property name="artifacts.dir" value="${build.dir}/artifacts"/>
 
    <!--default clustering server settings-->   
-   <property name="jbm.remoting.netty.port" value="5445"/>
+   <property name="hornetq.remoting.netty.port" value="5445"/>
    <property name="jnp.port" value="1099"/>
    <property name="jnp.rmiPort" value="1098"/>
-   <property name="jbm.data.dir" value="data1"/>
+   <property name="hornetq.data.dir" value="data1"/>
     
    <!-- ======================================================================================== -->
    <!-- Thirdparty Dependency                                                                    -->
@@ -516,18 +516,18 @@
          <param name="conf.dir" value="${src.config.standalone.non-clustered.dir}"/>
       </antcall>
       <!-- user configuration is only for standalone -->
-      <schemavalidate file="${src.config.standalone.non-clustered.dir}/jbm-users.xml">
-         <schema namespace="urn:jboss:messaging" 
-                 file="${src.schema.dir}/jbm-users.xsd"/>
+      <schemavalidate file="${src.config.standalone.non-clustered.dir}/hornetq-users.xml">
+         <schema namespace="urn:hornetq" 
+                 file="${src.schema.dir}/hornetq-users.xsd"/>
       </schemavalidate>
 
       <antcall target="-validate-configuration">
          <param name="conf.dir" value="${src.config.standalone.clustered.dir}"/>
       </antcall>
       <!-- user configuration is only for standalone -->
-      <schemavalidate file="${src.config.standalone.clustered.dir}/jbm-users.xml">
-         <schema namespace="urn:jboss:messaging" 
-                 file="${src.schema.dir}/jbm-users.xsd"/>
+      <schemavalidate file="${src.config.standalone.clustered.dir}/hornetq-users.xml">
+         <schema namespace="urn:hornetq" 
+                 file="${src.schema.dir}/hornetq-users.xsd"/>
       </schemavalidate>
       
       <antcall target="-validate-configuration">
@@ -541,13 +541,13 @@
     
    <target name="-validate-configuration">
       <echo>validating configuration from ${conf.dir}</echo>
-      <schemavalidate file="${conf.dir}/jbm-configuration.xml">
-         <schema namespace="urn:jboss:messaging" 
-                 file="${src.schema.dir}/jbm-configuration.xsd"/>
+      <schemavalidate file="${conf.dir}/hornetq-configuration.xml">
+         <schema namespace="urn:hornetq" 
+                 file="${src.schema.dir}/hornetq-configuration.xsd"/>
       </schemavalidate>
-      <schemavalidate file="${conf.dir}/jbm-jms.xml">
-         <schema namespace="urn:jboss:messaging" 
-                 file="${src.schema.dir}/jbm-jms.xsd"/>
+      <schemavalidate file="${conf.dir}/hornetq-jms.xml">
+         <schema namespace="urn:hornetq" 
+                 file="${src.schema.dir}/hornetq-jms.xsd"/>
       </schemavalidate>
    </target>
    
@@ -590,11 +590,11 @@
          <fileset dir="${build.core.classes.dir}" includes="**"/>
          <fileset dir="${src.config.dir}/common">
             <include name="**/*.xsd"/>
-            <exclude name="**/jbm-jms.xsd"/>
+            <exclude name="**/hornetq-jms.xsd"/>
          </fileset>
          <manifest>
-            <attribute name="JBossMessaging-Version" value="${messaging.version.string}"/>
-            <attribute name="JBossMessaging-SVN-URL" value="${messaging.version.svnurl}"/>
+            <attribute name="JBossMessaging-Version" value="${hornetq.version.string}"/>
+            <attribute name="JBossMessaging-SVN-URL" value="${hornetq.version.svnurl}"/>
          </manifest>
       </jar>
 
@@ -605,7 +605,7 @@
       <jar jarfile="${build.jars.dir}/${jms.jar.name}">
          <fileset dir="${build.jms.classes.dir}" includes="**"/>
          <fileset dir="${src.config.dir}/common">
-            <include name="**/jbm-jms.xsd"/>
+            <include name="**/hornetq-jms.xsd"/>
          </fileset>
       </jar>
 
@@ -919,27 +919,27 @@
       <delete dir="${artifacts.dir}"/>
 
       <antcall target="artifact">
-         <param name="artifact.name" value="jbm-core"/>
+         <param name="artifact.name" value="hornetq-core"/>
       </antcall>
 
       <antcall target="artifact">
-         <param name="artifact.name" value="jbm-core-client"/>
+         <param name="artifact.name" value="hornetq-core-client"/>
       </antcall>
 
       <antcall target="artifact">
-         <param name="artifact.name" value="jbm-transports"/>
+         <param name="artifact.name" value="hornetq-transports"/>
       </antcall>
 
       <antcall target="artifact">
-         <param name="artifact.name" value="jbm-jms"/>
+         <param name="artifact.name" value="hornetq-jms"/>
       </antcall>
 
       <antcall target="artifact">
-         <param name="artifact.name" value="jbm-jboss-as-security"/>     
+         <param name="artifact.name" value="hornetq-jboss-as-security"/>     
       </antcall>
 
       <antcall target="artifact">
-         <param name="artifact.name" value="jbm-logging"/>     
+         <param name="artifact.name" value="hornetq-logging"/>     
       </antcall>
 
       <property name="build.resources.dir" value="${build.dir}/resources"/>
@@ -953,24 +953,24 @@
             <exclude name="ra.xml"/>
          </fileset>
       </copy>
-      <jar jarfile="${build.jars.dir}/jbm-resources.jar">
+      <jar jarfile="${build.jars.dir}/hornetq-resources.jar">
          <fileset dir="${build.core.classes.dir}" includes="**"/>
       </jar>
 
        <antcall target="artifact">
-         <param name="artifact.name" value="jbm-resources"/>     
+         <param name="artifact.name" value="hornetq-resources"/>     
       </antcall>
 
    </target>
 
    <target name="artifact">
       <echo message="${artifact.name}"/>
-      <property name="artifacts.version" value="${messaging.version.majorVersion}.${messaging.version.minorVersion}.${messaging.version.microVersion}.${messaging.version.versionSuffix}"/>
+      <property name="artifacts.version" value="${hornetq.version.majorVersion}.${hornetq.version.minorVersion}.${hornetq.version.microVersion}.${hornetq.version.versionSuffix}"/>
       <property name="artifact.dir" value="${artifacts.dir}/${artifact.name}/${artifacts.version}"/>
       <mkdir dir="${artifact.dir}"/>
       <copy tofile="${artifact.dir}/${artifact.name}-${artifacts.version}.jar"
             file="${build.jars.dir}/${artifact.name}.jar">
-        <!-- <globmapper from="jbm-core" to="jbm-core-${messaging.version.major}.${messaging.version.minor}.${messaging.version.micro}.${messaging.version.suffix}*"/>-->
+        <!-- <globmapper from="hornetq-core" to="hornetq-core-${hornetq.version.major}.${hornetq.version.minor}.${hornetq.version.micro}.${hornetq.version.suffix}*"/>-->
       </copy>
       <copy file="pom.xml" tofile="${artifact.dir}/${artifact.name}-${artifacts.version}.pom">
          <filterset>
@@ -1392,7 +1392,7 @@
          <jvmarg value="-Djava.util.logging.config.file=${src.config.trunk.non-clustered.dir}/logging.properties"/>
          <jvmarg value="-Djava.library.path=${native.bin.dir}"/>
          <!--<jvmarg line="-Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=8000"/>-->
-         <arg line="jbm-jboss-beans.xml"/>
+         <arg line="hornetq-jboss-beans.xml"/>
          <classpath path="${src.config.trunk.non-clustered.dir}" />
          <classpath refid="jms.standalone.server.classpath"/>
       </java>
@@ -1411,11 +1411,11 @@
          <jvmarg
                value="-Dorg.jboss.logging.Logger.pluginClass=org.hornetq.integration.logging.HornetQLoggerPlugin"/>
          <jvmarg value="-Djava.library.path=${native.bin.dir}"/>
-         <jvmarg value="-Djbm.remoting.netty.port=${jbm.remoting.netty.port}"/>
+         <jvmarg value="-Dhornetq.remoting.netty.port=${hornetq.remoting.netty.port}"/>
          <jvmarg value="-Djnp.port=${jnp.port}"/>
          <jvmarg value="-Djnp.rmiPort=${jnp.rmiPort}"/>
-         <jvmarg value="-Djbm.data.dir=${jbm.data.dir}"/>
-         <arg line="jbm-jboss-beans.xml"/>
+         <jvmarg value="-Dhornetq.data.dir=${hornetq.data.dir}"/>
+         <arg line="hornetq-jboss-beans.xml"/>
          <classpath path="${src.config.trunk.clustered.dir}" />
          <classpath refid="jms.standalone.server.classpath"/>
       </java>
@@ -1439,7 +1439,7 @@
          <jvmarg value="-Djava.library.path=${native.bin.dir}"/>
          <jvmarg value="-Djava.naming.factory.initial=org.jnp.interfaces.NamingContextFactory"/>
          <jvmarg value="-Djava.naming.factory.url.pkgs=org.jboss.naming:org.jnp.interfaces"/>
-         <arg line="jbm-jboss-beans.xml"/>
+         <arg line="hornetq-jboss-beans.xml"/>
          <classpath path="${src.config.standalone.non-clustered.dir}" />
       </java>
    </target>

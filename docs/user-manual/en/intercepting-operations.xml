@@ -31,7 +31,7 @@ public interface Interceptor
    </section>
    <section>
       <title>Configuring The Interceptors</title>
-      <para>The interceptors are configured in <literal>jbm-configuration.xml</literal>:</para>
+      <para>The interceptors are configured in <literal>hornetq-configuration.xml</literal>:</para>
       <programlisting>
 &lt;remoting-interceptors&gt;
    &lt;class-name&gt;org.hornetq.jms.example.LoginInterceptor&lt;/class-name&gt;

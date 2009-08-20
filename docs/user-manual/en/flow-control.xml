@@ -86,7 +86,7 @@
          <section>
             <title>Using JMS</title>
             <para>if JNDI is used to look up the connection factory, the consumer window size is
-               configured in <literal>jbm-jms.xml</literal>:</para>
+               configured in <literal>hornetq-jms.xml</literal>:</para>
             <programlisting>
 &lt;connection-factory name="ConnectionFactory"&gt;
    &lt;connector-ref connector-name="netty-connector"/&gt;
@@ -127,7 +127,7 @@
          <section>
             <title>Using JMS</title>
             <para>If JNDI is used to look up the connection factory, the max rate can be configured
-               in <literal>jbm-jms.xml</literal>:</para>
+               in <literal>hornetq-jms.xml</literal>:</para>
             <programlisting>&lt;connection-factory name="ConnectionFactory">
       &lt;connector-ref connector-name="netty-connector"/>
       &lt;entries>
@@ -186,7 +186,7 @@
          <section>
             <title>Using JMS</title>
             <para>If JNDI is used to look up the connection factory, the max rate can be configured
-               in <literal>jbm-jms.xml</literal>:</para>
+               in <literal>hornetq-jms.xml</literal>:</para>
             <programlisting>&lt;connection-factory name="ConnectionFactory">
       &lt;connector-ref connector-name="netty-connector"/>
       &lt;entries>

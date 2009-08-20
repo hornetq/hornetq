@@ -178,9 +178,9 @@ public class JMSExpirationHeaderTest extends MessageHeaderTestBase
                Message m = queueProducerSession.createMessage();
                queueProducer.send(m, DeliveryMode.NON_PERSISTENT, 4, -1);
 
-               HornetQMessage jbm = (HornetQMessage)m;
+               HornetQMessage msg = (HornetQMessage)m;
                
-               if (!jbm.getCoreMessage().isExpired())
+               if (!msg.getCoreMessage().isExpired())
                {
                   log.error("The message " + m + " should have expired");
                   testFailed = true;

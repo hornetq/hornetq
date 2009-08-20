@@ -20,10 +20,10 @@
         <title>Configuration</title>
         <para>You can configure the location of the paging folder</para>
         <para>Global paging parameters are specified on the main configuration file (<literal
-                >jbm-configuration.xml</literal>).</para>
-        <programlisting>&lt;configuration xmlns="urn:jboss:messaging"
+                >hornetq-configuration.xml</literal>).</para>
+        <programlisting>&lt;configuration xmlns="urn:hornetq"
             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-            xsi:schemaLocation="urn:jboss:messaging /schema/jbm-configuration.xsd">
+            xsi:schemaLocation="urn:hornetq /schema/hornetq-configuration.xsd">
             
             ...
             
@@ -64,7 +64,7 @@
         <section>
             <title>Configuration</title>
             <para>Configuration is done at the address settings, done at the main configuration file
-                    (<literal>jbm-configuration.xml</literal>).</para>
+                    (<literal>hornetq-configuration.xml</literal>).</para>
             <programlisting>  &lt;address-settings>
       &lt;address-setting match="jms.someaddress">
          &lt;max-size-bytes>104857600&lt;/max-size-bytes>

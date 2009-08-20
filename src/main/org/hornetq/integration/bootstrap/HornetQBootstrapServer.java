@@ -32,7 +32,7 @@ import java.util.TimerTask;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
- * This is the method in which the JBM server can be deployed externall outside of jBoss. Alternatively a user can embed
+ * This is the method in which the HornetQ server can be deployed externall outside of jBoss. Alternatively a user can embed
  * by using the same code as in main
  *
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
@@ -80,13 +80,13 @@ public class HornetQBootstrapServer extends BasicBootstrap
     */
    public void addShutdownHook()
    {
-      String dirName = System.getProperty("jbm.config.dir", ".");
+      String dirName = System.getProperty("hornetq.config.dir", ".");
       final File file = new File(dirName + "/STOP_ME");
       if (file.exists())
       {
          file.delete();
       }
-      final Timer timer = new Timer("JBM Server Shutdown Timer", true);
+      final Timer timer = new Timer("HornetQ Server Shutdown Timer", true);
       timer.scheduleAtFixedRate(new TimerTask()
       {
          @Override

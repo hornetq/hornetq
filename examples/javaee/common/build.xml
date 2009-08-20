@@ -38,8 +38,8 @@
 
    <property name="src.dir" value="src"/>
    <property name="example.classname" value="this.shouldn't.be.run.directly"/>
-   <property name="jbm.example.runServer" value="true"/>
-   <property name="jbm.example.beans.file" value="server0"/>
+   <property name="hornetq.example.runServer" value="true"/>
+   <property name="hornetq.example.beans.file" value="server0"/>
 
    <property name="build.dir" value="build"/>
    <property name="classes.dir" value="${build.dir}/classes"/>
@@ -47,13 +47,13 @@
    <property name="example.config.dir" value="config"/>
 
    <path id="jms.compilation.classpath">
-      <fileset dir="${jbm.jars.dir}">
+      <fileset dir="${hornetq.jars.dir}">
          <include name="**/*.jar"/>
       </fileset>
       <fileset dir="${jboss.home}/client">
          <include name="**/*.jar"/>
       </fileset>
-      <fileset dir="${jboss.home}/server/default-with-jbm2/lib">
+      <fileset dir="${jboss.home}/server/default-with-hornetq/lib">
          <include name="netty*.jar"/>
       </fileset>
    </path>
@@ -132,15 +132,15 @@
    </target>
 
    <target name="copy-profile" depends="profile.check" unless="donot.copy.profile">
-      <property name="profile" value="${jboss.home}/server/default-with-jbm2"/>
+      <property name="profile" value="${jboss.home}/server/default-with-hornetq"/>
       <property name="example-profile" value="${jboss.home}/server/${example.name}-example-profile"/>
       <property name="deploy.dir" value="${example-profile}/deploy/"/>
       <mkdir dir="${example-profile}"/>
       <copy todir="${example-profile}">
          <fileset dir="${profile}">
-            <exclude name="**/*jbm-configuration.xml"/>
-            <exclude name="**/*jbm-jms.xml"/>
-            <exclude name="**/*jbm-users.xml"/>
+            <exclude name="**/*hornetq-configuration.xml"/>
+            <exclude name="**/*hornetq-jms.xml"/>
+            <exclude name="**/*hornetq-users.xml"/>
          </fileset>
       </copy>
    </target>
@@ -164,8 +164,8 @@
 
    <target name="validate-jboss">
       <fail unless="ENV.JBOSS_HOME" message="JBOSS_HOME environment variable not set! Set it and try again."/>
-      <available property="default-config" type="dir" file="${jboss.home}/server/default-with-jbm2"/>
-      <fail unless="default-config" message="${jboss.home}/server/default-with-jbm2 not found!"/>
+      <available property="default-config" type="dir" file="${jboss.home}/server/default-with-hornetq"/>
+      <fail unless="default-config" message="${jboss.home}/server/default-with-hornetq not found!"/>
    </target>
 
    <target name="runExample" depends="validate-jboss,compile">

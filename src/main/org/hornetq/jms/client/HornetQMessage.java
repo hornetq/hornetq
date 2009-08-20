@@ -259,7 +259,7 @@ public class HornetQMessage implements javax.jms.Message
 
    public static final SimpleString CORRELATIONID_HEADER_NAME = new SimpleString("JMSCorrelationID");
 
-   public static final SimpleString JBM_MESSAGE_ID = new SimpleString("JMSMessageID");
+   public static final SimpleString HORNETQ_MESSAGE_ID = new SimpleString("JMSMessageID");
 
    public static final SimpleString TYPE_HEADER_NAME = new SimpleString("JMSType");
 
@@ -271,16 +271,16 @@ public class HornetQMessage implements javax.jms.Message
 
    public static final String JMSXDELIVERYCOUNT = "JMSXDeliveryCount";
 
-   public static final String JMS_JBM_INPUT_STREAM = "JMS_JBM_InputStream";
+   public static final String JMS_HORNETQ_INPUT_STREAM = "JMS_HQ_InputStream";
 
-   public static final String JMS_JBM_OUTPUT_STREAM = "JMS_JBM_OutputStream";
+   public static final String JMS_HORNETQ_OUTPUT_STREAM = "JMS_HQ_OutputStream";
 
-   public static final String JMS_JBM_SAVE_STREAM = "JMS_JBM_SaveStream";
+   public static final String JMS_HORNETQ_SAVE_STREAM = "JMS_HQ_SaveStream";
 
    public static final String JMSXGROUPID = "JMSXGroupID";
 
    // Used when bridging a message
-   public static final String JBOSS_MESSAGING_BRIDGE_MESSAGE_ID_LIST = "JBM_BRIDGE_MSG_ID_LIST";
+   public static final String JBOSS_MESSAGING_BRIDGE_MESSAGE_ID_LIST = "HQ_BRIDGE_MSG_ID_LIST";
 
    public static final byte TYPE = 0;
 
@@ -529,7 +529,7 @@ public class HornetQMessage implements javax.jms.Message
    {
       if (msgID == null)
       {
-         SimpleString id = (SimpleString)message.getProperty(JBM_MESSAGE_ID);
+         SimpleString id = (SimpleString)message.getProperty(HORNETQ_MESSAGE_ID);
 
          msgID = id == null ? null : id.toString();
       }
@@ -544,11 +544,11 @@ public class HornetQMessage implements javax.jms.Message
       }
       if (jmsMessageID == null)
       {
-         message.removeProperty(JBM_MESSAGE_ID);
+         message.removeProperty(HORNETQ_MESSAGE_ID);
       }
       else
       {
-         message.putStringProperty(JBM_MESSAGE_ID, new SimpleString(jmsMessageID));
+         message.putStringProperty(HORNETQ_MESSAGE_ID, new SimpleString(jmsMessageID));
       }
       msgID = jmsMessageID;
    }
@@ -1001,7 +1001,7 @@ public class HornetQMessage implements javax.jms.Message
 
    public Object getObjectProperty(final String name) throws JMSException
    {
-      if (JMS_JBM_INPUT_STREAM.equals(name))
+      if (JMS_HORNETQ_INPUT_STREAM.equals(name))
       {
          return message.getBodyInputStream();
       }
@@ -1099,13 +1099,13 @@ public class HornetQMessage implements javax.jms.Message
 
    public void setObjectProperty(final String name, final Object value) throws JMSException
    {
-      if (JMS_JBM_OUTPUT_STREAM.equals(name))
+      if (JMS_HORNETQ_OUTPUT_STREAM.equals(name))
       {
          setOutputStream((OutputStream)value);
          
          return;
       }
-      else if (JMS_JBM_SAVE_STREAM.equals(name))
+      else if (JMS_HORNETQ_SAVE_STREAM.equals(name))
       {
          saveToOutputStream((OutputStream)value);
          
@@ -1114,7 +1114,7 @@ public class HornetQMessage implements javax.jms.Message
 
       checkProperty(name, value);
 
-      if (JMS_JBM_INPUT_STREAM.equals(name))
+      if (JMS_HORNETQ_INPUT_STREAM.equals(name))
       {
          setInputStream((InputStream)value);
          

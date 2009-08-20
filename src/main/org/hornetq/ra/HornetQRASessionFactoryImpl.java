@@ -922,7 +922,7 @@ public class HornetQRASessionFactoryImpl implements HornetQRASessionFactory, Ref
                   log.trace("Allocated  " + this + " session=" + session);
                }
 
-               session.setJBMSessionFactory(this);
+               session.setHornetQSessionFactory(this);
 
                if (started)
                {
@@ -1011,7 +1011,7 @@ public class HornetQRASessionFactoryImpl implements HornetQRASessionFactory, Ref
                   log.trace("Allocated  " + this + " session=" + session);
                }
 
-               session.setJBMSessionFactory(this);
+               session.setHornetQSessionFactory(this);
 
                if (started)
                {

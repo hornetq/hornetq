@@ -28,7 +28,7 @@ import org.hornetq.core.logging.Logger;
 import org.hornetq.utils.SimpleString;
 
 /**
-* Implementations of the operators used in JBM filter expressions
+* Implementations of the operators used in HornetQ filter expressions
 *
 * @author Norbert Lataille (Norbert.Lataille@m4x.org)
 * @author droy@boostmyscore.com

@@ -27,40 +27,40 @@ public class SelectorTranslatorTest extends UnitTestCase
 {
    public void testParseNull()
    {
-      assertNull(SelectorTranslator.convertToJBMFilterString(null));
+      assertNull(SelectorTranslator.convertToHornetQFilterString(null));
    }
    
    public void testParseSimple()
    {
       final String selector = "color = 'red'";
       
-      assertEquals(selector, SelectorTranslator.convertToJBMFilterString(selector));
+      assertEquals(selector, SelectorTranslator.convertToHornetQFilterString(selector));
    }
    
    public void testParseMoreComplex()
    {
       final String selector = "color = 'red' OR cheese = 'stilton' OR (age = 3 AND shoesize = 12)";
       
-      assertEquals(selector, SelectorTranslator.convertToJBMFilterString(selector));
+      assertEquals(selector, SelectorTranslator.convertToHornetQFilterString(selector));
    }
    
    public void testParseJMSDeliveryMode()
    {
       String selector = "JMSDeliveryMode='NON_PERSISTENT'";
       
-      assertEquals("JBMDurable='NON_DURABLE'", SelectorTranslator.convertToJBMFilterString(selector));
+      assertEquals("HQDurable='NON_DURABLE'", SelectorTranslator.convertToHornetQFilterString(selector));
             
       selector = "JMSDeliveryMode='PERSISTENT'";
       
-      assertEquals("JBMDurable='DURABLE'", SelectorTranslator.convertToJBMFilterString(selector));
+      assertEquals("HQDurable='DURABLE'", SelectorTranslator.convertToHornetQFilterString(selector));
             
       selector = "color = 'red' AND 'NON_PERSISTENT' = JMSDeliveryMode";
       
-      assertEquals("color = 'red' AND 'NON_DURABLE' = JBMDurable", SelectorTranslator.convertToJBMFilterString(selector));
+      assertEquals("color = 'red' AND 'NON_DURABLE' = HQDurable", SelectorTranslator.convertToHornetQFilterString(selector));
             
       selector = "color = 'red' AND 'PERSISTENT' = JMSDeliveryMode";
       
-      assertEquals("color = 'red' AND 'DURABLE' = JBMDurable", SelectorTranslator.convertToJBMFilterString(selector));
+      assertEquals("color = 'red' AND 'DURABLE' = HQDurable", SelectorTranslator.convertToHornetQFilterString(selector));
                   
       checkNoSubstitute("JMSDeliveryMode");     
    }
@@ -69,45 +69,45 @@ public class SelectorTranslatorTest extends UnitTestCase
    {
       String selector = "JMSPriority=5";
       
-      assertEquals("JBMPriority=5", SelectorTranslator.convertToJBMFilterString(selector));
+      assertEquals("HQPriority=5", SelectorTranslator.convertToHornetQFilterString(selector));
             
       selector = " JMSPriority = 7";
       
-      assertEquals(" JBMPriority = 7", SelectorTranslator.convertToJBMFilterString(selector));
+      assertEquals(" HQPriority = 7", SelectorTranslator.convertToHornetQFilterString(selector));
       
       selector = " JMSPriority = 7 OR 1 = JMSPriority AND (JMSPriority= 1 + 4)";
       
-      assertEquals(" JBMPriority = 7 OR 1 = JBMPriority AND (JBMPriority= 1 + 4)", SelectorTranslator.convertToJBMFilterString(selector));
+      assertEquals(" HQPriority = 7 OR 1 = HQPriority AND (HQPriority= 1 + 4)", SelectorTranslator.convertToHornetQFilterString(selector));
                         
       checkNoSubstitute("JMSPriority");      
       
       selector = "animal = 'lion' JMSPriority = 321 OR animal_name = 'xyzJMSPriorityxyz'";
       
-      assertEquals("animal = 'lion' JBMPriority = 321 OR animal_name = 'xyzJMSPriorityxyz'", SelectorTranslator.convertToJBMFilterString(selector));
+      assertEquals("animal = 'lion' HQPriority = 321 OR animal_name = 'xyzJMSPriorityxyz'", SelectorTranslator.convertToHornetQFilterString(selector));
      
    }
    
    public void testParseJMSMessageID()
    {
-      String selector = "JMSMessageID='ID:JBM-12435678";
+      String selector = "JMSMessageID='ID:HQ-12435678";
       
-      assertEquals(selector, SelectorTranslator.convertToJBMFilterString(selector));
+      assertEquals(selector, SelectorTranslator.convertToHornetQFilterString(selector));
       
-      selector = " JMSMessageID='ID:JBM-12435678";
+      selector = " JMSMessageID='ID:HQ-12435678";
       
-      assertEquals(selector, SelectorTranslator.convertToJBMFilterString(selector));
+      assertEquals(selector, SelectorTranslator.convertToHornetQFilterString(selector));
       
-      selector = " JMSMessageID = 'ID:JBM-12435678";
+      selector = " JMSMessageID = 'ID:HQ-12435678";
       
-      assertEquals(selector, SelectorTranslator.convertToJBMFilterString(selector));
+      assertEquals(selector, SelectorTranslator.convertToHornetQFilterString(selector));
       
       selector = " myHeader = JMSMessageID";
       
-      assertEquals(selector, SelectorTranslator.convertToJBMFilterString(selector));
+      assertEquals(selector, SelectorTranslator.convertToHornetQFilterString(selector));
       
-      selector = " myHeader = JMSMessageID OR (JMSMessageID = 'ID-JBM' + '12345')";
+      selector = " myHeader = JMSMessageID OR (JMSMessageID = 'ID-HQ' + '12345')";
       
-      assertEquals(selector, SelectorTranslator.convertToJBMFilterString(selector));
+      assertEquals(selector, SelectorTranslator.convertToHornetQFilterString(selector));
       
       checkNoSubstitute("JMSMessageID"); 
    }
@@ -116,46 +116,46 @@ public class SelectorTranslatorTest extends UnitTestCase
    {
       String selector = "JMSTimestamp=12345678";
       
-      assertEquals("JBMTimestamp=12345678", SelectorTranslator.convertToJBMFilterString(selector));
+      assertEquals("HQTimestamp=12345678", SelectorTranslator.convertToHornetQFilterString(selector));
             
       selector = " JMSTimestamp=12345678";
       
-      assertEquals(" JBMTimestamp=12345678", SelectorTranslator.convertToJBMFilterString(selector));
+      assertEquals(" HQTimestamp=12345678", SelectorTranslator.convertToHornetQFilterString(selector));
       
       selector = " JMSTimestamp=12345678 OR 78766 = JMSTimestamp AND (JMSTimestamp= 1 + 4878787)";
       
-      assertEquals(" JBMTimestamp=12345678 OR 78766 = JBMTimestamp AND (JBMTimestamp= 1 + 4878787)", SelectorTranslator.convertToJBMFilterString(selector));
+      assertEquals(" HQTimestamp=12345678 OR 78766 = HQTimestamp AND (HQTimestamp= 1 + 4878787)", SelectorTranslator.convertToHornetQFilterString(selector));
       
                   
       checkNoSubstitute("JMSTimestamp"); 
       
       selector = "animal = 'lion' JMSTimestamp = 321 OR animal_name = 'xyzJMSTimestampxyz'";
       
-      assertEquals("animal = 'lion' JBMTimestamp = 321 OR animal_name = 'xyzJMSTimestampxyz'", SelectorTranslator.convertToJBMFilterString(selector));
+      assertEquals("animal = 'lion' HQTimestamp = 321 OR animal_name = 'xyzJMSTimestampxyz'", SelectorTranslator.convertToHornetQFilterString(selector));
      
    }
    
    public void testParseJMSCorrelationID()
    {
-      String selector = "JMSCorrelationID='ID:JBM-12435678";
+      String selector = "JMSCorrelationID='ID:HQ-12435678";
       
-      assertEquals(selector, SelectorTranslator.convertToJBMFilterString(selector));
+      assertEquals(selector, SelectorTranslator.convertToHornetQFilterString(selector));
       
-      selector = " JMSCorrelationID='ID:JBM-12435678";
+      selector = " JMSCorrelationID='ID:HQ-12435678";
       
-      assertEquals(selector, SelectorTranslator.convertToJBMFilterString(selector));
+      assertEquals(selector, SelectorTranslator.convertToHornetQFilterString(selector));
       
-      selector = " JMSCorrelationID = 'ID:JBM-12435678";
+      selector = " JMSCorrelationID = 'ID:HQ-12435678";
       
-      assertEquals(selector, SelectorTranslator.convertToJBMFilterString(selector));
+      assertEquals(selector, SelectorTranslator.convertToHornetQFilterString(selector));
       
       selector = " myHeader = JMSCorrelationID";
       
-      assertEquals(selector, SelectorTranslator.convertToJBMFilterString(selector));
+      assertEquals(selector, SelectorTranslator.convertToHornetQFilterString(selector));
       
-      selector = " myHeader = JMSCorrelationID OR (JMSCorrelationID = 'ID-JBM' + '12345')";
+      selector = " myHeader = JMSCorrelationID OR (JMSCorrelationID = 'ID-HQ' + '12345')";
       
-      assertEquals(selector, SelectorTranslator.convertToJBMFilterString(selector));
+      assertEquals(selector, SelectorTranslator.convertToHornetQFilterString(selector));
       
       checkNoSubstitute("JMSCorrelationID"); 
    }
@@ -164,23 +164,23 @@ public class SelectorTranslatorTest extends UnitTestCase
    {
       String selector = "JMSType='aardvark'";
       
-      assertEquals(selector, SelectorTranslator.convertToJBMFilterString(selector));
+      assertEquals(selector, SelectorTranslator.convertToHornetQFilterString(selector));
       
       selector = " JMSType='aardvark'";
       
-      assertEquals(selector, SelectorTranslator.convertToJBMFilterString(selector));
+      assertEquals(selector, SelectorTranslator.convertToHornetQFilterString(selector));
       
       selector = " JMSType = 'aardvark'";
       
-      assertEquals(selector, SelectorTranslator.convertToJBMFilterString(selector));
+      assertEquals(selector, SelectorTranslator.convertToHornetQFilterString(selector));
       
       selector = " myHeader = JMSType";
       
-      assertEquals(selector, SelectorTranslator.convertToJBMFilterString(selector));
+      assertEquals(selector, SelectorTranslator.convertToHornetQFilterString(selector));
       
       selector = " myHeader = JMSType OR (JMSType = 'aardvark' + 'sandwich')";
       
-      assertEquals(selector, SelectorTranslator.convertToJBMFilterString(selector));
+      assertEquals(selector, SelectorTranslator.convertToHornetQFilterString(selector));
       
       checkNoSubstitute("JMSType"); 
    }
@@ -191,43 +191,43 @@ public class SelectorTranslatorTest extends UnitTestCase
    {
       String selector = "Other" + fieldName + " = 767868";
       
-      assertEquals(selector, SelectorTranslator.convertToJBMFilterString(selector));
+      assertEquals(selector, SelectorTranslator.convertToHornetQFilterString(selector));
       
       selector = "cheese = 'cheddar' AND Wrong" + fieldName +" = 54";
       
-      assertEquals(selector, SelectorTranslator.convertToJBMFilterString(selector));
+      assertEquals(selector, SelectorTranslator.convertToHornetQFilterString(selector));
       
       selector = "fruit = 'pomegranate' AND " + fieldName + "NotThisOne = 'tuesday'";
       
-      assertEquals(selector, SelectorTranslator.convertToJBMFilterString(selector));
+      assertEquals(selector, SelectorTranslator.convertToHornetQFilterString(selector));
       
       selector = "animal = 'lion' AND animal_name = '" + fieldName + "'";
       
-      assertEquals(selector, SelectorTranslator.convertToJBMFilterString(selector));
+      assertEquals(selector, SelectorTranslator.convertToHornetQFilterString(selector));
       
       selector = "animal = 'lion' AND animal_name = ' " + fieldName + "'";
       
-      assertEquals(selector, SelectorTranslator.convertToJBMFilterString(selector));
+      assertEquals(selector, SelectorTranslator.convertToHornetQFilterString(selector));
       
       selector = "animal = 'lion' AND animal_name = ' " + fieldName + " '";
       
-      assertEquals(selector, SelectorTranslator.convertToJBMFilterString(selector));
+      assertEquals(selector, SelectorTranslator.convertToHornetQFilterString(selector));
       
       selector = "animal = 'lion' AND animal_name = 'xyz " + fieldName +"'";
       
-      assertEquals(selector, SelectorTranslator.convertToJBMFilterString(selector));
+      assertEquals(selector, SelectorTranslator.convertToHornetQFilterString(selector));
       
       selector = "animal = 'lion' AND animal_name = 'xyz" + fieldName + "'";
       
-      assertEquals(selector, SelectorTranslator.convertToJBMFilterString(selector));
+      assertEquals(selector, SelectorTranslator.convertToHornetQFilterString(selector));
       
       selector = "animal = 'lion' AND animal_name = '" + fieldName + "xyz'";
       
-      assertEquals(selector, SelectorTranslator.convertToJBMFilterString(selector));
+      assertEquals(selector, SelectorTranslator.convertToHornetQFilterString(selector));
       
       selector = "animal = 'lion' AND animal_name = 'xyz" + fieldName + "xyz'";
       
-      assertEquals(selector, SelectorTranslator.convertToJBMFilterString(selector));
+      assertEquals(selector, SelectorTranslator.convertToHornetQFilterString(selector));
    }
    
 }

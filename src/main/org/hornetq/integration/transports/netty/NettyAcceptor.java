@@ -288,9 +288,9 @@ public class NettyAcceptor implements Acceptor
       bootstrap.setOption("child.reuseAddress", true);
       bootstrap.setOption("child.keepAlive", true);
 
-      channelGroup = new DefaultChannelGroup("jbm-accepted-channels");
+      channelGroup = new DefaultChannelGroup("hornetq-accepted-channels");
 
-      serverChannelGroup = new DefaultChannelGroup("jbm-acceptor-channels");
+      serverChannelGroup = new DefaultChannelGroup("hornetq-acceptor-channels");
 
       startServerChannels();
 

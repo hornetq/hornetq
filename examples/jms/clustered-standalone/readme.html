@@ -30,10 +30,10 @@
         <li>in the first terminal, go to the <code>bin</code> directory and start the first server (with default configuration):
            <pre><code>./run.sh ../config/stand-alone/clustered</code></pre>
         <li>in the second terminal, start the second server:
-           <pre><code>export CLUSTER_PROPS="-Ddata.dir=../data-server2 -Djnp.port=2099 -Djnp.rmiPort=2098 -Djbm.remoting.netty.port=6445"
+           <pre><code>export CLUSTER_PROPS="-Ddata.dir=../data-server2 -Djnp.port=2099 -Djnp.rmiPort=2098 -Dhornetq.remoting.netty.port=6445"
 ./run.sh ../config/stand-alone/clustered</code></pre>
         <li>in the third terminal, start the third server (with default configuration):
-           <pre><code>export CLUSTER_PROPS="-Ddata.dir=../data-server3 -Djnp.port=3099 -Djnp.rmiPort=3098 -Djbm.remoting.netty.port=7445"
+           <pre><code>export CLUSTER_PROPS="-Ddata.dir=../data-server3 -Djnp.port=3099 -Djnp.rmiPort=3098 -Dhornetq.remoting.netty.port=7445"
 ./run.sh ../config/stand-alone/clustered</code></pre>
         <li>finally, in the fourth terminal, start the example
            <pre><code>ant runRemote</code></pre>

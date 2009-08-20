@@ -9,7 +9,7 @@
       <programlisting>
          bin$ ./run.sh
          
-         15:05:54,108 INFO  @main [JBMBootstrapServer] Starting JBoss Messaging server
+         15:05:54,108 INFO  @main [HornetQBootstrapServer] Starting JBoss Messaging server
          ...
          15:06:02,566 INFO  @main [MessagingServerImpl] JBoss Messaging Server version 
          2.0.0.BETA1-SNAPSHOT (Stilton, 101) started
@@ -29,7 +29,7 @@
             <emphasis>non-clustered</emphasis> JBoss Messaging server, got to <literal
             >$JBOSS_HOME/bin</literal> directory and type:</para>
       <programlisting>
-        bin$ ./run.sh -c default-with-jbm2
+        bin$ ./run.sh -c default-with-hornetq
         
         15:18:35,460 INFO  [ServerImpl] Starting JBoss (Microcontainer)...
         15:18:35,462 INFO  [ServerImpl] Release ID: JBoss [The Oracle] 5.1.0.CR1 (build: 

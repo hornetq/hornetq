@@ -21,13 +21,13 @@
 
    <!-- We use a minimal classpath on this example -->
    <path id="local.classpath">
-      <fileset dir="${jbm.jars.dir}">
-         <include name="jbm-core.jar"/>
-         <include name="jbm-transports.jar"/>
-         <include name="jbm-bootstrap.jar"/>
-         <include name="jbm-jbossas-security.jar"/>
+      <fileset dir="${hornetq.jars.dir}">
+         <include name="hornetq-core.jar"/>
+         <include name="hornetq-transports.jar"/>
+         <include name="hornetq-bootstrap.jar"/>
+         <include name="hornetq-jbossas-security.jar"/>
       </fileset>
-      <fileset dir="${jbm.jars.dir}">
+      <fileset dir="${hornetq.jars.dir}">
          <include name="jboss-mc.jar"/>
       </fileset>
       <fileset dir="${jars.dir}">

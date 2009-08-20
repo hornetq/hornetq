@@ -33,7 +33,7 @@ import org.hornetq.core.remoting.FailureListener;
  * Mainly from org.jboss.server.XAResourceWrapper from the JBoss AS server module
  * 
  * The reason why we don't use that class directly is that it assumes on failure of connection
- * the RM_FAIL or RM_ERR is thrown, but in JBM we throw XA_RETRY since we want the recovery manager to be able
+ * the RM_FAIL or RM_ERR is thrown, but in HornetQ we throw XA_RETRY since we want the recovery manager to be able
  * to retry on failure without having to manually retry
  * 
  * @author <a href="adrian@jboss.com">Adrian Brock</a>

@@ -19,7 +19,7 @@ import org.hornetq.core.buffers.ChannelBuffers;
  *
  * @author The Netty Project (netty-dev@lists.jboss.org)
  * @author Trustin Lee (tlee@redhat.com)
- * Stripped down by Clebert Suconic for JBM
+ * Stripped down by Clebert Suconic for HornetQ
  *
  * @version $Rev: 237 $, $Date: 2008-09-04 06:53:44 -0500 (Thu, 04 Sep 2008) $
  */

@@ -73,7 +73,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
 {
    private static final Logger log = Logger.getLogger(PostOfficeImpl.class);
 
-   public static final SimpleString HDR_RESET_QUEUE_DATA = new SimpleString("_JBM_RESET_QUEUE_DATA");
+   public static final SimpleString HDR_RESET_QUEUE_DATA = new SimpleString("_HQ_RESET_QUEUE_DATA");
 
    private MessagingServer server;
 
@@ -821,7 +821,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
 
       if (reaperPeriod > 0)
       {
-         reaperThread = new Thread(reaperRunnable, "JBM-expiry-reaper");
+         reaperThread = new Thread(reaperRunnable, "HornetQ-expiry-reaper");
 
          reaperThread.setPriority(reaperPriority);
 

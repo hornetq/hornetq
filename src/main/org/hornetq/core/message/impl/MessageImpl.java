@@ -33,7 +33,7 @@ import org.hornetq.utils.TypedProperties;
 /**
  * A concrete implementation of a message
  *
- * All messages handled by JBM core are of this type
+ * All messages handled by HornetQ core are of this type
  *
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -50,23 +50,23 @@ public abstract class MessageImpl implements Message
 
    private static final Logger log = Logger.getLogger(MessageImpl.class);
 
-   public static final SimpleString HDR_ACTUAL_EXPIRY_TIME = new SimpleString("_JBM_ACTUAL_EXPIRY");
+   public static final SimpleString HDR_ACTUAL_EXPIRY_TIME = new SimpleString("_HQ_ACTUAL_EXPIRY");
 
-   public static final SimpleString HDR_ORIGINAL_DESTINATION = new SimpleString("_JBM_ORIG_DESTINATION");
+   public static final SimpleString HDR_ORIGINAL_DESTINATION = new SimpleString("_HQ_ORIG_DESTINATION");
 
-   public static final SimpleString HDR_ORIG_MESSAGE_ID = new SimpleString("_JBM_ORIG_MESSAGE_ID");
+   public static final SimpleString HDR_ORIG_MESSAGE_ID = new SimpleString("_HQ_ORIG_MESSAGE_ID");
 
-   public static final SimpleString HDR_GROUP_ID = new SimpleString("_JBM_GROUP_ID");
+   public static final SimpleString HDR_GROUP_ID = new SimpleString("_HQ_GROUP_ID");
 
-   public static final SimpleString HDR_SCHEDULED_DELIVERY_TIME = new SimpleString("_JBM_SCHED_DELIVERY");
+   public static final SimpleString HDR_SCHEDULED_DELIVERY_TIME = new SimpleString("_HQ_SCHED_DELIVERY");
    
-   public static final SimpleString HDR_DUPLICATE_DETECTION_ID = new SimpleString("_JBM_DUPL_ID");
+   public static final SimpleString HDR_DUPLICATE_DETECTION_ID = new SimpleString("_HQ_DUPL_ID");
 
-   public static final SimpleString HDR_ROUTE_TO_IDS = new SimpleString("_JBM_ROUTE_TO");
+   public static final SimpleString HDR_ROUTE_TO_IDS = new SimpleString("_HQ_ROUTE_TO");
    
-   public static final SimpleString HDR_FROM_CLUSTER = new SimpleString("_JBM_FROM_CLUSTER");
+   public static final SimpleString HDR_FROM_CLUSTER = new SimpleString("_HQ_FROM_CLUSTER");
 
-   public static final SimpleString HDR_LAST_VALUE_NAME = new SimpleString("_JBM_LVQ_NAME");
+   public static final SimpleString HDR_LAST_VALUE_NAME = new SimpleString("_HQ_LVQ_NAME");
   
    // Attributes ----------------------------------------------------
 

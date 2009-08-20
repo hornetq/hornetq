@@ -104,7 +104,7 @@
         <para>The standard stand-alone messaging server configuration comprises a core messaging
             server, a JMS service and a JNDI service.</para>
         <para>The role of the JMS Service is to deploy any JMS Queues, Topics and ConnectionFactory
-            instances from any server side <literal>jbm-jms.xml</literal> configuration files. It also
+            instances from any server side <literal>hornetq-jms.xml</literal> configuration files. It also
             provides a simple management API for creating and destroying Queues, Topics and
             ConnectionFactory instances which can be accessed via JMX or the connection. It is a
             separate service to the JBoss Messaging core server, since the core server is JMS

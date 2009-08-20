@@ -8,7 +8,7 @@
         <title>Predefined Queues</title>
         <para>Queues can be predefined via configuration at a core level or at a JMS level. Firstly
             lets look at a JMS level.</para>
-        <para>The following shows a queue predefined in the <literal>jbm-jms.xml</literal>
+        <para>The following shows a queue predefined in the <literal>hornetq-jms.xml</literal>
             configuration file.</para>
         <programlisting>&lt;queue name="selectorQueue">
       &lt;entry name="/queue/selectorQueue"/>
@@ -27,7 +27,7 @@
         <para>The durable element specifies whether the queue will be persisted. This again is
             optional and defaults to true if omitted.</para>
         <para>Secondly a queue can be predefined at a core level in the <literal
-                >jbm-configuration.xml</literal> file. The following is an example.</para>
+                >hornetq-configuration.xml</literal> file. The following is an example.</para>
         <programlisting>&lt;queues>     
    	&lt;queue name="jms.queue.selectorQueue">
    	    &lt;address>jms.queue.selectorQueue&lt;/address>
@@ -71,7 +71,7 @@
         <title>Configuring Queues Via Address Settings</title>
         <para>There are some attributes that are defined against a queue rather than a specific
             queue. Here an example of an <literal>address-setting</literal> entry that would be
-            found in the <literal>jbm-configuration.xml</literal> file.</para>
+            found in the <literal>hornetq-configuration.xml</literal> file.</para>
         <programlisting>&lt;address-settings>
     &lt;address-setting match="jms.queue.exampleQueue">
         &lt;dead-letter-address>jms.queue.deadLetterQueue&lt;/dead-letter-address>

@@ -37,7 +37,7 @@ import org.hornetq.utils.SimpleString;
 import org.hornetq.utils.TypedProperties;
 
 /**
- * The JBM SecurityStore implementation
+ * The HornetQ SecurityStore implementation
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>

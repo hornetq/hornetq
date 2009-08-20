@@ -11,15 +11,15 @@
      <h2>Example configuration</h2>
 
      <p>JBoss Messaging can be managed by sending JMS messages with specific properties to its <em>management</em> queue.</p>
-     </p>By default, the management name is called <code>jbm.management</code> but this can be configured in <a href="server0/jbm-configuration.xml">jbm-configuration.xml</a>
+     </p>By default, the management name is called <code>hornetq.management</code> but this can be configured in <a href="server0/hornetq-configuration.xml">hornetq-configuration.xml</a>
      <pre>
-         <code>&lt;management-address&gt;jbm.management&lt;/management-address&gt;</code>
+         <code>&lt;management-address&gt;hornetq.management&lt;/management-address&gt;</code>
      </pre>
      
      <p>The management queue requires a "special" user permission <code>manage</code> to be able to receive management messages.
-         This is also configured in <a href="server0/jbm-configuration.xml">jbm-configuration.xml</a></p>
+         This is also configured in <a href="server0/hornetq-configuration.xml">hornetq-configuration.xml</a></p>
      <pre>
-         <code>&lt;security-setting match="jbm.management"&gt;
+         <code>&lt;security-setting match="hornetq.management"&gt;
             &lt;permission type="manage" roles="guest" /&gt;
          &lt;/security-setting&gt;</code>
      </pre>
@@ -72,7 +72,7 @@
             
         <li>We create the JMS management queue. This is a <em>special</em> queue which is not looked up from JNDI but instantiated directly</li>
         <pre>
-            <code>Queue managementQueue = new JBossQueue("jbm.management", "jbm.management");</code>
+            <code>Queue managementQueue = new JBossQueue("hornetq.management", "hornetq.management");</code>
         </pre>
 
         <li>We create a <code>QueueRequestor</code> to send messages to the management queue and receive replies (see <a href="../queue-requestor/readme.html">queue-requestor example</a>)</li>
@@ -94,7 +94,7 @@
             We use a helper class <a href="../../../docs/api/org/jboss/messaging/jms/server/management/impl/JMSManagementHelper.html">JMSManagementHelper</a> to fill these properties:
             <ul>
                 <li>The name of the resource to manage <code>jms.queue.exampleQueue</code> 
-                    (i.e. <code>jms.queue</code> followed by the name of the queue as defined in <a href="server0/jbm-jms.xml">jbm-jms.xml</a>)</li>
+                    (i.e. <code>jms.queue</code> followed by the name of the queue as defined in <a href="server0/hornetq-jms.xml">hornetq-jms.xml</a>)</li>
                 <li>In our case, the name of the attribute to retrieve <code>MessageCount</code></li>
             </ul>
         </li>

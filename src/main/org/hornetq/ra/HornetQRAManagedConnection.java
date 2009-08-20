@@ -544,7 +544,7 @@ public class HornetQRAManagedConnection implements ManagedConnection, ExceptionL
 
    /**
     * Move a handler from one mc to this one.
-    * @param obj An object of type JBMSession.
+    * @param obj An object of type HornetQSession.
     * @throws ResourceException Failed to associate connection.
     * @throws IllegalStateException ManagedConnection in an illegal state.
     */

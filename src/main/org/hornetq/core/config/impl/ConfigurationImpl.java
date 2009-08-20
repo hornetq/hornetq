@@ -120,11 +120,11 @@ public class ConfigurationImpl implements Configuration
 
    public static final long DEFAULT_TRANSACTION_TIMEOUT_SCAN_PERIOD = 1000;
 
-   public static final SimpleString DEFAULT_MANAGEMENT_ADDRESS = new SimpleString("jbm.management");
+   public static final SimpleString DEFAULT_MANAGEMENT_ADDRESS = new SimpleString("hornetq.management");
 
-   public static final SimpleString DEFAULT_MANAGEMENT_NOTIFICATION_ADDRESS = new SimpleString("jbm.notifications");
+   public static final SimpleString DEFAULT_MANAGEMENT_NOTIFICATION_ADDRESS = new SimpleString("hornetq.notifications");
 
-   public static final String DEFAULT_MANAGEMENT_CLUSTER_USER = "JBM.MANAGEMENT.ADMIN.USER";
+   public static final String DEFAULT_MANAGEMENT_CLUSTER_USER = "HORNETQ.MANAGEMENT.ADMIN.USER";
 
    public static final String DEFAULT_MANAGEMENT_CLUSTER_PASSWORD = "CHANGE ME!!";
 

@@ -23,9 +23,9 @@
             main configuration file.</para>
         <para>The configuration property <literal>large-messages-directory</literal> specifies where
             large messages are stored.</para>
-        <programlisting>&lt;configuration xmlns="urn:jboss:messaging"
+        <programlisting>&lt;configuration xmlns="urn:hornetq"
                xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-               xsi:schemaLocation="urn:jboss:messaging /schema/jbm-configuration.xsd">
+               xsi:schemaLocation="urn:hornetq /schema/hornetq-configuration.xsd">
 
 ...
 
@@ -58,7 +58,7 @@ factory.setMinLargeMessageSize(25 * 1024);</programlisting>
         <section>
             <title>Using JMS</title>
             <para>If JNDI is used to look up the connection factory, the minimum large message size
-                is specified in <literal>jbm-jms.xml</literal></para>
+                is specified in <literal>hornetq-jms.xml</literal></para>
             <programlisting>...
 &lt;connection-factory name="ConnectionFactory">
 &lt;connector-ref connector-name="netty"/>
@@ -116,20 +116,20 @@ factory.setMinLargeMessageSize(25 * 1024);</programlisting>
                             <entry>setBodyInputStream(InputStream)</entry>
                             <entry>Set the InputStream used to read a message body when sending
                                 it.</entry>
-                            <entry>JMS_JBM_InputStream</entry>
+                            <entry>JMS_HQ_InputStream</entry>
                         </row>
                         <row>
                             <entry>setOutputStream(OutputStream)</entry>
                             <entry>Set the OutputStream that will receive the body of a message.
                                 This method does not block.</entry>
-                            <entry>JMS_JBM_OutputStream</entry>
+                            <entry>JMS_HQ_OutputStream</entry>
                         </row>
                         <row>
                             <entry>saveOutputStream(OutputStream)</entry>
                             <entry>Save the body of the message to the <literal
                                     >OutputStream</literal>. It will block until the entire content
                                 is transferred to the <literal>OutputStream</literal>.</entry>
-                            <entry>JMS_JBM_SaveStream</entry>
+                            <entry>JMS_HQ_SaveStream</entry>
                         </row>
                     </tbody>
                 </tgroup>
@@ -165,7 +165,7 @@ msg.setInputStream(dataInputStream);
                 . You can use the method <literal>Message.setObjectProperty</literal> to set the
                 input and output streams.</para>
             <para>The <literal>InputStream</literal> can be defined through the JMS Object Property
-                JMS_JBM_InputStream on messages being sent:</para>
+                JMS_HQ_InputStream on messages being sent:</para>
             <programlisting>
 BytesMessage message = session.createBytesMessage();
 
@@ -173,7 +173,7 @@ FileInputStream fileInputStream = new FileInputStream(fileInput);
 
 BufferedInputStream bufferedInput = new BufferedInputStream(fileInputStream);
 
-message.setObjectProperty("JMS_JBM_InputStream", bufferedInput);
+message.setObjectProperty("JMS_HQ_InputStream", bufferedInput);
 
 someProducer.send(message);</programlisting>
             <para>The <literal>OutputStream</literal> can be set through the JMS Object Property
@@ -191,10 +191,10 @@ BufferedOutputStream bufferedOutput = new BufferedOutputStream(fileOutputStream)
 messageReceived.setObjectProperty("JMS_JBM_SaveStream", bufferedOutput);
             </programlisting>
             <para>Setting the <literal>OutputStream</literal> could also be done in a non blocking
-                way using the property JMS_JBM_InputStream.</para>
+                way using the property JMS_HQ_InputStream.</para>
             <programlisting>
 // This won't wait the stream to finish. You need to keep the consumer active.
-messageReceived.setObjectProperty("JMS_JBM_InputStream", bufferedOutput);
+messageReceived.setObjectProperty("JMS_HQ_InputStream", bufferedOutput);
             </programlisting>
             <note>
                 <para>When using JMS, Streaming large messages are only supported on <literal

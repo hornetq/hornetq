@@ -43,7 +43,7 @@ public class CoreClientOverHttpTest extends UnitTestCase
       conf.setSecurityEnabled(false);
 
       HashMap<String, Object> params = new HashMap<String, Object>();
-      params.put("jbm.remoting.netty.httpenabled", true);
+      params.put("hornetq.remoting.netty.httpenabled", true);
       conf.getAcceptorConfigurations().add(new TransportConfiguration(NETTY_ACCEPTOR_FACTORY, params));
 
       MessagingServer server = Messaging.newMessagingServer(conf, false);
@@ -95,7 +95,7 @@ public class CoreClientOverHttpTest extends UnitTestCase
       conf.setSecurityEnabled(false);
 
       HashMap<String, Object> params = new HashMap<String, Object>();
-      params.put("jbm.remoting.netty.httpenabled", true);
+      params.put("hornetq.remoting.netty.httpenabled", true);
       conf.getAcceptorConfigurations().add(new TransportConfiguration(NETTY_ACCEPTOR_FACTORY, params));
 
       MessagingServer server = Messaging.newMessagingServer(conf, false);

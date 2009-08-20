@@ -40,7 +40,7 @@
     </itemizedlist>
     <para>If you're using JMS, and you're using the JMS Service on the server to load your JMS
         connection factory instances directly into JNDI, then you can specify these parameters in
-        the xml configuration in <literal>jbm-jms.xml</literal>, for example:</para>
+        the xml configuration in <literal>hornetq-jms.xml</literal>, for example:</para>
     <programlisting>
 &lt;connection-factory name="ConnectionFactory"&gt;
 &lt;connector-ref connector-name="netty"/&gt;

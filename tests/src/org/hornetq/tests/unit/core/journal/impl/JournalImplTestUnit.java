@@ -265,9 +265,9 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
       }
       finally
       {
-         filePrefix = "jbm";
+         filePrefix = "hq";
 
-         fileExtension = "jbm";
+         fileExtension = "hq";
       }
    }
 

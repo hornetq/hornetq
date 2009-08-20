@@ -203,7 +203,7 @@ public class SecurityDeployerTest extends UnitTestCase
    
    public void testDeployFromConfigurationFile() throws Exception
    {
-      String xml = "<configuration xmlns='urn:jboss:messaging'> " 
+      String xml = "<configuration xmlns='urn:hornetq'> " 
                  + "<security-settings>"
                  + "   <security-setting match=\"jms.topic.testTopic\">"
                  + "      <permission type=\"createDurableQueue\" roles=\"durpublisher\"/>"

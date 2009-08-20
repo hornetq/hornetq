@@ -69,7 +69,7 @@ server.start();</programlisting>
         <para>You may also choose to use a dependency injection framework such as <trademark>JBoss
                 Micro Container</trademark> or <trademark>Spring Framework</trademark>.</para>
         <para>JBoss Messaging standalone uses JBoss Micro Container as the injection framework.
-                <literal>JBMBootstrapServer</literal> and <literal>jbm-jboss-beans.xml</literal>
+                <literal>HornetQBootstrapServer</literal> and <literal>hornetq-jboss-beans.xml</literal>
             which are part of the JBoss Messaging distribution provide a very complete
             implementation of what's needed to bootstrap the server using JBoss Micro Container. </para>
         <para>When using JBoss Micro Container, you need to provide a XML declaring the <literal
@@ -95,10 +95,10 @@ server.start();</programlisting>
       &lt;/constructor>         
    &lt;/bean>
    &lt;/deployment></programlisting>
-        <para><literal>JBMBootstrapServer</literal> provides an easy encapsulation of JBoss Micro
+        <para><literal>HornetQBootstrapServer</literal> provides an easy encapsulation of JBoss Micro
             Container.</para>
-        <programlisting>JBMBootstrapServer bootStrap = 
-        new JBMBootstrapServer(new String[] {"jbm-jboss-beans.xml"});
+        <programlisting>HornetQBootstrapServer bootStrap = 
+        new HornetQBootstrapServer(new String[] {"hornetq-jboss-beans.xml"});
         bootStrap.run();</programlisting>
     </section>
     <section>

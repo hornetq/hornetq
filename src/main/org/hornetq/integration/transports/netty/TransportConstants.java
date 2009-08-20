@@ -20,45 +20,45 @@ package org.hornetq.integration.transports.netty;
  */
 public class TransportConstants
 {
-   public static final String SSL_ENABLED_PROP_NAME = "jbm.remoting.netty.sslenabled";
+   public static final String SSL_ENABLED_PROP_NAME = "hornetq.remoting.netty.sslenabled";
 
-   public static final String HTTP_ENABLED_PROP_NAME = "jbm.remoting.netty.httpenabled";
+   public static final String HTTP_ENABLED_PROP_NAME = "hornetq.remoting.netty.httpenabled";
 
-   public static final String HTTP_CLIENT_IDLE_PROP_NAME = "jbm.remoting.netty.httpclientidletime";
+   public static final String HTTP_CLIENT_IDLE_PROP_NAME = "hornetq.remoting.netty.httpclientidletime";
 
-   public static final String HTTP_CLIENT_IDLE_SCAN_PERIOD = "jbm.remoting.netty.httpclientidlescanperiod";
+   public static final String HTTP_CLIENT_IDLE_SCAN_PERIOD = "hornetq.remoting.netty.httpclientidlescanperiod";
 
-   public static final String HTTP_RESPONSE_TIME_PROP_NAME = "jbm.remoting.netty.httpresponsetime";
+   public static final String HTTP_RESPONSE_TIME_PROP_NAME = "hornetq.remoting.netty.httpresponsetime";
 
-   public static final String HTTP_SERVER_SCAN_PERIOD_PROP_NAME = "jbm.remoting.netty.httpserverscanperiod";
+   public static final String HTTP_SERVER_SCAN_PERIOD_PROP_NAME = "hornetq.remoting.netty.httpserverscanperiod";
 
-   public static final String HTTP_REQUIRES_SESSION_ID = "jbm.remoting.netty.httprequiressessionid";
+   public static final String HTTP_REQUIRES_SESSION_ID = "hornetq.remoting.netty.httprequiressessionid";
 
-   public static final String USE_SERVLET_PROP_NAME = "jbm.remoting.netty.useservlet";
+   public static final String USE_SERVLET_PROP_NAME = "hornetq.remoting.netty.useservlet";
 
-   public static final String SERVLET_PATH = "jbm.remoting.netty.servletpath";
+   public static final String SERVLET_PATH = "hornetq.remoting.netty.servletpath";
 
-   public static final String USE_NIO_PROP_NAME = "jbm.remoting.netty.usenio";
+   public static final String USE_NIO_PROP_NAME = "hornetq.remoting.netty.usenio";
 
-   public static final String USE_INVM_PROP_NAME = "jbm.remoting.netty.useinvm";
+   public static final String USE_INVM_PROP_NAME = "hornetq.remoting.netty.useinvm";
 
-   public static final String HOST_PROP_NAME = "jbm.remoting.netty.host";
+   public static final String HOST_PROP_NAME = "hornetq.remoting.netty.host";
 
-   public static final String PORT_PROP_NAME = "jbm.remoting.netty.port";
+   public static final String PORT_PROP_NAME = "hornetq.remoting.netty.port";
 
-   public static final String KEYSTORE_PATH_PROP_NAME = "jbm.remoting.netty.keystorepath";
+   public static final String KEYSTORE_PATH_PROP_NAME = "hornetq.remoting.netty.keystorepath";
 
-   public static final String KEYSTORE_PASSWORD_PROP_NAME = "jbm.remoting.netty.keystorepassword";
+   public static final String KEYSTORE_PASSWORD_PROP_NAME = "hornetq.remoting.netty.keystorepassword";
 
-   public static final String TRUSTSTORE_PATH_PROP_NAME = "jbm.remoting.netty.truststorepath";
+   public static final String TRUSTSTORE_PATH_PROP_NAME = "hornetq.remoting.netty.truststorepath";
 
-   public static final String TRUSTSTORE_PASSWORD_PROP_NAME = "jbm.remoting.netty.truststorepassword";
+   public static final String TRUSTSTORE_PASSWORD_PROP_NAME = "hornetq.remoting.netty.truststorepassword";
 
-   public static final String TCP_NODELAY_PROPNAME = "jbm.remoting.netty.tcpnodelay";
+   public static final String TCP_NODELAY_PROPNAME = "hornetq.remoting.netty.tcpnodelay";
 
-   public static final String TCP_SENDBUFFER_SIZE_PROPNAME = "jbm.remoting.netty.tcpsendbuffersize";
+   public static final String TCP_SENDBUFFER_SIZE_PROPNAME = "hornetq.remoting.netty.tcpsendbuffersize";
 
-   public static final String TCP_RECEIVEBUFFER_SIZE_PROPNAME = "jbm.remoting.netty.tcpreceivebuffersize";
+   public static final String TCP_RECEIVEBUFFER_SIZE_PROPNAME = "hornetq.remoting.netty.tcpreceivebuffersize";
 
    public static final boolean DEFAULT_SSL_ENABLED = false;
 
@@ -98,6 +98,6 @@ public class TransportConstants
 
    public static final boolean DEFAULT_HTTP_REQUIRES_SESSION_ID = false;
 
-   public static final String DEFAULT_SERVLET_PATH = "/messaging/JBMServlet";
+   public static final String DEFAULT_SERVLET_PATH = "/messaging/HornetQServlet";
 
 }

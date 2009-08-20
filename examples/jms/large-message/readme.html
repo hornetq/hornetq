@@ -36,7 +36,7 @@
            <code>Queue queue = (Queue)initialContext.lookup("/queue/exampleQueue");</code>
         </pre>
 
-        <li>Perform a lookup on the Connection Factory. This ConnectionFactory has a special attribute set on it. jbm-jms.xml)
+        <li>Perform a lookup on the Connection Factory. This ConnectionFactory has a special attribute set on it. hornetq-jms.xml)
             Messages with more than 10K are considered large.</li>
         <pre>
            <code>ConnectionFactory cf = (ConnectionFactory)initialContext.lookup("/ConnectionFactory");</code>
@@ -77,7 +77,7 @@
          
          BufferedInputStream bufferedInput = new BufferedInputStream(fileInputStream);
          
-         message.setObjectProperty("JMS_JBM_InputStream", bufferedInput);
+         message.setObjectProperty("JMS_HQ_InputStream", bufferedInput);
         </code></pre>
         
         <li>Send the Message.</li>
@@ -153,7 +153,7 @@
          
          <li>This will save the stream and wait until the entire message is written before continuing.</li> 
         <pre><code>
-         messageReceived.setObjectProperty("JMS_JBM_SaveStream", bufferedOutput);
+         messageReceived.setObjectProperty("JMS_HQ_SaveStream", bufferedOutput);
         </code></pre>
         
         <li>Be sure to close our resources!</li>

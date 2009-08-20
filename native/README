@@ -1,5 +1,5 @@
 
-This is a simple tutorial on compiling libJBMLibAIO.so
+This is a simple tutorial on compiling libHornetQLibAIO.so
 
 DEPENDENCIES
 
@@ -41,7 +41,7 @@ if you are missing any dependencies, autoconf would tell you what you're missing
 
 COMPILED FILE
 
-The produced file will be under ./src/.libs/libJBMLibAIO.so
+The produced file will be under ./src/.libs/libHornetQLibAIO.so
 
 
 PERF-DISK

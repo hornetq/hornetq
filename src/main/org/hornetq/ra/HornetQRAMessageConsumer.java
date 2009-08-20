@@ -248,7 +248,7 @@ public class HornetQRAMessageConsumer implements MessageConsumer
 
       if (trace)
       {
-         log.trace("new JBMMessageConsumer " + this + " consumer=" + consumer + " session=" + session);
+         log.trace("new HornetQMessageConsumer " + this + " consumer=" + consumer + " session=" + session);
       }
    }
 

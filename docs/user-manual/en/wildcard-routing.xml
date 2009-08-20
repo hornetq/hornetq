@@ -12,7 +12,7 @@
         <para>In JMS terminology this allows "topic hierarchies" to be created.</para>
     </note>
     <para>To enable this functionality set the property <literal>wild-card-routing-enabled</literal>
-        in the <literal>jbm-configuration.xml</literal> file to <literal>true</literal>. This is
+        in the <literal>hornetq-configuration.xml</literal> file to <literal>true</literal>. This is
             <literal>true</literal> by default.</para>
     <para>For more information on the wild card syntax take a look at <xref
             linkend="wildcard-syntax" /> chapter, also see <xref

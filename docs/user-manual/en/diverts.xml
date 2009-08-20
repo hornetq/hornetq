@@ -25,7 +25,7 @@
         thought of as a type of routing table for messages. Combining diverts with bridges allows
         you to create a distributed network of reliable routing connections between multiple
         geographically distributed servers, creating your global messaging mesh.</para>
-    <para>Diverts are defined as xml in the <literal>jbm-configuration.xml</literal> file. There can
+    <para>Diverts are defined as xml in the <literal>hornetq-configuration.xml</literal> file. There can
         be zero or more diverts in the file.</para>
     <para>Please see <xref linkend="divert-example" /> for a full working
         example showing you how to configure and use diverts.</para>

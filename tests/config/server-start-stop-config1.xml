@@ -1,6 +1,6 @@
-<configuration xmlns="urn:jboss:messaging"
+<configuration xmlns="urn:hornetq"
             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-            xsi:schemaLocation="urn:jboss:messaging /schema/jbm-configuration.xsd">
+            xsi:schemaLocation="urn:hornetq /schema/hornetq-configuration.xsd">
 
    <connectors>
       <connector name="netty-connector">
@@ -8,7 +8,7 @@
       </connector>
    </connectors>
    
-   <journal-directory>/tmp/jbm-unit-test/start-stop-data</journal-directory>
+   <journal-directory>/tmp/hornetq-unit-test/start-stop-data</journal-directory>
    
    <acceptors>
       <acceptor name="netty-acceptor">

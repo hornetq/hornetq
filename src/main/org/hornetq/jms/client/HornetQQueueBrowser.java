@@ -253,7 +253,7 @@ public class HornetQQueueBrowser implements QueueBrowser
       this.queue = queue;
       if (messageSelector != null)
       {
-         this.filterString = new SimpleString(SelectorTranslator.convertToJBMFilterString(messageSelector));
+         this.filterString = new SimpleString(SelectorTranslator.convertToHornetQFilterString(messageSelector));
       }
    }
 
@@ -340,15 +340,15 @@ public class HornetQQueueBrowser implements QueueBrowser
 
       public Object nextElement()
       {
-         HornetQMessage jbm;
+         HornetQMessage msg;
          if (hasMoreElements())
          {
             ClientMessage next = current;
             current = null;
-            jbm = HornetQMessage.createMessage(next, session);
+            msg = HornetQMessage.createMessage(next, session);
             try
             {
-               jbm.doBeforeReceive();
+               msg.doBeforeReceive();
             }
             catch (Exception e)
             {
@@ -356,7 +356,7 @@ public class HornetQQueueBrowser implements QueueBrowser
 
                return null;
             }
-            return jbm;
+            return msg;
          }
          else
          {

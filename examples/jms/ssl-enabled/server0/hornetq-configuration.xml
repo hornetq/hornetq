@@ -1,0 +1,46 @@
+<configuration xmlns="urn:hornetq"
+            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+            xsi:schemaLocation="urn:hornetq /schema/hornetq-configuration.xsd">
+
+   <!-- Connectors -->
+
+   <connectors>
+      <connector name="netty-ssl-connector">
+         <factory-class>org.hornetq.integration.transports.netty.NettyConnectorFactory</factory-class>
+         <param key="hornetq.remoting.netty.host" value="localhost" type="String"/>
+         <param key="hornetq.remoting.netty.port" value="5500" type="Integer"/>	                     
+         <param key="hornetq.remoting.netty.sslenabled" value="true" type="Boolean"/>
+         <param key="hornetq.remoting.netty.keystorepath" value="server0/hornetq.example.keystore" type="String"/>
+         <param key="hornetq.remoting.netty.keystorepassword" value="hornetqexample" type="String"/>
+      </connector>
+   </connectors>
+   
+   <!-- Acceptors -->
+   <acceptors>
+      <acceptor name="netty-ssl-acceptor">
+         <factory-class>org.hornetq.integration.transports.netty.NettyAcceptorFactory</factory-class>
+         <param key="hornetq.remoting.netty.host" value="localhost" type="String"/>
+         <param key="hornetq.remoting.netty.port" value="5500" type="Integer"/>	                     
+         <param key="hornetq.remoting.netty.sslenabled" value="true" type="Boolean"/>
+         <param key="hornetq.remoting.netty.keystorepath" value="hornetq.example.keystore" type="String"/>
+         <param key="hornetq.remoting.netty.keystorepassword" value="hornetqexample" type="String"/>
+         <param key="hornetq.remoting.netty.truststorepath" value="hornetq.example.truststore" type="String"/>
+         <param key="hornetq.remoting.netty.truststorepassword" value="hornetqexample" type="String"/>
+      </acceptor>
+   </acceptors>
+
+   <!-- Other config -->
+
+   <security-settings>
+      <!--security for example queue-->
+      <security-setting match="jms.queue.exampleQueue">
+         <permission type="createDurableQueue" roles="guest"/>
+         <permission type="deleteDurableQueue" roles="guest"/>
+         <permission type="createTempQueue" roles="guest"/>
+         <permission type="deleteTempQueue" roles="guest"/>
+         <permission type="consume" roles="guest"/>
+         <permission type="send" roles="guest"/>
+      </security-setting>
+   </security-settings>
+   
+</configuration>

@@ -30,7 +30,7 @@ import java.util.Set;
 
 /**
  * This implementation delegates to the JBoss AS security interfaces (which in turn use JAAS)
- * It can be used when running JBM in JBoss AS
+ * It can be used when running HornetQ in JBoss AS
  *
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>

@@ -41,7 +41,7 @@ public class DestinationObjectFactory implements ObjectFactory
    {
       Reference r = (Reference)ref;
       
-      byte[] bytes = (byte[])r.get("JBM-DEST").getContent();
+      byte[] bytes = (byte[])r.get("HornetQ-DEST").getContent();
       
       // Deserialize
       return (HornetQDestination)SerializableObjectRefAddr.deserialize(bytes);

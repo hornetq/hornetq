@@ -74,12 +74,12 @@ public class VersionLoader
          try
          {
             versionProps.load(in);
-            String versionName = versionProps.getProperty("messaging.version.versionName");
-            int majorVersion = Integer.valueOf(versionProps.getProperty("messaging.version.majorVersion"));
-            int minorVersion = Integer.valueOf(versionProps.getProperty("messaging.version.minorVersion"));
-            int microVersion = Integer.valueOf(versionProps.getProperty("messaging.version.microVersion"));
-            int incrementingVersion = Integer.valueOf(versionProps.getProperty("messaging.version.incrementingVersion"));
-            String versionSuffix = versionProps.getProperty("messaging.version.versionSuffix");
+            String versionName = versionProps.getProperty("hornetq.version.versionName");
+            int majorVersion = Integer.valueOf(versionProps.getProperty("hornetq.version.majorVersion"));
+            int minorVersion = Integer.valueOf(versionProps.getProperty("hornetq.version.minorVersion"));
+            int microVersion = Integer.valueOf(versionProps.getProperty("hornetq.version.microVersion"));
+            int incrementingVersion = Integer.valueOf(versionProps.getProperty("hornetq.version.incrementingVersion"));
+            String versionSuffix = versionProps.getProperty("hornetq.version.versionSuffix");
             return new VersionImpl(versionName,
                                    majorVersion,
                                    minorVersion,

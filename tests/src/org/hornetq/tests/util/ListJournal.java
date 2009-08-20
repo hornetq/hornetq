@@ -61,8 +61,8 @@ public class ListJournal
                                                0,
                                                0,
                                                new NIOSequentialFileFactory(fileConf.getJournalDirectory()),
-                                               "jbm-data",
-                                               "jbm",
+                                               "hornetq-data",
+                                               "hq",
                                                fileConf.getJournalMaxAIO());
 
          ArrayList<RecordInfo> records = new ArrayList<RecordInfo>();

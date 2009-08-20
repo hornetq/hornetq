@@ -210,7 +210,7 @@ import javax.transaction.xa.Xid;
 import org.hornetq.core.logging.Logger;
 
 /**
- * JBMXAResource.
+ * HornetQXAResource.
  * 
  * @author <a href="adrian@jboss.com">Adrian Brock</a>
  * @author <a href="jesper.pedersen@jboss.org">Jesper Pedersen</a>
@@ -231,7 +231,7 @@ public class HornetQRAXAResource implements XAResource
    private final XAResource xaResource;
 
    /**
-    * Create a new JBMXAResource.
+    * Create a new HornetQXAResource.
     * @param managedConnection the managed connection
     * @param xaResource the xa resource
     */

@@ -16,7 +16,7 @@
      <h2>Example configuration</h2>
 
      <p>JBoss Messaging can configured to send JMS messages when management notifications are emitted on the server.</p>
-     <p>By default, the management name is called <code>jbm.notifications</code> but this can be configured in <a href="server0/jbm-configuration.xml">jbm-configuration.xml</a>.
+     <p>By default, the management name is called <code>hornetq.notifications</code> but this can be configured in <a href="server0/hornetq-configuration.xml">hornetq-configuration.xml</a>.
         For this example, we will set it to <code>example.notifications</code>.</p>
       <pre>
          <code>&lt;management-notification-address&gt;example.notifications&lt;/management-notification-address&gt;</code>
@@ -31,14 +31,14 @@
          &lt;/queues&gt;</code>
      </pre>
      
-     <p>Since we want to lookup the notifications queue using JNDI, we also declare it in  <a href="server0/jbm-jms.xml">jbm-jms.xml</a>
+     <p>Since we want to lookup the notifications queue using JNDI, we also declare it in  <a href="server0/hornetq-jms.xml">hornetq-jms.xml</a>
      <pre>
          <code>&lt;queue name="notificationsQueue"&gt;
             &lt;entry name="/queue/notificationsQueue"/&gt;
          &lt;/queue&gt;</code>
      </pre>
      <p>The notification queue requires permission to create/delete temporary queues and consume messages.
-         This is also configured in <a href="server0/jbm-configuration.xml">jbm-configuration.xml</a></p>
+         This is also configured in <a href="server0/hornetq-configuration.xml">hornetq-configuration.xml</a></p>
      <pre>
          <code><!--security for notification queue-->
          &lt;security-setting match="example.notifications"&gt;
@@ -121,12 +121,12 @@
         <pre>
             <code>------------------------
             Received notification:
-              _JBM_RoutingName: jms.queue.exampleQueue
-              _JBM_Address: jms.queue.exampleQueue
+              _HQ_RoutingName: jms.queue.exampleQueue
+              _HQ_Address: jms.queue.exampleQueue
               ...
-              _JBM_ConsumerCount: 1
+              _HQ_ConsumerCount: 1
               ...
-              _JBM_NotifType: CONSUMER_CREATED
+              _HQ_NotifType: CONSUMER_CREATED
             ------------------------</code>
         </pre>
         <p>The notification tells us that a consumer was created for the JMS queue <code>exampleQueue</code>. When the notification
@@ -141,12 +141,12 @@
         <pre>
             <code>------------------------
             Received notification:
-              _JBM_RoutingName: jms.queue.exampleQueue
-              _JBM_Address: jms.queue.exampleQueue
+              _HQ_RoutingName: jms.queue.exampleQueue
+              _HQ_Address: jms.queue.exampleQueue
               ...
-              _JBM_ConsumerCount: 0
+              _HQ_ConsumerCount: 0
               ...
-              _JBM_NotifType: CONSUMER_CLOSED
+              _HQ_NotifType: CONSUMER_CLOSED
             ------------------------</code>
         </pre>
         <p>The notification tells us that a consumer was closed for the JMS queue <code>exampleQueue</code>. When the notification
@@ -166,9 +166,9 @@
         <pre>
             <code>------------------------
             Received notification:
-              _JBM_User: not.a.valid.user
+              _HQ_User: not.a.valid.user
               ...
-              _JBM_NotifType: SECURITY_AUTHENTICATION_VIOLATION
+              _HQ_NotifType: SECURITY_AUTHENTICATION_VIOLATION
             ------------------------
             </code>
         </pre>

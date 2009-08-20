@@ -94,7 +94,7 @@ public class LargeMessageExample extends HornetQExample
          FileInputStream fileInputStream = new FileInputStream(fileInput);
          BufferedInputStream bufferedInput = new BufferedInputStream(fileInputStream);
 
-         message.setObjectProperty("JMS_JBM_InputStream", bufferedInput);
+         message.setObjectProperty("JMS_HQ_InputStream", bufferedInput);
 
          System.out.println("Sending the huge message.");
 
@@ -162,7 +162,7 @@ public class LargeMessageExample extends HornetQExample
          BufferedOutputStream bufferedOutput = new BufferedOutputStream(fileOutputStream);
 
          // Step 14. This will save the stream and wait until the entire message is written before continuing.
-         messageReceived.setObjectProperty("JMS_JBM_SaveStream", bufferedOutput);
+         messageReceived.setObjectProperty("JMS_HQ_SaveStream", bufferedOutput);
 
          fileOutputStream.close();
 

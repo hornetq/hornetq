@@ -65,9 +65,9 @@ public class FilterTest  extends UnitTestCase
       testInvalidFilter(null);
    }
    
-   public void testJBMDurable() throws Exception
+   public void testHQDurable() throws Exception
    {
-      filter = new FilterImpl(new SimpleString("JBMDurable='DURABLE'"));
+      filter = new FilterImpl(new SimpleString("HQDurable='DURABLE'"));
       
       message.setDurable(true);
       
@@ -77,7 +77,7 @@ public class FilterTest  extends UnitTestCase
       
       assertFalse(filter.match(message));
       
-      filter = new FilterImpl(new SimpleString("JBMDurable='NON_DURABLE'"));
+      filter = new FilterImpl(new SimpleString("HQDurable='NON_DURABLE'"));
       
       message = new ServerMessageImpl();
       message.setDurable(true);
@@ -90,14 +90,14 @@ public class FilterTest  extends UnitTestCase
       
    }
    
-   public void testJBMSize() throws Exception
+   public void testHQSize() throws Exception
    {
       message.setDestination(RandomUtil.randomSimpleString());      
       message.setBody(ChannelBuffers.wrappedBuffer(RandomUtil.randomBytes(1)));
       assertTrue(message.getEncodeSize() < 1024);
       
-      Filter moreThan128 = new FilterImpl(new SimpleString("JBMSize > 128"));
-      Filter lessThan1024 = new FilterImpl(new SimpleString("JBMSize < 1024"));
+      Filter moreThan128 = new FilterImpl(new SimpleString("HQSize > 128"));
+      Filter lessThan1024 = new FilterImpl(new SimpleString("HQSize < 1024"));
       
       assertFalse(moreThan128.match(message));
       assertTrue(lessThan1024.match(message));
@@ -109,9 +109,9 @@ public class FilterTest  extends UnitTestCase
 
    }
 
-   public void testJBMPriority() throws Exception
+   public void testHQPriority() throws Exception
    {
-      filter = new FilterImpl(new SimpleString("JBMPriority=3"));
+      filter = new FilterImpl(new SimpleString("HQPriority=3"));
       
       for (int i = 0; i < 10; i++)
       {         
@@ -128,9 +128,9 @@ public class FilterTest  extends UnitTestCase
       }
    }
    
-   public void testJBMTimestamp() throws Exception
+   public void testHQTimestamp() throws Exception
    {
-      filter = new FilterImpl(new SimpleString("JBMTimestamp=12345678"));
+      filter = new FilterImpl(new SimpleString("HQTimestamp=12345678"));
       
       message.setTimestamp(87654321);
       

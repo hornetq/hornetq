@@ -10,7 +10,7 @@
         rollback any it finds. The default for this is 60000 milliseconds (1 minute), i.e. any
         transactions older than 60 seconds are removed, however this can be changed by editing the
             <literal>transaction-timeout</literal> property in <literal
-            >jbm-configuration.xml</literal>. The property <literal
+            >hornetq-configuration.xml</literal>. The property <literal
             >transaction-timeout-scan-period</literal> configures how often, in milliseconds, to
         scan for old transactions.</para>
 </chapter>

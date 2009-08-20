@@ -6,7 +6,7 @@
     <section id="server.configuration">
         <title>Server Configuration</title>
         <section>
-            <title>jbm-configuration.xml</title>
+            <title>hornetq-configuration.xml</title>
             <para>This is the main core server configuration file.</para>
             <table frame="topbot" border="2">
                 <title>Server Configuration</title>
@@ -773,7 +773,7 @@
             </table>
         </section>
         <section>
-            <title>jbm-jms.xml</title>
+            <title>hornetq-jms.xml</title>
             <para>This is the configuration file used by the server side JMS service to load JMS
                 Queues, Topics and Connection Factories.</para>
             <table frame="topbot" border="2">

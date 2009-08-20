@@ -16,13 +16,13 @@ system property (which defaults to server0). To run a 2nd server with a configur
 server1 dir contains a copy of server0 with different settings.
 
 To run a server with the same configuration but on a different host, change:
-* jbm.remoting.netty.host property in jbm-configuration.xml
-* bindAddress and rmiBindAddress properties in jbm-jboss-beans.xml
+* hornetq.remoting.netty.host property in hornetq-configuration.xml
+* bindAddress and rmiBindAddress properties in hornetq-jboss-beans.xml
 
 Configure Server Dump
 =====================
 
-The server can "dump" info at regular interval. In jbm-configuration.xml, set
+The server can "dump" info at regular interval. In hornetq-configuration.xml, set
 
    <server-dump-interval>10000</server-dump-interval>
 

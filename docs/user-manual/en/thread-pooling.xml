@@ -19,7 +19,7 @@
                 that require running periodically or with delays. It maps internally to a <literal
                     >java.util.concurrent.ScheduledThreadPoolExecutor</literal> instance.</para>
             <para>The maximum number of thread used by this pool is configure in <literal
-                    >jbm-configuration.xml</literal> with the <literal
+                    >hornetq-configuration.xml</literal> with the <literal
                     >scheduled-thread-pool-max-size</literal> parameter. The default value is
                     <literal>5</literal> threads. A small number of threads is usually sufficient
                 for this pool.</para>
@@ -30,7 +30,7 @@
                 server side. It maps internally to a <literal
                     >java.util.concurrent.ThreadPoolExecutor</literal> instance.</para>
             <para>The maximum number of thread used by this pool is configure in <literal
-                    >jbm-configuration.xml</literal> with the <literal
+                    >hornetq-configuration.xml</literal> with the <literal
                     >thread-pool-max-size</literal> parameter.</para>
             <para>If a value of <literal>-1</literal> is used this signifies that the thread pool
                 has no upper bound and new threads will be created on demand if there are enough
@@ -93,7 +93,7 @@ myFactory.setUseGlobalPools(false);
 myFactory.setScheduledThreadPoolMaxSize(10);
 myFactory.setThreadPoolMaxSize(-1);        </programlisting>
         <para>If you're using JNDI to instantiate <literal>JBossConnectionFactory</literal>
-            instances, you can also set these parameters in the <literal>jbm-jms.xml</literal> file
+            instances, you can also set these parameters in the <literal>hornetq-jms.xml</literal> file
             where you describe your connection factory, for example:</para>
         <programlisting>&lt;connection-factory name="ConnectionFactory"&gt;
     &lt;connector-ref connector-name="netty"/&gt;

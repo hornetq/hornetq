@@ -48,17 +48,17 @@ run:
 init:
 
 compile:
-     [echo] src.example.dir=/home/andy/projects/JBMTrunk/examples/jms/queue/src
-    [javac] Compiling 5 source files to /home/andy/projects/JBMTrunk/examples/jms/queue
+     [echo] src.example.dir=/home/andy/projects/HornetQTrunk/examples/jms/queue/src
+    [javac] Compiling 5 source files to /home/andy/projects/HornetQTrunk/examples/jms/queue
 /build/classes
 
 runExample:
-     [java] 10:41:04,149 INFO  @main [JMSExample] jbm.example.runServer is true
+     [java] 10:41:04,149 INFO  @main [JMSExample] hornetq.example.runServer is true
      [java] 10:41:04,149 INFO  @main [JMSExample] starting server with config 'server0'
  logServerOutput true
      [java] 10:41:04,149 INFO  @main [JMSExample] and vm args: -Xms512M,-Xmx512M,-XX:+U
 seParallelGC,-XX:+AggressiveOpts,-XX:+UseFastAccessorMethods,-Djava.util.logging.config.
-file=/home/andy/projects/JBMTrunk/examples/jms/common/../../../src/config/stand-alone/no
+file=/home/andy/projects/HornetQTrunk/examples/jms/common/../../../src/config/stand-alone/no
 n-clustered/logging.properties
      [java] org.hornetq.jms.example.SpawnedJMSServer out:10:41:08,437 INFO  @main [Journal
 StorageManager] AIO journal selected
@@ -82,7 +82,7 @@ erManagerImpl] Binding for java:/ConnectionFactory already exists
 erManagerImpl] Binding for java:/XAConnectionFactory already exists
      [java] org.hornetq.jms.example.SpawnedJMSServer out:10:41:11,241 INFO  @main [Messagi
 ngServerImpl] JBoss Messaging Server version 2.0.0.BETA1-SNAPSHOT (Stilton, 101) started
-     [java] org.hornetq.jms.example.SpawnedJMSServer out:10:41:11,241 INFO  @main [JBMBoot
+     [java] org.hornetq.jms.example.SpawnedJMSServer out:10:41:11,241 INFO  @main [HornetQBoot
 strapServer] JBoss Messaging server started
      [java] org.hornetq.jms.example.SpawnedJMSServer out:STARTED::
      [java] 10:41:11,276 INFO  @main [JMSExample] using server0/client-jndi.properties f
@@ -127,20 +127,20 @@ deploy:
 
 deploy-resources:
      [copy] Copying 1 file to /home/andy/projects/jbossas5.1/build/output/jboss-5.1.0.GA
-     /server/default-with-jbm2/deploy/messaging.sar
+     /server/default-with-hornetq/deploy/messaging.sar
      [copy] Copying 1 file to /home/andy/projects/jbossas5.1/build/output/jboss-5.1.0.GA
-     /server/default-with-jbm2/deploy/messaging.sar
+     /server/default-with-hornetq/deploy/messaging.sar
 
 init:
 
 compile:
 
 jar:
-      [jar] Building jar: /home/andy/projects/JBMTrunk/examples/javaee/mdb/build/mdb-exa
+      [jar] Building jar: /home/andy/projects/HornetQTrunk/examples/javaee/mdb/build/mdb-exa
       mple.jar
 
 ear:
-      [jar] Building jar: /home/andy/projects/JBMTrunk/examples/javaee/mdb/build/mdb-exa
+      [jar] Building jar: /home/andy/projects/HornetQTrunk/examples/javaee/mdb/build/mdb-exa
       mple.ear
 
 deploy-ear:
@@ -199,11 +199,11 @@ undeploy:
 
 undeploy-misc:
    [delete] Deleting: /home/andy/projects/jbossas5.1/build/output/jboss-5.1.0.GA
-   /server/default-with-jbm2/deploy/mdb-example.ear
+   /server/default-with-hornetq/deploy/mdb-example.ear
    [delete] Deleting: /home/andy/projects/jbossas5.1/build/output/jboss-5.1.0.GA
-   /server/default-with-jbm2/deploy/messaging.sar/jbm-queues.xml
+   /server/default-with-hornetq/deploy/messaging.sar/hornetq-queues.xml
    [delete] Deleting: /home/andy/projects/jbossas5.1/build/output/jboss-5.1.0.GA
-   /server/default-with-jbm2/deploy/messaging.sar/jbm-jms.xml
+   /server/default-with-hornetq/deploy/messaging.sar/hornetq-jms.xml
 
 BUILD SUCCESSFUL
 Total time: 1 second

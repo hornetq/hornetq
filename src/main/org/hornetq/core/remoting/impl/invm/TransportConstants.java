@@ -20,5 +20,5 @@ package org.hornetq.core.remoting.impl.invm;
  */
 public class TransportConstants
 {
-   public static final String SERVER_ID_PROP_NAME = "jbm.remoting.invm.serverid";
+   public static final String SERVER_ID_PROP_NAME = "hornetq.remoting.invm.serverid";
 }

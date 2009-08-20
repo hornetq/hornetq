@@ -281,7 +281,7 @@ public class HornetQSession implements Session, XASession, QueueSession, XAQueue
 
    public static final int PRE_ACKNOWLEDGE = 100;
 
-   private static SimpleString REJECTING_FILTER = new SimpleString("_JBMX=-1");
+   private static SimpleString REJECTING_FILTER = new SimpleString("_HQX=-1");
 
    // Static --------------------------------------------------------
 
@@ -361,11 +361,11 @@ public class HornetQSession implements Session, XASession, QueueSession, XAQueue
    {
       checkClosed();
 
-      HornetQObjectMessage jbm = new HornetQObjectMessage(session);
+      HornetQObjectMessage msg = new HornetQObjectMessage(session);
 
-      jbm.setObject(object);
+      msg.setObject(object);
 
-      return jbm;
+      return msg;
    }
 
    public StreamMessage createStreamMessage() throws JMSException
@@ -386,11 +386,11 @@ public class HornetQSession implements Session, XASession, QueueSession, XAQueue
    {
       checkClosed();
 
-      HornetQTextMessage jbm = new HornetQTextMessage(session);
+      HornetQTextMessage msg = new HornetQTextMessage(session);
 
-      jbm.setText(text);
+      msg.setText(text);
 
-      return jbm;
+      return msg;
    }
 
    public boolean getTransacted() throws JMSException
@@ -702,7 +702,7 @@ public class HornetQSession implements Session, XASession, QueueSession, XAQueue
 
          if (selectorString != null)
          {
-            coreFilterString = new SimpleString(SelectorTranslator.convertToJBMFilterString(selectorString));
+            coreFilterString = new SimpleString(SelectorTranslator.convertToHornetQFilterString(selectorString));
          }
 
          ClientConsumer consumer;

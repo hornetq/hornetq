@@ -87,7 +87,7 @@
     <section id="configuring.bindings.journal">
         <title>Configuring the bindings journal</title>
         <para>The bindings journal is configured using the following attributes in <literal
-                >jbm-configuration.xml</literal></para>
+                >hornetq-configuration.xml</literal></para>
         <itemizedlist>
             <listitem>
                 <para><literal>bindings-directory</literal></para>
@@ -106,7 +106,7 @@
     <section id="configuring.message.journal">
         <title>Configuring the message journal</title>
         <para>The message journal is configured using the following attributes in <literal
-                >jbm-configuration.xml</literal></para>
+                >hornetq-configuration.xml</literal></para>
         <itemizedlist>
             <listitem id="configuring.message.journal.journal-directory">
                 <para><literal>journal-directory</literal></para>
@@ -242,7 +242,7 @@
         <para> In some situations, zero persistence is sometimes required for a messaging system.
             Configuring JBoss Messaging to perform zero persistence is straightforward. Simply set
             the parameter <literal>persistence-enabled</literal> in <literal
-                >jbm-configuration.xml</literal> to <literal>false</literal>. </para>
+                >hornetq-configuration.xml</literal> to <literal>false</literal>. </para>
         <para>Please note that if you set this parameter to false, then <emphasis>zero</emphasis>
             persistence will occur. That means no bindings data, message data, large message data,
             duplicate id caches or paging data will be persisted.</para>

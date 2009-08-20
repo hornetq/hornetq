@@ -50,7 +50,7 @@ public class QueueDeployerTest extends UnitTestCase
 
    public void testParseQueueConfigurationFromAddressSettings() throws Exception
    {
-      String xml = "<configuration xmlns='urn:jboss:messaging'>" + "   <queues>"
+      String xml = "<configuration xmlns='urn:hornetq'>" + "   <queues>"
                    + "      <queue name='foo'>"
                    + "         <address>bar</address>"
                    + "         <filter string='speed > 88' />"
@@ -74,9 +74,9 @@ public class QueueDeployerTest extends UnitTestCase
       assertEquals(false, queueConfiguration.isDurable());
    }
 
-   public void testParseQueueConfigurationFromJBMConfiguration() throws Exception
+   public void testParseQueueConfigurationFromHornetQConfiguration() throws Exception
    {
-      String xml = "<configuration xmlns='urn:jboss:messaging'> " + "<queues>"
+      String xml = "<configuration xmlns='urn:hornetq'> " + "<queues>"
                    + "   <queue name='foo'>"
                    + "      <address>bar</address>"
                    + "      <filter string='speed > 88' />"

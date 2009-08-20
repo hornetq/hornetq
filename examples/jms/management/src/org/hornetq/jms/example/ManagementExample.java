@@ -73,7 +73,7 @@ public class ManagementExample extends HornetQExample
 
          // Step 9. create the JMS management queue.
          // It is a "special" queue and it is not looked up from JNDI but constructed directly
-         Queue managementQueue = new HornetQQueue("jbm.management", "jbm.management");
+         Queue managementQueue = new HornetQQueue("hornetq.management", "hornetq.management");
          
          // Step 10. Create a QueueRequestor for the management queue (see queue-requestor example)
          QueueRequestor requestor = new QueueRequestor(session, managementQueue);

@@ -134,7 +134,7 @@ at org.acme.yourproject.YourClass (YourClass.java:666)
         <para>If you're using JMS it's defined by the <literal>ClientFailureCheckPeriod</literal>
             attribute on a <literal>JBossConnectionFactory</literal> instance, or if you're
             deploying JMS connection factory instances direct into JNDI on the server side, you can
-            specify it in the <literal>jbm-jms.xml </literal> configuration file, using the
+            specify it in the <literal>hornetq-jms.xml </literal> configuration file, using the
             parameter <literal>client-failure-check-period</literal>.</para>
         <para>The default value for client failure check period is <literal>5000</literal>ms, i.e. 5
             seconds. A value of <literal>-1</literal> means the client will never fail the
@@ -155,7 +155,7 @@ at org.acme.yourproject.YourClass (YourClass.java:666)
         <para>Processing operations asynchronously on another thread does however add a little more
             latency, so we allow this to be configured using the parameter <literal
                 >async-connection-execution-enabled</literal> in <literal
-                >jbm-configuration.xml</literal>. The default value for this parameter is <literal
+                >hornetq-configuration.xml</literal>. The default value for this parameter is <literal
                 >true</literal>.</para>
         <para>If you do set this parameter to <literal>false</literal> please do so with
             caution.</para>
@@ -183,6 +183,6 @@ at org.acme.yourproject.YourClass (YourClass.java:666)
             on the <literal>ClientSessionFactory</literal> immediately after constructing it, or if
             you are using JMS use the setter on the <literal>JBossConnectionFactory</literal> or
             specify the <literal>max-connections</literal> parameter in the connection factory xml
-            configuration in <literal>jbm-jms.xml</literal>.</para>
+            configuration in <literal>hornetq-jms.xml</literal>.</para>
     </section>
 </chapter>

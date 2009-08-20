@@ -179,7 +179,7 @@ public class JournalStorageManager implements StorageManager
                                         config.getJournalCompactMinFiles(),
                                         config.getJournalCompactPercentage(),
                                         bindingsFF,
-                                        "jbm-bindings",
+                                        "hornetq-bindings",
                                         "bindings",
                                         1);
 
@@ -222,8 +222,8 @@ public class JournalStorageManager implements StorageManager
                                        config.getJournalCompactMinFiles(),
                                        config.getJournalCompactPercentage(),
                                        journalFF,
-                                       "jbm-data",
-                                       "jbm",
+                                       "hornetq-data",
+                                       "hq",
                                        config.getJournalMaxAIO());
 
       largeMessagesDirectory = config.getLargeMessagesDirectory();

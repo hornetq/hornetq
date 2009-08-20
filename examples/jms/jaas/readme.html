@@ -10,18 +10,18 @@
      <p>JBoss Messaging can leverage JAAS to delegate user authentication and authorization to existing security infrastructure.</p>
      
      <p>
-         The example will show how to configure JBoss Messaging with JAAS in <a href="server0/jbm-jboss-beans.xml">jbm-jboss-beans.xml</a>.
+         The example will show how to configure JBoss Messaging with JAAS in <a href="server0/hornetq-jboss-beans.xml">hornetq-jboss-beans.xml</a>.
          It will use a simple <code>LoginModule</code> without any user interaction.
          The example will create a connection and authenticate the user with this JAAS LoginModule, send a message
          to a queue and receive it (see the <a href="../queue/readme.html">Queue example</a> for a complete description
          of the application code)
      </p>
      <h2>Example setup</h2>
-     <p>JBoss Messaging can use a JAAS security manager by specifying it in <a href="server0/jbm-jboss-beans.xml">jbm-jboss-beans.xml</a>:</p>
+     <p>JBoss Messaging can use a JAAS security manager by specifying it in <a href="server0/hornetq-jboss-beans.xml">hornetq-jboss-beans.xml</a>:</p>
      <pre>
          <code>
             &lt;!-- The security manager using JAAS --&gt;
-            &lt;bean name="JBMSecurityManager" class="org.hornetq.integration.security.JAASSecurityManager"&gt;
+            &lt;bean name="HornetQSecurityManager" class="org.hornetq.integration.security.JAASSecurityManager"&gt;
                &lt;property name="configurationName"&gt;org.hornetq.jms.example.ExampleLoginModule&lt;/property&gt;
                &lt;property name="configuration"&gt;
                   &lt;inject bean="ExampleConfiguration"/&gt;
@@ -62,7 +62,7 @@
      </pre>
      
      <ul>
-        <li>the JBMSecurityManager's <code>configurationName</code> must be the name of the Java class implementing <code>LoginModule</code></li>
+        <li>the HornetQSecurityManager's <code>configurationName</code> must be the name of the Java class implementing <code>LoginModule</code></li>
         <li>the <code>callbackHandler</code> property must be an implementation of <code>CallbackHandler</code>. In this example, the ExampleCallbackHandler
            does nothing since the authentication requires no user interaction</li>
         <li>the <code>configuration</code> property must be an implementation of <code>Configuration</code>. For simplicity, we pass directly the

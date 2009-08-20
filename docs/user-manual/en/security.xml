@@ -3,7 +3,7 @@
     <title>Security</title>
     <para>This chapter describes how security works with JBoss Messaging and how you can configure
         it. To disable security completely simply set the <literal>security-enabled</literal>
-        property to false in the <literal>jbm-configuration.xml</literal> file.</para>
+        property to false in the <literal>hornetq-configuration.xml</literal> file.</para>
     <para>For performance reasons security is cached and invalidated every so long. To change this
         period set the property <literal>security-invalidation-interval</literal>, which is in
         milliseconds. The default is <literal>10000</literal> ms.</para>
@@ -55,7 +55,7 @@
             the user has any of those roles, he/she will be granted that permission for that set of
             addresses.</para>
         <para>Let's take a simple example, here's a security block from <literal
-                >jbm-configuration.xml</literal> or <literal>jbm-queues.xml</literal> file:</para>
+                >hornetq-configuration.xml</literal> or <literal>hornetq-queues.xml</literal> file:</para>
         <programlisting>
 &lt;security-setting match="globalqueues.europe.#"&gt;
     &lt;permission type="createDurableQueue" roles="admin"/&gt;
@@ -126,15 +126,15 @@
         <title>Basic user credentials</title>
         <para> JBoss Messaging ships with a security manager implementation that reads user
             credentials, i.e. user names, passwords and role information from an xml file on the
-            classpath called <literal>jbm-users.xml</literal>. This is the default security
+            classpath called <literal>hornetq-users.xml</literal>. This is the default security
             manager.</para>
         <para>If you wish to use this security manager, then users, passwords and roles can easily
             be added into this file.</para>
         <para>Let's take a look at an example file:</para>
         <programlisting>
-&lt;configuration xmlns="urn:jboss:messaging" 
+&lt;configuration xmlns="urn:hornetq" 
                xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="urn:jboss:messaging ../schemas/jbm-users.xsd "&gt;
+    xsi:schemaLocation="urn:hornetq ../schemas/hornetq-users.xsd "&gt;
     
     &lt;defaultuser name="guest" password="guest"&gt;
         &lt;role name="guest"/&gt;
@@ -169,12 +169,12 @@
     <section id="change-security-manager">
         <title>Changing the security manager</title>
         <para>If you do not want to use the default security manager then you can specify a
-            different one by editing the <literal>jbm-jboss-beans.xml</literal> file and changing
-            the class for the <literal>JBMSecurityManager</literal> bean.</para>
+            different one by editing the <literal>hornetq-jboss-beans.xml</literal> file and changing
+            the class for the <literal>HornetQSecurityManager</literal> bean.</para>
         <para>Let's take a look at a snippet from the default beans file:</para>
         <programlisting>           
-&lt;bean name="JBMSecurityManager" 
-      class="org.hornetq.core.security.impl.JBMSecurityManagerImpl"&gt;
+&lt;bean name="HornetQSecurityManager" 
+      class="org.hornetq.core.security.impl.HornetQSecurityManagerImpl"&gt;
     &lt;start ignored="true"/&gt;
     &lt;stop ignored="true"/&gt;
 &lt;/bean&gt;            
@@ -187,7 +187,7 @@
             Application Sever security, alternatively you could write your own implementation by
             implementing the <literal>org.hornetq.core.security.SecurityManager</literal>
             interface, and specifying the classname of your implementation in the <literal
-                >jbm-jboss-beans.xml</literal> file.</para>
+                >hornetq-jboss-beans.xml</literal> file.</para>
         <para>These two implementations are discussed in the next two sections.</para>
     </section>
     <section>
@@ -199,7 +199,7 @@
             you need to specify the security manager as a <literal>JAASSecurityManager</literal> in
             the beans file. Here's an example:</para>
         <programlisting>
-&lt;bean name="JBMSecurityManager" 
+&lt;bean name="HornetQSecurityManager" 
       class="org.hornetq.integration.security.JAASSecurityManager"&gt;      
     &lt;start ignored="true"/&gt;
     &lt;stop ignored="true"/&gt;
@@ -241,7 +241,7 @@
             security model.</para>
         <para>The class name of this security manager is <literal
                 >org.hornetq.integration.security.JBossASSecurityManager</literal></para>
-        <para>Take a look at one of the default <literal>jbm-jboss-beans.xml</literal> files for
+        <para>Take a look at one of the default <literal>hornetq-jboss-beans.xml</literal> files for
             JBoss Application Server that are bundled in the distribution for an example of how this
             is configured.</para>
     </section>

@@ -4,7 +4,7 @@
          version="2.4">
    <context-param>
       <param-name>serverChannelName</param-name>
-      <param-value>org.jboss.jbm</param-value>
+      <param-value>org.hornetq</param-value>
    </context-param>
 
     <context-param>
@@ -32,6 +32,6 @@
 
    <servlet-mapping>
       <servlet-name>NettyServlet</servlet-name>
-      <url-pattern>/JBMServlet</url-pattern>
+      <url-pattern>/HornetQServlet</url-pattern>
    </servlet-mapping>
 </web-app>

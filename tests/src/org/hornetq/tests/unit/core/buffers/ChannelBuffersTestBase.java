@@ -28,7 +28,7 @@ import org.hornetq.tests.util.UnitTestCase;
  * @author The Netty Project (netty-dev@lists.jboss.org)
  * @author Trustin Lee (tlee@redhat.com)
  * 
- * Converted to JBM Buffers by Clebert Suconic
+ * Converted to HornetQ Buffers by Clebert Suconic
  *
  * @version $Rev: 472 $, $Date: 2008-11-14 01:45:53 -0600 (Fri, 14 Nov 2008) $
  */

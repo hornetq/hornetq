@@ -140,7 +140,7 @@ public class ReconnectSameNodeExample extends HornetQExample
 
          Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-         Queue managementQueue = new HornetQQueue("jbm.management", "jbm.management");
+         Queue managementQueue = new HornetQQueue("hornetq.management", "hornetq.management");
 
          MessageProducer producer = session.createProducer(managementQueue);
 

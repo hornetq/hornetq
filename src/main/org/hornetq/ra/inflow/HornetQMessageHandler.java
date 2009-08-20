@@ -224,11 +224,11 @@ public class HornetQMessageHandler implements MessageHandler
          txnStrategy = new NoTXTransactionDemarcationStrategy();
       }
 
-      HornetQMessage jbm = HornetQMessage.createMessage(message, session);
+      HornetQMessage msg = HornetQMessage.createMessage(message, session);
 
       try
       {
-         jbm.doBeforeReceive();
+         msg.doBeforeReceive();
          message.acknowledge();
       }
       catch (Exception e)
@@ -240,7 +240,7 @@ public class HornetQMessageHandler implements MessageHandler
 
       try
       {
-         ((MessageListener) endpoint).onMessage(jbm);
+         ((MessageListener) endpoint).onMessage(msg);
       }
       catch (Throwable t)
       {

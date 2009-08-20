@@ -59,7 +59,7 @@ public class TopicControlImpl implements TopicControl
 
    public static String createFilterFromJMSSelector(final String selectorStr) throws MessagingException
    {
-      return (selectorStr == null || selectorStr.trim().length() == 0) ? null : SelectorTranslator.convertToJBMFilterString(selectorStr);
+      return (selectorStr == null || selectorStr.trim().length() == 0) ? null : SelectorTranslator.convertToHornetQFilterString(selectorStr);
    }
 
    // Constructors --------------------------------------------------

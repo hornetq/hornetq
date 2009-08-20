@@ -69,9 +69,9 @@ public class FileConfiguration extends ConfigurationImpl
 
    // Constants ------------------------------------------------------------------------
 
-   private static final String DEFAULT_CONFIGURATION_URL = "jbm-configuration.xml";
+   private static final String DEFAULT_CONFIGURATION_URL = "hornetq-configuration.xml";
 
-   private static final String CONFIGURATION_SCHEMA_URL = "schema/jbm-configuration.xsd";
+   private static final String CONFIGURATION_SCHEMA_URL = "schema/hornetq-configuration.xsd";
 
    // Static --------------------------------------------------------------------------
    

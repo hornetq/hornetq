@@ -7,11 +7,11 @@
             together in order to share message processing load. Each active node in the cluster is
             an active JBoss Messaging server which manages its own messages and handles its own
             connections. A server must be configured to be clustered, you will need to set the
-                <literal>clustered</literal> element in the <literal>jbm-configuration.xml</literal>
+                <literal>clustered</literal> element in the <literal>hornetq-configuration.xml</literal>
             configuration file to <literal>true</literal>, this is <literal>false</literal> by
             default.</para>
         <para>The cluster is formed by each node declaring <emphasis>cluster connections</emphasis>
-            to other nodes in the core configuration file <literal>jbm-configuration.xml</literal>.
+            to other nodes in the core configuration file <literal>hornetq-configuration.xml</literal>.
             When a node forms a cluster connection to another node, internally it creates a <emphasis>core
             bridge</emphasis> (as described in <xref
                 linkend="core-bridges" />) connection between it and the other node,
@@ -60,11 +60,11 @@
                 connection settings for a live and (optional) backup server and broadcasts them on
                 the network. It also defines the UDP address and port settings. </para>
             <para>Broadcast groups are defined in the server configuration file <literal
-                    >jbm-configuration.xml</literal>. There can be many broadcast groups per JBoss
+                    >hornetq-configuration.xml</literal>. There can be many broadcast groups per JBoss
                 Messaging server. All broadcast groups must be defined in a <literal
                     >broadcast-groups</literal> element.</para>
             <para>Let's take a look at an example broadcast group from <literal
-                    >jbm-configuration.xml</literal>:</para>
+                    >hornetq-configuration.xml</literal>:</para>
             <programlisting>&lt;broadcast-groups>
    &lt;broadcast-group name="my-broadcast-group">
       &lt;local-bind-port>54321&lt;/local-bind-port>
@@ -149,7 +149,7 @@
         <section>
             <title>Defining Discovery Groups on the Server</title>
             <para>For cluster connections, discovery groups are defined in the server side
-                configuration file <literal>jbm-configuration.xml</literal>. All discovery groups
+                configuration file <literal>hornetq-configuration.xml</literal>. All discovery groups
                 must be defined inside a <literal>discovery-groups</literal> element. There can be
                 many discovery groups defined by JBoss Messaging server. Let's look at an
                 example:</para>
@@ -200,7 +200,7 @@
                 <para>If you're using JMS and you're also using the JMS Service on the server to
                     load your JMS connection factory instances into JNDI, then you can specify which
                     discovery group to use for your JMS connection factory in the server side xml
-                    configuration <literal>jbm-jms.xml</literal>. Let's take a look at an
+                    configuration <literal>hornetq-jms.xml</literal>. Let's take a look at an
                     example:</para>
                 <programlisting>&lt;connection-factory name="ConnectionFactory">
    &lt;discovery-group-ref discovery-group-name="my-discovery-group"/>
@@ -209,7 +209,7 @@
     &lt;/entries>
 &lt;/connection-factory></programlisting>
                 <para>The element <literal>discovery-group-ref</literal> specifies the name of a
-                    discovery group defined in <literal>jbm-configuration.xml</literal>.</para>
+                    discovery group defined in <literal>hornetq-configuration.xml</literal>.</para>
                 <para>When this connection factory is downloaded from JNDI by a client application
                     and JMS connections are created from it, those connections will be load-balanced
                     across the list of servers that the discovery group maintains by listening on
@@ -293,7 +293,7 @@ Connection jmsConnection2 = jmsConnectionFactory.createConnection();</programlis
             <para>Cluster connections group servers into clusters so that messages can be load
                 balanced between the nodes of the cluster. Let's take a look at a typical cluster
                 connection. Cluster connections are always defined in <literal
-                    >jbm-configuration.xml</literal> inside a <literal>cluster-connection</literal>
+                    >hornetq-configuration.xml</literal> inside a <literal>cluster-connection</literal>
                 element. There can be zero or more cluster connections defined per JBoss Messaging
                 server.</para>
             <programlisting>
@@ -427,7 +427,7 @@ Connection jmsConnection2 = jmsConnectionFactory.createConnection();</programlis
                 >org.hornetq.core.client.impl.RoundRobinConnectionLoadBalancingPolicy</literal>.</para>
         <para>If you're using JMS, and you're using JNDI on the server to put your JMS connection
             factories into JNDI, then you can specify the load balancing policy directly in the
-                <literal>jbm-jms.xml</literal> configuration file on the server as follows:
+                <literal>hornetq-jms.xml</literal> configuration file on the server as follows:
             <programlisting>
 &lt;connection-factory name="ConnectionFactory"&gt;
     &lt;discovery-group-ref discovery-group-name="my-discovery-group"/&gt;
@@ -480,7 +480,7 @@ factory.setLoadBalancingPolicyClassName("com.acme.MyLoadBalancingPolicy");
                 <para>If you're using JMS, and you're using the JMS Service to load your JMS
                     connection factory instances directly into JNDI on the server, then you can
                     specify the list of servers in the server side configuration file <literal
-                        >jbm-jms.xml</literal>. Let's take a look at an example:</para>
+                        >hornetq-jms.xml</literal>. Let's take a look at an example:</para>
                 <programlisting>&lt;connection-factory name="ConnectionFactory">
    &lt;connector-ref connector-name="my-connector1" 
         backup-connector-name="my-backup-connector1"/>
@@ -497,10 +497,10 @@ factory.setLoadBalancingPolicyClassName("com.acme.MyLoadBalancingPolicy");
                         <literal>connector-name</literal> attribute and an optional <literal
                         >backup-connector-name</literal> attribute. The <literal
                         >connector-name</literal> attribute references a connector defined in
-                        <literal>jbm-configuration.xml</literal> which will be used as a live
+                        <literal>hornetq-configuration.xml</literal> which will be used as a live
                     connector. The <literal>backup-connector-name</literal> is optional, and if
                     specified it also references a connector defined in <literal
-                        >jbm-configuration.xml</literal>. For more information on connectors please
+                        >hornetq-configuration.xml</literal>. For more information on connectors please
                     see <xref linkend="configuring-transports" />.</para>
                 <para>The connection factory thus maintains a list of [connector, backup connector]
                     pairs, these pairs are then used by the client connection load balancing policy
@@ -586,9 +586,9 @@ ClientSession session2 = factory.createClientSession(...);</programlisting>
                     <literal>connector-name</literal> attribute and an optional <literal
                     >backup-connector-name</literal> attribute. The <literal
                     >connector-name</literal> attribute references a connector defined in <literal
-                    >jbm-configuration.xml</literal> which will be used as a live connector. The
+                    >hornetq-configuration.xml</literal> which will be used as a live connector. The
                     <literal>backup-connector-name</literal> is optional, and if specified it also
-                references a connector defined in <literal>jbm-configuration.xml</literal>. For more
+                references a connector defined in <literal>hornetq-configuration.xml</literal>. For more
                 information on connectors please see <xref linkend="configuring-transports" />.</para>
         </section>
     </section>
@@ -613,7 +613,7 @@ ClientSession session2 = factory.createClientSession(...);</programlisting>
         <para>Message redistribution can be configured on a per address basis, by specifying the
             redistribution delay in the address settings, for more information on configuring
             address settings, please see <xref linkend="queue-attributes" />.</para>
-        <para>Here's an address settings snippet from <literal>jbm-configuration.xml</literal>
+        <para>Here's an address settings snippet from <literal>hornetq-configuration.xml</literal>
             showing how message redistribution is enabled for a set of queues:</para>
         <programlisting>&lt;address-settings>     
    &lt;address-setting match="jms.#">

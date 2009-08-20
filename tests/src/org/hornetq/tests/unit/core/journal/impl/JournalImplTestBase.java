@@ -58,9 +58,9 @@ public abstract class JournalImplTestBase extends UnitTestCase
 
    protected boolean sync;
 
-   protected String filePrefix = "jbm";
+   protected String filePrefix = "hq";
 
-   protected String fileExtension = "jbm";
+   protected String fileExtension = "hq";
 
    protected SequentialFileFactory fileFactory;
 

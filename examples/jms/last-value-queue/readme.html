@@ -16,7 +16,7 @@
         We will then consume from the queue the <em>last</em> message.</p>
         
      <h2>Example setup</h2>
-     <p>Last-Value queues are defined in the configuration file <a href="server0/jbm-configuration.xml">jbm-configuration.xml</a>:</p>
+     <p>Last-Value queues are defined in the configuration file <a href="server0/hornetq-configuration.xml">hornetq-configuration.xml</a>:</p>
      <pre>
          <code>&lt;address-setting match="jms.queue.lastValueQueue"&gt;
                 &lt;last-value-queue&gt;true&lt;/last-value-queue&gt;
@@ -51,17 +51,17 @@
        <li>We will create and send a text message with the Last-Value property set to <code>STOCK_NAME</code></li>
        <pre>
            <code>TextMessage message = session.createTextMessage("1st message with Last-Value property set");
-           message.setStringProperty("_JBM_LVQ_NAME", "STOCK_NAME");
+           message.setStringProperty("_HQ_LVQ_NAME", "STOCK_NAME");
            producer.send(message);
            System.out.format("Sent message: %s\n", message.getText());</code>
        </pre>
        
-       <p><em>The <em>Last-Value</em> key is defined in JBoss Messaging's MessageImpl class. Its value is <code>"_JBM_LVQ_NAME"</code></em></p>
+       <p><em>The <em>Last-Value</em> key is defined in JBoss Messaging's MessageImpl class. Its value is <code>"_HQ_LVQ_NAME"</code></em></p>
 
        <li>We will create and send a <em>second</em> text message with the Last-Value property set to <code>STOCK_NAME</code></li>
        <pre>
            <code>message = session.createTextMessage("2nd message with Last-Value property set");
-           message.setStringProperty("_JBM_LVQ_NAME", "STOCK_NAME");
+           message.setStringProperty("_HQ_LVQ_NAME", "STOCK_NAME");
            producer.send(message);
            System.out.format("Sent message: %s\n", message.getText());</code>
        </pre>
@@ -69,7 +69,7 @@
        <li>We will create and send a <em>third</em> text message with the Last-Value property set to <code>STOCK_NAME</code></li>
        <pre>
            <code>message = session.createTextMessage("3rd message with Last-Value property set");
-           message.setStringProperty("_JBM_LVQ_NAME", "STOCK_NAME");
+           message.setStringProperty("_HQ_LVQ_NAME", "STOCK_NAME");
            producer.send(message);
            System.out.format("Sent message: %s\n", message.getText());</code>
        </pre>

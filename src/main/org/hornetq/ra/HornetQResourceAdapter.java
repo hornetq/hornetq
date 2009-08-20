@@ -1424,7 +1424,7 @@ public class HornetQResourceAdapter implements ResourceAdapter
       }
       else
       {
-         throw new IllegalArgumentException("must provide either TransportType or DiscoveryGroupAddress and DiscoveryGroupPort for JBM ResourceAdapter Connection Factory");
+         throw new IllegalArgumentException("must provide either TransportType or DiscoveryGroupAddress and DiscoveryGroupPort for HornetQ ResourceAdapter Connection Factory");
       }
       setParams(cf, overrideProperties);
       return cf;

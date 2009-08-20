@@ -20,9 +20,9 @@
    <import file="../../common/build.xml"/>
 	
    <path id="remote.classpath">
-    <fileset dir="${jbm.jars.dir}">
-      <include name="jbm-core.jar"/>
-      <include name="jbm-transports.jar"/>
+    <fileset dir="${hornetq.jars.dir}">
+      <include name="hornetq-core.jar"/>
+      <include name="hornetq-transports.jar"/>
     </fileset>
  	  <fileset dir="${jars.dir}">
       <include name="**/netty*jar"/>

@@ -10,13 +10,13 @@
     <para>These are the native libraries distributed by JBoss Messaging:</para>
     <itemizedlist>
         <listitem>
-            <para>libJBMLibAIO32.so - x86 32 bits</para>
+            <para>libHornetQLibAIO32.so - x86 32 bits</para>
         </listitem>
         <listitem>
-            <para>libJBMLibAIO64.so - x86 64 bits</para>
+            <para>libHornetQLibAIO64.so - x86 64 bits</para>
         </listitem>
         <listitem>
-            <para>libJBMLibAIO_ia64.so - Itanium 64 bits</para>
+            <para>libHornetQLibAIO_ia64.so - Itanium 64 bits</para>
         </listitem>
     </itemizedlist>
     <para>When using libaio, JBoss Messaging will aways try loading these files as long as they are
@@ -99,7 +99,7 @@ config.status: executing libtool commands
 
 ...</programlisting>
             <para>The produced library will be at <literal
-                    >./native-src/src/.libs/libJBMLibAIO.so</literal>. Simply move that file over
+                    >./native-src/src/.libs/libHornetQLibAIO.so</literal>. Simply move that file over
                     <literal>bin</literal> on the distribution or the place you have chosen on the
                     <link linkend="using-server.library.path">library path</link>.</para>
             <para>If you want to perform changes on the JBoss Messaging libaio code, you could just

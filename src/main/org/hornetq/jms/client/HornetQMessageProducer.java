@@ -546,7 +546,7 @@ public class HornetQMessageProducer implements MessageProducer, QueueSender, Top
          address = destination.getSimpleAddress();
       }
 
-      HornetQMessage jbm;
+      HornetQMessage msg;
 
       boolean foreign = false;
 
@@ -558,27 +558,27 @@ public class HornetQMessageProducer implements MessageProducer, QueueSender, Top
 
          if (message instanceof BytesMessage)
          {
-            jbm = new HornetQBytesMessage((BytesMessage)message, clientSession);
+            msg = new HornetQBytesMessage((BytesMessage)message, clientSession);
          }
          else if (message instanceof MapMessage)
          {
-            jbm = new HornetQMapMessage((MapMessage)message, clientSession);
+            msg = new HornetQMapMessage((MapMessage)message, clientSession);
          }
          else if (message instanceof ObjectMessage)
          {
-            jbm = new HornetQObjectMessage((ObjectMessage)message, clientSession);
+            msg = new HornetQObjectMessage((ObjectMessage)message, clientSession);
          }
          else if (message instanceof StreamMessage)
          {
-            jbm = new HornetQStreamMessage((StreamMessage)message, clientSession);
+            msg = new HornetQStreamMessage((StreamMessage)message, clientSession);
          }
          else if (message instanceof TextMessage)
          {
-            jbm = new HornetQTextMessage((TextMessage)message, clientSession);
+            msg = new HornetQTextMessage((TextMessage)message, clientSession);
          }
          else
          {
-            jbm = new HornetQMessage(message, clientSession);
+            msg = new HornetQMessage(message, clientSession);
          }
 
          // Set the destination on the original message
@@ -588,25 +588,25 @@ public class HornetQMessageProducer implements MessageProducer, QueueSender, Top
       }
       else
       {
-         jbm = (HornetQMessage)message;
+         msg = (HornetQMessage)message;
       }
 
       if (!disableMessageID)
       {
          // Generate an id
-         jbm.setJMSMessageID(messageIDPrefix + sequenceNumber.incrementAndGet());
+         msg.setJMSMessageID(messageIDPrefix + sequenceNumber.incrementAndGet());
       }
 
       if (foreign)
       {
-         message.setJMSMessageID(jbm.getJMSMessageID());
+         message.setJMSMessageID(msg.getJMSMessageID());
       }
 
-      jbm.setJMSDestination(destination);
+      msg.setJMSDestination(destination);
 
       try
       {
-         jbm.doBeforeSend();
+         msg.doBeforeSend();
       }
       catch (Exception e)
       {
@@ -617,7 +617,7 @@ public class HornetQMessageProducer implements MessageProducer, QueueSender, Top
          throw je;
       }
 
-      ClientMessage coreMessage = jbm.getCoreMessage();
+      ClientMessage coreMessage = msg.getCoreMessage();
 
       if (jbossConn.hasNoLocal())
       {

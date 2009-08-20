@@ -16,7 +16,7 @@
       <connection-definition>org.hornetq.ra.HornetQRAConnectionFactory</connection-definition>
       <config-property name="SessionDefaultType" type="java.lang.String">javax.jms.Topic</config-property>
       <config-property name="ConnectorClassName" type="java.lang.String">org.hornetq.integration.transports.netty.NettyConnectorFactory</config-property>
-      <config-property name="ConnectionParameters" type="java.lang.String">jbm.remoting.netty.port=5445</config-property>
+      <config-property name="ConnectionParameters" type="java.lang.String">hornetq.remoting.netty.port=5445</config-property>
       <max-pool-size>20</max-pool-size>
    </tx-connection-factory>
   

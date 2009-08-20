@@ -293,7 +293,7 @@ public abstract class HornetQDestination implements Destination, Serializable/*,
    public Reference getReference() throws NamingException
    {
       return new Reference(this.getClass().getCanonicalName(),
-                           new SerializableObjectRefAddr("JBM-DEST", this),
+                           new SerializableObjectRefAddr("HornetQ-DEST", this),
                            DestinationObjectFactory.class.getCanonicalName(),
                            null);
    }

@@ -76,8 +76,8 @@ public class AddAndRemoveStressTest extends UnitTestCase
                                          0,
                                          0,
                                          factory,
-                                         "jbm",
-                                         "jbm",
+                                         "hq",
+                                         "hq",
                                          1000);
 
       impl.start();
@@ -96,7 +96,7 @@ public class AddAndRemoveStressTest extends UnitTestCase
       impl.stop();
 
       factory = new AIOSequentialFileFactory(getTestDir());
-      impl = new JournalImpl(10 * 1024 * 1024, NUMBER_OF_FILES_ON_JOURNAL, 0, 0, factory, "jbm", "jbm", 1000);
+      impl = new JournalImpl(10 * 1024 * 1024, NUMBER_OF_FILES_ON_JOURNAL, 0, 0, factory, "hq", "hq", 1000);
 
       impl.start();
 
@@ -115,7 +115,7 @@ public class AddAndRemoveStressTest extends UnitTestCase
       impl.stop();
 
       factory = new AIOSequentialFileFactory(getTestDir());
-      impl = new JournalImpl(10 * 1024 * 1024, NUMBER_OF_FILES_ON_JOURNAL, 0, 0, factory, "jbm", "jbm", 1000);
+      impl = new JournalImpl(10 * 1024 * 1024, NUMBER_OF_FILES_ON_JOURNAL, 0, 0, factory, "hq", "hq", 1000);
 
       impl.start();
 
@@ -147,8 +147,8 @@ public class AddAndRemoveStressTest extends UnitTestCase
                                          0,
                                          0,
                                          factory,
-                                         "jbm",
-                                         "jbm",
+                                         "hq",
+                                         "hq",
                                          1000);
 
       impl.start();
@@ -168,7 +168,7 @@ public class AddAndRemoveStressTest extends UnitTestCase
       impl.stop();
 
       factory = new AIOSequentialFileFactory(getTestDir());
-      impl = new JournalImpl(10 * 1024 * 1024, 10, 0, 0, factory, "jbm", "jbm", 1000);
+      impl = new JournalImpl(10 * 1024 * 1024, 10, 0, 0, factory, "hq", "hq", 1000);
 
       impl.start();
 
@@ -187,7 +187,7 @@ public class AddAndRemoveStressTest extends UnitTestCase
       impl.stop();
 
       factory = new AIOSequentialFileFactory(getTestDir());
-      impl = new JournalImpl(10 * 1024 * 1024, NUMBER_OF_FILES_ON_JOURNAL, 0, 0, factory, "jbm", "jbm", 1000);
+      impl = new JournalImpl(10 * 1024 * 1024, NUMBER_OF_FILES_ON_JOURNAL, 0, 0, factory, "hq", "hq", 1000);
 
       impl.start();
 

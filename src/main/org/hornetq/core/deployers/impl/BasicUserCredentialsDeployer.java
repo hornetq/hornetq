@@ -20,7 +20,7 @@ import org.w3c.dom.NodeList;
 
 /**
  * 
- * deployer for adding security loaded from the file "jbm-users.xml"
+ * deployer for adding security loaded from the file "hornetq-users.xml"
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
  */
 public class BasicUserCredentialsDeployer extends XmlDeployer
@@ -55,7 +55,7 @@ public class BasicUserCredentialsDeployer extends XmlDeployer
    @Override
    public void validate(Node rootNode) throws Exception
    {
-      org.hornetq.utils.XMLUtil.validate(rootNode, "schema/jbm-users.xsd");
+      org.hornetq.utils.XMLUtil.validate(rootNode, "schema/hornetq-users.xsd");
    }
 
    public void deploy(final Node node) throws Exception
@@ -91,6 +91,6 @@ public class BasicUserCredentialsDeployer extends XmlDeployer
 
    public String[] getDefaultConfigFileNames()
    {
-      return new String[] { "jbm-users.xml" };
+      return new String[] { "hornetq-users.xml" };
    }
 }

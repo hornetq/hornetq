@@ -12,77 +12,77 @@
   ~ permissions and limitations under the License.
   -->
 
-<project default="upload" name="JBoss Messaging">
-   <property name="jbm.version" value="2.0.0.BETA1-SNAPSHOT"/>
+<project default="upload" name="HornetQ">
+   <property name="hornetq.version" value="2.0.0.BETA5"/>
    <property name="build.dir" value="build"/>
    <property name="jars.dir" value="${build.dir}/jars"/>
 
-   <target name="uploadJbmBootstrap">
+   <target name="uploadHornetQBootstrap">
       <antcall target="upload">
-         <param name="artifact.id" value="jbm-bootstrap"/>
+         <param name="artifact.id" value="hornetq-bootstrap"/>
          <param name="artifact.type" value="jar"/>
       </antcall>
    </target>
 
-   <target name="uploadJbmCore">
+   <target name="uploadHornetQCore">
       <antcall target="upload">
-         <param name="artifact.id" value="jbm-core"/>
+         <param name="artifact.id" value="hornetq-core"/>
          <param name="artifact.type" value="jar"/>
       </antcall>
    </target>
 
-   <target name="uploadJbmLogging">
+   <target name="uploadHornetQLogging">
       <antcall target="upload">
-         <param name="artifact.id" value="jbm-logging"/>
+         <param name="artifact.id" value="hornetq-logging"/>
          <param name="artifact.type" value="jar"/>
       </antcall>
    </target>
 
-   <target name="uploadJbmTransports">
+   <target name="uploadHornetQTransports">
       <antcall target="upload">
-         <param name="artifact.id" value="jbm-transports"/>
+         <param name="artifact.id" value="hornetq-transports"/>
          <param name="artifact.type" value="jar"/>
       </antcall>
    </target>
 
-   <target name="uploadJbmCoreClient">
+   <target name="uploadHornetQCoreClient">
       <antcall target="upload">
-         <param name="artifact.id" value="jbm-core-client"/>
+         <param name="artifact.id" value="hornetq-core-client"/>
          <param name="artifact.type" value="jar"/>
       </antcall>
    </target>
 
-   <target name="uploadJbmJms">
+   <target name="uploadHornetQJms">
       <antcall target="upload">
-         <param name="artifact.id" value="jbm-jms"/>
+         <param name="artifact.id" value="hornetq-jms"/>
          <param name="artifact.type" value="jar"/>
       </antcall>
    </target>
 
-   <target name="uploadJbmJmsClient">
+   <target name="uploadHornetQJmsClient">
       <antcall target="upload">
-         <param name="artifact.id" value="jbm-jms-client"/>
+         <param name="artifact.id" value="hornetq-jms-client"/>
          <param name="artifact.type" value="jar"/>
       </antcall>
    </target>
 
-   <target name="uploadJbmSecurity">
+   <target name="uploadHornetQSecurity">
       <antcall target="upload">
-         <param name="artifact.id" value="jbm-jboss-as-security"/>
+         <param name="artifact.id" value="hornetq-jboss-as-security"/>
          <param name="artifact.type" value="jar"/>
       </antcall>
    </target>
 
-   <target name="uploadJbmRa">
+   <target name="uploadHornetQRa">
       <antcall target="upload">
-         <param name="artifact.id" value="jbm-ra"/>
+         <param name="artifact.id" value="hornetq-ra"/>
          <param name="artifact.type" value="jar"/>
       </antcall>
    </target>
 
-   <target name="uploadJbmResources">
+   <target name="uploadHornetQResources">
       <antcall target="upload">
-         <param name="artifact.id" value="jbm-resources"/>
+         <param name="artifact.id" value="hornetq-resources"/>
          <param name="artifact.type" value="jar"/>
       </antcall>
    </target>
@@ -94,7 +94,7 @@
          <arg value="deploy:deploy-file"/>
          <arg value="-DgroupId=org.hornetq"/>
          <arg value="-DartifactId=${artifact.id}"/>
-         <arg value="-Dversion=${jbm.version}"/>
+         <arg value="-Dversion=${hornetq.version}"/>
          <arg value="-Dpackaging=${artifact.type}"/>
          <arg value="-DgeneratePom=true"/>
          <arg value="-Dfile=${jars.dir}/${artifact.id}.${artifact.type}"/>

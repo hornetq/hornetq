@@ -25,7 +25,7 @@ import org.hornetq.core.security.HornetQSecurityManager;
 import org.hornetq.core.security.Role;
 
 /**
- * A basic implementation of the JBMUpdateableSecurityManager. This can be used within an appserver and be deployed by
+ * A basic implementation of the HornetQSecurityManager. This can be used within an appserver and be deployed by
  * BasicUserCredentialsDeployer or used standalone or embedded.
  *
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>

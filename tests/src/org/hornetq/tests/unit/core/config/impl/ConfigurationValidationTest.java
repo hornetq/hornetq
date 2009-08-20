@@ -42,13 +42,13 @@ public class ConfigurationValidationTest extends UnitTestCase
 
    public void testMinimalConfiguration() throws Exception
    {
-      String xml = "<configuration xmlns='urn:jboss:messaging'>" 
+      String xml = "<configuration xmlns='urn:hornetq'>" 
                  + "</configuration>";
       Element element = org.hornetq.utils.XMLUtil.stringToElement(xml);
       assertNotNull(element);
       element = XMLUtil.stringToElement(xml);
       assertNotNull(element);
-      XMLUtil.validate(element, "jbm-configuration.xsd");
+      XMLUtil.validate(element, "hornetq-configuration.xsd");
    }
 
    public void testFullConfiguration() throws Exception

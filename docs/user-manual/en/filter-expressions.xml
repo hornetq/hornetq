@@ -11,7 +11,7 @@
     <itemizedlist>
         <listitem>
             <para>Predefined Queues. When pre-defining a queue, either in <literal
-                    >jbm-configuration.xml</literal> or <literal>jbm-jms.xml</literal> a filter
+                    >hornetq-configuration.xml</literal> or <literal>hornetq-jms.xml</literal> a filter
                 expression can be defined for a queue. Only messages that match the filter
                 expression will enter the queue.</para>
         </listitem>
@@ -45,7 +45,7 @@
                 The value is a long integer.</para>
         </listitem>
         <listitem>
-            <para><literal>JBMDurable</literal>. To refer to whether a message is durable or not.
+            <para><literal>HQDurable</literal>. To refer to whether a message is durable or not.
                 The value is a string with valid values: <literal>DURABLE</literal> or <literal
                     >NON_DURABLE</literal>.</para>
         </listitem>

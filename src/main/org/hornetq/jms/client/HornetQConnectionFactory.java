@@ -372,7 +372,7 @@ public class HornetQConnectionFactory implements ConnectionFactory, QueueConnect
    public Reference getReference() throws NamingException
    {
       return new Reference(this.getClass().getCanonicalName(),
-                           new SerializableObjectRefAddr("JBM-CF", this),
+                           new SerializableObjectRefAddr("HornetQ-CF", this),
                            ConnectionFactoryObjectFactory.class.getCanonicalName(),
                            null);
    }

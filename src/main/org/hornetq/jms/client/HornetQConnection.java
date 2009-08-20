@@ -261,7 +261,7 @@ public class HornetQConnection implements Connection, QueueConnection, TopicConn
 
    public static final int TYPE_TOPIC_CONNECTION = 2;
 
-   public static final SimpleString CONNECTION_ID_PROPERTY_NAME = new SimpleString("__JBM_CID");
+   public static final SimpleString CONNECTION_ID_PROPERTY_NAME = new SimpleString("__HQ_CID");
 
    // Static ---------------------------------------------------------------------------------------
 

@@ -13,20 +13,20 @@
     <section>
         <title>Pure Core Client</title>
         <para>If you're using just a pure JBoss Messaging core client (i.e. no JMS) then you need
-                <literal>jbm-core-client.jar</literal> on your client classpath.</para>
+                <literal>hornetq-core-client.jar</literal> on your client classpath.</para>
         <para>If you're using a Netty transport then you will also netty <literal
-                >netty.jar</literal> and <literal>jbm-transports.jar</literal>.</para>
+                >netty.jar</literal> and <literal>hornetq-transports.jar</literal>.</para>
     </section>
     <section>
         <title>JMS Client</title>
         <para>If you're using JMS on the client side, then you will need <literal
-                >jbm-core-client.jar</literal>, <literal>jbm-jms-client.jar</literal> and <literal
+                >hornetq-core-client.jar</literal>, <literal>hornetq-jms-client.jar</literal> and <literal
                 >jboss-jms-api.jar</literal>. Note that <literal>jboss-jms-api.jar</literal> just
             contains Java EE API interface classes needed for the <literal>javax.jms.*</literal>
             classes, so if you already have a jar with these interface classes on your classpath you
             won't need it.</para>
         <para>If you're using a Netty transport then you will also netty <literal
-                >netty.jar</literal> and <literal>jbm-transports.jar</literal>.</para>
+                >netty.jar</literal> and <literal>hornetq-transports.jar</literal>.</para>
     </section>
     <section>
         <title>JNDI</title>

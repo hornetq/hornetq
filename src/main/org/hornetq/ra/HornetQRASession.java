@@ -295,11 +295,11 @@ public class HornetQRASession implements Session, QueueSession, TopicSession, XA
     * Set the session factory
     * @param sf The session factory
     */
-   public void setJBMSessionFactory(final HornetQRASessionFactory sf)
+   public void setHornetQSessionFactory(final HornetQRASessionFactory sf)
    {
       if (trace)
       {
-         log.trace("setJBMSessionFactory(" + sf + ")");
+         log.trace("setHornetQSessionFactory(" + sf + ")");
       }
 
       this.sf = sf;
@@ -714,7 +714,7 @@ public class HornetQRASession implements Session, QueueSession, TopicSession, XA
 
          if (trace)
          {
-            log.trace("createdSubscriber " + session + " JBMTopicSubscriber=" + result);
+            log.trace("createdSubscriber " + session + " HornetQTopicSubscriber=" + result);
          }
 
          addConsumer(result);
@@ -758,7 +758,7 @@ public class HornetQRASession implements Session, QueueSession, TopicSession, XA
 
          if (trace)
          {
-            log.trace("createdSubscriber " + session + " JBMTopicSubscriber=" + result);
+            log.trace("createdSubscriber " + session + " HornetQTopicSubscriber=" + result);
          }
 
          addConsumer(result);
@@ -800,7 +800,7 @@ public class HornetQRASession implements Session, QueueSession, TopicSession, XA
 
          if (trace)
          {
-            log.trace("createdDurableSubscriber " + session + " JBMTopicSubscriber=" + result);
+            log.trace("createdDurableSubscriber " + session + " HornetQTopicSubscriber=" + result);
          }
 
          addConsumer(result);
@@ -850,7 +850,7 @@ public class HornetQRASession implements Session, QueueSession, TopicSession, XA
 
          if (trace)
          {
-            log.trace("createdDurableSubscriber " + session + " JBMTopicSubscriber=" + result);
+            log.trace("createdDurableSubscriber " + session + " HornetQTopicSubscriber=" + result);
          }
 
          addConsumer(result);

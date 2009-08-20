@@ -8,7 +8,7 @@
      <br>
      <p>This example demonstrates a clustered JMS durable subscription.
      Normally durable subscriptions exist on a single node and can only have one subscriber at any one time,
-     however, with JBM 2.0 it's possible to create durable subscription instances with the same name and client-id
+     however, with HornetQ 2.0 it's possible to create durable subscription instances with the same name and client-id
      on different nodes of the cluster, and consume from them simultaneously.
      This allows the work of processing messages from a durable subscription to be spread across the cluster in
      a similar way to how JMS Queues can be load balanced across the cluster

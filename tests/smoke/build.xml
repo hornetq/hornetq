@@ -141,13 +141,13 @@
       <antcall target="old-client-compatibility-test">
          <param name="jboss.home" value="${jboss.compatibility.home}"/>
          <param name="jboss.configuration" value="current-version-server"/>
-         <param name="jboss.messaging.version" value="1.0.1.CR1"/>
+         <param name="jboss.hornetq.version" value="1.0.1.CR1"/>
       </antcall>
 
       <antcall target="old-client-compatibility-test">
          <param name="jboss.home" value="${jboss.compatibility.home}"/>
          <param name="jboss.configuration" value="current-version-server"/>
-         <param name="jboss.messaging.version" value="1.0.1.CR2"/>
+         <param name="jboss.hornetq.version" value="1.0.1.CR2"/>
       </antcall>
 
    </target>
@@ -522,32 +522,32 @@
 
    <target name="old-server-compatibility-test" depends="check-jboss-availability">
 
-      <echo message="Checking current client's compatibility with a ${jboss.messaging.version} server"/>
-      <unzip src="${jboss.compatibility.home}/../jboss-messaging-${jboss.messaging.version}.zip" dest="./output">
+      <echo message="Checking current client's compatibility with a ${jboss.hornetq.version} server"/>
+      <unzip src="${jboss.compatibility.home}/../jboss-messaging-${jboss.hornetq.version}.zip" dest="./output">
          <patternset>
-            <include name="jboss-messaging-${jboss.messaging.version}/jboss-messaging.sar"/>
+            <include name="jboss-messaging-${jboss.hornetq.version}/jboss-messaging.sar"/>
          </patternset>
       </unzip>
 
       <antcall target="run-all-examples">
-         <param name="jboss.configuration" value="messaging-${jboss.messaging.version}"/>
+         <param name="jboss.configuration" value="messaging-${jboss.hornetq.version}"/>
       </antcall>
-      <delete dir="./output/jboss-messaging-${jboss.messaging.version}"/>
+      <delete dir="./output/jboss-messaging-${jboss.hornetq.version}"/>
 
    </target>
 
    <target name="old-client-compatibility-test" depends="check-jboss-availability">
 
-      <echo message="Checking current server's compatibility with a ${jboss.messaging.version} client"/>
-      <unzip src="${jboss.compatibility.home}/../jboss-messaging-${jboss.messaging.version}.zip" dest="./output">
+      <echo message="Checking current server's compatibility with a ${jboss.hornetq.version} client"/>
+      <unzip src="${jboss.compatibility.home}/../jboss-messaging-${jboss.hornetq.version}.zip" dest="./output">
          <patternset>
-            <include name="jboss-messaging-${jboss.messaging.version}/jboss-messaging-client.jar"/>
+            <include name="jboss-messaging-${jboss.hornetq.version}/jboss-messaging-client.jar"/>
          </patternset>
       </unzip>
       <antcall target="run-all-examples">
-         <param name="messaging.client.jar.path" value="${basedir}/output/jboss-messaging-${jboss.messaging.version}"/>
+         <param name="messaging.client.jar.path" value="${basedir}/output/jboss-messaging-${jboss.hornetq.version}"/>
       </antcall>
-      <delete dir="./output/jboss-messaging-${jboss.messaging.version}"/>
+      <delete dir="./output/jboss-messaging-${jboss.hornetq.version}"/>
 
    </target>
 
@@ -560,7 +560,7 @@
       <antcall target="fail-on-serialization-debug-output"/>
 
       <!-- record successful run -->
-      <echo message="TEST_TYPE=${smoke.test.type} JBOSS_HOME=${jboss.home} JBOSS_CONFIGURATION=${jboss.configuration} CLIENT_VERSION=${jboss.messaging.version} INSTALLATION_TYPE=${release.admin.target} SERVER_ARTIFACT_NAME=${messaging.server.artifact.name} EXAMPLE_NAME=${example.name}  CLUSTERED=${clustered}${line.separator}"
+      <echo message="TEST_TYPE=${smoke.test.type} JBOSS_HOME=${jboss.home} JBOSS_CONFIGURATION=${jboss.configuration} CLIENT_VERSION=${jboss.hornetq.version} INSTALLATION_TYPE=${release.admin.target} SERVER_ARTIFACT_NAME=${messaging.server.artifact.name} EXAMPLE_NAME=${example.name}  CLUSTERED=${clustered}${line.separator}"
             file="./output/smoke.log" append="yes"/>
 
    </target>
@@ -587,7 +587,7 @@
       </antcall>
 
       <!-- record successful run -->
-      <echo message="TEST_TYPE=${smoke.test.type} JBOSS_HOME=${jboss.home} JBOSS_CONFIGURATION=${jboss.configuration}-node0 CLIENT_VERSION=${jboss.messaging.version} INSTALLATION_TYPE=${release.admin.target} SERVER_ARTIFACT_NAME=${messaging.server.artifact.name} EXAMPLE_NAME=${example.name} CLUSTERED=true${line.separator}"
+      <echo message="TEST_TYPE=${smoke.test.type} JBOSS_HOME=${jboss.home} JBOSS_CONFIGURATION=${jboss.configuration}-node0 CLIENT_VERSION=${jboss.hornetq.version} INSTALLATION_TYPE=${release.admin.target} SERVER_ARTIFACT_NAME=${messaging.server.artifact.name} EXAMPLE_NAME=${example.name} CLUSTERED=true${line.separator}"
             file="./output/smoke.log" append="yes"/>
 
    </target>

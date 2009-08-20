@@ -1,6 +1,6 @@
 <configuration
-   xmlns="urn:jboss:messaging" 
+   xmlns="urn:hornetq" 
    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-   xsi:schemaLocation="urn:jboss:messaging ../../src/schemas/jbm-configuration.xsd ">
+   xsi:schemaLocation="urn:hornetq ../../src/schemas/hornetq-configuration.xsd ">
    <!-- just use the defaults -->
 </configuration>

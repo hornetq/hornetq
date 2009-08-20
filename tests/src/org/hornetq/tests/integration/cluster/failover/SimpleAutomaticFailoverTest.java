@@ -768,7 +768,7 @@ public class SimpleAutomaticFailoverTest extends UnitTestCase
 
       ClientSession sess = sf.createSession(false, true, true);
 
-      sess.createQueue("jbm.notifications", "notifqueue", false);
+      sess.createQueue("hornetq.notifications", "notifqueue", false);
 
       ClientConsumer cons = sess.createConsumer("notifqueue");
 

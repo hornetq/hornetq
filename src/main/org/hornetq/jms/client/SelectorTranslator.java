@@ -18,12 +18,12 @@ import java.util.List;
 
 /**
  * 
- * This class converts a JMS selector expression into a JBM core filter expression.
+ * This class converts a JMS selector expression into a HornetQ core filter expression.
  * 
- * JMS selector and JBM filters use the same syntax but have different identifiers.
+ * JMS selector and HornetQ filters use the same syntax but have different identifiers.
  * 
  * We basically just need to replace the JMS header and property Identifier names
- * with the corresponding JBM field and header Identifier names.
+ * with the corresponding HornetQ field and header Identifier names.
  * 
  * We must be careful not to substitute any literals, or identifers whose name contains the name
  * of one we want to substitute.
@@ -35,7 +35,7 @@ import java.util.List;
  */
 public class SelectorTranslator
 {
-   public static String convertToJBMFilterString(final String selectorString)
+   public static String convertToHornetQFilterString(final String selectorString)
    {
       if (selectorString == null)
       {
@@ -44,11 +44,11 @@ public class SelectorTranslator
       
       //First convert any JMS header identifiers
         
-      String filterString = parse(selectorString, "JMSDeliveryMode", "JBMDurable");      
+      String filterString = parse(selectorString, "JMSDeliveryMode", "HQDurable");      
       filterString = parse(filterString, "'PERSISTENT'", "'DURABLE'");
       filterString = parse(filterString, "'NON_PERSISTENT'", "'NON_DURABLE'");      
-      filterString = parse(filterString, "JMSPriority", "JBMPriority");            
-      filterString = parse(filterString, "JMSTimestamp", "JBMTimestamp");
+      filterString = parse(filterString, "JMSPriority", "HQPriority");            
+      filterString = parse(filterString, "JMSTimestamp", "HQTimestamp");
       
       return filterString;
      

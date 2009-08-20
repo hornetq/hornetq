@@ -1246,7 +1246,7 @@ public class AlignedJournalImplTest extends UnitTestCase
    {
 
       SequentialFileFactory factory = new FakeSequentialFileFactory(512, false);
-      JournalImpl impl = new JournalImpl(512 + 512 * 3, 20, 0, 0, factory, "jbm", "jbm", 1000);
+      JournalImpl impl = new JournalImpl(512 + 512 * 3, 20, 0, 0, factory, "hq", "hq", 1000);
 
       impl.start();
 
@@ -1259,7 +1259,7 @@ public class AlignedJournalImplTest extends UnitTestCase
 
       impl.stop();
 
-      impl = new JournalImpl(512 + 1024 + 512, 20, 0, 0, factory, "jbm", "jbm", 1000);
+      impl = new JournalImpl(512 + 1024 + 512, 20, 0, 0, factory, "hq", "hq", 1000);
       impl.start();
       impl.load(dummyLoader);
 
@@ -1274,7 +1274,7 @@ public class AlignedJournalImplTest extends UnitTestCase
 
       impl.stop();
 
-      impl = new JournalImpl(512 + 1024 + 512, 20, 0, 0, factory, "jbm", "jbm", 1000);
+      impl = new JournalImpl(512 + 1024 + 512, 20, 0, 0, factory, "hq", "hq", 1000);
       impl.start();
 
       ArrayList<RecordInfo> info = new ArrayList<RecordInfo>();

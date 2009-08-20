@@ -30,7 +30,7 @@
     </section>
     <section id="using-jms.server.configuration">
         <title>JMS Server Configuration</title>
-        <para>The file <literal>jbm-jms.xml</literal> on the server classpath contains any JMS
+        <para>The file <literal>hornetq-jms.xml</literal> on the server classpath contains any JMS
             Queue, Topic and ConnectionFactory instances that we wish to create and make available
             to lookup via the JNDI.</para>
         <para>A JMS ConnectionFactory object is used by the client to make connections to the
@@ -41,9 +41,9 @@
             Connection Factory instances you can deploy from the file. Here's our
             configuration:</para>
         <programlisting>
-&lt;configuration xmlns="urn:jboss:messaging" 
+&lt;configuration xmlns="urn:hornetq" 
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="urn:jboss:messaging ../schemas/jbm-jms.xsd "&gt;
+    xsi:schemaLocation="urn:hornetq ../schemas/hornetq-jms.xsd "&gt;
     
     &lt;connection-factory name="ConnectionFactory"&gt;
         &lt;connector-ref connector-name="netty"/&gt;
@@ -64,7 +64,7 @@
         <note>
             <para>The JMS connection factory references a <literal>connector</literal> called
                     <literal>netty</literal>. This is a reference to a connector object deployed in
-                the main core configuration file <literal>jbm-configuration.xml</literal> which
+                the main core configuration file <literal>hornetq-configuration.xml</literal> which
                 defines the transport and parameters used to actually connect to the server.</para>
         </note>
     </section>
@@ -88,7 +88,7 @@ java.naming.factory.url.pkgs=org.jboss.naming:org.jnp.interfaces
             is the port used by the JNDI server and may vary depending on how you have configured
             your JNDI server.</para>
         <para>In the default standalone configuration, JNDI server ports are configured in the
-                <literal>jbm-jboss-beans.xml</literal> file where the JNDIServer bean is confgured,
+                <literal>hornetq-jboss-beans.xml</literal> file where the JNDIServer bean is confgured,
             here's a snippet from the file:</para>
         <programlisting>
 &lt;bean name="JNDIServer" class="org.jnp.server.Main"&gt;

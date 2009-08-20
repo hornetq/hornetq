@@ -66,7 +66,7 @@ public abstract class SequentialFileFactoryTestBase extends UnitTestCase
 
       for (int i = 0; i < numFiles; i++)
       {
-         String fileName = UUID.randomUUID().toString() + ".jbm";
+         String fileName = UUID.randomUUID().toString() + ".hq";
 
          expectedFiles.add(fileName);
 
@@ -88,7 +88,7 @@ public abstract class SequentialFileFactoryTestBase extends UnitTestCase
       SequentialFile sf2 = factory.createSequentialFile("different.cheese", 1);
       sf2.open();
 
-      List<String> fileNames = factory.listFiles("jbm");
+      List<String> fileNames = factory.listFiles("hq");
 
       assertEquals(expectedFiles.size(), fileNames.size());
 
@@ -115,7 +115,7 @@ public abstract class SequentialFileFactoryTestBase extends UnitTestCase
 
    public void testFill() throws Exception
    {
-      SequentialFile sf = factory.createSequentialFile("fill.jbm", 1);
+      SequentialFile sf = factory.createSequentialFile("fill.hq", 1);
 
       sf.open();
 
@@ -140,29 +140,29 @@ public abstract class SequentialFileFactoryTestBase extends UnitTestCase
 
    public void testDelete() throws Exception
    {
-      SequentialFile sf = factory.createSequentialFile("delete-me.jbm", 1);
+      SequentialFile sf = factory.createSequentialFile("delete-me.hq", 1);
 
       sf.open();
 
-      SequentialFile sf2 = factory.createSequentialFile("delete-me2.jbm", 1);
+      SequentialFile sf2 = factory.createSequentialFile("delete-me2.hq", 1);
 
       sf2.open();
 
-      List<String> fileNames = factory.listFiles("jbm");
+      List<String> fileNames = factory.listFiles("hq");
 
       assertEquals(2, fileNames.size());
 
-      assertTrue(fileNames.contains("delete-me.jbm"));
+      assertTrue(fileNames.contains("delete-me.hq"));
 
-      assertTrue(fileNames.contains("delete-me2.jbm"));
+      assertTrue(fileNames.contains("delete-me2.hq"));
 
       sf.delete();
 
-      fileNames = factory.listFiles("jbm");
+      fileNames = factory.listFiles("hq");
 
       assertEquals(1, fileNames.size());
 
-      assertTrue(fileNames.contains("delete-me2.jbm"));
+      assertTrue(fileNames.contains("delete-me2.hq"));
 
       sf2.close();
 
@@ -170,15 +170,15 @@ public abstract class SequentialFileFactoryTestBase extends UnitTestCase
    
    public void testRename() throws Exception
    {
-      SequentialFile sf = factory.createSequentialFile("test1.jbm", 1);
+      SequentialFile sf = factory.createSequentialFile("test1.hq", 1);
 
       sf.open();
 
-      List<String> fileNames = factory.listFiles("jbm");
+      List<String> fileNames = factory.listFiles("hq");
 
       assertEquals(1, fileNames.size());
 
-      assertTrue(fileNames.contains("test1.jbm"));
+      assertTrue(fileNames.contains("test1.hq"));
       
       sf.renameTo("test1.cmp");
 
@@ -190,7 +190,7 @@ public abstract class SequentialFileFactoryTestBase extends UnitTestCase
 
       sf.delete();
 
-      fileNames = factory.listFiles("jbm");
+      fileNames = factory.listFiles("hq");
 
       assertEquals(0, fileNames.size());
 
@@ -203,7 +203,7 @@ public abstract class SequentialFileFactoryTestBase extends UnitTestCase
    // TODO: RE-ENABLE THIS
 //   public void testWriteandRead() throws Exception
 //   {
-//      SequentialFile sf = factory.createSequentialFile("write.jbm", 1);
+//      SequentialFile sf = factory.createSequentialFile("write.hq", 1);
 //
 //      sf.open();
 //
@@ -265,7 +265,7 @@ public abstract class SequentialFileFactoryTestBase extends UnitTestCase
 //
 //   public void testPosition() throws Exception
 //   {
-//      SequentialFile sf = factory.createSequentialFile("position.jbm", 1);
+//      SequentialFile sf = factory.createSequentialFile("position.hq", 1);
 //
 //      sf.open();
 //
@@ -345,7 +345,7 @@ public abstract class SequentialFileFactoryTestBase extends UnitTestCase
 //
 //   public void testOpenClose() throws Exception
 //   {
-//      SequentialFile sf = factory.createSequentialFile("openclose.jbm", 1);
+//      SequentialFile sf = factory.createSequentialFile("openclose.hq", 1);
 //
 //      sf.open();
 //

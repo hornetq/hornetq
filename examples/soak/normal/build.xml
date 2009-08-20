@@ -75,7 +75,7 @@ Copyright 2009 Red Hat, Inc.
 
 	<target name="runServer" depends="compile">
 	    <echo message="Using server configuration from server.dir: ${server.dir}" />
-		<java classname="org.hornetq.common.example.SpawnedJBMServer" fork="true" clonevm="true" resultproperty="example-result">
+		<java classname="org.hornetq.common.example.SpawnedHornetQServer" fork="true" clonevm="true" resultproperty="example-result">
 			<jvmarg value="-Xms2048M" />
 			<jvmarg value="-Xmx2048M" />
 			<jvmarg value="-XX:+UseParallelGC" />
@@ -84,7 +84,7 @@ Copyright 2009 Red Hat, Inc.
 			<jvmarg value="-XX:+UseFastAccessorMethods" />
 			<jvmarg value="-Djava.util.logging.config.file=${config.dir}/logging.properties" />
 			<jvmarg value="-Dcom.sun.management.jmxremote" />
-			<arg line="jbm-jboss-beans.xml" />
+			<arg line="hornetq-jboss-beans.xml" />
 			<classpath refid="extra.classpath" />
 			<classpath refid="server.classpath" />
 		</java>

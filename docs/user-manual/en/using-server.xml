@@ -99,7 +99,7 @@
             following files.</para>
         <itemizedlist>
             <listitem>
-                <para><literal>jbm-jboss-beans.xml</literal>. This is the JBoss Microcontainer beans
+                <para><literal>hornetq-jboss-beans.xml</literal>. This is the JBoss Microcontainer beans
                     file which defines what beans the Microcontainer should create and what
                     dependencies to enforce between them. Remember that JBoss Messaging is just a
                     set of POJOs. In the stand-alone server, it's the JBoss Microcontainer which
@@ -108,30 +108,30 @@
                     file.</para>
             </listitem>
             <listitem>
-                <para><literal>jbm-configuration.xml</literal>. This is the main JBoss Messaging
+                <para><literal>hornetq-configuration.xml</literal>. This is the main JBoss Messaging
                     configuration file. All the parameters in this file are described in <xref
                         linkend="configuration-index"/>.</para>
             </listitem>
             <listitem>
-                <para><literal>jbm-queues.xml</literal>. This file contains predefined queues, queue
+                <para><literal>hornetq-queues.xml</literal>. This file contains predefined queues, queue
                     settings and security settings. The file is optional - all this configuration
-                    can also live in <literal>jbm-configuration.xml</literal>. In fact, the default
+                    can also live in <literal>hornetq-configuration.xml</literal>. In fact, the default
                     configuration sets do not have a <literal>jbm.queues.xml</literal> file. The
                     purpose of allowing queues to be configured in these files is to allow you to
                     manage your queue configuration over many files instead of being forced to
                     maintain it in a single file. There can be many <literal
-                        >jbm-queues.xml</literal> files on the classpath. All will be loaded if
+                        >hornetq-queues.xml</literal> files on the classpath. All will be loaded if
                     found.</para>
             </listitem>
             <listitem>
-                <para><literal>jbm-users.xml</literal> JBoss Messaging ships with a security manager
+                <para><literal>hornetq-users.xml</literal> JBoss Messaging ships with a security manager
                     implementation which obtains user credentials from the <literal
-                        >jbm-users.xml</literal> file. This file contains user, password and role
+                        >hornetq-users.xml</literal> file. This file contains user, password and role
                     information. For more information on security ,please see <xref
                         linkend="security"/>.</para>
             </listitem>
             <listitem>
-                <para><literal>jbm-jms.xml</literal> The distro configuration by default includes a
+                <para><literal>hornetq-jms.xml</literal> The distro configuration by default includes a
                     server side JMS service which mainly deploys JMS Queues, Topics and
                     ConnectionFactorys from this file into JNDI. If you're not using JMS, or you
                     don't need to deploy JMS objects on the server side, then you don't need this
@@ -150,7 +150,7 @@
         </itemizedlist>
         <note>
             <para>The property <literal>file-deployment-enabled</literal> in the <literal
-                    >jbm-configuration.xml</literal> configuration when set to false mans that the
+                    >hornetq-configuration.xml</literal> configuration when set to false mans that the
                 other configuration files are not loaded. This is true by default.</para>
         </note>
         <para>It is also possible to use system property substitution in all the configuration
@@ -158,14 +158,14 @@
             this with a connector configuration:</para>
         <programlisting>&lt;connector name="netty">
          &lt;factory-class>org.hornetq.integration.transports.netty.NettyConnectorFactory&lt;/factory-class>
-         &lt;param key="jbm.remoting.netty.host"  value="${jbm.remoting.netty.host:localhost}" type="String"/>
-         &lt;param key="jbm.remoting.netty.port"  value="${jbm.remoting.netty.port:5445}" type="Integer"/>
+         &lt;param key="hornetq.remoting.netty.host"  value="${hornetq.remoting.netty.host:localhost}" type="String"/>
+         &lt;param key="hornetq.remoting.netty.port"  value="${hornetq.remoting.netty.port:5445}" type="Integer"/>
 &lt;/connector></programlisting>
         <para>here you can see we have replaced 2 values with system properties <literal
-                >jbm.remoting.netty.host</literal> and <literal>jbm.remoting.netty.port</literal>.
+                >hornetq.remoting.netty.host</literal> and <literal>hornetq.remoting.netty.port</literal>.
             These values will be replaced by the value found in the system property if there is one,
             if not they default back to localhost or 5445 respectively. It is also possible to not
-            supply a default. i.e. <literal>${jbm.remoting.netty.host}</literal>, however the system
+            supply a default. i.e. <literal>${hornetq.remoting.netty.host}</literal>, however the system
             property <emphasis>must</emphasis> be supplied in that case.</para>
     </section>
     <section id="server.microcontainer.configuration">
@@ -208,8 +208,8 @@
 &lt;/bean&gt;
 
 &lt;!-- The security manager --&gt;
-&lt;bean name="JBMSecurityManager" 
-      class="org.hornetq.core.security.impl.JBMSecurityManagerImpl"&gt;
+&lt;bean name="HornetQSecurityManager" 
+      class="org.hornetq.core.security.impl.HornetQSecurityManagerImpl"&gt;
    &lt;start ignored="true"/&gt;
    &lt;stop ignored="true"/&gt;
 &lt;/bean&gt;
@@ -226,7 +226,7 @@
          &lt;inject bean="MBeanServer"/&gt;
       &lt;/parameter&gt;
       &lt;parameter&gt;
-         &lt;inject bean="JBMSecurityManager"/&gt;
+         &lt;inject bean="HornetQSecurityManager"/&gt;
       &lt;/parameter&gt;        
    &lt;/constructor&gt;         
 &lt;/bean&gt;
@@ -270,7 +270,7 @@
             <listitem>
                 <para>Security Manager. The security manager used by the messaging server is
                     pluggable. The default one used just reads user-role information from the
-                        <literal>jbm-users.xml</literal> file on disk. However it can be replaced by
+                        <literal>hornetq-users.xml</literal> file on disk. However it can be replaced by
                     a JAAS security manager, or when running inside JBoss Application Server it can
                     be configured to use the JBoss AS security manager for tight integration with
                     JBoss AS security. If you've disabled security altogether you can remove this
@@ -283,7 +283,7 @@
             <listitem>
                 <para>JMSServerManager</para>
                 <para>This deploys any JMS Objects such as JMS Queues, Topics and ConnectionFactory
-                    instances from <literal>jbm-jms.xml</literal> files on the disk. It also
+                    instances from <literal>hornetq-jms.xml</literal> files on the disk. It also
                     provides a simple management API for manipulating JMS Objects. On the whole it
                     just translates and delegates its work to the core server. If you don't need to
                     deploy JMS Queues, Topics and ConnectionFactorys from server side configuration
@@ -294,7 +294,7 @@
     <section id="usingserver.mainconfig">
         <title>The main configuration file.</title>
         <para>The configuration for the JBoss Messaging core server is contained in <literal
-                >jbm-configuration.xml</literal>. This is what the FileConfiguration bean uses to
+                >hornetq-configuration.xml</literal>. This is what the FileConfiguration bean uses to
             configure the messaging server.</para>
         <para>There are many attributes which you can configure JBoss Messaging. In most cases the
             defaults will do fine, in fact every attribute can be defaulted which means a file with

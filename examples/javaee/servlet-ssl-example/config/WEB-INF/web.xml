@@ -7,13 +7,13 @@
       <servlet-class>org.jboss.netty.channel.socket.http.HttpTunnelingServlet</servlet-class>
       <init-param>
              <param-name>endpoint</param-name>
-             <param-value>local:org.jboss.jbm</param-value>
+             <param-value>local:org.hornetq</param-value>
            </init-param>
            <load-on-startup>1</load-on-startup>
    </servlet>
 
    <servlet-mapping>
       <servlet-name>NettyServlet</servlet-name>
-      <url-pattern>/JBMServlet</url-pattern>
+      <url-pattern>/HornetQServlet</url-pattern>
    </servlet-mapping>
 </web-app>

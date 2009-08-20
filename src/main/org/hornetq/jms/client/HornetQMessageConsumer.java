@@ -394,18 +394,18 @@ public class HornetQMessageConsumer implements MessageConsumer, QueueReceiver, T
       {
          ClientMessage message = consumer.receive(timeout);
 
-         HornetQMessage jbm = null;
+         HornetQMessage msg = null;
 
          if (message != null)
          {
             message.acknowledge();
 
-            jbm = HornetQMessage.createMessage(message, ackMode == Session.CLIENT_ACKNOWLEDGE ? session.getCoreSession()
+            msg = HornetQMessage.createMessage(message, ackMode == Session.CLIENT_ACKNOWLEDGE ? session.getCoreSession()
                                                                                            : null);
 
             try
             {
-               jbm.doBeforeReceive();
+               msg.doBeforeReceive();
             }
             catch (Exception e)
             {
@@ -415,7 +415,7 @@ public class HornetQMessageConsumer implements MessageConsumer, QueueReceiver, T
             }
          }
 
-         return jbm;
+         return msg;
       }
       catch (MessagingException e)
       {

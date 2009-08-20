@@ -675,7 +675,7 @@ public class PagingStoreImpl implements TestSupportPageStore
                   returnPage.delete();
 
                   // This will trigger this Destination to exit the page mode,
-                  // and this will make JBM start using the journal again
+                  // and this will make HornetQ start using the journal again
                   return null;
                }
                else

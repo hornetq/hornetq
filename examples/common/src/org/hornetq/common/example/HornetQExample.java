@@ -40,26 +40,26 @@ public abstract class HornetQExample
    private String serverProps;
 
    public abstract boolean runExample() throws Exception;
-   
+
    private boolean logServerOutput;
-   
+
    private String[] configs;
-      
+
    protected void run(String[] configs)
    {
-      String runServerProp = System.getProperty("jbm.example.runServer");
-      String logServerOutputProp = System.getProperty("jbm.example.logserveroutput");
-      serverClasspath = System.getProperty("jbm.example.server.classpath");
+      String runServerProp = System.getProperty("hornetq.example.runServer");
+      String logServerOutputProp = System.getProperty("hornetq.example.logserveroutput");
+      serverClasspath = System.getProperty("hornetq.example.server.classpath");
       boolean runServer = runServerProp == null ? true : Boolean.valueOf(runServerProp);
-      logServerOutput = logServerOutputProp == null?false:Boolean.valueOf(logServerOutputProp);
-      serverProps = System.getProperty("jbm.example.server.args");
-      if(System.getProperty("jbm.example.server.override.args") != null)
+      logServerOutput = logServerOutputProp == null ? false : Boolean.valueOf(logServerOutputProp);
+      serverProps = System.getProperty("hornetq.example.server.args");
+      if (System.getProperty("hornetq.example.server.override.args") != null)
       {
-         serverProps = System.getProperty("jbm.example.server..override.args");  
+         serverProps = System.getProperty("hornetq.example.server.override.args");
       }
       System.out.println("serverProps = " + serverProps);
-      log.info("jbm.example.runServer is " + runServer);
-      
+      log.info("hornetq.example.runServer is " + runServer);
+
       this.configs = configs;
 
       try
@@ -68,12 +68,12 @@ public abstract class HornetQExample
          {
             startServers();
          }
-         
+
          if (!runExample())
          {
             failure = true;
          }
-          System.out.println("example complete");
+         System.out.println("example complete");
       }
       catch (Throwable e)
       {
@@ -105,28 +105,28 @@ public abstract class HornetQExample
             }
          }
       }
-      reportResultAndExit();      
+      reportResultAndExit();
    }
 
    protected void killServer(int id) throws Exception
    {
       System.out.println("Killing server " + id);
-      
+
       // We kill the server by creating a new file in the server dir which is checked for by the server
       // We can't use Process.destroy() since this does not do a hard kill - it causes shutdown hooks
       // to be called which cleanly shutdown the server
       File file = new File("server" + id + "/KILL_ME");
-      
+
       file.createNewFile();
    }
-   
-   protected void stopServer(int id) throws Exception 
+
+   protected void stopServer(int id) throws Exception
    {
       System.out.println("Stopping server " + id);
-      
+
       stopServer(servers[id]);
    }
-   
+
    protected InitialContext getContext(int serverId) throws Exception
    {
       String jndiFilename = "server" + serverId + "/client-jndi.properties";
@@ -141,39 +141,38 @@ public abstract class HornetQExample
       }
       finally
       {
-         if(inStream != null)
+         if (inStream != null)
          {
             inStream.close();
          }
       }
       return new InitialContext(props);
    }
-   
+
    protected void startServer(int index) throws Exception
    {
       String config = configs[index];
-      log.info("starting server with config '" + config + "' " + "logServerOutput " + logServerOutput);    
-      servers[index] = SpawnedVMSupport.spawnVM(
-            serverClasspath,
-            "JBMServer_" + index,
-            SpawnedJBMServer.class.getName(),
-            serverProps,
-            logServerOutput,
-            "STARTED::",
-            "FAILED::",
-            config,
-            "jbm-jboss-beans.xml");   
+      log.info("starting server with config '" + config + "' " + "logServerOutput " + logServerOutput);
+      servers[index] = SpawnedVMSupport.spawnVM(serverClasspath,
+                                                "HornetQServer_" + index,
+                                                SpawnedHornetQServer.class.getName(),
+                                                serverProps,
+                                                logServerOutput,
+                                                "STARTED::",
+                                                "FAILED::",
+                                                config,
+                                                "hornetq-jboss-beans.xml");
    }
-   
+
    private void startServers() throws Exception
-   {     
+   {
       servers = new Process[configs.length];
       for (int i = 0; i < configs.length; i++)
       {
          startServer(i);
-      }      
+      }
    }
-   
+
    private void stopServers() throws Exception
    {
       for (Process server : servers)
@@ -184,8 +183,7 @@ public abstract class HornetQExample
 
    private void stopServer(Process server) throws Exception
    {
-      if (!System.getProperty("os.name").contains("Windows")
-          && !System.getProperty("os.name").contains("Mac OS X"))
+      if (!System.getProperty("os.name").contains("Windows") && !System.getProperty("os.name").contains("Mac OS X"))
       {
          if (server.getInputStream() != null)
          {
@@ -199,7 +197,6 @@ public abstract class HornetQExample
       server.destroy();
    }
 
-   
    private void reportResultAndExit()
    {
       if (failure)

@@ -64,45 +64,11 @@
       <exec dir="${jboss.home}/bin" executable="cmd" osfamily="windows">
          <arg line="/c run.bat -c jca-config-example-profile2 -Djboss.service.binding.set=ports-01"/>
       </exec>
-      <!-- copy 1st server resources  configuration -->
-      <!--<copy file="./server/jms-remote-ds.xml" todir="${deploy.dir}" overwrite="yes"/>
-   	  <copy file="./server/jbm-queues.xml" tofile="${deploy.dir}/messaging.sar/jbm-queues.xml" overwrite="yes"/>
-   	  <copy file="./server/jbm-jms.xml" tofile="${deploy.dir}/messaging.sar/jbm-jms.xml" overwrite="yes"/>
-
-      --><!-- copy 2nd server resources configuration --><!--
-      <copy file="./server/jbm-queues.xml" tofile="${deploy.dir2}/messaging.sar/jbm-queues.xml" overwrite="yes"/>
-   	  <copy file="./server/jbm-jms.xml" tofile="${deploy.dir2}/messaging.sar/jbm-jms.xml" overwrite="yes"/>
-
-   	  <copy todir="${deploy.dir}/example-jbm-ra.rar.tmp" overwrite="yes">
-         <fileset dir="${deploy.dir}/jms-ra.rar" includes="**/*" excludes="META-INF/ra.xml"/>
-      </copy>
-   	  <copy file="./server/alternate-ra.xml" tofile="${deploy.dir}/example-jbm-ra.rar.tmp/META-INF/ra.xml" overwrite="yes"/>
-   	  --><!-- We need the deployment atomic. We only rename the file after the ra.xml was copied --><!--
-   	  <move file="${deploy.dir}/example-jbm-ra.rar.tmp" tofile="${deploy.dir}/example-jbm-ra.rar" overwrite="yes"/>
-   	  <sleep seconds="10"/>
-      <antcall target="deploy-ear">
-         <param name="deploy.dir" value="${deploy.dir}" />
-      </antcall>-->
    </target>
 
    <target name="undeploy2">
       <property name="deploy.dir2" value="${jboss.home}/server/jca-config-example-profile2/" />
-      <delete dir="${deploy.dir2}"/>
-      <!--<property name="deploy.dir" value="${jboss.home}/server/default-with-jbm2/deploy/" />
-      <property name="deploy.dir2" value="${jboss.home}/server/default-with-jbm2_2/deploy/" />
-
-      <delete file="${deploy.dir}/mdb-example.ear" failonerror="false"/>
-
-      --><!-- delete 1st server resources  configuration --><!--
-      <delete file="${deploy.dir}/jms-remote-ds.xml" failonerror="false"/>
-      <delete file="${deploy.dir}/messaging.sar/jbm-queues.xml" failonerror="false"/>
-      <delete file="${deploy.dir}/messaging.sar/jbm-jms.xml" failonerror="false"/>
-
-      <delete dir="${deploy.dir}/example-jbm-ra.rar" failonerror="false"/>
-
-      --><!-- delete 2nd server resources configuration --><!--
-      <delete file="${deploy.dir2}/messaging.sar/jbm-queues.xml" failonerror="false"/>
-      <delete file="${deploy.dir2}/messaging.sar/jbm-jms.xml" failonerror="false"/>-->
+      <delete dir="${deploy.dir2}"/>      
    </target>
 
    <target name="run">

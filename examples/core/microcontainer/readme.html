@@ -16,8 +16,8 @@
      
         <li>Start the server</li>
         <pre>
-         jbm = new JBMBootstrapServer("./server0/jbm-jboss-beans.xml");
-         jbm.run();
+         hornetq = new HornetQBootstrapServer("./server0/hornetq-jboss-beans.xml");
+         hornetq.run();
         </pre>
      
         <li>As we are not using a JNDI environment we instantiate the objects directly</li>
@@ -79,7 +79,7 @@
 
         <pre>
            <code>
-           jbm.shutdown();
+           hornetq.shutdown();
 		   </code>
         </pre>
      </ol>

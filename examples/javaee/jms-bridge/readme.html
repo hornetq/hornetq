@@ -32,7 +32,7 @@
 
      <p>The JMS Bridge is configured using JBoss microcontainer (<a href="config/jms-bridge-jboss-beans.xml">jms-bridge-jboss-beans.xml</a> contains comments about the various parameters 
          used to configure the bridge).<br />
-     <p>The Bridge is deployed in the application server when you run <code>ant deploy</code> (it is copied to <code>${JBOSS_HOME}/server/default-with-jbm2/deploy/</code>).</p>
+     <p>The Bridge is deployed in the application server when you run <code>ant deploy</code> (it is copied to <code>${JBOSS_HOME}/server/default-with-hornetq/deploy/</code>).</p>
          
      <h2>Example step-by-step</h2>
 
@@ -120,9 +120,9 @@
              <code>System.out.format("Message ID         : %s\n", messageReceived.getJMSMessageID());</code>
          </pre>
          
-         <li>If you need to retrieve the message ID of the message <em>sent to the source</em>, you can use the property <code>JBM_BRIDGE_MSG_ID_LIST</code></li>
+         <li>If you need to retrieve the message ID of the message <em>sent to the source</em>, you can use the property <code>HQ_BRIDGE_MSG_ID_LIST</code></li>
          <pre>
-             <code>System.out.format("Bridged Message ID : %s\n", messageReceived.getStringProperty("JBM_BRIDGE_MSG_ID_LIST"));</code>
+             <code>System.out.format("Bridged Message ID : %s\n", messageReceived.getStringProperty("HQ_BRIDGE_MSG_ID_LIST"));</code>
          </pre>
         
          <li>And finally, <b>always</b> remember to close the JMS connections and resources after use, in a <code>finally</code> block. Closing a JMS connection will automatically close all of its sessions, consumers, producer and browser objects</li>

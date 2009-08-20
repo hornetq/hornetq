@@ -82,7 +82,7 @@ public class JMSBridgeExample
          System.out.format("Message ID         : %s\n", messageReceived.getJMSMessageID());
 
          // Step 12. Display the message ID of the message received by the *bridge*
-         System.out.format("Bridged Message ID : %s\n", messageReceived.getStringProperty("JBM_BRIDGE_MSG_ID_LIST"));
+         System.out.format("Bridged Message ID : %s\n", messageReceived.getStringProperty("HQ_BRIDGE_MSG_ID_LIST"));
       }
       finally
       {
