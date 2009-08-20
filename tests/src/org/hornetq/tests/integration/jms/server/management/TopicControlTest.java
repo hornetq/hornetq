@@ -220,7 +220,7 @@ import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
 import org.hornetq.core.server.Messaging;
 import org.hornetq.core.server.MessagingServer;
-import org.hornetq.jms.JBossTopic;
+import org.hornetq.jms.HornetQTopic;
 import org.hornetq.jms.server.impl.JMSServerManagerImpl;
 import org.hornetq.jms.server.management.SubscriptionInfo;
 import org.hornetq.jms.server.management.TopicControl;
@@ -251,7 +251,7 @@ public class TopicControlTest extends ManagementTestBase
 
    private String subscriptionName;
 
-   protected JBossTopic topic;
+   protected HornetQTopic topic;
 
    // Static --------------------------------------------------------
 
@@ -527,7 +527,7 @@ public class TopicControlTest extends ManagementTestBase
       JMSUtil.sendMessages(topic, 3);
 
       TopicControl topicControl = createManagementControl();
-      Map<String, Object>[] messages = topicControl.listMessagesForSubscription(JBossTopic.createQueueNameForDurableSubscription(clientID,
+      Map<String, Object>[] messages = topicControl.listMessagesForSubscription(HornetQTopic.createQueueNameForDurableSubscription(clientID,
                                                                                                                                  subscriptionName));
       assertEquals(3, messages.length);
       
@@ -543,7 +543,7 @@ public class TopicControlTest extends ManagementTestBase
       String[] ids = JMSUtil.sendMessages(topic, 3);
 
       TopicControl topicControl = createManagementControl();
-      String jsonString = topicControl.listMessagesForSubscriptionAsJSON(JBossTopic.createQueueNameForDurableSubscription(clientID,
+      String jsonString = topicControl.listMessagesForSubscriptionAsJSON(HornetQTopic.createQueueNameForDurableSubscription(clientID,
                                                                                                                                  subscriptionName));
       assertNotNull(jsonString);
       JSONArray array = new JSONArray(jsonString);
@@ -564,7 +564,7 @@ public class TopicControlTest extends ManagementTestBase
 
       try
       {
-         topicControl.listMessagesForSubscription(JBossTopic.createQueueNameForDurableSubscription(unknownClientID,
+         topicControl.listMessagesForSubscription(HornetQTopic.createQueueNameForDurableSubscription(unknownClientID,
                                                                                                    subscriptionName));
          fail();
       }
@@ -581,7 +581,7 @@ public class TopicControlTest extends ManagementTestBase
 
       try
       {
-         topicControl.listMessagesForSubscription(JBossTopic.createQueueNameForDurableSubscription(clientID,
+         topicControl.listMessagesForSubscription(HornetQTopic.createQueueNameForDurableSubscription(clientID,
                                                                                                    unknownSubscription));
          fail();
       }
@@ -617,7 +617,7 @@ public class TopicControlTest extends ManagementTestBase
 
       String topicName = randomString();
       serverManager.createTopic(topicName, topicName);
-      topic = new JBossTopic(topicName);
+      topic = new HornetQTopic(topicName);
    }
 
    @Override

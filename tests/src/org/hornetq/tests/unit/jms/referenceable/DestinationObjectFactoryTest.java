@@ -208,8 +208,8 @@ import static org.hornetq.tests.util.RandomUtil.randomString;
 
 import javax.naming.Reference;
 
-import org.hornetq.jms.JBossDestination;
-import org.hornetq.jms.JBossQueue;
+import org.hornetq.jms.HornetQDestination;
+import org.hornetq.jms.HornetQQueue;
 import org.hornetq.jms.referenceable.DestinationObjectFactory;
 import org.hornetq.tests.util.UnitTestCase;
 
@@ -233,13 +233,13 @@ public class DestinationObjectFactoryTest extends UnitTestCase
 
    public void testReference() throws Exception
    {
-      JBossDestination queue = new JBossQueue(randomString());
+      HornetQDestination queue = new HornetQQueue(randomString());
       Reference reference = queue.getReference();
 
       DestinationObjectFactory factory = new DestinationObjectFactory();
       Object object = factory.getObjectInstance(reference, null, null, null);
       assertNotNull(object);
-      assertTrue(object instanceof JBossDestination);
+      assertTrue(object instanceof HornetQDestination);
       assertEquals(queue, object);
    }
    

@@ -221,7 +221,7 @@ import junit.framework.Assert;
 
 import org.hornetq.core.config.TransportConfiguration;
 import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
-import org.hornetq.jms.client.JBossConnectionFactory;
+import org.hornetq.jms.client.HornetQConnectionFactory;
 
 /**
  * A JMSUtil
@@ -243,7 +243,7 @@ public class JMSUtil
 
    public static Connection createConnection(String connectorFactory) throws JMSException
    {
-      JBossConnectionFactory cf = new JBossConnectionFactory(new TransportConfiguration(connectorFactory));
+      HornetQConnectionFactory cf = new HornetQConnectionFactory(new TransportConfiguration(connectorFactory));
       
       cf.setBlockOnNonPersistentSend(true);
       cf.setBlockOnPersistentSend(true);
@@ -254,7 +254,7 @@ public class JMSUtil
    
    public static ConnectionFactory createFactory(String connectorFactory, long connectionTTL, long clientFailureCheckPeriod) throws JMSException
    {
-      JBossConnectionFactory cf = new JBossConnectionFactory(new TransportConfiguration(connectorFactory));
+      HornetQConnectionFactory cf = new HornetQConnectionFactory(new TransportConfiguration(connectorFactory));
       
       cf.setBlockOnNonPersistentSend(true);
       cf.setBlockOnPersistentSend(true);
@@ -290,7 +290,7 @@ public class JMSUtil
 
    public static String[] sendMessages(Destination destination, int messagesToSend) throws Exception
    {
-      JBossConnectionFactory cf = new JBossConnectionFactory(new TransportConfiguration(InVMConnectorFactory.class.getName()));
+      HornetQConnectionFactory cf = new HornetQConnectionFactory(new TransportConfiguration(InVMConnectorFactory.class.getName()));
       return sendMessages(cf, destination, messagesToSend);
    }
 

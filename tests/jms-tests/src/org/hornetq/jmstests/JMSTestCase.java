@@ -232,7 +232,7 @@ import java.util.List;
 import javax.naming.InitialContext;
 
 import org.hornetq.core.config.TransportConfiguration;
-import org.hornetq.jms.client.JBossConnectionFactory;
+import org.hornetq.jms.client.HornetQConnectionFactory;
 import org.hornetq.utils.Pair;
 
 /**
@@ -244,7 +244,7 @@ import org.hornetq.utils.Pair;
 public class JMSTestCase extends HornetQServerTestCase
 {
 
-   protected static JBossConnectionFactory cf;
+   protected static HornetQConnectionFactory cf;
 
    protected static InitialContext ic;
 
@@ -303,7 +303,7 @@ public class JMSTestCase extends HornetQServerTestCase
                                                     DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN,
                                                     jndiBindings);
 
-      cf = (JBossConnectionFactory)getInitialContext().lookup("/testsuitecf");
+      cf = (HornetQConnectionFactory)getInitialContext().lookup("/testsuitecf");
 
       assertRemainingMessages(0);
    }

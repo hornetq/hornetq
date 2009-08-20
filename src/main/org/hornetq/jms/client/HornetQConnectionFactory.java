@@ -236,7 +236,7 @@ import org.hornetq.utils.Pair;
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision$</tt> $Id$
  */
-public class JBossConnectionFactory implements ConnectionFactory, QueueConnectionFactory, TopicConnectionFactory,
+public class HornetQConnectionFactory implements ConnectionFactory, QueueConnectionFactory, TopicConnectionFactory,
          XAConnectionFactory, XAQueueConnectionFactory, XATopicConnectionFactory, Serializable/*
    * , Referenceable
    * http://jira.jboss.org/jira/browse/JBMESSAGING-395
@@ -246,7 +246,7 @@ public class JBossConnectionFactory implements ConnectionFactory, QueueConnectio
 
    private final static long serialVersionUID = -2810634789345348326L;
 
-   private static final Logger log = Logger.getLogger(JBossConnectionFactory.class);
+   private static final Logger log = Logger.getLogger(HornetQConnectionFactory.class);
 
    // Static ---------------------------------------------------------------------------------------
 
@@ -264,33 +264,33 @@ public class JBossConnectionFactory implements ConnectionFactory, QueueConnectio
 
    // Constructors ---------------------------------------------------------------------------------
 
-   public JBossConnectionFactory()
+   public HornetQConnectionFactory()
    {
       sessionFactory = new ClientSessionFactoryImpl();
    }
 
-   public JBossConnectionFactory(final ClientSessionFactory sessionFactory)
+   public HornetQConnectionFactory(final ClientSessionFactory sessionFactory)
    {
       this.sessionFactory = sessionFactory;
    }
 
-   public JBossConnectionFactory(final String discoveryAddress, final int discoveryPort)
+   public HornetQConnectionFactory(final String discoveryAddress, final int discoveryPort)
    {
       sessionFactory = new ClientSessionFactoryImpl(discoveryAddress, discoveryPort);
    }
 
-   public JBossConnectionFactory(final List<Pair<TransportConfiguration, TransportConfiguration>> staticConnectors)
+   public HornetQConnectionFactory(final List<Pair<TransportConfiguration, TransportConfiguration>> staticConnectors)
    {
       sessionFactory = new ClientSessionFactoryImpl(staticConnectors);
    }
 
-   public JBossConnectionFactory(final TransportConfiguration connectorConfig,
+   public HornetQConnectionFactory(final TransportConfiguration connectorConfig,
                                  final TransportConfiguration backupConnectorConfig)
    {
       sessionFactory = new ClientSessionFactoryImpl(connectorConfig, backupConnectorConfig);
    }
 
-   public JBossConnectionFactory(final TransportConfiguration connectorConfig)
+   public HornetQConnectionFactory(final TransportConfiguration connectorConfig)
    {
       this(connectorConfig, null);
    }
@@ -304,7 +304,7 @@ public class JBossConnectionFactory implements ConnectionFactory, QueueConnectio
 
    public Connection createConnection(final String username, final String password) throws JMSException
    {
-      return createConnectionInternal(username, password, false, JBossConnection.TYPE_GENERIC_CONNECTION);
+      return createConnectionInternal(username, password, false, HornetQConnection.TYPE_GENERIC_CONNECTION);
    }
 
    // QueueConnectionFactory implementation --------------------------------------------------------
@@ -316,7 +316,7 @@ public class JBossConnectionFactory implements ConnectionFactory, QueueConnectio
 
    public QueueConnection createQueueConnection(final String username, final String password) throws JMSException
    {
-      return createConnectionInternal(username, password, false, JBossConnection.TYPE_QUEUE_CONNECTION);
+      return createConnectionInternal(username, password, false, HornetQConnection.TYPE_QUEUE_CONNECTION);
    }
 
    // TopicConnectionFactory implementation --------------------------------------------------------
@@ -328,7 +328,7 @@ public class JBossConnectionFactory implements ConnectionFactory, QueueConnectio
 
    public TopicConnection createTopicConnection(final String username, final String password) throws JMSException
    {
-      return createConnectionInternal(username, password, false, JBossConnection.TYPE_TOPIC_CONNECTION);
+      return createConnectionInternal(username, password, false, HornetQConnection.TYPE_TOPIC_CONNECTION);
    }
 
    // XAConnectionFactory implementation -----------------------------------------------------------
@@ -340,7 +340,7 @@ public class JBossConnectionFactory implements ConnectionFactory, QueueConnectio
 
    public XAConnection createXAConnection(final String username, final String password) throws JMSException
    {
-      return createConnectionInternal(username, password, true, JBossConnection.TYPE_GENERIC_CONNECTION);
+      return createConnectionInternal(username, password, true, HornetQConnection.TYPE_GENERIC_CONNECTION);
    }
 
    // XAQueueConnectionFactory implementation ------------------------------------------------------
@@ -352,7 +352,7 @@ public class JBossConnectionFactory implements ConnectionFactory, QueueConnectio
 
    public XAQueueConnection createXAQueueConnection(final String username, final String password) throws JMSException
    {
-      return createConnectionInternal(username, password, true, JBossConnection.TYPE_QUEUE_CONNECTION);
+      return createConnectionInternal(username, password, true, HornetQConnection.TYPE_QUEUE_CONNECTION);
    }
 
    // XATopicConnectionFactory implementation ------------------------------------------------------
@@ -364,7 +364,7 @@ public class JBossConnectionFactory implements ConnectionFactory, QueueConnectio
 
    public XATopicConnection createXATopicConnection(final String username, final String password) throws JMSException
    {
-      return createConnectionInternal(username, password, true, JBossConnection.TYPE_TOPIC_CONNECTION);
+      return createConnectionInternal(username, password, true, HornetQConnection.TYPE_TOPIC_CONNECTION);
    }
 
    // Referenceable implementation -----------------------------------------------------------------
@@ -709,14 +709,14 @@ public class JBossConnectionFactory implements ConnectionFactory, QueueConnectio
 
    // Protected ------------------------------------------------------------------------------------
 
-   protected synchronized JBossConnection createConnectionInternal(final String username,
+   protected synchronized HornetQConnection createConnectionInternal(final String username,
                                                                    final String password,
                                                                    final boolean isXA,
                                                                    final int type) throws JMSException
    {
       readOnly = true;
 
-      JBossConnection connection = new JBossConnection(username,
+      HornetQConnection connection = new HornetQConnection(username,
                                                        password,
                                                        type,
                                                        clientID,
@@ -749,7 +749,7 @@ public class JBossConnectionFactory implements ConnectionFactory, QueueConnectio
    {
       if (readOnly)
       {
-         throw new IllegalStateException("Cannot set attribute on JBossConnectionFactory after it has been used");
+         throw new IllegalStateException("Cannot set attribute on HornetQConnectionFactory after it has been used");
       }
    }
 

@@ -224,7 +224,7 @@ public class JMSMessageListenerWrapper implements MessageHandler
 {
    private static final Logger log = Logger.getLogger(JMSMessageListenerWrapper.class);
       
-   private final JBossSession session;
+   private final HornetQSession session;
    
    private final MessageListener listener;
    
@@ -232,7 +232,7 @@ public class JMSMessageListenerWrapper implements MessageHandler
    
    private final boolean transactedOrClientAck;
    
-   public JMSMessageListenerWrapper(final JBossSession session, final ClientConsumer consumer, final MessageListener listener, final int ackMode)
+   public JMSMessageListenerWrapper(final HornetQSession session, final ClientConsumer consumer, final MessageListener listener, final int ackMode)
    {
       this.session = session;
       
@@ -249,7 +249,7 @@ public class JMSMessageListenerWrapper implements MessageHandler
     */
    public void onMessage(final ClientMessage message)
    {
-      JBossMessage jbm = JBossMessage.createMessage(message, session.getCoreSession());
+      HornetQMessage jbm = HornetQMessage.createMessage(message, session.getCoreSession());
       
       try
       {

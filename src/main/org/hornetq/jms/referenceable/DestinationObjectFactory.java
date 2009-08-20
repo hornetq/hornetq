@@ -211,14 +211,14 @@ import javax.naming.Name;
 import javax.naming.Reference;
 import javax.naming.spi.ObjectFactory;
 
-import org.hornetq.jms.JBossDestination;
+import org.hornetq.jms.HornetQDestination;
 
 
 /**
  * 
  * A DestinationObjectFactory.
  * 
- * Given a Reference - reconstructs a JBossDestination
+ * Given a Reference - reconstructs a HornetQDestination
  * 
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
  * @version $Revision$
@@ -235,7 +235,7 @@ public class DestinationObjectFactory implements ObjectFactory
       byte[] bytes = (byte[])r.get("JBM-DEST").getContent();
       
       // Deserialize
-      return (JBossDestination)SerializableObjectRefAddr.deserialize(bytes);
+      return (HornetQDestination)SerializableObjectRefAddr.deserialize(bytes);
    }
 }
 

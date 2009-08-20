@@ -216,7 +216,7 @@ import org.hornetq.core.config.TransportConfiguration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.server.Messaging;
 import org.hornetq.core.server.MessagingServer;
-import org.hornetq.jms.client.JBossTextMessage;
+import org.hornetq.jms.client.HornetQTextMessage;
 import org.hornetq.tests.util.UnitTestCase;
 import org.hornetq.utils.SimpleString;
 
@@ -253,7 +253,7 @@ public class CoreClientOverHttpTest extends UnitTestCase
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = session.createClientMessage(JBossTextMessage.TYPE, false, 0,
+         ClientMessage message = session.createClientMessage(HornetQTextMessage.TYPE, false, 0,
                System.currentTimeMillis(), (byte) 1);
          message.getBody().writeString("CoreClientOverHttpTest");
          producer.send(message);

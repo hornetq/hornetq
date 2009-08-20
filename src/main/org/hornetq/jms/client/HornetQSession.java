@@ -249,11 +249,11 @@ import org.hornetq.core.filter.impl.FilterImpl;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.remoting.impl.wireformat.SessionBindingQueryResponseMessage;
 import org.hornetq.core.remoting.impl.wireformat.SessionQueueQueryResponseMessage;
-import org.hornetq.jms.JBossDestination;
-import org.hornetq.jms.JBossQueue;
-import org.hornetq.jms.JBossTemporaryQueue;
-import org.hornetq.jms.JBossTemporaryTopic;
-import org.hornetq.jms.JBossTopic;
+import org.hornetq.jms.HornetQDestination;
+import org.hornetq.jms.HornetQQueue;
+import org.hornetq.jms.HornetQTemporaryQueue;
+import org.hornetq.jms.HornetQTemporaryTopic;
+import org.hornetq.jms.HornetQTopic;
 import org.hornetq.utils.SimpleString;
 
 /**
@@ -269,7 +269,7 @@ import org.hornetq.utils.SimpleString;
  *
  * $Id$
  */
-public class JBossSession implements Session, XASession, QueueSession, XAQueueSession, TopicSession, XATopicSession
+public class HornetQSession implements Session, XASession, QueueSession, XAQueueSession, TopicSession, XATopicSession
 {
    // Constants -----------------------------------------------------
 
@@ -285,11 +285,11 @@ public class JBossSession implements Session, XASession, QueueSession, XAQueueSe
 
    // Static --------------------------------------------------------
 
-   private static final Logger log = Logger.getLogger(JBossSession.class);
+   private static final Logger log = Logger.getLogger(HornetQSession.class);
 
    // Attributes ----------------------------------------------------
 
-   private final JBossConnection connection;
+   private final HornetQConnection connection;
 
    private final ClientSession session;
 
@@ -303,11 +303,11 @@ public class JBossSession implements Session, XASession, QueueSession, XAQueueSe
 
    private boolean recoverCalled;
 
-   private final Set<JBossMessageConsumer> consumers = new HashSet<JBossMessageConsumer>();
+   private final Set<HornetQMessageConsumer> consumers = new HashSet<HornetQMessageConsumer>();
 
    // Constructors --------------------------------------------------
 
-   public JBossSession(final JBossConnection connection,
+   public HornetQSession(final HornetQConnection connection,
                        final boolean transacted,
                        final boolean xa,
                        final int ackMode,
@@ -333,35 +333,35 @@ public class JBossSession implements Session, XASession, QueueSession, XAQueueSe
    {
       checkClosed();
 
-      return new JBossBytesMessage(session);
+      return new HornetQBytesMessage(session);
    }
 
    public MapMessage createMapMessage() throws JMSException
    {
       checkClosed();
 
-      return new JBossMapMessage(session);
+      return new HornetQMapMessage(session);
    }
 
    public Message createMessage() throws JMSException
    {
       checkClosed();
 
-      return new JBossMessage(session);
+      return new HornetQMessage(session);
    }
 
    public ObjectMessage createObjectMessage() throws JMSException
    {
       checkClosed();
 
-      return new JBossObjectMessage(session);
+      return new HornetQObjectMessage(session);
    }
 
    public ObjectMessage createObjectMessage(final Serializable object) throws JMSException
    {
       checkClosed();
 
-      JBossObjectMessage jbm = new JBossObjectMessage(session);
+      HornetQObjectMessage jbm = new HornetQObjectMessage(session);
 
       jbm.setObject(object);
 
@@ -372,21 +372,21 @@ public class JBossSession implements Session, XASession, QueueSession, XAQueueSe
    {
       checkClosed();
 
-      return new JBossStreamMessage(session);
+      return new HornetQStreamMessage(session);
    }
 
    public TextMessage createTextMessage() throws JMSException
    {
       checkClosed();
 
-      return new JBossTextMessage(session);
+      return new HornetQTextMessage(session);
    }
 
    public TextMessage createTextMessage(final String text) throws JMSException
    {
       checkClosed();
 
-      JBossTextMessage jbm = new JBossTextMessage(session);
+      HornetQTextMessage jbm = new HornetQTextMessage(session);
 
       jbm.setText(text);
 
@@ -452,7 +452,7 @@ public class JBossSession implements Session, XASession, QueueSession, XAQueueSe
    {
       try
       {
-         for (JBossMessageConsumer cons : new HashSet<JBossMessageConsumer>(consumers))
+         for (HornetQMessageConsumer cons : new HashSet<HornetQMessageConsumer>(consumers))
          {
             cons.close();
          }
@@ -504,14 +504,14 @@ public class JBossSession implements Session, XASession, QueueSession, XAQueueSe
 
    public MessageProducer createProducer(final Destination destination) throws JMSException
    {
-      if (destination != null && !(destination instanceof JBossDestination))
+      if (destination != null && !(destination instanceof HornetQDestination))
       {
          throw new InvalidDestinationException("Not a JBoss Destination:" + destination);
       }
 
       try
       {
-         JBossDestination jbd = (JBossDestination)destination;
+         HornetQDestination jbd = (HornetQDestination)destination;
 
          //TODO Uncomment when https://jira.jboss.org/jira/browse/JBMESSAGING-1565 is complete
 //         if (jbd != null)
@@ -538,7 +538,7 @@ public class JBossSession implements Session, XASession, QueueSession, XAQueueSe
 
          ClientProducer producer = session.createProducer(jbd == null ? null : jbd.getSimpleAddress());
 
-         return new JBossMessageProducer(connection, producer, jbd, session);
+         return new HornetQMessageProducer(connection, producer, jbd, session);
       }
       catch (MessagingException e)
       {
@@ -565,19 +565,19 @@ public class JBossSession implements Session, XASession, QueueSession, XAQueueSe
          throw new InvalidDestinationException("Cannot create a consumer with a null destination");
       }
 
-      if (!(destination instanceof JBossDestination))
+      if (!(destination instanceof HornetQDestination))
       {
-         throw new InvalidDestinationException("Not a JBossDestination:" + destination);
+         throw new InvalidDestinationException("Not a HornetQDestination:" + destination);
       }
 
-      JBossDestination jbdest = (JBossDestination)destination;
+      HornetQDestination jbdest = (HornetQDestination)destination;
 
       if (jbdest.isTemporary() && !connection.containsTemporaryQueue(jbdest.getSimpleAddress()))
       {
          throw new JMSException("Can not create consumer for temporary destination " + destination + " from another JMS connection");
       }
       
-      JBossMessageConsumer consumer = createConsumer(jbdest, null, messageSelector, noLocal);
+      HornetQMessageConsumer consumer = createConsumer(jbdest, null, messageSelector, noLocal);
 
       return consumer;
    }
@@ -590,7 +590,7 @@ public class JBossSession implements Session, XASession, QueueSession, XAQueueSe
          throw new IllegalStateException("Cannot create a queue using a TopicSession");
       }
 
-      JBossQueue queue = new JBossQueue(queueName);
+      HornetQQueue queue = new HornetQQueue(queueName);
 
       try
       {
@@ -619,7 +619,7 @@ public class JBossSession implements Session, XASession, QueueSession, XAQueueSe
          throw new IllegalStateException("Cannot create a topic on a QueueSession");
       }
 
-      JBossTopic topic = new JBossTopic(topicName);
+      HornetQTopic topic = new HornetQTopic(topicName);
 
       try
       {
@@ -659,21 +659,21 @@ public class JBossSession implements Session, XASession, QueueSession, XAQueueSe
       {
          throw new InvalidDestinationException("Cannot create a durable subscriber on a null topic");
       }
-      if (!(topic instanceof JBossTopic))
+      if (!(topic instanceof HornetQTopic))
       {
-         throw new InvalidDestinationException("Not a JBossTopic:" + topic);
+         throw new InvalidDestinationException("Not a HornetQTopic:" + topic);
       }
       if ("".equals(messageSelector))
       {
          messageSelector = null;
       }
 
-      JBossDestination jbdest = (JBossDestination)topic;
+      HornetQDestination jbdest = (HornetQDestination)topic;
 
       return createConsumer(jbdest, name, messageSelector, noLocal);
    }
 
-   private JBossMessageConsumer createConsumer(final JBossDestination dest,
+   private HornetQMessageConsumer createConsumer(final HornetQDestination dest,
                                                final String subscriptionName,
                                                String selectorString,
                                                final boolean noLocal) throws JMSException
@@ -686,7 +686,7 @@ public class JBossSession implements Session, XASession, QueueSession, XAQueueSe
          {
             connection.setHasNoLocal();
 
-            String filter = JBossConnection.CONNECTION_ID_PROPERTY_NAME.toString() + "<>'" + connection.getUID() + "'";
+            String filter = HornetQConnection.CONNECTION_ID_PROPERTY_NAME.toString() + "<>'" + connection.getUID() + "'";
 
             if (selectorString != null)
             {
@@ -757,7 +757,7 @@ public class JBossSession implements Session, XASession, QueueSession, XAQueueSe
                   throw new InvalidDestinationException("Cannot create a durable subscription on a temporary topic");
                }
 
-               queueName = new SimpleString(JBossTopic.createQueueNameForDurableSubscription(connection.getClientID(),
+               queueName = new SimpleString(HornetQTopic.createQueueNameForDurableSubscription(connection.getClientID(),
                                                                                              subscriptionName));
 
                SessionQueueQueryResponseMessage subResponse = session.queueQuery(queueName);
@@ -806,7 +806,7 @@ public class JBossSession implements Session, XASession, QueueSession, XAQueueSe
             }
          }
 
-         JBossMessageConsumer jbc = new JBossMessageConsumer(this,
+         HornetQMessageConsumer jbc = new HornetQMessageConsumer(this,
                                                              consumer,
                                                              noLocal,
                                                              dest,
@@ -839,9 +839,9 @@ public class JBossSession implements Session, XASession, QueueSession, XAQueueSe
       {
          throw new InvalidDestinationException("Cannot create a browser with a null queue");
       }
-      if (!(queue instanceof JBossQueue))
+      if (!(queue instanceof HornetQQueue))
       {
-         throw new InvalidDestinationException("Not a JBossQueue:" + queue);
+         throw new InvalidDestinationException("Not a HornetQQueue:" + queue);
       }
       if ("".equals(filterString))
       {
@@ -858,7 +858,7 @@ public class JBossSession implements Session, XASession, QueueSession, XAQueueSe
          throw JMSExceptionHelper.convertFromMessagingException(e);
       }
 
-      JBossQueue jbq = (JBossQueue)queue;
+      HornetQQueue jbq = (HornetQQueue)queue;
 
       try
       {
@@ -873,7 +873,7 @@ public class JBossSession implements Session, XASession, QueueSession, XAQueueSe
          throw JMSExceptionHelper.convertFromMessagingException(e);
       }
 
-      return new JBossQueueBrowser(jbq, filterString, session);
+      return new HornetQQueueBrowser(jbq, filterString, session);
 
    }
 
@@ -889,7 +889,7 @@ public class JBossSession implements Session, XASession, QueueSession, XAQueueSe
 
       try
       {
-         JBossTemporaryQueue queue = new JBossTemporaryQueue(this, queueName);
+         HornetQTemporaryQueue queue = new HornetQTemporaryQueue(this, queueName);
 
          SimpleString simpleAddress = queue.getSimpleAddress();
 
@@ -917,7 +917,7 @@ public class JBossSession implements Session, XASession, QueueSession, XAQueueSe
 
       try
       {
-         JBossTemporaryTopic topic = new JBossTemporaryTopic(this, topicName);
+         HornetQTemporaryTopic topic = new HornetQTemporaryTopic(this, topicName);
 
          SimpleString simpleAddress = topic.getSimpleAddress();
 
@@ -946,7 +946,7 @@ public class JBossSession implements Session, XASession, QueueSession, XAQueueSe
          throw new IllegalStateException("Cannot unsubscribe using a QueueSession");
       }
 
-      SimpleString queueName = new SimpleString(JBossTopic.createQueueNameForDurableSubscription(connection.getClientID(),
+      SimpleString queueName = new SimpleString(HornetQTopic.createQueueNameForDurableSubscription(connection.getClientID(),
                                                                                                  name));
 
       try
@@ -1042,7 +1042,7 @@ public class JBossSession implements Session, XASession, QueueSession, XAQueueSe
 
    public String toString()
    {
-      return "JBossSession->" + session;
+      return "HornetQSession->" + session;
    }
 
    public ClientSession getCoreSession()
@@ -1060,7 +1060,7 @@ public class JBossSession implements Session, XASession, QueueSession, XAQueueSe
       this.recoverCalled = recoverCalled;
    }
 
-   public void deleteTemporaryTopic(final JBossTemporaryTopic tempTopic) throws JMSException
+   public void deleteTemporaryTopic(final HornetQTemporaryTopic tempTopic) throws JMSException
    {
       try
       {
@@ -1090,7 +1090,7 @@ public class JBossSession implements Session, XASession, QueueSession, XAQueueSe
       }
    }
 
-   public void deleteTemporaryQueue(final JBossTemporaryQueue tempQueue) throws JMSException
+   public void deleteTemporaryQueue(final HornetQTemporaryQueue tempQueue) throws JMSException
    {
       try
       {
@@ -1156,7 +1156,7 @@ public class JBossSession implements Session, XASession, QueueSession, XAQueueSe
       }
    }
 
-   public void removeConsumer(final JBossMessageConsumer consumer)
+   public void removeConsumer(final HornetQMessageConsumer consumer)
    {
       consumers.remove(consumer);
    }

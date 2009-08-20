@@ -229,13 +229,13 @@ import org.hornetq.utils.DataConstants;
  * 
  * @version $Revision: 3412 $
  *
- * $Id: JBossStreamMessage.java 3412 2007-12-05 19:41:47Z timfox $
+ * $Id: HornetQStreamMessage.java 3412 2007-12-05 19:41:47Z timfox $
  */
-public class JBossStreamMessage extends JBossMessage implements StreamMessage
+public class HornetQStreamMessage extends HornetQMessage implements StreamMessage
 {
    // Constants -----------------------------------------------------
 
-   private static final Logger log = Logger.getLogger(JBossStreamMessage.class);
+   private static final Logger log = Logger.getLogger(HornetQStreamMessage.class);
    
    
    public static final byte TYPE = 6;
@@ -249,24 +249,24 @@ public class JBossStreamMessage extends JBossMessage implements StreamMessage
    /*
     * This constructor is used to construct messages prior to sending
     */
-   public JBossStreamMessage()
+   public HornetQStreamMessage()
    {   
-      super(JBossStreamMessage.TYPE);
+      super(HornetQStreamMessage.TYPE);
    }
 
-   public JBossStreamMessage(final ClientSession session)
+   public HornetQStreamMessage(final ClientSession session)
    {   
-      super(JBossStreamMessage.TYPE, session);
+      super(HornetQStreamMessage.TYPE, session);
    }
    
-   public JBossStreamMessage(final ClientMessage message, final ClientSession session)
+   public HornetQStreamMessage(final ClientMessage message, final ClientSession session)
    {
       super(message, session);
    }
    
-   public JBossStreamMessage(final StreamMessage foreign, final ClientSession session) throws JMSException
+   public HornetQStreamMessage(final StreamMessage foreign, final ClientSession session) throws JMSException
    {
-      super(foreign, JBossStreamMessage.TYPE, session);
+      super(foreign, HornetQStreamMessage.TYPE, session);
       
       foreign.reset();
       
@@ -288,7 +288,7 @@ public class JBossStreamMessage extends JBossMessage implements StreamMessage
 
    public byte getType()
    {
-      return JBossStreamMessage.TYPE;
+      return HornetQStreamMessage.TYPE;
    }
    
    // StreamMessage implementation ----------------------------------
@@ -736,7 +736,7 @@ public class JBossStreamMessage extends JBossMessage implements StreamMessage
       getBody().resetReaderIndex();
    }
 
-   // JBossMessage overrides ----------------------------------------
+   // HornetQMessage overrides ----------------------------------------
   
    public void clearBody() throws JMSException
    {

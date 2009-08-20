@@ -200,447 +200,471 @@
  *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
- */
+ */ 
 
 package org.hornetq.jms.client;
 
-import java.util.concurrent.atomic.AtomicLong;
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.HashSet;
+import java.util.Set;
 
-import javax.jms.BytesMessage;
-import javax.jms.DeliveryMode;
-import javax.jms.Destination;
-import javax.jms.IllegalStateException;
-import javax.jms.InvalidDestinationException;
 import javax.jms.JMSException;
 import javax.jms.MapMessage;
-import javax.jms.Message;
-import javax.jms.MessageProducer;
-import javax.jms.ObjectMessage;
-import javax.jms.Queue;
-import javax.jms.QueueSender;
-import javax.jms.StreamMessage;
-import javax.jms.TextMessage;
-import javax.jms.Topic;
-import javax.jms.TopicPublisher;
+import javax.jms.MessageFormatException;
 
 import org.hornetq.core.client.ClientMessage;
-import org.hornetq.core.client.ClientProducer;
 import org.hornetq.core.client.ClientSession;
-import org.hornetq.core.exception.MessagingException;
-import org.hornetq.core.logging.Logger;
-import org.hornetq.jms.JBossDestination;
 import org.hornetq.utils.SimpleString;
-import org.hornetq.utils.UUIDGenerator;
+import org.hornetq.utils.TypedProperties;
 
 /**
- * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
+ * This class implements javax.jms.MapMessage
+ * 
+ * @author Norbert Lataille (Norbert.Lataille@m4x.org)
+ * @author <a href="mailto:adrian@jboss.org">Adrian Brock</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @author <a href="mailto:ataylor@redhat.com">Andy Taylor</a>
- * @version <tt>$Revision$</tt>
+ * 
+ * @version $Revision: 3412 $
  *
- * $Id$
+ * $Id: HornetQMapMessage.java 3412 2007-12-05 19:41:47Z timfox $
  */
-public class JBossMessageProducer implements MessageProducer, QueueSender, TopicPublisher
+public class HornetQMapMessage extends HornetQMessage implements MapMessage
 {
    // Constants -----------------------------------------------------
 
-   // Static --------------------------------------------------------
-
-   private static final Logger log = Logger.getLogger(JBossMessageProducer.class);
+   public static final byte TYPE = 5;
 
    // Attributes ----------------------------------------------------
+   
+   private TypedProperties map = new TypedProperties();
 
-   private JBossConnection jbossConn;
-
-   private final SimpleString connID;
-
-   private ClientProducer producer;
-
-   private boolean disableMessageID = false;
-
-   private boolean disableMessageTimestamp = false;
-
-   private int defaultPriority = 4;
-
-   private long defaultTimeToLive = 0;
-
-   private int defaultDeliveryMode = DeliveryMode.PERSISTENT;
-
-   private JBossDestination defaultDestination;
-
-   private final String messageIDPrefix;
-
-   private final AtomicLong sequenceNumber = new AtomicLong(0);
-
-   private ClientSession clientSession;
+   // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
-
-   public JBossMessageProducer(final JBossConnection jbossConn,
-                               final ClientProducer producer,
-                               final JBossDestination defaultDestination,
-                               final ClientSession clientSession) throws JMSException
+   public HornetQMapMessage()
    {
-      this.jbossConn = jbossConn;
+      super(HornetQMapMessage.TYPE);
 
-      this.connID = jbossConn.getUID();
-
-      this.producer = producer;
-
-      this.defaultDestination = defaultDestination;
-
-      this.clientSession = clientSession;
-
-      // TODO the UUID should be generated at the JMS Connection level,
-      // then session, producers & messages ID could be created using simple sequences
-      String uuid = UUIDGenerator.getInstance().generateSimpleStringUUID().toString();
-
-      messageIDPrefix = "ID:" + uuid + ":";
+      map = new TypedProperties();
+   }
+   /*
+    * This constructor is used to construct messages prior to sending
+    */
+   public HornetQMapMessage(final ClientSession session)
+   {
+      super(HornetQMapMessage.TYPE, session);
+      
+      map = new TypedProperties();
+   }
+   
+   public HornetQMapMessage(final ClientMessage message, final ClientSession session)
+   {
+      super(message, session);
    }
 
-   // MessageProducer implementation --------------------------------
-
-   public void setDisableMessageID(boolean value) throws JMSException
+   /**
+    * 
+    * Constructor for a foreign MapMessage
+    * @param foreign
+    * @throws JMSException
+    */
+   public HornetQMapMessage(final MapMessage foreign, final ClientSession session) throws JMSException
    {
-      checkClosed();
-
-      disableMessageID = value;
-   }
-
-   public boolean getDisableMessageID() throws JMSException
-   {
-      checkClosed();
-
-      return disableMessageID;
-   }
-
-   public void setDisableMessageTimestamp(boolean value) throws JMSException
-   {
-      checkClosed();
-
-      disableMessageTimestamp = value;
-   }
-
-   public boolean getDisableMessageTimestamp() throws JMSException
-   {
-      checkClosed();
-
-      return disableMessageTimestamp;
-   }
-
-   public void setDeliveryMode(int deliveryMode) throws JMSException
-   {
-      checkClosed();
-
-      this.defaultDeliveryMode = deliveryMode;
-   }
-
-   public int getDeliveryMode() throws JMSException
-   {
-      checkClosed();
-
-      return this.defaultDeliveryMode;
-   }
-
-   public void setPriority(int defaultPriority) throws JMSException
-   {
-      checkClosed();
-
-      this.defaultPriority = defaultPriority;
-   }
-
-   public int getPriority() throws JMSException
-   {
-      checkClosed();
-
-      return defaultPriority;
-   }
-
-   public void setTimeToLive(long timeToLive) throws JMSException
-   {
-      checkClosed();
-
-      this.defaultTimeToLive = timeToLive;
-   }
-
-   public long getTimeToLive() throws JMSException
-   {
-      checkClosed();
-
-      return defaultTimeToLive;
-   }
-
-   public Destination getDestination() throws JMSException
-   {
-      checkClosed();
-
-      return defaultDestination;
-   }
-
-   public void close() throws JMSException
-   {
-      try
+      super(foreign, HornetQMapMessage.TYPE, session);     
+      Enumeration names = foreign.getMapNames();
+      while (names.hasMoreElements())
       {
-         producer.close();
-      }
-      catch (MessagingException e)
-      {
-         throw JMSExceptionHelper.convertFromMessagingException(e);
-      }
-   }
-
-   public void send(Message message) throws JMSException
-   {
-      checkClosed();
-
-      message.setJMSDeliveryMode(defaultDeliveryMode);
-
-      message.setJMSPriority(defaultPriority);
-
-      doSend(message, defaultTimeToLive, null);
-   }
-
-   public void send(Message message, int deliveryMode, int priority, long timeToLive) throws JMSException
-   {
-      checkClosed();
-
-      message.setJMSDeliveryMode(deliveryMode);
-
-      message.setJMSPriority(priority);
-
-      doSend(message, timeToLive, null);
-   }
-
-   public void send(Destination destination, Message message) throws JMSException
-   {
-      checkClosed();
-
-      if (destination != null && !(destination instanceof JBossDestination))
-      {
-         throw new InvalidDestinationException("Not a JBoss Destination:" + destination);
-      }
-
-      message.setJMSDeliveryMode(defaultDeliveryMode);
-
-      message.setJMSPriority(defaultPriority);
-
-      doSend(message, defaultTimeToLive, (JBossDestination)destination);
-   }
-
-   public void send(Destination destination, Message message, int deliveryMode, int priority, long timeToLive) throws JMSException
-   {
-      checkClosed();
-
-      if (destination != null && !(destination instanceof JBossDestination))
-      {
-         throw new InvalidDestinationException("Not a JBoss Destination:" + destination);
-      }
-
-      message.setJMSDeliveryMode(deliveryMode);
-
-      message.setJMSPriority(priority);
-
-      doSend(message, timeToLive, (JBossDestination)destination);
-   }
-
-   // TopicPublisher Implementation ---------------------------------
-
-   public Topic getTopic() throws JMSException
-   {
-      return (Topic)getDestination();
-   }
-
-   public void publish(Message message) throws JMSException
-   {
-      send(message);
-   }
-
-   public void publish(Topic topic, Message message) throws JMSException
-   {
-      send(topic, message);
-   }
-
-   public void publish(Message message, int deliveryMode, int priority, long timeToLive) throws JMSException
-   {
-      send(message, deliveryMode, priority, timeToLive);
-   }
-
-   public void publish(Topic topic, Message message, int deliveryMode, int priority, long timeToLive) throws JMSException
-   {
-      send(topic, message, deliveryMode, priority, timeToLive);
-   }
-
-   // QueueSender Implementation ------------------------------------
-
-   public void send(Queue queue, Message message) throws JMSException
-   {
-      send((Destination)queue, message);
-   }
-
-   public void send(Queue queue, Message message, int deliveryMode, int priority, long timeToLive) throws JMSException
-   {
-      send((Destination)queue, message, deliveryMode, priority, timeToLive);
-   }
-
-   public Queue getQueue() throws JMSException
-   {
-      return (Queue)getDestination();
+         String name = (String)names.nextElement();
+         Object obj = foreign.getObject(name);
+         this.setObject(name, obj);
+      } 
    }
 
    // Public --------------------------------------------------------
 
-   public String toString()
+   public byte getType()
    {
-      return "JBossMessageProducer->" + producer;
+      return HornetQMapMessage.TYPE;
+   }
+      
+   // MapMessage implementation -------------------------------------
+
+   public void setBoolean(final String name, final boolean value) throws JMSException
+   {
+      checkName(name);
+      map.putBooleanProperty(new SimpleString(name), value);
    }
 
+   public void setByte(final String name, final byte value) throws JMSException
+   {
+      checkName(name);
+      map.putByteProperty(new SimpleString(name), value);
+   }
+
+   public void setShort(final String name, final short value) throws JMSException
+   {
+      checkName(name);
+      map.putShortProperty(new SimpleString(name), value);
+   }
+
+   public void setChar(final String name, final char value) throws JMSException
+   {
+      checkName(name);
+      map.putCharProperty(new SimpleString(name), value);
+   }
+
+   public void setInt(final String name, final int value) throws JMSException
+   {
+      checkName(name);
+      map.putIntProperty(new SimpleString(name), value);
+   }
+
+   public void setLong(final String name, final long value) throws JMSException
+   {
+      checkName(name);
+      map.putLongProperty(new SimpleString(name), value);
+   }
+
+   public void setFloat(final String name, final float value) throws JMSException
+   {
+      checkName(name);
+      map.putFloatProperty(new SimpleString(name), value);
+   }
+
+   public void setDouble(final String name, final double value) throws JMSException
+   {
+      checkName(name);
+      map.putDoubleProperty(new SimpleString(name), value);
+   }
+
+   public void setString(final String name, final String value) throws JMSException
+   {
+      checkName(name);
+      map.putStringProperty(new SimpleString(name), value == null ? null : new SimpleString(value));
+   }
+
+   public void setBytes(final String name, final byte[] value) throws JMSException
+   {
+      checkName(name);
+      map.putBytesProperty(new SimpleString(name), value);
+   }
+
+   public void setBytes(final String name, final byte[] value, final int offset, final int length) throws JMSException
+   {
+      checkName(name);
+      if (offset + length > value.length)
+      {
+         throw new JMSException("Invalid offset/length");
+      }
+      byte[] newBytes = new byte[length];
+      System.arraycopy(value, offset, newBytes, 0, length);
+      map.putBytesProperty(new SimpleString(name), newBytes);
+   }
+
+   public void setObject(final String name, final Object value) throws JMSException
+   {
+      checkName(name);
+      SimpleString key = new SimpleString(name);
+      if (value instanceof Boolean)
+         map.putBooleanProperty(key, (Boolean)value);
+      else if (value instanceof Byte)
+         map.putByteProperty(key, (Byte)value);
+      else if (value instanceof Short)
+         map.putShortProperty(key, (Short)value);
+      else if (value instanceof Character)
+         map.putCharProperty(key, (Character)value);
+      else if (value instanceof Integer)
+         map.putIntProperty(key, (Integer)value);
+      else if (value instanceof Long)
+         map.putLongProperty(key, (Long)value);
+      else if (value instanceof Float)
+         map.putFloatProperty(key, (Float)value);
+      else if (value instanceof Double)
+         map.putDoubleProperty(key, (Double)value);
+      else if (value instanceof String)
+         map.putStringProperty(key, new SimpleString((String)value));
+      else if (value instanceof byte[])
+         map.putBytesProperty(key, (byte[]) value);
+      else
+         throw new MessageFormatException("Invalid object type.");
+   }
+
+   public boolean getBoolean(final String name) throws JMSException
+   {
+      Object value = map.getProperty(new SimpleString(name));
+
+      if (value == null)
+         return Boolean.valueOf(null).booleanValue();
+
+      if (value instanceof Boolean)
+         return ((Boolean) value).booleanValue();
+      else if (value instanceof SimpleString)
+         return Boolean.valueOf(((SimpleString) value).toString()).booleanValue();
+      else
+         throw new MessageFormatException("Invalid conversion");
+   }
+
+   public byte getByte(final String name) throws JMSException
+   {
+      Object value = map.getProperty(new SimpleString(name));
+
+      if (value == null)
+         return Byte.parseByte(null);
+
+      if (value instanceof Byte)
+         return ((Byte) value).byteValue();
+      else if (value instanceof SimpleString)
+         return Byte.parseByte(((SimpleString) value).toString());
+      else
+         throw new MessageFormatException("Invalid conversion");
+   }
+
+   public short getShort(final String name) throws JMSException
+   {
+      Object value = map.getProperty(new SimpleString(name));
+
+      if (value == null)
+         return Short.parseShort(null);
+
+      if (value instanceof Byte)
+         return ((Byte) value).shortValue();
+      else if (value instanceof Short)
+         return ((Short) value).shortValue();
+      else if (value instanceof SimpleString)
+         return Short.parseShort(((SimpleString) value).toString());
+      else
+         throw new MessageFormatException("Invalid conversion");
+   }
+
+   public char getChar(final String name) throws JMSException
+   {
+      Object value = map.getProperty(new SimpleString(name));
+
+      if (value == null)
+         throw new NullPointerException("Invalid conversion");
+
+      if (value instanceof Character)
+         return ((Character) value).charValue();
+      else
+         throw new MessageFormatException("Invalid conversion");
+   }
+
+   public int getInt(final String name) throws JMSException
+   {
+      Object value = map.getProperty(new SimpleString(name));
+
+      if (value == null)
+         return Integer.parseInt(null);
+
+      if (value instanceof Byte)
+         return ((Byte) value).intValue();
+      else if (value instanceof Short)
+         return ((Short) value).intValue();
+      else if (value instanceof Integer)
+         return ((Integer) value).intValue();
+      else if (value instanceof SimpleString)
+         return Integer.parseInt(((SimpleString) value).toString());
+      else
+         throw new MessageFormatException("Invalid conversion");
+   }
+
+   public long getLong(final String name) throws JMSException
+   {
+      Object value = map.getProperty(new SimpleString(name));
+
+      if (value == null)
+         return Long.parseLong(null);
+
+      if (value instanceof Byte)
+         return ((Byte) value).longValue();
+      else if (value instanceof Short)
+         return ((Short) value).longValue();
+      else if (value instanceof Integer)
+         return ((Integer) value).longValue();
+      else if (value instanceof Long)
+         return ((Long) value).longValue();
+      else if (value instanceof SimpleString)
+         return Long.parseLong(((SimpleString) value).toString());
+      else
+         throw new MessageFormatException("Invalid conversion");
+   }
+
+   public float getFloat(final String name) throws JMSException
+   {
+      Object value = map.getProperty(new SimpleString(name));
+
+      if (value == null)
+         return Float.parseFloat(null);
+
+      if (value instanceof Float)
+         return ((Float) value).floatValue();
+      else if (value instanceof SimpleString)
+         return Float.parseFloat(((SimpleString) value).toString());
+      else
+         throw new MessageFormatException("Invalid conversion");
+   }
+
+   public double getDouble(final String name) throws JMSException
+   {
+      Object value = map.getProperty(new SimpleString(name));
+
+      if (value == null)
+         return Double.parseDouble(null);
+
+      if (value instanceof Float)
+         return ((Float) value).doubleValue();
+      else if (value instanceof Double)
+         return ((Double) value).doubleValue();
+      else if (value instanceof SimpleString)
+         return Double.parseDouble(((SimpleString) value).toString());
+      else
+         throw new MessageFormatException("Invalid conversion");
+   }
+
+   public String getString(final String name) throws JMSException
+   {
+      Object value = map.getProperty(new SimpleString(name));
+
+      if (value == null)
+         return null;
+
+      if (value instanceof SimpleString)
+      {
+         return ((SimpleString) value).toString();
+      }      
+      else if (value instanceof Boolean)
+      {
+         return  value.toString();
+      }
+      else if (value instanceof Byte)
+      {
+         return value.toString();
+      }
+      else if (value instanceof Short)
+      {
+         return value.toString();
+      }
+      else if (value instanceof Character)
+      {
+         return value.toString();
+      }
+      else if (value instanceof Integer)
+      {
+         return value.toString();
+      }
+      else if (value instanceof Long)
+      {
+         return value.toString();
+      }
+      else if (value instanceof Float)
+      {
+         return value.toString();
+      }
+      else if (value instanceof Double)
+      {
+         return value.toString();
+      }
+      else
+      {
+         throw new MessageFormatException("Invalid conversion");
+      }
+   }
+
+   public byte[] getBytes(final String name) throws JMSException
+   {
+      Object value = map.getProperty(new SimpleString(name));
+
+      if (value == null)
+         return null;
+      if (value instanceof byte[])
+         return (byte[]) value;
+      else
+         throw new MessageFormatException("Invalid conversion");
+   }
+
+   public Object getObject(final String name) throws JMSException
+   {
+      Object val = map.getProperty(new SimpleString(name));
+      
+      if (val instanceof SimpleString)
+      {
+         val = ((SimpleString)val).toString();
+      }
+      
+      return val;
+   }
+
+   public Enumeration getMapNames() throws JMSException
+   {
+      Set propNames = new HashSet<String>();
+      
+      for (SimpleString str: map.getPropertyNames())
+      {
+         propNames.add(str.toString());
+      }
+      
+      return Collections.enumeration(propNames);
+   }
+
+   public boolean itemExists(final String name) throws JMSException
+   {
+      return map.containsProperty(new SimpleString(name));
+   }
+
+   // HornetQMessage overrides ----------------------------------------
+
+   public void clearBody() throws JMSException
+   {
+      super.clearBody();
+      
+      map.clear();
+   }
+   
+   public void doBeforeSend() throws Exception
+   {
+      message.getBody().clear();
+      map.encode(message.getBody());
+      
+      super.doBeforeSend();
+   }
+   
+   public void doBeforeReceive() throws Exception
+   {        
+      super.doBeforeReceive();
+      
+      map.decode(message.getBody());
+   }
+   
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
-
+     
    // Private -------------------------------------------------------
-
-   private void doSend(Message message, long timeToLive, JBossDestination destination) throws JMSException
+   
+   /**
+    * Check the name
+    * 
+    * @param name the name
+    */
+   private void checkName(String name) throws JMSException
    {
-      if (timeToLive == 0)
+      checkWrite();            
+      
+      if (name == null)
       {
-         message.setJMSExpiration(0);
-      }
-      else
-      {
-         message.setJMSExpiration(System.currentTimeMillis() + timeToLive);
+         throw new IllegalArgumentException("Name must not be null.");
       }
 
-      if (!disableMessageTimestamp)
+      if (name.equals(""))
       {
-         message.setJMSTimestamp(System.currentTimeMillis());
-      }
-      else
-      {
-         message.setJMSTimestamp(0);
-      }
-
-      SimpleString address = null;
-
-      if (destination == null)
-      {
-         if (defaultDestination == null)
-         {
-            throw new InvalidDestinationException("Destination must be specified on send with an anonymous producer");
-         }
-
-         destination = defaultDestination;
-      }
-      else
-      {
-         if (defaultDestination != null)
-         {
-            if (!destination.equals(defaultDestination))
-            {
-               throw new JMSException("Where a default destination is specified " + "for the sender and a destination is "
-                                      + "specified in the arguments to the send, "
-                                      + "these destinations must be equal");
-            }
-         }
-
-         address = destination.getSimpleAddress();
-      }
-
-      JBossMessage jbm;
-
-      boolean foreign = false;
-
-      // First convert from foreign message if appropriate
-      if (!(message instanceof JBossMessage))
-      {
-         // JMS 1.1 Sect. 3.11.4: A provider must be prepared to accept, from a client,
-         // a message whose implementation is not one of its own.
-
-         if (message instanceof BytesMessage)
-         {
-            jbm = new JBossBytesMessage((BytesMessage)message, clientSession);
-         }
-         else if (message instanceof MapMessage)
-         {
-            jbm = new JBossMapMessage((MapMessage)message, clientSession);
-         }
-         else if (message instanceof ObjectMessage)
-         {
-            jbm = new JBossObjectMessage((ObjectMessage)message, clientSession);
-         }
-         else if (message instanceof StreamMessage)
-         {
-            jbm = new JBossStreamMessage((StreamMessage)message, clientSession);
-         }
-         else if (message instanceof TextMessage)
-         {
-            jbm = new JBossTextMessage((TextMessage)message, clientSession);
-         }
-         else
-         {
-            jbm = new JBossMessage(message, clientSession);
-         }
-
-         // Set the destination on the original message
-         message.setJMSDestination(destination);
-
-         foreign = true;
-      }
-      else
-      {
-         jbm = (JBossMessage)message;
-      }
-
-      if (!disableMessageID)
-      {
-         // Generate an id
-         jbm.setJMSMessageID(messageIDPrefix + sequenceNumber.incrementAndGet());
-      }
-
-      if (foreign)
-      {
-         message.setJMSMessageID(jbm.getJMSMessageID());
-      }
-
-      jbm.setJMSDestination(destination);
-
-      try
-      {
-         jbm.doBeforeSend();
-      }
-      catch (Exception e)
-      {
-         JMSException je = new JMSException(e.getMessage());
-
-         je.initCause(e);
-
-         throw je;
-      }
-
-      ClientMessage coreMessage = jbm.getCoreMessage();
-
-      if (jbossConn.hasNoLocal())
-      {
-         coreMessage.putStringProperty(JBossConnection.CONNECTION_ID_PROPERTY_NAME, connID);
-      }
-
-      try
-      {
-         producer.send(address, coreMessage);
-      }
-      catch (MessagingException e)
-      {
-         throw JMSExceptionHelper.convertFromMessagingException(e);
-      }
-   }
-
-   private void checkClosed() throws JMSException
-   {
-      if (producer.isClosed())
-      {
-         throw new IllegalStateException("Producer is closed");
+         throw new IllegalArgumentException("Name must not be an empty String.");
       }
    }
 
    // Inner classes -------------------------------------------------
+
 }
+

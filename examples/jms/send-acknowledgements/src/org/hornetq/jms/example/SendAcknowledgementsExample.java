@@ -215,7 +215,7 @@ import org.hornetq.common.example.HornetQExample;
 import org.hornetq.core.client.ClientSession;
 import org.hornetq.core.client.SendAcknowledgementHandler;
 import org.hornetq.core.message.Message;
-import org.hornetq.jms.client.JBossSession;
+import org.hornetq.jms.client.HornetQSession;
 
 /**
  * 
@@ -268,7 +268,7 @@ public class SendAcknowledgementsExample extends HornetQExample
 
          // Step 7. Set the handler on the underlying core session
 
-         ClientSession coreSession = ((JBossSession)session).getCoreSession();
+         ClientSession coreSession = ((HornetQSession)session).getCoreSession();
 
          coreSession.setSendAcknowledgementHandler(new MySendAcknowledgementsHandler());
 

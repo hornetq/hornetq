@@ -211,13 +211,13 @@ import javax.naming.Name;
 import javax.naming.Reference;
 import javax.naming.spi.ObjectFactory;
 
-import org.hornetq.jms.client.JBossConnectionFactory;
+import org.hornetq.jms.client.HornetQConnectionFactory;
 
 /**
  * 
  * A ConnectionFactoryObjectFactory.
  * 
- * Given a reference - reconstructs a JBossConnectionFactory
+ * Given a reference - reconstructs a HornetQConnectionFactory
  * 
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
  * @version $Revision$
@@ -234,7 +234,7 @@ public class ConnectionFactoryObjectFactory implements ObjectFactory
       byte[] bytes = (byte[])r.get("JBM-CF").getContent();
       
       // Deserialize
-      return (JBossConnectionFactory)SerializableObjectRefAddr.deserialize(bytes);
+      return (HornetQConnectionFactory)SerializableObjectRefAddr.deserialize(bytes);
    }
 }
 

@@ -220,8 +220,8 @@ import org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
 import org.hornetq.core.server.Messaging;
 import org.hornetq.core.server.MessagingServer;
-import org.hornetq.jms.JBossQueue;
-import org.hornetq.jms.client.JBossConnectionFactory;
+import org.hornetq.jms.HornetQQueue;
+import org.hornetq.jms.client.HornetQConnectionFactory;
 
 /**
  * This example demonstrates how to run a JBoss Messaging embedded with JMS
@@ -248,8 +248,8 @@ public class EmbeddedExample
    
    
          // Step 3. As we are not using a JNDI environment we instantiate the objects directly
-         Queue queue = new JBossQueue("exampleQueue");
-         JBossConnectionFactory cf = new JBossConnectionFactory (new TransportConfiguration(InVMConnectorFactory.class.getName()));
+         Queue queue = new HornetQQueue("exampleQueue");
+         HornetQConnectionFactory cf = new HornetQConnectionFactory (new TransportConfiguration(InVMConnectorFactory.class.getName()));
          
          // Step 4. Create a JMS Destination by using the Core API
          ClientSession coreSession = cf.getCoreFactory().createSession(false, false, false);

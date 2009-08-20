@@ -212,8 +212,8 @@ import org.hornetq.core.management.MessageCounterInfo;
 import org.hornetq.core.management.QueueControl;
 import org.hornetq.core.messagecounter.MessageCounter;
 import org.hornetq.core.messagecounter.impl.MessageCounterHelper;
-import org.hornetq.jms.JBossQueue;
-import org.hornetq.jms.client.JBossMessage;
+import org.hornetq.jms.HornetQQueue;
+import org.hornetq.jms.client.HornetQMessage;
 import org.hornetq.jms.client.SelectorTranslator;
 import org.hornetq.jms.server.management.JMSQueueControl;
 import org.hornetq.utils.json.JSONArray;
@@ -233,7 +233,7 @@ public class JMSQueueControlImpl implements JMSQueueControl
 
    // Attributes ----------------------------------------------------
 
-   private final JBossQueue managedQueue;
+   private final HornetQQueue managedQueue;
 
    private final QueueControl coreQueueControl;
 
@@ -253,7 +253,7 @@ public class JMSQueueControlImpl implements JMSQueueControl
 
    private static String createFilterForJMSMessageID(String jmsMessageID) throws Exception
    {
-      return JBossMessage.JBM_MESSAGE_ID + " = '" + jmsMessageID + "'";
+      return HornetQMessage.JBM_MESSAGE_ID + " = '" + jmsMessageID + "'";
    }
 
    static String toJSON(Map<String, Object>[] messages)
@@ -269,7 +269,7 @@ public class JMSQueueControlImpl implements JMSQueueControl
 
    // Constructors --------------------------------------------------
 
-   public JMSQueueControlImpl(final JBossQueue managedQueue,
+   public JMSQueueControlImpl(final HornetQQueue managedQueue,
                           final QueueControl coreQueueControl,
                           final String jndiBinding,
                           final MessageCounter counter)
@@ -384,7 +384,7 @@ public class JMSQueueControlImpl implements JMSQueueControl
          
          for (Map<String, Object> coreMessage : coreMessages)
          {
-            Map<String, Object> jmsMessage = JBossMessage.coreMaptoJMSMap(coreMessage);
+            Map<String, Object> jmsMessage = HornetQMessage.coreMaptoJMSMap(coreMessage);
             jmsMessages[i++] = jmsMessage;
          }
          return jmsMessages;
@@ -448,7 +448,7 @@ public class JMSQueueControlImpl implements JMSQueueControl
    public boolean moveMessage(String messageID, String otherQueueName) throws Exception
    {
       String filter = createFilterForJMSMessageID(messageID);
-      JBossQueue otherQueue = new JBossQueue(otherQueueName);
+      HornetQQueue otherQueue = new HornetQQueue(otherQueueName);
       int moved = coreQueueControl.moveMessages(filter, otherQueue.getAddress());
       if (moved != 1)
       {
@@ -461,7 +461,7 @@ public class JMSQueueControlImpl implements JMSQueueControl
    public int moveMessages(String filterStr, String otherQueueName) throws Exception
    {
       String filter = createFilterFromJMSSelector(filterStr);
-      JBossQueue otherQueue = new JBossQueue(otherQueueName);
+      HornetQQueue otherQueue = new HornetQQueue(otherQueueName);
       return coreQueueControl.moveMessages(filter, otherQueue.getAddress());
    }
 

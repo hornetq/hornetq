@@ -203,15 +203,9 @@
  */
 package org.hornetq.ra;
 
-import org.hornetq.core.client.ClientSession;
-import org.hornetq.core.client.ClientSessionFactory;
-import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
-import org.hornetq.core.config.TransportConfiguration;
-import org.hornetq.core.exception.MessagingException;
-import org.hornetq.core.logging.Logger;
-import org.hornetq.jms.client.JBossConnectionFactory;
-import org.hornetq.ra.inflow.HornetQActivation;
-import org.hornetq.ra.inflow.HornetQActivationSpec;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.jms.Session;
 import javax.resource.ResourceException;
@@ -222,9 +216,15 @@ import javax.resource.spi.ResourceAdapterInternalException;
 import javax.resource.spi.endpoint.MessageEndpointFactory;
 import javax.resource.spi.work.WorkManager;
 import javax.transaction.xa.XAResource;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicBoolean;
+
+import org.hornetq.core.client.ClientSession;
+import org.hornetq.core.client.ClientSessionFactory;
+import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
+import org.hornetq.core.config.TransportConfiguration;
+import org.hornetq.core.exception.MessagingException;
+import org.hornetq.core.logging.Logger;
+import org.hornetq.ra.inflow.HornetQActivation;
+import org.hornetq.ra.inflow.HornetQActivationSpec;
 
 /**
  * The resource adapter for JBoss Messaging
@@ -271,7 +271,7 @@ public class HornetQResourceAdapter implements ResourceAdapter
     */
    private final Map<ActivationSpec, HornetQActivation> activations;
 
-   private JBossConnectionFactory defaultJBossConnectionFactory;
+   private org.hornetq.jms.client.HornetQConnectionFactory defaultJBossConnectionFactory;
 
    /**
     * Constructor
@@ -314,7 +314,7 @@ public class HornetQResourceAdapter implements ResourceAdapter
          log.trace("endpointActivation(" + endpointFactory + ", " + spec + ")");
       }
 
-      HornetQActivation activation = new HornetQActivation(this, endpointFactory, (HornetQActivationSpec) spec);
+      HornetQActivation activation = new HornetQActivation(this, endpointFactory, (HornetQActivationSpec)spec);
       activations.put(spec, activation);
       activation.start();
    }
@@ -1443,7 +1443,7 @@ public class HornetQResourceAdapter implements ResourceAdapter
 
       if (obj instanceof HornetQResourceAdapter)
       {
-         return raProperties.equals(((HornetQResourceAdapter) obj).getProperties());
+         return raProperties.equals(((HornetQResourceAdapter)obj).getProperties());
       }
       else
       {
@@ -1499,68 +1499,38 @@ public class HornetQResourceAdapter implements ResourceAdapter
 
       ClientSession result;
 
-      //if we are CMP or BMP using local tx we ignore the ack mode as we are transactional
+      // if we are CMP or BMP using local tx we ignore the ack mode as we are transactional
       if (deliveryTransacted || useLocalTx)
       {
          int actTxBatchSize = transactionBatchSize != null ? transactionBatchSize
-                                                           : ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE;
+                                                          : ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE;
          if (useLocalTx)
          {
-            result = parameterFactory.createSession(user,
-                                                    pass,
-                                                    false,
-                                                    false,
-                                                    false,
-                                                    false,
-                                                    actTxBatchSize);
+            result = parameterFactory.createSession(user, pass, false, false, false, false, actTxBatchSize);
          }
          else
          {
-            result = parameterFactory.createSession(user,
-                                                    pass,
-                                                    true,
-                                                    false,
-                                                    false,
-                                                    false,
-                                                    actTxBatchSize);
+            result = parameterFactory.createSession(user, pass, true, false, false, false, actTxBatchSize);
          }
       }
       else
       {
          if (preAck != null && preAck)
          {
-            result = parameterFactory.createSession(user,
-                                                    pass,
-                                                    false,
-                                                    true,
-                                                    true,
-                                                    true,
-                                                    -1);
+            result = parameterFactory.createSession(user, pass, false, true, true, true, -1);
          }
          else
          {
-            //only auto ack and dups ok are supported
+            // only auto ack and dups ok are supported
             switch (ackMode)
             {
                case Session.AUTO_ACKNOWLEDGE:
-                  result = parameterFactory.createSession(user,
-                                                          pass,
-                                                          false,
-                                                          true,
-                                                          true,
-                                                          false,
-                                                          0);
+                  result = parameterFactory.createSession(user, pass, false, true, true, false, 0);
                   break;
                case Session.DUPS_OK_ACKNOWLEDGE:
                   int actDupsOkBatchSize = dupsOkBatchSize != null ? dupsOkBatchSize
-                                                                   : ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE;
-                  result = parameterFactory.createSession(user,
-                                                          pass,
-                                                          false,
-                                                          true,
-                                                          true,
-                                                          false,
-                                                          actDupsOkBatchSize);
+                                                                  : ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE;
+                  result = parameterFactory.createSession(user, pass, false, true, true, false, actDupsOkBatchSize);
                   break;
                default:
                   throw new IllegalArgumentException("Invalid ackmode: " + ackMode);
@@ -1573,7 +1543,6 @@ public class HornetQResourceAdapter implements ResourceAdapter
       return result;
 
    }
-
 
    /**
     * Get the resource adapter properties
@@ -1599,7 +1568,7 @@ public class HornetQResourceAdapter implements ResourceAdapter
       sessionFactory = defaultJBossConnectionFactory.getCoreFactory();
    }
 
-   public JBossConnectionFactory getDefaultJBossConnectionFactory() throws ResourceException
+   public org.hornetq.jms.client.HornetQConnectionFactory getDefaultJBossConnectionFactory() throws ResourceException
    {
       if (!configured.getAndSet(true))
       {
@@ -1615,28 +1584,34 @@ public class HornetQResourceAdapter implements ResourceAdapter
       return defaultJBossConnectionFactory;
    }
 
-   public JBossConnectionFactory createJBossConnectionFactory(ConnectionFactoryProperties overrideProperties)
+   public org.hornetq.jms.client.HornetQConnectionFactory createJBossConnectionFactory(ConnectionFactoryProperties overrideProperties)
    {
-      JBossConnectionFactory cf;
-      String connectorClassName = overrideProperties.getConnectorClassName() != null ? overrideProperties.getConnectorClassName() : getConnectorClassName();
-      String discoveryAddress = overrideProperties.getDiscoveryAddress() != null ? overrideProperties.getDiscoveryAddress() : getDiscoveryAddress();
+      org.hornetq.jms.client.HornetQConnectionFactory cf;
+      String connectorClassName = overrideProperties.getConnectorClassName() != null ? overrideProperties.getConnectorClassName()
+                                                                                    : getConnectorClassName();
+      String discoveryAddress = overrideProperties.getDiscoveryAddress() != null ? overrideProperties.getDiscoveryAddress()
+                                                                                : getDiscoveryAddress();
       if (connectorClassName != null)
       {
-         Map<String, Object> connectionParams = overrideProperties.getParsedConnectionParameters() != null ? overrideProperties.getParsedConnectionParameters() : getConnectionParameters();
+         Map<String, Object> connectionParams = overrideProperties.getParsedConnectionParameters() != null ? overrideProperties.getParsedConnectionParameters()
+                                                                                                          : getConnectionParameters();
          TransportConfiguration transportConf = new TransportConfiguration(connectorClassName, connectionParams);
 
-         String backUpCOnnectorClassname = overrideProperties.getBackupConnectorClassName() != null ? overrideProperties.getBackupConnectorClassName() : getBackupConnectorClassName();
-         Map<String, Object> backupConnectionParams = overrideProperties.getParsedBackupConnectionParameters() != null ? overrideProperties.getParsedBackupConnectionParameters() : getBackupConnectionParameters();
+         String backUpCOnnectorClassname = overrideProperties.getBackupConnectorClassName() != null ? overrideProperties.getBackupConnectorClassName()
+                                                                                                   : getBackupConnectorClassName();
+         Map<String, Object> backupConnectionParams = overrideProperties.getParsedBackupConnectionParameters() != null ? overrideProperties.getParsedBackupConnectionParameters()
+                                                                                                                      : getBackupConnectionParameters();
          TransportConfiguration backup = backUpCOnnectorClassname == null ? null
-                                                                          : new TransportConfiguration(backUpCOnnectorClassname,
-                                                                                                       backupConnectionParams);
+                                                                         : new TransportConfiguration(backUpCOnnectorClassname,
+                                                                                                      backupConnectionParams);
 
-         cf = new JBossConnectionFactory(transportConf, backup);
+         cf = new org.hornetq.jms.client.HornetQConnectionFactory(transportConf, backup);
       }
       else if (discoveryAddress != null)
       {
-         Integer discoveryPort = overrideProperties.getDiscoveryPort() != null ? overrideProperties.getDiscoveryPort() : getDiscoveryPort();
-         cf = new JBossConnectionFactory(discoveryAddress, discoveryPort);
+         Integer discoveryPort = overrideProperties.getDiscoveryPort() != null ? overrideProperties.getDiscoveryPort()
+                                                                              : getDiscoveryPort();
+         cf = new org.hornetq.jms.client.HornetQConnectionFactory(discoveryAddress, discoveryPort);
       }
       else
       {
@@ -1646,139 +1621,167 @@ public class HornetQResourceAdapter implements ResourceAdapter
       return cf;
    }
 
-   private void setParams(final JBossConnectionFactory cf, ConnectionFactoryProperties overrideProperties)
+   private void setParams(final org.hornetq.jms.client.HornetQConnectionFactory cf,
+                          ConnectionFactoryProperties overrideProperties)
    {
-      Boolean val = overrideProperties.isAutoGroup() != null ? overrideProperties.isAutoGroup() : raProperties.isAutoGroup();
+      Boolean val = overrideProperties.isAutoGroup() != null ? overrideProperties.isAutoGroup()
+                                                            : raProperties.isAutoGroup();
       if (val != null)
       {
          cf.setAutoGroup(val);
       }
-      val = overrideProperties.isBlockOnAcknowledge() != null ? overrideProperties.isBlockOnAcknowledge() : raProperties.isBlockOnAcknowledge();
+      val = overrideProperties.isBlockOnAcknowledge() != null ? overrideProperties.isBlockOnAcknowledge()
+                                                             : raProperties.isBlockOnAcknowledge();
       if (val != null)
       {
          cf.setBlockOnAcknowledge(val);
       }
-      val = overrideProperties.isBlockOnNonPersistentSend() != null ? overrideProperties.isBlockOnNonPersistentSend() : raProperties.isBlockOnNonPersistentSend();
+      val = overrideProperties.isBlockOnNonPersistentSend() != null ? overrideProperties.isBlockOnNonPersistentSend()
+                                                                   : raProperties.isBlockOnNonPersistentSend();
       if (val != null)
       {
          cf.setBlockOnNonPersistentSend(val);
       }
-      val = overrideProperties.isBlockOnPersistentSend() != null ? overrideProperties.isBlockOnPersistentSend() : raProperties.isBlockOnPersistentSend();
+      val = overrideProperties.isBlockOnPersistentSend() != null ? overrideProperties.isBlockOnPersistentSend()
+                                                                : raProperties.isBlockOnPersistentSend();
       if (val != null)
       {
          cf.setBlockOnPersistentSend(val);
       }
-      val = overrideProperties.isFailoverOnServerShutdown() != null ? overrideProperties.isFailoverOnServerShutdown() : raProperties.isFailoverOnServerShutdown();
+      val = overrideProperties.isFailoverOnServerShutdown() != null ? overrideProperties.isFailoverOnServerShutdown()
+                                                                   : raProperties.isFailoverOnServerShutdown();
       if (val != null)
       {
          cf.setFailoverOnServerShutdown(val);
       }
-      val = overrideProperties.isPreAcknowledge() != null ? overrideProperties.isPreAcknowledge() : raProperties.isPreAcknowledge();
+      val = overrideProperties.isPreAcknowledge() != null ? overrideProperties.isPreAcknowledge()
+                                                         : raProperties.isPreAcknowledge();
       if (val != null)
       {
          cf.setPreAcknowledge(val);
       }
-      val = overrideProperties.isUseGlobalPools() != null ? overrideProperties.isUseGlobalPools() : raProperties.isUseGlobalPools();
+      val = overrideProperties.isUseGlobalPools() != null ? overrideProperties.isUseGlobalPools()
+                                                         : raProperties.isUseGlobalPools();
       if (val != null)
       {
          cf.setUseGlobalPools(val);
       }
-      Integer val2 = overrideProperties.getConsumerMaxRate() != null ? overrideProperties.getConsumerMaxRate() : raProperties.getConsumerMaxRate();
+      Integer val2 = overrideProperties.getConsumerMaxRate() != null ? overrideProperties.getConsumerMaxRate()
+                                                                    : raProperties.getConsumerMaxRate();
       if (val2 != null)
       {
          cf.setConsumerMaxRate(val2);
       }
-      val2 = overrideProperties.getConsumerWindowSize() != null ? overrideProperties.getConsumerWindowSize() : raProperties.getConsumerWindowSize();
+      val2 = overrideProperties.getConsumerWindowSize() != null ? overrideProperties.getConsumerWindowSize()
+                                                               : raProperties.getConsumerWindowSize();
       if (val2 != null)
       {
          cf.setConsumerWindowSize(val2);
       }
-      val2 = overrideProperties.getDupsOKBatchSize() != null ? overrideProperties.getDupsOKBatchSize() : raProperties.getDupsOKBatchSize();
+      val2 = overrideProperties.getDupsOKBatchSize() != null ? overrideProperties.getDupsOKBatchSize()
+                                                            : raProperties.getDupsOKBatchSize();
       if (val2 != null)
       {
          cf.setDupsOKBatchSize(val2);
       }
-      val2 = overrideProperties.getMaxConnections() != null ? overrideProperties.getMaxConnections() : raProperties.getMaxConnections();
+      val2 = overrideProperties.getMaxConnections() != null ? overrideProperties.getMaxConnections()
+                                                           : raProperties.getMaxConnections();
       if (val2 != null)
       {
          cf.setMaxConnections(val2);
       }
-      val2 = overrideProperties.getMinLargeMessageSize() != null ? overrideProperties.getMinLargeMessageSize() : raProperties.getMinLargeMessageSize();
+      val2 = overrideProperties.getMinLargeMessageSize() != null ? overrideProperties.getMinLargeMessageSize()
+                                                                : raProperties.getMinLargeMessageSize();
       if (val2 != null)
       {
          cf.setMinLargeMessageSize(val2);
       }
-      val2 = overrideProperties.getProducerMaxRate() != null ? overrideProperties.getProducerMaxRate() : raProperties.getProducerMaxRate();
+      val2 = overrideProperties.getProducerMaxRate() != null ? overrideProperties.getProducerMaxRate()
+                                                            : raProperties.getProducerMaxRate();
       if (val2 != null)
       {
          cf.setProducerMaxRate(val2);
       }
-      val2 = overrideProperties.getProducerWindowSize() != null ? overrideProperties.getProducerWindowSize() : raProperties.getProducerWindowSize();
+      val2 = overrideProperties.getProducerWindowSize() != null ? overrideProperties.getProducerWindowSize()
+                                                               : raProperties.getProducerWindowSize();
       if (val2 != null)
       {
          cf.setProducerWindowSize(val2);
       }
-      val2 = overrideProperties.getReconnectAttempts() != null ? overrideProperties.getReconnectAttempts() : raProperties.getReconnectAttempts();
+      val2 = overrideProperties.getReconnectAttempts() != null ? overrideProperties.getReconnectAttempts()
+                                                              : raProperties.getReconnectAttempts();
       if (val2 != null)
       {
          cf.setReconnectAttempts(val2);
       }
-      val2 = overrideProperties.getThreadPoolMaxSize() != null ? overrideProperties.getThreadPoolMaxSize() : raProperties.getThreadPoolMaxSize();
+      val2 = overrideProperties.getThreadPoolMaxSize() != null ? overrideProperties.getThreadPoolMaxSize()
+                                                              : raProperties.getThreadPoolMaxSize();
       if (val2 != null)
       {
          cf.setThreadPoolMaxSize(val2);
       }
-      val2 = overrideProperties.getScheduledThreadPoolMaxSize() != null ? overrideProperties.getScheduledThreadPoolMaxSize() : raProperties.getScheduledThreadPoolMaxSize();
+      val2 = overrideProperties.getScheduledThreadPoolMaxSize() != null ? overrideProperties.getScheduledThreadPoolMaxSize()
+                                                                       : raProperties.getScheduledThreadPoolMaxSize();
       if (val2 != null)
       {
          cf.setScheduledThreadPoolMaxSize(val2);
       }
-      val2 = overrideProperties.getTransactionBatchSize() != null ? overrideProperties.getTransactionBatchSize() : raProperties.getTransactionBatchSize();
+      val2 = overrideProperties.getTransactionBatchSize() != null ? overrideProperties.getTransactionBatchSize()
+                                                                 : raProperties.getTransactionBatchSize();
       if (val2 != null)
       {
          cf.setTransactionBatchSize(val2);
       }
-      Long val3 = overrideProperties.getClientFailureCheckPeriod() != null ? overrideProperties.getClientFailureCheckPeriod() : raProperties.getClientFailureCheckPeriod();
+      Long val3 = overrideProperties.getClientFailureCheckPeriod() != null ? overrideProperties.getClientFailureCheckPeriod()
+                                                                          : raProperties.getClientFailureCheckPeriod();
       if (val3 != null)
       {
          cf.setClientFailureCheckPeriod(val3);
       }
-      val3 = overrideProperties.getCallTimeout() != null ? overrideProperties.getCallTimeout() : raProperties.getCallTimeout();
+      val3 = overrideProperties.getCallTimeout() != null ? overrideProperties.getCallTimeout()
+                                                        : raProperties.getCallTimeout();
       if (val3 != null)
       {
          cf.setCallTimeout(val3);
       }
-      val3 = overrideProperties.getConnectionTTL() != null ? overrideProperties.getConnectionTTL() : raProperties.getConnectionTTL();
+      val3 = overrideProperties.getConnectionTTL() != null ? overrideProperties.getConnectionTTL()
+                                                          : raProperties.getConnectionTTL();
       if (val3 != null)
       {
          cf.setConnectionTTL(val3);
       }
-      val3 = overrideProperties.getDiscoveryInitialWaitTimeout() != null ? overrideProperties.getDiscoveryInitialWaitTimeout() : raProperties.getDiscoveryInitialWaitTimeout();
+      val3 = overrideProperties.getDiscoveryInitialWaitTimeout() != null ? overrideProperties.getDiscoveryInitialWaitTimeout()
+                                                                        : raProperties.getDiscoveryInitialWaitTimeout();
       if (val3 != null)
       {
          cf.setDiscoveryInitialWaitTimeout(val3);
       }
-      val3 = overrideProperties.getDiscoveryRefreshTimeout() != null ? overrideProperties.getDiscoveryRefreshTimeout() : raProperties.getDiscoveryRefreshTimeout();
+      val3 = overrideProperties.getDiscoveryRefreshTimeout() != null ? overrideProperties.getDiscoveryRefreshTimeout()
+                                                                    : raProperties.getDiscoveryRefreshTimeout();
       if (val3 != null)
       {
          cf.setDiscoveryRefreshTimeout(val3);
       }
-      val3 = overrideProperties.getRetryInterval() != null ? overrideProperties.getRetryInterval() : raProperties.getRetryInterval();
+      val3 = overrideProperties.getRetryInterval() != null ? overrideProperties.getRetryInterval()
+                                                          : raProperties.getRetryInterval();
       if (val3 != null)
       {
          cf.setRetryInterval(val3);
       }
-      Double val4 = overrideProperties.getRetryIntervalMultiplier() != null ? overrideProperties.getRetryIntervalMultiplier() : raProperties.getRetryIntervalMultiplier();
+      Double val4 = overrideProperties.getRetryIntervalMultiplier() != null ? overrideProperties.getRetryIntervalMultiplier()
+                                                                           : raProperties.getRetryIntervalMultiplier();
       if (val4 != null)
       {
          cf.setRetryIntervalMultiplier(val4);
       }
-      String val5 = overrideProperties.getClientID() != null ? overrideProperties.getClientID() : raProperties.getClientID();
+      String val5 = overrideProperties.getClientID() != null ? overrideProperties.getClientID()
+                                                            : raProperties.getClientID();
       if (val5 != null)
       {
          cf.setClientID(val5);
       }
-      val5 = overrideProperties.getConnectionLoadBalancingPolicyClassName() != null ? overrideProperties.getConnectionLoadBalancingPolicyClassName() : raProperties.getConnectionLoadBalancingPolicyClassName();
+      val5 = overrideProperties.getConnectionLoadBalancingPolicyClassName() != null ? overrideProperties.getConnectionLoadBalancingPolicyClassName()
+                                                                                   : raProperties.getConnectionLoadBalancingPolicyClassName();
       if (val5 != null)
       {
          cf.setConnectionLoadBalancingPolicyClassName(val5);

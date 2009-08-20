@@ -215,8 +215,8 @@ import javax.jms.Session;
 import org.hornetq.core.config.TransportConfiguration;
 import org.hornetq.core.management.ResourceNames;
 import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
-import org.hornetq.jms.JBossQueue;
-import org.hornetq.jms.client.JBossConnectionFactory;
+import org.hornetq.jms.HornetQQueue;
+import org.hornetq.jms.client.HornetQConnectionFactory;
 import org.hornetq.jms.server.management.JMSQueueControl;
 
 /**
@@ -248,7 +248,7 @@ public class JMSQueueControlUsingJMSTest extends JMSQueueControlTest
    {
       super.setUp();
 
-      JBossConnectionFactory cf = new JBossConnectionFactory(new TransportConfiguration(InVMConnectorFactory.class.getName()));
+      HornetQConnectionFactory cf = new HornetQConnectionFactory(new TransportConfiguration(InVMConnectorFactory.class.getName()));
       connection = cf.createQueueConnection();
       session = connection.createQueueSession(false, Session.AUTO_ACKNOWLEDGE);
       connection.start();
@@ -269,7 +269,7 @@ public class JMSQueueControlUsingJMSTest extends JMSQueueControlTest
    @Override
    protected JMSQueueControl createManagementControl() throws Exception
    {
-      JBossQueue managementQueue = new JBossQueue(DEFAULT_MANAGEMENT_ADDRESS.toString(),
+      HornetQQueue managementQueue = new HornetQQueue(DEFAULT_MANAGEMENT_ADDRESS.toString(),
                                                   DEFAULT_MANAGEMENT_ADDRESS.toString());
       final JMSMessagingProxy proxy = new JMSMessagingProxy(session,
                                                             managementQueue,

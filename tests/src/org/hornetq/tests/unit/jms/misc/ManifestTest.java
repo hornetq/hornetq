@@ -217,7 +217,7 @@ import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.server.Messaging;
 import org.hornetq.core.server.MessagingServer;
-import org.hornetq.jms.client.JBossConnectionMetaData;
+import org.hornetq.jms.client.HornetQConnectionMetaData;
 import org.hornetq.tests.util.UnitTestCase;
 
 /**
@@ -258,7 +258,7 @@ public class ManifestTest extends UnitTestCase
       {
          MessagingServer server = Messaging.newMessagingServer(new ConfigurationImpl());
 
-         ConnectionMetaData meta = new JBossConnectionMetaData(server.getVersion());
+         ConnectionMetaData meta = new HornetQConnectionMetaData(server.getVersion());
 
          // Compare the value from ConnectionMetaData and MANIFEST.MF
          Attributes attrs = manifest.getMainAttributes();

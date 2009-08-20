@@ -221,7 +221,7 @@ import java.util.ArrayList;
 import javax.jms.MessageEOFException;
 import javax.jms.MessageFormatException;
 
-import org.hornetq.jms.client.JBossStreamMessage;
+import org.hornetq.jms.client.HornetQStreamMessage;
 import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.tests.util.UnitTestCase;
 
@@ -231,7 +231,7 @@ import org.hornetq.tests.util.UnitTestCase;
  * @version <tt>$Revision$</tt>
  * 
  */
-public class JBossStreamMessageTest extends UnitTestCase
+public class HornetQStreamMessageTest extends UnitTestCase
 {
    // Constants -----------------------------------------------------
 
@@ -245,14 +245,14 @@ public class JBossStreamMessageTest extends UnitTestCase
 
    public void testGetType() throws Exception
    {
-      JBossStreamMessage message = new JBossStreamMessage();
-      assertEquals(JBossStreamMessage.TYPE, message.getType());
+      HornetQStreamMessage message = new HornetQStreamMessage();
+      assertEquals(HornetQStreamMessage.TYPE, message.getType());
    }
 
    public void testReadBooleanFromBoolean() throws Exception
    {
       boolean value = randomBoolean();
-      JBossStreamMessage message = new JBossStreamMessage();
+      HornetQStreamMessage message = new HornetQStreamMessage();
 
       message.writeBoolean(value);
       message.reset();
@@ -263,7 +263,7 @@ public class JBossStreamMessageTest extends UnitTestCase
    public void testReadBooleanFromString() throws Exception
    {
       boolean value = randomBoolean();
-      JBossStreamMessage message = new JBossStreamMessage();
+      HornetQStreamMessage message = new HornetQStreamMessage();
 
       message.writeString(Boolean.toString(value));
       message.reset();
@@ -275,7 +275,7 @@ public class JBossStreamMessageTest extends UnitTestCase
    {
       doReadTypeFromInvalidType(randomFloat(), new TypeReader()
       {
-         public Object readType(JBossStreamMessage message) throws Exception
+         public Object readType(HornetQStreamMessage message) throws Exception
          {
             return message.readBoolean();
          }
@@ -286,7 +286,7 @@ public class JBossStreamMessageTest extends UnitTestCase
    {
       doReadTypeFromEmptyMessage(new TypeReader()
       {
-         public Object readType(JBossStreamMessage message) throws Exception
+         public Object readType(HornetQStreamMessage message) throws Exception
          {
             return message.readBoolean();
          }
@@ -297,7 +297,7 @@ public class JBossStreamMessageTest extends UnitTestCase
    {
       doReadTypeFromInvalidType(randomFloat(), new TypeReader()
       {
-         public Object readType(JBossStreamMessage message) throws Exception
+         public Object readType(HornetQStreamMessage message) throws Exception
          {
             return message.readChar();
          }
@@ -308,7 +308,7 @@ public class JBossStreamMessageTest extends UnitTestCase
    {
       doReadTypeFromEmptyMessage(new TypeReader()
       {
-         public Object readType(JBossStreamMessage message) throws Exception
+         public Object readType(HornetQStreamMessage message) throws Exception
          {
             return message.readChar();
          }
@@ -318,7 +318,7 @@ public class JBossStreamMessageTest extends UnitTestCase
    public void testReadByteFromByte() throws Exception
    {
       byte value = randomByte();
-      JBossStreamMessage message = new JBossStreamMessage();
+      HornetQStreamMessage message = new HornetQStreamMessage();
 
       message.writeByte(value);
       message.reset();
@@ -329,7 +329,7 @@ public class JBossStreamMessageTest extends UnitTestCase
    public void testReadByteFromString() throws Exception
    {
       byte value = randomByte();
-      JBossStreamMessage message = new JBossStreamMessage();
+      HornetQStreamMessage message = new HornetQStreamMessage();
 
       message.writeString(Byte.toString(value));
       message.reset();
@@ -341,7 +341,7 @@ public class JBossStreamMessageTest extends UnitTestCase
    {
       doReadTypeFromInvalidType(randomFloat(), new TypeReader()
       {
-         public Object readType(JBossStreamMessage message) throws Exception
+         public Object readType(HornetQStreamMessage message) throws Exception
          {
             return message.readByte();
          }
@@ -352,7 +352,7 @@ public class JBossStreamMessageTest extends UnitTestCase
    {
       doReadTypeFromEmptyMessage(new TypeReader()
       {
-         public Object readType(JBossStreamMessage message) throws Exception
+         public Object readType(HornetQStreamMessage message) throws Exception
          {
             return message.readByte();
          }
@@ -362,7 +362,7 @@ public class JBossStreamMessageTest extends UnitTestCase
    public void testReadBytesFromBytes() throws Exception
    {
       byte[] value = randomBytes();
-      JBossStreamMessage message = new JBossStreamMessage();
+      HornetQStreamMessage message = new HornetQStreamMessage();
 
       message.writeBytes(value);
       message.reset();
@@ -376,7 +376,7 @@ public class JBossStreamMessageTest extends UnitTestCase
    public void testReadBytesFromBytes_2() throws Exception
    {
       byte[] value = randomBytes(512);
-      JBossStreamMessage message = new JBossStreamMessage();
+      HornetQStreamMessage message = new HornetQStreamMessage();
 
       message.writeBytes(value, 0, 256);
       message.reset();
@@ -391,7 +391,7 @@ public class JBossStreamMessageTest extends UnitTestCase
    {
       doReadTypeFromInvalidType(randomBoolean(), new TypeReader()
       {
-         public Object readType(JBossStreamMessage message) throws Exception
+         public Object readType(HornetQStreamMessage message) throws Exception
          {
             return message.readByte();
          }
@@ -402,7 +402,7 @@ public class JBossStreamMessageTest extends UnitTestCase
    {
       doReadTypeFromEmptyMessage(new TypeReader()
       {
-         public Object readType(JBossStreamMessage message) throws Exception
+         public Object readType(HornetQStreamMessage message) throws Exception
          {
             byte[] bytes = new byte[1];
             return message.readBytes(bytes);
@@ -413,7 +413,7 @@ public class JBossStreamMessageTest extends UnitTestCase
    public void testReadShortFromByte() throws Exception
    {
       byte value = randomByte();
-      JBossStreamMessage message = new JBossStreamMessage();
+      HornetQStreamMessage message = new HornetQStreamMessage();
 
       message.writeByte(value);
       message.reset();
@@ -424,7 +424,7 @@ public class JBossStreamMessageTest extends UnitTestCase
    public void testReadShortFromShort() throws Exception
    {
       short value = randomShort();
-      JBossStreamMessage message = new JBossStreamMessage();
+      HornetQStreamMessage message = new HornetQStreamMessage();
 
       message.writeShort(value);
       message.reset();
@@ -435,7 +435,7 @@ public class JBossStreamMessageTest extends UnitTestCase
    public void testReadShortFromString() throws Exception
    {
       short value = randomShort();
-      JBossStreamMessage message = new JBossStreamMessage();
+      HornetQStreamMessage message = new HornetQStreamMessage();
 
       message.writeString(Short.toString(value));
       message.reset();
@@ -447,7 +447,7 @@ public class JBossStreamMessageTest extends UnitTestCase
    {
       doReadTypeFromInvalidType(randomFloat(), new TypeReader()
       {
-         public Object readType(JBossStreamMessage message) throws Exception
+         public Object readType(HornetQStreamMessage message) throws Exception
          {
             return message.readShort();
          }
@@ -458,7 +458,7 @@ public class JBossStreamMessageTest extends UnitTestCase
    {
       doReadTypeFromEmptyMessage(new TypeReader()
       {
-         public Object readType(JBossStreamMessage message) throws Exception
+         public Object readType(HornetQStreamMessage message) throws Exception
          {
             return message.readShort();
          }
@@ -468,7 +468,7 @@ public class JBossStreamMessageTest extends UnitTestCase
    public void testReadIntFromByte() throws Exception
    {
       byte value = randomByte();
-      JBossStreamMessage message = new JBossStreamMessage();
+      HornetQStreamMessage message = new HornetQStreamMessage();
 
       message.writeByte(value);
       message.reset();
@@ -479,7 +479,7 @@ public class JBossStreamMessageTest extends UnitTestCase
    public void testReadIntFromShort() throws Exception
    {
       short value = randomShort();
-      JBossStreamMessage message = new JBossStreamMessage();
+      HornetQStreamMessage message = new HornetQStreamMessage();
 
       message.writeShort(value);
       message.reset();
@@ -490,7 +490,7 @@ public class JBossStreamMessageTest extends UnitTestCase
    public void testReadIntFromInt() throws Exception
    {
       int value = randomInt();
-      JBossStreamMessage message = new JBossStreamMessage();
+      HornetQStreamMessage message = new HornetQStreamMessage();
 
       message.writeInt(value);
       message.reset();
@@ -501,7 +501,7 @@ public class JBossStreamMessageTest extends UnitTestCase
    public void testReadIntFromString() throws Exception
    {
       int value = randomInt();
-      JBossStreamMessage message = new JBossStreamMessage();
+      HornetQStreamMessage message = new HornetQStreamMessage();
 
       message.writeString(Integer.toString(value));
       message.reset();
@@ -513,7 +513,7 @@ public class JBossStreamMessageTest extends UnitTestCase
    {
       doReadTypeFromInvalidType(randomFloat(), new TypeReader()
       {
-         public Object readType(JBossStreamMessage message) throws Exception
+         public Object readType(HornetQStreamMessage message) throws Exception
          {
             return message.readInt();
          }
@@ -524,7 +524,7 @@ public class JBossStreamMessageTest extends UnitTestCase
    {
       doReadTypeFromEmptyMessage(new TypeReader()
       {
-         public Object readType(JBossStreamMessage message) throws Exception
+         public Object readType(HornetQStreamMessage message) throws Exception
          {
             return message.readInt();
          }
@@ -534,7 +534,7 @@ public class JBossStreamMessageTest extends UnitTestCase
    public void testReadCharFromChar() throws Exception
    {
       char value = randomChar();
-      JBossStreamMessage message = new JBossStreamMessage();
+      HornetQStreamMessage message = new HornetQStreamMessage();
 
       message.writeChar(value);
       message.reset();
@@ -545,7 +545,7 @@ public class JBossStreamMessageTest extends UnitTestCase
    public void testReadLongFromByte() throws Exception
    {
       byte value = randomByte();
-      JBossStreamMessage message = new JBossStreamMessage();
+      HornetQStreamMessage message = new HornetQStreamMessage();
 
       message.writeByte(value);
       message.reset();
@@ -556,7 +556,7 @@ public class JBossStreamMessageTest extends UnitTestCase
    public void testReadLongFromShort() throws Exception
    {
       short value = randomShort();
-      JBossStreamMessage message = new JBossStreamMessage();
+      HornetQStreamMessage message = new HornetQStreamMessage();
 
       message.writeShort(value);
       message.reset();
@@ -567,7 +567,7 @@ public class JBossStreamMessageTest extends UnitTestCase
    public void testReadLongFromInt() throws Exception
    {
       int value = randomInt();
-      JBossStreamMessage message = new JBossStreamMessage();
+      HornetQStreamMessage message = new HornetQStreamMessage();
 
       message.writeInt(value);
       message.reset();
@@ -578,7 +578,7 @@ public class JBossStreamMessageTest extends UnitTestCase
    public void testReadLongFromLong() throws Exception
    {
       long value = RandomUtil.randomLong();
-      JBossStreamMessage message = new JBossStreamMessage();
+      HornetQStreamMessage message = new HornetQStreamMessage();
 
       message.writeLong(value);
       message.reset();
@@ -589,7 +589,7 @@ public class JBossStreamMessageTest extends UnitTestCase
    public void testReadLongFromString() throws Exception
    {
       long value = RandomUtil.randomLong();
-      JBossStreamMessage message = new JBossStreamMessage();
+      HornetQStreamMessage message = new HornetQStreamMessage();
 
       message.writeString(Long.toString(value));
       message.reset();
@@ -601,7 +601,7 @@ public class JBossStreamMessageTest extends UnitTestCase
    {
       doReadTypeFromInvalidType(randomFloat(), new TypeReader()
       {
-         public Object readType(JBossStreamMessage message) throws Exception
+         public Object readType(HornetQStreamMessage message) throws Exception
          {
             return message.readLong();
          }
@@ -612,7 +612,7 @@ public class JBossStreamMessageTest extends UnitTestCase
    {
       doReadTypeFromEmptyMessage(new TypeReader()
       {
-         public Object readType(JBossStreamMessage message) throws Exception
+         public Object readType(HornetQStreamMessage message) throws Exception
          {
             return message.readLong();
          }
@@ -622,7 +622,7 @@ public class JBossStreamMessageTest extends UnitTestCase
    public void testReadFloatFromFloat() throws Exception
    {
       float value = randomFloat();
-      JBossStreamMessage message = new JBossStreamMessage();
+      HornetQStreamMessage message = new HornetQStreamMessage();
 
       message.writeFloat(value);
       message.reset();
@@ -633,7 +633,7 @@ public class JBossStreamMessageTest extends UnitTestCase
    public void testReadFloatFromString() throws Exception
    {
       float value = randomFloat();
-      JBossStreamMessage message = new JBossStreamMessage();
+      HornetQStreamMessage message = new HornetQStreamMessage();
 
       message.writeString(Float.toString(value));
       message.reset();
@@ -645,7 +645,7 @@ public class JBossStreamMessageTest extends UnitTestCase
    {
       doReadTypeFromInvalidType(randomBoolean(), new TypeReader()
       {
-         public Object readType(JBossStreamMessage message) throws Exception
+         public Object readType(HornetQStreamMessage message) throws Exception
          {
             return message.readFloat();
          }
@@ -656,7 +656,7 @@ public class JBossStreamMessageTest extends UnitTestCase
    {
       doReadTypeFromEmptyMessage(new TypeReader()
       {
-         public Object readType(JBossStreamMessage message) throws Exception
+         public Object readType(HornetQStreamMessage message) throws Exception
          {
             return message.readFloat();
          }
@@ -666,7 +666,7 @@ public class JBossStreamMessageTest extends UnitTestCase
    public void testReadDoubleFromFloat() throws Exception
    {
       float value = randomFloat();
-      JBossStreamMessage message = new JBossStreamMessage();
+      HornetQStreamMessage message = new HornetQStreamMessage();
 
       message.writeFloat(value);
       message.reset();
@@ -677,7 +677,7 @@ public class JBossStreamMessageTest extends UnitTestCase
    public void testReadDoubleFromDouble() throws Exception
    {
       double value = randomDouble();
-      JBossStreamMessage message = new JBossStreamMessage();
+      HornetQStreamMessage message = new HornetQStreamMessage();
 
       message.writeDouble(value);
       message.reset();
@@ -688,7 +688,7 @@ public class JBossStreamMessageTest extends UnitTestCase
    public void testReadDoubleFromString() throws Exception
    {
       double value = randomDouble();
-      JBossStreamMessage message = new JBossStreamMessage();
+      HornetQStreamMessage message = new HornetQStreamMessage();
 
       message.writeString(Double.toString(value));
       message.reset();
@@ -700,7 +700,7 @@ public class JBossStreamMessageTest extends UnitTestCase
    {
       doReadTypeFromInvalidType(randomBoolean(), new TypeReader()
       {
-         public Object readType(JBossStreamMessage message) throws Exception
+         public Object readType(HornetQStreamMessage message) throws Exception
          {
             return message.readDouble();
          }
@@ -711,7 +711,7 @@ public class JBossStreamMessageTest extends UnitTestCase
    {
       doReadTypeFromEmptyMessage(new TypeReader()
       {
-         public Object readType(JBossStreamMessage message) throws Exception
+         public Object readType(HornetQStreamMessage message) throws Exception
          {
             return message.readDouble();
          }
@@ -721,7 +721,7 @@ public class JBossStreamMessageTest extends UnitTestCase
    public void testReadStringFromBoolean() throws Exception
    {
       boolean value = randomBoolean();
-      JBossStreamMessage message = new JBossStreamMessage();
+      HornetQStreamMessage message = new HornetQStreamMessage();
 
       message.writeBoolean(value);
       message.reset();
@@ -732,7 +732,7 @@ public class JBossStreamMessageTest extends UnitTestCase
    public void testReadStringFromChar() throws Exception
    {
       char value = randomChar();
-      JBossStreamMessage message = new JBossStreamMessage();
+      HornetQStreamMessage message = new HornetQStreamMessage();
 
       message.writeChar(value);
       message.reset();
@@ -743,7 +743,7 @@ public class JBossStreamMessageTest extends UnitTestCase
    public void testReadStringFromByte() throws Exception
    {
       byte value = randomByte();
-      JBossStreamMessage message = new JBossStreamMessage();
+      HornetQStreamMessage message = new HornetQStreamMessage();
 
       message.writeByte(value);
       message.reset();
@@ -754,7 +754,7 @@ public class JBossStreamMessageTest extends UnitTestCase
    public void testReadStringFromShort() throws Exception
    {
       short value = randomShort();
-      JBossStreamMessage message = new JBossStreamMessage();
+      HornetQStreamMessage message = new HornetQStreamMessage();
 
       message.writeShort(value);
       message.reset();
@@ -765,7 +765,7 @@ public class JBossStreamMessageTest extends UnitTestCase
    public void testReadStringFromInt() throws Exception
    {
       int value = randomInt();
-      JBossStreamMessage message = new JBossStreamMessage();
+      HornetQStreamMessage message = new HornetQStreamMessage();
 
       message.writeInt(value);
       message.reset();
@@ -776,7 +776,7 @@ public class JBossStreamMessageTest extends UnitTestCase
    public void testReadStringFromLong() throws Exception
    {
       long value = randomLong();
-      JBossStreamMessage message = new JBossStreamMessage();
+      HornetQStreamMessage message = new HornetQStreamMessage();
 
       message.writeLong(value);
       message.reset();
@@ -787,7 +787,7 @@ public class JBossStreamMessageTest extends UnitTestCase
    public void testReadStringFromFloat() throws Exception
    {
       float value = randomFloat();
-      JBossStreamMessage message = new JBossStreamMessage();
+      HornetQStreamMessage message = new HornetQStreamMessage();
 
       message.writeFloat(value);
       message.reset();
@@ -798,7 +798,7 @@ public class JBossStreamMessageTest extends UnitTestCase
    public void testReadStringFromDouble() throws Exception
    {
       double value = randomDouble();
-      JBossStreamMessage message = new JBossStreamMessage();
+      HornetQStreamMessage message = new HornetQStreamMessage();
 
       message.writeDouble(value);
       message.reset();
@@ -809,7 +809,7 @@ public class JBossStreamMessageTest extends UnitTestCase
    public void testReadStringFromString() throws Exception
    {
       String value = randomString();
-      JBossStreamMessage message = new JBossStreamMessage();
+      HornetQStreamMessage message = new HornetQStreamMessage();
 
       message.writeString(value);
       message.reset();
@@ -819,7 +819,7 @@ public class JBossStreamMessageTest extends UnitTestCase
 
    public void testReadStringFromNullString() throws Exception
    {
-      JBossStreamMessage message = new JBossStreamMessage();
+      HornetQStreamMessage message = new HornetQStreamMessage();
 
       message.writeString(null);
       message.reset();
@@ -831,7 +831,7 @@ public class JBossStreamMessageTest extends UnitTestCase
    {
       doReadTypeFromEmptyMessage(new TypeReader()
       {
-         public Object readType(JBossStreamMessage message) throws Exception
+         public Object readType(HornetQStreamMessage message) throws Exception
          {
             return message.readString();
          }
@@ -842,7 +842,7 @@ public class JBossStreamMessageTest extends UnitTestCase
    {
       doWriteObjectWithType(randomBoolean(), new TypeReader()
       {
-         public Object readType(JBossStreamMessage message) throws Exception
+         public Object readType(HornetQStreamMessage message) throws Exception
          {
             return message.readBoolean();
          }
@@ -853,7 +853,7 @@ public class JBossStreamMessageTest extends UnitTestCase
    {
       doWriteObjectWithType(randomChar(), new TypeReader()
       {
-         public Object readType(JBossStreamMessage message) throws Exception
+         public Object readType(HornetQStreamMessage message) throws Exception
          {
             return message.readChar();
          }
@@ -864,7 +864,7 @@ public class JBossStreamMessageTest extends UnitTestCase
    {
       doWriteObjectWithType(randomByte(), new TypeReader()
       {
-         public Object readType(JBossStreamMessage message) throws Exception
+         public Object readType(HornetQStreamMessage message) throws Exception
          {
             return message.readByte();
          }
@@ -876,7 +876,7 @@ public class JBossStreamMessageTest extends UnitTestCase
       final byte[] value = randomBytes();
       doWriteObjectWithType(value, new TypeReader()
       {
-         public Object readType(JBossStreamMessage message) throws Exception
+         public Object readType(HornetQStreamMessage message) throws Exception
          {
             byte[] bytes = new byte[value.length];
             message.readBytes(bytes);
@@ -889,7 +889,7 @@ public class JBossStreamMessageTest extends UnitTestCase
    {
       doWriteObjectWithType(randomShort(), new TypeReader()
       {
-         public Object readType(JBossStreamMessage message) throws Exception
+         public Object readType(HornetQStreamMessage message) throws Exception
          {
             return message.readShort();
          }
@@ -900,7 +900,7 @@ public class JBossStreamMessageTest extends UnitTestCase
    {
       doWriteObjectWithType(randomInt(), new TypeReader()
       {
-         public Object readType(JBossStreamMessage message) throws Exception
+         public Object readType(HornetQStreamMessage message) throws Exception
          {
             return message.readInt();
          }
@@ -911,7 +911,7 @@ public class JBossStreamMessageTest extends UnitTestCase
    {
       doWriteObjectWithType(randomLong(), new TypeReader()
       {
-         public Object readType(JBossStreamMessage message) throws Exception
+         public Object readType(HornetQStreamMessage message) throws Exception
          {
             return message.readLong();
          }
@@ -922,7 +922,7 @@ public class JBossStreamMessageTest extends UnitTestCase
    {
       doWriteObjectWithType(randomFloat(), new TypeReader()
       {
-         public Object readType(JBossStreamMessage message) throws Exception
+         public Object readType(HornetQStreamMessage message) throws Exception
          {
             return message.readFloat();
          }
@@ -933,7 +933,7 @@ public class JBossStreamMessageTest extends UnitTestCase
    {
       doWriteObjectWithType(randomDouble(), new TypeReader()
       {
-         public Object readType(JBossStreamMessage message) throws Exception
+         public Object readType(HornetQStreamMessage message) throws Exception
          {
             return message.readDouble();
          }
@@ -944,7 +944,7 @@ public class JBossStreamMessageTest extends UnitTestCase
    {
       doWriteObjectWithType(randomString(), new TypeReader()
       {
-         public Object readType(JBossStreamMessage message) throws Exception
+         public Object readType(HornetQStreamMessage message) throws Exception
          {
             return message.readString();
          }
@@ -953,7 +953,7 @@ public class JBossStreamMessageTest extends UnitTestCase
 
    public void testWriteObjectWithNull() throws Exception
    {
-      JBossStreamMessage message = new JBossStreamMessage();
+      HornetQStreamMessage message = new HornetQStreamMessage();
 
       try
       {
@@ -966,7 +966,7 @@ public class JBossStreamMessageTest extends UnitTestCase
 
    public void testWriteObjectWithInvalidType() throws Exception
    {
-      JBossStreamMessage message = new JBossStreamMessage();
+      HornetQStreamMessage message = new HornetQStreamMessage();
 
       try
       {
@@ -980,7 +980,7 @@ public class JBossStreamMessageTest extends UnitTestCase
    public void testReadObjectFromBoolean() throws Exception
    {
       boolean value = randomBoolean();
-      JBossStreamMessage message = new JBossStreamMessage();
+      HornetQStreamMessage message = new HornetQStreamMessage();
       message.writeBoolean(value);
 
       message.reset();
@@ -991,7 +991,7 @@ public class JBossStreamMessageTest extends UnitTestCase
    public void testReadObjectFromChar() throws Exception
    {
       char value = randomChar();
-      JBossStreamMessage message = new JBossStreamMessage();
+      HornetQStreamMessage message = new HornetQStreamMessage();
       message.writeChar(value);
 
       message.reset();
@@ -1002,7 +1002,7 @@ public class JBossStreamMessageTest extends UnitTestCase
    public void testReadObjectFromByte() throws Exception
    {
       byte value = randomByte();
-      JBossStreamMessage message = new JBossStreamMessage();
+      HornetQStreamMessage message = new HornetQStreamMessage();
       message.writeByte(value);
 
       message.reset();
@@ -1013,7 +1013,7 @@ public class JBossStreamMessageTest extends UnitTestCase
    public void testReadObjectFromBytes() throws Exception
    {
       byte[] value = randomBytes();
-      JBossStreamMessage message = new JBossStreamMessage();
+      HornetQStreamMessage message = new HornetQStreamMessage();
       message.writeBytes(value);
 
       message.reset();
@@ -1025,7 +1025,7 @@ public class JBossStreamMessageTest extends UnitTestCase
    public void testReadObjectFromShort() throws Exception
    {
       short value = randomShort();
-      JBossStreamMessage message = new JBossStreamMessage();
+      HornetQStreamMessage message = new HornetQStreamMessage();
       message.writeShort(value);
 
       message.reset();
@@ -1036,7 +1036,7 @@ public class JBossStreamMessageTest extends UnitTestCase
    public void testReadObjectFromInt() throws Exception
    {
       int value = randomInt();
-      JBossStreamMessage message = new JBossStreamMessage();
+      HornetQStreamMessage message = new HornetQStreamMessage();
       message.writeInt(value);
 
       message.reset();
@@ -1047,7 +1047,7 @@ public class JBossStreamMessageTest extends UnitTestCase
    public void testReadObjectFromLong() throws Exception
    {
       long value = randomLong();
-      JBossStreamMessage message = new JBossStreamMessage();
+      HornetQStreamMessage message = new HornetQStreamMessage();
       message.writeLong(value);
 
       message.reset();
@@ -1058,7 +1058,7 @@ public class JBossStreamMessageTest extends UnitTestCase
    public void testReadObjectFromFloat() throws Exception
    {
       float value = randomFloat();
-      JBossStreamMessage message = new JBossStreamMessage();
+      HornetQStreamMessage message = new HornetQStreamMessage();
       message.writeFloat(value);
 
       message.reset();
@@ -1069,7 +1069,7 @@ public class JBossStreamMessageTest extends UnitTestCase
    public void testReadObjectFromDouble() throws Exception
    {
       double value = randomDouble();
-      JBossStreamMessage message = new JBossStreamMessage();
+      HornetQStreamMessage message = new HornetQStreamMessage();
       message.writeDouble(value);
 
       message.reset();
@@ -1080,7 +1080,7 @@ public class JBossStreamMessageTest extends UnitTestCase
    public void testReadObjectFromString() throws Exception
    {
       String value = randomString();
-      JBossStreamMessage message = new JBossStreamMessage();
+      HornetQStreamMessage message = new HornetQStreamMessage();
       message.writeString(value);
 
       message.reset();
@@ -1092,7 +1092,7 @@ public class JBossStreamMessageTest extends UnitTestCase
 
    private void doReadTypeFromEmptyMessage(TypeReader reader) throws Exception
    {
-      JBossStreamMessage message = new JBossStreamMessage();
+      HornetQStreamMessage message = new HornetQStreamMessage();
       message.reset();
 
       try
@@ -1107,7 +1107,7 @@ public class JBossStreamMessageTest extends UnitTestCase
    private void doReadTypeFromInvalidType(Object invalidValue, TypeReader reader)
          throws Exception
    {
-      JBossStreamMessage message = new JBossStreamMessage();
+      HornetQStreamMessage message = new HornetQStreamMessage();
 
       message.writeObject(invalidValue);
       message.reset();
@@ -1124,7 +1124,7 @@ public class JBossStreamMessageTest extends UnitTestCase
    private void doWriteObjectWithType(Object value, TypeReader reader)
          throws Exception
    {
-      JBossStreamMessage message = new JBossStreamMessage();
+      HornetQStreamMessage message = new HornetQStreamMessage();
 
       message.writeObject(value);
       message.reset();
@@ -1143,6 +1143,6 @@ public class JBossStreamMessageTest extends UnitTestCase
 
    private interface TypeReader
    {
-      Object readType(JBossStreamMessage message) throws Exception;
+      Object readType(HornetQStreamMessage message) throws Exception;
    }
 }

@@ -230,7 +230,7 @@ import org.hornetq.core.remoting.impl.invm.InVMRegistry;
 import org.hornetq.core.remoting.impl.invm.TransportConstants;
 import org.hornetq.core.server.Messaging;
 import org.hornetq.core.server.MessagingServer;
-import org.hornetq.jms.client.JBossTextMessage;
+import org.hornetq.jms.client.HornetQTextMessage;
 import org.hornetq.tests.util.UnitTestCase;
 import org.hornetq.utils.SimpleString;
 
@@ -482,7 +482,7 @@ public class RandomFailoverTest extends UnitTestCase
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = sessSend.createClientMessage(JBossTextMessage.TYPE,
+         ClientMessage message = sessSend.createClientMessage(HornetQTextMessage.TYPE,
                                                               false,
                                                               0,
                                                               System.currentTimeMillis(),
@@ -596,7 +596,7 @@ public class RandomFailoverTest extends UnitTestCase
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = sessSend.createClientMessage(JBossTextMessage.TYPE,
+         ClientMessage message = sessSend.createClientMessage(HornetQTextMessage.TYPE,
                                                               false,
                                                               0,
                                                               System.currentTimeMillis(),
@@ -710,7 +710,7 @@ public class RandomFailoverTest extends UnitTestCase
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = sessSend.createClientMessage(JBossTextMessage.TYPE,
+         ClientMessage message = sessSend.createClientMessage(HornetQTextMessage.TYPE,
                                                               false,
                                                               0,
                                                               System.currentTimeMillis(),
@@ -723,7 +723,7 @@ public class RandomFailoverTest extends UnitTestCase
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = sessSend.createClientMessage(JBossTextMessage.TYPE,
+         ClientMessage message = sessSend.createClientMessage(HornetQTextMessage.TYPE,
                                                               false,
                                                               0,
                                                               System.currentTimeMillis(),
@@ -859,7 +859,7 @@ public class RandomFailoverTest extends UnitTestCase
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = sessSend.createClientMessage(JBossTextMessage.TYPE,
+         ClientMessage message = sessSend.createClientMessage(HornetQTextMessage.TYPE,
                                                               false,
                                                               0,
                                                               System.currentTimeMillis(),
@@ -872,7 +872,7 @@ public class RandomFailoverTest extends UnitTestCase
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = sessSend.createClientMessage(JBossTextMessage.TYPE,
+         ClientMessage message = sessSend.createClientMessage(HornetQTextMessage.TYPE,
                                                               false,
                                                               0,
                                                               System.currentTimeMillis(),
@@ -1017,7 +1017,7 @@ public class RandomFailoverTest extends UnitTestCase
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = sessSend.createClientMessage(JBossTextMessage.TYPE,
+         ClientMessage message = sessSend.createClientMessage(HornetQTextMessage.TYPE,
                                                               false,
                                                               0,
                                                               System.currentTimeMillis(),
@@ -1104,7 +1104,7 @@ public class RandomFailoverTest extends UnitTestCase
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = sessSend.createClientMessage(JBossTextMessage.TYPE,
+         ClientMessage message = sessSend.createClientMessage(HornetQTextMessage.TYPE,
                                                               false,
                                                               0,
                                                               System.currentTimeMillis(),
@@ -1205,7 +1205,7 @@ public class RandomFailoverTest extends UnitTestCase
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = sessSend.createClientMessage(JBossTextMessage.TYPE,
+         ClientMessage message = sessSend.createClientMessage(HornetQTextMessage.TYPE,
                                                               false,
                                                               0,
                                                               System.currentTimeMillis(),
@@ -1218,7 +1218,7 @@ public class RandomFailoverTest extends UnitTestCase
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = sessSend.createClientMessage(JBossTextMessage.TYPE,
+         ClientMessage message = sessSend.createClientMessage(HornetQTextMessage.TYPE,
                                                               false,
                                                               0,
                                                               System.currentTimeMillis(),
@@ -1338,7 +1338,7 @@ public class RandomFailoverTest extends UnitTestCase
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = sessSend.createClientMessage(JBossTextMessage.TYPE,
+         ClientMessage message = sessSend.createClientMessage(HornetQTextMessage.TYPE,
                                                               false,
                                                               0,
                                                               System.currentTimeMillis(),
@@ -1351,7 +1351,7 @@ public class RandomFailoverTest extends UnitTestCase
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = sessSend.createClientMessage(JBossTextMessage.TYPE,
+         ClientMessage message = sessSend.createClientMessage(HornetQTextMessage.TYPE,
                                                               false,
                                                               0,
                                                               System.currentTimeMillis(),
@@ -1459,7 +1459,7 @@ public class RandomFailoverTest extends UnitTestCase
 
       ClientProducer producer = sess.createProducer(ADDRESS);
 
-      ClientMessage message = sess.createClientMessage(JBossTextMessage.TYPE,
+      ClientMessage message = sess.createClientMessage(HornetQTextMessage.TYPE,
                                                        false,
                                                        0,
                                                        System.currentTimeMillis(),
@@ -1493,7 +1493,7 @@ public class RandomFailoverTest extends UnitTestCase
 
       ClientProducer producer = sess.createProducer(ADDRESS);
 
-      ClientMessage message = sess.createClientMessage(JBossTextMessage.TYPE,
+      ClientMessage message = sess.createClientMessage(HornetQTextMessage.TYPE,
                                                        false,
                                                        0,
                                                        System.currentTimeMillis(),
@@ -1563,7 +1563,7 @@ public class RandomFailoverTest extends UnitTestCase
 
       ClientProducer producer = sess.createProducer(ADDRESS);
 
-      ClientMessage message = sess.createClientMessage(JBossTextMessage.TYPE,
+      ClientMessage message = sess.createClientMessage(HornetQTextMessage.TYPE,
                                                        false,
                                                        0,
                                                        System.currentTimeMillis(),

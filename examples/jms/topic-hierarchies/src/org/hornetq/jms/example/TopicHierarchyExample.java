@@ -214,7 +214,7 @@ import javax.jms.Topic;
 import javax.naming.InitialContext;
 
 import org.hornetq.common.example.HornetQExample;
-import org.hornetq.jms.JBossTopic;
+import org.hornetq.jms.HornetQTopic;
 
 /**
  * This example demonstrates how a JMS TopicSubscriber can be created to subscribe to a wild-card Topic.
@@ -249,7 +249,7 @@ public class TopicHierarchyExample extends HornetQExample
          Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
          
          //Step 6. Instantiate a topic representing the wildcard we're going to subscribe to 
-         Topic topicSubscribe = new JBossTopic("news.europe.#");
+         Topic topicSubscribe = new HornetQTopic("news.europe.#");
          
          //Step 7. Create a consumer (topic subscriber) that will consume using that wildcard
          // The consumer will receive any messages sent to any topic that starts with news.europe
@@ -260,11 +260,11 @@ public class TopicHierarchyExample extends HornetQExample
          
          //Step 9. Instantiate some more topic objects corresponding to the individual topics
          //we're going to send messages to
-         Topic topicNewsUsaWrestling = new JBossTopic("news.usa.wrestling");
+         Topic topicNewsUsaWrestling = new HornetQTopic("news.usa.wrestling");
          
-         Topic topicNewsEuropeSport = new JBossTopic("news.europe.sport");
+         Topic topicNewsEuropeSport = new HornetQTopic("news.europe.sport");
          
-         Topic topicNewsEuropeEntertainment = new JBossTopic("news.europe.entertainment");
+         Topic topicNewsEuropeEntertainment = new HornetQTopic("news.europe.entertainment");
         
          //Step 10. Send a message destined for the usa wrestling topic
          TextMessage messageWrestlingNews = session.createTextMessage("Hulk Hogan starts ballet classes");

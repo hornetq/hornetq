@@ -212,7 +212,7 @@ import org.hornetq.core.config.Configuration;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.server.MessagingServer;
 import org.hornetq.core.settings.impl.AddressSettings;
-import org.hornetq.jms.client.JBossTextMessage;
+import org.hornetq.jms.client.HornetQTextMessage;
 import org.hornetq.tests.util.ServiceTestBase;
 
 /**
@@ -451,7 +451,7 @@ public class DelayedMessageTest extends ServiceTestBase
 
    private ClientMessage createDurableMessage(final ClientSession session, final String body)
    {
-      ClientMessage message = session.createClientMessage(JBossTextMessage.TYPE,
+      ClientMessage message = session.createClientMessage(HornetQTextMessage.TYPE,
                                                           true,
                                                           0,
                                                           System.currentTimeMillis(),

@@ -216,9 +216,9 @@ import org.hornetq.core.management.QueueControl;
 import org.hornetq.core.management.ResourceNames;
 import org.hornetq.core.messagecounter.MessageCounter;
 import org.hornetq.core.messagecounter.MessageCounterManager;
-import org.hornetq.jms.JBossQueue;
-import org.hornetq.jms.JBossTopic;
-import org.hornetq.jms.client.JBossConnectionFactory;
+import org.hornetq.jms.HornetQQueue;
+import org.hornetq.jms.HornetQTopic;
+import org.hornetq.jms.client.HornetQConnectionFactory;
 import org.hornetq.jms.server.JMSServerManager;
 import org.hornetq.jms.server.management.JMSManagementService;
 import org.hornetq.jms.server.management.JMSServerControl;
@@ -271,7 +271,7 @@ public class JMSManagementServiceImpl implements JMSManagementService
       managementService.unregisterFromRegistry(ResourceNames.JMS_SERVER);
    }
 
-   public synchronized void registerQueue(final JBossQueue queue,
+   public synchronized void registerQueue(final HornetQQueue queue,
                              final String jndiBinding) throws Exception
    {
       QueueControl coreQueueControl = (QueueControl)managementService.getResource(ResourceNames.CORE_QUEUE + queue.getAddress());
@@ -301,7 +301,7 @@ public class JMSManagementServiceImpl implements JMSManagementService
       managementService.unregisterFromRegistry(ResourceNames.JMS_QUEUE + name);
    }
 
-   public synchronized void registerTopic(final JBossTopic topic,
+   public synchronized void registerTopic(final HornetQTopic topic,
                              final String jndiBinding) throws Exception
    {
       ObjectName objectName = ObjectNames.getJMSTopicObjectName(topic.getTopicName());
@@ -320,7 +320,7 @@ public class JMSManagementServiceImpl implements JMSManagementService
    }
 
    public synchronized void registerConnectionFactory(final String name,
-                                         final JBossConnectionFactory connectionFactory,
+                                         final HornetQConnectionFactory connectionFactory,
                                          final List<String> bindings) throws Exception
    {
       ObjectName objectName = ObjectNames.getConnectionFactoryObjectName(name);

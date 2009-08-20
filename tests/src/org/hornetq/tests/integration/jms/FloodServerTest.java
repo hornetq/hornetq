@@ -238,7 +238,7 @@ import org.hornetq.core.server.Messaging;
 import org.hornetq.core.server.MessagingServer;
 import org.hornetq.integration.transports.netty.NettyAcceptorFactory;
 import org.hornetq.integration.transports.netty.NettyConnectorFactory;
-import org.hornetq.jms.JBossTopic;
+import org.hornetq.jms.HornetQTopic;
 import org.hornetq.jms.server.impl.JMSServerManagerImpl;
 import org.hornetq.tests.unit.util.InVMContext;
 import org.hornetq.tests.util.UnitTestCase;
@@ -434,7 +434,7 @@ public class FloodServerTest extends UnitTestCase
 
          session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-         producer = session.createProducer(new JBossTopic("my-topic"));
+         producer = session.createProducer(new HornetQTopic("my-topic"));
 
          producer.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
 
@@ -488,7 +488,7 @@ public class FloodServerTest extends UnitTestCase
 
          session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-         consumer = session.createConsumer(new JBossTopic("my-topic"));
+         consumer = session.createConsumer(new HornetQTopic("my-topic"));
 
          this.numMessages = numMessages;
       }

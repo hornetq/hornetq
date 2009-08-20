@@ -203,16 +203,10 @@
  */
 package org.hornetq.ra.inflow;
 
-import org.hornetq.core.client.ClientSession;
-import org.hornetq.core.logging.Logger;
-import org.hornetq.jms.JBossDestination;
-import org.hornetq.jms.JBossQueue;
-import org.hornetq.jms.JBossTopic;
-import org.hornetq.jms.client.JBossConnectionFactory;
-import org.hornetq.ra.HornetQResourceAdapter;
-import org.hornetq.ra.Util;
-import org.hornetq.utils.SimpleString;
-import org.jboss.tm.TransactionManagerLocator;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.jms.Destination;
 import javax.jms.Message;
@@ -226,10 +220,16 @@ import javax.resource.spi.endpoint.MessageEndpointFactory;
 import javax.resource.spi.work.Work;
 import javax.resource.spi.work.WorkManager;
 import javax.transaction.TransactionManager;
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
+
+import org.hornetq.core.client.ClientSession;
+import org.hornetq.core.logging.Logger;
+import org.hornetq.jms.HornetQDestination;
+import org.hornetq.jms.HornetQQueue;
+import org.hornetq.jms.HornetQTopic;
+import org.hornetq.ra.HornetQResourceAdapter;
+import org.hornetq.ra.Util;
+import org.hornetq.utils.SimpleString;
+import org.jboss.tm.TransactionManagerLocator;
 
 /**
  * The activation.
@@ -286,7 +286,7 @@ public class HornetQActivation
     */
    private boolean isDeliveryTransacted;
 
-   private JBossDestination destination;
+   private HornetQDestination destination;
 
    /**
     * The TransactionManager
@@ -295,7 +295,7 @@ public class HornetQActivation
 
    private final List<HornetQMessageHandler> handlers = new ArrayList<HornetQMessageHandler>();
 
-   private JBossConnectionFactory factory;
+   private org.hornetq.jms.client.HornetQConnectionFactory factory;
 
    static
    {
@@ -603,7 +603,7 @@ public class HornetQActivation
             log.debug("Retrieving destination " + destinationName + " of type " + destinationType.getName());
             try
             {
-               destination = (JBossDestination)Util.lookup(ctx, destinationName, destinationType);
+               destination = (HornetQDestination)Util.lookup(ctx, destinationName, destinationType);
             }
             catch (Exception e)
             {
@@ -614,11 +614,11 @@ public class HornetQActivation
                // If there is no binding on naming, we will just create a new instance
                if (isTopic)
                {
-                  destination = new JBossTopic(destinationName.substring(destinationName.lastIndexOf('/') + 1));
+                  destination = new HornetQTopic(destinationName.substring(destinationName.lastIndexOf('/') + 1));
                }
                else
                {
-                  destination = new JBossQueue(destinationName.substring(destinationName.lastIndexOf('/') + 1));
+                  destination = new HornetQQueue(destinationName.substring(destinationName.lastIndexOf('/') + 1));
                }
             }
          }
@@ -627,7 +627,7 @@ public class HornetQActivation
             log.debug("Destination type not defined");
             log.debug("Retrieving destination " + destinationName + " of type " + Destination.class.getName());
 
-            destination = (JBossDestination)Util.lookup(ctx, destinationName, Destination.class);
+            destination = (HornetQDestination)Util.lookup(ctx, destinationName, Destination.class);
             if (destination instanceof Topic)
             {
                isTopic = true;
@@ -638,11 +638,11 @@ public class HornetQActivation
       {
          if (Topic.class.getName().equals(spec.getDestinationType()))
          {
-            destination = new JBossTopic(spec.getDestination());
+            destination = new HornetQTopic(spec.getDestination());
          }
          else
          {
-            destination = new JBossQueue(spec.getDestination());
+            destination = new HornetQQueue(spec.getDestination());
          }
       }
 

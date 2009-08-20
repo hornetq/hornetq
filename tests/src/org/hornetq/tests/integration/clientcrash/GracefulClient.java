@@ -213,7 +213,7 @@ import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
 import org.hornetq.core.config.TransportConfiguration;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.integration.transports.netty.NettyConnectorFactory;
-import org.hornetq.jms.client.JBossTextMessage;
+import org.hornetq.jms.client.HornetQTextMessage;
 
 /**
  * Code to be run in an external VM, via main().
@@ -250,7 +250,7 @@ public class GracefulClient
          ClientProducer producer = session.createProducer(queueName);
          ClientConsumer consumer = session.createConsumer(queueName);
 
-         ClientMessage message = session.createClientMessage(JBossTextMessage.TYPE, false, 0,
+         ClientMessage message = session.createClientMessage(HornetQTextMessage.TYPE, false, 0,
                System.currentTimeMillis(), (byte) 1);
          message.getBody().writeString(messageText);
          producer.send(message);

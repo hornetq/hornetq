@@ -204,9 +204,9 @@
 package org.hornetq.jms.example;
 
 import org.hornetq.common.example.HornetQExample;
-import org.hornetq.jms.JBossQueue;
-import org.hornetq.jms.JBossTopic;
-import org.hornetq.jms.client.JBossConnectionFactory;
+import org.hornetq.jms.HornetQQueue;
+import org.hornetq.jms.HornetQTopic;
+import org.hornetq.jms.client.HornetQConnectionFactory;
 
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
@@ -264,15 +264,15 @@ public class SymmetricClusterExample extends HornetQExample
          // connection factory directly we avoid having to worry about a JNDI look-up.
          // In an app server environment you could use HA-JNDI to lookup from the clustered JNDI servers without
          // having to know about a specific one.
-         ConnectionFactory cf = new JBossConnectionFactory("231.7.7.7", 9876); 
+         ConnectionFactory cf = new HornetQConnectionFactory("231.7.7.7", 9876); 
          
          // We give a little while for each server to broadcast its whereabouts to the client
          Thread.sleep(2000);
          
          // Step 2. Directly instantiate JMS Queue and Topic objects
-         Queue queue = new JBossQueue("exampleQueue");
+         Queue queue = new HornetQQueue("exampleQueue");
          
-         Topic topic = new JBossTopic("exampleTopic");
+         Topic topic = new HornetQTopic("exampleTopic");
 
          // Step 3. We create three connections, they should be to different nodes of the cluster in a round-robin fashion
          // and start them

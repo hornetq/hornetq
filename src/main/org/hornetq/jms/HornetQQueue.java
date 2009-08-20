@@ -200,168 +200,79 @@
  *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
- */
+ */ 
 
-package org.hornetq.jms.client;
-
-import java.util.Enumeration;
-import java.util.NoSuchElementException;
+package org.hornetq.jms;
 
 import javax.jms.JMSException;
 import javax.jms.Queue;
-import javax.jms.QueueBrowser;
 
-import org.hornetq.core.client.ClientConsumer;
-import org.hornetq.core.client.ClientMessage;
-import org.hornetq.core.client.ClientSession;
-import org.hornetq.core.exception.MessagingException;
 import org.hornetq.core.logging.Logger;
-import org.hornetq.jms.JBossQueue;
 import org.hornetq.utils.SimpleString;
 
 /**
+ * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
- *         <p/>
- *         $Id$
+ * @version <tt>$Revision$</tt>
+ *
+ * $Id$
  */
-public class JBossQueueBrowser implements QueueBrowser
+public class HornetQQueue extends HornetQDestination implements Queue
 {
-   // Constants ------------------------------------------------------------------------------------
+   // Constants -----------------------------------------------------
+   
+   private static final Logger log = Logger.getLogger(HornetQQueue.class);
 
-   private static final Logger log = Logger.getLogger(JBossQueueBrowser.class);
+   
+	private static final long serialVersionUID = -1106092883162295462L;
+	
+	public static final String JMS_QUEUE_ADDRESS_PREFIX = "jms.queue.";
 
-   private static final long NEXT_MESSAGE_TIMEOUT = 1000;
-
-   // Static ---------------------------------------------------------------------------------------
-
-   // Attributes -----------------------------------------------------------------------------------
-
-   private ClientSession session;
-
-   private ClientConsumer consumer;
-
-   private JBossQueue queue;
-
-   private SimpleString filterString;
-
-   // Constructors ---------------------------------------------------------------------------------
-
-   public JBossQueueBrowser(JBossQueue queue, String messageSelector, ClientSession session) throws JMSException
+   // Static --------------------------------------------------------
+   
+   public static SimpleString createAddressFromName(String name)
    {
-      this.session = session;
-      this.queue = queue;
-      if (messageSelector != null)
-      {
-         this.filterString = new SimpleString(SelectorTranslator.convertToJBMFilterString(messageSelector));
-      }
+      return new SimpleString(JMS_QUEUE_ADDRESS_PREFIX + name);
    }
 
-   // QueueBrowser implementation -------------------------------------------------------------------
+   // Attributes ----------------------------------------------------
+   
+   // Constructors --------------------------------------------------
 
-   public void close() throws JMSException
-   {
-      if (consumer != null)
-      {
-         try
-         {
-            consumer.close();
-         }
-         catch (MessagingException e)
-         {
-            throw JMSExceptionHelper.convertFromMessagingException(e);
-         }
-      }
+   public HornetQQueue(final String name)
+   {      
+      super(JMS_QUEUE_ADDRESS_PREFIX + name, name);
    }
 
-   public Enumeration getEnumeration() throws JMSException
-   {
-      try
-      {
-         close();
-
-         consumer = session.createConsumer(queue.getSimpleAddress(), filterString, true);
-
-         return new BrowserEnumeration();
-      }
-      catch (MessagingException e)
-      {
-         throw JMSExceptionHelper.convertFromMessagingException(e);
-      }
-
+   public HornetQQueue(final String address, final String name)
+   {      
+      super(address, name);
    }
 
-   public String getMessageSelector() throws JMSException
+   // Queue implementation ------------------------------------------
+
+   public String getQueueName() throws JMSException
    {
-      return filterString == null ? null : filterString.toString();
+      return name;
    }
 
-   public Queue getQueue() throws JMSException
+   // Public --------------------------------------------------------
+   
+   public boolean isTemporary()
    {
-      return queue;
+      return false;
    }
-
-   // Public ---------------------------------------------------------------------------------------
-
+   
    public String toString()
    {
-      return "JBossQueueBrowser->" + consumer;
+      return "HornetQQueue[" + name + "]";
    }
-
-   // Package protected ----------------------------------------------------------------------------
-
-   // Protected ------------------------------------------------------------------------------------
-
-   // Private --------------------------------------------------------------------------------------
-
-   // Inner classes --------------------------------------------------------------------------------
-
-   private class BrowserEnumeration implements Enumeration
-   {
-      ClientMessage current = null;
-
-      public boolean hasMoreElements()
-      {
-         if (current == null)
-         {
-            try
-            {
-               // todo change this to consumer.receiveImmediate() once
-               // https://jira.jboss.org/jira/browse/JBMESSAGING-1432 is completed
-               current = consumer.receive(NEXT_MESSAGE_TIMEOUT);
-            }
-            catch (MessagingException e)
-            {
-               return false;
-            }
-         }
-         return current != null;
-      }
-
-      public Object nextElement()
-      {
-         JBossMessage jbm;
-         if (hasMoreElements())
-         {
-            ClientMessage next = current;
-            current = null;
-            jbm = JBossMessage.createMessage(next, session);
-            try
-            {
-               jbm.doBeforeReceive();
-            }
-            catch (Exception e)
-            {
-               log.error("Failed to create message", e);
-
-               return null;
-            }
-            return jbm;
-         }
-         else
-         {
-            throw new NoSuchElementException();
-         }
-      }
-   }
+   
+   // Package protected ---------------------------------------------
+   
+   // Protected -----------------------------------------------------
+   
+   // Private -------------------------------------------------------
+   
+   // Inner classes -------------------------------------------------   
 }

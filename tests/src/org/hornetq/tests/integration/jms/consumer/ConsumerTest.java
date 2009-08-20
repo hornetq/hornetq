@@ -218,9 +218,9 @@ import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.server.Messaging;
 import org.hornetq.core.server.MessagingServer;
 import org.hornetq.core.server.Queue;
-import org.hornetq.jms.JBossQueue;
-import org.hornetq.jms.client.JBossConnectionFactory;
-import org.hornetq.jms.client.JBossSession;
+import org.hornetq.jms.HornetQQueue;
+import org.hornetq.jms.client.HornetQConnectionFactory;
+import org.hornetq.jms.client.HornetQSession;
 import org.hornetq.jms.server.impl.JMSServerManagerImpl;
 import org.hornetq.tests.integration.jms.server.management.NullInitialContext;
 import org.hornetq.tests.util.UnitTestCase;
@@ -235,11 +235,11 @@ public class ConsumerTest extends UnitTestCase
 
    private JMSServerManagerImpl jmsServer;
 
-   private JBossConnectionFactory cf;
+   private HornetQConnectionFactory cf;
 
    private static final String Q_NAME = "ConsumerTestQueue";
 
-   private JBossQueue jBossQueue;
+   private HornetQQueue jBossQueue;
 
    @Override
    protected void setUp() throws Exception
@@ -256,7 +256,7 @@ public class ConsumerTest extends UnitTestCase
       jmsServer.setContext(new NullInitialContext());
       jmsServer.start();
       jmsServer.createQueue(Q_NAME, Q_NAME, null, true);
-      cf = new JBossConnectionFactory(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory"));
+      cf = new HornetQConnectionFactory(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory"));
       cf.setBlockOnPersistentSend(true);
       cf.setPreAcknowledge(true);
    }
@@ -291,8 +291,8 @@ public class ConsumerTest extends UnitTestCase
    public void testPreCommitAcks() throws Exception
    {
       Connection conn = cf.createConnection();
-      Session session = conn.createSession(false, JBossSession.PRE_ACKNOWLEDGE);
-      jBossQueue = new JBossQueue(Q_NAME);
+      Session session = conn.createSession(false, HornetQSession.PRE_ACKNOWLEDGE);
+      jBossQueue = new HornetQQueue(Q_NAME);
       MessageProducer producer = session.createProducer(jBossQueue);
       MessageConsumer consumer = session.createConsumer(jBossQueue);
       int noOfMessages = 100;
@@ -308,7 +308,7 @@ public class ConsumerTest extends UnitTestCase
          assertNotNull(m);
       }
       // assert that all the messages are there and none have been acked
-      SimpleString queueName = new SimpleString(JBossQueue.JMS_QUEUE_ADDRESS_PREFIX + Q_NAME);
+      SimpleString queueName = new SimpleString(HornetQQueue.JMS_QUEUE_ADDRESS_PREFIX + Q_NAME);
       assertEquals(0, ((Queue)server.getPostOffice().getBinding(queueName).getBindable()).getDeliveringCount());
       assertEquals(0, ((Queue)server.getPostOffice().getBinding(queueName).getBindable()).getMessageCount());
       conn.close();
@@ -317,8 +317,8 @@ public class ConsumerTest extends UnitTestCase
    public void testPreCommitAcksWithMessageExpiry() throws Exception
    {
       Connection conn = cf.createConnection();
-      Session session = conn.createSession(false, JBossSession.PRE_ACKNOWLEDGE);
-      jBossQueue = new JBossQueue(Q_NAME);
+      Session session = conn.createSession(false, HornetQSession.PRE_ACKNOWLEDGE);
+      jBossQueue = new HornetQQueue(Q_NAME);
       MessageProducer producer = session.createProducer(jBossQueue);
       MessageConsumer consumer = session.createConsumer(jBossQueue);
       int noOfMessages = 1000;
@@ -336,7 +336,7 @@ public class ConsumerTest extends UnitTestCase
          assertNotNull(m);
       }
       // assert that all the messages are there and none have been acked
-      SimpleString queueName = new SimpleString(JBossQueue.JMS_QUEUE_ADDRESS_PREFIX + Q_NAME);
+      SimpleString queueName = new SimpleString(HornetQQueue.JMS_QUEUE_ADDRESS_PREFIX + Q_NAME);
       assertEquals(0, ((Queue)server.getPostOffice().getBinding(queueName).getBindable()).getDeliveringCount());
       assertEquals(0, ((Queue)server.getPostOffice().getBinding(queueName).getBindable()).getMessageCount());
       conn.close();
@@ -345,8 +345,8 @@ public class ConsumerTest extends UnitTestCase
    public void testClearExceptionListener() throws Exception
    {
       Connection conn = cf.createConnection();
-      Session session = conn.createSession(false, JBossSession.PRE_ACKNOWLEDGE);
-      jBossQueue = new JBossQueue(Q_NAME);
+      Session session = conn.createSession(false, HornetQSession.PRE_ACKNOWLEDGE);
+      jBossQueue = new HornetQQueue(Q_NAME);
       MessageConsumer consumer = session.createConsumer(jBossQueue);
       consumer.setMessageListener(new MessageListener()
       {
@@ -362,8 +362,8 @@ public class ConsumerTest extends UnitTestCase
    public void testCantReceiveWhenListenerIsSet() throws Exception
    {
       Connection conn = cf.createConnection();
-      Session session = conn.createSession(false, JBossSession.PRE_ACKNOWLEDGE);
-      jBossQueue = new JBossQueue(Q_NAME);
+      Session session = conn.createSession(false, HornetQSession.PRE_ACKNOWLEDGE);
+      jBossQueue = new HornetQQueue(Q_NAME);
       MessageConsumer consumer = session.createConsumer(jBossQueue);
       consumer.setMessageListener(new MessageListener()
       {

@@ -251,7 +251,7 @@ import org.hornetq.core.server.ServerMessage;
 import org.hornetq.core.server.impl.ServerMessageImpl;
 import org.hornetq.core.transaction.impl.XidImpl;
 import org.hornetq.integration.transports.netty.TransportConstants;
-import org.hornetq.jms.client.JBossTextMessage;
+import org.hornetq.jms.client.HornetQTextMessage;
 import org.hornetq.utils.SimpleString;
 import org.hornetq.utils.UUIDGenerator;
 
@@ -971,7 +971,7 @@ public class UnitTestCase extends TestCase
 
    protected ClientMessage createTextMessage(String s, boolean durable, ClientSession clientSession)
    {
-      ClientMessage message = clientSession.createClientMessage(JBossTextMessage.TYPE,
+      ClientMessage message = clientSession.createClientMessage(HornetQTextMessage.TYPE,
                                                                 durable,
                                                                 0,
                                                                 System.currentTimeMillis(),

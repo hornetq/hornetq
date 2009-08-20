@@ -223,9 +223,9 @@ import org.hornetq.core.deployers.impl.XmlDeployer;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.server.ActivateCallback;
 import org.hornetq.core.server.MessagingServer;
-import org.hornetq.jms.JBossQueue;
-import org.hornetq.jms.JBossTopic;
-import org.hornetq.jms.client.JBossConnectionFactory;
+import org.hornetq.jms.HornetQQueue;
+import org.hornetq.jms.HornetQTopic;
+import org.hornetq.jms.client.HornetQConnectionFactory;
 import org.hornetq.jms.client.SelectorTranslator;
 import org.hornetq.jms.server.JMSServerManager;
 import org.hornetq.jms.server.management.JMSManagementService;
@@ -253,7 +253,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
 
    private final Map<String, List<String>> destinations = new HashMap<String, List<String>>();
 
-   private final Map<String, JBossConnectionFactory> connectionFactories = new HashMap<String, JBossConnectionFactory>();
+   private final Map<String, HornetQConnectionFactory> connectionFactories = new HashMap<String, HornetQConnectionFactory>();
 
    private final Map<String, List<String>> connectionFactoryBindings = new HashMap<String, List<String>>();
 
@@ -406,7 +406,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
                                            boolean durable) throws Exception
    {
       checkInitialised();
-      JBossQueue jBossQueue = new JBossQueue(queueName);
+      HornetQQueue jBossQueue = new HornetQQueue(queueName);
 
       // Convert from JMS selector to core filter
       String coreFilterString = null;
@@ -435,7 +435,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
    public synchronized boolean createTopic(final String topicName, final String jndiBinding) throws Exception
    {
       checkInitialised();
-      JBossTopic jBossTopic = new JBossTopic(topicName);
+      HornetQTopic jBossTopic = new HornetQTopic(topicName);
       // We create a dummy subscription on the topic, that never receives messages - this is so we can perform JMS
       // checks when routing messages to a topic that
       // does not exist - otherwise we would not be able to distinguish from a non existent topic and one with no
@@ -481,7 +481,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
 
       destinations.remove(name);
       jmsManagementService.unregisterQueue(name);
-      server.getMessagingServerControl().destroyQueue(JBossQueue.createAddressFromName(name).toString());
+      server.getMessagingServerControl().destroyQueue(HornetQQueue.createAddressFromName(name).toString());
 
       return true;
    }
@@ -493,7 +493,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
 
       destinations.remove(name);
       jmsManagementService.unregisterTopic(name);
-      server.getMessagingServerControl().destroyQueue(JBossTopic.createAddressFromName(name).toString());
+      server.getMessagingServerControl().destroyQueue(HornetQTopic.createAddressFromName(name).toString());
 
       return true;
    }
@@ -503,10 +503,10 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
                                                     List<String> jndiBindings) throws Exception
    {
       checkInitialised();
-      JBossConnectionFactory cf = connectionFactories.get(name);
+      HornetQConnectionFactory cf = connectionFactories.get(name);
       if (cf == null)
       {
-         cf = new JBossConnectionFactory(connectorConfigs);
+         cf = new HornetQConnectionFactory(connectorConfigs);
       }
 
       bindConnectionFactory(cf, name, jndiBindings);
@@ -518,10 +518,10 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
                                                     List<String> jndiBindings) throws Exception
    {
       checkInitialised();
-      JBossConnectionFactory cf = connectionFactories.get(name);
+      HornetQConnectionFactory cf = connectionFactories.get(name);
       if (cf == null)
       {
-         cf = new JBossConnectionFactory(connectorConfigs);
+         cf = new HornetQConnectionFactory(connectorConfigs);
          cf.setClientID(clientID);
       }
 
@@ -559,10 +559,10 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
                                                     List<String> jndiBindings) throws Exception
    {
       checkInitialised();
-      JBossConnectionFactory cf = connectionFactories.get(name);
+      HornetQConnectionFactory cf = connectionFactories.get(name);
       if (cf == null)
       {
-         cf = new JBossConnectionFactory(connectorConfigs);
+         cf = new HornetQConnectionFactory(connectorConfigs);
          cf.setClientID(clientID);
          cf.setClientFailureCheckPeriod(clientFailureCheckPeriod);
          cf.setConnectionTTL(connectionTTL);
@@ -628,10 +628,10 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
                                                     List<String> jndiBindings) throws Exception
    {
       checkInitialised();
-      JBossConnectionFactory cf = connectionFactories.get(name);
+      HornetQConnectionFactory cf = connectionFactories.get(name);
       if (cf == null)
       {
-         cf = new JBossConnectionFactory(discoveryAddress, discoveryPort);
+         cf = new HornetQConnectionFactory(discoveryAddress, discoveryPort);
          cf.setClientID(clientID);
          cf.setDiscoveryRefreshTimeout(discoveryRefreshTimeout);
          cf.setClientFailureCheckPeriod(clientFailureCheckPeriod);
@@ -671,10 +671,10 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
                                                     List<String> jndiBindings) throws Exception
    {
       checkInitialised();
-      JBossConnectionFactory cf = connectionFactories.get(name);
+      HornetQConnectionFactory cf = connectionFactories.get(name);
       if (cf == null)
       {
-         cf = new JBossConnectionFactory(discoveryAddress, discoveryPort);
+         cf = new HornetQConnectionFactory(discoveryAddress, discoveryPort);
       }
 
       bindConnectionFactory(cf, name, jndiBindings);
@@ -687,10 +687,10 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
                                                     List<String> jndiBindings) throws Exception
    {
       checkInitialised();
-      JBossConnectionFactory cf = connectionFactories.get(name);
+      HornetQConnectionFactory cf = connectionFactories.get(name);
       if (cf == null)
       {
-         cf = new JBossConnectionFactory(discoveryAddress, discoveryPort);
+         cf = new HornetQConnectionFactory(discoveryAddress, discoveryPort);
          cf.setClientID(clientID);
       }
 
@@ -702,10 +702,10 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
                                                     List<String> jndiBindings) throws Exception
    {
       checkInitialised();
-      JBossConnectionFactory cf = connectionFactories.get(name);
+      HornetQConnectionFactory cf = connectionFactories.get(name);
       if (cf == null)
       {
-         cf = new JBossConnectionFactory(liveTC);
+         cf = new HornetQConnectionFactory(liveTC);
       }
 
       bindConnectionFactory(cf, name, jndiBindings);
@@ -717,10 +717,10 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
                                                     List<String> jndiBindings) throws Exception
    {
       checkInitialised();
-      JBossConnectionFactory cf = connectionFactories.get(name);
+      HornetQConnectionFactory cf = connectionFactories.get(name);
       if (cf == null)
       {
-         cf = new JBossConnectionFactory(liveTC);
+         cf = new HornetQConnectionFactory(liveTC);
          cf.setClientID(clientID);
       }
 
@@ -733,10 +733,10 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
                                                     List<String> jndiBindings) throws Exception
    {
       checkInitialised();
-      JBossConnectionFactory cf = connectionFactories.get(name);
+      HornetQConnectionFactory cf = connectionFactories.get(name);
       if (cf == null)
       {
-         cf = new JBossConnectionFactory(liveTC, backupTC);
+         cf = new HornetQConnectionFactory(liveTC, backupTC);
       }
 
       bindConnectionFactory(cf, name, jndiBindings);
@@ -749,10 +749,10 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
                                                     List<String> jndiBindings) throws Exception
    {
       checkInitialised();
-      JBossConnectionFactory cf = connectionFactories.get(name);
+      HornetQConnectionFactory cf = connectionFactories.get(name);
       if (cf == null)
       {
-         cf = new JBossConnectionFactory(liveTC, backupTC);
+         cf = new HornetQConnectionFactory(liveTC, backupTC);
          cf.setClientID(clientID);
       }
 
@@ -830,7 +830,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
       }
    }
 
-   private void bindConnectionFactory(final JBossConnectionFactory cf,
+   private void bindConnectionFactory(final HornetQConnectionFactory cf,
                                       final String name,
                                       final List<String> jndiBindings) throws Exception
    {

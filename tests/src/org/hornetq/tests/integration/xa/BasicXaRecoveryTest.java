@@ -221,8 +221,8 @@ import org.hornetq.core.logging.Logger;
 import org.hornetq.core.server.MessagingServer;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.core.transaction.impl.XidImpl;
-import org.hornetq.jms.client.JBossBytesMessage;
-import org.hornetq.jms.client.JBossTextMessage;
+import org.hornetq.jms.client.HornetQBytesMessage;
+import org.hornetq.jms.client.HornetQTextMessage;
 import org.hornetq.tests.util.ServiceTestBase;
 import org.hornetq.utils.SimpleString;
 import org.hornetq.utils.UUIDGenerator;
@@ -1437,7 +1437,7 @@ public class BasicXaRecoveryTest extends ServiceTestBase
 
    private ClientMessage createTextMessage(final String s, final boolean durable)
    {
-      ClientMessage message = clientSession.createClientMessage(JBossTextMessage.TYPE,
+      ClientMessage message = clientSession.createClientMessage(HornetQTextMessage.TYPE,
                                                                 durable,
                                                                 0,
                                                                 System.currentTimeMillis(),
@@ -1448,7 +1448,7 @@ public class BasicXaRecoveryTest extends ServiceTestBase
 
    private ClientMessage createBytesMessage(final byte[] b, final boolean durable)
    {
-      ClientMessage message = clientSession.createClientMessage(JBossBytesMessage.TYPE,
+      ClientMessage message = clientSession.createClientMessage(HornetQBytesMessage.TYPE,
                                                                 durable,
                                                                 0,
                                                                 System.currentTimeMillis(),

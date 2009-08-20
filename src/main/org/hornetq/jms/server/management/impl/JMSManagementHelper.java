@@ -208,7 +208,7 @@ import javax.jms.JMSException;
 import javax.jms.Message;
 
 import org.hornetq.core.client.management.impl.ManagementHelper;
-import org.hornetq.jms.client.JBossMessage;
+import org.hornetq.jms.client.HornetQMessage;
 
 /*
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -226,13 +226,13 @@ public class JMSManagementHelper
 
    private static org.hornetq.core.message.Message getCoreMessage(final Message jmsMessage)
    {
-      if (jmsMessage instanceof JBossMessage == false)
+      if (jmsMessage instanceof HornetQMessage == false)
       {
          throw new IllegalArgumentException("Cannot send a non JBoss message as a management message " +
                                             jmsMessage.getClass().getName());
       }
       
-      return ((JBossMessage)jmsMessage).getCoreMessage();
+      return ((HornetQMessage)jmsMessage).getCoreMessage();
    }
    
    public static void putAttribute(final Message message, final String resourceName, final String attribute) throws JMSException

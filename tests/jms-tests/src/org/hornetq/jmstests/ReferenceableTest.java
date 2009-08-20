@@ -269,9 +269,9 @@ public class ReferenceableTest extends JMSTestCase
       
       Object instance = factory.getObjectInstance(cfRef, null, null, null);
       
-      assertTrue(instance instanceof JBossConnectionFactory);
+      assertTrue(instance instanceof HornetQConnectionFactory);
       
-      JBossConnectionFactory cf2 = (JBossConnectionFactory)instance;
+      HornetQConnectionFactory cf2 = (HornetQConnectionFactory)instance;
       
       simpleSendReceive(cf2, queue);
    }
@@ -288,9 +288,9 @@ public class ReferenceableTest extends JMSTestCase
       
       Object instance = factory.getObjectInstance(queueRef, null, null, null);
       
-      assertTrue(instance instanceof JBossQueue);
+      assertTrue(instance instanceof HornetQQueue);
       
-      JBossQueue queue2 = (JBossQueue)instance;
+      HornetQQueue queue2 = (HornetQQueue)instance;
       
       assertEquals(queue.getQueueName(), queue2.getQueueName());
       
@@ -310,9 +310,9 @@ public class ReferenceableTest extends JMSTestCase
       
       Object instance = factory.getObjectInstance(topicRef, null, null, null);
       
-      assertTrue(instance instanceof JBossTopic);
+      assertTrue(instance instanceof HornetQTopic);
       
-      JBossTopic topic2 = (JBossTopic)instance;
+      HornetQTopic topic2 = (HornetQTopic)instance;
       
       assertEquals(topic.getTopicName(), topic2.getTopicName());
       

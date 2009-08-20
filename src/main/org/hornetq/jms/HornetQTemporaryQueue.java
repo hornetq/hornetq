@@ -202,109 +202,66 @@
  *    limitations under the License.
  */ 
 
-package org.hornetq.tests.unit.jms;
+package org.hornetq.jms;
 
-import static org.hornetq.tests.util.RandomUtil.randomString;
-
-import javax.jms.Queue;
+import javax.jms.JMSException;
 import javax.jms.TemporaryQueue;
-import javax.jms.TemporaryTopic;
-import javax.jms.Topic;
 
-import org.hornetq.jms.JBossDestination;
-import org.hornetq.jms.JBossQueue;
-import org.hornetq.jms.JBossTemporaryQueue;
-import org.hornetq.jms.JBossTemporaryTopic;
-import org.hornetq.jms.JBossTopic;
-import org.hornetq.tests.util.UnitTestCase;
+import org.hornetq.jms.client.HornetQSession;
 
 /**
- * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * @version <tt>$Revision: 3569 $</tt>
  *
- * @version <tt>$Revision$</tt>
- *
+ * $Id: HornetQQueue.java 3569 2008-01-15 21:14:04Z timfox $
  */
-public class JBossDestinationTest extends UnitTestCase
-{
+public class HornetQTemporaryQueue extends HornetQQueue implements TemporaryQueue
+{   
    // Constants -----------------------------------------------------
+   
+	private static final long serialVersionUID = -4624930377557954624L;
 
-   // Attributes ----------------------------------------------------
-
+	public static final String JMS_TEMP_QUEUE_ADDRESS_PREFIX = "jms.tempqueue.";
+   
    // Static --------------------------------------------------------
-
+   
+   // Attributes ----------------------------------------------------
+   
+   private final transient HornetQSession session;
+   
    // Constructors --------------------------------------------------
 
-   // Public --------------------------------------------------------
-
-   public void testEquals() throws Exception
+   public HornetQTemporaryQueue(final HornetQSession session, final String name)
    {
-      String destinationName = randomString();
-      String address = JBossQueue.JMS_QUEUE_ADDRESS_PREFIX + destinationName;
-      JBossDestination destination = JBossDestination.fromAddress(address);
-      JBossDestination sameDestination = JBossDestination.fromAddress(address);
-      JBossDestination differentDestination = JBossDestination.fromAddress(address + randomString());
+      super(JMS_TEMP_QUEUE_ADDRESS_PREFIX + name, name);
       
-      assertFalse(destination.equals(null));
-      assertTrue(destination.equals(destination));
-      assertTrue(destination.equals(sameDestination));
-      assertFalse(destination.equals(differentDestination));
+      this.session = session;
    }
    
-   public void testFromAddressWithQueueAddressPrefix() throws Exception
-   {
-      String destinationName = randomString();
-      String address = JBossQueue.JMS_QUEUE_ADDRESS_PREFIX + destinationName;
-      JBossDestination destination = JBossDestination.fromAddress(address);
-      assertTrue(destination instanceof Queue);
-      assertEquals(destinationName, ((Queue)destination).getQueueName());
+   // TemporaryQueue implementation ------------------------------------------
+
+   public void delete() throws JMSException
+   {      
+      session.deleteTemporaryQueue(this);
    }
 
-   public void testFromAddressWithTopicAddressPrefix() throws Exception
-   {
-      String destinationName = randomString();
-      String address = JBossTopic.JMS_TOPIC_ADDRESS_PREFIX + destinationName;
-      JBossDestination destination = JBossDestination.fromAddress(address);
-      assertTrue(destination instanceof Topic);
-      assertEquals(destinationName, ((Topic)destination).getTopicName());
-   }
+   // Public --------------------------------------------------------
    
-   public void testFromAddressWithTemporaryQueueAddressPrefix() throws Exception
+   public boolean isTemporary()
    {
-      String destinationName = randomString();
-      String address = JBossTemporaryQueue.JMS_TEMP_QUEUE_ADDRESS_PREFIX + destinationName;
-      JBossDestination destination = JBossDestination.fromAddress(address);
-      assertTrue(destination instanceof TemporaryQueue);
-      assertEquals(destinationName, ((TemporaryQueue)destination).getQueueName());
+      return true;
    }
-   
-   public void testFromAddressWithTemporaryTopicAddressPrefix() throws Exception
+      
+   public String toString()
    {
-      String destinationName = randomString();
-      String address = JBossTemporaryTopic.JMS_TEMP_TOPIC_ADDRESS_PREFIX + destinationName;
-      JBossDestination destination = JBossDestination.fromAddress(address);
-      assertTrue(destination instanceof TemporaryTopic);
-      assertEquals(destinationName, ((TemporaryTopic)destination).getTopicName());
-   }
-   
-   public void testFromAddressWithInvalidPrefix() throws Exception
-   {
-      String invalidPrefix = "junk";
-      String destinationName = randomString();
-      String address = invalidPrefix + destinationName;
-      try
-      {
-         JBossDestination.fromAddress(address);
-         fail("IllegalArgumentException");
-      } catch (IllegalArgumentException e)
-      {
-      }
+      return "HornetQTemporaryQueue[" + name + "]";
    }
 
    // Package protected ---------------------------------------------
-
+   
    // Protected -----------------------------------------------------
-
+   
    // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
+   
+   // Inner classes -------------------------------------------------   
 }

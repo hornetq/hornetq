@@ -235,7 +235,7 @@ import javax.jms.MessageProducer;
 import javax.jms.Session;
 
 import org.hornetq.core.config.TransportConfiguration;
-import org.hornetq.jms.client.JBossConnectionFactory;
+import org.hornetq.jms.client.HornetQConnectionFactory;
 import org.hornetq.utils.Pair;
 
 /**
@@ -254,7 +254,7 @@ public class CTSMiscellaneousTest extends HornetQServerTestCase
    // Static --------------------------------------------------------
 
    // Attributes ----------------------------------------------------
-   protected static JBossConnectionFactory cf;
+   protected static HornetQConnectionFactory cf;
 
    private static final String ORG_JBOSS_MESSAGING_SERVICE_LBCONNECTION_FACTORY = "StrictTCKConnectionFactory";
 
@@ -307,7 +307,7 @@ public class CTSMiscellaneousTest extends HornetQServerTestCase
                                                        DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN,
                                                        jndiBindings);
 
-         cf = (JBossConnectionFactory)getInitialContext().lookup("/StrictTCKConnectionFactory");
+         cf = (HornetQConnectionFactory)getInitialContext().lookup("/StrictTCKConnectionFactory");
       }
       catch (Exception e)
       {

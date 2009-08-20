@@ -200,85 +200,168 @@
  *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
- */ 
+ */
 
-package org.hornetq.tests.unit.jms;
+package org.hornetq.jms.client;
 
-import static org.hornetq.tests.util.RandomUtil.randomString;
+import java.util.Enumeration;
+import java.util.NoSuchElementException;
 
-import org.hornetq.jms.JBossTopic;
-import org.hornetq.tests.util.UnitTestCase;
-import org.hornetq.utils.Pair;
+import javax.jms.JMSException;
+import javax.jms.Queue;
+import javax.jms.QueueBrowser;
+
+import org.hornetq.core.client.ClientConsumer;
+import org.hornetq.core.client.ClientMessage;
+import org.hornetq.core.client.ClientSession;
+import org.hornetq.core.exception.MessagingException;
+import org.hornetq.core.logging.Logger;
+import org.hornetq.jms.HornetQQueue;
+import org.hornetq.utils.SimpleString;
 
 /**
- * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
- *
- * @version <tt>$Revision$</tt>
- *
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
+ *         <p/>
+ *         $Id$
  */
-public class JBossTopicTest extends UnitTestCase
+public class HornetQQueueBrowser implements QueueBrowser
 {
-   // Constants -----------------------------------------------------
+   // Constants ------------------------------------------------------------------------------------
 
-   // Attributes ----------------------------------------------------
+   private static final Logger log = Logger.getLogger(HornetQQueueBrowser.class);
 
-   // Static --------------------------------------------------------
+   private static final long NEXT_MESSAGE_TIMEOUT = 1000;
 
-   // Constructors --------------------------------------------------
+   // Static ---------------------------------------------------------------------------------------
 
-   // Public --------------------------------------------------------
+   // Attributes -----------------------------------------------------------------------------------
 
+   private ClientSession session;
 
-   public void testIsTemporary() throws Exception
+   private ClientConsumer consumer;
+
+   private HornetQQueue queue;
+
+   private SimpleString filterString;
+
+   // Constructors ---------------------------------------------------------------------------------
+
+   public HornetQQueueBrowser(HornetQQueue queue, String messageSelector, ClientSession session) throws JMSException
    {
-      JBossTopic topic = new JBossTopic(randomString());
-      assertFalse(topic.isTemporary());
-   }
-   
-   public void testGetTopicName() throws Exception
-   {
-      String topicName = randomString();
-      JBossTopic queue = new JBossTopic(topicName);
-      assertEquals(topicName, queue.getTopicName());
-   }
-   
-   public void testDecomposeQueueNameForDurableSubscription() throws Exception
-   {
-      String clientID = randomString();
-      String subscriptionName = randomString();
-      
-      Pair<String, String> pair = JBossTopic.decomposeQueueNameForDurableSubscription(clientID + '.' + subscriptionName);
-      assertEquals(clientID, pair.a);
-      assertEquals(subscriptionName, pair.b);
-   }
-   
-   public void testdDecomposeQueueNameForDurableSubscriptionWithInvalidQueueName() throws Exception
-   {
-      try
+      this.session = session;
+      this.queue = queue;
+      if (messageSelector != null)
       {
-         JBossTopic.decomposeQueueNameForDurableSubscription("queueNameHasNoDot");
-         fail("IllegalArgumentException");
-      } catch (IllegalArgumentException e)
-      {
-      }
-   }
-   
-   public void testdDcomposeQueueNameForDurableSubscriptionWithInvalidQueueName_2() throws Exception
-   {
-      try
-      {
-         JBossTopic.decomposeQueueNameForDurableSubscription("queueName.HasTooMany.Dots");
-         fail("IllegalArgumentException");
-      } catch (IllegalArgumentException e)
-      {
+         this.filterString = new SimpleString(SelectorTranslator.convertToJBMFilterString(messageSelector));
       }
    }
 
-   // Package protected ---------------------------------------------
+   // QueueBrowser implementation -------------------------------------------------------------------
 
-   // Protected -----------------------------------------------------
+   public void close() throws JMSException
+   {
+      if (consumer != null)
+      {
+         try
+         {
+            consumer.close();
+         }
+         catch (MessagingException e)
+         {
+            throw JMSExceptionHelper.convertFromMessagingException(e);
+         }
+      }
+   }
 
-   // Private -------------------------------------------------------
+   public Enumeration getEnumeration() throws JMSException
+   {
+      try
+      {
+         close();
 
-   // Inner classes -------------------------------------------------
+         consumer = session.createConsumer(queue.getSimpleAddress(), filterString, true);
+
+         return new BrowserEnumeration();
+      }
+      catch (MessagingException e)
+      {
+         throw JMSExceptionHelper.convertFromMessagingException(e);
+      }
+
+   }
+
+   public String getMessageSelector() throws JMSException
+   {
+      return filterString == null ? null : filterString.toString();
+   }
+
+   public Queue getQueue() throws JMSException
+   {
+      return queue;
+   }
+
+   // Public ---------------------------------------------------------------------------------------
+
+   public String toString()
+   {
+      return "HornetQQueueBrowser->" + consumer;
+   }
+
+   // Package protected ----------------------------------------------------------------------------
+
+   // Protected ------------------------------------------------------------------------------------
+
+   // Private --------------------------------------------------------------------------------------
+
+   // Inner classes --------------------------------------------------------------------------------
+
+   private class BrowserEnumeration implements Enumeration
+   {
+      ClientMessage current = null;
+
+      public boolean hasMoreElements()
+      {
+         if (current == null)
+         {
+            try
+            {
+               // todo change this to consumer.receiveImmediate() once
+               // https://jira.jboss.org/jira/browse/JBMESSAGING-1432 is completed
+               current = consumer.receive(NEXT_MESSAGE_TIMEOUT);
+            }
+            catch (MessagingException e)
+            {
+               return false;
+            }
+         }
+         return current != null;
+      }
+
+      public Object nextElement()
+      {
+         HornetQMessage jbm;
+         if (hasMoreElements())
+         {
+            ClientMessage next = current;
+            current = null;
+            jbm = HornetQMessage.createMessage(next, session);
+            try
+            {
+               jbm.doBeforeReceive();
+            }
+            catch (Exception e)
+            {
+               log.error("Failed to create message", e);
+
+               return null;
+            }
+            return jbm;
+         }
+         else
+         {
+            throw new NoSuchElementException();
+         }
+      }
+   }
 }

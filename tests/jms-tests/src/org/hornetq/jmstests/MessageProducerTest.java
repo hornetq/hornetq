@@ -585,7 +585,7 @@ public class MessageProducerTest extends JMSTestCase
          Session ps = pconn.createSession(false, Session.AUTO_ACKNOWLEDGE);
          try
          {
-            ps.createProducer(new JBossTopic("NoSuchTopic"));
+            ps.createProducer(new HornetQTopic("NoSuchTopic"));
             fail("should throw exception");
          }
          catch (InvalidDestinationException e)

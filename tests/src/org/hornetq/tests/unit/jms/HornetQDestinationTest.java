@@ -206,7 +206,16 @@ package org.hornetq.tests.unit.jms;
 
 import static org.hornetq.tests.util.RandomUtil.randomString;
 
-import org.hornetq.jms.JBossQueue;
+import javax.jms.Queue;
+import javax.jms.TemporaryQueue;
+import javax.jms.TemporaryTopic;
+import javax.jms.Topic;
+
+import org.hornetq.jms.HornetQDestination;
+import org.hornetq.jms.HornetQQueue;
+import org.hornetq.jms.HornetQTemporaryQueue;
+import org.hornetq.jms.HornetQTemporaryTopic;
+import org.hornetq.jms.HornetQTopic;
 import org.hornetq.tests.util.UnitTestCase;
 
 /**
@@ -215,7 +224,7 @@ import org.hornetq.tests.util.UnitTestCase;
  * @version <tt>$Revision$</tt>
  *
  */
-public class JBossQueueTest extends UnitTestCase
+public class HornetQDestinationTest extends UnitTestCase
 {
    // Constants -----------------------------------------------------
 
@@ -227,19 +236,69 @@ public class JBossQueueTest extends UnitTestCase
 
    // Public --------------------------------------------------------
 
-   public void testIsTemporary() throws Exception
+   public void testEquals() throws Exception
    {
-      JBossQueue queue = new JBossQueue(randomString());
-      assertFalse(queue.isTemporary());
+      String destinationName = randomString();
+      String address = HornetQQueue.JMS_QUEUE_ADDRESS_PREFIX + destinationName;
+      HornetQDestination destination = HornetQDestination.fromAddress(address);
+      HornetQDestination sameDestination = HornetQDestination.fromAddress(address);
+      HornetQDestination differentDestination = HornetQDestination.fromAddress(address + randomString());
+      
+      assertFalse(destination.equals(null));
+      assertTrue(destination.equals(destination));
+      assertTrue(destination.equals(sameDestination));
+      assertFalse(destination.equals(differentDestination));
    }
    
-   public void testGetQueueName() throws Exception
+   public void testFromAddressWithQueueAddressPrefix() throws Exception
    {
-      String queueName = randomString();
-      JBossQueue queue = new JBossQueue(queueName);
-      assertEquals(queueName, queue.getQueueName());
+      String destinationName = randomString();
+      String address = HornetQQueue.JMS_QUEUE_ADDRESS_PREFIX + destinationName;
+      HornetQDestination destination = HornetQDestination.fromAddress(address);
+      assertTrue(destination instanceof Queue);
+      assertEquals(destinationName, ((Queue)destination).getQueueName());
    }
 
+   public void testFromAddressWithTopicAddressPrefix() throws Exception
+   {
+      String destinationName = randomString();
+      String address = HornetQTopic.JMS_TOPIC_ADDRESS_PREFIX + destinationName;
+      HornetQDestination destination = HornetQDestination.fromAddress(address);
+      assertTrue(destination instanceof Topic);
+      assertEquals(destinationName, ((Topic)destination).getTopicName());
+   }
+   
+   public void testFromAddressWithTemporaryQueueAddressPrefix() throws Exception
+   {
+      String destinationName = randomString();
+      String address = HornetQTemporaryQueue.JMS_TEMP_QUEUE_ADDRESS_PREFIX + destinationName;
+      HornetQDestination destination = HornetQDestination.fromAddress(address);
+      assertTrue(destination instanceof TemporaryQueue);
+      assertEquals(destinationName, ((TemporaryQueue)destination).getQueueName());
+   }
+   
+   public void testFromAddressWithTemporaryTopicAddressPrefix() throws Exception
+   {
+      String destinationName = randomString();
+      String address = HornetQTemporaryTopic.JMS_TEMP_TOPIC_ADDRESS_PREFIX + destinationName;
+      HornetQDestination destination = HornetQDestination.fromAddress(address);
+      assertTrue(destination instanceof TemporaryTopic);
+      assertEquals(destinationName, ((TemporaryTopic)destination).getTopicName());
+   }
+   
+   public void testFromAddressWithInvalidPrefix() throws Exception
+   {
+      String invalidPrefix = "junk";
+      String destinationName = randomString();
+      String address = invalidPrefix + destinationName;
+      try
+      {
+         HornetQDestination.fromAddress(address);
+         fail("IllegalArgumentException");
+      } catch (IllegalArgumentException e)
+      {
+      }
+   }
 
    // Package protected ---------------------------------------------
 

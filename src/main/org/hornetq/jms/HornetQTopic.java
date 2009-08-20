@@ -200,229 +200,132 @@
  *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
- */
+ */ 
 
-package org.hornetq.jms.client;
+package org.hornetq.jms;
 
-import javax.jms.IllegalStateException;
 import javax.jms.JMSException;
-import javax.jms.Message;
-import javax.jms.MessageConsumer;
-import javax.jms.MessageListener;
-import javax.jms.Queue;
-import javax.jms.QueueReceiver;
-import javax.jms.Session;
 import javax.jms.Topic;
-import javax.jms.TopicSubscriber;
 
-import org.hornetq.core.client.ClientConsumer;
-import org.hornetq.core.client.ClientMessage;
-import org.hornetq.core.client.MessageHandler;
-import org.hornetq.core.exception.MessagingException;
-import org.hornetq.core.logging.Logger;
-import org.hornetq.jms.JBossDestination;
+import org.hornetq.utils.Pair;
 import org.hornetq.utils.SimpleString;
 
 /**
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision$</tt>
  *
  * $Id$
  */
-public class JBossMessageConsumer implements MessageConsumer, QueueReceiver, TopicSubscriber
+public class HornetQTopic extends HornetQDestination implements Topic
 {
    // Constants -----------------------------------------------------
 
-   private static final Logger log = Logger.getLogger(JBossMessageConsumer.class);
+	private static final long serialVersionUID = 7873614001276404156L;
 
+	public static final String JMS_TOPIC_ADDRESS_PREFIX = "jms.topic.";
+
+   private static final char SEPARATOR = '.';
+      
    // Static --------------------------------------------------------
-
-   // Attributes ----------------------------------------------------
-
-   private final ClientConsumer consumer;
-
-   private MessageListener listener;
-
-   private MessageHandler coreListener;
-
-   private final JBossSession session;
-
-   private final int ackMode;
-
-   private final boolean noLocal;
-
-   private final JBossDestination destination;
-
-   private final String selector;
-
-   private final SimpleString autoDeleteQueueName;
-
-   // Constructors --------------------------------------------------
-
-   public JBossMessageConsumer(final JBossSession session,
-                               final ClientConsumer consumer,
-                               final boolean noLocal,
-                               final JBossDestination destination,
-                               final String selector,
-                               final SimpleString autoDeleteQueueName) throws JMSException
+      
+   public static String createQueueNameForDurableSubscription(final String clientID, final String subscriptionName)
    {
-      this.session = session;
-
-      this.consumer = consumer;
-
-      this.ackMode = session.getAcknowledgeMode();
-
-      this.noLocal = noLocal;
-
-      this.destination = destination;
-
-      this.selector = selector;
-
-      this.autoDeleteQueueName = autoDeleteQueueName;
+   	return escape(clientID) + SEPARATOR + escape(subscriptionName);
    }
-
-   // MessageConsumer implementation --------------------------------
-
-   public String getMessageSelector() throws JMSException
+   
+   public static Pair<String, String> decomposeQueueNameForDurableSubscription(final String queueName)
    {
-      checkClosed();
-
-      return selector;
-   }
-
-   public MessageListener getMessageListener() throws JMSException
-   {
-      checkClosed();
-
-      return listener;
-   }
-
-   public void setMessageListener(MessageListener listener) throws JMSException
-   {
-      this.listener = listener;
-
-      coreListener = listener == null ? null : new JMSMessageListenerWrapper(session, consumer, listener, ackMode);
-
-      try
+      StringBuffer[] parts = new StringBuffer[2];
+      int currentPart = 0;
+      
+      parts[0] = new StringBuffer();
+      parts[1] = new StringBuffer();
+      
+      int pos = 0;
+      while (pos < queueName.length())
       {
-         consumer.setMessageHandler(coreListener);
-      }
-      catch (MessagingException e)
-      {
-         throw JMSExceptionHelper.convertFromMessagingException(e);
-      }
-   }
+         char ch = queueName.charAt(pos);
+         pos++;
 
-   public Message receive() throws JMSException
-   {
-      return getMessage(0);
-   }
-
-   public Message receive(long timeout) throws JMSException
-   {
-      return getMessage(timeout);
-   }
-
-   public Message receiveNoWait() throws JMSException
-   {
-      return getMessage(-1);
-   }
-
-   public void close() throws JMSException
-   {
-      try
-      {
-         consumer.close();
-
-         if (autoDeleteQueueName != null)
+         if (ch == SEPARATOR)
          {
-            // If non durable subscriber need to delete subscription too
-            session.deleteQueue(autoDeleteQueueName);
+            currentPart++;
+            if (currentPart >= parts.length)
+            {
+               throw new IllegalArgumentException("Invalid message queue name: " + queueName);
+            }
+            
+            continue;
          }
 
-         session.removeConsumer(this);
+         if (ch == '\\')
+         {
+            if (pos >= queueName.length())
+            {
+               throw new IllegalArgumentException("Invalid message queue name: " + queueName);
+            }
+            ch = queueName.charAt(pos);
+            pos++;
+         }
+
+         parts[currentPart].append(ch);
       }
-      catch (MessagingException e)
+      
+      if (currentPart != 1)
       {
-         throw JMSExceptionHelper.convertFromMessagingException(e);
+         throw new IllegalArgumentException("Invalid message queue name: " + queueName);
       }
+      
+      Pair<String, String> pair = new Pair<String, String>(parts[0].toString(), parts[1].toString());
+
+      return pair;
+   }
+         
+   public static SimpleString createAddressFromName(String name)
+   {
+      return new SimpleString(JMS_TOPIC_ADDRESS_PREFIX + name);
    }
 
-   // QueueReceiver implementation ----------------------------------
+   // Attributes ----------------------------------------------------     
+   
+   // Constructors --------------------------------------------------
 
-   public Queue getQueue() throws JMSException
+   public HornetQTopic(final String name)
    {
-      return (Queue)destination;
+      super(JMS_TOPIC_ADDRESS_PREFIX + name, name);
    }
 
-   // TopicSubscriber implementation --------------------------------
-
-   public Topic getTopic() throws JMSException
+   public HornetQTopic(final String address, final String name)
    {
-      return (Topic)destination;
+      super(address, name);
    }
 
-   public boolean getNoLocal() throws JMSException
+   // Topic implementation ------------------------------------------
+
+   public String getTopicName() throws JMSException
    {
-      return noLocal;
+      return name;
    }
 
    // Public --------------------------------------------------------
 
+   public boolean isTemporary()
+   {
+      return false;
+   }   
+   
    public String toString()
    {
-      return "JBossMessageConsumer->" + consumer;
+      return "HornetQTopic[" + name + "]";
    }
 
+     
    // Package protected ---------------------------------------------
-
+   
    // Protected -----------------------------------------------------
-
+   
    // Private -------------------------------------------------------
-
-   private void checkClosed() throws JMSException
-   {
-      if (session.getCoreSession().isClosed())
-      {
-         throw new IllegalStateException("Consumer is closed");
-      }
-   }
-
-   private JBossMessage getMessage(long timeout) throws JMSException
-   {
-      try
-      {
-         ClientMessage message = consumer.receive(timeout);
-
-         JBossMessage jbm = null;
-
-         if (message != null)
-         {
-            message.acknowledge();
-
-            jbm = JBossMessage.createMessage(message, ackMode == Session.CLIENT_ACKNOWLEDGE ? session.getCoreSession()
-                                                                                           : null);
-
-            try
-            {
-               jbm.doBeforeReceive();
-            }
-            catch (Exception e)
-            {
-               log.error("Failed to prepare message", e);
-
-               return null;
-            }
-         }
-
-         return jbm;
-      }
-      catch (MessagingException e)
-      {
-         throw JMSExceptionHelper.convertFromMessagingException(e);
-      }
-   }
-
-   // Inner classes -------------------------------------------------
-
+   
+   // Inner classes -------------------------------------------------   
 }

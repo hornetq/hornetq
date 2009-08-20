@@ -206,9 +206,9 @@ package org.hornetq.jms.server.management;
 
 import java.util.List;
 
-import org.hornetq.jms.JBossQueue;
-import org.hornetq.jms.JBossTopic;
-import org.hornetq.jms.client.JBossConnectionFactory;
+import org.hornetq.jms.HornetQQueue;
+import org.hornetq.jms.HornetQTopic;
+import org.hornetq.jms.client.HornetQConnectionFactory;
 import org.hornetq.jms.server.JMSServerManager;
 
 /**
@@ -223,17 +223,17 @@ public interface JMSManagementService
 
    void unregisterJMSServer() throws Exception;
 
-   void registerQueue(JBossQueue queue,
+   void registerQueue(HornetQQueue queue,
                       String jndiBinding) throws Exception;
 
    void unregisterQueue(String name) throws Exception;
 
-   void registerTopic(JBossTopic topic,
+   void registerTopic(HornetQTopic topic,
                       String jndiBinding) throws Exception;
 
    void unregisterTopic(String name) throws Exception;
 
-   void registerConnectionFactory(String name, JBossConnectionFactory connectionFactory, List<String> bindings) throws Exception;
+   void registerConnectionFactory(String name, HornetQConnectionFactory connectionFactory, List<String> bindings) throws Exception;
 
    void unregisterConnectionFactory(String name) throws Exception;
 }

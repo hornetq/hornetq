@@ -209,7 +209,7 @@ import java.util.concurrent.CountDownLatch;
 import javax.jms.DeliveryMode;
 import javax.jms.Message;
 
-import org.hornetq.jms.client.JBossMessage;
+import org.hornetq.jms.client.HornetQMessage;
 
 /**
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
@@ -369,7 +369,7 @@ public class JMSExpirationHeaderTest extends MessageHeaderTestBase
                Message m = queueProducerSession.createMessage();
                queueProducer.send(m, DeliveryMode.NON_PERSISTENT, 4, -1);
 
-               JBossMessage jbm = (JBossMessage)m;
+               HornetQMessage jbm = (HornetQMessage)m;
                
                if (!jbm.getCoreMessage().isExpired())
                {
@@ -426,7 +426,7 @@ public class JMSExpirationHeaderTest extends MessageHeaderTestBase
 
    public void testExpirationOnReceive() throws Exception
    {
-      expectedMessage = new JBossMessage();
+      expectedMessage = new HornetQMessage();
 
       queueProducer.send(queueProducerSession.createMessage(), DeliveryMode.NON_PERSISTENT, 4, 2000);
 

@@ -203,16 +203,7 @@
  */
 package org.hornetq.ra.inflow;
 
-import org.hornetq.core.client.ClientConsumer;
-import org.hornetq.core.client.ClientMessage;
-import org.hornetq.core.client.ClientSession;
-import org.hornetq.core.client.MessageHandler;
-import org.hornetq.core.exception.MessagingException;
-import org.hornetq.core.logging.Logger;
-import org.hornetq.core.remoting.impl.wireformat.SessionQueueQueryResponseMessage;
-import org.hornetq.jms.JBossTopic;
-import org.hornetq.jms.client.JBossMessage;
-import org.hornetq.utils.SimpleString;
+import java.util.UUID;
 
 import javax.jms.InvalidClientIDException;
 import javax.jms.JMSException;
@@ -222,7 +213,17 @@ import javax.resource.spi.endpoint.MessageEndpointFactory;
 import javax.transaction.Status;
 import javax.transaction.Transaction;
 import javax.transaction.TransactionManager;
-import java.util.UUID;
+
+import org.hornetq.core.client.ClientConsumer;
+import org.hornetq.core.client.ClientMessage;
+import org.hornetq.core.client.ClientSession;
+import org.hornetq.core.client.MessageHandler;
+import org.hornetq.core.exception.MessagingException;
+import org.hornetq.core.logging.Logger;
+import org.hornetq.core.remoting.impl.wireformat.SessionQueueQueryResponseMessage;
+import org.hornetq.jms.HornetQTopic;
+import org.hornetq.jms.client.HornetQMessage;
+import org.hornetq.utils.SimpleString;
 
 /**
  * The message handler
@@ -291,7 +292,7 @@ public class HornetQMessageHandler implements MessageHandler
             throw new InvalidClientIDException("Cannot create durable subscription - client ID has not been set");
          }
 
-         SimpleString queueName = new SimpleString(JBossTopic.createQueueNameForDurableSubscription(activation.getActivationSpec()
+         SimpleString queueName = new SimpleString(HornetQTopic.createQueueNameForDurableSubscription(activation.getActivationSpec()
                .getClientID(),
                                                                                                     subscriptionName));
 
@@ -414,7 +415,7 @@ public class HornetQMessageHandler implements MessageHandler
          txnStrategy = new NoTXTransactionDemarcationStrategy();
       }
 
-      JBossMessage jbm = JBossMessage.createMessage(message, session);
+      HornetQMessage jbm = HornetQMessage.createMessage(message, session);
 
       try
       {

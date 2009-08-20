@@ -217,7 +217,7 @@ import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.server.Messaging;
 import org.hornetq.core.server.MessagingServer;
-import org.hornetq.jms.client.JBossTextMessage;
+import org.hornetq.jms.client.HornetQTextMessage;
 import org.hornetq.tests.util.UnitTestCase;
 import org.hornetq.utils.SimpleString;
 
@@ -274,7 +274,7 @@ public class CoreClientTest extends UnitTestCase
       
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = session.createClientMessage(JBossTextMessage.TYPE, false, 0,
+         ClientMessage message = session.createClientMessage(HornetQTextMessage.TYPE, false, 0,
                System.currentTimeMillis(), (byte) 1);         
          message.setBody(ChannelBuffers.buffer(3000));
          

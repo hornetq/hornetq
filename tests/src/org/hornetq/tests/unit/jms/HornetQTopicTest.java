@@ -202,77 +202,83 @@
  *    limitations under the License.
  */ 
 
-package org.hornetq.jms;
+package org.hornetq.tests.unit.jms;
 
-import javax.jms.JMSException;
-import javax.jms.Queue;
+import static org.hornetq.tests.util.RandomUtil.randomString;
 
-import org.hornetq.core.logging.Logger;
-import org.hornetq.utils.SimpleString;
+import org.hornetq.jms.HornetQTopic;
+import org.hornetq.tests.util.UnitTestCase;
+import org.hornetq.utils.Pair;
 
 /**
- * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
- * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
+ *
  * @version <tt>$Revision$</tt>
  *
- * $Id$
  */
-public class JBossQueue extends JBossDestination implements Queue
+public class HornetQTopicTest extends UnitTestCase
 {
    // Constants -----------------------------------------------------
-   
-   private static final Logger log = Logger.getLogger(JBossQueue.class);
-
-   
-	private static final long serialVersionUID = -1106092883162295462L;
-	
-	public static final String JMS_QUEUE_ADDRESS_PREFIX = "jms.queue.";
-
-   // Static --------------------------------------------------------
-   
-   public static SimpleString createAddressFromName(String name)
-   {
-      return new SimpleString(JMS_QUEUE_ADDRESS_PREFIX + name);
-   }
 
    // Attributes ----------------------------------------------------
-   
+
+   // Static --------------------------------------------------------
+
    // Constructors --------------------------------------------------
 
-   public JBossQueue(final String name)
-   {      
-      super(JMS_QUEUE_ADDRESS_PREFIX + name, name);
-   }
-
-   public JBossQueue(final String address, final String name)
-   {      
-      super(address, name);
-   }
-
-   // Queue implementation ------------------------------------------
-
-   public String getQueueName() throws JMSException
-   {
-      return name;
-   }
-
    // Public --------------------------------------------------------
-   
-   public boolean isTemporary()
+
+
+   public void testIsTemporary() throws Exception
    {
-      return false;
+      HornetQTopic topic = new HornetQTopic(randomString());
+      assertFalse(topic.isTemporary());
    }
    
-   public String toString()
+   public void testGetTopicName() throws Exception
    {
-      return "JBossQueue[" + name + "]";
+      String topicName = randomString();
+      HornetQTopic queue = new HornetQTopic(topicName);
+      assertEquals(topicName, queue.getTopicName());
    }
    
+   public void testDecomposeQueueNameForDurableSubscription() throws Exception
+   {
+      String clientID = randomString();
+      String subscriptionName = randomString();
+      
+      Pair<String, String> pair = HornetQTopic.decomposeQueueNameForDurableSubscription(clientID + '.' + subscriptionName);
+      assertEquals(clientID, pair.a);
+      assertEquals(subscriptionName, pair.b);
+   }
+   
+   public void testdDecomposeQueueNameForDurableSubscriptionWithInvalidQueueName() throws Exception
+   {
+      try
+      {
+         HornetQTopic.decomposeQueueNameForDurableSubscription("queueNameHasNoDot");
+         fail("IllegalArgumentException");
+      } catch (IllegalArgumentException e)
+      {
+      }
+   }
+   
+   public void testdDcomposeQueueNameForDurableSubscriptionWithInvalidQueueName_2() throws Exception
+   {
+      try
+      {
+         HornetQTopic.decomposeQueueNameForDurableSubscription("queueName.HasTooMany.Dots");
+         fail("IllegalArgumentException");
+      } catch (IllegalArgumentException e)
+      {
+      }
+   }
+
    // Package protected ---------------------------------------------
-   
+
    // Protected -----------------------------------------------------
-   
+
    // Private -------------------------------------------------------
-   
-   // Inner classes -------------------------------------------------   
+
+   // Inner classes -------------------------------------------------
 }

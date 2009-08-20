@@ -224,7 +224,7 @@ import org.hornetq.core.remoting.impl.invm.InVMRegistry;
 import org.hornetq.core.remoting.impl.invm.TransportConstants;
 import org.hornetq.core.server.Messaging;
 import org.hornetq.core.server.MessagingServer;
-import org.hornetq.jms.client.JBossTextMessage;
+import org.hornetq.jms.client.HornetQTextMessage;
 import org.hornetq.tests.util.UnitTestCase;
 import org.hornetq.utils.SimpleString;
 
@@ -273,7 +273,7 @@ public class FailoverPreAcknowledgeTest extends UnitTestCase
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = session1.createClientMessage(JBossTextMessage.TYPE,
+         ClientMessage message = session1.createClientMessage(HornetQTextMessage.TYPE,
                                                              false);
          message.putIntProperty(new SimpleString("count"), i);
          message.getBody().writeString("more aardvarks");

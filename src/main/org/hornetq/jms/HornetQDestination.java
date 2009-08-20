@@ -204,59 +204,141 @@
 
 package org.hornetq.jms;
 
-import javax.jms.JMSException;
-import javax.jms.TemporaryQueue;
+import java.io.Serializable;
 
-import org.hornetq.jms.client.JBossSession;
+import javax.jms.Destination;
+import javax.naming.NamingException;
+import javax.naming.Reference;
+
+import org.hornetq.jms.referenceable.DestinationObjectFactory;
+import org.hornetq.jms.referenceable.SerializableObjectRefAddr;
+import org.hornetq.utils.SimpleString;
+
 
 /**
+ * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * @version <tt>$Revision: 3569 $</tt>
+ * @version <tt>$Revision$</tt>
  *
- * $Id: JBossQueue.java 3569 2008-01-15 21:14:04Z timfox $
+ * $Id$
  */
-public class JBossTemporaryQueue extends JBossQueue implements TemporaryQueue
-{   
+public abstract class HornetQDestination implements Destination, Serializable/*, Referenceable http://jira.jboss.org/jira/browse/JBMESSAGING-395*/
+{
    // Constants -----------------------------------------------------
-   
-	private static final long serialVersionUID = -4624930377557954624L;
 
-	public static final String JMS_TEMP_QUEUE_ADDRESS_PREFIX = "jms.tempqueue.";
-   
    // Static --------------------------------------------------------
-   
+      
+	protected static String escape(final String input)
+   {
+	   if (input == null)
+	   {
+	      return "";
+	   }
+      return input.replace("\\", "\\\\").replace(".", "\\.");
+   }
+	
+	public static HornetQDestination fromAddress(final String address)
+	{
+		if (address.startsWith(HornetQQueue.JMS_QUEUE_ADDRESS_PREFIX))
+		{
+			String name = address.substring(HornetQQueue.JMS_QUEUE_ADDRESS_PREFIX.length());
+			
+			return new HornetQQueue(address, name);
+		}
+		else if (address.startsWith(HornetQTopic.JMS_TOPIC_ADDRESS_PREFIX))
+		{
+			String name = address.substring(HornetQTopic.JMS_TOPIC_ADDRESS_PREFIX.length());
+			
+			return new HornetQTopic(address, name);
+		}
+		else if (address.startsWith(HornetQTemporaryQueue.JMS_TEMP_QUEUE_ADDRESS_PREFIX))
+		{
+			String name = address.substring(HornetQTemporaryQueue.JMS_TEMP_QUEUE_ADDRESS_PREFIX.length());
+			
+			return new HornetQTemporaryQueue(null, name);
+		}
+		else if (address.startsWith(HornetQTemporaryTopic.JMS_TEMP_TOPIC_ADDRESS_PREFIX))
+		{
+			String name = address.substring(HornetQTemporaryTopic.JMS_TEMP_TOPIC_ADDRESS_PREFIX.length());
+			
+			return new HornetQTemporaryTopic(null, name);
+		}
+		else
+		{
+			throw new IllegalArgumentException("Invalid address " + address);
+		}
+	}
+      
    // Attributes ----------------------------------------------------
+
+   protected final String name;
    
-   private final transient JBossSession session;
+   private final String address;
    
+   private final SimpleString simpleAddress;
+         
    // Constructors --------------------------------------------------
 
-   public JBossTemporaryQueue(final JBossSession session, final String name)
+   public HornetQDestination(final String address, final String name)
    {
-      super(JMS_TEMP_QUEUE_ADDRESS_PREFIX + name, name);
+      this.address = address;
       
-      this.session = session;
+      this.name = name;
+      
+      this.simpleAddress = new SimpleString(address);
    }
    
-   // TemporaryQueue implementation ------------------------------------------
-
-   public void delete() throws JMSException
-   {      
-      session.deleteTemporaryQueue(this);
+   // Referenceable implementation ---------------------------------------
+   
+   public Reference getReference() throws NamingException
+   {
+      return new Reference(this.getClass().getCanonicalName(),
+                           new SerializableObjectRefAddr("JBM-DEST", this),
+                           DestinationObjectFactory.class.getCanonicalName(),
+                           null);
    }
 
    // Public --------------------------------------------------------
    
-   public boolean isTemporary()
+   public String getAddress()
    {
-      return true;
+      return address;
    }
-      
-   public String toString()
+   
+   public SimpleString getSimpleAddress()
    {
-      return "JBossTemporaryQueue[" + name + "]";
+   	return simpleAddress;
+   }
+   
+   public String getName()
+   {
+      return name;
+   }
+   
+   public abstract boolean isTemporary();
+
+   public boolean equals(Object o)
+   {
+      if (this == o)
+      {
+         return true;
+      }
+      
+      if (!(o instanceof HornetQDestination))
+      {
+         return false;
+      }
+      
+      HornetQDestination that = (HornetQDestination)o;
+      
+      return this.address.equals(that.address);      
    }
 
+   public int hashCode()
+   {
+      return address.hashCode();      
+   }
+   
    // Package protected ---------------------------------------------
    
    // Protected -----------------------------------------------------

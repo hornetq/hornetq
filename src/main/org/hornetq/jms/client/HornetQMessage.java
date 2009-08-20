@@ -232,7 +232,7 @@ import org.hornetq.core.exception.MessagingException;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.message.impl.MessageImpl;
 import org.hornetq.core.remoting.spi.MessagingBuffer;
-import org.hornetq.jms.JBossDestination;
+import org.hornetq.jms.HornetQDestination;
 import org.hornetq.utils.SimpleString;
 
 /**
@@ -249,9 +249,9 @@ import org.hornetq.utils.SimpleString;
  * @author <a href="mailto:adrian@jboss.org">Adrian Brock</a>
  * @author <a href="mailto:ataylor@redhat.com">Andy Taylor</a> 
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a> 
- * $Id: JBossMessage.java 3466 2007-12-10 18:44:52Z timfox $
+ * $Id: HornetQMessage.java 3466 2007-12-10 18:44:52Z timfox $
  */
-public class JBossMessage implements javax.jms.Message
+public class HornetQMessage implements javax.jms.Message
 {
    // Constants -----------------------------------------------------
 
@@ -345,44 +345,44 @@ public class JBossMessage implements javax.jms.Message
       reservedIdentifiers.add("ESCAPE");
    }
 
-   private static final Logger log = Logger.getLogger(JBossMessage.class);
+   private static final Logger log = Logger.getLogger(HornetQMessage.class);
 
-   public static JBossMessage createMessage(final ClientMessage message, final ClientSession session)
+   public static HornetQMessage createMessage(final ClientMessage message, final ClientSession session)
    {
       int type = message.getType();
 
-      JBossMessage msg;
+      HornetQMessage msg;
 
       switch (type)
       {
-         case JBossMessage.TYPE: // 0
+         case HornetQMessage.TYPE: // 0
          {
-            msg = new JBossMessage(message, session);
+            msg = new HornetQMessage(message, session);
             break;
          }
-         case JBossBytesMessage.TYPE: // 4
+         case HornetQBytesMessage.TYPE: // 4
          {
-            msg = new JBossBytesMessage(message, session);
+            msg = new HornetQBytesMessage(message, session);
             break;
          }
-         case JBossMapMessage.TYPE: // 5
+         case HornetQMapMessage.TYPE: // 5
          {
-            msg = new JBossMapMessage(message, session);
+            msg = new HornetQMapMessage(message, session);
             break;
          }
-         case JBossObjectMessage.TYPE:
+         case HornetQObjectMessage.TYPE:
          {
-            msg = new JBossObjectMessage(message, session);
+            msg = new HornetQObjectMessage(message, session);
             break;
          }
-         case JBossStreamMessage.TYPE: // 6
+         case HornetQStreamMessage.TYPE: // 6
          {
-            msg = new JBossStreamMessage(message, session);
+            msg = new HornetQStreamMessage(message, session);
             break;
          }
-         case JBossTextMessage.TYPE: // 3
+         case HornetQTextMessage.TYPE: // 3
          {
-            msg = new JBossTextMessage(message, session);
+            msg = new HornetQTextMessage(message, session);
             break;
          }
          default:
@@ -426,9 +426,9 @@ public class JBossMessage implements javax.jms.Message
    /**
     * constructors for test purposes only
     */
-   public JBossMessage()
+   public HornetQMessage()
    {
-      message = new ClientMessageImpl(JBossMessage.TYPE,
+      message = new ClientMessageImpl(HornetQMessage.TYPE,
                                       true,
                                       0,
                                       System.currentTimeMillis(),
@@ -437,7 +437,7 @@ public class JBossMessage implements javax.jms.Message
 
    }
 
-   public JBossMessage(byte type)
+   public HornetQMessage(byte type)
    {
       message = new ClientMessageImpl(type,
                                       true,
@@ -451,21 +451,21 @@ public class JBossMessage implements javax.jms.Message
    /*
     * Create a new message prior to sending
     */
-   protected JBossMessage(final byte type, final ClientSession session)
+   protected HornetQMessage(final byte type, final ClientSession session)
    {
       message = session.createClientMessage(type, true, 0, System.currentTimeMillis(), (byte)4);
 
    }
 
-   public JBossMessage(final ClientSession session)
+   public HornetQMessage(final ClientSession session)
    {
-      this(JBossMessage.TYPE, session);
+      this(HornetQMessage.TYPE, session);
    }
 
    /**
     * Constructor for when receiving a message from the server
     */
-   public JBossMessage(final ClientMessage message, ClientSession session)
+   public HornetQMessage(final ClientMessage message, ClientSession session)
    {
       this.message = message;
 
@@ -479,12 +479,12 @@ public class JBossMessage implements javax.jms.Message
    /*
     * A constructor that takes a foreign message
     */
-   public JBossMessage(final Message foreign, final ClientSession session) throws JMSException
+   public HornetQMessage(final Message foreign, final ClientSession session) throws JMSException
    {
-      this(foreign, JBossMessage.TYPE, session);
+      this(foreign, HornetQMessage.TYPE, session);
    }
 
-   protected JBossMessage(final Message foreign, final byte type, final ClientSession session) throws JMSException
+   protected HornetQMessage(final Message foreign, final byte type, final ClientSession session) throws JMSException
    {
       this(type, session);
 
@@ -625,7 +625,7 @@ public class JBossMessage implements javax.jms.Message
 
          if (repl != null)
          {
-            replyTo = JBossDestination.fromAddress(repl.toString());
+            replyTo = HornetQDestination.fromAddress(repl.toString());
          }
       }
       return replyTo;
@@ -641,12 +641,12 @@ public class JBossMessage implements javax.jms.Message
       }
       else
       {
-         if (dest instanceof JBossDestination == false)
+         if (dest instanceof HornetQDestination == false)
          {
             throw new InvalidDestinationException("Not a JBoss destination " + dest);
          }
 
-         JBossDestination jbd = (JBossDestination)dest;
+         HornetQDestination jbd = (HornetQDestination)dest;
 
          message.putStringProperty(REPLYTO_HEADER_NAME, jbd.getSimpleAddress());
 
@@ -660,7 +660,7 @@ public class JBossMessage implements javax.jms.Message
       {
          SimpleString sdest = message.getDestination();
 
-         dest = sdest == null ? null : JBossDestination.fromAddress(sdest.toString());
+         dest = sdest == null ? null : HornetQDestination.fromAddress(sdest.toString());
       }
 
       return dest;
@@ -1199,7 +1199,7 @@ public class JBossMessage implements javax.jms.Message
 
    public byte getType()
    {
-      return JBossMessage.TYPE;
+      return HornetQMessage.TYPE;
    }
 
    public void setInputStream(final InputStream input) throws JMSException
@@ -1264,7 +1264,7 @@ public class JBossMessage implements javax.jms.Message
 
    public String toString()
    {
-      StringBuffer sb = new StringBuffer("JBossMessage[");
+      StringBuffer sb = new StringBuffer("HornetQMessage[");
       sb.append("");
       sb.append(getJMSMessageID());
       sb.append("]:");
@@ -1301,7 +1301,7 @@ public class JBossMessage implements javax.jms.Message
 
    private void checkStream() throws JMSException
    {
-      if (!(message.getType() == JBossBytesMessage.TYPE || message.getType() == JBossStreamMessage.TYPE))
+      if (!(message.getType() == HornetQBytesMessage.TYPE || message.getType() == HornetQStreamMessage.TYPE))
       {
          throw new IllegalStateException("LargeMessage streaming is only possible on ByteMessage or StreamMessage");
       }

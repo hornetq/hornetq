@@ -233,7 +233,7 @@ import org.hornetq.core.remoting.impl.invm.TransportConstants;
 import org.hornetq.core.remoting.spi.ConnectionLifeCycleListener;
 import org.hornetq.core.server.Messaging;
 import org.hornetq.core.server.MessagingServer;
-import org.hornetq.jms.client.JBossTextMessage;
+import org.hornetq.jms.client.HornetQTextMessage;
 import org.hornetq.tests.util.UnitTestCase;
 import org.hornetq.utils.SimpleString;
 
@@ -282,7 +282,7 @@ public class SimpleAutomaticFailoverTest extends UnitTestCase
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = session.createClientMessage(JBossTextMessage.TYPE,
+         ClientMessage message = session.createClientMessage(HornetQTextMessage.TYPE,
                                                              false,
                                                              0,
                                                              System.currentTimeMillis(),
@@ -331,7 +331,7 @@ public class SimpleAutomaticFailoverTest extends UnitTestCase
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = session.createClientMessage(JBossTextMessage.TYPE,
+         ClientMessage message = session.createClientMessage(HornetQTextMessage.TYPE,
                                                              false,
                                                              0,
                                                              System.currentTimeMillis(),
@@ -409,7 +409,7 @@ public class SimpleAutomaticFailoverTest extends UnitTestCase
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = session.createClientMessage(JBossTextMessage.TYPE,
+         ClientMessage message = session.createClientMessage(HornetQTextMessage.TYPE,
                                                              false,
                                                              0,
                                                              System.currentTimeMillis(),
@@ -490,7 +490,7 @@ public class SimpleAutomaticFailoverTest extends UnitTestCase
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = session.createClientMessage(JBossTextMessage.TYPE,
+         ClientMessage message = session.createClientMessage(HornetQTextMessage.TYPE,
                                                              false,
                                                              0,
                                                              System.currentTimeMillis(),
@@ -558,7 +558,7 @@ public class SimpleAutomaticFailoverTest extends UnitTestCase
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = session.createClientMessage(JBossTextMessage.TYPE,
+         ClientMessage message = session.createClientMessage(HornetQTextMessage.TYPE,
                                                              false,
                                                              0,
                                                              System.currentTimeMillis(),
@@ -649,7 +649,7 @@ public class SimpleAutomaticFailoverTest extends UnitTestCase
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = session.createClientMessage(JBossTextMessage.TYPE,
+         ClientMessage message = session.createClientMessage(HornetQTextMessage.TYPE,
                                                              false,
                                                              0,
                                                              System.currentTimeMillis(),
@@ -795,7 +795,7 @@ public class SimpleAutomaticFailoverTest extends UnitTestCase
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = session.createClientMessage(JBossTextMessage.TYPE,
+         ClientMessage message = session.createClientMessage(HornetQTextMessage.TYPE,
                                                              false,
                                                              0,
                                                              System.currentTimeMillis(),
@@ -907,7 +907,7 @@ public class SimpleAutomaticFailoverTest extends UnitTestCase
 
             for (int k = 0; k < numMessages; k++)
             {
-               ClientMessage message = session.createClientMessage(JBossTextMessage.TYPE,
+               ClientMessage message = session.createClientMessage(HornetQTextMessage.TYPE,
                                                                    false,
                                                                    0,
                                                                    System.currentTimeMillis(),
@@ -1026,7 +1026,7 @@ public class SimpleAutomaticFailoverTest extends UnitTestCase
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = session.createClientMessage(JBossTextMessage.TYPE,
+         ClientMessage message = session.createClientMessage(HornetQTextMessage.TYPE,
                                                              false,
                                                              0,
                                                              System.currentTimeMillis(),

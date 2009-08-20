@@ -221,13 +221,13 @@ import javax.jms.Session;
 import javax.jms.StreamMessage;
 import javax.jms.TextMessage;
 
-import org.hornetq.jms.JBossQueue;
-import org.hornetq.jms.client.JBossBytesMessage;
-import org.hornetq.jms.client.JBossMapMessage;
-import org.hornetq.jms.client.JBossMessage;
-import org.hornetq.jms.client.JBossObjectMessage;
-import org.hornetq.jms.client.JBossStreamMessage;
-import org.hornetq.jms.client.JBossTextMessage;
+import org.hornetq.jms.HornetQQueue;
+import org.hornetq.jms.client.HornetQBytesMessage;
+import org.hornetq.jms.client.HornetQMapMessage;
+import org.hornetq.jms.client.HornetQMessage;
+import org.hornetq.jms.client.HornetQObjectMessage;
+import org.hornetq.jms.client.HornetQStreamMessage;
+import org.hornetq.jms.client.HornetQTextMessage;
 import org.hornetq.jmstests.HornetQServerTestCase;
 
 /**
@@ -247,13 +247,13 @@ public class MessageHeaderTestBase extends HornetQServerTestCase
    /**
     * Loads the message header fields with significant values.
     */
-   public static void configureMessage(JBossMessage m) throws JMSException
+   public static void configureMessage(HornetQMessage m) throws JMSException
    {
       m.setJMSMessageID("ID:messageID777");
       m.setJMSTimestamp(123456789l);
       m.setJMSCorrelationID("correlationID777");
-      m.setJMSReplyTo(new JBossQueue("ReplyToQueue"));
-      m.setJMSDestination(new JBossQueue("DestinationQueue"));
+      m.setJMSReplyTo(new HornetQQueue("ReplyToQueue"));
+      m.setJMSDestination(new HornetQQueue("DestinationQueue"));
       m.setJMSDeliveryMode(DeliveryMode.PERSISTENT);      
       m.setJMSExpiration(987654321l);
       m.setJMSPriority(9);
@@ -272,7 +272,7 @@ public class MessageHeaderTestBase extends HornetQServerTestCase
     * Makes sure two physically different message are equivalent: they have identical JMS fields and
     * body.
     */
-   public static void ensureEquivalent(Message m1, JBossMessage m2) throws JMSException
+   public static void ensureEquivalent(Message m1, HornetQMessage m2) throws JMSException
    {
       assertTrue(m1 != m2);
       
@@ -503,7 +503,7 @@ public class MessageHeaderTestBase extends HornetQServerTestCase
       }
    }
 
-   public static void ensureEquivalent(BytesMessage m1, JBossBytesMessage m2) throws JMSException
+   public static void ensureEquivalent(BytesMessage m1, HornetQBytesMessage m2) throws JMSException
    {
       ensureEquivalent((Message)m1, m2);
 
@@ -534,7 +534,7 @@ public class MessageHeaderTestBase extends HornetQServerTestCase
       }
    }
 
-   public static void ensureEquivalent(MapMessage m1, JBossMapMessage m2) throws JMSException
+   public static void ensureEquivalent(MapMessage m1, HornetQMapMessage m2) throws JMSException
    {
       ensureEquivalent((Message)m1, m2);
 
@@ -551,13 +551,13 @@ public class MessageHeaderTestBase extends HornetQServerTestCase
       }
    }
 
-   public static void ensureEquivalent(ObjectMessage m1, JBossObjectMessage m2) throws JMSException
+   public static void ensureEquivalent(ObjectMessage m1, HornetQObjectMessage m2) throws JMSException
    {
       ensureEquivalent((Message)m1, m2);
       assertEquals(m1.getObject(), m2.getObject());
    }
 
-   public static void ensureEquivalent(StreamMessage m1, JBossStreamMessage m2) throws JMSException
+   public static void ensureEquivalent(StreamMessage m1, HornetQStreamMessage m2) throws JMSException
    {
       ensureEquivalent((Message)m1, m2);
 
@@ -618,7 +618,7 @@ public class MessageHeaderTestBase extends HornetQServerTestCase
       }
    }
    
-   public static void ensureEquivalent(TextMessage m1, JBossTextMessage m2) throws JMSException
+   public static void ensureEquivalent(TextMessage m1, HornetQTextMessage m2) throws JMSException
    {
       ensureEquivalent((Message)m1, m2);
       assertEquals(m1.getText(), m2.getText());

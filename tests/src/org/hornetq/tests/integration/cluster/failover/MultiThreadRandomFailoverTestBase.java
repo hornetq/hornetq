@@ -224,8 +224,8 @@ import org.hornetq.core.exception.MessagingException;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.remoting.impl.invm.InVMRegistry;
 import org.hornetq.core.server.MessagingServer;
-import org.hornetq.jms.client.JBossBytesMessage;
-import org.hornetq.jms.client.JBossTextMessage;
+import org.hornetq.jms.client.HornetQBytesMessage;
+import org.hornetq.jms.client.HornetQTextMessage;
 import org.hornetq.utils.SimpleString;
 
 /**
@@ -1213,7 +1213,7 @@ public abstract class MultiThreadRandomFailoverTestBase extends MultiThreadFailo
 
       ClientProducer producer = sess.createProducer(ADDRESS);
 
-      ClientMessage message = sess.createClientMessage(JBossTextMessage.TYPE,
+      ClientMessage message = sess.createClientMessage(HornetQTextMessage.TYPE,
                                                        false,
                                                        0,
                                                        System.currentTimeMillis(),
@@ -1247,7 +1247,7 @@ public abstract class MultiThreadRandomFailoverTestBase extends MultiThreadFailo
 
       ClientProducer producer = sess.createProducer(ADDRESS);
 
-      ClientMessage message = sess.createClientMessage(JBossTextMessage.TYPE,
+      ClientMessage message = sess.createClientMessage(HornetQTextMessage.TYPE,
                                                        false,
                                                        0,
                                                        System.currentTimeMillis(),
@@ -1436,7 +1436,7 @@ public abstract class MultiThreadRandomFailoverTestBase extends MultiThreadFailo
 
       ClientProducer producer = sess.createProducer(ADDRESS);
 
-      ClientMessage message = sess.createClientMessage(JBossTextMessage.TYPE,
+      ClientMessage message = sess.createClientMessage(HornetQTextMessage.TYPE,
                                                        false,
                                                        0,
                                                        System.currentTimeMillis(),
@@ -1558,7 +1558,7 @@ public abstract class MultiThreadRandomFailoverTestBase extends MultiThreadFailo
    {
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = sessSend.createClientMessage(JBossBytesMessage.TYPE,
+         ClientMessage message = sessSend.createClientMessage(HornetQBytesMessage.TYPE,
                                                               false,
                                                               0,
                                                               System.currentTimeMillis(),

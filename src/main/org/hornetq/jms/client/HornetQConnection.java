@@ -248,12 +248,12 @@ import org.hornetq.utils.VersionLoader;
  *          <p/>
  *          $Id$
  */
-public class JBossConnection implements Connection, QueueConnection, TopicConnection, XAConnection, XAQueueConnection,
+public class HornetQConnection implements Connection, QueueConnection, TopicConnection, XAConnection, XAQueueConnection,
          XATopicConnection
 {
    // Constants ------------------------------------------------------------------------------------
 
-   private static final Logger log = Logger.getLogger(JBossConnection.class);
+   private static final Logger log = Logger.getLogger(HornetQConnection.class);
 
    public static final int TYPE_GENERIC_CONNECTION = 0;
 
@@ -269,7 +269,7 @@ public class JBossConnection implements Connection, QueueConnection, TopicConnec
 
    private final int connectionType;
 
-   private final Set<JBossSession> sessions = new org.hornetq.utils.ConcurrentHashSet<JBossSession>();
+   private final Set<HornetQSession> sessions = new org.hornetq.utils.ConcurrentHashSet<HornetQSession>();
 
    private final Set<SimpleString> tempQueues = new org.hornetq.utils.ConcurrentHashSet<SimpleString>();
 
@@ -309,7 +309,7 @@ public class JBossConnection implements Connection, QueueConnection, TopicConnec
 
    // Constructors ---------------------------------------------------------------------------------
 
-   public JBossConnection(final String username,
+   public HornetQConnection(final String username,
                           final String password,
                           final int connectionType,
                           final String clientID,
@@ -383,7 +383,7 @@ public class JBossConnection implements Connection, QueueConnection, TopicConnec
 
       if (metaData == null)
       {
-         metaData = new JBossConnectionMetaData(thisVersion);
+         metaData = new HornetQConnectionMetaData(thisVersion);
       }
 
       return metaData;
@@ -410,7 +410,7 @@ public class JBossConnection implements Connection, QueueConnection, TopicConnec
    {
       checkClosed();
 
-      for (JBossSession session : sessions)
+      for (HornetQSession session : sessions)
       {
          session.start();
       }
@@ -423,7 +423,7 @@ public class JBossConnection implements Connection, QueueConnection, TopicConnec
    {
       checkClosed();
 
-      for (JBossSession session : sessions)
+      for (HornetQSession session : sessions)
       {
          session.stop();
       }
@@ -441,7 +441,7 @@ public class JBossConnection implements Connection, QueueConnection, TopicConnec
 
       try
       {
-         for (JBossSession session : new HashSet<JBossSession>(sessions))
+         for (HornetQSession session : new HashSet<HornetQSession>(sessions))
          {
             session.close();
          }
@@ -513,7 +513,7 @@ public class JBossConnection implements Connection, QueueConnection, TopicConnec
    public QueueSession createQueueSession(final boolean transacted, final int acknowledgeMode) throws JMSException
    {
       checkClosed();
-      return createSessionInternal(transacted, acknowledgeMode, false, JBossSession.TYPE_QUEUE_SESSION);
+      return createSessionInternal(transacted, acknowledgeMode, false, HornetQSession.TYPE_QUEUE_SESSION);
    }
 
    public ConnectionConsumer createConnectionConsumer(final Queue queue,
@@ -531,7 +531,7 @@ public class JBossConnection implements Connection, QueueConnection, TopicConnec
    public TopicSession createTopicSession(final boolean transacted, final int acknowledgeMode) throws JMSException
    {
       checkClosed();
-      return createSessionInternal(transacted, acknowledgeMode, false, JBossSession.TYPE_TOPIC_SESSION);
+      return createSessionInternal(transacted, acknowledgeMode, false, HornetQSession.TYPE_TOPIC_SESSION);
    }
 
    public ConnectionConsumer createConnectionConsumer(final Topic topic,
@@ -549,7 +549,7 @@ public class JBossConnection implements Connection, QueueConnection, TopicConnec
    public XASession createXASession() throws JMSException
    {
       checkClosed();
-      return createSessionInternal(true, Session.SESSION_TRANSACTED, true, JBossSession.TYPE_GENERIC_SESSION);
+      return createSessionInternal(true, Session.SESSION_TRANSACTED, true, HornetQSession.TYPE_GENERIC_SESSION);
    }
 
    // XAQueueConnection implementation -------------------------------------------------------------
@@ -557,7 +557,7 @@ public class JBossConnection implements Connection, QueueConnection, TopicConnec
    public XAQueueSession createXAQueueSession() throws JMSException
    {
       checkClosed();
-      return createSessionInternal(true, Session.SESSION_TRANSACTED, true, JBossSession.TYPE_QUEUE_SESSION);
+      return createSessionInternal(true, Session.SESSION_TRANSACTED, true, HornetQSession.TYPE_QUEUE_SESSION);
 
    }
 
@@ -566,7 +566,7 @@ public class JBossConnection implements Connection, QueueConnection, TopicConnec
    public XATopicSession createXATopicSession() throws JMSException
    {
       checkClosed();
-      return createSessionInternal(true, Session.SESSION_TRANSACTED, true, JBossSession.TYPE_TOPIC_SESSION);
+      return createSessionInternal(true, Session.SESSION_TRANSACTED, true, HornetQSession.TYPE_TOPIC_SESSION);
 
    }
 
@@ -602,7 +602,7 @@ public class JBossConnection implements Connection, QueueConnection, TopicConnec
       return uid;
    }
 
-   public void removeSession(final JBossSession session)
+   public void removeSession(final HornetQSession session)
    {
       sessions.remove(session);
    }
@@ -631,7 +631,7 @@ public class JBossConnection implements Connection, QueueConnection, TopicConnec
       }
    }
 
-   protected JBossSession createSessionInternal(final boolean transacted,
+   protected HornetQSession createSessionInternal(final boolean transacted,
                                                 int acknowledgeMode,
                                                 final boolean isXA,
                                                 final int type) throws JMSException
@@ -661,7 +661,7 @@ public class JBossConnection implements Connection, QueueConnection, TopicConnec
          {
             session = sessionFactory.createSession(username, password, isXA, true, false, false, transactionBatchSize);
          }
-         else if (acknowledgeMode == JBossSession.PRE_ACKNOWLEDGE)
+         else if (acknowledgeMode == HornetQSession.PRE_ACKNOWLEDGE)
          {
             session = sessionFactory.createSession(username, password, isXA, true, false, true, transactionBatchSize);
          }
@@ -676,7 +676,7 @@ public class JBossConnection implements Connection, QueueConnection, TopicConnec
          // a set (no duplicates)
          session.addFailureListener(listener);
 
-         JBossSession jbs = new JBossSession(this, transacted, isXA, acknowledgeMode, session, type);
+         HornetQSession jbs = new HornetQSession(this, transacted, isXA, acknowledgeMode, session, type);
 
          sessions.add(jbs);
 
@@ -721,11 +721,11 @@ public class JBossConnection implements Connection, QueueConnection, TopicConnec
 
    private static class JMSFailureListener implements FailureListener
    {
-      private WeakReference<JBossConnection> connectionRef;
+      private WeakReference<HornetQConnection> connectionRef;
       
-      JMSFailureListener(final JBossConnection connection)
+      JMSFailureListener(final HornetQConnection connection)
       {
-         connectionRef = new WeakReference<JBossConnection>(connection);
+         connectionRef = new WeakReference<HornetQConnection>(connection);
       }
       
       public synchronized void connectionFailed(final MessagingException me)
@@ -735,7 +735,7 @@ public class JBossConnection implements Connection, QueueConnection, TopicConnec
             return;
          }
          
-         JBossConnection conn = connectionRef.get();
+         HornetQConnection conn = connectionRef.get();
          
          if (conn != null)
          {

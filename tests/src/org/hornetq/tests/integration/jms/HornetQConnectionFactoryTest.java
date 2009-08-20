@@ -223,22 +223,22 @@ import org.hornetq.core.logging.Logger;
 import org.hornetq.core.remoting.impl.invm.TransportConstants;
 import org.hornetq.core.server.Messaging;
 import org.hornetq.core.server.MessagingServer;
-import org.hornetq.jms.client.JBossConnectionFactory;
+import org.hornetq.jms.client.HornetQConnectionFactory;
 import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.tests.util.UnitTestCase;
 import org.hornetq.utils.Pair;
 
 /**
  * 
- * A JBossConnectionFactoryTest
+ * A HornetQConnectionFactoryTest
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  *
  */
-public class JBossConnectionFactoryTest extends UnitTestCase
+public class HornetQConnectionFactoryTest extends UnitTestCase
 {
-   private static final Logger log = Logger.getLogger(JBossConnectionFactoryTest.class);
+   private static final Logger log = Logger.getLogger(HornetQConnectionFactoryTest.class);
 
    private final String groupAddress = "230.1.2.3";
 
@@ -254,7 +254,7 @@ public class JBossConnectionFactoryTest extends UnitTestCase
 
    public void testDefaultConstructor() throws Exception
    {
-      JBossConnectionFactory cf = new JBossConnectionFactory();
+      HornetQConnectionFactory cf = new HornetQConnectionFactory();
       assertFactoryParams(cf,
                           null,
                           null,
@@ -325,7 +325,7 @@ public class JBossConnectionFactoryTest extends UnitTestCase
 
    public void testDiscoveryConstructor() throws Exception
    {
-      JBossConnectionFactory cf = new JBossConnectionFactory(groupAddress, groupPort);
+      HornetQConnectionFactory cf = new HornetQConnectionFactory(groupAddress, groupPort);
       assertFactoryParams(cf,
                           null,
                           groupAddress,
@@ -373,7 +373,7 @@ public class JBossConnectionFactoryTest extends UnitTestCase
                                                                                                                             this.backupTC);
       staticConnectors.add(pair0);
 
-      JBossConnectionFactory cf = new JBossConnectionFactory(staticConnectors);
+      HornetQConnectionFactory cf = new HornetQConnectionFactory(staticConnectors);
       assertFactoryParams(cf,
                           staticConnectors,
                           null,
@@ -422,7 +422,7 @@ public class JBossConnectionFactoryTest extends UnitTestCase
                                                                                                                             this.backupTC);
       staticConnectors.add(pair0);
 
-      JBossConnectionFactory cf = new JBossConnectionFactory(this.liveTC, this.backupTC);
+      HornetQConnectionFactory cf = new HornetQConnectionFactory(this.liveTC, this.backupTC);
       assertFactoryParams(cf,
                           staticConnectors,
                           null,
@@ -471,7 +471,7 @@ public class JBossConnectionFactoryTest extends UnitTestCase
                                                                                                                             null);
       staticConnectors.add(pair0);
 
-      JBossConnectionFactory cf = new JBossConnectionFactory(this.liveTC);
+      HornetQConnectionFactory cf = new HornetQConnectionFactory(this.liveTC);
       assertFactoryParams(cf,
                           staticConnectors,
                           null,
@@ -609,7 +609,7 @@ public class JBossConnectionFactoryTest extends UnitTestCase
 
    }
 
-   private void testSettersThrowException(JBossConnectionFactory cf)
+   private void testSettersThrowException(HornetQConnectionFactory cf)
    {
       List<Pair<TransportConfiguration, TransportConfiguration>> staticConnectors = new ArrayList<Pair<TransportConfiguration, TransportConfiguration>>();
       Pair<TransportConfiguration, TransportConfiguration> pair0 = new Pair<TransportConfiguration, TransportConfiguration>(this.liveTC,
@@ -950,7 +950,7 @@ public class JBossConnectionFactoryTest extends UnitTestCase
 
    }
 
-   private void assertFactoryParams(JBossConnectionFactory cf,
+   private void assertFactoryParams(HornetQConnectionFactory cf,
                                     List<Pair<TransportConfiguration, TransportConfiguration>> staticConnectors,
                                     String discoveryAddress,
                                     int discoveryPort,

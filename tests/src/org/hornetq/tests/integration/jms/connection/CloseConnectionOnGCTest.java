@@ -212,7 +212,7 @@ import org.hornetq.core.config.TransportConfiguration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.server.Messaging;
 import org.hornetq.core.server.MessagingServer;
-import org.hornetq.jms.client.JBossConnectionFactory;
+import org.hornetq.jms.client.HornetQConnectionFactory;
 import org.hornetq.jms.server.impl.JMSServerManagerImpl;
 import org.hornetq.tests.integration.jms.server.management.NullInitialContext;
 import org.hornetq.tests.util.UnitTestCase;
@@ -231,7 +231,7 @@ public class CloseConnectionOnGCTest extends UnitTestCase
 
    private JMSServerManagerImpl jmsServer;
 
-   private JBossConnectionFactory cf;
+   private HornetQConnectionFactory cf;
 
    private static final String Q_NAME = "ConnectionTestQueue";
 
@@ -250,7 +250,7 @@ public class CloseConnectionOnGCTest extends UnitTestCase
       jmsServer.setContext(new NullInitialContext());
       jmsServer.start();     
       jmsServer.createQueue(Q_NAME, Q_NAME, null, true);
-      cf = new JBossConnectionFactory(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory"));      
+      cf = new HornetQConnectionFactory(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory"));      
       cf.setBlockOnPersistentSend(true);
       cf.setPreAcknowledge(true);
    }

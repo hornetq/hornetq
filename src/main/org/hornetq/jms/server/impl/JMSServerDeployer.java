@@ -304,7 +304,7 @@ public class JMSServerDeployer extends XmlDeployer
    }
 
    /**
-    * creates the object to bind, this will either be a JBossConnectionFActory, JBossQueue or JBossTopic
+    * creates the object to bind, this will either be a JBossConnectionFActory, HornetQQueue or HornetQTopic
     * 
     * @param node the config
     * @throws Exception .

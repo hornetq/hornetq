@@ -225,7 +225,7 @@ import org.hornetq.core.remoting.impl.invm.InVMRegistry;
 import org.hornetq.core.remoting.impl.invm.TransportConstants;
 import org.hornetq.core.server.Messaging;
 import org.hornetq.core.server.MessagingServer;
-import org.hornetq.jms.client.JBossTextMessage;
+import org.hornetq.jms.client.HornetQTextMessage;
 import org.hornetq.tests.util.UnitTestCase;
 import org.hornetq.utils.SimpleString;
 
@@ -296,7 +296,7 @@ public class ReconnectWithBackupTest extends UnitTestCase
 
          for (int i = 0; i < numMessages; i++)
          {
-            ClientMessage message = session.createClientMessage(JBossTextMessage.TYPE,
+            ClientMessage message = session.createClientMessage(HornetQTextMessage.TYPE,
                                                                 false,
                                                                 0,
                                                                 System.currentTimeMillis(),
@@ -367,7 +367,7 @@ public class ReconnectWithBackupTest extends UnitTestCase
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = session.createClientMessage(JBossTextMessage.TYPE,
+         ClientMessage message = session.createClientMessage(HornetQTextMessage.TYPE,
                                                              false,
                                                              0,
                                                              System.currentTimeMillis(),
@@ -411,7 +411,7 @@ public class ReconnectWithBackupTest extends UnitTestCase
 
          for (int i = numMessages; i < numMessages * 2; i++)
          {
-            message = session.createClientMessage(JBossTextMessage.TYPE, false, 0, System.currentTimeMillis(), (byte)1);
+            message = session.createClientMessage(HornetQTextMessage.TYPE, false, 0, System.currentTimeMillis(), (byte)1);
             message.putIntProperty(new SimpleString("count"), i);
             message.getBody().writeString("aardvarks");
             producer.send(message);

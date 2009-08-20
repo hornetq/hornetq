@@ -215,9 +215,9 @@ import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.exception.MessagingException;
 import org.hornetq.core.server.Messaging;
 import org.hornetq.core.server.MessagingServer;
-import org.hornetq.jms.client.JBossConnection;
-import org.hornetq.jms.client.JBossConnectionFactory;
-import org.hornetq.jms.client.JBossSession;
+import org.hornetq.jms.client.HornetQConnection;
+import org.hornetq.jms.client.HornetQConnectionFactory;
+import org.hornetq.jms.client.HornetQSession;
 import org.hornetq.jms.server.impl.JMSServerManagerImpl;
 import org.hornetq.tests.integration.jms.server.management.NullInitialContext;
 import org.hornetq.tests.util.UnitTestCase;
@@ -236,7 +236,7 @@ public class ExceptionListenerTest extends UnitTestCase
 
    private JMSServerManagerImpl jmsServer;
 
-   private JBossConnectionFactory cf;
+   private HornetQConnectionFactory cf;
 
    private static final String Q_NAME = "ConnectionTestQueue";
 
@@ -255,7 +255,7 @@ public class ExceptionListenerTest extends UnitTestCase
       jmsServer.setContext(new NullInitialContext());
       jmsServer.start();     
       jmsServer.createQueue(Q_NAME, Q_NAME, null, true);
-      cf = new JBossConnectionFactory(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory"));      
+      cf = new HornetQConnectionFactory(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory"));      
       cf.setBlockOnPersistentSend(true);
       cf.setPreAcknowledge(true);
    }
@@ -304,7 +304,7 @@ public class ExceptionListenerTest extends UnitTestCase
       
       conn.setExceptionListener(listener);
       
-      ClientSessionInternal coreSession = (ClientSessionInternal)((JBossConnection)conn).getInitialSession();
+      ClientSessionInternal coreSession = (ClientSessionInternal)((HornetQConnection)conn).getInitialSession();
       
       coreSession.getConnection().fail(new MessagingException(MessagingException.INTERNAL_ERROR, "blah"));
       
@@ -327,13 +327,13 @@ public class ExceptionListenerTest extends UnitTestCase
       
       Session sess3 = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
       
-      ClientSessionInternal coreSession0 = (ClientSessionInternal)((JBossConnection)conn).getInitialSession();
+      ClientSessionInternal coreSession0 = (ClientSessionInternal)((HornetQConnection)conn).getInitialSession();
       
-      ClientSessionInternal coreSession1 = (ClientSessionInternal)((JBossSession)sess1).getCoreSession();
+      ClientSessionInternal coreSession1 = (ClientSessionInternal)((HornetQSession)sess1).getCoreSession();
       
-      ClientSessionInternal coreSession2 = (ClientSessionInternal)((JBossSession)sess2).getCoreSession();
+      ClientSessionInternal coreSession2 = (ClientSessionInternal)((HornetQSession)sess2).getCoreSession();
       
-      ClientSessionInternal coreSession3 = (ClientSessionInternal)((JBossSession)sess3).getCoreSession();
+      ClientSessionInternal coreSession3 = (ClientSessionInternal)((HornetQSession)sess3).getCoreSession();
       
       coreSession0.getConnection().fail(new MessagingException(MessagingException.INTERNAL_ERROR, "blah"));
       

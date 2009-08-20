@@ -844,7 +844,7 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
       mapIterator = null;
       checkCloseConnections();
 
-      // TODO (after beta5) should really execute on different thread then remove the async in JBossConnection
+      // TODO (after beta5) should really execute on different thread then remove the async in HornetQConnection
 
       // threadPool.execute(new Runnable()
       // {

@@ -234,12 +234,12 @@ import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
 import org.hornetq.core.server.Messaging;
-import org.hornetq.jms.JBossQueue;
+import org.hornetq.jms.HornetQQueue;
 import org.hornetq.jms.bridge.ConnectionFactoryFactory;
 import org.hornetq.jms.bridge.DestinationFactory;
 import org.hornetq.jms.bridge.QualityOfServiceMode;
 import org.hornetq.jms.bridge.impl.JMSBridgeImpl;
-import org.hornetq.jms.client.JBossConnectionFactory;
+import org.hornetq.jms.client.HornetQConnectionFactory;
 import org.hornetq.jms.server.JMSServerManager;
 import org.hornetq.jms.server.impl.JMSServerManagerImpl;
 import org.hornetq.tests.unit.util.InVMContext;
@@ -341,7 +341,7 @@ public class JMSBridgeImplTest extends UnitTestCase
 
    private static ConnectionFactory createConnectionFactory()
    {
-      JBossConnectionFactory cf = new JBossConnectionFactory(new TransportConfiguration(InVMConnectorFactory.class.getName()));
+      HornetQConnectionFactory cf = new HornetQConnectionFactory(new TransportConfiguration(InVMConnectorFactory.class.getName()));
       // Note! We disable automatic reconnection on the session factory. The bridge needs to do the reconnection
       cf.setReconnectAttempts(0);
       cf.setBlockOnNonPersistentSend(true);
@@ -355,7 +355,7 @@ public class JMSBridgeImplTest extends UnitTestCase
 
    public void testStartWithRepeatedFailure() throws Exception
    {
-      JBossConnectionFactory failingSourceCF = new JBossConnectionFactory(new TransportConfiguration(InVMConnectorFactory.class.getName()))
+      HornetQConnectionFactory failingSourceCF = new HornetQConnectionFactory(new TransportConfiguration(InVMConnectorFactory.class.getName()))
       {
          @Override
          public Connection createConnection() throws JMSException
@@ -366,8 +366,8 @@ public class JMSBridgeImplTest extends UnitTestCase
 
       ConnectionFactoryFactory sourceCFF = newConnectionFactoryFactory(failingSourceCF);
       ConnectionFactoryFactory targetCFF = newConnectionFactoryFactory(createConnectionFactory());
-      DestinationFactory sourceDF = newDestinationFactory(new JBossQueue(SOURCE));
-      DestinationFactory targetDF = newDestinationFactory(new JBossQueue(TARGET));
+      DestinationFactory sourceDF = newDestinationFactory(new HornetQQueue(SOURCE));
+      DestinationFactory targetDF = newDestinationFactory(new HornetQQueue(TARGET));
       TransactionManager tm = newTransactionManager();
 
       JMSBridgeImpl bridge = new JMSBridgeImpl();
@@ -396,7 +396,7 @@ public class JMSBridgeImplTest extends UnitTestCase
 
    public void testStartWithFailureThenSuccess() throws Exception
    {
-      JBossConnectionFactory failingSourceCF = new JBossConnectionFactory(new TransportConfiguration(InVMConnectorFactory.class.getName()))
+      HornetQConnectionFactory failingSourceCF = new HornetQConnectionFactory(new TransportConfiguration(InVMConnectorFactory.class.getName()))
       {
          boolean firstTime = true;
 
@@ -421,8 +421,8 @@ public class JMSBridgeImplTest extends UnitTestCase
 
       ConnectionFactoryFactory sourceCFF = newConnectionFactoryFactory(failingSourceCF);
       ConnectionFactoryFactory targetCFF = newConnectionFactoryFactory(createConnectionFactory());
-      DestinationFactory sourceDF = newDestinationFactory(new JBossQueue(SOURCE));
-      DestinationFactory targetDF = newDestinationFactory(new JBossQueue(TARGET));
+      DestinationFactory sourceDF = newDestinationFactory(new HornetQQueue(SOURCE));
+      DestinationFactory targetDF = newDestinationFactory(new HornetQQueue(TARGET));
       TransactionManager tm = newTransactionManager();
 
       JMSBridgeImpl bridge = new JMSBridgeImpl();
@@ -461,8 +461,8 @@ public class JMSBridgeImplTest extends UnitTestCase
 
       ConnectionFactoryFactory sourceCFF = newConnectionFactoryFactory(createConnectionFactory());
       ConnectionFactoryFactory targetCFF = newConnectionFactoryFactory(createConnectionFactory());
-      DestinationFactory sourceDF = newDestinationFactory(new JBossQueue(SOURCE));
-      DestinationFactory targetDF = newDestinationFactory(new JBossQueue(TARGET));
+      DestinationFactory sourceDF = newDestinationFactory(new HornetQQueue(SOURCE));
+      DestinationFactory targetDF = newDestinationFactory(new HornetQQueue(TARGET));
       TransactionManager tm = newTransactionManager();
 
       JMSBridgeImpl bridge = new JMSBridgeImpl();
@@ -518,7 +518,7 @@ public class JMSBridgeImplTest extends UnitTestCase
    public void testExceptionOnSourceAndRetrySucceeds() throws Exception
    {
       final AtomicReference<Connection> sourceConn = new AtomicReference<Connection>();
-      JBossConnectionFactory failingSourceCF = new JBossConnectionFactory(new TransportConfiguration(InVMConnectorFactory.class.getName()))
+      HornetQConnectionFactory failingSourceCF = new HornetQConnectionFactory(new TransportConfiguration(InVMConnectorFactory.class.getName()))
       {
          @Override
          public Connection createConnection() throws JMSException
@@ -534,8 +534,8 @@ public class JMSBridgeImplTest extends UnitTestCase
 
       ConnectionFactoryFactory sourceCFF = newConnectionFactoryFactory(failingSourceCF);
       ConnectionFactoryFactory targetCFF = newConnectionFactoryFactory(createConnectionFactory());
-      DestinationFactory sourceDF = newDestinationFactory(new JBossQueue(SOURCE));
-      DestinationFactory targetDF = newDestinationFactory(new JBossQueue(TARGET));
+      DestinationFactory sourceDF = newDestinationFactory(new HornetQQueue(SOURCE));
+      DestinationFactory targetDF = newDestinationFactory(new HornetQQueue(TARGET));
       TransactionManager tm = newTransactionManager();
 
       JMSBridgeImpl bridge = new JMSBridgeImpl();
@@ -568,7 +568,7 @@ public class JMSBridgeImplTest extends UnitTestCase
    public void testExceptionOnSourceAndRetryFails() throws Exception
    {
       final AtomicReference<Connection> sourceConn = new AtomicReference<Connection>();
-      JBossConnectionFactory failingSourceCF = new JBossConnectionFactory(new TransportConfiguration(InVMConnectorFactory.class.getName()))
+      HornetQConnectionFactory failingSourceCF = new HornetQConnectionFactory(new TransportConfiguration(InVMConnectorFactory.class.getName()))
       {
          boolean firstTime = true;
 
@@ -594,8 +594,8 @@ public class JMSBridgeImplTest extends UnitTestCase
 
       ConnectionFactoryFactory sourceCFF = newConnectionFactoryFactory(failingSourceCF);
       ConnectionFactoryFactory targetCFF = newConnectionFactoryFactory(createConnectionFactory());
-      DestinationFactory sourceDF = newDestinationFactory(new JBossQueue(SOURCE));
-      DestinationFactory targetDF = newDestinationFactory(new JBossQueue(TARGET));
+      DestinationFactory sourceDF = newDestinationFactory(new HornetQQueue(SOURCE));
+      DestinationFactory targetDF = newDestinationFactory(new HornetQQueue(TARGET));
       TransactionManager tm = newTransactionManager();
 
       JMSBridgeImpl bridge = new JMSBridgeImpl();

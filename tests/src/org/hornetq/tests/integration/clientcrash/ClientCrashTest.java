@@ -213,7 +213,7 @@ import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
 import org.hornetq.core.config.TransportConfiguration;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.message.Message;
-import org.hornetq.jms.client.JBossTextMessage;
+import org.hornetq.jms.client.HornetQTextMessage;
 import org.hornetq.tests.util.SpawnedVMSupport;
 import org.hornetq.utils.SimpleString;
 
@@ -274,7 +274,7 @@ public class ClientCrashTest extends ClientTestBase
       assertActiveConnections(1 + 1); // One local and one from the other vm
       assertActiveSession(1 + 1);
 
-      ClientMessage message = session.createClientMessage(JBossTextMessage.TYPE,
+      ClientMessage message = session.createClientMessage(HornetQTextMessage.TYPE,
                                                           false,
                                                           0,
                                                           System.currentTimeMillis(),

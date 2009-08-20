@@ -218,7 +218,7 @@ import static org.hornetq.tests.util.UnitTestCase.assertEqualsByteArrays;
 
 import javax.jms.MessageFormatException;
 
-import org.hornetq.jms.client.JBossMapMessage;
+import org.hornetq.jms.client.HornetQMapMessage;
 import org.hornetq.tests.util.UnitTestCase;
 
 /**
@@ -227,7 +227,7 @@ import org.hornetq.tests.util.UnitTestCase;
  * @version <tt>$Revision$</tt>
  * 
  */
-public class JBossMapMessageTest extends UnitTestCase
+public class HornetQMapMessageTest extends UnitTestCase
 {
    // Constants -----------------------------------------------------
 
@@ -251,7 +251,7 @@ public class JBossMapMessageTest extends UnitTestCase
 
    public void testClearBody() throws Exception
    {
-      JBossMapMessage message = new JBossMapMessage();
+      HornetQMapMessage message = new HornetQMapMessage();
       message.setBoolean(itemName, true);
 
       assertTrue(message.itemExists(itemName));
@@ -263,13 +263,13 @@ public class JBossMapMessageTest extends UnitTestCase
 
    public void testGetType() throws Exception
    {
-      JBossMapMessage message = new JBossMapMessage();
-      assertEquals(JBossMapMessage.TYPE, message.getType());
+      HornetQMapMessage message = new HornetQMapMessage();
+      assertEquals(HornetQMapMessage.TYPE, message.getType());
    }
    
    public void testCheckItemNameIsNull() throws Exception
    {
-      JBossMapMessage message = new JBossMapMessage();
+      HornetQMapMessage message = new HornetQMapMessage();
       try
       {
          message.setBoolean(null, true);
@@ -282,7 +282,7 @@ public class JBossMapMessageTest extends UnitTestCase
 
    public void testCheckItemNameIsEmpty() throws Exception
    {
-      JBossMapMessage message = new JBossMapMessage();
+      HornetQMapMessage message = new HornetQMapMessage();
       try
       {
          message.setBoolean("", true);
@@ -297,7 +297,7 @@ public class JBossMapMessageTest extends UnitTestCase
    {
       boolean value = true;
 
-      JBossMapMessage message = new JBossMapMessage();
+      HornetQMapMessage message = new HornetQMapMessage();
       message.setBoolean(itemName, value);
 
       assertEquals(value, message.getBoolean(itemName));
@@ -305,7 +305,7 @@ public class JBossMapMessageTest extends UnitTestCase
 
    public void testGetBooleanFromNull() throws Exception
    {
-      JBossMapMessage message = new JBossMapMessage();
+      HornetQMapMessage message = new HornetQMapMessage();
       assertEquals(false, message.getBoolean(itemName));
    }
 
@@ -313,7 +313,7 @@ public class JBossMapMessageTest extends UnitTestCase
    {
       boolean value = true;
 
-      JBossMapMessage message = new JBossMapMessage();
+      HornetQMapMessage message = new HornetQMapMessage();
       message.setString(itemName, Boolean.toString(value));
 
       assertEquals(value, message.getBoolean(itemName));
@@ -321,7 +321,7 @@ public class JBossMapMessageTest extends UnitTestCase
 
    public void testGetBooleanFromInvalidType() throws Exception
    {
-      JBossMapMessage message = new JBossMapMessage();
+      HornetQMapMessage message = new HornetQMapMessage();
       message.setFloat(itemName, randomFloat());
 
       try
@@ -337,7 +337,7 @@ public class JBossMapMessageTest extends UnitTestCase
    {
       byte value = randomByte();
 
-      JBossMapMessage message = new JBossMapMessage();
+      HornetQMapMessage message = new HornetQMapMessage();
       message.setByte(itemName, value);
 
       assertEquals(value, message.getByte(itemName));
@@ -345,7 +345,7 @@ public class JBossMapMessageTest extends UnitTestCase
 
    public void testGetByteFromNull() throws Exception
    {
-      JBossMapMessage message = new JBossMapMessage();
+      HornetQMapMessage message = new HornetQMapMessage();
 
       try
       {
@@ -360,7 +360,7 @@ public class JBossMapMessageTest extends UnitTestCase
    {
       byte value = randomByte();
 
-      JBossMapMessage message = new JBossMapMessage();
+      HornetQMapMessage message = new HornetQMapMessage();
       message.setString(itemName, Byte.toString(value));
 
       assertEquals(value, message.getByte(itemName));
@@ -368,7 +368,7 @@ public class JBossMapMessageTest extends UnitTestCase
 
    public void testGetByteFromInvalidType() throws Exception
    {
-      JBossMapMessage message = new JBossMapMessage();
+      HornetQMapMessage message = new HornetQMapMessage();
       message.setFloat(itemName, randomFloat());
 
       try
@@ -384,7 +384,7 @@ public class JBossMapMessageTest extends UnitTestCase
    {
       byte value = randomByte();
 
-      JBossMapMessage message = new JBossMapMessage();
+      HornetQMapMessage message = new HornetQMapMessage();
       message.setByte(itemName, value);
 
       assertEquals(value, message.getShort(itemName));
@@ -394,7 +394,7 @@ public class JBossMapMessageTest extends UnitTestCase
    {
       short value = randomShort();
 
-      JBossMapMessage message = new JBossMapMessage();
+      HornetQMapMessage message = new HornetQMapMessage();
       message.setShort(itemName, value);
 
       assertEquals(value, message.getShort(itemName));
@@ -402,7 +402,7 @@ public class JBossMapMessageTest extends UnitTestCase
 
    public void testGetShortFromNull() throws Exception
    {
-      JBossMapMessage message = new JBossMapMessage();
+      HornetQMapMessage message = new HornetQMapMessage();
 
       try
       {
@@ -417,7 +417,7 @@ public class JBossMapMessageTest extends UnitTestCase
    {
       short value = randomShort();
 
-      JBossMapMessage message = new JBossMapMessage();
+      HornetQMapMessage message = new HornetQMapMessage();
       message.setString(itemName, Short.toString(value));
 
       assertEquals(value, message.getShort(itemName));
@@ -425,7 +425,7 @@ public class JBossMapMessageTest extends UnitTestCase
 
    public void testGetShortFromInvalidType() throws Exception
    {
-      JBossMapMessage message = new JBossMapMessage();
+      HornetQMapMessage message = new HornetQMapMessage();
       message.setFloat(itemName, randomFloat());
 
       try
@@ -441,7 +441,7 @@ public class JBossMapMessageTest extends UnitTestCase
    {
       byte value = randomByte();
 
-      JBossMapMessage message = new JBossMapMessage();
+      HornetQMapMessage message = new HornetQMapMessage();
       message.setByte(itemName, value);
 
       assertEquals(value, message.getInt(itemName));
@@ -451,7 +451,7 @@ public class JBossMapMessageTest extends UnitTestCase
    {
       short value = randomShort();
 
-      JBossMapMessage message = new JBossMapMessage();
+      HornetQMapMessage message = new HornetQMapMessage();
       message.setShort(itemName, value);
 
       assertEquals(value, message.getInt(itemName));
@@ -461,7 +461,7 @@ public class JBossMapMessageTest extends UnitTestCase
    {
       int value = randomInt();
 
-      JBossMapMessage message = new JBossMapMessage();
+      HornetQMapMessage message = new HornetQMapMessage();
       message.setInt(itemName, value);
 
       assertEquals(value, message.getInt(itemName));
@@ -469,7 +469,7 @@ public class JBossMapMessageTest extends UnitTestCase
 
    public void testGetIntFromNull() throws Exception
    {
-      JBossMapMessage message = new JBossMapMessage();
+      HornetQMapMessage message = new HornetQMapMessage();
 
       try
       {
@@ -484,7 +484,7 @@ public class JBossMapMessageTest extends UnitTestCase
    {
       int value = randomInt();
 
-      JBossMapMessage message = new JBossMapMessage();
+      HornetQMapMessage message = new HornetQMapMessage();
       message.setString(itemName, Integer.toString(value));
 
       assertEquals(value, message.getInt(itemName));
@@ -492,7 +492,7 @@ public class JBossMapMessageTest extends UnitTestCase
 
    public void testGetIntFromInvalidType() throws Exception
    {
-      JBossMapMessage message = new JBossMapMessage();
+      HornetQMapMessage message = new HornetQMapMessage();
       message.setFloat(itemName, randomFloat());
 
       try
@@ -508,7 +508,7 @@ public class JBossMapMessageTest extends UnitTestCase
    {
       char value = randomChar();
 
-      JBossMapMessage message = new JBossMapMessage();
+      HornetQMapMessage message = new HornetQMapMessage();
       message.setChar(itemName, value);
 
       assertEquals(value, message.getChar(itemName));
@@ -516,7 +516,7 @@ public class JBossMapMessageTest extends UnitTestCase
 
    public void testGetCharFromNull() throws Exception
    {
-      JBossMapMessage message = new JBossMapMessage();
+      HornetQMapMessage message = new HornetQMapMessage();
 
       try
       {
@@ -529,7 +529,7 @@ public class JBossMapMessageTest extends UnitTestCase
 
    public void testGetCharFromInvalidType() throws Exception
    {
-      JBossMapMessage message = new JBossMapMessage();
+      HornetQMapMessage message = new HornetQMapMessage();
       message.setFloat(itemName, randomFloat());
 
       try
@@ -545,7 +545,7 @@ public class JBossMapMessageTest extends UnitTestCase
    {
       byte value = randomByte();
 
-      JBossMapMessage message = new JBossMapMessage();
+      HornetQMapMessage message = new HornetQMapMessage();
       message.setByte(itemName, value);
 
       assertEquals(value, message.getLong(itemName));
@@ -555,7 +555,7 @@ public class JBossMapMessageTest extends UnitTestCase
    {
       short value = randomShort();
 
-      JBossMapMessage message = new JBossMapMessage();
+      HornetQMapMessage message = new HornetQMapMessage();
       message.setShort(itemName, value);
 
       assertEquals(value, message.getLong(itemName));
@@ -565,7 +565,7 @@ public class JBossMapMessageTest extends UnitTestCase
    {
       int value = randomInt();
 
-      JBossMapMessage message = new JBossMapMessage();
+      HornetQMapMessage message = new HornetQMapMessage();
       message.setInt(itemName, value);
 
       assertEquals(value, message.getLong(itemName));
@@ -575,7 +575,7 @@ public class JBossMapMessageTest extends UnitTestCase
    {
       long value = randomLong();
 
-      JBossMapMessage message = new JBossMapMessage();
+      HornetQMapMessage message = new HornetQMapMessage();
       message.setLong(itemName, value);
 
       assertEquals(value, message.getLong(itemName));
@@ -583,7 +583,7 @@ public class JBossMapMessageTest extends UnitTestCase
 
    public void testGetLongFromNull() throws Exception
    {
-      JBossMapMessage message = new JBossMapMessage();
+      HornetQMapMessage message = new HornetQMapMessage();
 
       try
       {
@@ -598,7 +598,7 @@ public class JBossMapMessageTest extends UnitTestCase
    {
       long value = randomLong();
 
-      JBossMapMessage message = new JBossMapMessage();
+      HornetQMapMessage message = new HornetQMapMessage();
       message.setString(itemName, Long.toString(value));
 
       assertEquals(value, message.getLong(itemName));
@@ -606,7 +606,7 @@ public class JBossMapMessageTest extends UnitTestCase
 
    public void testGetLongFromInvalidType() throws Exception
    {
-      JBossMapMessage message = new JBossMapMessage();
+      HornetQMapMessage message = new HornetQMapMessage();
       message.setFloat(itemName, randomFloat());
 
       try
@@ -622,7 +622,7 @@ public class JBossMapMessageTest extends UnitTestCase
    {
       float value = randomFloat();
 
-      JBossMapMessage message = new JBossMapMessage();
+      HornetQMapMessage message = new HornetQMapMessage();
       message.setFloat(itemName, value);
 
       assertEquals(value, message.getFloat(itemName));
@@ -630,7 +630,7 @@ public class JBossMapMessageTest extends UnitTestCase
 
    public void testGetFloatFromNull() throws Exception
    {
-      JBossMapMessage message = new JBossMapMessage();
+      HornetQMapMessage message = new HornetQMapMessage();
 
       try
       {
@@ -645,7 +645,7 @@ public class JBossMapMessageTest extends UnitTestCase
    {
       float value = randomFloat();
 
-      JBossMapMessage message = new JBossMapMessage();
+      HornetQMapMessage message = new HornetQMapMessage();
       message.setString(itemName, Float.toString(value));
 
       assertEquals(value, message.getFloat(itemName));
@@ -653,7 +653,7 @@ public class JBossMapMessageTest extends UnitTestCase
 
    public void testGetFloatFromInvalidType() throws Exception
    {
-      JBossMapMessage message = new JBossMapMessage();
+      HornetQMapMessage message = new HornetQMapMessage();
       message.setChar(itemName, randomChar());
 
       try
@@ -669,7 +669,7 @@ public class JBossMapMessageTest extends UnitTestCase
    {
       float value = randomFloat();
 
-      JBossMapMessage message = new JBossMapMessage();
+      HornetQMapMessage message = new HornetQMapMessage();
       message.setFloat(itemName, value);
 
       assertEquals(Float.valueOf(value).doubleValue(), message.getDouble(itemName));
@@ -679,7 +679,7 @@ public class JBossMapMessageTest extends UnitTestCase
    {
       double value = randomDouble();
 
-      JBossMapMessage message = new JBossMapMessage();
+      HornetQMapMessage message = new HornetQMapMessage();
       message.setDouble(itemName, value);
 
       assertEquals(value, message.getDouble(itemName));
@@ -687,7 +687,7 @@ public class JBossMapMessageTest extends UnitTestCase
 
    public void testGetDoubleFromNull() throws Exception
    {
-      JBossMapMessage message = new JBossMapMessage();
+      HornetQMapMessage message = new HornetQMapMessage();
 
       try
       {
@@ -702,7 +702,7 @@ public class JBossMapMessageTest extends UnitTestCase
    {
       double value = randomDouble();
 
-      JBossMapMessage message = new JBossMapMessage();
+      HornetQMapMessage message = new HornetQMapMessage();
       message.setString(itemName, Double.toString(value));
 
       assertEquals(value, message.getDouble(itemName));
@@ -710,7 +710,7 @@ public class JBossMapMessageTest extends UnitTestCase
 
    public void testGetDoubleFromInvalidType() throws Exception
    {
-      JBossMapMessage message = new JBossMapMessage();
+      HornetQMapMessage message = new HornetQMapMessage();
       message.setChar(itemName, randomChar());
 
       try
@@ -726,7 +726,7 @@ public class JBossMapMessageTest extends UnitTestCase
    {
       boolean value = randomBoolean();
 
-      JBossMapMessage message = new JBossMapMessage();
+      HornetQMapMessage message = new HornetQMapMessage();
       message.setBoolean(itemName, value);
 
       assertEquals(Boolean.toString(value), message.getString(itemName));
@@ -736,7 +736,7 @@ public class JBossMapMessageTest extends UnitTestCase
    {
       byte value = randomByte();
 
-      JBossMapMessage message = new JBossMapMessage();
+      HornetQMapMessage message = new HornetQMapMessage();
       message.setByte(itemName, value);
 
       assertEquals(Byte.toString(value), message.getString(itemName));
@@ -746,7 +746,7 @@ public class JBossMapMessageTest extends UnitTestCase
    {
       char value = randomChar();
 
-      JBossMapMessage message = new JBossMapMessage();
+      HornetQMapMessage message = new HornetQMapMessage();
       message.setChar(itemName, value);
 
       assertEquals(Character.toString(value), message.getString(itemName));
@@ -756,7 +756,7 @@ public class JBossMapMessageTest extends UnitTestCase
    {
       short value = randomShort();
 
-      JBossMapMessage message = new JBossMapMessage();
+      HornetQMapMessage message = new HornetQMapMessage();
       message.setShort(itemName, value);
 
       assertEquals(Short.toString(value), message.getString(itemName));
@@ -766,7 +766,7 @@ public class JBossMapMessageTest extends UnitTestCase
    {
       int value = randomInt();
 
-      JBossMapMessage message = new JBossMapMessage();
+      HornetQMapMessage message = new HornetQMapMessage();
       message.setInt(itemName, value);
 
       assertEquals(Integer.toString(value), message.getString(itemName));
@@ -776,7 +776,7 @@ public class JBossMapMessageTest extends UnitTestCase
    {
       long value = randomLong();
 
-      JBossMapMessage message = new JBossMapMessage();
+      HornetQMapMessage message = new HornetQMapMessage();
       message.setLong(itemName, value);
 
       assertEquals(Long.toString(value), message.getString(itemName));
@@ -786,7 +786,7 @@ public class JBossMapMessageTest extends UnitTestCase
    {
       float value = randomFloat();
 
-      JBossMapMessage message = new JBossMapMessage();
+      HornetQMapMessage message = new HornetQMapMessage();
       message.setFloat(itemName, value);
 
       assertEquals(Float.toString(value), message.getString(itemName));
@@ -796,7 +796,7 @@ public class JBossMapMessageTest extends UnitTestCase
    {
       double value = randomByte();
 
-      JBossMapMessage message = new JBossMapMessage();
+      HornetQMapMessage message = new HornetQMapMessage();
       message.setDouble(itemName, value);
 
       assertEquals(Double.toString(value), message.getString(itemName));
@@ -804,7 +804,7 @@ public class JBossMapMessageTest extends UnitTestCase
    
    public void testGetStringFromNull() throws Exception
    {
-      JBossMapMessage message = new JBossMapMessage();
+      HornetQMapMessage message = new HornetQMapMessage();
 
       assertNull(message.getString(itemName));
    }
@@ -813,7 +813,7 @@ public class JBossMapMessageTest extends UnitTestCase
    {
       String value = randomString();
 
-      JBossMapMessage message = new JBossMapMessage();
+      HornetQMapMessage message = new HornetQMapMessage();
       message.setString(itemName, value);
 
       assertEquals(value, message.getString(itemName));
@@ -822,7 +822,7 @@ public class JBossMapMessageTest extends UnitTestCase
    public void testGetBytesFromBytes() throws Exception
    {
       byte[] value = randomBytes();
-      JBossMapMessage message = new JBossMapMessage();
+      HornetQMapMessage message = new HornetQMapMessage();
       message.setBytes(itemName, value);
 
       assertEqualsByteArrays(value, message.getBytes(itemName));
@@ -830,14 +830,14 @@ public class JBossMapMessageTest extends UnitTestCase
 
    public void testGetBytesFromNull() throws Exception
    {
-      JBossMapMessage message = new JBossMapMessage();
+      HornetQMapMessage message = new HornetQMapMessage();
       
       assertNull(message.getBytes(itemName));
    }
    
    public void testGetBytesFromInvalidType() throws Exception
    {
-      JBossMapMessage message = new JBossMapMessage();
+      HornetQMapMessage message = new HornetQMapMessage();
       message.setChar(itemName, randomChar());
 
       try
@@ -852,7 +852,7 @@ public class JBossMapMessageTest extends UnitTestCase
    public void testSetObjectFromBoolean() throws Exception
    {
       boolean value = randomBoolean();
-      JBossMapMessage message = new JBossMapMessage();
+      HornetQMapMessage message = new HornetQMapMessage();
       message.setObject(itemName, value);
 
       assertEquals(value, message.getObject(itemName));
@@ -911,7 +911,7 @@ public class JBossMapMessageTest extends UnitTestCase
 
    private void doTestSetObject(Object value) throws Exception
    {
-      JBossMapMessage message = new JBossMapMessage();
+      HornetQMapMessage message = new HornetQMapMessage();
       message.setObject(itemName, value);
 
       assertEquals(value, message.getObject(itemName));

@@ -229,8 +229,8 @@ import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
 import org.hornetq.core.server.Messaging;
 import org.hornetq.core.server.MessagingServer;
 import org.hornetq.core.settings.impl.AddressSettings;
-import org.hornetq.jms.JBossQueue;
-import org.hornetq.jms.client.JBossConnectionFactory;
+import org.hornetq.jms.HornetQQueue;
+import org.hornetq.jms.client.HornetQConnectionFactory;
 import org.hornetq.jms.server.impl.JMSServerManagerImpl;
 import org.hornetq.jms.server.management.JMSQueueControl;
 import org.hornetq.tests.integration.management.ManagementControlHelper;
@@ -258,7 +258,7 @@ public class JMSQueueControlTest extends ManagementTestBase
 
    private JMSServerManagerImpl serverManager;
 
-   protected JBossQueue queue;
+   protected HornetQQueue queue;
 
    protected Context context;
 
@@ -569,7 +569,7 @@ public class JMSQueueControlTest extends ManagementTestBase
    {
       JMSQueueControl queueControl = createManagementControl();
       String expiryQueueName = randomString();
-      JBossQueue expiryQueue = new JBossQueue(expiryQueueName);
+      HornetQQueue expiryQueue = new HornetQQueue(expiryQueueName);
       serverManager.createQueue(expiryQueueName, expiryQueueName, null, true);
       queueControl.setExpiryAddress(expiryQueue.getAddress());
 
@@ -698,7 +698,7 @@ public class JMSQueueControlTest extends ManagementTestBase
    {
       String deadLetterQueue = randomString();
       serverManager.createQueue(deadLetterQueue, deadLetterQueue, null, true);
-      JBossQueue dlq = new JBossQueue(deadLetterQueue);
+      HornetQQueue dlq = new HornetQQueue(deadLetterQueue);
 
       Connection conn = createConnection();
       Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
@@ -755,7 +755,7 @@ public class JMSQueueControlTest extends ManagementTestBase
       String otherQueueName = randomString();
 
       serverManager.createQueue(otherQueueName, otherQueueName, null, true);
-      JBossQueue otherQueue = new JBossQueue(otherQueueName);
+      HornetQQueue otherQueue = new HornetQQueue(otherQueueName);
 
       // send on queue
       JMSUtil.sendMessages(queue, 2);
@@ -802,7 +802,7 @@ public class JMSQueueControlTest extends ManagementTestBase
       String otherQueueName = randomString();
 
       serverManager.createQueue(otherQueueName, otherQueueName, null, true);
-      JBossQueue otherQueue = new JBossQueue(otherQueueName);
+      HornetQQueue otherQueue = new HornetQQueue(otherQueueName);
 
       Connection connection = JMSUtil.createConnection(InVMConnectorFactory.class.getName());
       Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
@@ -837,7 +837,7 @@ public class JMSQueueControlTest extends ManagementTestBase
       String otherQueueName = randomString();
 
       serverManager.createQueue(otherQueueName, otherQueueName, null, true);
-      JBossQueue otherQueue = new JBossQueue(otherQueueName);
+      HornetQQueue otherQueue = new HornetQQueue(otherQueueName);
 
       String[] messageIDs = JMSUtil.sendMessages(queue, 1);
 
@@ -921,7 +921,7 @@ public class JMSQueueControlTest extends ManagementTestBase
 
       String queueName = randomString();
       serverManager.createQueue(queueName, queueName, null, true);
-      queue = new JBossQueue(queueName);
+      queue = new HornetQQueue(queueName);
    }
 
    @Override
@@ -953,7 +953,7 @@ public class JMSQueueControlTest extends ManagementTestBase
 
    private Connection createConnection() throws JMSException
    {
-      JBossConnectionFactory cf = new JBossConnectionFactory(new TransportConfiguration(InVMConnectorFactory.class.getName()));
+      HornetQConnectionFactory cf = new HornetQConnectionFactory(new TransportConfiguration(InVMConnectorFactory.class.getName()));
 
       cf.setBlockOnPersistentSend(true);
 

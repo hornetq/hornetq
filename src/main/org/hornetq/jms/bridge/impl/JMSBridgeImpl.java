@@ -235,8 +235,8 @@ import org.hornetq.jms.bridge.ConnectionFactoryFactory;
 import org.hornetq.jms.bridge.DestinationFactory;
 import org.hornetq.jms.bridge.JMSBridge;
 import org.hornetq.jms.bridge.QualityOfServiceMode;
-import org.hornetq.jms.client.JBossMessage;
-import org.hornetq.jms.client.JBossSession;
+import org.hornetq.jms.client.HornetQMessage;
+import org.hornetq.jms.client.HornetQSession;
 import org.jboss.tm.TransactionManagerLocator;
 
 /**
@@ -1105,9 +1105,9 @@ public class JMSBridgeImpl implements MessagingComponent, JMSBridge
             }
          }
          
-         if (forwardMode == FORWARD_MODE_XA && sourceSession instanceof JBossSession)
+         if (forwardMode == FORWARD_MODE_XA && sourceSession instanceof HornetQSession)
          {
-         	JBossSession jsession = (JBossSession)sourceSession;
+         	HornetQSession jsession = (HornetQSession)sourceSession;
 
          	ClientSession clientSession = jsession.getCoreSession();
             
@@ -1505,7 +1505,7 @@ public class JMSBridgeImpl implements MessagingComponent, JMSBridge
 
    	String val = null;
    	
-   	val = msg.getStringProperty(JBossMessage.JBOSS_MESSAGING_BRIDGE_MESSAGE_ID_LIST);
+   	val = msg.getStringProperty(HornetQMessage.JBOSS_MESSAGING_BRIDGE_MESSAGE_ID_LIST);
    	
    	if (val == null)
    	{
@@ -1520,7 +1520,7 @@ public class JMSBridgeImpl implements MessagingComponent, JMSBridge
    		val = sb.toString();
    	}
    	
-   	msg.setStringProperty(JBossMessage.JBOSS_MESSAGING_BRIDGE_MESSAGE_ID_LIST, val);            	   
+   	msg.setStringProperty(HornetQMessage.JBOSS_MESSAGING_BRIDGE_MESSAGE_ID_LIST, val);            	   
    }
 
    

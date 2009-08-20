@@ -219,7 +219,7 @@ import javax.jms.TextMessage;
 import javax.naming.InitialContext;
 
 import org.hornetq.common.example.HornetQExample;
-import org.hornetq.jms.client.JBossMessage;
+import org.hornetq.jms.client.HornetQMessage;
 
 /**
  * A simple JMS Queue example that sends and receives message groups.
@@ -272,7 +272,7 @@ public class MessageGroupExample extends HornetQExample
          for (int i = 0; i < msgCount; i++)
          {
             groupMessages[i] = session.createTextMessage("Group-0 message " + i);
-            groupMessages[i].setStringProperty(JBossMessage.JMSXGROUPID, "Group-0");
+            groupMessages[i].setStringProperty(HornetQMessage.JMSXGROUPID, "Group-0");
             groupMessages[i].setIntProperty("JMSXGroupSeq", i + 1);
             producer.send(groupMessages[i]);
             System.out.println("Sent message: " + groupMessages[i].getText());

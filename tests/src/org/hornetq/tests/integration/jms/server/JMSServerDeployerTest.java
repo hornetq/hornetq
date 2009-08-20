@@ -212,7 +212,7 @@ import org.hornetq.core.deployers.impl.FileDeploymentManager;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.server.MessagingServer;
 import org.hornetq.integration.transports.netty.NettyConnectorFactory;
-import org.hornetq.jms.client.JBossConnectionFactory;
+import org.hornetq.jms.client.HornetQConnectionFactory;
 import org.hornetq.jms.server.JMSServerManager;
 import org.hornetq.jms.server.impl.JMSServerDeployer;
 import org.hornetq.jms.server.impl.JMSServerManagerImpl;
@@ -378,7 +378,7 @@ public class JMSServerDeployerTest extends ServiceTestBase
 
       for (String binding : connectionFactoryBindings)
       {
-         JBossConnectionFactory cf = (JBossConnectionFactory)context.lookup(binding);
+         HornetQConnectionFactory cf = (HornetQConnectionFactory)context.lookup(binding);
          assertNotNull(cf);
          assertEquals(1234, cf.getClientFailureCheckPeriod());
          assertEquals(5678, cf.getCallTimeout());

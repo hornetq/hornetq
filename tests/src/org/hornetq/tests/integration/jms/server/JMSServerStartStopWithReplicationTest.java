@@ -222,7 +222,7 @@ import org.hornetq.core.security.impl.HornetQSecurityManagerImpl;
 import org.hornetq.core.server.MessagingServer;
 import org.hornetq.core.server.impl.MessagingServerImpl;
 import org.hornetq.integration.transports.netty.NettyConnectorFactory;
-import org.hornetq.jms.client.JBossConnectionFactory;
+import org.hornetq.jms.client.HornetQConnectionFactory;
 import org.hornetq.jms.server.JMSServerManager;
 import org.hornetq.jms.server.impl.JMSServerManagerImpl;
 import org.hornetq.tests.util.UnitTestCase;
@@ -299,7 +299,7 @@ public class JMSServerStartStopWithReplicationTest extends UnitTestCase
          startBackup();
          startLive();
 
-         JBossConnectionFactory jbcf = new JBossConnectionFactory(new TransportConfiguration(NettyConnectorFactory.class.getCanonicalName()),
+         HornetQConnectionFactory jbcf = new HornetQConnectionFactory(new TransportConfiguration(NettyConnectorFactory.class.getCanonicalName()),
                                                                   new TransportConfiguration(NettyConnectorFactory.class.getCanonicalName(),
                                                                                              backupParams));
 
@@ -337,7 +337,7 @@ public class JMSServerStartStopWithReplicationTest extends UnitTestCase
       startBackup();
       startLive();
 
-      JBossConnectionFactory jbcf = new JBossConnectionFactory(new TransportConfiguration(NettyConnectorFactory.class.getCanonicalName()),
+      HornetQConnectionFactory jbcf = new HornetQConnectionFactory(new TransportConfiguration(NettyConnectorFactory.class.getCanonicalName()),
                                                                new TransportConfiguration(NettyConnectorFactory.class.getCanonicalName(),
                                                                                           backupParams));
 

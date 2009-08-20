@@ -229,9 +229,9 @@ import org.hornetq.core.remoting.impl.invm.InVMRegistry;
 import org.hornetq.core.remoting.impl.invm.TransportConstants;
 import org.hornetq.core.server.Messaging;
 import org.hornetq.core.server.MessagingServer;
-import org.hornetq.jms.JBossQueue;
-import org.hornetq.jms.client.JBossConnectionFactory;
-import org.hornetq.jms.client.JBossSession;
+import org.hornetq.jms.HornetQQueue;
+import org.hornetq.jms.client.HornetQConnectionFactory;
+import org.hornetq.jms.client.HornetQSession;
 import org.hornetq.tests.util.UnitTestCase;
 import org.hornetq.utils.SimpleString;
 
@@ -270,7 +270,7 @@ public class JMSFailoverTest extends UnitTestCase
 
    public void testAutomaticFailover() throws Exception
    {
-      JBossConnectionFactory jbcf = new JBossConnectionFactory(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory"),
+      HornetQConnectionFactory jbcf = new HornetQConnectionFactory(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory"),
                                                                new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory",
                                                                                           backupParams));
       
@@ -285,11 +285,11 @@ public class JMSFailoverTest extends UnitTestCase
 
       Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-      ClientSession coreSession = ((JBossSession)sess).getCoreSession();
+      ClientSession coreSession = ((HornetQSession)sess).getCoreSession();
 
       RemotingConnection coreConn = ((ClientSessionInternal)coreSession).getConnection();
 
-      SimpleString jmsQueueName = new SimpleString(JBossQueue.JMS_QUEUE_ADDRESS_PREFIX + "myqueue");
+      SimpleString jmsQueueName = new SimpleString(HornetQQueue.JMS_QUEUE_ADDRESS_PREFIX + "myqueue");
 
       coreSession.createQueue(jmsQueueName, jmsQueueName, null, false);
 
@@ -334,13 +334,13 @@ public class JMSFailoverTest extends UnitTestCase
 
    public void testManualFailover() throws Exception
    {
-      JBossConnectionFactory jbcfLive = new JBossConnectionFactory(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory"));
+      HornetQConnectionFactory jbcfLive = new HornetQConnectionFactory(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory"));
       
       jbcfLive.setBlockOnNonPersistentSend(true);
       jbcfLive.setBlockOnPersistentSend(true);
 
 
-      JBossConnectionFactory jbcfBackup = new JBossConnectionFactory(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory",
+      HornetQConnectionFactory jbcfBackup = new HornetQConnectionFactory(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory",
                                                                                                 backupParams));
       jbcfBackup.setBlockOnNonPersistentSend(true);
       jbcfBackup.setBlockOnPersistentSend(true);
@@ -353,11 +353,11 @@ public class JMSFailoverTest extends UnitTestCase
 
       Session sessLive = connLive.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-      ClientSession coreSessionLive = ((JBossSession)sessLive).getCoreSession();
+      ClientSession coreSessionLive = ((HornetQSession)sessLive).getCoreSession();
 
       RemotingConnection coreConnLive = ((ClientSessionInternal)coreSessionLive).getConnection();
 
-      SimpleString jmsQueueName = new SimpleString(JBossQueue.JMS_QUEUE_ADDRESS_PREFIX + "myqueue");
+      SimpleString jmsQueueName = new SimpleString(HornetQQueue.JMS_QUEUE_ADDRESS_PREFIX + "myqueue");
 
       coreSessionLive.createQueue(jmsQueueName, jmsQueueName, null, false);
 

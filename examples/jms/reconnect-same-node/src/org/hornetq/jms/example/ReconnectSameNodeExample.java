@@ -214,7 +214,7 @@ import javax.jms.TextMessage;
 import javax.naming.InitialContext;
 
 import org.hornetq.common.example.HornetQExample;
-import org.hornetq.jms.JBossQueue;
+import org.hornetq.jms.HornetQQueue;
 import org.hornetq.jms.server.management.impl.JMSManagementHelper;
 
 /**
@@ -331,7 +331,7 @@ public class ReconnectSameNodeExample extends HornetQExample
 
          Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-         Queue managementQueue = new JBossQueue("jbm.management", "jbm.management");
+         Queue managementQueue = new HornetQQueue("jbm.management", "jbm.management");
 
          MessageProducer producer = session.createProducer(managementQueue);
 

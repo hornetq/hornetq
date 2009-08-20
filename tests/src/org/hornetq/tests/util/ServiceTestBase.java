@@ -228,8 +228,8 @@ import org.hornetq.core.server.MessagingServer;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.integration.transports.netty.NettyAcceptorFactory;
 import org.hornetq.integration.transports.netty.NettyConnectorFactory;
-import org.hornetq.jms.client.JBossBytesMessage;
-import org.hornetq.jms.client.JBossTextMessage;
+import org.hornetq.jms.client.HornetQBytesMessage;
+import org.hornetq.jms.client.HornetQTextMessage;
 
 /**
  * 
@@ -546,7 +546,7 @@ public class ServiceTestBase extends UnitTestCase
 
    protected ClientMessage createTextMessage(final ClientSession session, final String s, final boolean durable)
    {
-      ClientMessage message = session.createClientMessage(JBossTextMessage.TYPE,
+      ClientMessage message = session.createClientMessage(HornetQTextMessage.TYPE,
                                                           durable,
                                                           0,
                                                           System.currentTimeMillis(),
@@ -557,7 +557,7 @@ public class ServiceTestBase extends UnitTestCase
 
    protected ClientMessage createBytesMessage(final ClientSession session, final byte[] b, final boolean durable)
    {
-      ClientMessage message = session.createClientMessage(JBossBytesMessage.TYPE,
+      ClientMessage message = session.createClientMessage(HornetQBytesMessage.TYPE,
                                                           durable,
                                                           0,
                                                           System.currentTimeMillis(),

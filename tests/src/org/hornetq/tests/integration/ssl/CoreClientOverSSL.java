@@ -214,7 +214,7 @@ import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
 import org.hornetq.core.config.TransportConfiguration;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.integration.transports.netty.TransportConstants;
-import org.hornetq.jms.client.JBossTextMessage;
+import org.hornetq.jms.client.HornetQTextMessage;
 
 /**
  * This client will open a connection, send a message to a queue over SSL and
@@ -256,7 +256,7 @@ public class CoreClientOverSSL
          ClientSession session = sf.createSession(false, true, true);
          ClientProducer producer = session.createProducer(CoreClientOverSSLTest.QUEUE);
 
-         ClientMessage message = session.createClientMessage(JBossTextMessage.TYPE, false, 0,
+         ClientMessage message = session.createClientMessage(HornetQTextMessage.TYPE, false, 0,
                System.currentTimeMillis(), (byte) 1);
          message.getBody().writeString(CoreClientOverSSLTest.MESSAGE_TEXT_FROM_CLIENT);
          producer.send(message);

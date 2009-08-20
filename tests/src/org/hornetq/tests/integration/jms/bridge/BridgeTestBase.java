@@ -218,8 +218,8 @@ import org.hornetq.core.server.MessagingServer;
 import org.hornetq.jms.bridge.ConnectionFactoryFactory;
 import org.hornetq.jms.bridge.DestinationFactory;
 import org.hornetq.jms.bridge.QualityOfServiceMode;
-import org.hornetq.jms.client.JBossConnectionFactory;
-import org.hornetq.jms.client.JBossMessage;
+import org.hornetq.jms.client.HornetQConnectionFactory;
+import org.hornetq.jms.client.HornetQMessage;
 import org.hornetq.jms.server.JMSServerManager;
 import org.hornetq.jms.server.impl.JMSServerManagerImpl;
 import org.hornetq.jms.server.management.JMSQueueControl;
@@ -394,7 +394,7 @@ public abstract class BridgeTestBase extends UnitTestCase
       {
          public ConnectionFactory createConnectionFactory() throws Exception
          {            
-            JBossConnectionFactory cf = new JBossConnectionFactory(new TransportConfiguration(InVMConnectorFactory.class.getName()));
+            HornetQConnectionFactory cf = new HornetQConnectionFactory(new TransportConfiguration(InVMConnectorFactory.class.getName()));
             
             //Note! We disable automatic reconnection on the session factory. The bridge needs to do the reconnection
             cf.setReconnectAttempts(0);
@@ -414,7 +414,7 @@ public abstract class BridgeTestBase extends UnitTestCase
 
          public ConnectionFactory createConnectionFactory() throws Exception
          {
-            JBossConnectionFactory cf = new JBossConnectionFactory(new TransportConfiguration(InVMConnectorFactory.class.getName(), params1));
+            HornetQConnectionFactory cf = new HornetQConnectionFactory(new TransportConfiguration(InVMConnectorFactory.class.getName(), params1));
             
             //Note! We disable automatic reconnection on the session factory. The bridge needs to do the reconnection
             cf.setReconnectAttempts(0);
@@ -488,7 +488,7 @@ public abstract class BridgeTestBase extends UnitTestCase
             if (largeMessage)
             {
                BytesMessage msg = sess.createBytesMessage();
-               ((JBossMessage)msg).setInputStream(createFakeLargeStream(1024l * 1024l));
+               ((HornetQMessage)msg).setInputStream(createFakeLargeStream(1024l * 1024l));
                msg.setStringProperty("msg", "message" + i);
                prod.send(msg);
             }

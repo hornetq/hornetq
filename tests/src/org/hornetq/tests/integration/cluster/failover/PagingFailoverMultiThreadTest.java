@@ -239,7 +239,7 @@ import org.hornetq.core.server.Messaging;
 import org.hornetq.core.server.MessagingServer;
 import org.hornetq.core.server.impl.QueueImpl;
 import org.hornetq.core.settings.impl.AddressSettings;
-import org.hornetq.jms.client.JBossBytesMessage;
+import org.hornetq.jms.client.HornetQBytesMessage;
 import org.hornetq.utils.SimpleString;
 
 /**
@@ -446,7 +446,7 @@ public class PagingFailoverMultiThreadTest extends MultiThreadFailoverSupport
    {
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = sessSend.createClientMessage(JBossBytesMessage.TYPE,
+         ClientMessage message = sessSend.createClientMessage(HornetQBytesMessage.TYPE,
                                                               false,
                                                               0,
                                                               System.currentTimeMillis(),

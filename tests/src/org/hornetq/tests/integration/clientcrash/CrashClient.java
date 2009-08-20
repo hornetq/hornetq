@@ -215,7 +215,7 @@ import org.hornetq.core.client.ClientSessionFactory;
 import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
 import org.hornetq.core.config.TransportConfiguration;
 import org.hornetq.core.logging.Logger;
-import org.hornetq.jms.client.JBossTextMessage;
+import org.hornetq.jms.client.HornetQTextMessage;
 
 /**
  * Code to be run in an external VM, via main().
@@ -249,7 +249,7 @@ public class CrashClient
          ClientSession session = sf.createSession(false, true, true);
          ClientProducer producer = session.createProducer(QUEUE);
 
-         ClientMessage message = session.createClientMessage(JBossTextMessage.TYPE,
+         ClientMessage message = session.createClientMessage(HornetQTextMessage.TYPE,
                                                              false,
                                                              0,
                                                              System.currentTimeMillis(),

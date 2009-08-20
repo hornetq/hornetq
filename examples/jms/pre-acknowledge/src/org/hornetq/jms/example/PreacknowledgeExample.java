@@ -217,8 +217,8 @@ import javax.jms.TextMessage;
 import javax.naming.InitialContext;
 
 import org.hornetq.common.example.HornetQExample;
-import org.hornetq.jms.JBossQueue;
-import org.hornetq.jms.client.JBossSession;
+import org.hornetq.jms.HornetQQueue;
+import org.hornetq.jms.client.HornetQSession;
 import org.hornetq.jms.server.management.impl.JMSManagementHelper;
 
 /**
@@ -256,7 +256,7 @@ public class PreacknowledgeExample extends HornetQExample
          // Step 3. Create a the JMS objects
          connection = cf.createConnection();
 
-         Session session = connection.createSession(false, JBossSession.PRE_ACKNOWLEDGE);
+         Session session = connection.createSession(false, HornetQSession.PRE_ACKNOWLEDGE);
 
          MessageProducer producer = session.createProducer(queue);
          
@@ -318,7 +318,7 @@ public class PreacknowledgeExample extends HornetQExample
    {
       QueueSession session = ((QueueConnection)connection).createQueueSession(false, Session.AUTO_ACKNOWLEDGE);
 
-      Queue managementQueue = new JBossQueue("jbm.management", "jbm.management");
+      Queue managementQueue = new HornetQQueue("jbm.management", "jbm.management");
       
       QueueRequestor requestor = new QueueRequestor(session, managementQueue);
       

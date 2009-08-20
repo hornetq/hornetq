@@ -202,66 +202,178 @@
  *    limitations under the License.
  */ 
 
-package org.hornetq.jms;
+package org.hornetq.jms.client;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
 
 import javax.jms.JMSException;
-import javax.jms.TemporaryTopic;
+import javax.jms.ObjectMessage;
 
-import org.hornetq.jms.client.JBossSession;
+import org.hornetq.core.client.ClientMessage;
+import org.hornetq.core.client.ClientSession;
 
 /**
+ * This class implements javax.jms.ObjectMessage
+ * 
+ * Don't used ObjectMessage if you want good performance!
+ * 
+ * Serialization is slooooow!
+ * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * @version <tt>$Revision: 3569 $</tt>
+ * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
+ * @author <a href="mailto:ataylor@redhat.com">Andy Taylor</a>
+ * 
+ * @version $Revision: 3412 $
  *
- * $Id: JBossQueue.java 3569 2008-01-15 21:14:04Z timfox $
+ * $Id: HornetQObjectMessage.java 3412 2007-12-05 19:41:47Z timfox $
  */
-public class JBossTemporaryTopic extends JBossTopic implements TemporaryTopic
-{      
+public class HornetQObjectMessage extends HornetQMessage implements ObjectMessage
+{
    // Constants -----------------------------------------------------
-      
-	private static final long serialVersionUID = 845450764835635266L;
 
-	public static final String JMS_TEMP_TOPIC_ADDRESS_PREFIX = "jms.temptopic.";
-   
-   // Static --------------------------------------------------------
-   
+   public static final byte TYPE = 2;
+
    // Attributes ----------------------------------------------------
    
-   private final transient JBossSession session;
-      
-   // Constructors --------------------------------------------------
+   // keep a snapshot of the Serializable Object as a byte[] to provide Object isolation
+   private byte[] data;
 
-   public JBossTemporaryTopic(final JBossSession session, final String name)
+   // Static --------------------------------------------------------
+
+   // Constructors --------------------------------------------------
+   
+   /*
+    * This constructor is used to construct messages prior to sending
+    */
+   public HornetQObjectMessage()
    {
-      super(JMS_TEMP_TOPIC_ADDRESS_PREFIX + name, name);
-      
-      this.session = session;
+      super(HornetQObjectMessage.TYPE);
+   }
+
+   public HornetQObjectMessage( final ClientSession session)
+   {
+      super(HornetQObjectMessage.TYPE, session);
    }
    
-   // TemporaryTopic implementation ------------------------------------------
+   public HornetQObjectMessage(final ClientMessage message, ClientSession session)
+   {
+      super(message, session);
+   }
 
-   public void delete() throws JMSException
-   {      
-      session.deleteTemporaryTopic(this);
+   /**
+    * A copy constructor for foreign JMS ObjectMessages.
+    */
+   public HornetQObjectMessage(final ObjectMessage foreign, final ClientSession session) throws JMSException
+   {
+      super(foreign, HornetQObjectMessage.TYPE, session);
+
+      setObject(foreign.getObject()); 
    }
 
    // Public --------------------------------------------------------
-   
-   public boolean isTemporary()
+
+   public byte getType()
    {
-      return true;
+      return HornetQObjectMessage.TYPE;
    }
-      
-   public String toString()
+   
+   public void doBeforeSend() throws Exception
    {
-      return "JBossTemporaryTopic[" + name + "]";
+      getBody().clear();
+      if (data != null)
+      {
+         getBody().writeInt(data.length);
+         getBody().writeBytes(data);
+      }
+      
+      super.doBeforeSend();
+   }
+   
+      
+   // ObjectMessage implementation ----------------------------------
+
+   public void setObject(Serializable object) throws JMSException
+   {  
+      checkWrite();
+
+      if (object != null)
+      {
+         try 
+         {
+            ByteArrayOutputStream baos = new ByteArrayOutputStream(1024);
+
+            ObjectOutputStream oos = new ObjectOutputStream(baos);
+
+            oos.writeObject(object);
+
+            oos.flush();
+
+            data = baos.toByteArray();
+         }
+         catch (Exception e)
+         {
+            JMSException je = new JMSException("Failed to serialize object");
+            je.setLinkedException(e);
+            throw je;
+         }
+      }
    }
 
-   // Package protected ---------------------------------------------
+   // lazy deserialize the Object the first time the client requests it
+   public Serializable getObject() throws JMSException
+   {
+      if (data == null)
+      {
+         try
+         {
+            int len = getBody().readInt();
+            data = new byte[len];
+            getBody().readBytes(data);
+         } 
+         catch (Exception e)
+         {
+            return null;
+         }
+      }
+      
+      if (data.length == 0)
+      {
+         return null;
+      }
+
+      try
+      {
+         ByteArrayInputStream bais = new ByteArrayInputStream(data);
+         ObjectInputStream ois = new org.hornetq.utils.ObjectInputStreamWithClassLoader(bais);
+         Serializable object = (Serializable)ois.readObject();
+         return object;
+      }
+      catch (Exception e)
+      {
+         JMSException je = new JMSException("Failed to deserialize object");
+         je.setLinkedException(e);
+         throw je;
+      }
+   }
+
+   public void clearBody() throws JMSException
+   {
+      super.clearBody();
+      
+      data = null;
+   }
    
+   
+
+   // Package protected ---------------------------------------------
+
    // Protected -----------------------------------------------------
    
    // Private -------------------------------------------------------
-   
-   // Inner classes -------------------------------------------------   
+
+   // Inner classes -------------------------------------------------
 }

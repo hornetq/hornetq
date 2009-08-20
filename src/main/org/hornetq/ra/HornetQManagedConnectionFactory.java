@@ -203,8 +203,9 @@
  */
 package org.hornetq.ra;
 
-import org.hornetq.core.logging.Logger;
-import org.hornetq.jms.client.JBossConnectionFactory;
+import java.io.PrintWriter;
+import java.util.Iterator;
+import java.util.Set;
 
 import javax.jms.ConnectionMetaData;
 import javax.resource.ResourceException;
@@ -215,9 +216,8 @@ import javax.resource.spi.ManagedConnectionFactory;
 import javax.resource.spi.ResourceAdapter;
 import javax.resource.spi.ResourceAdapterAssociation;
 import javax.security.auth.Subject;
-import java.io.PrintWriter;
-import java.util.Iterator;
-import java.util.Set;
+
+import org.hornetq.core.logging.Logger;
 
 /**
  * JBM ManagedConectionFactory
@@ -262,7 +262,7 @@ public class HornetQManagedConnectionFactory implements ManagedConnectionFactory
    /**
     * Connection Factory used if properties are set
     */
-   private JBossConnectionFactory connectionFactory;
+   private org.hornetq.jms.client.HornetQConnectionFactory connectionFactory;
 
    /**
     * Constructor
@@ -935,22 +935,9 @@ public class HornetQManagedConnectionFactory implements ManagedConnectionFactory
     *
     * @return The factory
     */
-   protected synchronized JBossConnectionFactory getJBossConnectionFactory() throws ResourceException
+   protected synchronized org.hornetq.jms.client.HornetQConnectionFactory getJBossConnectionFactory() throws ResourceException
    {
-      /*if (mcfProperties.getConnectorClassName() != null)
-      {
-         if (connectionFactory == null)
-         {
-            connectionFactory = ra.createRemoteFactory(mcfProperties.getConnectorClassName(),
-                                                       mcfProperties.getParsedConnectionParameters());
-         }
 
-         return connectionFactory;
-      }
-      else
-      {
-         return ra.getDefaultJBossConnectionFactory();
-      }*/
       if(connectionFactory == null)
       {
          connectionFactory = ra.createJBossConnectionFactory(mcfProperties);

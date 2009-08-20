@@ -208,7 +208,7 @@ import java.util.List;
 
 import javax.management.NotCompliantMBeanException;
 
-import org.hornetq.jms.client.JBossConnectionFactory;
+import org.hornetq.jms.client.HornetQConnectionFactory;
 import org.hornetq.jms.server.management.ConnectionFactoryControl;
 
 /**
@@ -223,7 +223,7 @@ public class ConnectionFactoryControlImpl implements ConnectionFactoryControl
 
    // Attributes ----------------------------------------------------
 
-   private final JBossConnectionFactory cf;
+   private final HornetQConnectionFactory cf;
 
    private final List<String> bindings;
 
@@ -233,7 +233,7 @@ public class ConnectionFactoryControlImpl implements ConnectionFactoryControl
 
    // Constructors --------------------------------------------------
 
-   public ConnectionFactoryControlImpl(final JBossConnectionFactory cf, final String name, final List<String> bindings) throws NotCompliantMBeanException
+   public ConnectionFactoryControlImpl(final HornetQConnectionFactory cf, final String name, final List<String> bindings) throws NotCompliantMBeanException
    {
       this.cf = cf;
       this.name = name;

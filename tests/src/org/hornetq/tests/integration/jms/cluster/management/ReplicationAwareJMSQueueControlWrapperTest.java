@@ -216,7 +216,7 @@ import javax.jms.TextMessage;
 
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
-import org.hornetq.jms.JBossQueue;
+import org.hornetq.jms.HornetQQueue;
 import org.hornetq.jms.server.impl.JMSServerManagerImpl;
 import org.hornetq.jms.server.management.JMSQueueControl;
 import org.hornetq.tests.integration.cluster.management.ReplicationAwareTestBase;
@@ -241,9 +241,9 @@ public class ReplicationAwareJMSQueueControlWrapperTest extends ReplicationAware
 
    private JMSServerManagerImpl backupServerManager;
 
-   private JBossQueue queue;
+   private HornetQQueue queue;
 
-   private JBossQueue otherQueue;
+   private HornetQQueue otherQueue;
 
    private Connection connection;
    
@@ -509,12 +509,12 @@ public class ReplicationAwareJMSQueueControlWrapperTest extends ReplicationAware
       String queueName = randomString();
       liveServerManager.createQueue(queueName, queueName, null, true);
       backupServerManager.createQueue(queueName, queueName, null, true);
-      queue = new JBossQueue(queueName);
+      queue = new HornetQQueue(queueName);
       
       String otherQueueName = randomString();     
       liveServerManager.createQueue(otherQueueName, otherQueueName, null, true);
       backupServerManager.createQueue(otherQueueName, otherQueueName, null, true);
-      otherQueue = new JBossQueue(otherQueueName);
+      otherQueue = new HornetQQueue(otherQueueName);
       
       connection = JMSUtil.createConnection(InVMConnectorFactory.class.getName());
       session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);

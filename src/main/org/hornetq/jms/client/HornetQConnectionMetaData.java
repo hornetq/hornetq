@@ -220,7 +220,7 @@ import org.hornetq.core.version.Version;
  *
  * $Id$
  */
-public class JBossConnectionMetaData implements ConnectionMetaData
+public class HornetQConnectionMetaData implements ConnectionMetaData
 {
    // Constants -----------------------------------------------------
 
@@ -235,9 +235,9 @@ public class JBossConnectionMetaData implements ConnectionMetaData
    // Constructors --------------------------------------------------
 
    /**
-    * Create a new JBossConnectionMetaData object.
+    * Create a new HornetQConnectionMetaData object.
     */
-   public JBossConnectionMetaData(final Version serverVersion)
+   public HornetQConnectionMetaData(final Version serverVersion)
    {
       this.serverVersion = serverVersion;
    }

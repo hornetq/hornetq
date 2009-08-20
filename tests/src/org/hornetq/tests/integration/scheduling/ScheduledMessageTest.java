@@ -219,7 +219,7 @@ import org.hornetq.core.message.impl.MessageImpl;
 import org.hornetq.core.server.MessagingServer;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.core.transaction.impl.XidImpl;
-import org.hornetq.jms.client.JBossTextMessage;
+import org.hornetq.jms.client.HornetQTextMessage;
 import org.hornetq.tests.util.ServiceTestBase;
 import org.hornetq.utils.SimpleString;
 import org.hornetq.utils.UUIDGenerator;
@@ -470,7 +470,7 @@ public class ScheduledMessageTest extends ServiceTestBase
       ClientSession session = sessionFactory.createSession(false, true, false);
       session.createQueue(atestq, atestq, null, true);
       ClientProducer producer = session.createProducer(atestq);
-      ClientMessage message = session.createClientMessage(JBossTextMessage.TYPE,
+      ClientMessage message = session.createClientMessage(HornetQTextMessage.TYPE,
                                                           false,
                                                           0,
                                                           System.currentTimeMillis(),
@@ -957,7 +957,7 @@ public class ScheduledMessageTest extends ServiceTestBase
 
    private ClientMessage createDurableMessage(final ClientSession session, final String body)
    {
-      ClientMessage message = session.createClientMessage(JBossTextMessage.TYPE,
+      ClientMessage message = session.createClientMessage(HornetQTextMessage.TYPE,
                                                           true,
                                                           0,
                                                           System.currentTimeMillis(),

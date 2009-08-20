@@ -217,8 +217,8 @@ import org.hornetq.core.logging.Logger;
 import org.hornetq.core.remoting.RemotingConnection;
 import org.hornetq.core.server.Messaging;
 import org.hornetq.core.server.MessagingServer;
-import org.hornetq.jms.client.JBossConnectionFactory;
-import org.hornetq.jms.client.JBossSession;
+import org.hornetq.jms.client.HornetQConnectionFactory;
+import org.hornetq.jms.client.HornetQSession;
 import org.hornetq.jms.server.impl.JMSServerManagerImpl;
 import org.hornetq.tests.integration.jms.server.management.NullInitialContext;
 import org.hornetq.tests.util.UnitTestCase;
@@ -239,9 +239,9 @@ public class FailureDeadlockTest extends UnitTestCase
 
    private JMSServerManagerImpl jmsServer;
 
-   private JBossConnectionFactory cf1;
+   private HornetQConnectionFactory cf1;
 
-   private JBossConnectionFactory cf2;
+   private HornetQConnectionFactory cf2;
 
    @Override
    protected void setUp() throws Exception
@@ -256,9 +256,9 @@ public class FailureDeadlockTest extends UnitTestCase
       jmsServer = new JMSServerManagerImpl(server);
       jmsServer.setContext(new NullInitialContext());
       jmsServer.start();
-      cf1 = new JBossConnectionFactory(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory"));
+      cf1 = new HornetQConnectionFactory(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory"));
 
-      cf2 = new JBossConnectionFactory(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory"));
+      cf2 = new HornetQConnectionFactory(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory"));
    }
 
    @Override
@@ -305,12 +305,12 @@ public class FailureDeadlockTest extends UnitTestCase
          final Connection conn1 = cf1.createConnection();
 
          Session sess1 = conn1.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         RemotingConnection rc1 = ((ClientSessionInternal)((JBossSession)sess1).getCoreSession()).getConnection();
+         RemotingConnection rc1 = ((ClientSessionInternal)((HornetQSession)sess1).getCoreSession()).getConnection();
 
          final Connection conn2 = cf2.createConnection();
 
          Session sess2 = conn2.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         RemotingConnection rc2 = ((ClientSessionInternal)((JBossSession)sess2).getCoreSession()).getConnection();
+         RemotingConnection rc2 = ((ClientSessionInternal)((HornetQSession)sess2).getCoreSession()).getConnection();
 
          ExceptionListener listener1 = new ExceptionListener()
          {
@@ -374,7 +374,7 @@ public class FailureDeadlockTest extends UnitTestCase
          final Connection conn1 = cf1.createConnection();
    
          Session sess1 = conn1.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         RemotingConnection rc1 = ((ClientSessionInternal)((JBossSession)sess1).getCoreSession()).getConnection();      
+         RemotingConnection rc1 = ((ClientSessionInternal)((HornetQSession)sess1).getCoreSession()).getConnection();      
    
          rc1.fail(new MessagingException(MessagingException.NOT_CONNECTED, "blah"));
    

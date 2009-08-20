@@ -248,8 +248,8 @@ import org.hornetq.core.security.Role;
 import org.hornetq.core.server.MessagingServer;
 import org.hornetq.core.server.Queue;
 import org.hornetq.integration.bootstrap.HornetQBootstrapServer;
-import org.hornetq.jms.JBossQueue;
-import org.hornetq.jms.JBossTopic;
+import org.hornetq.jms.HornetQQueue;
+import org.hornetq.jms.HornetQTopic;
 import org.hornetq.jms.server.JMSServerManager;
 import org.hornetq.jms.server.management.JMSQueueControl;
 import org.hornetq.jms.server.management.TopicControl;
@@ -616,10 +616,10 @@ public class LocalTestServer implements Server, Runnable
 
    public void removeAllMessages(String destination, boolean isQueue) throws Exception
    {
-      SimpleString address = JBossQueue.createAddressFromName(destination);
+      SimpleString address = HornetQQueue.createAddressFromName(destination);
       if (!isQueue)
       {
-         address = JBossTopic.createAddressFromName(destination);
+         address = HornetQTopic.createAddressFromName(destination);
       }
       Binding binding = getMessagingServer().getPostOffice().getBinding(address);
       if (binding != null && binding.getType() == BindingType.LOCAL_QUEUE)
