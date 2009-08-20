@@ -212,7 +212,7 @@ import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.naming.InitialContext;
 
-import org.hornetq.common.example.JBMExample;
+import org.hornetq.common.example.HornetQExample;
 
 /**
  * An example showing how messages are moved to an expiry queue when they expire.
@@ -220,7 +220,7 @@ import org.hornetq.common.example.JBMExample;
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  *
  */
-public class ExpiryExample extends JBMExample
+public class ExpiryExample extends HornetQExample
 {
    public static void main(String[] args)
    {

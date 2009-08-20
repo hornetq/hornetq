@@ -268,7 +268,7 @@ import org.hornetq.core.remoting.impl.wireformat.replication.ReplicateStartupInf
 import org.hornetq.core.remoting.server.RemotingService;
 import org.hornetq.core.remoting.server.impl.RemotingServiceImpl;
 import org.hornetq.core.security.CheckType;
-import org.hornetq.core.security.JBMSecurityManager;
+import org.hornetq.core.security.HornetQSecurityManager;
 import org.hornetq.core.security.Role;
 import org.hornetq.core.security.SecurityStore;
 import org.hornetq.core.security.impl.SecurityStoreImpl;
@@ -293,7 +293,7 @@ import org.hornetq.core.transaction.impl.TransactionImpl;
 import org.hornetq.core.version.Version;
 import org.hornetq.utils.ExecutorFactory;
 import org.hornetq.utils.Future;
-import org.hornetq.utils.JBMThreadFactory;
+import org.hornetq.utils.HornetQThreadFactory;
 import org.hornetq.utils.OrderedExecutorFactory;
 import org.hornetq.utils.Pair;
 import org.hornetq.utils.SimpleString;
@@ -327,7 +327,7 @@ public class MessagingServerImpl implements MessagingServer
 
    private final Version version;
 
-   private final JBMSecurityManager securityManager;
+   private final HornetQSecurityManager securityManager;
 
    private final Configuration configuration;
 
@@ -413,14 +413,14 @@ public class MessagingServerImpl implements MessagingServer
       this(configuration, mbeanServer, null);
    }
 
-   public MessagingServerImpl(final Configuration configuration, final JBMSecurityManager securityManager)
+   public MessagingServerImpl(final Configuration configuration, final HornetQSecurityManager securityManager)
    {
       this(configuration, null, securityManager);
    }
 
    public MessagingServerImpl(Configuration configuration,
                               MBeanServer mbeanServer,
-                              final JBMSecurityManager securityManager)
+                              final HornetQSecurityManager securityManager)
    {
       if (configuration == null)
       {
@@ -636,7 +636,7 @@ public class MessagingServerImpl implements MessagingServer
       return storageManager;
    }
 
-   public JBMSecurityManager getSecurityManager()
+   public HornetQSecurityManager getSecurityManager()
    {
       return securityManager;
    }
@@ -1073,7 +1073,7 @@ public class MessagingServerImpl implements MessagingServer
    {
       // Create the pools - we have two pools - one for non scheduled - and another for scheduled
 
-      ThreadFactory tFactory = new JBMThreadFactory("JBM-server-threads" + System.identityHashCode(this), false);
+      ThreadFactory tFactory = new HornetQThreadFactory("JBM-server-threads" + System.identityHashCode(this), false);
 
       if (configuration.getThreadPoolMaxSize() == -1)
       {
@@ -1087,7 +1087,7 @@ public class MessagingServerImpl implements MessagingServer
       executorFactory = new OrderedExecutorFactory(threadPool);
 
       scheduledPool = new ScheduledThreadPoolExecutor(configuration.getScheduledThreadPoolMaxSize(),
-                                                      new org.hornetq.utils.JBMThreadFactory("JBM-scheduled-threads",
+                                                      new HornetQThreadFactory("JBM-scheduled-threads",
                                                                                                      false));
 
       managementService = new ManagementServiceImpl(mbeanServer, configuration, managementConnectorID);

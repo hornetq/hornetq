@@ -212,14 +212,14 @@ import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.naming.InitialContext;
 
-import org.hornetq.common.example.JBMExample;
+import org.hornetq.common.example.HornetQExample;
 
 /**
  * A simple JMS example that shows how to implement and use interceptors with JBoss Messaging.
  *
  * @author <a href="hgao@redhat.com">Howard Gao</a>
  */
-public class InterceptorExample extends JBMExample
+public class InterceptorExample extends HornetQExample
 {
    public static void main(String[] args)
    {

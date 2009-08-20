@@ -215,14 +215,14 @@ import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.naming.InitialContext;
 
-import org.hornetq.common.example.JBMExample;
+import org.hornetq.common.example.HornetQExample;
 
 /**
  * A simple JMS example that uses selectors with queue consumers.
  *
  * @author <a href="hgao@redhat.com">Howard Gao</a>
  */
-public class QueueSelectorExample extends JBMExample
+public class QueueSelectorExample extends HornetQExample
 {
    private volatile boolean result = true;
 

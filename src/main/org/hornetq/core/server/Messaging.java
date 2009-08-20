@@ -210,8 +210,8 @@ import javax.management.MBeanServer;
 
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.logging.Logger;
-import org.hornetq.core.security.JBMSecurityManager;
-import org.hornetq.core.security.impl.JBMSecurityManagerImpl;
+import org.hornetq.core.security.HornetQSecurityManager;
+import org.hornetq.core.security.impl.HornetQSecurityManagerImpl;
 import org.hornetq.core.server.impl.MessagingServerImpl;
 
 /**
@@ -229,7 +229,7 @@ public class Messaging
 
    public static MessagingServer newMessagingServer(final Configuration config, boolean enablePersistence)
    {
-      JBMSecurityManager securityManager = new JBMSecurityManagerImpl();
+      HornetQSecurityManager securityManager = new HornetQSecurityManagerImpl();
 
       MessagingServer server = newMessagingServer(config,
                                                   ManagementFactory.getPlatformMBeanServer(),
@@ -248,7 +248,7 @@ public class Messaging
                                                     final MBeanServer mbeanServer,
                                                     final boolean enablePersistence)
    {
-      JBMSecurityManager securityManager = new JBMSecurityManagerImpl();
+      HornetQSecurityManager securityManager = new HornetQSecurityManagerImpl();
 
       MessagingServer server = newMessagingServer(config, mbeanServer, securityManager, enablePersistence);
 
@@ -262,7 +262,7 @@ public class Messaging
 
    public static MessagingServer newMessagingServer(final Configuration config,
                                                     final MBeanServer mbeanServer,
-                                                    final JBMSecurityManager securityManager)
+                                                    final HornetQSecurityManager securityManager)
    {
       MessagingServer server = newMessagingServer(config, mbeanServer, securityManager, true);
 
@@ -271,7 +271,7 @@ public class Messaging
 
    public static MessagingServer newMessagingServer(final Configuration config,
                                                     final MBeanServer mbeanServer,
-                                                    final JBMSecurityManager securityManager,
+                                                    final HornetQSecurityManager securityManager,
                                                     final boolean enablePersistence)
    {
       config.setPersistenceEnabled(enablePersistence);

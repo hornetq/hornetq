@@ -213,14 +213,14 @@ import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.naming.InitialContext;
 
-import org.hornetq.common.example.JBMExample;
+import org.hornetq.common.example.HornetQExample;
 
 /**
  * A simple JMS example that shows how to use queues requestors.
  *
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  */
-public class QueueRequestorExample extends JBMExample
+public class QueueRequestorExample extends HornetQExample
 {
    public static void main(String[] args)
    {

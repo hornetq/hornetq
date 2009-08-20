@@ -212,7 +212,7 @@ import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.naming.InitialContext;
 
-import org.hornetq.common.example.JBMExample;
+import org.hornetq.common.example.HornetQExample;
 
 /**
  * This example demonstrates how JBoss Messaging can be configured with a redelivery delay in the event a message
@@ -223,7 +223,7 @@ import org.hornetq.common.example.JBMExample;
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */
-public class DelayedRedeliveryExample extends JBMExample
+public class DelayedRedeliveryExample extends HornetQExample
 {
    public static void main(String[] args)
    {

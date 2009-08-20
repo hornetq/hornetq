@@ -215,7 +215,7 @@ import org.hornetq.core.asyncio.impl.TimedBuffer;
 import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.journal.SequentialFile;
 import org.hornetq.core.logging.Logger;
-import org.hornetq.utils.JBMThreadFactory;
+import org.hornetq.utils.HornetQThreadFactory;
 
 /**
  * 
@@ -243,10 +243,10 @@ public class AIOSequentialFileFactory extends AbstractSequentialFactory
    /** A single AIO write executor for every AIO File.
     *  This is used only for AIO & instant operations. We only need one executor-thread for the entire journal as we always have only one active file.
     *  And even if we had multiple files at a given moment, this should still be ok, as we control max-io in a semaphore, guaranteeing AIO calls don't block on disk calls */
-   private final Executor writeExecutor = Executors.newSingleThreadExecutor(new JBMThreadFactory("JBM-AIO-writer-pool" + System.identityHashCode(this),
+   private final Executor writeExecutor = Executors.newSingleThreadExecutor(new HornetQThreadFactory("JBM-AIO-writer-pool" + System.identityHashCode(this),
                                                                                                  true));
 
-   private final Executor pollerExecutor = Executors.newCachedThreadPool(new JBMThreadFactory("JBM-AIO-poller-pool" + System.identityHashCode(this),
+   private final Executor pollerExecutor = Executors.newCachedThreadPool(new HornetQThreadFactory("JBM-AIO-poller-pool" + System.identityHashCode(this),
                                                                                               true));
 
    private final int bufferSize;

@@ -220,7 +220,7 @@ import org.hornetq.core.asyncio.BufferCallback;
 import org.hornetq.core.asyncio.impl.AsynchronousFileImpl;
 import org.hornetq.core.exception.MessagingException;
 import org.hornetq.core.logging.Logger;
-import org.hornetq.utils.JBMThreadFactory;
+import org.hornetq.utils.HornetQThreadFactory;
 
 /**
  * 
@@ -255,7 +255,7 @@ public class AsynchronousFileTest extends AIOTestBase
    protected void setUp() throws Exception
    {
       super.setUp();
-      pollerExecutor = Executors.newCachedThreadPool(new JBMThreadFactory("JBM-AIO-poller-pool" + System.identityHashCode(this), false));
+      pollerExecutor = Executors.newCachedThreadPool(new HornetQThreadFactory("JBM-AIO-poller-pool" + System.identityHashCode(this), false));
       executor = Executors.newSingleThreadExecutor();
    }
    

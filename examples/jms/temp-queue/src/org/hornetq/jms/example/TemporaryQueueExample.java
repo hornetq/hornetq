@@ -213,14 +213,14 @@ import javax.jms.TemporaryQueue;
 import javax.jms.TextMessage;
 import javax.naming.InitialContext;
 
-import org.hornetq.common.example.JBMExample;
+import org.hornetq.common.example.HornetQExample;
 
 /**
  * A simple JMS example that shows how to use temporary queues.
  *
  * @author <a href="hgao@redhat.com">Howard Gao</a>
  */
-public class TemporaryQueueExample extends JBMExample
+public class TemporaryQueueExample extends HornetQExample
 {
    public static void main(String[] args)
    {

@@ -205,7 +205,7 @@ package org.hornetq.core.deployers.impl;
 
 import org.hornetq.core.deployers.DeploymentManager;
 import org.hornetq.core.logging.Logger;
-import org.hornetq.core.security.JBMSecurityManager;
+import org.hornetq.core.security.HornetQSecurityManager;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
@@ -218,7 +218,7 @@ public class BasicUserCredentialsDeployer extends XmlDeployer
 {
    private static final Logger log = Logger.getLogger(BasicUserCredentialsDeployer.class);
 
-   private final JBMSecurityManager jbmSecurityManager;
+   private final HornetQSecurityManager hornetQSecurityManager;
 
    private static final String PASSWORD_ATTRIBUTE = "password";
 
@@ -231,11 +231,11 @@ public class BasicUserCredentialsDeployer extends XmlDeployer
    private static final String USER = "user";
 
    public BasicUserCredentialsDeployer(final DeploymentManager deploymentManager,
-                                       final JBMSecurityManager jbmSecurityManager)
+                                       final HornetQSecurityManager hornetQSecurityManager)
    {
       super(deploymentManager);
 
-      this.jbmSecurityManager = jbmSecurityManager;
+      this.hornetQSecurityManager = hornetQSecurityManager;
    }
 
    public String[] getElementTagName()
@@ -255,11 +255,11 @@ public class BasicUserCredentialsDeployer extends XmlDeployer
       String password = node.getAttributes().getNamedItem(PASSWORD_ATTRIBUTE).getNodeValue();
 
       // add the user
-      jbmSecurityManager.addUser(username, password);
+      hornetQSecurityManager.addUser(username, password);
       String nodeName = node.getNodeName();
       if (DEFAULT_USER.equalsIgnoreCase(nodeName))
       {
-         jbmSecurityManager.setDefaultUser(username);
+         hornetQSecurityManager.setDefaultUser(username);
       }
       NodeList children = node.getChildNodes();
       for (int i = 0; i < children.getLength(); i++)
@@ -269,7 +269,7 @@ public class BasicUserCredentialsDeployer extends XmlDeployer
          if (ROLES_NODE.equalsIgnoreCase(child.getNodeName()))
          {
             String role = child.getAttributes().getNamedItem(ROLE_ATTR_NAME).getNodeValue();
-            jbmSecurityManager.addRole(username, role);
+            hornetQSecurityManager.addRole(username, role);
          }
       }
    }
@@ -277,7 +277,7 @@ public class BasicUserCredentialsDeployer extends XmlDeployer
    public void undeploy(final Node node) throws Exception
    {
       String username = node.getAttributes().getNamedItem(getKeyAttribute()).getNodeValue();
-      jbmSecurityManager.removeUser(username);
+      hornetQSecurityManager.removeUser(username);
    }
 
    public String[] getDefaultConfigFileNames()

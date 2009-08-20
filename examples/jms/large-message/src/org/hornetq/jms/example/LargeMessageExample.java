@@ -203,7 +203,7 @@
  */
 package org.hornetq.jms.example;
 
-import org.hornetq.common.example.JBMExample;
+import org.hornetq.common.example.HornetQExample;
 
 import javax.jms.BytesMessage;
 import javax.jms.Connection;
@@ -228,7 +228,7 @@ import java.io.IOException;
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="clebert.suconic@jboss.com">Clebert Suconic</a>
  */
-public class LargeMessageExample extends JBMExample
+public class LargeMessageExample extends HornetQExample
 {
    public static void main(String[] args)
    {

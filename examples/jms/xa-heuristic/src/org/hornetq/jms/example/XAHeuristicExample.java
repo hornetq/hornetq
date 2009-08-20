@@ -204,7 +204,7 @@
 package org.hornetq.jms.example;
 
 import org.hornetq.common.example.DummyXid;
-import org.hornetq.common.example.JBMExample;
+import org.hornetq.common.example.HornetQExample;
 import org.hornetq.core.management.ObjectNames;
 import org.hornetq.utils.UUIDGenerator;
 
@@ -235,7 +235,7 @@ import java.util.HashMap;
  *
  * @author <a href="hgao@redhat.com">Howard Gao</a>
  */
-public class XAHeuristicExample extends JBMExample
+public class XAHeuristicExample extends HornetQExample
 {
    private volatile boolean result = true;
    private ArrayList<String> receiveHolder = new ArrayList<String>();

@@ -212,7 +212,7 @@ import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.naming.InitialContext;
 
-import org.hornetq.common.example.JBMExample;
+import org.hornetq.common.example.HornetQExample;
 
 /**
  * This example demonstrates how a message consumer can be limited to consumer messages at a maximum rate
@@ -220,7 +220,7 @@ import org.hornetq.common.example.JBMExample;
  *
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
  */
-public class ConsumerRateLimitExample extends JBMExample
+public class ConsumerRateLimitExample extends HornetQExample
 {
    public static void main(String[] args)
    {

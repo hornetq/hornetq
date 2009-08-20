@@ -211,7 +211,7 @@ import javax.jms.MessageProducer;
 import javax.jms.Session;
 import javax.jms.TextMessage;
 
-import org.hornetq.jmstests.JBMServerTestCase;
+import org.hornetq.jmstests.HornetQServerTestCase;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
@@ -219,7 +219,7 @@ import org.hornetq.jmstests.JBMServerTestCase;
  *
  * $Id$
  */
-public class JMSPriorityHeaderTest extends JBMServerTestCase
+public class JMSPriorityHeaderTest extends HornetQServerTestCase
 {
    // Constants -----------------------------------------------------
 

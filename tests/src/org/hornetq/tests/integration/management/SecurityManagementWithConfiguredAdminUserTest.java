@@ -213,7 +213,7 @@ import org.hornetq.core.config.TransportConfiguration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.hornetq.core.security.Role;
-import org.hornetq.core.security.impl.JBMSecurityManagerImpl;
+import org.hornetq.core.security.impl.HornetQSecurityManagerImpl;
 import org.hornetq.core.server.Messaging;
 import org.hornetq.core.server.MessagingServer;
 import org.hornetq.core.settings.HierarchicalRepository;
@@ -282,7 +282,7 @@ public class SecurityManagementWithConfiguredAdminUserTest extends SecurityManag
       MessagingServer server = Messaging.newMessagingServer(conf, false);
       server.start();
       HierarchicalRepository<Set<Role>> securityRepository = server.getSecurityRepository();
-      JBMSecurityManagerImpl securityManager = (JBMSecurityManagerImpl)server.getSecurityManager();
+      HornetQSecurityManagerImpl securityManager = (HornetQSecurityManagerImpl)server.getSecurityManager();
       securityManager.addUser(validAdminUser, validAdminPassword);
       securityManager.addUser(invalidAdminUser, invalidAdminPassword);   
 

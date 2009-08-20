@@ -211,7 +211,7 @@ import javax.jms.Queue;
 import javax.jms.Session;
 import javax.naming.InitialContext;
 
-import org.hornetq.common.example.JBMExample;
+import org.hornetq.common.example.HornetQExample;
 import org.hornetq.core.client.ClientSession;
 import org.hornetq.core.client.SendAcknowledgementHandler;
 import org.hornetq.core.message.Message;
@@ -227,7 +227,7 @@ import org.hornetq.jms.client.JBossSession;
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */
-public class SendAcknowledgementsExample extends JBMExample
+public class SendAcknowledgementsExample extends HornetQExample
 {
    public static void main(String[] args)
    {

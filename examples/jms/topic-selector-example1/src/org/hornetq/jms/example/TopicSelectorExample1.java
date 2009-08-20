@@ -212,14 +212,14 @@ import javax.jms.TextMessage;
 import javax.jms.Topic;
 import javax.naming.InitialContext;
 
-import org.hornetq.common.example.JBMExample;
+import org.hornetq.common.example.HornetQExample;
 
 /**
  * A simple JMS Topic example that creates a producer and consumer on a queue and sends and receives a message.
  *
  * @author <a href="csuconic@redhat.com">Clebert Suconic</a>
  */
-public class TopicSelectorExample1 extends JBMExample
+public class TopicSelectorExample1 extends HornetQExample
 {
    public static void main(String[] args)
    {

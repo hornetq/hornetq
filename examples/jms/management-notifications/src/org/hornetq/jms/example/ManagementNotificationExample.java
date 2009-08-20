@@ -214,17 +214,16 @@ import javax.jms.MessageListener;
 import javax.jms.MessageProducer;
 import javax.jms.Queue;
 import javax.jms.Session;
-import javax.jms.Topic;
 import javax.naming.InitialContext;
 
-import org.hornetq.common.example.JBMExample;
+import org.hornetq.common.example.HornetQExample;
 
 /**
  * An example that shows how to receive management notifications using JMS messages.
  *
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  */
-public class ManagementNotificationExample extends JBMExample
+public class ManagementNotificationExample extends HornetQExample
 {
    public static void main(String[] args)
    {

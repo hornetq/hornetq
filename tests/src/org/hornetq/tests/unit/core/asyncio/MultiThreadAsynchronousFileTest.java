@@ -215,7 +215,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.hornetq.core.asyncio.AIOCallback;
 import org.hornetq.core.asyncio.impl.AsynchronousFileImpl;
 import org.hornetq.core.logging.Logger;
-import org.hornetq.utils.JBMThreadFactory;
+import org.hornetq.utils.HornetQThreadFactory;
 
 /**
  * 
@@ -257,7 +257,7 @@ public class MultiThreadAsynchronousFileTest extends AIOTestBase
    protected void setUp() throws Exception
    {
       super.setUp();
-      pollerExecutor = Executors.newCachedThreadPool(new JBMThreadFactory("JBM-AIO-poller-pool" + System.identityHashCode(this), false));
+      pollerExecutor = Executors.newCachedThreadPool(new HornetQThreadFactory("JBM-AIO-poller-pool" + System.identityHashCode(this), false));
       executor = Executors.newSingleThreadExecutor();
    }
    

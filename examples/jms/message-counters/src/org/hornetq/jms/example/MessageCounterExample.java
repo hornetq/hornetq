@@ -203,7 +203,7 @@
  */
 package org.hornetq.jms.example;
 
-import org.hornetq.common.example.JBMExample;
+import org.hornetq.common.example.HornetQExample;
 import org.hornetq.core.management.MessageCounterInfo;
 import org.hornetq.core.management.ObjectNames;
 import org.hornetq.jms.server.management.JMSQueueControl;
@@ -231,7 +231,7 @@ import java.util.HashMap;
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  *
  */
-public class MessageCounterExample extends JBMExample
+public class MessageCounterExample extends HornetQExample
 {
    private String JMX_URL = "service:jmx:rmi:///jndi/rmi://localhost:3001/jmxrmi";
 

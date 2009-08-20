@@ -222,8 +222,7 @@ import javax.jms.Session;
 import javax.naming.Context;
 
 import org.hornetq.core.logging.Logger;
-import org.hornetq.jmstests.JBMServerTestCase;
-import org.hornetq.jmstests.tools.ServerManagement;
+import org.hornetq.jmstests.HornetQServerTestCase;
 
 /**
  * In order for this test to run, you will need to edit /etc/security/limits.conf and change your max sockets to something bigger than 1024
@@ -242,7 +241,7 @@ clebert        hard    nofile          10240
  * @version <tt>$Revision$</tt>
  *          $Id$
  */
-public class SeveralClientsStressTest extends JBMServerTestCase
+public class SeveralClientsStressTest extends HornetQServerTestCase
 {
 
    // Constants ------------------------------------------------------------------------------------

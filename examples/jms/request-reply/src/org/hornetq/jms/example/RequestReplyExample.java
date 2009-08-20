@@ -217,7 +217,7 @@ import javax.jms.TemporaryQueue;
 import javax.jms.TextMessage;
 import javax.naming.InitialContext;
 
-import org.hornetq.common.example.JBMExample;
+import org.hornetq.common.example.HornetQExample;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -227,7 +227,7 @@ import java.util.Map;
  *
  * @author <a href="hgao@redhat.com">Howard Gao</a>
  */
-public class RequestReplyExample extends JBMExample
+public class RequestReplyExample extends HornetQExample
 {
    private Map<String, TextMessage> requestMap = new HashMap<String, TextMessage>();
    

@@ -219,7 +219,7 @@ import javax.jms.Topic;
 import javax.naming.InitialContext;
 
 import org.hornetq.core.logging.Logger;
-import org.hornetq.jmstests.JBMServerTestCase;
+import org.hornetq.jmstests.HornetQServerTestCase;
 
 
 /**
@@ -232,7 +232,7 @@ import org.hornetq.jmstests.JBMServerTestCase;
  * $Id: $
  *
  */
-public class ManyConnectionsStressTest extends JBMServerTestCase
+public class ManyConnectionsStressTest extends HornetQServerTestCase
 {
    // Constants -----------------------------------------------------
 

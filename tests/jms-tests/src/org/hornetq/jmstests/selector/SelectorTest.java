@@ -217,7 +217,7 @@ import javax.jms.MessageProducer;
 import javax.jms.Session;
 import javax.jms.TextMessage;
 
-import org.hornetq.jmstests.JBMServerTestCase;
+import org.hornetq.jmstests.HornetQServerTestCase;
 
 /**
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
@@ -225,7 +225,7 @@ import org.hornetq.jmstests.JBMServerTestCase;
  *
  * $Id$
  */
-public class SelectorTest extends JBMServerTestCase
+public class SelectorTest extends HornetQServerTestCase
 {
    // Constants -----------------------------------------------------
 

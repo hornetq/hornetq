@@ -214,7 +214,7 @@ import javax.jms.Session;
 import javax.naming.InitialContext;
 
 import org.hornetq.core.logging.Logger;
-import org.hornetq.jmstests.JBMServerTestCase;
+import org.hornetq.jmstests.HornetQServerTestCase;
 
 /**
  * A stress test written to investigate http://jira.jboss.org/jira/browse/JBMESSAGING-362
@@ -223,7 +223,7 @@ import org.hornetq.jmstests.JBMServerTestCase;
  * @version <tt>$Revision$</tt>
  * $Id$
  */
-public class CorruptMessageStressTest extends JBMServerTestCase
+public class CorruptMessageStressTest extends HornetQServerTestCase
 {
    // Constants -----------------------------------------------------
 

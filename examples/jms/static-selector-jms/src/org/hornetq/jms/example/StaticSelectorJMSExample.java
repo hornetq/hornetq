@@ -215,14 +215,14 @@ import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.naming.InitialContext;
 
-import org.hornetq.common.example.JBMExample;
+import org.hornetq.common.example.HornetQExample;
 
 /**
  * A simple JMS example that shows how static message selectors work when using JMS config.
  *
  * @author <a href="hgao@redhat.com">Howard Gao</a>
  */
-public class StaticSelectorJMSExample extends JBMExample
+public class StaticSelectorJMSExample extends HornetQExample
 {
    private volatile boolean result = true;
 

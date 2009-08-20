@@ -210,7 +210,7 @@ import org.hornetq.core.client.ClientSession;
 import org.hornetq.core.client.ClientSessionFactory;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.exception.MessagingException;
-import org.hornetq.core.security.JBMSecurityManager;
+import org.hornetq.core.security.HornetQSecurityManager;
 import org.hornetq.core.security.Role;
 import org.hornetq.core.security.impl.JAASSecurityManager;
 import org.hornetq.core.server.MessagingServer;
@@ -254,7 +254,7 @@ public class SecurityTest extends ServiceTestBase
       Configuration configuration = createDefaultConfig(false);
       configuration.setSecurityEnabled(true);
       MessagingServer server = createServer(false, configuration);
-      JBMSecurityManager securityManager = server.getSecurityManager();
+      HornetQSecurityManager securityManager = server.getSecurityManager();
       securityManager.addUser("guest", "guest");
       securityManager.setDefaultUser("guest");
       try
@@ -313,7 +313,7 @@ public class SecurityTest extends ServiceTestBase
       Configuration configuration = createDefaultConfig(false);
       configuration.setSecurityEnabled(true);
       MessagingServer server = createServer(false, configuration);
-      JBMSecurityManager securityManager = server.getSecurityManager();
+      HornetQSecurityManager securityManager = server.getSecurityManager();
       securityManager.addUser("newuser", "apass");
       try
       {
@@ -344,7 +344,7 @@ public class SecurityTest extends ServiceTestBase
       Configuration configuration = createDefaultConfig(false);
       configuration.setSecurityEnabled(true);
       MessagingServer server = createServer(false, configuration);
-      JBMSecurityManager securityManager = server.getSecurityManager();
+      HornetQSecurityManager securityManager = server.getSecurityManager();
       securityManager.addUser("newuser", "apass");
       try
       {
@@ -379,7 +379,7 @@ public class SecurityTest extends ServiceTestBase
       {
          server.start();
          HierarchicalRepository<Set<Role>> securityRepository = server.getSecurityRepository();
-         JBMSecurityManager securityManager = server.getSecurityManager();
+         HornetQSecurityManager securityManager = server.getSecurityManager();
          securityManager.addUser("auser", "pass");
          Role role = new Role("arole", false, false, true, false, false, false, false);
          Set<Role> roles = new HashSet<Role>();
@@ -410,7 +410,7 @@ public class SecurityTest extends ServiceTestBase
       {
          server.start();
          HierarchicalRepository<Set<Role>> securityRepository = server.getSecurityRepository();
-         JBMSecurityManager securityManager = server.getSecurityManager();
+         HornetQSecurityManager securityManager = server.getSecurityManager();
          securityManager.addUser("auser", "pass");
          Role role = new Role("arole", false, false, false, false, false, false, false);
          Set<Role> roles = new HashSet<Role>();
@@ -449,7 +449,7 @@ public class SecurityTest extends ServiceTestBase
       {
          server.start();
          HierarchicalRepository<Set<Role>> securityRepository = server.getSecurityRepository();
-         JBMSecurityManager securityManager = server.getSecurityManager();
+         HornetQSecurityManager securityManager = server.getSecurityManager();
          securityManager.addUser("auser", "pass");
          Role role = new Role("arole", false, false, true, true, false, false, false);
          Set<Role> roles = new HashSet<Role>();
@@ -481,7 +481,7 @@ public class SecurityTest extends ServiceTestBase
       {
          server.start();
          HierarchicalRepository<Set<Role>> securityRepository = server.getSecurityRepository();
-         JBMSecurityManager securityManager = server.getSecurityManager();
+         HornetQSecurityManager securityManager = server.getSecurityManager();
          securityManager.addUser("auser", "pass");
          Role role = new Role("arole", false, false, true, false, false, false, false);
          Set<Role> roles = new HashSet<Role>();
@@ -521,7 +521,7 @@ public class SecurityTest extends ServiceTestBase
       {
          server.start();
          HierarchicalRepository<Set<Role>> securityRepository = server.getSecurityRepository();
-         JBMSecurityManager securityManager = server.getSecurityManager();
+         HornetQSecurityManager securityManager = server.getSecurityManager();
          securityManager.addUser("auser", "pass");
          Role role = new Role("arole", false, false, false, false, true, false, false);
          Set<Role> roles = new HashSet<Role>();
@@ -552,7 +552,7 @@ public class SecurityTest extends ServiceTestBase
       {
          server.start();
          HierarchicalRepository<Set<Role>> securityRepository = server.getSecurityRepository();
-         JBMSecurityManager securityManager = server.getSecurityManager();
+         HornetQSecurityManager securityManager = server.getSecurityManager();
          securityManager.addUser("auser", "pass");
          Role role = new Role("arole", false, false, false, false, false, false, false);
          Set<Role> roles = new HashSet<Role>();
@@ -591,7 +591,7 @@ public class SecurityTest extends ServiceTestBase
       {
          server.start();
          HierarchicalRepository<Set<Role>> securityRepository = server.getSecurityRepository();
-         JBMSecurityManager securityManager = server.getSecurityManager();
+         HornetQSecurityManager securityManager = server.getSecurityManager();
          securityManager.addUser("auser", "pass");
          Role role = new Role("arole", false, false, false, false, true, true, false);
          Set<Role> roles = new HashSet<Role>();
@@ -623,7 +623,7 @@ public class SecurityTest extends ServiceTestBase
       {
          server.start();
          HierarchicalRepository<Set<Role>> securityRepository = server.getSecurityRepository();
-         JBMSecurityManager securityManager = server.getSecurityManager();
+         HornetQSecurityManager securityManager = server.getSecurityManager();
          securityManager.addUser("auser", "pass");
          Role role = new Role("arole", false, false, false, false, true, false, false);
          Set<Role> roles = new HashSet<Role>();
@@ -663,7 +663,7 @@ public class SecurityTest extends ServiceTestBase
       {
          server.start();
          HierarchicalRepository<Set<Role>> securityRepository = server.getSecurityRepository();
-         JBMSecurityManager securityManager = server.getSecurityManager();
+         HornetQSecurityManager securityManager = server.getSecurityManager();
          securityManager.addUser("auser", "pass");
          Role role = new Role("arole", true, false, true, false, false, false, false);
          Set<Role> roles = new HashSet<Role>();
@@ -697,7 +697,7 @@ public class SecurityTest extends ServiceTestBase
       {
          server.start();
          HierarchicalRepository<Set<Role>> securityRepository = server.getSecurityRepository();
-         JBMSecurityManager securityManager = server.getSecurityManager();
+         HornetQSecurityManager securityManager = server.getSecurityManager();
          securityManager.addUser("auser", "pass");
          Role role = new Role("arole", false, false, true, false, false, false, false);
          Set<Role> roles = new HashSet<Role>();
@@ -738,7 +738,7 @@ public class SecurityTest extends ServiceTestBase
       {
          server.start();
          HierarchicalRepository<Set<Role>> securityRepository = server.getSecurityRepository();
-         JBMSecurityManager securityManager = server.getSecurityManager();
+         HornetQSecurityManager securityManager = server.getSecurityManager();
          securityManager.addUser("auser", "pass");
          Role role = new Role("arole", false, false, true, false, false, false, false);
          Set<Role> roles = new HashSet<Role>();
@@ -774,7 +774,7 @@ public class SecurityTest extends ServiceTestBase
       {
          server.start();
          HierarchicalRepository<Set<Role>> securityRepository = server.getSecurityRepository();
-         JBMSecurityManager securityManager = server.getSecurityManager();
+         HornetQSecurityManager securityManager = server.getSecurityManager();
          securityManager.addUser("auser", "pass");
          securityManager.addUser("guest", "guest");
          securityManager.addRole("guest", "guest");
@@ -815,7 +815,7 @@ public class SecurityTest extends ServiceTestBase
       {
          server.start();
          HierarchicalRepository<Set<Role>> securityRepository = server.getSecurityRepository();
-         JBMSecurityManager securityManager = server.getSecurityManager();
+         HornetQSecurityManager securityManager = server.getSecurityManager();
          securityManager.addUser("auser", "pass");
          securityManager.addUser("guest", "guest");
          securityManager.addRole("guest", "guest");
@@ -864,7 +864,7 @@ public class SecurityTest extends ServiceTestBase
       {
          server.start();
          HierarchicalRepository<Set<Role>> securityRepository = server.getSecurityRepository();
-         JBMSecurityManager securityManager = server.getSecurityManager();
+         HornetQSecurityManager securityManager = server.getSecurityManager();
          securityManager.addUser("auser", "pass");
          securityManager.addUser("guest", "guest");
          securityManager.addRole("guest", "guest");
@@ -926,7 +926,7 @@ public class SecurityTest extends ServiceTestBase
       {
          server.start();
          HierarchicalRepository<Set<Role>> securityRepository = server.getSecurityRepository();
-         JBMSecurityManager securityManager = server.getSecurityManager();
+         HornetQSecurityManager securityManager = server.getSecurityManager();
          securityManager.addUser("auser", "pass");
          securityManager.addUser("guest", "guest");
          securityManager.addRole("guest", "guest");
@@ -996,7 +996,7 @@ public class SecurityTest extends ServiceTestBase
       {
          server.start();
          HierarchicalRepository<Set<Role>> securityRepository = server.getSecurityRepository();
-         JBMSecurityManager securityManager = server.getSecurityManager();
+         HornetQSecurityManager securityManager = server.getSecurityManager();
          securityManager.addUser("auser", "pass");
          securityManager.addUser("guest", "guest");
          securityManager.addRole("guest", "guest");
@@ -1100,7 +1100,7 @@ public class SecurityTest extends ServiceTestBase
       {
          server.start();
          HierarchicalRepository<Set<Role>> securityRepository = server.getSecurityRepository();
-         JBMSecurityManager securityManager = server.getSecurityManager();
+         HornetQSecurityManager securityManager = server.getSecurityManager();
          securityManager.addUser("auser", "pass");
          Role role = new Role("arole", false, false, false, false, false, false, true);
          Set<Role> roles = new HashSet<Role>();
@@ -1133,7 +1133,7 @@ public class SecurityTest extends ServiceTestBase
       {
          server.start();
          HierarchicalRepository<Set<Role>> securityRepository = server.getSecurityRepository();
-         JBMSecurityManager securityManager = server.getSecurityManager();
+         HornetQSecurityManager securityManager = server.getSecurityManager();
          securityManager.addUser("auser", "pass");
          Role role = new Role("arole", false, false, true, false, false, false, false);
          Set<Role> roles = new HashSet<Role>();
@@ -1174,7 +1174,7 @@ public class SecurityTest extends ServiceTestBase
       {
          server.start();
          HierarchicalRepository<Set<Role>> securityRepository = server.getSecurityRepository();
-         JBMSecurityManager securityManager = server.getSecurityManager();
+         HornetQSecurityManager securityManager = server.getSecurityManager();
          securityManager.addUser("auser", "pass");
          Role role = new Role("arole", false, false, true, false, false, false, false);
          Set<Role> roles = new HashSet<Role>();
@@ -1297,7 +1297,7 @@ public class SecurityTest extends ServiceTestBase
       try
       {
          server.start();
-         JBMSecurityManager securityManager = server.getSecurityManager();
+         HornetQSecurityManager securityManager = server.getSecurityManager();
          securityManager.addUser("all", "all");
          securityManager.addUser("bill", "jbossmessaging");
          securityManager.addUser("andrew", "jbossmessaging1");
@@ -1425,7 +1425,7 @@ public class SecurityTest extends ServiceTestBase
       try
       {
          server.start();
-         JBMSecurityManager securityManager = server.getSecurityManager();
+         HornetQSecurityManager securityManager = server.getSecurityManager();
          securityManager.addUser("all", "all");
          securityManager.addUser("bill", "jbossmessaging");
          securityManager.addUser("andrew", "jbossmessaging1");

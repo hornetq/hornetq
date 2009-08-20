@@ -212,7 +212,7 @@ import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.naming.InitialContext;
 
-import org.hornetq.common.example.JBMExample;
+import org.hornetq.common.example.HornetQExample;
 
 /**
  * A simple example that demonstrates automatic failover of the JMS connection from one node to another
@@ -220,7 +220,7 @@ import org.hornetq.common.example.JBMExample;
  *
  * @author <a href="tim.fox@jboss.com>Tim Fox</a>
  */
-public class AutomaticFailoverExample extends JBMExample
+public class AutomaticFailoverExample extends HornetQExample
 {
    public static void main(String[] args)
    {

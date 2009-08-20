@@ -180,7 +180,7 @@
 &lt;/bean&gt;            
         </programlisting>
         <para>The class <literal
-                >org.hornetq.core.security.impl.JBMSecurityManagerImpl</literal> is the
+                >org.hornetq.core.security.impl.HornetQSecurityManagerImpl</literal> is the
             default security manager that reads used by the standalone server.</para>
         <para>JBoss Messaging ships with two other security manager implementations you can use
             off-the-shelf; one a JAAS security manager and another for integrating with JBoss

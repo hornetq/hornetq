@@ -215,7 +215,7 @@ import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.naming.InitialContext;
 
-import org.hornetq.common.example.JBMExample;
+import org.hornetq.common.example.HornetQExample;
 import org.hornetq.core.message.impl.MessageImpl;
 
 /**
@@ -223,7 +223,7 @@ import org.hornetq.core.message.impl.MessageImpl;
  *
  * @author <a href="hgao@redhat.com">Howard Gao</a>
  */
-public class ScheduledMessageExample extends JBMExample
+public class ScheduledMessageExample extends HornetQExample
 {
    public static void main(String[] args)
    {

@@ -244,7 +244,7 @@ public class MDBMessageSendTxExample implements MessageListener
             configuration of the Adapter is found in this archive under <literal
                 >META-INF/ra.xml</literal>.</para>
         <para>The configuration will look something like the following:</para>
-        <programlisting>&lt;resourceadapter>
+        <programlisting><![CDATA[<![CDATA[<![CDATA[<![CDATA[<![CDATA[&lt;resourceadapter>
       &lt;resourceadapter-class>org.hornetq.ra.JBMResourceAdapter&lt;/resourceadapter-class>
       &lt;config-property>
          &lt;description>The transport type&lt;/description>
@@ -262,7 +262,7 @@ public class MDBMessageSendTxExample implements MessageListener
 
       &lt;outbound-resourceadapter>
          &lt;connection-definition>
-            &lt;managedconnectionfactory-class>org.hornetq.ra.JBMManagedConnection
+            &lt;managedconnectionfactory-class>org.hornetq.ra.HornetQManagedConnection
             Factory&lt;/managedconnectionfactory-class>
 
             &lt;config-property>
@@ -272,19 +272,19 @@ public class MDBMessageSendTxExample implements MessageListener
                &lt;config-property-value>javax.jms.Queue&lt;/config-property-value>
             &lt;/config-property>
             &lt;config-property>
-               &lt;description>Try to obtain a lock within specified number of seconds; less 
+               &lt;description>Try to obtain a lock within specified number of seconds; less
                than or equal to 0 disable this functionality&lt;/description>
                &lt;config-property-name>UseTryLock&lt;/config-property-name>
                &lt;config-property-type>java.lang.Integer&lt;/config-property-type>
                &lt;config-property-value>0&lt;/config-property-value>
             &lt;/config-property>
 
-            &lt;connectionfactory-interface>org.hornetq.ra.JBMConnectionFactory
+            &lt;connectionfactory-interface>org.hornetq.ra.HornetQConnectionFactory
             &lt;/connectionfactory-interface>
-            &lt;connectionfactory-impl-class>org.hornetq.ra.JBMConnectionFactoryImpl
+            &lt;connectionfactororg.hornetq.ra.HornetQConnectionFactoryImplonFactoryImpl
             &lt;/connectionfactory-impl-class>
             &lt;connection-interface>javax.jms.Session&lt;/connection-interface>
-            &lt;connection-impl-class>org.hornetq.ra.JBMSession
+            &lt;connection-impl-class>org.hornetq.ra.HornetQSession
             &lt;/connection-impl-class>
          &lt;/connection-definition>
          &lt;transaction-support>XATransaction&lt;/transaction-support>
@@ -302,7 +302,7 @@ public class MDBMessageSendTxExample implements MessageListener
             &lt;messagelistener>
                &lt;messagelistener-type>javax.jms.MessageListener&lt;/messagelistener-type>
                &lt;activationspec>
-                  &lt;activationspec-class>org.hornetq.ra.inflow.JBMActivationSpec
+                  &lt;activationspec-class>org.hornetq.ra.inflow.HornetQActivationSpec
                   &lt;/activationspec-class>
                   &lt;required-config-property>
                       &lt;config-property-name>destination&lt;/config-property-name>
@@ -312,7 +312,7 @@ public class MDBMessageSendTxExample implements MessageListener
          &lt;/messageadapter>
       &lt;/inbound-resourceadapter>
 
-   &lt;/resourceadapter></programlisting>
+   &lt;/resourceadapter>]]>]]>]]>]]>]]></programlisting>
         <para>There are 3 main parts to this configuration.</para>
         <orderedlist>
             <listitem>
@@ -551,11 +551,11 @@ public class MDBMessageSendTxExample implements MessageListener
                 adapter in the JBoss Application Server. If you are using another JEE application
                 server please refer to your application servers documentation for how to do
                 this.</para>
-            <programlisting>&lt;tx-connection-factory>
+            <programlisting><![CDATA[&lt;tx-connection-factory>
       &lt;jndi-name>RemoteJmsXA&lt;/jndi-name>
       &lt;xa-transaction/>
       &lt;rar-name>jms-ra.rar&lt;/rar-name>
-      &lt;connection-definition>org.hornetq.ra.JBMConnectionFactory
+      &lt;connection-definition>org.hornetq.ra.HornetQConnectionFactory
 &lt;/connection-definition>
       &lt;config-property name="SessionDefaultType" type="String">javax.jms.Topic
       &lt;/config-property>
@@ -565,7 +565,7 @@ public class MDBMessageSendTxExample implements MessageListener
       &lt;config-property name="ConnectionParameters" type="String">
           jbm.remoting.netty.port=5445&lt;/config-property>
       &lt;max-pool-size>20&lt;/max-pool-size>
-&lt;/tx-connection-factory></programlisting>
+&lt;/tx-connection-factory>]]></programlisting>
             <para>In this example the connection factory will be bound to JNDI with the name
                     <literal>RemoteJmsXA</literal> and can be looked up in the usual way using JNDI
                 or defined within the EJB or MDB as such:</para>

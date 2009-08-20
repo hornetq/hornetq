@@ -212,7 +212,7 @@ import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.naming.InitialContext;
 
-import org.hornetq.common.example.JBMExample;
+import org.hornetq.common.example.HornetQExample;
 
 /**
  * This example demonstrates how JBoss Messaging consumers can be configured to not buffer any messages from
@@ -220,7 +220,7 @@ import org.hornetq.common.example.JBMExample;
  *
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
  */
-public class NoConsumerBufferingExample extends JBMExample
+public class NoConsumerBufferingExample extends HornetQExample
 {
    public static void main(String[] args)
    {

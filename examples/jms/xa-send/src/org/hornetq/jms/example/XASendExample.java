@@ -204,7 +204,7 @@
 package org.hornetq.jms.example;
 
 import org.hornetq.common.example.DummyXid;
-import org.hornetq.common.example.JBMExample;
+import org.hornetq.common.example.HornetQExample;
 import org.hornetq.utils.UUIDGenerator;
 
 import javax.jms.JMSException;
@@ -228,7 +228,7 @@ import java.util.ArrayList;
  *
  * @author <a href="hgao@redhat.com">Howard Gao</a>
  */
-public class XASendExample extends JBMExample
+public class XASendExample extends HornetQExample
 {
    private volatile boolean result = true;
    private ArrayList<String> receiveHolder = new ArrayList<String>();

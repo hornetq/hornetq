@@ -212,7 +212,7 @@ import javax.jms.TextMessage;
 import javax.jms.Topic;
 import javax.naming.InitialContext;
 
-import org.hornetq.common.example.JBMExample;
+import org.hornetq.common.example.HornetQExample;
 
 /**
  * 
@@ -234,7 +234,7 @@ import org.hornetq.common.example.JBMExample;
  *
  *
  */
-public class ClusteredStandaloneExample extends JBMExample
+public class ClusteredStandaloneExample extends HornetQExample
 {
    public static void main(String[] args)
    {

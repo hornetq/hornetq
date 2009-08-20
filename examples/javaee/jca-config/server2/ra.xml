@@ -226,7 +226,7 @@
    </license>
 
    <resourceadapter>
-      <resourceadapter-class>org.hornetq.ra.JBMResourceAdapter</resourceadapter-class>
+      <resourceadapter-class>org.hornetq.ra.HornetQResourceAdapter</resourceadapter-class>
       <config-property>
          <description>The transport type</description>
          <config-property-name>ConnectorClassName</config-property-name>
@@ -248,7 +248,7 @@
       
       <outbound-resourceadapter>
          <connection-definition>
-            <managedconnectionfactory-class>org.hornetq.ra.JBMManagedConnectionFactory</managedconnectionfactory-class>
+            <managedconnectionfactory-class>org.hornetq.ra.HornetQManagedConnectionFactory</managedconnectionfactory-class>
 
             <config-property>
                <description>The default session type</description>
@@ -263,10 +263,10 @@
                <config-property-value>0</config-property-value>
             </config-property>
 
-            <connectionfactory-interface>org.hornetq.ra.JBMConnectionFactory</connectionfactory-interface>
-            <connectionfactory-impl-class>org.hornetq.ra.JBMConnectionFactoryImpl</connectionfactory-impl-class>
+            <connectionfactory-interface>org.hornetq.ra.HornetQConnectionFactory</connectionfactory-interface>
+            <connectionfactory-impl-class>org.hornetq.ra.HornetQConnectionFactoryImpl</connectionfactory-impl-class>
             <connection-interface>javax.jms.Session</connection-interface>
-            <connection-impl-class>org.hornetq.ra.JBMSession</connection-impl-class>
+            <connection-impl-class>org.hornetq.ra.HornetQSession</connection-impl-class>
          </connection-definition>
          <transaction-support>XATransaction</transaction-support>
          <authentication-mechanism>
@@ -281,7 +281,7 @@
             <messagelistener>
                <messagelistener-type>javax.jms.MessageListener</messagelistener-type>
                <activationspec>
-                  <activationspec-class>org.hornetq.ra.inflow.JBMActivationSpec</activationspec-class>
+                  <activationspec-class>org.hornetq.ra.inflow.HornetQActivationSpec</activationspec-class>
                   <required-config-property>
                       <config-property-name>destination</config-property-name>
                   </required-config-property>

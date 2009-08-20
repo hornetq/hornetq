@@ -227,7 +227,7 @@ import org.hornetq.core.cluster.impl.DiscoveryGroupImpl;
 import org.hornetq.core.config.TransportConfiguration;
 import org.hornetq.core.exception.MessagingException;
 import org.hornetq.core.logging.Logger;
-import org.hornetq.utils.JBMThreadFactory;
+import org.hornetq.utils.HornetQThreadFactory;
 import org.hornetq.utils.Pair;
 import org.hornetq.utils.UUIDGenerator;
 
@@ -392,7 +392,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
    {
       if (globalThreadPool == null)
       {
-         ThreadFactory factory = new JBMThreadFactory("JBM-client-global-threads", true);
+         ThreadFactory factory = new HornetQThreadFactory("JBM-client-global-threads", true);
 
          globalThreadPool = Executors.newCachedThreadPool(factory);
       }
@@ -404,7 +404,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
    {
       if (globalScheduledThreadPool == null)
       {
-         ThreadFactory factory = new JBMThreadFactory("JBM-client-global-scheduled-threads", true);
+         ThreadFactory factory = new HornetQThreadFactory("JBM-client-global-scheduled-threads", true);
 
          globalScheduledThreadPool = Executors.newScheduledThreadPool(DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE, factory);
       }
@@ -422,7 +422,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
       }
       else
       {
-         ThreadFactory factory = new JBMThreadFactory("JBM-client-factory-threads-" + System.identityHashCode(this),
+         ThreadFactory factory = new HornetQThreadFactory("JBM-client-factory-threads-" + System.identityHashCode(this),
                                                       true);
 
          if (threadPoolMaxSize == -1)
@@ -434,7 +434,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
             threadPool = Executors.newFixedThreadPool(threadPoolMaxSize, factory);
          }
 
-         factory = new JBMThreadFactory("JBM-client-factory-pinger-threads-" + System.identityHashCode(this), true);
+         factory = new HornetQThreadFactory("JBM-client-factory-pinger-threads-" + System.identityHashCode(this), true);
 
          scheduledThreadPool = Executors.newScheduledThreadPool(scheduledThreadPoolMaxSize, factory);
       }

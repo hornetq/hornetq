@@ -241,7 +241,7 @@ import org.hornetq.utils.Pair;
  *          <p/>
  *          $Id: $
  */
-public class JMSTestCase extends JBMServerTestCase
+public class JMSTestCase extends HornetQServerTestCase
 {
 
    protected static JBossConnectionFactory cf;

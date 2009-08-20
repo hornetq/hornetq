@@ -247,7 +247,7 @@ import org.hornetq.utils.Pair;
  *
  * $Id$
  */
-public class CTSMiscellaneousTest extends JBMServerTestCase
+public class CTSMiscellaneousTest extends HornetQServerTestCase
 {
    // Constants -----------------------------------------------------
 

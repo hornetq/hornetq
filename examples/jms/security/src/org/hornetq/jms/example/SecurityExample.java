@@ -214,14 +214,14 @@ import javax.jms.TextMessage;
 import javax.jms.Topic;
 import javax.naming.InitialContext;
 
-import org.hornetq.common.example.JBMExample;
+import org.hornetq.common.example.HornetQExample;
 
 /**
  * A simple JMS example that shows how to access messaging with security configured.
  *
  * @author <a href="hgao@redhat.com">Howard Gao</a>
  */
-public class SecurityExample extends JBMExample
+public class SecurityExample extends HornetQExample
 {
    private boolean result = true;
    

@@ -213,7 +213,7 @@ import javax.jms.TopicPublisher;
 import javax.jms.TopicSession;
 import javax.jms.TopicSubscriber;
 
-import org.hornetq.jmstests.JBMServerTestCase;
+import org.hornetq.jmstests.HornetQServerTestCase;
 
 
 /**
@@ -226,7 +226,7 @@ import org.hornetq.jmstests.JBMServerTestCase;
  * $Id$
  *
  */
-public class ObjectMessageDeliveryTest extends JBMServerTestCase
+public class ObjectMessageDeliveryTest extends HornetQServerTestCase
 {
    // Constants -----------------------------------------------------
    

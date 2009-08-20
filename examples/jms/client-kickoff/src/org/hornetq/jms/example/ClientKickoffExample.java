@@ -203,7 +203,7 @@
  */
 package org.hornetq.jms.example;
 
-import org.hornetq.common.example.JBMExample;
+import org.hornetq.common.example.HornetQExample;
 import org.hornetq.core.management.MessagingServerControl;
 import org.hornetq.core.management.ObjectNames;
 
@@ -226,7 +226,7 @@ import java.util.concurrent.atomic.AtomicReference;
  *
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  */
-public class ClientKickoffExample extends JBMExample
+public class ClientKickoffExample extends HornetQExample
 {
    private String JMX_URL = "service:jmx:rmi:///jndi/rmi://localhost:3000/jmxrmi";
 

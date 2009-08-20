@@ -218,14 +218,14 @@ import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.naming.InitialContext;
 
-import org.hornetq.common.example.JBMExample;
+import org.hornetq.common.example.HornetQExample;
 
 /**
  * A simple JMS example that shows the delivery order of messages with priorities.
  *
  * @author <a href="hgao@redhat.com">Howard Gao</a>
  */
-public class MessagePriorityExample extends JBMExample
+public class MessagePriorityExample extends HornetQExample
 {
    private volatile boolean result = true;
    private ArrayList<TextMessage> msgReceived = new ArrayList<TextMessage>();

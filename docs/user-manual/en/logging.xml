@@ -17,7 +17,7 @@
     <para>Because some of the third party components used to bootstrap JBoss Messaging, i.e. the
         Microcontainer, use the JBoss Logging framework we have supplied a plugin class that
         redirects this to the JUL logger. This is set via a system property, <literal
-            >-Dorg.jboss.logging.Logger.pluginClass=org.hornetq.integration.logging.JBMLoggerPlugin</literal>.
+            >-Dorg.jboss.logging.Logger.pluginClass=org.hornetq.integration.logging.HornetQLoggerPlugin</literal>.
         This is only needed when starting the standalone server and is set in the run script. This
         is not a problem if you are embedding JBoss Messaging in your own code as the Microcontainer
         won't be being used.</para>

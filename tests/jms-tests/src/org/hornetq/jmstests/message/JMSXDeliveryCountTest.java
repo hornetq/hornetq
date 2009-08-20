@@ -222,7 +222,7 @@ import javax.transaction.xa.Xid;
 
 import com.arjuna.ats.internal.jta.transaction.arjunacore.TransactionManagerImple;
 
-import org.hornetq.jmstests.JBMServerTestCase;
+import org.hornetq.jmstests.HornetQServerTestCase;
 
 /**
  * 
@@ -234,7 +234,7 @@ import org.hornetq.jmstests.JBMServerTestCase;
  * $Id$
  *
  */
-public class JMSXDeliveryCountTest extends JBMServerTestCase
+public class JMSXDeliveryCountTest extends HornetQServerTestCase
 {
    // Constants ------------------------------------------------------------------------------------
 

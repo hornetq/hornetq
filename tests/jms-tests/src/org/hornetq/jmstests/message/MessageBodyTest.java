@@ -222,7 +222,7 @@ import javax.jms.Session;
 import javax.jms.StreamMessage;
 import javax.jms.TextMessage;
 
-import org.hornetq.jmstests.JBMServerTestCase;
+import org.hornetq.jmstests.HornetQServerTestCase;
 
 /**
  * 
@@ -234,7 +234,7 @@ import org.hornetq.jmstests.JBMServerTestCase;
  * $Id$
  * 
  */
-public class MessageBodyTest extends JBMServerTestCase
+public class MessageBodyTest extends HornetQServerTestCase
 {
 	// Constants -----------------------------------------------------
 

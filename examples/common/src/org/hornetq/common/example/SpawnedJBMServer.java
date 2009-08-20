@@ -203,7 +203,7 @@
  */
 package org.hornetq.common.example;
 
-import org.hornetq.integration.bootstrap.JBMBootstrapServer;
+import org.hornetq.integration.bootstrap.HornetQBootstrapServer;
 
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
@@ -212,7 +212,7 @@ public class SpawnedJBMServer
 {
    public static void main(String[] args)
    {
-      JBMBootstrapServer bootstrap;
+      HornetQBootstrapServer bootstrap;
       try
       {
          Thread killChecker = new KillChecker(".");
@@ -222,7 +222,7 @@ public class SpawnedJBMServer
          System.setProperty("java.naming.factory.initial", "org.jnp.interfaces.NamingContextFactory");
          System.setProperty("java.naming.factory.url.pkgs", "org.jboss.naming:org.jnp.interfaces");
          System.setProperty("org.jboss.logging.Logger.pluginClass", "org.hornetq.integration.logging.JBMLoggerPlugin");
-         bootstrap = new JBMBootstrapServer(args);
+         bootstrap = new HornetQBootstrapServer(args);
          bootstrap.run();
          System.out.println("STARTED::");
       }

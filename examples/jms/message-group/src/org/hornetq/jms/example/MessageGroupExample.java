@@ -218,7 +218,7 @@ import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.naming.InitialContext;
 
-import org.hornetq.common.example.JBMExample;
+import org.hornetq.common.example.HornetQExample;
 import org.hornetq.jms.client.JBossMessage;
 
 /**
@@ -226,7 +226,7 @@ import org.hornetq.jms.client.JBossMessage;
  *
  * @author <a href="hgao@redhat.com">Howard Gao</a>
  */
-public class MessageGroupExample extends JBMExample
+public class MessageGroupExample extends HornetQExample
 {
    private Map<String, String> messageReceiverMap = new ConcurrentHashMap<String, String>();
    private boolean result = true;

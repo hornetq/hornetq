@@ -212,7 +212,7 @@ import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.naming.InitialContext;
 
-import org.hornetq.common.example.JBMExample;
+import org.hornetq.common.example.HornetQExample;
 
 /**
  * This example demonstrates how subsequent connections created from a single connection factory can be load
@@ -226,7 +226,7 @@ import org.hornetq.common.example.JBMExample;
  *
  * @author <a href="tim.fox@jboss.com>Tim Fox</a>
  */
-public class ClientSideLoadBalancingExample extends JBMExample
+public class ClientSideLoadBalancingExample extends HornetQExample
 {
    public static void main(String[] args)
    {

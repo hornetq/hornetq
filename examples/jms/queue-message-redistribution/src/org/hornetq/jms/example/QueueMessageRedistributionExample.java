@@ -212,7 +212,7 @@ import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.naming.InitialContext;
 
-import org.hornetq.common.example.JBMExample;
+import org.hornetq.common.example.HornetQExample;
 
 /**
  * This example demonstrates a queue with the same name deployed on two nodes of a cluster.
@@ -222,7 +222,7 @@ import org.hornetq.common.example.JBMExample;
  *
  * @author <a href="tim.fox@jboss.com>Tim Fox</a>
  */
-public class QueueMessageRedistributionExample extends JBMExample
+public class QueueMessageRedistributionExample extends HornetQExample
 {
    public static void main(String[] args)
    {

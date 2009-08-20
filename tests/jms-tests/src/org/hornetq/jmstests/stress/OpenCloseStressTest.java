@@ -218,7 +218,7 @@ import javax.jms.TextMessage;
 import javax.jms.Topic;
 import javax.naming.InitialContext;
 
-import org.hornetq.jmstests.JBMServerTestCase;
+import org.hornetq.jmstests.HornetQServerTestCase;
 import org.hornetq.utils.UUIDGenerator;
 
 /**
@@ -238,7 +238,7 @@ import org.hornetq.utils.UUIDGenerator;
  *
  * $Id: StressTest.java 2349 2007-02-19 14:15:53Z timfox $
  */
-public class OpenCloseStressTest extends JBMServerTestCase
+public class OpenCloseStressTest extends HornetQServerTestCase
 {   
    InitialContext ic;
    ConnectionFactory cf;

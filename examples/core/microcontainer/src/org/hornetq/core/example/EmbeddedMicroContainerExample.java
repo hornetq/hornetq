@@ -212,7 +212,7 @@ import org.hornetq.core.client.ClientSession;
 import org.hornetq.core.client.ClientSessionFactory;
 import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
 import org.hornetq.core.config.TransportConfiguration;
-import org.hornetq.integration.bootstrap.JBMBootstrapServer;
+import org.hornetq.integration.bootstrap.HornetQBootstrapServer;
 import org.hornetq.integration.transports.netty.NettyConnectorFactory;
 
 
@@ -230,13 +230,13 @@ public class EmbeddedMicroContainerExample
    public static void main(String[] args)
    {
 
-      JBMBootstrapServer jbm = null;
+      HornetQBootstrapServer hornetQ = null;
       try
       {
          
          // Step 1. Start the server         
-         jbm = new JBMBootstrapServer("./server0/jbm-jboss-beans.xml");
-         jbm.run();
+         hornetQ = new HornetQBootstrapServer("./server0/jbm-jboss-beans.xml");
+         hornetQ.run();
          
          // Step 2. As we are not using a JNDI environment we instantiate the objects directly         
          ClientSessionFactory sf = new ClientSessionFactoryImpl (new TransportConfiguration(NettyConnectorFactory.class.getName()));
@@ -289,9 +289,9 @@ public class EmbeddedMicroContainerExample
             }
 
             // Step 9. Shutdown the container
-            if (jbm != null)
+            if (hornetQ != null)
             {
-               jbm.shutDown();
+               hornetQ.shutDown();
             }
          }
       }

@@ -228,7 +228,7 @@ import org.hornetq.core.exception.MessagingException;
 import org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
 import org.hornetq.core.security.CheckType;
-import org.hornetq.core.security.JBMSecurityManager;
+import org.hornetq.core.security.HornetQSecurityManager;
 import org.hornetq.core.security.Role;
 import org.hornetq.core.server.Messaging;
 import org.hornetq.core.server.MessagingServer;
@@ -291,7 +291,7 @@ public class SecurityNotificationTest extends UnitTestCase
       Set<Role> roles = new HashSet<Role>();
       roles.add(role);
       server.getSecurityRepository().addMatch(address.toString(), roles);
-      JBMSecurityManager securityManager =  server.getSecurityManager();
+      HornetQSecurityManager securityManager =  server.getSecurityManager();
       securityManager.addRole("guest", "roleCanNotCreateQueue");
       
       flush(notifConsumer);
@@ -337,7 +337,7 @@ public class SecurityNotificationTest extends UnitTestCase
 
       notifQueue = randomSimpleString();
 
-      JBMSecurityManager securityManager = server.getSecurityManager();
+      HornetQSecurityManager securityManager = server.getSecurityManager();
       securityManager.addUser("admin", "admin");      
       securityManager.addUser("guest", "guest");
       securityManager.setDefaultUser("guest");

@@ -207,7 +207,7 @@ package org.hornetq.tests.unit.core.deployers.impl;
 import org.hornetq.core.deployers.DeploymentManager;
 import org.hornetq.core.deployers.impl.BasicUserCredentialsDeployer;
 import org.hornetq.core.security.CheckType;
-import org.hornetq.core.security.JBMSecurityManager;
+import org.hornetq.core.security.HornetQSecurityManager;
 import org.hornetq.core.security.Role;
 import org.hornetq.tests.util.UnitTestCase;
 import org.hornetq.utils.XMLUtil;
@@ -229,7 +229,7 @@ public class BasicUserCredentialsDeployerTest extends UnitTestCase
 {
    private BasicUserCredentialsDeployer deployer;
    
-   FakeJBMUpdateableSecurityManager securityManager;
+   FakeHornetQUpdateableSecurityManager securityManager;
 
    private static final String simpleSecurityXml = "<configuration>\n" +
                                                    "<defaultuser name=\"guest\" password=\"guest\">\n" +
@@ -259,7 +259,7 @@ public class BasicUserCredentialsDeployerTest extends UnitTestCase
    {
       super.setUp();
       DeploymentManager deploymentManager = new FakeDeploymentManager();
-      securityManager = new FakeJBMUpdateableSecurityManager();
+      securityManager = new FakeHornetQUpdateableSecurityManager();
       deployer = new BasicUserCredentialsDeployer(deploymentManager, securityManager);
    }
 
@@ -370,7 +370,7 @@ public class BasicUserCredentialsDeployerTest extends UnitTestCase
       assertEquals("bar", roles.get(2));
    }
 
-   class FakeJBMUpdateableSecurityManager implements JBMSecurityManager
+   class FakeHornetQUpdateableSecurityManager implements HornetQSecurityManager
    {
       String defaultUser;
 

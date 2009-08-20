@@ -228,7 +228,7 @@ import org.hornetq.jms.client.JBossMessage;
 import org.hornetq.jms.client.JBossObjectMessage;
 import org.hornetq.jms.client.JBossStreamMessage;
 import org.hornetq.jms.client.JBossTextMessage;
-import org.hornetq.jmstests.JBMServerTestCase;
+import org.hornetq.jmstests.HornetQServerTestCase;
 
 /**
  *
@@ -238,7 +238,7 @@ import org.hornetq.jmstests.JBMServerTestCase;
  *
  * $Id: MessageImplTestBase.java 2883 2007-07-12 23:36:16Z timfox $
  */
-public class MessageHeaderTestBase extends JBMServerTestCase
+public class MessageHeaderTestBase extends HornetQServerTestCase
 {
    // Constants -----------------------------------------------------
 

@@ -206,7 +206,7 @@ package org.hornetq.core.security.impl;
 
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.security.CheckType;
-import org.hornetq.core.security.JBMSecurityManager;
+import org.hornetq.core.security.HornetQSecurityManager;
 import org.hornetq.core.security.Role;
 import org.hornetq.core.server.MessagingComponent;
 
@@ -231,7 +231,7 @@ import java.util.Set;
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="jmesnil@redhat.com">Jeff Mesnil</a>
  */
-public class JAASSecurityManager implements JBMSecurityManager, MessagingComponent
+public class JAASSecurityManager implements HornetQSecurityManager, MessagingComponent
 {
    private static final Logger log = Logger.getLogger(JAASSecurityManager.class);
 

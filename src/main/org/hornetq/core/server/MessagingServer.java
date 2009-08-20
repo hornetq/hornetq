@@ -219,7 +219,7 @@ import org.hornetq.core.remoting.RemotingConnection;
 import org.hornetq.core.remoting.impl.wireformat.CreateSessionResponseMessage;
 import org.hornetq.core.remoting.impl.wireformat.ReattachSessionResponseMessage;
 import org.hornetq.core.remoting.server.RemotingService;
-import org.hornetq.core.security.JBMSecurityManager;
+import org.hornetq.core.security.HornetQSecurityManager;
 import org.hornetq.core.security.Role;
 import org.hornetq.core.server.cluster.ClusterManager;
 import org.hornetq.core.settings.HierarchicalRepository;
@@ -248,7 +248,7 @@ public interface MessagingServer extends MessagingComponent
 
    ManagementService getManagementService();
 
-   JBMSecurityManager getSecurityManager();
+   HornetQSecurityManager getSecurityManager();
 
    MBeanServer getMBeanServer();
 

@@ -214,8 +214,8 @@ import javax.jms.TextMessage;
 import org.hornetq.core.config.TransportConfiguration;
 import org.hornetq.core.config.impl.FileConfiguration;
 import org.hornetq.core.logging.Logger;
-import org.hornetq.core.security.JBMSecurityManager;
-import org.hornetq.core.security.impl.JBMSecurityManagerImpl;
+import org.hornetq.core.security.HornetQSecurityManager;
+import org.hornetq.core.security.impl.HornetQSecurityManagerImpl;
 import org.hornetq.core.server.MessagingServer;
 import org.hornetq.core.server.impl.MessagingServerImpl;
 import org.hornetq.integration.transports.netty.NettyConnectorFactory;
@@ -349,7 +349,7 @@ public class JMSServerStartStopTest extends UnitTestCase
       
       fc.start();
       
-      JBMSecurityManager sm = new JBMSecurityManagerImpl();
+      HornetQSecurityManager sm = new HornetQSecurityManagerImpl();
       
       MessagingServer liveServer = new MessagingServerImpl(fc, sm);     
       

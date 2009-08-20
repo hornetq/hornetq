@@ -214,7 +214,7 @@ import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.naming.InitialContext;
 
-import org.hornetq.common.example.JBMExample;
+import org.hornetq.common.example.HornetQExample;
 
 import java.util.Enumeration;
 
@@ -225,7 +225,7 @@ import java.util.Enumeration;
  *
  *
  */
-public class QueueBrowserExample extends JBMExample
+public class QueueBrowserExample extends HornetQExample
 {
    public static void main(String[] args)
    {

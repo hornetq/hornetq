@@ -221,9 +221,6 @@ import javax.jms.TopicSession;
 import javax.jms.XAConnection;
 import javax.jms.XASession;
 
-import org.hornetq.core.client.ClientSession;
-import org.hornetq.jms.client.JBossSession;
-
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
@@ -231,7 +228,7 @@ import org.hornetq.jms.client.JBossSession;
  *
  * $Id$
  */
-public class SessionTest extends JBMServerTestCase
+public class SessionTest extends HornetQServerTestCase
 {
    // Constants -----------------------------------------------------
 

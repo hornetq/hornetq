@@ -204,7 +204,7 @@
 package org.hornetq.jms.example;
 
 import org.hornetq.common.example.DummyXid;
-import org.hornetq.common.example.JBMExample;
+import org.hornetq.common.example.HornetQExample;
 import org.hornetq.utils.UUIDGenerator;
 
 import javax.jms.MessageConsumer;
@@ -224,7 +224,7 @@ import javax.transaction.xa.Xid;
  *
  * @author <a href="hgao@redhat.com">Howard Gao</a>
  */
-public class XAReceiveExample extends JBMExample
+public class XAReceiveExample extends HornetQExample
 {
    private volatile boolean result = true;
    

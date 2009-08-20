@@ -206,7 +206,6 @@ package org.hornetq.jms.example;
 import javax.jms.Message;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
-import javax.jms.ObjectMessage;
 import javax.jms.Queue;
 import javax.jms.QueueConnection;
 import javax.jms.QueueConnectionFactory;
@@ -216,7 +215,7 @@ import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.naming.InitialContext;
 
-import org.hornetq.common.example.JBMExample;
+import org.hornetq.common.example.HornetQExample;
 import org.hornetq.jms.JBossQueue;
 import org.hornetq.jms.server.management.impl.JMSManagementHelper;
 
@@ -225,7 +224,7 @@ import org.hornetq.jms.server.management.impl.JMSManagementHelper;
  *
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  */
-public class ManagementExample extends JBMExample
+public class ManagementExample extends HornetQExample
 {
    public static void main(String[] args)
    {

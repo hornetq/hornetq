@@ -221,7 +221,7 @@ import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
-import org.hornetq.core.security.JBMSecurityManager;
+import org.hornetq.core.security.HornetQSecurityManager;
 import org.hornetq.core.server.JournalType;
 import org.hornetq.core.server.Messaging;
 import org.hornetq.core.server.MessagingServer;
@@ -394,7 +394,7 @@ public class ServiceTestBase extends UnitTestCase
 
    protected MessagingServer createServer(final boolean realFiles,
                                           final Configuration configuration,
-                                          final JBMSecurityManager securityManager)
+                                          final HornetQSecurityManager securityManager)
    {
       MessagingServer server;
 

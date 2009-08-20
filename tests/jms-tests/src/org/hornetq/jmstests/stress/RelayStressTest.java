@@ -216,7 +216,7 @@ import javax.jms.Topic;
 import javax.naming.InitialContext;
 
 import org.hornetq.core.logging.Logger;
-import org.hornetq.jmstests.JBMServerTestCase;
+import org.hornetq.jmstests.HornetQServerTestCase;
 
 /**
  * Send messages to a topic with selector1, consumer them with multiple consumers and relay them
@@ -228,7 +228,7 @@ import org.hornetq.jmstests.JBMServerTestCase;
  * $Id$
  *
  */
-public class RelayStressTest extends JBMServerTestCase
+public class RelayStressTest extends HornetQServerTestCase
 {
    // Constants -----------------------------------------------------
 

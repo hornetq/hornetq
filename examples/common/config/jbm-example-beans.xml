@@ -26,7 +26,7 @@
 
    <!--<bean name="JBMSecurityManager" class="org.hornetq.core.security.impl.JBossASSecurityManager"/>-->
 
-   <bean name="JBMSecurityManager" class="org.hornetq.core.security.impl.JBMSecurityManagerImpl">
+   <bean name="JBMSecurityManager" class="org.hornetq.core.security.impl.HornetQSecurityManagerImpl">
    </bean>
 
    <bean name="BasicSecurityDeployer" class="org.hornetq.core.deployers.impl.BasicUserCredentialsDeployer">

@@ -26,7 +26,7 @@
    </bean>
 
     <!-- The security manager -->
-   <bean name="JBMSecurityManager" class="org.hornetq.core.security.impl.JBMSecurityManagerImpl">
+   <bean name="JBMSecurityManager" class="org.hornetq.core.security.impl.HornetQSecurityManagerImpl">
       <start ignored="true"/>
       <stop ignored="true"/>
    </bean>

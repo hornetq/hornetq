@@ -209,7 +209,7 @@ import javax.jms.Destination;
 import javax.jms.Topic;
 import javax.jms.XASession;
 
-import org.hornetq.jmstests.JBMServerTestCase;
+import org.hornetq.jmstests.HornetQServerTestCase;
 
 /**
  * 
@@ -220,7 +220,7 @@ import org.hornetq.jmstests.JBMServerTestCase;
  *
  * $Id$
 */
-public class JMSStressTestBase extends JBMServerTestCase
+public class JMSStressTestBase extends HornetQServerTestCase
 {
    protected static final int NUM_PERSISTENT_MESSAGES = 4000;
    

@@ -213,7 +213,7 @@ import javax.jms.TextMessage;
 import javax.jms.Topic;
 import javax.naming.InitialContext;
 
-import org.hornetq.common.example.JBMExample;
+import org.hornetq.common.example.HornetQExample;
 import org.hornetq.jms.JBossTopic;
 
 /**
@@ -223,7 +223,7 @@ import org.hornetq.jms.JBossTopic;
  *
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
  */
-public class TopicHierarchyExample extends JBMExample
+public class TopicHierarchyExample extends HornetQExample
 {
    public static void main(String[] args)
    {

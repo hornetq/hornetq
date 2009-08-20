@@ -244,7 +244,7 @@ import org.jboss.tm.TxUtils;
  * $Id$
  *
  */
-public class XATest extends JBMServerTestCase
+public class XATest extends HornetQServerTestCase
 {
    // Constants -----------------------------------------------------
 

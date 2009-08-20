@@ -218,7 +218,7 @@ import javax.jms.TextMessage;
 import javax.naming.InitialContext;
 
 import org.hornetq.core.logging.Logger;
-import org.hornetq.jmstests.JBMServerTestCase;
+import org.hornetq.jmstests.HornetQServerTestCase;
 
 /**
  * This test was added to test regression on http://jira.jboss.com/jira/browse/JBMESSAGING-660
@@ -226,7 +226,7 @@ import org.hornetq.jmstests.JBMServerTestCase;
  * @version <tt>$Revision$</tt>
  * $Id$
  */
-public class ConcurrentCloseStressTest extends JBMServerTestCase
+public class ConcurrentCloseStressTest extends HornetQServerTestCase
 {
    private static final Logger log = Logger.getLogger(ConcurrentCloseStressTest.class);
 

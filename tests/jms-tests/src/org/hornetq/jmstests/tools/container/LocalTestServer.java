@@ -247,7 +247,7 @@ import org.hornetq.core.postoffice.BindingType;
 import org.hornetq.core.security.Role;
 import org.hornetq.core.server.MessagingServer;
 import org.hornetq.core.server.Queue;
-import org.hornetq.integration.bootstrap.JBMBootstrapServer;
+import org.hornetq.integration.bootstrap.HornetQBootstrapServer;
 import org.hornetq.jms.JBossQueue;
 import org.hornetq.jms.JBossTopic;
 import org.hornetq.jms.server.JMSServerManager;
@@ -290,7 +290,7 @@ public class LocalTestServer implements Server, Runnable
 
    private int serverIndex;
 
-   JBMBootstrapServer bootstrap;
+   HornetQBootstrapServer bootstrap;
 
    // Constructors ---------------------------------------------------------------------------------
 
@@ -327,7 +327,7 @@ public class LocalTestServer implements Server, Runnable
       }
 
       PropertyKernelConfig propertyKernelConfig = new PropertyKernelConfig(System.getProperties());
-      bootstrap = new JBMBootstrapServer(propertyKernelConfig, containerConfig);
+      bootstrap = new HornetQBootstrapServer(propertyKernelConfig, containerConfig);
       System.setProperty(Constants.SERVER_INDEX_PROPERTY_NAME, "" + getServerID());
       bootstrap.run();
       started = true;

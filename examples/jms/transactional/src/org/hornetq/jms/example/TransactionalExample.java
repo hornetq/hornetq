@@ -212,14 +212,14 @@ import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.naming.InitialContext;
 
-import org.hornetq.common.example.JBMExample;
+import org.hornetq.common.example.HornetQExample;
 
 /**
  * A simple JMS example that sends and consume message transactionally.
  *
  * @author <a href="hgao@redhat.com">Howard Gao</a>
  */
-public class TransactionalExample extends JBMExample
+public class TransactionalExample extends HornetQExample
 {
    public static void main(String[] args)
    {

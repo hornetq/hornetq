@@ -207,7 +207,7 @@ package org.hornetq.jmstests.util;
 import javax.naming.InitialContext;
 import javax.naming.NameNotFoundException;
 
-import org.hornetq.jmstests.JBMServerTestCase;
+import org.hornetq.jmstests.HornetQServerTestCase;
 import org.hornetq.utils.JNDIUtil;
 
 
@@ -215,7 +215,7 @@ import org.hornetq.utils.JNDIUtil;
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>
  * @version <tt>$Revision$</tt>
  */
-public class JNDIUtilTest extends JBMServerTestCase
+public class JNDIUtilTest extends HornetQServerTestCase
 {
    // Constants -----------------------------------------------------
 

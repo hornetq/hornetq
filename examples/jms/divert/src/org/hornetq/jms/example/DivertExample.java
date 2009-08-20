@@ -214,7 +214,7 @@ import javax.jms.TextMessage;
 import javax.jms.Topic;
 import javax.naming.InitialContext;
 
-import org.hornetq.common.example.JBMExample;
+import org.hornetq.common.example.HornetQExample;
 
 /**
  * This examples demonstrates the use of JBoss Messaging "Diverts" to transparently divert or copy messages
@@ -224,7 +224,7 @@ import org.hornetq.common.example.JBMExample;
  *
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
  */
-public class DivertExample extends JBMExample
+public class DivertExample extends HornetQExample
 {
    public static void main(String[] args)
    {

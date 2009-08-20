@@ -213,10 +213,10 @@ import org.hornetq.integration.transports.netty.NettyConnector;
 import org.hornetq.jms.JBossQueue;
 import org.hornetq.jms.client.JBossConnectionFactory;
 import org.hornetq.ra.ConnectionFactoryProperties;
-import org.hornetq.ra.JBMManagedConnectionFactory;
-import org.hornetq.ra.JBMResourceAdapter;
-import org.hornetq.ra.inflow.JBMActivation;
-import org.hornetq.ra.inflow.JBMActivationSpec;
+import org.hornetq.ra.HornetQManagedConnectionFactory;
+import org.hornetq.ra.HornetQResourceAdapter;
+import org.hornetq.ra.inflow.HornetQActivation;
+import org.hornetq.ra.inflow.HornetQActivationSpec;
 import org.hornetq.tests.util.ServiceTestBase;
 
 import javax.jms.Connection;
@@ -256,7 +256,7 @@ public class ResourceAdapterTest extends ServiceTestBase
 
    public void testDefaultConnectionFactory() throws Exception
    {
-      JBMResourceAdapter ra = new JBMResourceAdapter();
+      HornetQResourceAdapter ra = new HornetQResourceAdapter();
       ra.setConnectorClassName(InVMConnector.class.getName());
       JBossConnectionFactory factory = ra.getDefaultJBossConnectionFactory();
       assertEquals(factory.getCallTimeout(), ClientSessionFactoryImpl.DEFAULT_CALL_TIMEOUT);
@@ -292,7 +292,7 @@ public class ResourceAdapterTest extends ServiceTestBase
 
    public void test2DefaultConnectionFactorySame() throws Exception
    {
-      JBMResourceAdapter ra = new JBMResourceAdapter();
+      HornetQResourceAdapter ra = new HornetQResourceAdapter();
       ra.setConnectorClassName(InVMConnector.class.getName());
       JBossConnectionFactory factory = ra.getDefaultJBossConnectionFactory();
       JBossConnectionFactory factory2 = ra.getDefaultJBossConnectionFactory();
@@ -301,7 +301,7 @@ public class ResourceAdapterTest extends ServiceTestBase
 
    public void testCreateConnectionFactoryNoOverrides() throws Exception
    {
-      JBMResourceAdapter ra = new JBMResourceAdapter();
+      HornetQResourceAdapter ra = new HornetQResourceAdapter();
       ra.setConnectorClassName(InVMConnector.class.getName());
       JBossConnectionFactory factory = ra.createJBossConnectionFactory(new ConnectionFactoryProperties());
       assertEquals(factory.getCallTimeout(), ClientSessionFactoryImpl.DEFAULT_CALL_TIMEOUT);
@@ -337,7 +337,7 @@ public class ResourceAdapterTest extends ServiceTestBase
 
    public void testDefaultConnectionFactoryOverrides() throws Exception
    {
-      JBMResourceAdapter ra = new JBMResourceAdapter();
+      HornetQResourceAdapter ra = new HornetQResourceAdapter();
       ra.setConnectorClassName(InVMConnector.class.getName());
       ra.setAutoGroup(!ClientSessionFactoryImpl.DEFAULT_AUTO_GROUP);
       ra.setBlockOnAcknowledge(!ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_ACKNOWLEDGE);
@@ -400,7 +400,7 @@ public class ResourceAdapterTest extends ServiceTestBase
 
    public void testCreateConnectionFactoryOverrides() throws Exception
    {
-      JBMResourceAdapter ra = new JBMResourceAdapter();
+      HornetQResourceAdapter ra = new HornetQResourceAdapter();
       ra.setConnectorClassName(InVMConnector.class.getName());
       ConnectionFactoryProperties connectionFactoryProperties = new ConnectionFactoryProperties();
       connectionFactoryProperties.setAutoGroup(!ClientSessionFactoryImpl.DEFAULT_AUTO_GROUP);
@@ -464,7 +464,7 @@ public class ResourceAdapterTest extends ServiceTestBase
 
    public void testCreateConnectionFactoryOverrideConnector() throws Exception
    {
-      JBMResourceAdapter ra = new JBMResourceAdapter();
+      HornetQResourceAdapter ra = new HornetQResourceAdapter();
       ra.setConnectorClassName(InVMConnector.class.getName());
       ConnectionFactoryProperties connectionFactoryProperties = new ConnectionFactoryProperties();
       connectionFactoryProperties.setConnectorClassName(NettyConnector.class.getName());
@@ -475,7 +475,7 @@ public class ResourceAdapterTest extends ServiceTestBase
 
    public void testCreateConnectionFactoryOverrideDiscovery() throws Exception
    {
-      JBMResourceAdapter ra = new JBMResourceAdapter();
+      HornetQResourceAdapter ra = new HornetQResourceAdapter();
       ra.setConnectorClassName(InVMConnector.class.getName());
       ConnectionFactoryProperties connectionFactoryProperties = new ConnectionFactoryProperties();
       connectionFactoryProperties.setDiscoveryAddress("myhost");
@@ -487,7 +487,7 @@ public class ResourceAdapterTest extends ServiceTestBase
 
     public void testCreateConnectionFactoryThrowsException() throws Exception
    {
-      JBMResourceAdapter ra = new JBMResourceAdapter();
+      HornetQResourceAdapter ra = new HornetQResourceAdapter();
       ConnectionFactoryProperties connectionFactoryProperties = new ConnectionFactoryProperties();
       try
       {
@@ -502,14 +502,14 @@ public class ResourceAdapterTest extends ServiceTestBase
 
    public void testValidateProperties() throws Exception
    {
-      validateGettersAndSetters(new JBMResourceAdapter(), "backupTransportConfiguration");
-      validateGettersAndSetters(new JBMManagedConnectionFactory(), "connectionParameters", "sessionDefaultType", "backupConnectionParameters");
-      validateGettersAndSetters(new JBMActivationSpec(),
+      validateGettersAndSetters(new HornetQResourceAdapter(), "backupTransportConfiguration");
+      validateGettersAndSetters(new HornetQManagedConnectionFactory(), "connectionParameters", "sessionDefaultType", "backupConnectionParameters");
+      validateGettersAndSetters(new HornetQActivationSpec(),
                                 "connectionParameters",
                                 "acknowledgeMode",
                                 "subscriptionDurability");
 
-      JBMActivationSpec spec = new JBMActivationSpec();
+      HornetQActivationSpec spec = new HornetQActivationSpec();
 
       spec.setAcknowledgeMode("DUPS_OK_ACKNOWLEDGE");
       assertEquals("Dups-ok-acknowledge", spec.getAcknowledgeMode());
@@ -521,8 +521,8 @@ public class ResourceAdapterTest extends ServiceTestBase
       assertEquals("NonDurable", spec.getSubscriptionDurability());
       
       
-      spec = new JBMActivationSpec();
-      JBMResourceAdapter adapter = new JBMResourceAdapter();
+      spec = new HornetQActivationSpec();
+      HornetQResourceAdapter adapter = new HornetQResourceAdapter();
 
       adapter.setUserName("us1");
       adapter.setPassword("ps1");
@@ -560,7 +560,7 @@ public class ResourceAdapterTest extends ServiceTestBase
          session.createQueue(queue.getSimpleAddress(), queue.getSimpleAddress(), true);
          session.close();
          
-         JBMResourceAdapter ra = new JBMResourceAdapter();
+         HornetQResourceAdapter ra = new HornetQResourceAdapter();
 
          ra.setConnectorClassName("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory");
          ra.setConnectionParameters("bm.remoting.invm.serverid=0");
@@ -572,7 +572,7 @@ public class ResourceAdapterTest extends ServiceTestBase
          
          conn.close();
          
-         JBMActivationSpec spec = new JBMActivationSpec();
+         HornetQActivationSpec spec = new HornetQActivationSpec();
          
          spec.setResourceAdapter(ra);
          
@@ -587,7 +587,7 @@ public class ResourceAdapterTest extends ServiceTestBase
          spec.setMinSession(1);
          spec.setMaxSession(1);
          
-         JBMActivation activation = new JBMActivation(ra, new FakeMessageEndpointFactory(), spec);
+         HornetQActivation activation = new HornetQActivation(ra, new FakeMessageEndpointFactory(), spec);
          
          activation.start();
          activation.stop();
@@ -607,7 +607,7 @@ public class ResourceAdapterTest extends ServiceTestBase
 
    // Inner classes -------------------------------------------------
 
-   class MockJBMResourceAdapter extends JBMResourceAdapter
+   class MockHornetQResourceAdapter extends HornetQResourceAdapter
    {
       /*public JBossConnectionFactory createRemoteFactory(String connectorClassName,
                                                         Map<String, Object> connectionParameters)

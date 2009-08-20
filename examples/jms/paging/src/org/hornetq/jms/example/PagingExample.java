@@ -203,7 +203,7 @@
  */
 package org.hornetq.jms.example;
 
-import org.hornetq.common.example.JBMExample;
+import org.hornetq.common.example.HornetQExample;
 
 import javax.jms.BytesMessage;
 import javax.jms.Connection;
@@ -220,7 +220,7 @@ import javax.naming.InitialContext;
  *
  * @author <a href="csuconic@redhat.com">Clebert Suconic</a>
  */
-public class PagingExample extends JBMExample
+public class PagingExample extends HornetQExample
 {
    public static void main(String[] args)
    {

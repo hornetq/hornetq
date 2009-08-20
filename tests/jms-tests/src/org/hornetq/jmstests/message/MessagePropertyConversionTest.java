@@ -211,7 +211,7 @@ import javax.jms.MessageFormatException;
 import javax.jms.MessageProducer;
 import javax.jms.Session;
 
-import org.hornetq.jmstests.JBMServerTestCase;
+import org.hornetq.jmstests.HornetQServerTestCase;
 
 /**
  * 
@@ -222,7 +222,7 @@ import org.hornetq.jmstests.JBMServerTestCase;
  * 
  * $Id$
  */
-public class MessagePropertyConversionTest extends JBMServerTestCase
+public class MessagePropertyConversionTest extends HornetQServerTestCase
 {
    // Attributes ----------------------------------------------------
 

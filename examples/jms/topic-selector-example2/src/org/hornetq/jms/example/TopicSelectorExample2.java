@@ -215,14 +215,14 @@ import javax.jms.TextMessage;
 import javax.jms.Topic;
 import javax.naming.InitialContext;
 
-import org.hornetq.common.example.JBMExample;
+import org.hornetq.common.example.HornetQExample;
 
 /**
  * A simple JMS example that consumes messages using selectors.
  *
  * @author <a href="hgao@redhat.com">Howard Gao</a>
  */
-public class TopicSelectorExample2 extends JBMExample
+public class TopicSelectorExample2 extends HornetQExample
 {
    private volatile boolean result = true;
    

@@ -212,14 +212,14 @@ import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.naming.InitialContext;
 
-import org.hornetq.common.example.JBMExample;
+import org.hornetq.common.example.HornetQExample;
 
 /**
  * A simple JMS Queue example that uses SSL secure transport.
  *
  * @author <a href="hgao@redhat.com">Howard Gao</a>
  */
-public class SSLExample extends JBMExample
+public class SSLExample extends HornetQExample
 {
    public static void main(String[] args)
    {

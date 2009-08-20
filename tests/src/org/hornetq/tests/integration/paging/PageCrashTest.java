@@ -225,8 +225,8 @@ import org.hornetq.core.paging.PagingStore;
 import org.hornetq.core.paging.impl.PagingManagerImpl;
 import org.hornetq.core.paging.impl.PagingStoreFactoryNIO;
 import org.hornetq.core.paging.impl.PagingStoreImpl;
-import org.hornetq.core.security.JBMSecurityManager;
-import org.hornetq.core.security.impl.JBMSecurityManagerImpl;
+import org.hornetq.core.security.HornetQSecurityManager;
+import org.hornetq.core.security.impl.HornetQSecurityManagerImpl;
 import org.hornetq.core.server.MessagingServer;
 import org.hornetq.core.server.impl.MessagingServerImpl;
 import org.hornetq.core.settings.impl.AddressSettings;
@@ -401,7 +401,7 @@ public class PageCrashTest extends ServiceTestBase
 
    private MessagingServer newMessagingServer(final Configuration configuration)
    {
-      JBMSecurityManager securityManager = new JBMSecurityManagerImpl();
+      HornetQSecurityManager securityManager = new HornetQSecurityManagerImpl();
 
       MessagingServer server = new FailingMessagingServerImpl(configuration, securityManager);
 
@@ -421,7 +421,7 @@ public class PageCrashTest extends ServiceTestBase
     *  before the page-file was removed */
    class FailingMessagingServerImpl extends MessagingServerImpl
    {
-      FailingMessagingServerImpl(final Configuration config, final JBMSecurityManager securityManager)
+      FailingMessagingServerImpl(final Configuration config, final HornetQSecurityManager securityManager)
       {
          super(config, ManagementFactory.getPlatformMBeanServer(), securityManager);
       }

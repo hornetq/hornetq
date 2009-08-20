@@ -217,7 +217,7 @@ import org.hornetq.core.management.Notification;
 import org.hornetq.core.management.NotificationService;
 import org.hornetq.core.management.NotificationType;
 import org.hornetq.core.security.CheckType;
-import org.hornetq.core.security.JBMSecurityManager;
+import org.hornetq.core.security.HornetQSecurityManager;
 import org.hornetq.core.security.Role;
 import org.hornetq.core.security.SecurityStore;
 import org.hornetq.core.server.ServerSession;
@@ -252,7 +252,7 @@ public class SecurityStoreImpl implements SecurityStore, HierarchicalRepositoryC
 
    private final HierarchicalRepository<Set<Role>> securityRepository;
 
-   private final JBMSecurityManager securityManager;
+   private final HornetQSecurityManager securityManager;
 
    private final ConcurrentMap<String, ConcurrentHashSet<SimpleString>> cache = new ConcurrentHashMap<String, ConcurrentHashSet<SimpleString>>();
 
@@ -274,7 +274,7 @@ public class SecurityStoreImpl implements SecurityStore, HierarchicalRepositoryC
     * @param notificationService can be <code>null</code>
     */
    public SecurityStoreImpl(final HierarchicalRepository<Set<Role>> securityRepository,
-                            final JBMSecurityManager securityManager,
+                            final HornetQSecurityManager securityManager,
                             final long invalidationInterval,
                             final boolean securityEnabled,
                             final String managementClusterUser,

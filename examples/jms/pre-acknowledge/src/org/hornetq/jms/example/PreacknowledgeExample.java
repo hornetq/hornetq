@@ -208,7 +208,6 @@ import javax.jms.ConnectionFactory;
 import javax.jms.Message;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
-import javax.jms.ObjectMessage;
 import javax.jms.Queue;
 import javax.jms.QueueConnection;
 import javax.jms.QueueRequestor;
@@ -217,7 +216,7 @@ import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.naming.InitialContext;
 
-import org.hornetq.common.example.JBMExample;
+import org.hornetq.common.example.HornetQExample;
 import org.hornetq.jms.JBossQueue;
 import org.hornetq.jms.client.JBossSession;
 import org.hornetq.jms.server.management.impl.JMSManagementHelper;
@@ -232,7 +231,7 @@ import org.hornetq.jms.server.management.impl.JMSManagementHelper;
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */
-public class PreacknowledgeExample extends JBMExample
+public class PreacknowledgeExample extends HornetQExample
 {
    public static void main(String[] args)
    {

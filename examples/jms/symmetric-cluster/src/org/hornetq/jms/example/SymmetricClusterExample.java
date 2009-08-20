@@ -203,7 +203,7 @@
  */
 package org.hornetq.jms.example;
 
-import org.hornetq.common.example.JBMExample;
+import org.hornetq.common.example.HornetQExample;
 import org.hornetq.jms.JBossQueue;
 import org.hornetq.jms.JBossTopic;
 import org.hornetq.jms.client.JBossConnectionFactory;
@@ -234,7 +234,7 @@ import javax.jms.Topic;
  *
  * @author <a href="tim.fox@jboss.com>Tim Fox</a>
  */
-public class SymmetricClusterExample extends JBMExample
+public class SymmetricClusterExample extends HornetQExample
 {
    public static void main(String[] args)
    {

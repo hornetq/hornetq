@@ -216,7 +216,7 @@ import javax.jms.Queue;
 import javax.jms.Session;
 import javax.jms.TextMessage;
 
-import org.hornetq.common.example.JBMExample;
+import org.hornetq.common.example.HornetQExample;
 import org.hornetq.core.config.TransportConfiguration;
 import org.hornetq.integration.transports.netty.NettyConnectorFactory;
 import org.hornetq.jms.JBossQueue;
@@ -232,7 +232,7 @@ import org.hornetq.jms.client.JBossConnectionFactory;
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */
-public class InstantiateConnectionFactoryExample extends JBMExample
+public class InstantiateConnectionFactoryExample extends HornetQExample
 {
    public static void main(String[] args)
    {
