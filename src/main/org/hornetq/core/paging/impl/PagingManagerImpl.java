@@ -216,7 +216,7 @@ public class PagingManagerImpl implements PagingManager
       }
    }
 
-   // MessagingComponent implementation
+   // HornetQComponent implementation
    // ------------------------------------------------------------------------------------------------
 
    public boolean isStarted()

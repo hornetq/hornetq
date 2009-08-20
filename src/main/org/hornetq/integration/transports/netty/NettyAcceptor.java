@@ -268,7 +268,7 @@ public class NettyAcceptor implements Acceptor
             }
 
             ChannelPipelineSupport.addCodecFilter(pipeline, handler);
-            pipeline.addLast("handler", new MessagingServerChannelHandler(channelGroup, handler, new Listener()));
+            pipeline.addLast("handler", new HornetQServerChannelHandler(channelGroup, handler, new Listener()));
             return pipeline;
          }
       };
@@ -408,9 +408,9 @@ public class NettyAcceptor implements Acceptor
    // Inner classes -----------------------------------------------------------------------------
 
    @ChannelPipelineCoverage("one")
-   private final class MessagingServerChannelHandler extends HornetQChannelHandler
+   private final class HornetQServerChannelHandler extends HornetQChannelHandler
    {
-      MessagingServerChannelHandler(ChannelGroup group, BufferHandler handler, ConnectionLifeCycleListener listener)
+      HornetQServerChannelHandler(ChannelGroup group, BufferHandler handler, ConnectionLifeCycleListener listener)
       {
          super(group, handler, listener);
       }

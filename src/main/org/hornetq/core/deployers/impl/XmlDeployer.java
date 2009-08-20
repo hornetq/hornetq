@@ -16,7 +16,7 @@ package org.hornetq.core.deployers.impl;
 import org.hornetq.core.deployers.Deployer;
 import org.hornetq.core.deployers.DeploymentManager;
 import org.hornetq.core.logging.Logger;
-import org.hornetq.core.server.MessagingComponent;
+import org.hornetq.core.server.HornetQComponent;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -34,7 +34,7 @@ import java.util.Set;
 /**
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
  */
-public abstract class XmlDeployer implements Deployer, MessagingComponent
+public abstract class XmlDeployer implements Deployer, HornetQComponent
 {
    private static Logger log = Logger.getLogger(XmlDeployer.class);
    

@@ -23,7 +23,7 @@ import org.hornetq.core.paging.PagingManager;
 import org.hornetq.core.postoffice.Binding;
 import org.hornetq.core.server.LargeServerMessage;
 import org.hornetq.core.server.MessageReference;
-import org.hornetq.core.server.MessagingComponent;
+import org.hornetq.core.server.HornetQComponent;
 import org.hornetq.core.server.Queue;
 import org.hornetq.core.server.ServerMessage;
 import org.hornetq.core.transaction.ResourceManager;
@@ -40,7 +40,7 @@ import org.hornetq.utils.UUID;
  * @author <a href="mailto:andy.taylor@jboss.org>Andy Taylor</a>
  *
  */
-public interface StorageManager extends MessagingComponent
+public interface StorageManager extends HornetQComponent
 {
    // Message related operations
    

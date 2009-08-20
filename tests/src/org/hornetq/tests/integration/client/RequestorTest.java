@@ -160,7 +160,7 @@ public class RequestorTest extends UnitTestCase
 
       session.close();
 
-      expectHornetQException("ClientRequestor's session must not be closed", HornetQException.OBJECT_CLOSED, new MessagingAction(){
+      expectHornetQException("ClientRequestor's session must not be closed", HornetQException.OBJECT_CLOSED, new HornetQAction(){
          public void run() throws Exception
          {
             new ClientRequestor(session, requestAddress);
@@ -198,7 +198,7 @@ public class RequestorTest extends UnitTestCase
 
       requestor.close();
 
-      expectHornetQException("can not send a request on a closed ClientRequestor", HornetQException.OBJECT_CLOSED, new MessagingAction(){
+      expectHornetQException("can not send a request on a closed ClientRequestor", HornetQException.OBJECT_CLOSED, new HornetQAction(){
 
          public void run() throws Exception
          {

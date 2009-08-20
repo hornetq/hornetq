@@ -17,7 +17,7 @@ import java.nio.ByteBuffer;
 
 import org.hornetq.core.buffers.ChannelBuffers;
 import org.hornetq.core.remoting.spi.HornetQBuffer;
-import org.hornetq.tests.unit.core.remoting.MessagingBufferTestBase;
+import org.hornetq.tests.unit.core.remoting.HornetQBufferTestBase;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -25,7 +25,7 @@ import org.hornetq.tests.unit.core.remoting.MessagingBufferTestBase;
  * @version <tt>$Revision$</tt>
  *
  */
-public class ByteBufferWrapperTest extends MessagingBufferTestBase
+public class ByteBufferWrapperTest extends HornetQBufferTestBase
 {
 
    // Constants -----------------------------------------------------
@@ -38,7 +38,7 @@ public class ByteBufferWrapperTest extends MessagingBufferTestBase
 
    // Public --------------------------------------------------------
 
-   // MessagingBufferTestBase overrides -----------------------------
+   // HornetQBufferTestBase overrides -----------------------------
 
    @Override
    protected HornetQBuffer createBuffer()

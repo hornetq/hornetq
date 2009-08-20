@@ -17,16 +17,16 @@ import junit.framework.TestCase;
 
 import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
 import org.hornetq.core.remoting.impl.invm.TransportConstants;
-import org.hornetq.jms.server.recovery.MessagingXAResourceRecovery;
+import org.hornetq.jms.server.recovery.HornetQXAResourceRecovery;
 
 /**
- * A MessagingXAResourceRecoveryTest
+ * A HornetQXAResourceRecoveryTest
  *
  * @author jmesnil
  *
  *
  */
-public class MessagingXAResourceRecoveryTest extends TestCase
+public class HornetQXAResourceRecoveryTest extends TestCase
 {
 
    // Constants -----------------------------------------------------
@@ -42,7 +42,7 @@ public class MessagingXAResourceRecoveryTest extends TestCase
    public void testConfigWithOnlyConnectorFactoryClassName() throws Exception
    {
       String config = "org.hornetq.core.remoting.impl.invm.InVMConnectorFactory";
-      MessagingXAResourceRecovery.ConfigParser parser = new MessagingXAResourceRecovery.ConfigParser(config);
+      HornetQXAResourceRecovery.ConfigParser parser = new HornetQXAResourceRecovery.ConfigParser(config);
 
       assertEquals(InVMConnectorFactory.class.getName(), parser.getConnectorFactoryClassName());
       assertEquals(0, parser.getConnectorParameters().size());
@@ -53,7 +53,7 @@ public class MessagingXAResourceRecoveryTest extends TestCase
    public void testConfigWithConnectorFactoryClassNameAndParamsWithoutUserCredentials() throws Exception
    {
       String config = "org.hornetq.core.remoting.impl.invm.InVMConnectorFactory, , , hornetq.remoting.invm.serverid=99";
-      MessagingXAResourceRecovery.ConfigParser parser = new MessagingXAResourceRecovery.ConfigParser(config);
+      HornetQXAResourceRecovery.ConfigParser parser = new HornetQXAResourceRecovery.ConfigParser(config);
 
       assertEquals(InVMConnectorFactory.class.getName(), parser.getConnectorFactoryClassName());
       assertEquals(1, parser.getConnectorParameters().size());
@@ -65,7 +65,7 @@ public class MessagingXAResourceRecoveryTest extends TestCase
    public void testConfigWithConnectorFactoryClassNameAndParamsAndUserCredentials() throws Exception
    {
       String config = "org.hornetq.core.remoting.impl.invm.InVMConnectorFactory, foo, bar, hornetq.remoting.invm.serverid=99, key=val";
-      MessagingXAResourceRecovery.ConfigParser parser = new MessagingXAResourceRecovery.ConfigParser(config);
+      HornetQXAResourceRecovery.ConfigParser parser = new HornetQXAResourceRecovery.ConfigParser(config);
 
       assertEquals(InVMConnectorFactory.class.getName(), parser.getConnectorFactoryClassName());
       assertEquals(2, parser.getConnectorParameters().size());
@@ -78,7 +78,7 @@ public class MessagingXAResourceRecoveryTest extends TestCase
    public void testConfigWithConnectorFactoryClassNameAndUserCredentialsWithoutParams() throws Exception
    {
       String config = "org.hornetq.core.remoting.impl.invm.InVMConnectorFactory, foo, bar";
-      MessagingXAResourceRecovery.ConfigParser parser = new MessagingXAResourceRecovery.ConfigParser(config);
+      HornetQXAResourceRecovery.ConfigParser parser = new HornetQXAResourceRecovery.ConfigParser(config);
 
       assertEquals(InVMConnectorFactory.class.getName(), parser.getConnectorFactoryClassName());
       assertEquals(0, parser.getConnectorParameters().size());
@@ -91,7 +91,7 @@ public class MessagingXAResourceRecoveryTest extends TestCase
       try
       {
          String config = "";
-         new MessagingXAResourceRecovery.ConfigParser(config);
+         new HornetQXAResourceRecovery.ConfigParser(config);
          fail();
       }
       catch (IllegalArgumentException e)
@@ -104,7 +104,7 @@ public class MessagingXAResourceRecoveryTest extends TestCase
       try
       {
          String config = "org.hornetq.core.remoting.impl.invm.InVMConnectorFactory, foo";
-         new MessagingXAResourceRecovery.ConfigParser(config);
+         new HornetQXAResourceRecovery.ConfigParser(config);
          fail();
       }
       catch (IllegalArgumentException e)

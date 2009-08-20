@@ -33,19 +33,19 @@ import org.hornetq.core.logging.Logger;
  * $Id$
  *
  */
-public class MessagingXAResourceRecovery implements XAResourceRecovery
+public class HornetQXAResourceRecovery implements XAResourceRecovery
 {
    private boolean trace = log.isTraceEnabled();
 
-   private static final Logger log = Logger.getLogger(MessagingXAResourceRecovery.class);
+   private static final Logger log = Logger.getLogger(HornetQXAResourceRecovery.class);
    
    private boolean hasMore;
    
-   private MessagingXAResourceWrapper res;
+   private HornetQXAResourceWrapper res;
 
-   public MessagingXAResourceRecovery()
+   public HornetQXAResourceRecovery()
    {
-      if(trace) log.trace("Constructing MessagingXAResourceRecovery");
+      if(trace) log.trace("Constructing HornetQXAResourceRecovery");
    }
 
    public boolean initialise(String config)
@@ -58,7 +58,7 @@ public class MessagingXAResourceRecovery implements XAResourceRecovery
       String username = parser.getUsername();
       String password = parser.getPassword();
       
-      res = new MessagingXAResourceWrapper(connectorFactoryClassName, connectorParams, username, password);
+      res = new HornetQXAResourceWrapper(connectorFactoryClassName, connectorParams, username, password);
              
       if (log.isTraceEnabled()) { log.trace(this + " initialised"); }      
       

@@ -13,7 +13,7 @@
 
 package org.hornetq.core.paging;
 
-import org.hornetq.core.server.MessagingComponent;
+import org.hornetq.core.server.HornetQComponent;
 import org.hornetq.utils.SimpleString;
 
 /**
@@ -28,7 +28,7 @@ import org.hornetq.utils.SimpleString;
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
  *
  */
-public interface PagingStore extends MessagingComponent
+public interface PagingStore extends HornetQComponent
 {
    int getNumberOfPages();
 

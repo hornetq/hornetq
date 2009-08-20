@@ -16,7 +16,7 @@ package org.hornetq.core.server.cluster;
 import java.util.Map;
 import java.util.Set;
 
-import org.hornetq.core.server.MessagingComponent;
+import org.hornetq.core.server.HornetQComponent;
 import org.hornetq.utils.SimpleString;
 
 /**
@@ -27,7 +27,7 @@ import org.hornetq.utils.SimpleString;
  * Created 18 Nov 2008 09:23:26
  *
  */
-public interface ClusterManager extends MessagingComponent
+public interface ClusterManager extends HornetQComponent
 {
    Map<String, Bridge> getBridges();
 

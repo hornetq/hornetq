@@ -21,7 +21,7 @@ import java.util.Map;
  * @author <a href="jmesnil@redhat.com">Jeff Mesnil</a>
  *
  */
-public interface AcceptorControl extends MessagingComponentControl
+public interface AcceptorControl extends HornetQComponentControl
 {
    String getName();
 

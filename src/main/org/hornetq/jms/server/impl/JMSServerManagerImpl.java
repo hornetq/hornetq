@@ -125,7 +125,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
       }
    }
 
-   // MessagingComponent implementation -----------------------------------
+   // HornetQComponent implementation -----------------------------------
 
    public synchronized void start() throws Exception
    {

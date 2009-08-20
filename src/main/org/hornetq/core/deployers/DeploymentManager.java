@@ -15,7 +15,7 @@ package org.hornetq.core.deployers;
 
 import java.util.List;
 
-import org.hornetq.core.server.MessagingComponent;
+import org.hornetq.core.server.HornetQComponent;
 
 
 /**
@@ -23,7 +23,7 @@ import org.hornetq.core.server.MessagingComponent;
  *
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
  */
-public interface DeploymentManager extends MessagingComponent
+public interface DeploymentManager extends HornetQComponent
 {
    /**
     * registers a deployable object which will handle the deployment of URL's

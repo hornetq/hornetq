@@ -17,7 +17,7 @@ import java.util.Set;
 
 import org.hornetq.core.remoting.Interceptor;
 import org.hornetq.core.remoting.RemotingConnection;
-import org.hornetq.core.server.MessagingComponent;
+import org.hornetq.core.server.HornetQComponent;
 
 /**
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -25,7 +25,7 @@ import org.hornetq.core.server.MessagingComponent;
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision$</tt>
  */
-public interface RemotingService extends MessagingComponent
+public interface RemotingService extends HornetQComponent
 {
    /**
     * Remove a connection from the connections held by the remoting service.

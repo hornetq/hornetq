@@ -14,15 +14,15 @@
 package org.hornetq.core.server;
 
 /**
- * A MessagingComponent
+ * A HornetQComponent
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @version <tt>$Revision: 2796 $</tt>
  *
- * $Id: MessagingComponent.java 2796 2007-06-25 22:24:41Z timfox $
+ * $Id: HornetQComponent.java 2796 2007-06-25 22:24:41Z timfox $
  *
  */
-public interface MessagingComponent
+public interface HornetQComponent
 {
    void start() throws Exception;
    

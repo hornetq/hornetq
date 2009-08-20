@@ -23,12 +23,12 @@ import org.hornetq.core.management.impl.HornetQServerControlImpl;
 import javax.management.MBeanInfo;
 
 /**
- * A ReplicationAwareMessagingServerControlWrapper
+ * A ReplicationAwareHornetQServerControlWrapper
  *
  * @author <a href="jmesnil@redhat.com">Jeff Mesnil</a>
  *
  */
-public class ReplicationAwareMessagingServerControlWrapper extends ReplicationAwareStandardMBeanWrapper implements
+public class ReplicationAwareHornetQServerControlWrapper extends ReplicationAwareStandardMBeanWrapper implements
          HornetQServerControl
 {
 
@@ -42,7 +42,7 @@ public class ReplicationAwareMessagingServerControlWrapper extends ReplicationAw
 
    // Constructors --------------------------------------------------
 
-   public ReplicationAwareMessagingServerControlWrapper(final HornetQServerControlImpl localControl,
+   public ReplicationAwareHornetQServerControlWrapper(final HornetQServerControlImpl localControl,
                                                         final ReplicationOperationInvoker replicationInvoker) throws Exception
    {
       super(ResourceNames.CORE_SERVER, HornetQServerControl.class, replicationInvoker);

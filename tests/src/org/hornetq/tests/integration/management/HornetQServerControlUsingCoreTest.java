@@ -23,11 +23,11 @@ import org.hornetq.core.management.ResourceNames;
 import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
 
 /**
- * A MessagingServerControlUsingCoreTest
+ * A HornetQServerControlUsingCoreTest
  *
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  */
-public class MessagingServerControlUsingCoreTest extends MessagingServerControlTest
+public class HornetQServerControlUsingCoreTest extends HornetQServerControlTest
 {
 
    // Constants -----------------------------------------------------
@@ -40,7 +40,7 @@ public class MessagingServerControlUsingCoreTest extends MessagingServerControlT
 
    // Public --------------------------------------------------------
 
-   // MessagingServerControlTest overrides --------------------------
+   // HornetQServerControlTest overrides --------------------------
 
    private ClientSession session;
 

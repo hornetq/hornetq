@@ -15,14 +15,14 @@ package org.hornetq.core.deployers;
 
 import java.net.URL;
 
-import org.hornetq.core.server.MessagingComponent;
+import org.hornetq.core.server.HornetQComponent;
 
 /**
  * abstract class that helps with deployment of messaging components.
  *
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
  */
-public interface Deployer extends MessagingComponent
+public interface Deployer extends HornetQComponent
 {
    /**
     * The name of the configuration files to look for for deployment

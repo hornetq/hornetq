@@ -283,7 +283,7 @@ public class ConfigurationImpl implements Configuration
 
    protected long serverDumpInterval = DEFAULT_SERVER_DUMP_INTERVAL;
 
-   // MessagingComponent implementation ----------------------------------------------
+   // HornetQComponent implementation ----------------------------------------------
 
    public void start() throws Exception
    {

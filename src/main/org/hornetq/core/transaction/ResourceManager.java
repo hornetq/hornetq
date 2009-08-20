@@ -18,7 +18,7 @@ import java.util.Map;
 
 import javax.transaction.xa.Xid;
 
-import org.hornetq.core.server.MessagingComponent;
+import org.hornetq.core.server.HornetQComponent;
 
 
 /**
@@ -28,7 +28,7 @@ import org.hornetq.core.server.MessagingComponent;
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */
-public interface ResourceManager extends MessagingComponent
+public interface ResourceManager extends HornetQComponent
 {
    boolean putTransaction(Xid xid, Transaction tx);
    

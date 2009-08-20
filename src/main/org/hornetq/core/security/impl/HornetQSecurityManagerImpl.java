@@ -50,7 +50,7 @@ public class HornetQSecurityManagerImpl implements HornetQSecurityManager
     */
    private Map<String, List<String>> roles = new HashMap<String, List<String>>();
 
-   // MessagingComponent implementation ------------------------------------------
+   // HornetQComponent implementation ------------------------------------------
 
    public void start()
    {

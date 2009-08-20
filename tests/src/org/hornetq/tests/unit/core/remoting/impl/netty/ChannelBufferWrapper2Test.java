@@ -15,7 +15,7 @@ package org.hornetq.tests.unit.core.remoting.impl.netty;
 
 import org.hornetq.core.buffers.ChannelBuffers;
 import org.hornetq.core.remoting.spi.HornetQBuffer;
-import org.hornetq.tests.unit.core.remoting.MessagingBufferTestBase;
+import org.hornetq.tests.unit.core.remoting.HornetQBufferTestBase;
 
 /**
  * Same as ChannelBufferWrapperTest, but using a different constructor
@@ -25,7 +25,7 @@ import org.hornetq.tests.unit.core.remoting.MessagingBufferTestBase;
  * @version <tt>$Revision$</tt>
  *
  */
-public class ChannelBufferWrapper2Test extends MessagingBufferTestBase
+public class ChannelBufferWrapper2Test extends HornetQBufferTestBase
 {
 
    // Constants -----------------------------------------------------

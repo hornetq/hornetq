@@ -34,7 +34,7 @@ import org.hornetq.core.remoting.server.RemotingService;
 import org.hornetq.core.remoting.spi.Acceptor;
 import org.hornetq.core.security.Role;
 import org.hornetq.core.server.Divert;
-import org.hornetq.core.server.MessagingComponent;
+import org.hornetq.core.server.HornetQComponent;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.Queue;
 import org.hornetq.core.server.QueueFactory;
@@ -53,7 +53,7 @@ import org.hornetq.utils.SimpleString;
  * @version <tt>$Revision$</tt>
  * 
  */
-public interface ManagementService extends NotificationService, MessagingComponent
+public interface ManagementService extends NotificationService, HornetQComponent
 {
    // Configuration
 

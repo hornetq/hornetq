@@ -44,7 +44,7 @@ import org.hornetq.utils.json.JSONObject;
  *
  *
  */
-public class MessagingServerControlTest extends ManagementTestBase
+public class HornetQServerControlTest extends ManagementTestBase
 {
 
    // Constants -----------------------------------------------------

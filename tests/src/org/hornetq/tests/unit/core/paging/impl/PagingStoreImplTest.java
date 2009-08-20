@@ -1074,7 +1074,7 @@ public class PagingStoreImplTest extends UnitTestCase
       }
 
       /* (non-Javadoc)
-       * @see org.hornetq.core.server.MessagingComponent#isStarted()
+       * @see org.hornetq.core.server.HornetQComponent#isStarted()
        */
       public boolean isStarted()
       {
@@ -1082,7 +1082,7 @@ public class PagingStoreImplTest extends UnitTestCase
       }
 
       /* (non-Javadoc)
-       * @see org.hornetq.core.server.MessagingComponent#start()
+       * @see org.hornetq.core.server.HornetQComponent#start()
        */
       public void start() throws Exception
       {
@@ -1090,7 +1090,7 @@ public class PagingStoreImplTest extends UnitTestCase
       }
 
       /* (non-Javadoc)
-       * @see org.hornetq.core.server.MessagingComponent#stop()
+       * @see org.hornetq.core.server.HornetQComponent#stop()
        */
       public void stop() throws Exception
       {

@@ -15,7 +15,7 @@ package org.hornetq.jms.bridge;
 
 import javax.transaction.TransactionManager;
 
-import org.hornetq.core.server.MessagingComponent;
+import org.hornetq.core.server.HornetQComponent;
 
 /**
  * 
@@ -25,7 +25,7 @@ import org.hornetq.core.server.MessagingComponent;
  * @version <tt>$Revision$</tt>
  * 
  */
-public interface JMSBridge extends MessagingComponent
+public interface JMSBridge extends HornetQComponent
 {
    void pause() throws Exception;
 

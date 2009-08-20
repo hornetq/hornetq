@@ -14,7 +14,7 @@
 package org.hornetq.jms.server;
 
 import org.hornetq.core.config.TransportConfiguration;
-import org.hornetq.core.server.MessagingComponent;
+import org.hornetq.core.server.HornetQComponent;
 import org.hornetq.utils.Pair;
 
 import javax.naming.Context;
@@ -27,7 +27,7 @@ import java.util.List;
  * @author <a href="jmesnil@redhat.com">Jeff Mesnil</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  */
-public interface JMSServerManager extends MessagingComponent
+public interface JMSServerManager extends HornetQComponent
 {
    String getVersion();
 

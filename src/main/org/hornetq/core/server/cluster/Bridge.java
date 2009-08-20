@@ -16,7 +16,7 @@ package org.hornetq.core.server.cluster;
 
 import org.hornetq.core.management.NotificationService;
 import org.hornetq.core.server.Consumer;
-import org.hornetq.core.server.MessagingComponent;
+import org.hornetq.core.server.HornetQComponent;
 import org.hornetq.core.server.Queue;
 import org.hornetq.utils.SimpleString;
 
@@ -31,7 +31,7 @@ import org.hornetq.utils.SimpleString;
  *
  *
  */
-public interface Bridge extends Consumer, MessagingComponent
+public interface Bridge extends Consumer, HornetQComponent
 {
    SimpleString getName();
 

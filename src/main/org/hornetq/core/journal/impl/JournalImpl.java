@@ -2259,7 +2259,7 @@ public class JournalImpl implements TestableJournal
       new PerfBlast(pages).start();
    }
 
-   // MessagingComponent implementation
+   // HornetQComponent implementation
    // ---------------------------------------------------
 
    public synchronized boolean isStarted()

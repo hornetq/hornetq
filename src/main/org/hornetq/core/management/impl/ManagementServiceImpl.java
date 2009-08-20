@@ -53,7 +53,7 @@ import org.hornetq.core.management.ObjectNames;
 import org.hornetq.core.management.ReplicationOperationInvoker;
 import org.hornetq.core.management.ResourceNames;
 import org.hornetq.core.management.jmx.impl.ReplicationAwareAddressControlWrapper;
-import org.hornetq.core.management.jmx.impl.ReplicationAwareMessagingServerControlWrapper;
+import org.hornetq.core.management.jmx.impl.ReplicationAwareHornetQServerControlWrapper;
 import org.hornetq.core.management.jmx.impl.ReplicationAwareQueueControlWrapper;
 import org.hornetq.core.messagecounter.MessageCounter;
 import org.hornetq.core.messagecounter.MessageCounterManager;
@@ -210,7 +210,7 @@ public class ManagementServiceImpl implements ManagementService
                                                               messageCounterManager,
                                                               broadcaster);
       ObjectName objectName = ObjectNames.getMessagingServerObjectName();
-      registerInJMX(objectName, new ReplicationAwareMessagingServerControlWrapper(messagingServerControl,
+      registerInJMX(objectName, new ReplicationAwareHornetQServerControlWrapper(messagingServerControl,
                                                                                   replicationInvoker));
       registerInRegistry(ResourceNames.CORE_SERVER, messagingServerControl);
 
@@ -577,7 +577,7 @@ public class ManagementServiceImpl implements ManagementService
       return replicationInvoker;
    }
 
-   // MessagingComponent implementation -----------------------------
+   // HornetQComponent implementation -----------------------------
 
    public void start() throws Exception
    {

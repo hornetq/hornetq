@@ -68,7 +68,7 @@ public class ConsumerCloseTest extends ServiceTestBase
 
       assertTrue(consumer.isClosed());
 
-      expectHornetQException(HornetQException.OBJECT_CLOSED, new MessagingAction()
+      expectHornetQException(HornetQException.OBJECT_CLOSED, new HornetQAction()
       {
          public void run() throws HornetQException
          {
@@ -76,7 +76,7 @@ public class ConsumerCloseTest extends ServiceTestBase
          }
       });
 
-      expectHornetQException(HornetQException.OBJECT_CLOSED, new MessagingAction()
+      expectHornetQException(HornetQException.OBJECT_CLOSED, new HornetQAction()
       {
          public void run() throws HornetQException
          {
@@ -84,7 +84,7 @@ public class ConsumerCloseTest extends ServiceTestBase
          }
       });
 
-      expectHornetQException(HornetQException.OBJECT_CLOSED, new MessagingAction()
+      expectHornetQException(HornetQException.OBJECT_CLOSED, new HornetQAction()
       {
          public void run() throws HornetQException
          {

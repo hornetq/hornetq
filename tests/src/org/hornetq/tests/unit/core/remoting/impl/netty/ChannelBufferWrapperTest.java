@@ -15,7 +15,7 @@ package org.hornetq.tests.unit.core.remoting.impl.netty;
 
 import org.hornetq.core.remoting.spi.HornetQBuffer;
 import org.hornetq.integration.transports.netty.ChannelBufferWrapper;
-import org.hornetq.tests.unit.core.remoting.MessagingBufferTestBase;
+import org.hornetq.tests.unit.core.remoting.HornetQBufferTestBase;
 import org.jboss.netty.buffer.ChannelBuffer;
 import org.jboss.netty.buffer.ChannelBuffers;
 
@@ -25,7 +25,7 @@ import org.jboss.netty.buffer.ChannelBuffers;
  * @version <tt>$Revision$</tt>
  *
  */
-public class ChannelBufferWrapperTest extends MessagingBufferTestBase
+public class ChannelBufferWrapperTest extends HornetQBufferTestBase
 {
 
    // Constants -----------------------------------------------------

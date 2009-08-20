@@ -25,7 +25,7 @@ import org.hornetq.core.config.cluster.DiscoveryGroupConfiguration;
 import org.hornetq.core.config.cluster.DivertConfiguration;
 import org.hornetq.core.config.cluster.QueueConfiguration;
 import org.hornetq.core.server.JournalType;
-import org.hornetq.core.server.MessagingComponent;
+import org.hornetq.core.server.HornetQComponent;
 import org.hornetq.utils.SimpleString;
 
 /**
@@ -35,7 +35,7 @@ import org.hornetq.utils.SimpleString;
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */
-public interface Configuration extends Serializable, MessagingComponent
+public interface Configuration extends Serializable, HornetQComponent
 {
    // General attributes -------------------------------------------------------------------
 

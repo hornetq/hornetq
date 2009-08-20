@@ -212,7 +212,7 @@ public class PageCrashTest extends ServiceTestBase
    {
       HornetQSecurityManager securityManager = new HornetQSecurityManagerImpl();
 
-      HornetQServer server = new FailingMessagingServerImpl(configuration, securityManager);
+      HornetQServer server = new FailingHornetQServer(configuration, securityManager);
 
       AddressSettings defaultSetting = new AddressSettings();
       defaultSetting.setPageSizeBytes(10 * 1024);
@@ -228,9 +228,9 @@ public class PageCrashTest extends ServiceTestBase
    /** This is hacking HornetQServerImpl, 
     *  to make sure the server will fail right 
     *  before the page-file was removed */
-   class FailingMessagingServerImpl extends HornetQServerImpl
+   class FailingHornetQServer extends HornetQServerImpl
    {
-      FailingMessagingServerImpl(final Configuration config, final HornetQSecurityManager securityManager)
+      FailingHornetQServer(final Configuration config, final HornetQSecurityManager securityManager)
       {
          super(config, ManagementFactory.getPlatformMBeanServer(), securityManager);
       }

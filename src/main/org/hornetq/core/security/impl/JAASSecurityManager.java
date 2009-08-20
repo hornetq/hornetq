@@ -17,7 +17,7 @@ import org.hornetq.core.logging.Logger;
 import org.hornetq.core.security.CheckType;
 import org.hornetq.core.security.HornetQSecurityManager;
 import org.hornetq.core.security.Role;
-import org.hornetq.core.server.MessagingComponent;
+import org.hornetq.core.server.HornetQComponent;
 
 import javax.security.auth.Subject;
 import javax.security.auth.callback.CallbackHandler;
@@ -40,7 +40,7 @@ import java.util.Set;
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="jmesnil@redhat.com">Jeff Mesnil</a>
  */
-public class JAASSecurityManager implements HornetQSecurityManager, MessagingComponent
+public class JAASSecurityManager implements HornetQSecurityManager, HornetQComponent
 {
    private static final Logger log = Logger.getLogger(JAASSecurityManager.class);
 
@@ -146,7 +146,7 @@ public class JAASSecurityManager implements HornetQSecurityManager, MessagingCom
       // NO-OP
    }
 
-   // MessagingComponent implementation -----------------------------
+   // HornetQComponent implementation -----------------------------
 
    /**
     * lifecycle method, needs to be called

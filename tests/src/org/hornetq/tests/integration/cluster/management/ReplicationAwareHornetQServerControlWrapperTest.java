@@ -40,7 +40,7 @@ import org.hornetq.utils.SimpleString;
  *
  * @author <a href="jmesnil@redhat.com">Jeff Mesnil</a>
  */
-public class ReplicationAwareMessagingServerControlWrapperTest extends ReplicationAwareTestBase
+public class ReplicationAwareHornetQServerControlWrapperTest extends ReplicationAwareTestBase
 {
    // Constants -----------------------------------------------------
 

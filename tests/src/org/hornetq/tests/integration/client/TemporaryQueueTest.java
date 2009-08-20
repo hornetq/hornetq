@@ -207,7 +207,7 @@ public class TemporaryQueueTest extends ServiceTestBase
       session = sf.createSession(false, true, true);
       session.start();
       
-      expectHornetQException("temp queue must not exist after the server detected the client crash", HornetQException.QUEUE_DOES_NOT_EXIST, new MessagingAction()
+      expectHornetQException("temp queue must not exist after the server detected the client crash", HornetQException.QUEUE_DOES_NOT_EXIST, new HornetQAction()
       {
          public void run() throws HornetQException
          {

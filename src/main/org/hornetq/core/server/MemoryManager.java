@@ -22,7 +22,7 @@ package org.hornetq.core.server;
  * $Id: MemoryManager.java 2796 2007-06-25 22:24:41Z timfox $
  *
  */
-public interface MemoryManager extends MessagingComponent
+public interface MemoryManager extends HornetQComponent
 {
    boolean isMemoryLow();    
 }

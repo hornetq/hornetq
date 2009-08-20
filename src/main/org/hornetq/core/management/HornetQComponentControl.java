@@ -15,11 +15,11 @@
 package org.hornetq.core.management;
 
 /**
- * A MessagingComponentControl
+ * A HornetQComponentControl
  *
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  */
-public interface MessagingComponentControl
+public interface HornetQComponentControl
 {
    boolean isStarted();
    

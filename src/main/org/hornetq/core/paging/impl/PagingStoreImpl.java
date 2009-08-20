@@ -441,7 +441,7 @@ public class PagingStoreImpl implements TestSupportPageStore
       }
    }
 
-   // MessagingComponent implementation
+   // HornetQComponent implementation
 
    public synchronized boolean isStarted()
    {

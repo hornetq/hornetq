@@ -16,7 +16,7 @@ package org.hornetq.core.postoffice;
 import java.util.List;
 
 import org.hornetq.core.paging.PagingManager;
-import org.hornetq.core.server.MessagingComponent;
+import org.hornetq.core.server.HornetQComponent;
 import org.hornetq.core.server.Queue;
 import org.hornetq.core.server.ServerMessage;
 import org.hornetq.core.transaction.Transaction;
@@ -40,7 +40,7 @@ import org.hornetq.utils.SimpleString;
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */
-public interface PostOffice extends MessagingComponent
+public interface PostOffice extends HornetQComponent
 {
    void addBinding(Binding binding) throws Exception;
 

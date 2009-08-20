@@ -17,7 +17,7 @@ import java.util.Collection;
 
 import org.hornetq.core.journal.SequentialFile;
 import org.hornetq.core.postoffice.PostOffice;
-import org.hornetq.core.server.MessagingComponent;
+import org.hornetq.core.server.HornetQComponent;
 import org.hornetq.core.server.ServerMessage;
 import org.hornetq.utils.SimpleString;
 
@@ -46,7 +46,7 @@ import org.hornetq.utils.SimpleString;
  * @author <a href="mailto:andy.taylor@jboss.org>Andy Taylor</a>
  *
  */
-public interface PagingManager extends MessagingComponent
+public interface PagingManager extends HornetQComponent
 {
    void activate();
 

@@ -28,7 +28,7 @@ import java.util.concurrent.TimeUnit;
 import javax.transaction.xa.Xid;
 
 import org.hornetq.core.logging.Logger;
-import org.hornetq.core.server.MessagingComponent;
+import org.hornetq.core.server.HornetQComponent;
 import org.hornetq.core.transaction.ResourceManager;
 import org.hornetq.core.transaction.Transaction;
 
@@ -38,7 +38,7 @@ import org.hornetq.core.transaction.Transaction;
  *
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  */
-public class ResourceManagerImpl implements ResourceManager, MessagingComponent
+public class ResourceManagerImpl implements ResourceManager, HornetQComponent
 {
    private static final Logger log = Logger.getLogger(ResourceManagerImpl.class);
 
@@ -66,7 +66,7 @@ public class ResourceManagerImpl implements ResourceManager, MessagingComponent
       this.scheduledThreadPool = scheduledThreadPool;
    }
 
-   // MessagingComponent implementation
+   // HornetQComponent implementation
 
    public void start() throws Exception
    {

@@ -15,13 +15,13 @@ package org.hornetq.core.security;
 
 import java.util.Set;
 
-import org.hornetq.core.server.MessagingComponent;
+import org.hornetq.core.server.HornetQComponent;
 
 /**
  * USe to validate whether a user has is valid to connect to the server and perform certain functions
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
  */
-public interface HornetQSecurityManager extends MessagingComponent
+public interface HornetQSecurityManager extends HornetQComponent
 {
    /**
     * is this a valid user.

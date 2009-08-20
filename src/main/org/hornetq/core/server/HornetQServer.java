@@ -47,7 +47,7 @@ import org.hornetq.utils.UUID;
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
  */
-public interface HornetQServer extends MessagingComponent
+public interface HornetQServer extends HornetQComponent
 {
    Configuration getConfiguration();
 

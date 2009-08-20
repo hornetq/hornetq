@@ -59,7 +59,7 @@ public class ProducerCloseTest extends ServiceTestBase
 
       assertTrue(producer.isClosed());
 
-      expectHornetQException(HornetQException.OBJECT_CLOSED, new MessagingAction()
+      expectHornetQException(HornetQException.OBJECT_CLOSED, new HornetQAction()
       {
          public void run() throws HornetQException
          {

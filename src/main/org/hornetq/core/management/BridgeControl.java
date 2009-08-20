@@ -20,7 +20,7 @@ package org.hornetq.core.management;
  * @author <a href="jmesnil@redhat.com">Jeff Mesnil</a>
  *
  */
-public interface BridgeControl extends MessagingComponentControl
+public interface BridgeControl extends HornetQComponentControl
 {
    String getName();
    

@@ -31,13 +31,13 @@ import org.jboss.netty.handler.codec.frame.FrameDecoder;
  *
  * @version $Revision$, $Date$
  */
-public class MessagingFrameDecoder extends FrameDecoder
+public class HornetQFrameDecoder extends FrameDecoder
 {
-   private static final Logger log = Logger.getLogger(MessagingFrameDecoder.class);
+   private static final Logger log = Logger.getLogger(HornetQFrameDecoder.class);
 
    private final BufferHandler handler;
 
-   public MessagingFrameDecoder(final BufferHandler handler)
+   public HornetQFrameDecoder(final BufferHandler handler)
    {
       this.handler = handler;
    }

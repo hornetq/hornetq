@@ -16,7 +16,7 @@ package org.hornetq.jms.bridge;
 import javax.management.ObjectName;
 
 import org.hornetq.core.logging.Logger;
-import org.hornetq.core.server.MessagingComponent;
+import org.hornetq.core.server.HornetQComponent;
 import org.hornetq.jms.bridge.impl.JMSBridgeImpl;
 
 /**
@@ -255,7 +255,7 @@ public class BridgeService implements BridgeMBean
       return bridge.isStarted();
    }
 
-   public MessagingComponent getInstance()
+   public HornetQComponent getInstance()
    {
       return bridge;
    }

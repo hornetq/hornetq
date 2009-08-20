@@ -13,7 +13,7 @@
 
 package org.hornetq.core.server.cluster;
 
-import org.hornetq.core.server.MessagingComponent;
+import org.hornetq.core.server.HornetQComponent;
 import org.hornetq.utils.SimpleString;
 
 /**
@@ -25,7 +25,7 @@ import org.hornetq.utils.SimpleString;
  *
  *
  */
-public interface ClusterConnection extends MessagingComponent
+public interface ClusterConnection extends HornetQComponent
 {
    SimpleString getName();
 

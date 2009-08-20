@@ -16,7 +16,7 @@ package org.hornetq.core.journal;
 import java.util.List;
 
 import org.hornetq.core.journal.impl.JournalFile;
-import org.hornetq.core.server.MessagingComponent;
+import org.hornetq.core.server.HornetQComponent;
 
 /**
  * 
@@ -26,7 +26,7 @@ import org.hornetq.core.server.MessagingComponent;
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
  *
  */
-public interface Journal extends MessagingComponent
+public interface Journal extends HornetQComponent
 {
    // Non transactional operations
 

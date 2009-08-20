@@ -172,7 +172,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
       this.addressSettingsRepository = addressSettingsRepository;
    }
 
-   // MessagingComponent implementation ---------------------------------------
+   // HornetQComponent implementation ---------------------------------------
 
    public synchronized void start() throws Exception
    {

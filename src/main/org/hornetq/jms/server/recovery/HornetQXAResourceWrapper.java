@@ -42,10 +42,10 @@ import org.hornetq.core.remoting.FailureListener;
  * 
  * @version $Revision: 45341 $
  */
-public class MessagingXAResourceWrapper implements XAResource, FailureListener
+public class HornetQXAResourceWrapper implements XAResource, FailureListener
 {
    /** The log */
-   private static final Logger log = Logger.getLogger(MessagingXAResourceWrapper.class);
+   private static final Logger log = Logger.getLogger(HornetQXAResourceWrapper.class);
 
    /** The state lock */
    private static final Object lock = new Object();
@@ -63,7 +63,7 @@ public class MessagingXAResourceWrapper implements XAResource, FailureListener
 
    private XAResource delegate;
 
-   public MessagingXAResourceWrapper(final String connectorFactoryClassName,
+   public HornetQXAResourceWrapper(final String connectorFactoryClassName,
                                      final Map<String, Object> connectorConfig,
                                      final String username, 
                                      final String password)
@@ -132,8 +132,8 @@ public class MessagingXAResourceWrapper implements XAResource, FailureListener
 
    public boolean isSameRM(XAResource xaRes) throws XAException
    {
-      if (xaRes instanceof MessagingXAResourceWrapper)
-         xaRes = ((MessagingXAResourceWrapper)xaRes).getDelegate();
+      if (xaRes instanceof HornetQXAResourceWrapper)
+         xaRes = ((HornetQXAResourceWrapper)xaRes).getDelegate();
 
       XAResource xaResource = getDelegate();
       try

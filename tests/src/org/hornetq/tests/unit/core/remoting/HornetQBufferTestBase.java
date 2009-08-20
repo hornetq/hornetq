@@ -31,7 +31,7 @@ import org.hornetq.utils.SimpleString;
  *
  * @version <tt>$Revision$</tt>
  */
-public abstract class MessagingBufferTestBase extends UnitTestCase
+public abstract class HornetQBufferTestBase extends UnitTestCase
 {
    // Constants -----------------------------------------------------
 

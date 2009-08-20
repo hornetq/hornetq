@@ -39,7 +39,7 @@ import javax.transaction.xa.XAResource;
 
 import org.hornetq.core.client.ClientSession;
 import org.hornetq.core.logging.Logger;
-import org.hornetq.core.server.MessagingComponent;
+import org.hornetq.core.server.HornetQComponent;
 import org.hornetq.jms.bridge.ConnectionFactoryFactory;
 import org.hornetq.jms.bridge.DestinationFactory;
 import org.hornetq.jms.bridge.JMSBridge;
@@ -58,7 +58,7 @@ import org.jboss.tm.TransactionManagerLocator;
  * $Id:JMSBridge.java 4566 2008-06-24 08:01:35Z jmesnil $
  *
  */
-public class JMSBridgeImpl implements MessagingComponent, JMSBridge
+public class JMSBridgeImpl implements HornetQComponent, JMSBridge
 {
    private static final Logger log;
    
@@ -214,7 +214,7 @@ public class JMSBridgeImpl implements MessagingComponent, JMSBridge
       }
    }
          
-   // MessagingComponent overrides --------------------------------------------------
+   // HornetQComponent overrides --------------------------------------------------
         
    public synchronized void start() throws Exception
    {      

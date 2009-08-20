@@ -138,7 +138,7 @@ public class MessageDurabilityTest extends ServiceTestBase
 
       session.start();
       
-      expectHornetQException(HornetQException.QUEUE_DOES_NOT_EXIST, new MessagingAction()
+      expectHornetQException(HornetQException.QUEUE_DOES_NOT_EXIST, new HornetQAction()
       {
          public void run() throws HornetQException
          {
@@ -165,7 +165,7 @@ public class MessageDurabilityTest extends ServiceTestBase
       restart();
 
       session.start();
-      expectHornetQException(HornetQException.QUEUE_DOES_NOT_EXIST, new MessagingAction()
+      expectHornetQException(HornetQException.QUEUE_DOES_NOT_EXIST, new HornetQAction()
       {
          public void run() throws HornetQException
          {

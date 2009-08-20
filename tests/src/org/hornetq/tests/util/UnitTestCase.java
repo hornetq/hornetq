@@ -405,7 +405,7 @@ public class UnitTestCase extends TestCase
       return testDir + "/temp";
    }
 
-   protected static void expectHornetQException(String message, int errorCode, MessagingAction action)
+   protected static void expectHornetQException(String message, int errorCode, HornetQAction action)
    {
       try
       {
@@ -419,12 +419,12 @@ public class UnitTestCase extends TestCase
       }
    }
    
-   protected static void expectHornetQException(int errorCode, MessagingAction action)
+   protected static void expectHornetQException(int errorCode, HornetQAction action)
    {
       expectHornetQException("must throw a HornetQException with the expected errorCode: " + errorCode, errorCode, action);
    }
    
-   protected static void expectXAException(int errorCode, MessagingAction action)
+   protected static void expectXAException(int errorCode, HornetQAction action)
    {
       try
       {
@@ -844,7 +844,7 @@ public class UnitTestCase extends TestCase
 
    // Inner classes -------------------------------------------------
 
-   protected static interface MessagingAction
+   protected static interface HornetQAction
    {
       void run() throws Exception;
    }

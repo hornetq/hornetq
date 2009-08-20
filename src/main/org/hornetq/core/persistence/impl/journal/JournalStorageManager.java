@@ -986,7 +986,7 @@ public class JournalStorageManager implements StorageManager
       idGenerator.setID(lastID + 1);
    }
 
-   // MessagingComponent implementation
+   // HornetQComponent implementation
    // ------------------------------------------------------
 
    public synchronized void start() throws Exception

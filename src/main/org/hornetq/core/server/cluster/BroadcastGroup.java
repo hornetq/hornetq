@@ -16,7 +16,7 @@ package org.hornetq.core.server.cluster;
 
 import org.hornetq.core.config.TransportConfiguration;
 import org.hornetq.core.management.NotificationService;
-import org.hornetq.core.server.MessagingComponent;
+import org.hornetq.core.server.HornetQComponent;
 import org.hornetq.utils.Pair;
 
 /**
@@ -29,7 +29,7 @@ import org.hornetq.utils.Pair;
  *
  *
  */
-public interface BroadcastGroup extends MessagingComponent
+public interface BroadcastGroup extends HornetQComponent
 {
    void setNotificationService(NotificationService notificationService);
 

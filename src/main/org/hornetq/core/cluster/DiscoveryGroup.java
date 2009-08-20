@@ -17,7 +17,7 @@ package org.hornetq.core.cluster;
 import java.util.Map;
 
 import org.hornetq.core.management.NotificationService;
-import org.hornetq.core.server.MessagingComponent;
+import org.hornetq.core.server.HornetQComponent;
 
 /**
  * A DiscoveryGroup
@@ -28,7 +28,7 @@ import org.hornetq.core.server.MessagingComponent;
  *
  *
  */
-public interface DiscoveryGroup extends MessagingComponent
+public interface DiscoveryGroup extends HornetQComponent
 {
    void setNotificationService(NotificationService notificationService);
 
