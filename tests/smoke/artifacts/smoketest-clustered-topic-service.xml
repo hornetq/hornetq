@@ -6,8 +6,8 @@
       name="jboss.messaging.destination:service=Topic,name=DistributedSmokeTestTopic"
       xmbean-dd="xmdesc/Topic-xmbean.xml">
       <attribute name="Clustered">true</attribute>
-      <depends optional-attribute-name="ServerPeer">jboss.messaging:service=ServerPeer</depends>
-      <depends>jboss.messaging:service=PostOffice</depends>
+      <depends optional-attribute-name="ServerPeer">hornetq:service=ServerPeer</depends>
+      <depends>hornetq:service=PostOffice</depends>
    </mbean>
 
 </server>

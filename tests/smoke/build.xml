@@ -633,7 +633,7 @@
 
       <java classname="org.jboss.console.twiddle.Twiddle" fork="yes" failonerror="yes"
             dir="${jboss.home}/bin">
-         <arg line="-s jnp://localhost:${jnpPort} get jboss.messaging:service=ServerPeer ServerPeerID"/>
+         <arg line="-s jnp://localhost:${jnpPort} get hornetq:service=ServerPeer ServerPeerID"/>
          <classpath>
             <path refid="twiddle.classpath"/>
          </classpath>

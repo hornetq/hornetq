@@ -3,7 +3,7 @@
     JMS Stuff
    -->
 
-   <mbean code="org.jboss.jms.jndi.JMSProviderLoader" name="jboss.messaging:service=JMSProviderLoader,name=JMSProvider">
+   <mbean code="org.jboss.jms.jndi.JMSProviderLoader" name="hornetq:service=JMSProviderLoader,name=JMSProvider">
       <attribute name="ProviderName">DefaultJMSProvider</attribute>
       <attribute name="ProviderAdapterClass">org.jboss.jms.jndi.JNDIProviderAdapter</attribute>
       <attribute name="FactoryRef">java:/XAConnectionFactory</attribute>

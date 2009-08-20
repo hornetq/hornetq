@@ -5,7 +5,7 @@
    <mbean code="org.hornetq.jms.server.destination.QueueService"
       name="jboss.messaging.destination:service=Queue,name=SmokeTestQueue"
       xmbean-dd="xmdesc/Queue-xmbean.xml">
-      <depends optional-attribute-name="ServerPeer">jboss.messaging:service=ServerPeer</depends>
+      <depends optional-attribute-name="ServerPeer">hornetq:service=ServerPeer</depends>
    </mbean>
 
 </server>
