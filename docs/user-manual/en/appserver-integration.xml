@@ -1,25 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <chapter id="appserver-integration">
     <title>Application Server Integration and Java EE</title>
-    <para>HornetQ can be easily installed in JBoss Application Server 5.1 or later. For
-        details on installing HornetQ in the JBoss Application Server refer to quick-start
-        guide.</para>
-    <para>Since HornetQ also provides a JCA adaptor, it should also be possible to integrate
-        HornetQ as a JMS provider in other JEE compliant app servers. For instructions on
-        how to integrate a remote JCA adaptor into another application sever, please consult that
-        application server's instructions.</para>
+    <para>HornetQ can be easily installed in JBoss Application Server 5.1 or later. For details on
+        installing HornetQ in the JBoss Application Server refer to quick-start guide.</para>
+    <para>Since HornetQ also provides a JCA adaptor, it should also be possible to integrate HornetQ
+        as a JMS provider in other JEE compliant app servers. For instructions on how to integrate a
+        remote JCA adaptor into another application sever, please consult that application server's
+        instructions.</para>
     <para>A JCA Adapter basically controls the incoming of messages to Message Driven Beans and the
         outgoing of messages from other JEE components.</para>
     <para>This section explains the basics behind configuring the different JEE components in the
         AS.</para>
     <section>
         <title>Configuring Message Driven Beans</title>
-        <para>The delivery of messages to an MDB using HornetQ is configured on the JCA
-            Adapter via a configuration file <literal>ra.xml</literal> which can be found under in
-            the <literal>jms-ra.rar</literal> archive of directory. By default this is configured to
-            consume messages using an InVM connector from the instance of HornetQ running
-            within the application server. A full list of what is configurable is found later in
-            this chapter. </para>
+        <para>The delivery of messages to an MDB using HornetQ is configured on the JCA Adapter via
+            a configuration file <literal>ra.xml</literal> which can be found under in the <literal
+                >jms-ra.rar</literal> archive of directory. By default this is configured to consume
+            messages using an InVM connector from the instance of HornetQ running within the
+            application server. A full list of what is configurable is found later in this chapter. </para>
         <para>All MDB's however need to have the destination type and the destination configured.
             The following example shows how this can be done via annotations.</para>
         <programlisting>@MessageDriven(name = "MDBExample",
@@ -244,7 +242,7 @@ public class MDBMessageSendTxExample implements MessageListener
             configuration of the Adapter is found in this archive under <literal
                 >META-INF/ra.xml</literal>.</para>
         <para>The configuration will look something like the following:</para>
-        <programlisting><![CDATA[<![CDATA[<![CDATA[<![CDATA[<![CDATA[&lt;resourceadapter>
+        <programlisting>&lt;resourceadapter>
       &lt;resourceadapter-class>org.hornetq.ra.HornetQResourceAdapter&lt;/resourceadapter-class>
       &lt;config-property>
          &lt;description>The transport type&lt;/description>
@@ -312,7 +310,7 @@ public class MDBMessageSendTxExample implements MessageListener
          &lt;/messageadapter>
       &lt;/inbound-resourceadapter>
 
-   &lt;/resourceadapter>]]>]]>]]>]]>]]></programlisting>
+   &lt;/resourceadapter></programlisting>
         <para>There are 3 main parts to this configuration.</para>
         <orderedlist>
             <listitem>
@@ -616,13 +614,13 @@ initialContext = new InitialContext(jndiParameters);</programlisting>
         <para>A bridge is deployed inside a JBoss AS instance. The instance can be the same instance
             as either the source or target server. Or could be on a third, separate JBoss AS
             instance.</para>
-        <para>The bridge can also be used to bridge messages from other non HornetQ JMS
-            servers, as long as they are JMS 1.1 compliant.<note>
+        <para>The bridge can also be used to bridge messages from other non HornetQ JMS servers, as
+            long as they are JMS 1.1 compliant.<note>
                 <para>Don't confuse a JMS bridge with a core bridge. A JMS bridge can be used to
                     bridge any two JMS 1.1 compliant JMS providers and uses the JMS API. A core
                     bridge (described in <xref linkend="core-bridges"/>) is used to bridge any two
-                    HornetQ instances and uses the core API. Always use a core bridge if you
-                    can in preference to a JMS bridge. The core bridge will typically provide better
+                    HornetQ instances and uses the core API. Always use a core bridge if you can in
+                    preference to a JMS bridge. The core bridge will typically provide better
                     performance than a JMS bridge. Also the core bridge can provide <emphasis>once
                         and only once</emphasis> delivery guarantees without using XA.</para>
             </note></para>
@@ -899,8 +897,8 @@ initialContext = new InitialContext(jndiParameters);</programlisting>
                     <para>Add MessageID In Header</para>
                     <para>If <literal>true</literal>, then the original message's message ID will be
                         appended in the message sent to the destination in the header <literal
-                            >HORNETQ_BRIDGE_MSG_ID_LIST</literal>. If the message is bridged more than
-                        once, each message ID will be appended. This enables a distributed
+                            >HORNETQ_BRIDGE_MSG_ID_LIST</literal>. If the message is bridged more
+                        than once, each message ID will be appended. This enables a distributed
                         request-response pattern to be used</para>
                     <note>
                         <para>when you receive the message you can send back a response using the
@@ -956,8 +954,8 @@ initialContext = new InitialContext(jndiParameters);</programlisting>
                 <title>ONCE_AND_ONLY_ONCE</title>
                 <para>This QoS mode ensures messages will reach the destination from the source once
                     and only once. (Sometimes this mode is known as "exactly once"). If both the
-                    source and the destination are on the same HornetQ server instance then
-                    this can be achieved by sending and acknowledging the messages in the same local
+                    source and the destination are on the same HornetQ server instance then this can
+                    be achieved by sending and acknowledging the messages in the same local
                     transaction. If the source and destination are on different servers this is
                     achieved by enlisting the sending and consuming sessions in a JTA transaction.
                     The JTA transaction is controlled by JBoss Transactions JTA * implementation
@@ -995,17 +993,17 @@ initialContext = new InitialContext(jndiParameters);</programlisting>
             or lose network connectivity. For more information on XA Recovery,please refer to <ulink
                 url="http://www.jboss.org/community/wiki/JBossTransactions">JBoss
                 Transactions</ulink>.</para>
-        <para>When HornetQ is integrated with JBoss AS, it can take advantage of JBoss
-            Transactions to provide recovery of messaging resources. If messages are involved in a
-            XA transaction, in the event of a server crash, the recovery manager will ensure that
-            the transactions are recovered and the messages will either be committed or rolled back
+        <para>When HornetQ is integrated with JBoss AS, it can take advantage of JBoss Transactions
+            to provide recovery of messaging resources. If messages are involved in a XA
+            transaction, in the event of a server crash, the recovery manager will ensure that the
+            transactions are recovered and the messages will either be committed or rolled back
             (depending on the transaction outcome) when the server is restarted.</para>
         <section>
             <title>XA Recovery Configuration</title>
-            <para>To enable HornetQs XA Recovery, the Recovery Manager must be configured to
-                connect to HornetQ to recover its resources. The following property must be
-                added to the <literal>jta</literal> section of <literal
-                    >conf/jbossts-properties.xml</literal> of JBoss AS profiles:</para>
+            <para>To enable HornetQs XA Recovery, the Recovery Manager must be configured to connect
+                to HornetQ to recover its resources. The following property must be added to the
+                    <literal>jta</literal> section of <literal>conf/jbossts-properties.xml</literal>
+                of JBoss AS profiles:</para>
             <programlisting>
 &lt;properties depends="arjuna" name="jta"&gt;
    ...
@@ -1015,15 +1013,15 @@ initialContext = new InitialContext(jndiParameters);</programlisting>
 &lt;/properties&gt;
             </programlisting>
             <para>The <literal>[connection configuration]</literal> contains all the information
-                required to connect to HornetQ node under the form <literal>[connector
-                    factory class name],[user name], [password], [connector parameters]</literal>. </para>
+                required to connect to HornetQ node under the form <literal>[connector factory class
+                    name],[user name], [password], [connector parameters]</literal>. </para>
             <itemizedlist>
                 <listitem>
                     <para><literal>[connector factory class name]</literal> corresponds to the name
                         of the <literal>ConnectorFactory</literal> used to connect to JBoss
                         Messaging. Values can be <literal
-                            >org.hornetq.core.remoting.impl.invm.InVMConnectorFactory</literal>
-                        or <literal
+                            >org.hornetq.core.remoting.impl.invm.InVMConnectorFactory</literal> or
+                            <literal
                             >org.hornetq.integration.transports.netty.NettyConnectorFactory</literal></para>
                 </listitem>
                 <listitem>
@@ -1082,9 +1080,8 @@ initialContext = new InitialContext(jndiParameters);</programlisting>
                     &lt;property name="com.arjuna.ats.jta.recovery.XAResourceRecovery.JBMESSAGING1"
                            value="org.hornetq.jms.server.recovery.MessagingXAResourceRecovery;org.hornetq.integration.transports.netty.NettyConnectorFactory, admin, adminpass, hornetq.remoting.netty.port=8888"/>        			                    
                 </programlisting>
-                <para>Configuring HornetQ with an invm acceptor and configuring the Recovery
-                    Manager with an invm connector is the recommended way to enable XA
-                    Recovery.</para>
+                <para>Configuring HornetQ with an invm acceptor and configuring the Recovery Manager
+                    with an invm connector is the recommended way to enable XA Recovery.</para>
             </section>
         </section>
         <section>

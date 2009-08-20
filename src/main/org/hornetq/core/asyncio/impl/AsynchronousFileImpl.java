@@ -92,7 +92,7 @@ public class AsynchronousFileImpl implements AsynchronousFile
 
    static
    {
-      String libraries[] = new String[] { "HornetQnative", "HornetQnative64", "HornetQnative32", "HornetQnative_ia64" };
+      String libraries[] = new String[] { "HornetQAIO", "HornetQAIO64", "HornetQAIO32", "HornetQAIO_ia64" };
 
       for (String library : libraries)
       {

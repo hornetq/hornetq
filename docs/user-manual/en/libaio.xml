@@ -10,13 +10,13 @@
     <para>These are the native libraries distributed by HornetQ:</para>
     <itemizedlist>
         <listitem>
-            <para>libHornetQLibAIO32.so - x86 32 bits</para>
+            <para>libHornetQAIO32.so - x86 32 bits</para>
         </listitem>
         <listitem>
-            <para>libHornetQLibAIO64.so - x86 64 bits</para>
+            <para>libHornetQAIO64.so - x86 64 bits</para>
         </listitem>
         <listitem>
-            <para>libHornetQLibAIO_ia64.so - Itanium 64 bits</para>
+            <para>libHornetQAIO_ia64.so - Itanium 64 bits</para>
         </listitem>
     </itemizedlist>
     <para>When using libaio, HornetQ will aways try loading these files as long as they are

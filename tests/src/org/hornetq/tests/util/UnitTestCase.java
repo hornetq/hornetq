@@ -566,7 +566,8 @@ public class UnitTestCase extends TestCase
       
       if (AsynchronousFileImpl.getTotalMaxIO() != 0)
       {
-         log.warn("test did not close all its files " + AsynchronousFileImpl.getTotalMaxIO());
+         AsynchronousFileImpl.resetMaxAIO();
+         fail("test did not close all its files " + AsynchronousFileImpl.getTotalMaxIO());
       }
 
       super.tearDown();
