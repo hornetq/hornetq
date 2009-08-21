@@ -5,8 +5,9 @@
  */
 
 package org.hornetq.utils.concurrent;     // XXX This belongs in java.util!!! XXX
-import java.util.concurrent.*;  // XXX This import goes away        XXX
-import java.util.*;  
+import java.util.Collection;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.TimeUnit;
 
 /**
  * A {@link Deque} that additionally supports operations that wait for

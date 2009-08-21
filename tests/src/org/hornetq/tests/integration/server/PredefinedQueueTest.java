@@ -14,6 +14,9 @@
 
 package org.hornetq.tests.integration.server;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.hornetq.core.client.ClientConsumer;
 import org.hornetq.core.client.ClientMessage;
 import org.hornetq.core.client.ClientProducer;
@@ -30,9 +33,6 @@ import org.hornetq.core.server.HornetQ;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.tests.util.ServiceTestBase;
 import org.hornetq.utils.SimpleString;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * 

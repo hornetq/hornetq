@@ -14,7 +14,6 @@
 package org.hornetq.core.paging;
 
 import java.util.List;
-import java.util.concurrent.Executor;
 
 import org.hornetq.core.journal.SequentialFileFactory;
 import org.hornetq.core.persistence.StorageManager;

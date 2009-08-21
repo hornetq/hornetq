@@ -16,7 +16,6 @@ package org.hornetq.core.remoting.impl.wireformat;
 import javax.transaction.xa.Xid;
 
 import org.hornetq.core.remoting.spi.HornetQBuffer;
-import org.hornetq.utils.DataConstants;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>

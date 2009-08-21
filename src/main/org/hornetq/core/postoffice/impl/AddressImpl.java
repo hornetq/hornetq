@@ -12,18 +12,17 @@
  */
 package org.hornetq.core.postoffice.impl;
 
-import org.hornetq.core.postoffice.Address;
-import org.hornetq.utils.SimpleString;
-
 import static org.hornetq.core.postoffice.impl.WildcardAddressManager.ANY_WORDS;
 import static org.hornetq.core.postoffice.impl.WildcardAddressManager.ANY_WORDS_SIMPLESTRING;
 import static org.hornetq.core.postoffice.impl.WildcardAddressManager.DELIM;
 import static org.hornetq.core.postoffice.impl.WildcardAddressManager.SINGLE_WORD;
 import static org.hornetq.core.postoffice.impl.WildcardAddressManager.SINGLE_WORD_SIMPLESTRING;
 
-
 import java.util.ArrayList;
 import java.util.List;
+
+import org.hornetq.core.postoffice.Address;
+import org.hornetq.utils.SimpleString;
 
 /**
  * splits an address string into its hierarchical parts split by '.'

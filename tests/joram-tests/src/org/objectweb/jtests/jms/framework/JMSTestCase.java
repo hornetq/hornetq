@@ -18,10 +18,10 @@ import java.util.Properties;
 
 import javax.jms.JMSException;
 
+import junit.framework.TestCase;
+
 import org.objectweb.jtests.jms.admin.Admin;
 import org.objectweb.jtests.jms.admin.AdminFactory;
-
-import junit.framework.TestCase;
 
 /**
  * Class extending <code>junit.framework.TestCase</code> to

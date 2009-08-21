@@ -22,6 +22,9 @@ import java.nio.channels.ScatteringByteChannel;
 import java.nio.charset.UnsupportedCharsetException;
 
 import org.hornetq.core.remoting.spi.HornetQBuffer;
+import org.jboss.netty.buffer.ChannelBufferIndexFinder;
+import org.jboss.netty.buffer.ChannelBufferInputStream;
+import org.jboss.netty.buffer.ChannelBufferOutputStream;
 
 /**
  * A random and sequential accessible sequence of zero or more bytes (octets).

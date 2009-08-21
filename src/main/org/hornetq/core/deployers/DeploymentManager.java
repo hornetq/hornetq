@@ -13,8 +13,6 @@
 
 package org.hornetq.core.deployers;
 
-import java.util.List;
-
 import org.hornetq.core.server.HornetQComponent;
 
 

@@ -12,8 +12,6 @@
  */
 package org.hornetq.javaee.example;
 
-import org.hornetq.javaee.example.server.SendMessageService;
-
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.MessageConsumer;
@@ -21,6 +19,8 @@ import javax.jms.Queue;
 import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.naming.InitialContext;
+
+import org.hornetq.javaee.example.server.SendMessageService;
 
 /**
  * An example showing how to invoke a EJB which sends a JMS message and update a JDBC table in the same transaction.

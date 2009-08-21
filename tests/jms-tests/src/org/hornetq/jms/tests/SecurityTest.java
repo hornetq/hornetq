@@ -13,12 +13,13 @@
 
 package org.hornetq.jms.tests;
 
+import java.util.ArrayList;
+
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.IllegalStateException;
 import javax.jms.JMSSecurityException;
 import javax.jms.Session;
-import java.util.ArrayList;
 
 /**
  * Test JMS Security.

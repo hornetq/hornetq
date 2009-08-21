@@ -13,11 +13,6 @@
 
 package org.hornetq.core.settings.impl;
 
-import org.hornetq.core.logging.Logger;
-import org.hornetq.core.settings.HierarchicalRepository;
-import org.hornetq.core.settings.HierarchicalRepositoryChangeListener;
-import org.hornetq.core.settings.Mergeable;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -25,6 +20,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+
+import org.hornetq.core.logging.Logger;
+import org.hornetq.core.settings.HierarchicalRepository;
+import org.hornetq.core.settings.HierarchicalRepositoryChangeListener;
+import org.hornetq.core.settings.Mergeable;
 
 
 /**

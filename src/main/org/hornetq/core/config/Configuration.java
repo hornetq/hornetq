@@ -24,8 +24,8 @@ import org.hornetq.core.config.cluster.ClusterConnectionConfiguration;
 import org.hornetq.core.config.cluster.DiscoveryGroupConfiguration;
 import org.hornetq.core.config.cluster.DivertConfiguration;
 import org.hornetq.core.config.cluster.QueueConfiguration;
-import org.hornetq.core.server.JournalType;
 import org.hornetq.core.server.HornetQComponent;
+import org.hornetq.core.server.JournalType;
 import org.hornetq.utils.SimpleString;
 
 /**

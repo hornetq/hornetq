@@ -13,6 +13,9 @@
 
 package org.hornetq.tests.integration.client;
 
+import static org.hornetq.tests.util.RandomUtil.randomLong;
+import static org.hornetq.tests.util.RandomUtil.randomSimpleString;
+
 import org.hornetq.core.client.ClientConsumer;
 import org.hornetq.core.client.ClientMessage;
 import org.hornetq.core.client.ClientProducer;
@@ -32,9 +35,6 @@ import org.hornetq.core.server.HornetQ;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.tests.util.UnitTestCase;
 import org.hornetq.utils.SimpleString;
-
-import static org.hornetq.tests.util.RandomUtil.randomLong;
-import static org.hornetq.tests.util.RandomUtil.randomSimpleString;
 
 /**
  * A ClientRequestorTest

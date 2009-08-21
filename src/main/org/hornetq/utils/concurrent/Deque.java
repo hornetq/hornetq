@@ -5,7 +5,12 @@
  */
 
 package org.hornetq.utils.concurrent;     // XXX This belongs in java.util!!! XXX
-import java.util.*;    // XXX This import goes away        XXX
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.Queue;
+import java.util.Stack;
 
 /**
  * A linear collection that supports element insertion and removal at

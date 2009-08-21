@@ -12,8 +12,6 @@
  */
 package org.hornetq.jms.example;
 
-import org.hornetq.common.example.HornetQExample;
-
 import javax.jms.BytesMessage;
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
@@ -23,6 +21,8 @@ import javax.jms.MessageProducer;
 import javax.jms.Queue;
 import javax.jms.Session;
 import javax.naming.InitialContext;
+
+import org.hornetq.common.example.HornetQExample;
 
 /**
  * A simple JMS Queue example that creates a producer and consumer on a queue and sends then receives a message.

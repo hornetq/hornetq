@@ -12,9 +12,9 @@
  */
 package org.hornetq.integration.logging;
 
-import org.apache.log4j.Logger;
-
 import java.util.logging.Level;
+
+import org.apache.log4j.Logger;
 
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>

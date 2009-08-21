@@ -13,15 +13,12 @@
 
 package org.hornetq.jms.tests;
 
-import com.arjuna.ats.internal.jta.transaction.arjunacore.TransactionManagerImple;
-
-import org.hornetq.core.logging.Logger;
-import org.hornetq.core.security.Role;
-import org.hornetq.core.server.HornetQServer;
-import org.hornetq.jms.server.JMSServerManager;
-import org.hornetq.jms.tests.tools.ServerManagement;
-import org.hornetq.jms.tests.tools.container.Server;
-import org.hornetq.jms.tests.util.ProxyAssertSupport;
+import java.lang.ref.WeakReference;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
@@ -35,12 +32,16 @@ import javax.jms.TopicConnectionFactory;
 import javax.jms.XAConnectionFactory;
 import javax.naming.InitialContext;
 import javax.transaction.TransactionManager;
-import java.lang.ref.WeakReference;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+
+import com.arjuna.ats.internal.jta.transaction.arjunacore.TransactionManagerImple;
+
+import org.hornetq.core.logging.Logger;
+import org.hornetq.core.security.Role;
+import org.hornetq.core.server.HornetQServer;
+import org.hornetq.jms.server.JMSServerManager;
+import org.hornetq.jms.tests.tools.ServerManagement;
+import org.hornetq.jms.tests.tools.container.Server;
+import org.hornetq.jms.tests.util.ProxyAssertSupport;
 
 /**
  * @author <a href="mailto:adrian@jboss.org">Adrian Brock</a>

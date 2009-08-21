@@ -12,6 +12,9 @@
  */
 package org.hornetq.jms.example;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.Destination;
@@ -27,9 +30,6 @@ import javax.jms.TextMessage;
 import javax.naming.InitialContext;
 
 import org.hornetq.common.example.HornetQExample;
-
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * A simple JMS example that shows how to use Request/Replay style messaging.

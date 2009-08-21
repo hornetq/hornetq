@@ -13,10 +13,10 @@
 
 package org.hornetq.core.management;
 
-import org.hornetq.core.config.Configuration;
-
 import static javax.management.MBeanOperationInfo.ACTION;
 import static javax.management.MBeanOperationInfo.INFO;
+
+import org.hornetq.core.config.Configuration;
 
 /**
  * This interface describes the core management interface exposed by the server

@@ -14,7 +14,6 @@ package org.hornetq.integration.transports.netty;
 
 import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.logging.Logger;
-import org.hornetq.core.remoting.Packet;
 import org.hornetq.core.remoting.spi.BufferHandler;
 import org.hornetq.core.remoting.spi.ConnectionLifeCycleListener;
 import org.jboss.netty.buffer.ChannelBuffer;

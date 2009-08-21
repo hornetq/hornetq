@@ -30,7 +30,6 @@ import org.hornetq.core.remoting.impl.wireformat.SessionReceiveContinuationMessa
 import org.hornetq.core.remoting.impl.wireformat.SessionReceiveMessage;
 import org.hornetq.utils.Future;
 import org.hornetq.utils.TokenBucketLimiter;
-import org.hornetq.utils.UUIDGenerator;
 
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>

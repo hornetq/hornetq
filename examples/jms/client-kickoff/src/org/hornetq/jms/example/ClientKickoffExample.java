@@ -12,9 +12,8 @@
  */
 package org.hornetq.jms.example;
 
-import org.hornetq.common.example.HornetQExample;
-import org.hornetq.core.management.HornetQServerControl;
-import org.hornetq.core.management.ObjectNames;
+import java.util.HashMap;
+import java.util.concurrent.atomic.AtomicReference;
 
 import javax.jms.ExceptionListener;
 import javax.jms.JMSException;
@@ -27,8 +26,10 @@ import javax.management.remote.JMXConnector;
 import javax.management.remote.JMXConnectorFactory;
 import javax.management.remote.JMXServiceURL;
 import javax.naming.InitialContext;
-import java.util.HashMap;
-import java.util.concurrent.atomic.AtomicReference;
+
+import org.hornetq.common.example.HornetQExample;
+import org.hornetq.core.management.HornetQServerControl;
+import org.hornetq.core.management.ObjectNames;
 
 /**
  * An example that shows how to kick off a client connected to HornetQby using JMX.

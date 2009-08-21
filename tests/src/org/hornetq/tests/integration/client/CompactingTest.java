@@ -25,8 +25,8 @@ import org.hornetq.core.client.ClientSessionFactory;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.exception.HornetQException;
-import org.hornetq.core.server.JournalType;
 import org.hornetq.core.server.HornetQServer;
+import org.hornetq.core.server.JournalType;
 import org.hornetq.tests.util.ServiceTestBase;
 
 /**

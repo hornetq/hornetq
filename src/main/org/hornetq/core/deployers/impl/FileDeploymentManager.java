@@ -13,11 +13,6 @@
 
 package org.hornetq.core.deployers.impl;
 
-import org.hornetq.core.deployers.Deployer;
-import org.hornetq.core.deployers.DeploymentManager;
-import org.hornetq.core.logging.Logger;
-import org.hornetq.utils.Pair;
-
 import java.io.File;
 import java.net.URL;
 import java.util.ArrayList;
@@ -29,6 +24,11 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
+
+import org.hornetq.core.deployers.Deployer;
+import org.hornetq.core.deployers.DeploymentManager;
+import org.hornetq.core.logging.Logger;
+import org.hornetq.utils.Pair;
 
 /**
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>

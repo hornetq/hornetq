@@ -84,9 +84,9 @@ import org.hornetq.core.remoting.impl.wireformat.replication.SessionReplicateDel
 import org.hornetq.core.remoting.spi.HornetQBuffer;
 import org.hornetq.core.security.CheckType;
 import org.hornetq.core.security.SecurityStore;
+import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.LargeServerMessage;
 import org.hornetq.core.server.MessageReference;
-import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.Queue;
 import org.hornetq.core.server.QueueFactory;
 import org.hornetq.core.server.ServerConsumer;

@@ -13,6 +13,9 @@
 
 package org.hornetq.tests.unit.core.deployers.impl;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.cluster.QueueConfiguration;
 import org.hornetq.core.deployers.DeploymentManager;
@@ -21,9 +24,6 @@ import org.hornetq.core.management.HornetQServerControl;
 import org.hornetq.tests.util.UnitTestCase;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * A QueueDeployerTest

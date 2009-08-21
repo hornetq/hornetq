@@ -12,6 +12,8 @@
  */
 package org.hornetq.javaee.example.server;
 
+import java.sql.PreparedStatement;
+
 import javax.ejb.Remote;
 import javax.ejb.Stateless;
 import javax.jms.Connection;
@@ -22,7 +24,6 @@ import javax.jms.Session;
 import javax.jms.TextMessage;
 import javax.naming.InitialContext;
 import javax.sql.DataSource;
-import java.sql.PreparedStatement;
 
 /**
  * An EJB which sends a JMS message and update a JDBC table in the same transaction.

@@ -12,9 +12,7 @@
  */
 package org.hornetq.jms.example;
 
-import org.hornetq.common.example.HornetQExample;
-import org.hornetq.core.management.ObjectNames;
-import org.hornetq.jms.server.management.JMSQueueControl;
+import java.util.HashMap;
 
 import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
@@ -31,7 +29,10 @@ import javax.management.remote.JMXConnector;
 import javax.management.remote.JMXConnectorFactory;
 import javax.management.remote.JMXServiceURL;
 import javax.naming.InitialContext;
-import java.util.HashMap;
+
+import org.hornetq.common.example.HornetQExample;
+import org.hornetq.core.management.ObjectNames;
+import org.hornetq.jms.server.management.JMSQueueControl;
 
 /**
  * An example that shows how to manage HornetQ using JMX.

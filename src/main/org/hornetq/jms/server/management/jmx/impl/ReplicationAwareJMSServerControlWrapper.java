@@ -28,7 +28,6 @@ import org.hornetq.core.management.impl.MBeanInfoHelper;
 import org.hornetq.core.management.jmx.impl.ReplicationAwareStandardMBeanWrapper;
 import org.hornetq.jms.server.management.JMSServerControl;
 import org.hornetq.jms.server.management.impl.JMSServerControlImpl;
-import org.hornetq.jms.server.management.impl.JMSServerControlImpl.NotificationType;
 
 /**
  * A ReplicationAwareJMSServerControlWrapper

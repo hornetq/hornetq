@@ -12,9 +12,9 @@
  */
 package org.hornetq.ra;
 
-import org.hornetq.core.logging.Logger;
-
 import java.io.Serializable;
+
+import org.hornetq.core.logging.Logger;
 
 /**
  * The RA default properties - these are set in the ra.xml file

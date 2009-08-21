@@ -54,7 +54,6 @@ import org.hornetq.core.logging.Logger;
 import org.hornetq.core.remoting.spi.HornetQBuffer;
 import org.hornetq.utils.DataConstants;
 import org.hornetq.utils.Pair;
-import org.hornetq.utils.VariableLatch;
 import org.hornetq.utils.concurrent.LinkedBlockingDeque;
 
 /**

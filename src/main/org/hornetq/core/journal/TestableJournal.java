@@ -13,7 +13,6 @@
 
 package org.hornetq.core.journal;
 
-import org.hornetq.core.journal.impl.JournalFile;
 
 /**
  * 

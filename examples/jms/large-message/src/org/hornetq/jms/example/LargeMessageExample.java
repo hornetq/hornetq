@@ -12,7 +12,13 @@
  */
 package org.hornetq.jms.example;
 
-import org.hornetq.common.example.HornetQExample;
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 
 import javax.jms.BytesMessage;
 import javax.jms.Connection;
@@ -22,13 +28,8 @@ import javax.jms.MessageProducer;
 import javax.jms.Queue;
 import javax.jms.Session;
 import javax.naming.InitialContext;
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
+
+import org.hornetq.common.example.HornetQExample;
 
 /**
  * This example demonstrates the ability of HornetQ to send and consume a very large message, much

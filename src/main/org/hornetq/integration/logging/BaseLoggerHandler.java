@@ -13,8 +13,8 @@
 package org.hornetq.integration.logging;
 
 import java.util.logging.Handler;
-import java.util.logging.LogRecord;
 import java.util.logging.Level;
+import java.util.logging.LogRecord;
 
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>

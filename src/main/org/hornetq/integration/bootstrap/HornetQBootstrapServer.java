@@ -13,12 +13,6 @@
 
 package org.hornetq.integration.bootstrap;
 
-import org.hornetq.core.logging.Logger;
-import org.jboss.kernel.plugins.bootstrap.basic.BasicBootstrap;
-import org.jboss.kernel.plugins.deployment.xml.BeanXMLDeployer;
-import org.jboss.kernel.spi.config.KernelConfig;
-import org.jboss.kernel.spi.deployment.KernelDeployment;
-
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -30,6 +24,12 @@ import java.util.Properties;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.CopyOnWriteArrayList;
+
+import org.hornetq.core.logging.Logger;
+import org.jboss.kernel.plugins.bootstrap.basic.BasicBootstrap;
+import org.jboss.kernel.plugins.deployment.xml.BeanXMLDeployer;
+import org.jboss.kernel.spi.config.KernelConfig;
+import org.jboss.kernel.spi.deployment.KernelDeployment;
 
 /**
  * This is the method in which the HornetQ server can be deployed externall outside of jBoss. Alternatively a user can embed

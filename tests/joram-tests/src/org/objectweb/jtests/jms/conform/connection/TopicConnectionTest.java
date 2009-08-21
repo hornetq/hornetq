@@ -13,9 +13,7 @@
 
 package org.objectweb.jtests.jms.conform.connection;
 
-import javax.jms.InvalidClientIDException;
 import javax.jms.JMSException;
-import javax.jms.TopicConnection;
 
 import junit.framework.Test;
 import junit.framework.TestSuite;

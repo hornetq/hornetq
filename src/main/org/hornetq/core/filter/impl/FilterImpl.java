@@ -21,7 +21,6 @@ import org.hornetq.core.filter.Filter;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.server.ServerMessage;
 import org.hornetq.utils.SimpleString;
-import org.hornetq.core.filter.impl.FilterParser;
 
 /**
 * This class implements a HornetQ filter

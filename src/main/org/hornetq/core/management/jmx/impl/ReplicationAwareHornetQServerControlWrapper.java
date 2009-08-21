@@ -13,14 +13,14 @@
 
 package org.hornetq.core.management.jmx.impl;
 
+import javax.management.MBeanInfo;
+
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.management.HornetQServerControl;
 import org.hornetq.core.management.ReplicationOperationInvoker;
 import org.hornetq.core.management.ResourceNames;
-import org.hornetq.core.management.impl.MBeanInfoHelper;
 import org.hornetq.core.management.impl.HornetQServerControlImpl;
-
-import javax.management.MBeanInfo;
+import org.hornetq.core.management.impl.MBeanInfoHelper;
 
 /**
  * A ReplicationAwareHornetQServerControlWrapper

@@ -13,6 +13,13 @@
 
 package org.hornetq.integration.security;
 
+import java.security.Principal;
+import java.util.HashSet;
+import java.util.Set;
+
+import javax.naming.InitialContext;
+import javax.security.auth.Subject;
+
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.security.CheckType;
 import org.hornetq.core.security.HornetQSecurityManager;
@@ -21,12 +28,6 @@ import org.hornetq.core.server.HornetQComponent;
 import org.jboss.security.AuthenticationManager;
 import org.jboss.security.RealmMapping;
 import org.jboss.security.SimplePrincipal;
-
-import javax.naming.InitialContext;
-import javax.security.auth.Subject;
-import java.security.Principal;
-import java.util.HashSet;
-import java.util.Set;
 
 /**
  * This implementation delegates to the JBoss AS security interfaces (which in turn use JAAS)

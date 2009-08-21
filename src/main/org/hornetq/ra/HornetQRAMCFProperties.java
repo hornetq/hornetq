@@ -203,11 +203,12 @@
  */
 package org.hornetq.ra;
 
-import org.hornetq.core.logging.Logger;
+import java.io.Serializable;
 
 import javax.jms.Queue;
 import javax.jms.Topic;
-import java.io.Serializable;
+
+import org.hornetq.core.logging.Logger;
 
 /**
  * The MCF default properties - these are set in the <tx-connection-factory> at the jms-ds.xml

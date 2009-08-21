@@ -13,12 +13,13 @@
 
 package org.hornetq.jms.server;
 
+import java.util.List;
+
+import javax.naming.Context;
+
 import org.hornetq.core.config.TransportConfiguration;
 import org.hornetq.core.server.HornetQComponent;
 import org.hornetq.utils.Pair;
-
-import javax.naming.Context;
-import java.util.List;
 
 /**
  * The JMS Management interface.

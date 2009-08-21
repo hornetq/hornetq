@@ -26,7 +26,6 @@ import org.hornetq.core.client.ClientProducer;
 import org.hornetq.core.client.ClientSessionFactory;
 import org.hornetq.core.client.SendAcknowledgementHandler;
 import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
-import org.hornetq.core.client.impl.ClientSessionImpl;
 import org.hornetq.core.client.impl.ClientSessionInternal;
 import org.hornetq.core.client.management.impl.ManagementHelper;
 import org.hornetq.core.config.TransportConfiguration;

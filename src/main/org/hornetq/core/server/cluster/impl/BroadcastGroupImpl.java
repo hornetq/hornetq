@@ -21,7 +21,6 @@ import java.util.List;
 import java.util.concurrent.ScheduledFuture;
 
 import org.hornetq.core.buffers.ChannelBuffers;
-import org.hornetq.core.client.management.impl.ManagementHelper;
 import org.hornetq.core.config.TransportConfiguration;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.management.Notification;

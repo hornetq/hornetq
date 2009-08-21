@@ -17,12 +17,12 @@ import java.io.ByteArrayInputStream;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.hornetq.core.filter.impl.FilterParser;
 import org.hornetq.core.filter.impl.Identifier;
 import org.hornetq.core.filter.impl.Operator;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.tests.util.UnitTestCase;
 import org.hornetq.utils.SimpleString;
-import org.hornetq.core.filter.impl.FilterParser;
 
 /**
  Tests of the JavaCC LL(1) parser for the HornetQ filters

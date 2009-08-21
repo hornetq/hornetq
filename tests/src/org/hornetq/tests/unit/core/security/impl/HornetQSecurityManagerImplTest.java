@@ -13,12 +13,12 @@
 
 package org.hornetq.tests.unit.core.security.impl;
 
+import java.util.HashSet;
+
 import org.hornetq.core.security.CheckType;
 import org.hornetq.core.security.Role;
 import org.hornetq.core.security.impl.HornetQSecurityManagerImpl;
 import org.hornetq.tests.util.UnitTestCase;
-
-import java.util.HashSet;
 
 /**
  * tests HornetQSecurityManagerImpl

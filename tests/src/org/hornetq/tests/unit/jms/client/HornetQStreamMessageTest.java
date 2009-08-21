@@ -214,7 +214,6 @@ import static org.hornetq.tests.util.RandomUtil.randomInt;
 import static org.hornetq.tests.util.RandomUtil.randomLong;
 import static org.hornetq.tests.util.RandomUtil.randomShort;
 import static org.hornetq.tests.util.RandomUtil.randomString;
-import static org.hornetq.tests.util.UnitTestCase.assertEqualsByteArrays;
 
 import java.util.ArrayList;
 

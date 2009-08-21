@@ -13,14 +13,14 @@
 
 package org.hornetq.tests.unit.core.settings.impl;
 
+import java.util.ArrayList;
+import java.util.HashSet;
+
 import org.hornetq.core.security.Role;
 import org.hornetq.core.settings.HierarchicalRepository;
 import org.hornetq.core.settings.Mergeable;
 import org.hornetq.core.settings.impl.HierarchicalObjectRepository;
 import org.hornetq.tests.util.UnitTestCase;
-
-import java.util.ArrayList;
-import java.util.HashSet;
 
 /**
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>

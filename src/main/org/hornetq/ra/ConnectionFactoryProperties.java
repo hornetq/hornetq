@@ -12,9 +12,9 @@
  */
 package org.hornetq.ra;
 
-import org.hornetq.core.logging.Logger;
-
 import java.util.Map;
+
+import org.hornetq.core.logging.Logger;
 
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>

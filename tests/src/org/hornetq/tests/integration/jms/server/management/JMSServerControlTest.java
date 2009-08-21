@@ -15,7 +15,6 @@ package org.hornetq.tests.integration.jms.server.management;
 
 import static org.hornetq.tests.util.RandomUtil.randomString;
 
-import java.util.Arrays;
 import java.util.Map;
 
 import javax.jms.Connection;
@@ -35,8 +34,6 @@ import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
 import org.hornetq.core.remoting.impl.invm.TransportConstants;
 import org.hornetq.core.server.HornetQ;
 import org.hornetq.core.server.HornetQServer;
-import org.hornetq.integration.transports.netty.NettyAcceptorFactory;
-import org.hornetq.integration.transports.netty.NettyConnectorFactory;
 import org.hornetq.jms.server.JMSServerManager;
 import org.hornetq.jms.server.impl.JMSServerManagerImpl;
 import org.hornetq.jms.server.management.JMSServerControl;

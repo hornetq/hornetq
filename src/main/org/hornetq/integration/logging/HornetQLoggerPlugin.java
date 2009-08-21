@@ -13,10 +13,10 @@
 
 package org.hornetq.integration.logging;
 
-import org.jboss.logging.LoggerPlugin;
-
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import org.jboss.logging.LoggerPlugin;
 
 /**
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>

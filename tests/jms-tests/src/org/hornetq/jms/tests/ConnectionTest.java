@@ -25,8 +25,6 @@ import javax.jms.Topic;
 import javax.jms.TopicConnection;
 import javax.jms.TopicConnectionFactory;
 
-import junit.framework.TestCase;
-
 import org.hornetq.core.logging.Logger;
 
 /**

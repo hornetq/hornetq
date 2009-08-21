@@ -14,10 +14,10 @@ package org.hornetq.core.client;
 
 import static org.hornetq.utils.SimpleString.toSimpleString;
 
+import java.util.UUID;
+
 import org.hornetq.core.client.impl.ClientMessageImpl;
 import org.hornetq.utils.SimpleString;
-
-import java.util.UUID;
 
 
 /**

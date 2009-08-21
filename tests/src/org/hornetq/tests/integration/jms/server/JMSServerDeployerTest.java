@@ -13,6 +13,12 @@
 
 package org.hornetq.tests.integration.jms.server;
 
+import java.net.URL;
+
+import javax.jms.Queue;
+import javax.jms.Topic;
+import javax.naming.Context;
+
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.TransportConfiguration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
@@ -28,11 +34,6 @@ import org.hornetq.jms.server.impl.JMSServerManagerImpl;
 import org.hornetq.tests.unit.util.InVMContext;
 import org.hornetq.tests.util.ServiceTestBase;
 import org.w3c.dom.Element;
-
-import javax.jms.Queue;
-import javax.jms.Topic;
-import javax.naming.Context;
-import java.net.URL;
 
 /**
  * A JMSServerDeployerTest

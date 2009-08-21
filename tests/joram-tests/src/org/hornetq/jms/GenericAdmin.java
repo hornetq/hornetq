@@ -14,7 +14,6 @@
 package org.hornetq.jms;
 
 import javax.naming.Context;
-import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
 import org.jboss.logging.Logger;

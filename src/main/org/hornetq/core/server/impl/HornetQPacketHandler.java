@@ -42,13 +42,11 @@ import org.hornetq.core.remoting.impl.wireformat.replication.ReplicateRemoteBind
 import org.hornetq.core.remoting.impl.wireformat.replication.ReplicateRemoteConsumerAddedMessage;
 import org.hornetq.core.remoting.impl.wireformat.replication.ReplicateRemoteConsumerRemovedMessage;
 import org.hornetq.core.remoting.impl.wireformat.replication.ReplicateStartupInfoMessage;
-import org.hornetq.core.server.MessageReference;
 import org.hornetq.core.server.HornetQServer;
+import org.hornetq.core.server.MessageReference;
 import org.hornetq.core.server.Queue;
 import org.hornetq.core.server.cluster.ClusterConnection;
 import org.hornetq.core.server.cluster.RemoteQueueBinding;
-import org.hornetq.core.transaction.Transaction;
-import org.hornetq.core.transaction.impl.TransactionImpl;
 
 /**
  * A packet handler for all packets that need to be handled at the server level

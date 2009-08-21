@@ -13,6 +13,12 @@
 
 package org.hornetq.tests.unit.core.deployers.impl;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 import org.hornetq.core.deployers.DeploymentManager;
 import org.hornetq.core.deployers.impl.BasicUserCredentialsDeployer;
 import org.hornetq.core.security.CheckType;
@@ -22,12 +28,6 @@ import org.hornetq.tests.util.UnitTestCase;
 import org.hornetq.utils.XMLUtil;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 /**
  * tests BasicUserCredentialsDeployer

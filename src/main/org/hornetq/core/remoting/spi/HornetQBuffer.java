@@ -13,7 +13,6 @@
 
 package org.hornetq.core.remoting.spi;
 
-import org.hornetq.core.buffers.ChannelBuffer;
 import org.hornetq.utils.SimpleString;
 
 /**

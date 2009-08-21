@@ -12,9 +12,9 @@
  */
 package org.hornetq.core.postoffice;
 
-import org.hornetq.utils.SimpleString;
-
 import java.util.List;
+
+import org.hornetq.utils.SimpleString;
 
 /**
  * USed to hold a hierarchichal style address, delimited by a '.'.

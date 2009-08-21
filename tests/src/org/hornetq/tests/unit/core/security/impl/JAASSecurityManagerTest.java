@@ -13,21 +13,6 @@
 
 package org.hornetq.tests.unit.core.security.impl;
 
-import org.hornetq.core.security.CheckType;
-import org.hornetq.core.security.Role;
-import org.hornetq.core.security.impl.JAASSecurityManager;
-import org.hornetq.tests.util.UnitTestCase;
-import org.jboss.security.SimpleGroup;
-
-import javax.security.auth.Subject;
-import javax.security.auth.callback.Callback;
-import javax.security.auth.callback.CallbackHandler;
-import javax.security.auth.callback.UnsupportedCallbackException;
-import javax.security.auth.login.AppConfigurationEntry;
-import javax.security.auth.login.AppConfigurationEntry.LoginModuleControlFlag;
-import javax.security.auth.login.Configuration;
-import javax.security.auth.login.LoginException;
-import javax.security.auth.spi.LoginModule;
 import java.io.IOException;
 import java.security.Principal;
 import java.security.acl.Group;
@@ -36,6 +21,22 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+
+import javax.security.auth.Subject;
+import javax.security.auth.callback.Callback;
+import javax.security.auth.callback.CallbackHandler;
+import javax.security.auth.callback.UnsupportedCallbackException;
+import javax.security.auth.login.AppConfigurationEntry;
+import javax.security.auth.login.Configuration;
+import javax.security.auth.login.LoginException;
+import javax.security.auth.login.AppConfigurationEntry.LoginModuleControlFlag;
+import javax.security.auth.spi.LoginModule;
+
+import org.hornetq.core.security.CheckType;
+import org.hornetq.core.security.Role;
+import org.hornetq.core.security.impl.JAASSecurityManager;
+import org.hornetq.tests.util.UnitTestCase;
+import org.jboss.security.SimpleGroup;
 
 /**
  * tests the JAASSecurityManager

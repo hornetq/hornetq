@@ -42,7 +42,6 @@ import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.core.transaction.Transaction;
 import org.hornetq.core.transaction.TransactionPropertyIndexes;
 import org.hornetq.core.transaction.impl.TransactionImpl;
-import org.hornetq.utils.Future;
 import org.hornetq.utils.SimpleString;
 
 /**

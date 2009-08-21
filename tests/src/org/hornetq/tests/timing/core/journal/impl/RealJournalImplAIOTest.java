@@ -14,7 +14,6 @@
 package org.hornetq.tests.timing.core.journal.impl;
 
 import java.io.File;
-import java.util.concurrent.Executors;
 
 import org.hornetq.core.asyncio.impl.AsynchronousFileImpl;
 import org.hornetq.core.journal.SequentialFileFactory;

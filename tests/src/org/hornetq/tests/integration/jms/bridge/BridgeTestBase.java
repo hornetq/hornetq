@@ -12,6 +12,24 @@
  */
 package org.hornetq.tests.integration.jms.bridge;
 
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
+
+import javax.jms.BytesMessage;
+import javax.jms.Connection;
+import javax.jms.ConnectionFactory;
+import javax.jms.DeliveryMode;
+import javax.jms.Destination;
+import javax.jms.Message;
+import javax.jms.MessageConsumer;
+import javax.jms.MessageProducer;
+import javax.jms.Queue;
+import javax.jms.Session;
+import javax.jms.TextMessage;
+import javax.jms.Topic;
+import javax.transaction.TransactionManager;
+
 import com.arjuna.ats.internal.jta.transaction.arjunacore.TransactionManagerImple;
 
 import org.hornetq.core.config.Configuration;
@@ -35,23 +53,6 @@ import org.hornetq.jms.server.management.JMSQueueControl;
 import org.hornetq.jms.server.management.TopicControl;
 import org.hornetq.tests.unit.util.InVMContext;
 import org.hornetq.tests.util.UnitTestCase;
-
-import javax.jms.BytesMessage;
-import javax.jms.Connection;
-import javax.jms.ConnectionFactory;
-import javax.jms.DeliveryMode;
-import javax.jms.Destination;
-import javax.jms.Message;
-import javax.jms.MessageConsumer;
-import javax.jms.MessageProducer;
-import javax.jms.Queue;
-import javax.jms.Session;
-import javax.jms.TextMessage;
-import javax.jms.Topic;
-import javax.transaction.TransactionManager;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Set;
 
 /**
  * 

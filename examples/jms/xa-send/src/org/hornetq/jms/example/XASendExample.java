@@ -12,9 +12,7 @@
  */
 package org.hornetq.jms.example;
 
-import org.hornetq.common.example.DummyXid;
-import org.hornetq.common.example.HornetQExample;
-import org.hornetq.utils.UUIDGenerator;
+import java.util.ArrayList;
 
 import javax.jms.JMSException;
 import javax.jms.Message;
@@ -30,7 +28,10 @@ import javax.jms.XASession;
 import javax.naming.InitialContext;
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
-import java.util.ArrayList;
+
+import org.hornetq.common.example.DummyXid;
+import org.hornetq.common.example.HornetQExample;
+import org.hornetq.utils.UUIDGenerator;
 
 /**
  * A simple JMS example showing the usage of XA support in JMS.

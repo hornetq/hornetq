@@ -13,8 +13,7 @@
 
 package org.hornetq.jms.tests;
 
-import org.hornetq.jms.tests.message.SimpleJMSMessage;
-import org.hornetq.jms.tests.message.SimpleJMSTextMessage;
+import java.io.Serializable;
 
 import javax.jms.Connection;
 import javax.jms.DeliveryMode;
@@ -24,7 +23,9 @@ import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
 import javax.jms.Session;
 import javax.jms.TextMessage;
-import java.io.Serializable;
+
+import org.hornetq.jms.tests.message.SimpleJMSMessage;
+import org.hornetq.jms.tests.message.SimpleJMSTextMessage;
 
 /**
  * @author <a href="mailto:ovidiu@feodorov.com">Ovidiu Feodorov</a>

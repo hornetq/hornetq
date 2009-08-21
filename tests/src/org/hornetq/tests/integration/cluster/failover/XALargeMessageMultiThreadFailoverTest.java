@@ -24,8 +24,8 @@ import org.hornetq.core.config.TransportConfiguration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.hornetq.core.remoting.impl.invm.TransportConstants;
-import org.hornetq.core.server.JournalType;
 import org.hornetq.core.server.HornetQ;
+import org.hornetq.core.server.JournalType;
 
 /**
  * A LargeMessageMultiThreadFailoverTest

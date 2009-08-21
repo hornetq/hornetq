@@ -17,7 +17,6 @@ import static org.hornetq.utils.DataConstants.SIZE_INT;
 
 import java.nio.ByteBuffer;
 
-import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.journal.SequentialFile;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.remoting.spi.HornetQBuffer;
