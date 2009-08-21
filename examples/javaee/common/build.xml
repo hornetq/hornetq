@@ -91,7 +91,7 @@
    <target name="jar" depends="compile">
       <jar destfile="${build.dir}/${example.name}-example.jar"
            basedir="${classes.dir}"
-           includes="org/jboss/javaee/example/server/**/*">
+           includes="org/hornetq/javaee/example/server/**/*">
       </jar>
    </target>
 

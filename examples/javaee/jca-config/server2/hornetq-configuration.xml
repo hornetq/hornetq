@@ -1,3 +1,11 @@
+<!--
+  ~ Copyright (c) 2009. Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+  ~ Morbi non lorem porttitor neque feugiat blandit. Ut vitae ipsum eget quam lacinia accumsan.
+  ~ Etiam sed turpis ac ipsum condimentum fringilla. Maecenas magna.
+  ~ Proin dapibus sapien vel ante. Aliquam erat volutpat. Pellentesque sagittis ligula eget metus.
+  ~ Vestibulum commodo. Ut rhoncus gravida arcu.
+  -->
+
 <configuration xmlns="urn:hornetq"
                xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
                xsi:schemaLocation="urn:hornetq /schema/hornetq-configuration.xsd">
@@ -33,7 +41,7 @@
       <!-- Netty TCP Acceptor -->
       <acceptor name="netty">
          <factory-class>org.hornetq.integration.transports.netty.NettyAcceptorFactory</factory-class>
-         <param key="hornetq.remoting.netty.port" value="${hornetq.remoting.netty.port:5445}" type="Integer"/>
+         <param key="hornetq.remoting.netty.port" value="${hornetq.remoting.netty.port:5446}" type="Integer"/>
       </acceptor>
    </acceptors>
 

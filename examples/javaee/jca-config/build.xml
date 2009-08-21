@@ -19,7 +19,7 @@
    <target name="jar2" depends="compile">
       <jar destfile="${build.dir}/jca-config-example2.jar"
            basedir="${classes.dir}"
-           includes="org/jboss/javaee/example/server2/**/*">
+           includes="org/hornetq/javaee/example/server2/**/*">
       </jar>
    </target>
    <target name="ear2" depends="jar2">
@@ -42,9 +42,10 @@
             <exclude name="**/tmp/**"/>
          </fileset>
       </copy>
-      <copy todir="${deploy.dir2}/deploy/hornetq.sar">
+      <copy todir="${deploy.dir2}/deploy/hornetq.sar" overwrite="true">
          <fileset dir="server2">
             <include name="jms-remote-ds.xml"/>
+            <include name="hornetq-configuration.xml"/>
          </fileset>
       </copy>
       <copy todir="${deploy.dir2}/deploy/jms-ra.rar/META-INF">
