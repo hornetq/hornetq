@@ -51,8 +51,6 @@ public interface StorageManager extends HornetQComponent
    long generateUniqueID();
    
    long getCurrentUniqueID();
-   
-   void setUniqueIDSequence(long id);
 
    void storeMessage(ServerMessage message) throws Exception;
    

@@ -1,0 +1,164 @@
+/*
+ * Copyright 2009 Red Hat, Inc.
+ * Red Hat licenses this file to you under the Apache License, version
+ * 2.0 (the "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+ * implied.  See the License for the specific language governing
+ * permissions and limitations under the License.
+ */
+
+package org.hornetq.tests.unit.core.persistence.impl;
+
+import java.io.File;
+import java.util.ArrayList;
+
+import org.hornetq.core.buffers.ChannelBuffers;
+import org.hornetq.core.journal.Journal;
+import org.hornetq.core.journal.PreparedTransactionInfo;
+import org.hornetq.core.journal.RecordInfo;
+import org.hornetq.core.journal.impl.JournalImpl;
+import org.hornetq.core.journal.impl.NIOSequentialFileFactory;
+import org.hornetq.core.persistence.impl.journal.BatchingIDGenerator;
+import org.hornetq.core.remoting.spi.HornetQBuffer;
+import org.hornetq.tests.util.UnitTestCase;
+
+/**
+ * A BatchIDGeneratorUnitTest
+ *
+ * @author <mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
+ *
+ *
+ */
+public class BatchIDGeneratorUnitTest extends UnitTestCase
+{
+
+   // Constants -----------------------------------------------------
+
+   // Attributes ----------------------------------------------------
+
+   // Static --------------------------------------------------------
+
+   // Constructors --------------------------------------------------
+
+   // Public --------------------------------------------------------
+
+   public void testSequence() throws Exception
+   {
+      NIOSequentialFileFactory factory = new NIOSequentialFileFactory(getTestDir());
+      Journal journal = new JournalImpl(10 * 1024, 2, 0, 0, factory, "test-data", "tst", 1);
+
+      journal.start();
+
+      journal.load(new ArrayList<RecordInfo>(), new ArrayList<PreparedTransactionInfo>());
+
+      BatchingIDGenerator batch = new BatchingIDGenerator(0, 1000, journal);
+      long id1 = batch.generateID();
+      long id2 = batch.generateID();
+
+      assertTrue(id2 > id1);
+
+      journal.stop();
+      batch = new BatchingIDGenerator(0, 1000, journal);
+      loadIDs(journal, batch);
+
+      long id3 = batch.generateID();
+
+      assertEquals(1000, id3);
+
+      long id4 = batch.generateID();
+
+      assertTrue(id4 > id3 && id4 < 2000);
+
+      batch.close();
+
+      journal.stop();
+      batch = new BatchingIDGenerator(0, 1000, journal);
+      loadIDs(journal, batch);
+
+      long id5 = batch.generateID();
+      assertTrue(id5 > id4 && id5 < 2000);
+      
+      
+      long lastId = id5;
+      
+      boolean close = true;
+      for (int i = 0 ; i < 100000; i++)
+      {
+         if (i % 1000 == 0)
+         {
+            System.out.println("lastId = " + lastId);
+            // interchanging closes and simulated crashes
+            if (close)
+            {
+               batch.close();
+            }
+
+            close = !close;
+            
+            journal.stop();
+            batch = new BatchingIDGenerator(0, 1000, journal);
+            loadIDs(journal, batch);
+         }
+
+         long id = batch.generateID();
+
+         assertTrue(id > lastId);
+         
+         lastId = id;
+      }
+      
+      System.out.println("LastID = " + lastId);
+ 
+   }
+
+   protected void loadIDs(Journal journal, BatchingIDGenerator batch) throws Exception
+   {
+      ArrayList<RecordInfo> records = new ArrayList<RecordInfo>();
+      ArrayList<PreparedTransactionInfo> tx = new ArrayList<PreparedTransactionInfo>();
+
+      journal.start();
+      journal.load(records, tx);
+
+      assertEquals(0, tx.size());
+
+      assertTrue(records.size() > 0);
+
+      for (RecordInfo record : records)
+      {
+         if (record.userRecordType == BatchingIDGenerator.ID_COUNTER_RECORD)
+         {
+            HornetQBuffer buffer = ChannelBuffers.wrappedBuffer(record.data);
+            batch.loadState(record.id, buffer);
+         }
+      }
+   }
+
+   // Package protected ---------------------------------------------
+
+   // Protected -----------------------------------------------------
+
+   protected void setUp() throws Exception
+   {
+      super.setUp();
+      
+      File file = new File(getTestDir());
+
+      deleteDirectory(file);
+
+      file.mkdir();
+   }
+
+   protected void tearDown() throws Exception
+   {
+      super.tearDown();
+   }
+
+   // Private -------------------------------------------------------
+
+   // Inner classes -------------------------------------------------
+
+}

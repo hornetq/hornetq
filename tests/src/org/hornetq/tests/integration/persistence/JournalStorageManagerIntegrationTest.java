@@ -47,7 +47,8 @@ public class JournalStorageManagerIntegrationTest extends ServiceTestBase
    public void testLargeMessageCopy() throws Exception
    {
       clearData();
-      Configuration configuration = createConfigForJournal();
+      
+      Configuration configuration = createDefaultConfig();
 
       configuration.start();
 

@@ -24,13 +24,20 @@ import org.hornetq.integration.transports.netty.NettyAcceptorFactory;
 import org.hornetq.tests.util.ServiceTestBase;
 import org.hornetq.utils.SimpleString;
 
+/**
+ * 
+ * A SessionCloseOnGCTest
+ *
+ * @author <mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
+ * @author <mailto:tim.fox@jboss.org">Tim Fox</a>
+ *
+ *
+ */
 public class SessionCloseOnGCTest extends ServiceTestBase
 {
    private static final Logger log = Logger.getLogger(SessionCloseOnGCTest.class);
 
    private HornetQServer server;
-
-   private final SimpleString QUEUE = new SimpleString("ConsumerTestQueue");
 
    @Override
    protected void setUp() throws Exception
@@ -38,10 +45,6 @@ public class SessionCloseOnGCTest extends ServiceTestBase
       super.setUp();
 
       server = createServer(false);
-      server.getConfiguration()
-            .getAcceptorConfigurations()
-            .add(new TransportConfiguration(NettyAcceptorFactory.class.getCanonicalName()));
-
       server.start();
    }
 

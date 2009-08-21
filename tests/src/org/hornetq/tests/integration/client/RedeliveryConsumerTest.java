@@ -238,12 +238,8 @@ public class RedeliveryConsumerTest extends ServiceTestBase
     */
    private void setUp(final boolean persistDeliveryCountBeforeDelivery) throws Exception, HornetQException
    {
-      Configuration config = createConfigForJournal();
-      config.setJournalFileSize(10 * 1024);
-      config.setJournalMinFiles(2);
-      config.setSecurityEnabled(false);
+      Configuration config = createDefaultConfig();
       config.setPersistDeliveryCountBeforeDelivery(persistDeliveryCountBeforeDelivery);
-      config.getAcceptorConfigurations().add(new TransportConfiguration(InVMAcceptorFactory.class.getCanonicalName()));
 
       server = createServer(true, config);
       

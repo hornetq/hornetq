@@ -75,7 +75,7 @@ public class DuplicateDetectionUnitTest extends ServiceTestBase
 
          SimpleString ADDRESS = new SimpleString("address");
 
-         Configuration configuration = createConfigForJournal();
+         Configuration configuration = createDefaultConfig();
 
          configuration.start();
 

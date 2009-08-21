@@ -196,10 +196,8 @@ public class LVQRecoveryTest extends ServiceTestBase
       super.setUp();
       
       clearData();
-      configuration = createConfigForJournal();
+      configuration = createDefaultConfig();
       configuration.setSecurityEnabled(false);
-      TransportConfiguration transportConfig = new TransportConfiguration(INVM_ACCEPTOR_FACTORY);
-      configuration.getAcceptorConfigurations().add(transportConfig);
       server = createServer(true, configuration);
       // start the server
       server.start();

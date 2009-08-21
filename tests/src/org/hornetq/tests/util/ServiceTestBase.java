@@ -121,17 +121,6 @@ public class ServiceTestBase extends UnitTestCase
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
-   protected Configuration createConfigForJournal()
-   {
-      Configuration config = new ConfigurationImpl();
-      config.setJournalDirectory(getJournalDir());
-      config.setBindingsDirectory(getBindingsDir());
-      config.setJournalType(JournalType.ASYNCIO);
-      config.setLargeMessagesDirectory(getLargeMessagesDir());
-      config.setJournalCompactMinFiles(0);
-      config.setJournalCompactPercentage(0);
-      return config;
-   }
 
    protected HornetQServer createServer(final boolean realFiles,
                                           final Configuration configuration,

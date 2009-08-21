@@ -56,7 +56,7 @@ public class RestartSMTest extends ServiceTestBase
       File testdir = new File(getTestDir());
       deleteDirectory(testdir);
 
-      Configuration configuration = createConfigForJournal();
+      Configuration configuration = createDefaultConfig();
 
       configuration.start();
 

@@ -549,6 +549,8 @@ public class UnitTestCase extends TestCase
    {
       super.setUp();
       
+      deleteDirectory(new File(getTestDir()));
+      
       InVMRegistry.instance.clear();
       
       // checkFreePort(TransportConstants.DEFAULT_PORT);

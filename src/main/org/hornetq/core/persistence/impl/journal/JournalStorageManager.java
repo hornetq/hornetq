@@ -92,8 +92,6 @@ public class JournalStorageManager implements StorageManager
 
    public static final byte PERSISTENT_ID_RECORD = 23;
 
-   public static final byte ID_COUNTER_RECORD = 24;
-
    // type + expiration + timestamp + priority
    public static final int SIZE_FIELDS = SIZE_INT + SIZE_LONG + SIZE_LONG + SIZE_BYTE;
 
@@ -117,7 +115,7 @@ public class JournalStorageManager implements StorageManager
 
    private UUID persistentID;
 
-   private final BatchingIDGenerator idGenerator = new BatchingIDGenerator(0, CHECKPOINT_BATCH_SIZE);
+   private final BatchingIDGenerator idGenerator;
 
    private final Journal messageJournal;
 
@@ -216,6 +214,9 @@ public class JournalStorageManager implements StorageManager
       {
          throw new IllegalArgumentException("Unsupported journal type " + config.getJournalType());
       }
+      
+      
+      this.idGenerator = new BatchingIDGenerator(0, CHECKPOINT_BATCH_SIZE, bindingsJournal);
 
       messageJournal = new JournalImpl(config.getJournalFileSize(),
                                        config.getJournalMinFiles(),
@@ -260,11 +261,6 @@ public class JournalStorageManager implements StorageManager
    public long getCurrentUniqueID()
    {
       return idGenerator.getCurrentID();
-   }
-
-   public void setUniqueIDSequence(final long id)
-   {
-      idGenerator.setID(id);
    }
 
    public LargeServerMessage createLargeMessage()
@@ -969,21 +965,15 @@ public class JournalStorageManager implements StorageManager
 
             persistentID = encoding.uuid;
          }
-         else if (rec == ID_COUNTER_RECORD)
+         else if (rec == BatchingIDGenerator.ID_COUNTER_RECORD)
          {
-            IDCounterEncoding encoding = new IDCounterEncoding();
-
-            encoding.decode(buffer);
-
-            lastID = encoding.id;
+            idGenerator.loadState(record.id, buffer);
          }
          else
          {
             throw new IllegalStateException("Invalid record type " + rec);
          }
       }
-
-      idGenerator.setID(lastID + 1);
    }
 
    // HornetQComponent implementation
@@ -1128,79 +1118,6 @@ public class JournalStorageManager implements StorageManager
    // Inner Classes
    // ----------------------------------------------------------------------------
 
-   private class BatchingIDGenerator implements IDGenerator
-   {
-      private final AtomicLong counter;
-
-      private final long checkpointSize;
-
-      private volatile long nextID;
-
-      public BatchingIDGenerator(final long start, final long checkpointSize)
-      {
-         this.counter = new AtomicLong(start);
-
-         this.checkpointSize = checkpointSize;
-
-         nextID = start + checkpointSize;
-      }
-
-      public void setID(final long id)
-      {
-         this.counter.set(id);
-
-         nextID = id + checkpointSize;
-      }
-
-      public long generateID()
-      {
-         long id = counter.getAndIncrement();
-
-         if (id >= nextID)
-         {
-            saveCheckPoint(id);
-
-            return id;
-         }
-         else
-         {
-            return id;
-         }
-      }
-
-      private synchronized void saveCheckPoint(final long id)
-      {
-         if (id >= nextID)
-         {
-            storeID(id);
-
-            nextID += checkpointSize;
-         }
-      }
-
-      public long getCurrentID()
-      {
-         return counter.get();
-      }
-
-      public void close()
-      {
-         storeID(counter.get());
-      }
-
-      private void storeID(final long id)
-      {
-         try
-         {
-            bindingsJournal.appendAddRecord(id, ID_COUNTER_RECORD, new IDCounterEncoding(id), true);
-         }
-         catch (Exception e)
-         {
-            log.error("Failed to store id", e);
-         }
-      }
-   }
-
    private static class XidEncoding implements EncodingSupport
    {
       final Xid xid;
@@ -1330,36 +1247,6 @@ public class JournalStorageManager implements StorageManager
       public int getEncodeSize()
       {
          return 16;
-      }
-
-   }
-
-   private static class IDCounterEncoding implements EncodingSupport
-   {
-      long id;
-
-      IDCounterEncoding(final long id)
-      {
-         this.id = id;
-      }
-
-      IDCounterEncoding()
-      {
-      }
-
-      public void decode(final HornetQBuffer buffer)
-      {
-         id = buffer.readLong();
-      }
-
-      public void encode(final HornetQBuffer buffer)
-      {
-         buffer.writeLong(id);
-      }
-
-      public int getEncodeSize()
-      {
-         return SIZE_LONG;
       }
 
    }
