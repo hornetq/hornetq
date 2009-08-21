@@ -59,7 +59,7 @@ public class JBossASSecurityManager implements HornetQSecurityManager, HornetQCo
    /**
     * The JNDI name of the AuthenticationManager(and RealmMapping since they are the same object).
     */
-   private String securityDomainName = "java:/jaas/messaging";
+   private String securityDomainName = "java:/jaas/hornetq";
    
    private boolean started;
    
