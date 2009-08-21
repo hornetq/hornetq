@@ -42,6 +42,7 @@
             <file name="en/message-expiry.xml"/>
             <file name="en/message-grouping.xml"/>
             <file name="en/messaging-concepts.xml"/>
+            <file name="en/notice.xml"/>
             <file name="en/paging.xml"/>
             <file name="en/perf-tuning.xml"/>
             <file name="en/persistence.xml"/>
