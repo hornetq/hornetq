@@ -50,11 +50,11 @@ public class ResourceManagerImpl implements ResourceManager, HornetQComponent
 
    private boolean started = false;
 
-   private TxTimeoutHandler task;
+   //private TxTimeoutHandler task;
 
    private final long txTimeoutScanPeriod;
 
-   private final ScheduledExecutorService scheduledThreadPool;
+   //private final ScheduledExecutorService scheduledThreadPool;
 
    public ResourceManagerImpl(final int defaultTimeoutSeconds, 
                               final long txTimeoutScanPeriod, 
@@ -63,7 +63,7 @@ public class ResourceManagerImpl implements ResourceManager, HornetQComponent
       this.defaultTimeoutSeconds = defaultTimeoutSeconds;
       this.timeoutSeconds = defaultTimeoutSeconds;
       this.txTimeoutScanPeriod = txTimeoutScanPeriod;
-      this.scheduledThreadPool = scheduledThreadPool;
+     // this.scheduledThreadPool = scheduledThreadPool;
    }
 
    // HornetQComponent implementation
@@ -74,10 +74,10 @@ public class ResourceManagerImpl implements ResourceManager, HornetQComponent
       {
          return;
       }
-      
-      task = new TxTimeoutHandler();
+      //todo - https://jira.jboss.org/jira/browse/HORNETQ-106
+      /*task = new TxTimeoutHandler();
       Future<?> future = scheduledThreadPool.scheduleAtFixedRate(task, txTimeoutScanPeriod, txTimeoutScanPeriod, TimeUnit.MILLISECONDS);
-      task.setFuture(future);
+      task.setFuture(future);*/
       
       started = true;
    }
@@ -88,10 +88,10 @@ public class ResourceManagerImpl implements ResourceManager, HornetQComponent
       {
          return;
       }
-      if (task != null)
+      /*if (task != null)
       {
          task.close();
-      }
+      }*/
 
       started = false;
    }
