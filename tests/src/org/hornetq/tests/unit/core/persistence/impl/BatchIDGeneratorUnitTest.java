@@ -110,8 +110,21 @@ public class BatchIDGeneratorUnitTest extends UnitTestCase
          
          lastId = id;
       }
+
       
-      System.out.println("LastID = " + lastId);
+      batch.close();
+      journal.stop();
+      batch = new BatchingIDGenerator(0, 1000, journal);
+      loadIDs(journal, batch);
+      
+      lastId = batch.getCurrentID();
+
+      journal.stop();
+      batch = new BatchingIDGenerator(0, 1000, journal);
+      loadIDs(journal, batch);
+      
+      assertEquals("No Ids were generated, so the currentID was supposed to stay the same", lastId, batch.getCurrentID());
+      
  
    }
 
