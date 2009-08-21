@@ -87,7 +87,7 @@ server.start();</programlisting>
         <para>You may also choose to use a dependency injection framework such as <trademark>JBoss
                 Micro Container</trademark> or <trademark>Spring Framework</trademark>.</para>
         <para>HornetQ standalone uses JBoss Micro Container as the injection framework.
-                <literal>HornetQBootstrapServer</literal> and <literal>hornetq-jboss-beans.xml</literal>
+                <literal>HornetQBootstrapServer</literal> and <literal>hornetq-beans.xml</literal>
             which are part of the HornetQ distribution provide a very complete
             implementation of what's needed to bootstrap the server using JBoss Micro Container. </para>
         <para>When using JBoss Micro Container, you need to provide a XML declaring the <literal
@@ -116,7 +116,7 @@ server.start();</programlisting>
         <para><literal>HornetQBootstrapServer</literal> provides an easy encapsulation of JBoss Micro
             Container.</para>
         <programlisting>HornetQBootstrapServer bootStrap = 
-        new HornetQBootstrapServer(new String[] {"hornetq-jboss-beans.xml"});
+        new HornetQBootstrapServer(new String[] {"hornetq-beans.xml"});
         bootStrap.run();</programlisting>
     </section>
     <section>

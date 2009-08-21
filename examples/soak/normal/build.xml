@@ -84,7 +84,7 @@ Copyright 2009 Red Hat, Inc.
 			<jvmarg value="-XX:+UseFastAccessorMethods" />
 			<jvmarg value="-Djava.util.logging.config.file=${config.dir}/logging.properties" />
 			<jvmarg value="-Dcom.sun.management.jmxremote" />
-			<arg line="hornetq-jboss-beans.xml" />
+			<arg line="hornetq-beans.xml" />
 			<classpath refid="extra.classpath" />
 			<classpath refid="server.classpath" />
 		</java>

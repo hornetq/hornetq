@@ -62,7 +62,7 @@
          <jvmarg value="-XX:+AggressiveOpts"/>
 		   <jvmarg value="-XX:+UseFastAccessorMethods"/>
          <jvmarg value="-Djava.util.logging.config.file=${config.dir}/logging.properties"/>
-         <arg line="hornetq-jboss-beans.xml"/>
+         <arg line="hornetq-beans.xml"/>
          <classpath refid="server.classpath"/>
       </java>
    </target>

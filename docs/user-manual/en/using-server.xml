@@ -118,7 +118,10 @@
             following files.</para>
         <itemizedlist>
             <listitem>
-                <para><literal>hornetq-jboss-beans.xml</literal>. This is the JBoss Microcontainer beans
+                <para><literal>hornetq-beans.xml</literal>
+                (or <literal>hornetq-jboss-beans.xml</literal> if you're running inside JBoss
+                Application Server).                
+                This is the JBoss Microcontainer beans
                     file which defines what beans the Microcontainer should create and what
                     dependencies to enforce between them. Remember that HornetQ is just a
                     set of POJOs. In the stand-alone server, it's the JBoss Microcontainer which

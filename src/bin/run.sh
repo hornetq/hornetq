@@ -1,9 +1,11 @@
+#!/bin/sh
+
 export HORNETQ_HOME=..
 mkdir -p ../logs
 # By default, the server is started in the non-clustered standalone configuration
 
 if [ a"$1" = a ]; then CONFIG_DIR=$HORNETQ_HOME/config/stand-alone/non-clustered; else CONFIG_DIR="$1"; fi
-if [ a"$2" = a ]; then FILENAME=hornetq-jboss-beans.xml; else FILENAME="$2"; fi
+if [ a"$2" = a ]; then FILENAME=hornetq-beans.xml; else FILENAME="$2"; fi
 
 export CLASSPATH=$CONFIG_DIR:$HORNETQ_HOME/schemas/
 #you can use the following line if you want to run with different ports

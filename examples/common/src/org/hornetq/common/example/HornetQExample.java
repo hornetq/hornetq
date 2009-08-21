@@ -162,7 +162,7 @@ public abstract class HornetQExample
                                                 "STARTED::",
                                                 "FAILED::",
                                                 config,
-                                                "hornetq-jboss-beans.xml");
+                                                "hornetq-beans.xml");
    }
 
    private void startServers() throws Exception

@@ -188,7 +188,9 @@
     <section id="change-security-manager">
         <title>Changing the security manager</title>
         <para>If you do not want to use the default security manager then you can specify a
-            different one by editing the <literal>hornetq-jboss-beans.xml</literal> file and changing
+            different one by editing the file <literal>hornetq-beans.xml</literal> 
+            (or <literal>hornetq-jboss-beans.xml</literal> if you're running JBoss Application Server) 
+            and changing
             the class for the <literal>HornetQSecurityManager</literal> bean.</para>
         <para>Let's take a look at a snippet from the default beans file:</para>
         <programlisting>           
@@ -205,8 +207,9 @@
             off-the-shelf; one a JAAS security manager and another for integrating with JBoss
             Application Sever security, alternatively you could write your own implementation by
             implementing the <literal>org.hornetq.core.security.SecurityManager</literal>
-            interface, and specifying the classname of your implementation in the <literal
-                >hornetq-jboss-beans.xml</literal> file.</para>
+            interface, and specifying the classname of your implementation in the
+            file <literal>hornetq-beans.xml</literal> 
+            (or <literal>hornetq-jboss-beans.xml</literal> if you're running JBoss Application Server).</para>
         <para>These two implementations are discussed in the next two sections.</para>
     </section>
     <section>

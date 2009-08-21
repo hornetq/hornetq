@@ -44,7 +44,7 @@ public class EmbeddedMicroContainerExample
       {
          
          // Step 1. Start the server         
-         hornetQ = new HornetQBootstrapServer("./server0/hornetq-jboss-beans.xml");
+         hornetQ = new HornetQBootstrapServer("./server0/hornetq-beans.xml");
          hornetQ.run();
          
          // Step 2. As we are not using a JNDI environment we instantiate the objects directly         

@@ -10,14 +10,16 @@
      <p>HornetQ can leverage JAAS to delegate user authentication and authorization to existing security infrastructure.</p>
      
      <p>
-         The example will show how to configure HornetQ with JAAS in <a href="server0/hornetq-jboss-beans.xml">hornetq-jboss-beans.xml</a>.
+         The example will show how to configure HornetQ with JAAS in <a href="server0/hornetq-beans.xml">hornetq-beans.xml</a>
+         (You would use <literal>hornetq-jboss-beans.xml</literal> if you are running inside JBoss Application
+         Server).
          It will use a simple <code>LoginModule</code> without any user interaction.
          The example will create a connection and authenticate the user with this JAAS LoginModule, send a message
          to a queue and receive it (see the <a href="../queue/readme.html">Queue example</a> for a complete description
          of the application code)
      </p>
      <h2>Example setup</h2>
-     <p>HornetQ can use a JAAS security manager by specifying it in <a href="server0/hornetq-jboss-beans.xml">hornetq-jboss-beans.xml</a>:</p>
+     <p>HornetQ can use a JAAS security manager by specifying it in <a href="server0/hornetq-beans.xml">hornetq-beans.xml</a>:</p>
      <pre>
          <code>
             &lt;!-- The security manager using JAAS --&gt;
