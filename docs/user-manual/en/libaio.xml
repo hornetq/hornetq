@@ -118,8 +118,8 @@ config.status: executing libtool commands
 
 ...</programlisting>
             <para>The produced library will be at <literal
-                    >./native-src/src/.libs/libHornetQLibAIO.so</literal>. Simply move that file
-                over <literal>bin</literal> on the distribution or the place you have chosen on the
+                    >./native-src/src/.libs/libHornetQAIO.so</literal>. Simply move that file over
+                    <literal>bin</literal> on the distribution or the place you have chosen on the
                     <link linkend="using-server.library.path">library path</link>.</para>
             <para>If you want to perform changes on the HornetQ libaio code, you could just call
                 make directly at the <literal>native-src</literal> directory.</para>
