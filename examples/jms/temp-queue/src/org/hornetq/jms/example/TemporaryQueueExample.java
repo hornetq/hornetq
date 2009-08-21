@@ -14,7 +14,7 @@ package org.hornetq.jms.example;
 
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
-import javax.jms.InvalidDestinationException;
+import javax.jms.JMSException;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
 import javax.jms.Session;
@@ -108,7 +108,7 @@ public class TemporaryQueueExample extends HornetQExample
             messageConsumer = session.createConsumer(tempQueue2);
             throw new Exception("Temporary queue cannot be accessed outside its lifecycle!");
          }
-         catch (InvalidDestinationException e)
+         catch (JMSException e)
          {
             System.out.println("Exception got when trying to access a temp queue outside its scope: " + e);
          }

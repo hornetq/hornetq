@@ -44,6 +44,16 @@
      
      <p>In the configuration, the hornetq.example.keystore is the key store file holding client certificate. The hornetq.example.truststore 
      is the file for server to hold trusted client certificates. They are pre-generated for illustration purpose.</p>
+     
+     <!-- Commands to generate the stores:
+       * create the keystore:
+         keytool -genkey -keystore hornetq.example.keystore -storepass hornetqexample
+       * export the certificate:
+         keytool -export -keystore hornetq.example.keystore -file hornetq.cer
+       * create the truststore:
+         keytool -import -file hornetq.cer -keystore hornetq.example.truststore -storepass hornetqexample            
+     -->
+     
      <br>
      <h2>Example step-by-step</h2>
      <p><i>To run the example, simply type <code>ant</code> from this directory</i></p>

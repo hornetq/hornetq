@@ -45,7 +45,7 @@
    </path>
 
    <target name="run" depends="compile">
-      <java classname="org.hornetq.jms.example.EmbeddedMicroContainerExample" fork="true"
+      <java classname="org.hornetq.core.example.EmbeddedMicroContainerExample" fork="true"
             resultproperty="example-result">
          <jvmarg value="-Xms50M"/>
          <jvmarg value="-Xmx50M"/>

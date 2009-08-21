@@ -109,10 +109,10 @@ public class ExpiryExample extends HornetQExample
          System.out.println("Expiration time of the expired message (relative to the expiry queue): " + messageReceived.getJMSExpiration());
          
          System.out.println();
-         // Step 20. the *origin* destination is stored in the _HORNETQ_ORIG_DESTINATION property
-         System.out.println("*Origin destination* of the expired message: " + messageReceived.getStringProperty("_HORNETQ_ORIG_DESTINATION"));
-         // Step 21. the actual expiration time is stored in the _HORNETQ_ORIG_DESTINATION property
-         System.out.println("*Actual expiration time* of the expired message: " + messageReceived.getLongProperty("_HORNETQ_ACTUAL_EXPIRY"));
+         // Step 20. the *origin* destination is stored in the _HQ_ORIG_DESTINATION property
+         System.out.println("*Origin destination* of the expired message: " + messageReceived.getStringProperty("_HQ_ORIG_DESTINATION"));
+         // Step 21. the actual expiration time is stored in the _HQ_ORIG_DESTINATION property
+         System.out.println("*Actual expiration time* of the expired message: " + messageReceived.getLongProperty("_HQ_ACTUAL_EXPIRY"));
 
          return true;
       }
