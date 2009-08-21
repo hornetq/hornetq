@@ -83,7 +83,7 @@
 	<classpathentry kind="src" path="examples/javaee/mdb-cmt-tx-local/src"/>
 	<classpathentry kind="src" path="examples/javaee/mdb-cmt-tx-not-supported/src"/>
 	<classpathentry kind="src" path="examples/javaee/mdb-cmt-tx-required/src"/>
-	<classpathentry kind="src" path="examples/javaee/servlet-ssl-example/src"/>
+	<classpathentry kind="src" path="examples/javaee/servlet-ssl/src"/>
 	<classpathentry kind="src" path="examples/javaee/servlet-transport/src"/>
 	<classpathentry kind="src" path="examples/javaee/xarecovery/src"/>
 	<classpathentry kind="src" path="examples/soak/normal/src"/>
