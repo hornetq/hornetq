@@ -38,9 +38,9 @@ Copyright 2009 Red Hat, Inc.
    <mkdir dir="${dest.bin.dir}/META-INF/lib/linux2/x86"/>
    <mkdir dir="${dest.bin.dir}/META-INF/lib/linux2/x64"/>
    <mkdir dir="${dest.bin.dir}/META-INF/lib/linux2/i64"/>
-   <copy todir="${dest.bin.dir}/META-INF/lib/linux2/x86" file="${src.bin.dir}/libHornetQLibAIO32.so"/>
-   <copy todir="${dest.bin.dir}/META-INF/lib/linux2/x64" file="${src.bin.dir}/libHornetQLibAIO64.so"/>
-   <copy todir="${dest.bin.dir}/META-INF/lib/linux2/i64" file="${src.bin.dir}/libHornetQLibAIO_ia64.so"/>
+   <copy todir="${dest.bin.dir}/META-INF/lib/linux2/x86" file="${src.bin.dir}/libHornetQAIO32.so"/>
+   <copy todir="${dest.bin.dir}/META-INF/lib/linux2/x64" file="${src.bin.dir}/libHornetQAIO64.so"/>
+   <copy todir="${dest.bin.dir}/META-INF/lib/linux2/i64" file="${src.bin.dir}/libHornetQAIO_ia64.so"/>
    </target>
 
    <target name="create-profile">
