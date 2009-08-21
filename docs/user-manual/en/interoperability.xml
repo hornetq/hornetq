@@ -1,4 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
+
+<!-- ============================================================================= -->
+<!-- Copyright © 2009 Red Hat, Inc. and others.                                    -->
+<!--                                                                               -->
+<!-- The text of and illustrations in this document are licensed by Red Hat under  -->
+<!-- a Creative Commons Attribution–Share Alike 3.0 Unported license ("CC-BY-SA"). -->
+<!--                                                                               -->
+<!-- An explanation of CC-BY-SA is available at                                    -->
+<!--                                                                               -->
+<!--            http://creativecommons.org/licenses/by-sa/3.0/.                    -->
+<!--                                                                               -->
+<!-- In accordance with CC-BY-SA, if you distribute this document or an adaptation -->
+<!-- of it, you must provide the URL for the original version.                     -->
+<!--                                                                               -->
+<!-- Red Hat, as the licensor of this document, waives the right to enforce,       -->
+<!-- and agrees not to assert, Section 4d of CC-BY-SA to the fullest extent        -->
+<!-- permitted by applicable law.                                                  -->
+<!-- ============================================================================= -->
+
 <chapter id="interoperability">
     <title>Interoperability</title>
     <section>
@@ -17,8 +36,8 @@
         <programlisting>java.naming.factory.initial=org.jnp.interfaces.NamingContextFactory
 java.naming.provider.url=jnp://localhost:1099
 java.naming.factory.url.pkgs=org.jboss.naming:org.jnp.interfaces</programlisting>
-        <para>Make sure this file is in the classpath along with the StompConnect jar and the HornetQ jars and simply run <literal>java
-            org.codehaus.stomp.jms.Main</literal>.</para>
+        <para>Make sure this file is in the classpath along with the StompConnect jar and the HornetQ
+            jars and simply run <literal>java org.codehaus.stomp.jms.Main</literal>.</para>
         <para>HornetQ will shortly be implementing the Stomp protocol directly, so you won't
             have to use StompConnect to be able to use HornetQ with Stomp clients.</para>
     </section>

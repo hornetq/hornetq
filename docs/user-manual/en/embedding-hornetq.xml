@@ -1,4 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
+
+<!-- ============================================================================= -->
+<!-- Copyright © 2009 Red Hat, Inc. and others.                                    -->
+<!--                                                                               -->
+<!-- The text of and illustrations in this document are licensed by Red Hat under  -->
+<!-- a Creative Commons Attribution–Share Alike 3.0 Unported license ("CC-BY-SA"). -->
+<!--                                                                               -->
+<!-- An explanation of CC-BY-SA is available at                                    -->
+<!--                                                                               -->
+<!--            http://creativecommons.org/licenses/by-sa/3.0/.                    -->
+<!--                                                                               -->
+<!-- In accordance with CC-BY-SA, if you distribute this document or an adaptation -->
+<!-- of it, you must provide the URL for the original version.                     -->
+<!--                                                                               -->
+<!-- Red Hat, as the licensor of this document, waives the right to enforce,       -->
+<!-- and agrees not to assert, Section 4d of CC-BY-SA to the fullest extent        -->
+<!-- permitted by applicable law.                                                  -->
+<!-- ============================================================================= -->
+
 <chapter id="embedding-hornetq">
     <title>Embedding HornetQ</title>
     <para>HornetQ is designed as set of simple Plain Old Java Objects (POJOs). This means
@@ -10,13 +29,14 @@
     <para>Examples of applications that might want to do this include any application that needs
         very high performance, transactional, persistent messaging but doesn't want the hassle of
         writing it all from scratch.</para>
-    <para>Embedding JBM can be done in very few easy steps. Instantiate the configuration object,
+    <para>Embedding HornetQ can be done in very few easy steps. Instantiate the configuration object,
         instantiate the server, start it, and you have a HornetQ running in your virtual
         machine. It's as simple and easy as that.</para>
     <section>
         <title>POJO instantiation</title>
         <para>You can follow this step-by-step guide:</para>
-        <para>Create the configuration object - this contains configuration information for a HornetQ server. If you want to configure it from a file on the classpath, use <literal
+        <para>Create the configuration object - this contains configuration information for a HornetQ.
+             If you want to configure it from a file on the classpath, use <literal
                 >FileConfigurationImpl</literal></para>
         <programlisting>import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.impl.FileConfiguration;
@@ -46,20 +66,20 @@ transports.add(new TransportConfiguration(InVMAcceptorFactory.class.getName()));
 
 config.setAcceptorConfigurations(transports);</programlisting>
         <para>You need to instantiate and start HornetQ server. The class <literal
-                >org.hornetq.core.serverMessaging</literal> has a few static methods for
+                >org.hornetq.core.server.Messaging</literal> has a few static methods for
             creating servers with common configurations.</para>
-        <programlisting>import org.hornetq.core.server.HornetQ;
-import org.hornetq.core.server.HornetQServer;
+        <programlisting>import org.hornetq.core.server.Messaging;
+import org.hornetq.core.server.MessagingServer;
 
 ...
 
-HornetQServer server = HornetQ.newHornetQServer(config);
+MessagingServer server = Messaging.newMessagingServer(config);
 
 server.start();</programlisting>
-        <para>You also have the option of instantiating <literal>HornetQServerImpl</literal>
+        <para>You also have the option of instantiating <literal>MessagingServerImpl</literal>
             directly:</para>
-        <programlisting>HornetQServer server = 
-        new HornetQServerImpl(config);
+        <programlisting>MessagingServer server = 
+        new MessagingServerImpl(config);
 server.start();</programlisting>
     </section>
     <section>
@@ -71,7 +91,7 @@ server.start();</programlisting>
             which are part of the HornetQ distribution provide a very complete
             implementation of what's needed to bootstrap the server using JBoss Micro Container. </para>
         <para>When using JBoss Micro Container, you need to provide a XML declaring the <literal
-                >HornetQServer</literal> and <literal>Configuration</literal> object, you can also
+                >MessagingServer</literal> and <literal>Configuration</literal> object, you can also
             inject a security manager and a MBean server if you want, but those are optional.</para>
         <para>A very basic XML Bean declaration for the JBoss Micro Container would be:</para>
         <programlisting>&lt;?xml version="1.0" encoding="UTF-8"?>
@@ -84,8 +104,8 @@ server.start();</programlisting>
    &lt;/bean>
 
    	&lt;!-- The core server -->
-   &lt;bean name="HornetQServer" 
-         class="org.hornetq.core.server.impl.HornetQServerImpl">      
+   &lt;bean name="MessagingServer" 
+         class="org.hornetq.core.server.impl.MessagingServerImpl">      
       &lt;constructor>
          &lt;parameter>
             &lt;inject bean="Configuration"/>

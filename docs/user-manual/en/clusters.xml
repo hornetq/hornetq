@@ -1,4 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
+
+<!-- ============================================================================= -->
+<!-- Copyright © 2009 Red Hat, Inc. and others.                                    -->
+<!--                                                                               -->
+<!-- The text of and illustrations in this document are licensed by Red Hat under  -->
+<!-- a Creative Commons Attribution–Share Alike 3.0 Unported license ("CC-BY-SA"). -->
+<!--                                                                               -->
+<!-- An explanation of CC-BY-SA is available at                                    -->
+<!--                                                                               -->
+<!--            http://creativecommons.org/licenses/by-sa/3.0/.                    -->
+<!--                                                                               -->
+<!-- In accordance with CC-BY-SA, if you distribute this document or an adaptation -->
+<!-- of it, you must provide the URL for the original version.                     -->
+<!--                                                                               -->
+<!-- Red Hat, as the licensor of this document, waives the right to enforce,       -->
+<!-- and agrees not to assert, Section 4d of CC-BY-SA to the fullest extent        -->
+<!-- permitted by applicable law.                                                  -->
+<!-- ============================================================================= -->
+
 <chapter id="clusters">
     <title>Clusters</title>    
     <section>
@@ -21,7 +40,8 @@
         <para>Nodes can be connected together to form a cluster in many different topologies, we
             will discuss a couple of the more common topologies later in this chapter.</para>
         <para>We'll also discuss client side load balancing, where we can balance client connections
-            across the nodes of the cluster, and we'll consider message redistribution where HornetQ will redistribute messages between nodes to avoid starvation.</para>
+            across the nodes of the cluster, and we'll consider message redistribution where HornetQ
+            will redistribute messages between nodes to avoid starvation.</para>
         <para>Another important part of clustering is <emphasis>server discovery</emphasis> where
             servers can broadcast their connection details so clients or other servers can connect
             to them with the minimum of configuration.</para>
@@ -59,7 +79,8 @@
                 connection settings for a live and (optional) backup server and broadcasts them on
                 the network. It also defines the UDP address and port settings. </para>
             <para>Broadcast groups are defined in the server configuration file <literal
-                    >hornetq-configuration.xml</literal>. There can be many broadcast groups per HornetQ server. All broadcast groups must be defined in a <literal
+                    >hornetq-configuration.xml</literal>. There can be many broadcast groups per HornetQ
+                server. All broadcast groups must be defined in a <literal
                     >broadcast-groups</literal> element.</para>
             <para>Let's take a look at an example broadcast group from <literal
                     >hornetq-configuration.xml</literal>:</para>
@@ -403,7 +424,8 @@ Connection jmsConnection2 = jmsConnectionFactory.createConnection();</programlis
             connections created using a single factory can be made to different nodes of the
             cluster. This allows connections to spread smoothly across the nodes of a cluster and
             not be "clumped" on any particular node.</para>
-        <para>The load balancing policy to be used by the client factory is configurable. HornetQ provides two out-of-the-box load balancing policies and you can also implement
+        <para>The load balancing policy to be used by the client factory is configurable. HornetQ
+            provides two out-of-the-box load balancing policies and you can also implement
             your own and use that.</para>
         <para>The out-of-the-box policies are</para>
         <itemizedlist>
@@ -599,7 +621,8 @@ ClientSession session2 = factory.createClientSession(...);</programlisting>
             it doesn't solve: What happens if the consumers on a queue close after the messages have
             been sent to the node? If there are no consumers on the queue the message won't get
             consumed and we have a <emphasis>starvation</emphasis> situation.</para>
-        <para>This is where message redistribution comes in. With message redistribution HornetQ can be configured to automatically <emphasis>redistribute</emphasis> messages
+        <para>This is where message redistribution comes in. With message redistribution HornetQ
+            can be configured to automatically <emphasis>redistribute</emphasis> messages
             from queues which have no consumers back to other nodes in the cluster which do have
             matching consumers.</para>
         <para>Message redistribution can be configured to kick in immediately after the last

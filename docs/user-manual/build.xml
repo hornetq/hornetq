@@ -1,4 +1,4 @@
-<project name="hornetq.user-manual" default="all" basedir=".">
+<project name="HornetQ User Manual" default="all" basedir=".">
 
   <property name="build.dir" value="build"/>
   <property name="pdf.name"  value="HornetQ_UserManual.pdf"/>

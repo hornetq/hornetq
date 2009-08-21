@@ -1,7 +1,26 @@
 <?xml version="1.0" encoding="UTF-8"?>
+
+<!-- ============================================================================= -->
+<!-- Copyright © 2009 Red Hat, Inc. and others.                                    -->
+<!--                                                                               -->
+<!-- The text of and illustrations in this document are licensed by Red Hat under  -->
+<!-- a Creative Commons Attribution–Share Alike 3.0 Unported license ("CC-BY-SA"). -->
+<!--                                                                               -->
+<!-- An explanation of CC-BY-SA is available at                                    -->
+<!--                                                                               -->
+<!--            http://creativecommons.org/licenses/by-sa/3.0/.                    -->
+<!--                                                                               -->
+<!-- In accordance with CC-BY-SA, if you distribute this document or an adaptation -->
+<!-- of it, you must provide the URL for the original version.                     -->
+<!--                                                                               -->
+<!-- Red Hat, as the licensor of this document, waives the right to enforce,       -->
+<!-- and agrees not to assert, Section 4d of CC-BY-SA to the fullest extent        -->
+<!-- permitted by applicable law.                                                  -->
+<!-- ============================================================================= -->
+
 <chapter id="preface">
     <title>Preface</title>
-    <para>The goal of HornetQ is simple and uncompromising; to bring unrivalled levels of
+    <para>The goal of HornetQ is simple and uncompromising; to bring unrivaled levels of
         performance and reliability to messaging, and to be the fastest, best featured and most
         scalable multi-protocol messaging system.</para>
     <para>Why use HornetQ? Here are just a few of the reasons:</para>
@@ -23,11 +42,12 @@
                 and others you won't find anywhere else.</para>
         </listitem>
         <listitem>
-            <para>Elegant POJO based design with minimal third party dependencies. Run HornetQ stand-alone, run it in integrated in your favourite JEE application
+            <para>Elegant POJO based design with minimal third party dependencies. Run HornetQ
+                stand-alone, run it in integrated in your favourite JEE application
                 server, or run it embedded inside your own product.</para>
         </listitem>
         <listitem>
-            <para>Seamless high availabilty. We provide server replication and completely
+            <para>Seamless high availability. We provide server replication and completely
                 transparent client failover so you don't have to worry about coding your client
                 specially for an HA environment.</para>
         </listitem>

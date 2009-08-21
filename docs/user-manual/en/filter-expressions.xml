@@ -1,4 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
+
+<!-- ============================================================================= -->
+<!-- Copyright © 2009 Red Hat, Inc. and others.                                    -->
+<!--                                                                               -->
+<!-- The text of and illustrations in this document are licensed by Red Hat under  -->
+<!-- a Creative Commons Attribution–Share Alike 3.0 Unported license ("CC-BY-SA"). -->
+<!--                                                                               -->
+<!-- An explanation of CC-BY-SA is available at                                    -->
+<!--                                                                               -->
+<!--            http://creativecommons.org/licenses/by-sa/3.0/.                    -->
+<!--                                                                               -->
+<!-- In accordance with CC-BY-SA, if you distribute this document or an adaptation -->
+<!-- of it, you must provide the URL for the original version.                     -->
+<!--                                                                               -->
+<!-- Red Hat, as the licensor of this document, waives the right to enforce,       -->
+<!-- and agrees not to assert, Section 4d of CC-BY-SA to the fullest extent        -->
+<!-- permitted by applicable law.                                                  -->
+<!-- ============================================================================= -->
+
 <chapter id="filter-expressions">
     <title>Filter Expressions</title>
     <para>HornetQ provides a powerful filter language based on a subset of the SQL 92
@@ -29,7 +48,8 @@
         </listitem>
     </itemizedlist>
     <para>There are some differences between JMS selector expressions and HornetQ core
-        filter expressions. Whereas JMS selector expressions operate on a JMS message, HornetQ core filter expressions operate on a core message.</para>
+        filter expressions. Whereas JMS selector expressions operate on a JMS message, HornetQ
+        core filter expressions operate on a core message.</para>
     <para>The following identifiers can be used in a core filter expressions to refer to attributes
         of the core message in an expression:</para>
     <itemizedlist>

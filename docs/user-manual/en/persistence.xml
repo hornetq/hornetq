@@ -1,4 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
+
+<!-- ============================================================================= -->
+<!-- Copyright © 2009 Red Hat, Inc. and others.                                    -->
+<!--                                                                               -->
+<!-- The text of and illustrations in this document are licensed by Red Hat under  -->
+<!-- a Creative Commons Attribution–Share Alike 3.0 Unported license ("CC-BY-SA"). -->
+<!--                                                                               -->
+<!-- An explanation of CC-BY-SA is available at                                    -->
+<!--                                                                               -->
+<!--            http://creativecommons.org/licenses/by-sa/3.0/.                    -->
+<!--                                                                               -->
+<!-- In accordance with CC-BY-SA, if you distribute this document or an adaptation -->
+<!-- of it, you must provide the URL for the original version.                     -->
+<!--                                                                               -->
+<!-- Red Hat, as the licensor of this document, waives the right to enforce,       -->
+<!-- and agrees not to assert, Section 4d of CC-BY-SA to the fullest extent        -->
+<!-- permitted by applicable law.                                                  -->
+<!-- ============================================================================= -->
+
 <chapter id="persistence">
     <title>Persistence</title>
     <para>In this chapter we will describe how persistence works with HornetQ and how to
@@ -30,7 +49,8 @@
     <para>The journal also fully supports transactional operation if required, supporting both local
         and XA transactions.</para>
     <para>The majority of the journal is written in Java, however we abstract out the interaction
-        with the actual file system to allow different pluggable implementations. We ship HornetQ with two implementations:</para>
+        with the actual file system to allow different pluggable implementations. HornetQ ships
+        with two implementations:</para>
     <itemizedlist>
         <listitem>
             <para>Java <ulink url="http://en.wikipedia.org/wiki/New_I/O">NIO</ulink>.</para>

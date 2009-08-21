@@ -1,4 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
+
+<!-- ============================================================================= -->
+<!-- Copyright © 2009 Red Hat, Inc. and others.                                    -->
+<!--                                                                               -->
+<!-- The text of and illustrations in this document are licensed by Red Hat under  -->
+<!-- a Creative Commons Attribution–Share Alike 3.0 Unported license ("CC-BY-SA"). -->
+<!--                                                                               -->
+<!-- An explanation of CC-BY-SA is available at                                    -->
+<!--                                                                               -->
+<!--            http://creativecommons.org/licenses/by-sa/3.0/.                    -->
+<!--                                                                               -->
+<!-- In accordance with CC-BY-SA, if you distribute this document or an adaptation -->
+<!-- of it, you must provide the URL for the original version.                     -->
+<!--                                                                               -->
+<!-- Red Hat, as the licensor of this document, waives the right to enforce,       -->
+<!-- and agrees not to assert, Section 4d of CC-BY-SA to the fullest extent        -->
+<!-- permitted by applicable law.                                                  -->
+<!-- ============================================================================= -->
+
 <chapter id="perf-tuning">
     <title>Performance Tuning</title>
     <para>In this chapter we'll discuss how to tune HornetQ for optimum performance.</para>
@@ -22,7 +41,8 @@
             </listitem>
             <listitem>
                 <para><literal>journal-aio-flush-on-sync</literal>. If you don't have many producers
-                    in your system you may consider setting journal-aio-flush-on-sync to true. HornetQ by default is optimized by the case where you have many producers. We
+                    in your system you may consider setting journal-aio-flush-on-sync to true. HornetQ
+                    by default is optimized by the case where you have many producers. We
                     try to combine multiple writes in a single OS operation. However if that's not
                     your case setting this option to true will give you a performance boost.</para>
                 <para>On the other hand when you have multiple producers, keeping <literal

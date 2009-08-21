@@ -1,4 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
+
+<!-- ============================================================================= -->
+<!-- Copyright © 2009 Red Hat, Inc. and others.                                    -->
+<!--                                                                               -->
+<!-- The text of and illustrations in this document are licensed by Red Hat under  -->
+<!-- a Creative Commons Attribution–Share Alike 3.0 Unported license ("CC-BY-SA"). -->
+<!--                                                                               -->
+<!-- An explanation of CC-BY-SA is available at                                    -->
+<!--                                                                               -->
+<!--            http://creativecommons.org/licenses/by-sa/3.0/.                    -->
+<!--                                                                               -->
+<!-- In accordance with CC-BY-SA, if you distribute this document or an adaptation -->
+<!-- of it, you must provide the URL for the original version.                     -->
+<!--                                                                               -->
+<!-- Red Hat, as the licensor of this document, waives the right to enforce,       -->
+<!-- and agrees not to assert, Section 4d of CC-BY-SA to the fullest extent        -->
+<!-- permitted by applicable law.                                                  -->
+<!-- ============================================================================= -->
+
 <chapter id="using-jms">
     <title>Using JMS</title>
     <para>Although HornetQ provides a JMS agnostic messaging API, many users will be more
@@ -88,7 +107,7 @@ java.naming.factory.url.pkgs=org.jboss.naming:org.jnp.interfaces
             is the port used by the JNDI server and may vary depending on how you have configured
             your JNDI server.</para>
         <para>In the default standalone configuration, JNDI server ports are configured in the
-                <literal>hornetq-jboss-beans.xml</literal> file where the JNDIServer bean is confgured,
+                <literal>hornetq-jboss-beans.xml</literal> file where the JNDIServer bean is configured,
             here's a snippet from the file:</para>
         <programlisting>
 &lt;bean name="JNDIServer" class="org.jnp.server.Main"&gt;
