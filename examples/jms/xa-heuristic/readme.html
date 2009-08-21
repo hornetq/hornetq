@@ -6,7 +6,7 @@
   <body>
      <h1>JMS XA Heuristic Example</h1>
      <br>
-     <p>This example shows you how to make an XA heuristic decision through JBoss Messageing Management Interface.</p>
+     <p>This example shows you how to make an XA heuristic decision through HornetQ Management Interface.</p>
      
      <p>A heuristic decision is a unilateral decision to commit or rollback an XA transaction branch after it has 
      been prepared. </p>
@@ -19,8 +19,8 @@
      Then we get the MBeanServerConnection object to manipulate the prepared transactions. To illustrate, we roll back the first 
      transaction but commit the second. This will result in that only the message 'world' is received. </p>
 
-     <p>This example uses JMX to manipulate transactions in a HornetQ Server. For details on JMX facilities with JBoss 
-     Messaging, please look at the JMX Example.</p>
+     <p>This example uses JMX to manipulate transactions in a HornetQ Server. For details on JMX facilities with HornetQ,
+     please look at the JMX Example.</p>
      
      <br>
      <h2>Example step-by-step</h2>
@@ -170,7 +170,7 @@
         <li>We list the prepared transactions</li>
         <pre>
           <code>
-          ObjectName serverObject = ObjectNames.getHornetQServerObjectName();
+          ObjectName serverObject = ObjectNames.getMessagingServerObjectName();
           String[] infos = (String[])mbsc.invoke(serverObject, "listPreparedTransactions", null, null);
          
           System.out.println("Prepared transactions: ");
