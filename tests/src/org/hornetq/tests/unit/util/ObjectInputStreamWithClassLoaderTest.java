@@ -9,7 +9,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
  * implied.  See the License for the specific language governing
  * permissions and limitations under the License.
- */ 
+ */
 
 package org.hornetq.tests.unit.util;
 
@@ -46,8 +46,7 @@ public class ObjectInputStreamWithClassLoaderTest extends UnitTestCase
    public static ClassLoader newClassLoader(Class anyUserClass) throws Exception
    {
       URL classLocation = anyUserClass.getProtectionDomain().getCodeSource().getLocation();
-      StringTokenizer tokenString = new StringTokenizer(System.getProperty("java.class.path"),
-         File.pathSeparator);
+      StringTokenizer tokenString = new StringTokenizer(System.getProperty("java.class.path"), File.pathSeparator);
       String pathIgnore = System.getProperty("java.home");
       if (pathIgnore == null)
       {
@@ -58,22 +57,20 @@ public class ObjectInputStreamWithClassLoaderTest extends UnitTestCase
       while (tokenString.hasMoreElements())
       {
          String value = tokenString.nextToken();
-         URL itemLocation = new File(value).toURL();
-         if (!itemLocation.equals(classLocation) &&
-                      itemLocation.toString().indexOf(pathIgnore) >= 0)
+         URL itemLocation = new File(value).toURI().toURL();
+         if (!itemLocation.equals(classLocation) && itemLocation.toString().indexOf(pathIgnore) >= 0)
          {
             urls.add(itemLocation);
          }
       }
 
-      URL[] urlArray = (URL[]) urls.toArray(new URL[urls.size()]);
+      URL[] urlArray = (URL[])urls.toArray(new URL[urls.size()]);
 
       ClassLoader masterClassLoader = URLClassLoader.newInstance(urlArray, null);
-      ClassLoader appClassLoader = URLClassLoader.newInstance(new URL[]{classLocation},
-                                      masterClassLoader);
+      ClassLoader appClassLoader = URLClassLoader.newInstance(new URL[] { classLocation }, masterClassLoader);
       return appClassLoader;
    }
-   
+
    // Constructors --------------------------------------------------
 
    // Public --------------------------------------------------------
@@ -86,21 +83,19 @@ public class ObjectInputStreamWithClassLoaderTest extends UnitTestCase
       {
          AnObject obj = new AnObject();
          byte[] bytes = toBytes(obj);
-         
+
          ClassLoader testClassLoader = newClassLoader(obj.getClass());
          Thread.currentThread().setContextClassLoader(testClassLoader);
 
          ByteArrayInputStream bais = new ByteArrayInputStream(bytes);
          org.hornetq.utils.ObjectInputStreamWithClassLoader ois = new ObjectInputStreamWithClassLoader(bais);
 
-         Object deserializedObj= ois.readObject();
-         
+         Object deserializedObj = ois.readObject();
+
          assertNotSame(obj, deserializedObj);
          assertNotSame(obj.getClass(), deserializedObj.getClass());
-         assertNotSame(obj.getClass().getClassLoader(),
-               deserializedObj.getClass().getClassLoader());
-         assertSame(testClassLoader,
-               deserializedObj.getClass().getClassLoader());
+         assertNotSame(obj.getClass().getClassLoader(), deserializedObj.getClass().getClassLoader());
+         assertSame(testClassLoader, deserializedObj.getClass().getClassLoader());
       }
       finally
       {
@@ -122,13 +117,13 @@ public class ObjectInputStreamWithClassLoaderTest extends UnitTestCase
       ObjectOutputStream oos = new ObjectOutputStream(baos);
       oos.writeObject(obj);
       oos.flush();
-      return baos.toByteArray();    
+      return baos.toByteArray();
    }
-   
+
    // Inner classes -------------------------------------------------
-   
+
    private static class AnObject implements Serializable
    {
-      private static final long serialVersionUID = -5172742084489525256L;      
+      private static final long serialVersionUID = -5172742084489525256L;
    }
 }
