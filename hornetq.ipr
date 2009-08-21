@@ -287,7 +287,7 @@
   </component>
   <component name="CopyrightManager" default="">
     <copyright>
-      <option name="notice" value="Copyright (c) &amp;#36;today.year. Lorem ipsum dolor sit amet, consectetur adipiscing elit. &#10;Morbi non lorem porttitor neque feugiat blandit. Ut vitae ipsum eget quam lacinia accumsan. &#10;Etiam sed turpis ac ipsum condimentum fringilla. Maecenas magna. &#10;Proin dapibus sapien vel ante. Aliquam erat volutpat. Pellentesque sagittis ligula eget metus. &#10;Vestibulum commodo. Ut rhoncus gravida arcu." />
+      <option name="notice" value="Copyright 2009 Red Hat, Inc.&#10; Red Hat licenses this file to you under the Apache License, version&#10; 2.0 (the &quot;License&quot;); you may not use this file except in compliance&#10; with the License.  You may obtain a copy of the License at&#10;    http://www.apache.org/licenses/LICENSE-2.0&#10; Unless required by applicable law or agreed to in writing, software&#10; distributed under the License is distributed on an &quot;AS IS&quot; BASIS,&#10; WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or&#10; implied.  See the License for the specific language governing&#10; permissions and limitations under the License." />
       <option name="keyword" value="Copyright" />
       <option name="myName" value="new" />
       <option name="myLocal" value="true" />
