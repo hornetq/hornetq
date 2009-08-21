@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
 <!-- ============================================================================= -->
 <!-- Copyright © 2009 Red Hat, Inc. and others.                                    -->
 <!--                                                                               -->
@@ -17,7 +16,6 @@
 <!-- and agrees not to assert, Section 4d of CC-BY-SA to the fullest extent        -->
 <!-- permitted by applicable law.                                                  -->
 <!-- ============================================================================= -->
-
 <chapter id="examples">
    <title>Running the Examples</title>
    <para>In the directory <literal>examples</literal> there are 2 sets of examples, these are </para>
@@ -116,8 +114,8 @@ or jndi
 BUILD SUCCESSFUL
 Total time: 13 seconds
 </programlisting>
-      <para>Congratulations! You have successfully run your first HornetQ example. Try some
-         of the others.</para>
+      <para>Congratulations! You have successfully run your first HornetQ example. Try some of the
+         others.</para>
    </section>
    <section id="examples.messaging">
       <title>The Java EE Examples</title>
@@ -127,7 +125,7 @@ Total time: 13 seconds
       <para>We'll use the MDB example for the purposes of this guide. For the other examples refer
          to the user guide. Before going any further ensure that the Jboss Application Server is
          running.</para>
-      <para>Like the other Java EE examples the MDB example is a J2EE Application which first needs
+      <para>Like the other Java EE examples the MDB example is a JEE Application which first needs
          deploying in the JBoss Application Server. The first thing we need to do is set the
             <literal>JBOSS_HOME</literal> environment property to the location of the JBoss
          Application Server, in a Linux shell this would be something like:</para>

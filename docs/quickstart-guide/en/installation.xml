@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
 <!-- ============================================================================= -->
 <!-- Copyright © 2009 Red Hat, Inc. and others.                                    -->
 <!--                                                                               -->
@@ -17,21 +16,20 @@
 <!-- and agrees not to assert, Section 4d of CC-BY-SA to the fullest extent        -->
 <!-- permitted by applicable law.                                                  -->
 <!-- ============================================================================= -->
-
 <chapter id="installation">
    <title>Installation</title>
    <para>This section describes how to install HornetQ. </para>
    <section id="installation.prerequisites">
       <title>Prerequisites</title>
       <note>
-         <para>HornetQ only runs on Java 5 or later. We highly recommend to use Java
-            6.</para>
+         <para>HornetQ only runs on Java 5 or later. We highly recommend to use Java 6.</para>
       </note>
-      <para>By default, HornetQ server is run with 1GB of memory. If your computer has less
-         memory, modify the value in <literal>bin/run.sh</literal> accordingly.</para>
-      <para>For persistence, HornetQ uses its own fast journal file, which you can configure
-         to use libaio (which is the default when running on Linux) or Java NIO. In order to use the
-         libaio module on Linux, it's required to install libaio.</para>
+      <para>By default, HornetQ server is run with 1GiB of memory. If your computer has less memory,
+         or you want to run it with more available RAM, modify the value in <literal
+            >bin/run.sh</literal> accordingly.</para>
+      <para>For persistence, HornetQ uses its own fast journal, which you can configure to use
+         libaio (which is the default when running on Linux) or Java NIO. In order to use the libaio
+         module on Linux, it's required to install libaio.</para>
       <para>If you're not running on Linux then you don't need to worry about this.</para>
       <para>You can install libaio using the following steps:</para>
       <para>Using yum, (e.g. on Fedora or Red Hat Enterprise Linux):</para>
@@ -69,9 +67,9 @@
                Messaging</para>
          </listitem>
          <listitem>
-            <para><literal>config</literal> -- configuration files needed to configure HornetQ. This contains configurations to run HornetQ either in stand-alone
-               or inside JBoss AS 5. Please refer to the reference guide for details on
-               configuration. </para>
+            <para><literal>config</literal> -- configuration files needed to configure HornetQ. This
+               contains configurations to run HornetQ either in stand-alone or inside JBoss AS 5.
+               Please refer to the reference guide for details on configuration. </para>
          </listitem>
          <listitem>
             <para><literal>docs</literal> -- guides and javadocs for HornetQ </para>
@@ -87,16 +85,16 @@
             <para><literal>licenses</literal> -- licenses for HornetQ </para>
          </listitem>
          <listitem>
-            <para><literal>schemas</literal> -- XML Schemas used to validate HornetQ
-               configuration files</para>
+            <para><literal>schemas</literal> -- XML Schemas used to validate HornetQ configuration
+               files</para>
          </listitem>
       </itemizedlist>
    </section>
    <section id="installation.jboss">
       <title>HornetQ In JBoss AS 5</title>
-      <para>HornetQ can be deployed in <ulink url="http://www.jboss.org/jbossas/">JBoss
-            AS 5</ulink>. It is not shipped by default with the application server and you need to
-         create new AS 5 profiles to run AS 5 with HornetQ.</para>
+      <para>HornetQ can be deployed in <ulink url="http://www.jboss.org/jbossas/">JBoss AS
+         5</ulink>. It is not shipped by default with the application server and you need to create
+         new AS 5 profiles to run AS 5 with HornetQ.</para>
       <para>To create AS 5 profiles:</para>
       <orderedlist>
          <listitem>
@@ -115,12 +113,12 @@
       <itemizedlist>
          <listitem>
             <para><literal>default-with-hornetq</literal> -- it corresponds to AS 5 <literal
-                  >default</literal> profile with HornetQ as its JMS provider. In this
-               profile, HornetQ is <emphasis>non-clustered</emphasis></para>
+                  >default</literal> profile with HornetQ as its JMS provider. In this profile,
+               HornetQ is <emphasis>non-clustered</emphasis></para>
          </listitem>
          <listitem>
-            <para><literal>all-with-hornetq</literal> -- it corresponds to AS 5 <literal>all</literal>
-               profile with HornetQ as its JMS provider. In this profile, HornetQ
+            <para><literal>all-with-hornetq</literal> -- it corresponds to AS 5 <literal
+                  >all</literal> profile with HornetQ as its JMS provider. In this profile, HornetQ
                is <emphasis>clustered</emphasis></para>
          </listitem>
       </itemizedlist>
