@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
 <!-- ============================================================================= -->
 <!-- Copyright © 2009 Red Hat, Inc. and others.                                    -->
 <!--                                                                               -->
@@ -17,20 +16,20 @@
 <!-- and agrees not to assert, Section 4d of CC-BY-SA to the fullest extent        -->
 <!-- permitted by applicable law.                                                  -->
 <!-- ============================================================================= -->
-
 <chapter id="message-expiry">
    <title>Message Expiry</title>
-   <para>Messages can be set with an optional <emphasis>time to live</emphasis> when sending them.
-      Such messages will be retained in the messaging system until their <emphasis>time to
-         live</emphasis> is reached.</para>
-   <para>HornetQ's addresses can be assigned a expiry address so that, when messages are
-      expired, they are removed from the queue and sent to the expiry address. Many different queues
-      can be bound to an expiry address.  These <emphasis>expired</emphasis> messages can later be
-      consumed for further inspection.</para>
+   <para>Messages can be set with an optional <emphasis>time to live</emphasis> when sending
+      them.</para>
+   <para>HornetQ will not deliver a message to a consumer after it's time to live has been exceeded.
+      If the message hasn't been delivered by the time that time to live is reached the server can
+      discard it.</para>
+   <para>HornetQ's addresses can be assigned a expiry address so that, when messages are expired,
+      they are removed from the queue and sent to the expiry address. Many different queues can be
+      bound to an expiry address. These <emphasis>expired</emphasis> messages can later be consumed
+      for further inspection.</para>
    <section>
       <title>Message Expiry</title>
-      <para>Using HornetQ Core API, you can set an expiration time directly on the
-         message:</para>
+      <para>Using HornetQ Core API, you can set an expiration time directly on the message:</para>
       <programlisting>
 // message will expire in 5000ms from now
 message.setExpiration(System.currentTimeMillis() + 5000);         
@@ -65,12 +64,12 @@ producer.setTimeToLive(5000);
 &lt;/address-setting&gt;
         </programlisting>
       <para>If messages are expired and no expiry address is specified, messages are simply removed
-         from the queue. Address wildcards can be used to configure expiry address for a set of
-         addresses (see <xref linkend="wildcard-syntax"/>).</para>
+         from the queue and dropped. Address wildcards can be used to configure expiry address for a
+         set of addresses (see <xref linkend="wildcard-syntax"/>).</para>
    </section>
    <section id="configuring.expiry.reaper">
       <title>Configuring The Expiry Reaper Thread</title>
-      <para>A reaper thread is periodically inspecting the queues to check if messages have
+      <para>A reaper thread will periodically inspect the queues to check if messages have
          expired.</para>
       <para>The reaper thread can be configured with the following properties in <literal
             >hornetq-configuration.xml</literal></para>
@@ -89,7 +88,7 @@ producer.setTimeToLive(5000);
    </section>
    <section>
       <title>Example</title>
-      <para>See <xref linkend="examples.expiry" /> for an example which 
-         shows how message expiry is configured and used with JMS.</para>
+      <para>See <xref linkend="examples.expiry"/> for an example which shows how message expiry is
+         configured and used with JMS.</para>
    </section>
 </chapter>

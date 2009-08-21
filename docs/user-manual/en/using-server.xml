@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
 <!-- ============================================================================= -->
 <!-- Copyright © 2009 Red Hat, Inc. and others.                                    -->
 <!--                                                                               -->
@@ -17,15 +16,14 @@
 <!-- and agrees not to assert, Section 4d of CC-BY-SA to the fullest extent        -->
 <!-- permitted by applicable law.                                                  -->
 <!-- ============================================================================= -->
-
 <chapter id="using-server">
     <title>Using the Server</title>
     <para>This chapter will familiarise you with how to use the HornetQ server.</para>
     <para>We'll show where it is, how to start and stop it, and we'll describe the directory layout
         and what all the files are and what they do.</para>
-    <para>For the remainder of this chapter when we talk about the HornetQ server we mean
-        the HornetQ standalone server, in its default configuration with a JMS Service and
-        JNDI service enabled.</para>
+    <para>For the remainder of this chapter when we talk about the HornetQ server we mean the
+        HornetQ standalone server, in its default configuration with a JMS Service and JNDI service
+        enabled.</para>
     <para>When running embedded in JBoss Application Server the layout may be slightly different but
         by-and-large will be the same.</para>
     <section>
@@ -43,7 +41,7 @@
             a windows batch file <literal>run.bat</literal></para>
         <para>To run on Unix/Linux type <literal>./stop.sh</literal></para>
         <para>To run on Windows type <literal>stop.bat</literal></para>
-        <para>Please note that HornetQ requires a Java 5 or later JDK to run. We recommend
+        <para>Please note that HornetQ requires a Java 5 or later runtime to run. We recommend
             running on Java 6.</para>
         <para>Both the run and the stop scripts use the config under <literal
                 >config/stand-alone/non-clustered</literal> by default. The configuration can be
@@ -56,10 +54,10 @@
         <para>The run scripts <literal>run.sh</literal> and <literal>run.bat</literal> set some JVM
             settings for tuning running on Java 6 and choosing the garbage collection policy. We
             recommend using a parallel garbage collection algorithm to smooth out latency and
-            minimises large GC pauses.</para>
-        <para>By default HornetQ runs in a maximum of 1GB of RAM. To increase the memory
-            settings change the <literal>-Xms</literal> and <literal>-Xmx</literal> memory settings
-            as you would for any Java program.</para>
+            minimise large GC pauses.</para>
+        <para>By default HornetQ runs in a maximum of 1GiB of RAM. To increase the memory settings
+            change the <literal>-Xms</literal> and <literal>-Xmx</literal> memory settings as you
+            would for any Java program.</para>
         <para>If you wish to add any more JVM arguments or tune the existing ones, the run scripts
             are the place to do it.</para>
     </section>
@@ -70,9 +68,9 @@
             classpath when calling Java to run the server.</para>
         <para>In the distribution, the run scripts will add the non clustered configuration
             directory to the classpath. This is a directory which contains a set of configuration
-            files for running the HornetQ server in a basic non-clustered configuration. In
-            the distribution this directory is <literal>config/stand-alone/non-clustered/</literal>
-            from the root of the distribution.</para>
+            files for running the HornetQ server in a basic non-clustered configuration. In the
+            distribution this directory is <literal>config/stand-alone/non-clustered/</literal> from
+            the root of the distribution.</para>
         <para>The distribution contains several standard configuration sets for running:</para>
         <itemizedlist>
             <listitem>
@@ -90,8 +88,8 @@
         </itemizedlist>
         <para>You can of course create your own configuration and specify any configuration
             directory when running the run script.</para>
-        <para>Just make sure the directory is on the classpath and HornetQ will search there
-            when starting up.</para>
+        <para>Just make sure the directory is on the classpath and HornetQ will search there when
+            starting up.</para>
     </section>
     <section id="using-server.library.path">
         <title>Library Path</title>
@@ -105,9 +103,9 @@
         <title>System properties</title>
         <para>HornetQ also takes a couple of Java system properties on the command line for
             configuring logging properties</para>
-        <para>HornetQ uses JDK logging to minimise dependencies on other logging systems.
-            JDK logging can then be configured to delegate to some other framework, e.g. log4j if
-            that's what you prefer.</para>
+        <para>HornetQ uses JDK logging to minimise dependencies on other logging systems. JDK
+            logging can then be configured to delegate to some other framework, e.g. log4j if that's
+            what you prefer.</para>
         <para>For more information on configuring logging, please see <xref linkend="logging"
             />.</para>
     </section>
@@ -118,16 +116,14 @@
             following files.</para>
         <itemizedlist>
             <listitem>
-                <para><literal>hornetq-beans.xml</literal>
-                (or <literal>hornetq-jboss-beans.xml</literal> if you're running inside JBoss
-                Application Server).                
-                This is the JBoss Microcontainer beans
-                    file which defines what beans the Microcontainer should create and what
-                    dependencies to enforce between them. Remember that HornetQ is just a
-                    set of POJOs. In the stand-alone server, it's the JBoss Microcontainer which
-                    instantiates these POJOs and enforces dependencies between them and other beans.
-                    Please see <xref linkend="usingserver.mainconfig"/> for more information on this
-                    file.</para>
+                <para><literal>hornetq-beans.xml</literal> (or <literal
+                        >hornetq-jboss-beans.xml</literal> if you're running inside JBoss
+                    Application Server). This is the JBoss Microcontainer beans file which defines
+                    what beans the Microcontainer should create and what dependencies to enforce
+                    between them. Remember that HornetQ is just a set of POJOs. In the stand-alone
+                    server, it's the JBoss Microcontainer which instantiates these POJOs and
+                    enforces dependencies between them and other beans. Please see <xref
+                        linkend="usingserver.mainconfig"/> for more information on this file.</para>
             </listitem>
             <listitem>
                 <para><literal>hornetq-configuration.xml</literal>. This is the main HornetQ
@@ -135,26 +131,26 @@
                         linkend="configuration-index"/>.</para>
             </listitem>
             <listitem>
-                <para><literal>hornetq-queues.xml</literal>. This file contains predefined queues, queue
-                    settings and security settings. The file is optional - all this configuration
-                    can also live in <literal>hornetq-configuration.xml</literal>. In fact, the default
-                    configuration sets do not have a <literal>hornetq-queues.xml</literal> file. The
-                    purpose of allowing queues to be configured in these files is to allow you to
-                    manage your queue configuration over many files instead of being forced to
-                    maintain it in a single file. There can be many <literal
-                        >hornetq-queues.xml</literal> files on the classpath. All will be loaded if
-                    found.</para>
+                <para><literal>hornetq-queues.xml</literal>. This file contains predefined queues,
+                    queue settings and security settings. The file is optional - all this
+                    configuration can also live in <literal>hornetq-configuration.xml</literal>. In
+                    fact, the default configuration sets do not have a <literal
+                        >hornetq-queues.xml</literal> file. The purpose of allowing queues to be
+                    configured in these files is to allow you to manage your queue configuration
+                    over many files instead of being forced to maintain it in a single file. There
+                    can be many <literal>hornetq-queues.xml</literal> files on the classpath. All
+                    will be loaded if found.</para>
             </listitem>
             <listitem>
                 <para><literal>hornetq-users.xml</literal> HornetQ ships with a security manager
                     implementation which obtains user credentials from the <literal
-                        >hornetq-users.xml</literal> file. This file contains user, password and role
-                    information. For more information on security ,please see <xref
+                        >hornetq-users.xml</literal> file. This file contains user, password and
+                    role information. For more information on security ,please see <xref
                         linkend="security"/>.</para>
             </listitem>
             <listitem>
-                <para><literal>hornetq-jms.xml</literal> The distro configuration by default includes a
-                    server side JMS service which mainly deploys JMS Queues, Topics and
+                <para><literal>hornetq-jms.xml</literal> The distro configuration by default
+                    includes a server side JMS service which mainly deploys JMS Queues, Topics and
                     ConnectionFactorys from this file into JNDI. If you're not using JMS, or you
                     don't need to deploy JMS objects on the server side, then you don't need this
                     file. For more information on using JMS, please see <xref linkend="using-jms"
@@ -172,8 +168,8 @@
         </itemizedlist>
         <note>
             <para>The property <literal>file-deployment-enabled</literal> in the <literal
-                    >hornetq-configuration.xml</literal> configuration when set to false mans that the
-                other configuration files are not loaded. This is true by default.</para>
+                    >hornetq-configuration.xml</literal> configuration when set to false mans that
+                the other configuration files are not loaded. This is true by default.</para>
         </note>
         <para>It is also possible to use system property substitution in all the configuration
             files. by replacing a value with the name of a system property. Here is an example of
@@ -184,11 +180,12 @@
          &lt;param key="hornetq.remoting.netty.port"  value="${hornetq.remoting.netty.port:5445}" type="Integer"/>
 &lt;/connector></programlisting>
         <para>here you can see we have replaced 2 values with system properties <literal
-                >hornetq.remoting.netty.host</literal> and <literal>hornetq.remoting.netty.port</literal>.
-            These values will be replaced by the value found in the system property if there is one,
-            if not they default back to localhost or 5445 respectively. It is also possible to not
-            supply a default. i.e. <literal>${hornetq.remoting.netty.host}</literal>, however the system
-            property <emphasis>must</emphasis> be supplied in that case.</para>
+                >hornetq.remoting.netty.host</literal> and <literal
+                >hornetq.remoting.netty.port</literal>. These values will be replaced by the value
+            found in the system property if there is one, if not they default back to localhost or
+            5445 respectively. It is also possible to not supply a default. i.e. <literal
+                >${hornetq.remoting.netty.host}</literal>, however the system property
+                <emphasis>must</emphasis> be supplied in that case.</para>
     </section>
     <section id="server.microcontainer.configuration">
         <title>JBoss Microcontainer Beans File</title>
@@ -283,7 +280,7 @@
             </listitem>
             <listitem>
                 <para>Configuration</para>
-                <para>The messaging server is configured with a Configuration object. In the default
+                <para>The HornetQ server is configured with a Configuration object. In the default
                     stand-alone set-up it uses a FileConfiguration object which knows to read
                     configuration information from the file system. In different configurations such
                     as embedded you might want to provide configuration information from somewhere
@@ -292,11 +289,11 @@
             <listitem>
                 <para>Security Manager. The security manager used by the messaging server is
                     pluggable. The default one used just reads user-role information from the
-                        <literal>hornetq-users.xml</literal> file on disk. However it can be replaced by
-                    a JAAS security manager, or when running inside JBoss Application Server it can
-                    be configured to use the JBoss AS security manager for tight integration with
-                    JBoss AS security. If you've disabled security altogether you can remove this
-                    too.</para>
+                        <literal>hornetq-users.xml</literal> file on disk. However it can be
+                    replaced by a JAAS security manager, or when running inside JBoss Application
+                    Server it can be configured to use the JBoss AS security manager for tight
+                    integration with JBoss AS security. If you've disabled security altogether you
+                    can remove this too.</para>
             </listitem>
             <listitem>
                 <para>HornetQServer</para>
@@ -316,12 +313,12 @@
     <section id="usingserver.mainconfig">
         <title>The main configuration file.</title>
         <para>The configuration for the HornetQ core server is contained in <literal
-                >hornetq-configuration.xml</literal>. This is what the FileConfiguration bean uses to
-            configure the messaging server.</para>
-        <para>There are many attributes which you can configure HornetQ. In most cases the
-            defaults will do fine, in fact every attribute can be defaulted which means a file with
-            a single empty <literal>configuration</literal> element is a valid configuration file.
-            The different configuration will be explained throughout the manual or you can refer to
-            the configuration reference <link linkend="configuration-index">here</link>.</para>
+                >hornetq-configuration.xml</literal>. This is what the FileConfiguration bean uses
+            to configure the messaging server.</para>
+        <para>There are many attributes which you can configure HornetQ. In most cases the defaults
+            will do fine, in fact every attribute can be defaulted which means a file with a single
+            empty <literal>configuration</literal> element is a valid configuration file. The
+            different configuration will be explained throughout the manual or you can refer to the
+            configuration reference <link linkend="configuration-index">here</link>.</para>
     </section>
 </chapter>

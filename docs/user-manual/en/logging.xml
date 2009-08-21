@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
 <!-- ============================================================================= -->
 <!-- Copyright © 2009 Red Hat, Inc. and others.                                    -->
 <!--                                                                               -->
@@ -17,13 +16,12 @@
 <!-- and agrees not to assert, Section 4d of CC-BY-SA to the fullest extent        -->
 <!-- permitted by applicable law.                                                  -->
 <!-- ============================================================================= -->
-
 <chapter id="logging">
     <title>Logging</title>
-    <para>HornetQ uses standard <ulink url="http://java.sun.com/j2se/1.4.2/docs/guide/util/logging/">JDK
-            logging</ulink>, (a.k.a Java-Util-Logging: JUL), for all its logging. This means we have
-        no dependencies on any third party logging framework. Users can provide their own logging
-        handler to use or alternatively use the log4j handler supplied by HornetQ.</para>
+    <para>HornetQ uses standard <ulink url="http://java.sun.com/j2se/1.4.2/docs/guide/util/logging/"
+            >JDK logging</ulink>, (a.k.a Java-Util-Logging: JUL), for all its logging. This means we
+        have no dependencies on any third party logging framework. Users can provide their own
+        logging handler to use or alternatively use the log4j handler supplied by HornetQ.</para>
     <para>The handlers are configured via the JUL <literal>logging.properties</literal> file. This
         default location for this file is under the <literal>lib</literal> directory found in the
         Java home directory but it can be overridden by setting the <literal
@@ -38,14 +36,16 @@
         redirects this to the JUL logger. This is set via a system property, <literal
             >-Dorg.jboss.logging.Logger.pluginClass=org.hornetq.integration.logging.HornetQLoggerPlugin</literal>.
         This is only needed when starting the standalone server and is set in the run script. This
-        is not a problem if you are embedding HornetQ in your own code as the Microcontainer
-        won't be being used.</para>
-   <para>If you want configure your client's logging, make sure you provide a <literal>logging.properties</literal>
-   file and set the <literal>java.util.logging.config.file</literal> property on client startup</para>
+        is not a problem if you are embedding HornetQ in your own code as the Microcontainer won't
+        be being used.</para>
+    <para>If you want configure your client's logging, make sure you provide a <literal
+            >logging.properties</literal> file and set the <literal
+            >java.util.logging.config.file</literal> property on client startup</para>
     <section>
         <title>Log4j Configuration</title>
-        <para>HornetQ supplies a JUL Log4j handler that can be used instead of the defaults.
-            To use this simply edit the logging.properties file as such:</para>
+        <para>HornetQ supplies a JUL Log4j handler that can be used instead of the defaults if you
+            prefer to work with log4j logs. To use this simply edit the logging.properties file as
+            such:</para>
         <programlisting>handlers=org.hornetq.integration.logging.Log4jLoggerHandler</programlisting>
         <para>You will also need to download the Log4j jars and place them in the <literal
                 >lib</literal> directory and also provide a log4j configuration and place it on the
@@ -53,8 +53,8 @@
     </section>
     <section>
         <title>Logging With The JBoss Application Server</title>
-        <para>When HornetQ is deployed within the Application Server then it will still use
-            JUL  however the logging is redirected to the default JBoss logger. For more information
-            on this refer to the JBoss documentation.</para>
+        <para>When HornetQ is deployed within the Application Server then it will still use JUL
+            however the logging is redirected to the default JBoss logger. For more information on
+            this refer to the JBoss documentation.</para>
     </section>
 </chapter>

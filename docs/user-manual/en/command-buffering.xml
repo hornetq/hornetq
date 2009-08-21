@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
 <!-- ============================================================================= -->
 <!-- Copyright © 2009 Red Hat, Inc. and others.                                    -->
 <!--                                                                               -->
@@ -17,12 +16,11 @@
 <!-- and agrees not to assert, Section 4d of CC-BY-SA to the fullest extent        -->
 <!-- permitted by applicable law.                                                  -->
 <!-- ============================================================================= -->
-
 <chapter id="command-buffering">
     <title>Command Buffering</title>
-    <para>As HornetQ clients send commands to their servers they store each sent command in
-        an in-memory buffer. In the case that connection failure occurs and the client subsequently
-        reconnects to the same server or fails over onto a replica server, as part of the
+    <para>As HornetQ clients send commands to their servers they store each sent command in an
+        in-memory buffer. In the case that connection failure occurs and the client subsequently
+        reconnects to the same server or fails over onto a backup server, as part of the
         reconnection protocol the server informs the client during reconnection with the id of the
         last command it successfully received from that client.</para>
     <para>If the client has sent more commands than were received before failover it can replay any
@@ -34,9 +32,10 @@
         client can then free up space in the buffer.</para>
     <para>If you are using JMS and you're using the JMS service on the server to load your JMS
         connection factory instances into JNDI then this parameter can be configured in <literal
-            >hornetq-jms.xml</literal> using the element <literal>producer-window-size</literal> a. If
-        you're using JMS but not using JNDI then you can set these values directly on the <literal
-            >HornetQConnectionFactory</literal> instance using the appropriate setter method.</para>
+            >hornetq-jms.xml</literal> using the element <literal>producer-window-size</literal> a.
+        If you're using JMS but not using JNDI then you can set these values directly on the
+            <literal>HornetQConnectionFactory</literal> instance using the appropriate setter
+        method.</para>
     <para>If you're using core you can set these values directly on the <literal
             >ClientSessionFactory</literal> instance using the appropriate setter method.</para>
     <para>The send window is specified in bytes, and has a default value of <literal

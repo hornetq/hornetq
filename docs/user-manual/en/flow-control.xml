@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
 <!-- ============================================================================= -->
 <!-- Copyright © 2009 Red Hat, Inc. and others.                                    -->
 <!--                                                                               -->
@@ -17,7 +16,6 @@
 <!-- and agrees not to assert, Section 4d of CC-BY-SA to the fullest extent        -->
 <!-- permitted by applicable law.                                                  -->
 <!-- ============================================================================= -->
-
 <chapter id="flow-control">
    <title>Flow Control</title>
    <para>Flow control is used to limit the flow of data between a client and server, or a server and
@@ -28,19 +26,20 @@
          messages. For performance reasons clients normally buffer messages before delivering to the
          consumer via the <literal>receive()</literal> method or asynchronously via a message
          listener. If the consumer cannot process messages as fast as they are being delivered and
-         stored in the internal buffer, then you could end up with a situation where messages just
-         keep building up and are not processed for a long time. </para>
+         stored in the internal buffer, then you could end up with a situation where messages would
+         keep building up possibly causing out of memory on the client if they cannot be processed
+         in time.</para>
       <section id="flow-control.consumer.window">
          <title>Window-Based Flow Control</title>
-         <para>By default, HornetQ consumers buffer messages from the server in a client
-            side buffer before the client consumes them. This improves performance: otherwise every
-            time the client consumes a message, HornetQ would have to go the server to
-            request the next message. In turn, this message would then get sent to the client side,
-            if one was available.</para>
+         <para>By default, HornetQ consumers buffer messages from the server in a client side buffer
+            before the client consumes them. This improves performance: otherwise every time the
+            client consumes a message, HornetQ would have to go the server to request the next
+            message. In turn, this message would then get sent to the client side, if one was
+            available.</para>
          <para>A network round trip would be involved for <emphasis>every</emphasis> message and
             considerably reduce performance.</para>
-         <para>To prevent this, HornetQ pre-fetches messages into a buffer on each consumer.
-            The total maximum size of messages (in bytes) that will be buffered on each consumer is
+         <para>To prevent this, HornetQ pre-fetches messages into a buffer on each consumer. The
+            total maximum size of messages (in bytes) that will be buffered on each consumer is
             determined by the <literal>consumer-window-size</literal> parameter.</para>
          <para>By default, the <literal>consumer-window-size</literal> is set to 1 MiB (1024 * 1024
             bytes).</para>
@@ -51,8 +50,8 @@
             </listitem>
             <listitem>
                <para><literal>0</literal> to not buffer any messages. See <xref
-                     linkend="examples.no-consumer-buffering" />
-                  for working example of a consumer with no buffering.</para>
+                     linkend="examples.no-consumer-buffering"/> for working example of a consumer
+                  with no buffering.</para>
             </listitem>
             <listitem>
                <para><literal>&gt;0</literal> for a buffer with the given maximum size in
@@ -89,6 +88,8 @@
                      0 (for no buffer at all). This will prevent the slow consumer from buffering
                      any messages on the client side. Messages will remain on the server side ready
                      to be consumed by other consumers.</para>
+                  <para>Setting this to -1 can give deterministic distribution between multiple
+                     consumers on a queue.</para>
                </listitem>
             </varlistentry>
          </variablelist>
@@ -98,9 +99,9 @@
             find the optimal value, but a value of 1MiB is fine in most cases.</para>
          <section id="flow-control.core.api">
             <title>Using Core API</title>
-            <para>If HornetQ Core API is used, the consumer window size is specified by
-                  <literal>ClientSessionFactory.setConsumerWindowSize()</literal> method and some of
-               the <literal>ClientSession.createConsumer()</literal> methods.</para>
+            <para>If HornetQ Core API is used, the consumer window size is specified by <literal
+                  >ClientSessionFactory.setConsumerWindowSize()</literal> method and some of the
+                  <literal>ClientSession.createConsumer()</literal> methods.</para>
          </section>
          <section>
             <title>Using JMS</title>
@@ -120,8 +121,8 @@
             <para>If the connection factory is directly instantiated, the consumer window size is
                specified by <literal>HornetQConnectionFactory.setConsumerWindowSize()</literal>
                method.</para>
-            <para>Please see <xref linkend="examples.no-consumer-buffering" /> for an example which shows how to configure
-               HornetQ to prevent consumer buffering when dealing with slow
+            <para>Please see <xref linkend="examples.no-consumer-buffering"/> for an example which
+               shows how to configure HornetQ to prevent consumer buffering when dealing with slow
                consumers.</para>
          </section>
       </section>
@@ -134,8 +135,8 @@
             consumption rate specified in units of messages per second. Setting this to <literal
                >-1</literal> disables rate limited flow control. The default value is <literal
                >-1</literal>.</para>
-         <para>Please see <xref linkend="examples.consumer-rate-limit" /> for a working example 
-         of limiting consumer rate.</para>
+         <para>Please see <xref linkend="examples.consumer-rate-limit"/> for a working example of
+            limiting consumer rate.</para>
          <section id="flow-control.rate.core.api">
             <title>Using Core API</title>
             <para>If the HornetQ core API is being used the rate can be set via the <literal
@@ -167,34 +168,33 @@
                   slow rate limit and a high window based limit the clients internal buffer would
                   soon fill up with messages.</para>
             </note>
-            <para>Please see <xref linkend="examples.consumer-rate-limit" /> for an example which shows
-               how to configure HornetQ to prevent consumer buffering when dealing with slow
+            <para>Please see <xref linkend="examples.consumer-rate-limit"/> for an example which
+               shows how to configure HornetQ to prevent consumer buffering when dealing with slow
                consumers.</para>
          </section>
       </section>
    </section>
    <section>
       <title>Producer flow control</title>
-      <para>HornetQ also can limit the amount of data sent from a client to a server to
-         prevent the server being overwhelmed.</para>
+      <para>HornetQ also can limit the amount of data sent from a client to a server to prevent the
+         server being overwhelmed.</para>
       <section>
          <title>Window based flow control</title>
-         <para>HornetQ clients maintain a buffer of commands that have been sent to the
-            server, thus provides a form of flow control. Please see <xref
-               linkend="command-buffering"/> for more information on
-            this.</para>
+         <para>HornetQ clients maintain a buffer of commands that have been sent to the server, thus
+            provides a form of flow control. Please see <xref linkend="command-buffering"/> for more
+            information on this.</para>
       </section>
       <section>
          <title>Rate limited flow control</title>
-         <para>HornetQ also allows the rate a producer can emit message to be limited, in
-            units of messages per second. By specifying such a rate, HornetQ will ensure
-            that producer never produces messages at a rate higher than that specified.</para>
+         <para>HornetQ also allows the rate a producer can emit message to be limited, in units of
+            messages per second. By specifying such a rate, HornetQ will ensure that producer never
+            produces messages at a rate higher than that specified.</para>
          <para>The rate must be a positive integer to enable and is the maximum desired message
             consumption rate specified in units of messages per second. Setting this to <literal
                >-1</literal> disables rate limited flow control. The default value is <literal
                >-1</literal>.</para>
-         <para>Please see the <xref linkend="producer-rate-limiting-example" /> 
-            for a working example of limiting producer rate.</para>
+         <para>Please see the <xref linkend="producer-rate-limiting-example"/> for a working example
+            of limiting producer rate.</para>
          <section id="flow-control.producer.rate.core.api">
             <title>Using Core API</title>
             <para>If the HornetQ core API is being used the rate can be set via the <literal

@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
 <!-- ============================================================================= -->
 <!-- Copyright © 2009 Red Hat, Inc. and others.                                    -->
 <!--                                                                               -->
@@ -17,20 +16,40 @@
 <!-- and agrees not to assert, Section 4d of CC-BY-SA to the fullest extent        -->
 <!-- permitted by applicable law.                                                  -->
 <!-- ============================================================================= -->
-
 <chapter id="preface">
     <title>Preface</title>
-    <para>The goal of HornetQ is simple and uncompromising; to bring unrivaled levels of
-        performance and reliability to messaging, and to be the fastest, best featured and most
-        scalable multi-protocol messaging system.</para>
+    <para>What is HornetQ?</para>
+    <itemizedlist>
+        <listitem>
+            <para>HornetQ is an open source project to build a multi-protocol, embeddable, high
+                performance, clustered, asynchronous messaging system.</para>
+        </listitem>
+        <listitem>
+            <para>HornetQ is an example of Message Oriented Middleware (MoM) For a description of
+                MoMs and other messaging concepts please see the <xref linkend="messaging-concepts"
+                />.</para>
+        </listitem>
+        <listitem>
+            <para>HornetQ is Red Hat's flagship Java messaging system.</para>
+        </listitem>
+        <listitem>
+            <para>For answers to more questions about what HornetQ is and isn't please visit
+                    the<ulink url="http://www.jboss.org/community/wiki/HornetQGeneralFAQs">FAQs wiki
+                    page</ulink>.</para>
+        </listitem>
+    </itemizedlist>
     <para>Why use HornetQ? Here are just a few of the reasons:</para>
     <itemizedlist>
         <listitem>
-            <para>100% open source software.</para>
+            <para>100% open source software. HornetQ is licenced using the Apache Software License v
+                2.0 to minimise barriers to adoption.</para>
         </listitem>
         <listitem>
-            <para>Written in Java. Runs on any platform with a J2SE 5.0 JDK, that's everything from
-                Windows desktops to IBM mainframes.</para>
+            <para>HornetQ is designed with usability in mind.</para>
+        </listitem>
+        <listitem>
+            <para>Written in Java. Runs on any platform with a Java 5+ runtime, that's everything
+                from Windows desktops to IBM mainframes.</para>
         </listitem>
         <listitem>
             <para>Superb performance. Our class beating high performance journal provides persistent
@@ -43,19 +62,24 @@
         </listitem>
         <listitem>
             <para>Elegant POJO based design with minimal third party dependencies. Run HornetQ
-                stand-alone, run it in integrated in your favourite JEE application
-                server, or run it embedded inside your own product.</para>
+                stand-alone, run it in integrated in your favourite JEE application server, or run
+                it embedded inside your own product.</para>
         </listitem>
         <listitem>
-            <para>Seamless high availability. We provide server replication and completely
-                transparent client failover so you don't have to worry about coding your client
-                specially for an HA environment.</para>
+            <para>Seamless high availability. We provide a HA solution with automatic client
+                failover so you can guarantee zero message loss or duplication in event of server
+                failure.</para>
         </listitem>
         <listitem>
             <para>Hugely flexible clustering. Create clusters of servers that know how to load
                 balance messages. Link geographically distributed clusters over unreliable
                 connections to form a global network. Configure routing of messages in a highly
                 flexible way.</para>
+        </listitem>
+        <listitem>
+            <para>For a full list of features, please see the <ulink
+                    url="http://www.jboss.org/community/wiki/HornetQFeatures">features wiki
+                    page</ulink> .</para>
         </listitem>
     </itemizedlist>
 </chapter>

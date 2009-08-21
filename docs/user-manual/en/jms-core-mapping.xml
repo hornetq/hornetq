@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
 <!-- ============================================================================= -->
 <!-- Copyright © 2009 Red Hat, Inc. and others.                                    -->
 <!--                                                                               -->
@@ -17,16 +16,14 @@
 <!-- and agrees not to assert, Section 4d of CC-BY-SA to the fullest extent        -->
 <!-- permitted by applicable law.                                                  -->
 <!-- ============================================================================= -->
-
 <chapter id="jms-core-mapping">
     <title>Mapping JMS Concepts to the Core API</title>
-    <para>This chapter describes how JMS destinations are mapped to HornetQ core
-        queues.</para>
-    <para>HornetQ core is JMS-agnostic. It does not have any concept of a JMS topic. A JMS
-        topic is implemented in core as an address (the topic name) with zero or more queues bound
-        to it. Each queue bound to that address represents a topic subscription. Likewise, a JMS
-        queue is implemented as an address (the JMS queue name) with one single queue bound to it
-        which represents the JMS queue.</para>
+    <para>This chapter describes how JMS destinations are mapped to HornetQ addresses.</para>
+    <para>HornetQ core is JMS-agnostic. It does not have any concept of a JMS topic. A JMS topic is
+        implemented in core as an address (the topic name) with zero or more queues bound to it.
+        Each queue bound to that address represents a topic subscription. Likewise, a JMS queue is
+        implemented as an address (the JMS queue name) with one single queue bound to it which
+        represents the JMS queue.</para>
     <para>By convention, all JMS queues map to core queues where the core queue name has the string
             <literal>jms.queue.</literal> prepended to it. E.g. the JMS queue with the name
         "orders.europe" would map to the core queue with the name "jms.queue.orders.europe". The

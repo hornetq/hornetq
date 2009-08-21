@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
 <!-- ============================================================================= -->
 <!-- Copyright © 2009 Red Hat, Inc. and others.                                    -->
 <!--                                                                               -->
@@ -17,7 +16,6 @@
 <!-- and agrees not to assert, Section 4d of CC-BY-SA to the fullest extent        -->
 <!-- permitted by applicable law.                                                  -->
 <!-- ============================================================================= -->
-
 <chapter id="ha">
     <title>High Availability and Failover</title>
     <para>We define high availability as the <emphasis>ability for the system to continue
@@ -25,18 +23,17 @@
         availability is <emphasis>failover</emphasis> which we define as the <emphasis>ability for
             client connections to migrate from one server to another in event of server failure so
             client applications can continue to operate</emphasis>.</para>
-    <para>HornetQ provides high availability by replicating servers in pairs. It also
-        provides both 100% transparent client failover and application-level client failover.</para>
+    <para>HornetQ provides high availability by replicating servers in pairs. It also provides both
+        automatic client failover and application-level client failover.</para>
     <section>
         <title>Server replication</title>
         <para>HornetQ allows pairs of servers to be linked together as <emphasis>live -
                 backup</emphasis> pairs. In this release there is a single backup server for each
             live server. Backup servers are not operational until failover occurs. In later releases
             we will most likely support replication onto multiple backup servers.</para>
-        <para>When a <emphasis>live - backup</emphasis> pair is configured, HornetQ ensures
-            that the live server state is replicated to the backup server. Replicated state includes
-            session state, and also global state such as the set of queues and addresses on the
-            server. </para>
+        <para>When a <emphasis>live - backup</emphasis> pair is configured, HornetQ ensures that the
+            live server state is replicated to the backup server. Replicated state includes session
+            state, and also global state such as the set of queues and addresses on the server. </para>
         <para>When a client fails over from live to backup server, the backup server will already
             have the correct global and session state, so the client will be able to resume its
             session(s) on the backup server as if nothing happened.</para>
@@ -48,13 +45,13 @@
             before replicating the next piece of data.</para>
         <section id="configuring.live.backup">
             <title>Configuring live-backup pairs</title>
-            <para>First, on the live server, in <literal>hornetq-configuration.xml</literal> configure
-                the live server with knowledge of its backup server. This is done by specifying a
-                    <literal>backup-connector-ref</literal> element. This element references a
-                connector, also specified on the live server which contains knowledge of how to
-                connect to the backup server. Here's a snippet from <literal
-                    >hornetq-configuration.xml</literal> showing a live server configured with a backup
-                server:</para>
+            <para>First, on the live server, in <literal>hornetq-configuration.xml</literal>
+                configure the live server with knowledge of its backup server. This is done by
+                specifying a <literal>backup-connector-ref</literal> element. This element
+                references a connector, also specified on the live server which contains knowledge
+                of how to connect to the backup server. Here's a snippet from <literal
+                    >hornetq-configuration.xml</literal> showing a live server configured with a
+                backup server:</para>
             <programlisting>&lt;backup-connector-ref connector-name="backup-connector"/>
    
 &lt;!-- Connectors -->
@@ -72,8 +69,9 @@
    &lt;/connector>
 
 &lt;/connectors></programlisting>
-            <para>Secondly, on the backup server, also in <literal>hornetq-configuration.xml</literal> ,
-                the element <literal>backup</literal> must be set to true. I.e. :</para>
+            <para>Secondly, on the backup server, also in <literal
+                    >hornetq-configuration.xml</literal> , the element <literal>backup</literal>
+                must be set to true. I.e. :</para>
             <programlisting>&lt;backup>true&lt;/backup>
 </programlisting>
         </section>
@@ -94,9 +92,8 @@
                 may diverge. After such a failure, at the next available opportunity the <literal
                     >B</literal> server should be taken down, and its <literal>data</literal>
                 directory copied back to the <literal>L</literal> server. Live and backup servers
-                can then be restarted. In this release of HornetQ we do not provide any
-                automatic facility for re-assigning a backup node with a live node while it is
-                running.</para>
+                can then be restarted. In this release of HornetQ we do not provide any automatic
+                facility for re-assigning a backup node with a live node while it is running.</para>
             <para>For a backup server to function correctly it's also important that it has the same
                 set of bridges, predefined queues, cluster connections, broadcast groups and
                 discovery groups as defined on the live node. The easiest way to ensure this is just
@@ -119,37 +116,37 @@
     </section>
     <section id="ha.client.automatic">
         <title>Automatic client failover</title>
-        <para>HornetQ clients can be configured with knowledge of live and backup servers,
-            so that in event of connection failure of the client - live server connection, the
-            client will detect this and reconnect its sessions to the backup server. Because of
-            server replication, then backup server will already have those sessions in the same
-            state they were left on the live server and the client will be able to reconnect them
-            and resume them 100% transparently as if nothing happened.</para>
-        <para>For automatic failover HornetQ requires <emphasis>zero</emphasis> coding of
-            special failover code on the client or server. This differs from other messaging systems
-            which intrusively require you to code special failover handling code. HornetQ
-            automatic failover preserves all your normal JMS or core API semantics and allows your
-            client code to continue 100% uninterrupted on event of connection failure and failover
-            from a live to a backup server.</para>
-        <para>HornetQ clients detect connection failure when it has not received packets
-            from the server within the time given by <literal>client-failure-check-period</literal>
-            as explained in section <xref linkend="connection-ttl"/>. If the client does not receive
+        <para>HornetQ clients can be configured with knowledge of live and backup servers, so that
+            in event of connection failure of the client - live server connection, the client will
+            detect this and reconnect its sessions to the backup server. Because of server
+            replication, then backup server will already have those sessions in the same state they
+            were left on the live server and the client will be able to reconnect them and resume
+            them 100% transparently as if nothing happened.</para>
+        <para>For automatic failover HornetQ requires <emphasis>zero</emphasis> coding of special
+            failover code on the client or server. This differs from other messaging systems which
+            intrusively require you to code special failover handling code. HornetQ automatic
+            failover preserves all your normal JMS or core API semantics and allows your client code
+            to continue 100% uninterrupted on event of connection failure and failover from a live
+            to a backup server.</para>
+        <para>HornetQ clients detect connection failure when it has not received packets from the
+            server within the time given by <literal>client-failure-check-period</literal> as
+            explained in section <xref linkend="connection-ttl"/>. If the client does not receive
             data in good time, it will assume the connection has failed and attempt failover.</para>
-        <para>HornetQ clients can be configured with the list of live-backup server pairs in
-            a number of different ways. They can be configured explicitly or probably the most
-            common way of doing this is to use <emphasis>server discovery</emphasis> for the client
-            to automatically discover the list. For full details on how to configure clients please
-            see <xref linkend="clusters.server-discovery"/>.</para>
+        <para>HornetQ clients can be configured with the list of live-backup server pairs in a
+            number of different ways. They can be configured explicitly or probably the most common
+            way of doing this is to use <emphasis>server discovery</emphasis> for the client to
+            automatically discover the list. For full details on how to configure clients please see
+                <xref linkend="clusters.server-discovery"/>.</para>
         <para>Sometimes you want a client to failover onto a backup server even if the live server
             is just cleanly shutdown rather than having crashed or the connection failed. To
             configure this you can set the property <literal>FailoverOnServerShutdown</literal> to
-            false either on the <literal>HornetQConnectionFactory</literal> if you're using JMS or in
-            the <literal>hornetq-jms.xml</literal> file when you define the connection factory, or if
-            using core by setting the property directly on the <literal
+            false either on the <literal>HornetQConnectionFactory</literal> if you're using JMS or
+            in the <literal>hornetq-jms.xml</literal> file when you define the connection factory,
+            or if using core by setting the property directly on the <literal
                 >ClientSessionFactoryImpl</literal> instance after creation. The default value for
             this property is <literal>false</literal>, this means that by default <emphasis>HornetQ
-                clients will not failover to a backup server if the live server is simply
-                shutdown cleanly.</emphasis></para>
+                clients will not failover to a backup server if the live server is simply shutdown
+                cleanly.</emphasis></para>
         <para>For a fully functional example of automatic failover, please see <xref
                 linkend="automatic-failover"/>.</para>
     </section>
@@ -166,13 +163,12 @@
             live server.</para>
         <para>To implement application-level failover, if you're using JMS then you need to code an
                 <literal>ExceptionListener</literal> class on the JMS connection. The <literal
-                >ExceptionListener</literal> will be called by HornetQ in the event that
-            connection failure is detected. In your <literal>ExceptionListener</literal> you would
-            close your old JMS connections, potentially look up new connection factory instances
-            from JNDI and creating new connections. In this case you may well be using 
-            <ulink url="http://www.jboss.org/community/wiki/JBossHAJNDIImpl">HA-JNDI</ulink>
-            to ensure that the new connection factory is looked up from a different
-            server.</para>
+                >ExceptionListener</literal> will be called by HornetQ in the event that connection
+            failure is detected. In your <literal>ExceptionListener</literal> you would close your
+            old JMS connections, potentially look up new connection factory instances from JNDI and
+            creating new connections. In this case you may well be using <ulink
+                url="http://www.jboss.org/community/wiki/JBossHAJNDIImpl">HA-JNDI</ulink> to ensure
+            that the new connection factory is looked up from a different server.</para>
         <para>For a working example of application-level failover, please see <xref
                 linkend="application-level-failover"/>.</para>
         <para>If you are using the core API, then the procedure is very similar: you would code a

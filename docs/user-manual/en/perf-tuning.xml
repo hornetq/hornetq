@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
 <!-- ============================================================================= -->
 <!-- Copyright © 2009 Red Hat, Inc. and others.                                    -->
 <!--                                                                               -->
@@ -17,13 +16,22 @@
 <!-- and agrees not to assert, Section 4d of CC-BY-SA to the fullest extent        -->
 <!-- permitted by applicable law.                                                  -->
 <!-- ============================================================================= -->
-
 <chapter id="perf-tuning">
     <title>Performance Tuning</title>
     <para>In this chapter we'll discuss how to tune HornetQ for optimum performance.</para>
     <section>
         <title>Tuning the journal</title>
         <itemizedlist>
+            <listitem>
+                <para>Put the journal on its own physical volume. If the disk is shared with other
+                    processes e.g. transaction co-ordinator, database or other journals which are
+                    also reading and writing from it, then this may greatly reduce performance since
+                    the disk head may be skipping all over the place between the different files.
+                    One of the advantages of an append only journal is that disk head movement is
+                    minimised - this advantage is destroyed if the disk is shared. If you're using
+                    paging or large messages make sure they're ideally put on separate volumes
+                    too.</para>
+            </listitem>
             <listitem>
                 <para>Minimum number of journal files. Set <literal>journal-min-files</literal> to a
                     number of files that would fit your average sustainable rate. If you see new
@@ -37,12 +45,13 @@
                     systems.</para>
             </listitem>
             <listitem>
-                <para>Use AIO journal. If using Linux, try to keep your journal type as AIO.</para>
+                <para>Use AIO journal. If using Linux, try to keep your journal type as AIO. AIO
+                    will scale better than Java NIO.</para>
             </listitem>
             <listitem>
                 <para><literal>journal-aio-flush-on-sync</literal>. If you don't have many producers
-                    in your system you may consider setting journal-aio-flush-on-sync to true. HornetQ
-                    by default is optimized by the case where you have many producers. We
+                    in your system you may consider setting journal-aio-flush-on-sync to true.
+                    HornetQ by default is optimized by the case where you have many producers. We
                     try to combine multiple writes in a single OS operation. However if that's not
                     your case setting this option to true will give you a performance boost.</para>
                 <para>On the other hand when you have multiple producers, keeping <literal
@@ -64,7 +73,7 @@
                     of creating a unique ID.</para>
             </listitem>
             <listitem>
-                <para> Disable message timestamp. Use the <literal
+                <para>Disable message timestamp. Use the <literal
                         >setDisableMessageTimeStamp()</literal> method on the <literal
                         >MessageProducer</literal> class to disable message timestamps if you don't
                     need them. Again this makes the message smaller.</para>
@@ -85,7 +94,7 @@
                     received on the client, this means more traffic on the network. If you can, use
                         <literal>DUPS_OK_ACKNOWLEDGE</literal> or use <literal
                         >CLIENT_ACKNOWLEDGE</literal> or a transacted session and batch up many
-                    acknowledgements with one acknowledge/commit.</para>
+                    acknowledgements with one acknowledge/commit. </para>
             </listitem>
             <listitem>
                 <para>Avoid persistent messages. By default JMS messages are persistent. If you
@@ -97,8 +106,7 @@
     </section>
     <section>
         <title>Other Tunings</title>
-        <para>There are various other places in HornetQ where we can perform some
-            tuning:</para>
+        <para>There are various other places in HornetQ where we can perform some tuning:</para>
         <itemizedlist>
             <listitem>
                 <para>Use Asynchronous Send Acknowledgements. If you need to send persistent
@@ -127,9 +135,9 @@
             <listitem>
                 <para>Sync transactions lazily. Setting <literal
                         >journal-sync-transactional</literal> to <literal>false</literal> in
-                        <literal>hornetq-configuration.xml</literal> can give you better transactional
-                    persistent performance at the expense of some possibility of loss of
-                    transactions on failure. See <xref linkend="send-guarantees"/> for more
+                        <literal>hornetq-configuration.xml</literal> can give you better
+                    transactional persistent performance at the expense of some possibility of loss
+                    of transactions on failure. See <xref linkend="send-guarantees"/> for more
                     information.</para>
             </listitem>
             <listitem>
@@ -176,7 +184,7 @@ serveruser     hard    nofile  20000
     <section>
         <title>Tuning the VM</title>
         <para>We highly recommend you use the latest Java 6 JVM, especially in the area of
-            networking many improvements have been made since Java 5. We test internally using the
+            networking, many improvements have been made since Java 5. We test internally using the
             Sun JVM, so some of these tunings won't apply to JDKs from other providers (e.g. IBM or
             JRockit)</para>
         <itemizedlist>
@@ -186,13 +194,13 @@ serveruser     hard    nofile  20000
                         >-XX:+UseParallelGC</literal> on Sun JDKs.</para>
             </listitem>
             <listitem>
-                <para>Memory settings. Give as much memory as you can to the server. HornetQ
-                    can run in low memory by using paging (described in <xref linkend="paging"/>)
-                    but if it can run with all queues in RAM this will improve performance. The
-                    amount of memory you require will depend on the size and number of your queues
-                    and the size and number of your messages. Use the JVM arguments <literal
-                        >-Xms</literal> and <literal>-Xmx</literal> to set server available RAM. We
-                    recommend setting them to the same high value.</para>
+                <para>Memory settings. Give as much memory as you can to the server. HornetQ can run
+                    in low memory by using paging (described in <xref linkend="paging"/>) but if it
+                    can run with all queues in RAM this will improve performance. The amount of
+                    memory you require will depend on the size and number of your queues and the
+                    size and number of your messages. Use the JVM arguments <literal>-Xms</literal>
+                    and <literal>-Xmx</literal> to set server available RAM. We recommend setting
+                    them to the same high value.</para>
             </listitem>
             <listitem>
                 <para>Aggressive options. Different JVMs provide different sets of JVM tuning
@@ -234,8 +242,8 @@ serveruser     hard    nofile  20000
                     entire queue has to be scanned for matching messages.</para>
                 <para>This anti-pattern can normally be avoided by instead using a topic with many
                     durable subscriptions, each subscription defines a message selector. With topic
-                    subscriptions the selector expression is evaluated by HornetQ before the
-                    message goes into the subscription, so no scanning is involved.</para>
+                    subscriptions the selector expression is evaluated by HornetQ before the message
+                    goes into the subscription, so no scanning is involved.</para>
             </listitem>
             <listitem>
                 <para>Don't create temporary queues for each request. This common anti-pattern
@@ -246,6 +254,12 @@ serveruser     hard    nofile  20000
                     the reply-to. A common mistake made with this pattern is to create a new
                     temporary queue on each message sent. This will drastically reduce performance.
                     Instead the temporary queue should be re-used for many requests.</para>
+            </listitem>
+            <listitem>
+                <para>Don't use Mesage Driven Beans for the sake of it. As soon as you start using MDBs you are greatly
+                increasing the codepath for each message received compared to a straightforward message consumer, since a lot of
+                extra application server code is executed. Ask yourself
+                do you really need MDBs? Can you accomplish the same task using just a normal message consumer?</para>
             </listitem>
         </itemizedlist>
     </section>

@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
 <!-- ============================================================================= -->
 <!-- Copyright © 2009 Red Hat, Inc. and others.                                    -->
 <!--                                                                               -->
@@ -17,21 +16,19 @@
 <!-- and agrees not to assert, Section 4d of CC-BY-SA to the fullest extent        -->
 <!-- permitted by applicable law.                                                  -->
 <!-- ============================================================================= -->
-
 <chapter id="using-core">
     <title>Using Core</title>
-    <para>HornetQ core is a completely JMS-agnostic messaging system with its own core
-        API.</para>
+    <para>HornetQ core is a completely JMS-agnostic messaging system with its own core API.</para>
     <para>If you don't want to use JMS you can use the core API directly. The core API provides all
         the functionality of JMS but without much of the complexity. It also provides features that
-        are not normally available using JMS.</para>
+        are not available using JMS.</para>
     <section>
         <title>Core Messaging Concepts</title>
         <para>Some of the core messaging concepts are similar to JMS concepts, but core messaging
             concepts differ in some ways. In general the core messaging API is simpler than the JMS
-            API, since we remove distinctions between queues, topics and subscriptions. We'll
-            discuss each of the major core messaging concepts in turn, but to see the API in
-            detail, please consult the Javadoc.</para>
+            API, since we remove distinctions between queues,  topics and subscriptions. We'll
+            discuss each of the major core messaging concepts in turn, but to see the API in detail,
+            please consult the Javadoc.</para>
         <section>
             <title>Message</title>
             <para>A message is the unit of data which is sent between clients and servers.</para>
@@ -42,15 +39,16 @@
             <para>A message has a destination which represents the <emphasis>address</emphasis> it
                 is being sent to. When the message arrives on the server it is routed to any queues
                 that are bound to the address. An address may have many queues bound to it or even
-                none.</para>
+                none. There may also be entities other than queues, like <emphasis role="italic"
+                    >diverts</emphasis> bound to addresses.</para>
             <para>Messages can be either durable or non durable. Durable messages in a durable queue
                 will survive a server crash or restart. Non durable messages will never survive a
                 server crash or restart.</para>
             <para>Messages can be specified with a priority value between 0 and 9. 0 represents the
-                highest priority and 9 represents the lowest. HornetQ will attempt to
-                deliver higher priority messages before lower priority ones.</para>
-            <para>Messages can be specified with an optional expiry time. HornetQ will not
-                deliver messages after its expiry time has been exceeded.</para>
+                highest priority and 9 represents the lowest. HornetQ will attempt to deliver higher
+                priority messages before lower priority ones.</para>
+            <para>Messages can be specified with an optional expiry time. HornetQ will not deliver
+                messages after its expiry time has been exceeded.</para>
             <para>Messages also have an optional timestamp which represents the time the message was
                 sent.</para>
         </section>
@@ -62,6 +60,8 @@
                 queues bound to the message's destination address. If any of the queues are bound
                 with a filter expression, then the message will only be routed to the subset of
                 bound queues which match that filter expression.</para>
+            <para>Other entities, such as <emphasis role="italic">diverts</emphasis> can also be
+                bound to an address and messages will also be routed there.</para>
             <note>
                 <para>In core, there is no concept of a Topic, Topic is a JMS only term. Instead, in
                     core, we just deal with <emphasis>addresses</emphasis> and

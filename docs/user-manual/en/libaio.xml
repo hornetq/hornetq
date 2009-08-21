@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
 <!-- ============================================================================= -->
 <!-- Copyright © 2009 Red Hat, Inc. and others.                                    -->
 <!--                                                                               -->
@@ -17,15 +16,16 @@
 <!-- and agrees not to assert, Section 4d of CC-BY-SA to the fullest extent        -->
 <!-- permitted by applicable law.                                                  -->
 <!-- ============================================================================= -->
-
 <chapter id="libaio">
     <title>Libaio Native Libraries</title>
-    <para>HornetQ distributes a native library, used as a bridge between HornetQ and
-        linux libaio.</para>
+    <para>HornetQ distributes a native library, used as a bridge between HornetQ and linux
+        libaio.</para>
     <para><literal>libaio</literal> is a library, developed as part of the linux kernel project.
         With <literal>libaio</literal> we submit writes to the operating system where they are
         processed asynchronously. Some time later the OS will call our code back when they have been
         processed.</para>
+    <para>We use this in our high performance journal if configured to do so, please see <xref
+            linkend="persistence"/>.</para>
     <para>These are the native libraries distributed by HornetQ:</para>
     <itemizedlist>
         <listitem>
@@ -38,13 +38,13 @@
             <para>libHornetQAIO_ia64.so - Itanium 64 bits</para>
         </listitem>
     </itemizedlist>
-    <para>When using libaio, HornetQ will always try loading these files as long as they are
-        on the <link linkend="using-server.library.path">library path</link>.</para>
+    <para>When using libaio, HornetQ will always try loading these files as long as they are on the
+            <link linkend="using-server.library.path">library path</link>.</para>
     <section>
         <title>Compiling the native libraries</title>
-        <para>Case you are using Linux on a platform other than x86_32, x86_64 or IA64 (Itanium),
-            (for example IBM POWER) you may need to compile the native library, since we do not
-            distribute binaries for those platforms with the release.</para>
+        <para>In the case that you are using Linux on a platform other than x86_32, x86_64 or IA64
+            (Itanium), (for example IBM POWER) you may need to compile the native library, since we
+            do not distribute binaries for those platforms with the release.</para>
         <section>
             <title>Install requirements</title>
             <note>
@@ -118,11 +118,11 @@ config.status: executing libtool commands
 
 ...</programlisting>
             <para>The produced library will be at <literal
-                    >./native-src/src/.libs/libHornetQLibAIO.so</literal>. Simply move that file over
-                    <literal>bin</literal> on the distribution or the place you have chosen on the
+                    >./native-src/src/.libs/libHornetQLibAIO.so</literal>. Simply move that file
+                over <literal>bin</literal> on the distribution or the place you have chosen on the
                     <link linkend="using-server.library.path">library path</link>.</para>
-            <para>If you want to perform changes on the HornetQ libaio code, you could just
-                call make directly at the <literal>native-src</literal> directory.</para>
+            <para>If you want to perform changes on the HornetQ libaio code, you could just call
+                make directly at the <literal>native-src</literal> directory.</para>
         </section>
     </section>
 </chapter>

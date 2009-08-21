@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
 <!-- ============================================================================= -->
 <!-- Copyright © 2009 Red Hat, Inc. and others.                                    -->
 <!--                                                                               -->
@@ -17,7 +16,6 @@
 <!-- and agrees not to assert, Section 4d of CC-BY-SA to the fullest extent        -->
 <!-- permitted by applicable law.                                                  -->
 <!-- ============================================================================= -->
-
 <chapter id="configuration-index">
     <title>Configuration Reference</title>
     <para>This section is a quick index for looking up configuration. Click on the element name to
@@ -991,7 +989,7 @@
                                     >connection-factory.scheduled-thread-pool-max-size</link></entry>
                             <entry>Integer</entry>
                             <entry>the size of the scheduled thread pool</entry>
-                            <entry>2</entry>
+                            <entry>5</entry>
                         </row>
                         <row>
                             <entry><link linkend="thread-pooling.client.side"

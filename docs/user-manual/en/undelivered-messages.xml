@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
 <!-- ============================================================================= -->
 <!-- Copyright © 2009 Red Hat, Inc. and others.                                    -->
 <!--                                                                               -->
@@ -17,7 +16,6 @@
 <!-- and agrees not to assert, Section 4d of CC-BY-SA to the fullest extent        -->
 <!-- permitted by applicable law.                                                  -->
 <!-- ============================================================================= -->
-
 <chapter id="undelivered-messages">
    <title>Message Redelivery and Undelivered Messages</title>
    <para>Messages can be delivered unsuccessfully (e.g. if the transacted session used to consume
@@ -54,31 +52,32 @@
         &lt;redelivery-delay&gt;5000&lt;/redelivery-delay&gt;
      &lt;/address-setting&gt;
              </programlisting>
-         <para>If a <literal>redelivery-delay</literal> is specified, HornetQ will wait this
-            delay before redelivering the messages</para>
+         <para>If a <literal>redelivery-delay</literal> is specified, HornetQ will wait this delay
+            before redelivering the messages</para>
          <para>By default, there is no redelivery delay (<literal>redelivery-delay</literal>is set
             to 0).</para>
          <para>Address wildcards can be used to configure redelivery delay for a set of addresses
-            (see <xref linkend="wildcard-syntax"/>).</para>
+            (see <xref linkend="wildcard-syntax"/>), so you don't have to specify redelivery delay
+            individually for each address.</para>
       </section>
       <section>
          <title>Example</title>
-         <para>See <xref linkend="examples.delayed-redelivery" /> for an example which
-            shows how delayed redelivery is configured and used with JMS.</para>
+         <para>See <xref linkend="examples.delayed-redelivery"/> for an example which shows how
+            delayed redelivery is configured and used with JMS.</para>
       </section>
    </section>
    <section>
       <title>Dead Letter Addresses</title>
       <para>To prevent a client infinitely receiving the same undelivered message (regardless of
-         what is causing the unsuccessful deliveries), messaging systems define dead letter
-         messages: after a specified unsuccessful delivery attempts, the message is removed from the
-         queue and send instead to a dead letter address. </para>
-      <para>Any dead letter messages can then be diverted to queue(s) where they can later be
-         perused by the system administrator for action to be taken.</para>
-      <para>HornetQ's addresses can be assigned a dead letter address. Once the messages
-         have be unsuccessfully delivered for a given number of attempts, they are removed from the
-         queue and sent to the dead letter address. These <emphasis>dead letter</emphasis> messages
-         can later be consumed for further inspection.</para>
+         what is causing the unsuccessful deliveries), messaging systems define <emphasis
+            role="italic">dead letter addresses</emphasis>: after a specified unsuccessful delivery
+         attempts, the message is removed from the queue and send instead to a dead letter address. </para>
+      <para>Any such messages can then be diverted to queue(s) where they can later be perused by
+         the system administrator for action to be taken.</para>
+      <para>HornetQ's addresses can be assigned a dead letter address. Once the messages have be
+         unsuccessfully delivered for a given number of attempts, they are removed from the queue
+         and sent to the dead letter address. These <emphasis>dead letter</emphasis> messages can
+         later be consumed for further inspection.</para>
       <section id="undelivered-messages.configuring">
          <title>Configuring Dead Letter Addresses</title>
          <para>Dead letter address is defined in the address-setting configuration:</para>
@@ -115,27 +114,26 @@
       </section>
       <section>
          <title>Example</title>
-         <para>See <xref linkend="examples.dead-letter" /> for an example which
-            shows how dead letter is configured and used with JMS.</para>
+         <para>See <xref linkend="examples.dead-letter"/> for an example which shows how dead letter
+            is configured and used with JMS.</para>
       </section>
    </section>
    <section id="configuring.delivery.count.persistence">
       <title>Delivery Count Persistence</title>
-      <para>In normal use, HornetQ does not update delivery count
-            <emphasis>persistently</emphasis> until a message is rolled back (i.e. the delivery
-         count is not updated <emphasis>before</emphasis> the message is delivered to the consumer).
-         In most messaging use cases, the messages are consumed, acknowledged and forgotten as soon
-         as they are consumed. In these cases, updating the delivery count persistently before
-         delivering the message would add an extra persistent step <emphasis>for each message
-            delivered</emphasis>, implying a significant performance penalty.</para>
+      <para>In normal use, HornetQ does not update delivery count <emphasis>persistently</emphasis>
+         until a message is rolled back (i.e. the delivery count is not updated
+            <emphasis>before</emphasis> the message is delivered to the consumer). In most messaging
+         use cases, the messages are consumed, acknowledged and forgotten as soon as they are
+         consumed. In these cases, updating the delivery count persistently before delivering the
+         message would add an extra persistent step <emphasis>for each message delivered</emphasis>,
+         implying a significant performance penalty.</para>
       <para>However, if the delivery count is not updated persistently before the message delivery
          happens, in the event of a server crash, messages might have been delivered but that will
          not have been reflected in the delivery count. During the recovery phase, the server will
          not have knowledge of that and will deliver the message with <literal>redelivered</literal>
          set to <literal>false</literal> while it should be <literal>true</literal>. </para>
-      <para>As this behavior breaks strict JMS semantics, HornetQ allows to persist delivery
-         count before message delivery but disabled it by default for performance
-         implications.</para>
+      <para>As this behavior breaks strict JMS semantics, HornetQ allows to persist delivery count
+         before message delivery but disabled it by default for performance implications.</para>
       <para>To enable it, set <literal>persist-delivery-count-before-delivery</literal> to <literal
             >true</literal> in <literal>hornetq-configuration.xml</literal>:</para>
       <programlisting>

@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
 <!-- ============================================================================= -->
 <!-- Copyright © 2009 Red Hat, Inc. and others.                                    -->
 <!--                                                                               -->
@@ -17,17 +16,16 @@
 <!-- and agrees not to assert, Section 4d of CC-BY-SA to the fullest extent        -->
 <!-- permitted by applicable law.                                                  -->
 <!-- ============================================================================= -->
-
 <chapter id="connection-ttl">
     <title>Dead Connections and Session Multiplexing</title>
     <para>In this section we will discuss connection time-to-live (TTL) and explain how HornetQ
-        deals with crashed clients and clients which have exited without cleanly closing
-        their resources. We'll also discuss how HornetQ multiplexes several sessions on a
-        single connection.</para>
+        deals with crashed clients and clients which have exited without cleanly closing their
+        resources. We'll also discuss how HornetQ multiplexes several sessions on a single
+        connection.</para>
     <section id="dead.connections">
         <title>Cleaning up Dead Connection Resources on the Server</title>
-        <para>Before a HornetQ client application exits it is considered good practice that
-            it should close its resources in a controlled manner, using a <literal>finally</literal>
+        <para>Before a HornetQ client application exits it is considered good practice that it
+            should close its resources in a controlled manner, using a <literal>finally</literal>
             block.</para>
         <para>Here's an example of a well behaved core client application closing its session and
             session factory in a finally block:</para>
@@ -83,8 +81,8 @@ finally
             over time this result in the server running out of memory or other resources.</para>
         <para>We have to balance the requirement for cleaning up dead client resources with the fact
             that sometimes the network between the client and the server can fail and then come
-            back, allowing the client to reconnect. HornetQ supports client reconnection, so
-            we don't want to clean up "dead" server side resources too soon or this will prevent any
+            back, allowing the client to reconnect. HornetQ supports client reconnection, so we
+            don't want to clean up "dead" server side resources too soon or this will prevent any
             client from reconnecting, as it won't be able to find its old sessions on the
             server.</para>
         <para>HornetQ makes all of this configurable. For each <literal
@@ -114,9 +112,9 @@ finally
             <para>As previously discussed, it's important that all core client sessions and JMS
                 connections are always closed explicitly in a <literal>finally</literal> block when
                 you are finished using them. </para>
-            <para>If you fail to do so, HornetQ will detect this at garbage collection time,
-                and log a warning similar to the following in the logs (If you are using JMS the
-                warning will involve a JMS connection not a client session):</para>
+            <para>If you fail to do so, HornetQ will detect this at garbage collection time, and log
+                a warning similar to the following in the logs (If you are using JMS the warning
+                will involve a JMS connection not a client session):</para>
             <programlisting>
                 
 [Finalizer] 20:14:43,244 WARNING [org.hornetq.core.client.impl.DelegatingSession]  I'm closin
@@ -142,9 +140,7 @@ at org.acme.yourproject.YourClass (YourClass.java:666)
             for pinging, and that's for the <emphasis>client</emphasis> to be able to detect that
             the server or network has failed.</para>
         <para>As long as the client is receiving data from the server it will consider the
-            connection to be still alive. If the connection is idle the server will periodically
-            send packets to the client to prevent the client from thinking the connection is
-            dead.</para>
+            connection to be still alive. </para>
         <para>If the client does not receive any packets for <literal
                 >client-failure-check-period</literal> milliseconds then it will consider the
             connection failed and will either initiate failover, or call any <literal
@@ -174,8 +170,8 @@ at org.acme.yourproject.YourClass (YourClass.java:666)
         <para>Processing operations asynchronously on another thread does however add a little more
             latency, so we allow this to be configured using the parameter <literal
                 >async-connection-execution-enabled</literal> in <literal
-                >hornetq-configuration.xml</literal>. The default value for this parameter is <literal
-                >true</literal>.</para>
+                >hornetq-configuration.xml</literal>. The default value for this parameter is
+                <literal>true</literal>.</para>
         <para>If you do set this parameter to <literal>false</literal> please do so with
             caution.</para>
     </section>

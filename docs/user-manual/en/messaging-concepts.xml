@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
 <!-- ============================================================================= -->
 <!-- Copyright © 2009 Red Hat, Inc. and others.                                    -->
 <!--                                                                               -->
@@ -17,7 +16,6 @@
 <!-- and agrees not to assert, Section 4d of CC-BY-SA to the fullest extent        -->
 <!-- permitted by applicable law.                                                  -->
 <!-- ============================================================================= -->
-
 <chapter id="messaging-concepts">
     <title>Messaging Concepts</title>
     <para>HornetQ is an asynchronous messaging system, an example of <ulink
@@ -54,12 +52,12 @@
             loosely couples heterogeneous systems together. Message buses often form the core of an
                 <ulink url="http://en.wikipedia.org/wiki/Enterprise_service_bus">Enterprise Service
                 Bus</ulink>. (ESB). Using a message bus to de-couple disparate systems can allow the
-            system to grow and adapt. It also allows more flexibility add new systems or retire old
-            ones since they don't have brittle dependencies on each other.</para>
+            system to grow and adapt more easily. It also allows more flexibility to add new systems
+            or retire old ones since they don't have brittle dependencies on each other.</para>
     </section>
     <section>
         <title>Messaging styles</title>
-        <para>Messaging systems normally support two main styles of asynchronous messaging:  <ulink
+        <para>Messaging systems normally support two main styles of asynchronous messaging: <ulink
                 url="http://en.wikipedia.org/wiki/Message_queue"> message queue</ulink> messaging
             (also known as <emphasis role="italic">point-to-point messaging</emphasis>) and <ulink
                 url="http://en.wikipedia.org/wiki/Publish_subscribe">publish subscribe</ulink>
@@ -82,15 +80,15 @@
                 existence.</para>
             <para>A classic example of point to point messaging would be an order queue in a
                 company's book ordering system. Each order is represented as a message which is sent
-                to the order queue. There are many front end ordering systems which send orders to
-                the order queue. When a message arrives on the queue it is persisted - this ensures
-                that if the server crashes the order is not lost. There are many consumers on the
-                order queue - each representing an instance of an order processing component - these
-                can be on different physical machines but consuming from the same queue. The
-                messaging system delivers each message to one and only one of the ordering
-                processing components. Different messages can be processed by order processors, but
-                a single order is only processed by one order processor - this ensures orders aren't
-                processed twice.</para>
+                to the order queue. Let's imagine there are many front end ordering systems which
+                send orders to the order queue. When a message arrives on the queue it is persisted
+                - this ensures that if the server crashes the order is not lost. Let's also imagine
+                there are many consumers on the order queue - each representing an instance of an
+                order processing component - these can be on different physical machines but
+                consuming from the same queue. The messaging system delivers each message to one and
+                only one of the ordering processing components. Different messages can be processed
+                by different order processors, but a single order is only processed by one order
+                processor - this ensures orders aren't processed twice.</para>
             <para>As an order processor receives a message, it fulfills the order, sends order
                 information to the warehouse system and then updates the order database with the
                 order details. Once it's done that it acknowledges the message to tell the server
@@ -104,13 +102,16 @@
             <para>With publish-subscribe messaging many senders can send messages to an entity on
                 the server, often called a <emphasis role="italic">topic</emphasis> (e.g. in the JMS
                 world).</para>
-            <para>There can be many subscriptions on a topic, each subscription receives a copy of
-                    <emphasis role="italic">each</emphasis> message sent to the topic. This differs
-                from the message queue pattern where each message is only consumed by a single
-                consumer.</para>
+            <para>There can be many <emphasis>subscriptions</emphasis> on a topic, a subscription is
+                just another word for a consumer of a topic. Each subscription receives a
+                    <emphasis>copy</emphasis> of <emphasis role="italic">each</emphasis> message
+                sent to the topic. This differs from the message queue pattern where each message is
+                only consumed by a single consumer.</para>
             <para>Subscriptions can optionally be <emphasis role="italic">durable</emphasis> which
                 means they retain a copy of each message sent to the topic until the subscriber
-                consumes it.</para>
+                consumes it - even if the server crashes or is restarted in between. Non-durable
+                subscriptions only last a maximum of the lifetime of the connection that created
+                them.</para>
             <para>An example of publish-subscribe messaging would be a news feed. As news articles
                 are created by different editors around the world they are sent to a news feed
                 topic. There are many subscribers around the world who are interested in receiving
@@ -139,11 +140,11 @@
     </section>
     <section>
         <title>Durability</title>
-        <para>Messages are either durable or non durable. Durable messages will persisted in
-            permanent storage and will survive server failure. Non durable messages will not survive
-            server failure or restart. Examples of durable messages might be orders or trades, where
-            they cannot be lost. An example of a non durable message might be a stock price update.
-            This is transitory and there's no need for it to survive a restart. </para>
+        <para>Messages are either durable or non durable. Durable messages will be persisted in
+            permanent storage and will survive server failure or restart. Non durable messages will
+            not survive server failure or restart. Examples of durable messages might be orders or
+            trades, where they cannot be lost. An example of a non durable message might be a stock
+            price update which is transitory and doesn't need to survive a restart.</para>
     </section>
     <section>
         <title>Messaging APIs and protocols</title>
@@ -176,9 +177,26 @@
                 functionality to be exposed to the client application. API's like JMS are not
                 normally rich enough to expose all the extra features that most messaging systems
                 provide.</para>
-            <para>HornetQ provides its own core client API for clients to use if they wish
-                to have access to functionality over and above that accessible via the JMS
-                API.</para>
+            <para>HornetQ provides its own core client API for clients to use if they wish to have
+                access to functionality over and above that accessible via the JMS API.</para>
+        </section>
+        <section>
+            <title>RESTful API</title>
+            <para><ulink url="http://en.wikipedia.org/wiki/Representational_State_Transfer"
+                    >REST</ulink> approaches to messaging are showing a lot interest
+                recently.</para>
+            <para>It seems fairly likely that API standards for cloud computing will eventually
+                converge on a REST style set of interfaces and consequently a REST messaging
+                approach is a very strong contender for becoming the defacto method for messaging
+                interoperability.</para>
+            <para>With a REST approach messaging resources are manipulated as resources defined by a
+                URI and typically using a simple set of operations on those resources, e.g. PUT,
+                POST, GET etc. REST approaches to messaging often use HTTP as their underlying
+                protocol.</para>
+            <para>The advantage of a REST approach with HTTP is in its simplicity and the fact the
+                internet is already tuned to deal with HTTP optimally.</para>
+            <para>HornetQ will shortly be implementing RESTful approach to messaging
+                interoperability.</para>
         </section>
         <section>
             <title>STOMP</title>
@@ -202,63 +220,47 @@
                 available in many different programming languages.</para>
             <para>HornetQ will shortly be implementing AMQP.</para>
         </section>
-        <section>
-            <title>REST</title>
-            <para><ulink url="http://en.wikipedia.org/wiki/Representational_State_Transfer"
-                    >REST</ulink> approaches to messaging are showing a lot interest recently. With
-                a REST approach messaging resources are manipulated as resources defined by a URI
-                and typically using a simple set of operations on those resources, e.g. PUT, POST,
-                GET etc. REST approaches to messaging often use HTTP as their underlying
-                protocol.</para>
-            <para>The advantage of a REST approach with HTTP is in its simplicity and the fact the
-                internet is already tuned to deal with HTTP optimally.</para>
-            <para>HornetQ will shortly be implementing REST.</para>
-        </section>
     </section>
     <section>
         <title>High Availability</title>
         <para>High Availability (HA) means that the system should remain operational after failure
             of one or more of the servers. The degree of support for HA varies between various
             messaging systems.</para>
-        <para>Some messaging systems require you to deal with server side failure by writing some
-            client side code which gets called on event of server failure, and in which you are
-            supposed to recreate your connections to another server.</para>
-        <para>HornetQ provides 100% transparent failover where you don't have have to write
-            any special client side code to deal with failure. On failover HornetQ will
-            automatically fail over your client connections to another server, and your client
-            sessions can continue as if nothing happened.</para>
-        <para>For more information on HA, please see <xref linkend="ha" />.</para>
+        <para>HornetQ provides automatic failover where your sessions are automatically reconnected
+            to the backup server on event of live serve failure.</para>
+        <para>For more information on HA, please see <xref linkend="ha"/>.</para>
     </section>
     <section>
         <title>Clusters</title>
         <para>Many messaging systems allow you to create groups of messaging servers called
                 <emphasis role="italic">clusters</emphasis>. Clusters allow the load of sending and
-            consuming messages to be spread over many servers. This allows your system to be able
-            scale horizontally by adding new servers to the cluster.</para>
+            consuming messages to be spread over many servers. This allows your system to scale
+            horizontally by adding new servers to the cluster.</para>
         <para>Degrees of support for clusters varies between messaging systems, with some systems
             having fairly basic clusters with the cluster members being hardly aware of each
             other.</para>
-        <para>HornetQ provides very configurable state of the art clustering where messages
+        <para>HornetQ provides very configurable state-of-the-art clustering model where messages
             can be intelligently load balanced between the servers in the cluster, according to the
             number of consumers on each node, and whether they are ready for messages.</para>
-        <para>HornetQ also has the ability to automatically redistribute messages between
-            nodes of a cluster to prevent starvation on any particular node.</para>
+        <para>HornetQ also has the ability to automatically redistribute messages between nodes of a
+            cluster to prevent starvation on any particular node.</para>
         <para>For full details on clustering, please see <xref linkend="clusters"/>.</para>
     </section>
     <section>
         <title>Bridges and routing</title>
         <para>Some messaging systems allow isolated clusters or single nodes to be bridged together,
-            typically over unreliable connections like a wide area network (WAN).</para>
+            typically over unreliable connections like a wide area network (WAN), or the
+            internet.</para>
         <para>A bridge normally consumes from a queue on one server and forwards messages to another
             queue on a different server. Bridges cope with unreliable connections, automatically
             reconnecting when the connections becomes available again.</para>
-        <para>HornetQ bridges can be configured with filter expressions to only forward
-            certain messages, and transformation can also be hooked in.</para>
+        <para>HornetQ bridges can be configured with filter expressions to only forward certain
+            messages, and transformation can also be hooked in.</para>
         <para>HornetQ also allows routing between queues to be configured in server side
             configuration. This allows complex routing networks to be set up forwarding or copying
             messages from one destination to another, forming a global network of interconnected
             brokers.</para>
-        <para>For more information please see <xref linkend="core-bridges"/>
-            and <xref linkend="diverts"/>.</para>
+        <para>For more information please see <xref linkend="core-bridges"/> and <xref
+                linkend="diverts"/>.</para>
     </section>
 </chapter>

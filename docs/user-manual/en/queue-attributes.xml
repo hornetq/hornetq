@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
 <!-- ============================================================================= -->
 <!-- Copyright © 2009 Red Hat, Inc. and others.                                    -->
 <!--                                                                               -->
@@ -17,7 +16,6 @@
 <!-- and agrees not to assert, Section 4d of CC-BY-SA to the fullest extent        -->
 <!-- permitted by applicable law.                                                  -->
 <!-- ============================================================================= -->
-
 <chapter id="queue-attributes">
     <title>Queue Attributes</title>
     <para>Queue attributes can be set in one of two ways. Either by configuring them using the
@@ -68,9 +66,9 @@
                 <para>There is no entry element.</para>
             </listitem>
             <listitem>
-                <para>The filter uses the <emphasis>Core filter syntax</emphasis>
-                (described in <xref linkend="filter-expressions" />),
-                 <emphasis>not</emphasis> the JMS selector syntax.</para>
+                <para>The filter uses the <emphasis>Core filter syntax</emphasis> (described in
+                        <xref linkend="filter-expressions"/>), <emphasis>not</emphasis> the JMS
+                    selector syntax.</para>
             </listitem>
         </orderedlist>
     </section>
@@ -78,12 +76,12 @@
         <title>Using the API</title>
         <para>Queues can also be created using the core API or the management API.</para>
         <para>For the core API, queues can be created via the <literal
-                >org.hornetq.core.client.ClientSession</literal> interface. There are
-            multiple <literal>createQueue</literal> methods that support setting all of the
-            previously mentioned attributes. There is one extra attribute that can be set via this
-            API which is <literal>temporary</literal>. setting this to true means that the queue
-            will be deleted once the session is disconnected.</para>
-        <para>Take a look at <xref linkend="management" /> for a description of the management API
+                >org.hornetq.core.client.ClientSession</literal> interface. There are multiple
+                <literal>createQueue</literal> methods that support setting all of the previously
+            mentioned attributes. There is one extra attribute that can be set via this API which is
+                <literal>temporary</literal>. setting this to true means that the queue will be
+            deleted once the session is disconnected.</para>
+        <para>Take a look at <xref linkend="management"/> for a description of the management API
             for creating queues.</para>
     </section>
     <section id="queue-attributes.address-settings">
@@ -104,7 +102,7 @@
         &lt;redistribution-delay>0&lt;/redistribution-delay>
      &lt;/address-setting>
 &lt;/address-settings></programlisting>
-        <para>These are explained fully throughout the user manual, howvere here is a breif
+        <para>These are explained fully throughout the user manual, howvere here is a brief
             description with a link to the appropriate chapter if available. </para>
         <para><literal>max-delivery-attempts</literal> defines how many time a cancelled message can
             be redelivered before sending to the <literal>dead-letter-address</literal>. A full

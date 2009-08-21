@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
 <!-- ============================================================================= -->
 <!-- Copyright © 2009 Red Hat, Inc. and others.                                    -->
 <!--                                                                               -->
@@ -17,26 +16,25 @@
 <!-- and agrees not to assert, Section 4d of CC-BY-SA to the fullest extent        -->
 <!-- permitted by applicable law.                                                  -->
 <!-- ============================================================================= -->
-
 <chapter id="embedding-hornetq">
     <title>Embedding HornetQ</title>
-    <para>HornetQ is designed as set of simple Plain Old Java Objects (POJOs). This means
-        HornetQ can be instantiated and run in any dependency injection framework such as
-        JBoss Microcontainer, Spring or Google Guice. It also means that if you have an application
-        that could use messaging functionality internally, then it can <emphasis>directly
-            instantiate</emphasis> HornetQ clients and servers in its own application code
-        to perform that functionality. We call this <emphasis>embedding</emphasis> HornetQ.</para>
+    <para>HornetQ is designed as set of simple Plain Old Java Objects (POJOs). This means HornetQ
+        can be instantiated and run in any dependency injection framework such as JBoss
+        Microcontainer, Spring or Google Guice. It also means that if you have an application that
+        could use messaging functionality internally, then it can <emphasis>directly
+            instantiate</emphasis> HornetQ clients and servers in its own application code to
+        perform that functionality. We call this <emphasis>embedding</emphasis> HornetQ.</para>
     <para>Examples of applications that might want to do this include any application that needs
         very high performance, transactional, persistent messaging but doesn't want the hassle of
         writing it all from scratch.</para>
-    <para>Embedding HornetQ can be done in very few easy steps. Instantiate the configuration object,
-        instantiate the server, start it, and you have a HornetQ running in your virtual
+    <para>Embedding HornetQ can be done in very few easy steps. Instantiate the configuration
+        object, instantiate the server, start it, and you have a HornetQ running in your virtual
         machine. It's as simple and easy as that.</para>
     <section>
         <title>POJO instantiation</title>
         <para>You can follow this step-by-step guide:</para>
-        <para>Create the configuration object - this contains configuration information for a HornetQ.
-             If you want to configure it from a file on the classpath, use <literal
+        <para>Create the configuration object - this contains configuration information for a
+            HornetQ. If you want to configure it from a file on the classpath, use <literal
                 >FileConfigurationImpl</literal></para>
         <programlisting>import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.impl.FileConfiguration;
@@ -66,8 +64,8 @@ transports.add(new TransportConfiguration(InVMAcceptorFactory.class.getName()));
 
 config.setAcceptorConfigurations(transports);</programlisting>
         <para>You need to instantiate and start HornetQ server. The class <literal
-                >org.hornetq.core.server.Messaging</literal> has a few static methods for
-            creating servers with common configurations.</para>
+                >org.hornetq.core.server.Messaging</literal> has a few static methods for creating
+            servers with common configurations.</para>
         <programlisting>import org.hornetq.core.server.Messaging;
 import org.hornetq.core.server.MessagingServer;
 
@@ -86,13 +84,14 @@ server.start();</programlisting>
         <title>Dependency Frameworks</title>
         <para>You may also choose to use a dependency injection framework such as <trademark>JBoss
                 Micro Container</trademark> or <trademark>Spring Framework</trademark>.</para>
-        <para>HornetQ standalone uses JBoss Micro Container as the injection framework.
-                <literal>HornetQBootstrapServer</literal> and <literal>hornetq-beans.xml</literal>
-            which are part of the HornetQ distribution provide a very complete
-            implementation of what's needed to bootstrap the server using JBoss Micro Container. </para>
-        <para>When using JBoss Micro Container, you need to provide a XML declaring the <literal
-                >MessagingServer</literal> and <literal>Configuration</literal> object, you can also
-            inject a security manager and a MBean server if you want, but those are optional.</para>
+        <para>HornetQ standalone uses JBoss Micro Container as the injection framework. <literal
+                >HornetQBootstrapServer</literal> and <literal>hornetq-beans.xml</literal> which are
+            part of the HornetQ distribution provide a very complete implementation of what's needed
+            to bootstrap the server using JBoss Micro Container. </para>
+        <para>When using JBoss Micro Container, you need to provide an XML file declaring the
+                <literal>MessagingServer</literal> and <literal>Configuration</literal> object, you
+            can also inject a security manager and a MBean server if you want, but those are
+            optional.</para>
         <para>A very basic XML Bean declaration for the JBoss Micro Container would be:</para>
         <programlisting>&lt;?xml version="1.0" encoding="UTF-8"?>
 
@@ -113,8 +112,8 @@ server.start();</programlisting>
       &lt;/constructor>         
    &lt;/bean>
    &lt;/deployment></programlisting>
-        <para><literal>HornetQBootstrapServer</literal> provides an easy encapsulation of JBoss Micro
-            Container.</para>
+        <para><literal>HornetQBootstrapServer</literal> provides an easy encapsulation of JBoss
+            Micro Container.</para>
         <programlisting>HornetQBootstrapServer bootStrap = 
         new HornetQBootstrapServer(new String[] {"hornetq-beans.xml"});
         bootStrap.run();</programlisting>
@@ -154,9 +153,9 @@ session.close();</programlisting>
         </section>
         <section>
             <title>JMS API</title>
-            <para>Connection on an Embedded HornetQ through JMS is also simple. Just
-                instantiate <literal>HornetQConnectionFactory</literal> directly. The following
-                example illustrates that.</para>
+            <para>Connection on an Embedded HornetQ through JMS is also simple. Just instantiate
+                    <literal>HornetQConnectionFactory</literal> directly. The following example
+                illustrates that.</para>
             <programlisting>HornetQConnectionFactory cf = 
     new HornetQConnectionFactory(
        new TransportConfiguration(InVMConnectorFactory.class.getName()));
@@ -188,7 +187,7 @@ conn.close();</programlisting>
     </section>
     <section>
         <title>JMS Embedding Example</title>
-        <para>Please see <xref linkend="examples.embedded" /> for an example which shows how
-            to setup and run HornetQ embedded with JMS.</para>
+        <para>Please see <xref linkend="examples.embedded"/> for an example which shows how to setup
+            and run HornetQ embedded with JMS.</para>
     </section>
 </chapter>

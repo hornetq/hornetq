@@ -69,8 +69,8 @@
         <!ENTITY libaio                  SYSTEM "libaio.xml">
         ]>
 <book lang="en">
-   <bookinfo>
-      <title>HornetQ User Manual</title>
+   <bookinfo>         
+      <title>HornetQ 2.0 User Manual</title>
       <subtitle>Putting the buzz in messaging</subtitle>
    </bookinfo>
 
@@ -78,6 +78,7 @@
 
    &notice;
    &preface;
+   &project-info;
    &messaging-concepts;        
    &architecture;
    &using-server;
@@ -122,6 +123,6 @@
    &interoperability;
    &perf-tuning;
    &configuration-index;
-   &project-info;
+   
    
 </book>

@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
 <!-- ============================================================================= -->
 <!-- Copyright © 2009 Red Hat, Inc. and others.                                    -->
 <!--                                                                               -->
@@ -17,28 +16,25 @@
 <!-- and agrees not to assert, Section 4d of CC-BY-SA to the fullest extent        -->
 <!-- permitted by applicable law.                                                  -->
 <!-- ============================================================================= -->
-
 <chapter id="appserver-integration">
     <title>Application Server Integration and Java EE</title>
-    <para>HornetQ can be easily installed in JBoss Application Server 5.1 or later. For
-        details on installing HornetQ in the JBoss Application Server refer to quick-start
-        guide.</para>
-    <para>Since HornetQ also provides a JCA adaptor, it should also be possible to integrate
-        HornetQ as a JMS provider in other JEE compliant app servers. For instructions on
-        how to integrate a remote JCA adaptor into another application sever, please consult that
-        application server's instructions.</para>
-    <para>A JCA Adapter basically controls the incoming of messages to Message Driven Beans and the
-        outgoing of messages from other JEE components.</para>
+    <para>HornetQ can be easily installed in JBoss Application Server 5.1 or later. For details on
+        installing HornetQ in the JBoss Application Server please refer to quick-start guide.</para>
+    <para>Since HornetQ also provides a JCA adaptor, it should also be possible to integrate HornetQ
+        as a JMS provider in other JEE compliant app servers. For instructions on how to integrate a
+        remote JCA adaptor into another application sever, please consult that application server's
+        instructions.</para>
+    <para>A JCA Adapter basically controls the inflow of messages to Message Driven Beans and the
+        outflow of messages sent from other JEE components, e.g. EJBs and Servlets.</para>
     <para>This section explains the basics behind configuring the different JEE components in the
         AS.</para>
     <section>
         <title>Configuring Message Driven Beans</title>
-        <para>The delivery of messages to an MDB using HornetQ is configured on the JCA
-            Adapter via a configuration file <literal>ra.xml</literal> which can be found under in
-            the <literal>jms-ra.rar</literal> archive of directory. By default this is configured to
-            consume messages using an InVM connector from the instance of HornetQ running
-            within the application server. A full list of what is configurable is found later in
-            this chapter. </para>
+        <para>The delivery of messages to an MDB using HornetQ is configured on the JCA Adapter via
+            a configuration file <literal>ra.xml</literal> which can be found under in the <literal
+                >jms-ra.rar</literal> archive of directory. By default this is configured to consume
+            messages using an InVM connector from the instance of HornetQ running within the
+            application server. A full list of what is configurable is found later in this chapter. </para>
         <para>All MDB's however need to have the destination type and the destination configured.
             The following example shows how this can be done via annotations.</para>
         <programlisting>@MessageDriven(name = "MDBExample",
@@ -56,11 +52,11 @@ public class MDBExample implements MessageListener
             preconfigured in the usual way using the HornetQ configuration files.</para>
         <section>
             <title>Using Container Managed Transactions</title>
-            <para>When an MDB is using Container Managed Transactions, the delivery of the message
-                is done within the scope of an XA transaction. The commit or rollback of this
-                transaction is controlled by the container itself. If the transaction is rolled back
-                then the message delivery semantics will kick in (by default this is to try
-                and redeliver the message up to 10 times before sending to a DLQ). Using annotations
+            <para>When an MDB is using Container Managed Transactions (CMT), the delivery of the
+                message is done within the scope of a JTA transaction. The commit or rollback of
+                this transaction is controlled by the container itself. If the transaction is rolled
+                back then the message delivery semantics will kick in (by default this is to try and
+                redeliver the message up to 10 times before sending to a DLQ). Using annotations
                 this would be configured as follows:</para>
             <programlisting>@MessageDriven(name = "MDB_CMP_TxRequiredExample",
                activationConfig =
@@ -76,10 +72,10 @@ public class MDB_CMP_TxRequiredExample implements MessageListener
 }</programlisting>
             <para>The <literal>TransactionManagement</literal> annotation tells the container to
                 treat this MDB to use Container Managed Persistence. The <literal
-                    >TransactionAttribute</literal> annotation tells the container that an XA
+                    >TransactionAttribute</literal> annotation tells the container that a JTA
                 transaction is required for this MDB. Note that the only other valid value for this
                 is <literal>TransactionAttributeType.NOT_SUPPORTED</literal> which tells the
-                container that this MDB does not support XA transactions and one should not be
+                container that this MDB does not support JTA transactions and one should not be
                 created.</para>
             <para>It is also possible to inform the container that it must rollback the transaction
                 by calling <literal>setRollbackOnly</literal> on the <literal
@@ -119,8 +115,9 @@ public class MDB_CMP_TxLocalExample implements MessageListener
         </section>
         <section>
             <title>Using Bean Managed Transactions</title>
-            <para>Message driven beans can also be configured to use Bean Managed Transactions. In
-                this case a User Transaction is created. This would be configured as follows:</para>
+            <para>Message driven beans can also be configured to use Bean Managed Transactions
+                (BMT). In this case a User Transaction is created. This would be configured as
+                follows:</para>
             <programlisting>@MessageDriven(name = "MDB_BMPExample",
                activationConfig =
                      {
@@ -133,10 +130,10 @@ public class MDB_BMPExample implements MessageListener
 {
    public void onMessage(Message message)
 }</programlisting>
-            <para>When using Bean Managed transactions the message will be acknowledged outside the
-                scope of the user transaction and use the acknowledge mode specified by the user
-                with the <literal>acknowledgeMode</literal> property. There are only 2 acceptable
-                values for this <literal>Auto-acknowledge</literal> and <literal
+            <para>When using Bean Managed Transactions the message delivery to the MBD will occur
+                outside the scope of the user transaction and use the acknowledge mode specified by
+                the user with the <literal>acknowledgeMode</literal> property. There are only 2
+                acceptable values for this <literal>Auto-acknowledge</literal> and <literal
                     >Dups-ok-acknowledge</literal>.Not that because the message delivery is outside
                 the scope of the transaction a failure within the MDB will not cause the message to
                 be redelivered.</para>
@@ -190,11 +187,12 @@ public class MDBMessageSelectorExample implements MessageListener
         <title>Sending Messages from within JEE components</title>
         <para>The JCA adapter can also be used for sending messages. The Connection Factory to use
             is configured by default in the <literal>jms-ds.xml</literal> file and is mapped to
-                <literal>java:/JmsXA</literal>. Using this from within a J2EE component will mean
-            that the sending of the message will be done as part of the XA transaction being used by
-            the component. This means that if the sending of the message fails the overall
-            transaction would rollback and the message redelivered. Heres an example of this from
-            within an MDB:</para>
+                <literal>java:/JmsXA</literal>. Using this from within a JEE component will mean
+            that the sending of the message will be done as part of the JTA transaction being used
+            by the component.</para>
+        <para>This means that if the sending of the message fails the overall transaction would
+            rollback and the message redelivered. Heres an example of this from within an
+            MDB:</para>
         <programlisting>@MessageDriven(name = "MDBMessageSendTxExample",
                activationConfig =
                      {
@@ -251,14 +249,17 @@ public class MDBMessageSendTxExample implements MessageListener
          }
       }
    }
-}</programlisting>
+   }</programlisting>
+        <para>In JBoss Application Server you can use the JMS JCA adapter for sending messages from
+            EJBs (including Session, Entity and Message Driven Beans), Servlets (including jsps) and
+            custom MBeans.</para>
     </section>
     <section>
         <title>Configuring the JCA Adaptor</title>
-        <para>The Java Connector Architecture (JCA) Adapter is what allows HornetQ to be integrated with
-            JEE components such as MDB's and EJB's. It configures how components such as MDB's
-            consume messages from the HornetQ server and also how components such as EJB's or Servlet's
-            can send messages.</para>
+        <para>The Java Connector Architecture (JCA) Adapter is what allows HornetQ to be integrated
+            with JEE components such as MDB's and EJB's. It configures how components such as MDB's
+            consume messages from the HornetQ server and also how components such as EJB's or
+            Servlet's can send messages.</para>
         <para>The HornetQ JCA adapter is deployed via the <literal>jms-ra.rar</literal> archive. The
             configuration of the Adapter is found in this archive under <literal
                 >META-INF/ra.xml</literal>.</para>
@@ -635,13 +636,13 @@ initialContext = new InitialContext(jndiParameters);</programlisting>
         <para>A bridge is deployed inside a JBoss AS instance. The instance can be the same instance
             as either the source or target server. Or could be on a third, separate JBoss AS
             instance.</para>
-        <para>The bridge can also be used to bridge messages from other non HornetQ JMS
-            servers, as long as they are JMS 1.1 compliant.<note>
+        <para>The bridge can also be used to bridge messages from other non HornetQ JMS servers, as
+            long as they are JMS 1.1 compliant.<note>
                 <para>Don't confuse a JMS bridge with a core bridge. A JMS bridge can be used to
                     bridge any two JMS 1.1 compliant JMS providers and uses the JMS API. A core
                     bridge (described in <xref linkend="core-bridges"/>) is used to bridge any two
-                    HornetQ instances and uses the core API. Always use a core bridge if you
-                    can in preference to a JMS bridge. The core bridge will typically provide better
+                    HornetQ instances and uses the core API. Always use a core bridge if you can in
+                    preference to a JMS bridge. The core bridge will typically provide better
                     performance than a JMS bridge. Also the core bridge can provide <emphasis>once
                         and only once</emphasis> delivery guarantees without using XA.</para>
             </note></para>
@@ -934,8 +935,8 @@ initialContext = new InitialContext(jndiParameters);</programlisting>
             <para>The source and target connection factory factories are used to create the
                 connection factory used to create the connection for the source or target
                 server.</para>
-            <para>The configuration example above uses the default implementation provided by HornetQ
-                that looks up the connection factory using JNDI. For other Application
+            <para>The configuration example above uses the default implementation provided by
+                HornetQ that looks up the connection factory using JNDI. For other Application
                 Servers or JMS providers a new implementation may have to be provided. This can
                 easily be done by implementing the interface <literal
                     >org.hornetq.jms.bridge.ConnectionFactoryFactory</literal>.</para>
@@ -975,8 +976,8 @@ initialContext = new InitialContext(jndiParameters);</programlisting>
                 <title>ONCE_AND_ONLY_ONCE</title>
                 <para>This QoS mode ensures messages will reach the destination from the source once
                     and only once. (Sometimes this mode is known as "exactly once"). If both the
-                    source and the destination are on the same HornetQ server instance then
-                    this can be achieved by sending and acknowledging the messages in the same local
+                    source and the destination are on the same HornetQ server instance then this can
+                    be achieved by sending and acknowledging the messages in the same local
                     transaction. If the source and destination are on different servers this is
                     achieved by enlisting the sending and consuming sessions in a JTA transaction.
                     The JTA transaction is controlled by JBoss Transactions JTA * implementation
@@ -1014,17 +1015,17 @@ initialContext = new InitialContext(jndiParameters);</programlisting>
             or lose network connectivity. For more information on XA Recovery,please refer to <ulink
                 url="http://www.jboss.org/community/wiki/JBossTransactions">JBoss
                 Transactions</ulink>.</para>
-        <para>When HornetQ is integrated with JBoss AS, it can take advantage of JBoss
-            Transactions to provide recovery of messaging resources. If messages are involved in a
-            XA transaction, in the event of a server crash, the recovery manager will ensure that
-            the transactions are recovered and the messages will either be committed or rolled back
+        <para>When HornetQ is integrated with JBoss AS, it can take advantage of JBoss Transactions
+            to provide recovery of messaging resources. If messages are involved in a XA
+            transaction, in the event of a server crash, the recovery manager will ensure that the
+            transactions are recovered and the messages will either be committed or rolled back
             (depending on the transaction outcome) when the server is restarted.</para>
         <section>
             <title>XA Recovery Configuration</title>
-            <para>To enable HornetQs XA Recovery, the Recovery Manager must be configured to
-                connect to HornetQ to recover its resources. The following property must be
-                added to the <literal>jta</literal> section of <literal
-                    >conf/jbossts-properties.xml</literal> of JBoss AS profiles:</para>
+            <para>To enable HornetQs XA Recovery, the Recovery Manager must be configured to connect
+                to HornetQ to recover its resources. The following property must be added to the
+                    <literal>jta</literal> section of <literal>conf/jbossts-properties.xml</literal>
+                of JBoss AS profiles:</para>
             <programlisting>
 &lt;properties depends="arjuna" name="jta"&gt;
    ...
@@ -1034,13 +1035,13 @@ initialContext = new InitialContext(jndiParameters);</programlisting>
 &lt;/properties&gt;
             </programlisting>
             <para>The <literal>[connection configuration]</literal> contains all the information
-                required to connect to HornetQ node under the form <literal>[connector
-                    factory class name],[user name], [password], [connector parameters]</literal>. </para>
+                required to connect to HornetQ node under the form <literal>[connector factory class
+                    name],[user name], [password], [connector parameters]</literal>. </para>
             <itemizedlist>
                 <listitem>
                     <para><literal>[connector factory class name]</literal> corresponds to the name
                         of the <literal>ConnectorFactory</literal> used to connect to HornetQ.
-                         Values can be <literal
+                        Values can be <literal
                             >org.hornetq.core.remoting.impl.invm.InVMConnectorFactory</literal> or
                             <literal
                             >org.hornetq.integration.transports.netty.NettyConnectorFactory</literal></para>
@@ -1101,9 +1102,8 @@ initialContext = new InitialContext(jndiParameters);</programlisting>
                     &lt;property name="com.arjuna.ats.jta.recovery.XAResourceRecovery.HORNETQ1"
                            value="org.hornetq.jms.server.recovery.HornetQXAResourceRecovery;org.hornetq.integration.transports.netty.NettyConnectorFactory, admin, adminpass, hornetq.remoting.netty.port=8888"/>        			                    
                 </programlisting>
-                <para>Configuring HornetQ with an invm acceptor and configuring the Recovery
-                    Manager with an invm connector is the recommended way to enable XA
-                    Recovery.</para>
+                <para>Configuring HornetQ with an invm acceptor and configuring the Recovery Manager
+                    with an invm connector is the recommended way to enable XA Recovery.</para>
             </section>
         </section>
         <section>

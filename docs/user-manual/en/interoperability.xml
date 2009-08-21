@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
 <!-- ============================================================================= -->
 <!-- Copyright © 2009 Red Hat, Inc. and others.                                    -->
 <!--                                                                               -->
@@ -17,7 +16,6 @@
 <!-- and agrees not to assert, Section 4d of CC-BY-SA to the fullest extent        -->
 <!-- permitted by applicable law.                                                  -->
 <!-- ============================================================================= -->
-
 <chapter id="interoperability">
     <title>Interoperability</title>
     <section>
@@ -26,28 +24,29 @@
             Stomp clients to communicate with Stomp Brokers. <ulink
                 url="http://stomp.codehaus.org/StompConnect">StompConnect</ulink> is a server that
             can act as a Stomp broker and proxy the Stomp protocol to the standard JMS API.
-            Consequently, using StompConnect it is possible to turn HornetQ into a Stomp Broker and use
-            any of the available stomp clients. These include clients written in C, C++, c# and .net
-            etc.</para>
-        <para>To run StompConnect first start the HornetQ server and make sure that it is
-            using JNDI.</para>
+            Consequently, using StompConnect it is possible to turn HornetQ into a Stomp Broker and
+            use any of the available stomp clients. These include clients written in C, C++, c# and
+            .net etc.</para>
+        <para>To run StompConnect first start the HornetQ server and make sure that it is using
+            JNDI.</para>
         <para>Stomp requires the file <literal>jndi.properties</literal> to be available on the
             classpath. This should look something like:</para>
         <programlisting>java.naming.factory.initial=org.jnp.interfaces.NamingContextFactory
 java.naming.provider.url=jnp://localhost:1099
 java.naming.factory.url.pkgs=org.jboss.naming:org.jnp.interfaces</programlisting>
-        <para>Make sure this file is in the classpath along with the StompConnect jar and the HornetQ
-            jars and simply run <literal>java org.codehaus.stomp.jms.Main</literal>.</para>
-        <para>HornetQ will shortly be implementing the Stomp protocol directly, so you won't
-            have to use StompConnect to be able to use HornetQ with Stomp clients.</para>
-    </section>
-    <section>
-        <title>AMQP</title>
-        <para>AMQP support coming soon!</para>
+        <para>Make sure this file is in the classpath along with the StompConnect jar and the
+            HornetQ jars and simply run <literal>java org.codehaus.stomp.jms.Main</literal>.</para>
+        <para>HornetQ will shortly be implementing the Stomp protocol directly, so you won't have to
+            use StompConnect to be able to use HornetQ with Stomp clients.</para>
+        <para>A list of STOMP clients is available <ulink url="http://stomp.codehaus.org/Clients"
+                >here.</ulink></para>
     </section>
     <section>
         <title>REST</title>
         <para>REST support coming soon!</para>
     </section>
-    
+    <section>
+        <title>AMQP</title>
+        <para>AMQP support coming soon!</para>
+    </section>
 </chapter>

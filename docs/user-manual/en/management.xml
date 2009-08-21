@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
 <!-- ============================================================================= -->
 <!-- Copyright © 2009 Red Hat, Inc. and others.                                    -->
 <!--                                                                               -->
@@ -17,7 +16,6 @@
 <!-- and agrees not to assert, Section 4d of CC-BY-SA to the fullest extent        -->
 <!-- permitted by applicable law.                                                  -->
 <!-- ============================================================================= -->
-
 <chapter id="management">
    <title>Management</title>
    <para>HornetQ has an extensive management API that allows a user to modify a server
@@ -63,18 +61,16 @@
       </itemizedlist>
       <para>The way to invoke a <emphasis>management operations</emphasis> depends whether JMX, core
          messages, or JMS messages are used.</para>
-         
       <note>
-         <para>A few management operations requires a <literal>filter</literal> parameter to chose which
-         messages are involved by the operation. Passing
-         <literal>null</literal> or an empty string means that the management operation will be performed
-         on <emphasis>all messages</emphasis>.</para>
+         <para>A few management operations requires a <literal>filter</literal> parameter to chose
+            which messages are involved by the operation. Passing <literal>null</literal> or an
+            empty string means that the management operation will be performed on <emphasis>all
+               messages</emphasis>.</para>
       </note>
-         
       <section>
          <title>Core Management API</title>
-         <para>HornetQ defines a core management API to manage core resources. For full
-            details of the API please consult the javadoc. In summary:</para>
+         <para>HornetQ defines a core management API to manage core resources. For full details of
+            the API please consult the javadoc. In summary:</para>
          <section>
             <title>Core Server Management</title>
             <itemizedlist>
@@ -84,8 +80,8 @@
                         <literal>createQueue()</literal> or <literal>deployQueue()</literal> or
                         <literal>destroyQueue()</literal>)on the <literal
                         >HornetQServerControl</literal> (with the ObjectName <literal
-                        >org.hornetq:module=Core,type=Server</literal> or the resource name
-                        <literal>core.server</literal>)</para>
+                        >org.hornetq:module=Core,type=Server</literal> or the resource name <literal
+                        >core.server</literal>)</para>
                   <para><literal>createQueue</literal> will fail if the queue already exists while
                         <literal>deployQueue</literal> will do nothing.</para>
                </listitem>
@@ -120,20 +116,18 @@
                </listitem>
                <listitem>
                   <para>Retrieving the server configuration and attributes</para>
-                  <para>The <literal>HornetQServerControl</literal> exposes HornetQ
-                     server configuration through all its attributes (e.g. <literal
-                        >getVersion()</literal> method to retrieve the server's version,
-                     etc.)</para>
+                  <para>The <literal>HornetQServerControl</literal> exposes HornetQ server
+                     configuration through all its attributes (e.g. <literal>getVersion()</literal>
+                     method to retrieve the server's version, etc.)</para>
                </listitem>
             </itemizedlist>
          </section>
          <section>
             <title>Core Address Management</title>
-            <para>Core addresses can be managed using the <literal>AddressControl</literal>
-               class (with the ObjectName <literal
-                  >org.hornetq:module=Core,type=Address,name="&lt;the address
-                  name&gt;"</literal> or the resource name <literal>core.address.&lt;the address
-                  name&gt;</literal>). </para>
+            <para>Core addresses can be managed using the <literal>AddressControl</literal> class
+               (with the ObjectName <literal>org.hornetq:module=Core,type=Address,name="&lt;the
+                  address name&gt;"</literal> or the resource name <literal>core.address.&lt;the
+                  address name&gt;</literal>). </para>
             <itemizedlist>
                <listitem>
                   <para>Modifying roles and permissions for an address</para>
@@ -147,9 +141,8 @@
          <section>
             <title>Core Queue Management</title>
             <para>The bulk of the core management API deals with core queues. The <literal
-                  >QueueControl</literal> class defines the Core queue management operations
-               (with the ObjectName <literal
-                  >org.hornetq:module=Core,type=Queue,address="&lt;the bound
+                  >QueueControl</literal> class defines the Core queue management operations (with
+               the ObjectName <literal>org.hornetq:module=Core,type=Queue,address="&lt;the bound
                   address&gt;",name="&lt;the queue name&gt;"</literal> or the resource name <literal
                   >core.queue.&lt;the queue name&gt;</literal>).</para>
             <para>Most of the management operations on queues take either a single message ID (e.g.
@@ -207,10 +200,10 @@
                </listitem>
                <listitem>
                   <para>Retrieving the queue attributes</para>
-                  <para>The <literal>QueueControl</literal> exposes Core queue settings through
-                     its attributes (e.g. <literal>getFilter()</literal> to retrieve the queue's
-                     filter if it was created with one, <literal>isDurable()</literal> to know
-                     wether the queue is durable or not, etc.)</para>
+                  <para>The <literal>QueueControl</literal> exposes Core queue settings through its
+                     attributes (e.g. <literal>getFilter()</literal> to retrieve the queue's filter
+                     if it was created with one, <literal>isDurable()</literal> to know wether the
+                     queue is durable or not, etc.)</para>
                </listitem>
             </itemizedlist>
          </section>
@@ -224,8 +217,8 @@
                <listitem>
                   <para>Acceptors</para>
                   <para>They can be started or stopped using the <literal>start()</literal> or.
-                        <literal>stop()</literal> method on the <literal
-                        >AcceptorControl</literal> class (with the ObjectName <literal
+                        <literal>stop()</literal> method on the <literal>AcceptorControl</literal>
+                     class (with the ObjectName <literal
                         >org.hornetq:module=Core,type=Acceptor,name="&lt;the acceptor
                         name&gt;"</literal> or the resource name <literal>core.acceptor.&lt;the
                         address name&gt;</literal>). The acceptors parameters can be retrieved using
@@ -235,19 +228,18 @@
                <listitem>
                   <para>Diverts</para>
                   <para>They can be started or stopped using the <literal>start()</literal> or
-                        <literal>stop()</literal> method on the <literal
-                        >DivertControl</literal> class (with the ObjectName <literal
-                        >org.hornetq:module=Core,type=Divert,name=&lt;the divert
-                        name&gt;</literal> or the resource name <literal>core.divert.&lt;the divert
-                        name&gt;</literal>). Diverts parameters can be retrieved using the <literal
-                        >DivertControl</literal> attributes (see <xref linkend="diverts"
-                     />)</para>
+                        <literal>stop()</literal> method on the <literal>DivertControl</literal>
+                     class (with the ObjectName <literal
+                        >org.hornetq:module=Core,type=Divert,name=&lt;the divert name&gt;</literal>
+                     or the resource name <literal>core.divert.&lt;the divert name&gt;</literal>).
+                     Diverts parameters can be retrieved using the <literal>DivertControl</literal>
+                     attributes (see <xref linkend="diverts"/>)</para>
                </listitem>
                <listitem>
                   <para>Bridges</para>
                   <para>They can be started or stopped using the <literal>start()</literal> (resp.
-                        <literal>stop()</literal>) method on the <literal
-                        >BridgeControl</literal> class (with the ObjectName <literal
+                        <literal>stop()</literal>) method on the <literal>BridgeControl</literal>
+                     class (with the ObjectName <literal
                         >org.hornetq:module=Core,type=Bridge,name="&lt;the bridge
                         name&gt;"</literal> or the resource name <literal>core.bridge.&lt;the bridge
                         name&gt;</literal>). Bridges parameters can be retrieved using the <literal
@@ -259,8 +251,8 @@
                   <para>They can be started or stopped using the <literal>start()</literal> or
                         <literal>stop()</literal> method on the <literal
                         >BroadcastGroupControl</literal> class (with the ObjectName <literal
-                        >org.hornetq:module=Core,type=BroadcastGroup,name="&lt;the broadcast
-                        group name&gt;"</literal> or the resource name <literal
+                        >org.hornetq:module=Core,type=BroadcastGroup,name="&lt;the broadcast group
+                        name&gt;"</literal> or the resource name <literal
                         >core.broadcastgroup.&lt;the broadcast group name&gt;</literal>). Broadcast
                      groups parameters can be retrieved using the <literal
                         >BroadcastGroupControl</literal> attributes (see <xref
@@ -271,20 +263,19 @@
                   <para>They can be started or stopped using the <literal>start()</literal> or
                         <literal>stop()</literal> method on the <literal
                         >DiscoveryGroupControl</literal> class (with the ObjectName <literal
-                        >org.hornetq:module=Core,type=DiscoveryGroup,name="&lt;the discovery
-                        group name&gt;"</literal> or the resource name <literal
-                        >core.discovery.&lt;the discovery group name&gt;</literal>). Discovery
-                     groups parameters can be retrieved using the <literal
-                        >DiscoveryGroupControl</literal> attributes (see <xref
-                        linkend="clusters.discovery-groups"/>)</para>
+                        >org.hornetq:module=Core,type=DiscoveryGroup,name="&lt;the discovery group
+                        name&gt;"</literal> or the resource name <literal>core.discovery.&lt;the
+                        discovery group name&gt;</literal>). Discovery groups parameters can be
+                     retrieved using the <literal>DiscoveryGroupControl</literal> attributes (see
+                        <xref linkend="clusters.discovery-groups"/>)</para>
                </listitem>
                <listitem>
                   <para>Cluster connections</para>
                   <para>They can be started or stopped using the <literal>start()</literal> or
                         <literal>stop()</literal> method on the <literal
                         >ClusterConnectionControl</literal> class (with the ObjectName <literal
-                        >org.hornetq:module=Core,type=ClusterConnection,name="&lt;the
-                        cluster connection name&gt;"</literal> or the resource name <literal
+                        >org.hornetq:module=Core,type=ClusterConnection,name="&lt;the cluster
+                        connection name&gt;"</literal> or the resource name <literal
                         >core.clusterconnection.&lt;the cluster connection name&gt;</literal>).
                      Cluster connections parameters can be retrieved using the <literal
                         >ClusterConnectionControl</literal> attributes (see <xref
@@ -301,25 +292,24 @@
             <title>JMS Server Management</title>
             <para>JMS Resources (connection factories and destinations) can be created using the
                   <literal>JMSServerControl</literal> class (with the ObjectName <literal
-                  >org.hornetq:module=JMS,type=Server</literal> or the resource name
-                  <literal>jms.server</literal>).</para>
+                  >org.hornetq:module=JMS,type=Server</literal> or the resource name <literal
+                  >jms.server</literal>).</para>
             <itemizedlist>
                <listitem>
                   <para>Creating/destroying connection factories</para>
                   <para>JMS connection factories can be created or destroyed using the <literal
                         >createConnectionFactory()</literal> methods or <literal
                         >destroyConnectionFactory()</literal> methods. These connection factories
-                     are bound to JNDI so that JMS clients can look them up.
-                     If a graphical console is used to create the connection factories, the 
-                     transport parameters are specified in the text fied input as a comma-separated 
-                     list of key=value
-                     (e.g. <literal>key1=10, key2="value", key3=false</literal>). If there are multiple
-                     transports defined, you need to enclose the key/value pairs between curly braces.
-                     For example <literal>{key=10}, {key=20}</literal>. In that case, the first 
-                     <literal>key</literal> will be associated to the first transport configuration and the
-                     second <literal>key</literal> will be associated to the second transport configuration
-                     (see <xref
-                     linkend="configuring-transports"/> for a list of the transport parameters)</para>
+                     are bound to JNDI so that JMS clients can look them up. If a graphical console
+                     is used to create the connection factories, the transport parameters are
+                     specified in the text fied input as a comma-separated list of key=value (e.g.
+                        <literal>key1=10, key2="value", key3=false</literal>). If there are multiple
+                     transports defined, you need to enclose the key/value pairs between curly
+                     braces. For example <literal>{key=10}, {key=20}</literal>. In that case, the
+                     first <literal>key</literal> will be associated to the first transport
+                     configuration and the second <literal>key</literal> will be associated to the
+                     second transport configuration (see <xref linkend="configuring-transports"/>
+                     for a list of the transport parameters)</para>
                </listitem>
                <listitem>
                   <para>Creating/destroying queues</para>
@@ -350,9 +340,9 @@
             <title>JMS ConnectionFactory Management</title>
             <para>JMS Connection Factories can be managed using the <literal
                   >ConnectionFactoryControl</literal> class (with the ObjectName <literal
-                  >org.hornetq:module=JMS,type=ConnectionFactory,name="&lt;the connection
-                  factory name&gt;"</literal> or the resource name <literal
-                  >jms.connectionfactory.&lt;the connection factory name&gt;</literal>).</para>
+                  >org.hornetq:module=JMS,type=ConnectionFactory,name="&lt;the connection factory
+                  name&gt;"</literal> or the resource name <literal>jms.connectionfactory.&lt;the
+                  connection factory name&gt;</literal>).</para>
             <itemizedlist>
                <listitem>
                   <para>Retrieving connection factory attributes</para>
@@ -367,9 +357,9 @@
          </section>
          <section>
             <title>JMS Queue Management</title>
-            <para>JMS queues can be managed using the <literal>JMSQueueControl</literal> class
-               (with the ObjectName <literal>org.hornetq:module=JMS,type=Queue,name="&lt;the
-                  queue name&gt;"</literal> or the resource name <literal>jms.queue.&lt;the queue
+            <para>JMS queues can be managed using the <literal>JMSQueueControl</literal> class (with
+               the ObjectName <literal>org.hornetq:module=JMS,type=Queue,name="&lt;the queue
+                  name&gt;"</literal> or the resource name <literal>jms.queue.&lt;the queue
                   name&gt;</literal>). </para>
             <para><emphasis>The management operations on a JMS queue are very similar to the
                   operations on a core queue. </emphasis></para>
@@ -423,18 +413,18 @@
                </listitem>
                <listitem>
                   <para>Retrieving the queue attributes</para>
-                  <para>The <literal>JMSQueueControl</literal> exposes JMS queue settings
-                     through its attributes (e.g. <literal>isTemporary()</literal> to know wether
-                     the queue is temporary or not, <literal>isDurable()</literal> to know wether
-                     the queue is durable or not, etc.)</para>
+                  <para>The <literal>JMSQueueControl</literal> exposes JMS queue settings through
+                     its attributes (e.g. <literal>isTemporary()</literal> to know wether the queue
+                     is temporary or not, <literal>isDurable()</literal> to know wether the queue is
+                     durable or not, etc.)</para>
                </listitem>
             </itemizedlist>
          </section>
          <section>
             <title>JMS Topic Management</title>
-            <para>JMS Topics can be managed using the <literal>TopicControl</literal> class
-               (with the ObjectName <literal>org.hornetq:module=JMS,type=Topic,name="&lt;the
-                  topic name&gt;"</literal> or the resource name <literal>jms.topic.&lt;the topic
+            <para>JMS Topics can be managed using the <literal>TopicControl</literal> class (with
+               the ObjectName <literal>org.hornetq:module=JMS,type=Topic,name="&lt;the topic
+                  name&gt;"</literal> or the resource name <literal>jms.topic.&lt;the topic
                   name&gt;</literal>).</para>
             <itemizedlist>
                <listitem>
@@ -468,9 +458,8 @@
       <para>HornetQ can be managed using <ulink
             url="http://java.sun.com/javase/technologies/core/mntr-mgmt/javamanagement/"
          >JMX</ulink>. </para>
-      <para>The management API is exposed by HornetQ using MBeans interfaces. HornetQ
-         registers its resources with the domain <literal
-         >org.hornetq</literal>.</para>
+      <para>The management API is exposed by HornetQ using MBeans interfaces. HornetQ registers its
+         resources with the domain <literal>org.hornetq</literal>.</para>
       <para>For example, the <literal>ObjectName</literal> to manage a JMS Queue <literal
             >exampleQueue</literal> is:</para>
       <programlisting>
@@ -484,61 +473,55 @@
             >org.hornetq.core.management.ObjectNames</literal>. You can also use <literal
             >jconsole</literal> to find the <literal>ObjectName</literal> of the MBeans you want to
          manage. </para>
-      <para>Managing HornetQ using JMX is identical to management of any Java Applications
-         using JMX. It can be done by reflection or by creating proxies of the MBeans.</para>
+      <para>Managing HornetQ using JMX is identical to management of any Java Applications using
+         JMX. It can be done by reflection or by creating proxies of the MBeans.</para>
       <section id="management.jmx.configuration">
          <title>Configuring JMX</title>
-         <para>By default, JMX is enabled to manage HornetQ. It can be disabled by setting
-               <literal>jmx-management-enabled</literal> to <literal>false</literal> in <literal
+         <para>By default, JMX is enabled to manage HornetQ. It can be disabled by setting <literal
+               >jmx-management-enabled</literal> to <literal>false</literal> in <literal
                >hornetq-configuration.xml</literal>:</para>
          <programlisting>
 &lt;!-- false to disable JMX management for HornetQ --&gt;
 &lt;jmx-management-enabled&gt;false&lt;/jmx-management-enabled&gt;            
          </programlisting>
-         <para>If JMX is enabled, HornetQ can be managed locally using <literal
-               >jconsole</literal>. Remote connections to JMX are not enabled by default for
-            security reasons. Please refer to <ulink
-               url="http://java.sun.com/j2se/1.5.0/docs/guide/management/agent.html#remote">Java
-               Management guide</ulink> to configure the server for remote management (system
+         <para>If JMX is enabled, HornetQ can be managed locally using <literal>jconsole</literal>.
+            Remote connections to JMX are not enabled by default for security reasons. Please refer
+            to <ulink url="http://java.sun.com/j2se/1.5.0/docs/guide/management/agent.html#remote"
+               >Java Management guide</ulink> to configure the server for remote management (system
             properties must be set in <literal>run.sh</literal> or <literal>run.bat</literal>
             scripts).</para>
-            
          <section>
             <title>MBeanServer configuration</title>
-            
-            <para>When HornetQ is run in standalone, it uses the Java Virtual Machine's <literal>Platform
-               MBeanServer</literal> to register its MBeans. This is configured in JBoss
-            Microcontainer Beans file (see <xref linkend="server.microcontainer.configuration"
-            />):</para>
+            <para>When HornetQ is run in standalone, it uses the Java Virtual Machine's <literal
+                  >Platform MBeanServer</literal> to register its MBeans. This is configured in
+               JBoss Microcontainer Beans file (see <xref
+                  linkend="server.microcontainer.configuration"/>):</para>
             <programlisting>&lt;!-- MBeanServer --&gt;
 &lt;bean name="MBeanServer" class="javax.management.MBeanServer"&gt;
    &lt;constructor factoryClass="java.lang.management.ManagementFactory"
                          factoryMethod="getPlatformMBeanServer" /&gt;
 &lt;/bean&gt;            
             </programlisting>
-         
-            <para>When it is integrated in JBoss AS 5, it uses the Application Server's own
-               MBean Server so that it can be managed using AS 5's jmx-console:</para>
+            <para>When it is integrated in JBoss AS 5+, it uses the Application Server's own MBean
+               Server so that it can be managed using AS 5's jmx-console:</para>
             <programlisting>&lt;!-- MBeanServer --&gt;
 &lt;bean name="MBeanServer" class="javax.management.MBeanServer"&gt;
    &lt;constructor factoryClass="org.jboss.mx.util.MBeanServerLocator"
                          factoryMethod="locateJBoss" /&gt;
 &lt;/bean&gt;            
             </programlisting>
-         </section>         
+         </section>
       </section>
-      
       <section>
          <title>Example</title>
-         <para>See <xref linkend="examples.jmx" /> for an example which 
-            shows how to use a remote connection to JMX and MBean proxies to
-            manage HornetQ.</para>
+         <para>See <xref linkend="examples.jmx"/> for an example which shows how to use a remote
+            connection to JMX and MBean proxies to manage HornetQ.</para>
       </section>
    </section>
    <section>
       <title>Using Management Via Core API</title>
-      <para>The core management API in HornetQ is called by sending Core messages to a
-         special address, the <emphasis>management address</emphasis>.</para>
+      <para>The core management API in HornetQ is called by sending Core messages to a special
+         address, the <emphasis>management address</emphasis>.</para>
       <para><emphasis>Management messages</emphasis> are regular Core messages with well-known
          properties that the server needs to understand to interact with the management API:</para>
       <itemizedlist>
@@ -552,16 +535,16 @@
             <para>The parameters of the management operation</para>
          </listitem>
       </itemizedlist>
-      <para>When such a management message is sent to the management address, HornetQ server
-         will handle it, extract the information, invoke the operation on the managed resources and
-         send a <emphasis>management reply</emphasis> to the management message's reply-to address
+      <para>When such a management message is sent to the management address, HornetQ server will
+         handle it, extract the information, invoke the operation on the managed resources and send
+         a <emphasis>management reply</emphasis> to the management message's reply-to address
          (specified by <literal>ClientMessageImpl.REPLYTO_HEADER_NAME</literal>). </para>
       <para>A <literal>ClientConsumer</literal> can be used to consume the management reply and
          retrieve the result of the operation (if any) stored in the reply's body. For portability,
          results are returned as a <ulink url="http://json.org">JSON</ulink> String rather than Java
          Serialization (the <literal
-            >org.hornetq.core.client.management.impl.ManagementHelper</literal> can be used
-         to convert the JSON string to Java objects).</para>
+            >org.hornetq.core.client.management.impl.ManagementHelper</literal> can be used to
+         convert the JSON string to Java objects).</para>
       <para>These steps can be simplified to make it easier to invoke management operations using
          Core messages:</para>
       <orderedlist>
@@ -574,16 +557,16 @@
          </listitem>
          <listitem>
             <para>Use the helper class <literal
-                  >org.hornetq.core.client.management.impl.ManagementHelper</literal> to
-               fill the message with the management properties</para>
+                  >org.hornetq.core.client.management.impl.ManagementHelper</literal> to fill the
+               message with the management properties</para>
          </listitem>
          <listitem>
             <para>Send the message using the <literal>ClientRequestor</literal></para>
          </listitem>
          <listitem>
             <para>Use the helper class <literal
-                  >org.hornetq.core.client.management.impl.ManagementHelper</literal> to
-               retrieve the operation result from the management reply</para>
+                  >org.hornetq.core.client.management.impl.ManagementHelper</literal> to retrieve
+               the operation result from the management reply</para>
          </listitem>
       </orderedlist>
       <para>For example, to find out the number of messages in the core queue <literal
@@ -600,10 +583,10 @@
       <para>Management operation name and parameters must conform to the Java interfaces defined in
          the <literal>management</literal> packages.</para>
       <para>Names of the resources are built using the helper class <literal
-            >org.hornetq.core.management.ResourceNames</literal> and are straightforward
-            (<literal>core.queue.exampleQueue</literal> for the Core Queue <literal
-            >exampleQueue</literal>, <literal>jms.topic.exampleTopic</literal> for the JMS Topic
-            <literal>exampleTopic</literal>, etc.).</para>
+            >org.hornetq.core.management.ResourceNames</literal> and are straightforward (<literal
+            >core.queue.exampleQueue</literal> for the Core Queue <literal>exampleQueue</literal>,
+            <literal>jms.topic.exampleTopic</literal> for the JMS Topic <literal
+            >exampleTopic</literal>, etc.).</para>
       <section id="management.core.configuration">
          <title>Configuring Core Management</title>
          <para>The management address to send management messages is configured in <literal
@@ -646,16 +629,16 @@
          </listitem>
          <listitem>
             <para>use the helper class <literal
-                  >org.hornetq.jms.server.management.impl.JMSManagementHelper</literal> to
-               fill the message with the management properties</para>
+                  >org.hornetq.jms.server.management.impl.JMSManagementHelper</literal> to fill the
+               message with the management properties</para>
          </listitem>
          <listitem>
             <para>send the message using the <literal>QueueRequestor</literal></para>
          </listitem>
          <listitem>
             <para>use the helper class <literal
-                  >org.hornetq.jms.server.management.impl.JMSManagementHelper</literal> to
-               retrieve the operation result from the management reply</para>
+                  >org.hornetq.jms.server.management.impl.JMSManagementHelper</literal> to retrieve
+               the operation result from the management reply</para>
          </listitem>
       </orderedlist>
       <para>For example, to know the number of messages in the JMS queue <literal
@@ -679,51 +662,50 @@
       </section>
       <section>
          <title>Example</title>
-         <para>See <xref linkend="examples.management" /> for an example which shows how to use 
-            JMS messages to manage HornetQ server.</para>
+         <para>See <xref linkend="examples.management"/> for an example which shows how to use JMS
+            messages to manage HornetQ server.</para>
       </section>
    </section>
    <section id="management.replication">
       <title>Management Cluster Credentials</title>
-      <para>HornetQ allows <emphasis>replication</emphasis> of a live server to a backup
-         server. This impacts management as resources created on the live server (e.g. a core
-         address) must also be created on the backup server. Otherwise, when failover occurs, the
-         backup server will not be able to handle messages sent to this address since its resources
-         will have been created on the live server only and not on the backup.</para>
+      <para>HornetQ allows <emphasis>replication</emphasis> of a live server to a backup server.
+         This impacts management as resources created on the live server (e.g. a core address) must
+         also be created on the backup server. Otherwise, when failover occurs, the backup server
+         will not be able to handle messages sent to this address since its resources will have been
+         created on the live server only and not on the backup.</para>
       <para>HornetQ <emphasis>replicates management operations</emphasis> regardless of the
          management API used (JMX, Core messages, JMS messages). Any management operation invoked on
          a live server will also be invoked on its backup server to ensure a proper replication of
          resources and state. For example, you only need to manage the live server: if a queue is
-         created on the live server, HornetQ will ensure that the same resource will also be
-         created on the backup server.</para>
+         created on the live server, HornetQ will ensure that the same resource will also be created
+         on the backup server.</para>
       <para>If core or JMS messages are used to invoke management operations, replication is handled
          automatically by HornetQ.</para>
-      <para>To allow this management replication with JMX, HornetQ defines 
-            <emphasis>management cluster credentials</emphasis>: this special user/password <emphasis>must
-            be shared by all nodes</emphasis>. To configure it, change the value in <literal
+      <para>To allow this management replication with JMX, HornetQ defines <emphasis>management
+            cluster credentials</emphasis>: this special user/password <emphasis>must be shared by
+            all nodes</emphasis>. To configure it, change the value in <literal
             >hornetq-configuration.xml</literal>:</para>
       <programlisting>
    &lt;management-cluster-user&gt;HORNETQ.MANAGEMENT.ADMIN.USER&lt;/management-cluster-user&gt;
    &lt;management-cluster-password&gt;CHANGE ME!!&lt;/management-cluster-password&gt;
       </programlisting>
-      <para>It is strongly suggested to
-         change these values from their default. If they are not changed from the default, HornetQ will
-         detect this and pester you with a warning on every start-up.</para>
-      <para>HornetQ internally uses Core messages to replicate management operations between
-         the live and backup server when JMX is used. By default, there is a timeout of 5s (5000ms)
-         to send a management request from the live server to the backup server and wait for a
-         reply. If a reply is not received before the timeout is hit, HornetQ considers the
-         replication has failed. This timeout can be configured in <literal
-            >hornetq-configuration.xml</literal>:</para>
+      <para>It is strongly suggested to change these values from their default. If they are not
+         changed from the default, HornetQ will detect this and pester you with a warning on every
+         start-up.</para>
+      <para>HornetQ internally uses Core messages to replicate management operations between the
+         live and backup server when JMX is used. By default, there is a timeout of 5s (5000ms) to
+         send a management request from the live server to the backup server and wait for a reply.
+         If a reply is not received before the timeout is hit, HornetQ considers the replication has
+         failed. This timeout can be configured in <literal
+         >hornetq-configuration.xml</literal>:</para>
       <programlisting>
          &lt;management-request-timeout&gt;5000&lt;/management-request-timeout&gt;
       </programlisting>
    </section>
    <section id="management.notifications">
       <title>Management Notifications</title>
-      <para>HornetQ emits <emphasis>notifications</emphasis> to inform listeners of
-         potentially interesting events (creation of new resources, security violation,
-         etc.).</para>
+      <para>HornetQ emits <emphasis>notifications</emphasis> to inform listeners of potentially
+         interesting events (creation of new resources, security violation, etc.).</para>
       <para>These notifications can be received by 3 different ways:</para>
       <itemizedlist>
          <listitem>
@@ -742,20 +724,20 @@
             notifications can be received by subscribing to 2 MBeans:</para>
          <itemizedlist>
             <listitem>
-               <para><literal>org.hornetq:module=Core,type=Server</literal> for
-                  notifications on <emphasis>Core</emphasis> resources</para>
+               <para><literal>org.hornetq:module=Core,type=Server</literal> for notifications on
+                     <emphasis>Core</emphasis> resources</para>
             </listitem>
             <listitem>
-               <para><literal>org.hornetq:module=JMS,type=Server</literal> for notifications
-                  on <emphasis>JMS</emphasis> resources</para>
+               <para><literal>org.hornetq:module=JMS,type=Server</literal> for notifications on
+                     <emphasis>JMS</emphasis> resources</para>
             </listitem>
          </itemizedlist>
       </section>
       <section>
          <title>Core Messages Notifications</title>
-         <para>HornetQ defines a special <emphasis>management notification
-               address</emphasis>. Core queues can be bound to this address so that clients will
-            receive management notifications as Core messages</para>
+         <para>HornetQ defines a special <emphasis>management notification address</emphasis>. Core
+            queues can be bound to this address so that clients will receive management
+            notifications as Core messages</para>
          <para>A Core client which wants to receive management notifications must create a core
             queue bound to the management notification address. It can then receive the
             notifications from its queue.</para>
@@ -816,10 +798,9 @@
       </section>
       <section>
          <title>Example</title>
-         <para>See <xref linkend="examples.management-notifications" /> for an example which
-            shows how to use a
-            JMS <literal>MessageListener</literal> to receive management notifications from HornetQ
-            server.</para>
+         <para>See <xref linkend="examples.management-notifications"/> for an example which shows
+            how to use a JMS <literal>MessageListener</literal> to receive management notifications
+            from HornetQ server.</para>
       </section>
    </section>
    <section id="management.message-counters">
@@ -869,8 +850,7 @@
       <section id="configuring.message.counters">
          <title>Configuring Message Counters</title>
          <para>By default, message counters are disabled as it might have a small negative effect on
-            memory (the metrics are kept in memory) and CPU (the queues are sampled at regular
-            interval).</para>
+            memory.</para>
          <para>To enable message counters, you can set it to <literal>true</literal> in <literal
                >hornetq-configuration.xml</literal>:</para>
          <programlisting>
@@ -906,9 +886,8 @@ System.out.format("%s message(s) in the queue (since last sample: %s)\n",
       </section>
       <section>
          <title>Example</title>
-         <para>See <xref linkend="examples.message-counters" /> for an example which 
-            shows how to use message counters to
-            retrieve information on a JMS <literal>Queue</literal>.</para>
+         <para>See <xref linkend="examples.message-counters"/> for an example which shows how to use
+            message counters to retrieve information on a JMS <literal>Queue</literal>.</para>
       </section>
    </section>
 </chapter>

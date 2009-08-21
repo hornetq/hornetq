@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
 <!-- ============================================================================= -->
 <!-- Copyright © 2009 Red Hat, Inc. and others.                                    -->
 <!--                                                                               -->
@@ -17,16 +16,15 @@
 <!-- and agrees not to assert, Section 4d of CC-BY-SA to the fullest extent        -->
 <!-- permitted by applicable law.                                                  -->
 <!-- ============================================================================= -->
-
 <chapter id="paging">
     <title>Paging</title>
-    <para>HornetQ transparently supports huge queues containing millions of messages while
-        the server is running with limited memory.</para>
+    <para>HornetQ transparently supports huge queues containing millions of messages while the
+        server is running with limited memory.</para>
     <para>In such a situation it's not possible to store all of the queues in memory at any one
-        time, so HornetQ transparently <emphasis>pages</emphasis> messages into and out of
-        memory as they are needed, thus allowing massive queues with a low memory footprint.</para>
-    <para>HornetQ will start paging messages to disk, when either the size of the queue
-        reaches a total configured maximum size.</para>
+        time, so HornetQ transparently <emphasis>pages</emphasis> messages into and out of memory as
+        they are needed, thus allowing massive queues with a low memory footprint.</para>
+    <para>HornetQ will start paging messages to disk, when the size of all messages in memory for an
+        address exceeds a configured maximum size.</para>
     <section>
         <title>Page Files</title>
         <para>Messages are stored per address on the file system. Each address has an individual
@@ -66,9 +64,8 @@
                     <tbody>
                         <row>
                             <entry><literal>paging-directory</literal></entry>
-                            <entry>Where page files are stored. HornetQ will create one
-                                folder for each address being paged under this configured
-                                location.</entry>
+                            <entry>Where page files are stored. HornetQ will create one folder for
+                                each address being paged under this configured location.</entry>
                             <entry>data/paging</entry>
                         </row>
                     </tbody>

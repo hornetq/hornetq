@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
 <!-- ============================================================================= -->
 <!-- Copyright © 2009 Red Hat, Inc. and others.                                    -->
 <!--                                                                               -->
@@ -17,28 +16,24 @@
 <!-- and agrees not to assert, Section 4d of CC-BY-SA to the fullest extent        -->
 <!-- permitted by applicable law.                                                  -->
 <!-- ============================================================================= -->
-
 <chapter id="architecture">
     <title>Architecture</title>
-    <para>In this section we will give an overview of the HornetQ high level
-        architecture.</para>
+    <para>In this section we will give an overview of the HornetQ high level architecture.</para>
     <section>
         <title>Core Architecture</title>
-        <para>HornetQ core is designed simply as set of Plain Old Java Objects
-            (POJOs).</para>
+        <para>HornetQ core is designed simply as set of Plain Old Java Objects (POJOs).</para>
         <para>We've also designed it to have as few dependencies on external jars as possible. In
-            fact, HornetQ core has <emphasis role="italic">zero</emphasis> dependencies on
-            any jars other than the standard JDK classes!</para>
-        <para>This allows HornetQ to be easily embedded in your own project, or instantiated
-            in any dependency injection framework such as JBoss Microcontainer, Spring or Google
+            fact, HornetQ core has <emphasis role="italic">zero</emphasis> dependencies on any jars
+            other than the standard JDK classes!</para>
+        <para>This allows HornetQ to be easily embedded in your own project, or instantiated in any
+            dependency injection framework such as JBoss Microcontainer, Spring or Google
             Guice.</para>
-        <para>A HornetQ server has its own high performance persistent journal, which it
-            uses for message and other persistence.</para>
+        <para>A HornetQ server has its own high performance persistent journal, which it uses for
+            message and other persistence.</para>
         <para>Using a high performance journal allows outrageous persistence message performance,
             something not achievable when using a relational database for persistence.</para>
-        <para>HornetQ clients, potentially on different physical machines interact with the
-            HornetQ server. HornetQ currently provides two APIs for messaging at the
-            client side:</para>
+        <para>HornetQ clients, potentially on different physical machines interact with the HornetQ
+            server. HornetQ currently provides two APIs for messaging at the client side:</para>
         <para>
             <orderedlist>
                 <listitem>
@@ -53,12 +48,12 @@
             </orderedlist>
         </para>
         <para>JMS semantics are implemented by a thin JMS facade layer on the client side.</para>
-        <para>The HornetQ server does not speak JMS and in fact does not know anything about
-            JMS, it's a protocol agnostic messaging server designed to be used with multiple
-            different protocols.</para>
+        <para>The HornetQ server does not speak JMS and in fact does not know anything about JMS,
+            it's a protocol agnostic messaging server designed to be used with multiple different
+            protocols.</para>
         <para>When a user uses the JMS API on the client side, all JMS interactions are translated
-            into operations on the HornetQ core client API before being transferred over the
-            wire using the HornetQ wire format.</para>
+            into operations on the HornetQ core client API before being transferred over the wire
+            using the HornetQ wire format.</para>
         <para>The server always just deals with core API interactions.</para>
         <para>A schematic illustrating this relationship is shown in figure 3.1 below:</para>
         <para>
@@ -72,18 +67,18 @@
     </section>
     <section>
         <title>HornetQ embedded in your own application</title>
-        <para>HornetQ core is designed as a set of simple POJOs so if you have an
-            application that requires messaging functionality internally but you don't want to
-            expose that as a messaging server you can directly instantiate and embed messaging
-            servers in your own application.</para>
-        <para>For more information on embedding HornetQ, see <xref
-                linkend="embedding-hornetq" />.</para>
+        <para>HornetQ core is designed as a set of simple POJOs so if you have an application that
+            requires messaging functionality internally but you don't want to expose that as a
+            HornetQ server you can directly instantiate and embed HornetQ servers in your own
+            application.</para>
+        <para>For more information on embedding HornetQ, see <xref linkend="embedding-hornetq"
+            />.</para>
     </section>
     <section>
         <title>HornetQ integrated with a JEE application server</title>
-        <para>HornetQ provides its own fully functional Java Connector Architecture (JCA)
-            adaptor which enables it to be integrated easily into any JEE compliant application
-            server or servlet engine.</para>
+        <para>HornetQ provides its own fully functional Java Connector Architecture (JCA) adaptor
+            which enables it to be integrated easily into any JEE compliant application server or
+            servlet engine.</para>
         <para>JEE application servers provide Message Driven Beans (MDBs), which are a special type
             of Enterprise Java Beans (EJBs) that can process messages from sources such as JMS
             systems or mail systems.</para>
@@ -102,39 +97,39 @@
             an EJB, MDB or servlet without going through a JCA adapter, but this is not recommended
             since you will not be able to take advantage of the JCA features, such as caching of JMS
             sessions, which can result in poor performance.</para>
-        <para>Figure 3.2 below shows a JEE application server integrating with a HornetQ
-            server via the HornetQ JCA adaptor. Note that all communication between EJB
-            sessions or entity beans and Message Driven beans go through the adaptor and not
-            directly to HornetQ.</para>
+        <para>Figure 3.2 below shows a JEE application server integrating with a HornetQ server via
+            the HornetQ JCA adaptor. Note that all communication between EJB sessions or entity
+            beans and Message Driven beans go through the adaptor and not directly to
+            HornetQ.</para>
         <para>The large arrow with the prohibited sign shows an EJB session bean talking directly to
-            the HornetQ server. This is not recommended as you'll most likely end up
-            creating a new connection and session every time you want to interact from the EJB,
-            which is an anti-pattern.</para>
+            the HornetQ server. This is not recommended as you'll most likely end up creating a new
+            connection and session every time you want to interact from the EJB, which is an
+            anti-pattern.</para>
         <para>
             <graphic fileref="images/architecture2.jpg"/>
         </para>
         <para>For more information on using the JCA adaptor, please see <xref
-                linkend="appserver-integration" />.</para>
+                linkend="appserver-integration"/>.</para>
     </section>
     <section>
         <title>HornetQ stand-alone server</title>
-        <para>HornetQ can also be deployed as a stand-alone server. This means a fully
-            independent messaging server not dependent on a JEE application server.</para>
+        <para>HornetQ can also be deployed as a stand-alone server. This means a fully independent
+            messaging server not dependent on a JEE application server.</para>
         <para>The standard stand-alone messaging server configuration comprises a core messaging
             server, a JMS service and a JNDI service.</para>
         <para>The role of the JMS Service is to deploy any JMS Queues, Topics and ConnectionFactory
-            instances from any server side <literal>hornetq-jms.xml</literal> configuration files. It also
-            provides a simple management API for creating and destroying Queues, Topics and
+            instances from any server side <literal>hornetq-jms.xml</literal> configuration files.
+            It also provides a simple management API for creating and destroying Queues, Topics and
             ConnectionFactory instances which can be accessed via JMX or the connection. It is a
-            separate service to the HornetQ core server, since the core server is JMS
-            agnostic. If you don't want to deploy any JMS Queues, Topics and ConnectionFactory
-            instances via server side XML configuration and don't require a JMS management API on the
-            server side then you can disable this service.</para>
+            separate service to the HornetQ core server, since the core server is JMS agnostic. If
+            you don't want to deploy any JMS Queues, Topics and ConnectionFactory instances via
+            server side XML configuration and don't require a JMS management API on the server side
+            then you can disable this service.</para>
         <para>We also include a JNDI server since JNDI is a common requirement when using JMS to
             lookup Queues, Topics and ConnectionFactory instances. If you do not require JNDI then
-            this service can also be disabled. HornetQ allows you to programmatically create
-            JMS and core objects directly on the client side as opposed to looking them up from
-            JNDI, so a JNDI server is not always a requirement.</para>
+            this service can also be disabled. HornetQ allows you to programmatically create JMS and
+            core objects directly on the client side as opposed to looking them up from JNDI, so a
+            JNDI server is not always a requirement.</para>
         <para>The stand-alone server configuration uses JBoss Microcontainer to instantiate and
             enforce dependencies between the components. JBoss Microcontainer is a very lightweight
             POJO bootstrapper.</para>
@@ -142,7 +137,7 @@
         <para>
             <graphic fileref="images/architecture3.jpg"/>
         </para>
-        <para>For more information on server configuration files see <xref linkend="server.configuration" />.
-$        </para>
+        <para>For more information on server configuration files see <xref
+                linkend="server.configuration"/>. $ </para>
     </section>
 </chapter>

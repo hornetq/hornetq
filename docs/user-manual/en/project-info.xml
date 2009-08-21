@@ -30,17 +30,25 @@
     </section>
 
     <section id="download.svn">
-       <title>Project Information</title>
-       <para>If you have any user questions please use our <ulink
-          url="http://n2.nabble.com/hornetq-users-f3404100.html">user
-          forum</ulink></para>
-       <para>If you have development related questions, please use our <ulink
-          url="http://n2.nabble.com/hornetq-dev-f3404069.html">development
-          forum</ulink></para>
-       <para>Pop in and chat to us in our <ulink url="irc://irc.freenode.net:6667/hornetq">IRC channel</ulink></para>  
-       <para>HornetQ Subversion trunk is <ulink url="http://anonsvn.jboss.org/repos/hornetq/trunk">http://anonsvn.jboss.org/repos/hornetq/trunk</ulink></para>
-       <para>All release tags are availble from <ulink url="http://anonsvn.jboss.org/repos/hornetq/tags">http://anonsvn.jboss.org/repos/hornetq/tags</ulink></para>
-    </section>
+       <title>Project Information</title>       
+       <para>
+       <itemizedlist>
+          <listitem><para>Please take a look at our project <ulink url="http://www.jboss.org/community/wiki/HornetQ">wiki</ulink></para></listitem>
+          <listitem> <para>If you have any user questions please use our <ulink
+             url="http://www.jboss.org/index.html?module=bb&amp;op=viewforum&amp;f=312">user
+             forum</ulink></para></listitem>
+          <listitem><para>If you have development related questions, please use our <ulink
+             url="http://www.jboss.org/index.html?module=bb&amp;op=viewforum&amp;f=313">developer
+             forum</ulink></para></listitem>
+          <listitem><para>Pop in and chat to us in our <ulink url="irc://irc.freenode.net:6667/hornetq">IRC channel</ulink></para></listitem>
+          <listitem><para>Our project <ulink url="http://hornetq.blogspot.com/">blog</ulink></para></listitem>
+          <listitem><para>Follow us on <ulink url="http://twitter.com/hornetq">twitter</ulink></para></listitem>
+          <listitem><para>HornetQ Subversion trunk is <ulink url="http://anonsvn.jboss.org/repos/hornetq/trunk">http://anonsvn.jboss.org/repos/hornetq/trunk</ulink></para></listitem>
+          <listitem><para>All release tags are availble from <ulink url="http://anonsvn.jboss.org/repos/hornetq/tags">http://anonsvn.jboss.org/repos/hornetq/tags</ulink></para></listitem>
+       </itemizedlist>
+          </para>
+       
+    
     <para>Red Hat kindly employs developers to work full time on HornetQ, the motley crew are:
             <itemizedlist>
                     <listitem><para> <ulink url="http://jbossfox.blogspot.com">Tim Fox</ulink> (project lead)</para></listitem>
@@ -50,6 +58,6 @@
                     <listitem><para>Andy Taylor</para></listitem>
             </itemizedlist>
             </para>
-            
+    </section>      
             
 </chapter>

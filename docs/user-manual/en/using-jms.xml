@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
 <!-- ============================================================================= -->
 <!-- Copyright © 2009 Red Hat, Inc. and others.                                    -->
 <!--                                                                               -->
@@ -17,7 +16,6 @@
 <!-- and agrees not to assert, Section 4d of CC-BY-SA to the fullest extent        -->
 <!-- permitted by applicable law.                                                  -->
 <!-- ============================================================================= -->
-
 <chapter id="using-jms">
     <title>Using JMS</title>
     <para>Although HornetQ provides a JMS agnostic messaging API, many users will be more
@@ -26,10 +24,10 @@
         API. If you are completely new to JMS we suggest you following the<ulink
             url="http://java.sun.com/products/jms/tutorial/1_3_1-fcs/doc/jms_tutorialTOC.html"> Sun
             JMS tutorial</ulink> - a full JMS tutorial is out of scope for this guide.</para>
-    <para>HornetQ also ships with a wide range of examples, many of which demonstrate JMS
-        API usage. A good place to start would be to play around with the simple JMS Queue and Topic
-        example, but we also provide examples for many other parts of the JMS API. A full
-        description of the examples is available in <xref linkend="examples"/>.</para>
+    <para>HornetQ also ships with a wide range of examples, many of which demonstrate JMS API usage.
+        A good place to start would be to play around with the simple JMS Queue and Topic example,
+        but we also provide examples for many other parts of the JMS API. A full description of the
+        examples is available in <xref linkend="examples"/>.</para>
     <para>In this section we'll go through the main steps in configuring the server for JMS and
         creating a simple JMS program. We'll also show how to configure and use JNDI, and also how
         to use JMS with HornetQ without using any JNDI.</para>
@@ -106,11 +104,10 @@ java.naming.factory.url.pkgs=org.jboss.naming:org.jnp.interfaces
         <para>Where <literal>myhost</literal> is the hostname or IP address of the JNDI server. 1099
             is the port used by the JNDI server and may vary depending on how you have configured
             your JNDI server.</para>
-        <para>In the default standalone configuration, JNDI server ports are configured in the
-                file <literal>hornetq-beans.xml</literal> 
-            (or <literal>hornetq-beans.xml</literal> if you're running JBoss Application Server)
-            where the JNDIServer bean is confgured,
-            here's a snippet from the file:</para>
+        <para>In the default standalone configuration, JNDI server ports are configured in the file
+                <literal>hornetq-beans.xml</literal> (or <literal>hornetq-beans.xml</literal> if
+            you're running JBoss Application Server) where the JNDIServer bean is confgured, here's
+            a snippet from the file:</para>
         <programlisting>
 &lt;bean name="JNDIServer" class="org.jnp.server.Main"&gt;
     &lt;property name="namingInfo"&gt;
@@ -164,9 +161,9 @@ System.out.println("Got order: " + receivedMessage.getText());
                 Objects</emphasis> (that's JMS Queues, Topics and Connection Factories) from JNDI,
             in some cases a JNDI server is not available and you still want to use JMS, or you just
             think "Why do I need JNDI? Why can't I just instantiate these objects directly?"</para>
-        <para>With HornetQ you can do exactly that. HornetQ supports the direct
-            instantiation of JMS Queue, Topic and Connection Factory instances, so you don't have to
-            use JNDI at all.</para>
+        <para>With HornetQ you can do exactly that. HornetQ supports the direct instantiation of JMS
+            Queue, Topic and Connection Factory instances, so you don't have to use JNDI at
+            all.</para>
         <para>For a full working example of direct instantiation please see the JMS examples in
                 <xref linkend="examples"/>.</para>
         <para>Here's our simple example, rewritten to not use JNDI at all:</para>
@@ -176,7 +173,7 @@ System.out.println("Got order: " + receivedMessage.getText());
         <programlisting>              
 TransportConfiguration transportConfiguration = 
                      new TransportConfiguration(NettyConnectorFactory.class.getName());                
-ConnectionFactory cf = new HornetQConnectionFactory();
+ConnectionFactory cf = new HornetQConnectionFactory(transportConfiguration);
         </programlisting>
         <para>We create the JMS Queue Object directly:</para>
         <programlisting>Queue orderQueue = new HornetQQueue("OrderQueue");</programlisting>
@@ -212,7 +209,7 @@ System.out.println("Got order: " + receivedMessage.getText());
             configure the consumer so that it sends the acknowledgements in batches rather that one
             at a time, saving valuable bandwidth. This can be configured via the connection factory
             via the <literal>dups-ok-batch-size</literal> element and is set in bytes. The default
-            is 1024 * 1024.</para>
+            is 1024 * 1024 bytes = 1 MiB.</para>
     </section>
     <section id="using-jms.txbatchsize">
         <title>Setting The Transaction Batch Size</title>
