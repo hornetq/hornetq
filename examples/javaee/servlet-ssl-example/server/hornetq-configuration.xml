@@ -17,7 +17,7 @@
          <param key="hornetq.remoting.netty.host" value="localhost" type="String"/>
          <param key="hornetq.remoting.netty.port" value="8443" type="Integer"/>
          <param key="hornetq.remoting.netty.useservlet" value="true" type="Boolean"/>
-         <param key="hornetq.remoting.netty.servletpath" value="/messaging/HornetQServlet" type="String"/>
+         <param key="hornetq.remoting.netty.servletpath" value="/hornetq/HornetQServlet" type="String"/>
          <param key="hornetq.remoting.netty.sslenabled" value="true" type="Boolean"/>
          <param key="hornetq.remoting.netty.keystorepath" value="server/hornetq.example.keystore" type="String"/>
          <param key="hornetq.remoting.netty.keystorepassword" value="hornetqexample" type="String"/>

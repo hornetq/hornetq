@@ -4,7 +4,7 @@
   <module>
     <web>
       <web-uri>servlet-ssl-transport-example.war</web-uri>
-      <context-root>/messaging</context-root>
+      <context-root>/hornetq</context-root>
     </web>
   </module>
    
