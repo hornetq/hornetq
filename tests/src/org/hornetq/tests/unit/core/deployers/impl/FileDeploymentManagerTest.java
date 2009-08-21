@@ -58,7 +58,7 @@ public class FileDeploymentManagerTest extends UnitTestCase
       fdm.start();
       try
       {        
-         assertEquals(file.toURL(), deployer.deployedUrl);
+         assertEquals(file.toURI().toURL(), deployer.deployedUrl);
          deployer.deployedUrl = null;
          fdm.start();
          assertNull(deployer.deployedUrl);
@@ -92,7 +92,7 @@ public class FileDeploymentManagerTest extends UnitTestCase
       try
       {
          fdm.registerDeployer(deployer);
-         assertEquals(file.toURL(), deployer.deployedUrl);
+         assertEquals(file.toURI().toURL(), deployer.deployedUrl);
          deployer.deployedUrl = null;
          fdm.start();
          assertNull(deployer.deployedUrl);
@@ -129,13 +129,13 @@ public class FileDeploymentManagerTest extends UnitTestCase
       FakeDeployer deployer4 = new FakeDeployer(filename3); // Can have multiple deployers on the same file
       try
       {
-         URL url1 = file1.toURL();      
+         URL url1 = file1.toURI().toURL();      
          deployer1.deploy(url1);
 
-         URL url2 = file2.toURL();      
+         URL url2 = file2.toURI().toURL();      
          deployer2.deploy(url2);
 
-         URL url3 = file3.toURL();      
+         URL url3 = file3.toURI().toURL();      
          deployer3.deploy(url3);
          
          deployer4.deploy(url3);
@@ -153,10 +153,10 @@ public class FileDeploymentManagerTest extends UnitTestCase
          assertTrue(fdm.getDeployers().contains(deployer4));
          assertEquals(4, fdm.getDeployed().size());
 
-         assertEquals(file1.toURL(), deployer1.deployedUrl);
-         assertEquals(file2.toURL(), deployer2.deployedUrl);
-         assertEquals(file3.toURL(), deployer3.deployedUrl);
-         assertEquals(file3.toURL(), deployer4.deployedUrl);
+         assertEquals(file1.toURI().toURL(), deployer1.deployedUrl);
+         assertEquals(file2.toURI().toURL(), deployer2.deployedUrl);
+         assertEquals(file3.toURI().toURL(), deployer3.deployedUrl);
+         assertEquals(file3.toURI().toURL(), deployer4.deployedUrl);
          //Registering same again should do nothing
 
          
@@ -223,11 +223,11 @@ public class FileDeploymentManagerTest extends UnitTestCase
       FakeDeployer deployer = new FakeDeployer(filename);
       try
       {
-         URL url = file.toURL();      
+         URL url = file.toURI().toURL();      
          deployer.deploy(url);
          
          fdm.registerDeployer(deployer);
-         assertEquals(file.toURL(), deployer.deployedUrl);
+         assertEquals(file.toURI().toURL(), deployer.deployedUrl);
          //Touch the file
          file.setLastModified(oldLastModified + 1000);
 
@@ -238,7 +238,7 @@ public class FileDeploymentManagerTest extends UnitTestCase
          assertEquals(1, fdm.getDeployers().size());
          assertTrue(fdm.getDeployers().contains(deployer));
          assertEquals(1, fdm.getDeployed().size());
-         assertEquals(file.toURL(), deployer.reDeployedUrl);
+         assertEquals(file.toURI().toURL(), deployer.reDeployedUrl);
          Pair<URL, Deployer> pair = new Pair<URL, Deployer>(url, deployer);
          assertEquals(oldLastModified + 1000, fdm.getDeployed().get(pair).lastModified);
          deployer.reDeployedUrl = null; 
@@ -271,7 +271,7 @@ public class FileDeploymentManagerTest extends UnitTestCase
       FakeDeployer deployer = new FakeDeployer(filename);
       try
       {
-         URL url = file.toURL();      
+         URL url = file.toURI().toURL();      
          deployer.deploy(url);
 
          
@@ -280,14 +280,14 @@ public class FileDeploymentManagerTest extends UnitTestCase
          assertEquals(1, fdm.getDeployers().size());
          assertTrue(fdm.getDeployers().contains(deployer));
          assertEquals(1, fdm.getDeployed().size());
-         assertEquals(file.toURL(), deployer.deployedUrl);
+         assertEquals(file.toURI().toURL(), deployer.deployedUrl);
          deployer.deployedUrl = null;
          file.delete();
          
          //This should cause undeployment
 
          deployer.undeploy(url);
-         assertEquals(file.toURL(), deployer.unDeployedUrl);
+         assertEquals(file.toURI().toURL(), deployer.unDeployedUrl);
          
          fdm.run();
 
@@ -310,7 +310,7 @@ public class FileDeploymentManagerTest extends UnitTestCase
          assertTrue(fdm.getDeployers().contains(deployer));
          assertEquals(1, fdm.getDeployed().size());
 
-         assertEquals(file.toURL(), deployer.deployedUrl);
+         assertEquals(file.toURI().toURL(), deployer.deployedUrl);
       }
       finally
       {

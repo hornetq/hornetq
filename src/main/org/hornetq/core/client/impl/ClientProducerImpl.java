@@ -296,7 +296,7 @@ public class ClientProducerImpl implements ClientProducerInternal
                pos += numberOfBytesRead;
             }
             while (pos < minLargeMessageSize);
-            
+                        
             if (lastChunk)
             {
                byte[] buff2 = new byte[pos];

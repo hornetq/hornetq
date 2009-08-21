@@ -138,7 +138,7 @@ public class BatchingIDGenerator implements IDGenerator
 
    // Inner classes -------------------------------------------------
 
-   static class IDCounterEncoding implements EncodingSupport
+   private static final class IDCounterEncoding implements EncodingSupport
    {
       long id;
 
