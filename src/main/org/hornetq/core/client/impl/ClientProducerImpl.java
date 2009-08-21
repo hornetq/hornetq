@@ -15,6 +15,7 @@ package org.hornetq.core.client.impl;
 
 import static org.hornetq.utils.SimpleString.toSimpleString;
 
+import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -216,12 +217,12 @@ public class ClientProducerImpl implements ClientProducerInternal
       SessionSendMessage message = new SessionSendMessage(msg, sendBlocking);
 
       if (msg.getBodyInputStream() != null || msg.getEncodeSize() >= minLargeMessageSize || msg.isLargeMessage())
-      {         
+      {
          sendMessageInChunks(sendBlocking, msg);
       }
       else if (sendBlocking)
-      {         
-         channel.sendBlocking(message);         
+      {
+         channel.sendBlocking(message);
       }
       else
       {
@@ -240,7 +241,7 @@ public class ClientProducerImpl implements ClientProducerInternal
       if (headerSize >= minLargeMessageSize)
       {
          throw new HornetQException(HornetQException.ILLEGAL_STATE, "Header size (" + headerSize +
-                                                                        ") is too big, use the messageBody for large data, or increase minLargeMessageSize");
+                                                                    ") is too big, use the messageBody for large data, or increase minLargeMessageSize");
       }
 
       // msg.getBody() could be Null on LargeServerMessage
@@ -256,45 +257,67 @@ public class ClientProducerImpl implements ClientProducerInternal
 
       channel.send(initialChunk);
 
-      if (msg.getBodyInputStream() != null)
+      InputStream input = msg.getBodyInputStream();
+      
+      if (input != null)
       {
          boolean lastChunk = false;
-         InputStream input = msg.getBodyInputStream();
+
          while (!lastChunk)
          {
-            byte[] bytesRead = new byte[minLargeMessageSize];
-            int numberOfBytesRead;
-
-            try
-            {
-               numberOfBytesRead = input.read(bytesRead);
+            byte[] buff = new byte[minLargeMessageSize];
+            
+            int pos = 0;
+                                   
+            do
+            {               
+               int numberOfBytesRead;
+               
+               int wanted = minLargeMessageSize - pos;
+               
+               try
+               {
+                  numberOfBytesRead = input.read(buff, pos, wanted);
+               }
+               catch (IOException e)
+               {
+                  throw new HornetQException(HornetQException.LARGE_MESSAGE_ERROR_BODY,
+                                             "Error reading the LargeMessageBody",
+                                             e);
+               }
+               
+               if (numberOfBytesRead == -1)
+               {                  
+                  lastChunk = true;
+                  
+                  break;
+               }
+                                             
+               pos += numberOfBytesRead;
             }
-            catch (IOException e)
+            while (pos < minLargeMessageSize);
+            
+            if (lastChunk)
             {
-               throw new HornetQException(HornetQException.LARGE_MESSAGE_ERROR_BODY,
-                                            "Error reading the LargeMessageBody",
-                                            e);
+               byte[] buff2 = new byte[pos];
+               
+               System.arraycopy(buff, 0, buff2, 0, pos);
+               
+               buff = buff2;
             }
-
-            if (numberOfBytesRead < 0)
-            {
-               numberOfBytesRead = 0;
-               lastChunk = true;
-            }
-
-            final SessionSendContinuationMessage chunk = new SessionSendContinuationMessage(bytesRead,
-                                                                                            numberOfBytesRead,
+            
+            final SessionSendContinuationMessage chunk = new SessionSendContinuationMessage(buff,                                                                                           
                                                                                             !lastChunk,
                                                                                             lastChunk && sendBlocking);
 
             if (sendBlocking && lastChunk)
             {
-               // When sending it blocking, only the last chunk will be blocking.               
+               // When sending it blocking, only the last chunk will be blocking.
                channel.sendBlocking(chunk);
             }
             else
             {
-               channel.send(chunk);               
+               channel.send(chunk);
             }
          }
 
@@ -305,8 +328,8 @@ public class ClientProducerImpl implements ClientProducerInternal
          catch (IOException e)
          {
             throw new HornetQException(HornetQException.LARGE_MESSAGE_ERROR_BODY,
-                                         "Error closing stream from LargeMessageBody",
-                                         e);
+                                       "Error closing stream from LargeMessageBody",
+                                       e);
          }
       }
       else
@@ -327,18 +350,17 @@ public class ClientProducerImpl implements ClientProducerInternal
 
             lastChunk = pos >= bodySize;
 
-            final SessionSendContinuationMessage chunk = new SessionSendContinuationMessage(bodyBuffer.array(),
-                                                                                            chunkLength,
+            final SessionSendContinuationMessage chunk = new SessionSendContinuationMessage(bodyBuffer.array(),                                                                                            
                                                                                             !lastChunk,
                                                                                             lastChunk && sendBlocking);
 
             if (sendBlocking && lastChunk)
             {
-               // When sending it blocking, only the last chunk will be blocking.              
+               // When sending it blocking, only the last chunk will be blocking.
                channel.sendBlocking(chunk);
             }
             else
-            {               
+            {
                channel.send(chunk);
             }
          }

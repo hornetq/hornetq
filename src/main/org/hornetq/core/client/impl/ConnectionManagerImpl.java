@@ -534,8 +534,6 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
          boolean attemptFailoverOrReconnect = (backupConnectorFactory != null || reconnectAttempts != 0)
                                                 && (failoverOnServerShutdown || !serverShutdown);
          
-         log.info("Attempting failover or reconnect " + attemptFailoverOrReconnect);
-
          if (attemptFailoverOrReconnect)
          {
             lockAllChannel1s();
@@ -640,8 +638,6 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
          }
          else
          {
-            log.info("Just closing connections and calling failure listeners");
-            
             closeConnectionsAndCallFailureListeners(me);
          }
       }
@@ -1096,7 +1092,6 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
 
          if (type == PacketImpl.DISCONNECT)
          {
-            log.info("Got a disconnect message");
             threadPool.execute(new Runnable()
             {
                // Must be executed on new thread since cannot block the netty thread for a long time and fail can

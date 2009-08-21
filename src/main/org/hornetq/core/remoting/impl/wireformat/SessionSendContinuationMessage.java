@@ -35,9 +35,6 @@ public class SessionSendContinuationMessage extends SessionContinuationMessage
 
    private boolean requiresResponse;
 
-   // Not sent through the wire. Just to define how many bytes to send of body
-   private transient int bodyLength;
-
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
@@ -56,14 +53,12 @@ public class SessionSendContinuationMessage extends SessionContinuationMessage
     * @param continues
     * @param requiresResponse
     */
-   public SessionSendContinuationMessage(final byte[] body,
-                                         final int bodyLength,
+   public SessionSendContinuationMessage(final byte[] body,                                         
                                          final boolean continues,
                                          final boolean requiresResponse)
    {
       super(SESS_SEND_CONTINUATION, body, continues);
       this.requiresResponse = requiresResponse;
-      this.bodyLength = bodyLength;
    }
 
 
@@ -80,25 +75,20 @@ public class SessionSendContinuationMessage extends SessionContinuationMessage
    @Override
    public int getRequiredBufferSize()
    {
-      return SESSION_CONTINUATION_BASE_SIZE + bodyLength + DataConstants.SIZE_BOOLEAN;
+      return super.getRequiredBufferSize() + DataConstants.SIZE_BOOLEAN;
    }
 
    @Override
    public void encodeBody(final HornetQBuffer buffer)
    {
-      buffer.writeInt(bodyLength);
-      buffer.writeBytes(body, 0, bodyLength);
-      buffer.writeBoolean(continues);
+      super.encodeBody(buffer);
       buffer.writeBoolean(requiresResponse);
    }
 
    @Override
    public void decodeBody(final HornetQBuffer buffer)
    {
-      bodyLength = buffer.readInt();
-      body = new byte[bodyLength];
-      buffer.readBytes(body);
-      continues = buffer.readBoolean();
+      super.decodeBody(buffer);
       requiresResponse = buffer.readBoolean();
    }
 
