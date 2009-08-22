@@ -228,8 +228,8 @@ public class HornetQServerImpl implements HornetQServer
    }
 
    public HornetQServerImpl(Configuration configuration,
-                              MBeanServer mbeanServer,
-                              final HornetQSecurityManager securityManager)
+                            MBeanServer mbeanServer,
+                            final HornetQSecurityManager securityManager)
    {
       if (configuration == null)
       {
@@ -896,8 +896,7 @@ public class HornetQServerImpl implements HornetQServer
       executorFactory = new OrderedExecutorFactory(threadPool);
 
       scheduledPool = new ScheduledThreadPoolExecutor(configuration.getScheduledThreadPoolMaxSize(),
-                                                      new HornetQThreadFactory("HornetQ-scheduled-threads",
-                                                                                                     false));
+                                                      new HornetQThreadFactory("HornetQ-scheduled-threads", false));
 
       managementService = new ManagementServiceImpl(mbeanServer, configuration, managementConnectorID);
 
@@ -1388,11 +1387,13 @@ public class HornetQServerImpl implements HornetQServer
       if (version.getIncrementingVersion() != incrementingVersion)
       {
          log.warn("Client with version " + incrementingVersion +
+                  " and address " +
+                  connection.getRemoteAddress() +
                   " is not compatible with server version " +
                   version.getFullVersion() +
                   ". " +
                   "Please ensure all clients and servers are upgraded to the same version for them to " +
-                  "interoperate");
+                  "interoperate properly");
          return null;
       }
 
