@@ -304,8 +304,22 @@ public class ManualReconnectionToSingleServerTest extends UnitTestCase
       try
       {
          Context initialContext = context;
-         Topic topic = (Topic)initialContext.lookup(topicName);
-         ConnectionFactory cf = (ConnectionFactory)initialContext.lookup("/cf");
+         Topic topic;
+         ConnectionFactory cf;
+         while (true)
+         {            
+            try
+            {
+               topic = (Topic)initialContext.lookup(topicName);
+               cf = (ConnectionFactory)initialContext.lookup("/cf");
+               break;
+            }
+            catch (Exception e)
+            {
+               //retry until server is up
+               Thread.sleep(100);
+            }
+         }
          connection = cf.createConnection();
          connection.setExceptionListener(exceptionListener);
          session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
