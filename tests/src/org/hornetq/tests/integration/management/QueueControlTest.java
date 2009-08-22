@@ -295,10 +295,10 @@ public class QueueControlTest extends ManagementTestBase
       producer.send(session.createClientMessage(false));
 
       Map<String, Object>[] messages = queueControl.listScheduledMessages();
-      assertEquals(1, messages.length);    
+      assertEquals(1, messages.length);
       assertEquals(intValue, ((Number)messages[0].get("key")).intValue());
 
-      Thread.sleep(delay);
+      Thread.sleep(delay + 500);
 
       messages = queueControl.listScheduledMessages();
       assertEquals(0, messages.length);
