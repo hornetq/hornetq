@@ -46,7 +46,7 @@ public class AsynchronousFileImpl implements AsynchronousFile
 
    private static boolean loaded = false;
 
-   private static int EXPECTED_NATIVE_VERSION = 24;
+   private static int EXPECTED_NATIVE_VERSION = 25;
 
    public static void addMax(final int io)
    {
