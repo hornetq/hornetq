@@ -26,6 +26,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.lang.ref.WeakReference;
 import java.net.ServerSocket;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -90,8 +91,61 @@ public class UnitTestCase extends TestCase
 
    private String testDir = System.getProperty("java.io.tmpdir", "/tmp") + "/hornetq-unit-test";
 
-   // Static --------------------------------------------------------
    
+   
+   
+   // Static --------------------------------------------------------
+
+   public static void forceGC()
+   {
+      WeakReference<Object> dumbReference = new WeakReference<Object>(new Object());
+      // A loop that will wait GC, using the minimal time as possible
+      while (dumbReference.get() != null)
+      {
+         System.gc();
+         try
+         {
+            Thread.sleep(500);
+         }
+         catch (InterruptedException e)
+         {
+         }
+      }
+   }
+
+   // verify if these weak references are released after a few GCs
+   public static void checkWeakReferences(WeakReference<?>... references)
+   {
+
+      int i = 0;
+      boolean hasValue = false;
+
+      do
+      {
+         hasValue = false;
+
+         if (i > 0)
+         {
+            forceGC();
+         }
+
+         for (WeakReference<?> ref : references)
+         {
+            if (ref.get() != null)
+            {
+               hasValue = true;
+            }
+         }
+      }
+      while (i++ <= 30 && hasValue);
+
+      for (WeakReference<?> ref : references)
+      {
+         assertNull(ref.get());
+      }
+   }
+
+
    public static String threadDump(String msg)
    {
       StringWriter str = new StringWriter();

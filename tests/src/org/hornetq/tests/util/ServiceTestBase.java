@@ -64,56 +64,6 @@ public class ServiceTestBase extends UnitTestCase
 
    // Static --------------------------------------------------------
    private final Logger log = Logger.getLogger(this.getClass());
-
-   public static void forceGC()
-   {
-      WeakReference<Object> dumbReference = new WeakReference<Object>(new Object());
-      // A loop that will wait GC, using the minimal time as possible
-      while (dumbReference.get() != null)
-      {
-         System.gc();
-         try
-         {
-            Thread.sleep(500);
-         }
-         catch (InterruptedException e)
-         {
-         }
-      }
-   }
-
-   // verify if these weak references are released after a few GCs
-   public static void checkWeakReferences(WeakReference<?>... references)
-   {
-
-      int i = 0;
-      boolean hasValue = false;
-
-      do
-      {
-         hasValue = false;
-
-         if (i > 0)
-         {
-            forceGC();
-         }
-
-         for (WeakReference<?> ref : references)
-         {
-            if (ref.get() != null)
-            {
-               hasValue = true;
-            }
-         }
-      }
-      while (i++ <= 30 && hasValue);
-
-      for (WeakReference<?> ref : references)
-      {
-         assertNull(ref.get());
-      }
-   }
-
    // Constructors --------------------------------------------------
 
    // Public --------------------------------------------------------

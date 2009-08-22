@@ -48,6 +48,10 @@ public abstract class SequentialFileFactoryTestBase extends UnitTestCase
    {
       assertEquals(0, AsynchronousFileImpl.getTotalMaxIO());
       
+      factory = null;
+      
+      forceGC();
+      
       super.tearDown();
    }
 
@@ -374,6 +378,9 @@ public abstract class SequentialFileFactoryTestBase extends UnitTestCase
 
       try
       {
+         
+         bb1 = factory.wrapBuffer(bytes1);
+         
          sf.write(bb1, true);
 
          fail("Should throw exception");
