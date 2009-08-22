@@ -127,7 +127,7 @@ public class BatchingIDGenerator implements IDGenerator
    {
       try
       {
-         journalStorage.appendAddRecord(id, ID_COUNTER_RECORD, new IDCounterEncoding(id), true);
+         journalStorage.appendAddRecord(journalID, ID_COUNTER_RECORD, new IDCounterEncoding(id), true);
       }
       catch (Exception e)
       {
