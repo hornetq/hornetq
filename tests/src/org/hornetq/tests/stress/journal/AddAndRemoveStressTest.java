@@ -205,6 +205,8 @@ public class AddAndRemoveStressTest extends UnitTestCase
 
       impl.forceMoveNextFile();
       impl.checkAndReclaimFiles();
+      
+      impl.stop();
 
       assertEquals(0, info.size());
       assertEquals(0, trans.size());
