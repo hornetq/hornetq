@@ -1232,7 +1232,11 @@ public class AlignedJournalImplTest extends UnitTestCase
 
       assertEquals(2, finishedOK.intValue());
 
+      journalImpl.debugWait();
+
       journalImpl.forceMoveNextFile();
+
+      journalImpl.debugWait();
 
       journalImpl.checkAndReclaimFiles();
 
@@ -1319,6 +1323,14 @@ public class AlignedJournalImplTest extends UnitTestCase
          {
          }
       }
+
+      records = null;
+
+      transactions = null;
+
+      factory = null;
+
+      journalImpl = null;
 
       super.tearDown();
    }
