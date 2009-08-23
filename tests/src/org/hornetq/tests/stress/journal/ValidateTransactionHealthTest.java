@@ -163,6 +163,8 @@ public class ValidateTransactionHealthTest extends UnitTestCase
       assertEquals(0, loadTest.numberOfPreparedTransactions);
       assertEquals(0, loadTest.numberOfUpdates);
       assertEquals(0, loadTest.numberOfDeletes);
+      
+      journal.stop();
 
       if (loadTest.ex != null)
       {
