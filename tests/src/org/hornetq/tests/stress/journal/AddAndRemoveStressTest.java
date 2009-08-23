@@ -130,6 +130,8 @@ public class AddAndRemoveStressTest extends UnitTestCase
       {
          System.out.println("Info ID: " + info.get(0).id);
       }
+      
+      impl.stop();
 
       assertEquals(0, info.size());
       assertEquals(0, trans.size());
