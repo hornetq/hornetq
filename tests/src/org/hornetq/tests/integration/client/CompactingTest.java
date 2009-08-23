@@ -220,29 +220,43 @@ public class CompactingTest extends ServiceTestBase
 
       setupServer(journalType);
 
-      ClientSession sess = sf.createSession(true, true);
+      ClientSession sess = null;
 
-      ClientConsumer cons = sess.createConsumer(Q1);
-
-      sess.start();
-
-      for (int i = 0; i < numberOfMessages.intValue(); i++)
+      try
       {
-         ClientMessage msg = cons.receive(10000);
-         assertNotNull(msg);
-         msg.acknowledge();
+         
+         sess = sf.createSession(true, true);
+
+         ClientConsumer cons = sess.createConsumer(Q1);
+
+         sess.start();
+
+         for (int i = 0; i < numberOfMessages.intValue(); i++)
+         {
+            ClientMessage msg = cons.receive(60000);
+            assertNotNull(msg);
+            msg.acknowledge();
+         }
+
+         assertNull(cons.receiveImmediate());
+
+         cons.close();
+
+         cons = sess.createConsumer(Q2);
+
+         assertNull(cons.receive(100));
+
       }
-
-      assertNull(cons.receiveImmediate());
-
-      cons.close();
-
-      cons = sess.createConsumer(Q2);
-
-      assertNull(cons.receive(100));
-
-      sess.close();
-
+      finally
+      {
+         try
+         {
+            sess.close();
+         }
+         catch (Throwable ignored)
+         {
+         }
+      }
    }
 
    @Override
@@ -302,9 +316,9 @@ public class CompactingTest extends ServiceTestBase
       sf.close();
 
       server.stop();
-      
+
       server = null;
-      
+
       sf = null;
 
       super.tearDown();
