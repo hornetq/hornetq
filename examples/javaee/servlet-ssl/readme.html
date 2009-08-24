@@ -11,15 +11,12 @@
      <h2>JBoss AS configuration</h2>
 
      <p>Please refer to HornetQ Quickstart guide to <a href="../../../docs/quickstart-guide/en/html_single/index.html#installation.jboss">install it in JBoss AS 5<a></p>
+    
+     <h2>Example Configuration</h2>
+
+     <p>In the configuration, the hornetq.example.keystore is the key store file holding client certificate. The hornetq.example.truststore 
+       is the file for server to hold trusted client certificates. They are pre-generated for illustration purpose<a id="fnr1" href="#fn1"><sup>1</sup></a>.</p>
   
-     <!-- Commands to generate the stores:
-       * create the keystore:
-         keytool -genkey -keystore hornetq.example.keystore -storepass hornetqexample
-       * export the certificate:
-         keytool -export -keystore hornetq.example.keystore -file hornetq.cer
-       * create the truststore:
-         keytool -import -file hornetq.cer -keystore hornetq.example.truststore -storepass hornetqexample            
-     -->
 
      <h2>Example step-by-step</h2>
      <p><em>To deploy and start the server, type <code>ant deploy</code>from the example directory</br >
@@ -98,9 +95,19 @@
               }
            }</code>
         </pre>
-
-
-
      </ol>
+     
+      <hr>
+
+      <ol>
+          <li><a id="fn1">The stores were generating using the following commands&nbsp;<a href="#fnr1">&#8617;</a>:
+              <ul>
+                  <li>create the keystore: <code>keytool -genkey -keystore hornetq.example.keystore -storepass hornetqexample</code>
+                  <li>export the certificate: <code>keytool -export -keystore hornetq.example.keystore -file hornetq.cer</code>
+                  <li>create the truststore: <code>keytool -import -file hornetq.cer -keystore hornetq.example.truststore -storepass hornetqexample</code>
+             </ul>
+         </li>
+     </ol>
+     
   </body>
 </html>
