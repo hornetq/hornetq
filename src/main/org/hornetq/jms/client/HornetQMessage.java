@@ -1264,8 +1264,7 @@ public class HornetQMessage implements javax.jms.Message
 
    public String toString()
    {
-      StringBuffer sb = new StringBuffer("HornetQRAMessage[");
-      sb.append("");
+      StringBuffer sb = new StringBuffer("HornetQMessage[");
       sb.append(getJMSMessageID());
       sb.append("]:");
       sb.append(message.isDurable() ? "PERSISTENT" : "NON-PERSISTENT");
