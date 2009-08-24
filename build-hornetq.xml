@@ -28,7 +28,7 @@
    <!-- Module name(s) & version                                                                 -->
    <!-- ======================================================================================== -->
 
-   <property name="module.name" value="HornetQ"/>
+   <property name="module.name" value="hornetq"/>
 	   <!-- Version properties are read from hornetq-version.properties instead of duplicating them here -->
    <property file="src/config/common/hornetq-version.properties"/>
    <property name="hornetq.version.revision" value="0" />
