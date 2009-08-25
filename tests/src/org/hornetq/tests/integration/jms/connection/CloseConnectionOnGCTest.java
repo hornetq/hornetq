@@ -24,6 +24,7 @@ import org.hornetq.core.server.HornetQServer;
 import org.hornetq.jms.client.HornetQConnectionFactory;
 import org.hornetq.jms.server.impl.JMSServerManagerImpl;
 import org.hornetq.tests.integration.jms.server.management.NullInitialContext;
+import org.hornetq.tests.util.JMSTestBase;
 import org.hornetq.tests.util.UnitTestCase;
 
 /**
@@ -34,31 +35,15 @@ import org.hornetq.tests.util.UnitTestCase;
  *
  *
  */
-public class CloseConnectionOnGCTest extends UnitTestCase
+public class CloseConnectionOnGCTest extends JMSTestBase
 {
-   private HornetQServer server;
-
-   private JMSServerManagerImpl jmsServer;
-
    private HornetQConnectionFactory cf;
-
-   private static final String Q_NAME = "ConnectionTestQueue";
 
    @Override
    protected void setUp() throws Exception
    {
       super.setUp();
-      
-      Configuration conf = new ConfigurationImpl();
-      conf.setSecurityEnabled(false);
-      conf.setJMXManagementEnabled(true);
-      conf.getAcceptorConfigurations()
-          .add(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory"));
-      server = HornetQ.newHornetQServer(conf, false);
-      jmsServer = new JMSServerManagerImpl(server);
-      jmsServer.setContext(new NullInitialContext());
-      jmsServer.start();     
-      jmsServer.createQueue(Q_NAME, Q_NAME, null, true);
+
       cf = new HornetQConnectionFactory(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory"));      
       cf.setBlockOnPersistentSend(true);
       cf.setPreAcknowledge(true);
@@ -67,24 +52,6 @@ public class CloseConnectionOnGCTest extends UnitTestCase
    @Override
    protected void tearDown() throws Exception
    {
-      jmsServer.stop();
-      cf = null;
-      if (server != null && server.isStarted())
-      {
-         try
-         {
-            server.stop();
-         }
-         catch (Exception e)
-         {
-            e.printStackTrace();
-         }
-         server = null;
-
-      }
-      
-      server = null;
-      jmsServer = null;
       cf = null;
       
       super.tearDown();

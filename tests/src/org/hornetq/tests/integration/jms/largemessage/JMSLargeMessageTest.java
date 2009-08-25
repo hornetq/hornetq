@@ -61,7 +61,7 @@ public class JMSLargeMessageTest extends JMSTestBase
    protected void setUp() throws Exception
    {
       super.setUp();
-      serverManager.createQueue("queue1", "/jms/queue1", null, true);
+      jmsServer.createQueue("queue1", "/jms/queue1", null, true);
       
       queue1 = (Queue)context.lookup("/jms/queue1");
    }

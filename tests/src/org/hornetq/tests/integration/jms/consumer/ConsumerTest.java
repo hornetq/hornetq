@@ -21,31 +21,19 @@ import javax.jms.MessageProducer;
 import javax.jms.Session;
 import javax.jms.TextMessage;
 
-import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.TransportConfiguration;
-import org.hornetq.core.config.impl.ConfigurationImpl;
-import org.hornetq.core.server.HornetQ;
-import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.Queue;
 import org.hornetq.jms.HornetQQueue;
 import org.hornetq.jms.client.HornetQConnectionFactory;
 import org.hornetq.jms.client.HornetQSession;
-import org.hornetq.jms.server.impl.JMSServerManagerImpl;
-import org.hornetq.tests.integration.jms.server.management.NullInitialContext;
-import org.hornetq.tests.util.UnitTestCase;
+import org.hornetq.tests.util.JMSTestBase;
 import org.hornetq.utils.SimpleString;
 
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
  */
-public class ConsumerTest extends UnitTestCase
+public class ConsumerTest extends JMSTestBase
 {
-   private HornetQServer server;
-
-   private JMSServerManagerImpl jmsServer;
-
-   private HornetQConnectionFactory cf;
-
    private static final String Q_NAME = "ConsumerTestQueue";
 
    private HornetQQueue jBossQueue;
@@ -55,44 +43,14 @@ public class ConsumerTest extends UnitTestCase
    {
       super.setUp();
 
-      Configuration conf = new ConfigurationImpl();
-      conf.setSecurityEnabled(false);
-      conf.setJMXManagementEnabled(true);
-      conf.getAcceptorConfigurations()
-          .add(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory"));
-      server = HornetQ.newHornetQServer(conf, false);
-      jmsServer = new JMSServerManagerImpl(server);
-      jmsServer.setContext(new NullInitialContext());
-      jmsServer.start();
       jmsServer.createQueue(Q_NAME, Q_NAME, null, true);
       cf = new HornetQConnectionFactory(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory"));
-      cf.setBlockOnPersistentSend(true);
-      cf.setPreAcknowledge(true);
    }
 
    @Override
    protected void tearDown() throws Exception
    {
-      jmsServer.stop();
-      
       cf = null;
-      if (server != null && server.isStarted())
-      {
-         try
-         {
-            server.stop();
-         }
-         catch (Exception e)
-         {
-            e.printStackTrace();
-         }
-         server = null;
-      }
-
-      server = null;
-      jmsServer = null;
-      cf = null;
-      jBossQueue = null;
 
       super.tearDown();
    }
@@ -167,7 +125,7 @@ public class ConsumerTest extends UnitTestCase
       consumer.setMessageListener(null);
       consumer.receiveNoWait();
    }
-   
+
    public void testCantReceiveWhenListenerIsSet() throws Exception
    {
       Connection conn = cf.createConnection();
@@ -188,7 +146,7 @@ public class ConsumerTest extends UnitTestCase
       }
       catch (JMSException e)
       {
-         //Ok
+         // Ok
       }
    }
 }

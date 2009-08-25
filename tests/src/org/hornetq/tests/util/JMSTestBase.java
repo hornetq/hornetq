@@ -60,7 +60,7 @@ public class JMSTestBase extends ServiceTestBase
 
    protected HornetQServer server;
 
-   protected JMSServerManagerImpl serverManager;
+   protected JMSServerManagerImpl jmsServer;
    
    protected ConnectionFactory cf;
 
@@ -108,34 +108,34 @@ public class JMSTestBase extends ServiceTestBase
 
       server = HornetQ.newHornetQServer(conf, false);
 
-      serverManager = new JMSServerManagerImpl(server);
+      jmsServer = new JMSServerManagerImpl(server);
       context = new InVMContext();
-      serverManager.setContext(context);
-      serverManager.start();
-      serverManager.activated();
+      jmsServer.setContext(context);
+      jmsServer.start();
+      jmsServer.activated();
 
       registerConnectionFactory();
    }
 
    protected void restartServer() throws Exception
    {
-      serverManager.start();
-      serverManager.activated();
+      jmsServer.start();
+      jmsServer.activated();
       context = new InVMContext();
-      serverManager.setContext(context);
+      jmsServer.setContext(context);
       registerConnectionFactory();
    }
 
    protected void killServer() throws Exception
    {
-      serverManager.stop();
+      jmsServer.stop();
    }
 
    @Override
    protected void tearDown() throws Exception
    {
 
-      serverManager.stop();
+      jmsServer.stop();
 
       server.stop();
 
@@ -143,7 +143,7 @@ public class JMSTestBase extends ServiceTestBase
 
       server = null;
 
-      serverManager = null;
+      jmsServer = null;
 
       context = null;
 
@@ -169,7 +169,7 @@ public class JMSTestBase extends ServiceTestBase
       List<String> jndiBindings = new ArrayList<String>();
       jndiBindings.add("/cf");
 
-      serverManager.createConnectionFactory("ManualReconnectionToSingleServerTest",
+      jmsServer.createConnectionFactory("ManualReconnectionToSingleServerTest",
                                             connectorConfigs,
                                             null,
                                             DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
