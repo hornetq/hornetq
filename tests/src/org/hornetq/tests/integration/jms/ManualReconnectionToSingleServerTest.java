@@ -85,6 +85,8 @@ public class ManualReconnectionToSingleServerTest extends UnitTestCase
 
    private CountDownLatch exceptionLatch = new CountDownLatch(1);
 
+   private CountDownLatch reconnectionLatch = new CountDownLatch(1);
+
    private boolean afterRestart = false;
 
    private boolean receivedMessagesAfterRestart = false;
@@ -157,6 +159,8 @@ public class ManualReconnectionToSingleServerTest extends UnitTestCase
             Thread.sleep(5000);
             restartServer();
             afterRestart = true;
+            boolean clientReconnected = reconnectionLatch.await(10, SECONDS);
+            assertTrue("client did not reconnect after server was restarted", clientReconnected);
          }
       }
 
@@ -327,6 +331,7 @@ public class ManualReconnectionToSingleServerTest extends UnitTestCase
          consumer = session.createConsumer(topic);
          consumer.setMessageListener(listener);
          connection.start();
+         reconnectionLatch.countDown();
       }
       catch (Exception e)
       {
