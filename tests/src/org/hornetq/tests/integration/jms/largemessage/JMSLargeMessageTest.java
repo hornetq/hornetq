@@ -14,7 +14,6 @@
 package org.hornetq.tests.integration.jms.largemessage;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -29,7 +28,6 @@ import javax.jms.Queue;
 import javax.jms.Session;
 import javax.jms.TextMessage;
 
-import org.hornetq.jms.tests.JMSTestCase;
 import org.hornetq.tests.util.JMSTestBase;
 
 /**
