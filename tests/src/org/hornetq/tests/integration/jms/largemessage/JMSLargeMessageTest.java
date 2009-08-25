@@ -11,7 +11,7 @@
  * permissions and limitations under the License.
  */
 
-package org.hornetq.jms.tests.message;
+package org.hornetq.tests.integration.jms.largemessage;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -25,10 +25,12 @@ import javax.jms.Connection;
 import javax.jms.JMSException;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
+import javax.jms.Queue;
 import javax.jms.Session;
 import javax.jms.TextMessage;
 
 import org.hornetq.jms.tests.JMSTestCase;
+import org.hornetq.tests.util.JMSTestBase;
 
 /**
  *
@@ -37,17 +39,38 @@ import org.hornetq.jms.tests.JMSTestCase;
  *
  * $Id: MessageHeaderTest.java 6220 2009-03-30 19:38:11Z timfox $
  */
-public class LargeMessageTest extends JMSTestCase
+public class JMSLargeMessageTest extends JMSTestBase
 {
    // Constants -----------------------------------------------------
 
    // Attributes ----------------------------------------------------
+   
+   Queue queue1;
 
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
    // Public --------------------------------------------------------
+
+   protected boolean usePersistence()
+   {
+      return true;
+   }
+   
+   protected void setUp() throws Exception
+   {
+      super.setUp();
+      serverManager.createQueue("queue1", "/jms/queue1", null, true);
+      
+      queue1 = (Queue)context.lookup("/jms/queue1");
+   }
+   
+   protected void tearDown() throws Exception
+   {
+      queue1 = null;
+      super.tearDown();
+   }
 
    public void testSimpleLargeMessage() throws Exception
    {
@@ -307,48 +330,6 @@ public class LargeMessageTest extends JMSTestCase
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
-
-   protected byte getSamplebyte(final long position)
-   {
-      return (byte)('a' + (position) % ('z' - 'a' + 1));
-   }
-
-   // Creates a Fake LargeStream without using a real file
-   protected InputStream createFakeLargeStream(final long size) throws Exception
-   {
-      return new InputStream()
-      {
-         private long count;
-
-         private boolean closed = false;
-
-         @Override
-         public void close() throws IOException
-         {
-            super.close();
-            System.out.println("Sent " + count + " bytes over fakeOutputStream, while size = " + size);
-            closed = true;
-         }
-
-         @Override
-         public int read() throws IOException
-         {
-            if (closed)
-            {
-               throw new IOException("Stream was closed");
-            }
-            if (count++ < size)
-            {
-               return getSamplebyte(count - 1);
-            }
-            else
-            {
-               return -1;
-            }
-         }
-      };
-
-   }
 
    // Private -------------------------------------------------------
 
