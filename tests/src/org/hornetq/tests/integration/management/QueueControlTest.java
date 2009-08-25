@@ -332,7 +332,7 @@ public class QueueControlTest extends ManagementTestBase
       assertEquals(1, array.length());
       assertEquals(intValue, array.getJSONObject(0).get("key"));
 
-      Thread.sleep(delay);
+      Thread.sleep(delay + 500);
 
       jsonString = queueControl.listScheduledMessagesAsJSON();
       assertNotNull(jsonString);
