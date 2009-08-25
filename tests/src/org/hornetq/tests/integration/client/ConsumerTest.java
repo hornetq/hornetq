@@ -15,6 +15,8 @@ package org.hornetq.tests.integration.client;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
+import javax.jms.ObjectMessage;
+
 import org.hornetq.core.client.ClientConsumer;
 import org.hornetq.core.client.ClientMessage;
 import org.hornetq.core.client.ClientProducer;
@@ -64,8 +66,6 @@ public class ConsumerTest extends ServiceTestBase
       super.tearDown();
    }
 
-   
-  
    public void testConsumerAckImmediateAutoCommitTrue() throws Exception
    {
       ClientSessionFactory sf = createInVMFactory();
@@ -93,10 +93,8 @@ public class ConsumerTest extends ServiceTestBase
          assertEquals("m" + i, message2.getBody().readString());
       }
       // assert that all the messages are there and none have been acked
-      assertEquals(0,
-                   ((Queue)server.getPostOffice().getBinding(QUEUE).getBindable()).getDeliveringCount());
-      assertEquals(0,
-                   ((Queue)server.getPostOffice().getBinding(QUEUE).getBindable()).getMessageCount());
+      assertEquals(0, ((Queue)server.getPostOffice().getBinding(QUEUE).getBindable()).getDeliveringCount());
+      assertEquals(0, ((Queue)server.getPostOffice().getBinding(QUEUE).getBindable()).getMessageCount());
 
       session.close();
    }
@@ -129,10 +127,8 @@ public class ConsumerTest extends ServiceTestBase
          assertEquals("m" + i, message2.getBody().readString());
       }
       // assert that all the messages are there and none have been acked
-      assertEquals(0,
-                   ((Queue)server.getPostOffice().getBinding(QUEUE).getBindable()).getDeliveringCount());
-      assertEquals(0,
-                   ((Queue)server.getPostOffice().getBinding(QUEUE).getBindable()).getMessageCount());
+      assertEquals(0, ((Queue)server.getPostOffice().getBinding(QUEUE).getBindable()).getDeliveringCount());
+      assertEquals(0, ((Queue)server.getPostOffice().getBinding(QUEUE).getBindable()).getMessageCount());
 
       session.close();
    }
@@ -169,10 +165,8 @@ public class ConsumerTest extends ServiceTestBase
          }
       }
       // assert that all the messages are there and none have been acked
-      assertEquals(0,
-                   ((Queue)server.getPostOffice().getBinding(QUEUE).getBindable()).getDeliveringCount());
-      assertEquals(0,
-                   ((Queue)server.getPostOffice().getBinding(QUEUE).getBindable()).getMessageCount());
+      assertEquals(0, ((Queue)server.getPostOffice().getBinding(QUEUE).getBindable()).getDeliveringCount());
+      assertEquals(0, ((Queue)server.getPostOffice().getBinding(QUEUE).getBindable()).getMessageCount());
 
       session.close();
    }
@@ -209,17 +203,13 @@ public class ConsumerTest extends ServiceTestBase
          }
       }
       // assert that all the messages are there and none have been acked
-      assertEquals(0,
-                   ((Queue)server.getPostOffice().getBinding(QUEUE).getBindable()).getDeliveringCount());
-      assertEquals(0,
-                   ((Queue)server.getPostOffice().getBinding(QUEUE).getBindable()).getMessageCount());
+      assertEquals(0, ((Queue)server.getPostOffice().getBinding(QUEUE).getBindable()).getDeliveringCount());
+      assertEquals(0, ((Queue)server.getPostOffice().getBinding(QUEUE).getBindable()).getMessageCount());
 
       session.close();
 
-      assertEquals(0,
-                   ((Queue)server.getPostOffice().getBinding(QUEUE).getBindable()).getDeliveringCount());
-      assertEquals(0,
-                   ((Queue)server.getPostOffice().getBinding(QUEUE).getBindable()).getMessageCount());
+      assertEquals(0, ((Queue)server.getPostOffice().getBinding(QUEUE).getBindable()).getDeliveringCount());
+      assertEquals(0, ((Queue)server.getPostOffice().getBinding(QUEUE).getBindable()).getMessageCount());
    }
 
    public void testAcksWithSmallSendWindow() throws Exception
@@ -246,7 +236,7 @@ public class ConsumerTest extends ServiceTestBase
       {
          public boolean intercept(Packet packet, RemotingConnection connection) throws HornetQException
          {
-            if(packet.getType() == PacketImpl.SESS_ACKNOWLEDGE)
+            if (packet.getType() == PacketImpl.SESS_ACKNOWLEDGE)
             {
                latch.countDown();
             }
@@ -276,7 +266,7 @@ public class ConsumerTest extends ServiceTestBase
       assertTrue(latch.await(5, TimeUnit.SECONDS));
       sessionRec.close();
    }
-   
+
    public void testClearListener() throws Exception
    {
       ClientSessionFactory sf = createInVMFactory();
@@ -286,7 +276,7 @@ public class ConsumerTest extends ServiceTestBase
       session.createQueue(QUEUE, QUEUE, null, false);
 
       ClientConsumer consumer = session.createConsumer(QUEUE);
-      
+
       consumer.setMessageHandler(new MessageHandler()
       {
          public void onMessage(ClientMessage msg)
@@ -297,7 +287,7 @@ public class ConsumerTest extends ServiceTestBase
       consumer.setMessageHandler(null);
       consumer.receiveImmediate();
    }
-   
+
    public void testNoReceiveWithListener() throws Exception
    {
       ClientSessionFactory sf = createInVMFactory();
@@ -307,7 +297,7 @@ public class ConsumerTest extends ServiceTestBase
       session.createQueue(QUEUE, QUEUE, null, false);
 
       ClientConsumer consumer = session.createConsumer(QUEUE);
-      
+
       consumer.setMessageHandler(new MessageHandler()
       {
          public void onMessage(ClientMessage msg)
@@ -324,13 +314,132 @@ public class ConsumerTest extends ServiceTestBase
       {
          if (me.getCode() == HornetQException.ILLEGAL_STATE)
          {
-            //Ok
+            // Ok
          }
          else
          {
             fail("Wrong exception code");
          }
       }
+   }
+
+   // https://jira.jboss.org/jira/browse/HORNETQ-111
+   // Test that, on rollback credits are released for messages cleared in the buffer
+   public void testConsumerCreditsOnRollback() throws Exception
+   {
+      ClientSessionFactory sf = createInVMFactory();
+
+      sf.setConsumerWindowSize(10000);
+
+      ClientSession session = sf.createTransactedSession();
+
+      session.createQueue(QUEUE, QUEUE, null, false);
+
+      ClientProducer producer = session.createProducer(QUEUE);
+
+      final int numMessages = 100;
+
+      final byte[] bytes = new byte[1000];
+
+      for (int i = 0; i < numMessages; i++)
+      {
+         ClientMessage message = session.createClientMessage(false);
+
+         message.getBody().writeBytes(bytes);
+
+         message.putIntProperty("count", i);
+
+         producer.send(message);
+      }
+
+      session.commit();
+
+      ClientConsumer consumer = session.createConsumer(QUEUE);
+      session.start();
+
+      int commited = 0;
+      int rollbacked = 0;
+      for (int i = 0; i < 110; i++)
+      {
+         ClientMessage message = (ClientMessage)consumer.receive();
+
+         int count = (Integer)message.getProperty("count");
+
+         boolean redelivered = message.getDeliveryCount() > 1;
+
+         if (count % 2 == 0 && !redelivered)
+         {
+            session.rollback();
+            rollbacked++;
+         }
+         else
+         {
+            session.commit();
+            commited++;
+         }
+      }
+
+      session.close();
+   }
+   
+   // https://jira.jboss.org/jira/browse/HORNETQ-111
+   // Test that, on rollback credits are released for messages cleared in the buffer
+   public void testConsumerCreditsOnRollbackLargeMessages() throws Exception
+   {
+      ClientSessionFactory sf = createInVMFactory();
+
+      sf.setConsumerWindowSize(10000);
+      sf.setMinLargeMessageSize(1000);
+
+      ClientSession session = sf.createTransactedSession();
+
+      session.createQueue(QUEUE, QUEUE, null, false);
+
+      ClientProducer producer = session.createProducer(QUEUE);
+
+      final int numMessages = 100;
+
+      final byte[] bytes = new byte[10000];
+
+      for (int i = 0; i < numMessages; i++)
+      {
+         ClientMessage message = session.createClientMessage(false);
+
+         message.getBody().writeBytes(bytes);
+
+         message.putIntProperty("count", i);
+
+         producer.send(message);
+      }
+
+      session.commit();
+
+      ClientConsumer consumer = session.createConsumer(QUEUE);
+      session.start();
+
+      int commited = 0;
+      int rollbacked = 0;
+      for (int i = 0; i < 110; i++)
+      {
+         ClientMessage message = (ClientMessage)consumer.receive();
+
+         int count = (Integer)message.getProperty("count");
+
+         boolean redelivered = message.getDeliveryCount() > 1;
+
+         if (count % 2 == 0 && !redelivered)
+         {
+            session.rollback();
+            rollbacked++;
+         }
+         else
+         {
+            session.commit();
+            commited++;
+         }
+      }
+
+      session.close();
    }
 
 }

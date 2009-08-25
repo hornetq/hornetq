@@ -558,6 +558,7 @@ public class ServerConsumerImpl implements ServerConsumer
    {
       if (availableCredits != null && availableCredits.get() <= 0)
       {
+        // log.info("busy - available credits is " + availableCredits.get());
          return HandleStatus.BUSY;
       }
 

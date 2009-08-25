@@ -38,7 +38,7 @@ public interface ClientConsumerInternal extends ClientConsumer
    
    void flowControl(final int messageBytes, final boolean discountSlowConsumer) throws HornetQException;
 
-   void clear();
+   void clear() throws HornetQException;
 
    int getClientWindowSize();
 

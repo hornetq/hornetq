@@ -71,8 +71,6 @@ public class ClientConsumerImpl implements ClientConsumerInternal
 
    private final Runner runner = new Runner();
 
-   private ClientMessageInternal currentChunkMessage;
-
    private LargeMessageBufferImpl currentLargeMessageBuffer;
 
    // When receiving LargeMessages, the user may choose to not read the body, on this case we need to discard the body
@@ -407,7 +405,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
       // Flow control for the first packet, we will have others
       flowControl(packet.getPacketSize(), false);
             
-      currentChunkMessage = new ClientMessageImpl(packet.getDeliveryCount());
+      ClientMessageInternal currentChunkMessage = new ClientMessageImpl(packet.getDeliveryCount());
 
       currentChunkMessage.decodeProperties(ChannelBuffers.wrappedBuffer(packet.getLargeMessageHeader()));
 
@@ -441,12 +439,21 @@ public class ClientConsumerImpl implements ClientConsumerInternal
       currentLargeMessageBuffer.addPacket(chunk);
    }
 
-   public void clear()
+   public void clear() throws HornetQException
    {
       synchronized (this)
       {
+         //Need to send credits for the messages in the buffer
+         
+         for (ClientMessageInternal message: this.buffer)
+         {
+            flowControlBeforeConsumption(message);
+         }
+
          buffer.clear();
       }
+      
+      //Need to send credits for the messages in the buffer
 
       waitForOnMessageToComplete();
    }
@@ -484,7 +491,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
    }
 
    /** 
-    * flow control is synchornized because of LargeMessage and streaming.
+    * 
     * LargeMessageBuffer will call flowcontrol here, while other handleMessage will also be calling flowControl.
     * So, this operation needs to be atomic.
     * 
@@ -498,7 +505,6 @@ public class ClientConsumerImpl implements ClientConsumerInternal
 
          if (creditsToSend >= clientWindowSize)
          {
-
             if (clientWindowSize == 0 && discountSlowConsumer)
             {
                if (trace)

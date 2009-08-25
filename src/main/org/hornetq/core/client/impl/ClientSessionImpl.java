@@ -1204,6 +1204,8 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
 
       if (windowSize != 0)
       {
+         log.info("Sending " + windowSize + " initial credits");
+         
          channel.send(new SessionConsumerFlowCreditMessage(consumerID, windowSize));
       }
 
