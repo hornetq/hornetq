@@ -32,9 +32,6 @@
                 />.</para>
         </listitem>
         <listitem>
-            <para>HornetQ is Red Hat's flagship Java messaging system.</para>
-        </listitem>
-        <listitem>
             <para>For answers to more questions about what HornetQ is and isn't please visit
                 the <ulink url="http://www.jboss.org/community/wiki/HornetQGeneralFAQs">FAQs wiki
                     page</ulink>.</para>
