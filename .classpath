@@ -17,6 +17,7 @@
 	<classpathentry kind="src" path="examples/core/microcontainer/src"/>
 	<classpathentry kind="src" path="examples/core/embedded-remote/src"/>
 	<classpathentry kind="src" path="examples/core/perf/src"/>
+	<classpathentry kind="src" path="examples/jms/applet/src"/>
 	<classpathentry kind="src" path="examples/jms/application-layer-failover/src"/>
 	<classpathentry kind="src" path="examples/jms/automatic-failover/src"/>
 	<classpathentry kind="src" path="examples/jms/bridge/src"/>

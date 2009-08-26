@@ -187,9 +187,12 @@
             <include name="jms/*/build.xml"/>
             <exclude name="common/build.xml"/>
             <exclude name="core/perf/build.xml"/>
+            <exclude name="jms/applet/build.xml"/>
             <exclude name="jms/perf/build.xml"/>
          </fileset>
       </subant>
+   	
+   	  <echo message="Do not forget to run jms/applet example manually!" />
    </target>
 
 </project>
