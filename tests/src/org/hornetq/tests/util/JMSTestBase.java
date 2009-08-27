@@ -37,6 +37,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.jms.ConnectionFactory;
+import javax.jms.Queue;
+import javax.naming.NamingException;
 
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.TransportConfiguration;
@@ -94,6 +96,18 @@ public class JMSTestBase extends ServiceTestBase
    {
       return false;
    }
+   
+   /**
+    * @throws Exception
+    * @throws NamingException
+    */
+   protected Queue createQueue(String name) throws Exception, NamingException
+   {
+      jmsServer.createQueue(name, "/jms/" + name, null, true);
+      
+      return (Queue)context.lookup("/jms/" + name);
+   }
+   
 
    @Override
    protected void setUp() throws Exception
@@ -156,18 +170,32 @@ public class JMSTestBase extends ServiceTestBase
 
    private void registerConnectionFactory() throws Exception
    {
-      int retryInterval = 1000;
-      double retryIntervalMultiplier = 1.0;
-      int reconnectAttempts = -1;
-      boolean failoverOnServerShutdown = true;
-      int callTimeout = 30000;
-
       List<Pair<TransportConfiguration, TransportConfiguration>> connectorConfigs = new ArrayList<Pair<TransportConfiguration, TransportConfiguration>>();
       connectorConfigs.add(new Pair<TransportConfiguration, TransportConfiguration>(new TransportConfiguration(NettyConnectorFactory.class.getName()),
                                                                                     null));
 
       List<String> jndiBindings = new ArrayList<String>();
       jndiBindings.add("/cf");
+
+      createCF(connectorConfigs, jndiBindings);
+      
+      cf = (ConnectionFactory)context.lookup("/cf");
+      
+   }
+
+   /**
+    * @param connectorConfigs
+    * @param jndiBindings
+    * @throws Exception
+    */
+   protected void createCF(List<Pair<TransportConfiguration, TransportConfiguration>> connectorConfigs,
+                         List<String> jndiBindings) throws Exception
+   {
+      int retryInterval = 1000;
+      double retryIntervalMultiplier = 1.0;
+      int reconnectAttempts = -1;
+      boolean failoverOnServerShutdown = true;
+      int callTimeout = 30000;
 
       jmsServer.createConnectionFactory("ManualReconnectionToSingleServerTest",
                                             connectorConfigs,
@@ -198,9 +226,6 @@ public class JMSTestBase extends ServiceTestBase
                                             reconnectAttempts,
                                             failoverOnServerShutdown,
                                             jndiBindings);
-      
-      cf = (ConnectionFactory)context.lookup("/cf");
-      
    }
 
 }
