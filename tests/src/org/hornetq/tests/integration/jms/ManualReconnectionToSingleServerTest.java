@@ -101,7 +101,7 @@ public class ManualReconnectionToSingleServerTest extends UnitTestCase
          {
             receivedMessagesAfterRestart = true;
          }
-         System.out.println(msg);
+         System.out.println(receivedMessagesAfterRestart + " " + msg);
       }
    };
 
@@ -112,6 +112,7 @@ public class ManualReconnectionToSingleServerTest extends UnitTestCase
          exceptionLatch.countDown();
          disconnect();
          connect();
+         reconnectionLatch.countDown();
       }
    };
 
@@ -139,7 +140,7 @@ public class ManualReconnectionToSingleServerTest extends UnitTestCase
       
       connect();
 
-      int num = 10;
+      int num = 20;
       for (int i = 0; i < num; i++)
       {
          try
@@ -159,13 +160,14 @@ public class ManualReconnectionToSingleServerTest extends UnitTestCase
             Thread.sleep(5000);
             restartServer();
             afterRestart = true;
-            boolean clientReconnected = reconnectionLatch.await(10, SECONDS);
-            assertTrue("client did not reconnect after server was restarted", clientReconnected);
          }
       }
 
       boolean gotException = exceptionLatch.await(10, SECONDS);
       assertTrue(gotException);
+
+      boolean clientReconnected = reconnectionLatch.await(10, SECONDS);
+      assertTrue("client did not reconnect after server was restarted", clientReconnected);
 
       assertTrue(receivedMessagesAfterRestart);
       connection.close();
@@ -328,10 +330,11 @@ public class ManualReconnectionToSingleServerTest extends UnitTestCase
          connection.setExceptionListener(exceptionListener);
          session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
          producer = session.createProducer(topic);
+         System.out.println("creating consumer");
          consumer = session.createConsumer(topic);
          consumer.setMessageListener(listener);
          connection.start();
-         reconnectionLatch.countDown();
+         System.out.println("started new connection");
       }
       catch (Exception e)
       {
