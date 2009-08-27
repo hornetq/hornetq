@@ -208,10 +208,10 @@ BufferedOutputStream bufferedOutput = new BufferedOutputStream(fileOutputStream)
 messageReceived.setObjectProperty("JMS_HQ_SaveStream", bufferedOutput);
             </programlisting>
             <para>Setting the <literal>OutputStream</literal> could also be done in a non blocking
-                way using the property JMS_HQ_InputStream.</para>
+                way using the property JMS_HQ_OutputStream.</para>
             <programlisting>
 // This won't wait the stream to finish. You need to keep the consumer active.
-messageReceived.setObjectProperty("JMS_HQ_InputStream", bufferedOutput);
+messageReceived.setObjectProperty("JMS_HQ_OutputStream", bufferedOutput);
             </programlisting>
             <note>
                 <para>When using JMS, Streaming large messages are only supported on <literal
