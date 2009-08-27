@@ -232,7 +232,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
    {
       internalCreateQueue(address, queueName, null, false, false);
    }
-   
+
    public void createQueue(final SimpleString address, final SimpleString queueName, final boolean durable) throws HornetQException
    {
       internalCreateQueue(address, queueName, null, durable, false);
@@ -321,12 +321,12 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
    {
       return createConsumer(queueName, filterString, consumerWindowSize, consumerMaxRate, false);
    }
-   
+
    public void createQueue(final String address, final String queueName) throws HornetQException
    {
       internalCreateQueue(toSimpleString(address), toSimpleString(queueName), null, false, false);
    }
-   
+
    public ClientConsumer createConsumer(final String queueName, final String filterString) throws HornetQException
    {
       return createConsumer(toSimpleString(queueName), toSimpleString(filterString));
@@ -618,9 +618,13 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
    {
       checkClosed();
 
-      SessionExpiredMessage message = new SessionExpiredMessage(consumerID, messageID);
+      //We don't send expiries for pre-ack since message will already have been acked on server
+      if (!preAcknowledge)
+      {
+         SessionExpiredMessage message = new SessionExpiredMessage(consumerID, messageID);
 
-      channel.send(message);
+         channel.send(message);
+      }
    }
 
    public void addConsumer(final ClientConsumerInternal consumer)
@@ -798,7 +802,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
    {
       channel.returnBlocking();
    }
-   
+
    public ConnectionManager getConnectionManager()
    {
       return connectionManager;
@@ -1193,8 +1197,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
                                                                                                                 false)
                                                                                   : null,
                                                                executor,
-                                                               channel,
-                                                               preAcknowledge);
+                                                               channel);
 
       addConsumer(consumer);
 
@@ -1204,8 +1207,6 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
 
       if (windowSize != 0)
       {
-         log.info("Sending " + windowSize + " initial credits");
-         
          channel.send(new SessionConsumerFlowCreditMessage(consumerID, windowSize));
       }
 

@@ -74,7 +74,36 @@ public class ConsumerTest extends JMSTestBase
          Message m = consumer.receive(500);
          assertNotNull(m);
       }
-      // assert that all the messages are there and none have been acked
+
+      SimpleString queueName = new SimpleString(HornetQQueue.JMS_QUEUE_ADDRESS_PREFIX + Q_NAME);
+      assertEquals(0, ((Queue)server.getPostOffice().getBinding(queueName).getBindable()).getDeliveringCount());
+      assertEquals(0, ((Queue)server.getPostOffice().getBinding(queueName).getBindable()).getMessageCount());
+      conn.close();
+   }
+   
+   public void testPreCommitAcksSetOnConnectionFactory() throws Exception
+   {
+      ((HornetQConnectionFactory)cf).setPreAcknowledge(true);
+      Connection conn = cf.createConnection();
+      
+      Session session = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
+      jBossQueue = new HornetQQueue(Q_NAME);
+      MessageProducer producer = session.createProducer(jBossQueue);
+      MessageConsumer consumer = session.createConsumer(jBossQueue);
+      int noOfMessages = 100;
+      for (int i = 0; i < noOfMessages; i++)
+      {
+         producer.send(session.createTextMessage("m" + i));
+      }
+
+      conn.start();
+      for (int i = 0; i < noOfMessages; i++)
+      {
+         Message m = consumer.receive(500);
+         assertNotNull(m);
+      }
+      
+      //Messages should all have been acked since we set pre ack on the cf
       SimpleString queueName = new SimpleString(HornetQQueue.JMS_QUEUE_ADDRESS_PREFIX + Q_NAME);
       assertEquals(0, ((Queue)server.getPostOffice().getBinding(queueName).getBindable()).getDeliveringCount());
       assertEquals(0, ((Queue)server.getPostOffice().getBinding(queueName).getBindable()).getMessageCount());
@@ -95,14 +124,41 @@ public class ConsumerTest extends JMSTestBase
          producer.setTimeToLive(1);
          producer.send(textMessage);
       }
+      
+      Thread.sleep(2);
 
       conn.start();
+      Message m = consumer.receive(500);
+      assertNull(m);
+      
+      SimpleString queueName = new SimpleString(HornetQQueue.JMS_QUEUE_ADDRESS_PREFIX + Q_NAME);
+      assertEquals(0, ((Queue)server.getPostOffice().getBinding(queueName).getBindable()).getDeliveringCount());
+      assertEquals(0, ((Queue)server.getPostOffice().getBinding(queueName).getBindable()).getMessageCount());
+      conn.close();
+   }
+   
+   public void testPreCommitAcksWithMessageExpirySetOnConnectionFactory() throws Exception
+   {
+      ((HornetQConnectionFactory)cf).setPreAcknowledge(true);
+      Connection conn = cf.createConnection();
+      Session session = conn.createSession(false, Session.CLIENT_ACKNOWLEDGE);
+      jBossQueue = new HornetQQueue(Q_NAME);
+      MessageProducer producer = session.createProducer(jBossQueue);
+      MessageConsumer consumer = session.createConsumer(jBossQueue);
+      int noOfMessages = 1000;
       for (int i = 0; i < noOfMessages; i++)
       {
-         Message m = consumer.receive(500);
-         assertNotNull(m);
+         TextMessage textMessage = session.createTextMessage("m" + i);
+         producer.setTimeToLive(1);
+         producer.send(textMessage);
       }
-      // assert that all the messages are there and none have been acked
+      
+      Thread.sleep(2);
+
+      conn.start();
+      Message m = consumer.receive(500);
+      assertNull(m);
+      
       SimpleString queueName = new SimpleString(HornetQQueue.JMS_QUEUE_ADDRESS_PREFIX + Q_NAME);
       assertEquals(0, ((Queue)server.getPostOffice().getBinding(queueName).getBindable()).getDeliveringCount());
       assertEquals(0, ((Queue)server.getPostOffice().getBinding(queueName).getBindable()).getMessageCount());
@@ -112,7 +168,7 @@ public class ConsumerTest extends JMSTestBase
    public void testClearExceptionListener() throws Exception
    {
       Connection conn = cf.createConnection();
-      Session session = conn.createSession(false, HornetQSession.PRE_ACKNOWLEDGE);
+      Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
       jBossQueue = new HornetQQueue(Q_NAME);
       MessageConsumer consumer = session.createConsumer(jBossQueue);
       consumer.setMessageListener(new MessageListener()
@@ -129,7 +185,7 @@ public class ConsumerTest extends JMSTestBase
    public void testCantReceiveWhenListenerIsSet() throws Exception
    {
       Connection conn = cf.createConnection();
-      Session session = conn.createSession(false, HornetQSession.PRE_ACKNOWLEDGE);
+      Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
       jBossQueue = new HornetQQueue(Q_NAME);
       MessageConsumer consumer = session.createConsumer(jBossQueue);
       consumer.setMessageListener(new MessageListener()

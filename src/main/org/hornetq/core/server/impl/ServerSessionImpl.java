@@ -1622,7 +1622,6 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
       {
          MessageReference ref = consumers.get(packet.getConsumerID()).getExpired(packet.getMessageID());
 
-         // Null implies a browser
          if (ref != null)
          {
             ref.getQueue().expire(ref);

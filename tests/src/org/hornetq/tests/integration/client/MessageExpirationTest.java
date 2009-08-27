@@ -22,6 +22,7 @@ import org.hornetq.core.client.ClientSession;
 import org.hornetq.core.client.ClientSessionFactory;
 import org.hornetq.core.message.impl.MessageImpl;
 import org.hornetq.core.server.HornetQServer;
+import org.hornetq.core.server.Queue;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.tests.util.ServiceTestBase;
 import org.hornetq.utils.SimpleString;
@@ -77,6 +78,63 @@ public class MessageExpirationTest extends ServiceTestBase
       consumer.close();
       session.deleteQueue(queue);
    }
+   
+   public void testMessageExpirationOnServer() throws Exception
+   {
+      SimpleString address = randomSimpleString();
+      SimpleString queue = randomSimpleString();
+
+      session.createQueue(address, queue, false);
+
+      ClientProducer producer = session.createProducer(address);
+      ClientConsumer consumer = session.createConsumer(queue);
+      ClientMessage message = session.createClientMessage(false);
+      message.setExpiration(System.currentTimeMillis() + EXPIRATION);
+      producer.send(message);
+
+      Thread.sleep(EXPIRATION * 2);
+           
+      session.start();
+      
+      Thread.sleep(500);
+      
+      assertEquals(0, ((Queue)server.getPostOffice().getBinding(queue).getBindable()).getDeliveringCount());
+      assertEquals(0, ((Queue)server.getPostOffice().getBinding(queue).getBindable()).getMessageCount());
+
+      
+      ClientMessage message2 = consumer.receive(500);
+      assertNull(message2);
+
+      consumer.close();
+      session.deleteQueue(queue);
+   }
+   
+   public void testMessageExpirationOnClient() throws Exception
+   {
+      SimpleString address = randomSimpleString();
+      SimpleString queue = randomSimpleString();
+
+      session.createQueue(address, queue, false);
+
+      ClientProducer producer = session.createProducer(address);
+      ClientMessage message = session.createClientMessage(false);
+      message.setExpiration(System.currentTimeMillis() + EXPIRATION);
+      producer.send(message);
+     
+      session.start();
+      
+      Thread.sleep(EXPIRATION * 2);
+
+      ClientConsumer consumer = session.createConsumer(queue);
+      ClientMessage message2 = consumer.receive(500);
+      assertNull(message2);
+                 
+      assertEquals(0, ((Queue)server.getPostOffice().getBinding(queue).getBindable()).getDeliveringCount());
+      assertEquals(0, ((Queue)server.getPostOffice().getBinding(queue).getBindable()).getMessageCount());
+
+      consumer.close();
+      session.deleteQueue(queue);
+   }
 
    public void testMessageExpiredWithExpiryAddress() throws Exception
    {
@@ -84,9 +142,7 @@ public class MessageExpirationTest extends ServiceTestBase
       SimpleString queue = randomSimpleString();
       final SimpleString expiryAddress = randomSimpleString();
       SimpleString expiryQueue = randomSimpleString();
-
-      session.createQueue(address, queue, false);
-      session.createQueue(expiryAddress, expiryQueue, false);
+      
       server.getAddressSettingsRepository().addMatch(address.toString(), new AddressSettings()
       {
          @Override
@@ -95,6 +151,10 @@ public class MessageExpirationTest extends ServiceTestBase
             return expiryAddress;
          }
       });
+
+      session.createQueue(address, queue, false);
+      session.createQueue(expiryAddress, expiryQueue, false);
+      
 
       ClientProducer producer = session.createProducer(address);
       ClientMessage message = session.createClientMessage(false);

@@ -585,12 +585,12 @@ public class ChannelImpl implements Channel
       else
       {
          if (packet.isResponse())
-         {
-            response = packet;
-
+         {            
             confirm(packet);
 
             lock.lock();
+            
+            response = packet;
 
             try
             {

@@ -212,11 +212,7 @@ public class LargeMessageTest extends LargeMessageTestBase
          server.start();
 
          ClientSessionFactory sf = createInVMFactory();
-
-         session = sf.createSession(false, false, false);
-
-         session.createQueue(ADDRESS, ADDRESS, true);
-
+         
          SimpleString ADDRESS_DLA = ADDRESS.concat("-dla");
          SimpleString ADDRESS_EXPIRY = ADDRESS.concat("-expiry");
 
@@ -228,6 +224,11 @@ public class LargeMessageTest extends LargeMessageTestBase
 
          server.getAddressSettingsRepository().addMatch("*", addressSettings);
 
+         session = sf.createSession(false, false, false);
+
+         session.createQueue(ADDRESS, ADDRESS, true);
+
+        
          session.createQueue(ADDRESS_DLA, ADDRESS_DLA, true);
          session.createQueue(ADDRESS_EXPIRY, ADDRESS_EXPIRY, true);
 
@@ -346,21 +347,21 @@ public class LargeMessageTest extends LargeMessageTestBase
          server = createServer(true);
 
          server.start();
+         
+         AddressSettings addressSettings = new AddressSettings();
+
+         SimpleString ADDRESS_EXPIRY = ADDRESS.concat("-expiry");
+         
+         addressSettings.setExpiryAddress(ADDRESS_EXPIRY);
+
+         server.getAddressSettingsRepository().addMatch("*", addressSettings);
 
          ClientSessionFactory sf = createInVMFactory();
 
          session = sf.createSession(false, false, false);
 
          session.createQueue(ADDRESS, ADDRESS, true);
-
-         SimpleString ADDRESS_EXPIRY = ADDRESS.concat("-expiry");
-
-         AddressSettings addressSettings = new AddressSettings();
-
-         addressSettings.setExpiryAddress(ADDRESS_EXPIRY);
-
-         server.getAddressSettingsRepository().addMatch("*", addressSettings);
-
+                 
          session.createQueue(ADDRESS_EXPIRY, ADDRESS_EXPIRY, true);
 
          ClientProducer producer = session.createProducer(ADDRESS);

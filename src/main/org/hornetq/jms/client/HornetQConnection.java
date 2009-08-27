@@ -248,8 +248,8 @@ import org.hornetq.utils.VersionLoader;
  *          <p/>
  *          $Id$
  */
-public class HornetQConnection implements Connection, QueueConnection, TopicConnection, XAConnection, XAQueueConnection,
-         XATopicConnection
+public class HornetQConnection implements Connection, QueueConnection, TopicConnection, XAConnection,
+         XAQueueConnection, XATopicConnection
 {
    // Constants ------------------------------------------------------------------------------------
 
@@ -304,18 +304,18 @@ public class HornetQConnection implements Connection, QueueConnection, TopicConn
    private final int transactionBatchSize;
 
    private ClientSession initialSession;
-   
+
    private final Exception creationStack;
 
    // Constructors ---------------------------------------------------------------------------------
 
    public HornetQConnection(final String username,
-                          final String password,
-                          final int connectionType,
-                          final String clientID,
-                          final int dupsOKBatchSize,
-                          final int transactionBatchSize,
-                          final ClientSessionFactory sessionFactory)
+                            final String password,
+                            final int connectionType,
+                            final String clientID,
+                            final int dupsOKBatchSize,
+                            final int transactionBatchSize,
+                            final ClientSessionFactory sessionFactory)
    {
       this.username = username;
 
@@ -334,7 +334,7 @@ public class HornetQConnection implements Connection, QueueConnection, TopicConn
       this.dupsOKBatchSize = dupsOKBatchSize;
 
       this.transactionBatchSize = transactionBatchSize;
-      
+
       this.creationStack = new Exception();
    }
 
@@ -622,19 +622,18 @@ public class HornetQConnection implements Connection, QueueConnection, TopicConn
    {
       if (!closed)
       {
-         log.warn("I'm closing a JMS connection you left open. Please make sure you close all JMS connections explicitly " +
-                  "before letting them go out of scope!");
-         
+         log.warn("I'm closing a JMS connection you left open. Please make sure you close all JMS connections explicitly " + "before letting them go out of scope!");
+
          log.warn("The JMS connection you didn't close was created here:", creationStack);
-         
+
          close();
       }
    }
 
    protected HornetQSession createSessionInternal(final boolean transacted,
-                                                int acknowledgeMode,
-                                                final boolean isXA,
-                                                final int type) throws JMSException
+                                                  int acknowledgeMode,
+                                                  final boolean isXA,
+                                                  final int type) throws JMSException
    {
       if (transacted)
       {
@@ -647,19 +646,43 @@ public class HornetQConnection implements Connection, QueueConnection, TopicConn
 
          if (acknowledgeMode == Session.SESSION_TRANSACTED)
          {
-            session = sessionFactory.createSession(username, password, isXA, false, false, false, transactionBatchSize);
+            session = sessionFactory.createSession(username,
+                                                   password,
+                                                   isXA,
+                                                   false,
+                                                   false,
+                                                   sessionFactory.isPreAcknowledge(),
+                                                   transactionBatchSize);
          }
          else if (acknowledgeMode == Session.AUTO_ACKNOWLEDGE)
          {
-            session = sessionFactory.createSession(username, password, isXA, true, true, false, 0);
+            session = sessionFactory.createSession(username,
+                                                   password,
+                                                   isXA,
+                                                   true,
+                                                   true,
+                                                   sessionFactory.isPreAcknowledge(),
+                                                   0);
          }
          else if (acknowledgeMode == Session.DUPS_OK_ACKNOWLEDGE)
          {
-            session = sessionFactory.createSession(username, password, isXA, true, true, false, dupsOKBatchSize);
+            session = sessionFactory.createSession(username,
+                                                   password,
+                                                   isXA,
+                                                   true,
+                                                   true,
+                                                   sessionFactory.isPreAcknowledge(),
+                                                   dupsOKBatchSize);
          }
          else if (acknowledgeMode == Session.CLIENT_ACKNOWLEDGE)
          {
-            session = sessionFactory.createSession(username, password, isXA, true, false, false, transactionBatchSize);
+            session = sessionFactory.createSession(username,
+                                                   password,
+                                                   isXA,
+                                                   true,
+                                                   false,
+                                                   sessionFactory.isPreAcknowledge(),
+                                                   transactionBatchSize);
          }
          else if (acknowledgeMode == HornetQSession.PRE_ACKNOWLEDGE)
          {
@@ -722,33 +745,33 @@ public class HornetQConnection implements Connection, QueueConnection, TopicConn
    private static class JMSFailureListener implements FailureListener
    {
       private WeakReference<HornetQConnection> connectionRef;
-      
+
       JMSFailureListener(final HornetQConnection connection)
       {
          connectionRef = new WeakReference<HornetQConnection>(connection);
       }
-      
+
       public synchronized void connectionFailed(final HornetQException me)
       {
          if (me == null)
          {
             return;
          }
-         
+
          HornetQConnection conn = connectionRef.get();
-         
+
          if (conn != null)
          {
             try
             {
                final ExceptionListener exceptionListener = conn.getExceptionListener();
-               
+
                if (exceptionListener != null)
                {
                   final JMSException je = new JMSException(me.toString());
-      
+
                   je.initCause(me);
-      
+
                   new Thread(new Runnable()
                   {
                      public void run()

@@ -397,7 +397,7 @@ public class ServerConsumerImpl implements ServerConsumer
       {
          return null;
       }
-
+            
       // Expiries can come in out of sequence with respect to delivery order
 
       Iterator<MessageReference> iter = deliveringRefs.iterator();
@@ -416,15 +416,6 @@ public class ServerConsumerImpl implements ServerConsumer
 
             break;
          }
-      }
-
-      if (ref == null)
-      {
-         throw new IllegalStateException("Could not find reference with id " + messageID +
-                                         " backup " +
-                                         messageQueue.isBackup() +
-                                         " closed " +
-                                         closed);
       }
 
       return ref;

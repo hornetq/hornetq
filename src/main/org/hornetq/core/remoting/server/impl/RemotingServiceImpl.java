@@ -232,16 +232,14 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
 
       failureCheckThread.close();
       
-     // We need to stop them accepting first so no new connections are accepted after we send the disconnect message
+      // We need to stop them accepting first so no new connections are accepted after we send the disconnect message
       for (Acceptor acceptor : acceptors)
       {
          acceptor.pause();
       }
-
-      log.info("there are " + connections.size() + " connections to close on server close");
+     
       for (ConnectionEntry entry : connections.values())
-      {
-         log.info("sending disconnect message");
+      {       
          entry.connection.getChannel(0, -1, false).sendAndFlush(new PacketImpl(DISCONNECT));
       }
            

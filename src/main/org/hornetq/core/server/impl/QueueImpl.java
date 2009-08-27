@@ -146,6 +146,8 @@ public class QueueImpl implements Queue
    private final Map<Consumer, Iterator<MessageReference>> iterators = new HashMap<Consumer, Iterator<MessageReference>>();
 
    private ConcurrentMap<SimpleString, Consumer> groups = new ConcurrentHashMap<SimpleString, Consumer>();
+   
+   private final SimpleString expiryAddress;
 
    public QueueImpl(final long persistenceID,
                     final SimpleString address,
@@ -190,6 +192,15 @@ public class QueueImpl implements Queue
       direct = true;
 
       scheduledDeliveryHandler = new ScheduledDeliveryHandlerImpl(scheduledExecutor);
+      
+      if (addressSettingsRepository != null)
+      {
+         expiryAddress = addressSettingsRepository.getMatch(address.toString()).getExpiryAddress();
+      }
+      else
+      {
+         expiryAddress = null;
+      }
    }
    
    // Bindable implementation -------------------------------------------------------------------------------------
@@ -737,35 +748,17 @@ public class QueueImpl implements Queue
             messageReferences.addFirst(reference, reference.getMessage().getPriority());
          }
       }
-   }
+   }     
 
    public void expire(final MessageReference ref) throws Exception
-   {
-      SimpleString expiryAddress = addressSettingsRepository.getMatch(address.toString()).getExpiryAddress();
-
+   {      
+      log.info("expiring ref " + this.expiryAddress);
       if (expiryAddress != null)
       {
-         Bindings bindingList = postOffice.getBindingsForAddress(expiryAddress);
-
-         if (bindingList.getBindings().isEmpty())
-         {
-            if (log.isDebugEnabled())
-            {
-               log.debug("Message " + ref + " has expired without any binding for expiry address " + expiryAddress + ", dropping it");
-            }
-         }
-         else
-         {
-            move(expiryAddress, ref, true);
-         }
+         move(expiryAddress, ref, true);         
       }
       else
-      {
-         if (log.isDebugEnabled())
-         {
-            log.debug("Message " + ref + " has expired without any expiry address configured for " + name + ", dropping it");
-         }
-
+      {         
          acknowledge(ref);
       }
    }
@@ -1312,6 +1305,7 @@ public class QueueImpl implements Queue
 
       Iterator<MessageReference> iterator = null;
 
+      //TODO - this needs to be optimised!! Creating too much stuff on an inner loop
       int totalConsumers = distributionPolicy.getConsumerCount();
       Set<Consumer> busyConsumers = new HashSet<Consumer>();
       Set<Consumer> nullReferences = new HashSet<Consumer>();
@@ -1335,6 +1329,7 @@ public class QueueImpl implements Queue
             else
             {
                reference = null;
+               
                if (consumer.getFilter() != null)
                {
                   // we have iterated on the whole queue for
@@ -1361,6 +1356,32 @@ public class QueueImpl implements Queue
          else
          {
             nullReferences.remove(consumer);
+            
+            if (reference.getMessage().isExpired())
+            {
+               //We expire messages on the server too
+               if (iterator == null)
+               {
+                  messageReferences.removeFirst();
+               }
+               else
+               {
+                  iterator.remove();
+               }
+               
+               referenceHandled();
+               
+               try
+               {
+                  expire(reference);
+               }
+               catch (Exception e)
+               {
+                  log.error("Failed to expire ref", e);
+               }
+               
+               continue;
+            }
          }
 
          initPagingStore(reference.getMessage().getDestination());
@@ -1629,7 +1650,7 @@ public class QueueImpl implements Queue
 
       // TODO: We could optimize this by storing the paging-store for the address on the Queue. We would need to know
       // the Address for the Queue
-      PagingStore store = null;
+      PagingStore store;
 
       if (pagingManager != null)
       {
@@ -1637,13 +1658,14 @@ public class QueueImpl implements Queue
 
          store.addSize(-ref.getMemoryEstimate());
       }
-
-      if (message.decrementRefCount() == 0)
+      else
       {
-         if (store != null)
-         {
-            store.addSize(-ref.getMessage().getMemoryEstimate());
-         }
+         store = null;
+      }
+
+      if (message.decrementRefCount() == 0 && store != null)
+      {
+         store.addSize(-ref.getMessage().getMemoryEstimate());         
       }
    }
 
