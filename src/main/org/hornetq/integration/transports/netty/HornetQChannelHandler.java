@@ -94,6 +94,8 @@ class HornetQChannelHandler extends SimpleChannelHandler
             return;
          }
          
+         log.error("Got exception on Netty channel", e.getCause());
+                  
          HornetQException me = new HornetQException(HornetQException.INTERNAL_ERROR, "Netty exception");
          me.initCause(e.getCause());
          try
