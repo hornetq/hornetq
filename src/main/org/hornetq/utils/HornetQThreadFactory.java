@@ -48,10 +48,17 @@ public class HornetQThreadFactory implements ThreadFactory
 
    public Thread newThread(final Runnable command)
    {
-      Thread t = new Thread(group, command, "Thread-" + threadCount.getAndIncrement() +
-                                            " (group:" +
-                                            group.getName() +
-                                            ")");
+      Thread t = null;
+      // attach the thread to a group only if there is no security manager:
+      // when sandboxed, the code does not have the RuntimePermission modifyThreadGroup 
+      if (System.getSecurityManager() == null)
+      {
+         t = new Thread(group, command, "Thread-" + threadCount.getAndIncrement() +
+                        " (group:" + group.getName() + ")");
+      } else
+      {
+         t = new Thread(command, "Thread-" + threadCount.getAndIncrement());
+      }
 
       t.setDaemon(daemon);
       t.setPriority(threadPriority);
