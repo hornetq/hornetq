@@ -17,7 +17,6 @@ package org.hornetq.core.cluster;
 import java.util.Map;
 
 import org.hornetq.core.management.NotificationService;
-import org.hornetq.core.server.HornetQComponent;
 
 /**
  * A DiscoveryGroup
@@ -28,7 +27,7 @@ import org.hornetq.core.server.HornetQComponent;
  *
  *
  */
-public interface DiscoveryGroup extends HornetQComponent
+public interface DiscoveryGroup
 {
    void setNotificationService(NotificationService notificationService);
 
@@ -36,6 +35,12 @@ public interface DiscoveryGroup extends HornetQComponent
 
    Map<String, DiscoveryEntry> getDiscoveryEntryMap();
    
+   void start() throws Exception;
+   
+   void stop() throws Exception;
+   
+   boolean isStarted();
+
    boolean waitForBroadcast(long timeout);
    
    void registerListener(final DiscoveryListener listener);

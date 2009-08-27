@@ -661,23 +661,23 @@
             <include name="org/hornetq/core/client/**/*.class"/>
             <include name="org/hornetq/core/filter/**/*.class"/>
             <include name="org/hornetq/core/buffers/**/*.class"/>
+            <include name="org/hornetq/core/config/**/*.class"/>
             <include name="org/hornetq/core/exception/**/*.class"/>
             <include name="org/hornetq/core/logging/**/*.class"/>
-            <include name="org/hornetq/core/remoting/**/*.class"/>
+            <include name="org/hornetq/core/remoting/*.class"/>
+            <include name="org/hornetq/core/remoting/spi/*.class"/>
+            <include name="org/hornetq/core/remoting/impl/**/*.class"/>
             <include name="org/hornetq/utils/**/*.class"/>
             <include name="org/hornetq/core/cluster/**/*.class"/>
-            <include name="org/hornetq/core/config/**/*.class"/>
             <include name="org/hornetq/core/list/**/*.class"/>
             <include name="org/hornetq/core/message/**/*.class"/>
             <include name="org/hornetq/core/version/**/*.class"/>
-            <include name="org/hornetq/core/management/**/*.class"/>           
+            <include name="org/hornetq/core/management/*.class"/>
             <include name="org/hornetq/core/transaction/impl/XidImpl.class"/>
-            
-            <!-- FIXME - why are these classes in the client jar ??? -->
-            <include name="org/hornetq/core/server/HornetQComponent.class"/>
-            <include name="org/hornetq/core/server/JournalType.class"/>
-            <include name="org/hornetq/core/journal/EncodingSupport.class"/>
-            <include name="org/hornetq/core/server/ServerMessage.class"/>            
+         	
+         	<!-- required by SessionSendMessage -->
+            <include name="org/hornetq/core/server/ServerMessage.class"/>
+         	<include name="org/hornetq/core/journal/EncodingSupport.class"/>
          </fileset>
       </jar>
 

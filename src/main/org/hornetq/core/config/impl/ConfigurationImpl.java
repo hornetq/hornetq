@@ -283,7 +283,8 @@ public class ConfigurationImpl implements Configuration
 
    protected long serverDumpInterval = DEFAULT_SERVER_DUMP_INTERVAL;
 
-   // HornetQComponent implementation ----------------------------------------------
+
+   // Public -------------------------------------------------------------------------
 
    public void start() throws Exception
    {
@@ -297,8 +298,6 @@ public class ConfigurationImpl implements Configuration
    {
       return true;
    }
-
-   // Public -------------------------------------------------------------------------
 
    public boolean isClustered()
    {

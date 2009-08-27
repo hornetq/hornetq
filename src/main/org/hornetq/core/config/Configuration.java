@@ -24,7 +24,6 @@ import org.hornetq.core.config.cluster.ClusterConnectionConfiguration;
 import org.hornetq.core.config.cluster.DiscoveryGroupConfiguration;
 import org.hornetq.core.config.cluster.DivertConfiguration;
 import org.hornetq.core.config.cluster.QueueConfiguration;
-import org.hornetq.core.server.HornetQComponent;
 import org.hornetq.core.server.JournalType;
 import org.hornetq.utils.SimpleString;
 
@@ -35,8 +34,15 @@ import org.hornetq.utils.SimpleString;
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */
-public interface Configuration extends Serializable, HornetQComponent
+public interface Configuration extends Serializable
 {
+   public void start() throws Exception;
+
+   public void stop() throws Exception;
+
+   public boolean isStarted();
+
+   
    // General attributes -------------------------------------------------------------------
 
    boolean isClustered();
