@@ -177,7 +177,7 @@ public class ExpiryRunnerTest extends UnitTestCase
       consumer.close();
    }
 
-   public void testExpireWhilstConsuming() throws Exception
+   public void testExpireWhilstConsumingMessagesStillInOrder() throws Exception
    {
       ClientProducer producer = clientSession.createProducer(qName);
       ClientConsumer consumer = clientSession.createConsumer(qName);
@@ -216,9 +216,12 @@ public class ExpiryRunnerTest extends UnitTestCase
 
       for(int i = 0; i < numMessages; i++)
       {
-         assertTrue(dummyMessageHandler.payloads.remove("m" + i));
+         if(dummyMessageHandler.payloads.isEmpty())
+         {
+            break;
+         }
+         assertTrue("m" + i, dummyMessageHandler.payloads.remove("m" + i));
       }
-      assertTrue(dummyMessageHandler.payloads.isEmpty());
       consumer.close();
       thr.join();
    }
