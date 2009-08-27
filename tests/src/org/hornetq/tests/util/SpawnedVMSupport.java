@@ -100,6 +100,8 @@ public class SpawnedVMSupport
       {
          sb.append("-cp").append(" \"").append(classPath).append("\" ");
       }
+      
+      sb.append("-Djava.io.tmpdir=" + System.getProperty("java.io.tmpdir", "./tmp")).append(" ");
 
       sb.append("-Djava.library.path=").append(System.getProperty("java.library.path", "./native/bin")).append(" ");
 
