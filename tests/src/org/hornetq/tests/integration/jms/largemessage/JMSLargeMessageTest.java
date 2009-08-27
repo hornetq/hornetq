@@ -23,6 +23,7 @@ import javax.jms.BytesMessage;
 import javax.jms.Connection;
 import javax.jms.JMSException;
 import javax.jms.MessageConsumer;
+import javax.jms.MessageNotWriteableException;
 import javax.jms.MessageProducer;
 import javax.jms.Queue;
 import javax.jms.Session;
@@ -305,6 +306,15 @@ public class JMSLargeMessageTest extends JMSTestBase
             }
 
          };
+         
+         try
+         {
+            rm.setObjectProperty("JMS_HQ_InputStream", createFakeLargeStream(100));
+            fail("Exception expected!");
+         }
+         catch (MessageNotWriteableException expected)
+         {
+         }
 
          rm.setObjectProperty("JMS_HQ_SaveStream", out);
 

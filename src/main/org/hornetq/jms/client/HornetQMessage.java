@@ -300,8 +300,7 @@ public class HornetQMessage implements javax.jms.Message
 
       for (Map.Entry<String, Object> entry : coreMessage.entrySet())
       {
-         if (entry.getKey().equals("messageID") ||
-             entry.getKey().equals("destination") ||
+         if (entry.getKey().equals("messageID") || entry.getKey().equals("destination") ||
              entry.getKey().equals("type") ||
              entry.getKey().equals("durable") ||
              entry.getKey().equals("expiration") ||
@@ -316,7 +315,7 @@ public class HornetQMessage implements javax.jms.Message
             if (value instanceof SimpleString)
             {
                jmsMessage.put(entry.getKey(), value.toString());
-            } 
+            }
             else
             {
                jmsMessage.put(entry.getKey(), value);
@@ -1102,13 +1101,13 @@ public class HornetQMessage implements javax.jms.Message
       if (JMS_HORNETQ_OUTPUT_STREAM.equals(name))
       {
          setOutputStream((OutputStream)value);
-         
+
          return;
       }
       else if (JMS_HORNETQ_SAVE_STREAM.equals(name))
       {
          saveToOutputStream((OutputStream)value);
-         
+
          return;
       }
 
@@ -1117,7 +1116,7 @@ public class HornetQMessage implements javax.jms.Message
       if (JMS_HORNETQ_INPUT_STREAM.equals(name))
       {
          setInputStream((InputStream)value);
-         
+
          return;
       }
 
@@ -1310,7 +1309,16 @@ public class HornetQMessage implements javax.jms.Message
    {
       if (propertiesReadOnly)
       {
-         throw new MessageNotWriteableException("Message is read-only");
+         if (name.equals(JMS_HORNETQ_INPUT_STREAM))
+         {
+            throw new MessageNotWriteableException("You cannot set the Input Stream on received messages. Did you mean " + JMS_HORNETQ_OUTPUT_STREAM +
+                                                   " or " +
+                                                   JMS_HORNETQ_SAVE_STREAM + "?");
+         }
+         else
+         {
+            throw new MessageNotWriteableException("Message is read-only");
+         }
       }
 
       if (name == null)
