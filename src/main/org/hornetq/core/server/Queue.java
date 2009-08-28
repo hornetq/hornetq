@@ -148,4 +148,6 @@ public interface Queue extends Bindable
     * @return an immutable iterator which does not allow to remove references
     */
    Iterator<MessageReference> iterator();
+   
+   void setExpiryAddress(SimpleString expiryAddress);
 }

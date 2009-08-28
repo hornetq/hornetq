@@ -13,7 +13,6 @@
 
 package org.hornetq.core.remoting.impl;
 
-import static org.hornetq.core.remoting.impl.wireformat.PacketImpl.EARLY_RESPONSE;
 import static org.hornetq.core.remoting.impl.wireformat.PacketImpl.PACKETS_CONFIRMED;
 import static org.hornetq.core.remoting.impl.wireformat.PacketImpl.REPLICATION_RESPONSE;
 
@@ -146,7 +145,10 @@ public class ChannelImpl implements Channel
 
       try
       {
-         response = new PacketImpl(EARLY_RESPONSE);
+         response = new HornetQExceptionMessage(new HornetQException(HornetQException.UNBLOCKED,
+                                                                     "Connection failure detected. Unblocking a blocking call that will never get a response"
+
+         ));
 
          sendCondition.signal();
       }
@@ -173,8 +175,7 @@ public class ChannelImpl implements Channel
       {
          packet.setChannelID(id);
 
-         final HornetQBuffer buffer = connection.getTransportConnection()
-                                                  .createBuffer(packet.getRequiredBufferSize());
+         final HornetQBuffer buffer = connection.getTransportConnection().createBuffer(packet.getRequiredBufferSize());
 
          int size = packet.encode(buffer);
 
@@ -243,8 +244,7 @@ public class ChannelImpl implements Channel
       {
          packet.setChannelID(id);
 
-         final HornetQBuffer buffer = connection.getTransportConnection()
-                                                  .createBuffer(packet.getRequiredBufferSize());
+         final HornetQBuffer buffer = connection.getTransportConnection().createBuffer(packet.getRequiredBufferSize());
 
          int size = packet.encode(buffer);
 
@@ -302,7 +302,7 @@ public class ChannelImpl implements Channel
             if (response == null)
             {
                throw new HornetQException(HornetQException.CONNECTION_TIMEDOUT,
-                                            "Timed out waiting for response when sending packet " + packet.getType());
+                                          "Timed out waiting for response when sending packet " + packet.getType());
             }
 
             if (response.getType() == PacketImpl.EXCEPTION)
@@ -359,7 +359,7 @@ public class ChannelImpl implements Channel
             }
 
             final HornetQBuffer buffer = connection.getTransportConnection()
-                                                     .createBuffer(packet.getRequiredBufferSize());
+                                                   .createBuffer(packet.getRequiredBufferSize());
 
             packet.encode(buffer);
 
@@ -398,16 +398,16 @@ public class ChannelImpl implements Channel
       List<Runnable> toRun = new ArrayList<Runnable>();
 
       synchronized (replicationLock)
-      {         
+      {
          playedResponsesOnFailure = true;
-         
+
          responseActionCount = 0;
       }
 
       while (true)
       {
          // Execute all the response actions now
-         
+
          Runnable action = responseActions.poll();
 
          if (action != null)
@@ -419,11 +419,11 @@ public class ChannelImpl implements Channel
             break;
          }
       }
-      
+
       for (Runnable action : toRun)
       {
          action.run();
-      }      
+      }
    }
 
    public void setHandler(final ChannelHandler handler)
@@ -541,7 +541,7 @@ public class ChannelImpl implements Channel
          lastReceivedCommandID++;
 
          receivedBytes += packet.getPacketSize();
-         
+
          if (receivedBytes >= confWindowSize)
          {
             receivedBytes = 0;
@@ -585,11 +585,11 @@ public class ChannelImpl implements Channel
       else
       {
          if (packet.isResponse())
-         {            
+         {
             confirm(packet);
 
             lock.lock();
-            
+
             response = packet;
 
             try

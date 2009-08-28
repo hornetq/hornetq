@@ -13,8 +13,6 @@
 
 package org.hornetq.core.client.impl;
 
-import static org.hornetq.core.remoting.impl.wireformat.PacketImpl.EARLY_RESPONSE;
-
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -140,7 +138,7 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
    private Future<?> pingerFuture;
 
    private PingRunnable pingRunnable;
-   
+
    private volatile boolean exitLoop;
 
    // debug
@@ -282,13 +280,13 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
                   if (connection == null)
                   {
                      if (exitLoop)
-                     {                        
+                     {
                         return null;
                      }
                      // This can happen if the connection manager gets exitLoop - e.g. the server gets shut down
 
                      throw new HornetQException(HornetQException.NOT_CONNECTED,
-                                                  "Unable to connect to server using configuration " + connectorConfig);
+                                                "Unable to connect to server using configuration " + connectorConfig);
                   }
 
                   channel1 = connection.getChannel(1, -1, false);
@@ -319,56 +317,66 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
                                                          preAcknowledge,
                                                          producerWindowSize);
 
-               Packet pResponse = channel1.sendBlocking(request);
-
-               if (pResponse.getType() == EARLY_RESPONSE)
+               Packet pResponse;
+               try
                {
-                  // This means the thread was blocked on create session and failover unblocked it
-                  // so failover could occur
-
-                  // So we just need to return our connections and flag for retry
-
-                  returnConnection(connection.getID());
-
-                  retry = true;
+                  pResponse = channel1.sendBlocking(request);
                }
-               else
+               catch (HornetQException e)
                {
-                  CreateSessionResponseMessage response = (CreateSessionResponseMessage)pResponse;
+                  if (e.getCode() == HornetQException.UNBLOCKED)
+                  {
+                     // This means the thread was blocked on create session and failover unblocked it
+                     // so failover could occur
 
-                  Channel sessionChannel = connection.getChannel(sessionChannelID,
-                                                                 producerWindowSize,
-                                                                 producerWindowSize != -1);
+                     // So we just need to return our connections and flag for retry
 
-                  ClientSessionInternal session = new ClientSessionImpl(this,
-                                                                        name,
-                                                                        xa,
-                                                                        autoCommitSends,
-                                                                        autoCommitAcks,
-                                                                        preAcknowledge,
-                                                                        blockOnAcknowledge,
-                                                                        autoGroup,
-                                                                        ackBatchSize,
-                                                                        consumerWindowSize,
-                                                                        consumerMaxRate,
-                                                                        producerMaxRate,
-                                                                        blockOnNonPersistentSend,
-                                                                        blockOnPersistentSend,
-                                                                        cacheLargeMessageClient,
-                                                                        minLargeMessageSize,
-                                                                        connection,
-                                                                        response.getServerVersion(),
-                                                                        sessionChannel,
-                                                                        orderedExecutorFactory.getExecutor());
+                     returnConnection(connection.getID());
 
-                  sessions.put(session, connection);
-
-                  ChannelHandler handler = new ClientSessionPacketHandler(session, sessionChannel);
-
-                  sessionChannel.setHandler(handler);
-
-                  return new DelegatingSession(session);
+                     retry = true;
+                     
+                     continue;
+                  }
+                  else
+                  {
+                     throw e;
+                  }
                }
+
+               CreateSessionResponseMessage response = (CreateSessionResponseMessage)pResponse;
+
+               Channel sessionChannel = connection.getChannel(sessionChannelID,
+                                                              producerWindowSize,
+                                                              producerWindowSize != -1);
+
+               ClientSessionInternal session = new ClientSessionImpl(this,
+                                                                     name,
+                                                                     xa,
+                                                                     autoCommitSends,
+                                                                     autoCommitAcks,
+                                                                     preAcknowledge,
+                                                                     blockOnAcknowledge,
+                                                                     autoGroup,
+                                                                     ackBatchSize,
+                                                                     consumerWindowSize,
+                                                                     consumerMaxRate,
+                                                                     producerMaxRate,
+                                                                     blockOnNonPersistentSend,
+                                                                     blockOnPersistentSend,
+                                                                     cacheLargeMessageClient,
+                                                                     minLargeMessageSize,
+                                                                     connection,
+                                                                     response.getServerVersion(),
+                                                                     sessionChannel,
+                                                                     orderedExecutorFactory.getExecutor());
+
+               sessions.put(session, connection);
+
+               ChannelHandler handler = new ClientSessionPacketHandler(session, sessionChannel);
+
+               sessionChannel.setHandler(handler);
+
+               return new DelegatingSession(session);
             }
             catch (Throwable t)
             {
@@ -391,7 +399,7 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
                else
                {
                   HornetQException me = new HornetQException(HornetQException.INTERNAL_ERROR,
-                                                                 "Failed to create session");
+                                                             "Failed to create session");
 
                   me.initCause(t);
 
@@ -456,9 +464,7 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
    {
       return listeners.remove(listener);
    }
-   
-   
-   
+
    public void causeExit()
    {
       exitLoop = true;
@@ -531,9 +537,8 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
 
          boolean serverShutdown = me.getCode() == HornetQException.DISCONNECTED;
 
-         boolean attemptFailoverOrReconnect = (backupConnectorFactory != null || reconnectAttempts != 0)
-                                                && (failoverOnServerShutdown || !serverShutdown);
-         
+         boolean attemptFailoverOrReconnect = (backupConnectorFactory != null || reconnectAttempts != 0) && (failoverOnServerShutdown || !serverShutdown);
+
          if (attemptFailoverOrReconnect)
          {
             lockAllChannel1s();
@@ -779,7 +784,7 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
          {
             return null;
          }
-         
+
          RemotingConnection connection = getConnection(initialRefCount);
 
          if (connection == null)
@@ -1099,7 +1104,7 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
                public void run()
                {
                   conn.fail(new HornetQException(HornetQException.DISCONNECTED,
-                                                   "The connection was exitLoop by the server"));
+                                                 "The connection was exitLoop by the server"));
                }
             });
          }
@@ -1252,7 +1257,7 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
                   if (!connection.checkDataReceived())
                   {
                      final HornetQException me = new HornetQException(HornetQException.CONNECTION_TIMEDOUT,
-                                                                          "Did not receive data from server for " + connection.getTransportConnection());
+                                                                      "Did not receive data from server for " + connection.getTransportConnection());
 
                      threadPool.execute(new Runnable()
                      {

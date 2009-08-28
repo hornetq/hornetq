@@ -1016,12 +1016,17 @@ public class BindingImplTest extends UnitTestCase
 
    class FakeQueue implements Queue
    {
-
       private SimpleString name;
       
       FakeQueue(SimpleString name)
       {
          this.name = name;
+      }
+      
+      public void setExpiryAddress(SimpleString expiryAddress)
+      {
+         // TODO Auto-generated method stub
+         
       }
 
       /* (non-Javadoc)

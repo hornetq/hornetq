@@ -34,9 +34,9 @@ public class HornetQException extends Exception
 
    public static final int CONNECTION_TIMEDOUT = 003;
 
-   public static final int INTERRUPTED = 004;
+   public static final int DISCONNECTED = 004;
    
-   public static final int DISCONNECTED = 005;
+   public static final int UNBLOCKED = 005;
 
    public static final int QUEUE_DOES_NOT_EXIST = 100;
 

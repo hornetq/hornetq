@@ -54,8 +54,6 @@ public class PacketImpl implements Packet
 
    public static final byte REPLICATION_RESPONSE = 23;
 
-   public static final byte EARLY_RESPONSE = 24;
-
    // Server
    public static final byte CREATESESSION = 30;
 

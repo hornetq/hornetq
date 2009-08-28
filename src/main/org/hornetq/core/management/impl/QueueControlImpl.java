@@ -206,14 +206,18 @@ public class QueueControlImpl implements QueueControl
       }
    }
 
-   public void setExpiryAddress(final String expiryAddres) throws Exception
+   public void setExpiryAddress(final String expiryAddress) throws Exception
    {
       AddressSettings addressSettings = addressSettingsRepository.getMatch(address);
 
-      if (expiryAddres != null)
+      SimpleString sExpiryAddress = new SimpleString(expiryAddress);
+      
+      if (expiryAddress != null)
       {
-         addressSettings.setExpiryAddress(new SimpleString(expiryAddres));
+         addressSettings.setExpiryAddress(sExpiryAddress);
       }
+      
+      queue.setExpiryAddress(sExpiryAddress);
    }
 
    public Map<String, Object>[] listScheduledMessages() throws Exception

@@ -147,7 +147,7 @@ public class QueueImpl implements Queue
 
    private ConcurrentMap<SimpleString, Consumer> groups = new ConcurrentHashMap<SimpleString, Consumer>();
    
-   private final SimpleString expiryAddress;
+   private volatile SimpleString expiryAddress;
 
    public QueueImpl(final long persistenceID,
                     final SimpleString address,
@@ -761,6 +761,11 @@ public class QueueImpl implements Queue
       {         
          acknowledge(ref);
       }
+   }
+   
+   public void setExpiryAddress(final SimpleString expiryAddress)
+   {
+      this.expiryAddress = expiryAddress;
    }
 
    public void referenceHandled()
