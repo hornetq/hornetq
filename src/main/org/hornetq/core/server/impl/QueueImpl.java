@@ -1313,10 +1313,8 @@ public class QueueImpl implements Queue
       //TODO - this needs to be optimised!! Creating too much stuff on an inner loop
       int totalConsumers = distributionPolicy.getConsumerCount();
       Set<Consumer> busyConsumers = new HashSet<Consumer>();
-      //Set<Consumer> nullReferences = new HashSet<Consumer>();
+      Set<Consumer> nullReferences = new HashSet<Consumer>();
       
-      int nullCount = 0;
-
       while (true)
       {
          consumer = distributionPolicy.getNextConsumer();
@@ -1349,9 +1347,8 @@ public class QueueImpl implements Queue
 
          if (reference == null)
          {
-            //nullReferences.add(consumer);
-            nullCount++;
-            if (nullCount + busyConsumers.size() == totalConsumers)
+            nullReferences.add(consumer);            
+            if (nullReferences.size() + busyConsumers.size() == totalConsumers)
             {
                startDepaging();
                // We delivered all the messages - go into direct delivery
@@ -1363,7 +1360,7 @@ public class QueueImpl implements Queue
          }
          else
          {
-            //nullReferences.remove(consumer);
+            nullReferences.remove(consumer);
             
             if (reference.getMessage().isExpired())
             {
