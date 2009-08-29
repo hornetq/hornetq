@@ -26,7 +26,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Executor;
-import java.util.concurrent.atomic.AtomicLong;
 
 import javax.transaction.xa.Xid;
 
@@ -66,7 +65,6 @@ import org.hornetq.core.transaction.TransactionPropertyIndexes;
 import org.hornetq.core.transaction.Transaction.State;
 import org.hornetq.core.transaction.impl.TransactionImpl;
 import org.hornetq.utils.DataConstants;
-import org.hornetq.utils.IDGenerator;
 import org.hornetq.utils.Pair;
 import org.hornetq.utils.SimpleString;
 import org.hornetq.utils.UUID;
@@ -937,8 +935,6 @@ public class JournalStorageManager implements StorageManager
 
       bindingsJournal.load(records, preparedTransactions);
 
-      long lastID = -1;
-
       for (RecordInfo record : records)
       {
          long id = record.id;
@@ -986,13 +982,11 @@ public class JournalStorageManager implements StorageManager
          return;
       }
 
-
       checkAndCreateDir(bindingsDir, createBindingsDir);
 
       checkAndCreateDir(journalDir, createJournalDir);
       
       checkAndCreateDir(largeMessagesDirectory, createJournalDir);
-
 
       cleanupIncompleteFiles();
 
@@ -1044,7 +1038,7 @@ public class JournalStorageManager implements StorageManager
    // This should be accessed from this package only
    void deleteFile(final SequentialFile file)
    {
-      this.executor.execute(new Runnable()
+      executor.execute(new Runnable()
       {
          public void run()
          {
@@ -1381,7 +1375,6 @@ public class JournalStorageManager implements StorageManager
 
    private static class ScheduledDeliveryEncoding extends QueueEncoding
    {
-
       long scheduledDeliveryTime;
 
       private ScheduledDeliveryEncoding(long scheduledDeliveryTime, long queueID)
