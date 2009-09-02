@@ -222,7 +222,18 @@ public class HornetQActivation
 
       if (tm == null)
       {
-         tm = TransactionManagerLocator.locateTransactionManager();
+         try
+         {
+            ClassLoader loader = Thread.currentThread().getContextClassLoader();
+            Class aClass = loader.loadClass(ra.getTransactionManagerLocatorClass());
+            Object o = aClass.newInstance();
+            Method m = aClass.getMethod(ra.getTransactionManagerLocatorMethod());
+            tm = (TransactionManager) m.invoke(o);
+         }
+         catch (Exception e)
+         {
+            log.warn("unable to create TransactionManager from " + ra.getTransactionManagerLocatorClass() + "." + ra.getTransactionManagerLocatorMethod());
+         }
       }
 
       return tm;
