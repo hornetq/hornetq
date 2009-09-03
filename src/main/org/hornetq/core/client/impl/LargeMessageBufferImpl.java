@@ -63,6 +63,8 @@ public class LargeMessageBufferImpl implements ChannelBuffer, LargeMessageBuffer
    private final long totalSize;
 
    private boolean streamEnded = false;
+   
+   private boolean streamClosed = false;
 
    private final int readTimeout;
 
@@ -213,6 +215,7 @@ public class LargeMessageBufferImpl implements ChannelBuffer, LargeMessageBuffer
    {
       packets.offer(new SessionReceiveContinuationMessage());
       streamEnded = true;
+      streamClosed = true;
 
       notifyAll();
    }
@@ -1261,6 +1264,11 @@ public class LargeMessageBufferImpl implements ChannelBuffer, LargeMessageBuffer
       if (index >= totalSize)
       {
          throw new IndexOutOfBoundsException();
+      }
+      
+      if (streamClosed)
+      {
+         throw new IllegalAccessError("The consumer associated with this large message was closed before the body was read");
       }
 
       if (fileCache == null)

@@ -67,6 +67,82 @@ public class LargeMessageTest extends LargeMessageTestBase
    // Constructors --------------------------------------------------
 
    // Public --------------------------------------------------------
+   
+   
+   public void testCloseConsumer() throws Exception
+   {
+      final int messageSize = (int)(3.5 * ClientSessionFactoryImpl.DEFAULT_MIN_LARGE_MESSAGE_SIZE);
+
+      ClientSession session = null;           
+
+      try
+      {
+         server = createServer(true);
+
+         server.start();
+         
+         log.info("*********** starting test");
+
+         ClientSessionFactory sf = createInVMFactory();
+
+         session = sf.createSession(false, false, false);
+
+         session.createTemporaryQueue(ADDRESS, ADDRESS);
+
+         ClientProducer producer = session.createProducer(ADDRESS);
+
+         Message clientFile = createLargeClientMessage(session, messageSize, true);
+
+         log.info("*********** sending large message");
+         
+         producer.send(clientFile);
+
+         session.commit();
+
+         session.start();
+
+         ClientConsumer consumer = session.createConsumer(ADDRESS);
+         ClientMessage msg1 = consumer.receive(1000);
+         msg1.acknowledge();
+         session.commit();
+         assertNotNull(msg1);
+         
+         consumer.close();
+
+         try
+         {
+            msg1.getBody().readByte();
+            fail ("Exception was expected");
+         }
+         catch (Throwable ignored)
+         {
+         }
+
+         session.close();
+
+         validateNoFilesOnLargeDir();
+      }
+      finally
+      {
+         try
+         {
+            server.stop();
+         }
+         catch (Throwable ignored)
+         {
+         }
+
+         try
+         {
+            session.close();
+         }
+         catch (Throwable ignored)
+         {
+         }
+      }
+   }
+
+
 
    public void testDLALargeMessage() throws Exception
    {
