@@ -293,6 +293,22 @@ public class HornetQObjectMessage extends HornetQMessage implements ObjectMessag
       super.doBeforeSend();
    }
    
+   
+   public void doBeforeReceive() throws Exception
+   {
+      super.doBeforeReceive();
+      try
+      {
+         int len = getBody().readInt();
+         data = new byte[len];
+         getBody().readBytes(data);
+      }
+      catch (Exception e)
+      {
+         data = null;
+      }
+      
+   }
       
    // ObjectMessage implementation ----------------------------------
 
@@ -326,21 +342,7 @@ public class HornetQObjectMessage extends HornetQMessage implements ObjectMessag
    // lazy deserialize the Object the first time the client requests it
    public Serializable getObject() throws JMSException
    {
-      if (data == null)
-      {
-         try
-         {
-            int len = getBody().readInt();
-            data = new byte[len];
-            getBody().readBytes(data);
-         } 
-         catch (Exception e)
-         {
-            return null;
-         }
-      }
-      
-      if (data.length == 0)
+      if (data == null || data.length == 0)
       {
          return null;
       }
