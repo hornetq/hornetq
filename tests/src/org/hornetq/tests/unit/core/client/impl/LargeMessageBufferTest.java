@@ -257,6 +257,10 @@ public class LargeMessageBufferTest extends UnitTestCase
             catch (IndexOutOfBoundsException ignored)
             {
             }
+            catch (IllegalAccessError ignored)
+            {
+               
+            }
             catch (Throwable e)
             {
                e.printStackTrace();
