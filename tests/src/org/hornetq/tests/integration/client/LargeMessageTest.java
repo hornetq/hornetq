@@ -1588,12 +1588,6 @@ public class LargeMessageTest extends LargeMessageTestBase
          msg2.setOutputStream(createFakeOutputStream());
          assertTrue(msg2.waitOutputStreamCompletion(60000));
 
-         // for (int i = 0; i < SIZE; i++)
-         // {
-         // byte value = msg2.getBody().readByte();
-         // assertEquals("Error position " + i, (byte)'a', value);
-         // }
-
          session.commit();
 
          assertGlobalSize(server);
