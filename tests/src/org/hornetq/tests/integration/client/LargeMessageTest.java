@@ -275,6 +275,89 @@ public class LargeMessageTest extends LargeMessageTestBase
       }
    }
 
+   
+   public void testDeliveryCount() throws Exception
+   {
+      final int messageSize = (int)(3.5 * ClientSessionFactoryImpl.DEFAULT_MIN_LARGE_MESSAGE_SIZE);
+
+      ClientSession session = null;
+
+      try
+      {
+         server = createServer(true);
+
+         server.start();
+
+         ClientSessionFactory sf = createInVMFactory();
+         
+         session = sf.createSession(false, false, false);
+
+         session.createQueue(ADDRESS, ADDRESS, true);
+
+ 
+         ClientProducer producer = session.createProducer(ADDRESS);
+
+         Message clientFile = createLargeClientMessage(session, messageSize, true);
+         producer.send(clientFile);
+
+         session.commit();
+
+         session.start();
+
+         ClientConsumer consumer = session.createConsumer(ADDRESS);
+         
+         ClientMessage msg = consumer.receive(10000);
+         assertNotNull(msg);
+         msg.acknowledge();
+         assertEquals(1, msg.getDeliveryCount());
+         for (int i = 0 ; i < messageSize; i++)
+         {
+            assertEquals(getSamplebyte(i), msg.getBody().readByte());
+         }
+         session.rollback();
+         
+         session.close();
+         
+         session = sf.createSession(false, false, false);
+         session.start();
+
+         consumer = session.createConsumer(ADDRESS);
+         msg = consumer.receive(10000);
+         assertNotNull(msg);
+         msg.acknowledge();
+         for (int i = 0 ; i < messageSize; i++)
+         {
+            assertEquals(getSamplebyte(i), msg.getBody().readByte());
+         }
+         assertEquals(2, msg.getDeliveryCount());
+         msg.acknowledge();
+         consumer.close();
+         
+         session.commit();         
+         
+         validateNoFilesOnLargeDir();
+      }
+      finally
+      {
+         try
+         {
+            server.stop();
+         }
+         catch (Throwable ignored)
+         {
+         }
+
+         try
+         {
+            session.close();
+         }
+         catch (Throwable ignored)
+         {
+         }
+      }
+   }
+
+   
    public void testDLAOnExpiry() throws Exception
    {
       final int messageSize = (int)(3.5 * ClientSessionFactoryImpl.DEFAULT_MIN_LARGE_MESSAGE_SIZE);
