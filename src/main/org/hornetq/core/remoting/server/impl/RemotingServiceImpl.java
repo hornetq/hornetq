@@ -461,7 +461,7 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
       }
 
       public void run()
-      {
+      {         
          while (!closed)
          {
             long now = System.currentTimeMillis();

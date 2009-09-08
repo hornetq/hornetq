@@ -149,7 +149,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
       if (handler != null)
       {
          throw new HornetQException(HornetQException.ILLEGAL_STATE,
-                                      "Cannot call receive(...) - a MessageHandler is set");
+                                    "Cannot call receive(...) - a MessageHandler is set");
       }
 
       if (clientWindowSize == 0)
@@ -210,7 +210,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
             {
                // if we have already pre acked we cant expire
                boolean expired = m.isExpired();
-               
+
                flowControlBeforeConsumption(m);
 
                if (expired)
@@ -279,7 +279,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
       if (receiverThread != null)
       {
          throw new HornetQException(HornetQException.ILLEGAL_STATE,
-                                      "Cannot set MessageHandler - consumer is in receive(...)");
+                                    "Cannot set MessageHandler - consumer is in receive(...)");
       }
 
       boolean noPreviousHandler = handler == null;
@@ -400,7 +400,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
 
       // Flow control for the first packet, we will have others
       flowControl(packet.getPacketSize(), false);
-            
+
       ClientMessageInternal currentChunkMessage = new ClientMessageImpl(packet.getDeliveryCount());
 
       currentChunkMessage.decodeProperties(ChannelBuffers.wrappedBuffer(packet.getLargeMessageHeader()));
@@ -439,17 +439,17 @@ public class ClientConsumerImpl implements ClientConsumerInternal
    {
       synchronized (this)
       {
-         //Need to send credits for the messages in the buffer
-         
-         for (ClientMessageInternal message: this.buffer)
+         // Need to send credits for the messages in the buffer
+
+         for (ClientMessageInternal message : this.buffer)
          {
             flowControlBeforeConsumption(message);
          }
 
          buffer.clear();
       }
-      
-      //Need to send credits for the messages in the buffer
+
+      // Need to send credits for the messages in the buffer
 
       waitForOnMessageToComplete();
    }
@@ -742,17 +742,19 @@ public class ClientConsumerImpl implements ClientConsumerInternal
 
          flushAcks();
 
+         clearBuffer();
+
          if (sendCloseMessage)
          {
             channel.sendBlocking(new SessionConsumerCloseMessage(id));
          }
-
-         clearBuffer();
       }
-      finally
+      catch (Throwable t)
       {
-         session.removeConsumer(this);
+         // Consumer close should always return without exception
       }
+
+      session.removeConsumer(this);
    }
 
    private void clearBuffer()

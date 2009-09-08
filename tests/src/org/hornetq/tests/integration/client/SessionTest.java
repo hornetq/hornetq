@@ -21,8 +21,10 @@ import org.hornetq.core.client.ClientMessage;
 import org.hornetq.core.client.ClientProducer;
 import org.hornetq.core.client.ClientSession;
 import org.hornetq.core.client.ClientSessionFactory;
+import org.hornetq.core.client.impl.ClientSessionInternal;
 import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.remoting.FailureListener;
+import org.hornetq.core.remoting.RemotingConnection;
 import org.hornetq.core.remoting.impl.wireformat.SessionBindingQueryResponseMessage;
 import org.hornetq.core.remoting.impl.wireformat.SessionQueueQueryResponseMessage;
 import org.hornetq.core.server.HornetQServer;
@@ -98,6 +100,61 @@ public class SessionTest extends ServiceTestBase
          clientSession.close();
          server.stop();
          assertFalse(listener.called);
+      }
+      finally
+      {
+         if (server.isStarted())
+         {
+            server.stop();
+         }
+      }
+   }
+   
+   //Closing a session if the underlying remoting connection is deaad should cleanly
+   //release all resources
+   public void testCloseSessionOnDestroyedConnection() throws Exception
+   {
+      HornetQServer server = createServer(false);
+      try
+      {
+         //Make sure we have a short connection TTL so sessions will be quickly closed on the server
+         long ttl = 500;
+         server.getConfiguration().setConnectionTTLOverride(ttl);
+         server.start();
+         ClientSessionFactory cf = createInVMFactory();
+         ClientSessionInternal clientSession = (ClientSessionInternal)cf.createSession(false, true, true);
+         clientSession.createQueue(queueName, queueName, false);
+         ClientProducer producer = clientSession.createProducer();
+         ClientConsumer consumer = clientSession.createConsumer(queueName);   
+         
+         assertEquals(1, server.getRemotingService().getConnections().size());
+         
+         RemotingConnection rc = clientSession.getConnection();
+         
+         rc.fail(new HornetQException(HornetQException.INTERNAL_ERROR));
+         
+         clientSession.close();
+         
+         long start = System.currentTimeMillis();
+         
+         while (true)
+         {           
+            int cons = server.getRemotingService().getConnections().size();
+            
+            if (cons == 0)
+            {
+               break;
+            }               
+            
+            long now = System.currentTimeMillis();
+            
+            if (now - start > 10000)
+            {
+               throw new Exception("Timed out waiting for connections to close");
+            }
+            
+            Thread.sleep(50);
+         }         
       }
       finally
       {
