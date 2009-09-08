@@ -168,7 +168,7 @@
         </itemizedlist>
         <note>
             <para>The property <literal>file-deployment-enabled</literal> in the <literal
-                    >hornetq-configuration.xml</literal> configuration when set to false mans that
+                    >hornetq-configuration.xml</literal> configuration when set to false means that
                 the other configuration files are not loaded. This is true by default.</para>
         </note>
         <para>It is also possible to use system property substitution in all the configuration
