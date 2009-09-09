@@ -45,7 +45,7 @@
                 will survive a server crash or restart. Non durable messages will never survive a
                 server crash or restart.</para>
             <para>Messages can be specified with a priority value between 0 and 9. 0 represents the
-                highest priority and 9 represents the lowest. HornetQ will attempt to deliver higher
+                lowest priority and 9 represents the highest. HornetQ will attempt to deliver higher
                 priority messages before lower priority ones.</para>
             <para>Messages can be specified with an optional expiry time. HornetQ will not deliver
                 messages after its expiry time has been exceeded.</para>
