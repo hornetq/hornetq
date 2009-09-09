@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
 <!-- ============================================================================= -->
 <!-- Copyright © 2009 Red Hat, Inc. and others.                                    -->
 <!--                                                                               -->
@@ -17,7 +16,6 @@
 <!-- and agrees not to assert, Section 4d of CC-BY-SA to the fullest extent        -->
 <!-- permitted by applicable law.                                                  -->
 <!-- ============================================================================= -->
-
 <chapter id="pre-acknowledge">
    <title>Pre-Acknowledge Mode</title>
    <para>JMS specifies 3 acknowledgement modes:</para>
@@ -36,6 +34,12 @@
       server. However, in the case where you can afford to lose messages in event of failure, it
       would make sense to acknowledge the message on the server <emphasis>before</emphasis>
       delivering it to the client.</para>
+   <note>
+      <para>Please note, that if you use pre-acknowledge mode, then you will lose transactional
+         semantics for messages being consumed, since clearly they are being acknowledged first on
+         the server, not when you commit the transaction. This may be stating the obvious but we
+         like to be clear on these things to avoid confusion!</para>
+   </note>
    <para>The disadvantage of acknowledging on the server before delivery is that the message will be
       lost if the system crashes <emphasis>after</emphasis> acknowledging the message on the server
       but <emphasis>before</emphasis> it is delivered to the client. In that case, the message is
@@ -62,14 +66,14 @@
 // messages will be acknowledge on the server *before* being delivered to the client
 Session session = connection.createSession(false, HornetQSession.PRE_ACKNOWLEDGE);
       </programlisting>
-      <para>Or you can set pre-acknowledge directly on the <literal>HornetQConnectionFactory</literal>
-         instance using the setter method.</para>
+      <para>Or you can set pre-acknowledge directly on the <literal
+            >HornetQConnectionFactory</literal> instance using the setter method.</para>
       <para>To use pre-acknowledgement mode using the core API you can set it directly on the
             <literal>ClientSessionFactory</literal> instance using the setter method.</para>
    </section>
    <section>
       <title>Example</title>
-      <para>See <xref linkend="examples.pre-acknowledge" /> for an example which 
-         shows how to use pre-acknowledgement mode with with JMS.</para>
+      <para>See <xref linkend="examples.pre-acknowledge"/> for an example which shows how to use
+         pre-acknowledgement mode with with JMS.</para>
    </section>
 </chapter>
