@@ -91,14 +91,14 @@ public class AIOSequentialFileFactory extends AbstractSequentialFactory
    public void activate(SequentialFile file)
    {
       final AIOSequentialFile sequentialFile = (AIOSequentialFile)file;
-      timedBuffer.lock();
+      timedBuffer.disableAutoFlush();
       try
       {
          sequentialFile.setTimedBuffer(timedBuffer);
       }
       finally
       {
-         timedBuffer.unlock();
+         timedBuffer.enableAutoFlush();
       }
    }
 

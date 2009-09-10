@@ -585,14 +585,14 @@ public class FakeSequentialFileFactory implements SequentialFileFactory
       /* (non-Javadoc)
        * @see org.hornetq.core.journal.SequentialFile#lockBuffer()
        */
-      public void lockBuffer()
+      public void disableAutoFlush()
       {
       }
 
       /* (non-Javadoc)
        * @see org.hornetq.core.journal.SequentialFile#unlockBuffer()
        */
-      public void unlockBuffer()
+      public void enableAutoFlush()
       {
       }
 

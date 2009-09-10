@@ -29,7 +29,7 @@ import org.hornetq.jms.tests.HornetQServerTestCase;
  *
  * $Id$
  */
-public class MessageTestBase extends HornetQServerTestCase
+public abstract class MessageTestBase extends HornetQServerTestCase
 {
    // Constants -----------------------------------------------------
 

@@ -81,8 +81,8 @@ public interface SequentialFile
    
    void renameTo(String newFileName) throws Exception;
 
-   void lockBuffer();
+   void disableAutoFlush();
 
-   void unlockBuffer();
+   void enableAutoFlush();
 
 }

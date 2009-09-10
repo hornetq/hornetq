@@ -13,9 +13,30 @@
 
 package org.hornetq.tests.integration.jms.client;
 
+import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE;
+import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_AUTO_GROUP;
+import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_ACKNOWLEDGE;
+import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND;
+import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_PERSISTENT_SEND;
+import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD;
+import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME;
+import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CONNECTION_TTL;
+import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CONSUMER_MAX_RATE;
+import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CONSUMER_WINDOW_SIZE;
+import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_MAX_CONNECTIONS;
+import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_MIN_LARGE_MESSAGE_SIZE;
+import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_PRE_ACKNOWLEDGE;
+import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_PRODUCER_MAX_RATE;
+import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_PRODUCER_WINDOW_SIZE;
+import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE;
+import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_THREAD_POOL_MAX_SIZE;
+import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_USE_GLOBAL_POOLS;
+
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.List;
 
+import javax.jms.BytesMessage;
 import javax.jms.Connection;
 import javax.jms.MapMessage;
 import javax.jms.Message;
@@ -26,7 +47,11 @@ import javax.jms.Queue;
 import javax.jms.Session;
 import javax.jms.TextMessage;
 
+import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
+import org.hornetq.core.config.TransportConfiguration;
+import org.hornetq.jms.client.HornetQMessage;
 import org.hornetq.tests.util.JMSTestBase;
+import org.hornetq.utils.Pair;
 
 /**
  * Receive Messages and resend them, like the bridge would do
@@ -62,6 +87,11 @@ public class ResendTest extends JMSTestBase
 
          for (int i = 0; i < 10; i++)
          {
+            BytesMessage bm = sess.createBytesMessage();
+            bm.setObjectProperty(HornetQMessage.JMS_HORNETQ_INPUT_STREAM,
+                                 createFakeLargeStream(2 * ClientSessionFactoryImpl.DEFAULT_MIN_LARGE_MESSAGE_SIZE));
+            msgs.add(bm);
+
             MapMessage mm = sess.createMapMessage();
             mm.setBoolean("boolean", true);
             mm.setByte("byte", (byte)3);
@@ -125,7 +155,16 @@ public class ResendTest extends JMSTestBase
 
          sess.commit();
 
-         if (copiedMessage instanceof MapMessage)
+         if (copiedMessage instanceof BytesMessage)
+         {
+            BytesMessage copiedBytes = (BytesMessage)copiedMessage;
+
+            for (int i = 0; i < copiedBytes.getBodyLength(); i++)
+            {
+               assertEquals(getSamplebyte(i), copiedBytes.readByte());
+            }
+         }
+         else if (copiedMessage instanceof MapMessage)
          {
             MapMessage copiedMap = (MapMessage)copiedMessage;
             MapMessage originalMap = (MapMessage)originalMessage;
@@ -209,6 +248,45 @@ public class ResendTest extends JMSTestBase
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
+   protected void createCF(List<Pair<TransportConfiguration, TransportConfiguration>> connectorConfigs,
+                           List<String> jndiBindings) throws Exception
+   {
+      int retryInterval = 1000;
+      double retryIntervalMultiplier = 1.0;
+      int reconnectAttempts = -1;
+      boolean failoverOnServerShutdown = true;
+      int callTimeout = 30000;
+
+      jmsServer.createConnectionFactory("ManualReconnectionToSingleServerTest",
+                                        connectorConfigs,
+                                        null,
+                                        DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
+                                        DEFAULT_CONNECTION_TTL,
+                                        callTimeout,
+                                        DEFAULT_MAX_CONNECTIONS,
+                                        true,
+                                        DEFAULT_MIN_LARGE_MESSAGE_SIZE,
+                                        DEFAULT_CONSUMER_WINDOW_SIZE,
+                                        DEFAULT_CONSUMER_MAX_RATE,
+                                        DEFAULT_PRODUCER_WINDOW_SIZE,
+                                        DEFAULT_PRODUCER_MAX_RATE,
+                                        DEFAULT_BLOCK_ON_ACKNOWLEDGE,
+                                        DEFAULT_BLOCK_ON_PERSISTENT_SEND,
+                                        DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND,
+                                        DEFAULT_AUTO_GROUP,
+                                        DEFAULT_PRE_ACKNOWLEDGE,
+                                        DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME,
+                                        DEFAULT_ACK_BATCH_SIZE,
+                                        DEFAULT_ACK_BATCH_SIZE,
+                                        DEFAULT_USE_GLOBAL_POOLS,
+                                        DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE,
+                                        DEFAULT_THREAD_POOL_MAX_SIZE,
+                                        retryInterval,
+                                        retryIntervalMultiplier,
+                                        reconnectAttempts,
+                                        failoverOnServerShutdown,
+                                        jndiBindings);
+   }
 
    @Override
    protected void setUp() throws Exception

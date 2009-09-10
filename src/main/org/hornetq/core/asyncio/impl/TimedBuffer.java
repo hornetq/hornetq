@@ -179,12 +179,12 @@ public class TimedBuffer
       this.bufferObserver = observer;
    }
 
-   public void lock()
+   public void disableAutoFlush()
    {
       lock.lock();
    }
 
-   public void unlock()
+   public void enableAutoFlush()
    {
       lock.unlock();
    }

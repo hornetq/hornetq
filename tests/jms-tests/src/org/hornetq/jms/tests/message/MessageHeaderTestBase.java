@@ -47,7 +47,7 @@ import org.hornetq.jms.tests.HornetQServerTestCase;
  *
  * $Id: MessageImplTestBase.java 2883 2007-07-12 23:36:16Z timfox $
  */
-public class MessageHeaderTestBase extends HornetQServerTestCase
+public abstract class MessageHeaderTestBase extends HornetQServerTestCase
 {
    // Constants -----------------------------------------------------
 

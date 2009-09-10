@@ -47,9 +47,15 @@ public class CompactingTest extends ServiceTestBase
 
    private static final String AD2 = "ad2";
 
+   private static final String AD3 = "ad3";
+
    private static final String Q1 = "q1";
 
    private static final String Q2 = "q2";
+
+   private static final String Q3 = "q3";
+
+   private static final int TOT_AD3 = 5000;
 
    private HornetQServer server;
 
@@ -76,6 +82,36 @@ public class CompactingTest extends ServiceTestBase
 
       setupServer(journalType);
 
+      ClientSession session = sf.createSession(false, false);
+
+      try
+      {
+         ClientProducer producer = session.createProducer(AD3);
+
+         byte[] buffer = new byte[10 * 1024];
+
+         ClientMessage msg = session.createClientMessage(true);
+         msg.setBody(ChannelBuffers.wrappedBuffer(buffer));
+         for (int i = 0; i < TOT_AD3; i++)
+         {
+            producer.send(msg);
+            if (i % 100 == 0)
+            {
+               session.commit();
+            }
+         }
+
+         session.commit();
+      }
+      finally
+      {
+         session.close();
+      }
+      
+      server.stop();
+      
+      setupServer(journalType);
+      
       final AtomicInteger numberOfMessages = new AtomicInteger(0);
       final int NUMBER_OF_FAST_MESSAGES = 100000;
       final int SLOW_INTERVAL = 100;
@@ -224,7 +260,7 @@ public class CompactingTest extends ServiceTestBase
 
       try
       {
-         
+
          sess = sf.createSession(true, true);
 
          ClientConsumer cons = sess.createConsumer(Q1);
@@ -245,6 +281,19 @@ public class CompactingTest extends ServiceTestBase
          cons = sess.createConsumer(Q2);
 
          assertNull(cons.receive(100));
+
+         cons.close();
+
+         cons = sess.createConsumer(Q3);
+
+         for (int i = 0; i < TOT_AD3; i++)
+         {
+            ClientMessage msg = cons.receive(60000);
+            assertNotNull(msg);
+            msg.acknowledge();
+         }
+         
+         assertNull(cons.receiveImmediate());
 
       }
       finally
@@ -300,6 +349,14 @@ public class CompactingTest extends ServiceTestBase
       try
       {
          sess.createQueue(AD2, Q2, true);
+      }
+      catch (Exception ignored)
+      {
+      }
+
+      try
+      {
+         sess.createQueue(AD3, Q3, true);
       }
       catch (Exception ignored)
       {

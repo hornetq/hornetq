@@ -202,7 +202,8 @@ public class JournalImpl implements TestableJournal
 
    private ExecutorService filesExecutor = null;
 
-   private final Semaphore lock = new Semaphore(1);
+   // Lock used during the append of records
+   private final Semaphore lockAppend = new Semaphore(1);
 
    /** We don't lock the journal while compacting, however we need to lock it while taking and updating snapshots */
    private final ReadWriteLock compactingLock = new ReentrantReadWriteLock();
@@ -835,7 +836,7 @@ public class JournalImpl implements TestableJournal
 
          callback = getSyncCallback(sync);
 
-         lock.acquire();
+         lockAppend.acquire();
          try
          {
             JournalFile usedFile = appendRecord(bb, false, sync, null, callback);
@@ -844,7 +845,7 @@ public class JournalImpl implements TestableJournal
          }
          finally
          {
-            lock.release();
+            lockAppend.release();
          }
       }
       finally
@@ -895,7 +896,7 @@ public class JournalImpl implements TestableJournal
 
          callback = getSyncCallback(sync);
 
-         lock.acquire();
+         lockAppend.acquire();
          try
          {
             JournalFile usedFile = appendRecord(bb, false, sync, null, callback);
@@ -913,7 +914,7 @@ public class JournalImpl implements TestableJournal
          }
          finally
          {
-            lock.release();
+            lockAppend.release();
          }
       }
       finally
@@ -962,7 +963,7 @@ public class JournalImpl implements TestableJournal
 
          callback = getSyncCallback(sync);
 
-         lock.acquire();
+         lockAppend.acquire();
          try
          {
             JournalFile usedFile = appendRecord(bb, false, sync, null, callback);
@@ -981,7 +982,7 @@ public class JournalImpl implements TestableJournal
          }
          finally
          {
-            lock.release();
+            lockAppend.release();
          }
       }
       finally
@@ -1024,7 +1025,7 @@ public class JournalImpl implements TestableJournal
 
          JournalTransaction tx = getTransactionInfo(txID);
 
-         lock.acquire();
+         lockAppend.acquire();
          try
          {
             JournalFile usedFile = appendRecord(bb, false, false, tx, null);
@@ -1033,7 +1034,7 @@ public class JournalImpl implements TestableJournal
          }
          finally
          {
-            lock.release();
+            lockAppend.release();
          }
       }
       finally
@@ -1073,7 +1074,7 @@ public class JournalImpl implements TestableJournal
 
          JournalTransaction tx = getTransactionInfo(txID);
 
-         lock.acquire();
+         lockAppend.acquire();
          try
          {
             JournalFile usedFile = appendRecord(bb, false, false, tx, null);
@@ -1082,7 +1083,7 @@ public class JournalImpl implements TestableJournal
          }
          finally
          {
-            lock.release();
+            lockAppend.release();
          }
       }
       finally
@@ -1115,7 +1116,7 @@ public class JournalImpl implements TestableJournal
 
          JournalTransaction tx = getTransactionInfo(txID);
 
-         lock.acquire();
+         lockAppend.acquire();
          try
          {
             JournalFile usedFile = appendRecord(bb, false, false, tx, null);
@@ -1124,7 +1125,7 @@ public class JournalImpl implements TestableJournal
          }
          finally
          {
-            lock.release();
+            lockAppend.release();
          }
       }
       finally
@@ -1158,14 +1159,14 @@ public class JournalImpl implements TestableJournal
          throw new IllegalStateException("Journal must be loaded first");
       }
 
+      compactingLock.readLock().lock();
+
       JournalTransaction tx = getTransactionInfo(txID);
 
       if (sync)
       {
          tx.syncPreviousFiles(fileFactory.isSupportsCallbacks(), currentFile);
       }
-
-      compactingLock.readLock().lock();
 
       try
       {
@@ -1175,7 +1176,7 @@ public class JournalImpl implements TestableJournal
 
          writeTransaction(-1, PREPARE_RECORD, txID, tx, transactionData, size, -1, bb);
 
-         lock.acquire();
+         lockAppend.acquire();
          try
          {
             JournalFile usedFile = appendRecord(bb, true, sync, tx, null);
@@ -1184,7 +1185,7 @@ public class JournalImpl implements TestableJournal
          }
          finally
          {
-            lock.release();
+            lockAppend.release();
          }
 
       }
@@ -1221,9 +1222,9 @@ public class JournalImpl implements TestableJournal
          throw new IllegalStateException("Journal must be loaded first");
       }
 
-      JournalTransaction tx = transactions.remove(txID);
-
       compactingLock.readLock().lock();
+
+      JournalTransaction tx = transactions.remove(txID);
 
       try
       {
@@ -1237,7 +1238,7 @@ public class JournalImpl implements TestableJournal
 
          writeTransaction(-1, COMMIT_RECORD, txID, tx, null, SIZE_COMPLETE_TRANSACTION_RECORD, -1, bb);
 
-         lock.acquire();
+         lockAppend.acquire();
          try
          {
             JournalFile usedFile = appendRecord(bb, true, sync, tx, null);
@@ -1246,7 +1247,7 @@ public class JournalImpl implements TestableJournal
          }
          finally
          {
-            lock.release();
+            lockAppend.release();
          }
 
       }
@@ -1291,7 +1292,7 @@ public class JournalImpl implements TestableJournal
          bb.writeLong(txID);
          bb.writeInt(size);
 
-         lock.acquire();
+         lockAppend.acquire();
          try
          {
             JournalFile usedFile = appendRecord(bb, false, sync, tx, null);
@@ -1300,7 +1301,7 @@ public class JournalImpl implements TestableJournal
          }
          finally
          {
-            lock.release();
+            lockAppend.release();
          }
 
       }
@@ -1406,6 +1407,8 @@ public class JournalImpl implements TestableJournal
       try
       {
 
+         log.info("Starting compacting operation on journal");
+
          // We need to guarantee that the journal is frozen for this short time
          // We don't freeze the journal as we compact, only for the short time where we replace records
          compactingLock.writeLock().lock();
@@ -1459,10 +1462,13 @@ public class JournalImpl implements TestableJournal
 
          Collections.sort(dataFilesToProcess, new JournalFileComparator());
 
+         // This is where most of the work is done, taking most of the time of the compacting routine.
+         // Notice there are no locks while this is being done.
+         
          // Read the files, and use the JournalCompactor class to create the new outputFiles, and the new collections as
          // well
          for (final JournalFile file : dataFilesToProcess)
-         {            
+         {
             readJournalFile(fileFactory, file, compactor);
          }
 
@@ -1518,7 +1524,7 @@ public class JournalImpl implements TestableJournal
             {
                if (trace)
                {
-                  trace("Merging pending transaction " + newTransaction + " after compacting to the journal");
+                  trace("Merging pending transaction " + newTransaction + " after compacting the journal");
                }
                JournalTransaction liveTransaction = transactions.get(newTransaction.getId());
                if (liveTransaction == null)
@@ -1540,6 +1546,8 @@ public class JournalImpl implements TestableJournal
          // At this point the journal is unlocked. We keep renaming files while the journal is already operational
          renameFiles(dataFilesToProcess, newDatafiles);
          deleteControlFile(controlFile);
+
+         log.info("Finished compacting on journal");
 
       }
       finally
@@ -1929,7 +1937,7 @@ public class JournalImpl implements TestableJournal
          for (int i = 0; i < filesToCreate; i++)
          {
             // Keeping all files opened can be very costly (mainly on AIO)
-            freeFiles.add(createFile(false, false, true));
+            freeFiles.add(createFile(false, false, true, false));
          }
       }
 
@@ -2234,19 +2242,27 @@ public class JournalImpl implements TestableJournal
    // In some tests we need to force the journal to move to a next file
    public void forceMoveNextFile() throws Exception
    {
-      lock.acquire();
+      compactingLock.readLock().lock();
       try
       {
-         moveNextFile(true);
-         if (autoReclaim)
+         lockAppend.acquire();
+         try
          {
-            checkAndReclaimFiles();
+            moveNextFile(true);
+            if (autoReclaim)
+            {
+               checkAndReclaimFiles();
+            }
+            debugWait();
          }
-         debugWait();
+         finally
+         {
+            lockAppend.release();
+         }
       }
       finally
       {
-         lock.release();
+         compactingLock.readLock().unlock();
       }
    }
 
@@ -2286,7 +2302,7 @@ public class JournalImpl implements TestableJournal
          throw new IllegalStateException("Journal is already stopped");
       }
 
-      lock.acquire();
+      lockAppend.acquire();
 
       try
       {
@@ -2321,7 +2337,7 @@ public class JournalImpl implements TestableJournal
       }
       finally
       {
-         lock.release();
+         lockAppend.release();
       }
    }
 
@@ -2501,9 +2517,6 @@ public class JournalImpl implements TestableJournal
       return recordSize;
    }
 
-   /** 
-    * This method requires bufferControl disabled, or the reads are going to be invalid
-    * */
    private List<JournalFile> orderFiles() throws Exception
    {
 
@@ -2522,7 +2535,7 @@ public class JournalImpl implements TestableJournal
          file.read(bb);
 
          int fileID = bb.getInt();
-
+         
          fileFactory.releaseBuffer(bb);
 
          bb = null;
@@ -2531,6 +2544,16 @@ public class JournalImpl implements TestableJournal
          {
             nextFileID.set(fileID);
          }
+
+         int fileNameID = getFileNameID(fileName);
+         
+         // The compactor could create a fileName but use a previously assigned ID.
+         // Because of that we need to take both parts into account
+         if (nextFileID.get() < fileNameID)
+         {
+            nextFileID.set(fileNameID);
+         }
+
 
          orderedFiles.add(new JournalFileImpl(file, fileID));
 
@@ -2571,14 +2594,14 @@ public class JournalImpl implements TestableJournal
             throw new IllegalArgumentException("Record is too large to store " + size);
          }
 
-         // The buffer on the file can't be flushed or the currentFile could be affected
-         currentFile.getFile().lockBuffer();
+         // Disable auto flush on the timer. The Timer should'nt flush anything 
+         currentFile.getFile().disableAutoFlush();
 
          if (!currentFile.getFile().fits(size))
          {
-            currentFile.getFile().unlockBuffer();
+            currentFile.getFile().enableAutoFlush();
             moveNextFile(false);
-            currentFile.getFile().lockBuffer();
+            currentFile.getFile().disableAutoFlush();
 
             // The same check needs to be done at the new file also
             if (!currentFile.getFile().fits(size))
@@ -2642,9 +2665,23 @@ public class JournalImpl implements TestableJournal
       }
       finally
       {
-         currentFile.getFile().unlockBuffer();
+         currentFile.getFile().enableAutoFlush();
       }
 
+   }
+   
+   /** Get the ID part of the name */
+   private int getFileNameID(String fileName)
+   {
+      try
+      {
+         return Integer.parseInt(fileName.substring(filePrefix.length()+1, fileName.indexOf('.')));
+      }
+      catch (Throwable e)
+      {
+         log.warn("Impossible to get the ID part of the file name " + fileName, e);
+         return 0;
+      }
    }
 
    /**
@@ -2653,11 +2690,23 @@ public class JournalImpl implements TestableJournal
     * @return
     * @throws Exception
     */
-   private JournalFile createFile(final boolean keepOpened, final boolean multiAIO, final boolean fill) throws Exception
+   private JournalFile createFile(final boolean keepOpened,
+                                  final boolean multiAIO,
+                                  final boolean fill,
+                                  final boolean tmpCompact) throws Exception
    {
       int fileID = generateFileID();
 
-      String fileName = filePrefix + "-" + fileID + "." + fileExtension;
+      String fileName;
+
+      if (tmpCompact)
+      {
+         fileName = filePrefix + "-" + fileID + "." + fileExtension + ".cmp";
+      }
+      else
+      {
+         fileName = filePrefix + "-" + fileID + "." + fileExtension;
+      }
 
       if (trace)
       {
@@ -2820,7 +2869,7 @@ public class JournalImpl implements TestableJournal
     * */
    private void pushOpenedFile() throws Exception
    {
-      JournalFile nextOpenedFile = getFile(true, true, true);
+      JournalFile nextOpenedFile = getFile(true, true, true, false);
 
       openedFiles.offer(nextOpenedFile);
    }
@@ -2829,12 +2878,20 @@ public class JournalImpl implements TestableJournal
     * @return
     * @throws Exception
     */
-   JournalFile getFile(final boolean keepOpened, final boolean multiAIO, final boolean fill) throws Exception
+   JournalFile getFile(final boolean keepOpened,
+                       final boolean multiAIO,
+                       final boolean fill,
+                       final boolean tmpCompactExtension) throws Exception
    {
       JournalFile nextOpenedFile = null;
       try
       {
          nextOpenedFile = freeFiles.remove();
+         if (tmpCompactExtension)
+         {
+            SequentialFile sequentialFile = nextOpenedFile.getFile();
+            sequentialFile.renameTo(sequentialFile.getFileName() + ".cmp");
+         }
       }
       catch (NoSuchElementException ignored)
       {
@@ -2842,7 +2899,7 @@ public class JournalImpl implements TestableJournal
 
       if (nextOpenedFile == null)
       {
-         nextOpenedFile = createFile(keepOpened, multiAIO, fill);
+         nextOpenedFile = createFile(keepOpened, multiAIO, fill, tmpCompactExtension);
       }
       else
       {
@@ -2951,7 +3008,7 @@ public class JournalImpl implements TestableJournal
       {
          for (String dataFile : dataFiles)
          {
-            SequentialFile file = fileFactory.createSequentialFile(dataFile, 1);           
+            SequentialFile file = fileFactory.createSequentialFile(dataFile, 1);
             if (file.exists())
             {
                file.delete();
@@ -2960,7 +3017,7 @@ public class JournalImpl implements TestableJournal
 
          for (String newFile : newFiles)
          {
-            SequentialFile file = fileFactory.createSequentialFile(newFile, 1);           
+            SequentialFile file = fileFactory.createSequentialFile(newFile, 1);
             if (file.exists())
             {
                final String originalName = file.getFileName();
@@ -3179,7 +3236,7 @@ public class JournalImpl implements TestableJournal
       {
          try
          {
-            lock.acquire();
+            lockAppend.acquire();
 
             HornetQBuffer bb = newBuffer(128 * 1024);
 
@@ -3188,7 +3245,7 @@ public class JournalImpl implements TestableJournal
                appendRecord(bb, false, false, null, null);
             }
 
-            lock.release();
+            lockAppend.release();
          }
          catch (Exception e)
          {

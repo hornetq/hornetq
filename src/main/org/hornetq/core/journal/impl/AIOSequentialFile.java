@@ -127,14 +127,14 @@ public class AIOSequentialFile implements SequentialFile
       return timedBuffer.checkSize(size);
    }
 
-   public void lockBuffer()
+   public void disableAutoFlush()
    {
-      timedBuffer.lock();
+      timedBuffer.disableAutoFlush();
    }
 
-   public void unlockBuffer()
+   public void enableAutoFlush()
    {
-      timedBuffer.unlock();
+      timedBuffer.enableAutoFlush();
    }
 
    public synchronized void close() throws Exception

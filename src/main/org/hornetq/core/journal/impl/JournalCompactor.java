@@ -548,9 +548,8 @@ public class JournalCompactor implements JournalReaderCallback
       ByteBuffer bufferWrite = fileFactory.newBuffer(journal.getFileSize());
       writingChannel = ChannelBuffers.wrappedBuffer(bufferWrite);
 
-      currentFile = journal.getFile(false, false, false);
+      currentFile = journal.getFile(false, false, false, true);
       sequentialFile = currentFile.getFile();
-      sequentialFile.renameTo(sequentialFile.getFileName() + ".cmp");
             
       sequentialFile.open(1);
       fileID = nextOrderingID++;
