@@ -48,6 +48,7 @@ public class VersionImplTest extends UnitTestCase
       int microVersion = 1;
       int incrementingVersion = 10;
       String versionSuffix = "suffix";
+      String nettyVersion = "netty";
       VersionImpl version = new VersionImpl(versionName, majorVersion, minorVersion, microVersion, incrementingVersion, versionSuffix, nettyVersion);
      
       assertEquals(versionName, version.getVersionName());
@@ -60,6 +61,7 @@ public class VersionImplTest extends UnitTestCase
 
    public void testEquals() throws Exception
    {
+      String nettyVersion = "netty";
       VersionImpl version = new VersionImpl("HORNETQ", 2, 0, 1, 10, "suffix", nettyVersion);
       VersionImpl sameVersion = new VersionImpl("HORNETQ", 2, 0, 1, 10, "suffix", nettyVersion);
       VersionImpl differentVersion = new VersionImpl("HORNETQ", 2, 0, 1, 11, "suffix", nettyVersion);
@@ -73,6 +75,7 @@ public class VersionImplTest extends UnitTestCase
    
    public void testSerialize() throws Exception
    {
+      String nettyVersion = "netty";
       VersionImpl version = new VersionImpl("uyiuy", 3, 7, 6, 12, "uhuhuh", nettyVersion);
       ByteArrayOutputStream baos = new ByteArrayOutputStream();
       ObjectOutputStream oos = new ObjectOutputStream(baos);
