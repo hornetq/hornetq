@@ -10,7 +10,7 @@
  *  implied.  See the License for the specific language governing
  *  permissions and limitations under the License.
  */
-package org.hornetq.ra.inflow;
+package org.hornetq.integration.jboss.tm;
 
 import org.jboss.tm.TransactionManagerLocator;
 
@@ -19,10 +19,10 @@ import javax.transaction.TransactionManager;
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
  */
-public class JBoss5TransactionManagerLocator
+public class JBoss4TransactionManagerLocator
 {
    public TransactionManager getTm()
    {
-      return TransactionManagerLocator.locateTransactionManager();
+      return TransactionManagerLocator.getInstance().locate();
    }
 }

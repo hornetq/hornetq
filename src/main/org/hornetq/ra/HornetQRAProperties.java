@@ -47,7 +47,7 @@ public class HornetQRAProperties extends ConnectionFactoryProperties implements 
    /** Use Local TX instead of XA */
    private Boolean localTx = false;
 
-   private String transactionManagerLocatorClass = "org.hornetq.ra.inflow.JBoss5TransactionManagerLocator";
+   private String transactionManagerLocatorClass = "org.hornetq.integration.jboss.tm.JBoss5TransactionManagerLocator";
 
    private String transactionManagerLocatorMethod = "getTm";
 

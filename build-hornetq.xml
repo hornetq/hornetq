@@ -49,7 +49,7 @@
    <property name="jms.client.jar.name" value="hornetq-jms-client.jar"/>
    <property name="jnp.client.jar.name" value="jnp-client.jar"/>
    <property name="transports.jar.name" value="hornetq-transports.jar"/>
-   <property name="security.jar.name" value="hornetq-jboss-as-security.jar"/>
+   <property name="jboss.integration.jar.name" value="hornetq-jboss-as-integration.jar"/>
    <property name="bootstrap.jar.name" value="hornetq-bootstrap.jar"/>
    <property name="logging.jar.name" value="hornetq-logging.jar"/>
    <property name="core.client.jar.name" value="hornetq-core-client.jar"/>
@@ -65,7 +65,7 @@
    <property name="build.core.classes.dir" value="${build.dir}/classes/core"/>
    <property name="build.jms.classes.dir" value="${build.dir}/classes/jms"/>
    <property name="build.transports.classes.dir" value="${build.dir}/classes/transports"/>
-   <property name="build.security.classes.dir" value="${build.dir}/classes/security"/>
+   <property name="build.jboss.integration.classes.dir" value="${build.dir}/classes/jboss-integration"/>
    <property name="build.bootstrap.classes.dir" value="${build.dir}/classes/bootstrap"/>
    <property name="build.logging.classes.dir" value="${build.dir}/classes/logging"/>
    <property name="build.ra.classes.dir" value="${build.dir}/classes/ra"/>
@@ -171,9 +171,11 @@
       <path refid="org.jboss.netty.classpath"/>
    </path>
 
-   <path id="security.compilation.classpath">
+   <path id="jboss.integration.compilation.classpath">
       <path location="${build.core.classes.dir}"/>
       <path refid="org.jboss.security.classpath"/>
+      <path refid="org.jboss.integration.classpath"/>
+      <path refid="org.jboss.javaee.classpath"/>
    </path>
 
    <path id="bootstrap.compilation.classpath">
@@ -195,20 +197,20 @@
    <path id="test.compilation.classpath">
       <path refid="jms.compilation.classpath"/>
       <path refid="transports.compilation.classpath"/>
-      <path refid="security.compilation.classpath"/>
+      <path refid="jboss.integration.compilation.classpath"/>
       <path refid="bootstrap.compilation.classpath"/>
       <path refid="junit.junit.classpath"/>
       <path location="${build.jars.dir}/${ra.jar.name}"/>
       <path location="${build.jars.dir}/${jms.jar.name}"/>
       <path location="${build.jars.dir}/${transports.jar.name}"/>
-      <path location="${build.jars.dir}/${security.jar.name}"/>
+      <path location="${build.jars.dir}/${jboss.integration.jar.name}"/>
       <path location="${build.jars.dir}/${bootstrap.jar.name}"/>
       <path location="${build.jars.dir}/${logging.jar.name}"/>
    </path>
 
    <path id="jms.test.compilation.classpath">
       <path refid="transports.compilation.classpath"/>
-      <path refid="security.compilation.classpath"/>
+      <path refid="jboss.integration.compilation.classpath"/>
       <path refid="bootstrap.compilation.classpath"/>
       <path refid="jms.compilation.classpath"/>
       <path refid="junit.junit.classpath"/>
@@ -216,7 +218,7 @@
       <path location="${build.jars.dir}/${core.jar.name}"/>
       <path location="${build.jars.dir}/${jms.jar.name}"/>
       <path location="${build.jars.dir}/${transports.jar.name}"/>
-      <path location="${build.jars.dir}/${security.jar.name}"/>
+      <path location="${build.jars.dir}/${jboss.integration.jar.name}"/>
       <path location="${build.jars.dir}/${bootstrap.jar.name}"/>
       <path location="${build.jars.dir}/${logging.jar.name}"/>
    </path>
@@ -321,7 +323,7 @@
       <mkdir dir="${build.core.classes.dir}"/>
       <mkdir dir="${build.jms.classes.dir}"/>
       <mkdir dir="${build.transports.classes.dir}"/>
-      <mkdir dir="${build.security.classes.dir}"/>
+      <mkdir dir="${build.jboss.integration.classes.dir}"/>
       <mkdir dir="${build.bootstrap.classes.dir}"/>
       <mkdir dir="${build.logging.classes.dir}"/>
       <mkdir dir="${build.ra.classes.dir}"/>
@@ -430,8 +432,8 @@
       </javac>
    </target>
 
-   <target name="compile-security" depends="compile-core">
-      <javac destdir="${build.security.classes.dir}"
+   <target name="compile-jboss-integration" depends="compile-core">
+      <javac destdir="${build.jboss.integration.classes.dir}"
              target="${javac.target}"
              source="${javac.source}"
              optimize="${javac.optimize}"
@@ -445,8 +447,8 @@
          <src>
             <pathelement path="${src.main.dir}"/>
          </src>
-         <include name="org/hornetq/integration/security/**/*.java"/>
-         <classpath refid="security.compilation.classpath"/>
+         <include name="org/hornetq/integration/jboss/**/*.java"/>
+         <classpath refid="jboss.integration.compilation.classpath"/>
       </javac>
    </target>
 
@@ -562,7 +564,7 @@
    <!-- ======================================================================================== -->
 
    <target name="jar"
-           depends="jar-core, jar-core-client, jar-jms, jar-jms-client, jar-transports, jar-security, jar-bootstrap, jar-logging, jar-ra, jar-mc, jar-jnp-client">
+           depends="jar-core, jar-core-client, jar-jms, jar-jms-client, jar-transports, jar-jboss-integration, jar-bootstrap, jar-logging, jar-ra, jar-mc, jar-jnp-client">
    </target>
    <target name="jar-jnp-client" depends="init">
       <jar jarfile="${build.jars.dir}/${jnp.client.jar.name}">
@@ -637,10 +639,10 @@
 
    </target>
 
-   <target name="jar-security" depends="compile-security">
+   <target name="jar-jboss-integration" depends="compile-jboss-integration">
 
-      <jar jarfile="${build.jars.dir}/${security.jar.name}">
-         <fileset dir="${build.security.classes.dir}" includes="**"/>
+      <jar jarfile="${build.jars.dir}/${jboss.integration.jar.name}">
+         <fileset dir="${build.jboss.integration.classes.dir}" includes="**"/>
       </jar>
 
    </target>
@@ -742,7 +744,7 @@
             <include name="${core.jar.name}"/>
             <include name="${jms.jar.name}"/>
             <include name="${transports.jar.name}"/>
-            <include name="${security.jar.name}"/>
+            <include name="${jboss.integration.jar.name}"/>
             <include name="${bootstrap.jar.name}"/>
             <include name="${logging.jar.name}"/>
             <include name="${mc.jar.name}"/>
@@ -942,7 +944,7 @@
       </antcall>
 
       <antcall target="artifact">
-         <param name="artifact.name" value="hornetq-jboss-as-security"/>     
+         <param name="artifact.name" value="hornetq-jboss-as-integration"/>     
       </antcall>
 
       <antcall target="artifact">

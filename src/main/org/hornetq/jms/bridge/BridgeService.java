@@ -239,7 +239,28 @@ public class BridgeService implements BridgeMBean
    {
    	bridge.setAddMessageIDInHeader(value);
    }
-   
+
+
+   public String getTransactionManagerLocatorClass()
+   {
+      return bridge.getTransactionManagerLocatorClass();
+   }
+
+   public void setTransactionManagerLocatorClass(String transactionManagerLocatorClass)
+   {
+      bridge.setTransactionManagerLocatorClass(transactionManagerLocatorClass);
+   }
+
+   public String getTransactionManagerLocatorMethod()
+   {
+      return bridge.getTransactionManagerLocatorMethod();
+   }
+
+   public void setTransactionManagerLocatorMethod(String transactionManagerLocatorMethod)
+   {
+      bridge.setTransactionManagerLocatorMethod(transactionManagerLocatorMethod);
+   }
+
    public boolean isFailed()
    {
       return bridge.isFailed();

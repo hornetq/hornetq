@@ -68,7 +68,7 @@
 
    <target name="uploadHornetQSecurity">
       <antcall target="upload">
-         <param name="artifact.id" value="hornetq-jboss-as-security"/>
+         <param name="artifact.id" value="hornetq-jboss-as-integration"/>
          <param name="artifact.type" value="jar"/>
       </antcall>
    </target>

@@ -12,7 +12,7 @@
    <bean name="Configuration" class="org.hornetq.core.config.impl.FileConfiguration"/>   
 
 	<!-- The security manager -->
-   <bean name="HornetQSecurityManager" class="org.hornetq.integration.security.JBossASSecurityManager">
+   <bean name="HornetQSecurityManager" class="org.hornetq.integration.jboss.security.JBossASSecurityManager">
       <depends>JBossSecurityJNDIContextEstablishment</depends>
       <start ignored="true"/>
       <stop ignored="true"/>

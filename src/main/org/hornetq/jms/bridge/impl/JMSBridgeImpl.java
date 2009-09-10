@@ -18,6 +18,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Map;
+import java.lang.reflect.Method;
+import java.lang.reflect.InvocationTargetException;
 
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
@@ -144,6 +146,10 @@ public class JMSBridgeImpl implements HornetQComponent, JMSBridge
    private boolean failed;
    
    private int forwardMode;
+
+   private String transactionManagerLocatorClass = "org.hornetq.integration.jboss.tm.JBoss5TransactionManagerLocator";
+
+   private String transactionManagerLocatorMethod = "getTm";
    
    private static final int FORWARD_MODE_XA = 0;
    
@@ -561,7 +567,28 @@ public class JMSBridgeImpl implements HornetQComponent, JMSBridge
       
       this.clientID = clientID; 
    }
-   
+
+   public String getTransactionManagerLocatorClass()
+   {
+      return transactionManagerLocatorClass;
+   }
+
+   public void setTransactionManagerLocatorClass(String transactionManagerLocatorClass)
+   {
+      checkBridgeNotStarted();
+      this.transactionManagerLocatorClass = transactionManagerLocatorClass;
+   }
+
+   public String getTransactionManagerLocatorMethod()
+   {
+      return transactionManagerLocatorMethod;
+   }
+
+   public void setTransactionManagerLocatorMethod(String transactionManagerLocatorMethod)
+   {
+      this.transactionManagerLocatorMethod = transactionManagerLocatorMethod;
+   }
+
    public boolean isAddMessageIDInHeader()
    {
    	return this.addMessageIDInHeader;
@@ -744,8 +771,20 @@ public class JMSBridgeImpl implements HornetQComponent, JMSBridge
    {
       if (tm == null)
       {
-         tm = TransactionManagerLocator.getInstance().locate();
-         
+         try
+         {
+            ClassLoader loader = Thread.currentThread().getContextClassLoader();
+            Class aClass = loader.loadClass(transactionManagerLocatorClass);
+            Object o = aClass.newInstance();
+            Method m = aClass.getMethod(transactionManagerLocatorMethod);
+            tm = (TransactionManager) m.invoke(o);
+         }
+         catch (Exception e)
+         {
+            throw new IllegalStateException("unable to create TransactionManager from " + transactionManagerLocatorClass
+                                            + "." + transactionManagerLocatorMethod, e);
+         }
+
          if (tm == null)
          {
             throw new IllegalStateException("Cannot locate a transaction manager");

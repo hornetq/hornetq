@@ -215,12 +215,12 @@
         <para>To configure the JAAS security manager to work with your pre-built JAAS infrastructure
             you need to specify the security manager as a <literal>JAASSecurityManager</literal> in
             the beans file. Here's an example:</para>
-        <programlisting>
-&lt;bean name="HornetQSecurityManager" 
-      class="org.hornetq.integration.security.JAASSecurityManager"&gt;      
+        <programlisting><![CDATA[
+&lt;bean name="HornetQSecurityManager"
+      class="org.hornetq.integration.jboss.security.JAASSecurityManager"&gt;
     &lt;start ignored="true"/&gt;
     &lt;stop ignored="true"/&gt;
-    
+
     &lt;property name="ConfigurationName"&gt;org.hornetq.jms.example.ExampleLoginModule&lt;/property&gt;
     &lt;property name="Configuration"&gt;
        &lt;inject bean="ExampleConfiguration"/&gt;
@@ -228,8 +228,8 @@
     &lt;property name="CallbackHandler"&gt;
        &lt;inject bean="ExampleCallbackHandler"/&gt;
     &lt;/property&gt;
-&lt;/bean&gt;            
-        </programlisting>
+&lt;/bean&gt;
+        ]]></programlisting>
         <para>Note that you need to feed the JAAS security manager with three properties:</para>
         <itemizedlist>
             <listitem>
@@ -257,7 +257,7 @@
             Application server. This allows tight integration with the JBoss Application Server's
             security model.</para>
         <para>The class name of this security manager is <literal
-                >org.hornetq.integration.security.JBossASSecurityManager</literal></para>
+                >org.hornetq.integration.jboss.security.JBossASSecurityManager</literal></para>
         <para>Take a look at one of the default <literal>hornetq-jboss-beans.xml</literal> files for
             JBoss Application Server that are bundled in the distribution for an example of how this
             is configured.</para>

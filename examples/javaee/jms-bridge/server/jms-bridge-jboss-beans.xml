@@ -52,6 +52,8 @@
            <property name="transactionManager">
                <inject bean="RealTransactionManager"/>
            </property>
+          <!--<property name="transactionManagerLocatorClass">org.hornetq.integration.jboss.tm.JBoss5TransactionManagerLocator</property>
+          <property name="transactionManagerLocatorMethod">getTm</property>-->
        </bean>
 
        <!-- SourceCFF describes the ConnectionFactory used to connect to the source destination -->

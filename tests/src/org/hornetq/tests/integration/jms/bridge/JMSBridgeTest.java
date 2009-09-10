@@ -1575,8 +1575,35 @@ public class JMSBridgeTest extends BridgeTestBase
          }        
       }                  
    }
-   
-   
+
+   public void testSetTMClass() throws Exception
+   {
+      JMSBridgeImpl bridge = null;
+
+      try
+      {
+         bridge = new JMSBridgeImpl(cff0, cff0, sourceQueueFactory, localTargetQueueFactory,
+                  null, null, null, null,
+                  null, 3000, 10, QualityOfServiceMode.AT_MOST_ONCE,
+                  10000, 3000,
+                  null, null, false);
+         bridge.setTransactionManagerLocatorClass(this.getClass().getName());
+         bridge.setTransactionManagerLocatorMethod("getNewTm");
+         bridge.start();
+      }
+      finally
+      {
+         if (bridge != null)
+         {
+            bridge.stop();
+         }
+      }
+   }
+
+   public TransactionManager getNewTm()
+   {
+      return newTransactionManager();
+   }
    // Inner classes -------------------------------------------------------------------
    
    private static class StressSender implements Runnable

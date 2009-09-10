@@ -87,6 +87,14 @@ public interface JMSBridge extends HornetQComponent
 
    void setClientID(String clientID);
 
+   String getTransactionManagerLocatorClass();
+
+   void setTransactionManagerLocatorClass(String transactionManagerLocatorClass);
+
+   String getTransactionManagerLocatorMethod();
+
+   void setTransactionManagerLocatorMethod(String transactionManagerLocatorMethod);
+
    boolean isAddMessageIDInHeader();
 
    void setAddMessageIDInHeader(boolean value);

@@ -11,7 +11,7 @@
  * permissions and limitations under the License.
  */
 
-package org.hornetq.integration.security;
+package org.hornetq.integration.jboss.security;
 
 import java.security.Principal;
 import java.util.HashSet;
