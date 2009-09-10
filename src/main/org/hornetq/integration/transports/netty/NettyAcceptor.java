@@ -37,6 +37,7 @@ import org.hornetq.core.remoting.spi.BufferHandler;
 import org.hornetq.core.remoting.spi.Connection;
 import org.hornetq.core.remoting.spi.ConnectionLifeCycleListener;
 import org.hornetq.utils.ConfigurationHelper;
+import org.hornetq.utils.VersionLoader;
 import org.jboss.netty.bootstrap.ServerBootstrap;
 import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.ChannelFactory;
@@ -57,6 +58,7 @@ import org.jboss.netty.channel.socket.oio.OioServerSocketChannelFactory;
 import org.jboss.netty.handler.codec.http.HttpRequestDecoder;
 import org.jboss.netty.handler.codec.http.HttpResponseEncoder;
 import org.jboss.netty.handler.ssl.SslHandler;
+import org.jboss.netty.util.Version;
 
 /**
  * A Netty TCP Acceptor that supports SSL
@@ -295,6 +297,13 @@ public class NettyAcceptor implements Acceptor
       startServerChannels();
 
       paused = false;
+
+      if(!Version.ID.equals(VersionLoader.getVersion().getNettyVersion()))
+      {
+          log.warn("Unexpected Netty Version was expecting " + VersionLoader.getVersion().getNettyVersion() + " using " + Version.ID);
+      }
+
+      log.info("Started Netty Acceptor version " + Version.ID);
    }
 
    private void startServerChannels()

@@ -40,6 +40,7 @@ import org.hornetq.core.remoting.spi.ConnectionLifeCycleListener;
 import org.hornetq.core.remoting.spi.Connector;
 import org.hornetq.utils.ConfigurationHelper;
 import org.hornetq.utils.Future;
+import org.hornetq.utils.VersionLoader;
 import org.jboss.netty.bootstrap.ClientBootstrap;
 import org.jboss.netty.buffer.ChannelBuffer;
 import org.jboss.netty.channel.Channel;
@@ -70,6 +71,7 @@ import org.jboss.netty.handler.codec.http.HttpResponse;
 import org.jboss.netty.handler.codec.http.HttpResponseDecoder;
 import org.jboss.netty.handler.codec.http.HttpVersion;
 import org.jboss.netty.handler.ssl.SslHandler;
+import org.jboss.netty.util.Version;
 
 /**
  * A NettyConnector
@@ -310,6 +312,11 @@ public class NettyConnector implements Connector
             return pipeline;
          }
       });
+      if(!Version.ID.equals(VersionLoader.getVersion().getNettyVersion()))
+      {
+          log.warn("Unexpected Netty Version was expecting " + VersionLoader.getVersion().getNettyVersion() + " using " + Version.ID);
+      }
+      log.debug("Started Netty Connector version " + Version.ID);
    }
 
    public synchronized void close()

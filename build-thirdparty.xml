@@ -98,7 +98,7 @@
 
      <maven basedir="${basedir}"
             options="${maven.install.opts}"
-            goal="install"
+            goal="initialize"
             resultproperty="maven.install.result"/>
 
      <fail message="Unable to build maven modules.  See maven output for details.">

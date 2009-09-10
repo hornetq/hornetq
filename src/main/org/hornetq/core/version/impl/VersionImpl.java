@@ -47,11 +47,13 @@ public class VersionImpl implements Version, Serializable
 
    private String versionSuffix;
 
+   private String nettyVersion;
+
    // Constructors --------------------------------------------------
 
 
    public VersionImpl(final String versionName, final int majorVersion, final int minorVersion,
-                      final int microVersion, final int incrementingVersion, final String versionSuffix)
+                      final int microVersion, final int incrementingVersion, final String versionSuffix, String nettyVersion)
    {
       this.versionName = versionName;
 
@@ -64,6 +66,8 @@ public class VersionImpl implements Version, Serializable
       this.incrementingVersion = incrementingVersion;
 
       this.versionSuffix = versionSuffix;
+
+      this.nettyVersion = nettyVersion;
    }
 
    // Version implementation ------------------------------------------
@@ -102,6 +106,11 @@ public class VersionImpl implements Version, Serializable
    public int getIncrementingVersion()
    {
       return incrementingVersion;
+   }
+
+   public String getNettyVersion()
+   {
+      return nettyVersion;
    }
 
    // Public -------------------------------------------------------

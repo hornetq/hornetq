@@ -80,12 +80,14 @@ public class VersionLoader
             int microVersion = Integer.valueOf(versionProps.getProperty("hornetq.version.microVersion"));
             int incrementingVersion = Integer.valueOf(versionProps.getProperty("hornetq.version.incrementingVersion"));
             String versionSuffix = versionProps.getProperty("hornetq.version.versionSuffix");
+            String nettyVersion=versionProps.getProperty("hornetq.netty.version");
             return new VersionImpl(versionName,
                                    majorVersion,
                                    minorVersion,
                                    microVersion,
                                    incrementingVersion,
-                                   versionSuffix);
+                                   versionSuffix,
+                                   nettyVersion);
          }
          catch (IOException e)
          {

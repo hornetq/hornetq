@@ -268,8 +268,6 @@
    </path>
    
    <path id="jms.test.execution.classpath">
-      <pathelement location="${test.dir}/config"/>
-      <pathelement location="${src.config.dir}/common"/>
       <pathelement location="${src.schema.dir}"/>
       <pathelement location="${test.jms.dir}/config"/>
       <pathelement location="${test.jms.classes.dir}"/>
@@ -282,6 +280,8 @@
       <path refid="apache.xerces.classpath"/>
       <path refid="apache.logging.classpath"/>
       <path refid="log4j.log4j.classpath"/>
+      <pathelement location="${test.dir}/config"/>
+      <pathelement location="${src.config.dir}/common"/>
    </path>
     
    <path id="joram.test.execution.classpath">
@@ -378,8 +378,15 @@
       <javah class="org.hornetq.core.asyncio.impl.AsynchronousFileImpl"
              classpath="${build.core.classes.dir}" destdir="./native/src"/>
 
+      <java classname="org.jboss.netty.util.Version" classpathref="org.jboss.netty.classpath"
+            outputproperty="netty.version" fork="true"/>
+      <echo>setting netty version ${netty.version}</echo>
       <copy file="${src.config.dir}/common/hornetq-version.properties"
-            tofile="${build.core.classes.dir}/hornetq-version.properties"/>
+            tofile="${build.core.classes.dir}/hornetq-version.properties" overwrite="true">
+         <filterset>
+               <filter token="NETTY.VERSION" value="${netty.version}"/>
+         </filterset>
+      </copy>
 
    </target>
 
