@@ -146,12 +146,20 @@ public interface Configuration extends Serializable
    void setManagementAddress(SimpleString address);
 
    SimpleString getManagementNotificationAddress();
+   
+   void setManagementNotificationAddress(SimpleString address);
 
    String getManagementClusterUser();
-
+   
+   void setManagementClusterUser(String user);
+   
    String getManagementClusterPassword();
+   
+   void setManagementClusterPassword(String password);
 
    long getManagementRequestTimeout();
+   
+   void setManagementRequestTimeout(long timeout);
 
    int getIDCacheSize();
 
@@ -233,7 +241,7 @@ public interface Configuration extends Serializable
 
    long getServerDumpInterval();
 
-   void getServerDumpInterval(long interval);
+   void setServerDumpInterval(long interval);
 
    // Paging Properties --------------------------------------------------------------------
 
@@ -258,10 +266,14 @@ public interface Configuration extends Serializable
    void setTransactionTimeout(long timeout);
 
    boolean isMessageCounterEnabled();
+   
+   void setMessageCounterEnabled(boolean enabled);
 
    long getMessageCounterSamplePeriod();
 
    int getMessageCounterMaxDayHistory();
+   
+   void setMessageCounterMaxDayHistory(int maxDayHistory);
 
    long getTransactionTimeoutScanPeriod();
 
