@@ -868,13 +868,6 @@ public class ConfigurationImpl implements Configuration
       if (getClass() != obj.getClass())
          return false;
       ConfigurationImpl other = (ConfigurationImpl)obj;
-      if (acceptorConfigs == null)
-      {
-         if (other.acceptorConfigs != null)
-            return false;
-      }
-      else if (!acceptorConfigs.equals(other.acceptorConfigs))
-         return false;
       if (asyncConnectionExecutionEnabled != other.asyncConnectionExecutionEnabled)
          return false;
       if (backup != other.backup)
@@ -893,68 +886,20 @@ public class ConfigurationImpl implements Configuration
       }
       else if (!bindingsDirectory.equals(other.bindingsDirectory))
          return false;
-      if (bridgeConfigurations == null)
-      {
-         if (other.bridgeConfigurations != null)
-            return false;
-      }
-      else if (!bridgeConfigurations.equals(other.bridgeConfigurations))
-         return false;
-      if (broadcastGroupConfigurations == null)
-      {
-         if (other.broadcastGroupConfigurations != null)
-            return false;
-      }
-      else if (!broadcastGroupConfigurations.equals(other.broadcastGroupConfigurations))
-         return false;
-      if (clusterConfigurations == null)
-      {
-         if (other.clusterConfigurations != null)
-            return false;
-      }
-      else if (!clusterConfigurations.equals(other.clusterConfigurations))
-         return false;
-      if (clustered != other.clustered)
+       if (clustered != other.clustered)
          return false;
       if (connectionTTLOverride != other.connectionTTLOverride)
-         return false;
-      if (connectorConfigs == null)
-      {
-         if (other.connectorConfigs != null)
-            return false;
-      }
-      else if (!connectorConfigs.equals(other.connectorConfigs))
          return false;
       if (createBindingsDir != other.createBindingsDir)
          return false;
       if (createJournalDir != other.createJournalDir)
          return false;
-      if (discoveryGroupConfigurations == null)
-      {
-         if (other.discoveryGroupConfigurations != null)
-            return false;
-      }
-      else if (!discoveryGroupConfigurations.equals(other.discoveryGroupConfigurations))
-         return false;
-      if (divertConfigurations == null)
-      {
-         if (other.divertConfigurations != null)
-            return false;
-      }
-      else if (!divertConfigurations.equals(other.divertConfigurations))
-         return false;
+      
       if (fileDeploymentEnabled != other.fileDeploymentEnabled)
          return false;
       if (fileDeploymentScanPeriod != other.fileDeploymentScanPeriod)
          return false;
       if (idCacheSize != other.idCacheSize)
-         return false;
-      if (interceptorClassNames == null)
-      {
-         if (other.interceptorClassNames != null)
-            return false;
-      }
-      else if (!interceptorClassNames.equals(other.interceptorClassNames))
          return false;
       if (jmxManagementEnabled != other.jmxManagementEnabled)
          return false;
@@ -1057,13 +1002,6 @@ public class ConfigurationImpl implements Configuration
       if (persistenceEnabled != other.persistenceEnabled)
          return false;
       if (queueActivationTimeout != other.queueActivationTimeout)
-         return false;
-      if (queueConfigurations == null)
-      {
-         if (other.queueConfigurations != null)
-            return false;
-      }
-      else if (!queueConfigurations.equals(other.queueConfigurations))
          return false;
       if (scheduledThreadPoolMaxSize != other.scheduledThreadPoolMaxSize)
          return false;
