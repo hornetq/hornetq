@@ -82,8 +82,6 @@ public class HornetQServerControlImpl implements HornetQServerControl, Notificat
 
    private final NotificationBroadcasterSupport broadcaster;
 
-   private boolean messageCounterEnabled;
-
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
@@ -103,7 +101,6 @@ public class HornetQServerControlImpl implements HornetQServerControl, Notificat
       this.server = messagingServer;
       this.messageCounterManager = messageCounterManager;
       this.broadcaster = broadcaster;
-      this.messageCounterEnabled = configuration.isMessageCounterEnabled();
    }
 
    // Public --------------------------------------------------------
@@ -314,7 +311,7 @@ public class HornetQServerControlImpl implements HornetQServerControl, Notificat
 
    public boolean isMessageCounterEnabled()
    {
-      return messageCounterEnabled;
+      return configuration.isMessageCounterEnabled();
    }
 
    public synchronized long getMessageCounterSamplePeriod()
@@ -564,16 +561,16 @@ public class HornetQServerControlImpl implements HornetQServerControl, Notificat
    {
       if (isStarted())
       {
-         if (messageCounterEnabled && !enable)
+         if (configuration.isMessageCounterEnabled() && !enable)
          {
             stopMessageCounters();
          }
-         else if (!messageCounterEnabled && enable)
+         else if (!configuration.isMessageCounterEnabled() && enable)
          {
             startMessageCounters();
          }
       }
-      messageCounterEnabled = enable;
+      configuration.setMessageCounterEnabled(enable);
    }
 
    private void startMessageCounters()
