@@ -1204,11 +1204,19 @@ public class HornetQServerImpl implements HornetQServer
                                                 true,
                                                 false);
 
+         if (configuration.isBackup())
+         {
+            queue.setBackup();
+         }
+         
          Binding binding = new LocalQueueBinding(queueBindingInfo.getAddress(), queue, nodeID);
 
          queues.put(queueBindingInfo.getPersistenceID(), queue);
 
          postOffice.addBinding(binding);
+         
+         managementService.registerAddress(queueBindingInfo.getAddress());
+         managementService.registerQueue(queue, queueBindingInfo.getAddress(), storageManager);
       }
 
       Map<SimpleString, List<Pair<byte[], Long>>> duplicateIDMap = new HashMap<SimpleString, List<Pair<byte[], Long>>>();
@@ -1294,6 +1302,11 @@ public class HornetQServerImpl implements HornetQServer
 
       final Queue queue = queueFactory.createQueue(-1, address, queueName, filter, durable, temporary);
 
+      if (configuration.isBackup())
+      {
+         queue.setBackup();
+      }
+
       binding = new LocalQueueBinding(address, queue, nodeID);
 
       if (durable)
@@ -1302,6 +1315,9 @@ public class HornetQServerImpl implements HornetQServer
       }
 
       postOffice.addBinding(binding);
+      
+      managementService.registerAddress(address);
+      managementService.registerQueue(queue, address, storageManager);
 
       return queue;
    }

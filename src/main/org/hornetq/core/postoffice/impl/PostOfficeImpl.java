@@ -455,27 +455,8 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
    {
       binding.setID(generateTransientID());
 
-      boolean existed = addressManager.addBinding(binding);
-
-      // TODO - why is this code here?
-      // Shouldn't it be in HornetQServerImpl::createQueue??
-      if (binding.getType() == BindingType.LOCAL_QUEUE)
-      {
-         Queue queue = (Queue)binding.getBindable();
-
-         if (backup)
-         {
-            queue.setBackup();
-         }
-
-         managementService.registerQueue(queue, binding.getAddress(), storageManager);
-
-         if (!existed)
-         {
-            managementService.registerAddress(binding.getAddress());
-         }
-      }
-
+      addressManager.addBinding(binding);
+      
       TypedProperties props = new TypedProperties();
 
       props.putIntProperty(ManagementHelper.HDR_BINDING_TYPE, binding.getType().toInt());
