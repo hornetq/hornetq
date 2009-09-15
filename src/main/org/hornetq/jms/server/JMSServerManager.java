@@ -19,6 +19,7 @@ import javax.naming.Context;
 
 import org.hornetq.core.config.TransportConfiguration;
 import org.hornetq.core.server.HornetQComponent;
+import org.hornetq.core.server.HornetQServer;
 import org.hornetq.utils.Pair;
 
 /**
@@ -220,4 +221,9 @@ public interface JMSServerManager extends HornetQComponent
    String[] listSessions(String connectionID) throws Exception;
 
    void setContext(final Context context);
+
+   /**
+    * @return
+    */
+   HornetQServer getHornetQServer();
 }

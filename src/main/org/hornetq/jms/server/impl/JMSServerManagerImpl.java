@@ -195,6 +195,11 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
 
    // JMSServerManager implementation -------------------------------
 
+   public HornetQServer getHornetQServer()
+   {
+      return server;
+   }
+
    public synchronized void setContext(final Context context)
    {
       this.context = context;

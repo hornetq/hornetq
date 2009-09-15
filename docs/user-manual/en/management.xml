@@ -75,7 +75,9 @@
             <title>Core Server Management</title>
             <itemizedlist>
                <listitem>
-                  <para>Creating, deploying and destroying queues</para>
+                  <para>Listing, creating, deploying and destroying queues</para>
+                  <para>A list of deployed core queues can be retrieved using the 
+                      <literal>getQueueNames()</literal> method.</para>
                   <para>Core queues can be created or destroyed using the management operations
                         <literal>createQueue()</literal> or <literal>deployQueue()</literal> or
                         <literal>destroyQueue()</literal>)on the <literal
@@ -296,7 +298,9 @@
                   >jms.server</literal>).</para>
             <itemizedlist>
                <listitem>
-                  <para>Creating/destroying connection factories</para>
+                  <para>Listing, creating, destroying connection factories</para>
+                  <para>Names of the deployed connection factories can be retrieved by the
+					 <literal>getConnectionFactoryNames()</literal> method.</para>
                   <para>JMS connection factories can be created or destroyed using the <literal
                         >createConnectionFactory()</literal> methods or <literal
                         >destroyConnectionFactory()</literal> methods. These connection factories
@@ -312,14 +316,18 @@
                      for a list of the transport parameters)</para>
                </listitem>
                <listitem>
-                  <para>Creating/destroying queues</para>
+                  <para>Listing, creating, destroying queues</para>
+                  <para>Names of the deployed JMS queues can be retrieved by the
+					 <literal>getQueueNames()</literal> method.</para>
                   <para>JMS queues can be created or destroyed using the <literal
                         >createQueue()</literal> methods or <literal>destroyQueue()</literal>
                      methods. These queues are bound to JNDI so that JMS clients can look them
                      up</para>
                </listitem>
                <listitem>
-                  <para>Creating/destroying topics</para>
+                  <para>Listing, creating/destroying topics</para>
+                  <para>Names of the deployed topics can be retrieved by the
+					 <literal>getTopicNames()</literal> method.</para>
                   <para>JMS topics can be created or destroyed using the <literal
                         >createTopic()</literal> or <literal>destroyTopic()</literal> methods. These
                      topics are bound to JNDI so that JMS clients can look them up</para>

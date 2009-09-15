@@ -59,6 +59,20 @@ public class HornetQServerControlTest extends ManagementTestBase
 
    // Static --------------------------------------------------------
 
+   private static boolean contains(String name, String[] strings)
+   {
+      boolean found = false;
+      for (String str : strings)
+      {
+         if (name.equals(str))
+         {
+            found = true;
+            break;
+         }
+      } 
+      return found;
+   }
+   
    // Constructors --------------------------------------------------
 
    // Public --------------------------------------------------------
@@ -208,6 +222,44 @@ public class HornetQServerControlTest extends ManagementTestBase
       serverControl.destroyQueue(name.toString());
 
       checkNoResource(ObjectNames.getQueueObjectName(address, name));
+   }
+   
+   public void testGetQueueNames() throws Exception
+   {
+      SimpleString address = RandomUtil.randomSimpleString();
+      SimpleString name = RandomUtil.randomSimpleString();
+
+      HornetQServerControl serverControl = createManagementControl();
+
+      // due to replication, there can be another queue created for replicating
+      // management operations
+
+      assertFalse(contains(name.toString(), serverControl.getQueueNames()));
+      
+      serverControl.createQueue(address.toString(), name.toString());
+      assertTrue(contains(name.toString(), serverControl.getQueueNames()));
+
+      serverControl.destroyQueue(name.toString());
+      assertFalse(contains(name.toString(), serverControl.getQueueNames()));
+   }
+
+   public void testGetAddressNames() throws Exception
+   {
+      SimpleString address = RandomUtil.randomSimpleString();
+      SimpleString name = RandomUtil.randomSimpleString();
+
+      HornetQServerControl serverControl = createManagementControl();
+
+      // due to replication, there can be another queue created for replicating
+      // management operations
+
+      assertFalse(contains(address.toString(), serverControl.getAddressNames()));
+      
+      serverControl.createQueue(address.toString(), name.toString());
+      assertTrue(contains(address.toString(), serverControl.getAddressNames()));
+
+      serverControl.destroyQueue(name.toString());
+      assertFalse(contains(address.toString(), serverControl.getAddressNames()));
    }
 
    public void testMessageCounterMaxDayCount() throws Exception

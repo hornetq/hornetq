@@ -36,6 +36,16 @@ public class HornetQServerControlUsingCoreTest extends HornetQServerControlTest
 
    // Static --------------------------------------------------------
 
+   private static String[] toStringArray(Object[] res)
+   {
+      String[] names = new String[res.length];
+      for (int i = 0; i < res.length; i++)
+      {
+         names[i] = res[i].toString();               
+      }
+      return names;
+   }
+
    // Constructors --------------------------------------------------
 
    // Public --------------------------------------------------------
@@ -68,7 +78,6 @@ public class HornetQServerControlUsingCoreTest extends HornetQServerControlTest
    @Override
    protected HornetQServerControl createManagementControl() throws Exception
    {
-
       return new HornetQServerControl()
       {
          private final CoreMessagingProxy proxy = new CoreMessagingProxy(session,
@@ -153,6 +162,16 @@ public class HornetQServerControlUsingCoreTest extends HornetQServerControlTest
          {
             return (String)proxy.retrieveAttributeValue("connectorsAsJSON");
          }
+         
+         public String[] getAddressNames()
+         {
+            return toStringArray((Object[])proxy.retrieveAttributeValue("addressNames"));
+         }
+         
+         public String[] getQueueNames()
+         {
+            return toStringArray((Object[])proxy.retrieveAttributeValue("queueNames"));
+         }
 
          public int getIDCacheSize()
          {
@@ -161,13 +180,7 @@ public class HornetQServerControlUsingCoreTest extends HornetQServerControlTest
 
          public String[] getInterceptorClassNames()
          {
-            Object[] res = (Object[])proxy.retrieveAttributeValue("interceptorClassNames");
-            String[] names = new String[res.length];
-            for (int i = 0; i < res.length; i++)
-            {
-               names[i] = res[i].toString();               
-            }
-            return names;
+            return toStringArray((Object[])proxy.retrieveAttributeValue("interceptorClassNames"));
          }
 
          public String getJournalDirectory()

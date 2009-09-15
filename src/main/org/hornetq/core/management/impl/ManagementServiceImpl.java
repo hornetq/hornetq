@@ -21,6 +21,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Map.Entry;
 import java.util.concurrent.ScheduledExecutorService;
 
 import javax.management.MBeanServer;
@@ -50,6 +51,7 @@ import org.hornetq.core.management.ManagementService;
 import org.hornetq.core.management.Notification;
 import org.hornetq.core.management.NotificationListener;
 import org.hornetq.core.management.ObjectNames;
+import org.hornetq.core.management.QueueControl;
 import org.hornetq.core.management.ReplicationOperationInvoker;
 import org.hornetq.core.management.ResourceNames;
 import org.hornetq.core.management.jmx.impl.ReplicationAwareAddressControlWrapper;
@@ -255,14 +257,17 @@ public class ManagementServiceImpl implements ManagementService
                                                            address.toString(),
                                                            postOffice,
                                                            addressSettingsRepository);
-      MessageCounter counter = new MessageCounter(queue.getName().toString(),
-                                                  null,
-                                                  queueControl,
-                                                  false,
-                                                  queue.isDurable(),
-                                                  messageCounterManager.getMaxDayCount());
-      queueControl.setMessageCounter(counter);
-      messageCounterManager.registerMessageCounter(queue.getName().toString(), counter);
+      if (messageCounterManager != null)
+      {
+         MessageCounter counter = new MessageCounter(queue.getName().toString(),
+                                                     null,
+                                                     queueControl,
+                                                     false,
+                                                     queue.isDurable(),
+                                                     messageCounterManager.getMaxDayCount());
+         queueControl.setMessageCounter(counter);
+         messageCounterManager.registerMessageCounter(queue.getName().toString(), counter);
+      }
       ObjectName objectName = ObjectNames.getQueueObjectName(address, queue.getName());
       registerInJMX(objectName, new ReplicationAwareQueueControlWrapper(queueControl, replicationInvoker));
       registerInRegistry(ResourceNames.CORE_QUEUE + queue.getName(), queueControl);
@@ -488,6 +493,19 @@ public class ManagementServiceImpl implements ManagementService
    public Object getResource(final String resourceName)
    {
       return registry.get(resourceName);
+   }
+   
+   public Object[] getResources(Class<?> resourceType)
+   {
+      List<Object> resources = new ArrayList<Object>();
+      for (Object entry : registry.values())
+      {
+         if (resourceType.isAssignableFrom(entry.getClass()))
+         {
+            resources.add(entry);
+         }
+      }
+      return (Object[])resources.toArray(new Object[resources.size()]);
    }
 
    private Set<ObjectName> registeredNames = new HashSet<ObjectName>();

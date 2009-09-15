@@ -36,8 +36,10 @@ import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.TransportConfiguration;
 import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.logging.Logger;
+import org.hornetq.core.management.AddressControl;
 import org.hornetq.core.management.HornetQServerControl;
 import org.hornetq.core.management.NotificationType;
+import org.hornetq.core.management.QueueControl;
 import org.hornetq.core.messagecounter.MessageCounterManager;
 import org.hornetq.core.messagecounter.impl.MessageCounterManagerImpl;
 import org.hornetq.core.postoffice.PostOffice;
@@ -250,6 +252,32 @@ public class HornetQServerControlImpl implements HornetQServerControl, Notificat
       SimpleString filter = filterStr == null ? null : new SimpleString(filterStr);
 
       server.createQueue(new SimpleString(address), new SimpleString(name), filter, durable, false);
+   }
+
+   public String[] getQueueNames()
+   {
+      Object[] queues = server.getManagementService().getResources(QueueControl.class);
+      String[] names = new String[queues.length];
+      for (int i = 0; i < queues.length; i++)
+      {
+         QueueControl queue = (QueueControl)queues[i];
+         names[i] = queue.getName();
+      }
+      
+      return names;
+   }
+
+   public String[] getAddressNames()
+   {
+      Object[] addresses = server.getManagementService().getResources(AddressControl.class);
+      String[] names = new String[addresses.length];
+      for (int i = 0; i < addresses.length; i++)
+      {
+         AddressControl address = (AddressControl)addresses[i];
+         names[i] = address.getAddress();
+      }
+      
+      return names;
    }
 
    public void destroyQueue(final String name) throws Exception

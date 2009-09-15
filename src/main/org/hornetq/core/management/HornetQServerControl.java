@@ -116,6 +116,10 @@ public interface HornetQServerControl
    Object[] getConnectors() throws Exception;
 
    String getConnectorsAsJSON() throws Exception;
+   
+   String[] getAddressNames();
+
+   String[] getQueueNames();
 
    // Operations ----------------------------------------------------
 

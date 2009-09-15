@@ -46,6 +46,16 @@ public class JMSServerControlUsingJMSTest extends JMSServerControlTest
 
    // Static --------------------------------------------------------
 
+   private static String[] toStringArray(Object[] res)
+   {
+      String[] names = new String[res.length];
+      for (int i = 0; i < res.length; i++)
+      {
+         names[i] = res[i].toString();               
+      }
+      return names;
+   }
+   
    // Constructors --------------------------------------------------
 
    // JMSServerControlTest overrides --------------------------------
@@ -575,6 +585,21 @@ public class JMSServerControlUsingJMSTest extends JMSServerControlTest
          {
             return (Boolean)proxy.retrieveAttributeValue("started");
          }
+         
+         public String[] getQueueNames()
+         {
+            return toStringArray((Object[])proxy.retrieveAttributeValue("queueNames"));
+         }
+
+         public String[] getTopicNames()
+         {
+            return toStringArray((Object[])proxy.retrieveAttributeValue("topicNames"));
+         }
+
+         public String[] getConnectionFactoryNames()
+         {
+            return toStringArray((Object[])proxy.retrieveAttributeValue("connectionFactoryNames"));
+         }
 
          public String[] listConnectionIDs() throws Exception
          {
@@ -595,7 +620,7 @@ public class JMSServerControlUsingJMSTest extends JMSServerControlTest
          {
             return (String[])proxy.invokeOperation("listSessions", connectionID);
          }
-
+         
       };
    }
    // Public --------------------------------------------------------

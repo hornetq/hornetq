@@ -128,6 +128,25 @@ public class JMSServerControlTest extends ManagementTestBase
       checkNoBinding(context, queueJNDIBinding);
       checkNoResource(ObjectNames.getJMSQueueObjectName(queueName));
    }
+   
+   public void testGetQueueNames() throws Exception
+   {
+      String queueJNDIBinding = randomString();
+      String queueName = randomString();
+
+      JMSServerControl control = createManagementControl();
+      assertEquals(0, control.getQueueNames().length);
+
+      control.createQueue(queueName, queueJNDIBinding);
+
+      String[] names = control.getQueueNames();
+      assertEquals(1, names.length);
+      assertEquals(queueName, names[0]);
+
+      control.destroyQueue(queueName);
+
+      assertEquals(0, control.getQueueNames().length);
+   }
 
    public void testCreateTopic() throws Exception
    {
@@ -165,6 +184,25 @@ public class JMSServerControlTest extends ManagementTestBase
 
       checkNoBinding(context, topicJNDIBinding);
       checkNoResource(ObjectNames.getJMSTopicObjectName(topicName));
+   }
+   
+   public void testGetTopicNames() throws Exception
+   {
+      String topicJNDIBinding = randomString();
+      String topicName = randomString();
+
+      JMSServerControl control = createManagementControl();
+      assertEquals(0, control.getTopicNames().length);
+
+      control.createTopic(topicName, topicJNDIBinding);
+
+      String[] names = control.getTopicNames();
+      assertEquals(1, names.length);
+      assertEquals(topicName, names[0]);
+
+      control.destroyTopic(topicName);
+
+      assertEquals(0, control.getTopicNames().length);
    }
 
    public void testCreateConnectionFactory_1() throws Exception
@@ -527,6 +565,25 @@ public class JMSServerControlTest extends ManagementTestBase
          checkNoBinding(context, cfJNDIBinding);
       }
 
+   }
+   
+   public void testGetConnectionFactoryNames() throws Exception
+   {
+      String cfBinding = randomString();
+      String cfName = randomString();
+
+      JMSServerControl control = createManagementControl();
+      assertEquals(0, control.getConnectionFactoryNames().length);
+      
+      TransportConfiguration tcLive = new TransportConfiguration(InVMConnectorFactory.class.getName());
+      control.createConnectionFactory(cfName, tcLive.getFactoryClassName(), tcLive.getParams(), new String[] {cfBinding});
+
+      String[] cfNames = control.getConnectionFactoryNames();
+      assertEquals(1, cfNames.length);
+      assertEquals(cfName, cfNames[0]);
+      
+      control.destroyConnectionFactory(cfName);
+      assertEquals(0, control.getConnectionFactoryNames().length);
    }
 
    // Package protected ---------------------------------------------

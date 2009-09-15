@@ -29,7 +29,10 @@ import javax.management.NotificationListener;
 import org.hornetq.core.client.management.impl.ManagementHelper;
 import org.hornetq.core.config.TransportConfiguration;
 import org.hornetq.jms.server.JMSServerManager;
+import org.hornetq.jms.server.management.ConnectionFactoryControl;
+import org.hornetq.jms.server.management.JMSQueueControl;
 import org.hornetq.jms.server.management.JMSServerControl;
+import org.hornetq.jms.server.management.TopicControl;
 import org.hornetq.utils.Pair;
 
 /**
@@ -669,6 +672,42 @@ public class JMSServerControlImpl implements JMSServerControl, NotificationEmitt
       return server.getVersion();
    }
 
+   public String[] getQueueNames()
+   {
+      Object[] queueControls = server.getHornetQServer().getManagementService().getResources(JMSQueueControl.class);
+      String[] names = new String[queueControls.length];
+      for (int i = 0; i < queueControls.length; i++)
+      {
+         JMSQueueControl queueControl = (JMSQueueControl)queueControls[i];
+         names[i] = queueControl.getName();
+      }
+      return names;
+   }
+   
+   public String[] getTopicNames()
+   {
+      Object[] topicControls = server.getHornetQServer().getManagementService().getResources(TopicControl.class);
+      String[] names = new String[topicControls.length];
+      for (int i = 0; i < topicControls.length; i++)
+      {
+         TopicControl topicControl = (TopicControl)topicControls[i];
+         names[i] = topicControl.getName();
+      }
+      return names;
+   }
+   
+   public String[] getConnectionFactoryNames()
+   {
+      Object[] cfControls = server.getHornetQServer().getManagementService().getResources(ConnectionFactoryControl.class);
+      String[] names = new String[cfControls.length];
+      for (int i = 0; i < cfControls.length; i++)
+      {
+         ConnectionFactoryControl cfControl = (ConnectionFactoryControl)cfControls[i];
+         names[i] = cfControl.getName();
+      }
+      return names;
+   }
+   
    // NotificationEmitter implementation ----------------------------
 
    public void removeNotificationListener(final NotificationListener listener,

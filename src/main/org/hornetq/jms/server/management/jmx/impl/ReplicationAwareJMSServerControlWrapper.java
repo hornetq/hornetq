@@ -532,7 +532,22 @@ public class ReplicationAwareJMSServerControlWrapper extends ReplicationAwareSta
    {
       return localControl.isStarted();
    }
+   
+   public String[] getQueueNames()
+   {
+      return localControl.getQueueNames();
+   }
+   
+   public String[] getTopicNames()
+   {
+      return localControl.getTopicNames();
+   }
 
+   public String[] getConnectionFactoryNames()
+   {
+      return localControl.getConnectionFactoryNames();
+   }
+   
    public String[] listConnectionIDs() throws Exception
    {
       return localControl.listConnectionIDs();

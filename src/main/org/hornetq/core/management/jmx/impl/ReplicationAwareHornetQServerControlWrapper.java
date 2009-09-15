@@ -226,6 +226,16 @@ public class ReplicationAwareHornetQServerControlWrapper extends ReplicationAwar
    {
       return localControl.getConnectorsAsJSON();
    }
+   
+   public String[] getAddressNames()
+   {
+      return localControl.getAddressNames();
+   }
+   
+   public String[] getQueueNames()
+   {
+      return localControl.getQueueNames();
+   }
 
    public void sendQueueInfoToQueue(final String queueName, final String address) throws Exception
    {

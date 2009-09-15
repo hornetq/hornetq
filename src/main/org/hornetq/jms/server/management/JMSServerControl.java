@@ -36,6 +36,12 @@ public interface JMSServerControl
 
    String getVersion();
 
+   String[] getTopicNames();
+   
+   String[] getQueueNames();
+   
+   String[] getConnectionFactoryNames();
+   
    // Operations ----------------------------------------------------
 
    @Operation(desc = "Create a JMS Queue", impact = ACTION)

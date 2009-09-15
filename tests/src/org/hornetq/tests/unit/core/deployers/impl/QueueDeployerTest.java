@@ -157,6 +157,16 @@ public class QueueDeployerTest extends UnitTestCase
 
       }
 
+      public String[] getAddressNames()
+      {
+         return null;
+      }
+      
+      public String[] getQueueNames()
+      {
+         return null;
+      }
+
       List<QueueConfiguration> configs = new ArrayList<QueueConfiguration>();
 
       public void deployQueue(String address, String name, String filter, boolean durable) throws Exception

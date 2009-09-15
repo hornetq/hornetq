@@ -13,6 +13,7 @@
 
 package org.hornetq.tests.integration.management;
 
+import static org.hornetq.tests.util.RandomUtil.randomSimpleString;
 import static org.hornetq.tests.util.RandomUtil.randomString;
 
 import org.hornetq.core.buffers.ChannelBuffers;
@@ -20,13 +21,20 @@ import org.hornetq.core.client.management.impl.ManagementHelper;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.logging.Logger;
+import org.hornetq.core.management.AddressControl;
+import org.hornetq.core.management.QueueControl;
 import org.hornetq.core.management.ResourceNames;
+import org.hornetq.core.management.impl.ManagementServiceImpl;
 import org.hornetq.core.remoting.spi.HornetQBuffer;
 import org.hornetq.core.server.HornetQ;
 import org.hornetq.core.server.HornetQServer;
+import org.hornetq.core.server.Queue;
 import org.hornetq.core.server.ServerMessage;
 import org.hornetq.core.server.impl.ServerMessageImpl;
+import org.hornetq.tests.integration.server.FakeStorageManager;
+import org.hornetq.tests.unit.core.postoffice.impl.FakeQueue;
 import org.hornetq.tests.util.UnitTestCase;
+import org.hornetq.utils.SimpleString;
 
 /*
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -144,6 +152,31 @@ public class ManagementServiceImplTest extends UnitTestCase
       assertNotNull(ManagementHelper.getResult(reply));
       server.stop();
    }
+   
+   public void testGetResources() throws Exception
+   {
+      Configuration conf  = new ConfigurationImpl();
+      conf.setJMXManagementEnabled(false);
+      ManagementServiceImpl managementService = new ManagementServiceImpl(null, conf, -1);
+      
+      SimpleString address = randomSimpleString();
+      managementService.registerAddress(address);
+      Queue queue = new FakeQueue(randomSimpleString());
+      managementService.registerQueue(queue, randomSimpleString(), new FakeStorageManager());
+
+      Object[] addresses = managementService.getResources(AddressControl.class);
+      assertEquals(1, addresses.length);
+      assertTrue(addresses[0] instanceof AddressControl);
+      AddressControl addressControl = (AddressControl)addresses[0];
+      assertEquals(address.toString(), addressControl.getAddress());
+
+      Object[] queues = managementService.getResources(QueueControl.class);
+      assertEquals(1, queues.length);
+      assertTrue(queues[0] instanceof QueueControl);
+      QueueControl queueControl = (QueueControl)queues[0];
+      assertEquals(queue.getName().toString(), queueControl.getName());
+   }
+
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------

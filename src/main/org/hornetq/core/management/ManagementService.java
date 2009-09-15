@@ -127,6 +127,7 @@ public interface ManagementService extends NotificationService, HornetQComponent
 
    Object getResource(String resourceName);
 
+   Object[] getResources(Class<?> resourceType);
+   
    ServerMessage handleMessage(ServerMessage message) throws Exception;
-
 }
