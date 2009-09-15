@@ -42,7 +42,6 @@ import org.hornetq.core.postoffice.BindingType;
 import org.hornetq.core.postoffice.Bindings;
 import org.hornetq.core.postoffice.PostOffice;
 import org.hornetq.core.postoffice.QueueBinding;
-import org.hornetq.core.postoffice.impl.LocalQueueBinding;
 import org.hornetq.core.remoting.Channel;
 import org.hornetq.core.remoting.CloseListener;
 import org.hornetq.core.remoting.FailureListener;
@@ -1277,30 +1276,6 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
             filter = new FilterImpl(filterString);
          }
 
-         Queue theQueue;
-
-         if (browseOnly)
-         {
-            // We consume a copy of the queue - TODO - this is a temporary measure
-            // and will disappear once we can provide a proper iterator on the queue
-
-            theQueue = queueFactory.createQueue(-1, binding.getAddress(), name, filter, false, true);
-
-            // There's no need for any special locking since the list method is synchronized
-            List<MessageReference> refs = ((Queue)binding.getBindable()).list(filter);
-
-            for (MessageReference ref : refs)
-            {
-               theQueue.addLast(ref);
-            }
-
-            binding = new LocalQueueBinding(binding.getAddress(), theQueue, nodeID);
-         }
-         else
-         {
-            theQueue = (Queue)binding.getBindable();
-         }
-
          ServerConsumer consumer = new ServerConsumerImpl(idGenerator.generateID(),
                                                           oppositeChannelID,
                                                           this,
@@ -1331,6 +1306,8 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
 
             props.putIntProperty(ManagementHelper.HDR_DISTANCE, binding.getDistance());
 
+            Queue theQueue = (Queue)binding.getBindable();
+            
             props.putIntProperty(ManagementHelper.HDR_CONSUMER_COUNT, theQueue.getConsumerCount());
 
             if (filterString != null)
