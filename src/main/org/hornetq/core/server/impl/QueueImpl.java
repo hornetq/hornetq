@@ -983,23 +983,20 @@ public class QueueImpl implements Queue
 
    public synchronized boolean changeReferencePriority(final long messageID, final byte newPriority) throws Exception
    {
-      List<MessageReference> refs = list(null);
-      for (MessageReference ref : refs)
+      Iterator<MessageReference> iter = messageReferences.iterator();
+
+      while (iter.hasNext())
       {
-         ServerMessage message = ref.getMessage();
-         if (message.getMessageID() == messageID)
+         MessageReference ref = iter.next();
+         if (ref.getMessage().getMessageID() == messageID)
          {
-            message.setPriority(newPriority);
-            // delete and add the reference so that it
-            // goes to the right queues for the new priority
-
-            // FIXME - why deleting the reference?? This will delete it from storage!!
-
-            deleteReference(messageID);
+            iter.remove();
+            ref.getMessage().setPriority(newPriority);
             addLast(ref);
             return true;
          }
       }
+
       return false;
    }
 
