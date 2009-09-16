@@ -204,7 +204,7 @@ public class AddAndRemoveStressTest extends UnitTestCase
       }
 
       impl.forceMoveNextFile();
-      impl.checkAndReclaimFiles();
+      impl.checkReclaimStatus();
       
       impl.stop();
 

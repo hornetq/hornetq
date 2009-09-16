@@ -25,6 +25,7 @@ import org.hornetq.core.client.ClientSessionFactory;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.exception.HornetQException;
+import org.hornetq.core.message.Message;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.JournalType;
 import org.hornetq.tests.util.ServiceTestBase;
@@ -67,6 +68,101 @@ public class CompactingTest extends ServiceTestBase
 
    // Public --------------------------------------------------------
 
+   public void testCleanupAIO() throws Throwable
+   {
+      for (int i = 0; i < 3; i++)
+      {
+         System.out.println("Test # " + i);
+         internalTestCleanup(JournalType.ASYNCIO);
+         tearDown();
+         setUp();
+      }
+   }
+
+   public void testCleanupNIO() throws Throwable
+   {
+      for (int i = 0; i < 3; i++)
+      {
+         System.out.println("Test # " + i);
+         internalTestCleanup(JournalType.NIO);
+         tearDown();
+         setUp();
+      }
+   }
+
+   private void internalTestCleanup(JournalType journalType) throws Throwable
+   {
+      setupServer(journalType);
+
+      ClientSession session = sf.createSession(false, true, true);
+
+      ClientProducer prod = session.createProducer(AD1);
+
+      for (int i = 0; i < 500; i++)
+      {
+         prod.send(session.createClientMessage(true));
+      }
+
+      session.commit();
+
+      prod.close();
+
+      ClientConsumer cons = session.createConsumer(Q2);
+      prod = session.createProducer(AD2);
+
+      session.start();
+
+      for (int i = 0; i < 200; i++)
+      {
+         System.out.println("Iteration " + i);
+         for (int j = 0; j < 1000; j++)
+         {
+            Message msg = session.createClientMessage(true);
+            msg.getBody().writeBytes(new byte[1024]);
+
+            prod.send(msg);
+         }
+
+         session.commit();
+
+         for (int j = 0; j < 1000; j++)
+         {
+            ClientMessage msg = cons.receive(2000);
+            assertNotNull(msg);
+            msg.acknowledge();
+         }
+
+         session.commit();
+
+      }
+
+      assertNull(cons.receiveImmediate());
+
+      session.close();
+
+      server.stop();
+
+      server.start();
+
+      session = sf.createSession(false, true, true);
+      cons = session.createConsumer(Q1);
+      session.start();
+
+      for (int i = 0; i < 500; i++)
+      {
+         ClientMessage msg = cons.receive(1000);
+         assertNotNull(msg);
+         msg.acknowledge();
+      }
+
+      assertNull(cons.receiveImmediate());
+
+      prod = session.createProducer(AD2);
+
+      session.close();
+
+   }
+
    public void testMultiProducerAndCompactAIO() throws Throwable
    {
       internalTestMultiProducer(JournalType.ASYNCIO);
@@ -107,11 +203,11 @@ public class CompactingTest extends ServiceTestBase
       {
          session.close();
       }
-      
+
       server.stop();
-      
+
       setupServer(journalType);
-      
+
       final AtomicInteger numberOfMessages = new AtomicInteger(0);
       final int NUMBER_OF_FAST_MESSAGES = 100000;
       final int SLOW_INTERVAL = 100;
@@ -292,7 +388,7 @@ public class CompactingTest extends ServiceTestBase
             assertNotNull(msg);
             msg.acknowledge();
          }
-         
+
          assertNull(cons.receiveImmediate());
 
       }
@@ -327,7 +423,7 @@ public class CompactingTest extends ServiceTestBase
 
       config.setJournalType(journalType);
 
-      config.setJournalCompactMinFiles(3);
+      config.setJournalCompactMinFiles(10);
       config.setJournalCompactPercentage(50);
 
       server = createServer(true, config);
@@ -363,16 +459,27 @@ public class CompactingTest extends ServiceTestBase
       }
 
       sess.close();
-
-      sf = createInVMFactory();
    }
 
    @Override
    protected void tearDown() throws Exception
    {
-      sf.close();
+      try
+      {
+         if (sf != null)
+         {
+            sf.close();
+         }
 
-      server.stop();
+         if (server != null)
+         {
+            server.stop();
+         }
+      }
+      catch (Exception e)
+      {
+         e.printStackTrace(); // system.out -> junit reports
+      }
 
       server = null;
 

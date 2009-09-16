@@ -17,8 +17,6 @@ import org.hornetq.core.logging.Logger;
 
 /**
  * 
- * <p>A ReclaimerTest</p>
- * 
  * <p>The journal consists of an ordered list of journal files Fn where 0 <= n <= N</p>
  * 
  * <p>A journal file can contain either positives (pos) or negatives (neg)</p>
@@ -33,6 +31,7 @@ import org.hornetq.core.logging.Logger;
  * which are also marked for deletion in the same pass of the algorithm.</p>
  * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
+ * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
  *
  */
 public class Reclaimer
@@ -53,6 +52,8 @@ public class Reclaimer
          // First we evaluate criterion 1)
 
          JournalFile currentFile = files[i];
+
+         currentFile.setNeedCleanup(false);
 
          int posCount = currentFile.getPosCount();
 
@@ -101,6 +102,7 @@ public class Reclaimer
                         trace(currentFile + " Can't be reclaimed because " + file + " has negative values");
                      }
 
+                     file.setNeedCleanup(true);
                      currentFile.setCanReclaim(false);
 
                      break;

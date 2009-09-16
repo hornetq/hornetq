@@ -1057,7 +1057,7 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
 
       // Now restart
 
-      journal.checkAndReclaimFiles();
+      journal.checkReclaimStatus();
 
       System.out.println("journal:" + journal.debug());
 
@@ -3094,7 +3094,7 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
       System.out.println("*****************************************");
 
       journal.forceMoveNextFile();
-      journal.checkAndReclaimFiles();
+      journal.checkReclaimStatus();
 
       assertEquals(0, journal.getDataFilesCount());
 

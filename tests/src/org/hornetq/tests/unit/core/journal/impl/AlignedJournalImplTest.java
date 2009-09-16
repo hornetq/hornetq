@@ -156,7 +156,7 @@ public class AlignedJournalImplTest extends UnitTestCase
 
       journalImpl.forceMoveNextFile();
 
-      journalImpl.checkAndReclaimFiles();
+      journalImpl.checkReclaimStatus();
 
       setupAndLoadJournal(JOURNAL_SIZE, 10);
 
@@ -270,7 +270,7 @@ public class AlignedJournalImplTest extends UnitTestCase
 
       journalImpl.setAutoReclaim(false);
 
-      journalImpl.checkAndReclaimFiles();
+      journalImpl.checkReclaimStatus();
 
       journalImpl.debugWait();
 
@@ -316,7 +316,7 @@ public class AlignedJournalImplTest extends UnitTestCase
 
       journalImpl.setAutoReclaim(false);
 
-      journalImpl.checkAndReclaimFiles();
+      journalImpl.checkReclaimStatus();
 
       journalImpl.debugWait();
 
@@ -356,7 +356,7 @@ public class AlignedJournalImplTest extends UnitTestCase
 
       assertEquals(1000, records.get(0).id);
 
-      journalImpl.checkAndReclaimFiles();
+      journalImpl.checkReclaimStatus();
 
       log.debug(journalImpl.debug());
 
@@ -484,7 +484,7 @@ public class AlignedJournalImplTest extends UnitTestCase
       assertEquals(10, records.size());
       assertEquals(0, transactions.size());
 
-      journalImpl.checkAndReclaimFiles();
+      journalImpl.checkReclaimStatus();
 
       assertEquals(10, journalImpl.getDataFilesCount());
 
@@ -504,7 +504,7 @@ public class AlignedJournalImplTest extends UnitTestCase
 
       journalImpl.appendAddRecord(101, (byte)1, new SimpleEncoding(5, (byte)1), false);
 
-      journalImpl.checkAndReclaimFiles();
+      journalImpl.checkReclaimStatus();
 
       assertEquals(1, journalImpl.getDataFilesCount());
 
@@ -595,7 +595,7 @@ public class AlignedJournalImplTest extends UnitTestCase
 
       assertEquals(0, records.size());
 
-      journalImpl.checkAndReclaimFiles();
+      journalImpl.checkReclaimStatus();
 
       assertEquals(0, journalImpl.getDataFilesCount());
 
@@ -660,7 +660,7 @@ public class AlignedJournalImplTest extends UnitTestCase
 
       assertEquals(20, records.size());
 
-      journalImpl.checkAndReclaimFiles();
+      journalImpl.checkReclaimStatus();
 
    }
 
@@ -695,7 +695,7 @@ public class AlignedJournalImplTest extends UnitTestCase
 
       journalImpl.forceMoveNextFile();
 
-      journalImpl.checkAndReclaimFiles();
+      journalImpl.checkReclaimStatus();
 
       setupAndLoadJournal(JOURNAL_SIZE, 100, 2);
 
@@ -756,7 +756,7 @@ public class AlignedJournalImplTest extends UnitTestCase
 
       assertEquals(0, records.size());
 
-      journalImpl.checkAndReclaimFiles();
+      journalImpl.checkReclaimStatus();
 
       assertEquals(0, journalImpl.getDataFilesCount());
 
@@ -798,7 +798,7 @@ public class AlignedJournalImplTest extends UnitTestCase
       // the
       // file
       journalImpl.forceMoveNextFile();
-      journalImpl.checkAndReclaimFiles();
+      journalImpl.checkReclaimStatus();
 
       setupAndLoadJournal(JOURNAL_SIZE, 100);
 
@@ -836,7 +836,7 @@ public class AlignedJournalImplTest extends UnitTestCase
 
       journalImpl.appendCommitRecord(2l, false);
       journalImpl.forceMoveNextFile();
-      journalImpl.checkAndReclaimFiles();
+      journalImpl.checkReclaimStatus();
 
       setupAndLoadJournal(JOURNAL_SIZE, 100);
 
@@ -931,7 +931,7 @@ public class AlignedJournalImplTest extends UnitTestCase
          assertEquals((byte)1, transactions.get(0).extraData[i]);
       }
 
-      journalImpl.checkAndReclaimFiles();
+      journalImpl.checkReclaimStatus();
 
       assertEquals(10, journalImpl.getDataFilesCount());
 
@@ -943,7 +943,7 @@ public class AlignedJournalImplTest extends UnitTestCase
 
       assertEquals(10, records.size());
 
-      journalImpl.checkAndReclaimFiles();
+      journalImpl.checkReclaimStatus();
 
       for (int i = 0; i < 10; i++)
       {
@@ -980,7 +980,7 @@ public class AlignedJournalImplTest extends UnitTestCase
 
       // Reclaiming should still be able to reclaim a file if a transaction was
       // ignored
-      journalImpl.checkAndReclaimFiles();
+      journalImpl.checkReclaimStatus();
 
       assertEquals(2, factory.listFiles("tt").size());
 
@@ -1053,7 +1053,7 @@ public class AlignedJournalImplTest extends UnitTestCase
 
       journalImpl.forceMoveNextFile();
 
-      journalImpl.checkAndReclaimFiles();
+      journalImpl.checkReclaimStatus();
 
       assertEquals(0, journalImpl.getDataFilesCount());
 
@@ -1147,7 +1147,7 @@ public class AlignedJournalImplTest extends UnitTestCase
 
       journalImpl.forceMoveNextFile();
       journalImpl.debugWait();
-      journalImpl.checkAndReclaimFiles();
+      journalImpl.checkReclaimStatus();
 
       assertEquals(0, transactions.size());
       assertEquals(0, journalImpl.getDataFilesCount());
@@ -1238,7 +1238,7 @@ public class AlignedJournalImplTest extends UnitTestCase
 
       journalImpl.debugWait();
 
-      journalImpl.checkAndReclaimFiles();
+      journalImpl.checkReclaimStatus();
 
       assertEquals(0, journalImpl.getDataFilesCount());
 

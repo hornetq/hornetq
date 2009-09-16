@@ -83,7 +83,7 @@ public class ListJournal
             System.out.println("user record: " + record);
          }
 
-         journal.checkAndReclaimFiles();
+         journal.checkReclaimStatus();
 
          System.out.println("Data = " + journal.debug());
 

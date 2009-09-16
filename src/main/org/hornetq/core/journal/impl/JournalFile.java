@@ -19,8 +19,6 @@ import org.hornetq.core.journal.SequentialFile;
  * 
  * A JournalFile
  * 
- * TODO combine this with JournalFileImpl
- * 
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */
@@ -33,6 +31,8 @@ public interface JournalFile
    int getNegCount(JournalFile file);
 
    void incNegCount(JournalFile file);
+   
+   boolean resetNegCount(JournalFile file);
 
    int getPosCount();
 
@@ -49,6 +49,10 @@ public interface JournalFile
    void setCanReclaim(boolean canDelete);
 
    boolean isCanReclaim();
+   
+   void setNeedCleanup(boolean needCleanup);
+   
+   boolean isNeedCleanup();
 
    long getOffset();
    

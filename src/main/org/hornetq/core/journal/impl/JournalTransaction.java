@@ -281,7 +281,7 @@ public class JournalTransaction
    }
 
    /** 
-    * The caller of this method needs to guarantee lock.acquire at the journal. (unless this is being called from load what is a single thread process).
+    * The caller of this method needs to guarantee appendLock.lock at the journal. (unless this is being called from load what is a single thread process).
     * */
    public void commit(final JournalFile file)
    {
@@ -371,7 +371,7 @@ public class JournalTransaction
    }
 
    /** 
-    * The caller of this method needs to guarantee lock.acquire before calling this method if being used outside of the lock context.
+    * The caller of this method needs to guarantee appendLock.lock before calling this method if being used outside of the lock context.
     * or else potFilesMap could be affected
     * */
    public void rollback(final JournalFile file)
@@ -402,7 +402,7 @@ public class JournalTransaction
    }
 
    /** 
-    * The caller of this method needs to guarantee lock.acquire before calling this method if being used outside of the lock context.
+    * The caller of this method needs to guarantee appendLock.lock before calling this method if being used outside of the lock context.
     * or else potFilesMap could be affected
     * */
    public void prepare(final JournalFile file)

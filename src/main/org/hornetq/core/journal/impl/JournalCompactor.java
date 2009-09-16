@@ -13,7 +13,6 @@
 
 package org.hornetq.core.journal.impl;
 
-import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -29,9 +28,8 @@ import org.hornetq.core.journal.SequentialFile;
 import org.hornetq.core.journal.SequentialFileFactory;
 import org.hornetq.core.journal.impl.JournalImpl.JournalRecord;
 import org.hornetq.core.logging.Logger;
-import org.hornetq.core.remoting.spi.HornetQBuffer;
-import org.hornetq.utils.ConcurrentHashSet;
 import org.hornetq.utils.DataConstants;
+import org.hornetq.utils.Pair;
 
 /**
  * A JournalCompactor
@@ -40,31 +38,11 @@ import org.hornetq.utils.DataConstants;
  *
  *
  */
-public class JournalCompactor implements JournalReaderCallback
+public class JournalCompactor extends AbstractJournalUpdateTask
 {
 
-   private static final String FILE_COMPACT_CONTROL = "journal-rename-control.ctr";
-
    private static final Logger log = Logger.getLogger(JournalCompactor.class);
-
-   private final JournalImpl journal;
-
-   private final SequentialFileFactory fileFactory;
-
-   private JournalFile currentFile;
-
-   private SequentialFile sequentialFile;
-
-   private int fileID;
-
-   private ChannelBuffer writingChannel;
-
-   private int nextOrderingID;
-
-   private final List<JournalFile> newDataFiles = new ArrayList<JournalFile>();
-
-   private final Set<Long> recordsSnapshot = new ConcurrentHashSet<Long>();;
-
+   
    // Snapshot of transactions that were pending when the compactor started
    private final Map<Long, PendingTransaction> pendingTransactions = new ConcurrentHashMap<Long, PendingTransaction>();
 
@@ -77,71 +55,10 @@ public class JournalCompactor implements JournalReaderCallback
     *  we cache those updates. As soon as we are done we take the right account. */
    private final LinkedList<CompactCommand> pendingCommands = new LinkedList<CompactCommand>();
 
-   /**
-    * @param tmpRenameFile
-    * @param files
-    * @param newFiles
-    */
-   public static SequentialFile writeControlFile(final SequentialFileFactory fileFactory,
-                                                 final List<JournalFile> files,
-                                                 final List<JournalFile> newFiles) throws Exception
-   {
-
-      SequentialFile controlFile = fileFactory.createSequentialFile(FILE_COMPACT_CONTROL, 1);
-
-      try
-      {
-         controlFile.open(1);
-
-         ChannelBuffer renameBuffer = ChannelBuffers.dynamicBuffer(1);
-
-         renameBuffer.writeInt(-1);
-         renameBuffer.writeInt(-1);
-
-         HornetQBuffer filesToRename = ChannelBuffers.dynamicBuffer(1);
-
-         // DataFiles first
-
-         filesToRename.writeInt(files.size());
-
-         for (JournalFile file : files)
-         {
-            filesToRename.writeUTF(file.getFile().getFileName());
-         }
-
-         filesToRename.writeInt(newFiles.size());
-
-         for (JournalFile file : newFiles)
-         {
-            filesToRename.writeUTF(file.getFile().getFileName());
-         }
-
-         JournalImpl.writeAddRecord(-1,
-                                    1,
-                                    (byte)0,
-                                    new JournalImpl.ByteArrayEncoding(filesToRename.array()),
-                                    JournalImpl.SIZE_ADD_RECORD + filesToRename.array().length,
-                                    renameBuffer);
-
-         ByteBuffer writeBuffer = fileFactory.newBuffer(renameBuffer.writerIndex());
-
-         writeBuffer.put(renameBuffer.array(), 0, renameBuffer.writerIndex());
-
-         writeBuffer.rewind();
-
-         controlFile.write(writeBuffer, true);
-
-         return controlFile;
-      }
-      finally
-      {
-         controlFile.close();
-      }
-   }
-
    public static SequentialFile readControlFile(final SequentialFileFactory fileFactory,
                                                 final List<String> dataFiles,
-                                                final List<String> newFiles) throws Exception
+                                                final List<String> newFiles,
+                                                final List<Pair<String, String>> renameFile) throws Exception
    {
       SequentialFile controlFile = fileFactory.createSequentialFile(FILE_COMPACT_CONTROL, 1);
 
@@ -182,6 +99,14 @@ public class JournalCompactor implements JournalReaderCallback
                newFiles.add(input.readUTF());
             }
 
+            int numberRenames = input.readInt();
+            for (int i = 0; i < numberRenames; i++)
+            {
+               String from = input.readUTF();
+               String to = input.readUTF();
+               renameFile.add(new Pair<String, String>(from, to));
+            }
+
          }
 
          return controlFile;
@@ -212,10 +137,7 @@ public class JournalCompactor implements JournalReaderCallback
                            final Set<Long> recordsSnapshot,
                            final int firstFileID)
    {
-      this.fileFactory = fileFactory;
-      this.journal = journal;
-      this.recordsSnapshot.addAll(recordsSnapshot);
-      nextOrderingID = firstFileID;
+      super(fileFactory, journal, recordsSnapshot, firstFileID);
    }
 
    /** This methods informs the Compactor about the existence of a pending (non committed) transaction */
@@ -248,7 +170,7 @@ public class JournalCompactor implements JournalReaderCallback
       {
          for (long id : ids)
          {
-            recordsSnapshot.add(id);
+            addToRecordsSnaptsho(id);
          }
       }
 
@@ -256,7 +178,7 @@ public class JournalCompactor implements JournalReaderCallback
       {
          for (long id : ids2)
          {
-            recordsSnapshot.add(id);
+            addToRecordsSnaptsho(id);
          }
       }
    }
@@ -284,40 +206,20 @@ public class JournalCompactor implements JournalReaderCallback
       pendingCommands.add(new UpdateCompactCommand(id, usedFile, size));
    }
 
-   public boolean lookupRecord(final long id)
-   {
-      return recordsSnapshot.contains(id);
-   }
-
    private void checkSize(final int size) throws Exception
    {
-      if (writingChannel == null)
+      if (getWritingChannel() == null)
       {
          openFile();
       }
       else
       {
-         if (writingChannel.writerIndex() + size > writingChannel.capacity())
+         if (getWritingChannel().writerIndex() + size > getWritingChannel().capacity())
          {
             openFile();
          }
       }
    }
-
-   /** Write pending output into file */
-   public void flush() throws Exception
-   {
-      if (writingChannel != null)
-      {
-         sequentialFile.position(0);
-         sequentialFile.write(writingChannel.toByteBuffer(), true);
-         sequentialFile.close();
-         newDataFiles.add(currentFile);
-      }
-
-      writingChannel = null;
-   }
-
    /**
     * Replay pending counts that happened during compacting
     */
@@ -342,7 +244,7 @@ public class JournalCompactor implements JournalReaderCallback
 
    public void onReadAddRecord(final RecordInfo info) throws Exception
    {
-      if (recordsSnapshot.contains(info.id))
+      if (lookupRecord(info.id))
       {
          int size = JournalImpl.SIZE_ADD_RECORD + info.data.length;
 
@@ -353,7 +255,7 @@ public class JournalCompactor implements JournalReaderCallback
                                     info.getUserRecordType(),
                                     new JournalImpl.ByteArrayEncoding(info.data),
                                     size,
-                                    writingChannel);
+                                    getWritingChannel());
 
          newRecords.put(info.id, new JournalRecord(currentFile, size));
       }
@@ -377,7 +279,7 @@ public class JournalCompactor implements JournalReaderCallback
                                       info.getUserRecordType(),
                                       new JournalImpl.ByteArrayEncoding(info.data),
                                       size,
-                                      writingChannel);
+                                      getWritingChannel());
       }
       else
       {
@@ -388,6 +290,7 @@ public class JournalCompactor implements JournalReaderCallback
 
    public void onReadCommitRecord(final long transactionID, final int numberOfRecords) throws Exception
    {
+      
       if (pendingTransactions.get(transactionID) != null)
       {
          // Sanity check, this should never happen
@@ -421,7 +324,7 @@ public class JournalCompactor implements JournalReaderCallback
                                                     info.id,
                                                     new JournalImpl.ByteArrayEncoding(info.data),
                                                     size,
-                                                    writingChannel);
+                                                    getWritingChannel());
 
          newTransaction.addNegative(currentFile, info.id);
       }
@@ -447,11 +350,10 @@ public class JournalCompactor implements JournalReaderCallback
          JournalImpl.writeTransaction(fileID,
                                       JournalImpl.PREPARE_RECORD,
                                       transactionID,
-                                      newTransaction,
                                       new JournalImpl.ByteArrayEncoding(extraData),
                                       size,
                                       newTransaction.getCounter(currentFile),
-                                      writingChannel);
+                                      getWritingChannel());
 
          newTransaction.prepare(currentFile);
 
@@ -470,7 +372,7 @@ public class JournalCompactor implements JournalReaderCallback
 
    public void onReadUpdateRecord(final RecordInfo info) throws Exception
    {
-      if (recordsSnapshot.contains(info.id))
+      if (lookupRecord(info.id))
       {
          int size = JournalImpl.SIZE_UPDATE_RECORD + info.data.length;
 
@@ -492,7 +394,7 @@ public class JournalCompactor implements JournalReaderCallback
                                        info.userRecordType,
                                        new JournalImpl.ByteArrayEncoding(info.data),
                                        size,
-                                       writingChannel);
+                                       getWritingChannel());
 
       }
    }
@@ -513,7 +415,7 @@ public class JournalCompactor implements JournalReaderCallback
                                          info.userRecordType,
                                          new JournalImpl.ByteArrayEncoding(info.data),
                                          size,
-                                         writingChannel);
+                                         getWritingChannel());
 
          newTransaction.addPositive(currentFile, info.id, size);
       }
@@ -536,26 +438,6 @@ public class JournalCompactor implements JournalReaderCallback
          newTransactions.put(transactionID, newTransaction);
       }
       return newTransaction;
-   }
-
-   /**
-    * @throws Exception
-    */
-   private void openFile() throws Exception
-   {
-      flush();
-
-      ByteBuffer bufferWrite = fileFactory.newBuffer(journal.getFileSize());
-      writingChannel = ChannelBuffers.wrappedBuffer(bufferWrite);
-
-      currentFile = journal.getFile(false, false, false, true);
-      sequentialFile = currentFile.getFile();
-            
-      sequentialFile.open(1);
-      fileID = nextOrderingID++;
-      currentFile = new JournalFileImpl(sequentialFile, fileID);
-
-      writingChannel.writeInt(fileID);
    }
 
    private static abstract class CompactCommand
@@ -599,7 +481,7 @@ public class JournalCompactor implements JournalReaderCallback
       private long id;
 
       private JournalFile usedFile;
-      
+
       private final int size;
 
       public UpdateCompactCommand(final long id, final JournalFile usedFile, final int size)

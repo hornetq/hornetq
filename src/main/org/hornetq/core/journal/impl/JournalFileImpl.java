@@ -44,6 +44,8 @@ public class JournalFileImpl implements JournalFile
    private final AtomicInteger liveBytes = new AtomicInteger(0);
 
    private boolean canReclaim;
+   
+   private boolean needCleanup;   
 
    private final Map<JournalFile, AtomicInteger> negCounts = new ConcurrentHashMap<JournalFile, AtomicInteger>();
    
@@ -70,6 +72,17 @@ public class JournalFileImpl implements JournalFile
    {
       return canReclaim;
    }
+   
+   public boolean isNeedCleanup()
+   {
+      return needCleanup;
+   }
+
+   public void setNeedCleanup(boolean needCleanup)
+   {
+      this.needCleanup = needCleanup;
+   }
+   
 
    public void setCanReclaim(final boolean canReclaim)
    {
@@ -93,6 +106,11 @@ public class JournalFileImpl implements JournalFile
       {
          return count.intValue();
       }
+   }
+   
+   public boolean resetNegCount(JournalFile file)
+   {
+      return negCounts.remove(file) != null;
    }
 
    public void incPosCount()

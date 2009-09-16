@@ -354,6 +354,23 @@ public class ReclaimerTest extends UnitTestCase
       assertCanDelete(1);
       assertCantDelete(2);
    }
+   
+   public void testCleanup() throws Exception
+   {
+      setup(3);
+      setupPosNeg(0, 11, 0, 0, 0);
+      setupPosNeg(1, 1, 10, 0, 0);
+      setupPosNeg(2, 1, 0, 1, 0);
+      
+      reclaimer.scan(files);
+      
+      debugFiles();
+      
+      assertCantDelete(0);
+      assertTrue(files[0].isNeedCleanup());
+      assertCantDelete(1);
+      assertCantDelete(2);
+   }
 
    public void testThreeFiles10() throws Exception
    {
@@ -708,6 +725,18 @@ public class ReclaimerTest extends UnitTestCase
          }
       }
    }
+   
+   private void debugFiles()
+   {
+      for (int i = 0 ; i < files.length; i++)
+      {
+         System.out.println("[" + i + "]=" + files[i].getPosCount() + ", canDelete = " + files[i].isCanReclaim() + ", cleanup = " + files[i].isNeedCleanup());
+         for (int j = 0 ; j <= i; j++)
+         {
+            System.out.println("..." + files[i].getNegCount(files[j]));
+         }
+      }
+   }
 
    private void assertCanDelete(final int... fileNumber)
    {
@@ -738,6 +767,9 @@ public class ReclaimerTest extends UnitTestCase
       private int posCount;
 
       private boolean canDelete;
+      
+      private boolean needCleanup;
+
 
       public void extendOffset(final int delta)
       {
@@ -912,6 +944,31 @@ public class ReclaimerTest extends UnitTestCase
       public int getLiveSize()
       {
          return 0;
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.journal.impl.JournalFile#isNeedCleanup()
+       */
+      public boolean isNeedCleanup()
+      {
+         return this.needCleanup;
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.journal.impl.JournalFile#resetNegCount(org.hornetq.core.journal.impl.JournalFile)
+       */
+      public boolean resetNegCount(JournalFile file)
+      {
+         return false;
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.journal.impl.JournalFile#setNeedCleanup(boolean)
+       */
+      public void setNeedCleanup(boolean needCleanup)
+      {
+         this.needCleanup = needCleanup;
+         
       }
    }
 }

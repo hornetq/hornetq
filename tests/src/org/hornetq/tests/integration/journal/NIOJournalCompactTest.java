@@ -68,17 +68,26 @@ public class NIOJournalCompactTest extends JournalImplTestBase
          SequentialFile file = fileFactory.createSequentialFile("file-" + i + ".tst.new", 1);
          newFiles.add(new JournalFileImpl(file, 0));
       }
+      
+      ArrayList<Pair<String, String>> renames = new ArrayList<Pair<String, String>>();
+      renames.add(new Pair<String, String>("a", "b"));
+      renames.add(new Pair<String, String>("c", "d"));
+      
+      
 
-      JournalCompactor.writeControlFile(fileFactory, dataFiles, newFiles);
+      JournalCompactor.writeControlFile(fileFactory, dataFiles, newFiles, renames);
 
       ArrayList<String> strDataFiles = new ArrayList<String>();
 
       ArrayList<String> strNewFiles = new ArrayList<String>();
+      
+      ArrayList<Pair<String, String>> renamesRead = new ArrayList<Pair<String, String>>();
 
-      assertNotNull(JournalCompactor.readControlFile(fileFactory, strDataFiles, strNewFiles));
+      assertNotNull(JournalCompactor.readControlFile(fileFactory, strDataFiles, strNewFiles, renamesRead));
 
       assertEquals(dataFiles.size(), strDataFiles.size());
       assertEquals(newFiles.size(), strNewFiles.size());
+      assertEquals(renames.size(), renamesRead.size());
 
       Iterator<String> iterDataFiles = strDataFiles.iterator();
       for (JournalFile file : dataFiles)
@@ -91,6 +100,16 @@ public class NIOJournalCompactTest extends JournalImplTestBase
       for (JournalFile file : newFiles)
       {
          assertEquals(file.getFile().getFileName(), iterNewFiles.next());
+      }
+      assertFalse(iterNewFiles.hasNext());
+
+
+      Iterator<Pair<String,String>> iterRename = renames.iterator();
+      for (Pair<String,String> rename : renamesRead)
+      {
+         Pair<String, String> original = iterRename.next();
+         assertEquals(original.a, rename.a);
+         assertEquals(original.b, rename.b);
       }
       assertFalse(iterNewFiles.hasNext());
 
@@ -197,11 +216,11 @@ public class NIOJournalCompactTest extends JournalImplTestBase
       {
 
          @Override
-         protected SequentialFile createControlFile(List<JournalFile> files, List<JournalFile> newFiles) throws Exception
+         protected SequentialFile createControlFile(List<JournalFile> files, List<JournalFile> newFiles, Pair<String, String> pair) throws Exception
          {
             if (createControlFile)
             {
-               return super.createControlFile(files, newFiles);
+               return super.createControlFile(files, newFiles, pair);
             }
             else
             {
@@ -517,7 +536,7 @@ public class NIOJournalCompactTest extends JournalImplTestBase
 
          journal.forceMoveNextFile();
 
-         journal.checkAndReclaimFiles();
+         journal.checkReclaimStatus();
       }
 
       long transactionID = 0;
@@ -666,9 +685,9 @@ public class NIOJournalCompactTest extends JournalImplTestBase
          long id = idGenerator.generateID();
          listToDelete.add(id);
 
+         // Append Record Transaction will make the recordSize as exactly recordLength (discounting SIZE_ADD_RECORD_TX)
          addTx(tx, id);
 
-         // Append Record Transaction will make the recordSize as exactly recordLength (discounting SIZE_ADD_RECORD_TX)
          expectedSizes.add(recordLength);
          journal.forceMoveNextFile();
 
