@@ -305,13 +305,13 @@
    </path>
 
    <target name="clean">
-      <delete dir="${build.dir}"/>
-      <delete dir="${test.build.dir}"/>
-      <delete dir="${test.output.dir}"/>
-      <delete dir="${test.jms.build.dir}"/>
-      <delete dir="${test.joram.build.dir}"/>
-      <delete dir="${thirdparty.dir}"/>      
-      <delete>
+      <delete dir="${build.dir}" quiet="true"/>
+      <delete dir="${test.build.dir}" quiet="true"/>
+      <delete dir="${test.output.dir}" quiet="true"/>
+      <delete dir="${test.jms.build.dir}" quiet="true"/>
+      <delete dir="${test.joram.build.dir}" quiet="true"/>
+      <delete dir="${thirdparty.dir}" quiet="true"/>      
+      <delete quiet="true">
          <fileset dir="${logs.dir}" includes="*"/>
       </delete>
       <ant antfile="${examples.dir}/build.xml" target="clean" inheritall="false"/>
