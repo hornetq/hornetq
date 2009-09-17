@@ -201,9 +201,11 @@ etc
                 </listitem>
                 <listitem>
                     <para><literal>hornetq.remoting.netty.host</literal>. This specified the host
-                        name or ip address to connect to (when configuring a connector) or to listen
+                        name or IP address to connect to (when configuring a connector) or to listen
                         on (when configuring an acceptor). The default value for this property is
-                            <literal>localhost</literal>. Note that if you want your servers
+                        <literal>localhost</literal>. When configuring acceptors, multiple hosts
+                        or IP addresses can be specified by separating them with commas.
+                        Note that if you want your servers
                         accessible from other nodes, don't bind to localhost!</para>
                 </listitem>
                 <listitem>
