@@ -253,16 +253,6 @@ public class HornetQServerControlUsingCoreTest extends HornetQServerControlTest
             return (String)proxy.retrieveAttributeValue("pagingDirectory");
          }
 
-         public int getGlobalPageSize()
-         {
-            return (Integer)proxy.retrieveAttributeValue("globalPageSize");
-         }
-
-         public long getPagingMaxGlobalSizeBytes()
-         {
-            return (Long)proxy.retrieveAttributeValue("pagingMaxGlobalSizeBytes", Long.class);
-         }
-
          public long getQueueActivationTimeout()
          {
             return (Long)proxy.retrieveAttributeValue("queueActivationTimeout", Long.class);
@@ -421,6 +411,21 @@ public class HornetQServerControlUsingCoreTest extends HornetQServerControlTest
          public int getAIOBufferTimeout()
          {
             return (Integer)proxy.retrieveAttributeValue("AIOBufferTimeout");
+         }
+
+         public int getJournalCompactMinFiles()
+         {
+            return (Integer)proxy.retrieveAttributeValue("JournalCompactMinFiles");
+         }
+
+         public int getJournalCompactPercentage()
+         {
+            return (Integer)proxy.retrieveAttributeValue("JournalCompactPercentage");
+         }
+
+         public boolean isPersistenceEnabled()
+         {
+            return (Boolean)proxy.retrieveAttributeValue("PersistenceEnabled");
          }
 
       };

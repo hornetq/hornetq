@@ -43,7 +43,7 @@ public class ReplicationAwareHornetQServerControlWrapper extends ReplicationAwar
    // Constructors --------------------------------------------------
 
    public ReplicationAwareHornetQServerControlWrapper(final HornetQServerControlImpl localControl,
-                                                        final ReplicationOperationInvoker replicationInvoker) throws Exception
+                                                      final ReplicationOperationInvoker replicationInvoker) throws Exception
    {
       super(ResourceNames.CORE_SERVER, HornetQServerControl.class, replicationInvoker);
 
@@ -71,7 +71,7 @@ public class ReplicationAwareHornetQServerControlWrapper extends ReplicationAwar
    {
       return localControl.getConnectionCount();
    }
-   
+
    public String[] getInterceptorClassNames()
    {
       return localControl.getInterceptorClassNames();
@@ -221,17 +221,17 @@ public class ReplicationAwareHornetQServerControlWrapper extends ReplicationAwar
    {
       return localControl.getConnectors();
    }
-   
+
    public String getConnectorsAsJSON() throws Exception
    {
       return localControl.getConnectorsAsJSON();
    }
-   
+
    public String[] getAddressNames()
    {
       return localControl.getAddressNames();
    }
-   
+
    public String[] getQueueNames()
    {
       return localControl.getQueueNames();
@@ -390,6 +390,21 @@ public class ReplicationAwareHornetQServerControlWrapper extends ReplicationAwar
    public boolean isWildcardRoutingEnabled()
    {
       return localControl.isWildcardRoutingEnabled();
+   }
+
+   public int getJournalCompactMinFiles()
+   {
+      return localControl.getJournalCompactMinFiles();
+   }
+
+   public int getJournalCompactPercentage()
+   {
+      return localControl.getJournalCompactPercentage();
+   }
+
+   public boolean isPersistenceEnabled()
+   {
+      return localControl.isPersistenceEnabled();
    }
 
    // StandardMBean overrides ---------------------------------------

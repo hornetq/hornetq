@@ -60,6 +60,12 @@ public interface HornetQServerControl
    int getJournalMinFiles();
 
    int getJournalMaxAIO();
+   
+   int getJournalCompactMinFiles();
+   
+   int getJournalCompactPercentage();
+   
+   boolean isPersistenceEnabled();
 
    boolean isCreateBindingsDir();
 

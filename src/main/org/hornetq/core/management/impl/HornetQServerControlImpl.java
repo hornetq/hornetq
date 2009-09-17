@@ -171,6 +171,21 @@ public class HornetQServerControlImpl implements HornetQServerControl, Notificat
    {
       return configuration.getJournalMinFiles();
    }
+   
+   public int getJournalCompactMinFiles()
+   {
+      return configuration.getJournalCompactMinFiles();
+   }
+
+   public int getJournalCompactPercentage()
+   {
+      return configuration.getJournalCompactPercentage();
+   }
+
+   public boolean isPersistenceEnabled()
+   {
+      return configuration.isPersistenceEnabled();
+   }
 
    public String getJournalType()
    {
@@ -656,4 +671,5 @@ public class HornetQServerControlImpl implements HornetQServerControl, Notificat
    {
       return configuration.isWildcardRoutingEnabled();
    }
+
 }

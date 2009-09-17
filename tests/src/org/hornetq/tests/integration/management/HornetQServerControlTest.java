@@ -119,6 +119,9 @@ public class HornetQServerControlTest extends ManagementTestBase
       assertEquals(conf.getTransactionTimeoutScanPeriod(), serverControl.getTransactionTimeoutScanPeriod());
       assertEquals(conf.getMessageExpiryScanPeriod(), serverControl.getMessageExpiryScanPeriod());
       assertEquals(conf.getMessageExpiryThreadPriority(), serverControl.getMessageExpiryThreadPriority());
+      assertEquals(conf.getJournalCompactMinFiles(), serverControl.getJournalCompactMinFiles());
+      assertEquals(conf.getJournalCompactPercentage(), serverControl.getJournalCompactPercentage());
+      assertEquals(conf.isPersistenceEnabled(), serverControl.isPersistenceEnabled());
    }
 
    public void testGetConnectors() throws Exception
