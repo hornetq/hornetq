@@ -200,7 +200,7 @@ public class JournalImpl implements TestableJournal
    private final AtomicBoolean compactorRunning = new AtomicBoolean();
 
    private ExecutorService filesExecutor = null;
-   
+
    private ExecutorService compactorExecutor = null;
 
    // Lock used during the append of records
@@ -2075,46 +2075,48 @@ public class JournalImpl implements TestableJournal
             }
          }
 
-         // TODO: make this configurable
-         if (nCleanup > 5)
+         if (compactMinFiles > 0)
          {
-            for (JournalFile file : dataFiles)
+            if (nCleanup > getMinCompact())
             {
-               if (file.isNeedCleanup())
+               for (JournalFile file : dataFiles)
                {
-                  final JournalFile cleanupFile = file;
-                  
-                  if (compactorRunning.compareAndSet(false, true))
+                  if (file.isNeedCleanup())
                   {
-                     // The cleanup should happen rarely.
-                     // but when it happens it needs to use a different thread,
-                     // or opening new files or any other executor's usage will be blocked while the cleanUp is being
-                     // processed.
-                     
-                     compactorExecutor.execute(new Runnable()
+                     final JournalFile cleanupFile = file;
+
+                     if (compactorRunning.compareAndSet(false, true))
                      {
-                        public void run()
+                        // The cleanup should happen rarely.
+                        // but when it happens it needs to use a different thread,
+                        // or opening new files or any other executor's usage will be blocked while the cleanUp is being
+                        // processed.
+
+                        compactorExecutor.execute(new Runnable()
                         {
-                           try
+                           public void run()
                            {
-                              cleanUp(cleanupFile);
-                           }
-                           catch (Exception e)
-                           {
-                              log.warn(e.getMessage(), e);
-                           }
-                           finally
-                           {
-                              compactorRunning.set(false);
-                              if (autoReclaim)
+                              try
                               {
-                                 scheduleReclaim();
+                                 cleanUp(cleanupFile);
+                              }
+                              catch (Exception e)
+                              {
+                                 log.warn(e.getMessage(), e);
+                              }
+                              finally
+                              {
+                                 compactorRunning.set(false);
+                                 if (autoReclaim)
+                                 {
+                                    scheduleReclaim();
+                                 }
                               }
                            }
-                        }
-                     });
+                        });
+                     }
+                     return true;
                   }
-                  return true;
                }
             }
          }
@@ -2125,6 +2127,14 @@ public class JournalImpl implements TestableJournal
       }
 
       return false;
+   }
+
+   /**
+    * @return
+    */
+   private float getMinCompact()
+   {
+      return (compactMinFiles * compactPercentage);
    }
 
    public synchronized void cleanUp(final JournalFile file) throws Exception
@@ -2141,18 +2151,18 @@ public class JournalImpl implements TestableJournal
          JournalCleaner cleaner = null;
          ArrayList<JournalFile> dependencies = new ArrayList<JournalFile>();
          lockAppend.lock();
-         
+
          try
          {
 
-            log.info("Cleaning up file "  + file);
-            
+            log.info("Cleaning up file " + file);
+
             if (file.getPosCount() == 0)
             {
                // nothing to be done
                return;
             }
-            
+
             // We don't want this file to be reclaimed during the cleanup
             file.incPosCount();
 
@@ -2163,7 +2173,7 @@ public class JournalImpl implements TestableJournal
                if (jrnFile.resetNegCount(file))
                {
                   dependencies.add(jrnFile);
-                  jrnFile.incPosCount(); // this file can't be reclaimed while cleanup is being done  
+                  jrnFile.incPosCount(); // this file can't be reclaimed while cleanup is being done
                }
             }
 
@@ -2179,7 +2189,7 @@ public class JournalImpl implements TestableJournal
          cleaner.flush();
 
          cleaner.fixDependencies(file, dependencies);
-         
+
          for (JournalFile jrnfile : dependencies)
          {
             jrnfile.decPosCount();
@@ -2199,10 +2209,10 @@ public class JournalImpl implements TestableJournal
       finally
       {
          compactingLock.readLock().unlock();
-         log.info("Clean up on file "  + file + " done");
+         log.info("Clean up on file " + file + " done");
       }
 
-    }
+   }
 
    public void checkCompact() throws Exception
    {
@@ -2444,7 +2454,7 @@ public class JournalImpl implements TestableJournal
       }
 
       filesExecutor = Executors.newSingleThreadExecutor();
-      
+
       compactorExecutor = Executors.newCachedThreadPool();
 
       fileFactory.start();
