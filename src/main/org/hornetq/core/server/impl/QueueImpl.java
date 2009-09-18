@@ -113,6 +113,8 @@ public class QueueImpl implements Queue
 
    private final AtomicBoolean waitingToDeliver = new AtomicBoolean(false);
 
+   private boolean paused;
+
    private final Runnable deliverRunner = new DeliverRunner();
 
    private final PagingManager pagingManager;
@@ -146,7 +148,7 @@ public class QueueImpl implements Queue
    private final Map<Consumer, Iterator<MessageReference>> iterators = new HashMap<Consumer, Iterator<MessageReference>>();
 
    private ConcurrentMap<SimpleString, Consumer> groups = new ConcurrentHashMap<SimpleString, Consumer>();
-   
+
    private volatile SimpleString expiryAddress;
 
    public QueueImpl(final long persistenceID,
@@ -192,7 +194,7 @@ public class QueueImpl implements Queue
       direct = true;
 
       scheduledDeliveryHandler = new ScheduledDeliveryHandlerImpl(scheduledExecutor);
-      
+
       if (addressSettingsRepository != null)
       {
          expiryAddress = addressSettingsRepository.getMatch(address.toString()).getExpiryAddress();
@@ -202,7 +204,7 @@ public class QueueImpl implements Queue
          expiryAddress = null;
       }
    }
-   
+
    // Bindable implementation -------------------------------------------------------------------------------------
 
    public SimpleString getRoutingName()
@@ -748,21 +750,21 @@ public class QueueImpl implements Queue
             messageReferences.addFirst(reference, reference.getMessage().getPriority());
          }
       }
-   }     
+   }
 
    public void expire(final MessageReference ref) throws Exception
-   {      
+   {
       log.info("expiring ref " + this.expiryAddress);
       if (expiryAddress != null)
       {
-         move(expiryAddress, ref, true);         
+         move(expiryAddress, ref, true);
       }
       else
-      {         
+      {
          acknowledge(ref);
       }
    }
-   
+
    public void setExpiryAddress(final SimpleString expiryAddress)
    {
       this.expiryAddress = expiryAddress;
@@ -1289,7 +1291,7 @@ public class QueueImpl implements Queue
       // with the live node. Instead, when we replicate the delivery we remove
       // the ref from the queue
 
-      if (backup)
+      if (backup || paused)
       {
          return;
       }
@@ -1307,11 +1309,11 @@ public class QueueImpl implements Queue
 
       Iterator<MessageReference> iterator = null;
 
-      //TODO - this needs to be optimised!! Creating too much stuff on an inner loop
+      // TODO - this needs to be optimised!! Creating too much stuff on an inner loop
       int totalConsumers = distributionPolicy.getConsumerCount();
       Set<Consumer> busyConsumers = new HashSet<Consumer>();
       Set<Consumer> nullReferences = new HashSet<Consumer>();
-      
+
       while (true)
       {
          consumer = distributionPolicy.getNextConsumer();
@@ -1331,7 +1333,7 @@ public class QueueImpl implements Queue
             else
             {
                reference = null;
-               
+
                if (consumer.getFilter() != null)
                {
                   // we have iterated on the whole queue for
@@ -1344,7 +1346,7 @@ public class QueueImpl implements Queue
 
          if (reference == null)
          {
-            nullReferences.add(consumer);            
+            nullReferences.add(consumer);
             if (nullReferences.size() + busyConsumers.size() == totalConsumers)
             {
                startDepaging();
@@ -1358,10 +1360,10 @@ public class QueueImpl implements Queue
          else
          {
             nullReferences.remove(consumer);
-            
+
             if (reference.getMessage().isExpired())
             {
-               //We expire messages on the server too
+               // We expire messages on the server too
                if (iterator == null)
                {
                   messageReferences.removeFirst();
@@ -1370,9 +1372,9 @@ public class QueueImpl implements Queue
                {
                   iterator.remove();
                }
-               
+
                referenceHandled();
-               
+
                try
                {
                   expire(reference);
@@ -1381,7 +1383,7 @@ public class QueueImpl implements Queue
                {
                   log.error("Failed to expire ref", e);
                }
-               
+
                continue;
             }
          }
@@ -1447,7 +1449,7 @@ public class QueueImpl implements Queue
 
       boolean add = false;
 
-      if (direct && !backup)
+      if (direct && !backup && !paused)
       {
          // Deliver directly
 
@@ -1667,7 +1669,7 @@ public class QueueImpl implements Queue
 
       if (message.decrementRefCount() == 0 && store != null)
       {
-         store.addSize(-ref.getMessage().getMemoryEstimate());         
+         store.addSize(-ref.getMessage().getMemoryEstimate());
       }
    }
 
@@ -1732,6 +1734,7 @@ public class QueueImpl implements Queue
    {
       public void run()
       {
+
          // Must be set to false *before* executing to avoid race
          waitingToDeliver.set(false);
 
@@ -1886,5 +1889,25 @@ public class QueueImpl implements Queue
             futures.remove(this);
          }
       }
+   }
+
+   public synchronized void pause()
+   {
+      paused = true;
+      
+      log.info("Paused is now " + paused);
+   }
+
+   public synchronized void resume()
+   {
+      paused = false;
+      
+      deliver();
+   }
+
+   public synchronized boolean isPaused()
+   {
+      log.info("return ispaused " + paused);
+      return paused;
    }
 }

@@ -246,6 +246,21 @@ public class ReplicationAwareQueueControlWrapper extends ReplicationAwareStandar
                            info.getNotifications());
    }
 
+   public boolean isPaused() throws Exception
+   {
+      return localQueueControl.isPaused();
+   }
+
+   public void pause() throws Exception
+   {
+      localQueueControl.pause();
+   }
+
+   public void resume() throws Exception
+   {
+      localQueueControl.resume();
+   }
+
    // Public --------------------------------------------------------
 
    // Package protected ---------------------------------------------

@@ -32,6 +32,7 @@ import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.TransportConfiguration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
+import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.management.DayCounterInfo;
 import org.hornetq.core.management.HornetQServerControl;
 import org.hornetq.core.management.MessageCounterInfo;
@@ -307,7 +308,7 @@ public class QueueControlTest extends ManagementTestBase
 
       session.deleteQueue(queue);
    }
-   
+
    public void testListScheduledMessagesAsJSON() throws Exception
    {
       long delay = 2000;
@@ -369,7 +370,7 @@ public class QueueControlTest extends ManagementTestBase
       consumer.close();
       session.deleteQueue(queue);
    }
-   
+
    public void testListMessagesAsJSONWithNullFilter() throws Exception
    {
       SimpleString address = randomSimpleString();
@@ -384,7 +385,7 @@ public class QueueControlTest extends ManagementTestBase
       message.putIntProperty(new SimpleString("key"), intValue);
       producer.send(message);
 
-      String jsonString =  queueControl.listMessagesAsJSON(null);
+      String jsonString = queueControl.listMessagesAsJSON(null);
       assertNotNull(jsonString);
       JSONArray array = new JSONArray(jsonString);
       assertEquals(1, array.length());
@@ -392,7 +393,7 @@ public class QueueControlTest extends ManagementTestBase
 
       consumeMessages(1, session, queue);
 
-      jsonString =  queueControl.listMessagesAsJSON(null);
+      jsonString = queueControl.listMessagesAsJSON(null);
       assertNotNull(jsonString);
       array = new JSONArray(jsonString);
       assertEquals(0, array.length());
@@ -455,7 +456,7 @@ public class QueueControlTest extends ManagementTestBase
 
       session.deleteQueue(queue);
    }
-   
+
    public void testListMessagesWithEmptyFilter() throws Exception
    {
       SimpleString address = randomSimpleString();
@@ -478,7 +479,7 @@ public class QueueControlTest extends ManagementTestBase
 
       session.deleteQueue(queue);
    }
-   
+
    public void testListMessagesAsJSONWithFilter() throws Exception
    {
       SimpleString key = new SimpleString("key");
@@ -515,7 +516,7 @@ public class QueueControlTest extends ManagementTestBase
 
       session.deleteQueue(queue);
    }
-   
+
    /**
     * <ol>
     * <li>send a message to queue</li>
@@ -636,8 +637,7 @@ public class QueueControlTest extends ManagementTestBase
       assertEquals(2, queueControl.getMessageCount());
 
       // moved matching messages to otherQueue
-      int movedMatchedMessagesCount = queueControl.moveMessages(key + " =" + matchingValue,
-                                                                        otherQueue.toString());
+      int movedMatchedMessagesCount = queueControl.moveMessages(key + " =" + matchingValue, otherQueue.toString());
       assertEquals(1, movedMatchedMessagesCount);
       assertEquals(1, queueControl.getMessageCount());
 
@@ -682,7 +682,7 @@ public class QueueControlTest extends ManagementTestBase
       assertEquals(0, otherQueueControl.getMessageCount());
 
       // the message IDs are set on the server
-      Map<String, Object>[] messages = queueControl.listMessages(null);   
+      Map<String, Object>[] messages = queueControl.listMessages(null);
       assertEquals(2, messages.length);
       long messageID = (Long)messages[0].get("messageID");
 
@@ -714,7 +714,7 @@ public class QueueControlTest extends ManagementTestBase
       assertEquals(1, queueControl.getMessageCount());
 
       // the message IDs are set on the server
-      Map<String, Object>[] messages = queueControl.listMessages(null); 
+      Map<String, Object>[] messages = queueControl.listMessages(null);
       assertEquals(1, messages.length);
       long messageID = (Long)messages[0].get("messageID");
 
@@ -805,7 +805,7 @@ public class QueueControlTest extends ManagementTestBase
       int removedMatchedMessagesCount = queueControl.removeMessages(null);
       assertEquals(2, removedMatchedMessagesCount);
       assertEquals(0, queueControl.getMessageCount());
-      
+
       session.deleteQueue(queue);
    }
 
@@ -828,11 +828,10 @@ public class QueueControlTest extends ManagementTestBase
       int removedMatchedMessagesCount = queueControl.removeMessages("");
       assertEquals(2, removedMatchedMessagesCount);
       assertEquals(0, queueControl.getMessageCount());
-      
+
       session.deleteQueue(queue);
    }
-   
-   
+
    public void testRemoveMessage() throws Exception
    {
       SimpleString address = randomSimpleString();
@@ -849,7 +848,7 @@ public class QueueControlTest extends ManagementTestBase
       assertEquals(2, queueControl.getMessageCount());
 
       // the message IDs are set on the server
-      Map<String, Object>[] messages = queueControl.listMessages(null); 
+      Map<String, Object>[] messages = queueControl.listMessages(null);
       assertEquals(2, messages.length);
       long messageID = (Long)messages[0].get("messageID");
 
@@ -958,7 +957,7 @@ public class QueueControlTest extends ManagementTestBase
       assertEquals(0, expiryQueueControl.getMessageCount());
 
       // the message IDs are set on the server
-      Map<String, Object>[] messages = queueControl.listMessages(null);       
+      Map<String, Object>[] messages = queueControl.listMessages(null);
       assertEquals(1, messages.length);
       long messageID = (Long)messages[0].get("messageID");
 
@@ -996,7 +995,7 @@ public class QueueControlTest extends ManagementTestBase
       assertEquals(2, queueControl.getMessageCount());
 
       // the message IDs are set on the server
-      Map<String, Object>[] messages = queueControl.listMessages(null);       
+      Map<String, Object>[] messages = queueControl.listMessages(null);
       assertEquals(2, messages.length);
       long messageID = (Long)messages[0].get("messageID");
 
@@ -1015,7 +1014,7 @@ public class QueueControlTest extends ManagementTestBase
       consumeMessages(1, session, deadLetterQueue);
 
       session.deleteQueue(queue);
-      session.deleteQueue(deadLetterQueue);           
+      session.deleteQueue(deadLetterQueue);
    }
 
    public void testChangeMessagePriority() throws Exception
@@ -1037,7 +1036,7 @@ public class QueueControlTest extends ManagementTestBase
       assertEquals(1, queueControl.getMessageCount());
 
       // the message IDs are set on the server
-      Map<String, Object>[] messages = queueControl.listMessages(null);       
+      Map<String, Object>[] messages = queueControl.listMessages(null);
       assertEquals(1, messages.length);
       long messageID = (Long)messages[0].get("messageID");
 
@@ -1070,7 +1069,7 @@ public class QueueControlTest extends ManagementTestBase
       assertEquals(1, queueControl.getMessageCount());
 
       // the message IDs are set on the server
-      Map<String, Object>[] messages = queueControl.listMessages(null);       
+      Map<String, Object>[] messages = queueControl.listMessages(null);
       assertEquals(1, messages.length);
       long messageID = (Long)messages[0].get("messageID");
 
@@ -1099,14 +1098,14 @@ public class QueueControlTest extends ManagementTestBase
 
       session.createQueue(address, queue, null, false);
       QueueControl queueControl = createManagementControl(address, queue);
-      
+
       HornetQServerControl serverControl = createHornetQServerControl(mbeanServer);
       serverControl.enableMessageCounters();
       serverControl.setMessageCounterSamplePeriod(MessageCounterManagerImpl.MIN_SAMPLE_PERIOD);
 
       String jsonString = queueControl.listMessageCounter();
       MessageCounterInfo info = MessageCounterInfo.fromJSON(jsonString);
-      
+
       assertEquals(0, info.getDepth());
       assertEquals(0, info.getCount());
 
@@ -1133,7 +1132,7 @@ public class QueueControlTest extends ManagementTestBase
 
       consumeMessages(2, session, queue);
 
-      Thread.sleep(MessageCounterManagerImpl.MIN_SAMPLE_PERIOD * 2);      
+      Thread.sleep(MessageCounterManagerImpl.MIN_SAMPLE_PERIOD * 2);
       jsonString = queueControl.listMessageCounter();
       info = MessageCounterInfo.fromJSON(jsonString);
       assertEquals(0, info.getDepth());
@@ -1143,7 +1142,7 @@ public class QueueControlTest extends ManagementTestBase
 
       session.deleteQueue(queue);
    }
-   
+
    public void testResetMessageCounter() throws Exception
    {
       SimpleString address = randomSimpleString();
@@ -1151,7 +1150,7 @@ public class QueueControlTest extends ManagementTestBase
 
       session.createQueue(address, queue, null, false);
       QueueControl queueControl = createManagementControl(address, queue);
-      
+
       HornetQServerControl serverControl = createHornetQServerControl(mbeanServer);
       serverControl.enableMessageCounters();
       serverControl.setMessageCounterSamplePeriod(MessageCounterManagerImpl.MIN_SAMPLE_PERIOD);
@@ -1175,7 +1174,7 @@ public class QueueControlTest extends ManagementTestBase
 
       consumeMessages(1, session, queue);
 
-      Thread.sleep(MessageCounterManagerImpl.MIN_SAMPLE_PERIOD * 2);      
+      Thread.sleep(MessageCounterManagerImpl.MIN_SAMPLE_PERIOD * 2);
       jsonString = queueControl.listMessageCounter();
       info = MessageCounterInfo.fromJSON(jsonString);
       assertEquals(0, info.getDepth());
@@ -1184,18 +1183,18 @@ public class QueueControlTest extends ManagementTestBase
       assertEquals(0, info.getCountDelta());
 
       queueControl.resetMessageCounter();
-      
-      Thread.sleep(MessageCounterManagerImpl.MIN_SAMPLE_PERIOD * 2);      
+
+      Thread.sleep(MessageCounterManagerImpl.MIN_SAMPLE_PERIOD * 2);
       jsonString = queueControl.listMessageCounter();
       info = MessageCounterInfo.fromJSON(jsonString);
       assertEquals(0, info.getDepth());
       assertEquals(0, info.getDepthDelta());
       assertEquals(0, info.getCount());
       assertEquals(0, info.getCountDelta());
-      
+
       session.deleteQueue(queue);
    }
-   
+
    public void testListMessageCounterAsHTML() throws Exception
    {
       SimpleString address = randomSimpleString();
@@ -1203,10 +1202,10 @@ public class QueueControlTest extends ManagementTestBase
 
       session.createQueue(address, queue, null, false);
       QueueControl queueControl = createManagementControl(address, queue);
-      
+
       String history = queueControl.listMessageCounterAsHTML();
       assertNotNull(history);
-      
+
       session.deleteQueue(queue);
    }
 
@@ -1218,7 +1217,7 @@ public class QueueControlTest extends ManagementTestBase
 
       session.createQueue(address, queue, null, false);
       QueueControl queueControl = createManagementControl(address, queue);
-      
+
       HornetQServerControl serverControl = createHornetQServerControl(mbeanServer);
       serverControl.enableMessageCounters();
       serverControl.setMessageCounterSamplePeriod(counterPeriod);
@@ -1238,7 +1237,7 @@ public class QueueControlTest extends ManagementTestBase
 
       session.createQueue(address, queue, null, false);
       QueueControl queueControl = createManagementControl(address, queue);
-      
+
       HornetQServerControl serverControl = createHornetQServerControl(mbeanServer);
       serverControl.enableMessageCounters();
       serverControl.setMessageCounterSamplePeriod(counterPeriod);
@@ -1247,8 +1246,36 @@ public class QueueControlTest extends ManagementTestBase
       assertNotNull(history);
 
       session.deleteQueue(queue);
+
    }
-   
+
+   public void testPauseAndResume()
+   {
+      long counterPeriod = 1000;
+      SimpleString address = randomSimpleString();
+      SimpleString queue = randomSimpleString();
+
+      try
+      {
+         session.createQueue(address, queue, null, false);
+         QueueControl queueControl = createManagementControl(address, queue);
+
+         HornetQServerControl serverControl = createHornetQServerControl(mbeanServer);
+         serverControl.enableMessageCounters();
+         serverControl.setMessageCounterSamplePeriod(counterPeriod);
+         assertFalse(queueControl.isPaused());
+         queueControl.pause();
+         assertTrue(queueControl.isPaused());
+         queueControl.resume();
+         assertFalse(queueControl.isPaused());
+      }
+      catch (Exception e)
+      {
+         // TODO Auto-generated catch block
+         e.printStackTrace();
+      }
+   }
+
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
@@ -1278,9 +1305,9 @@ public class QueueControlTest extends ManagementTestBase
       session.close();
 
       server.stop();
-      
+
       session = null;
-      
+
       server = null;
 
       super.tearDown();

@@ -252,6 +252,21 @@ public class QueueControlUsingCoreTest extends QueueControlTest
             proxy.invokeOperation("setExpiryAddress", expiryAddres);
          }
 
+         public void pause() throws Exception
+         {
+            proxy.invokeOperation("pause");
+         }
+
+         public void resume() throws Exception
+         {
+            proxy.invokeOperation("pause");
+         }
+
+         public boolean isPaused() throws Exception
+         {
+            return (Boolean)proxy.invokeOperation("isPaused");
+         }
+
       };
    }
 

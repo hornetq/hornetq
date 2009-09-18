@@ -517,4 +517,31 @@ public class FakeQueue implements Queue
    {
    }
 
+   /* (non-Javadoc)
+    * @see org.hornetq.core.server.Queue#isPaused()
+    */
+   public boolean isPaused()
+   {
+      // TODO Auto-generated method stub
+      return false;
+   }
+
+   /* (non-Javadoc)
+    * @see org.hornetq.core.server.Queue#pause()
+    */
+   public void pause()
+   {
+      // TODO Auto-generated method stub
+      
+   }
+
+   /* (non-Javadoc)
+    * @see org.hornetq.core.server.Queue#resume()
+    */
+   public void resume()
+   {
+      // TODO Auto-generated method stub
+      
+   }
+
 }

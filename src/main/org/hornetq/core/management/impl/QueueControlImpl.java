@@ -19,6 +19,7 @@ import java.util.Map;
 import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.filter.Filter;
 import org.hornetq.core.filter.impl.FilterImpl;
+import org.hornetq.core.logging.Logger;
 import org.hornetq.core.management.MessageCounterInfo;
 import org.hornetq.core.management.QueueControl;
 import org.hornetq.core.message.Message;
@@ -42,8 +43,9 @@ import org.hornetq.utils.json.JSONObject;
  */
 public class QueueControlImpl implements QueueControl
 {
-
    // Constants -----------------------------------------------------
+   
+   private static final Logger log = Logger.getLogger(QueueControlImpl.class);
 
    // Attributes ----------------------------------------------------
 
@@ -65,11 +67,11 @@ public class QueueControlImpl implements QueueControl
       for (int i = 0; i < messages.length; i++)
       {
          Map<String, Object> message = messages[i];
-         array.put(new JSONObject(message));         
+         array.put(new JSONObject(message));
       }
       return array.toString();
    }
-   
+
    /**
     * Returns null if the string is null or empty
     */
@@ -78,7 +80,8 @@ public class QueueControlImpl implements QueueControl
       if (filterStr == null || filterStr.trim().length() == 0)
       {
          return null;
-      } else
+      }
+      else
       {
          return new FilterImpl(new SimpleString(filterStr));
       }
@@ -87,9 +90,9 @@ public class QueueControlImpl implements QueueControl
    // Constructors --------------------------------------------------
 
    public QueueControlImpl(final Queue queue,
-                       final String address,
-                       final PostOffice postOffice,
-                       final HierarchicalRepository<AddressSettings> addressSettingsRepository)
+                           final String address,
+                           final PostOffice postOffice,
+                           final HierarchicalRepository<AddressSettings> addressSettingsRepository)
    {
       this.queue = queue;
       this.address = address;
@@ -211,12 +214,12 @@ public class QueueControlImpl implements QueueControl
       AddressSettings addressSettings = addressSettingsRepository.getMatch(address);
 
       SimpleString sExpiryAddress = new SimpleString(expiryAddress);
-      
+
       if (expiryAddress != null)
       {
          addressSettings.setExpiryAddress(sExpiryAddress);
       }
-      
+
       queue.setExpiryAddress(sExpiryAddress);
    }
 
@@ -232,14 +235,14 @@ public class QueueControlImpl implements QueueControl
       }
       return messages;
    }
-   
+
    public String listScheduledMessagesAsJSON() throws Exception
    {
       return toJSON(listScheduledMessages());
    }
 
    public Map<String, Object>[] listMessages(final String filterStr) throws Exception
-   {     
+   {
       try
       {
          Filter filter = createFilter(filterStr);
@@ -258,7 +261,7 @@ public class QueueControlImpl implements QueueControl
          throw new IllegalStateException(e.getMessage());
       }
    }
-   
+
    public String listMessagesAsJSON(String filter) throws Exception
    {
       return toJSON(listMessages(filter));
@@ -406,6 +409,24 @@ public class QueueControlImpl implements QueueControl
    public String listMessageCounterHistoryAsHTML()
    {
       return MessageCounterHelper.listMessageCounterHistoryAsHTML(new MessageCounter[] { counter });
+   }
+
+   public void pause()
+   {
+      log.info("calling pause");
+      queue.pause();
+   }
+
+   public void resume()
+   {
+      log.info("calling resume");
+      queue.resume();
+   }
+
+   public boolean isPaused() throws Exception
+   {
+      log.info("calling isPaused");
+      return queue.isPaused();
    }
 
    // Package protected ---------------------------------------------

@@ -124,4 +124,13 @@ public interface QueueControl
 
    @Operation(desc = "List the message counters history HTML", impact = INFO)
    String listMessageCounterHistoryAsHTML() throws Exception;
+   
+   @Operation(desc = "Pauses the Queue", impact = ACTION)
+   void pause() throws Exception;
+   
+   @Operation(desc = "Resumes delivery of queued messages and gets the queue out of paused state.", impact = ACTION)
+   void resume() throws Exception;
+   
+   @Operation(desc = "Inspects if the queue is paused", impact = INFO)
+   boolean isPaused() throws Exception; 
 }
