@@ -13,13 +13,12 @@
 
 package org.hornetq.jms.bridge.impl;
 
+import java.lang.reflect.Method;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Map;
-import java.lang.reflect.Method;
-import java.lang.reflect.InvocationTargetException;
 
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
@@ -48,7 +47,6 @@ import org.hornetq.jms.bridge.JMSBridge;
 import org.hornetq.jms.bridge.QualityOfServiceMode;
 import org.hornetq.jms.client.HornetQMessage;
 import org.hornetq.jms.client.HornetQSession;
-import org.jboss.tm.TransactionManagerLocator;
 
 /**
  * 
@@ -278,6 +276,9 @@ public class JMSBridgeImpl implements HornetQComponent, JMSBridge
             if (trace) { log.trace("Started time checker thread"); }
          }            
          
+         Thread receiver = new SourceReceiver();
+         receiver.start();
+         
          if (trace) { log.trace("Started " + this); }
       }
       else
@@ -285,6 +286,7 @@ public class JMSBridgeImpl implements HornetQComponent, JMSBridge
          log.warn("Failed to start bridge");
          handleFailureOnStartup();
       }
+      
    }
    
    public synchronized void stop() throws Exception
@@ -1027,8 +1029,6 @@ public class JMSBridgeImpl implements HornetQComponent, JMSBridge
          }
          
          targetProducer = sess.createProducer(null);
-                          
-         sourceConsumer.setMessageListener(new SourceListener());
          
          return true;
       }
@@ -1414,6 +1414,79 @@ public class JMSBridgeImpl implements HornetQComponent, JMSBridge
    
    // Inner classes ---------------------------------------------------------------
    
+
+   /**
+    * We use a Thread which polls the sourceDestination instead of a MessageListener
+    * to ensure that message delivery does not happen concurrently with
+    * transaction enlistment of the XAResource (see HORNETQ-27)
+    *
+    */
+   private final class SourceReceiver extends Thread
+   {
+      @Override
+      public void run()
+      {
+         while(isStarted())
+         {
+            synchronized (lock)
+            {
+               if (isPaused() || failed)
+               {
+                  try
+                  {
+                     lock.wait(500);
+                  }
+                  catch (InterruptedException e)
+                  {
+                     if (trace) { log.trace(this + " thread was interrupted"); }
+                  }
+                  continue;
+               }
+
+               Message msg = null;
+               try
+               {
+                  msg = sourceConsumer.receive(1000);
+               }
+               catch (JMSException jmse)
+               {
+                  if (trace) { log.trace(this + " exception while receiving a message", jmse); }
+               }
+
+               if (msg == null)
+               {
+                  try
+                  {
+                     lock.wait(500);
+                  }
+                  catch (InterruptedException e)
+                  {
+                     if (trace) { log.trace(this + " thread was interrupted"); }
+                  }
+                  continue;
+               }
+
+               if (trace) { log.trace(this + " received message " + msg); }
+
+               messages.add(msg);
+
+               batchExpiryTime = System.currentTimeMillis() + maxBatchTime;            
+
+               if (trace) { log.trace(this + " rescheduled batchExpiryTime to " + batchExpiryTime); }
+
+               if (maxBatchSize != -1 && messages.size() >= maxBatchSize)
+               {
+                  if (trace) { log.trace(this + " maxBatchSize has been reached so sending batch"); }
+
+                  sendBatch();
+
+                  if (trace) { log.trace(this + " sent batch"); }
+               }                        
+            }
+         }         
+      }
+   }
+
    private class FailureHandler implements Runnable
    {
       /**
@@ -1574,40 +1647,6 @@ public class JMSBridgeImpl implements HornetQComponent, JMSBridge
          }
       }      
    }  
-   
-   private class SourceListener implements MessageListener
-   {
-      public void onMessage(Message msg)
-      {
-         synchronized (lock)
-         {
-            if (failed)
-            {
-               //Ignore the message
-               if (trace) { log.trace("JMSBridge has failed so ignoring message"); }
-                              
-               return;
-            }
-            
-            if (trace) { log.trace(this + " received message " + msg); }
-            
-            messages.add(msg);
-            
-            batchExpiryTime = System.currentTimeMillis() + maxBatchTime;            
-            
-            if (trace) { log.trace(this + " rescheduled batchExpiryTime to " + batchExpiryTime); }
-            
-            if (maxBatchSize != -1 && messages.size() >= maxBatchSize)
-            {
-               if (trace) { log.trace(this + " maxBatchSize has been reached so sending batch"); }
-               
-               sendBatch();
-               
-               if (trace) { log.trace(this + " sent batch"); }
-            }                        
-         }
-      }      
-   }   
    
    private class BridgeExceptionListener implements ExceptionListener
    {
