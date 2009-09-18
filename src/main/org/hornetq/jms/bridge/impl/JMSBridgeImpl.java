@@ -135,6 +135,8 @@ public class JMSBridgeImpl implements HornetQComponent, JMSBridge
    
    private Thread checkerThread;
    
+   private Thread sourceReceiver;
+
    private long batchExpiryTime;
    
    private boolean paused;         
@@ -276,8 +278,8 @@ public class JMSBridgeImpl implements HornetQComponent, JMSBridge
             if (trace) { log.trace("Started time checker thread"); }
          }            
          
-         Thread receiver = new SourceReceiver();
-         receiver.start();
+         sourceReceiver = new SourceReceiver();
+         sourceReceiver.start();
          
          if (trace) { log.trace("Started " + this); }
       }
@@ -308,6 +310,11 @@ public class JMSBridgeImpl implements HornetQComponent, JMSBridge
          {
             checkerThread.interrupt();
          }
+         
+         if (sourceReceiver != null)
+         {
+            sourceReceiver.interrupt();
+         }
       }
             
       //This must be outside sync block
@@ -318,6 +325,16 @@ public class JMSBridgeImpl implements HornetQComponent, JMSBridge
          checkerThread.join();
          
          if (trace) { log.trace("Checker thread has finished"); }
+      }
+      
+      //This must be outside sync block
+      if (sourceReceiver != null)
+      {  
+         if (trace) { log.trace("Waiting for source receiver thread to finish");}
+         
+         sourceReceiver.join();
+         
+         if (trace) { log.trace("Source receiver thread has finished"); }
       }
       
       if (tx != null)
@@ -1426,11 +1443,11 @@ public class JMSBridgeImpl implements HornetQComponent, JMSBridge
       @Override
       public void run()
       {
-         while(isStarted())
+         while(started)
          {
             synchronized (lock)
             {
-               if (isPaused() || failed)
+               if (paused || failed)
                {
                   try
                   {
