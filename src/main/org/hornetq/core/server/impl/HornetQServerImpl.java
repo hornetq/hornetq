@@ -907,7 +907,7 @@ public class HornetQServerImpl implements HornetQServer
                                                 scheduledPool,
                                                 managementConnectorID);
 
-      memoryManager = new MemoryManagerImpl();
+      memoryManager = new MemoryManagerImpl(configuration.getMemoryWarningThreshold(), configuration.getMemoryMeasureInterval());
 
       memoryManager.start();
    }

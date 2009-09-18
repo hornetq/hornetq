@@ -91,7 +91,9 @@ public class ConfigurationImplTest extends UnitTestCase
       assertEquals(ConfigurationImpl.DEFAULT_MANAGEMENT_REQUEST_TIMEOUT, conf.getManagementRequestTimeout());
       assertEquals(ConfigurationImpl.DEFAULT_ID_CACHE_SIZE, conf.getIDCacheSize());
       assertEquals(ConfigurationImpl.DEFAULT_PERSIST_ID_CACHE, conf.isPersistIDCache());
-
+      assertEquals(ConfigurationImpl.DEFAULT_SERVER_DUMP_INTERVAL, conf.getServerDumpInterval());
+      assertEquals(ConfigurationImpl.DEFAULT_MEMORY_WARNING_THRESHOLD, conf.getMemoryWarningThreshold());
+      assertEquals(ConfigurationImpl.DEFAULT_MEMORY_MEASURE_INTERVAL, conf.getMemoryMeasureInterval());
    }
 
    public void testSetGetAttributes()

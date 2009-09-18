@@ -243,6 +243,14 @@ public interface Configuration extends Serializable
 
    void setServerDumpInterval(long interval);
 
+   int getMemoryWarningThreshold();
+   
+   void setMemoryWarningThreshold(int memoryWarningThreshold);
+   
+   long getMemoryMeasureInterval();
+
+   void setMemoryMeasureInterval(long memoryMeasureInterval);
+   
    // Paging Properties --------------------------------------------------------------------
 
    String getPagingDirectory();
@@ -286,6 +294,7 @@ public interface Configuration extends Serializable
    int getMessageExpiryThreadPriority();
 
    void setMessageExpiryThreadPriority(int messageExpiryThreadPriority);
+
 
 
 }

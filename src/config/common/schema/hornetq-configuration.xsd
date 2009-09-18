@@ -166,6 +166,10 @@
 				</xsd:element>
 				<xsd:element maxOccurs="1" minOccurs="0" name="server-dump-interval" type="xsd:long">
 				</xsd:element>
+				<xsd:element maxOccurs="1" minOccurs="0" name="memory-warning-threshold" type="xsd:int">
+				</xsd:element>
+				<xsd:element maxOccurs="1" minOccurs="0" name="memory-measure-interval" type="xsd:long">
+				</xsd:element>				
 				<xsd:element maxOccurs="1" minOccurs="0" name="large-messages-directory" type="xsd:string">
 				</xsd:element>
                 <xsd:element maxOccurs="1" minOccurs="0" name="security-settings">

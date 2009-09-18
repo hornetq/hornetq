@@ -158,6 +158,10 @@ public class ConfigurationImpl implements Configuration
 
    public static final long DEFAULT_SERVER_DUMP_INTERVAL = -1;
 
+   public static final int DEFAULT_MEMORY_WARNING_THRESHOLD = 25;
+   
+   public static final long DEFAULT_MEMORY_MEASURE_INTERVAL = 3000; // in milliseconds
+
    // Attributes -----------------------------------------------------------------------------
 
    protected boolean clustered = DEFAULT_CLUSTERED;
@@ -281,6 +285,11 @@ public class ConfigurationImpl implements Configuration
    protected long managementRequestTimeout = DEFAULT_MANAGEMENT_REQUEST_TIMEOUT;
 
    protected long serverDumpInterval = DEFAULT_SERVER_DUMP_INTERVAL;
+
+   // percentage of free memory which triggers warning from the memory manager
+   protected int memoryWarningThreshold = DEFAULT_MEMORY_WARNING_THRESHOLD;
+   
+   protected long memoryMeasureInterval = DEFAULT_MEMORY_MEASURE_INTERVAL;
 
    // Public -------------------------------------------------------------------------
 
@@ -1051,5 +1060,24 @@ public class ConfigurationImpl implements Configuration
    {
       this.serverDumpInterval = intervalInMilliseconds;
    }
+   
+   public int getMemoryWarningThreshold()
+   {
+      return memoryWarningThreshold ;
+   }
+   
+   public void setMemoryWarningThreshold(int memoryWarningThreshold)
+   {
+      this.memoryWarningThreshold = memoryWarningThreshold;
+   }
 
+   public long getMemoryMeasureInterval()
+   {
+      return memoryMeasureInterval ;
+   }
+   
+   public void setMemoryMeasureInterval(long memoryMeasureInterval)
+   {
+      this.memoryMeasureInterval = memoryMeasureInterval;
+   }
 }

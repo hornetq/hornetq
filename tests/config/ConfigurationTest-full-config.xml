@@ -46,6 +46,8 @@
       <journal-min-files>100</journal-min-files>
       <journal-max-aio>56546</journal-max-aio>
       <large-messages-directory>largemessagesdir</large-messages-directory>
+      <memory-warning-threshold>95</memory-warning-threshold>
+      <memory-measure-interval>54321</memory-measure-interval>
       
       <remoting-interceptors>
          <class-name>org.hornetq.tests.unit.core.config.impl.TestInterceptor1</class-name>

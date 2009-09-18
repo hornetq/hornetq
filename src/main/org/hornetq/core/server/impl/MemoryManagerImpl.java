@@ -29,17 +29,11 @@ public class MemoryManagerImpl implements MemoryManager
 {
    private static final Logger log = Logger.getLogger(MemoryManagerImpl.class);
    
-   private static final long DEFAULT_MEASURE_INTERVAL = 3000;
-   
-   private static final int DEFAULT_FREE_MEMORY_PERCENT = 25;
-       
    private Runtime runtime;
    
-   //TODO Should be configurable
    private long measureInterval;
    
-   //TODO Should be configurable
-   private int freeMemoryPercent;
+   private int memoryWarningThreshold;
    
    private volatile boolean started;
    
@@ -47,13 +41,13 @@ public class MemoryManagerImpl implements MemoryManager
    
    private volatile boolean low;
    
-   public MemoryManagerImpl()
+   public MemoryManagerImpl(int memoryWarningThreshold, long measureInterval)
    {
       runtime = Runtime.getRuntime();
       
-      this.measureInterval = DEFAULT_MEASURE_INTERVAL;
+      this.measureInterval = measureInterval;
       
-      this.freeMemoryPercent = DEFAULT_FREE_MEMORY_PERCENT;    
+      this.memoryWarningThreshold = memoryWarningThreshold;    
    }
    
    public boolean isMemoryLow()
@@ -69,7 +63,7 @@ public class MemoryManagerImpl implements MemoryManager
    public synchronized void start()
    {
       log.debug("Starting MemoryManager with MEASURE_INTERVAL: " + measureInterval
-               + " FREE_MEMORY_PERCENT: " + freeMemoryPercent);
+               + " FREE_MEMORY_PERCENT: " + memoryWarningThreshold);
       
       if (started)
       {
@@ -151,9 +145,9 @@ public class MemoryManagerImpl implements MemoryManager
                log.debug(info);
             }
             
-            if (availableMemoryPercent <= freeMemoryPercent)
+            if (availableMemoryPercent <= memoryWarningThreshold)
             {
-               log.warn("Less than " + freeMemoryPercent + "%\n" 
+               log.warn("Less than " + memoryWarningThreshold + "%\n" 
                         + info +
                         "\nYou are in danger of running out of RAM. Have you set paging parameters " +
                         "on your addresses? (See user manual \"Paging\" chapter)");

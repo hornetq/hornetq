@@ -79,6 +79,7 @@ public class FileConfigurationTest extends ConfigurationImplTest
       assertEquals(33, conf.getJournalCompactPercentage());
       assertEquals(56546, conf.getJournalMaxAIO());
       assertEquals("largemessagesdir", conf.getLargeMessagesDirectory());
+      assertEquals(95, conf.getMemoryWarningThreshold());
       
       assertEquals(2, conf.getInterceptorClassNames().size());
       assertTrue(conf.getInterceptorClassNames().contains("org.hornetq.tests.unit.core.config.impl.TestInterceptor1"));

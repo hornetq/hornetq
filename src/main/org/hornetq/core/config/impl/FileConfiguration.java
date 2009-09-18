@@ -326,6 +326,10 @@ public class FileConfiguration extends ConfigurationImpl
       
       serverDumpInterval = getLong(e, "server-dump-interval", serverDumpInterval, MINUS_ONE_OR_GT_ZERO); // in milliseconds
 
+      memoryWarningThreshold = getInteger(e, "memory-warning-threshold", memoryWarningThreshold, PERCENTAGE);
+      
+      memoryMeasureInterval = getLong(e, "memory-measure-interval", memoryMeasureInterval, GT_ZERO); // in milliseconds
+      
       started = true;
    }
    
