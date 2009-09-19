@@ -259,7 +259,7 @@ public class QueueControlUsingCoreTest extends QueueControlTest
 
          public void resume() throws Exception
          {
-            proxy.invokeOperation("pause");
+            proxy.invokeOperation("resume");
          }
 
          public boolean isPaused() throws Exception

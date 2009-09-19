@@ -1316,6 +1316,7 @@ public class QueueControlTest extends ManagementTestBase
    protected QueueControl createManagementControl(SimpleString address, SimpleString queue) throws Exception
    {
       QueueControl queueControl = createQueueControl(address, queue, mbeanServer);
+      
       return queueControl;
    }
 

@@ -52,65 +52,57 @@ public class ManagementControlHelper
 
    public static AcceptorControl createAcceptorControl(String name, MBeanServer mbeanServer) throws Exception
    {
-      return (AcceptorControl)createProxy(ObjectNames.getAcceptorObjectName(name),
-                                               AcceptorControl.class,
-                                               mbeanServer);
+      return (AcceptorControl)createProxy(ObjectNames.getAcceptorObjectName(name), AcceptorControl.class, mbeanServer);
    }
 
    public static BroadcastGroupControl createBroadcastGroupControl(String name, MBeanServer mbeanServer) throws Exception
    {
       return (BroadcastGroupControl)createProxy(ObjectNames.getBroadcastGroupObjectName(name),
-                                                     BroadcastGroupControl.class,
-                                                     mbeanServer);
+                                                BroadcastGroupControl.class,
+                                                mbeanServer);
    }
 
    public static DiscoveryGroupControl createDiscoveryGroupControl(String name, MBeanServer mbeanServer) throws Exception
    {
       return (DiscoveryGroupControl)createProxy(ObjectNames.getDiscoveryGroupObjectName(name),
-                                                     DiscoveryGroupControl.class,
-                                                     mbeanServer);
+                                                DiscoveryGroupControl.class,
+                                                mbeanServer);
    }
 
    public static BridgeControl createBridgeControl(String name, MBeanServer mbeanServer) throws Exception
    {
-      return (BridgeControl)createProxy(ObjectNames.getBridgeObjectName(name),
-                                                  BridgeControl.class,
-                                                  mbeanServer);
+      return (BridgeControl)createProxy(ObjectNames.getBridgeObjectName(name), BridgeControl.class, mbeanServer);
    }
 
    public static DivertControl createDivertControl(String name, MBeanServer mbeanServer) throws Exception
    {
       return (DivertControl)createProxy(ObjectNames.getDivertObjectName(new SimpleString(name)),
-                                             DivertControl.class,
-                                             mbeanServer);
+                                        DivertControl.class,
+                                        mbeanServer);
    }
 
    public static ClusterConnectionControl createClusterConnectionControl(String name, MBeanServer mbeanServer) throws Exception
    {
       return (ClusterConnectionControl)createProxy(ObjectNames.getClusterConnectionObjectName(name),
-                                                        ClusterConnectionControl.class,
-                                                        mbeanServer);
+                                                   ClusterConnectionControl.class,
+                                                   mbeanServer);
    }
 
    public static HornetQServerControl createHornetQServerControl(MBeanServer mbeanServer) throws Exception
    {
       return (HornetQServerControl)createProxy(ObjectNames.getHornetQServerObjectName(),
-                                                      HornetQServerControl.class,
-                                                      mbeanServer);
+                                               HornetQServerControl.class,
+                                               mbeanServer);
    }
 
    public static QueueControl createQueueControl(SimpleString address, SimpleString name, MBeanServer mbeanServer) throws Exception
    {
-      return (QueueControl)createProxy(ObjectNames.getQueueObjectName(address, name),
-                                            QueueControl.class,
-                                            mbeanServer);
+      return (QueueControl)createProxy(ObjectNames.getQueueObjectName(address, name), QueueControl.class, mbeanServer);
    }
 
    public static AddressControl createAddressControl(SimpleString address, MBeanServer mbeanServer) throws Exception
    {
-      return (AddressControl)createProxy(ObjectNames.getAddressObjectName(address),
-                                              AddressControl.class,
-                                              mbeanServer);
+      return (AddressControl)createProxy(ObjectNames.getAddressObjectName(address), AddressControl.class, mbeanServer);
    }
 
    public static JMSQueueControl createJMSQueueControl(Queue queue, MBeanServer mbeanServer) throws Exception
@@ -120,30 +112,26 @@ public class ManagementControlHelper
 
    public static JMSQueueControl createJMSQueueControl(String name, MBeanServer mbeanServer) throws Exception
    {
-      return (JMSQueueControl)createProxy(ObjectNames.getJMSQueueObjectName(name),
-                                               JMSQueueControl.class,
-                                               mbeanServer);
+      return (JMSQueueControl)createProxy(ObjectNames.getJMSQueueObjectName(name), JMSQueueControl.class, mbeanServer);
    }
 
    public static JMSServerControl createJMSServerControl(MBeanServer mbeanServer) throws Exception
    {
-      return (JMSServerControl)createProxy(ObjectNames.getJMSServerObjectName(),
-                                                JMSServerControl.class,
-                                                mbeanServer);
+      return (JMSServerControl)createProxy(ObjectNames.getJMSServerObjectName(), JMSServerControl.class, mbeanServer);
    }
 
    public static ConnectionFactoryControl createConnectionFactoryControl(String name, MBeanServer mbeanServer) throws Exception
    {
       return (ConnectionFactoryControl)createProxy(ObjectNames.getConnectionFactoryObjectName(name),
-                                                        ConnectionFactoryControl.class,
-                                                        mbeanServer);
+                                                   ConnectionFactoryControl.class,
+                                                   mbeanServer);
    }
 
    public static TopicControl createTopicControl(Topic topic, MBeanServer mbeanServer) throws Exception
    {
       return (TopicControl)createProxy(ObjectNames.getJMSTopicObjectName(topic.getTopicName()),
-                                            TopicControl.class,
-                                            mbeanServer);
+                                       TopicControl.class,
+                                       mbeanServer);
    }
 
    // Constructors --------------------------------------------------

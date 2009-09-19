@@ -413,19 +413,16 @@ public class QueueControlImpl implements QueueControl
 
    public void pause()
    {
-      log.info("calling pause");
       queue.pause();
    }
 
    public void resume()
    {
-      log.info("calling resume");
       queue.resume();
    }
 
    public boolean isPaused() throws Exception
    {
-      log.info("calling isPaused");
       return queue.isPaused();
    }
 
