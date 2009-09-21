@@ -64,7 +64,7 @@ public class ClientCrashTest extends ClientTestBase
    {
       assertActiveConnections(0);
 
-      // spawn a JVM that creates a JMS client, which waits to receive a test
+      // spawn a JVM that creates a Core client, which waits to receive a test
       // message
       Process p = SpawnedVMSupport.spawnVM(CrashClient.class.getName());
 
