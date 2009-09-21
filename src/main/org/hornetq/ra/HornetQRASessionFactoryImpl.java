@@ -996,6 +996,7 @@ public class HornetQRASessionFactoryImpl implements HornetQRASessionFactory, Ref
             info.setUserName(userName);
             info.setPassword(password);
             info.setClientID(clientID);
+            info.setDefaults(((HornetQResourceAdapter)mcf.getResourceAdapter()).getProperties());
 
             if (trace)
             {
