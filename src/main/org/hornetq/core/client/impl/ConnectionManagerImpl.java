@@ -971,14 +971,23 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
                                                            clientFailureCheckPeriod,
                                                            System.currentTimeMillis()));
 
-         if (clientFailureCheckPeriod != -1 && pingerFuture == null)
+         if (clientFailureCheckPeriod != -1)
          {
-            pingRunnable = new PingRunnable();
+            if (pingerFuture == null)
+            {
+               pingRunnable = new PingRunnable();
 
-            pingerFuture = scheduledThreadPool.scheduleWithFixedDelay(new ActualScheduled(pingRunnable),
-                                                                      0,
-                                                                      clientFailureCheckPeriod,
-                                                                      TimeUnit.MILLISECONDS);
+               pingerFuture = scheduledThreadPool.scheduleWithFixedDelay(new ActualScheduled(pingRunnable),
+                                                                         0,
+                                                                         clientFailureCheckPeriod,
+                                                                         TimeUnit.MILLISECONDS);
+            }
+            // send a ping every time we create a new remoting connection
+            // to set up its TTL on the server side
+            else
+            {
+               pingRunnable.run();
+            }
          }
 
          if (debug)
