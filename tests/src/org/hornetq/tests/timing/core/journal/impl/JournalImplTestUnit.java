@@ -167,7 +167,7 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
       stopJournal();
       createJournal();
       startJournal();
-      journal.load(new ArrayList<RecordInfo>(), new ArrayList<PreparedTransactionInfo>());
+      journal.load(new ArrayList<RecordInfo>(), new ArrayList<PreparedTransactionInfo>(), null);
       
       assertEquals(NUMBER_OF_RECORDS / 2, journal.getIDMapSize());
       

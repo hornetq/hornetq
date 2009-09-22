@@ -126,6 +126,15 @@ public class NullStorageLargeServerMessage extends ServerMessageImpl implements 
       // nothing to be done on null persistence
    }
 
+   /* (non-Javadoc)
+    * @see org.hornetq.core.server.LargeServerMessage#isFileExists()
+    */
+   public boolean isFileExists() throws Exception
+   {
+      // There are no real files on null persistence
+      return true;
+   }
+
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------

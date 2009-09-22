@@ -167,7 +167,7 @@ public abstract class JournalImplTestBase extends UnitTestCase
 
       List<PreparedTransactionInfo> preparedTransactions = new ArrayList<PreparedTransactionInfo>();
 
-      journal.load(committedRecords, preparedTransactions);
+      journal.load(committedRecords, preparedTransactions, null);
 
       checkRecordsEquivalent(records, committedRecords);
 
@@ -199,7 +199,7 @@ public abstract class JournalImplTestBase extends UnitTestCase
 
    protected void load() throws Exception
    {
-      journal.load(null, null);
+      journal.load(null, null, null);
    }
 
    protected void add(final long... arguments) throws Exception

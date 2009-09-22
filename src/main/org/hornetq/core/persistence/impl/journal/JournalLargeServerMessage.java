@@ -50,8 +50,6 @@ public class JournalLargeServerMessage extends ServerMessageImpl implements Larg
    // We should only use the NIO implementation on the Journal
    private SequentialFile file;
 
-   private boolean complete = false;
-
    private long bodySize = -1;
 
    // Static --------------------------------------------------------
@@ -76,7 +74,6 @@ public class JournalLargeServerMessage extends ServerMessageImpl implements Larg
       this.linkMessage = copy;
       storageManager = copy.storageManager;
       file = fileCopy;
-      complete = true;
       bodySize = copy.bodySize;
       setMessageID(newID);
    }
@@ -149,6 +146,7 @@ public class JournalLargeServerMessage extends ServerMessageImpl implements Larg
       return (int)Math.min(bodySize, Integer.MAX_VALUE);
    }
 
+   @Override
    public synchronized long getLargeBodySize()
    {
       try
@@ -178,24 +176,16 @@ public class JournalLargeServerMessage extends ServerMessageImpl implements Larg
    public void decode(final HornetQBuffer buffer)
    {
       file = null;
-      complete = true;
+      try
+      {
+         this.setStored();
+      }
+      catch (Exception e)
+      {
+         // File still null, this wasn't supposed to happen ever.
+         log.warn(e.getMessage(), e);
+      }
       decodeProperties(buffer);
-   }
-
-   /**
-    * @return the complete
-    */
-   public boolean isComplete()
-   {
-      return complete;
-   }
-
-   /**
-    * @param complete the complete to set
-    */
-   public void setComplete(boolean complete)
-   {
-      this.complete = complete;
    }
 
    @Override
@@ -203,7 +193,9 @@ public class JournalLargeServerMessage extends ServerMessageImpl implements Larg
    {
       int currentRefCount = super.decrementRefCount();
 
-      if (currentRefCount == 0)
+      // We use <= as this could be used by load.
+      // because of a failure, no references were loaded, so we have 0... and we still need to delete the associated files
+      if (currentRefCount <= 0)
       {
          if (linkMessage != null)
          {
@@ -242,6 +234,12 @@ public class JournalLargeServerMessage extends ServerMessageImpl implements Larg
       validateFile();
       storageManager.deleteFile(file);
    }
+   
+   public boolean isFileExists() throws Exception
+   {
+      SequentialFile localfile = storageManager.createFileForLargeMessage(getMessageID(), isStored());
+      return localfile.exists();
+   }
 
    // We cache this
    private volatile int memoryEstimate = -1;
@@ -257,14 +255,16 @@ public class JournalLargeServerMessage extends ServerMessageImpl implements Larg
 
       return memoryEstimate;
    }
-
-   public synchronized void complete() throws Exception
+   
+   
+   @Override
+   public void setStored() throws Exception
    {
+      super.setStored();
       releaseResources();
-
-      if (!complete)
+      if (file != null && linkMessage == null)
       {
-         SequentialFile fileToRename = storageManager.createFileForLargeMessage(getMessageID(), true);
+         SequentialFile fileToRename = storageManager.createFileForLargeMessage(getMessageID(), isStored());
          file.renameTo(fileToRename.getFileName());
       }
    }
@@ -296,7 +296,7 @@ public class JournalLargeServerMessage extends ServerMessageImpl implements Larg
          idToUse = linkMessage.getMessageID();
       }
 
-      SequentialFile newfile = storageManager.createFileForLargeMessage(idToUse, true);
+      SequentialFile newfile = storageManager.createFileForLargeMessage(idToUse, isStored());
 
       file.open();
 
@@ -327,7 +327,7 @@ public class JournalLargeServerMessage extends ServerMessageImpl implements Larg
             throw new RuntimeException("MessageID not set on LargeMessage");
          }
 
-         file = storageManager.createFileForLargeMessage(getMessageID(), complete);
+         file = storageManager.createFileForLargeMessage(getMessageID(), isStored());
 
          file.open();
 

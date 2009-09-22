@@ -75,7 +75,7 @@ public interface Journal extends HornetQComponent
 
    // Load
 
-   long load(List<RecordInfo> committedRecords, List<PreparedTransactionInfo> preparedTransactions) throws Exception;
+   long load(List<RecordInfo> committedRecords, List<PreparedTransactionInfo> preparedTransactions, TransactionFailureCallback transactionFailure) throws Exception;
 
    int getAlignment() throws Exception;
 

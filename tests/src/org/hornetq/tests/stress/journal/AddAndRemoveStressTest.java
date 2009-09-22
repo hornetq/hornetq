@@ -15,6 +15,7 @@ package org.hornetq.tests.stress.journal;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.List;
 
 import org.hornetq.core.journal.LoaderCallback;
 import org.hornetq.core.journal.PreparedTransactionInfo;
@@ -51,6 +52,10 @@ public class AddAndRemoveStressTest extends UnitTestCase
       }
 
       public void updateRecord(final RecordInfo info)
+      {
+      }
+
+      public void failedTransaction(long transactionID, List<RecordInfo> records, List<RecordInfo> recordsToDelete)
       {
       }
    };
@@ -122,7 +127,7 @@ public class AddAndRemoveStressTest extends UnitTestCase
       ArrayList<RecordInfo> info = new ArrayList<RecordInfo>();
       ArrayList<PreparedTransactionInfo> trans = new ArrayList<PreparedTransactionInfo>();
 
-      impl.load(info, trans);
+      impl.load(info, trans, null);
 
       impl.forceMoveNextFile();
 
@@ -196,7 +201,7 @@ public class AddAndRemoveStressTest extends UnitTestCase
       ArrayList<RecordInfo> info = new ArrayList<RecordInfo>();
       ArrayList<PreparedTransactionInfo> trans = new ArrayList<PreparedTransactionInfo>();
 
-      impl.load(info, trans);
+      impl.load(info, trans, null);
 
       if (info.size() > 0)
       {

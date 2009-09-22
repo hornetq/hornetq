@@ -13,19 +13,20 @@
 
 package org.hornetq.core.journal;
 
+import java.util.List;
 
 /**
- * 
- * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
- * 
+ * A TransactionFailureCallback
+ *
+ * @author <mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
+ *
+ *
  */
-public interface LoaderCallback extends TransactionFailureCallback
+public interface TransactionFailureCallback
 {
-   void addPreparedTransaction(PreparedTransactionInfo preparedTransaction);
+   
+   /** To be used to inform about transactions without commit records.
+    *  This could be used to remove extra resources associated with the transactions (such as external files received during the transaction) */
+   void failedTransaction(long transactionID, List<RecordInfo> records, List<RecordInfo> recordsToDelete);
 
-   void addRecord(RecordInfo info);
-
-   void deleteRecord(long id);
-
-   void updateRecord(RecordInfo info);
 }

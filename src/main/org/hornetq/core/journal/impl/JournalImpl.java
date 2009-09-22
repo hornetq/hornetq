@@ -50,6 +50,7 @@ import org.hornetq.core.journal.RecordInfo;
 import org.hornetq.core.journal.SequentialFile;
 import org.hornetq.core.journal.SequentialFileFactory;
 import org.hornetq.core.journal.TestableJournal;
+import org.hornetq.core.journal.TransactionFailureCallback;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.remoting.spi.HornetQBuffer;
 import org.hornetq.utils.DataConstants;
@@ -1353,7 +1354,8 @@ public class JournalImpl implements TestableJournal
     * @see JournalImpl#load(LoaderCallback)
     */
    public synchronized long load(final List<RecordInfo> committedRecords,
-                                 final List<PreparedTransactionInfo> preparedTransactions) throws Exception
+                                 final List<PreparedTransactionInfo> preparedTransactions,
+                                 final TransactionFailureCallback failureCallback) throws Exception
    {
       final Set<Long> recordsToDelete = new HashSet<Long>();
       final List<RecordInfo> records = new ArrayList<RecordInfo>();
@@ -1397,6 +1399,14 @@ public class JournalImpl implements TestableJournal
                }
 
                recordsToDelete.clear();
+            }
+         }
+
+         public void failedTransaction(long transactionID, List<RecordInfo> records, List<RecordInfo> recordsToDelete)
+         {
+            if (failureCallback != null)
+            {
+               failureCallback.failedTransaction(transactionID, records, recordsToDelete);
             }
          }
       });
@@ -2015,6 +2025,8 @@ public class JournalImpl implements TestableJournal
 
             // Remove the transactionInfo
             transactions.remove(transaction.transactionID);
+            
+            loadManager.failedTransaction(transaction.transactionID, transaction.recordInfos, transaction.recordsToDelete);
          }
          else
          {

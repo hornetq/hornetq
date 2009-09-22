@@ -67,20 +67,19 @@ public class LargeMessageTest extends LargeMessageTestBase
    // Constructors --------------------------------------------------
 
    // Public --------------------------------------------------------
-   
-   
+
    public void testCloseConsumer() throws Exception
    {
       final int messageSize = (int)(3.5 * ClientSessionFactoryImpl.DEFAULT_MIN_LARGE_MESSAGE_SIZE);
 
-      ClientSession session = null;           
+      ClientSession session = null;
 
       try
       {
          server = createServer(true);
 
          server.start();
-         
+
          log.info("*********** starting test");
 
          ClientSessionFactory sf = createInVMFactory();
@@ -94,7 +93,7 @@ public class LargeMessageTest extends LargeMessageTestBase
          Message clientFile = createLargeClientMessage(session, messageSize, true);
 
          log.info("*********** sending large message");
-         
+
          producer.send(clientFile);
 
          session.commit();
@@ -106,13 +105,13 @@ public class LargeMessageTest extends LargeMessageTestBase
          msg1.acknowledge();
          session.commit();
          assertNotNull(msg1);
-         
+
          consumer.close();
 
          try
          {
             msg1.getBody().readByte();
-            fail ("Exception was expected");
+            fail("Exception was expected");
          }
          catch (Throwable ignored)
          {
@@ -142,20 +141,18 @@ public class LargeMessageTest extends LargeMessageTestBase
       }
    }
 
-
-
    public void testDLALargeMessage() throws Exception
    {
       final int messageSize = (int)(3.5 * ClientSessionFactoryImpl.DEFAULT_MIN_LARGE_MESSAGE_SIZE);
 
-      ClientSession session = null;           
+      ClientSession session = null;
 
       try
       {
          server = createServer(true);
 
          server.start();
-         
+
          log.info("*********** starting test");
 
          ClientSessionFactory sf = createInVMFactory();
@@ -181,7 +178,7 @@ public class LargeMessageTest extends LargeMessageTestBase
          Message clientFile = createLargeClientMessage(session, messageSize, true);
 
          log.info("*********** sending large message");
-         
+
          producer.send(clientFile);
 
          session.commit();
@@ -275,7 +272,6 @@ public class LargeMessageTest extends LargeMessageTestBase
       }
    }
 
-   
    public void testDeliveryCount() throws Exception
    {
       final int messageSize = (int)(3.5 * ClientSessionFactoryImpl.DEFAULT_MIN_LARGE_MESSAGE_SIZE);
@@ -289,12 +285,11 @@ public class LargeMessageTest extends LargeMessageTestBase
          server.start();
 
          ClientSessionFactory sf = createInVMFactory();
-         
+
          session = sf.createSession(false, false, false);
 
          session.createQueue(ADDRESS, ADDRESS, true);
 
- 
          ClientProducer producer = session.createProducer(ADDRESS);
 
          Message clientFile = createLargeClientMessage(session, messageSize, true);
@@ -305,19 +300,19 @@ public class LargeMessageTest extends LargeMessageTestBase
          session.start();
 
          ClientConsumer consumer = session.createConsumer(ADDRESS);
-         
+
          ClientMessage msg = consumer.receive(10000);
          assertNotNull(msg);
          msg.acknowledge();
          assertEquals(1, msg.getDeliveryCount());
-         for (int i = 0 ; i < messageSize; i++)
+         for (int i = 0; i < messageSize; i++)
          {
             assertEquals(getSamplebyte(i), msg.getBody().readByte());
          }
          session.rollback();
-         
+
          session.close();
-         
+
          session = sf.createSession(false, false, false);
          session.start();
 
@@ -325,16 +320,16 @@ public class LargeMessageTest extends LargeMessageTestBase
          msg = consumer.receive(10000);
          assertNotNull(msg);
          msg.acknowledge();
-         for (int i = 0 ; i < messageSize; i++)
+         for (int i = 0; i < messageSize; i++)
          {
             assertEquals(getSamplebyte(i), msg.getBody().readByte());
          }
          assertEquals(2, msg.getDeliveryCount());
          msg.acknowledge();
          consumer.close();
-         
-         session.commit();         
-         
+
+         session.commit();
+
          validateNoFilesOnLargeDir();
       }
       finally
@@ -357,8 +352,7 @@ public class LargeMessageTest extends LargeMessageTestBase
       }
    }
 
-   
-   public void testDLAOnExpiry() throws Exception
+   public void testDLAOnExpiryNonDurableMessage() throws Exception
    {
       final int messageSize = (int)(3.5 * ClientSessionFactoryImpl.DEFAULT_MIN_LARGE_MESSAGE_SIZE);
 
@@ -371,7 +365,7 @@ public class LargeMessageTest extends LargeMessageTestBase
          server.start();
 
          ClientSessionFactory sf = createInVMFactory();
-         
+
          SimpleString ADDRESS_DLA = ADDRESS.concat("-dla");
          SimpleString ADDRESS_EXPIRY = ADDRESS.concat("-expiry");
 
@@ -387,7 +381,139 @@ public class LargeMessageTest extends LargeMessageTestBase
 
          session.createQueue(ADDRESS, ADDRESS, true);
 
-        
+         session.createQueue(ADDRESS_DLA, ADDRESS_DLA, true);
+         session.createQueue(ADDRESS_EXPIRY, ADDRESS_EXPIRY, true);
+
+         ClientProducer producer = session.createProducer(ADDRESS);
+
+         Message clientFile = createLargeClientMessage(session, messageSize, false);
+         clientFile.setExpiration(System.currentTimeMillis());
+
+         producer.send(clientFile);
+
+         session.commit();
+
+         session.start();
+
+         ClientConsumer consumerExpired = session.createConsumer(ADDRESS);
+         // to kick expiry quicker than waiting reaper thread
+         assertNull(consumerExpired.receive(1000));
+         consumerExpired.close();
+
+         ClientConsumer consumerExpiry = session.createConsumer(ADDRESS_EXPIRY);
+
+         ClientMessage msg1 = consumerExpiry.receive(5000);
+         assertNotNull(msg1);
+         msg1.acknowledge();
+
+         session.rollback();
+
+         for (int j = 0; j < messageSize; j++)
+         {
+            assertEquals(getSamplebyte(j), msg1.getBody().readByte());
+         }
+
+         consumerExpiry.close();
+
+         for (int i = 0; i < 10; i++)
+         {
+
+            consumerExpiry = session.createConsumer(ADDRESS_DLA);
+
+            msg1 = consumerExpiry.receive(5000);
+            assertNotNull(msg1);
+            msg1.acknowledge();
+
+            session.rollback();
+
+            for (int j = 0; j < messageSize; j++)
+            {
+               assertEquals(getSamplebyte(j), msg1.getBody().readByte());
+            }
+
+            consumerExpiry.close();
+         }
+
+         session.close();
+
+         session = sf.createSession(false, false, false);
+
+         session.start();
+
+         consumerExpiry = session.createConsumer(ADDRESS_DLA);
+
+         msg1 = consumerExpiry.receive(5000);
+         assertNotNull(msg1);
+         // msg1.acknowledge();
+
+         for (int i = 0; i < messageSize; i++)
+         {
+            assertEquals(getSamplebyte(i), msg1.getBody().readByte());
+         }
+
+         session.commit();
+
+         consumerExpiry.close();
+
+         session.commit();
+
+         session.close();
+
+         server.stop();
+
+         server.start();
+
+         validateNoFilesOnLargeDir();
+      }
+      finally
+      {
+         try
+         {
+            server.stop();
+         }
+         catch (Throwable ignored)
+         {
+         }
+
+         try
+         {
+            session.close();
+         }
+         catch (Throwable ignored)
+         {
+         }
+      }
+   }
+
+   public void testDLAOnExpiry() throws Exception
+   {
+      final int messageSize = (int)(3.5 * ClientSessionFactoryImpl.DEFAULT_MIN_LARGE_MESSAGE_SIZE);
+
+      ClientSession session = null;
+
+      try
+      {
+         server = createServer(true);
+
+         server.start();
+
+         ClientSessionFactory sf = createInVMFactory();
+
+         SimpleString ADDRESS_DLA = ADDRESS.concat("-dla");
+         SimpleString ADDRESS_EXPIRY = ADDRESS.concat("-expiry");
+
+         AddressSettings addressSettings = new AddressSettings();
+
+         addressSettings.setDeadLetterAddress(ADDRESS_DLA);
+         addressSettings.setExpiryAddress(ADDRESS_EXPIRY);
+         addressSettings.setMaxDeliveryAttempts(1);
+
+         server.getAddressSettingsRepository().addMatch("*", addressSettings);
+
+         session = sf.createSession(false, false, false);
+
+         session.createQueue(ADDRESS, ADDRESS, true);
+
          session.createQueue(ADDRESS_DLA, ADDRESS_DLA, true);
          session.createQueue(ADDRESS_EXPIRY, ADDRESS_EXPIRY, true);
 
@@ -506,11 +632,11 @@ public class LargeMessageTest extends LargeMessageTestBase
          server = createServer(true);
 
          server.start();
-         
+
          AddressSettings addressSettings = new AddressSettings();
 
          SimpleString ADDRESS_EXPIRY = ADDRESS.concat("-expiry");
-         
+
          addressSettings.setExpiryAddress(ADDRESS_EXPIRY);
 
          server.getAddressSettingsRepository().addMatch("*", addressSettings);
@@ -520,7 +646,7 @@ public class LargeMessageTest extends LargeMessageTestBase
          session = sf.createSession(false, false, false);
 
          session.createQueue(ADDRESS, ADDRESS, true);
-                 
+
          session.createQueue(ADDRESS_EXPIRY, ADDRESS_EXPIRY, true);
 
          ClientProducer producer = session.createProducer(ADDRESS);
@@ -1163,6 +1289,12 @@ public class LargeMessageTest extends LargeMessageTestBase
          {
             session.end(xid, XAResource.TMSUCCESS);
             session.prepare(xid);
+            session.close();
+            server.stop();
+            server.start();
+
+            session = sf.createSession(isXA, false, false);
+
             session.rollback(xid);
          }
          else

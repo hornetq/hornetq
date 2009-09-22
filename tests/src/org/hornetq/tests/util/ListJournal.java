@@ -69,7 +69,7 @@ public class ListJournal
          ArrayList<PreparedTransactionInfo> prepared = new ArrayList<PreparedTransactionInfo>();
 
          journal.start();
-         journal.load(records, prepared);
+         journal.load(records, prepared, null);
 
          if (prepared.size() > 0)
          {

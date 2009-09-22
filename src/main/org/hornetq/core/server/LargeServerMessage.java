@@ -31,17 +31,13 @@ public interface LargeServerMessage extends ServerMessage
    
    /** When a large message is copied (e.g. ExpiryQueue) instead of copying the file, we specify a link between the messages */
    LargeServerMessage getLinkedMessage();
+   
+   boolean isFileExists() throws Exception;
 
    /** Close the files if opened */
    void releaseResources();
    
    long getLargeBodySize();
-   
-   void complete() throws Exception;
-   
-   void setComplete(boolean isComplete);
-   
-   boolean isComplete();
    
    void deleteFile() throws Exception;
 }

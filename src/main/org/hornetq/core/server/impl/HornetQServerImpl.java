@@ -794,6 +794,30 @@ public class HornetQServerImpl implements HornetQServer
                                    configuration.isBackup());
    }
 
+   /** for use on sub-classes */
+   protected ExecutorService getExecutor()
+   {
+      return threadPool;
+   }
+   
+   /** 
+    * This method is protected as it may be used as a hook for creating a custom storage manager (on tests for instance) 
+    * @return
+    */
+   protected StorageManager createStorageManager()
+   {
+      if (configuration.isPersistenceEnabled())
+      {
+         return new JournalStorageManager(configuration, threadPool);
+      }
+      else
+      {
+         return new NullStorageManager();
+      }
+   }
+
+   
+
    // Private
    // --------------------------------------------------------------------------------------
 
@@ -921,14 +945,7 @@ public class HornetQServerImpl implements HornetQServer
          deploymentManager = new FileDeploymentManager(configuration.getFileDeployerScanPeriod());
       }
 
-      if (configuration.isPersistenceEnabled())
-      {
-         storageManager = new JournalStorageManager(configuration, threadPool);
-      }
-      else
-      {
-         storageManager = new NullStorageManager();
-      }
+      this.storageManager = createStorageManager();
 
       securityRepository = new HierarchicalObjectRepository<Set<Role>>();
       securityRepository.setDefault(new HashSet<Role>());

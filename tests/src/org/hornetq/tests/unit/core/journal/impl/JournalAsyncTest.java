@@ -355,7 +355,7 @@ public class JournalAsyncTest extends UnitTestCase
       records.clear();
       transactions.clear();
 
-      journalImpl.load(records, transactions);
+      journalImpl.load(records, transactions, null);
    }
 
    // Inner classes -------------------------------------------------

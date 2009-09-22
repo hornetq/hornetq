@@ -153,6 +153,12 @@ public class PageImpl implements Page
 
       numberOfMessages.incrementAndGet();
       size.addAndGet(buffer.limit());
+      
+      if (message.getMessage(null).isLargeMessage())
+      {
+         // If we don't sync on large messages we could have the risk of files unnatended files on disk
+         sync();
+      }
    }
 
    public void sync() throws Exception

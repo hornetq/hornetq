@@ -610,6 +610,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
       {
          if (pagingManager.page(message, true))
          {
+            message.setStored();
             return;
          }
       }
@@ -1049,6 +1050,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
             {
                if (pagingManager.page(message, tx.getID(), first))
                {
+                  message.setStored();
                   if (message.isDurable())
                   {
                      // We only create pageTransactions if using persistent messages

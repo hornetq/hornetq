@@ -32,15 +32,11 @@ import org.hornetq.core.remoting.spi.HornetQBuffer;
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
  *
  */
-public class NIOSequentialFile implements SequentialFile
+public class NIOSequentialFile extends AbstractSequentialFile
 {
    private static final Logger log = Logger.getLogger(NIOSequentialFile.class);
 
-   private File file;
-
    private long fileSize = 0;
-
-   private final String directory;
 
    private FileChannel channel;
 
@@ -50,13 +46,7 @@ public class NIOSequentialFile implements SequentialFile
 
    public NIOSequentialFile(final String directory, final String fileName)
    {
-      this.directory = directory;
-      file = new File(directory + "/" + fileName);
-   }
-
-   public boolean exists()
-   {
-      return file.exists();
+      super(directory, new File(directory + "/" + fileName));
    }
 
    public int getAlignment()
@@ -78,11 +68,6 @@ public class NIOSequentialFile implements SequentialFile
       return this.position.get() + size <= fileSize;
    }
 
-   public String getFileName()
-   {
-      return file.getName();
-   }
-
    public synchronized boolean isOpen()
    {
       return channel != null;
@@ -90,7 +75,7 @@ public class NIOSequentialFile implements SequentialFile
 
    public synchronized void open() throws Exception
    {
-      rfile = new RandomAccessFile(file, "rw");
+      rfile = new RandomAccessFile(getFile(), "rw");
 
       channel = rfile.getChannel();
 
@@ -150,17 +135,7 @@ public class NIOSequentialFile implements SequentialFile
 
       notifyAll();
    }
-
-   public void delete() throws Exception
-   {
-      if (isOpen())
-      {
-         close();
-      }
-
-      file.delete();
-   }
-
+   
    public int read(final ByteBuffer bytes) throws Exception
    {
       return read(bytes, null);
@@ -249,7 +224,7 @@ public class NIOSequentialFile implements SequentialFile
    {
       if (channel == null)
       {
-         return file.length();
+         return getFile().length();
       }
       else
       {
@@ -268,18 +243,10 @@ public class NIOSequentialFile implements SequentialFile
       return position.get();
    }
 
-   public void renameTo(final String newFileName) throws Exception
-   {
-      close();
-      File newFile = new File(directory + "/" + newFileName);
-      file.renameTo(newFile);
-      file = newFile;
-   }
-
    @Override
    public String toString()
    {
-      return "NIOSequentialFile " + file;
+      return "NIOSequentialFile " + getFile();
    }
 
    /* (non-Javadoc)

@@ -272,7 +272,7 @@ public class JournalCrashTest extends ServiceTestBase
       ArrayList<PreparedTransactionInfo> transactions = new ArrayList<PreparedTransactionInfo>();
 
       journal.start();
-      journal.load(records, transactions);
+      journal.load(records, transactions, null);
       
       System.out.println("===============================================");
       System.out.println("Journal records at the end:");

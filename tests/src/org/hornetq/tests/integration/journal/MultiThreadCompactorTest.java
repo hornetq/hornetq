@@ -95,7 +95,7 @@ public class MultiThreadCompactorTest extends ServiceTestBase
          List<RecordInfo> committedRecords = new ArrayList<RecordInfo>();
          List<PreparedTransactionInfo> preparedTransactions = new ArrayList<PreparedTransactionInfo>();
          journal.start();
-         journal.load(committedRecords, preparedTransactions);
+         journal.load(committedRecords, preparedTransactions, null);
 
          assertEquals(0, committedRecords.size());
          assertEquals(0, preparedTransactions.size());

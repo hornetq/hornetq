@@ -105,7 +105,7 @@ public class ServerMessageImpl extends MessageImpl implements ServerMessage
       return stored;
    }
    
-   public void setStored()
+   public void setStored() throws Exception
    {
       stored = true;
    }

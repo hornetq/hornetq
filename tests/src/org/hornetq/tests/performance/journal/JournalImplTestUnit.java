@@ -170,7 +170,7 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
       stopJournal();
       createJournal();
       startJournal();
-      journal.load(new ArrayList<RecordInfo>(), new ArrayList<PreparedTransactionInfo>());
+      journal.load(new ArrayList<RecordInfo>(), new ArrayList<PreparedTransactionInfo>(), null);
 
       assertEquals(NUMBER_OF_RECORDS / 2, journal.getIDMapSize());
 
@@ -195,7 +195,7 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
 
       journal.start();
 
-      journal.load(new ArrayList<RecordInfo>(), null);
+      journal.load(new ArrayList<RecordInfo>(), null, null);
 
       try
       {
@@ -256,7 +256,7 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
 
       journal.start();
 
-      journal.load(new ArrayList<RecordInfo>(), null);
+      journal.load(new ArrayList<RecordInfo>(), null, null);
 
       log.debug("Adding data");
       SimpleEncoding data = new SimpleEncoding(700, (byte)'j');
@@ -279,7 +279,7 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
       journal = new JournalImpl(10 * 1024 * 1024, numFiles, 0, 0, getFileFactory(), "hornetq-data", "hq", 5000);
 
       journal.start();
-      journal.load(new ArrayList<RecordInfo>(), null);
+      journal.load(new ArrayList<RecordInfo>(), null, null);
       journal.stop();
 
    }

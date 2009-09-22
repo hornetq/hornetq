@@ -15,6 +15,7 @@ package org.hornetq.tests.stress.journal;
 
 import java.io.File;
 import java.nio.ByteBuffer;
+import java.util.List;
 
 import org.hornetq.core.asyncio.impl.AsynchronousFileImpl;
 import org.hornetq.core.journal.LoaderCallback;
@@ -232,6 +233,13 @@ public class ValidateTransactionHealthTest extends UnitTestCase
       {
          numberOfUpdates++;
 
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.journal.TransactionFailureCallback#failedTransaction(long, java.util.List, java.util.List)
+       */
+      public void failedTransaction(long transactionID, List<RecordInfo> records, List<RecordInfo> recordsToDelete)
+      {
       }
 
    }

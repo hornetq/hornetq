@@ -73,7 +73,7 @@ public class JournalExample
          ArrayList<PreparedTransactionInfo> preparedTransactions = new ArrayList<PreparedTransactionInfo>();
          journalExample.start();
          System.out.println("Loading records and creating data files");
-         journalExample.load(committedRecords, preparedTransactions);
+         journalExample.load(committedRecords, preparedTransactions, null);
 
          System.out.println("Loaded Record List:");
 

@@ -53,7 +53,7 @@ public class BatchIDGeneratorUnitTest extends UnitTestCase
 
       journal.start();
 
-      journal.load(new ArrayList<RecordInfo>(), new ArrayList<PreparedTransactionInfo>());
+      journal.load(new ArrayList<RecordInfo>(), new ArrayList<PreparedTransactionInfo>(), null);
 
       BatchingIDGenerator batch = new BatchingIDGenerator(0, 1000, journal);
       long id1 = batch.generateID();
@@ -134,7 +134,7 @@ public class BatchIDGeneratorUnitTest extends UnitTestCase
       ArrayList<PreparedTransactionInfo> tx = new ArrayList<PreparedTransactionInfo>();
 
       journal.start();
-      journal.load(records, tx);
+      journal.load(records, tx, null);
 
       assertEquals(0, tx.size());
 

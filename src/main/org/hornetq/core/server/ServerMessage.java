@@ -44,11 +44,12 @@ public interface ServerMessage extends Message, EncodingSupport
 
    int getMemoryEstimate();
 
-   void setStored();
+   void setStored() throws Exception;
 
    boolean isStored();
 
    int getRefCount();
+
    
    //TODO - we might be able to put this in a better place
 }

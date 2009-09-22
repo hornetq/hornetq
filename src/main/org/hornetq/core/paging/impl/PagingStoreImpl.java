@@ -37,6 +37,7 @@ import org.hornetq.core.paging.PagingStore;
 import org.hornetq.core.paging.PagingStoreFactory;
 import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.core.postoffice.PostOffice;
+import org.hornetq.core.server.LargeServerMessage;
 import org.hornetq.core.server.ServerMessage;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.core.transaction.Transaction;
@@ -769,6 +770,16 @@ public class PagingStoreImpl implements TestSupportPageStore
          ServerMessage message = null;
 
          message = pagedMessage.getMessage(storageManager);
+         
+         if (message.isLargeMessage())
+         {
+            LargeServerMessage largeMsg = (LargeServerMessage)message;
+            if (!largeMsg.isFileExists())
+            {
+               log.warn("File for large message " + largeMsg.getMessageID() + " doesn't exist, so ignoring depage for this large message");
+               continue;
+            }
+         }
 
          final long transactionIdDuringPaging = pagedMessage.getTransactionID();
 

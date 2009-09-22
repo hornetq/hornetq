@@ -130,7 +130,8 @@ public class ServerConsumerImpl implements ServerConsumer
    private final Binding binding;
 
    // Constructors ---------------------------------------------------------------------------------
-
+   
+   
    public ServerConsumerImpl(final long id,
                              final long replicatedSessionID,
                              final ServerSession session,
@@ -147,6 +148,7 @@ public class ServerConsumerImpl implements ServerConsumer
                              final Executor executor,
                              final ManagementService managementService) throws Exception
    {
+      
       this.id = id;
 
       this.replicatedSessionID = replicatedSessionID;

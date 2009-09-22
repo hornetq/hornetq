@@ -2367,7 +2367,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
 
             currentLargeMessage = null;
 
-            message.complete();
+            message.releaseResources();
 
             send(message);
          }

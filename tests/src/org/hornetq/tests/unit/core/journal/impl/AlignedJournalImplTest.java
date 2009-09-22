@@ -15,6 +15,7 @@ package org.hornetq.tests.unit.core.journal.impl;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -27,6 +28,7 @@ import org.hornetq.core.journal.PreparedTransactionInfo;
 import org.hornetq.core.journal.RecordInfo;
 import org.hornetq.core.journal.SequentialFile;
 import org.hornetq.core.journal.SequentialFileFactory;
+import org.hornetq.core.journal.TransactionFailureCallback;
 import org.hornetq.core.journal.impl.JournalImpl;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.tests.unit.core.journal.impl.fakes.FakeSequentialFileFactory;
@@ -61,6 +63,10 @@ public class AlignedJournalImplTest extends UnitTestCase
       public void updateRecord(RecordInfo info)
       {
       }
+
+      public void failedTransaction(long transactionID, List<RecordInfo> records, List<RecordInfo> recordsToDelete)
+      {
+      }
    };
 
    // Attributes ----------------------------------------------------
@@ -70,6 +76,8 @@ public class AlignedJournalImplTest extends UnitTestCase
    JournalImpl journalImpl = null;
 
    private ArrayList<RecordInfo> records = null;
+   
+   private ArrayList<Long> incompleteTransactions = null;
 
    private ArrayList<PreparedTransactionInfo> transactions = null;
 
@@ -436,6 +444,9 @@ public class AlignedJournalImplTest extends UnitTestCase
 
       assertEquals(0, records.size());
       assertEquals(0, transactions.size());
+      assertEquals(2, incompleteTransactions.size());
+      assertEquals((Long)77l, incompleteTransactions.get(0));
+      assertEquals((Long)78l, incompleteTransactions.get(1));
 
       try
       {
@@ -1284,7 +1295,7 @@ public class AlignedJournalImplTest extends UnitTestCase
       ArrayList<RecordInfo> info = new ArrayList<RecordInfo>();
       ArrayList<PreparedTransactionInfo> trans = new ArrayList<PreparedTransactionInfo>();
 
-      impl.load(info, trans);
+      impl.load(info, trans, null);
 
       assertEquals(0, info.size());
       assertEquals(0, trans.size());
@@ -1303,6 +1314,8 @@ public class AlignedJournalImplTest extends UnitTestCase
       records = new ArrayList<RecordInfo>();
 
       transactions = new ArrayList<PreparedTransactionInfo>();
+      
+      incompleteTransactions = new ArrayList<Long>();
 
       factory = null;
 
@@ -1327,6 +1340,8 @@ public class AlignedJournalImplTest extends UnitTestCase
       records = null;
 
       transactions = null;
+      
+      incompleteTransactions = null;
 
       factory = null;
 
@@ -1360,8 +1375,17 @@ public class AlignedJournalImplTest extends UnitTestCase
 
       records.clear();
       transactions.clear();
+      incompleteTransactions.clear();
 
-      journalImpl.load(records, transactions);
+      journalImpl.load(records, transactions, new TransactionFailureCallback()
+      {
+         public void failedTransaction(long transactionID, List<RecordInfo> records, List<RecordInfo> recordsToDelete)
+         {
+            System.out.println("records.length = " + records.size());
+            incompleteTransactions.add(transactionID);
+         }
+         
+      });
    }
 
    // Inner classes -------------------------------------------------

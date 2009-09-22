@@ -39,6 +39,7 @@ import org.hornetq.core.journal.PreparedTransactionInfo;
 import org.hornetq.core.journal.RecordInfo;
 import org.hornetq.core.journal.SequentialFile;
 import org.hornetq.core.journal.SequentialFileFactory;
+import org.hornetq.core.journal.TransactionFailureCallback;
 import org.hornetq.core.journal.impl.AIOSequentialFileFactory;
 import org.hornetq.core.journal.impl.JournalImpl;
 import org.hornetq.core.journal.impl.NIOSequentialFileFactory;
@@ -465,6 +466,44 @@ public class JournalStorageManager implements StorageManager
 
       int deliveryCount;
    }
+   
+   
+   private class LargeMessageTXFailureCallback implements TransactionFailureCallback
+   {
+      private final Map<Long, ServerMessage> messages;
+      
+      public LargeMessageTXFailureCallback(Map<Long, ServerMessage> messages)
+      {
+         super();
+         this.messages = messages;
+      }
+
+
+
+      public void failedTransaction(long transactionID, List<RecordInfo> records, List<RecordInfo> recordsToDelete)
+      {
+         for (RecordInfo record : records)
+         {
+            if (record.userRecordType == ADD_LARGE_MESSAGE)
+            {
+               byte[] data = record.data;
+
+               HornetQBuffer buff = ChannelBuffers.wrappedBuffer(data);
+
+               try
+               {
+                  LargeServerMessage serverMessage = parseLargeMessage(messages, buff);
+                  serverMessage.decrementRefCount();
+               }
+               catch (Exception e)
+               {
+                  log.warn(e.getMessage(), e);
+               }
+            }
+         }
+      }
+      
+   }
 
    public void loadMessageJournal(final PagingManager pagingManager,
                                   final ResourceManager resourceManager,
@@ -475,9 +514,11 @@ public class JournalStorageManager implements StorageManager
 
       List<PreparedTransactionInfo> preparedTransactions = new ArrayList<PreparedTransactionInfo>();
 
-      messageJournal.load(records, preparedTransactions);
-
       Map<Long, ServerMessage> messages = new HashMap<Long, ServerMessage>();
+      
+      messageJournal.load(records, preparedTransactions, new LargeMessageTXFailureCallback(messages));
+      
+      ArrayList<LargeServerMessage> largeMessages = new ArrayList<LargeServerMessage>();
 
       Map<Long, Map<Long, AddMessageRecord>> queueMap = new HashMap<Long, Map<Long, AddMessageRecord>>();
 
@@ -493,36 +534,11 @@ public class JournalStorageManager implements StorageManager
          {
             case ADD_LARGE_MESSAGE:
             {
-               LargeServerMessage largeMessage = createLargeMessage();
-
-               LargeMessageEncoding messageEncoding = new LargeMessageEncoding(largeMessage);
-
-               messageEncoding.decode(buff);
-               
-               Long originalMessageID = (Long)largeMessage.getProperties().getProperty(MessageImpl.HDR_ORIG_MESSAGE_ID);
-               
-               // Using the linked file by the original file
-               if (originalMessageID != null)
-               {
-                  LargeServerMessage originalMessage = (LargeServerMessage)messages.get(originalMessageID);
-                  
-                  if (originalMessage == null)
-                  {
-                     // this could happen if the message was deleted but the file still exists as the file still being used
-                      originalMessage = createLargeMessage();
-                     originalMessage.setMessageID(originalMessageID);
-                     originalMessage.setComplete(true);
-                     messages.put(originalMessageID, originalMessage);
-                  }
-                  
-                  originalMessage.incrementRefCount();
-                  
-                  largeMessage.setLinkedMessage(originalMessage);
-                  largeMessage.setComplete(true);
-               }
-               
+               LargeServerMessage largeMessage = parseLargeMessage(messages, buff);
 
                messages.put(record.id, largeMessage);
+               
+               largeMessages.add(largeMessage);
 
                break;
             }
@@ -708,10 +724,56 @@ public class JournalStorageManager implements StorageManager
 
       loadPreparedTransactions(pagingManager, resourceManager, queues, preparedTransactions, duplicateIDMap);
 
+      for (LargeServerMessage msg : largeMessages)
+      {
+         if (msg.getRefCount() == 0)
+         {
+            log.info("Large message: " + msg.getMessageID() + " didn't have any associated reference, file will be deleted");
+            msg.decrementRefCount();
+         }
+      }
+      
       if (perfBlastPages != -1)
       {
          messageJournal.perfBlast(perfBlastPages);
       }
+   }
+
+   /**
+    * @param messages
+    * @param buff
+    * @return
+    * @throws Exception
+    */
+   private LargeServerMessage parseLargeMessage(Map<Long, ServerMessage> messages, HornetQBuffer buff) throws Exception
+   {
+      LargeServerMessage largeMessage = createLargeMessage();
+
+      LargeMessageEncoding messageEncoding = new LargeMessageEncoding(largeMessage);
+
+      messageEncoding.decode(buff);
+      
+      Long originalMessageID = (Long)largeMessage.getProperties().getProperty(MessageImpl.HDR_ORIG_MESSAGE_ID);
+      
+      // Using the linked file by the original file
+      if (originalMessageID != null)
+      {
+         LargeServerMessage originalMessage = (LargeServerMessage)messages.get(originalMessageID);
+         
+         if (originalMessage == null)
+         {
+            // this could happen if the message was deleted but the file still exists as the file still being used
+            originalMessage = createLargeMessage();
+            originalMessage.setMessageID(originalMessageID);
+            originalMessage.setStored();
+            messages.put(originalMessageID, originalMessage);
+         }
+         
+         originalMessage.incrementRefCount();
+         
+         largeMessage.setLinkedMessage(originalMessage);
+      }
+      return largeMessage;
    }
 
    private void loadPreparedTransactions(final PagingManager pagingManager,
@@ -747,6 +809,12 @@ public class JournalStorageManager implements StorageManager
 
             switch (recordType)
             {
+               case ADD_LARGE_MESSAGE:
+               {
+                  messages.put(record.id, parseLargeMessage(messages, buff));
+                  
+                  break;
+               }
                case ADD_MESSAGE:
                {
                   ServerMessage message = new ServerMessageImpl(record.id);
@@ -933,7 +1001,7 @@ public class JournalStorageManager implements StorageManager
 
       List<PreparedTransactionInfo> preparedTransactions = new ArrayList<PreparedTransactionInfo>();
 
-      bindingsJournal.load(records, preparedTransactions);
+      bindingsJournal.load(records, preparedTransactions, null);
 
       for (RecordInfo record : records)
       {
@@ -1059,9 +1127,9 @@ public class JournalStorageManager implements StorageManager
     * @param messageID
     * @return
     */
-   SequentialFile createFileForLargeMessage(final long messageID, final boolean completeFile)
+   SequentialFile createFileForLargeMessage(final long messageID, final boolean stored)
    {
-      if (completeFile)
+      if (stored)
       {
          return largeMessagesFactory.createSequentialFile(messageID + ".msg", -1);
       }

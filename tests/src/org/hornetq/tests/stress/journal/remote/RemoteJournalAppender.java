@@ -14,6 +14,7 @@
 package org.hornetq.tests.stress.journal.remote;
 
 import java.nio.ByteBuffer;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.hornetq.core.config.impl.ConfigurationImpl;
@@ -96,6 +97,10 @@ public class RemoteJournalAppender
          }
 
          public void updateRecord(RecordInfo info)
+         {
+         }
+
+         public void failedTransaction(long transactionID, List<RecordInfo> records, List<RecordInfo> recordsToDelete)
          {
          }
       });

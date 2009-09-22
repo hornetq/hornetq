@@ -13,6 +13,7 @@
 
 package org.hornetq.tests.util;
 
+import java.io.File;
 import java.lang.management.ManagementFactory;
 import java.lang.ref.WeakReference;
 import java.util.HashMap;
@@ -313,6 +314,39 @@ public class ServiceTestBase extends UnitTestCase
       message.getBody().writeBytes(b);
       return message;
    }
+   
+   /**
+    * Deleting a file on LargeDire is an asynchronous process. Wee need to keep looking for a while if the file hasn't been deleted yet
+    */
+   protected void validateNoFilesOnLargeDir(int expect) throws Exception
+   {
+      File largeMessagesFileDir = new File(getLargeMessagesDir());
+
+      // Deleting the file is async... we keep looking for a period of the time until the file is really gone
+      for (int i = 0; i < 100; i++)
+      {
+         if (largeMessagesFileDir.listFiles().length != expect)
+         {
+            Thread.sleep(10);
+         }
+         else
+         {
+            break;
+         }
+      }
+
+      assertEquals(expect, largeMessagesFileDir.listFiles().length);
+   }
+
+   /**
+    * Deleting a file on LargeDire is an asynchronous process. Wee need to keep looking for a while if the file hasn't been deleted yet
+    */
+   protected void validateNoFilesOnLargeDir() throws Exception
+   {
+      validateNoFilesOnLargeDir(0);
+   }
+
+   
    // Private -------------------------------------------------------
 
    // Inner classes -------------------------------------------------
