@@ -224,19 +224,18 @@ public class FileDeploymentManager implements Runnable, DeploymentManager
          for (Map.Entry<Pair<URL, Deployer>, DeployInfo> entry : deployed.entrySet())
          {
             Pair<URL, Deployer> pair = entry.getKey();
-            
             if (!new File(pair.a.getFile()).exists())
             {
                try
                {
                   Deployer deployer = entry.getValue().deployer;
-                  log.debug("Undeploying " + deployer + " with url" + entry.getKey());
-                  deployer.undeploy(entry.getKey().a);
-                  toRemove.add(entry.getKey());
+                  log.debug("Undeploying " + deployer + " with url " + pair.a);
+                  deployer.undeploy(pair.a);
+                  toRemove.add(pair);
                }
                catch (Exception e)
                {
-                  log.error("Error undeploying " + entry.getKey().a, e);
+                  log.error("Error undeploying " + pair.a, e);
                }
             }
          }
