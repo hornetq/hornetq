@@ -18,12 +18,14 @@ import java.io.Serializable;
 import javax.jms.Connection;
 import javax.jms.DeliveryMode;
 import javax.jms.Destination;
+import javax.jms.InvalidDestinationException;
 import javax.jms.Message;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
 import javax.jms.Session;
 import javax.jms.TextMessage;
 
+import org.hornetq.jms.HornetQTopic;
 import org.hornetq.jms.tests.message.SimpleJMSMessage;
 import org.hornetq.jms.tests.message.SimpleJMSTextMessage;
 
@@ -386,8 +388,8 @@ public class MessageProducerTest extends JMSTestCase
          pconn.close();
       }
    }
-   //TODO Uncomment when https://jira.jboss.org/jira/browse/JBMESSAGING-1565 is complete
-   /*public void testCreateProducerOnInexistentDestination() throws Exception
+
+   public void testCreateProducerOnInexistentDestination() throws Exception
    {
       Connection pconn = cf.createConnection();
       try
@@ -408,7 +410,7 @@ public class MessageProducerTest extends JMSTestCase
          pconn.close();
       }
    }
-*/
+
    //
    // disabled MessageID tests
    //

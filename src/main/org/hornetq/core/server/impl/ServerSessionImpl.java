@@ -1483,6 +1483,11 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
                                                             filterString,
                                                             binding.getAddress());
          }
+         // make an exception for the management address (see HORNETQ-29)
+         else if (name.equals(managementAddress))
+         {
+            response = new SessionQueueQueryResponseMessage(true, -1, -1, null, managementAddress);
+         }
          else
          {
             response = new SessionQueueQueryResponseMessage();

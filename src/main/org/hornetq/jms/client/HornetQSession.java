@@ -513,28 +513,27 @@ public class HornetQSession implements Session, XASession, QueueSession, XAQueue
       {
          HornetQDestination jbd = (HornetQDestination)destination;
 
-         //TODO Uncomment when https://jira.jboss.org/jira/browse/JBMESSAGING-1565 is complete
-//         if (jbd != null)
-//         {
-//            if (jbd instanceof Queue)
-//            {
-//               SessionQueueQueryResponseMessage response = session.queueQuery(jbd.getSimpleAddress());
-//   
-//               if (!response.isExists())
-//               {
-//                  throw new InvalidDestinationException("Queue " + jbd.getName() + " does not exist");
-//               }
-//            }
-//            else
-//            {
-//               SessionBindingQueryResponseMessage response = session.bindingQuery(jbd.getSimpleAddress());
-//   
-//               if (!response.isExists())
-//               {
-//                  throw new InvalidDestinationException("Topic " + jbd.getName() + " does not exist");
-//               }
-//            }
-//         }
+         if (jbd != null)
+         {
+            if (jbd instanceof Queue)
+            {
+               SessionQueueQueryResponseMessage response = session.queueQuery(jbd.getSimpleAddress());
+
+               if (!response.isExists())
+               {
+                  throw new InvalidDestinationException("Queue " + jbd.getName() + " does not exist");
+               }
+            }
+            else
+            {
+               SessionBindingQueryResponseMessage response = session.bindingQuery(jbd.getSimpleAddress());
+
+               if (!response.isExists())
+               {
+                  throw new InvalidDestinationException("Topic " + jbd.getName() + " does not exist");
+               }
+            }
+         }
 
          ClientProducer producer = session.createProducer(jbd == null ? null : jbd.getSimpleAddress());
 
