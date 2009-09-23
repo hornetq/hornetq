@@ -39,7 +39,7 @@ public class LargeMessageStressTest extends LargeMessageTestBase
       
    public void testMessageChunkFilePersistenceOneHugeMessage() throws Exception
    {
-      testChunks(false, false, true, true, false, false, false, true, 1, 200 * 1024l * 1024l + 1024l, 120000, 0, 10 * 1024 * 1024, 1024 * 1024);
+      testChunks(false, false, false, true, true, false, false, false, true, 1, 200 * 1024l * 1024l + 1024l, 120000, 0, 10 * 1024 * 1024, 1024 * 1024);
    }
 
    // Package protected ---------------------------------------------

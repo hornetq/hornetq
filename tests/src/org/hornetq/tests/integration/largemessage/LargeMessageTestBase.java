@@ -13,7 +13,6 @@
 
 package org.hornetq.tests.integration.largemessage;
 
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -93,6 +92,7 @@ public class LargeMessageTestBase extends ServiceTestBase
    }
 
    protected void testChunks(final boolean isXA,
+                             final boolean restartOnXA,
                              final boolean rollbackFirstSend,
                              final boolean useStreamOnConsume,
                              final boolean realFiles,
@@ -106,6 +106,7 @@ public class LargeMessageTestBase extends ServiceTestBase
                              final long delayDelivery) throws Exception
    {
       testChunks(isXA,
+                 restartOnXA,
                  rollbackFirstSend,
                  useStreamOnConsume,
                  realFiles,
@@ -122,6 +123,7 @@ public class LargeMessageTestBase extends ServiceTestBase
    }
 
    protected void testChunks(final boolean isXA,
+                             final boolean restartOnXA,
                              final boolean rollbackFirstSend,
                              final boolean useStreamOnConsume,
                              final boolean realFiles,
@@ -186,13 +188,18 @@ public class LargeMessageTestBase extends ServiceTestBase
 
                session.close();
 
-               if (realFiles)
+               if (realFiles && restartOnXA)
                {
                   server.stop();
                   server.start();
                }
-
+               
                session = sf.createSession(null, null, isXA, false, false, preAck, 0);
+               
+               Xid[] xids = session.recover(XAResource.TMSTARTRSCAN);
+               assertEquals(1, xids.length);
+               assertEquals(xid, xids[0]);
+               
                session.rollback(xid);
                producer = session.createProducer(ADDRESS);
                xid = newXID();
@@ -215,13 +222,18 @@ public class LargeMessageTestBase extends ServiceTestBase
 
             session.close();
 
-            if (realFiles)
+            if (realFiles && restartOnXA)
             {
                server.stop();
                server.start();
             }
 
             session = sf.createSession(null, null, isXA, false, false, preAck, 0);
+            
+            Xid[] xids = session.recover(XAResource.TMSTARTRSCAN);
+            assertEquals(1, xids.length);
+            assertEquals(xid, xids[0]);
+            
 
             producer = session.createProducer(ADDRESS);
 
