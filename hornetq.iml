@@ -38,7 +38,7 @@
       <excludeFolder url="file://$MODULE_DIR$/tests/lib/jdbc-drivers" />
       <excludeFolder url="file://$MODULE_DIR$/tests/output" />
     </content>
-    <orderEntry type="jdk" jdkName="1.5" jdkType="JavaSDK" />
+    <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" name="messaging" level="project" />
     <orderEntry type="library" name="messaging_jars" level="project" />
