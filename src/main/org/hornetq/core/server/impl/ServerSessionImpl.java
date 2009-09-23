@@ -1476,7 +1476,6 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
             Filter filter = queue.getFilter();
 
             SimpleString filterString = filter == null ? null : filter.getFilterString();
-            // TODO: Remove MAX-SIZE-BYTES from SessionQueueQueryResponse.
             response = new SessionQueueQueryResponseMessage(queue.isDurable(),
                                                             queue.getConsumerCount(),
                                                             queue.getMessageCount(),
