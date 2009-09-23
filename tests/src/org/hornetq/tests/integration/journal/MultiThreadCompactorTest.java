@@ -17,6 +17,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
+import javax.transaction.xa.XAException;
+import javax.transaction.xa.XAResource;
+import javax.transaction.xa.Xid;
+
 import org.hornetq.core.buffers.ChannelBuffers;
 import org.hornetq.core.client.ClientConsumer;
 import org.hornetq.core.client.ClientMessage;
@@ -61,7 +65,7 @@ public class MultiThreadCompactorTest extends ServiceTestBase
    {
       return 3;
    }
-   
+
    protected void setUp() throws Exception
    {
       super.setUp();
@@ -80,6 +84,7 @@ public class MultiThreadCompactorTest extends ServiceTestBase
       {
          System.out.println("######################################");
          System.out.println("test # " + i);
+
          internalTestProduceAndConsume();
          stopServer();
 
@@ -113,13 +118,49 @@ public class MultiThreadCompactorTest extends ServiceTestBase
          journal = null;
 
          setupServer(JournalType.ASYNCIO);
+
       }
+   }
+
+   /**
+    * @param xid
+    * @throws HornetQException
+    * @throws XAException
+    */
+   private void addEmptyTransaction(Xid xid) throws HornetQException, XAException
+   {
+      ClientSessionFactory sf = createInVMFactory();
+      ClientSession session = sf.createSession(true, false, false);
+      session.start(xid, XAResource.TMNOFLAGS);
+      session.end(xid, XAResource.TMSUCCESS);
+      session.prepare(xid);
+      session.close();
+      sf.close();
+   }
+
+   private void checkEmptyXID(Xid xid) throws HornetQException, XAException
+   {
+      ClientSessionFactory sf = createInVMFactory();
+      ClientSession session = sf.createSession(true, false, false);
+
+      Xid[] xids = session.recover(XAResource.TMSTARTRSCAN);
+      assertEquals(1, xids.length);
+      assertEquals(xid, xids[0]);
+
+      session.rollback(xid);
+      
+      session.close();
+      sf.close();
    }
 
    public void internalTestProduceAndConsume() throws Throwable
    {
 
       addBogusData(100, "LAZY-QUEUE");
+
+      Xid xid = null;
+      xid = newXID();
+      addEmptyTransaction(xid);
 
       System.out.println(getTemporaryDir());
       boolean transactionalOnConsume = true;
@@ -194,6 +235,8 @@ public class MultiThreadCompactorTest extends ServiceTestBase
       setupServer(JournalType.ASYNCIO);
       drainQueue(0, QUEUE);
       drainQueue(0, new SimpleString("LAZY-QUEUE"));
+      
+      checkEmptyXID(xid);
 
    }
 
