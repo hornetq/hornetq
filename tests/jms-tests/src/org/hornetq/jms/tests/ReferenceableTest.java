@@ -22,6 +22,17 @@ import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
 import javax.jms.Session;
 import javax.jms.TextMessage;
+import javax.naming.Reference;
+import javax.naming.Referenceable;
+
+import org.hornetq.jms.HornetQQueue;
+import org.hornetq.jms.HornetQTopic;
+import org.hornetq.jms.client.HornetQConnectionFactory;
+import org.hornetq.jms.referenceable.ConnectionFactoryObjectFactory;
+import org.hornetq.jms.referenceable.DestinationObjectFactory;
+import org.hornetq.ra.HornetQRAConnectionFactory;
+import org.hornetq.ra.HornetQRAManagedConnectionFactory;
+import org.hornetq.ra.HornetQResourceAdapter;
 
 /**
  * 
@@ -55,15 +66,14 @@ public class ReferenceableTest extends JMSTestCase
       assertTrue(topic1 instanceof Serializable);            
    }
 
-   /* http://jira.jboss.org/jira/browse/JBMESSAGING-395
 
    public void testReferenceable() throws Exception
    {
       assertTrue(cf instanceof Referenceable);
       
-      assertTrue(queue instanceof Referenceable);
+      assertTrue(queue1 instanceof Referenceable);
       
-      assertTrue(topic instanceof Referenceable);
+      assertTrue(topic1 instanceof Referenceable);
    }
    
    public void testReferenceCF() throws Exception
@@ -78,16 +88,16 @@ public class ReferenceableTest extends JMSTestCase
       
       Object instance = factory.getObjectInstance(cfRef, null, null, null);
       
-      assertTrue(instance instanceof HornetQRAConnectionFactory);
+      assertTrue(instance instanceof HornetQConnectionFactory);
       
-      HornetQRAConnectionFactory cf2 = (HornetQRAConnectionFactory)instance;
+      HornetQConnectionFactory cf2 = (HornetQConnectionFactory)instance;
       
-      simpleSendReceive(cf2, queue);
+      simpleSendReceive(cf2, queue1);
    }
    
    public void testReferenceQueue() throws Exception
    {
-      Reference queueRef = ((Referenceable)queue).getReference();
+      Reference queueRef = ((Referenceable)queue1).getReference();
       
       String factoryName = queueRef.getFactoryClassName();
       
@@ -101,7 +111,7 @@ public class ReferenceableTest extends JMSTestCase
       
       HornetQQueue queue2 = (HornetQQueue)instance;
       
-      assertEquals(queue.getQueueName(), queue2.getQueueName());
+      assertEquals(queue1.getQueueName(), queue2.getQueueName());
       
       simpleSendReceive(cf, queue2);
       
@@ -109,7 +119,7 @@ public class ReferenceableTest extends JMSTestCase
    
    public void testReferenceTopic() throws Exception
    {
-      Reference topicRef = ((Referenceable)topic).getReference();
+      Reference topicRef = ((Referenceable)topic1).getReference();
       
       String factoryName = topicRef.getFactoryClassName();
       
@@ -123,12 +133,38 @@ public class ReferenceableTest extends JMSTestCase
       
       HornetQTopic topic2 = (HornetQTopic)instance;
       
-      assertEquals(topic.getTopicName(), topic2.getTopicName());
+      assertEquals(topic1.getTopicName(), topic2.getTopicName());
       
       simpleSendReceive(cf, topic2);
    }
 
-   */
+   
+   public void testReferenceRAManagedCF() throws Exception
+   {
+      HornetQResourceAdapter ra = new HornetQResourceAdapter();
+      
+      HornetQRAManagedConnectionFactory mcf = new HornetQRAManagedConnectionFactory();
+      
+      mcf.setResourceAdapter(ra);
+      
+      ConnectionFactory racf = (ConnectionFactory)mcf.createConnectionFactory();
+      
+      Reference cfRef = ((Referenceable)racf).getReference();
+      
+      String factoryName = cfRef.getFactoryClassName();
+      
+      Class factoryClass = Class.forName(factoryName);
+      
+      ConnectionFactoryObjectFactory factory = (ConnectionFactoryObjectFactory)factoryClass.newInstance();
+      
+      Object instance = factory.getObjectInstance(cfRef, null, null, null);
+      
+      assertTrue(instance instanceof HornetQRAConnectionFactory);
+      
+      HornetQRAConnectionFactory racf2 = (HornetQRAConnectionFactory)instance;
+      
+      //TODO implement simpleSendReceive with test inside the container or wait until https://jira.jboss.org/jira/browse/HORNETQ-140 is done.
+   }
    
    
    protected void simpleSendReceive(ConnectionFactory cf, Destination dest) throws Exception

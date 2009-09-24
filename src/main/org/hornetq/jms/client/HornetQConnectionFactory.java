@@ -32,6 +32,7 @@ import javax.jms.XATopicConnection;
 import javax.jms.XATopicConnectionFactory;
 import javax.naming.NamingException;
 import javax.naming.Reference;
+import javax.naming.Referenceable;
 
 import org.hornetq.core.client.ClientSessionFactory;
 import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
@@ -47,10 +48,7 @@ import org.hornetq.utils.Pair;
  * @version <tt>$Revision$</tt> $Id$
  */
 public class HornetQConnectionFactory implements ConnectionFactory, QueueConnectionFactory, TopicConnectionFactory,
-         XAConnectionFactory, XAQueueConnectionFactory, XATopicConnectionFactory, Serializable/*
-   * , Referenceable
-   * http://jira.jboss.org/jira/browse/JBMESSAGING-395
-   */
+         XAConnectionFactory, XAQueueConnectionFactory, XATopicConnectionFactory, Serializable, Referenceable 
 {
    // Constants ------------------------------------------------------------------------------------
 

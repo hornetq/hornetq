@@ -15,12 +15,11 @@ package org.hornetq.jms.referenceable;
 
 import java.util.Hashtable;
 
+import javax.jms.ConnectionFactory;
 import javax.naming.Context;
 import javax.naming.Name;
 import javax.naming.Reference;
 import javax.naming.spi.ObjectFactory;
-
-import org.hornetq.jms.client.HornetQConnectionFactory;
 
 /**
  * 
@@ -43,7 +42,7 @@ public class ConnectionFactoryObjectFactory implements ObjectFactory
       byte[] bytes = (byte[])r.get("HornetQ-CF").getContent();
       
       // Deserialize
-      return (HornetQConnectionFactory)SerializableObjectRefAddr.deserialize(bytes);
+      return (ConnectionFactory)SerializableObjectRefAddr.deserialize(bytes);
    }
 }
 

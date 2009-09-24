@@ -19,6 +19,7 @@ import java.io.Serializable;
 import javax.jms.Destination;
 import javax.naming.NamingException;
 import javax.naming.Reference;
+import javax.naming.Referenceable;
 
 import org.hornetq.jms.referenceable.DestinationObjectFactory;
 import org.hornetq.jms.referenceable.SerializableObjectRefAddr;
@@ -32,7 +33,7 @@ import org.hornetq.utils.SimpleString;
  *
  * $Id$
  */
-public abstract class HornetQDestination implements Destination, Serializable/*, Referenceable http://jira.jboss.org/jira/browse/JBMESSAGING-395*/
+public abstract class HornetQDestination implements Destination, Serializable, Referenceable
 {
    // Constants -----------------------------------------------------
 

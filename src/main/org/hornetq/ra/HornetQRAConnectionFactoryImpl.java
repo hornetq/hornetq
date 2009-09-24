@@ -20,11 +20,13 @@ import javax.jms.TopicConnection;
 import javax.jms.XAConnection;
 import javax.jms.XAQueueConnection;
 import javax.jms.XATopicConnection;
+import javax.naming.NamingException;
 import javax.naming.Reference;
-import javax.resource.Referenceable;
 import javax.resource.spi.ConnectionManager;
 
 import org.hornetq.core.logging.Logger;
+import org.hornetq.jms.referenceable.ConnectionFactoryObjectFactory;
+import org.hornetq.jms.referenceable.SerializableObjectRefAddr;
 
 /**
  * The connection factory
@@ -33,7 +35,7 @@ import org.hornetq.core.logging.Logger;
  * @author <a href="mailto:jesper.pedersen@jboss.org">Jesper Pedersen</a>
  * @version $Revision:  $
  */
-public class HornetQRAConnectionFactoryImpl implements HornetQRAConnectionFactory, Referenceable
+public class HornetQRAConnectionFactoryImpl implements HornetQRAConnectionFactory
 {
    /** Serial version UID */
    static final long serialVersionUID = 7981708919479859360L;
@@ -111,8 +113,24 @@ public class HornetQRAConnectionFactoryImpl implements HornetQRAConnectionFactor
       {
          log.trace("getReference()");
       }
-
-      return reference;
+      if(reference == null)
+      {
+         try
+         {
+            reference = new Reference(this.getClass().getCanonicalName(),
+                                 new SerializableObjectRefAddr("HornetQ-CF", this),
+                                 ConnectionFactoryObjectFactory.class.getCanonicalName(),
+                                 null);
+         }
+         catch (NamingException e)
+         {
+            log.error("Error while giving object Reference.", e);
+         }     
+      }
+      
+        return reference; 
+      
+      
    }
 
    /**

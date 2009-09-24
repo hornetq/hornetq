@@ -21,6 +21,7 @@ import javax.jms.TopicConnectionFactory;
 import javax.jms.XAConnectionFactory;
 import javax.jms.XAQueueConnectionFactory;
 import javax.jms.XATopicConnectionFactory;
+import javax.naming.Referenceable;
 
 /**
  * An aggregate interface for the JMS connection factories
@@ -30,7 +31,7 @@ import javax.jms.XATopicConnectionFactory;
  * @version $Revision: $
  */
 public interface HornetQRAConnectionFactory extends ConnectionFactory, TopicConnectionFactory, QueueConnectionFactory,
-         XAConnectionFactory, XAQueueConnectionFactory, XATopicConnectionFactory, Serializable
+         XAConnectionFactory, XAQueueConnectionFactory, XATopicConnectionFactory, Serializable, Referenceable
 {
    /** Connection factory capable of handling connections */
    public static final int CONNECTION = 0;

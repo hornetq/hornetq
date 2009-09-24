@@ -12,6 +12,7 @@
  */
 package org.hornetq.ra;
 
+import java.io.Serializable;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -43,7 +44,7 @@ import org.hornetq.ra.inflow.HornetQActivationSpec;
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
  * @version $Revision: $
  */
-public class HornetQResourceAdapter implements ResourceAdapter
+public class HornetQResourceAdapter implements ResourceAdapter, Serializable
 {
    /**
     * The logger
