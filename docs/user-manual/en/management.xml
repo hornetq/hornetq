@@ -175,7 +175,9 @@
                   <para>Messages can also be removed from the queue by using the <literal
                         >removeMessages()</literal> method which returns a <literal
                         >boolean</literal> for the single message ID variant or the number of
-                     removed messages for the filter variant.</para>
+                     removed messages for the filter variant. The <literal>removeMessages()</literal>
+                     method takes a <literal>filter</literal> argument to remove only filtered messages. Setting
+                     the filter to an empty string will in effect remove all messages.</para>
                </listitem>
                <listitem>
                   <para>Counting messages</para>
@@ -396,7 +398,10 @@
                   <para>Messages can also be removed from the queue by using the <literal
                         >removeMessages()</literal> method which returns a <literal
                         >boolean</literal> for the single message ID variant or the number of
-                     removed messages for the filter variant.</para>
+                     removed messages for the filter variant.
+                      The <literal>removeMessages()</literal>
+                      method takes a <literal>filter</literal> argument to remove only filtered messages. Setting
+                      the filter to an empty string will in effect remove all messages.</para>
                </listitem>
                <listitem>
                   <para>Counting messages</para>
