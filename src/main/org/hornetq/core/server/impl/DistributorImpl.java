@@ -15,6 +15,7 @@ package org.hornetq.core.server.impl;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.hornetq.core.logging.Logger;
 import org.hornetq.core.server.Consumer;
 import org.hornetq.core.server.Distributor;
 
@@ -23,6 +24,8 @@ import org.hornetq.core.server.Distributor;
  */
 public abstract class DistributorImpl implements Distributor
 {
+   private static final Logger log = Logger.getLogger(DistributorImpl.class);
+
    protected final List<Consumer> consumers = new ArrayList<Consumer>();
 
    public void addConsumer(Consumer consumer)

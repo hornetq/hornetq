@@ -215,6 +215,8 @@ public class ClientProducerImpl implements ClientProducerInternal
       boolean sendBlocking = msg.isDurable() ? blockOnPersistentSend : blockOnNonPersistentSend;
 
       SessionSendMessage message = new SessionSendMessage(msg, sendBlocking);
+      
+      session.workDone();
 
       if (msg.getBodyInputStream() != null || msg.getEncodeSize() >= minLargeMessageSize || msg.isLargeMessage())
       {
@@ -222,6 +224,7 @@ public class ClientProducerImpl implements ClientProducerInternal
       }
       else if (sendBlocking)
       {
+         //log.info("sending blocking");
          channel.sendBlocking(message);
       }
       else

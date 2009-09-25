@@ -128,10 +128,13 @@ public class QueueDeployerTest extends UnitTestCase
 
    private class FakeServerControl implements HornetQServerControl
    {
+      public boolean isSharedStore()
+      {
+         return false;
+      }
 
       public int getThreadPoolMaxSize()
       {
-
          return 0;
       }
 

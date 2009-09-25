@@ -22,6 +22,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.TimeUnit;
 
+import org.hornetq.core.logging.Logger;
 import org.jboss.netty.util.internal.MapBackedSet;
 
 /**
@@ -71,116 +72,155 @@ import org.jboss.netty.util.internal.MapBackedSet;
  * @author Trustin Lee (tlee@redhat.com)
  * @version $Rev: 1315 $, $Date: 2009-06-03 03:48:23 -0400 (Wed, 03 Jun 2009) $
  */
-public class VirtualExecutorService extends AbstractExecutorService {
+public class VirtualExecutorService extends AbstractExecutorService
+{
+   private static final Logger log = Logger.getLogger(VirtualExecutorService.class);
 
-    private final Executor e;
-    private final ExecutorService s;
-    final Object startStopLock = new Object();
-    volatile boolean shutdown;
-    Set<Thread> activeThreads = new MapBackedSet<Thread>(new IdentityHashMap<Thread, Boolean>());
+   private final Executor e;
 
-    /**
-     * Creates a new instance with the specified parent {@link Executor}.
-     */
-    public VirtualExecutorService(Executor parent) {
-        if (parent == null) {
-            throw new NullPointerException("parent");
-        }
+   private final ExecutorService s;
 
-        if (parent instanceof ExecutorService) {
-            e = null;
-            s = (ExecutorService) parent;
-        } else {
-            e = parent;
-            s = null;
-        }
-    }
+   final Object startStopLock = new Object();
 
-    public boolean isShutdown() {
-        synchronized (startStopLock) {
-            return shutdown;
-        }
-    }
+   volatile boolean shutdown;
 
-    public boolean isTerminated() {
-        synchronized (startStopLock) {
-            return shutdown && activeThreads.isEmpty();
-        }
-    }
+   Set<Thread> activeThreads = new MapBackedSet<Thread>(new IdentityHashMap<Thread, Boolean>());
 
-    public void shutdown() {
-        synchronized (startStopLock) {
-            if (shutdown) {
-                return;
+   /**
+    * Creates a new instance with the specified parent {@link Executor}.
+    */
+   public VirtualExecutorService(Executor parent)
+   {
+      if (parent == null)
+      {
+         throw new NullPointerException("parent");
+      }
+
+      if (parent instanceof ExecutorService)
+      {
+         e = null;
+         s = (ExecutorService)parent;
+      }
+      else
+      {
+         e = parent;
+         s = null;
+      }
+   }
+
+   public boolean isShutdown()
+   {
+      synchronized (startStopLock)
+      {
+         return shutdown;
+      }
+   }
+
+   public boolean isTerminated()
+   {
+      synchronized (startStopLock)
+      {
+         return shutdown && activeThreads.isEmpty();
+      }
+   }
+
+   public void shutdown()
+   {
+      synchronized (startStopLock)
+      {
+         if (shutdown)
+         {
+            return;
+         }
+         shutdown = true;
+      }
+   }
+
+   public List<Runnable> shutdownNow()
+   {
+      synchronized (startStopLock)
+      {
+         if (!isTerminated())
+         {
+            shutdown();
+            for (Thread t : activeThreads)
+            {
+               t.interrupt();
             }
-            shutdown = true;
-        }
-    }
+         }
+      }
 
-    public List<Runnable> shutdownNow() {
-        synchronized (startStopLock) {
-            if (!isTerminated()) {
-                shutdown();
-                for (Thread t: activeThreads) {
-                    t.interrupt();
-                }
+      return Collections.emptyList();
+   }
+
+   public boolean awaitTermination(long timeout, TimeUnit unit) throws InterruptedException
+   {
+      synchronized (startStopLock)
+      {
+         while (!isTerminated())
+         {
+            startStopLock.wait(TimeUnit.MILLISECONDS.convert(timeout, unit));
+         }
+
+         return isTerminated();
+      }
+   }
+
+   public void execute(Runnable command)
+   {
+      if (command == null)
+      {
+         throw new NullPointerException("command");
+      }
+
+      if (shutdown)
+      {
+         throw new RejectedExecutionException();
+      }
+
+      if (s != null)
+      {
+         s.execute(new ChildExecutorRunnable(command));
+      }
+      else
+      {
+         e.execute(new ChildExecutorRunnable(command));
+      }
+   }
+
+   private class ChildExecutorRunnable implements Runnable
+   {
+
+      private final Runnable runnable;
+
+      ChildExecutorRunnable(Runnable runnable)
+      {
+         this.runnable = runnable;
+      }
+
+      public void run()
+      {
+         Thread thread = Thread.currentThread();
+         synchronized (startStopLock)
+         {
+            activeThreads.add(thread);
+         }
+         try
+         {
+            runnable.run();
+         }
+         finally
+         {
+            synchronized (startStopLock)
+            {
+               boolean removed = activeThreads.remove(thread);
+               assert removed;
+               if (isTerminated())
+               {
+                  startStopLock.notifyAll();
+               }
             }
-        }
-
-        return Collections.emptyList();
-    }
-
-    public boolean awaitTermination(long timeout, TimeUnit unit)
-            throws InterruptedException {
-        synchronized (startStopLock) {
-            while (!isTerminated()) {
-                startStopLock.wait(TimeUnit.MILLISECONDS.convert(timeout, unit));
-            }
-
-            return isTerminated();
-        }
-    }
-
-    public void execute(Runnable command) {
-        if (command == null) {
-            throw new NullPointerException("command");
-        }
-
-        if (shutdown) {
-            throw new RejectedExecutionException();
-        }
-
-        if (s != null) {
-            s.execute(new ChildExecutorRunnable(command));
-        } else {
-            e.execute(new ChildExecutorRunnable(command));
-        }
-    }
-
-    private class ChildExecutorRunnable implements Runnable {
-
-        private final Runnable runnable;
-
-        ChildExecutorRunnable(Runnable runnable) {
-            this.runnable = runnable;
-        }
-
-        public void run() {
-            Thread thread = Thread.currentThread();
-            synchronized (startStopLock) {
-                activeThreads.add(thread);
-            }
-            try {
-                runnable.run();
-            } finally {
-                synchronized (startStopLock) {
-                    boolean removed = activeThreads.remove(thread);
-                    assert removed;
-                    if (isTerminated()) {
-                        startStopLock.notifyAll();
-                    }
-                }
-            }
-        }
-    }
+         }
+      }
+   }
 }

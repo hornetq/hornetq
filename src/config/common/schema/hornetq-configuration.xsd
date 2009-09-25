@@ -63,10 +63,10 @@
 				</xsd:element>
 				<xsd:element maxOccurs="1" minOccurs="0" ref="remoting-interceptors">
 				</xsd:element>
-				<xsd:element maxOccurs="1" minOccurs="0" name="queue-activation-timeout" type="xsd:long">
-				</xsd:element>
 				<xsd:element maxOccurs="1" minOccurs="0" name="backup" type="xsd:boolean">
-				</xsd:element>				
+				</xsd:element>		
+				<xsd:element maxOccurs="1" minOccurs="0" name="shared-store" type="xsd:boolean">
+				</xsd:element>			
 				<xsd:element maxOccurs="1" minOccurs="0" name="persist-delivery-count-before-delivery" type="xsd:boolean">
 				</xsd:element>
 				<xsd:element maxOccurs="1" minOccurs="0" name="backup-connector-ref" type="backup-connectorType">

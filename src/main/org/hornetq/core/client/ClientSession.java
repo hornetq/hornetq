@@ -66,6 +66,8 @@ public interface ClientSession extends XAResource
    ClientConsumer createConsumer(SimpleString queueName, SimpleString filterString) throws HornetQException;
 
    ClientConsumer createConsumer(SimpleString queueName, SimpleString filterString, boolean browseOnly) throws HornetQException;
+   
+   ClientConsumer createConsumer(SimpleString queueName, boolean browseOnly) throws HornetQException;
 
    ClientConsumer createConsumer(SimpleString queueName,
                                  SimpleString filterString,
@@ -78,6 +80,8 @@ public interface ClientSession extends XAResource
    ClientConsumer createConsumer(String queueName, String filterString) throws HornetQException;
 
    ClientConsumer createConsumer(String queueName, String filterString, boolean browseOnly) throws HornetQException;
+   
+   ClientConsumer createConsumer(String queueName, boolean browseOnly) throws HornetQException;
 
    ClientConsumer createConsumer(String queueName, String filterString, int windowSize, int maxRate, boolean browseOnly) throws HornetQException;
 

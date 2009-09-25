@@ -23,7 +23,6 @@ import org.hornetq.core.management.ManagementService;
 import org.hornetq.core.management.impl.HornetQServerControlImpl;
 import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.core.postoffice.PostOffice;
-import org.hornetq.core.remoting.Channel;
 import org.hornetq.core.remoting.RemotingConnection;
 import org.hornetq.core.remoting.impl.wireformat.CreateSessionResponseMessage;
 import org.hornetq.core.remoting.impl.wireformat.ReattachSessionResponseMessage;
@@ -64,7 +63,7 @@ public interface HornetQServer extends HornetQComponent
    Version getVersion();
 
    HornetQServerControlImpl getHornetQServerControl();
-
+   
    void registerActivateCallback(ActivateCallback callback);
 
    void unregisterActivateCallback(ActivateCallback callback);
@@ -72,8 +71,7 @@ public interface HornetQServer extends HornetQComponent
    ReattachSessionResponseMessage reattachSession(RemotingConnection connection, String name, int lastReceivedCommandID) throws Exception;
 
    CreateSessionResponseMessage createSession(String name,
-                                              long channelID,
-                                              long replicatedSessionID,
+                                              long channelID,                                              
                                               String username,
                                               String password,
                                               int minLargeMessageSize,
@@ -84,20 +82,6 @@ public interface HornetQServer extends HornetQComponent
                                               boolean preAcknowledge,
                                               boolean xa,
                                               int producerWindowSize) throws Exception;
-
-   void replicateCreateSession(String name,
-                               long channelID,
-                               long originalSessionID,
-                               String username,
-                               String password,
-                               int minLargeMessageSize,
-                               int incrementingVersion,
-                               RemotingConnection remotingConnection,
-                               boolean autoCommitSends,
-                               boolean autoCommitAcks,
-                               boolean preAcknowledge,
-                               boolean xa,
-                               int sendWindowSize) throws Exception;
 
    void removeSession(String name) throws Exception;
 
@@ -125,9 +109,7 @@ public interface HornetQServer extends HornetQComponent
 
    SimpleString getNodeID();
 
-   Channel getReplicatingChannel();
-
-   void initialiseBackup(UUID nodeID, long currentMessageID) throws Exception;
+  // void initialiseBackup(UUID nodeID, long currentMessageID) throws Exception;
 
    boolean isInitialised();
 
@@ -144,8 +126,6 @@ public interface HornetQServer extends HornetQComponent
                      boolean temporary) throws Exception;
 
    void destroyQueue(SimpleString queueName, ServerSession session) throws Exception;
-
-   void handleReplicateRedistribution(final SimpleString queueName, final long messageID) throws Exception;
 
    ExecutorFactory getExecutorFactory();
 }

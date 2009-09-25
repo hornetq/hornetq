@@ -13,6 +13,8 @@
 
 package org.hornetq.core.client.impl;
 
+import java.util.Set;
+
 import javax.transaction.xa.XAException;
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
@@ -30,6 +32,7 @@ import org.hornetq.core.remoting.impl.wireformat.SessionQueueQueryResponseMessag
 import org.hornetq.core.remoting.impl.wireformat.SessionReceiveContinuationMessage;
 import org.hornetq.core.remoting.impl.wireformat.SessionReceiveMessage;
 import org.hornetq.core.remoting.spi.HornetQBuffer;
+import org.hornetq.utils.ConcurrentHashSet;
 import org.hornetq.utils.SimpleString;
 
 /**
@@ -43,13 +46,27 @@ import org.hornetq.utils.SimpleString;
  *
  */
 public class DelegatingSession implements ClientSessionInternal
-{
+{   
    private static final Logger log = Logger.getLogger(DelegatingSession.class);
 
    private final ClientSessionInternal session;
 
    private Exception creationStack;
+   
+   private static Set<DelegatingSession> sessions = new ConcurrentHashSet<DelegatingSession>();
 
+   public static volatile boolean debug;
+   
+   public static void dumpSessionCreationStacks()
+   {
+      log.info("**** Dumping session creation stacks ****");
+      
+      for (DelegatingSession session: sessions)
+      {
+         log.info("session created", session.creationStack);
+      }
+   }
+   
    @Override
    protected void finalize() throws Throwable
    {
@@ -70,6 +87,11 @@ public class DelegatingSession implements ClientSessionInternal
       this.session = session;
 
       this.creationStack = new Exception();
+      
+      if (debug)
+      {
+         sessions.add(this);
+      }
    }
 
    public void acknowledge(long consumerID, long messageID) throws HornetQException
@@ -104,6 +126,11 @@ public class DelegatingSession implements ClientSessionInternal
 
    public void close() throws HornetQException
    {
+      if (debug)
+      {
+         sessions.remove(this);
+      }
+      
       session.close();
    }
 
@@ -183,6 +210,16 @@ public class DelegatingSession implements ClientSessionInternal
    public ClientConsumer createConsumer(String queueName) throws HornetQException
    {
       return session.createConsumer(queueName);
+   }
+   
+   public ClientConsumer createConsumer(SimpleString queueName, boolean browseOnly) throws HornetQException
+   {
+      return session.createConsumer(queueName, browseOnly);
+   }
+
+   public ClientConsumer createConsumer(String queueName, boolean browseOnly) throws HornetQException
+   {
+      return session.createConsumer(queueName, browseOnly);
    }
 
    public ClientProducer createProducer() throws HornetQException
@@ -330,6 +367,11 @@ public class DelegatingSession implements ClientSessionInternal
    {
       return session.handleFailover(backupConnection);
    }
+   
+   public boolean handleReattach(RemotingConnection backupConnection)
+   {
+      return session.handleReattach(backupConnection);
+   }
 
    public void handleReceiveContinuation(long consumerID, SessionReceiveContinuationMessage continuation) throws Exception
    {
@@ -464,5 +506,10 @@ public class DelegatingSession implements ClientSessionInternal
    public void setForceNotSameRM(boolean force)
    {
       session.setForceNotSameRM(force);
+   }
+   
+   public void workDone()
+   {
+      session.workDone();
    }
 }

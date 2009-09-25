@@ -13,6 +13,8 @@
 
 package org.hornetq.core.management.impl;
 
+import javax.management.StandardMBean;
+
 import org.hornetq.core.config.cluster.DivertConfiguration;
 import org.hornetq.core.management.DivertControl;
 import org.hornetq.core.server.Divert;
@@ -24,7 +26,7 @@ import org.hornetq.core.server.Divert;
  * 
  * Created 11 dec. 2008 17:09:04
  */
-public class DivertControlImpl implements DivertControl
+public class DivertControlImpl extends StandardMBean implements DivertControl
 {
 
    // Constants -----------------------------------------------------
@@ -42,7 +44,9 @@ public class DivertControlImpl implements DivertControl
    // DivertControlMBean implementation ---------------------------
 
    public DivertControlImpl(final Divert divert, final DivertConfiguration configuration)
+      throws Exception
    {
+      super(DivertControl.class);
       this.divert = divert;
       this.configuration = configuration;
    }

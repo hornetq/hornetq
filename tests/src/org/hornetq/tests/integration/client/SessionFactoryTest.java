@@ -31,6 +31,7 @@ import org.hornetq.core.config.TransportConfiguration;
 import org.hornetq.core.config.cluster.BroadcastGroupConfiguration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.exception.HornetQException;
+import org.hornetq.core.logging.Logger;
 import org.hornetq.core.remoting.impl.invm.TransportConstants;
 import org.hornetq.core.server.HornetQ;
 import org.hornetq.core.server.HornetQServer;
@@ -49,6 +50,8 @@ import org.hornetq.utils.Pair;
  */
 public class SessionFactoryTest extends ServiceTestBase
 {
+   private static final Logger log = Logger.getLogger(SessionFactoryTest.class);
+
    private final String groupAddress = "230.1.2.3";
 
    private final int groupPort = 8765;
@@ -62,14 +65,14 @@ public class SessionFactoryTest extends ServiceTestBase
    private TransportConfiguration backupTC;
    
    protected void tearDown() throws Exception
-   {
+   {      
       if (liveService != null && liveService.isStarted())
-      {
+      {         
          liveService.stop();
-      }
+      }     
       if (backupService != null && backupService.isStarted())
-      {
-         liveService.stop();
+      {         
+         backupService.stop();
       }
       liveService = null;
       backupService = null;
@@ -106,7 +109,7 @@ public class SessionFactoryTest extends ServiceTestBase
    {
       try
       {
-         startLiveAndBackup();
+         startLiveAndBackup();         
          ClientSessionFactory cf = new ClientSessionFactoryImpl();
          assertFactoryParams(cf,
                              null,
@@ -136,7 +139,7 @@ public class SessionFactoryTest extends ServiceTestBase
                              ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL,
                              ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL_MULTIPLIER,
                              ClientSessionFactoryImpl.DEFAULT_RECONNECT_ATTEMPTS,
-                             ClientSessionFactoryImpl.DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN);
+                             ClientSessionFactoryImpl.DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN);         
          try
          {
             ClientSession session = cf.createSession(false, true, true);
@@ -144,8 +147,9 @@ public class SessionFactoryTest extends ServiceTestBase
          }
          catch (HornetQException e)
          {
+            e.printStackTrace();
             // Ok
-         }
+         }    
          final List<Pair<TransportConfiguration, TransportConfiguration>> staticConnectors = new ArrayList<Pair<TransportConfiguration, TransportConfiguration>>();
          Pair<TransportConfiguration, TransportConfiguration> pair0 = new Pair<TransportConfiguration, TransportConfiguration>(this.liveTC,
                                                                                                                                this.backupTC);
@@ -854,10 +858,12 @@ public class SessionFactoryTest extends ServiceTestBase
    {
       if (liveService.isStarted())
       {
+         log.info("stopping live");
          liveService.stop();
       }
       if (backupService.isStarted())
       {
+         log.info("stopping backup");
          backupService.stop();
       }
    }

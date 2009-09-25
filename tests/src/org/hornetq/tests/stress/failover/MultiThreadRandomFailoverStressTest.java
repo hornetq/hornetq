@@ -13,7 +13,7 @@
 
 package org.hornetq.tests.stress.failover;
 
-import org.hornetq.tests.integration.cluster.failover.MultiThreadRandomFailoverTest;
+import org.hornetq.tests.integration.cluster.reattach.MultiThreadRandomReattachTest;
 
 /**
  * A MultiThreadRandomFailoverStressTest
@@ -21,7 +21,7 @@ import org.hornetq.tests.integration.cluster.failover.MultiThreadRandomFailoverT
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
  */
-public class MultiThreadRandomFailoverStressTest extends MultiThreadRandomFailoverTest
+public class MultiThreadRandomFailoverStressTest extends MultiThreadRandomReattachTest
 {
    protected int getNumIterations()
    {

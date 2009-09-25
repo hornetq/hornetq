@@ -46,7 +46,6 @@ import org.hornetq.core.paging.PagingStore;
 import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.core.postoffice.Bindings;
 import org.hornetq.core.postoffice.PostOffice;
-import org.hornetq.core.remoting.Channel;
 import org.hornetq.core.server.Consumer;
 import org.hornetq.core.server.Distributor;
 import org.hornetq.core.server.HandleStatus;
@@ -78,8 +77,6 @@ public class QueueImpl implements Queue
    private static final Logger log = Logger.getLogger(QueueImpl.class);
 
    public static final int REDISTRIBUTOR_BATCH_SIZE = 100;
-
-   private static final boolean trace = log.isTraceEnabled();
 
    public static final int NUM_PRIORITIES = 10;
 
@@ -128,10 +125,6 @@ public class QueueImpl implements Queue
    private final HierarchicalRepository<AddressSettings> addressSettingsRepository;
 
    private final ScheduledExecutorService scheduledExecutor;
-
-   private volatile boolean backup;
-
-   private int consumersToFailover = -1;
 
    private SimpleString address;
 
@@ -354,11 +347,6 @@ public class QueueImpl implements Queue
 
    public void lockDelivery()
    {
-      if (backup)
-      {
-         return;
-      }
-
       try
       {
          lock.acquire();
@@ -371,11 +359,6 @@ public class QueueImpl implements Queue
 
    public void unlockDelivery()
    {
-      if (backup)
-      {
-         return;
-      }
-
       lock.release();
    }
 
@@ -473,7 +456,7 @@ public class QueueImpl implements Queue
       return removed;
    }
 
-   public synchronized void addRedistributor(final long delay, final Executor executor, final Channel replicatingChannel)
+   public synchronized void addRedistributor(final long delay, final Executor executor)
    {
       if (future != null)
       {
@@ -492,7 +475,7 @@ public class QueueImpl implements Queue
       {
          if (consumers.size() == 0)
          {
-            DelayedAddRedistributor dar = new DelayedAddRedistributor(executor, replicatingChannel);
+            DelayedAddRedistributor dar = new DelayedAddRedistributor(executor);
 
             future = scheduledExecutor.schedule(dar, delay, TimeUnit.MILLISECONDS);
 
@@ -501,7 +484,7 @@ public class QueueImpl implements Queue
       }
       else
       {
-         internalAddRedistributor(executor, replicatingChannel);
+         internalAddRedistributor(executor);
       }
    }
 
@@ -745,7 +728,7 @@ public class QueueImpl implements Queue
    {
       if (checkDLQ(reference))
       {
-         if (!scheduledDeliveryHandler.checkAndSchedule(reference, backup))
+         if (!scheduledDeliveryHandler.checkAndSchedule(reference))
          {
             messageReferences.addFirst(reference, reference.getMessage().getPriority());
          }
@@ -754,7 +737,6 @@ public class QueueImpl implements Queue
 
    public void expire(final MessageReference ref) throws Exception
    {
-      log.info("expiring ref " + this.expiryAddress);
       if (expiryAddress != null)
       {
          move(expiryAddress, ref, true);
@@ -1002,69 +984,6 @@ public class QueueImpl implements Queue
       return false;
    }
 
-   public boolean isBackup()
-   {
-      return backup;
-   }
-
-   public synchronized void setBackup()
-   {
-      backup = true;
-
-      direct = false;
-   }
-
-   public synchronized boolean activate()
-   {
-      consumersToFailover = consumers.size();
-
-      if (consumersToFailover == 0)
-      {
-         backup = false;
-
-         return true;
-      }
-      else
-      {
-         return false;
-      }
-   }
-
-   public synchronized void activateNow(final Executor executor)
-   {
-      if (backup)
-      {
-         log.info("Timed out waiting for all consumers to reconnect to queue " + name +
-                  " so queue will be activated now");
-
-         backup = false;
-
-         scheduledDeliveryHandler.reSchedule();
-
-         deliverAsync(executor);
-      }
-   }
-
-   public synchronized boolean consumerFailedOver()
-   {
-      consumersToFailover--;
-
-      if (consumersToFailover == 0)
-      {
-         // All consumers for the queue have failed over, can re-activate it now
-
-         backup = false;
-
-         scheduledDeliveryHandler.reSchedule();
-
-         return true;
-      }
-      else
-      {
-         return false;
-      }
-   }
-
    // Public
    // -----------------------------------------------------------------------------
 
@@ -1096,17 +1015,12 @@ public class QueueImpl implements Queue
    // Private
    // ------------------------------------------------------------------------------
 
-   private void internalAddRedistributor(final Executor executor, final Channel replicatingChannel)
+   private void internalAddRedistributor(final Executor executor)
    {
       // create the redistributor only once if there are no local consumers
       if (consumers.size() == 0 && redistributor == null)
       {
-         redistributor = new Redistributor(this,
-                                           storageManager,
-                                           postOffice,
-                                           executor,
-                                           REDISTRIBUTOR_BATCH_SIZE,
-                                           replicatingChannel);
+         redistributor = new Redistributor(this, storageManager, postOffice, executor, REDISTRIBUTOR_BATCH_SIZE);
 
          distributionPolicy.addConsumer(redistributor);
 
@@ -1286,12 +1200,7 @@ public class QueueImpl implements Queue
     */
    private synchronized void deliver()
    {
-      // We don't do actual delivery if the queue is on a backup node - this is
-      // because it's async and could get out of step
-      // with the live node. Instead, when we replicate the delivery we remove
-      // the ref from the queue
-
-      if (backup || paused)
+      if (paused)
       {
          return;
       }
@@ -1355,6 +1264,7 @@ public class QueueImpl implements Queue
                promptDelivery = false;
                return;
             }
+            
             continue;
          }
          else
@@ -1402,7 +1312,7 @@ public class QueueImpl implements Queue
          }
 
          HandleStatus status = handle(reference, consumer);
-
+         
          if (status == HandleStatus.HANDLED)
          {
             if (iterator == null)
@@ -1430,6 +1340,7 @@ public class QueueImpl implements Queue
             {
                groups.remove(consumer);
             }
+
             continue;
          }
       }
@@ -1442,14 +1353,14 @@ public class QueueImpl implements Queue
          messagesAdded.incrementAndGet();
       }
 
-      if (scheduledDeliveryHandler.checkAndSchedule(ref, backup))
+      if (scheduledDeliveryHandler.checkAndSchedule(ref))
       {
          return;
       }
 
       boolean add = false;
 
-      if (direct && !backup && !paused)
+      if (direct && !paused)
       {
          // Deliver directly
 
@@ -1681,7 +1592,7 @@ public class QueueImpl implements Queue
          {
             ServerMessage msg = ref.getMessage();
 
-            if (!scheduledDeliveryHandler.checkAndSchedule(ref, backup))
+            if (!scheduledDeliveryHandler.checkAndSchedule(ref))
             {
                messageReferences.addFirst(ref, msg.getPriority());
             }
@@ -1871,20 +1782,16 @@ public class QueueImpl implements Queue
    {
       private final Executor executor;
 
-      private final Channel replicatingChannel;
-
-      DelayedAddRedistributor(final Executor executor, final Channel replicatingChannel)
+      DelayedAddRedistributor(final Executor executor)
       {
          this.executor = executor;
-
-         this.replicatingChannel = replicatingChannel;
       }
 
       public void run()
       {
          synchronized (QueueImpl.this)
          {
-            internalAddRedistributor(executor, replicatingChannel);
+            internalAddRedistributor(executor);
 
             futures.remove(this);
          }

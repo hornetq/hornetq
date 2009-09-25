@@ -120,7 +120,9 @@ public class JMSTestCase extends HornetQServerTestCase
    protected void tearDown() throws Exception
    {
       super.tearDown();
+      
       getJmsServerManager().destroyConnectionFactory("testsuitecf");
+      
       cf = null;
 
       assertRemainingMessages(0);

@@ -57,6 +57,10 @@ public interface Configuration extends Serializable
 
    void setBackup(boolean backup);
    
+   boolean isSharedStore();
+   
+   void setSharedStore(boolean sharedStore);
+   
    boolean isFileDeploymentEnabled();
    
    void setFileDeploymentEnabled(boolean enable);
@@ -69,10 +73,6 @@ public interface Configuration extends Serializable
    
    void setFileDeployerScanPeriod(long period);
 
-   long getQueueActivationTimeout();
-
-   void setQueueActivationTimeout(long timeout);
-   
    int getThreadPoolMaxSize();
 
    void setThreadPoolMaxSize(int maxSize);

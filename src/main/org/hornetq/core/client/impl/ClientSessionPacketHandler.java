@@ -58,6 +58,7 @@ public class ClientSessionPacketHandler implements ChannelHandler
             case SESS_RECEIVE_CONTINUATION:
             {
                SessionReceiveContinuationMessage continuation = (SessionReceiveContinuationMessage)packet;
+               
                clientSession.handleReceiveContinuation(continuation.getConsumerID(), continuation);
 
                break;

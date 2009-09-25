@@ -30,6 +30,7 @@ import org.hornetq.utils.SimpleString;
 
 public class FakeQueue implements Queue
 {
+
    private SimpleString name;
    
    public FakeQueue(SimpleString name)
@@ -101,12 +102,14 @@ public class FakeQueue implements Queue
    }
 
    /* (non-Javadoc)
-    * @see org.hornetq.core.server.Queue#addRedistributor(long, java.util.concurrent.Executor, org.hornetq.core.remoting.Channel)
+    * @see org.hornetq.core.server.Queue#addRedistributor(long, java.util.concurrent.Executor)
     */
-   public void addRedistributor(long delay, Executor executor, Channel replicatingChannel)
+   public void addRedistributor(long delay, Executor executor)
    {
-
+      // TODO Auto-generated method stub
+      
    }
+
 
    /* (non-Javadoc)
     * @see org.hornetq.core.server.Queue#cancel(org.hornetq.core.transaction.Transaction, org.hornetq.core.server.MessageReference)

@@ -52,8 +52,6 @@ public class PacketImpl implements Packet
 
    public static final byte PACKETS_CONFIRMED = 22;
 
-   public static final byte REPLICATION_RESPONSE = 23;
-
    // Server
    public static final byte CREATESESSION = 30;
 
@@ -63,11 +61,9 @@ public class PacketImpl implements Packet
 
    public static final byte REATTACH_SESSION_RESP = 33;
 
-   public static final byte REPLICATE_CREATESESSION = 34;
-   
-   public static final byte CREATE_QUEUE = 35;
+   public static final byte CREATE_QUEUE = 34;
 
-   public static final byte DELETE_QUEUE = 36;
+   public static final byte DELETE_QUEUE = 35;
 
 
    // Session
@@ -141,26 +137,6 @@ public class PacketImpl implements Packet
 
    public static final byte SESS_RECEIVE_CONTINUATION = 76;
 
-   public static final byte SESS_FAILOVER_COMPLETE = 77;
-   
-   //Replication
-
-   public static final byte SESS_REPLICATE_DELIVERY = 90;
-   
-   public static final byte REPLICATE_ADD_REMOTE_QUEUE_BINDING = 91;
-   
-   public static final byte REPLICATE_REMOVE_REMOTE_QUEUE_BINDING = 92;
-   
-   public static final byte REPLICATE_ADD_REMOTE_CONSUMER = 93;
-   
-   public static final byte REPLICATE_REMOVE_REMOTE_CONSUMER = 94;
-   
-   public static final byte REPLICATE_ACKNOWLEDGE = 95;
-   
-   public static final byte REPLICATE_STARTUP_INFO = 96;
-   
-   public static final byte REPLICATE_REDISTRIBUTION = 97;
-   
    // Static --------------------------------------------------------
 
    public PacketImpl(final byte type)
@@ -240,11 +216,6 @@ public class PacketImpl implements Packet
    public boolean isRequiresConfirmations()
    {
       return true;
-   }
-
-   public boolean isWriteAlways()
-   {
-      return false;
    }
 
    @Override

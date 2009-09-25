@@ -123,7 +123,7 @@ public class InVMConnection implements Connection
                   if (!closed)
                   {
                      buffer.readInt(); // read and discard
-
+                                         
                      handler.bufferReceived(id, buffer);
                   }
                }

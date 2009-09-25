@@ -14,11 +14,7 @@
 package org.hornetq.core.remoting.impl;
 
 import static org.hornetq.core.remoting.impl.wireformat.PacketImpl.PACKETS_CONFIRMED;
-import static org.hornetq.core.remoting.impl.wireformat.PacketImpl.REPLICATION_RESPONSE;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
@@ -73,11 +69,7 @@ public class ChannelImpl implements Channel
 
    private final Object sendBlockingLock = new Object();
 
-   private final Object replicationLock = new Object();
-
    private boolean failingOver;
-
-   private final Queue<Runnable> responseActions = new ConcurrentLinkedQueue<Runnable>();
 
    private final int windowSize;
 
@@ -88,10 +80,6 @@ public class ChannelImpl implements Channel
    private int receivedBytes;
 
    private CommandConfirmationHandler commandConfirmationHandler;
-
-   private int responseActionCount;
-
-   private boolean playedResponsesOnFailure;
 
    public ChannelImpl(final RemotingConnection connection, final long id, final int windowSize, final boolean block)
    {
@@ -200,15 +188,13 @@ public class ChannelImpl implements Channel
                resendCache.add(packet);
             }
 
-            if (connection.isActive() || packet.isWriteAlways())
-            {
-               connection.getTransportConnection().write(buffer, flush);
-            }
+            connection.getTransportConnection().write(buffer, flush);
          }
          finally
          {
             lock.unlock();
          }
+         
          // Must block on semaphore outside the main lock or this can prevent failover from occurring, also after the
          // packet is sent to assure we get some credits back
          if (sendSemaphore != null && packet.getType() != PACKETS_CONFIRMED)
@@ -222,7 +208,6 @@ public class ChannelImpl implements Channel
                throw new IllegalStateException("Semaphore interrupted");
             }
          }
-
       }
    }
 
@@ -308,8 +293,12 @@ public class ChannelImpl implements Channel
             if (response.getType() == PacketImpl.EXCEPTION)
             {
                final HornetQExceptionMessage mem = (HornetQExceptionMessage)response;
+               
+               HornetQException e = mem.getException();
+               
+               e.fillInStackTrace();
 
-               throw mem.getException();
+               throw e;
             }
          }
          finally
@@ -333,97 +322,9 @@ public class ChannelImpl implements Channel
       }
    }
 
-   // Must be synchronized since can be called by incoming session commands but also by deliveries
-   // Also needs to be synchronized with respect to replicatingChannelDead
-   public void replicatePacket(final Packet packet, final long replicatedChannelID, final Runnable action)
-   {
-      packet.setChannelID(replicatedChannelID);
-
-      boolean runItNow = false;
-
-      synchronized (replicationLock)
-      {
-         if (playedResponsesOnFailure && action != null)
-         {
-            // Already replicating channel failed, so just play the action now
-
-            runItNow = true;
-         }
-         else
-         {
-            if (action != null)
-            {
-               responseActions.add(action);
-
-               responseActionCount++;
-            }
-
-            final HornetQBuffer buffer = connection.getTransportConnection()
-                                                   .createBuffer(packet.getRequiredBufferSize());
-
-            packet.encode(buffer);
-
-            connection.getTransportConnection().write(buffer);
-         }
-      }
-
-      // Execute outside lock
-
-      if (runItNow)
-      {
-         action.run();
-      }
-   }
-
    public void setCommandConfirmationHandler(final CommandConfirmationHandler handler)
    {
       this.commandConfirmationHandler = handler;
-   }
-
-   public void executeOutstandingDelayedResults()
-   {
-      // Execute on different thread to avoid deadlock
-
-      new Thread()
-      {
-         public void run()
-         {
-            doExecuteOutstandingDelayedResults();
-         }
-      }.start();
-   }
-
-   private void doExecuteOutstandingDelayedResults()
-   {
-      List<Runnable> toRun = new ArrayList<Runnable>();
-
-      synchronized (replicationLock)
-      {
-         playedResponsesOnFailure = true;
-
-         responseActionCount = 0;
-      }
-
-      while (true)
-      {
-         // Execute all the response actions now
-
-         Runnable action = responseActions.poll();
-
-         if (action != null)
-         {
-            toRun.add(action);
-         }
-         else
-         {
-            break;
-         }
-      }
-
-      for (Runnable action : toRun)
-      {
-         action.run();
-      }
    }
 
    public void setHandler(final ChannelHandler handler)
@@ -451,9 +352,7 @@ public class ChannelImpl implements Channel
       closed = true;
    }
 
-   public void transferConnection(final RemotingConnection newConnection,
-                                  final long newChannelID,
-                                  final Channel replicatingChannel)
+   public void transferConnection(final RemotingConnection newConnection)
    {
       // Needs to synchronize on the connection to make sure no packets from
       // the old connection get processed after transfer has occurred
@@ -461,25 +360,13 @@ public class ChannelImpl implements Channel
       {
          connection.removeChannel(id);
 
-         if (replicatingChannel != null)
-         {
-            // If we're reconnecting to a live node which is replicated then there will be a replicating channel
-            // too. We need to then make sure that all replication responses come back since packets aren't
-            // considered confirmed until response comes back and is processed. Otherwise responses to previous
-            // message sends could come back after reconnection resulting in clients resending same message
-            // since it wasn't confirmed yet.
-            replicatingChannel.waitForAllReplicationResponse();
-         }
-
          // And switch it
 
          final RemotingConnectionImpl rnewConnection = (RemotingConnectionImpl)newConnection;
 
-         rnewConnection.putChannel(newChannelID, this);
+         rnewConnection.putChannel(id, this);
 
          connection = rnewConnection;
-
-         this.id = newChannelID;
       }
    }
 
@@ -522,7 +409,7 @@ public class ChannelImpl implements Channel
 
    public void flushConfirmations()
    {
-      if (receivedBytes != 0 && connection.isActive())
+      if (receivedBytes != 0)
       {
          receivedBytes = 0;
 
@@ -546,14 +433,11 @@ public class ChannelImpl implements Channel
          {
             receivedBytes = 0;
 
-            if (connection.isActive())
-            {
-               final Packet confirmed = new PacketsConfirmedMessage(lastReceivedCommandID);
+            final Packet confirmed = new PacketsConfirmedMessage(lastReceivedCommandID);
 
-               confirmed.setChannelID(id);
+            confirmed.setChannelID(id);
 
-               doWrite(confirmed);
-            }
+            doWrite(confirmed);
          }
       }
    }
@@ -573,12 +457,6 @@ public class ChannelImpl implements Channel
          {
             handler.handlePacket(packet);
          }
-
-         return;
-      }
-      else if (packet.getType() == REPLICATION_RESPONSE)
-      {
-         replicateResponseReceived();
 
          return;
       }
@@ -604,96 +482,6 @@ public class ChannelImpl implements Channel
          else if (handler != null)
          {
             handler.handlePacket(packet);
-         }
-      }
-
-      replicateComplete();
-   }
-
-   public void waitForAllReplicationResponse()
-   {
-      synchronized (replicationLock)
-      {
-         long toWait = 10000; // TODO don't hardcode timeout
-
-         long start = System.currentTimeMillis();
-
-         while (responseActionCount > 0 && toWait > 0)
-         {
-            try
-            {
-               replicationLock.wait();
-            }
-            catch (InterruptedException e)
-            {
-            }
-
-            long now = System.currentTimeMillis();
-
-            toWait -= now - start;
-
-            start = now;
-         }
-
-         if (toWait <= 0)
-         {
-            log.warn("Timed out waiting for replication responses to return");
-         }
-      }
-   }
-
-   private void replicateComplete()
-   {
-      if (!connection.isActive() && id != 0)
-      {
-         // We're on backup and not ping channel so send back a replication response
-
-         Packet packet = new PacketImpl(REPLICATION_RESPONSE);
-
-         packet.setChannelID(2);
-
-         doWrite(packet);
-      }
-   }
-
-   // This will never get called concurrently by more than one thread
-
-   // TODO it's not ideal synchronizing this since it forms a contention point with replication
-   // but we need to do this to protect it w.r.t. the check on replicatingChannel
-
-   private void replicateResponseReceived()
-   {
-      Runnable result = null;
-
-      synchronized (replicationLock)
-      {
-         if (playedResponsesOnFailure)
-         {
-            return;
-         }
-
-         result = responseActions.poll();
-
-         if (result == null)
-         {
-            throw new IllegalStateException("Cannot find response action");
-         }
-      }
-
-      // Must execute outside of lock
-      if (result != null)
-      {
-         result.run();
-
-         // TODO - we can optimise this not to lock every time - only if waiting for all replications to return
-         synchronized (replicationLock)
-         {
-            responseActionCount--;
-
-            if (responseActionCount == 0)
-            {
-               replicationLock.notify();
-            }
          }
       }
    }

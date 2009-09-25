@@ -63,8 +63,7 @@ public class PagingManagerImplTest extends UnitTestCase
       PagingManagerImpl managerImpl = new PagingManagerImpl(new PagingStoreFactoryNIO(getPageDir(), new OrderedExecutorFactory(Executors.newCachedThreadPool())),
                                                             new NullStorageManager(),
                                                             addressSettings,
-                                                            true,
-                                                            false);
+                                                            true);
 
       managerImpl.start();
 

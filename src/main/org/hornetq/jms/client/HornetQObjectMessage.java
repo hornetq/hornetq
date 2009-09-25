@@ -166,8 +166,8 @@ public class HornetQObjectMessage extends HornetQMessage implements ObjectMessag
       }
       catch (Exception e)
       {
-         JMSException je = new JMSException("Failed to deserialize object");
-         je.setLinkedException(e);
+         JMSException je = new JMSException(e.getMessage());
+         je.setStackTrace(e.getStackTrace());
          throw je;
       }
    }

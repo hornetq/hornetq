@@ -37,6 +37,7 @@ import org.hornetq.core.remoting.impl.wireformat.SessionReceiveContinuationMessa
 import org.hornetq.core.remoting.impl.wireformat.SessionReceiveMessage;
 import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.tests.util.UnitTestCase;
+import org.hornetq.utils.SimpleString;
 
 /**
  * A LargeMessageBufferUnitTest
@@ -551,6 +552,11 @@ public class LargeMessageBufferTest extends UnitTestCase
 
    static class FakeConsumerInternal implements ClientConsumerInternal
    {
+      public void clearAtFailover()
+      {
+         // TODO Auto-generated method stub
+         
+      }
 
       /* (non-Javadoc)
        * @see org.hornetq.core.client.impl.ClientConsumerInternal#acknowledge(org.hornetq.core.client.ClientMessage)
@@ -752,6 +758,25 @@ public class LargeMessageBufferTest extends UnitTestCase
       public void setLargeMessageCacheDir(File largeMessageCacheDir)
       {
       }
+      
+      public SimpleString getFilterString()
+      {
+         // TODO Auto-generated method stub
+         return null;
+      }
+
+      public SimpleString getQueueName()
+      {
+         // TODO Auto-generated method stub
+         return null;
+      }
+
+      public boolean isBrowseOnly()
+      {
+         // TODO Auto-generated method stub
+         return false;
+      }
+
 
    }
 

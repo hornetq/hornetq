@@ -16,6 +16,8 @@ package org.hornetq.core.management.impl;
 import java.util.List;
 import java.util.Map;
 
+import javax.management.StandardMBean;
+
 import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.filter.Filter;
 import org.hornetq.core.filter.impl.FilterImpl;
@@ -41,10 +43,10 @@ import org.hornetq.utils.json.JSONObject;
  * @version <tt>$Revision$</tt>
  * 
  */
-public class QueueControlImpl implements QueueControl
+public class QueueControlImpl extends StandardMBean implements QueueControl
 {
    // Constants -----------------------------------------------------
-   
+
    private static final Logger log = Logger.getLogger(QueueControlImpl.class);
 
    // Attributes ----------------------------------------------------
@@ -92,8 +94,9 @@ public class QueueControlImpl implements QueueControl
    public QueueControlImpl(final Queue queue,
                            final String address,
                            final PostOffice postOffice,
-                           final HierarchicalRepository<AddressSettings> addressSettingsRepository)
+                           final HierarchicalRepository<AddressSettings> addressSettingsRepository) throws Exception
    {
+      super(QueueControl.class);
       this.queue = queue;
       this.address = address;
       this.postOffice = postOffice;
@@ -134,11 +137,6 @@ public class QueueControlImpl implements QueueControl
    public boolean isTemporary()
    {
       return queue.isTemporary();
-   }
-
-   public boolean isBackup()
-   {
-      return queue.isBackup();
    }
 
    public int getMessageCount()

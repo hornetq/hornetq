@@ -25,9 +25,9 @@
       <message-expiry-scan-period>10111213</message-expiry-scan-period>
       <message-expiry-thread-priority>8</message-expiry-thread-priority>
       <id-cache-size>127</id-cache-size>
-      <persist-id-cache>true</persist-id-cache>
-      <queue-activation-timeout>12456</queue-activation-timeout>
+      <persist-id-cache>true</persist-id-cache>      
       <backup>true</backup>
+      <shared-store>true</shared-store>
       <persist-delivery-count-before-delivery>true</persist-delivery-count-before-delivery>      
       <paging-directory>pagingdir</paging-directory>
       <bindings-directory>somedir</bindings-directory>

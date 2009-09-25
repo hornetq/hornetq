@@ -15,6 +15,8 @@ package org.hornetq.core.management.impl;
 
 import java.util.Map;
 
+import javax.management.StandardMBean;
+
 import org.hornetq.core.config.TransportConfiguration;
 import org.hornetq.core.management.AcceptorControl;
 import org.hornetq.core.remoting.spi.Acceptor;
@@ -26,7 +28,7 @@ import org.hornetq.core.remoting.spi.Acceptor;
  * 
  * Created 11 dec. 2008 17:09:04
  */
-public class AcceptorControlImpl implements AcceptorControl
+public class AcceptorControlImpl extends StandardMBean implements AcceptorControl
 {
 
    // Constants -----------------------------------------------------
@@ -42,7 +44,9 @@ public class AcceptorControlImpl implements AcceptorControl
    // Constructors --------------------------------------------------
 
    public AcceptorControlImpl(final Acceptor acceptor, final TransportConfiguration configuration)
+      throws Exception
    {
+      super(AcceptorControl.class);
       this.acceptor = acceptor;
       this.configuration = configuration;
    }

@@ -41,8 +41,6 @@ public interface Packet
    int getRequiredBufferSize();
    
    boolean isRequiresConfirmations();
-   
-   boolean isWriteAlways();
 }
 
 

@@ -21,6 +21,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -36,6 +37,7 @@ import org.hornetq.core.cluster.impl.DiscoveryGroupImpl;
 import org.hornetq.core.config.TransportConfiguration;
 import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.logging.Logger;
+import org.hornetq.core.remoting.Interceptor;
 import org.hornetq.utils.HornetQThreadFactory;
 import org.hornetq.utils.Pair;
 import org.hornetq.utils.UUIDGenerator;
@@ -101,6 +103,8 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
    public static final double DEFAULT_RETRY_INTERVAL_MULTIPLIER = 1d;
 
    public static final int DEFAULT_RECONNECT_ATTEMPTS = 0;
+   
+   public static final boolean DEFAULT_USE_REATTACH = false;
 
    public static final boolean DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN = false;
 
@@ -188,10 +192,14 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
    private double retryIntervalMultiplier;
 
    private int reconnectAttempts;
+   
+   private boolean useReattach;
 
    private volatile boolean closed;
 
    private boolean failoverOnServerShutdown;
+   
+   private final List<Interceptor> interceptors = new CopyOnWriteArrayList<Interceptor>();
 
    private static ExecutorService globalThreadPool;
 
@@ -284,8 +292,10 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
                                                              retryInterval,
                                                              retryIntervalMultiplier,
                                                              reconnectAttempts,
+                                                             useReattach,
                                                              threadPool,
-                                                             scheduledThreadPool);
+                                                             scheduledThreadPool,
+                                                             interceptors);
 
             connectionManagerMap.put(pair, cm);
          }
@@ -353,6 +363,8 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
       retryIntervalMultiplier = DEFAULT_RETRY_INTERVAL_MULTIPLIER;
 
       reconnectAttempts = DEFAULT_RECONNECT_ATTEMPTS;
+      
+      useReattach = DEFAULT_USE_REATTACH;
 
       failoverOnServerShutdown = DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN;
    }
@@ -654,6 +666,17 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
       checkWrite();
       this.reconnectAttempts = reconnectAttempts;
    }
+   
+   public synchronized boolean isUseReattach()
+   {
+      return useReattach;
+   }
+
+   public synchronized void setUseReattach(boolean reattach)
+   {
+      checkWrite();
+      this.useReattach = reattach;
+   }
 
    public synchronized boolean isFailoverOnServerShutdown()
    {
@@ -703,6 +726,16 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
    {
       return discoveryRefreshTimeout;
    }
+   
+   public void addInterceptor(final Interceptor interceptor)
+   {
+      interceptors.add(interceptor);
+   }
+
+   public boolean removeInterceptor(final Interceptor interceptor)
+   {
+      return interceptors.remove(interceptor);
+   }
 
    public synchronized void setDiscoveryRefreshTimeout(long discoveryRefreshTimeout)
    {
@@ -721,6 +754,19 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
       return createSessionInternal(username,
                                    password,
                                    xa,
+                                   autoCommitSends,
+                                   autoCommitAcks,
+                                   preAcknowledge,
+                                   ackBatchSize);
+   }
+   
+   
+
+   public ClientSession createSession(boolean autoCommitSends, boolean autoCommitAcks, int ackBatchSize) throws HornetQException
+   {
+      return createSessionInternal(null,
+                                   null,
+                                   false,
                                    autoCommitSends,
                                    autoCommitAcks,
                                    preAcknowledge,
@@ -894,8 +940,10 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
                                                                             retryInterval,
                                                                             retryIntervalMultiplier,
                                                                             reconnectAttempts,
+                                                                            useReattach,
                                                                             threadPool,
-                                                                            scheduledThreadPool);
+                                                                            scheduledThreadPool,
+                                                                            interceptors);
 
             connectionManagerMap.put(connectorPair, connectionManager);
          }

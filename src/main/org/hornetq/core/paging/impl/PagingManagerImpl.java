@@ -47,7 +47,7 @@ public class PagingManagerImpl implements PagingManager
 
    private volatile boolean started = false;
 
-   private volatile boolean backup;
+   // private volatile boolean backup;
 
    private final AtomicLong totalMemoryBytes = new AtomicLong(0);
 
@@ -74,14 +74,12 @@ public class PagingManagerImpl implements PagingManager
    public PagingManagerImpl(final PagingStoreFactory pagingSPI,
                             final StorageManager storageManager,
                             final HierarchicalRepository<AddressSettings> addressSettingsRepository,
-                             final boolean syncNonTransactional,
-                            final boolean backup)
+                            final boolean syncNonTransactional)
    {
       pagingStoreFactory = pagingSPI;
       this.addressSettingsRepository = addressSettingsRepository;
       this.storageManager = storageManager;
       this.syncNonTransactional = syncNonTransactional;
-      this.backup = backup;
    }
 
    // Public
@@ -94,24 +92,6 @@ public class PagingManagerImpl implements PagingManager
    {
       Set<SimpleString> names = stores.keySet();
       return (SimpleString[])names.toArray(new SimpleString[names.size()]);
-   }
-   
-   public void activate()
-   {
-      backup = false;
-
-      for (PagingStore store : stores.values())
-      {
-         if (store.isPaging())
-         {
-            store.startDepaging();
-         }
-      }
-   }
-
-   public boolean isBackup()
-   {
-      return backup;
    }
 
    /* (non-Javadoc)
@@ -270,14 +250,11 @@ public class PagingManagerImpl implements PagingManager
       }
       synchronized (this)
       {
-         if (!isBackup())
+         for (PagingStore store : stores.values())
          {
-            for (PagingStore store : stores.values())
+            if (store.isPaging())
             {
-               if (store.isPaging())
-               {
-                  store.startDepaging();
-               }
+               store.startDepaging();
             }
          }
       }

@@ -67,8 +67,6 @@ public interface ManagementService extends NotificationService, HornetQComponent
 
    SimpleString getManagementNotificationAddress();
 
-   ReplicationOperationInvoker getReplicationOperationInvoker();
-
    // Resource Registration
 
    HornetQServerControlImpl registerServer(PostOffice postOffice,

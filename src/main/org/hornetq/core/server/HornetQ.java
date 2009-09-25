@@ -41,9 +41,9 @@ public class HornetQ
       HornetQSecurityManager securityManager = new HornetQSecurityManagerImpl();
 
       HornetQServer server = newHornetQServer(config,
-                                                  ManagementFactory.getPlatformMBeanServer(),
-                                                  securityManager,
-                                                  enablePersistence);
+                                              ManagementFactory.getPlatformMBeanServer(),
+                                              securityManager,
+                                              enablePersistence);
 
       return server;
    }
@@ -54,8 +54,8 @@ public class HornetQ
    }
 
    public static HornetQServer newHornetQServer(final Configuration config,
-                                                    final MBeanServer mbeanServer,
-                                                    final boolean enablePersistence)
+                                                final MBeanServer mbeanServer,
+                                                final boolean enablePersistence)
    {
       HornetQSecurityManager securityManager = new HornetQSecurityManagerImpl();
 
@@ -70,8 +70,8 @@ public class HornetQ
    }
 
    public static HornetQServer newHornetQServer(final Configuration config,
-                                                    final MBeanServer mbeanServer,
-                                                    final HornetQSecurityManager securityManager)
+                                                final MBeanServer mbeanServer,
+                                                final HornetQSecurityManager securityManager)
    {
       HornetQServer server = newHornetQServer(config, mbeanServer, securityManager, true);
 
@@ -79,9 +79,9 @@ public class HornetQ
    }
 
    public static HornetQServer newHornetQServer(final Configuration config,
-                                                    final MBeanServer mbeanServer,
-                                                    final HornetQSecurityManager securityManager,
-                                                    final boolean enablePersistence)
+                                                final MBeanServer mbeanServer,
+                                                final HornetQSecurityManager securityManager,
+                                                final boolean enablePersistence)
    {
       config.setPersistenceEnabled(enablePersistence);
 

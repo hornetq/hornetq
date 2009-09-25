@@ -821,6 +821,18 @@ public class MessageHeaderTest extends MessageHeaderTestBase
 
    class FakeSession implements ClientSession
    {
+      public ClientConsumer createConsumer(SimpleString queueName, boolean browseOnly) throws HornetQException
+      {
+         // TODO Auto-generated method stub
+         return null;
+      }
+
+      public ClientConsumer createConsumer(String queueName, boolean browseOnly) throws HornetQException
+      {
+         // TODO Auto-generated method stub
+         return null;
+      }
+
       public void createQueue(String address, String queueName) throws HornetQException
       {
          // TODO Auto-generated method stub

@@ -102,6 +102,9 @@
             <xsd:element name="reconnect-attempts" type="xsd:int"
                 maxOccurs="1" minOccurs="0">
             </xsd:element>
+            <xsd:element name="use-reattach" type="xsd:boolean"
+                maxOccurs="1" minOccurs="0">
+            </xsd:element>
             <xsd:element name="failover-on-server-shutdown" type="xsd:boolean"
                 maxOccurs="1" minOccurs="0">
             </xsd:element>

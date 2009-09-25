@@ -270,7 +270,7 @@ public class UnitTestCase extends TestCase
       }
    }
 
-   protected static  Object checkBinding(Context context, String binding) throws Exception
+   protected static Object checkBinding(Context context, String binding) throws Exception
    {
       Object o = context.lookup(binding);
       assertNotNull(o);

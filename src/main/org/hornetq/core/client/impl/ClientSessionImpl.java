@@ -12,13 +12,14 @@
  */
 package org.hornetq.core.client.impl;
 
+import static org.hornetq.core.exception.HornetQException.TRANSACTION_ROLLED_BACK;
 import static org.hornetq.utils.SimpleString.toSimpleString;
 
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
 
 import javax.transaction.xa.XAException;
@@ -38,6 +39,8 @@ import org.hornetq.core.remoting.FailureListener;
 import org.hornetq.core.remoting.Packet;
 import org.hornetq.core.remoting.RemotingConnection;
 import org.hornetq.core.remoting.impl.wireformat.CreateQueueMessage;
+import org.hornetq.core.remoting.impl.wireformat.CreateSessionMessage;
+import org.hornetq.core.remoting.impl.wireformat.CreateSessionResponseMessage;
 import org.hornetq.core.remoting.impl.wireformat.PacketImpl;
 import org.hornetq.core.remoting.impl.wireformat.ReattachSessionMessage;
 import org.hornetq.core.remoting.impl.wireformat.ReattachSessionResponseMessage;
@@ -50,7 +53,6 @@ import org.hornetq.core.remoting.impl.wireformat.SessionConsumerFlowCreditMessag
 import org.hornetq.core.remoting.impl.wireformat.SessionCreateConsumerMessage;
 import org.hornetq.core.remoting.impl.wireformat.SessionDeleteQueueMessage;
 import org.hornetq.core.remoting.impl.wireformat.SessionExpiredMessage;
-import org.hornetq.core.remoting.impl.wireformat.SessionFailoverCompleteMessage;
 import org.hornetq.core.remoting.impl.wireformat.SessionQueueQueryMessage;
 import org.hornetq.core.remoting.impl.wireformat.SessionQueueQueryResponseMessage;
 import org.hornetq.core.remoting.impl.wireformat.SessionReceiveContinuationMessage;
@@ -69,6 +71,7 @@ import org.hornetq.core.remoting.impl.wireformat.SessionXARollbackMessage;
 import org.hornetq.core.remoting.impl.wireformat.SessionXASetTimeoutMessage;
 import org.hornetq.core.remoting.impl.wireformat.SessionXASetTimeoutResponseMessage;
 import org.hornetq.core.remoting.impl.wireformat.SessionXAStartMessage;
+import org.hornetq.core.remoting.spi.Connection;
 import org.hornetq.core.remoting.spi.HornetQBuffer;
 import org.hornetq.utils.ConcurrentHashSet;
 import org.hornetq.utils.IDGenerator;
@@ -108,6 +111,10 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
 
    private final String name;
 
+   private final String username;
+
+   private final String password;
+
    private final boolean xa;
 
    private final Executor executor;
@@ -116,7 +123,8 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
 
    private final Set<ClientProducerInternal> producers = new ConcurrentHashSet<ClientProducerInternal>();
 
-   private final Map<Long, ClientConsumerInternal> consumers = new ConcurrentHashMap<Long, ClientConsumerInternal>();
+   // Consumers must be an ordered map so if we fail we recreate them in the same order with the same ids
+   private final Map<Long, ClientConsumerInternal> consumers = new LinkedHashMap<Long, ClientConsumerInternal>();
 
    private volatile boolean closed;
 
@@ -135,6 +143,8 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
    private final int consumerWindowSize;
 
    private final int consumerMaxRate;
+
+   private final int producerWindowSize;
 
    private final int producerMaxRate;
 
@@ -161,10 +171,16 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
 
    private volatile boolean closedSent;
 
+   private volatile boolean rollbackOnly;
+
+   private volatile boolean workDone;
+
    // Constructors ----------------------------------------------------------------------------
 
    public ClientSessionImpl(final ConnectionManager connectionManager,
                             final String name,
+                            final String username,
+                            final String password,
                             final boolean xa,
                             final boolean autoCommitSends,
                             final boolean autoCommitAcks,
@@ -174,6 +190,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
                             final int ackBatchSize,
                             final int consumerWindowSize,
                             final int consumerMaxRate,
+                            final int producerWindowSize,
                             final int producerMaxRate,
                             final boolean blockOnNonPersistentSend,
                             final boolean blockOnPersistentSend,
@@ -187,6 +204,10 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
       this.connectionManager = connectionManager;
 
       this.name = name;
+
+      this.username = username;
+
+      this.password = password;
 
       this.remotingConnection = remotingConnection;
 
@@ -213,6 +234,8 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
       this.consumerWindowSize = consumerWindowSize;
 
       this.consumerMaxRate = consumerMaxRate;
+
+      this.producerWindowSize = producerWindowSize;
 
       this.producerMaxRate = producerMaxRate;
 
@@ -338,10 +361,21 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
    {
       return createConsumer(queueName, filterString, consumerWindowSize, consumerMaxRate, browseOnly);
    }
+   
+   public ClientConsumer createConsumer(final SimpleString queueName,                                        
+                                        final boolean browseOnly) throws HornetQException
+   {
+      return createConsumer(queueName, null, consumerWindowSize, consumerMaxRate, browseOnly);
+   }
 
    public ClientConsumer createConsumer(final String queueName, final String filterString, final boolean browseOnly) throws HornetQException
    {
       return createConsumer(toSimpleString(queueName), toSimpleString(filterString), browseOnly);
+   }
+   
+   public ClientConsumer createConsumer(final String queueName, final boolean browseOnly) throws HornetQException
+   {
+      return createConsumer(toSimpleString(queueName), null, browseOnly);
    }
 
    /*
@@ -420,9 +454,17 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
    {
       checkClosed();
 
+      if (rollbackOnly)
+      {
+         throw new HornetQException(TRANSACTION_ROLLED_BACK,
+                                    "The transaction was rolled back on failover to a backup server");
+      }
+
       flushAcks();
 
       channel.sendBlocking(new PacketImpl(PacketImpl.SESS_COMMIT));
+
+      workDone = false;
    }
 
    public void rollback() throws HornetQException
@@ -430,7 +472,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
       rollback(false);
    }
 
-   public void rollback(final boolean isLastMessageAsDelived) throws HornetQException
+   public void rollback(final boolean isLastMessageAsDelivered) throws HornetQException
    {
       checkClosed();
 
@@ -455,7 +497,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
       // Acks must be flushed here *after connection is stopped and all onmessages finished executing
       flushAcks();
 
-      channel.sendBlocking(new RollbackMessage(isLastMessageAsDelived));
+      channel.sendBlocking(new RollbackMessage(isLastMessageAsDelivered));
 
       if (wasStarted)
       {
@@ -528,7 +570,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
       if (!started)
       {
          for (ClientConsumerInternal clientConsumerInternal : consumers.values())
-         {
+         {            
             clientConsumerInternal.start();
          }
 
@@ -618,7 +660,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
    {
       checkClosed();
 
-      //We don't send expiries for pre-ack since message will already have been acked on server
+      // We don't send expiries for pre-ack since message will already have been acked on server
       if (!preAcknowledge)
       {
          SessionExpiredMessage message = new SessionExpiredMessage(consumerID, messageID);
@@ -639,7 +681,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
 
    public void removeConsumer(final ClientConsumerInternal consumer) throws HornetQException
    {
-      consumers.remove(consumer.getID());
+      consumers.remove(consumer.getID());      
    }
 
    public void removeProducer(final ClientProducerInternal producer)
@@ -659,7 +701,10 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
          {
             log.trace("Setting up flowControlSize to " + message.getRequiredBufferSize() + " on message = " + clMessage);
          }
+
          clMessage.setFlowControlSize(message.getRequiredBufferSize());
+
+         workDone();
 
          consumer.handleMessage(message.getClientMessage());
       }
@@ -671,6 +716,8 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
 
       if (consumer != null)
       {
+         workDone();
+
          consumer.handleLargeMessage(message);
       }
    }
@@ -681,6 +728,8 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
 
       if (consumer != null)
       {
+         workDone();
+
          consumer.handleLargeMessageContinuation(continuation);
       }
    }
@@ -727,8 +776,10 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
       sendAckHandler = handler;
    }
 
-   // Needs to be synchronized to prevent issues with occurring concurrently with close()
-   public synchronized boolean handleFailover(final RemotingConnection backupConnection)
+    // Needs to be synchronized to prevent issues with occurring concurrently with close()
+   
+   //TODO - need to reenable
+   public synchronized boolean handleReattach(final RemotingConnection backupConnection)
    {
       if (closed)
       {
@@ -743,7 +794,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
 
       try
       {
-         channel.transferConnection(backupConnection, channel.getID(), null);
+         channel.transferConnection(backupConnection);
 
          backupConnection.syncIDGeneratorSequence(remotingConnection.getIDGeneratorSequence());
 
@@ -755,7 +806,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
 
          ReattachSessionResponseMessage response = (ReattachSessionResponseMessage)channel1.sendBlocking(request);
 
-         if (!response.isRemoved())
+         if (response.isSessionFound())
          {
             channel.replayCommands(response.getLastReceivedCommandID(), channel.getID());
 
@@ -783,6 +834,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
 
             channel.returnBlocking();
          }
+
       }
       catch (Throwable t)
       {
@@ -793,8 +845,153 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
          channel.unlock();
       }
 
-      channel.send(new SessionFailoverCompleteMessage(name));
+      return ok;
+   }
 
+   public void workDone()
+   {
+      workDone = true;
+   }
+
+   // Needs to be synchronized to prevent issues with occurring concurrently with close()
+   public synchronized boolean handleFailover(final RemotingConnection backupConnection)
+   {
+      if (closed)
+      {
+         return true;
+      }
+      
+      boolean ok = false;
+
+      // Need to stop all consumers outside the lock
+      for (ClientConsumerInternal consumer : consumers.values())
+      {
+         try
+         {
+            consumer.stop();
+         }
+         catch (HornetQException e)
+         {
+            log.error("Failed to stop consumer", e);
+         }
+
+         consumer.clearAtFailover();
+      }
+      
+      // We lock the channel to prevent any packets being sent during the failover process
+      channel.lock();
+      
+      try
+      {
+         channel.transferConnection(backupConnection);
+         
+         remotingConnection = backupConnection;
+
+         Packet request = new CreateSessionMessage(name,
+                                                   channel.getID(),
+                                                   version,
+                                                   username,
+                                                   password,
+                                                   minLargeMessageSize,
+                                                   xa,
+                                                   autoCommitSends,
+                                                   autoCommitAcks,
+                                                   preAcknowledge,
+                                                   producerWindowSize);
+
+         Channel channel1 = backupConnection.getChannel(1, -1, false);
+
+         CreateSessionResponseMessage response = (CreateSessionResponseMessage)channel1.sendBlocking(request);
+
+         if (response.isCreated())
+         {
+            // Session was created ok
+
+            // Now we need to recreate the consumers
+
+            for (Map.Entry<Long, ClientConsumerInternal> entry : consumers.entrySet())
+            {
+               SessionCreateConsumerMessage createConsumerRequest = new SessionCreateConsumerMessage(entry.getKey(),
+                                                                                                     entry.getValue().getQueueName(),
+                                                                                                     entry.getValue().getFilterString(),
+                                                                                                     entry.getValue().isBrowseOnly(),
+                                                                                                     false);
+
+               createConsumerRequest.setChannelID(channel.getID());
+
+               Connection conn = channel.getConnection().getTransportConnection();
+
+               HornetQBuffer buffer = conn.createBuffer(createConsumerRequest.getRequiredBufferSize());
+
+               createConsumerRequest.encode(buffer);
+
+               conn.write(buffer, false);
+               
+               int clientWindowSize = calcWindowSize(entry.getValue().getClientWindowSize());
+                              
+               if (clientWindowSize != 0)
+               {
+                  SessionConsumerFlowCreditMessage packet = new SessionConsumerFlowCreditMessage(entry.getKey(), clientWindowSize);
+                  
+                  packet.setChannelID(channel.getID());
+                  
+                  buffer = conn.createBuffer(packet.getRequiredBufferSize());
+
+                  packet.encode(buffer);
+
+                  conn.write(buffer, false);                  
+               }
+            }
+            
+            if ((!autoCommitAcks || !autoCommitSends) && workDone)
+            {
+               // Session is transacted - set for rollback only
+
+               // FIXME - there is a race condition here - a commit could sneak in before this is set
+               rollbackOnly = true;
+            }
+
+            // Now start the session if it was already started
+            if (started)
+            {
+               for (ClientConsumerInternal consumer : consumers.values())
+               {
+                  consumer.start();
+               }
+               
+               Packet packet = new PacketImpl(PacketImpl.SESS_START);
+               
+               packet.setChannelID(channel.getID());
+               
+               Connection conn = channel.getConnection().getTransportConnection();
+               
+               HornetQBuffer buffer = conn.createBuffer(packet.getRequiredBufferSize());
+
+               packet.encode(buffer);
+
+               conn.write(buffer, false);                              
+            }
+
+            ok = true;
+         }
+         else
+         {
+            // This means the server we failed onto is not ready to take new sessions - perhaps it hasn't actually
+            // failed over
+         }
+
+         // We cause any blocking calls to return - since they won't get responses.
+         channel.returnBlocking();
+      }
+      catch (Throwable t)
+      {
+         log.error("Failed to handle failover", t);
+      }
+      finally
+      {
+         channel.unlock();
+      }
+      
       return ok;
    }
 
@@ -826,6 +1023,11 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
    public void commit(final Xid xid, final boolean onePhase) throws XAException
    {
       checkXA();
+      
+      if (rollbackOnly)
+      {
+         throw new XAException(XAException.XA_RBOTHER);
+      }
 
       // Note - don't need to flush acks since the previous end would have
       // done this
@@ -836,6 +1038,8 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
       {
          SessionXAResponseMessage response = (SessionXAResponseMessage)channel.sendBlocking(packet);
 
+         workDone = false;
+                  
          if (response.isError())
          {
             throw new XAException(response.getResponseCode());
@@ -851,6 +1055,12 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
    public void end(final Xid xid, final int flags) throws XAException
    {
       checkXA();
+      
+      if (rollbackOnly)
+      {
+         throw new XAException(XAException.XA_RBOTHER);
+      }
+      
       try
       {
          Packet packet;
@@ -948,6 +1158,11 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
    {
       checkXA();
 
+      if (rollbackOnly)
+      {
+         throw new XAException(XAException.XA_RBOTHER);
+      }
+
       // Note - don't need to flush acks since the previous end would have
       // done this
 
@@ -1030,6 +1245,8 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
          {
             start();
          }
+
+         workDone = false;
 
          if (response.isError())
          {
@@ -1136,30 +1353,8 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
    // Private
    // ----------------------------------------------------------------------------
 
-   /**
-    * @param queueName
-    * @param filterString
-    * @param windowSize
-    * @param browseOnly
-    * @return
-    * @throws HornetQException
-    */
-   private ClientConsumer internalCreateConsumer(final SimpleString queueName,
-                                                 final SimpleString filterString,
-                                                 final int windowSize,
-                                                 final int maxRate,
-                                                 final boolean browseOnly) throws HornetQException
+   private int calcWindowSize(final int windowSize)
    {
-      checkClosed();
-
-      SessionCreateConsumerMessage request = new SessionCreateConsumerMessage(queueName, filterString, browseOnly);
-
-      channel.sendBlocking(request);
-
-      // The actual windows size that gets used is determined by the user since
-      // could be overridden on the queue settings
-      // The value we send is just a hint
-
       int clientWindowSize;
       if (windowSize == -1)
       {
@@ -1186,11 +1381,43 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
       {
          throw new IllegalArgumentException("Invalid window size " + windowSize);
       }
-
+      
+      return clientWindowSize;
+   }
+   
+   /**
+    * @param queueName
+    * @param filterString
+    * @param windowSize
+    * @param browseOnly
+    * @return
+    * @throws HornetQException
+    */
+   private ClientConsumer internalCreateConsumer(final SimpleString queueName,
+                                                 final SimpleString filterString,
+                                                 final int windowSize,
+                                                 final int maxRate,
+                                                 final boolean browseOnly) throws HornetQException
+   {
+      checkClosed();
+      
       long consumerID = idGenerator.generateID();
 
+      SessionCreateConsumerMessage request = new SessionCreateConsumerMessage(consumerID, queueName, filterString, browseOnly, true);
+
+      channel.sendBlocking(request);
+
+      // The actual windows size that gets used is determined by the user since
+      // could be overridden on the queue settings
+      // The value we send is just a hint
+
+      int clientWindowSize = calcWindowSize(windowSize);
+      
       ClientConsumerInternal consumer = new ClientConsumerImpl(this,
                                                                consumerID,
+                                                               queueName,
+                                                               filterString,
+                                                               browseOnly,
                                                                clientWindowSize,
                                                                ackBatchSize,
                                                                consumerMaxRate > 0 ? new TokenBucketLimiterImpl(maxRate,

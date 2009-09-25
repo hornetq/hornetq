@@ -84,7 +84,11 @@ public class PageCrashTest extends ServiceTestBase
 
       Configuration config = createDefaultConfig();
 
-      HornetQServer messagingService = createServer(true, config, 10 * 1024, 100 * 1024, new HashMap<String, AddressSettings>());
+      HornetQServer messagingService = createServer(true,
+                                                    config,
+                                                    10 * 1024,
+                                                    100 * 1024,
+                                                    new HashMap<String, AddressSettings>());
 
       messagingService.start();
 
@@ -241,8 +245,7 @@ public class PageCrashTest extends ServiceTestBase
          return new PagingManagerImpl(new FailurePagingStoreFactoryNIO(super.getConfiguration().getPagingDirectory()),
                                       super.getStorageManager(),
                                       super.getAddressSettingsRepository(),
-                                       super.getConfiguration().isJournalSyncNonTransactional(),
-                                      false);
+                                      super.getConfiguration().isJournalSyncNonTransactional());
       }
 
       class FailurePagingStoreFactoryNIO extends PagingStoreFactoryNIO

@@ -31,15 +31,13 @@ public interface Channel
    
    Packet sendBlocking(Packet packet) throws HornetQException;
 
-   void replicatePacket(Packet packet, long replicatedChannelID, Runnable action);
-   
    void setHandler(ChannelHandler handler);
    
    ChannelHandler getHandler();
 
    void close();
 
-   void transferConnection(RemotingConnection newConnection, final long newID, final Channel replicatingChannel);
+   void transferConnection(RemotingConnection newConnection);
    
    void replayCommands(int lastReceivedCommandID, final long newID);
 
@@ -55,8 +53,6 @@ public interface Channel
    
    RemotingConnection getConnection();
    
-   void executeOutstandingDelayedResults();
-   
    void confirm(Packet packet);
    
    void setCommandConfirmationHandler(CommandConfirmationHandler handler);
@@ -64,6 +60,4 @@ public interface Channel
    void flushConfirmations();  
    
    void handlePacket(Packet packet);
-   
-   void waitForAllReplicationResponse();
 }

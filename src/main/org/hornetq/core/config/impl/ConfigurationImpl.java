@@ -47,14 +47,14 @@ public class ConfigurationImpl implements Configuration
    public static final boolean DEFAULT_PERSIST_DELIVERY_COUNT_BEFORE_DELIVERY = false;
 
    public static final boolean DEFAULT_BACKUP = false;
+   
+   public static final boolean DEFAULT_SHARED_STORE = false;
 
    public static final boolean DEFAULT_FILE_DEPLOYMENT_ENABLED = false;
 
    public static final boolean DEFAULT_PERSISTENCE_ENABLED = true;
 
    public static final long DEFAULT_FILE_DEPLOYER_SCAN_PERIOD = 5000;
-
-   public static final long DEFAULT_QUEUE_ACTIVATION_TIMEOUT = 30000;
 
    public static final int DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE = 5;
 
@@ -167,7 +167,9 @@ public class ConfigurationImpl implements Configuration
    protected boolean clustered = DEFAULT_CLUSTERED;
 
    protected boolean backup = DEFAULT_BACKUP;
-
+   
+   protected boolean sharedStore = DEFAULT_SHARED_STORE;
+       
    protected boolean fileDeploymentEnabled = DEFAULT_FILE_DEPLOYMENT_ENABLED;
 
    protected boolean persistenceEnabled = DEFAULT_PERSISTENCE_ENABLED;
@@ -175,8 +177,6 @@ public class ConfigurationImpl implements Configuration
    protected long fileDeploymentScanPeriod = DEFAULT_FILE_DEPLOYER_SCAN_PERIOD;
 
    protected boolean persistDeliveryCountBeforeDelivery = DEFAULT_PERSIST_DELIVERY_COUNT_BEFORE_DELIVERY;
-
-   protected long queueActivationTimeout = DEFAULT_QUEUE_ACTIVATION_TIMEOUT;
 
    protected int scheduledThreadPoolMaxSize = DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE;
 
@@ -371,15 +371,15 @@ public class ConfigurationImpl implements Configuration
    {
       this.backup = backup;
    }
-
-   public long getQueueActivationTimeout()
+   
+   public boolean isSharedStore()
    {
-      return queueActivationTimeout;
+      return sharedStore;
    }
 
-   public void setQueueActivationTimeout(final long timeout)
+   public void setSharedStore(final boolean sharedStore)
    {
-      queueActivationTimeout = timeout;
+      this.sharedStore = sharedStore;
    }
 
    public int getScheduledThreadPoolMaxSize()
@@ -881,6 +881,8 @@ public class ConfigurationImpl implements Configuration
          return false;
       if (backup != other.backup)
          return false;
+      if (sharedStore != other.sharedStore)
+         return false;
       if (backupConnectorName == null)
       {
          if (other.backupConnectorName != null)
@@ -1009,8 +1011,6 @@ public class ConfigurationImpl implements Configuration
       if (persistIDCache != other.persistIDCache)
          return false;
       if (persistenceEnabled != other.persistenceEnabled)
-         return false;
-      if (queueActivationTimeout != other.queueActivationTimeout)
          return false;
       if (scheduledThreadPoolMaxSize != other.scheduledThreadPoolMaxSize)
          return false;

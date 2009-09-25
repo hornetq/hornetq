@@ -17,7 +17,6 @@ import org.hornetq.core.remoting.Channel;
 import org.hornetq.core.remoting.Packet;
 import org.hornetq.core.remoting.RemotingConnection;
 import org.hornetq.core.remoting.impl.wireformat.CreateQueueMessage;
-import org.hornetq.core.remoting.impl.wireformat.PacketsConfirmedMessage;
 import org.hornetq.core.remoting.impl.wireformat.RollbackMessage;
 import org.hornetq.core.remoting.impl.wireformat.SessionAcknowledgeMessage;
 import org.hornetq.core.remoting.impl.wireformat.SessionBindingQueryMessage;
@@ -39,7 +38,6 @@ import org.hornetq.core.remoting.impl.wireformat.SessionXAResumeMessage;
 import org.hornetq.core.remoting.impl.wireformat.SessionXARollbackMessage;
 import org.hornetq.core.remoting.impl.wireformat.SessionXASetTimeoutMessage;
 import org.hornetq.core.remoting.impl.wireformat.SessionXAStartMessage;
-import org.hornetq.core.remoting.impl.wireformat.replication.SessionReplicateDeliveryMessage;
 import org.hornetq.core.server.impl.ServerSessionPacketHandler;
 
 /**
@@ -126,13 +124,7 @@ public interface ServerSession
 
    void handleSendLargeMessage(SessionSendLargeMessage packet);
 
-   void handleFailedOver(Packet packet);
-
    void handleClose(Packet packet);
-
-   void handleReplicatedDelivery(SessionReplicateDeliveryMessage packet);
-   
-   void handlePacketsConfirmed(PacketsConfirmedMessage packet);
 
    int transferConnection(RemotingConnection newConnection, int lastReceivedCommandID);
 

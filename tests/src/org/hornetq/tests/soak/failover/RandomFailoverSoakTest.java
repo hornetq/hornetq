@@ -14,7 +14,7 @@
 
 package org.hornetq.tests.soak.failover;
 
-import org.hornetq.tests.integration.cluster.failover.RandomFailoverTest;
+import org.hornetq.tests.integration.cluster.reattach.RandomReattachTest;
 
 /**
  * A RandomFailoverSoakTest
@@ -25,7 +25,7 @@ import org.hornetq.tests.integration.cluster.failover.RandomFailoverTest;
  *
  *
  */
-public class RandomFailoverSoakTest extends RandomFailoverTest
+public class RandomFailoverSoakTest extends RandomReattachTest
 {
 
    protected int getNumIterations()

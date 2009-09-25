@@ -403,7 +403,7 @@ public class BindingsImpl implements Bindings
             }
 
             for (Bindable bindable : chosen)
-            {
+            {               
                bindable.route(message, tx);
             }
          }

@@ -49,5 +49,4 @@ public class DummyInterceptorB implements Interceptor
       log.debug("DummyFilter packet = " + packet);
       return true;
    }
-
 }

@@ -45,7 +45,7 @@ public class ConfigurationImplTest extends UnitTestCase
    {
       assertEquals(ConfigurationImpl.DEFAULT_CLUSTERED, conf.isClustered());
       assertEquals(ConfigurationImpl.DEFAULT_BACKUP, conf.isBackup());
-      assertEquals(ConfigurationImpl.DEFAULT_QUEUE_ACTIVATION_TIMEOUT, conf.getQueueActivationTimeout());
+      assertEquals(ConfigurationImpl.DEFAULT_SHARED_STORE, conf.isSharedStore());
       assertEquals(ConfigurationImpl.DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE, conf.getScheduledThreadPoolMaxSize());
       assertEquals(ConfigurationImpl.DEFAULT_SECURITY_INVALIDATION_INTERVAL, conf.getSecurityInvalidationInterval());
       assertEquals(ConfigurationImpl.DEFAULT_SECURITY_ENABLED, conf.isSecurityEnabled());
@@ -108,15 +108,15 @@ public class ConfigurationImplTest extends UnitTestCase
          conf.setBackup(b);
          assertEquals(b, conf.isBackup());
 
-         long l = randomLong();
-         conf.setQueueActivationTimeout(l);
-         assertEquals(l, conf.getQueueActivationTimeout());
+         b = randomBoolean();
+         conf.setSharedStore(b);
+         assertEquals(b, conf.isSharedStore());
 
          int i = randomInt();
          conf.setScheduledThreadPoolMaxSize(i);
          assertEquals(i, conf.getScheduledThreadPoolMaxSize());
 
-         l = randomLong();
+         long l = randomLong();
          conf.setSecurityInvalidationInterval(l);
          assertEquals(l, conf.getSecurityInvalidationInterval());
 
@@ -322,15 +322,14 @@ public class ConfigurationImplTest extends UnitTestCase
       conf.setBackup(b);
       assertEquals(b, conf.isBackup());
 
-      long l = randomLong();
-      conf.setQueueActivationTimeout(l);
-      assertEquals(l, conf.getQueueActivationTimeout());
-
+      b = randomBoolean();
+      conf.setSharedStore(b);
+            
       int i = randomInt();
       conf.setScheduledThreadPoolMaxSize(i);
       assertEquals(i, conf.getScheduledThreadPoolMaxSize());
 
-      l = randomLong();
+      long l = randomLong();
       conf.setSecurityInvalidationInterval(l);
       assertEquals(l, conf.getSecurityInvalidationInterval());
 

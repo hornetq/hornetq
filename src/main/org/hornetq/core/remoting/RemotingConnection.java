@@ -62,13 +62,7 @@ public interface RemotingConnection extends BufferHandler
 
    long getIDGeneratorSequence();
 
-   void activate();
-
-   void freeze();
-  
    Connection getTransportConnection();
-   
-   boolean isActive();
    
    boolean isClient();
    

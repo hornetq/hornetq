@@ -13,8 +13,6 @@
 
 package org.hornetq.core.postoffice;
 
-import java.util.List;
-
 import org.hornetq.core.paging.PagingManager;
 import org.hornetq.core.server.HornetQComponent;
 import org.hornetq.core.server.Queue;
@@ -57,8 +55,6 @@ public interface PostOffice extends HornetQComponent
    void route(ServerMessage message, Transaction tx) throws Exception;
    
    boolean redistribute(ServerMessage message, final Queue originatingQueue, Transaction tx) throws Exception;
-
-   List<Queue> activate();
 
    PagingManager getPagingManager();
 

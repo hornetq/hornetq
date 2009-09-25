@@ -59,8 +59,8 @@ public class FileConfigurationTest extends ConfigurationImplTest
       assertEquals(8, conf.getMessageExpiryThreadPriority());
       assertEquals(127, conf.getIDCacheSize());
       assertEquals(true, conf.isPersistIDCache());
-      assertEquals(12456, conf.getQueueActivationTimeout());
       assertEquals(true, conf.isBackup());
+      assertEquals(true, conf.isSharedStore());
       assertEquals(true, conf.isPersistDeliveryCountBeforeDelivery());      
       assertEquals("pagingdir", conf.getPagingDirectory());
       assertEquals("somedir", conf.getBindingsDirectory());

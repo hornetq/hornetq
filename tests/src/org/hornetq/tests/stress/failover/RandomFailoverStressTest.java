@@ -14,7 +14,7 @@
 
 package org.hornetq.tests.stress.failover;
 
-import org.hornetq.tests.integration.cluster.failover.RandomFailoverTest;
+import org.hornetq.tests.integration.cluster.reattach.RandomReattachTest;
 
 /**
  * A RandomFailoverStressTest
@@ -25,7 +25,7 @@ import org.hornetq.tests.integration.cluster.failover.RandomFailoverTest;
  *
  *
  */
-public class RandomFailoverStressTest extends RandomFailoverTest
+public class RandomFailoverStressTest extends RandomReattachTest
 {
 
    // Constants -----------------------------------------------------

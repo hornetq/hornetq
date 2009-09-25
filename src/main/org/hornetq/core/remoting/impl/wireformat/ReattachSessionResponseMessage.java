@@ -30,21 +30,20 @@ public class ReattachSessionResponseMessage extends PacketImpl
    // Attributes ----------------------------------------------------
 
    private int lastReceivedCommandID;
-   
-   //Is this flag really necessary - try removing it
-   private boolean removed;
+      
+   private boolean sessionFound;
    
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   public ReattachSessionResponseMessage(final int lastReceivedCommandID, final boolean removed)
+   public ReattachSessionResponseMessage(final int lastReceivedCommandID, final boolean sessionFound)
    {
       super(REATTACH_SESSION_RESP);
 
       this.lastReceivedCommandID = lastReceivedCommandID;
       
-      this.removed = removed;
+      this.sessionFound = sessionFound;
    }
    
    public ReattachSessionResponseMessage()
@@ -59,9 +58,9 @@ public class ReattachSessionResponseMessage extends PacketImpl
       return lastReceivedCommandID;
    }
    
-   public boolean isRemoved()
+   public boolean isSessionFound()
    {
-      return removed;
+      return sessionFound;
    }
    
    public int getRequiredBufferSize()
@@ -73,13 +72,13 @@ public class ReattachSessionResponseMessage extends PacketImpl
    public void encodeBody(final HornetQBuffer buffer)
    { 
       buffer.writeInt(lastReceivedCommandID);
-      buffer.writeBoolean(removed);
+      buffer.writeBoolean(sessionFound);
    }
    
    public void decodeBody(final HornetQBuffer buffer)
    { 
       lastReceivedCommandID = buffer.readInt();
-      removed = buffer.readBoolean();
+      sessionFound = buffer.readBoolean();
    }
    
    public boolean isResponse()

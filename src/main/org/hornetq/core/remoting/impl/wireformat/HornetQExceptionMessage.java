@@ -14,6 +14,7 @@
 package org.hornetq.core.remoting.impl.wireformat;
 
 import org.hornetq.core.exception.HornetQException;
+import org.hornetq.core.logging.Logger;
 import org.hornetq.core.remoting.spi.HornetQBuffer;
 import org.hornetq.utils.DataConstants;
 
@@ -27,6 +28,9 @@ import org.hornetq.utils.DataConstants;
 public class HornetQExceptionMessage extends PacketImpl
 {
    // Constants -----------------------------------------------------
+   
+   private static final Logger log = Logger.getLogger(HornetQExceptionMessage.class);
+
 
    // Attributes ----------------------------------------------------
 
@@ -39,7 +43,7 @@ public class HornetQExceptionMessage extends PacketImpl
    public HornetQExceptionMessage(final HornetQException exception)
    {
       super(EXCEPTION);
-
+      
       this.exception = exception;
    }
 
@@ -76,6 +80,7 @@ public class HornetQExceptionMessage extends PacketImpl
    {
       int code = buffer.readInt();
       String msg = buffer.readNullableString();
+        
       exception = new HornetQException(code, msg);
    }
 

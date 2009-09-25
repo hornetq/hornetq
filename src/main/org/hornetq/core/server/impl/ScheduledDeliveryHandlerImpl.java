@@ -49,7 +49,7 @@ public class ScheduledDeliveryHandlerImpl implements ScheduledDeliveryHandler
       this.scheduledExecutor = scheduledExecutor;
    }
 
-   public boolean checkAndSchedule(final MessageReference ref, final boolean backup)
+   public boolean checkAndSchedule(final MessageReference ref)
    {
       long deliveryTime = ref.getScheduledDeliveryTime();
 
@@ -67,10 +67,7 @@ public class ScheduledDeliveryHandlerImpl implements ScheduledDeliveryHandler
             scheduledRunnables.put(ref.getMessage().getMessageID(), runnable);
          }
 
-         if (!backup)
-         {
-            scheduleDelivery(runnable, deliveryTime);
-         }
+         scheduleDelivery(runnable, deliveryTime);         
 
          return true;
       }

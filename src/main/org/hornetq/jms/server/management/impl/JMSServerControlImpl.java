@@ -25,6 +25,7 @@ import javax.management.NotificationBroadcasterSupport;
 import javax.management.NotificationEmitter;
 import javax.management.NotificationFilter;
 import javax.management.NotificationListener;
+import javax.management.StandardMBean;
 
 import org.hornetq.core.client.management.impl.ManagementHelper;
 import org.hornetq.core.config.TransportConfiguration;
@@ -42,7 +43,7 @@ import org.hornetq.utils.Pair;
  * @version <tt>$Revision$</tt>
  * 
  */
-public class JMSServerControlImpl implements JMSServerControl, NotificationEmitter
+public class JMSServerControlImpl extends StandardMBean implements JMSServerControl, NotificationEmitter
 {
 
    // Constants -----------------------------------------------------
@@ -135,8 +136,9 @@ public class JMSServerControlImpl implements JMSServerControl, NotificationEmitt
 
    // Constructors --------------------------------------------------
 
-   public JMSServerControlImpl(final JMSServerManager server)
+   public JMSServerControlImpl(final JMSServerManager server) throws Exception
    {
+      super(JMSServerControl.class);
       this.server = server;
       broadcaster = new NotificationBroadcasterSupport();
    }

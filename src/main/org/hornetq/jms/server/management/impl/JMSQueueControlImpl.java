@@ -15,6 +15,8 @@ package org.hornetq.jms.server.management.impl;
 
 import java.util.Map;
 
+import javax.management.StandardMBean;
+
 import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.management.MessageCounterInfo;
@@ -34,7 +36,7 @@ import org.hornetq.utils.json.JSONObject;
  * @version <tt>$Revision$</tt>
  * 
  */
-public class JMSQueueControlImpl implements JMSQueueControl
+public class JMSQueueControlImpl extends StandardMBean implements JMSQueueControl
 {
    // Constants -----------------------------------------------------
 
@@ -57,7 +59,8 @@ public class JMSQueueControlImpl implements JMSQueueControl
     */
    public static String createFilterFromJMSSelector(final String selectorStr) throws HornetQException
    {
-      return (selectorStr == null || selectorStr.trim().length() == 0) ? null : SelectorTranslator.convertToHornetQFilterString(selectorStr);
+      return (selectorStr == null || selectorStr.trim().length() == 0) ? null
+                                                                      : SelectorTranslator.convertToHornetQFilterString(selectorStr);
    }
 
    private static String createFilterForJMSMessageID(String jmsMessageID) throws Exception
@@ -71,7 +74,7 @@ public class JMSQueueControlImpl implements JMSQueueControl
       for (int i = 0; i < messages.length; i++)
       {
          Map<String, Object> message = messages[i];
-         array.put(new JSONObject(message));         
+         array.put(new JSONObject(message));
       }
       return array.toString();
    }
@@ -79,10 +82,11 @@ public class JMSQueueControlImpl implements JMSQueueControl
    // Constructors --------------------------------------------------
 
    public JMSQueueControlImpl(final HornetQQueue managedQueue,
-                          final QueueControl coreQueueControl,
-                          final String jndiBinding,
-                          final MessageCounter counter)
+                              final QueueControl coreQueueControl,
+                              final String jndiBinding,
+                              final MessageCounter counter) throws Exception
    {
+      super(JMSQueueControl.class);
       this.managedQueue = managedQueue;
       this.coreQueueControl = coreQueueControl;
       this.binding = jndiBinding;
@@ -187,10 +191,10 @@ public class JMSQueueControlImpl implements JMSQueueControl
          String filter = createFilterFromJMSSelector(filterStr);
          Map<String, Object>[] coreMessages = coreQueueControl.listMessages(filter);
 
-         Map<String, Object>[] jmsMessages = new Map[coreMessages.length]; 
-         
+         Map<String, Object>[] jmsMessages = new Map[coreMessages.length];
+
          int i = 0;
-         
+
          for (Map<String, Object> coreMessage : coreMessages)
          {
             Map<String, Object> jmsMessage = HornetQMessage.coreMaptoJMSMap(coreMessage);
@@ -203,7 +207,7 @@ public class JMSQueueControlImpl implements JMSQueueControl
          throw new IllegalStateException(e.getMessage());
       }
    }
-   
+
    public String listMessagesAsJSON(String filter) throws Exception
    {
       return toJSON(listMessages(filter));

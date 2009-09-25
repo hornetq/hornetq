@@ -58,8 +58,6 @@ public interface QueueControl
 
    void setDeadLetterAddress(@Parameter(name = "deadLetterAddress", desc = "Dead-letter address of the queue") String deadLetterAddress) throws Exception;
 
-   boolean isBackup();
-
    // Operations ----------------------------------------------------
 
    @Operation(desc = "List the messages scheduled for delivery", impact = INFO)

@@ -13,6 +13,8 @@
 
 package org.hornetq.core.management.impl;
 
+import javax.management.StandardMBean;
+
 import org.hornetq.core.config.cluster.BroadcastGroupConfiguration;
 import org.hornetq.core.management.BroadcastGroupControl;
 import org.hornetq.core.server.cluster.BroadcastGroup;
@@ -27,7 +29,7 @@ import org.hornetq.utils.json.JSONObject;
  * 
  * Created 11 dec. 2008 17:09:04
  */
-public class BroadcastGroupControlImpl implements BroadcastGroupControl
+public class BroadcastGroupControlImpl extends StandardMBean implements BroadcastGroupControl
 {
 
    // Constants -----------------------------------------------------
@@ -43,7 +45,9 @@ public class BroadcastGroupControlImpl implements BroadcastGroupControl
    // Constructors --------------------------------------------------
 
    public BroadcastGroupControlImpl(final BroadcastGroup broadcastGroup, final BroadcastGroupConfiguration configuration)
+      throws Exception
    {
+      super(BroadcastGroupControl.class);
       this.broadcastGroup = broadcastGroup;
       this.configuration = configuration;
    }

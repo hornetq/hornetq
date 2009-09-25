@@ -325,14 +325,6 @@
                             <entry>true</entry>
                         </row>
                         <row>
-                            <entry><link linkend="queue.activation.timeout"
-                                    >queue-activation-timeout</link></entry>
-                            <entry>Long</entry>
-                            <entry>after failover occurs, this timeout specifies how long (in ms) to
-                                wait for consumers to re-attach before starting delivery</entry>
-                            <entry>30000</entry>
-                        </row>
-                        <row>
                             <entry><link linkend="server.scheduled.thread.pool"
                                     >scheduled-thread-pool-max-size</link></entry>
                             <entry>Integer</entry>

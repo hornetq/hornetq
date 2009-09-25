@@ -13,7 +13,6 @@
 
 package org.hornetq.tests.integration.cluster.bridge;
 
-import java.util.HashMap;
 import java.util.Map;
 
 import org.hornetq.core.config.Configuration;
@@ -35,29 +34,6 @@ import org.hornetq.tests.util.UnitTestCase;
  */
 public abstract class BridgeTestBase extends UnitTestCase
 {
-   protected HornetQServer createHornetQServerNIO(final int id, final Map<String, Object> params)
-   {
-      return createHornetQServerNIO(id, params, false);
-   }
-
-   protected HornetQServer createHornetQServerNIO(final int id,
-                                                      final Map<String, Object> params,
-                                                      final boolean backup)
-   {
-      Configuration serviceConf = new ConfigurationImpl();
-      serviceConf.setClustered(true);
-      serviceConf.setSecurityEnabled(false);
-      serviceConf.setBackup(backup);
-      serviceConf.setJournalMinFiles(2);
-      serviceConf.setJournalFileSize(100 * 1024);
-      params.put(TransportConstants.SERVER_ID_PROP_NAME, id);
-      serviceConf.getAcceptorConfigurations()
-                 .add(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory",
-                                                 params));
-      HornetQServer service = HornetQ.newHornetQServer(serviceConf);
-      return service;
-   }
-
    protected HornetQServer createHornetQServer(final int id, final Map<String, Object> params)
    {
       return createHornetQServer(id, params, false);
@@ -69,16 +45,18 @@ public abstract class BridgeTestBase extends UnitTestCase
       serviceConf.setClustered(true);
       serviceConf.setSecurityEnabled(false);
       serviceConf.setBackup(backup);
+      serviceConf.setSharedStore(true);
+      serviceConf.setBindingsDirectory(getBindingsDir(id, false));
+      serviceConf.setJournalMinFiles(2);
+      serviceConf.setJournalDirectory(getJournalDir(id, false));
+      serviceConf.setPagingDirectory(getPageDir(id, false));
+      serviceConf.setLargeMessagesDirectory(getLargeMessagesDir(id, false));
+      
       params.put(TransportConstants.SERVER_ID_PROP_NAME, id);
       serviceConf.getAcceptorConfigurations()
-                 .add(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory",
-                                                 params));
-      HornetQServer service = HornetQ.newHornetQServer(serviceConf, false);
+                 .add(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory", params));
+      HornetQServer service = HornetQ.newHornetQServer(serviceConf, true);
       return service;
    }
 
-   protected HornetQServer createHornetQServer(final int id)
-   {
-      return this.createHornetQServer(id, new HashMap<String, Object>());
-   }
 }

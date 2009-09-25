@@ -402,11 +402,6 @@ public class PagingStoreImpl implements TestSupportPageStore
          return false;
       }
 
-      if (pagingManager.isBackup())
-      {
-         return false;
-      }
-
       currentPageLock.readLock().lock();
       try
       {

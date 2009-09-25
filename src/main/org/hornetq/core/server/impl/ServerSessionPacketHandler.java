@@ -22,10 +22,8 @@ import static org.hornetq.core.remoting.impl.wireformat.PacketImpl.SESS_COMMIT;
 import static org.hornetq.core.remoting.impl.wireformat.PacketImpl.SESS_CONSUMER_CLOSE;
 import static org.hornetq.core.remoting.impl.wireformat.PacketImpl.SESS_CREATECONSUMER;
 import static org.hornetq.core.remoting.impl.wireformat.PacketImpl.SESS_EXPIRED;
-import static org.hornetq.core.remoting.impl.wireformat.PacketImpl.SESS_FAILOVER_COMPLETE;
 import static org.hornetq.core.remoting.impl.wireformat.PacketImpl.SESS_FLOWTOKEN;
 import static org.hornetq.core.remoting.impl.wireformat.PacketImpl.SESS_QUEUEQUERY;
-import static org.hornetq.core.remoting.impl.wireformat.PacketImpl.SESS_REPLICATE_DELIVERY;
 import static org.hornetq.core.remoting.impl.wireformat.PacketImpl.SESS_ROLLBACK;
 import static org.hornetq.core.remoting.impl.wireformat.PacketImpl.SESS_SEND;
 import static org.hornetq.core.remoting.impl.wireformat.PacketImpl.SESS_SEND_CONTINUATION;
@@ -49,8 +47,6 @@ import org.hornetq.core.logging.Logger;
 import org.hornetq.core.remoting.ChannelHandler;
 import org.hornetq.core.remoting.Packet;
 import org.hornetq.core.remoting.impl.wireformat.CreateQueueMessage;
-import org.hornetq.core.remoting.impl.wireformat.PacketImpl;
-import org.hornetq.core.remoting.impl.wireformat.PacketsConfirmedMessage;
 import org.hornetq.core.remoting.impl.wireformat.RollbackMessage;
 import org.hornetq.core.remoting.impl.wireformat.SessionAcknowledgeMessage;
 import org.hornetq.core.remoting.impl.wireformat.SessionBindingQueryMessage;
@@ -72,7 +68,6 @@ import org.hornetq.core.remoting.impl.wireformat.SessionXAResumeMessage;
 import org.hornetq.core.remoting.impl.wireformat.SessionXARollbackMessage;
 import org.hornetq.core.remoting.impl.wireformat.SessionXASetTimeoutMessage;
 import org.hornetq.core.remoting.impl.wireformat.SessionXAStartMessage;
-import org.hornetq.core.remoting.impl.wireformat.replication.SessionReplicateDeliveryMessage;
 import org.hornetq.core.server.ServerSession;
 
 /**
@@ -106,11 +101,6 @@ public class ServerSessionPacketHandler implements ChannelHandler
       {
          switch (type)
          {
-            case PacketImpl.PACKETS_CONFIRMED:
-            {
-               session.handlePacketsConfirmed((PacketsConfirmedMessage)packet);
-               break;
-            }
             case SESS_CREATECONSUMER:
             {
                SessionCreateConsumerMessage request = (SessionCreateConsumerMessage)packet;
@@ -118,15 +108,15 @@ public class ServerSessionPacketHandler implements ChannelHandler
                break;
             }
             case CREATE_QUEUE:
-            {               
-               CreateQueueMessage request = (CreateQueueMessage)packet;               
-               session.handleCreateQueue(request);             
+            {
+               CreateQueueMessage request = (CreateQueueMessage)packet;
+               session.handleCreateQueue(request);
                break;
             }
             case DELETE_QUEUE:
             {
                SessionDeleteQueueMessage request = (SessionDeleteQueueMessage)packet;
-               session.handleDeleteQueue(request);             
+               session.handleDeleteQueue(request);
                break;
             }
             case SESS_QUEUEQUERY:
@@ -237,11 +227,6 @@ public class ServerSessionPacketHandler implements ChannelHandler
                session.handleStart(packet);
                break;
             }
-            case SESS_FAILOVER_COMPLETE:
-            {
-               session.handleFailedOver(packet);
-               break;
-            }
             case SESS_STOP:
             {
                session.handleStop(packet);
@@ -267,26 +252,20 @@ public class ServerSessionPacketHandler implements ChannelHandler
             case SESS_SEND:
             {
                SessionSendMessage message = (SessionSendMessage)packet;
-               session.handleSend(message);               
-               break;              
+               session.handleSend(message);
+               break;
             }
             case SESS_SEND_LARGE:
             {
                SessionSendLargeMessage message = (SessionSendLargeMessage)packet;
-               session.handleSendLargeMessage(message);     
-               break;              
+               session.handleSendLargeMessage(message);
+               break;
             }
             case SESS_SEND_CONTINUATION:
             {
                SessionSendContinuationMessage message = (SessionSendContinuationMessage)packet;
                session.handleSendContinuations(message);
-               break;               
-            }
-            case SESS_REPLICATE_DELIVERY:
-            {
-               SessionReplicateDeliveryMessage message = (SessionReplicateDeliveryMessage)packet;
-               session.handleReplicatedDelivery(message);
-               break;               
+               break;
             }
          }
       }

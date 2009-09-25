@@ -24,15 +24,6 @@ import static org.hornetq.core.remoting.impl.wireformat.PacketImpl.PACKETS_CONFI
 import static org.hornetq.core.remoting.impl.wireformat.PacketImpl.PING;
 import static org.hornetq.core.remoting.impl.wireformat.PacketImpl.REATTACH_SESSION;
 import static org.hornetq.core.remoting.impl.wireformat.PacketImpl.REATTACH_SESSION_RESP;
-import static org.hornetq.core.remoting.impl.wireformat.PacketImpl.REPLICATE_ACKNOWLEDGE;
-import static org.hornetq.core.remoting.impl.wireformat.PacketImpl.REPLICATE_ADD_REMOTE_CONSUMER;
-import static org.hornetq.core.remoting.impl.wireformat.PacketImpl.REPLICATE_ADD_REMOTE_QUEUE_BINDING;
-import static org.hornetq.core.remoting.impl.wireformat.PacketImpl.REPLICATE_CREATESESSION;
-import static org.hornetq.core.remoting.impl.wireformat.PacketImpl.REPLICATE_REDISTRIBUTION;
-import static org.hornetq.core.remoting.impl.wireformat.PacketImpl.REPLICATE_REMOVE_REMOTE_CONSUMER;
-import static org.hornetq.core.remoting.impl.wireformat.PacketImpl.REPLICATE_REMOVE_REMOTE_QUEUE_BINDING;
-import static org.hornetq.core.remoting.impl.wireformat.PacketImpl.REPLICATE_STARTUP_INFO;
-import static org.hornetq.core.remoting.impl.wireformat.PacketImpl.REPLICATION_RESPONSE;
 import static org.hornetq.core.remoting.impl.wireformat.PacketImpl.SESS_ACKNOWLEDGE;
 import static org.hornetq.core.remoting.impl.wireformat.PacketImpl.SESS_BINDINGQUERY;
 import static org.hornetq.core.remoting.impl.wireformat.PacketImpl.SESS_BINDINGQUERY_RESP;
@@ -41,13 +32,11 @@ import static org.hornetq.core.remoting.impl.wireformat.PacketImpl.SESS_COMMIT;
 import static org.hornetq.core.remoting.impl.wireformat.PacketImpl.SESS_CONSUMER_CLOSE;
 import static org.hornetq.core.remoting.impl.wireformat.PacketImpl.SESS_CREATECONSUMER;
 import static org.hornetq.core.remoting.impl.wireformat.PacketImpl.SESS_EXPIRED;
-import static org.hornetq.core.remoting.impl.wireformat.PacketImpl.SESS_FAILOVER_COMPLETE;
 import static org.hornetq.core.remoting.impl.wireformat.PacketImpl.SESS_FLOWTOKEN;
 import static org.hornetq.core.remoting.impl.wireformat.PacketImpl.SESS_QUEUEQUERY;
 import static org.hornetq.core.remoting.impl.wireformat.PacketImpl.SESS_QUEUEQUERY_RESP;
 import static org.hornetq.core.remoting.impl.wireformat.PacketImpl.SESS_RECEIVE_CONTINUATION;
 import static org.hornetq.core.remoting.impl.wireformat.PacketImpl.SESS_RECEIVE_MSG;
-import static org.hornetq.core.remoting.impl.wireformat.PacketImpl.SESS_REPLICATE_DELIVERY;
 import static org.hornetq.core.remoting.impl.wireformat.PacketImpl.SESS_ROLLBACK;
 import static org.hornetq.core.remoting.impl.wireformat.PacketImpl.SESS_SEND;
 import static org.hornetq.core.remoting.impl.wireformat.PacketImpl.SESS_SEND_CONTINUATION;
@@ -82,7 +71,6 @@ import org.hornetq.core.remoting.impl.wireformat.PacketsConfirmedMessage;
 import org.hornetq.core.remoting.impl.wireformat.Ping;
 import org.hornetq.core.remoting.impl.wireformat.ReattachSessionMessage;
 import org.hornetq.core.remoting.impl.wireformat.ReattachSessionResponseMessage;
-import org.hornetq.core.remoting.impl.wireformat.ReplicateCreateSessionMessage;
 import org.hornetq.core.remoting.impl.wireformat.RollbackMessage;
 import org.hornetq.core.remoting.impl.wireformat.SessionAcknowledgeMessage;
 import org.hornetq.core.remoting.impl.wireformat.SessionBindingQueryMessage;
@@ -93,7 +81,6 @@ import org.hornetq.core.remoting.impl.wireformat.SessionConsumerFlowCreditMessag
 import org.hornetq.core.remoting.impl.wireformat.SessionCreateConsumerMessage;
 import org.hornetq.core.remoting.impl.wireformat.SessionDeleteQueueMessage;
 import org.hornetq.core.remoting.impl.wireformat.SessionExpiredMessage;
-import org.hornetq.core.remoting.impl.wireformat.SessionFailoverCompleteMessage;
 import org.hornetq.core.remoting.impl.wireformat.SessionQueueQueryMessage;
 import org.hornetq.core.remoting.impl.wireformat.SessionQueueQueryResponseMessage;
 import org.hornetq.core.remoting.impl.wireformat.SessionReceiveContinuationMessage;
@@ -114,14 +101,6 @@ import org.hornetq.core.remoting.impl.wireformat.SessionXARollbackMessage;
 import org.hornetq.core.remoting.impl.wireformat.SessionXASetTimeoutMessage;
 import org.hornetq.core.remoting.impl.wireformat.SessionXASetTimeoutResponseMessage;
 import org.hornetq.core.remoting.impl.wireformat.SessionXAStartMessage;
-import org.hornetq.core.remoting.impl.wireformat.replication.ReplicateAcknowledgeMessage;
-import org.hornetq.core.remoting.impl.wireformat.replication.ReplicateRedistributionMessage;
-import org.hornetq.core.remoting.impl.wireformat.replication.ReplicateRemoteBindingAddedMessage;
-import org.hornetq.core.remoting.impl.wireformat.replication.ReplicateRemoteBindingRemovedMessage;
-import org.hornetq.core.remoting.impl.wireformat.replication.ReplicateRemoteConsumerAddedMessage;
-import org.hornetq.core.remoting.impl.wireformat.replication.ReplicateRemoteConsumerRemovedMessage;
-import org.hornetq.core.remoting.impl.wireformat.replication.ReplicateStartupInfoMessage;
-import org.hornetq.core.remoting.impl.wireformat.replication.SessionReplicateDeliveryMessage;
 import org.hornetq.core.remoting.spi.HornetQBuffer;
 
 /**
@@ -161,19 +140,9 @@ public class PacketDecoder
             packet = new PacketsConfirmedMessage();
             break;
          }
-         case REPLICATION_RESPONSE:
-         {
-            packet = new PacketImpl(REPLICATION_RESPONSE);
-            break;
-         }
          case CREATESESSION:
          {
             packet = new CreateSessionMessage();
-            break;
-         }
-         case REPLICATE_CREATESESSION:
-         {
-            packet = new ReplicateCreateSessionMessage();
             break;
          }
          case CREATESESSION_RESP:
@@ -189,11 +158,6 @@ public class PacketDecoder
          case REATTACH_SESSION_RESP:
          {
             packet = new ReattachSessionResponseMessage();
-            break;
-         }
-         case SESS_FAILOVER_COMPLETE:
-         {
-            packet = new SessionFailoverCompleteMessage();
             break;
          }
          case SESS_CLOSE:
@@ -385,47 +349,7 @@ public class PacketDecoder
          {
             packet = new SessionSendContinuationMessage();
             break;
-         }
-         case REPLICATE_ADD_REMOTE_QUEUE_BINDING:
-         {
-            packet = new ReplicateRemoteBindingAddedMessage();
-            break;
-         }
-         case REPLICATE_REMOVE_REMOTE_QUEUE_BINDING:
-         {
-            packet = new ReplicateRemoteBindingRemovedMessage();
-            break;
-         }
-         case REPLICATE_ADD_REMOTE_CONSUMER:
-         {
-            packet = new ReplicateRemoteConsumerAddedMessage();
-            break;
-         }
-         case REPLICATE_REMOVE_REMOTE_CONSUMER:
-         {
-            packet = new ReplicateRemoteConsumerRemovedMessage();
-            break;
-         }
-         case SESS_REPLICATE_DELIVERY:
-         {
-            packet = new SessionReplicateDeliveryMessage();
-            break;
-         }
-         case REPLICATE_STARTUP_INFO:
-         {
-            packet = new ReplicateStartupInfoMessage();
-            break;
-         }
-         case REPLICATE_ACKNOWLEDGE:
-         {
-            packet = new ReplicateAcknowledgeMessage();
-            break;
-         }
-         case REPLICATE_REDISTRIBUTION:
-         {
-            packet = new ReplicateRedistributionMessage();
-            break;
-         }
+         }        
          default:
          {
             throw new IllegalArgumentException("Invalid type: " + packetType);

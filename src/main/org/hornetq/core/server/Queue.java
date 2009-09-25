@@ -121,17 +121,7 @@ public interface Queue extends Bindable
 
    int moveReferences(Filter filter, SimpleString toAddress) throws Exception;
 
-   void setBackup();
-
-   boolean activate();
-
-   void activateNow(Executor executor);
-
-   boolean isBackup();
-
-   boolean consumerFailedOver();
-
-   void addRedistributor(long delay, Executor executor, final Channel replicatingChannel);
+   void addRedistributor(long delay, Executor executor);
 
    void cancelRedistributor() throws Exception;
 

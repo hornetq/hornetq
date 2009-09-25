@@ -19,7 +19,7 @@ import java.util.List;
  */
 public interface ScheduledDeliveryHandler
 {
-   boolean checkAndSchedule(MessageReference ref, boolean backup);
+   boolean checkAndSchedule(MessageReference ref);
 
    void reSchedule();
 

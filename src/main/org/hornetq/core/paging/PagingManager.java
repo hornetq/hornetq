@@ -47,10 +47,6 @@ import org.hornetq.utils.SimpleString;
  */
 public interface PagingManager extends HornetQComponent
 {
-   void activate();
-
-   boolean isBackup();
-
    /** To return the PageStore associated with the address */
    PagingStore getPageStore(SimpleString address) throws Exception;
 

@@ -462,6 +462,16 @@ public class HornetQConnectionFactory implements ConnectionFactory, QueueConnect
    {
       sessionFactory.setReconnectAttempts(reconnectAttempts);
    }
+   
+   public synchronized boolean isUseReattach()
+   {
+      return sessionFactory.isUseReattach();
+   }
+
+   public synchronized void setUseReattach(boolean reattach)
+   {
+      sessionFactory.setUseReattach(reattach);
+   }
 
    public synchronized boolean isFailoverOnServerShutdown()
    {

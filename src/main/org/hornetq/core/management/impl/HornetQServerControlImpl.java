@@ -30,6 +30,7 @@ import javax.management.NotificationBroadcasterSupport;
 import javax.management.NotificationEmitter;
 import javax.management.NotificationFilter;
 import javax.management.NotificationListener;
+import javax.management.StandardMBean;
 import javax.transaction.xa.Xid;
 
 import org.hornetq.core.config.Configuration;
@@ -60,7 +61,7 @@ import org.hornetq.utils.json.JSONObject;
  * @version <tt>$Revision$</tt>
  * 
  */
-public class HornetQServerControlImpl implements HornetQServerControl, NotificationEmitter
+public class HornetQServerControlImpl extends StandardMBean implements HornetQServerControl, NotificationEmitter
 {
    // Constants -----------------------------------------------------
 
@@ -94,6 +95,7 @@ public class HornetQServerControlImpl implements HornetQServerControl, Notificat
                                  final MessageCounterManager messageCounterManager,
                                  final NotificationBroadcasterSupport broadcaster) throws Exception
    {
+      super(HornetQServerControl.class);
       this.postOffice = postOffice;
       this.configuration = configuration;
       this.resourceManager = resourceManager;
@@ -125,6 +127,11 @@ public class HornetQServerControlImpl implements HornetQServerControl, Notificat
    public boolean isBackup()
    {
       return configuration.isBackup();
+   }
+   
+   public boolean isSharedStore()
+   {
+      return configuration.isSharedStore();
    }
 
    public String getBackupConnectorName()
@@ -422,15 +429,12 @@ public class HornetQServerControlImpl implements HornetQServerControl, Notificat
 
    public String[] listRemoteAddresses()
    {
-      log.info("listing remote addresses");
       Set<RemotingConnection> connections = remotingService.getConnections();
 
       String[] remoteAddresses = new String[connections.size()];
       int i = 0;
       for (RemotingConnection connection : connections)
       {
-         log.info("connection " + connection + " is on server");
-         
          remoteAddresses[i++] = connection.getRemoteAddress();
       }
       return remoteAddresses;
@@ -640,11 +644,6 @@ public class HornetQServerControlImpl implements HornetQServerControl, Notificat
    public long getMessageExpiryThreadPriority()
    {
       return configuration.getMessageExpiryThreadPriority();
-   }
-
-   public long getQueueActivationTimeout()
-   {
-      return configuration.getQueueActivationTimeout();
    }
 
    public long getTransactionTimeout()

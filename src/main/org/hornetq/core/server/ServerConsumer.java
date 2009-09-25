@@ -43,12 +43,4 @@ public interface ServerConsumer extends Consumer
 	MessageReference getExpired(long messageID) throws Exception;
 	
 	void acknowledge(boolean autoCommitAcks, Transaction tx, long messageID) throws Exception;
-	
-	void failedOver();
-	
-	void deliverReplicated(long messageID) throws Exception;
-	
-	void lock();
-	
-	void unlock();
 }

@@ -16,6 +16,8 @@ package org.hornetq.core.management.impl;
 import java.util.Iterator;
 import java.util.Set;
 
+import javax.management.StandardMBean;
+
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.management.AddressControl;
 import org.hornetq.core.postoffice.Binding;
@@ -34,7 +36,7 @@ import org.hornetq.utils.json.JSONObject;
  * @version <tt>$Revision$</tt>
  * 
  */
-public class AddressControlImpl implements AddressControl
+public class AddressControlImpl extends StandardMBean implements AddressControl
 {
 
    // Constants -----------------------------------------------------
@@ -54,9 +56,11 @@ public class AddressControlImpl implements AddressControl
    // Constructors --------------------------------------------------
 
    public AddressControlImpl(final SimpleString address,
-                         final PostOffice postOffice,
-                         final HierarchicalRepository<Set<Role>> securityRepository)
+                             final PostOffice postOffice,
+                             final HierarchicalRepository<Set<Role>> securityRepository)
+      throws Exception
    {
+      super(AddressControl.class);
       this.address = address;
       this.postOffice = postOffice;
       this.securityRepository = securityRepository;
@@ -110,7 +114,7 @@ public class AddressControlImpl implements AddressControl
       }
       return objRoles;
    }
-   
+
    public String getRolesAsJSON() throws Exception
    {
       JSONArray json = new JSONArray();

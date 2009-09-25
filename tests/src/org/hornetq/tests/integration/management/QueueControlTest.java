@@ -85,7 +85,6 @@ public class QueueControlTest extends ManagementTestBase
       assertEquals(filter.toString(), queueControl.getFilter());
       assertEquals(durable, queueControl.isDurable());
       assertEquals(false, queueControl.isTemporary());
-      assertEquals(false, queueControl.isBackup());
 
       session.deleteQueue(queue);
    }

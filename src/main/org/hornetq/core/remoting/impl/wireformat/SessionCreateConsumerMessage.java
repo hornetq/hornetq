@@ -28,25 +28,33 @@ public class SessionCreateConsumerMessage extends PacketImpl
 
    // Attributes ----------------------------------------------------
 
+   private long id;
+   
    private SimpleString queueName;
 
    private SimpleString filterString;
 
    private boolean browseOnly;
+   
+   private boolean requiresResponse;
 
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   public SessionCreateConsumerMessage(final SimpleString queueName,
+   public SessionCreateConsumerMessage(final long id,
+                                       final SimpleString queueName,
                                        final SimpleString filterString,
-                                       final boolean browseOnly)
+                                       final boolean browseOnly,
+                                       final boolean requiresResponse)
    {
       super(SESS_CREATECONSUMER);
 
+      this.id = id;
       this.queueName = queueName;
       this.filterString = filterString;
       this.browseOnly = browseOnly;
+      this.requiresResponse = requiresResponse;
    }
 
    public SessionCreateConsumerMessage()
@@ -65,6 +73,11 @@ public class SessionCreateConsumerMessage extends PacketImpl
       buff.append("]");
       return buff.toString();
    }
+   
+   public long getID()
+   {
+      return id;
+   }
 
    public SimpleString getQueueName()
    {
@@ -80,28 +93,37 @@ public class SessionCreateConsumerMessage extends PacketImpl
    {
       return browseOnly;
    }
+   
+   public boolean isRequiresResponse()
+   {
+      return requiresResponse;
+   }
 
    public int getRequiredBufferSize()
    {
-      return BASIC_PACKET_SIZE + queueName.sizeof() +
+      return BASIC_PACKET_SIZE + DataConstants.SIZE_LONG + queueName.sizeof() +
              SimpleString.sizeofNullableString(filterString) +
-             DataConstants.SIZE_BOOLEAN;
+             2 * DataConstants.SIZE_BOOLEAN ;
    }
 
    @Override
    public void encodeBody(final HornetQBuffer buffer)
    {
+      buffer.writeLong(id);
       buffer.writeSimpleString(queueName);
       buffer.writeNullableSimpleString(filterString);
       buffer.writeBoolean(browseOnly);
+      buffer.writeBoolean(requiresResponse);
    }
 
    @Override
    public void decodeBody(final HornetQBuffer buffer)
    {
+      id = buffer.readLong();
       queueName = buffer.readSimpleString();
       filterString = buffer.readNullableSimpleString();
       browseOnly = buffer.readBoolean();
+      requiresResponse = buffer.readBoolean();
    }
 
    @Override

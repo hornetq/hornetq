@@ -86,7 +86,7 @@ public class HornetQServerControlTest extends ManagementTestBase
       assertEquals(conf.isClustered(), serverControl.isClustered());     
       assertEquals(conf.isPersistDeliveryCountBeforeDelivery(), serverControl.isPersistDeliveryCountBeforeDelivery());
       assertEquals(conf.isBackup(), serverControl.isBackup());
-      assertEquals(conf.getQueueActivationTimeout(), serverControl.getQueueActivationTimeout());
+      assertEquals(conf.isSharedStore(), serverControl.isSharedStore());
       assertEquals(conf.getScheduledThreadPoolMaxSize(), serverControl.getScheduledThreadPoolMaxSize());
       assertEquals(conf.getThreadPoolMaxSize(), serverControl.getThreadPoolMaxSize());
       assertEquals(conf.getSecurityInvalidationInterval(), serverControl.getSecurityInvalidationInterval());

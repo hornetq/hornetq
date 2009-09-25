@@ -224,10 +224,10 @@ public class BridgeStartTest extends ServiceTestBase
                                                                         forwardAddress,
                                                                         null,
                                                                         null,
-                                                                        1000,
+                                                                        500,
                                                                         1d,
                                                                         -1,
-                                                                        false,
+                                                                        true,
                                                                         true,
                                                                         connectorPair);
 
@@ -322,7 +322,11 @@ public class BridgeStartTest extends ServiceTestBase
 
          sf1.close();
 
+         log.info("stopping server 1");
+         
          server1.stop();
+         
+         log.info("stopped server 1");
 
          for (int i = 0; i < numMessages; i++)
          {
@@ -332,8 +336,12 @@ public class BridgeStartTest extends ServiceTestBase
 
             producer0.send(message);
          }
+         
+         log.info("sent some more messages");
 
          server1.start();
+         
+         log.info("started server1");
 
          sf1 = new ClientSessionFactoryImpl(server1tc);
 
@@ -342,6 +350,8 @@ public class BridgeStartTest extends ServiceTestBase
          consumer1 = session1.createConsumer(queueName1);
 
          session1.start();
+         
+         log.info("started session");
 
          for (int i = 0; i < numMessages; i++)
          {

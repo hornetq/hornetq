@@ -13,6 +13,8 @@
 
 package org.hornetq.core.management.impl;
 
+import javax.management.StandardMBean;
+
 import org.hornetq.core.cluster.DiscoveryGroup;
 import org.hornetq.core.config.cluster.DiscoveryGroupConfiguration;
 import org.hornetq.core.management.DiscoveryGroupControl;
@@ -24,7 +26,7 @@ import org.hornetq.core.management.DiscoveryGroupControl;
  * 
  * Created 11 dec. 2008 17:09:04
  */
-public class DiscoveryGroupControlImpl implements DiscoveryGroupControl
+public class DiscoveryGroupControlImpl extends StandardMBean implements DiscoveryGroupControl
 {
 
    // Constants -----------------------------------------------------
@@ -40,7 +42,9 @@ public class DiscoveryGroupControlImpl implements DiscoveryGroupControl
    // Constructors --------------------------------------------------
 
    public DiscoveryGroupControlImpl(final DiscoveryGroup acceptor, final DiscoveryGroupConfiguration configuration)
+      throws Exception
    {
+      super(DiscoveryGroupControl.class);
       this.discoveryGroup = acceptor;
       this.configuration = configuration;
    }

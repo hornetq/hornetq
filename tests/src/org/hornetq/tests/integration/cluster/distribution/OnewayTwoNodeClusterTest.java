@@ -147,7 +147,11 @@ public class OnewayTwoNodeClusterTest extends ClusterTestBase
       
       long start = System.currentTimeMillis();
       
+      log.info("stopping server 1");
+      
       stopServers(1);
+      
+      log.info("restarting server 1");
       
       startServers(1);
       

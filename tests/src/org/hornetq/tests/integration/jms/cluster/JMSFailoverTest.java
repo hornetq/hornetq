@@ -17,6 +17,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import javax.jms.Connection;
+import javax.jms.DeliveryMode;
 import javax.jms.ExceptionListener;
 import javax.jms.JMSException;
 import javax.jms.MessageConsumer;
@@ -79,12 +80,12 @@ public class JMSFailoverTest extends UnitTestCase
    public void testAutomaticFailover() throws Exception
    {
       HornetQConnectionFactory jbcf = new HornetQConnectionFactory(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory"),
-                                                               new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory",
-                                                                                          backupParams));
-      
+                                                                   new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory",
+                                                                                              backupParams));
+
       jbcf.setBlockOnPersistentSend(true);
       jbcf.setBlockOnNonPersistentSend(true);
-      
+
       Connection conn = jbcf.createConnection();
 
       MyExceptionListener listener = new MyExceptionListener();
@@ -99,13 +100,15 @@ public class JMSFailoverTest extends UnitTestCase
 
       SimpleString jmsQueueName = new SimpleString(HornetQQueue.JMS_QUEUE_ADDRESS_PREFIX + "myqueue");
 
-      coreSession.createQueue(jmsQueueName, jmsQueueName, null, false);
+      coreSession.createQueue(jmsQueueName, jmsQueueName, null, true);
 
       Queue queue = sess.createQueue("myqueue");
 
       final int numMessages = 1000;
 
       MessageProducer producer = sess.createProducer(queue);
+
+      producer.setDeliveryMode(DeliveryMode.PERSISTENT);
 
       MessageConsumer consumer = sess.createConsumer(queue);
 
@@ -137,19 +140,20 @@ public class JMSFailoverTest extends UnitTestCase
 
       conn.close();
 
-      assertNull(listener.e);
+      assertNotNull(listener.e);
+      
+      assertTrue(me == listener.e.getCause());
    }
 
    public void testManualFailover() throws Exception
    {
       HornetQConnectionFactory jbcfLive = new HornetQConnectionFactory(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory"));
-      
+
       jbcfLive.setBlockOnNonPersistentSend(true);
       jbcfLive.setBlockOnPersistentSend(true);
 
-
       HornetQConnectionFactory jbcfBackup = new HornetQConnectionFactory(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory",
-                                                                                                backupParams));
+                                                                                                    backupParams));
       jbcfBackup.setBlockOnNonPersistentSend(true);
       jbcfBackup.setBlockOnPersistentSend(true);
 
@@ -167,7 +171,7 @@ public class JMSFailoverTest extends UnitTestCase
 
       SimpleString jmsQueueName = new SimpleString(HornetQQueue.JMS_QUEUE_ADDRESS_PREFIX + "myqueue");
 
-      coreSessionLive.createQueue(jmsQueueName, jmsQueueName, null, false);
+      coreSessionLive.createQueue(jmsQueueName, jmsQueueName, null, true);
 
       Queue queue = sessLive.createQueue("myqueue");
 
@@ -200,10 +204,7 @@ public class JMSFailoverTest extends UnitTestCase
 
       Connection connBackup = jbcfBackup.createConnection();
 
-      log.info("creating session on backup");
       Session sessBackup = connBackup.createSession(false, Session.AUTO_ACKNOWLEDGE);
-
-      log.info("created on backup");
 
       MessageConsumer consumerBackup = sessBackup.createConsumer(queue);
 
@@ -238,24 +239,29 @@ public class JMSFailoverTest extends UnitTestCase
       backupConf.setSecurityEnabled(false);
       backupParams.put(TransportConstants.SERVER_ID_PROP_NAME, 1);
       backupConf.getAcceptorConfigurations()
-                .add(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory",
-                                                backupParams));
+                .add(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory", backupParams));
       backupConf.setBackup(true);
-      backupService = HornetQ.newHornetQServer(backupConf, false);
+      backupConf.setSharedStore(true);
+      backupConf.setBindingsDirectory(getBindingsDir());
+      backupConf.setJournalMinFiles(2);
+      backupConf.setJournalDirectory(getJournalDir());
+      backupConf.setPagingDirectory(getPageDir());
+      backupConf.setLargeMessagesDirectory(getLargeMessagesDir());
+      backupService = HornetQ.newHornetQServer(backupConf, true);
       backupService.start();
 
       Configuration liveConf = new ConfigurationImpl();
       liveConf.setSecurityEnabled(false);
       liveConf.getAcceptorConfigurations()
               .add(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory"));
-      Map<String, TransportConfiguration> connectors = new HashMap<String, TransportConfiguration>();
-      TransportConfiguration backupTC = new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory",
-                                                                   backupParams,
-                                                                   "backup-connector");
-      connectors.put(backupTC.getName(), backupTC);
-      liveConf.setConnectorConfigurations(connectors);
-      liveConf.setBackupConnectorName(backupTC.getName());
-      liveService = HornetQ.newHornetQServer(liveConf, false);
+      liveConf.setSharedStore(true);
+      liveConf.setBindingsDirectory(getBindingsDir());
+      liveConf.setJournalMinFiles(2);
+      liveConf.setJournalDirectory(getJournalDir());
+      liveConf.setPagingDirectory(getPageDir());
+      liveConf.setLargeMessagesDirectory(getLargeMessagesDir());
+
+      liveService = HornetQ.newHornetQServer(liveConf, true);
       liveService.start();
    }
 
@@ -269,11 +275,11 @@ public class JMSFailoverTest extends UnitTestCase
       assertEquals(0, InVMRegistry.instance.size());
 
       liveService = null;
-      
+
       backupService = null;
-      
+
       backupParams = null;
-      
+
       super.tearDown();
    }
 

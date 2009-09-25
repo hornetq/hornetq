@@ -25,7 +25,7 @@ public interface HornetQServerControl
 {
    // Attributes ----------------------------------------------------
 
-   public String getBackupConnectorName();
+   String getBackupConnectorName();
 
    String getVersion();
 
@@ -83,17 +83,17 @@ public interface HornetQServerControl
 
    void setMessageCounterSamplePeriod(long newPeriod) throws Exception;
 
-   public boolean isBackup();
+   boolean isBackup();
+   
+   boolean isSharedStore();
 
    int getAIOBufferSize();
 
    int getAIOBufferTimeout();
 
-   public String getPagingDirectory();
+   String getPagingDirectory();
 
    boolean isPersistDeliveryCountBeforeDelivery();
-
-   long getQueueActivationTimeout();
 
    long getConnectionTTLOverride();
 
@@ -166,7 +166,7 @@ public interface HornetQServerControl
    void resetAllMessageCounterHistories() throws Exception;
 
    @Operation(desc = "List all the prepared transaction, sorted by date, oldest first")
-   public String[] listPreparedTransactions() throws Exception;
+   String[] listPreparedTransactions() throws Exception;
 
    @Operation(desc = "Commit a prepared transaction")
    boolean commitPreparedTransaction(@Parameter(desc = "the Base64 representation of a transaction", name = "transactionAsBase64") String transactionAsBase64) throws Exception;

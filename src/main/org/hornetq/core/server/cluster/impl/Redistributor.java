@@ -19,9 +19,6 @@ import org.hornetq.core.filter.Filter;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.core.postoffice.PostOffice;
-import org.hornetq.core.remoting.Channel;
-import org.hornetq.core.remoting.Packet;
-import org.hornetq.core.remoting.impl.wireformat.replication.ReplicateRedistributionMessage;
 import org.hornetq.core.server.Consumer;
 import org.hornetq.core.server.HandleStatus;
 import org.hornetq.core.server.MessageReference;
@@ -57,14 +54,11 @@ public class Redistributor implements Consumer
 
    private int count;
    
-   private final Channel replicatingChannel;
-   
    public Redistributor(final Queue queue,
                         final StorageManager storageManager,
                         final PostOffice postOffice,
                         final Executor executor,
-                        final int batchSize,
-                        final Channel replicatingChannel)
+                        final int batchSize)
    {
       this.queue = queue;
       
@@ -75,8 +69,6 @@ public class Redistributor implements Consumer
       this.executor = executor;
 
       this.batchSize = batchSize;
-      
-      this.replicatingChannel = replicatingChannel;
    }
    
    public Filter getFilter()
@@ -134,30 +126,8 @@ public class Redistributor implements Consumer
 
       if (routed)
       {    
-         if (replicatingChannel == null)
-         {
-            doRedistribute(reference, tx);
-         }
-         else
-         {
-            Packet packet = new ReplicateRedistributionMessage(queue.getName(), reference.getMessage().getMessageID());
-            
-            replicatingChannel.replicatePacket(packet, 1, new Runnable()
-            {
-               public void run()
-               {
-                  try
-                  {
-                     doRedistribute(reference, tx);
-                  }
-                  catch (Exception e)
-                  {
-                     log.error("Failed to handle redistribution", e);
-                  }
-               }
-            });
-         }
-
+         doRedistribute(reference, tx);
+         
          return HandleStatus.HANDLED;
       }
       else
