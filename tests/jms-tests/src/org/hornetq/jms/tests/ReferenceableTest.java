@@ -30,9 +30,6 @@ import org.hornetq.jms.HornetQTopic;
 import org.hornetq.jms.client.HornetQConnectionFactory;
 import org.hornetq.jms.referenceable.ConnectionFactoryObjectFactory;
 import org.hornetq.jms.referenceable.DestinationObjectFactory;
-import org.hornetq.ra.HornetQRAConnectionFactory;
-import org.hornetq.ra.HornetQRAManagedConnectionFactory;
-import org.hornetq.ra.HornetQResourceAdapter;
 
 /**
  * 
@@ -139,33 +136,33 @@ public class ReferenceableTest extends JMSTestCase
    }
 
    
-   public void testReferenceRAManagedCF() throws Exception
-   {
-      HornetQResourceAdapter ra = new HornetQResourceAdapter();
-      
-      HornetQRAManagedConnectionFactory mcf = new HornetQRAManagedConnectionFactory();
-      
-      mcf.setResourceAdapter(ra);
-      
-      ConnectionFactory racf = (ConnectionFactory)mcf.createConnectionFactory();
-      
-      Reference cfRef = ((Referenceable)racf).getReference();
-      
-      String factoryName = cfRef.getFactoryClassName();
-      
-      Class factoryClass = Class.forName(factoryName);
-      
-      ConnectionFactoryObjectFactory factory = (ConnectionFactoryObjectFactory)factoryClass.newInstance();
-      
-      Object instance = factory.getObjectInstance(cfRef, null, null, null);
-      
-      assertTrue(instance instanceof HornetQRAConnectionFactory);
-      
-      HornetQRAConnectionFactory racf2 = (HornetQRAConnectionFactory)instance;
-      
-      //TODO implement simpleSendReceive with test inside the container or wait until https://jira.jboss.org/jira/browse/HORNETQ-140 is done.
-   }
-   
+//   public void testReferenceRAManagedCF() throws Exception
+//   {
+//      HornetQResourceAdapter ra = new HornetQResourceAdapter();
+//      
+//      HornetQRAManagedConnectionFactory mcf = new HornetQRAManagedConnectionFactory();
+//      
+//      mcf.setResourceAdapter(ra);
+//      
+//      ConnectionFactory racf = (ConnectionFactory)mcf.createConnectionFactory();
+//      
+//      Reference cfRef = ((Referenceable)racf).getReference();
+//      
+//      String factoryName = cfRef.getFactoryClassName();
+//      
+//      Class factoryClass = Class.forName(factoryName);
+//      
+//      ConnectionFactoryObjectFactory factory = (ConnectionFactoryObjectFactory)factoryClass.newInstance();
+//      
+//      Object instance = factory.getObjectInstance(cfRef, null, null, null);
+//      
+//      assertTrue(instance instanceof HornetQRAConnectionFactory);
+//      
+//      HornetQRAConnectionFactory racf2 = (HornetQRAConnectionFactory)instance;
+//      
+//      //TODO implement simpleSendReceive with test inside the container or wait until https://jira.jboss.org/jira/browse/HORNETQ-140 is done.
+//   }
+//   
    
    protected void simpleSendReceive(ConnectionFactory cf, Destination dest) throws Exception
    {
