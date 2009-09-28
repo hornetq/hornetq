@@ -871,7 +871,7 @@
                                     >connection-factory.connection-ttl</link></entry>
                             <entry>Long</entry>
                             <entry>the time to live (in ms) for connections</entry>
-                            <entry>5 * 60000</entry>
+                            <entry>1 * 60000</entry>
                         </row>
                         <row>
                             <entry><link linkend="flow-control.rate.core.api"

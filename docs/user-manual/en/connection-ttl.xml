@@ -98,7 +98,7 @@ finally
             instance, or if you're deploying JMS connection factory instances direct into JNDI on
             the server side, you can specify it in the xml config, using the parameter <literal
                 >connection-ttl</literal>.</para>
-        <para>The default value for connection ttl is <literal>300000</literal>ms, i.e. 5 minutes. A
+        <para>The default value for connection ttl is <literal>60000</literal>ms, i.e. 1 minute. A
             value of <literal>-1</literal> for <literal>ConnectionTTL</literal> means the server
             will never time out the connection on the server side.</para>
         <para>If you do not wish clients to be able to specify their own connection TTL, you can
@@ -151,7 +151,7 @@ at org.acme.yourproject.YourClass (YourClass.java:666)
             deploying JMS connection factory instances direct into JNDI on the server side, you can
             specify it in the <literal>hornetq-jms.xml </literal> configuration file, using the
             parameter <literal>client-failure-check-period</literal>.</para>
-        <para>The default value for client failure check period is <literal>5000</literal>ms, i.e. 5
+        <para>The default value for client failure check period is <literal>30000</literal>ms, i.e. 30
             seconds. A value of <literal>-1</literal> means the client will never fail the
             connection on the client side if no data is received from the server. Typically this is
             much lower than connection TTL to allow clients to reconnect in case of transitory
