@@ -64,20 +64,20 @@ transports.add(new TransportConfiguration(InVMAcceptorFactory.class.getName()));
 
 config.setAcceptorConfigurations(transports);</programlisting>
         <para>You need to instantiate and start HornetQ server. The class <literal
-                >org.hornetq.core.server.Messaging</literal> has a few static methods for creating
+                >org.hornetq.core.server.HornetQ</literal> has a few static methods for creating
             servers with common configurations.</para>
-        <programlisting>import org.hornetq.core.server.Messaging;
-import org.hornetq.core.server.MessagingServer;
+        <programlisting>import org.hornetq.core.server.HornetQ;
+import org.hornetq.core.server.HornetQServer;
 
 ...
 
-MessagingServer server = Messaging.newMessagingServer(config);
+HornetQServer server = HornetQ.newHornetQServer(config);
 
 server.start();</programlisting>
-        <para>You also have the option of instantiating <literal>MessagingServerImpl</literal>
+        <para>You also have the option of instantiating <literal>HornetQServerImpl</literal>
             directly:</para>
-        <programlisting>MessagingServer server = 
-        new MessagingServerImpl(config);
+        <programlisting>HornetQServer server = 
+        new HornetQServerImpl(config);
 server.start();</programlisting>
     </section>
     <section>
@@ -89,7 +89,7 @@ server.start();</programlisting>
             part of the HornetQ distribution provide a very complete implementation of what's needed
             to bootstrap the server using JBoss Micro Container. </para>
         <para>When using JBoss Micro Container, you need to provide an XML file declaring the
-                <literal>MessagingServer</literal> and <literal>Configuration</literal> object, you
+                <literal>HornetQServer</literal> and <literal>Configuration</literal> object, you
             can also inject a security manager and a MBean server if you want, but those are
             optional.</para>
         <para>A very basic XML Bean declaration for the JBoss Micro Container would be:</para>
@@ -103,8 +103,8 @@ server.start();</programlisting>
    &lt;/bean>
 
    	&lt;!-- The core server -->
-   &lt;bean name="MessagingServer" 
-         class="org.hornetq.core.server.impl.MessagingServerImpl">      
+   &lt;bean name="HornetQServer" 
+         class="org.hornetq.core.server.impl.HornetQServerImpl">      
       &lt;constructor>
          &lt;parameter>
             &lt;inject bean="Configuration"/>
