@@ -63,9 +63,8 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
 
    public static final long DEFAULT_CLIENT_FAILURE_CHECK_PERIOD = 30000;
 
-   // 5 minutes - normally this should be much higher than ping period, this allows clients to re-attach on live
-   // or backup without fear of session having already been closed when connection having timed out.
-   public static final long DEFAULT_CONNECTION_TTL = 5 * 60 * 1000;
+   // 1 minute - this should be higher than ping period
+   public static final long DEFAULT_CONNECTION_TTL = 1 * 60 * 1000;
 
    // Any message beyond this size is considered a large message (to be sent in chunks)
    public static final int DEFAULT_MIN_LARGE_MESSAGE_SIZE = 100 * 1024;
