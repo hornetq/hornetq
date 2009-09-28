@@ -11,7 +11,7 @@
  * permissions and limitations under the License.
  */
 
-package org.hornetq.tests.stress.journal;
+package org.hornetq.tests.integration.journal;
 
 import java.io.File;
 import java.nio.ByteBuffer;
