@@ -383,17 +383,6 @@ public class MDBMessageSendTxExample implements MessageListener
                                 key=val;key=val; and will be specific to the connector used</entry>
                         </row>
                         <row>
-                            <entry>TransactionManagerLocatorClass</entry>
-                            <entry>String</entry>
-                            <entry>The class to use to load the transaction manager</entry>
-                        </row>
-                        <row>
-                            <entry>TransactionManagerLocatorMethod</entry>
-                            <entry>String</entry>
-                            <entry>The method to invoke on the TransactionManagerLocatorClass to get
-                                the transaction manager</entry>
-                        </row>
-                        <row>
                             <entry>useLocalTx</entry>
                             <entry>boolean</entry>
                             <entry>True will enable local transaction optimisation.</entry>

@@ -53,12 +53,6 @@ Copyright 2009 Red Hat, Inc.
       </config-property>
       <!--
       <config-property>
-        <description>The class to use for locatingthe transactionmanager</description>
-        <config-property-name>TransactionManagerLocatorClass</config-property-name>
-        <config-property-type>java.lang.String</config-property-type>
-        <config-property-value>org.hornetq.ra.inflow.JBoss5TransactionManagerLocator</config-property-value>
-      </config-property>
-      <config-property>
         <description>The method to use for locatingthe transactionmanager</description>
         <config-property-name>TransactionManagerLocatorMethod</config-property-name>
         <config-property-type>java.lang.String</config-property-type>
