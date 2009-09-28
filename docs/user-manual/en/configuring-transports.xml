@@ -203,10 +203,15 @@ etc
                     <para><literal>hornetq.remoting.netty.host</literal>. This specified the host
                         name or IP address to connect to (when configuring a connector) or to listen
                         on (when configuring an acceptor). The default value for this property is
-                        <literal>localhost</literal>. When configuring acceptors, multiple hosts
-                        or IP addresses can be specified by separating them with commas.
-                        Note that if you want your servers
-                        accessible from other nodes, don't bind to localhost!</para>
+                            <literal>localhost</literal>. When configuring acceptors, multiple hosts
+                        or IP addresses can be specified by separating them with commas.</para>
+                    <note>
+                        <para>Don't forget to specify a host name or ip address! If you want your
+                            server able to accept connections from other nodes you must specify a
+                            hostname or ip address at which the acceptor will bind and listen for
+                            incoming connections. The default is localhost which of course is not
+                            accessible from remote nodes!</para>
+                    </note>
                 </listitem>
                 <listitem>
                     <para><literal>hornetq.remoting.netty.port</literal>. This specified the port to
