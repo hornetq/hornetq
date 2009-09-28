@@ -212,36 +212,6 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
       log.info("HornetQ resource adapter stopped");
    }
 
-   public void setTransactionManagerLocatorClass(final String transactionManagerLocatorClass)
-   {
-      if (trace)
-      {
-         log.trace("setTransactionManagerLocatorClass(" + transactionManagerLocatorClass + ")");
-      }
-
-      raProperties.setTransactionManagerLocatorClass(transactionManagerLocatorClass);
-   }
-
-   public String getTransactionManagerLocatorClass()
-   {
-      return raProperties.getTransactionManagerLocatorClass();
-   }
-
-   public void setTransactionManagerLocatorMethod(final String transactionManagerLocatorMethod)
-   {
-      if (trace)
-      {
-         log.trace("setTransactionManagerLocatorMethod(" + transactionManagerLocatorMethod + ")");
-      }
-
-      raProperties.setTransactionManagerLocatorMethod(transactionManagerLocatorMethod);
-   }
-
-   public String getTransactionManagerLocatorMethod()
-   {
-      return raProperties.getTransactionManagerLocatorMethod();
-   }
-
    public void setConnectorClassName(final String connectorClassName)
    {
       if (trace)

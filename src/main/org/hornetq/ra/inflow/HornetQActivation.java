@@ -97,11 +97,6 @@ public class HornetQActivation
 
    private HornetQDestination destination;
 
-   /**
-    * The TransactionManager
-    */
-   private TransactionManager tm;
-
    private final List<HornetQMessageHandler> handlers = new ArrayList<HornetQMessageHandler>();
 
    private org.hornetq.jms.client.HornetQConnectionFactory factory;
@@ -206,37 +201,6 @@ public class HornetQActivation
       }
 
       return ra.getWorkManager();
-   }
-
-   /**
-    * Get the transaction manager
-    *
-    * @return The value
-    */
-   public TransactionManager getTransactionManager()
-   {
-      if (trace)
-      {
-         log.trace("getTransactionManager()");
-      }
-
-      if (tm == null)
-      {
-         try
-         {
-            ClassLoader loader = Thread.currentThread().getContextClassLoader();
-            Class aClass = loader.loadClass(ra.getTransactionManagerLocatorClass());
-            Object o = aClass.newInstance();
-            Method m = aClass.getMethod(ra.getTransactionManagerLocatorMethod());
-            tm = (TransactionManager) m.invoke(o);
-         }
-         catch (Exception e)
-         {
-            log.warn("unable to create TransactionManager from " + ra.getTransactionManagerLocatorClass() + "." + ra.getTransactionManagerLocatorMethod());
-         }
-      }
-
-      return tm;
    }
 
    /**
