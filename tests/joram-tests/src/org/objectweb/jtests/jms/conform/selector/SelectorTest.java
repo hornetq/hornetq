@@ -41,9 +41,9 @@ public class SelectorTest extends PTPTestCase
       try
       {
          receiverConnection.stop();
-         if (receiver!=null)
+         if (receiver != null)
          {
-        	 receiver.close();
+            receiver.close();
          }
          receiver = receiverSession.createReceiver(receiverQueue, "");
          receiverConnection.start();
@@ -52,7 +52,7 @@ public class SelectorTest extends PTPTestCase
          message.setText("testEmptyStringAsSelector");
          sender.send(message);
 
-         TextMessage msg = (TextMessage) receiver.receive(TestConfig.TIMEOUT);
+         TextMessage msg = (TextMessage)receiver.receive(TestConfig.TIMEOUT);
          assertTrue("No message was received", msg != null);
          assertEquals("testEmptyStringAsSelector", msg.getText());
       }
@@ -75,9 +75,9 @@ public class SelectorTest extends PTPTestCase
       try
       {
          receiverConnection.stop();
-         if (receiver!=null)
+         if (receiver != null)
          {
-        	 receiver.close();
+            receiver.close();
          }
          receiver = receiverSession.createReceiver(receiverQueue, "string = 'literal''s'");
          receiverConnection.start();
@@ -92,7 +92,7 @@ public class SelectorTest extends PTPTestCase
          message.setText("testStringLiterals:2");
          sender.send(message);
 
-         TextMessage msg = (TextMessage) receiver.receive(TestConfig.TIMEOUT);
+         TextMessage msg = (TextMessage)receiver.receive(TestConfig.TIMEOUT);
          assertTrue("No message was received", msg != null);
          assertEquals("testStringLiterals:2", msg.getText());
       }
@@ -111,9 +111,9 @@ public class SelectorTest extends PTPTestCase
       try
       {
          receiverConnection.stop();
-         if (receiver!=null)
+         if (receiver != null)
          {
-        	 receiver.close();
+            receiver.close();
          }
          receiver = receiverSession.createReceiver(receiverQueue, "JMSDeliveryMode = 'PERSISTENT'");
          receiverConnection.start();
@@ -128,7 +128,7 @@ public class SelectorTest extends PTPTestCase
          // send a message in *persistent*
          sender.send(message, DeliveryMode.PERSISTENT, sender.getPriority(), sender.getTimeToLive());
 
-         TextMessage msg = (TextMessage) receiver.receive(TestConfig.TIMEOUT);
+         TextMessage msg = (TextMessage)receiver.receive(TestConfig.TIMEOUT);
          assertTrue("No message was received", msg != null);
          // only the message sent in persistent mode should be received.
          assertEquals(DeliveryMode.PERSISTENT, msg.getJMSDeliveryMode());
@@ -150,9 +150,9 @@ public class SelectorTest extends PTPTestCase
       try
       {
          receiverConnection.stop();
-         if (receiver!=null)
+         if (receiver != null)
          {
-        	 receiver.close();
+            receiver.close();
          }
          receiver = receiverSession.createReceiver(receiverQueue, "NumberOfOrders > 1");
          receiverConnection.start();
@@ -167,7 +167,7 @@ public class SelectorTest extends PTPTestCase
          message.setText("testIdentifierConversion:2");
          sender.send(message);
 
-         TextMessage msg = (TextMessage) receiver.receive(TestConfig.TIMEOUT);
+         TextMessage msg = (TextMessage)receiver.receive(TestConfig.TIMEOUT);
          assertEquals("testIdentifierConversion:2", msg.getText());
       }
       catch (JMSException e)
@@ -188,12 +188,12 @@ public class SelectorTest extends PTPTestCase
       try
       {
          receiverConnection.stop();
-         if (receiver!=null)
+         if (receiver != null)
          {
-        	 receiver.close();
+            receiver.close();
          }
          receiver = receiverSession.createReceiver(receiverQueue,
-               "JMSType = 'car' AND color = 'blue' AND weight > 2500");
+                                                   "JMSType = 'car' AND color = 'blue' AND weight > 2500");
          receiverConnection.start();
 
          TextMessage dummyMessage = senderSession.createTextMessage();
@@ -210,7 +210,7 @@ public class SelectorTest extends PTPTestCase
          message.setText("testSelectorExampleFromSpecs:2");
          sender.send(message);
 
-         TextMessage msg = (TextMessage) receiver.receive(TestConfig.TIMEOUT);
+         TextMessage msg = (TextMessage)receiver.receive(TestConfig.TIMEOUT);
          assertEquals("testSelectorExampleFromSpecs:2", msg.getText());
       }
       catch (JMSException e)
@@ -231,9 +231,9 @@ public class SelectorTest extends PTPTestCase
       try
       {
          receiverConnection.stop();
-         if (receiver!=null)
+         if (receiver != null)
          {
-        	 receiver.close();
+            receiver.close();
          }
          receiver = receiverSession.createReceiver(receiverQueue, "weight > 2500");
          receiverConnection.start();
@@ -248,7 +248,7 @@ public class SelectorTest extends PTPTestCase
          message.setText("testGreaterThan:2");
          sender.send(message);
 
-         TextMessage msg = (TextMessage) receiver.receive(TestConfig.TIMEOUT);
+         TextMessage msg = (TextMessage)receiver.receive(TestConfig.TIMEOUT);
          assertEquals("testGreaterThan:2", msg.getText());
       }
       catch (JMSException e)
@@ -269,9 +269,9 @@ public class SelectorTest extends PTPTestCase
       try
       {
          receiverConnection.stop();
-         if (receiver!=null)
+         if (receiver != null)
          {
-        	 receiver.close();
+            receiver.close();
          }
          receiver = receiverSession.createReceiver(receiverQueue, "weight = 2500");
          receiverConnection.start();
@@ -286,7 +286,7 @@ public class SelectorTest extends PTPTestCase
          message.setText("testEquals:2");
          sender.send(message);
 
-         TextMessage msg = (TextMessage) receiver.receive(TestConfig.TIMEOUT);
+         TextMessage msg = (TextMessage)receiver.receive(TestConfig.TIMEOUT);
          assertEquals("testEquals:2", msg.getText());
       }
       catch (JMSException e)
@@ -307,9 +307,9 @@ public class SelectorTest extends PTPTestCase
       try
       {
          receiverConnection.stop();
-         if (receiver!=null)
+         if (receiver != null)
          {
-        	 receiver.close();
+            receiver.close();
          }
          receiver = receiverSession.createReceiver(receiverQueue, "weight <> 2500");
          receiverConnection.start();
@@ -324,7 +324,7 @@ public class SelectorTest extends PTPTestCase
          message.setText("testEquals:2");
          sender.send(message);
 
-         TextMessage msg = (TextMessage) receiver.receive(TestConfig.TIMEOUT);
+         TextMessage msg = (TextMessage)receiver.receive(TestConfig.TIMEOUT);
          assertEquals("testEquals:2", msg.getText());
       }
       catch (JMSException e)
@@ -345,9 +345,9 @@ public class SelectorTest extends PTPTestCase
       try
       {
          receiverConnection.stop();
-         if (receiver!=null)
+         if (receiver != null)
          {
-        	 receiver.close();
+            receiver.close();
          }
          receiver = receiverSession.createReceiver(receiverQueue, "age BETWEEN 15 and 19");
          receiverConnection.start();
@@ -362,7 +362,7 @@ public class SelectorTest extends PTPTestCase
          message.setText("testBetween:2");
          sender.send(message);
 
-         TextMessage msg = (TextMessage) receiver.receive(TestConfig.TIMEOUT);
+         TextMessage msg = (TextMessage)receiver.receive(TestConfig.TIMEOUT);
          assertTrue("Message not received", msg != null);
          assertTrue("Message of another test: " + msg.getText(), msg.getText().startsWith("testBetween"));
          assertEquals("testBetween:2", msg.getText());
@@ -386,9 +386,9 @@ public class SelectorTest extends PTPTestCase
       try
       {
          receiverConnection.stop();
-         if (receiver!=null)
+         if (receiver != null)
          {
-        	 receiver.close();
+            receiver.close();
          }
          receiver = receiverSession.createReceiver(receiverQueue, "Country IN ('UK', 'US', 'France')");
          receiverConnection.start();
@@ -403,7 +403,7 @@ public class SelectorTest extends PTPTestCase
          message.setText("testIn:2");
          sender.send(message);
 
-         TextMessage msg = (TextMessage) receiver.receive(TestConfig.TIMEOUT);
+         TextMessage msg = (TextMessage)receiver.receive(TestConfig.TIMEOUT);
          assertTrue("Message not received", msg != null);
          assertTrue("Message of another test: " + msg.getText(), msg.getText().startsWith("testIn"));
          assertEquals("testIn:2", msg.getText());
@@ -427,9 +427,9 @@ public class SelectorTest extends PTPTestCase
       try
       {
          receiverConnection.stop();
-         if (receiver!=null)
+         if (receiver != null)
          {
-        	 receiver.close();
+            receiver.close();
          }
          receiver = receiverSession.createReceiver(receiverQueue, "underscored LIKE '\\_%' ESCAPE '\\'");
          receiverConnection.start();
@@ -444,7 +444,7 @@ public class SelectorTest extends PTPTestCase
          message.setText("testLikeEscape:2");
          sender.send(message);
 
-         TextMessage msg = (TextMessage) receiver.receive(TestConfig.TIMEOUT);
+         TextMessage msg = (TextMessage)receiver.receive(TestConfig.TIMEOUT);
          assertTrue("Message not received", msg != null);
          assertTrue("Message of another test: " + msg.getText(), msg.getText().startsWith("testLikeEscape"));
          assertEquals("testLikeEscape:2", msg.getText());
@@ -468,9 +468,9 @@ public class SelectorTest extends PTPTestCase
       try
       {
          receiverConnection.stop();
-         if (receiver!=null)
+         if (receiver != null)
          {
-        	 receiver.close();
+            receiver.close();
          }
          receiver = receiverSession.createReceiver(receiverQueue, "word LIKE 'l_se'");
          receiverConnection.start();
@@ -485,7 +485,7 @@ public class SelectorTest extends PTPTestCase
          message.setText("testLike_2:2");
          sender.send(message);
 
-         TextMessage msg = (TextMessage) receiver.receive(TestConfig.TIMEOUT);
+         TextMessage msg = (TextMessage)receiver.receive(TestConfig.TIMEOUT);
          assertTrue("Message not received", msg != null);
          assertTrue("Message of another test: " + msg.getText(), msg.getText().startsWith("testLike_2"));
          assertEquals("testLike_2:2", msg.getText());
@@ -509,9 +509,9 @@ public class SelectorTest extends PTPTestCase
       try
       {
          receiverConnection.stop();
-         if (receiver!=null)
+         if (receiver != null)
          {
-        	 receiver.close();
+            receiver.close();
          }
          receiver = receiverSession.createReceiver(receiverQueue, "phone LIKE '12%3'");
          receiverConnection.start();
@@ -526,7 +526,7 @@ public class SelectorTest extends PTPTestCase
          message.setText("testLike_1:2");
          sender.send(message);
 
-         TextMessage msg = (TextMessage) receiver.receive(TestConfig.TIMEOUT);
+         TextMessage msg = (TextMessage)receiver.receive(TestConfig.TIMEOUT);
          assertTrue("Message not received", msg != null);
          assertTrue("Message of another test: " + msg.getText(), msg.getText().startsWith("testLike_1"));
          assertEquals("testLike_1:2", msg.getText());
@@ -550,9 +550,9 @@ public class SelectorTest extends PTPTestCase
       try
       {
          receiverConnection.stop();
-         if (receiver!=null)
+         if (receiver != null)
          {
-        	 receiver.close();
+            receiver.close();
          }
          receiver = receiverSession.createReceiver(receiverQueue, "prop_name IS NULL");
          receiverConnection.start();
@@ -566,7 +566,7 @@ public class SelectorTest extends PTPTestCase
          message.setText("testNull:2");
          sender.send(message);
 
-         TextMessage msg = (TextMessage) receiver.receive(TestConfig.TIMEOUT);
+         TextMessage msg = (TextMessage)receiver.receive(TestConfig.TIMEOUT);
          assertTrue(msg != null);
          assertEquals("testNull:2", msg.getText());
       }

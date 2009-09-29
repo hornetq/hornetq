@@ -24,6 +24,7 @@ import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CONS
 import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CONSUMER_WINDOW_SIZE;
 import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN;
 import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_MAX_CONNECTIONS;
+import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_MAX_RETRY_INTERVAL;
 import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_MIN_LARGE_MESSAGE_SIZE;
 import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_PRE_ACKNOWLEDGE;
 import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_PRODUCER_MAX_RATE;
@@ -40,6 +41,7 @@ import java.util.List;
 
 import javax.naming.InitialContext;
 
+import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
 import org.hornetq.core.config.TransportConfiguration;
 import org.hornetq.jms.client.HornetQConnectionFactory;
 import org.hornetq.utils.Pair;
@@ -108,6 +110,7 @@ public class JMSTestCase extends HornetQServerTestCase
                                                     DEFAULT_THREAD_POOL_MAX_SIZE,                                                     
                                                     DEFAULT_RETRY_INTERVAL,
                                                     DEFAULT_RETRY_INTERVAL_MULTIPLIER,
+                                                    DEFAULT_MAX_RETRY_INTERVAL,
                                                     DEFAULT_RECONNECT_ATTEMPTS,
                                                     DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN,
                                                     jndiBindings);

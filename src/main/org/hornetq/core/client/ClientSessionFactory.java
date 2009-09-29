@@ -141,6 +141,10 @@ public interface ClientSessionFactory
    double getRetryIntervalMultiplier();
 
    void setRetryIntervalMultiplier(double retryIntervalMultiplier);
+   
+   long getMaxRetryInterval();
+
+   void setMaxRetryInterval(long maxRetryInterval);
 
    int getReconnectAttempts();
 

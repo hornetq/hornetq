@@ -98,7 +98,10 @@
    			</xsd:element>
    			<xsd:element name="retry-interval-multiplier" type="xsd:float"
    				maxOccurs="1" minOccurs="0">
-   			</xsd:element>            
+   			</xsd:element>   
+   			<xsd:element name="max-retry-interval" type="xsd:long"
+   				maxOccurs="1" minOccurs="0">
+   			</xsd:element>         
             <xsd:element name="reconnect-attempts" type="xsd:int"
                 maxOccurs="1" minOccurs="0">
             </xsd:element>

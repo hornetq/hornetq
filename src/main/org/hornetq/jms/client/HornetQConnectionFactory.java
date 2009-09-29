@@ -442,6 +442,16 @@ public class HornetQConnectionFactory implements ConnectionFactory, QueueConnect
    {
       sessionFactory.setRetryInterval(retryInterval);
    }
+   
+   public synchronized long getMaxRetryInterval()
+   {
+      return sessionFactory.getMaxRetryInterval();
+   }
+
+   public synchronized void setMaxRetryInterval(long retryInterval)
+   {
+      sessionFactory.setMaxRetryInterval(retryInterval);
+   }
 
    public synchronized double getRetryIntervalMultiplier()
    {

@@ -119,6 +119,7 @@ public interface JMSServerControl
                                 int threadPoolMaxSize,
                                 long retryInterval,
                                 double retryIntervalMultiplier,
+                                long maxRetryInterval,
                                 int reconnectAttempts,
                                 boolean failoverOnServerShutdown,
                                 Object[] jndiBindings) throws Exception;
@@ -152,6 +153,7 @@ public interface JMSServerControl
                                 @Parameter(name = "threadPoolMaxSize") int threadPoolMaxSize,
                                 @Parameter(name = "retryInterval") long retryInterval,
                                 @Parameter(name = "retryIntervalMultiplier") double retryIntervalMultiplier,
+                                @Parameter(name = "maxRetryInterval") long maxRetryInterval,
                                 @Parameter(name = "reconnectAttempts") int reconnectAttempts,
                                 @Parameter(name = "failoverOnServerShutdown") boolean failoverOnServerShutdown,
                                 @Parameter(name = "jndiBindings", desc = "comma-separated list of JNDI bindings") String jndiBindings) throws Exception;
@@ -198,6 +200,7 @@ public interface JMSServerControl
                                 int threadPoolMaxSize,
                                 long retryInterval,
                                 double retryIntervalMultiplier,
+                                long maxRetryInterval,
                                 int reconnectAttempts,
                                 boolean failoverOnServerShutdown,
                                 Object[] jndiBindings) throws Exception;
@@ -232,6 +235,7 @@ public interface JMSServerControl
                                 @Parameter(name = "threadPoolMaxSize") int threadPoolMaxSize,
                                 @Parameter(name = "retryInterval") long retryInterval,
                                 @Parameter(name = "retryIntervalMultiplier") double retryIntervalMultiplier,
+                                @Parameter(name = "maxRetryInterval") long maxRetryInterval,
                                 @Parameter(name = "reconnectAttempts") int reconnectAttempts,
                                 @Parameter(name = "failoverOnServerShutdown") boolean failoverOnServerShutdown,
                                 @Parameter(name = "jndiBindings", desc = "comma-separated list of JNDI bindings") String jndiBindings) throws Exception;

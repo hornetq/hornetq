@@ -171,6 +171,7 @@ public class FloodServerTest extends UnitTestCase
                                             DEFAULT_THREAD_POOL_MAX_SIZE,
                                             retryInterval,
                                             retryIntervalMultiplier,
+                                            1000,
                                             reconnectAttempts,
                                             failoverOnServerShutdown,
                                             jndiBindings);

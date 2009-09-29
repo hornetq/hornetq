@@ -246,6 +246,7 @@ public class JMSServerControlImpl extends StandardMBean implements JMSServerCont
                                        final int threadPoolMaxSize,
                                        final long retryInterval,
                                        final double retryIntervalMultiplier,
+                                       final long maxRetryInterval,
                                        final int reconnectAttempts,
                                        final boolean failoverOnServerShutdown,
                                        final Object[] jndiBindings) throws Exception
@@ -283,6 +284,7 @@ public class JMSServerControlImpl extends StandardMBean implements JMSServerCont
                                      threadPoolMaxSize,
                                      retryInterval,
                                      retryIntervalMultiplier,
+                                     maxRetryInterval,
                                      reconnectAttempts,
                                      failoverOnServerShutdown,
                                      jndiBindingsList);
@@ -319,6 +321,7 @@ public class JMSServerControlImpl extends StandardMBean implements JMSServerCont
                                        final int threadPoolMaxSize,
                                        final long retryInterval,
                                        final double retryIntervalMultiplier,
+                                       final long maxRetryInterval,
                                        final int reconnectAttempts,
                                        final boolean failoverOnServerShutdown,
                                        final String jndiBindings) throws Exception
@@ -358,6 +361,7 @@ public class JMSServerControlImpl extends StandardMBean implements JMSServerCont
                               threadPoolMaxSize,
                               retryInterval,
                               retryIntervalMultiplier,
+                              maxRetryInterval,
                               reconnectAttempts,
                               failoverOnServerShutdown,
                               bindings);
@@ -416,6 +420,7 @@ public class JMSServerControlImpl extends StandardMBean implements JMSServerCont
                                        final int threadPoolMaxSize,
                                        final long retryInterval,
                                        final double retryIntervalMultiplier,
+                                       final long maxRetryInterval,
                                        final int reconnectAttempts,
                                        final boolean failoverOnServerShutdown,
                                        final Object[] jndiBindings) throws Exception
@@ -451,6 +456,7 @@ public class JMSServerControlImpl extends StandardMBean implements JMSServerCont
                                      threadPoolMaxSize,
                                      retryInterval,
                                      retryIntervalMultiplier,
+                                     maxRetryInterval,
                                      reconnectAttempts,
                                      failoverOnServerShutdown,
                                      jndiBindingsList);
@@ -487,6 +493,7 @@ public class JMSServerControlImpl extends StandardMBean implements JMSServerCont
                                        final int threadPoolMaxSize,
                                        final long retryInterval,
                                        final double retryIntervalMultiplier,
+                                       final long maxRetryInterval,
                                        final int reconnectAttempts,
                                        final boolean failoverOnServerShutdown,
                                        final String jndiBindings) throws Exception
@@ -522,6 +529,7 @@ public class JMSServerControlImpl extends StandardMBean implements JMSServerCont
                               threadPoolMaxSize,
                               retryInterval,
                               retryIntervalMultiplier,
+                              maxRetryInterval,
                               reconnectAttempts,
                               failoverOnServerShutdown,
                               bindings);

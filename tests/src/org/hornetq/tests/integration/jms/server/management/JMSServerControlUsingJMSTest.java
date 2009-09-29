@@ -121,6 +121,7 @@ public class JMSServerControlUsingJMSTest extends JMSServerControlTest
                                              int threadPoolMaxSize,
                                              long retryInterval,
                                              double retryIntervalMultiplier,
+                                             long maxRetryInterval,
                                              int reconnectAttempts,
                                              boolean failoverOnServerShutdown,
                                              Object[] jndiBindings) throws Exception
@@ -154,6 +155,7 @@ public class JMSServerControlUsingJMSTest extends JMSServerControlTest
                                   threadPoolMaxSize,
                                   retryInterval,
                                   retryIntervalMultiplier,
+                                  maxRetryInterval,
                                   reconnectAttempts,
                                   failoverOnServerShutdown,
                                   jndiBindings);
@@ -188,6 +190,7 @@ public class JMSServerControlUsingJMSTest extends JMSServerControlTest
                                              int threadPoolMaxSize,
                                              long retryInterval,
                                              double retryIntervalMultiplier,
+                                             long maxRetryInterval,
                                              int reconnectAttempts,
                                              boolean failoverOnServerShutdown,
                                              String jndiBindings) throws Exception
@@ -221,6 +224,7 @@ public class JMSServerControlUsingJMSTest extends JMSServerControlTest
                                   threadPoolMaxSize,
                                   retryInterval,
                                   retryIntervalMultiplier,
+                                  maxRetryInterval,
                                   reconnectAttempts,
                                   failoverOnServerShutdown,
                                   jndiBindings);
@@ -403,6 +407,7 @@ public class JMSServerControlUsingJMSTest extends JMSServerControlTest
                                              int threadPoolMaxSize,
                                              long retryInterval,
                                              double retryIntervalMultiplier,
+                                             long maxRetryInterval,
                                              int reconnectAttempts,
                                              boolean failoverOnServerShutdown,
                                              Object[] jndiBindings) throws Exception
@@ -437,6 +442,7 @@ public class JMSServerControlUsingJMSTest extends JMSServerControlTest
                                   threadPoolMaxSize,
                                   retryInterval,
                                   retryIntervalMultiplier,
+                                  maxRetryInterval,
                                   reconnectAttempts,
                                   failoverOnServerShutdown,
                                   jndiBindings);
@@ -472,6 +478,7 @@ public class JMSServerControlUsingJMSTest extends JMSServerControlTest
                                              int threadPoolMaxSize,
                                              long retryInterval,
                                              double retryIntervalMultiplier,
+                                             long maxRetryInterval,
                                              int reconnectAttempts,
                                              boolean failoverOnServerShutdown,
                                              String jndiBindings) throws Exception
@@ -506,6 +513,7 @@ public class JMSServerControlUsingJMSTest extends JMSServerControlTest
                                   threadPoolMaxSize,
                                   retryInterval,
                                   retryIntervalMultiplier,
+                                  maxRetryInterval,
                                   reconnectAttempts,
                                   failoverOnServerShutdown,
                                   jndiBindings);

@@ -127,6 +127,8 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
    private final long retryInterval;
 
    private final double retryIntervalMultiplier; // For exponential backoff
+   
+   private final long maxRetryInterval;
 
    private final int reconnectAttempts;
 
@@ -175,6 +177,7 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
                                 final long connectionTTL,
                                 final long retryInterval,
                                 final double retryIntervalMultiplier,
+                                final long maxRetryInterval,
                                 final int reconnectAttempts,
                                 final boolean useReattach,
                                 final ExecutorService threadPool,
@@ -217,6 +220,8 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
       this.retryInterval = retryInterval;
 
       this.retryIntervalMultiplier = retryIntervalMultiplier;
+      
+      this.maxRetryInterval = maxRetryInterval;
 
       this.reconnectAttempts = reconnectAttempts;
       
@@ -836,6 +841,8 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
 
                try
                {
+                  log.info("sleeping " + interval);
+                  
                   Thread.sleep(interval);
                }
                catch (InterruptedException ignore)
@@ -843,7 +850,14 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
                }
 
                // Exponential back-off
-               interval *= retryIntervalMultiplier;
+               long newInterval = (long)((double)interval * retryIntervalMultiplier);
+               
+               if (newInterval > maxRetryInterval)
+               {
+                  newInterval = maxRetryInterval;
+               }
+               
+               interval = newInterval;
             }
             else
             {

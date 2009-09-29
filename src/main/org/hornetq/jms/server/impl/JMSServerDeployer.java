@@ -144,6 +144,7 @@ public class JMSServerDeployer extends XmlDeployer
          boolean preAcknowledge = getBoolean(e, "pre-acknowledge", ClientSessionFactoryImpl.DEFAULT_PRE_ACKNOWLEDGE);
          long retryInterval = getLong(e, "retry-interval", ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL, GT_ZERO);
          double retryIntervalMultiplier = getDouble(e, "retry-interval-multiplier", ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL_MULTIPLIER, GT_ZERO);
+         long maxRetryInterval = getLong(e, "max-retry-interval", ClientSessionFactoryImpl.DEFAULT_MAX_RETRY_INTERVAL, GT_ZERO);
          int reconnectAttempts = getInteger(e, "reconnect-attempts", ClientSessionFactoryImpl.DEFAULT_RECONNECT_ATTEMPTS, MINUS_ONE_OR_GE_ZERO);
          boolean failoverOnServerShutdown = getBoolean(e, "failover-on-server-shutdown", ClientSessionFactoryImpl.DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN);
          boolean useGlobalPools = getBoolean(e, "use-global-pools", ClientSessionFactoryImpl.DEFAULT_USE_GLOBAL_POOLS);
@@ -257,6 +258,7 @@ public class JMSServerDeployer extends XmlDeployer
                                                      threadPoolMaxSize,
                                                      retryInterval,
                                                      retryIntervalMultiplier,
+                                                     maxRetryInterval,
                                                      reconnectAttempts,
                                                      failoverOnServerShutdown,
                                                      jndiBindings);
@@ -289,6 +291,7 @@ public class JMSServerDeployer extends XmlDeployer
                                                      threadPoolMaxSize,
                                                      retryInterval,
                                                      retryIntervalMultiplier,
+                                                     maxRetryInterval,
                                                      reconnectAttempts,
                                                      failoverOnServerShutdown,
                                                      jndiBindings);

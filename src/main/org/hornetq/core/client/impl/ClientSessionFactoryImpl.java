@@ -100,6 +100,8 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
    public static final long DEFAULT_RETRY_INTERVAL = 2000;
 
    public static final double DEFAULT_RETRY_INTERVAL_MULTIPLIER = 1d;
+   
+   public static final long DEFAULT_MAX_RETRY_INTERVAL = 2000;
 
    public static final int DEFAULT_RECONNECT_ATTEMPTS = 0;
    
@@ -189,6 +191,8 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
    private long retryInterval;
 
    private double retryIntervalMultiplier;
+   
+   private long maxRetryInterval;
 
    private int reconnectAttempts;
    
@@ -290,6 +294,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
                                                              connectionTTL,
                                                              retryInterval,
                                                              retryIntervalMultiplier,
+                                                             maxRetryInterval,
                                                              reconnectAttempts,
                                                              useReattach,
                                                              threadPool,
@@ -360,6 +365,8 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
       retryInterval = DEFAULT_RETRY_INTERVAL;
 
       retryIntervalMultiplier = DEFAULT_RETRY_INTERVAL_MULTIPLIER;
+      
+      maxRetryInterval = DEFAULT_MAX_RETRY_INTERVAL;
 
       reconnectAttempts = DEFAULT_RECONNECT_ATTEMPTS;
       
@@ -642,6 +649,17 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
    {
       checkWrite();
       this.retryInterval = retryInterval;
+   }
+   
+   public synchronized long getMaxRetryInterval()
+   {
+      return maxRetryInterval;
+   }
+
+   public synchronized void setMaxRetryInterval(long retryInterval)
+   {
+      checkWrite();
+      this.maxRetryInterval = retryInterval;
    }
 
    public synchronized double getRetryIntervalMultiplier()
@@ -938,6 +956,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
                                                                             connectionTTL,
                                                                             retryInterval,
                                                                             retryIntervalMultiplier,
+                                                                            maxRetryInterval,
                                                                             reconnectAttempts,
                                                                             useReattach,
                                                                             threadPool,

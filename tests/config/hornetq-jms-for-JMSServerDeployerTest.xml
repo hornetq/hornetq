@@ -33,6 +33,7 @@
       <reconnect-attempts>34</reconnect-attempts>
       <retry-interval>5</retry-interval>
       <retry-interval-multiplier>6.0</retry-interval-multiplier>
+      <max-retry-interval>300</max-retry-interval>
    </connection-factory>
 
    <queue name="fullConfigurationQueue">

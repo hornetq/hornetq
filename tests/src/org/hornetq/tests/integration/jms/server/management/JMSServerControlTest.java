@@ -452,6 +452,7 @@ public class JMSServerControlTest extends ManagementTestBase
                                             ClientSessionFactoryImpl.DEFAULT_THREAD_POOL_MAX_SIZE,
                                             ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL,
                                             ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL_MULTIPLIER,
+                                            ClientSessionFactoryImpl.DEFAULT_MAX_RETRY_INTERVAL,
                                             ClientSessionFactoryImpl.DEFAULT_RECONNECT_ATTEMPTS,
                                             ClientSessionFactoryImpl.DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN,
                                             bindings);
@@ -497,6 +498,7 @@ public class JMSServerControlTest extends ManagementTestBase
                                             ClientSessionFactoryImpl.DEFAULT_THREAD_POOL_MAX_SIZE,
                                             ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL,
                                             ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL_MULTIPLIER,
+                                            ClientSessionFactoryImpl.DEFAULT_MAX_RETRY_INTERVAL,
                                             ClientSessionFactoryImpl.DEFAULT_RECONNECT_ATTEMPTS,
                                             ClientSessionFactoryImpl.DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN,
                                             jndiBindings);

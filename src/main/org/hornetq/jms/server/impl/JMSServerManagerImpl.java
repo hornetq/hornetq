@@ -368,6 +368,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
                                                     int threadPoolMaxSize,
                                                     long retryInterval,
                                                     double retryIntervalMultiplier,
+                                                    long maxRetryInterval,
                                                     int reconnectAttempts,
                                                     boolean failoverOnServerShutdown,
                                                     List<String> jndiBindings) throws Exception
@@ -401,6 +402,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
          cf.setThreadPoolMaxSize(threadPoolMaxSize);
          cf.setRetryInterval(retryInterval);
          cf.setRetryIntervalMultiplier(retryIntervalMultiplier);
+         cf.setMaxRetryInterval(maxRetryInterval);
          cf.setReconnectAttempts(reconnectAttempts);
          cf.setFailoverOnServerShutdown(failoverOnServerShutdown);
       }
@@ -437,6 +439,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
                                                     int threadPoolMaxSize,
                                                     long retryInterval,
                                                     double retryIntervalMultiplier,
+                                                    long maxRetryInterval,
                                                     int reconnectAttempts,
                                                     boolean failoverOnServerShutdown,
                                                     List<String> jndiBindings) throws Exception
@@ -472,6 +475,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
          cf.setThreadPoolMaxSize(threadPoolMaxSize);
          cf.setRetryInterval(retryInterval);
          cf.setRetryIntervalMultiplier(retryIntervalMultiplier);
+         cf.setMaxRetryInterval(maxRetryInterval);
          cf.setReconnectAttempts(reconnectAttempts);
          cf.setFailoverOnServerShutdown(failoverOnServerShutdown);
       }

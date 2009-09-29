@@ -162,6 +162,7 @@ public interface JMSServerManager extends HornetQComponent
                                 int threadPoolMaxSize,
                                 long retryInterval,
                                 double retryIntervalMultiplier,
+                                long maxRetryInterval,
                                 int reconnectAttempts,
                                 boolean failoverOnServerShutdown,
                                 List<String> jndiBindings) throws Exception;
@@ -195,6 +196,7 @@ public interface JMSServerManager extends HornetQComponent
                                 int threadPoolMaxSize,
                                 long retryInterval,
                                 double retryIntervalMultiplier,
+                                long maxRetryInterval,
                                 int reconnectAttempts,
                                 boolean failoverOnServerShutdown,
                                 List<String> jndiBindings) throws Exception;
