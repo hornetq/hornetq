@@ -176,6 +176,7 @@ public class ResendTest extends JMSTestBase
          }
          else if (copiedMessage instanceof ObjectMessage)
          {
+            assertNotSame(((ObjectMessage)originalMessage).getObject(), ((ObjectMessage)copiedMessage).getObject());
             assertEquals(((ObjectMessage)originalMessage).getObject(), ((ObjectMessage)copiedMessage).getObject());
          }
          else if (copiedMessage instanceof TextMessage)
