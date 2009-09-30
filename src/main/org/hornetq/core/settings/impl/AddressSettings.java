@@ -49,6 +49,8 @@ public class AddressSettings implements Mergeable<AddressSettings>
    public static final boolean DEFAULT_LAST_VALUE_QUEUE = false;
 
    public static final long DEFAULT_REDISTRIBUTION_DELAY = -1;
+   
+   public static final boolean DEFAULT_SEND_TO_DLA_ON_NO_ROUTE = false;
 
    private Integer maxSizeBytes = null;
 
@@ -71,6 +73,8 @@ public class AddressSettings implements Mergeable<AddressSettings>
    private Boolean lastValueQueue = null;
 
    private Long redistributionDelay = null;
+   
+   private Boolean sendToDLAOnNoRoute = null;
 
    public boolean isLastValueQueue()
    {
@@ -91,12 +95,12 @@ public class AddressSettings implements Mergeable<AddressSettings>
    {
       return dropMessagesWhenFull != null ? dropMessagesWhenFull : DEFAULT_DROP_MESSAGES_WHEN_FULL;
    }
-
+   
    public void setDropMessagesWhenFull(final boolean value)
    {
       dropMessagesWhenFull = value;
    }
-
+      
    public void setPageSizeBytes(final int pageSize)
    {
       pageSizeBytes = pageSize;
@@ -171,6 +175,16 @@ public class AddressSettings implements Mergeable<AddressSettings>
    public void setExpiryAddress(final SimpleString expiryAddress)
    {
       this.expiryAddress = expiryAddress;
+   }
+   
+   public boolean isSendToDLAOnNoRoute()
+   {
+      return sendToDLAOnNoRoute != null ? sendToDLAOnNoRoute : DEFAULT_SEND_TO_DLA_ON_NO_ROUTE;
+   }
+
+   public void setSendToDLAOnNoRoute(final boolean value)
+   {
+      sendToDLAOnNoRoute = value;
    }
 
    public Distributor getDistributionPolicy()
@@ -247,6 +261,10 @@ public class AddressSettings implements Mergeable<AddressSettings>
       if (redistributionDelay == null)
       {
          redistributionDelay = merged.redistributionDelay;
+      }
+      if (sendToDLAOnNoRoute == null)
+      {
+         sendToDLAOnNoRoute = merged.sendToDLAOnNoRoute;
       }
    }
 

@@ -1097,31 +1097,10 @@ public class QueueImpl implements Queue
        and original message id
       */
 
-      long newMessageId = storageManager.generateUniqueID();
+      long newID = storageManager.generateUniqueID();
 
-      ServerMessage copy = message.copy(newMessageId);
-
-      if (ref.getMessage().getProperty(HDR_ORIG_MESSAGE_ID) != null)
-      {
-         copy.putStringProperty(HDR_ORIGINAL_DESTINATION, (SimpleString)ref.getMessage()
-                                                                           .getProperty(HDR_ORIGINAL_DESTINATION));
-         copy.putLongProperty(HDR_ORIG_MESSAGE_ID, (Long)ref.getMessage().getProperty(HDR_ORIG_MESSAGE_ID));
-      }
-      else
-      {
-         SimpleString originalQueue = copy.getDestination();
-         copy.putStringProperty(HDR_ORIGINAL_DESTINATION, originalQueue);
-         copy.putLongProperty(HDR_ORIG_MESSAGE_ID, message.getMessageID());
-      }
-      // reset expiry
-      copy.setExpiration(0);
-      if (expiry)
-      {
-         long actualExpiryTime = System.currentTimeMillis();
-
-         copy.putLongProperty(HDR_ACTUAL_EXPIRY_TIME, actualExpiryTime);
-      }
-
+      ServerMessage copy = message.makeCopyForExpiryOrDLA(newID, expiry);
+      
       return copy;
    }
 

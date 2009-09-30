@@ -56,7 +56,7 @@ public class BindingsImpl implements Bindings
    private final List<Binding> exclusiveBindings = new CopyOnWriteArrayList<Binding>();
 
    private volatile boolean routeWhenNoConsumers;
-
+   
    public void setRouteWhenNoConsumers(final boolean routeWhenNoConsumers)
    {
       this.routeWhenNoConsumers = routeWhenNoConsumers;
@@ -123,7 +123,7 @@ public class BindingsImpl implements Bindings
       bindingsMap.remove(binding.getID());
    }
 
-   private void routeFromCluster(final ServerMessage message, final Transaction tx) throws Exception
+   private boolean routeFromCluster(final ServerMessage message, final Transaction tx) throws Exception
    {
       byte[] ids = (byte[])message.removeProperty(MessageImpl.HDR_ROUTE_TO_IDS);
 
@@ -139,10 +139,7 @@ public class BindingsImpl implements Bindings
 
          if (binding == null)
          {
-            // The binding has been closed - we need to route the message somewhere else...............
-            throw new IllegalStateException("Binding not found when routing from cluster - it must have closed " + bindingID);
-
-            // FIXME need to deal with this better
+            return false;
          }
 
          binding.willRoute(message);
@@ -159,6 +156,8 @@ public class BindingsImpl implements Bindings
       {
          bindable.route(message, tx);
       }
+      
+      return true;
    }
 
    public boolean redistribute(final ServerMessage message, final Queue originatingQueue, final Transaction tx) throws Exception
@@ -251,7 +250,7 @@ public class BindingsImpl implements Bindings
       }
    }
 
-   public void route(final ServerMessage message, final Transaction tx) throws Exception
+   public boolean route(final ServerMessage message, final Transaction tx) throws Exception
    {
       boolean routed = false;
       
@@ -272,7 +271,7 @@ public class BindingsImpl implements Bindings
       {
          if (message.getProperty(MessageImpl.HDR_FROM_CLUSTER) != null)
          {
-            routeFromCluster(message, tx);
+            routed = routeFromCluster(message, tx);
          }
          else
          {
@@ -405,9 +404,13 @@ public class BindingsImpl implements Bindings
             for (Bindable bindable : chosen)
             {               
                bindable.route(message, tx);
+               
+               routed = true;
             }
          }
       }
+      
+      return routed;
    }
 
    private final int incrementPos(int pos, int length)

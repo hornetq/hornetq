@@ -45,9 +45,8 @@ import org.hornetq.utils.TypedProperties;
  *
  *
  */
-public class BindingImplTest extends UnitTestCase
+public class BindingsImplTest extends UnitTestCase
 {
-
    // Constants -----------------------------------------------------
 
    // Attributes ----------------------------------------------------
@@ -274,6 +273,24 @@ public class BindingImplTest extends UnitTestCase
 
    class FakeMessage implements ServerMessage
    {
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.server.ServerMessage#makeCopyForExpiryOrDLA(long, boolean)
+       */
+      public ServerMessage makeCopyForExpiryOrDLA(long newID, boolean expiry) throws Exception
+      {
+         // TODO Auto-generated method stub
+         return null;
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.server.ServerMessage#setOriginalHeaders(org.hornetq.core.server.ServerMessage, boolean)
+       */
+      public void setOriginalHeaders(ServerMessage other, boolean expiry)
+      {
+         // TODO Auto-generated method stub
+         
+      }
 
       public Map<String, Object> toMap()
       {

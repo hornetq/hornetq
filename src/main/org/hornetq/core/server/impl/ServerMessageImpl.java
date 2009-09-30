@@ -21,6 +21,7 @@ import org.hornetq.core.remoting.spi.HornetQBuffer;
 import org.hornetq.core.server.MessageReference;
 import org.hornetq.core.server.Queue;
 import org.hornetq.core.server.ServerMessage;
+import org.hornetq.utils.SimpleString;
 
 /**
  * 
@@ -34,17 +35,17 @@ import org.hornetq.core.server.ServerMessage;
 public class ServerMessageImpl extends MessageImpl implements ServerMessage
 {
    private static final Logger log = Logger.getLogger(ServerMessageImpl.class);
-   
+
    private final AtomicInteger durableRefCount = new AtomicInteger(0);
 
    /** Global reference counts for paging control */
    private final AtomicInteger refCount = new AtomicInteger(0);
 
    private volatile boolean stored;
-   
-   //We cache this
+
+   // We cache this
    private volatile int memoryEstimate = -1;
-   
+
    /*
     * Constructor for when reading from network
     */
@@ -87,34 +88,34 @@ public class ServerMessageImpl extends MessageImpl implements ServerMessage
    {
       messageID = id;
    }
-   
+
    public void setType(byte type)
    {
       this.type = type;
    }
-   
+
    public MessageReference createReference(final Queue queue)
    {
       MessageReference ref = new MessageReferenceImpl(this, queue);
 
       return ref;
    }
-   
+
    public boolean isStored()
    {
       return stored;
    }
-   
+
    public void setStored() throws Exception
    {
       stored = true;
    }
-   
+
    public int incrementRefCount()
    {
       return refCount.incrementAndGet();
    }
-   
+
    public int incrementDurableRefCount()
    {
       return durableRefCount.incrementAndGet();
@@ -129,7 +130,7 @@ public class ServerMessageImpl extends MessageImpl implements ServerMessage
    {
       return refCount.decrementAndGet();
    }
-   
+
    public int getRefCount()
    {
       return refCount.get();
@@ -139,7 +140,7 @@ public class ServerMessageImpl extends MessageImpl implements ServerMessage
    {
       return false;
    }
-   
+
    public long getLargeBodySize()
    {
       return (long)getBodySize();
@@ -154,24 +155,70 @@ public class ServerMessageImpl extends MessageImpl implements ServerMessage
          // different from reality
          memoryEstimate = getEncodeSize() + (16 + 4) * 2 + 1;
       }
-      
+
       return memoryEstimate;
    }
 
    public ServerMessage copy(final long newID) throws Exception
    {
       ServerMessage m = new ServerMessageImpl(this);
-      
+
       m.setMessageID(newID);
-      
+
       return m;
    }
-   
+
    public ServerMessage copy() throws Exception
    {
       ServerMessage m = new ServerMessageImpl(this);
-       
+
       return m;
+   }
+
+   public ServerMessage makeCopyForExpiryOrDLA(final long newID, final boolean expiry) throws Exception
+   {
+      /*
+       We copy the message and send that to the dla/expiry queue - this is
+       because otherwise we may end up with a ref with the same message id in the
+       queue more than once which would barf - this might happen if the same message had been
+       expire from multiple subscriptions of a topic for example
+       We set headers that hold the original message destination, expiry time
+       and original message id
+      */
+
+      ServerMessage copy = copy(newID);
+      
+      copy.setOriginalHeaders(this, expiry);
+
+      return copy;
+   }
+   
+   public void setOriginalHeaders(final ServerMessage other, final boolean expiry)
+   {
+      if (other.getProperty(HDR_ORIG_MESSAGE_ID) != null)
+      {
+         putStringProperty(HDR_ORIGINAL_DESTINATION, (SimpleString)other.getProperty(HDR_ORIGINAL_DESTINATION));
+         
+         putLongProperty(HDR_ORIG_MESSAGE_ID, (Long)other.getProperty(HDR_ORIG_MESSAGE_ID));
+      }
+      else
+      {
+         SimpleString originalQueue = other.getDestination();
+
+         putStringProperty(HDR_ORIGINAL_DESTINATION, originalQueue);
+
+         putLongProperty(HDR_ORIG_MESSAGE_ID, other.getMessageID());
+      }
+      
+      if (expiry)
+      {
+         // reset expiry
+         setExpiration(0);
+         
+         long actualExpiryTime = System.currentTimeMillis();
+
+         putLongProperty(HDR_ACTUAL_EXPIRY_TIME, actualExpiryTime);
+      }
    }
 
    @Override

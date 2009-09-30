@@ -32,7 +32,7 @@ public interface Bindings
 {
    Collection<Binding> getBindings();
 
-   void route(ServerMessage message, Transaction tx) throws Exception;
+   boolean route(ServerMessage message, Transaction tx) throws Exception;
 
    void addBinding(Binding binding);
 

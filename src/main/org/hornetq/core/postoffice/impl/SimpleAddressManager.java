@@ -147,6 +147,8 @@ public class SimpleAddressManager implements AddressManager
       Bindings bindings = mappings.get(address);
 
       Bindings prevBindings = null;
+      
+      
 
       if (bindings == null)
       {

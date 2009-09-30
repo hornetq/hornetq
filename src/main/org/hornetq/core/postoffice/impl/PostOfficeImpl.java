@@ -612,9 +612,43 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
 
       Bindings bindings = addressManager.getBindingsForRoutingAddress(address);
 
+      boolean routed;
+      
       if (bindings != null)
       {
-         bindings.route(message, tx);
+         routed = bindings.route(message, tx);
+      }
+      else
+      {
+         routed = false;
+      }
+      
+      if (!routed)
+      {
+         AddressSettings addressSettings = addressSettingsRepository.getMatch(address.toString());
+         
+         boolean sendToDLA = addressSettings.isSendToDLAOnNoRoute();
+         
+         if (sendToDLA)
+         {
+            //Send to the DLA for the address
+            
+            SimpleString dlaAddress = addressSettings.getDeadLetterAddress();
+            
+            if (dlaAddress == null)
+            {
+               log.warn("Did not route to any bindings for address " + address + " and sendToDLAOnNoRoute is true " + 
+                        "but there is no DLA configured for the address, the message will be ignored.");
+            }
+            else
+            {
+               message.setOriginalHeaders(message, false);
+               
+               message.setDestination(dlaAddress);
+               
+               route(message, tx);
+            }
+         }
       }
 
       if (startedTx)
