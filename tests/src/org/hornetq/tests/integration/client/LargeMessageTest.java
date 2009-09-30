@@ -549,8 +549,7 @@ public class LargeMessageTest extends LargeMessageTestBase
          consumerExpiry.close();
 
          for (int i = 0; i < 10; i++)
-         {
-
+         { 
             consumerExpiry = session.createConsumer(ADDRESS_DLA);
 
             msg1 = consumerExpiry.receive(5000);

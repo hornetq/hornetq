@@ -13,10 +13,6 @@
 
 package org.hornetq.core.server.impl;
 
-import static org.hornetq.core.message.impl.MessageImpl.HDR_ACTUAL_EXPIRY_TIME;
-import static org.hornetq.core.message.impl.MessageImpl.HDR_ORIGINAL_DESTINATION;
-import static org.hornetq.core.message.impl.MessageImpl.HDR_ORIG_MESSAGE_ID;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -1780,8 +1776,6 @@ public class QueueImpl implements Queue
    public synchronized void pause()
    {
       paused = true;
-      
-      log.info("Paused is now " + paused);
    }
 
    public synchronized void resume()
@@ -1793,7 +1787,6 @@ public class QueueImpl implements Queue
 
    public synchronized boolean isPaused()
    {
-      log.info("return ispaused " + paused);
       return paused;
    }
 }

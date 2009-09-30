@@ -535,7 +535,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
    public void route(final ServerMessage message, Transaction tx) throws Exception
    {
       SimpleString address = message.getDestination();
-
+      
       byte[] duplicateIDBytes = null;
 
       Object duplicateID = message.getProperty(MessageImpl.HDR_DUPLICATE_DETECTION_ID);
@@ -622,7 +622,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
       {
          routed = false;
       }
-      
+
       if (!routed)
       {
          AddressSettings addressSettings = addressSettingsRepository.getMatch(address.toString());

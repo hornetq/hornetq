@@ -210,11 +210,11 @@ public class ServerMessageImpl extends MessageImpl implements ServerMessage
          putLongProperty(HDR_ORIG_MESSAGE_ID, other.getMessageID());
       }
       
+      // reset expiry
+      setExpiration(0);
+            
       if (expiry)
-      {
-         // reset expiry
-         setExpiration(0);
-         
+      {         
          long actualExpiryTime = System.currentTimeMillis();
 
          putLongProperty(HDR_ACTUAL_EXPIRY_TIME, actualExpiryTime);
