@@ -27,7 +27,6 @@ import org.hornetq.utils.Pair;
  * 
  * Created 18 Nov 2008 08:44:30
  *
- *
  */
 public class BroadcastGroupConfiguration implements Serializable
 {
@@ -35,19 +34,19 @@ public class BroadcastGroupConfiguration implements Serializable
    
    private static final Logger log = Logger.getLogger(BroadcastGroupConfiguration.class);
   
-   private final String name;
+   private String name;
    
-   private final String localBindAddress;
+   private String localBindAddress;
 
-   private final int localBindPort;
+   private int localBindPort;
    
-   private final String groupAddress;
+   private String groupAddress;
    
-   private final int groupPort;
+   private int groupPort;
    
-   private final long broadcastPeriod;
+   private long broadcastPeriod;
    
-   private final List<Pair<String, String>> connectorInfos;
+   private List<Pair<String, String>> connectorInfos;
    
    public BroadcastGroupConfiguration(final String name,
                                       final String localBindAddress,
@@ -100,6 +99,62 @@ public class BroadcastGroupConfiguration implements Serializable
    public List<Pair<String, String>> getConnectorInfos()
    {
       return connectorInfos;
+   }
+
+   /**
+    * @param name the name to set
+    */
+   public void setName(String name)
+   {
+      this.name = name;
+   }
+
+   /**
+    * @param localBindAddress the localBindAddress to set
+    */
+   public void setLocalBindAddress(String localBindAddress)
+   {
+      this.localBindAddress = localBindAddress;
+   }
+
+   /**
+    * @param localBindPort the localBindPort to set
+    */
+   public void setLocalBindPort(int localBindPort)
+   {
+      this.localBindPort = localBindPort;
+   }
+
+   /**
+    * @param groupAddress the groupAddress to set
+    */
+   public void setGroupAddress(String groupAddress)
+   {
+      this.groupAddress = groupAddress;
+   }
+
+   /**
+    * @param groupPort the groupPort to set
+    */
+   public void setGroupPort(int groupPort)
+   {
+      this.groupPort = groupPort;
+   }
+
+   /**
+    * @param broadcastPeriod the broadcastPeriod to set
+    */
+   public void setBroadcastPeriod(long broadcastPeriod)
+   {
+      this.broadcastPeriod = broadcastPeriod;
+   }
+
+   /**
+    * @param connectorInfos the connectorInfos to set
+    */
+   public void setConnectorInfos(List<Pair<String, String>> connectorInfos)
+   {
+      this.connectorInfos = connectorInfos;
    }
 
 }

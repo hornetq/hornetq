@@ -33,20 +33,19 @@ public class DivertConfiguration implements Serializable
    
    private static final Logger log = Logger.getLogger(DivertConfiguration.class);
 
+   private String name;
 
-   private final String name;
+   private String routingName;
 
-   private final String routingName;
+   private String address;
 
-   private final String address;
+   private String forwardingAddress;
 
-   private final String forwardingAddress;
+   private boolean exclusive;
 
-   private final boolean exclusive;
+   private String filterString;
 
-   private final String filterString;
-
-   private final String transformerClassName;
+   private String transformerClassName;
 
    public DivertConfiguration(final String name,
                               final String routingName,
@@ -105,5 +104,61 @@ public class DivertConfiguration implements Serializable
    public String getTransformerClassName()
    {
       return transformerClassName;
+   }
+
+   /**
+    * @param name the name to set
+    */
+   public void setName(String name)
+   {
+      this.name = name;
+   }
+
+   /**
+    * @param routingName the routingName to set
+    */
+   public void setRoutingName(String routingName)
+   {
+      this.routingName = routingName;
+   }
+
+   /**
+    * @param address the address to set
+    */
+   public void setAddress(String address)
+   {
+      this.address = address;
+   }
+
+   /**
+    * @param forwardingAddress the forwardingAddress to set
+    */
+   public void setForwardingAddress(String forwardingAddress)
+   {
+      this.forwardingAddress = forwardingAddress;
+   }
+
+   /**
+    * @param exclusive the exclusive to set
+    */
+   public void setExclusive(boolean exclusive)
+   {
+      this.exclusive = exclusive;
+   }
+
+   /**
+    * @param filterString the filterString to set
+    */
+   public void setFilterString(String filterString)
+   {
+      this.filterString = filterString;
+   }
+
+   /**
+    * @param transformerClassName the transformerClassName to set
+    */
+   public void setTransformerClassName(String transformerClassName)
+   {
+      this.transformerClassName = transformerClassName;
    }
 }

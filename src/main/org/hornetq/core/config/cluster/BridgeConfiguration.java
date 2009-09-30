@@ -30,29 +30,29 @@ public class BridgeConfiguration implements Serializable
 {
    private static final long serialVersionUID = -1057244274380572226L;
 
-   private final String name;
+   private String name;
 
-   private final String queueName;
+   private String queueName;
 
-   private final String forwardingAddress;
+   private String forwardingAddress;
 
-   private final String filterString;
+   private String filterString;
 
-   private final Pair<String, String> connectorPair;
+   private Pair<String, String> connectorPair;
 
-   private final String discoveryGroupName;
+   private String discoveryGroupName;
 
-   private final String transformerClassName;
+   private String transformerClassName;
 
-   private final long retryInterval;
+   private long retryInterval;
 
-   private final double retryIntervalMultiplier;
+   private double retryIntervalMultiplier;
 
-   private final int reconnectAttempts;
+   private int reconnectAttempts;
    
-   private final boolean failoverOnServerShutdown;
+   private boolean failoverOnServerShutdown;
 
-   private final boolean useDuplicateDetection;
+   private boolean useDuplicateDetection;
 
    public BridgeConfiguration(final String name,
                               final String queueName,
@@ -164,5 +164,101 @@ public class BridgeConfiguration implements Serializable
    public boolean isUseDuplicateDetection()
    {
       return useDuplicateDetection;
+   }
+
+   /**
+    * @param name the name to set
+    */
+   public void setName(String name)
+   {
+      this.name = name;
+   }
+
+   /**
+    * @param queueName the queueName to set
+    */
+   public void setQueueName(String queueName)
+   {
+      this.queueName = queueName;
+   }
+
+   /**
+    * @param forwardingAddress the forwardingAddress to set
+    */
+   public void setForwardingAddress(String forwardingAddress)
+   {
+      this.forwardingAddress = forwardingAddress;
+   }
+
+   /**
+    * @param filterString the filterString to set
+    */
+   public void setFilterString(String filterString)
+   {
+      this.filterString = filterString;
+   }
+
+   /**
+    * @param connectorPair the connectorPair to set
+    */
+   public void setConnectorPair(Pair<String, String> connectorPair)
+   {
+      this.connectorPair = connectorPair;
+   }
+
+   /**
+    * @param discoveryGroupName the discoveryGroupName to set
+    */
+   public void setDiscoveryGroupName(String discoveryGroupName)
+   {
+      this.discoveryGroupName = discoveryGroupName;
+   }
+
+   /**
+    * @param transformerClassName the transformerClassName to set
+    */
+   public void setTransformerClassName(String transformerClassName)
+   {
+      this.transformerClassName = transformerClassName;
+   }
+
+   /**
+    * @param retryInterval the retryInterval to set
+    */
+   public void setRetryInterval(long retryInterval)
+   {
+      this.retryInterval = retryInterval;
+   }
+
+   /**
+    * @param retryIntervalMultiplier the retryIntervalMultiplier to set
+    */
+   public void setRetryIntervalMultiplier(double retryIntervalMultiplier)
+   {
+      this.retryIntervalMultiplier = retryIntervalMultiplier;
+   }
+
+   /**
+    * @param reconnectAttempts the reconnectAttempts to set
+    */
+   public void setReconnectAttempts(int reconnectAttempts)
+   {
+      this.reconnectAttempts = reconnectAttempts;
+   }
+
+   /**
+    * @param failoverOnServerShutdown the failoverOnServerShutdown to set
+    */
+   public void setFailoverOnServerShutdown(boolean failoverOnServerShutdown)
+   {
+      this.failoverOnServerShutdown = failoverOnServerShutdown;
+   }
+
+   /**
+    * @param useDuplicateDetection the useDuplicateDetection to set
+    */
+   public void setUseDuplicateDetection(boolean useDuplicateDetection)
+   {
+      this.useDuplicateDetection = useDuplicateDetection;
    }
 }

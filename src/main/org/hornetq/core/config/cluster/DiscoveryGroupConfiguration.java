@@ -29,20 +29,19 @@ public class DiscoveryGroupConfiguration implements Serializable
 {
    private static final long serialVersionUID = 8657206421727863400L;
 
-   private final String name;
+   private String name;
    
-   private final String groupAddress;
+   private String groupAddress;
    
-   private final int groupPort;
+   private int groupPort;
    
-   private final long refreshTimeout;
+   private long refreshTimeout;
 
    public DiscoveryGroupConfiguration(final String name,                      
                                       final String groupAddress,
                                       final int groupPort,
                                       final long refreshTimeout)
    {
-      super();
       this.name = name;
       this.groupAddress = groupAddress;
       this.groupPort = groupPort;
@@ -67,5 +66,37 @@ public class DiscoveryGroupConfiguration implements Serializable
    public long getRefreshTimeout()
    {
       return refreshTimeout;
+   }
+
+   /**
+    * @param name the name to set
+    */
+   public void setName(String name)
+   {
+      this.name = name;
+   }
+
+   /**
+    * @param groupAddress the groupAddress to set
+    */
+   public void setGroupAddress(String groupAddress)
+   {
+      this.groupAddress = groupAddress;
+   }
+
+   /**
+    * @param groupPort the groupPort to set
+    */
+   public void setGroupPort(int groupPort)
+   {
+      this.groupPort = groupPort;
+   }
+
+   /**
+    * @param refreshTimeout the refreshTimeout to set
+    */
+   public void setRefreshTimeout(long refreshTimeout)
+   {
+      this.refreshTimeout = refreshTimeout;
    }
 }

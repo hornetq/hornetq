@@ -29,13 +29,13 @@ public class QueueConfiguration implements Serializable
 {
    private static final long serialVersionUID = 650404974977490254L;
 
-   private final String address;
+   private String address;
    
-   private final String name;
+   private String name;
    
-   private final String filterString;
+   private String filterString;
    
-   private final boolean durable;
+   private boolean durable;
 
    public QueueConfiguration(final String address, final String name, final String filterString, final boolean durable)
    {      
@@ -63,5 +63,37 @@ public class QueueConfiguration implements Serializable
    public boolean isDurable()
    {
       return durable;
+   }
+
+   /**
+    * @param address the address to set
+    */
+   public void setAddress(String address)
+   {
+      this.address = address;
+   }
+
+   /**
+    * @param name the name to set
+    */
+   public void setName(String name)
+   {
+      this.name = name;
+   }
+
+   /**
+    * @param filterString the filterString to set
+    */
+   public void setFilterString(String filterString)
+   {
+      this.filterString = filterString;
+   }
+
+   /**
+    * @param durable the durable to set
+    */
+   public void setDurable(boolean durable)
+   {
+      this.durable = durable;
    }
 }
