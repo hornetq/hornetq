@@ -198,7 +198,7 @@ public class ChannelImpl implements Channel
          // Must block on semaphore outside the main lock or this can prevent failover from occurring, also after the
          // packet is sent to assure we get some credits back
          if (sendSemaphore != null && packet.getType() != PACKETS_CONFIRMED)
-         {
+         {            
             try
             {
                sendSemaphore.acquire(size);
@@ -342,6 +342,12 @@ public class ChannelImpl implements Channel
       if (closed)
       {
          return;
+      }
+      
+      if (sendSemaphore != null)
+      {
+         //Any threads blocking on the send semaphore should be allowed to return
+         sendSemaphore.release(Integer.MAX_VALUE);
       }
 
       if (!connection.isDestroyed() && !connection.removeChannel(id))
