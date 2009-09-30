@@ -58,7 +58,9 @@ public class ClusterConnectionControlTest extends ManagementTestBase
 
    private HornetQServer server_0;
 
-   private ClusterConnectionConfiguration clusterConnectionConfig;
+   private ClusterConnectionConfiguration clusterConnectionConfig1;
+   
+   private ClusterConnectionConfiguration clusterConnectionConfig2;
 
    private HornetQServer server_1;
 
@@ -66,42 +68,68 @@ public class ClusterConnectionControlTest extends ManagementTestBase
 
    // Public --------------------------------------------------------
 
-   public void testAttributes() throws Exception
+   public void testAttributes1() throws Exception
    {
-      checkResource(ObjectNames.getClusterConnectionObjectName(clusterConnectionConfig.getName()));
+      checkResource(ObjectNames.getClusterConnectionObjectName(clusterConnectionConfig1.getName()));
 
-      ClusterConnectionControl clusterConnectionControl = createManagementControl(clusterConnectionConfig.getName());
+      ClusterConnectionControl clusterConnectionControl = createManagementControl(clusterConnectionConfig1.getName());
 
-      assertEquals(clusterConnectionConfig.getName(), clusterConnectionControl.getName());
-      assertEquals(clusterConnectionConfig.getAddress(), clusterConnectionControl.getAddress());
-      assertEquals(clusterConnectionConfig.getDiscoveryGroupName(), clusterConnectionControl.getDiscoveryGroupName());
-      assertEquals(clusterConnectionConfig.getRetryInterval(), clusterConnectionControl.getRetryInterval());
-      assertEquals(clusterConnectionConfig.isDuplicateDetection(), clusterConnectionControl.isDuplicateDetection());
-      assertEquals(clusterConnectionConfig.isForwardWhenNoConsumers(),
+      assertEquals(clusterConnectionConfig1.getName(), clusterConnectionControl.getName());
+      assertEquals(clusterConnectionConfig1.getAddress(), clusterConnectionControl.getAddress());
+      assertEquals(clusterConnectionConfig1.getDiscoveryGroupName(), clusterConnectionControl.getDiscoveryGroupName());
+      assertEquals(clusterConnectionConfig1.getRetryInterval(), clusterConnectionControl.getRetryInterval());
+      assertEquals(clusterConnectionConfig1.isDuplicateDetection(), clusterConnectionControl.isDuplicateDetection());
+      assertEquals(clusterConnectionConfig1.isForwardWhenNoConsumers(),
                    clusterConnectionControl.isForwardWhenNoConsumers());
-      assertEquals(clusterConnectionConfig.getMaxHops(), clusterConnectionControl.getMaxHops());
+      assertEquals(clusterConnectionConfig1.getMaxHops(), clusterConnectionControl.getMaxHops());
 
       Object[] connectorPairs = clusterConnectionControl.getStaticConnectorNamePairs();
       assertEquals(1, connectorPairs.length);
       Object[] connectorPairData = (Object[])connectorPairs[0];
-      assertEquals(clusterConnectionConfig.getStaticConnectorNamePairs().get(0).a, connectorPairData[0]);
-      assertEquals(clusterConnectionConfig.getStaticConnectorNamePairs().get(0).b, connectorPairData[1]);
+      assertEquals(clusterConnectionConfig1.getStaticConnectorNamePairs().get(0).a, connectorPairData[0]);
+      assertEquals(clusterConnectionConfig1.getStaticConnectorNamePairs().get(0).b, connectorPairData[1]);
 
       String jsonString = clusterConnectionControl.getStaticConnectorNamePairsAsJSON();
       assertNotNull(jsonString);
       JSONArray array = new JSONArray(jsonString);
       assertEquals(1, array.length());
       JSONObject data = array.getJSONObject(0);
-      assertEquals(clusterConnectionConfig.getStaticConnectorNamePairs().get(0).a, data.optString("a"));
-      assertEquals(clusterConnectionConfig.getStaticConnectorNamePairs().get(0).b, data.optString("b", null));
+      assertEquals(clusterConnectionConfig1.getStaticConnectorNamePairs().get(0).a, data.optString("a"));
+      assertEquals(clusterConnectionConfig1.getStaticConnectorNamePairs().get(0).b, data.optString("b", null));
 
+      assertNull(clusterConnectionControl.getDiscoveryGroupName());
+      
       assertTrue(clusterConnectionControl.isStarted());
+   }
+   
+   public void testAttributes2() throws Exception
+   {
+      checkResource(ObjectNames.getClusterConnectionObjectName(clusterConnectionConfig2.getName()));
+
+      ClusterConnectionControl clusterConnectionControl = createManagementControl(clusterConnectionConfig2.getName());
+
+      assertEquals(clusterConnectionConfig2.getName(), clusterConnectionControl.getName());
+      assertEquals(clusterConnectionConfig2.getAddress(), clusterConnectionControl.getAddress());
+      assertEquals(clusterConnectionConfig2.getDiscoveryGroupName(), clusterConnectionControl.getDiscoveryGroupName());
+      assertEquals(clusterConnectionConfig2.getRetryInterval(), clusterConnectionControl.getRetryInterval());
+      assertEquals(clusterConnectionConfig2.isDuplicateDetection(), clusterConnectionControl.isDuplicateDetection());
+      assertEquals(clusterConnectionConfig2.isForwardWhenNoConsumers(),
+                   clusterConnectionControl.isForwardWhenNoConsumers());
+      assertEquals(clusterConnectionConfig2.getMaxHops(), clusterConnectionControl.getMaxHops());
+
+      Object[] connectorPairs = clusterConnectionControl.getStaticConnectorNamePairs();
+      assertNull(connectorPairs);
+      
+      String jsonPairs = clusterConnectionControl.getStaticConnectorNamePairsAsJSON();
+      assertNull(jsonPairs);
+      
+      assertEquals(clusterConnectionConfig2.getDiscoveryGroupName(), clusterConnectionControl.getDiscoveryGroupName());
    }
 
    public void testStartStop() throws Exception
    {
-      checkResource(ObjectNames.getClusterConnectionObjectName(clusterConnectionConfig.getName()));
-      ClusterConnectionControl clusterConnectionControl = createManagementControl(clusterConnectionConfig.getName());
+      checkResource(ObjectNames.getClusterConnectionObjectName(clusterConnectionConfig1.getName()));
+      ClusterConnectionControl clusterConnectionControl = createManagementControl(clusterConnectionConfig1.getName());
 
       // started by the server
       assertTrue(clusterConnectionControl.isStarted());
@@ -138,13 +166,21 @@ public class ClusterConnectionControlTest extends ManagementTestBase
       List<Pair<String, String>> pairs = new ArrayList<Pair<String, String>>();
       pairs.add(connectorPair);
 
-      clusterConnectionConfig = new ClusterConnectionConfiguration(randomString(),
+      clusterConnectionConfig1 = new ClusterConnectionConfiguration(randomString(),
                                                                    queueConfig.getAddress(),
                                                                    randomPositiveLong(),
                                                                    randomBoolean(),
                                                                    randomBoolean(),
                                                                    randomPositiveInt(),
                                                                    pairs);
+      
+      clusterConnectionConfig2 = new ClusterConnectionConfiguration(randomString(),
+                                                                    queueConfig.getAddress(),
+                                                                    randomPositiveLong(),
+                                                                    randomBoolean(),
+                                                                    randomBoolean(),
+                                                                    randomPositiveInt(),
+                                                                    randomString());
 
       Configuration conf_1 = new ConfigurationImpl();
       conf_1.setSecurityEnabled(false);
@@ -159,7 +195,8 @@ public class ClusterConnectionControlTest extends ManagementTestBase
       conf_0.setClustered(true);
       conf_0.getAcceptorConfigurations().add(new TransportConfiguration(InVMAcceptorFactory.class.getName()));
       conf_0.getConnectorConfigurations().put(connectorConfig.getName(), connectorConfig);
-      conf_0.getClusterConfigurations().add(clusterConnectionConfig);
+      conf_0.getClusterConfigurations().add(clusterConnectionConfig1);
+      conf_0.getClusterConfigurations().add(clusterConnectionConfig2);
 
       server_1 = HornetQ.newHornetQServer(conf_1, MBeanServerFactory.createMBeanServer(), false);
       server_1.start();

@@ -13,6 +13,8 @@
 
 package org.hornetq.core.management.impl;
 
+import java.util.List;
+
 import javax.management.StandardMBean;
 
 import org.hornetq.core.config.cluster.ClusterConnectionConfiguration;
@@ -79,7 +81,14 @@ public class ClusterConnectionControlImpl extends StandardMBean implements Clust
 
    public Object[] getStaticConnectorNamePairs()
    {
-      Object[] ret = new Object[configuration.getStaticConnectorNamePairs().size()];
+      List<Pair<String, String>> pairs = configuration.getStaticConnectorNamePairs();
+      
+      if (pairs == null)
+      {
+         return null;
+      }
+         
+      Object[] ret = new Object[pairs.size()];
 
       int i = 0;
       for (Pair<String, String> pair : configuration.getStaticConnectorNamePairs())
@@ -97,9 +106,16 @@ public class ClusterConnectionControlImpl extends StandardMBean implements Clust
 
    public String getStaticConnectorNamePairsAsJSON() throws Exception
    {
+      List<Pair<String, String>> pairs = configuration.getStaticConnectorNamePairs();
+      
+      if (pairs == null)
+      {
+         return null;
+      }
+      
       JSONArray array = new JSONArray();
 
-      for (Pair<String, String> pair : configuration.getStaticConnectorNamePairs())
+      for (Pair<String, String> pair : pairs)
       {
          JSONObject p = new JSONObject();
          p.put("a", pair.a);
