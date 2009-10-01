@@ -90,6 +90,30 @@ public class DivertAndACKClientTest extends JMSTestBase
       connection.close();
    }
 
+   public void testClientACK() throws Exception
+   {
+      HornetQQueue queueSource = (HornetQQueue)createQueue("Source");
+      HornetQQueue queueTarget = (HornetQQueue)createQueue("Dest");
+
+     
+      Connection connection = cf.createConnection();
+      Session session = connection.createSession(false, Session.CLIENT_ACKNOWLEDGE);
+
+      final MessageProducer producer = session.createProducer(queueSource);
+
+      final TextMessage message = session.createTextMessage("message text");
+      producer.send(message);
+
+      connection.start();
+
+      final MessageConsumer consumer = session.createConsumer(queueTarget);
+      TextMessage receivedMessage = (TextMessage)consumer.receive(1000);
+      assertNotNull(receivedMessage);
+      receivedMessage.acknowledge();
+
+      connection.close();
+   }
+
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
