@@ -122,7 +122,7 @@ public class JMSTestBase extends ServiceTestBase
 
       conf.getAcceptorConfigurations().add(new TransportConfiguration(NettyAcceptorFactory.class.getName()));
 
-      server = HornetQ.newHornetQServer(conf, false);
+      server = HornetQ.newHornetQServer(conf, usePersistence());
 
       jmsServer = new JMSServerManagerImpl(server);
       context = new InVMContext();

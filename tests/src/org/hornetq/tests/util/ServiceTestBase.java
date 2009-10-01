@@ -250,6 +250,8 @@ public class ServiceTestBase extends UnitTestCase
       configuration.setLargeMessagesDirectory(getLargeMessagesDir());
       configuration.setJournalCompactMinFiles(0);
       configuration.setJournalCompactPercentage(0);
+      
+      configuration.setFileDeploymentEnabled(false);
 
       configuration.setJournalType(JournalType.ASYNCIO);
 
