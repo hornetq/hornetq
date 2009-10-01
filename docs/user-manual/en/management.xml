@@ -106,7 +106,9 @@
                      Strings.) To commit or rollback a given prepared transaction, the <literal
                         >commitPreparedTransaction</literal>() or <literal
                         >rollbackPreparedTransaction()</literal> method can be used to resolve
-                     heuristic transactions.</para>
+                     heuristic transactions. Heuristically completed transactions can be listed using 
+                     the <literal>listHeuristicCommittedTransactions()</literal> and 
+                     <literal>listHeuristicRolledBackTransactions</literal> methods.</para>
                </listitem>
                <listitem>
                   <para>Enabling and resetting Message counters</para>
