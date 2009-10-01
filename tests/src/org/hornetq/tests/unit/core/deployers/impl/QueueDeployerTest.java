@@ -159,6 +159,11 @@ public class QueueDeployerTest extends UnitTestCase
       {
 
       }
+      
+      public void createQueue(String address, String name, boolean durable) throws Exception
+      {
+
+      }
 
       public String[] getAddressNames()
       {

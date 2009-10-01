@@ -265,10 +265,19 @@ public class HornetQServerControlImpl extends StandardMBean implements HornetQSe
    {
       server.createQueue(new SimpleString(address), new SimpleString(name), null, true, false);
    }
+   
+   public void createQueue(final String address, final String name, final boolean durable) throws Exception
+   {
+      server.createQueue(new SimpleString(address), new SimpleString(name), null, durable, false);
+   }
 
    public void createQueue(final String address, final String name, final String filterStr, final boolean durable) throws Exception
    {
-      SimpleString filter = filterStr == null ? null : new SimpleString(filterStr);
+      SimpleString filter = null;
+      if (filterStr != null && !filterStr.trim().equals(""))
+      {
+         filter = new SimpleString(filterStr);
+      }
 
       server.createQueue(new SimpleString(address), new SimpleString(name), filter, durable, false);
    }

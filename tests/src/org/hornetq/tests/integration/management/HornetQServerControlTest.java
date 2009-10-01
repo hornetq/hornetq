@@ -200,12 +200,63 @@ public class HornetQServerControlTest extends ManagementTestBase
 
       checkNoResource(ObjectNames.getQueueObjectName(address, name));
    }
+   
+   public void testCreateAndDestroyQueue_3() throws Exception
+   {
+      SimpleString address = RandomUtil.randomSimpleString();
+      SimpleString name = RandomUtil.randomSimpleString();
+      boolean durable = true;
+
+      HornetQServerControl serverControl = createManagementControl();
+
+      checkNoResource(ObjectNames.getQueueObjectName(address, name));
+
+      serverControl.createQueue(address.toString(), name.toString(), durable);
+
+      checkResource(ObjectNames.getQueueObjectName(address, name));
+      QueueControl queueControl = ManagementControlHelper.createQueueControl(address, name, mbeanServer);
+      assertEquals(address.toString(), queueControl.getAddress());
+      assertEquals(name.toString(), queueControl.getName());
+      assertNull(queueControl.getFilter());
+      assertEquals(durable, queueControl.isDurable());
+      assertEquals(false, queueControl.isTemporary());
+
+      serverControl.destroyQueue(name.toString());
+
+      checkNoResource(ObjectNames.getQueueObjectName(address, name));
+   }
 
    public void testCreateAndDestroyQueueWithNullFilter() throws Exception
    {
       SimpleString address = RandomUtil.randomSimpleString();
       SimpleString name = RandomUtil.randomSimpleString();
       String filter = null;
+      boolean durable = true;
+
+      HornetQServerControl serverControl = createManagementControl();
+
+      checkNoResource(ObjectNames.getQueueObjectName(address, name));
+
+      serverControl.createQueue(address.toString(), name.toString(), filter, durable);
+
+      checkResource(ObjectNames.getQueueObjectName(address, name));
+      QueueControl queueControl = ManagementControlHelper.createQueueControl(address, name, mbeanServer);
+      assertEquals(address.toString(), queueControl.getAddress());
+      assertEquals(name.toString(), queueControl.getName());
+      assertNull(queueControl.getFilter());
+      assertEquals(durable, queueControl.isDurable());
+      assertEquals(false, queueControl.isTemporary());
+
+      serverControl.destroyQueue(name.toString());
+
+      checkNoResource(ObjectNames.getQueueObjectName(address, name));
+   }
+   
+   public void testCreateAndDestroyQueueWithEmptyStringForFilter() throws Exception
+   {
+      SimpleString address = RandomUtil.randomSimpleString();
+      SimpleString name = RandomUtil.randomSimpleString();
+      String filter = "";
       boolean durable = true;
 
       HornetQServerControl serverControl = createManagementControl();

@@ -108,6 +108,11 @@ public class HornetQServerControlUsingCoreTest extends HornetQServerControlTest
             proxy.invokeOperation("createQueue", address, name, filter, durable);
          }
          
+         public void createQueue(String address, String name, boolean durable) throws Exception
+         {
+            proxy.invokeOperation("createQueue", address, name, durable);
+         }
+         
          public void deployQueue(String address, String name, String filter, boolean durable) throws Exception
          {
             proxy.invokeOperation("deployQueue", address, name, filter, durable);

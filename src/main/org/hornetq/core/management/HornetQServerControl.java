@@ -132,11 +132,16 @@ public interface HornetQServerControl
    @Operation(desc = "Create a queue with the specified address", impact = ACTION)
    void createQueue(@Parameter(name = "address", desc = "Address of the queue") String address,
                     @Parameter(name = "name", desc = "Name of the queue") String name) throws Exception;
-
+   
    @Operation(desc = "Create a queue", impact = ACTION)
    void createQueue(@Parameter(name = "address", desc = "Address of the queue") String address,
                     @Parameter(name = "name", desc = "Name of the queue") String name,
                     @Parameter(name = "filter", desc = "Filter of the queue") String filter,
+                    @Parameter(name = "durable", desc = "Is the queue durable?") boolean durable) throws Exception;
+   
+   @Operation(desc = "Create a queue with the specified address, name and durability", impact = ACTION)
+   void createQueue(@Parameter(name = "address", desc = "Address of the queue") String address,
+                    @Parameter(name = "name", desc = "Name of the queue") String name,
                     @Parameter(name = "durable", desc = "Is the queue durable?") boolean durable) throws Exception;
 
    @Operation(desc = "Deploy a queue", impact = ACTION)
