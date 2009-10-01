@@ -347,7 +347,7 @@ public class ChannelImpl implements Channel
       if (sendSemaphore != null)
       {
          //Any threads blocking on the send semaphore should be allowed to return
-         sendSemaphore.release(Integer.MAX_VALUE);
+         sendSemaphore.release(Integer.MAX_VALUE - sendSemaphore.availablePermits());
       }
 
       if (!connection.isDestroyed() && !connection.removeChannel(id))

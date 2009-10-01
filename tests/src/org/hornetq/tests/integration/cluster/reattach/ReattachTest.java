@@ -416,6 +416,8 @@ public class ReattachTest extends UnitTestCase
 
       t.start();
 
+      log.info("Failing connection");
+      
       conn.fail(new HornetQException(HornetQException.NOT_CONNECTED));
 
       session.start();
