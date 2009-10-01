@@ -394,6 +394,30 @@ public class HornetQServerControlImpl extends StandardMBean implements HornetQSe
       }
       return s;
    }
+   
+   public String[] listHeuristicCommittedTransactions()
+   {
+      List<Xid> xids = resourceManager.getHeuristicCommittedTransactions();
+      String[] s = new String[xids.size()];
+      int i = 0;
+      for (Xid xid : xids)
+      {
+         s[i++] = XidImpl.toBase64String(xid);
+      }
+      return s;
+   }
+   
+   public String[] listHeuristicRolledBackTransactions()
+   {
+      List<Xid> xids = resourceManager.getHeuristicRolledbackTransactions();
+      String[] s = new String[xids.size()];
+      int i = 0;
+      for (Xid xid : xids)
+      {
+         s[i++] = XidImpl.toBase64String(xid);
+      }
+      return s;
+   }
 
    public synchronized boolean commitPreparedTransaction(final String transactionAsBase64) throws Exception
    {
@@ -405,6 +429,8 @@ public class HornetQServerControlImpl extends StandardMBean implements HornetQSe
          {
             Transaction transaction = resourceManager.removeTransaction(xid);
             transaction.commit();
+            long recordID = server.getStorageManager().storeHeuristicCompletion(xid, true);
+            resourceManager.putHeuristicCompletion(recordID, xid, true);
             return true;
          }
       }
@@ -421,6 +447,8 @@ public class HornetQServerControlImpl extends StandardMBean implements HornetQSe
          {
             Transaction transaction = resourceManager.removeTransaction(xid);
             transaction.rollback();
+            long recordID = server.getStorageManager().storeHeuristicCompletion(xid, false);
+            resourceManager.putHeuristicCompletion(recordID, xid, false);
             return true;
          }
       }

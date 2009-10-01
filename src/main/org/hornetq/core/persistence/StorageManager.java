@@ -96,6 +96,10 @@ public interface StorageManager extends HornetQComponent
 
    void deletePageTransactional(long txID, long recordID) throws Exception;
 
+   long storeHeuristicCompletion(Xid xid, boolean isCommit) throws Exception;
+   
+   void deleteHeuristicCompletion(long id) throws Exception;
+   
    void loadMessageJournal(PagingManager pagingManager,
                            ResourceManager resourceManager,
                            Map<Long, Queue> queues,

@@ -164,6 +164,15 @@ public class NullStorageManager implements StorageManager
                                               final long recordID) throws Exception
    {
    }
+   
+   public long storeHeuristicCompletion(final Xid xid, final boolean isCommit) throws Exception
+   {
+      return generateUniqueID();
+   }
+   
+   public void deleteHeuristicCompletion(final long txID) throws Exception
+   {
+   }
 
    /* (non-Javadoc)
     * @see org.hornetq.core.persistence.StorageManager#createLargeMessageStorage(long, int, int)

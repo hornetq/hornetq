@@ -168,6 +168,10 @@ public interface HornetQServerControl
    @Operation(desc = "List all the prepared transaction, sorted by date, oldest first")
    String[] listPreparedTransactions() throws Exception;
 
+   String[] listHeuristicCommittedTransactions() throws Exception;
+
+   String[] listHeuristicRolledBackTransactions() throws Exception;
+
    @Operation(desc = "Commit a prepared transaction")
    boolean commitPreparedTransaction(@Parameter(desc = "the Base64 representation of a transaction", name = "transactionAsBase64") String transactionAsBase64) throws Exception;
 

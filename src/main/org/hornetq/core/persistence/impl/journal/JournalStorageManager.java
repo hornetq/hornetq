@@ -112,6 +112,8 @@ public class JournalStorageManager implements StorageManager
 
    public static final byte DUPLICATE_ID = 37;
 
+   public static final byte HEURISTIC_COMPLETION = 38;
+
    private UUID persistentID;
 
    private final BatchingIDGenerator idGenerator;
@@ -378,6 +380,18 @@ public class JournalStorageManager implements StorageManager
       messageJournal.appendUpdateRecordTransactional(txID, messageID, ACKNOWLEDGE_REF, new RefEncoding(queueID));
    }
 
+   public long storeHeuristicCompletion(Xid xid, boolean isCommit) throws Exception
+   {
+      long id = generateUniqueID();
+      messageJournal.appendAddRecord(id, HEURISTIC_COMPLETION, new HeuristicCompletionEncoding(xid, isCommit), true);
+      return id;
+   }
+   
+   public void deleteHeuristicCompletion(long id) throws Exception
+   {
+      messageJournal.appendDeleteRecord(id, true);
+   }
+   
    public void deletePageTransactional(final long txID, final long recordID) throws Exception
    {
       messageJournal.appendDeleteRecordTransactional(txID, recordID);
@@ -684,6 +698,13 @@ public class JournalStorageManager implements StorageManager
 
                ids.add(new Pair<byte[], Long>(encoding.duplID, record.id));
 
+               break;
+            }
+            case HEURISTIC_COMPLETION:
+            {
+               HeuristicCompletionEncoding encoding = new HeuristicCompletionEncoding();
+               encoding.decode(buff);
+               resourceManager.putHeuristicCompletion(record.id, encoding.xid, encoding.isCommit);
                break;
             }
             default:
@@ -1206,6 +1227,39 @@ public class JournalStorageManager implements StorageManager
       public int getEncodeSize()
       {
          return XidCodecSupport.getXidEncodeLength(xid);
+      }
+   }
+   
+   private static class HeuristicCompletionEncoding implements EncodingSupport
+   {
+      Xid xid;
+      boolean isCommit;
+      
+      HeuristicCompletionEncoding(final Xid xid, final boolean isCommit)
+      {
+         this.xid = xid;
+         this.isCommit = isCommit;
+      }
+
+      HeuristicCompletionEncoding()
+      {
+      }
+
+      public void decode(final HornetQBuffer buffer)
+      {
+         xid = XidCodecSupport.decodeXid(buffer);
+         isCommit = buffer.readBoolean();
+      }
+
+      public void encode(final HornetQBuffer buffer)
+      {
+         XidCodecSupport.encodeXid(xid, buffer);
+         buffer.writeBoolean(isCommit);
+      }
+
+      public int getEncodeSize()
+      {
+         return XidCodecSupport.getXidEncodeLength(xid) + DataConstants.SIZE_BOOLEAN;
       }
    }
 

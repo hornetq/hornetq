@@ -782,9 +782,20 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
 
             if (theTx == null)
             {
-               final String msg = "Cannot find xid in resource manager: " + xid;
-
-               response = new SessionXAResponseMessage(true, XAException.XAER_NOTA, msg);
+               // checked heuristic committed transactions
+               if (resourceManager.getHeuristicCommittedTransactions().contains(xid))
+               {
+                  response = new SessionXAResponseMessage(true, XAException.XA_HEURCOM, "transaction has been heuristically committed: " + xid);
+               }
+               // checked heuristic rolled back transactions
+               else if (resourceManager.getHeuristicRolledbackTransactions().contains(xid))
+               {
+                  response = new SessionXAResponseMessage(true, XAException.XA_HEURRB, "transaction has been heuristically rolled back: " + xid);
+               } 
+               else
+               {
+                  response = new SessionXAResponseMessage(true, XAException.XAER_NOTA, "Cannot find xid in resource manager: " + xid);
+               }
             }
             else
             {
@@ -901,10 +912,25 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
 
    public void handleXAForget(final SessionXAForgetMessage packet)
    {
-      // Do nothing since we don't support heuristic commits / rollback from the
-      // resource manager
-
-      Packet response = new SessionXAResponseMessage(false, XAResource.XA_OK, null);
+      long id = resourceManager.removeHeuristicCompletion(packet.getXid());
+      int code = XAResource.XA_OK;
+      if (id != -1)
+      {
+         try
+         {
+            storageManager.deleteHeuristicCompletion(id);
+         }
+         catch (Exception e)
+         {
+            e.printStackTrace();
+            code = XAException.XAER_RMERR;
+         }
+      } else
+      {
+         code = XAException.XAER_NOTA;
+      }
+      
+      Packet response = new SessionXAResponseMessage((code != XAResource.XA_OK), code, null);
 
       channel.confirm(packet);
 
@@ -1044,9 +1070,20 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
 
             if (theTx == null)
             {
-               final String msg = "Cannot find xid in resource manager: " + xid;
-
-               response = new SessionXAResponseMessage(true, XAException.XAER_NOTA, msg);
+               // checked heuristic committed transactions
+               if (resourceManager.getHeuristicCommittedTransactions().contains(xid))
+               {
+                  response = new SessionXAResponseMessage(true, XAException.XA_HEURCOM, "transaction has ben heuristically committed: " + xid);
+               }
+               // checked heuristic rolled back transactions
+               else if (resourceManager.getHeuristicRolledbackTransactions().contains(xid))
+               {
+                  response = new SessionXAResponseMessage(true, XAException.XA_HEURRB, "transaction has ben heuristically rolled back: " + xid);
+               } 
+               else
+               {
+                  response = new SessionXAResponseMessage(true, XAException.XAER_NOTA, "Cannot find xid in resource manager: " + xid);
+               }
             }
             else
             {
@@ -1249,8 +1286,12 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
 
    public void handleGetInDoubtXids(final Packet packet)
    {
-      Packet response = new SessionXAGetInDoubtXidsResponseMessage(resourceManager.getPreparedTransactions());
-
+      List<Xid> indoubtsXids = new ArrayList<Xid>();
+      indoubtsXids.addAll(resourceManager.getPreparedTransactions());
+      indoubtsXids.addAll(resourceManager.getHeuristicCommittedTransactions());
+      indoubtsXids.addAll(resourceManager.getHeuristicRolledbackTransactions());
+      Packet response = new SessionXAGetInDoubtXidsResponseMessage(indoubtsXids);
+      
       channel.confirm(packet);
 
       channel.send(response);

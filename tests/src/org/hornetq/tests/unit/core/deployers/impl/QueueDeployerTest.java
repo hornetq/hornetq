@@ -461,7 +461,17 @@ public class QueueDeployerTest extends UnitTestCase
 
          return null;
       }
-
+      
+      public String[] listHeuristicCommittedTransactions() throws Exception
+      {
+         return null;
+      }
+      
+      public String[] listHeuristicRolledBackTransactions() throws Exception
+      {
+         return null;
+      }
+      
       public String[] listRemoteAddresses() throws Exception
       {
 

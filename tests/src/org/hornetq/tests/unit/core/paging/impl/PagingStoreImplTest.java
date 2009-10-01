@@ -1034,6 +1034,15 @@ public class PagingStoreImplTest extends UnitTestCase
       {
       }
 
+      public long storeHeuristicCompletion(Xid xid, boolean isCommit) throws Exception
+      {
+         return -1;
+      }
+      
+      public void deleteHeuristicCompletion(long txID) throws Exception
+      {
+      }
+
       /* (non-Javadoc)
        * @see org.hornetq.core.persistence.StorageManager#updateDeliveryCount(org.hornetq.core.server.MessageReference)
        */

@@ -43,4 +43,13 @@ public interface ResourceManager extends HornetQComponent
    List<Xid> getPreparedTransactions();
 
    Map<Xid, Long> getPreparedTransactionsWithCreationTime();
+
+   void putHeuristicCompletion(long txid, Xid xid, boolean b);
+
+   long removeHeuristicCompletion(Xid xid);
+
+   List<Xid> getHeuristicCommittedTransactions();
+
+   List<Xid> getHeuristicRolledbackTransactions();
+
 }

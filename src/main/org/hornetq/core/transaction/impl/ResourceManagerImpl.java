@@ -16,6 +16,7 @@ package org.hornetq.core.transaction.impl;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -23,7 +24,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 
 import javax.transaction.xa.Xid;
 
@@ -43,6 +43,8 @@ public class ResourceManagerImpl implements ResourceManager, HornetQComponent
    private static final Logger log = Logger.getLogger(ResourceManagerImpl.class);
 
    private final ConcurrentMap<Xid, Transaction> transactions = new ConcurrentHashMap<Xid, Transaction>();
+
+   private List<HeuristicCompletionHolder> heuristicCompletions = new ArrayList<HeuristicCompletionHolder>();
 
    private final int defaultTimeoutSeconds;
 
@@ -163,6 +165,49 @@ public class ResourceManagerImpl implements ResourceManager, HornetQComponent
       }
       return xidsWithCreationTime;
    }
+   
+   public void putHeuristicCompletion(final long recordID, final Xid xid, final boolean isCommit)
+   {
+      heuristicCompletions.add(new HeuristicCompletionHolder(recordID, xid, isCommit));
+   }
+   
+   public List<Xid>getHeuristicCommittedTransactions()
+   {
+      return getHeuristicCompletedTransactions(true);
+   }
+   
+   public List<Xid>getHeuristicRolledbackTransactions()
+   {
+      return getHeuristicCompletedTransactions(false);
+   }
+
+   public long removeHeuristicCompletion(Xid xid)
+   {
+      Iterator<HeuristicCompletionHolder> iterator = heuristicCompletions.iterator();
+      while (iterator.hasNext())
+      {
+         ResourceManagerImpl.HeuristicCompletionHolder holder = (ResourceManagerImpl.HeuristicCompletionHolder)iterator.next();
+         if (holder.xid.equals(xid))
+         {
+            iterator.remove();
+            return holder.recordID;
+         }
+      }
+      return -1;
+   }
+   
+   private List<Xid>getHeuristicCompletedTransactions(boolean isCommit)
+   {
+      List<Xid> xids = new ArrayList<Xid>();
+      for (HeuristicCompletionHolder holder : heuristicCompletions)
+      {
+         if (holder.isCommit == isCommit)
+         {
+            xids.add(holder.xid);
+         }
+      }
+      return xids;
+   }
 
    class TxTimeoutHandler implements Runnable
    {
@@ -219,5 +264,19 @@ public class ResourceManagerImpl implements ResourceManager, HornetQComponent
          closed = true;
       }
 
+   }
+   
+   private class HeuristicCompletionHolder
+   {
+      public final boolean isCommit;
+      public final Xid xid;
+      public final long recordID;
+
+      public HeuristicCompletionHolder(long recordID, Xid xid, boolean isCommit)
+      {
+         this.recordID = recordID;
+         this.xid = xid;
+         this.isCommit = isCommit;
+      }
    }
 }

@@ -397,9 +397,74 @@ public class BasicXaTest extends ServiceTestBase
 
    }
 
-   public void testForget() throws Exception
+   public void testForgetUnknownXID() throws Exception
    {
-      clientSession.forget(newXID());
+      try
+      {
+         clientSession.forget(newXID());
+         fail("should throw a XAERR_NOTA XAException");
+      }
+      catch (XAException e)
+      {
+         assertEquals(XAException.XAER_NOTA, e.errorCode);
+      }
+   }
+
+   public void testForgetHeuristicallyCommittedXID() throws Exception
+   {
+      Xid xid = newXID();
+      clientSession.start(xid, XAResource.TMNOFLAGS);
+      clientSession.end(xid, XAResource.TMSUCCESS);
+      clientSession.prepare(xid);
+
+      String[] preparedTransactions = messagingService.getHornetQServerControl().listPreparedTransactions();
+      assertEquals(1, preparedTransactions.length);
+      System.out.println(preparedTransactions[0]);
+      assertTrue(messagingService.getHornetQServerControl().commitPreparedTransaction(XidImpl.toBase64String(xid)));
+      assertEquals(1, messagingService.getHornetQServerControl().listHeuristicCommittedTransactions().length);
+
+      clientSession.forget(xid);
+
+      assertEquals(0, messagingService.getHornetQServerControl().listHeuristicCommittedTransactions().length);
+   }
+
+   public void testForgetHeuristicallyRolledBackXID() throws Exception
+   {
+      Xid xid = newXID();
+      clientSession.start(xid, XAResource.TMNOFLAGS);
+      clientSession.end(xid, XAResource.TMSUCCESS);
+      clientSession.prepare(xid);
+
+      String[] preparedTransactions = messagingService.getHornetQServerControl().listPreparedTransactions();
+      assertEquals(1, preparedTransactions.length);
+      System.out.println(preparedTransactions[0]);
+
+      assertTrue(messagingService.getHornetQServerControl().rollbackPreparedTransaction(XidImpl.toBase64String(xid)));      
+      assertEquals(1, messagingService.getHornetQServerControl().listHeuristicRolledBackTransactions().length);
+
+      clientSession.forget(xid);
+
+      assertEquals(0, messagingService.getHornetQServerControl().listHeuristicRolledBackTransactions().length);
+   }
+
+   public void testCommitHeuristicallyCommittedXID() throws Exception
+   {
+      doCompleteHeuristicallyCompletedXID(true, true);
+   }
+
+   public void testCommitHeuristicallyRolledBackXID() throws Exception
+   {
+      doCompleteHeuristicallyCompletedXID(true, false);
+   }
+
+   public void testRollbacktHeuristicallyCommittedXID() throws Exception
+   {
+      doCompleteHeuristicallyCompletedXID(false, true);
+   }
+
+   public void testRollbackHeuristicallyRolledBackXID() throws Exception
+   {
+      doCompleteHeuristicallyCompletedXID(false, false);
    }
 
    public void testSimpleJoin() throws Exception
@@ -666,6 +731,62 @@ public class BasicXaTest extends ServiceTestBase
       }
    }
 
+   private void doCompleteHeuristicallyCompletedXID(boolean isCommit, boolean heuristicCommit) throws Exception
+   {
+      Xid xid = newXID();
+      clientSession.start(xid, XAResource.TMNOFLAGS);
+      clientSession.end(xid, XAResource.TMSUCCESS);
+      clientSession.prepare(xid);
+
+      String[] preparedTransactions = messagingService.getHornetQServerControl().listPreparedTransactions();
+      assertEquals(1, preparedTransactions.length);
+
+      if (heuristicCommit)
+      {
+         assertTrue(messagingService.getHornetQServerControl().commitPreparedTransaction(XidImpl.toBase64String(xid)));      
+         assertEquals(1, messagingService.getHornetQServerControl().listHeuristicCommittedTransactions().length);
+      }
+      else
+      {
+         assertTrue(messagingService.getHornetQServerControl().rollbackPreparedTransaction(XidImpl.toBase64String(xid)));      
+         assertEquals(1, messagingService.getHornetQServerControl().listHeuristicRolledBackTransactions().length);         
+      }
+      assertEquals(0, messagingService.getHornetQServerControl().listPreparedTransactions().length);
+
+      try
+      {
+         if (isCommit)
+         {
+            clientSession.commit(xid, false);
+         } else
+         {
+            clientSession.rollback(xid);
+         }
+         fail("neither commit not rollback must succeed on a heuristically completed tx");
+      }
+
+      catch (XAException e)
+      {
+         if (heuristicCommit)
+         {
+            assertEquals(XAException.XA_HEURCOM, e.errorCode);
+         }
+         else
+         {
+            assertEquals(XAException.XA_HEURRB, e.errorCode);
+         }
+      }
+
+      if (heuristicCommit)
+      {
+         assertEquals(1, messagingService.getHornetQServerControl().listHeuristicCommittedTransactions().length);
+      }
+      else
+      {
+         assertEquals(1, messagingService.getHornetQServerControl().listHeuristicRolledBackTransactions().length);
+      }
+   }
+   
    class TxMessageHandler implements MessageHandler
    {
       boolean failedToAck = false;
