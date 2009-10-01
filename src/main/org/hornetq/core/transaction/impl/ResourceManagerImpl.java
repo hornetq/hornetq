@@ -24,6 +24,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import javax.transaction.xa.Xid;
 
@@ -52,12 +53,12 @@ public class ResourceManagerImpl implements ResourceManager, HornetQComponent
 
    private boolean started = false;
 
-   //private TxTimeoutHandler task;
+   private TxTimeoutHandler task;
 
    private final long txTimeoutScanPeriod;
 
-   //private final ScheduledExecutorService scheduledThreadPool;
-
+   private final ScheduledExecutorService scheduledThreadPool;
+   
    public ResourceManagerImpl(final int defaultTimeoutSeconds, 
                               final long txTimeoutScanPeriod, 
                               final ScheduledExecutorService scheduledThreadPool)
@@ -65,7 +66,7 @@ public class ResourceManagerImpl implements ResourceManager, HornetQComponent
       this.defaultTimeoutSeconds = defaultTimeoutSeconds;
       this.timeoutSeconds = defaultTimeoutSeconds;
       this.txTimeoutScanPeriod = txTimeoutScanPeriod;
-     // this.scheduledThreadPool = scheduledThreadPool;
+      this.scheduledThreadPool = scheduledThreadPool;
    }
 
    // HornetQComponent implementation
@@ -76,10 +77,9 @@ public class ResourceManagerImpl implements ResourceManager, HornetQComponent
       {
          return;
       }
-      //todo - https://jira.jboss.org/jira/browse/HORNETQ-106
-      /*task = new TxTimeoutHandler();
+      task = new TxTimeoutHandler();
       Future<?> future = scheduledThreadPool.scheduleAtFixedRate(task, txTimeoutScanPeriod, txTimeoutScanPeriod, TimeUnit.MILLISECONDS);
-      task.setFuture(future);*/
+      task.setFuture(future);
       
       started = true;
    }
@@ -90,10 +90,10 @@ public class ResourceManagerImpl implements ResourceManager, HornetQComponent
       {
          return;
       }
-      /*if (task != null)
+      if (task != null)
       {
          task.close();
-      }*/
+      }
 
       started = false;
    }
@@ -137,7 +137,7 @@ public class ResourceManagerImpl implements ResourceManager, HornetQComponent
          this.timeoutSeconds = timeoutSeconds;
       }
 
-      return false;
+      return true;
    }
 
    public List<Xid> getPreparedTransactions()

@@ -65,11 +65,7 @@ public class XaTimeoutTest extends UnitTestCase
 
    private SimpleString atestq = new SimpleString("atestq");
 
-   public void test()
-   {
-
-   }
-   /*protected void setUp() throws Exception
+   protected void setUp() throws Exception
    {
       super.setUp();
       
@@ -559,5 +555,5 @@ public class XaTimeoutTest extends UnitTestCase
       {
          return Collections.emptySet();
       }
-   }*/
+   }
 }

@@ -116,7 +116,7 @@ public class ConfigurationImpl implements Configuration
 
    public static final int DEFAULT_MESSAGE_COUNTER_MAX_DAY_HISTORY = 10;
 
-   public static final long DEFAULT_TRANSACTION_TIMEOUT = 60000;
+   public static final long DEFAULT_TRANSACTION_TIMEOUT = 300000; // 5 minutes
 
    public static final long DEFAULT_TRANSACTION_TIMEOUT_SCAN_PERIOD = 1000;
 

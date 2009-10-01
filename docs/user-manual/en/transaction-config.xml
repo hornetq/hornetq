@@ -24,9 +24,9 @@
         started but the forgotten about. Maybe the client died and never came back. If this happens
         then the transaction will just sit there indefinitely.</para>
     <para>To cope with this HornetQ can, if configured, scan for old transactions and rollback any
-        it finds. The default for this is 60000 milliseconds (1 minute), i.e. any transactions older
-        than 60 seconds are removed, however this can be changed by editing the <literal
-            >transaction-timeout</literal> property in <literal>hornetq-configuration.xml</literal>.
+        it finds. The default for this is 3000000 milliseconds (5 minutes), i.e. any transactions older
+        than 5 minutes are removed. This timeout can be changed by editing the <literal
+            >transaction-timeout</literal> property in <literal>hornetq-configuration.xml</literal> (value must be in milliseconds).
         The property <literal>transaction-timeout-scan-period</literal> configures how often, in
         milliseconds, to scan for old transactions.</para>
 </chapter>
