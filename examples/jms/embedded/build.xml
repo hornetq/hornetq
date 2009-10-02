@@ -20,10 +20,20 @@
    <import file="../../common/build.xml"/>
 
    <!-- We use a minimal classpath on this example -->
+   <path id="extra.classpath">
+ 	  <fileset dir="${jars.dir}">
+ 	     <include name="**/jnpserver.jar"/>	     
+ 	     <include name="**/jboss-logging-spi.jar"/>	     
+ 	     <include name="**/jboss-common-core.jar"/>	     
+ 	     <include name="**/netty.jar"/>	     
+ 	  </fileset>
+   </path>
+      
    <path id="local.classpath">
 	  <fileset dir="${hornetq.jars.dir}">
 	       <include name="hornetq-core.jar"/>
 	       <include name="hornetq-jms.jar"/>
+	       <include name="hornetq-transports.jar"/>
 	  </fileset>
 	 	
 	  <fileset dir="${jars.dir}">
@@ -31,10 +41,10 @@
 	  </fileset>
 
    	  <pathelement location="${classes.dir}"/>	   	
+   	  <path refid="extra.classpath"/>
    </path>
 
    <target name="run" depends="compile">   	
-
     <java classname="org.hornetq.jms.example.EmbeddedExample" fork="true" resultproperty="example-result">
        <jvmarg value="-Xms50M"/>
        <jvmarg value="-Xmx50M"/>
@@ -42,7 +52,7 @@
     </java>
     
     <!-- if the example exited with a result value != 0, we fail the build -->
-    <fail message="Example ${example.classname} failed">
+    <fail message="Example EmbeddedExample failed">
        <condition>
           <not>
              <equals arg1="${example-result}" arg2="0"/>
