@@ -23,7 +23,6 @@ import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CONN
 import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CONSUMER_MAX_RATE;
 import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CONSUMER_WINDOW_SIZE;
 import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN;
-import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_MAX_CONNECTIONS;
 import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_MAX_RETRY_INTERVAL;
 import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_MIN_LARGE_MESSAGE_SIZE;
 import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_PRE_ACKNOWLEDGE;
@@ -44,7 +43,6 @@ import javax.jms.DeliveryMode;
 import javax.jms.MessageProducer;
 import javax.jms.Session;
 
-import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
 import org.hornetq.core.config.TransportConfiguration;
 import org.hornetq.jms.client.HornetQConnectionFactory;
 import org.hornetq.utils.Pair;
@@ -93,8 +91,7 @@ public class CTSMiscellaneousTest extends HornetQServerTestCase
                                                        null,
                                                        DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
                                                        DEFAULT_CONNECTION_TTL,
-                                                       DEFAULT_CALL_TIMEOUT,
-                                                       DEFAULT_MAX_CONNECTIONS,
+                                                       DEFAULT_CALL_TIMEOUT,                                                       
                                                        DEFAULT_CACHE_LARGE_MESSAGE_CLIENT,
                                                        DEFAULT_MIN_LARGE_MESSAGE_SIZE,
                                                        DEFAULT_CONSUMER_WINDOW_SIZE,

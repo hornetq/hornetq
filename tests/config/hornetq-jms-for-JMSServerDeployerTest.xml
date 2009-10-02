@@ -29,7 +29,6 @@
       <discovery-initial-wait-timeout>678</discovery-initial-wait-timeout>
       <failover-on-server-shutdown>false</failover-on-server-shutdown>
       <connection-load-balancing-policy-class-name>FooClass</connection-load-balancing-policy-class-name>
-      <max-connections>12</max-connections>
       <reconnect-attempts>34</reconnect-attempts>
       <retry-interval>5</retry-interval>
       <retry-interval-multiplier>6.0</retry-interval-multiplier>

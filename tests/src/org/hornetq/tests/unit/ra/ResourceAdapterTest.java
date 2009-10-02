@@ -80,8 +80,7 @@ public class ResourceAdapterTest extends ServiceTestBase
       assertEquals(factory.getDiscoveryInitialWaitTimeout(), ClientSessionFactoryImpl.DEFAULT_DISCOVERY_INITIAL_WAIT_TIMEOUT);
       assertEquals(factory.getDiscoveryPort(), 0);
       assertEquals(factory.getDiscoveryRefreshTimeout(), ClientSessionFactoryImpl.DEFAULT_DISCOVERY_REFRESH_TIMEOUT);
-      assertEquals(factory.getDupsOKBatchSize(), ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE);
-      assertEquals(factory.getMaxConnections(), ClientSessionFactoryImpl.DEFAULT_MAX_CONNECTIONS);
+      assertEquals(factory.getDupsOKBatchSize(), ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE);     
       assertEquals(factory.getMinLargeMessageSize(), ClientSessionFactoryImpl.DEFAULT_MIN_LARGE_MESSAGE_SIZE);
       assertEquals(factory.getProducerMaxRate(), ClientSessionFactoryImpl.DEFAULT_PRODUCER_MAX_RATE);
       assertEquals(factory.getProducerWindowSize(), ClientSessionFactoryImpl.DEFAULT_PRODUCER_WINDOW_SIZE);
@@ -125,8 +124,7 @@ public class ResourceAdapterTest extends ServiceTestBase
       assertEquals(factory.getDiscoveryInitialWaitTimeout(), ClientSessionFactoryImpl.DEFAULT_DISCOVERY_INITIAL_WAIT_TIMEOUT);
       assertEquals(factory.getDiscoveryPort(), 0);
       assertEquals(factory.getDiscoveryRefreshTimeout(), ClientSessionFactoryImpl.DEFAULT_DISCOVERY_REFRESH_TIMEOUT);
-      assertEquals(factory.getDupsOKBatchSize(), ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE);
-      assertEquals(factory.getMaxConnections(), ClientSessionFactoryImpl.DEFAULT_MAX_CONNECTIONS);
+      assertEquals(factory.getDupsOKBatchSize(), ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE);     
       assertEquals(factory.getMinLargeMessageSize(), ClientSessionFactoryImpl.DEFAULT_MIN_LARGE_MESSAGE_SIZE);
       assertEquals(factory.getProducerMaxRate(), ClientSessionFactoryImpl.DEFAULT_PRODUCER_MAX_RATE);
       assertEquals(factory.getProducerWindowSize(), ClientSessionFactoryImpl.DEFAULT_PRODUCER_WINDOW_SIZE);
@@ -163,8 +161,7 @@ public class ResourceAdapterTest extends ServiceTestBase
       ra.setDiscoveryInitialWaitTimeout(6l);
       ra.setDiscoveryRefreshTimeout(7l);
       ra.setDupsOKBatchSize(8);
-      ra.setFailoverOnServerShutdown(!ClientSessionFactoryImpl.DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN);
-      ra.setMaxConnections(9);
+      ra.setFailoverOnServerShutdown(!ClientSessionFactoryImpl.DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN);    
       ra.setMinLargeMessageSize(10);
       ra.setPreAcknowledge(!ClientSessionFactoryImpl.DEFAULT_PRE_ACKNOWLEDGE);
       ra.setProducerMaxRate(11);
@@ -188,8 +185,7 @@ public class ResourceAdapterTest extends ServiceTestBase
       assertEquals(factory.getDiscoveryInitialWaitTimeout(), 6);
       assertEquals(factory.getDiscoveryPort(), 0);
       assertEquals(factory.getDiscoveryRefreshTimeout(), 7);
-      assertEquals(factory.getDupsOKBatchSize(), 8);
-      assertEquals(factory.getMaxConnections(), 9);
+      assertEquals(factory.getDupsOKBatchSize(), 8);     
       assertEquals(factory.getMinLargeMessageSize(), 10);
       assertEquals(factory.getProducerMaxRate(), 11);
       assertEquals(factory.getProducerWindowSize(), 12);
@@ -227,8 +223,7 @@ public class ResourceAdapterTest extends ServiceTestBase
       connectionFactoryProperties.setDiscoveryInitialWaitTimeout(6l);
       connectionFactoryProperties.setDiscoveryRefreshTimeout(7l);
       connectionFactoryProperties.setDupsOKBatchSize(8);
-      connectionFactoryProperties.setFailoverOnServerShutdown(!ClientSessionFactoryImpl.DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN);
-      connectionFactoryProperties.setMaxConnections(9);
+      connectionFactoryProperties.setFailoverOnServerShutdown(!ClientSessionFactoryImpl.DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN);     
       connectionFactoryProperties.setMinLargeMessageSize(10);
       connectionFactoryProperties.setPreAcknowledge(!ClientSessionFactoryImpl.DEFAULT_PRE_ACKNOWLEDGE);
       connectionFactoryProperties.setProducerMaxRate(11);
@@ -252,8 +247,7 @@ public class ResourceAdapterTest extends ServiceTestBase
       assertEquals(factory.getDiscoveryInitialWaitTimeout(), 6);
       assertEquals(factory.getDiscoveryPort(), 0);
       assertEquals(factory.getDiscoveryRefreshTimeout(), 7);
-      assertEquals(factory.getDupsOKBatchSize(), 8);
-      assertEquals(factory.getMaxConnections(), 9);
+      assertEquals(factory.getDupsOKBatchSize(), 8);      
       assertEquals(factory.getMinLargeMessageSize(), 10);
       assertEquals(factory.getProducerMaxRate(), 11);
       assertEquals(factory.getProducerWindowSize(), 12);

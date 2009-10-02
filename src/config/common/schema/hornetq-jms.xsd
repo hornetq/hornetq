@@ -87,9 +87,6 @@
             <xsd:element name="auto-group-id" type="xsd:boolean"
                 maxOccurs="1" minOccurs="0">
             </xsd:element>
-            <xsd:element name="max-connections" type="xsd:int"
-                maxOccurs="1" minOccurs="0">
-            </xsd:element>
             <xsd:element name="pre-acknowledge" type="xsd:boolean"
    				maxOccurs="1" minOccurs="0">
    			</xsd:element>

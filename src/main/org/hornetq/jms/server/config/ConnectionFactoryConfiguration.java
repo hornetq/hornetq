@@ -63,10 +63,6 @@ public interface ConnectionFactoryConfiguration
 
    void setCallTimeout(long callTimeout);
 
-   int getMaxConnections();
-
-   void setMaxConnections(int maxConnections);
-
    boolean isCacheLargeMessagesClient();
 
    void setCacheLargeMessagesClient(boolean cacheLargeMessagesClient);

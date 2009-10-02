@@ -126,6 +126,8 @@ public class FailoverTest extends FailoverTestBase
       boolean ok = latch.await(1000, TimeUnit.MILLISECONDS);
 
       assertTrue(ok);
+      
+      log.info("got here 1");
 
       ClientConsumer consumer = session.createConsumer(ADDRESS);
 
@@ -149,6 +151,7 @@ public class FailoverTest extends FailoverTestBase
          }
       }
 
+      log.info("closing session");
       session.close();
 
       assertEquals(0, sf.numSessions());
@@ -1291,117 +1294,7 @@ public class FailoverTest extends FailoverTestBase
       assertEquals(0, sf.numConnections());
    }
 
-   public void testFailoverFailMultipleUnderlyingConnections() throws Exception
-   {
-      ClientSessionFactoryInternal sf = getSessionFactory();
-
-      sf.setBlockOnNonPersistentSend(true);
-      sf.setBlockOnPersistentSend(true);
-
-      class MyListener implements FailureListener
-      {
-         CountDownLatch latch = new CountDownLatch(1);
-
-         public void connectionFailed(HornetQException me)
-         {
-            latch.countDown();
-         }
-      }
-
-      ClientSession session1 = sf.createSession(true, true);
-      ClientSession session2 = sf.createSession(true, true);
-      ClientSession session3 = sf.createSession(true, true);
-
-      SimpleString queueName1 = new SimpleString("queue1");
-      session1.createQueue(ADDRESS, queueName1, null, true);
-      MyListener listener1 = new MyListener();
-      session1.addFailureListener(listener1);
-
-      SimpleString queueName2 = new SimpleString("queue2");
-      session2.createQueue(ADDRESS, queueName2, null, true);
-      MyListener listener2 = new MyListener();
-      session2.addFailureListener(listener2);
-
-      SimpleString queueName3 = new SimpleString("queue3");
-      session3.createQueue(ADDRESS, queueName3, null, true);
-      MyListener listener3 = new MyListener();
-      session3.addFailureListener(listener3);
-
-      ClientConsumer consumer1 = session1.createConsumer(queueName1);
-      ClientConsumer consumer2 = session1.createConsumer(queueName2);
-      ClientConsumer consumer3 = session1.createConsumer(queueName3);
-
-      ClientProducer producer = session1.createProducer(ADDRESS);
-
-      final int numMessages = 100;
-
-      for (int i = 0; i < numMessages; i++)
-      {
-         ClientMessage message = session1.createClientMessage(true);
-
-         message.getBody().writeString("message" + i);
-
-         message.putIntProperty("counter", i);
-
-         producer.send(message);
-      }
-
-      // Fail all the connections
-
-      RemotingConnection conn1 = ((ClientSessionInternal)session1).getConnection();
-      RemotingConnection conn2 = ((ClientSessionInternal)session2).getConnection();
-      RemotingConnection conn3 = ((ClientSessionInternal)session3).getConnection();
-
-      assertTrue(conn1 != conn2);
-      assertTrue(conn2 != conn3);
-      assertTrue(conn1 != conn3);
-
-      conn2.fail(new HornetQException(HornetQException.NOT_CONNECTED));
-      conn3.fail(new HornetQException(HornetQException.NOT_CONNECTED));
-
-      // Wait to be informed of failure
-
-      boolean ok = listener1.latch.await(1000, TimeUnit.MILLISECONDS);
-      assertTrue(ok);
-      ok = listener2.latch.await(1000, TimeUnit.MILLISECONDS);
-      assertTrue(ok);
-      ok = listener3.latch.await(1000, TimeUnit.MILLISECONDS);
-      assertTrue(ok);
-
-      session1.start();
-      session2.start();
-      session3.start();
-
-      for (int i = 0; i < numMessages; i++)
-      {
-         ClientMessage message = consumer1.receive(1000);
-         assertNotNull(message);
-         assertEquals("message" + i, message.getBody().readString());
-         assertEquals(i, message.getProperty("counter"));
-         message.acknowledge();
-
-         message = consumer2.receive(1000);
-         assertNotNull(message);
-         assertEquals("message" + i, message.getBody().readString());
-         assertEquals(i, message.getProperty("counter"));
-         message.acknowledge();
-
-         message = consumer3.receive(1000);
-         assertNotNull(message);
-         assertEquals("message" + i, message.getBody().readString());
-         assertEquals(i, message.getProperty("counter"));
-         message.acknowledge();
-      }
-
-      session1.close();
-      session2.close();
-      session3.close();
-
-      assertEquals(0, sf.numSessions());
-
-      assertEquals(0, sf.numConnections());
-   }
-
+   
    /*
     * Browser will get reset to beginning after failover
     */

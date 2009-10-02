@@ -130,11 +130,6 @@ public class JMSConnectionFactoryControlImpl extends StandardMBean implements Co
       return cf.getConnectionTTL();
    }
 
-   public int getMaxConnections()
-   {
-      return cf.getMaxConnections();
-   }
-
    public int getReconnectAttempts()
    {
       return cf.getReconnectAttempts();

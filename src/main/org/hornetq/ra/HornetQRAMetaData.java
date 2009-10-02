@@ -81,21 +81,6 @@ public class HornetQRAMetaData implements ManagedConnectionMetaData
    }
 
    /**
-    * Get the maximum number of connections -- RETURNS 0
-    * @return The number
-    * @exception ResourceException Thrown if operation fails
-    */
-   public int getMaxConnections() throws ResourceException
-   {
-      if (trace)
-      {
-         log.trace("getMaxConnections()");
-      }
-
-      return 0;
-   }
-
-   /**
     * Get the user name
     * @return The user name
     * @exception ResourceException Thrown if operation fails
@@ -108,5 +93,14 @@ public class HornetQRAMetaData implements ManagedConnectionMetaData
       }
 
       return mc.getUserName();
+   }
+
+   /* (non-Javadoc)
+    * @see javax.resource.spi.ManagedConnectionMetaData#getMaxConnections()
+    */   
+   public int getMaxConnections() throws ResourceException
+   {     
+      // TODO Auto-generated method stub
+      return 0;
    }
 }

@@ -30,7 +30,6 @@ import org.hornetq.utils.Pair;
  */
 public class ConnectionFactoryConfigurationImpl implements ConnectionFactoryConfiguration
 {
-
    // Constants -----------------------------------------------------
 
    // Attributes ----------------------------------------------------
@@ -54,8 +53,6 @@ public class ConnectionFactoryConfigurationImpl implements ConnectionFactoryConf
    public long connectionTTL = ClientSessionFactoryImpl.DEFAULT_CONNECTION_TTL;
 
    public long callTimeout = ClientSessionFactoryImpl.DEFAULT_CALL_TIMEOUT;
-
-   public int maxConnections = ClientSessionFactoryImpl.DEFAULT_MAX_CONNECTIONS;
 
    public boolean cacheLargeMessagesClient = ClientSessionFactoryImpl.DEFAULT_CACHE_LARGE_MESSAGE_CLIENT;
 
@@ -230,16 +227,6 @@ public class ConnectionFactoryConfigurationImpl implements ConnectionFactoryConf
    public void setCallTimeout(long callTimeout)
    {
       this.callTimeout = callTimeout;
-   }
-
-   public int getMaxConnections()
-   {
-      return maxConnections;
-   }
-
-   public void setMaxConnections(int maxConnections)
-   {
-      this.maxConnections = maxConnections;
    }
 
    public boolean isCacheLargeMessagesClient()

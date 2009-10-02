@@ -541,12 +541,7 @@ public class MDBMessageSendTxExample implements MessageListener
                             <entry>AutoGroup</entry>
                             <entry>boolean</entry>
                             <entry>If true then auto group messages</entry>
-                        </row>
-                        <row>
-                            <entry>MaxConnections</entry>
-                            <entry>integer</entry>
-                            <entry>The max number of connections.</entry>
-                        </row>
+                        </row>           
                         <row>
                             <entry>PreAcknowledge</entry>
                             <entry>boolean</entry>

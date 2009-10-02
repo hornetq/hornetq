@@ -836,37 +836,7 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
 
       raProperties.setAutoGroup(autoGroup);
    }
-
-   /**
-    * Get max connections
-    *
-    * @return The value
-    */
-   public Integer getMaxConnections()
-   {
-      if (trace)
-      {
-         log.trace("getMaxConnections()");
-      }
-
-      return raProperties.getMaxConnections();
-   }
-
-   /**
-    * Set max connections
-    *
-    * @param maxConnections The value
-    */
-   public void setMaxConnections(final Integer maxConnections)
-   {
-      if (trace)
-      {
-         log.trace("setMaxConnections(" + maxConnections + ")");
-      }
-
-      raProperties.setMaxConnections(maxConnections);
-   }
-
+  
    /**
     * Get pre acknowledge
     *
@@ -1494,12 +1464,7 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
       {
          cf.setDupsOKBatchSize(val2);
       }
-      val2 = overrideProperties.getMaxConnections() != null ? overrideProperties.getMaxConnections()
-                                                           : raProperties.getMaxConnections();
-      if (val2 != null)
-      {
-         cf.setMaxConnections(val2);
-      }
+      
       val2 = overrideProperties.getMinLargeMessageSize() != null ? overrideProperties.getMinLargeMessageSize()
                                                                 : raProperties.getMinLargeMessageSize();
       if (val2 != null)

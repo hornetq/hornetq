@@ -109,8 +109,6 @@ public interface HornetQServer extends HornetQComponent
 
    SimpleString getNodeID();
 
-  // void initialiseBackup(UUID nodeID, long currentMessageID) throws Exception;
-
    boolean isInitialised();
 
    Queue createQueue(SimpleString address,

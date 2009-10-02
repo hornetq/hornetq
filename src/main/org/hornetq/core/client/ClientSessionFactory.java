@@ -70,10 +70,6 @@ public interface ClientSessionFactory
 
    void setCallTimeout(long callTimeout);
 
-   int getMaxConnections();
-
-   void setMaxConnections(int maxConnections);
-
    int getMinLargeMessageSize();
 
    void setMinLargeMessageSize(int minLargeMessageSize);

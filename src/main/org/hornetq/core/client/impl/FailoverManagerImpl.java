@@ -15,15 +15,10 @@ package org.hornetq.core.client.impl;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
@@ -67,19 +62,19 @@ import org.hornetq.utils.VersionLoader;
  * Created 27 Nov 2008 18:46:06
  *
  */
-public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeCycleListener
+public class FailoverManagerImpl implements FailoverManager, ConnectionLifeCycleListener
 {
    // Constants
    // ------------------------------------------------------------------------------------
 
    private static final long serialVersionUID = 2512460695662741413L;
 
-   private static final Logger log = Logger.getLogger(ConnectionManagerImpl.class);
+   private static final Logger log = Logger.getLogger(FailoverManagerImpl.class);
 
    // Attributes
    // -----------------------------------------------------------------------------------
 
-   //We hold this reference for GC reasons
+   // We hold this reference for GC reasons
    private final ClientSessionFactory sessionFactory;
 
    private final TransportConfiguration connectorConfig;
@@ -94,15 +89,13 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
 
    private Map<String, Object> backupTransportParams;
 
-   private final int maxConnections;
-
    private final long callTimeout;
 
    private final long clientFailureCheckPeriod;
 
    private final long connectionTTL;
 
-   private final Map<ClientSessionInternal, RemotingConnection> sessions = new HashMap<ClientSessionInternal, RemotingConnection>();
+   private final Set<ClientSessionInternal> sessions = new HashSet<ClientSessionInternal>();
 
    private final Object exitLock = new Object();
 
@@ -118,16 +111,12 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
 
    private final ScheduledExecutorService scheduledThreadPool;
 
-   private final Map<Object, ConnectionEntry> connections = Collections.synchronizedMap(new LinkedHashMap<Object, ConnectionEntry>());
-
-   private int refCount;
-
-   private Iterator<ConnectionEntry> mapIterator;
+   private RemotingConnection connection;
 
    private final long retryInterval;
 
    private final double retryIntervalMultiplier; // For exponential backoff
-   
+
    private final long maxRetryInterval;
 
    private final int reconnectAttempts;
@@ -143,23 +132,10 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
    private PingRunnable pingRunnable;
 
    private volatile boolean exitLoop;
-   
+
    private final List<Interceptor> interceptors;
-   
+
    private final boolean useReattach;
-
-   // debug
-
-   private static Map<TransportConfiguration, Set<RemotingConnection>> debugConns;
-
-   private static boolean debug = false;
-
-   public static void enableDebug()
-   {
-      debug = true;
-
-      debugConns = new ConcurrentHashMap<TransportConfiguration, Set<RemotingConnection>>();
-   }
 
    // Static
    // ---------------------------------------------------------------------------------------
@@ -167,11 +143,10 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
    // Constructors
    // ---------------------------------------------------------------------------------
 
-   public ConnectionManagerImpl(final ClientSessionFactory sessionFactory,
+   public FailoverManagerImpl(final ClientSessionFactory sessionFactory,
                                 final TransportConfiguration connectorConfig,
                                 final TransportConfiguration backupConfig,
                                 final boolean failoverOnServerShutdown,
-                                final int maxConnections,
                                 final long callTimeout,
                                 final long clientFailureCheckPeriod,
                                 final long connectionTTL,
@@ -209,8 +184,6 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
          backupTransportParams = null;
       }
 
-      this.maxConnections = maxConnections;
-
       this.callTimeout = callTimeout;
 
       this.clientFailureCheckPeriod = clientFailureCheckPeriod;
@@ -220,11 +193,11 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
       this.retryInterval = retryInterval;
 
       this.retryIntervalMultiplier = retryIntervalMultiplier;
-      
+
       this.maxRetryInterval = maxRetryInterval;
 
       this.reconnectAttempts = reconnectAttempts;
-      
+
       this.useReattach = useReattach;
 
       this.scheduledThreadPool = scheduledThreadPool;
@@ -232,7 +205,7 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
       this.threadPool = threadPool;
 
       this.orderedExecutorFactory = new OrderedExecutorFactory(threadPool);
-      
+
       this.interceptors = interceptors;
    }
 
@@ -244,12 +217,13 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
 
    public void connectionDestroyed(final Object connectionID)
    {
-      failConnection(connectionID, new HornetQException(HornetQException.NOT_CONNECTED, "Channel disconnected"));
+      this.handleConnectionFailure(connectionID, new HornetQException(HornetQException.NOT_CONNECTED,
+                                                                      "Channel disconnected"));
    }
 
    public void connectionException(final Object connectionID, final HornetQException me)
    {
-      failConnection(connectionID, me);
+      this.handleConnectionFailure(connectionID, me);
    }
 
    // ConnectionManager implementation ------------------------------------------------------------------
@@ -290,8 +264,8 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
                Channel channel1;
 
                synchronized (failoverLock)
-               {                
-                  connection = getConnectionWithRetry(1, reconnectAttempts);
+               {
+                  connection = getConnectionWithRetry(reconnectAttempts);
 
                   if (connection == null)
                   {
@@ -303,7 +277,7 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
 
                      throw new HornetQException(HornetQException.NOT_CONNECTED,
                                                 "Unable to connect to server using configuration " + connectorConfig);
-                                    
+
                   }
 
                   channel1 = connection.getChannel(1, -1, false);
@@ -348,10 +322,10 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
 
                      // So we just need to return our connections and flag for retry
 
-                     returnConnection(connection.getID());
+                     checkCloseConnection();
 
                      retry = true;
-                     
+
                      continue;
                   }
                   else
@@ -390,7 +364,7 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
                                                                      sessionChannel,
                                                                      orderedExecutorFactory.getExecutor());
 
-               sessions.put(session, connection);
+               sessions.add(session);
 
                ChannelHandler handler = new ClientSessionPacketHandler(session, sessionChannel);
 
@@ -407,10 +381,7 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
                   lock = null;
                }
 
-               if (connection != null)
-               {
-                  returnConnection(connection.getID());
-               }
+               checkCloseConnection();
 
                if (t instanceof HornetQException)
                {
@@ -460,14 +431,14 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
          {
             sessions.remove(session);
 
-            returnConnection(session.getConnection().getID());
+            checkCloseConnection();
          }
       }
    }
 
    public synchronized int numConnections()
    {
-      return connections.size();
+      return connection != null ? 1 : 0;
    }
 
    public int numSessions()
@@ -509,24 +480,23 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
    // Private
    // --------------------------------------------------------------------------------------
 
-   private void handleConnectionFailure(final HornetQException me, final Object connectionID)
+   private void handleConnectionFailure(final Object connectionID, final HornetQException me)
    {
-      failoverOrReconnect(me, connectionID);
+      failoverOrReconnect(connectionID, me);
    }
 
-   private void failoverOrReconnect(final HornetQException me, final Object connectionID)
+   private void failoverOrReconnect(final Object connectionID, final HornetQException me)
    {
       boolean done = false;
 
       synchronized (failoverLock)
       {
-         if (connectionID != null && !connections.containsKey(connectionID))
+         if (connection == null || connection.getID() != connectionID)
          {
             // We already failed over/reconnected - probably the first failure came in, all the connections were failed
             // over then a async connection exception or disconnect
             // came in for one of the already exitLoop connections, so we return true - we don't want to call the
             // listeners again
-
             return;
          }
 
@@ -556,13 +526,13 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
          // until failover is complete
 
          boolean serverShutdown = me.getCode() == HornetQException.DISCONNECTED;
-         
-         //We will try to failover if there is a backup connector factory, but we don't do this if the server
-         //has been shutdown cleanly unless failoverOnServerShutdown is true
+
+         // We will try to failover if there is a backup connector factory, but we don't do this if the server
+         // has been shutdown cleanly unless failoverOnServerShutdown is true
          boolean attemptFailover = backupConnectorFactory != null && (failoverOnServerShutdown || !serverShutdown);
-         
+
          boolean attemptReconnect;
-         
+
          if (attemptFailover)
          {
             attemptReconnect = false;
@@ -571,10 +541,10 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
          {
             attemptReconnect = reconnectAttempts != 0;
          }
-         
+
          if (attemptFailover || attemptReconnect)
          {
-            lockAllChannel1s();
+            lockChannel1();
 
             final boolean needToInterrupt;
 
@@ -583,13 +553,13 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
                needToInterrupt = inCreateSession;
             }
 
-            unlockAllChannel1s();
+            unlockChannel1();
 
             if (needToInterrupt)
             {
                // Forcing return all channels won't guarantee that any blocked thread will return immediately
                // So we need to wait for it
-               forceReturnAllChannel1s();
+               forceReturnChannel1();
 
                // Now we need to make sure that the thread has actually exited and returned it's connections
                // before failover occurs
@@ -614,18 +584,9 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
 
             // So.. do failover / reconnection
 
-            Set<RemotingConnection> oldConnections = new HashSet<RemotingConnection>();
+            RemotingConnection oldConnection = connection;
 
-            for (ConnectionEntry entry : connections.values())
-            {
-               oldConnections.add(entry.connection);
-            }
-
-            connections.clear();
-
-            refCount = 0;
-
-            mapIterator = null;
+            connection = null;
 
             try
             {
@@ -658,37 +619,19 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
 
             if (done)
             {
-               // Destroy the old connections
-               for (RemotingConnection connection : oldConnections)
-               {
-                  connection.destroy();
-               }
+               // Destroy the old connection
+
+               oldConnection.destroy();
             }
             else
             {
-               for (RemotingConnection connection : oldConnections)
-               {
-                  connection.destroy();
-               }
-
-               closeAllConnections();
+               oldConnection.destroy();
             }
          }
-         else
-         {
-            closeAllConnections();
-         }
-         
-         //We always call the failure listeners
+
+         // We always call the failure listeners
          callFailureListeners(me);
       }
-   }
-
-   private void closeAllConnections()
-   {
-      refCount = 0;
-      mapIterator = null;
-      checkCloseConnections();     
    }
 
    private void callFailureListeners(final HornetQException me)
@@ -712,107 +655,67 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
    }
 
    /*
-    * Re-attach sessions all pre-existing sessions to new remoting connections
+    * Re-attach sessions all pre-existing sessions to the new remoting connection
     */
    private boolean reattachSessions(final int reconnectAttempts, final boolean reattach)
    {
-      // We re-attach sessions per connection to ensure there is the same mapping of channel id
-      // on live and backup connections
+      RemotingConnection backupConnection = getConnectionWithRetry(reconnectAttempts);
 
-      Map<RemotingConnection, List<ClientSessionInternal>> sessionsPerConnection = new HashMap<RemotingConnection, List<ClientSessionInternal>>();
-
-      for (Map.Entry<ClientSessionInternal, RemotingConnection> entry : sessions.entrySet())
+      if (backupConnection == null)
       {
-         ClientSessionInternal session = entry.getKey();
+         log.warn("Failed to connect to server.");
 
-         RemotingConnection connection = entry.getValue();
-
-         List<ClientSessionInternal> sessions = sessionsPerConnection.get(connection);
-
-         if (sessions == null)
-         {
-            sessions = new ArrayList<ClientSessionInternal>();
-
-            sessionsPerConnection.put(connection, sessions);
-         }
-
-         sessions.add(session);
+         return false;
       }
+
+      List<FailureListener> oldListeners = connection.getFailureListeners();
+
+      List<FailureListener> newListeners = new ArrayList<FailureListener>(backupConnection.getFailureListeners());
+
+      for (FailureListener listener : oldListeners)
+      {
+         // Add all apart from the first one which is the old DelegatingFailureListener
+
+         if (listener instanceof DelegatingFailureListener == false)
+         {
+            newListeners.add(listener);
+         }
+      }
+
+      backupConnection.setFailureListeners(newListeners);
 
       boolean ok = true;
 
-      for (Map.Entry<RemotingConnection, List<ClientSessionInternal>> entry : sessionsPerConnection.entrySet())
+      // If all connections got ok, then handle failover
+      for (ClientSessionInternal session : sessions)
       {
-         List<ClientSessionInternal> theSessions = entry.getValue();
+         boolean b;
 
-         RemotingConnection backupConnection = getConnectionWithRetry(theSessions.size(), reconnectAttempts);
-
-         if (backupConnection == null)
+         if (reattach)
          {
-            log.warn("Failed to connect to server.");
+            b = session.handleReattach(backupConnection);
+         }
+         else
+         {
+            b = session.handleFailover(backupConnection);
+         }
 
+         if (!b)
+         {
+            // If a session fails to re-attach we doom the lot, but we make sure we try all sessions and don't exit
+            // early
+            // or connections might be left lying around
             ok = false;
-
-            break;
          }
-
-         List<FailureListener> oldListeners = entry.getKey().getFailureListeners();
-
-         List<FailureListener> newListeners = new ArrayList<FailureListener>(backupConnection.getFailureListeners());
-
-         for (FailureListener listener : oldListeners)
-         {
-            // Add all apart from the first one which is the old DelegatingFailureListener
-
-            if (listener instanceof DelegatingFailureListener == false)
-            {
-               newListeners.add(listener);
-            }
-         }
-
-         backupConnection.setFailureListeners(newListeners);
-
-         for (ClientSessionInternal session : theSessions)
-         {
-            sessions.put(session, backupConnection);
-         }
-      }
-
-      if (ok)
-      {
-         // If all connections got ok, then handle failover
-         for (Map.Entry<ClientSessionInternal, RemotingConnection> entry : sessions.entrySet())
-         {
-            boolean b;
-            
-            if (reattach)
-            {
-               b = entry.getKey().handleReattach(entry.getValue());
-            }
-            else
-            {
-               b = entry.getKey().handleFailover(entry.getValue());
-            }
-            
-            if (!b)
-            {
-               // If a session fails to re-attach we doom the lot, but we make sure we try all sessions and don't exit
-               // early
-               // or connections might be left lying around
-               ok = false;
-            }
-         }
-         
-         log.info("Reconnected ok");
       }
 
       return ok;
    }
 
-   private RemotingConnection getConnectionWithRetry(final int initialRefCount, final int reconnectAttempts)
+   private RemotingConnection getConnectionWithRetry(final int reconnectAttempts)
    {
       long interval = retryInterval;
-      
+
       int count = 0;
 
       while (true)
@@ -822,7 +725,7 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
             return null;
          }
 
-         RemotingConnection connection = getConnection(initialRefCount);
+         RemotingConnection connection = getConnection();
 
          if (connection == null)
          {
@@ -841,8 +744,6 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
 
                try
                {
-                  log.info("sleeping " + interval);
-                  
                   Thread.sleep(interval);
                }
                catch (InterruptedException ignore)
@@ -851,12 +752,12 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
 
                // Exponential back-off
                long newInterval = (long)((double)interval * retryIntervalMultiplier);
-               
+
                if (newInterval > maxRetryInterval)
                {
                   newInterval = maxRetryInterval;
                }
-               
+
                interval = newInterval;
             }
             else
@@ -871,14 +772,10 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
       }
    }
 
-   private void checkCloseConnections()
+   private void checkCloseConnection()
    {
-      if (refCount == 0)
+      if (connection != null && sessions.size() == 0)
       {
-         // Close connections
-
-         Set<ConnectionEntry> copy = new HashSet<ConnectionEntry>(connections.values());
-
          if (pingerFuture != null)
          {
             pingRunnable.cancel();
@@ -890,20 +787,15 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
             pingerFuture = null;
          }
 
-         connections.clear();
-
-         for (ConnectionEntry entry : copy)
+         try
          {
-            try
-            {
-               entry.connection.destroy();
-            }
-            catch (Throwable ignore)
-            {
-            }
+            connection.destroy();
+         }
+         catch (Throwable ignore)
+         {
          }
 
-         mapIterator = null;
+         connection = null;
 
          try
          {
@@ -918,17 +810,12 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
 
          connector = null;
       }
-
    }
 
-   public RemotingConnection getConnection(final int initialRefCount)
+   public RemotingConnection getConnection()
    {
-      RemotingConnection conn;
-
-      if (connections.size() < maxConnections)
+      if (connection == null)
       {
-         // Create a new one
-
          Connection tc = null;
 
          try
@@ -1003,19 +890,14 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
 
          if (tc == null)
          {
-            return null;
+            return connection;
          }
 
-         conn = new RemotingConnectionImpl(tc, callTimeout, interceptors);
+         connection = new RemotingConnectionImpl(tc, callTimeout, interceptors);
 
-         conn.addFailureListener(new DelegatingFailureListener(conn.getID()));
+         connection.addFailureListener(new DelegatingFailureListener(connection.getID()));
 
-         conn.getChannel(0, -1, false).setHandler(new Channel0Handler(conn));
-
-         connections.put(conn.getID(), new ConnectionEntry(conn,
-                                                           connector,
-                                                           clientFailureCheckPeriod,
-                                                           System.currentTimeMillis()));
+         connection.getChannel(0, -1, false).setHandler(new Channel0Handler(connection));
 
          if (clientFailureCheckPeriod != -1)
          {
@@ -1034,50 +916,10 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
             {
                pingRunnable.run();
             }
-         }
-
-         if (debug)
-         {
-            checkAddDebug(conn);
-         }
-      }
-      else
-      {
-         // Return one round-robin from the list
-
-         if (mapIterator == null || !mapIterator.hasNext())
-         {
-            mapIterator = connections.values().iterator();
-         }
-
-         ConnectionEntry entry = mapIterator.next();
-
-         conn = entry.connection;
-      }
-
-      refCount += initialRefCount;
-
-      return conn;
-   }
-
-   private void returnConnection(final Object connectionID)
-   {
-      ConnectionEntry entry = connections.get(connectionID);
-
-      if (refCount != 0)
-      {
-         refCount--;
-      }
-
-      if (entry != null)
-      {
-         checkCloseConnections();
-      }
-      else
-      {
-         // Can be legitimately null if session was exitLoop before then went to remove session from csf
-         // and locked since failover had started then after failover removes it but it's already been failed
-      }
+         }                 
+      }  
+      
+      return connection;
    }
 
    private ConnectorFactory instantiateConnectorFactory(final String connectorFactoryClassName)
@@ -1095,46 +937,25 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
       }
    }
 
-   private void lockAllChannel1s()
+   private void lockChannel1()
    {
-      for (ConnectionEntry entry : connections.values())
-      {
-         Channel channel1 = entry.connection.getChannel(1, -1, false);
+      Channel channel1 = connection.getChannel(1, -1, false);
 
-         channel1.getLock().lock();
-      }
+      channel1.getLock().lock();
    }
 
-   private void unlockAllChannel1s()
+   private void unlockChannel1()
    {
-      for (ConnectionEntry entry : connections.values())
-      {
-         Channel channel1 = entry.connection.getChannel(1, -1, false);
+      Channel channel1 = connection.getChannel(1, -1, false);
 
-         channel1.getLock().unlock();
-      }
+      channel1.getLock().unlock();
    }
 
-   private void forceReturnAllChannel1s()
+   private void forceReturnChannel1()
    {
-      for (ConnectionEntry entry : connections.values())
-      {
-         Channel channel1 = entry.connection.getChannel(1, -1, false);
+      Channel channel1 = connection.getChannel(1, -1, false);
 
-         channel1.returnBlocking();
-      }
-   }
-
-   private void failConnection(final Object connectionID, final HornetQException me)
-   {
-      ConnectionEntry entry = connections.get(connectionID);
-
-      if (entry != null)
-      {
-         RemotingConnection conn = entry.connection;
-
-         conn.fail(me);
-      }
+      channel1.returnBlocking();
    }
 
    private class Channel0Handler implements ChannelHandler
@@ -1166,47 +987,22 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
       }
    }
 
-   private static class ConnectionEntry
-   {
-      ConnectionEntry(final RemotingConnection connection,
-                      final Connector connector,
-                      final long expiryPeriod,
-                      final long createTime)
-      {
-         this.connection = connection;
-
-         this.connector = connector;
-
-         this.expiryPeriod = expiryPeriod;
-
-         this.lastCheck = createTime;
-      }
-
-      final RemotingConnection connection;
-
-      final Connector connector;
-
-      volatile long lastCheck;
-
-      final long expiryPeriod;
-   }
-
    private class DelegatingBufferHandler extends AbstractBufferHandler
    {
       public void bufferReceived(final Object connectionID, final HornetQBuffer buffer)
       {
-         ConnectionEntry entry = connections.get(connectionID);
+         // ConnectionEntry entry = connections.get(connectionID);
 
-         if (entry != null)
+         if (connection != null && connectionID == connection.getID())
          {
-            entry.connection.bufferReceived(connectionID, buffer);
+            connection.bufferReceived(connectionID, buffer);
          }
       }
    }
 
    private class DelegatingFailureListener implements FailureListener
    {
-      final Object connectionID;
+      private final Object connectionID;
 
       DelegatingFailureListener(final Object connectionID)
       {
@@ -1215,51 +1011,7 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
 
       public void connectionFailed(final HornetQException me)
       {
-         handleConnectionFailure(me, connectionID);
-      }
-   }
-
-   // Debug only
-
-   private void checkAddDebug(final RemotingConnection conn)
-   {
-      Set<RemotingConnection> conns;
-
-      synchronized (debugConns)
-      {
-         conns = debugConns.get(connectorConfig);
-
-         if (conns == null)
-         {
-            conns = new HashSet<RemotingConnection>();
-
-            debugConns.put(connectorConfig, conns);
-         }
-
-         conns.add(conn);
-      }
-   }
-
-   public static void failAllConnectionsForConnector(final TransportConfiguration config)
-   {
-      Set<RemotingConnection> conns;
-
-      synchronized (debugConns)
-      {
-         conns = debugConns.get(config);
-
-         if (conns != null)
-         {
-            conns = new HashSet<RemotingConnection>(debugConns.get(config));
-         }
-      }
-
-      if (conns != null)
-      {
-         for (RemotingConnection conn : conns)
-         {
-            conn.fail(new HornetQException(HornetQException.INTERNAL_ERROR, "blah"));
-         }
+         handleConnectionFailure(connectionID, me);
       }
    }
 
@@ -1290,6 +1042,8 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
 
       private boolean first;
 
+      private long lastCheck = System.currentTimeMillis();
+
       public synchronized void run()
       {
          if (cancelled || (stopPingingAfterOne && !first))
@@ -1299,47 +1053,39 @@ public class ConnectionManagerImpl implements ConnectionManager, ConnectionLifeC
 
          first = false;
 
-         synchronized (connections)
+         long now = System.currentTimeMillis();
+
+         if (clientFailureCheckPeriod != -1 && now >= lastCheck + clientFailureCheckPeriod)
          {
-            long now = System.currentTimeMillis();
-
-            for (ConnectionEntry entry : connections.values())
+            if (!connection.checkDataReceived())
             {
-               final RemotingConnection connection = entry.connection;
+               final HornetQException me = new HornetQException(HornetQException.CONNECTION_TIMEDOUT,
+                                                                "Did not receive data from server for " + connection.getTransportConnection());
 
-               if (entry.expiryPeriod != -1 && now >= entry.lastCheck + entry.expiryPeriod)
+               threadPool.execute(new Runnable()
                {
-                  if (!connection.checkDataReceived())
+                  // Must be executed on different thread
+                  public void run()
                   {
-                     final HornetQException me = new HornetQException(HornetQException.CONNECTION_TIMEDOUT,
-                                                                      "Did not receive data from server for " + connection.getTransportConnection());
-
-                     threadPool.execute(new Runnable()
-                     {
-                        // Must be executed on different thread
-                        public void run()
-                        {
-                           connection.fail(me);
-                        }
-                     });
-
-                     return;
+                     connection.fail(me);
                   }
-                  else
-                  {
-                     entry.lastCheck = now;
-                  }
-               }
+               });
 
-               // Send a ping
-
-               Ping ping = new Ping(connectionTTL);
-
-               Channel channel0 = connection.getChannel(0, -1, false);
-
-               channel0.send(ping);
+               return;
+            }
+            else
+            {
+               lastCheck = now;
             }
          }
+
+         // Send a ping
+
+         Ping ping = new Ping(connectionTTL);
+
+         Channel channel0 = connection.getChannel(0, -1, false);
+
+         channel0.send(ping);
       }
 
       public synchronized void cancel()

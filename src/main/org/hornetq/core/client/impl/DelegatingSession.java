@@ -498,7 +498,7 @@ public class DelegatingSession implements ClientSessionInternal
       session.stop();
    }
 
-   public ConnectionManager getConnectionManager()
+   public FailoverManager getConnectionManager()
    {
       return session.getConnectionManager();
    }

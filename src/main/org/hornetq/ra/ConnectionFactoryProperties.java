@@ -89,8 +89,6 @@ public class ConnectionFactoryProperties
 
    private Boolean autoGroup;
 
-   private Integer maxConnections;
-
    private Boolean preAcknowledge;
 
    private Long retryInterval;
@@ -555,26 +553,7 @@ public class ConnectionFactoryProperties
       this.autoGroup = autoGroup;
    }
 
-   public Integer getMaxConnections()
-   {
-      if (trace)
-      {
-         log.trace("getMaxConnections()");
-      }
-      hasBeenUpdated = true;
-      return maxConnections;
-   }
-
-   public void setMaxConnections(Integer maxConnections)
-   {
-      if (trace)
-      {
-         log.trace("setMaxConnections(" + maxConnections + ")");
-      }
-      hasBeenUpdated = true;
-      this.maxConnections = maxConnections;
-   }
-
+   
    public Boolean isPreAcknowledge()
    {
       if (trace)

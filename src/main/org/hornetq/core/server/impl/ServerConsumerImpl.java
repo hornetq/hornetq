@@ -46,6 +46,7 @@ import org.hornetq.core.server.ServerMessage;
 import org.hornetq.core.server.ServerSession;
 import org.hornetq.core.transaction.Transaction;
 import org.hornetq.core.transaction.impl.TransactionImpl;
+import org.hornetq.utils.SimpleString;
 import org.hornetq.utils.TypedProperties;
 
 /**
@@ -485,7 +486,7 @@ public class ServerConsumerImpl implements ServerConsumer
          }
 
          final ServerMessage message = ref.getMessage();
-
+         
          if (filter != null && !filter.match(message))
          {
             return HandleStatus.NO_MATCH;

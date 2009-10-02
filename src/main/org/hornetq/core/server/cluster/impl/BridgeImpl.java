@@ -537,6 +537,7 @@ public class BridgeImpl implements Bridge, FailureListener, SendAcknowledgementH
    {           
       if (flowRecord != null)
       {
+         
          if (notifConsumer != null)
          {
             try

@@ -19,7 +19,6 @@ import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CONN
 import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CONNECTION_TTL;
 import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CONSUMER_MAX_RATE;
 import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CONSUMER_WINDOW_SIZE;
-import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_MAX_CONNECTIONS;
 import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_MIN_LARGE_MESSAGE_SIZE;
 import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_PRODUCER_MAX_RATE;
 import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_PRODUCER_WINDOW_SIZE;
@@ -150,8 +149,7 @@ public class FloodServerTest extends UnitTestCase
                                             null,
                                             1000,
                                             DEFAULT_CONNECTION_TTL,
-                                            callTimeout,
-                                            DEFAULT_MAX_CONNECTIONS,
+                                            callTimeout,                                           
                                             DEFAULT_CACHE_LARGE_MESSAGE_CLIENT,
                                             DEFAULT_MIN_LARGE_MESSAGE_SIZE,
                                             DEFAULT_CONSUMER_WINDOW_SIZE,

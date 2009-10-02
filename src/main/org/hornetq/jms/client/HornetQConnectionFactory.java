@@ -413,16 +413,6 @@ public class HornetQConnectionFactory implements ConnectionFactory, QueueConnect
       sessionFactory.setAutoGroup(autoGroup);
    }
 
-   public synchronized int getMaxConnections()
-   {
-      return sessionFactory.getMaxConnections();
-   }
-
-   public synchronized void setMaxConnections(int maxConnections)
-   {
-      sessionFactory.setMaxConnections(maxConnections);
-   }
-
    public synchronized boolean isPreAcknowledge()
    {
       return sessionFactory.isPreAcknowledge();

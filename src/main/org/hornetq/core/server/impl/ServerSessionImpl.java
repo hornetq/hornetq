@@ -1572,7 +1572,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
    public int transferConnection(final RemotingConnection newConnection, final int lastReceivedCommandID)
    {
       boolean wasStarted = this.started;
-
+      
       if (wasStarted)
       {
          this.setStarted(false);
@@ -1589,7 +1589,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
       // received responses that the backup did not know about.
 
       channel.transferConnection(newConnection);
-
+      
       newConnection.syncIDGeneratorSequence(remotingConnection.getIDGeneratorSequence());
 
       remotingConnection = newConnection;
@@ -1605,7 +1605,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
       {
          this.setStarted(true);
       }
-
+      
       return serverLastReceivedCommandID;
    }
 

@@ -27,7 +27,7 @@ import org.hornetq.core.remoting.RemotingConnection;
  *
  *
  */
-public interface ConnectionManager
+public interface FailoverManager
 {
    ClientSession createSession(final String username,
                                final String password,
@@ -52,8 +52,6 @@ public interface ConnectionManager
    int numConnections();
 
    int numSessions();
-   
-   RemotingConnection getConnection(final int initialRefCount);
    
    void addFailureListener(FailureListener listener);
 

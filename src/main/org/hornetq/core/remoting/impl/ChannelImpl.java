@@ -381,11 +381,11 @@ public class ChannelImpl implements Channel
    public void replayCommands(final int otherLastReceivedCommandID, final long newChannelID)
    {
       clearUpTo(otherLastReceivedCommandID);
-
+         
       for (final Packet packet : resendCache)
       {
          packet.setChannelID(newChannelID);
-
+         
          doWrite(packet);
       }
    }

@@ -107,7 +107,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
 
    // Attributes ----------------------------------------------------------------------------
 
-   private final ConnectionManager connectionManager;
+   private final FailoverManager connectionManager;
 
    private final String name;
 
@@ -177,7 +177,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
 
    // Constructors ----------------------------------------------------------------------------
 
-   public ClientSessionImpl(final ConnectionManager connectionManager,
+   public ClientSessionImpl(final FailoverManager connectionManager,
                             final String name,
                             final String username,
                             final String password,
@@ -785,7 +785,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
       {
          return true;
       }
-
+      
       boolean ok = false;
 
       // We lock the channel to prevent any packets to be added to the resend
@@ -795,7 +795,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
       try
       {
          channel.transferConnection(backupConnection);
-
+         
          backupConnection.syncIDGeneratorSequence(remotingConnection.getIDGeneratorSequence());
 
          remotingConnection = backupConnection;
@@ -807,7 +807,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
          ReattachSessionResponseMessage response = (ReattachSessionResponseMessage)channel1.sendBlocking(request);
 
          if (response.isSessionFound())
-         {
+         {                        
             channel.replayCommands(response.getLastReceivedCommandID(), channel.getID());
 
             ok = true;
@@ -862,7 +862,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
       }
       
       boolean ok = false;
-
+            
       // Need to stop all consumers outside the lock
       for (ClientConsumerInternal consumer : consumers.values())
       {
@@ -1000,7 +1000,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
       channel.returnBlocking();
    }
 
-   public ConnectionManager getConnectionManager()
+   public FailoverManager getConnectionManager()
    {
       return connectionManager;
    }

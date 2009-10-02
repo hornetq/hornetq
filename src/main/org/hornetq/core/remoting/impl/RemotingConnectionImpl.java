@@ -20,6 +20,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Executor;
 
+import org.hornetq.core.client.ClientMessage;
 import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.remoting.Channel;
@@ -29,9 +30,11 @@ import org.hornetq.core.remoting.Interceptor;
 import org.hornetq.core.remoting.Packet;
 import org.hornetq.core.remoting.RemotingConnection;
 import org.hornetq.core.remoting.impl.wireformat.PacketImpl;
+import org.hornetq.core.remoting.impl.wireformat.SessionReceiveMessage;
 import org.hornetq.core.remoting.spi.Connection;
 import org.hornetq.core.remoting.spi.HornetQBuffer;
 import org.hornetq.utils.SimpleIDGenerator;
+import org.hornetq.utils.SimpleString;
 
 /**
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
@@ -330,11 +333,11 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
    public void bufferReceived(final Object connectionID, final HornetQBuffer buffer)
    {
       final Packet packet = decoder.decode(buffer);
-
+      
       if (executor == null || packet.getType() == PacketImpl.PING)
       {
          // Pings must always be handled out of band so we can send pings back to the client quickly
-         // otherwise they would get in the queue with everything else which might give a intolerable delay
+         // otherwise they would get in the queue with everything else which might give an intolerable delay
          doBufferReceived(packet);
       }
       else

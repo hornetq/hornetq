@@ -85,13 +85,13 @@ public class ReattachTest extends UnitTestCase
 
       session.createQueue(ADDRESS, ADDRESS, null, false);
 
-      final int numIterations = 100;
+      final int numIterations = 10;
 
       for (int j = 0; j < numIterations; j++)
       {
          ClientProducer producer = session.createProducer(ADDRESS);
 
-         final int numMessages = 1000;
+         final int numMessages = 100;
 
          for (int i = 0; i < numMessages; i++)
          {
@@ -290,18 +290,9 @@ public class ReattachTest extends UnitTestCase
       InVMConnector.numberOfFailures = 10;
       InVMConnector.failOnCreateConnection = true;
 
-      // We need to fail on different connections.
-
-      // We fail on one connection then the connection manager tries to reconnect all connections
-      // Then we fail the other, and the connection manager is then called while the reconnection is occurring
-      // We can't use the same connection since RemotingConnectionImpl only allows one fail to be in process
-      // at same time
-
       final RemotingConnection conn = ((ClientSessionInternal)session).getConnection();
 
       final RemotingConnection conn2 = ((ClientSessionInternal)session2).getConnection();
-
-      assertTrue(conn != conn2);
 
       Thread t = new Thread()
       {
@@ -314,8 +305,6 @@ public class ReattachTest extends UnitTestCase
             catch (InterruptedException ignore)
             {
             }
-
-            log.info("calling fail async");
 
             conn2.fail(new HornetQException(HornetQException.NOT_CONNECTED, "Did not receive pong from server"));
          }
@@ -416,8 +405,6 @@ public class ReattachTest extends UnitTestCase
 
       t.start();
 
-      log.info("Failing connection");
-      
       conn.fail(new HornetQException(HornetQException.NOT_CONNECTED));
 
       session.start();
@@ -637,7 +624,7 @@ public class ReattachTest extends UnitTestCase
       RemotingConnection conn = ((ClientSessionInternal)session).getConnection();
 
       long start = System.currentTimeMillis();
-    
+
       conn.fail(new HornetQException(HornetQException.NOT_CONNECTED));
 
       session.start();
@@ -662,8 +649,6 @@ public class ReattachTest extends UnitTestCase
       long end = System.currentTimeMillis();
 
       double wait = retryInterval + retryMultiplier * retryInterval + retryMultiplier * retryMultiplier * retryInterval;
-      
-      log.info("wait is " + wait);
 
       assertTrue((end - start) >= wait);
 
@@ -679,7 +664,7 @@ public class ReattachTest extends UnitTestCase
       final double retryMultiplier = 2d;
 
       final int reconnectAttempts = -1;
-      
+
       final long maxRetryInterval = 1000;
 
       ClientSessionFactoryInternal sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory"));
@@ -718,7 +703,7 @@ public class ReattachTest extends UnitTestCase
       RemotingConnection conn = ((ClientSessionInternal)session).getConnection();
 
       long start = System.currentTimeMillis();
-    
+
       conn.fail(new HornetQException(HornetQException.NOT_CONNECTED));
 
       session.start();
@@ -743,11 +728,9 @@ public class ReattachTest extends UnitTestCase
       long end = System.currentTimeMillis();
 
       double wait = retryInterval + retryMultiplier * 2 * retryInterval + retryMultiplier;
-      
-      log.info("wait is " + wait);
 
       assertTrue((end - start) >= wait);
-      
+
       assertTrue((end - start) < wait + 500);
 
       session.close();

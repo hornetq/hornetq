@@ -60,8 +60,6 @@ public interface ConnectionFactoryControl
 
    boolean isAutoGroup();
 
-   int getMaxConnections();
-
    long getRetryInterval();
 
    double getRetryIntervalMultiplier();

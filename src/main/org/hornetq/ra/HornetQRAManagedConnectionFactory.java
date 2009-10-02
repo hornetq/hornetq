@@ -604,17 +604,7 @@ public class HornetQRAManagedConnectionFactory implements ManagedConnectionFacto
    {
       mcfProperties.setAutoGroup(autoGroup);
    }
-
-   public Integer getMaxConnections()
-   {
-      return mcfProperties.getMaxConnections();
-   }
-
-   public void setMaxConnections(Integer maxConnections)
-   {
-      mcfProperties.setMaxConnections(maxConnections);
-   }
-
+   
    public Boolean isPreAcknowledge()
    {
       return mcfProperties.isPreAcknowledge();

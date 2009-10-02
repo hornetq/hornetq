@@ -29,7 +29,7 @@ import org.hornetq.core.client.ClientProducer;
 import org.hornetq.core.client.ClientSession;
 import org.hornetq.core.client.ClientSessionFactory;
 import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
-import org.hornetq.core.client.impl.ConnectionManagerImpl;
+import org.hornetq.core.client.impl.FailoverManagerImpl;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.TransportConfiguration;
 import org.hornetq.core.config.cluster.BroadcastGroupConfiguration;
@@ -134,11 +134,6 @@ public class ClusterTestBase extends ServiceTestBase
    private HornetQServer[] servers = new HornetQServer[MAX_SERVERS];
 
    private ClientSessionFactory[] sfs = new ClientSessionFactory[MAX_SERVERS];
-
-   protected void failNode(TransportConfiguration conf)
-   {
-      ConnectionManagerImpl.failAllConnectionsForConnector(conf);
-   }
 
    protected void waitForMessages(int node, final String address, final int count) throws Exception
    {

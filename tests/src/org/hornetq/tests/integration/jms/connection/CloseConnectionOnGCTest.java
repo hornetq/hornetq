@@ -103,8 +103,6 @@ public class CloseConnectionOnGCTest extends JMSTestBase
       Session sess6 = conn3.createSession(false, Session.AUTO_ACKNOWLEDGE);
       Session sess7 = conn3.createSession(false, Session.AUTO_ACKNOWLEDGE);
             
-      assertEquals(ClientSessionFactoryImpl.DEFAULT_MAX_CONNECTIONS, server.getRemotingService().getConnections().size());
-      
       sess1 = sess2 = sess3 = sess4 = sess5 = sess6 = sess7 = null;
       
       conn1 = null;

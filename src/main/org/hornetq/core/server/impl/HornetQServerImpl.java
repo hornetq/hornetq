@@ -32,7 +32,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.management.MBeanServer;
 
-import org.hornetq.core.client.impl.ConnectionManager;
+import org.hornetq.core.client.impl.FailoverManager;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.cluster.DivertConfiguration;
 import org.hornetq.core.config.cluster.QueueConfiguration;
@@ -189,7 +189,7 @@ public class HornetQServerImpl implements HornetQServer
 
    private static AtomicInteger managementConnectorSequence = new AtomicInteger(0);
 
-   private ConnectionManager replicatingConnectionManager;
+   private FailoverManager replicatingFailoverManager;
 
    private final Set<ActivateCallback> activateCallbacks = new HashSet<ActivateCallback>();
 

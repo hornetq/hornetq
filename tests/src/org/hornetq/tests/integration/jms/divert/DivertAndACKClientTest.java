@@ -15,7 +15,6 @@ package org.hornetq.tests.integration.jms.divert;
 
 import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE;
 import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_AUTO_GROUP;
-import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_ACKNOWLEDGE;
 import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND;
 import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_PERSISTENT_SEND;
 import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CACHE_LARGE_MESSAGE_CLIENT;
@@ -24,7 +23,6 @@ import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CONN
 import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CONNECTION_TTL;
 import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CONSUMER_MAX_RATE;
 import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CONSUMER_WINDOW_SIZE;
-import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_MAX_CONNECTIONS;
 import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_MAX_RETRY_INTERVAL;
 import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_MIN_LARGE_MESSAGE_SIZE;
 import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_PRE_ACKNOWLEDGE;
@@ -37,7 +35,11 @@ import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_USE_
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.jms.*;
+import javax.jms.Connection;
+import javax.jms.MessageConsumer;
+import javax.jms.MessageProducer;
+import javax.jms.Session;
+import javax.jms.TextMessage;
 
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.TransportConfiguration;
@@ -161,8 +163,7 @@ public class DivertAndACKClientTest extends JMSTestBase
                                               null,
                                               DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
                                               DEFAULT_CONNECTION_TTL,
-                                              callTimeout,
-                                              DEFAULT_MAX_CONNECTIONS,
+                                              callTimeout,                               
                                               DEFAULT_CACHE_LARGE_MESSAGE_CLIENT,
                                               DEFAULT_MIN_LARGE_MESSAGE_SIZE,
                                               DEFAULT_CONSUMER_WINDOW_SIZE,

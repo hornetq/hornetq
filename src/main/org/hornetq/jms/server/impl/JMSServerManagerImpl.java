@@ -365,8 +365,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
                                                     String clientID,
                                                     long clientFailureCheckPeriod,
                                                     long connectionTTL,
-                                                    long callTimeout,
-                                                    int maxConnections,
+                                                    long callTimeout,                                               
                                                     boolean cacheLargeMessagesClient,
                                                     int minLargeMessageSize,
                                                     int consumerWindowSize,
@@ -399,8 +398,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
          cf.setClientID(clientID);
          cf.setClientFailureCheckPeriod(clientFailureCheckPeriod);
          cf.setConnectionTTL(connectionTTL);
-         cf.setCallTimeout(callTimeout);
-         cf.setMaxConnections(maxConnections);
+         cf.setCallTimeout(callTimeout);         
          cf.setCacheLargeMessagesClient(cacheLargeMessagesClient);
          cf.setMinLargeMessageSize(minLargeMessageSize);
          cf.setConsumerWindowSize(consumerWindowSize);
@@ -435,8 +433,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
                                                     long discoveryRefreshTimeout,
                                                     long clientFailureCheckPeriod,
                                                     long connectionTTL,
-                                                    long callTimeout,
-                                                    int maxConnections,
+                                                    long callTimeout,                                             
                                                     boolean cacheLargeMessagesClient,
                                                     int minLargeMessageSize,
                                                     int consumerWindowSize,
@@ -471,8 +468,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
          cf.setDiscoveryRefreshTimeout(discoveryRefreshTimeout);
          cf.setClientFailureCheckPeriod(clientFailureCheckPeriod);
          cf.setConnectionTTL(connectionTTL);
-         cf.setCallTimeout(callTimeout);
-         cf.setMaxConnections(maxConnections);
+         cf.setCallTimeout(callTimeout);        
          cf.setCacheLargeMessagesClient(cacheLargeMessagesClient);
          cf.setMinLargeMessageSize(minLargeMessageSize);
          cf.setConsumerWindowSize(consumerWindowSize);
@@ -752,8 +748,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
                                     config.getDiscoveryRefreshTimeout(),
                                     config.getClientFailureCheckPeriod(),
                                     config.getConnectionTTL(),
-                                    config.getCallTimeout(),
-                                    config.getMaxConnections(),
+                                    config.getCallTimeout(),                             
                                     config.isCacheLargeMessagesClient(),
                                     config.getMinLargeMessageSize(),
                                     config.getConsumerWindowSize(),
@@ -786,8 +781,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
                                     config.getClientID(),
                                     config.getClientFailureCheckPeriod(),
                                     config.getConnectionTTL(),
-                                    config.getCallTimeout(),
-                                    config.getMaxConnections(),
+                                    config.getCallTimeout(),                        
                                     config.isCacheLargeMessagesClient(),
                                     config.getMinLargeMessageSize(),
                                     config.getConsumerWindowSize(),
