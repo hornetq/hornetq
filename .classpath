@@ -118,5 +118,6 @@
 	<classpathentry kind="lib" path="thirdparty/org/jboss/microcontainer/lib/jboss-kernel.jar"/>
 	<classpathentry kind="lib" path="thirdparty/org/jboss/security/lib/jboss-security-spi.jar"/>
 	<classpathentry kind="lib" path="thirdparty/wutka-dtdparser/lib/dtdparser121.jar"/>
+	<classpathentry kind="lib" path="thirdparty/org/jboss/ejb3/lib/jboss-ejb3-ext-api.jar"/>
 	<classpathentry kind="output" path="eclipse-output"/>
 </classpath>
