@@ -14,6 +14,7 @@
 package org.hornetq.jms.server.impl;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -37,6 +38,10 @@ import org.hornetq.jms.HornetQTopic;
 import org.hornetq.jms.client.HornetQConnectionFactory;
 import org.hornetq.jms.client.SelectorTranslator;
 import org.hornetq.jms.server.JMSServerManager;
+import org.hornetq.jms.server.config.ConnectionFactoryConfiguration;
+import org.hornetq.jms.server.config.JMSConfiguration;
+import org.hornetq.jms.server.config.QueueConfiguration;
+import org.hornetq.jms.server.config.TopicConfiguration;
 import org.hornetq.jms.server.management.JMSManagementService;
 import org.hornetq.jms.server.management.impl.JMSManagementServiceImpl;
 import org.hornetq.utils.Pair;
@@ -79,9 +84,11 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
    private DeploymentManager deploymentManager;
 
    private final String configFileName;
-   
+
    private boolean contextSet;
-   
+
+   private JMSConfiguration config;
+
    public JMSServerManagerImpl(final HornetQServer server) throws Exception
    {
       this.server = server;
@@ -94,6 +101,15 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
       this.server = server;
 
       this.configFileName = configFileName;
+   }
+
+   public JMSServerManagerImpl(final HornetQServer server, final JMSConfiguration configuration) throws Exception
+   {
+      this.server = server;
+
+      this.configFileName = null;
+
+      this.config = configuration;
    }
 
    // ActivateCallback implementation -------------------------------------
@@ -118,6 +134,8 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
          jmsDeployer.start();
 
          deploymentManager.start();
+
+         deploy();
       }
       catch (Exception e)
       {
@@ -709,4 +727,112 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
       }
       destinations.get(destination).add(jndiBinding);
    }
+
+   private void deploy() throws Exception
+   {
+      if (config == null)
+      {
+         return;
+      }
+      
+      if (config.getContext() != null)
+      {
+         setContext(config.getContext());
+      }
+
+      List<ConnectionFactoryConfiguration> connectionFactoryConfigurations = config.getConnectionFactoryConfigurations();
+      for (ConnectionFactoryConfiguration config : connectionFactoryConfigurations)
+      {
+         if (config.getDiscoveryAddress() != null)
+         {
+            createConnectionFactory(config.getName(),
+                                    config.getDiscoveryAddress(),
+                                    config.getDiscoveryPort(),
+                                    config.getClientID(),
+                                    config.getDiscoveryRefreshTimeout(),
+                                    config.getClientFailureCheckPeriod(),
+                                    config.getConnectionTTL(),
+                                    config.getCallTimeout(),
+                                    config.getMaxConnections(),
+                                    config.isCacheLargeMessagesClient(),
+                                    config.getMinLargeMessageSize(),
+                                    config.getConsumerWindowSize(),
+                                    config.getConsumerMaxRate(),
+                                    config.getProducerWindowSize(),
+                                    config.getProducerMaxRate(),
+                                    config.isBlockOnAcknowledge(),
+                                    config.isBlockOnPersistentSend(),
+                                    config.isBlockOnNonPersistentSend(),
+                                    config.isAutoGroup(),
+                                    config.isPreAcknowledge(),
+                                    config.getLoadBalancingPolicyClassName(),
+                                    config.getTransactionBatchSize(),
+                                    config.getDupsOKBatchSize(),
+                                    config.getInitialWaitTimeout(),
+                                    config.isUseGlobalPools(),
+                                    config.getScheduledThreadPoolMaxSize(),
+                                    config.getThreadPoolMaxSize(),
+                                    config.getRetryInterval(),
+                                    config.getRetryIntervalMultiplier(),
+                                    config.getMaxRetryInterval(),
+                                    config.getReconnectAttempts(),
+                                    config.isFailoverOnServerShutdown(),
+                                    Arrays.asList(config.getBindings()));
+         }
+         else
+         {
+            createConnectionFactory(config.getName(),
+                                    config.getConnectorConfigs(),
+                                    config.getClientID(),
+                                    config.getClientFailureCheckPeriod(),
+                                    config.getConnectionTTL(),
+                                    config.getCallTimeout(),
+                                    config.getMaxConnections(),
+                                    config.isCacheLargeMessagesClient(),
+                                    config.getMinLargeMessageSize(),
+                                    config.getConsumerWindowSize(),
+                                    config.getConsumerMaxRate(),
+                                    config.getProducerWindowSize(),
+                                    config.getProducerMaxRate(),
+                                    config.isBlockOnAcknowledge(),
+                                    config.isBlockOnPersistentSend(),
+                                    config.isBlockOnNonPersistentSend(),
+                                    config.isAutoGroup(),
+                                    config.isPreAcknowledge(),
+                                    config.getLoadBalancingPolicyClassName(),
+                                    config.getTransactionBatchSize(),
+                                    config.getDupsOKBatchSize(),
+                                    config.isUseGlobalPools(),
+                                    config.getScheduledThreadPoolMaxSize(),
+                                    config.getThreadPoolMaxSize(),
+                                    config.getRetryInterval(),
+                                    config.getRetryIntervalMultiplier(),
+                                    config.getMaxRetryInterval(),
+                                    config.getReconnectAttempts(),
+                                    config.isFailoverOnServerShutdown(),
+                                    Arrays.asList(config.getBindings()));
+         }
+      }
+
+      List<QueueConfiguration> queueConfigs = config.getQueueConfigurations();
+      for (QueueConfiguration config : queueConfigs)
+      {
+         String[] bindings = config.getBindings();
+         for (String binding : bindings)
+         {
+            createQueue(config.getName(), binding, config.getSelector(), config.isDurable());
+         }
+      }
+
+      List<TopicConfiguration> topicConfigs = config.getTopicConfigurations();
+      for (TopicConfiguration config : topicConfigs)
+      {
+         String[] bindings = config.getBindings();
+         for (String binding : bindings)
+         {
+            createTopic(config.getName(), binding);
+         }
+      }
+   }
+
 }
