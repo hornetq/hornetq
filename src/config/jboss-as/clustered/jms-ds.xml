@@ -16,7 +16,7 @@
    <tx-connection-factory>
       <jndi-name>JmsXA</jndi-name>
       <xa-transaction/>
-      <rar-name>jms-ra.rar</rar-name>
+      <rar-name>hornetq-ra.rar</rar-name>
       <connection-definition>org.hornetq.ra.HornetQRAConnectionFactory</connection-definition>
       <config-property name="SessionDefaultType" type="java.lang.String">javax.jms.Topic</config-property>
       <config-property name="JmsProviderAdapterJNDI" type="java.lang.String">java:/DefaultJMSProvider</config-property>

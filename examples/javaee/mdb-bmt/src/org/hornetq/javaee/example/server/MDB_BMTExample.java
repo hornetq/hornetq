@@ -12,6 +12,8 @@
  */
 package org.hornetq.javaee.example.server;
 
+import org.jboss.ejb3.annotation.ResourceAdapter;
+
 import javax.annotation.Resource;
 import javax.ejb.ActivationConfigProperty;
 import javax.ejb.MessageDriven;
@@ -34,6 +36,7 @@ import javax.transaction.UserTransaction;
                         @ActivationConfigProperty(propertyName = "acknowledgeMode", propertyValue = "Dups-ok-acknowledge")
                      })
 @TransactionManagement(value= TransactionManagementType.BEAN)
+@ResourceAdapter("hornetq-ra.rar")
 public class MDB_BMTExample implements MessageListener
 {
    @Resource

@@ -43,6 +43,7 @@
                         @ActivationConfigProperty(propertyName = "destinationType", propertyValue = "javax.jms.Queue"),
                         @ActivationConfigProperty(propertyName = "destination", propertyValue = "queue/testQueue")
                      })
+@ResourceAdapter("hornetq-ra.rar")
 public class MDBExample implements MessageListener
 {
    public void onMessage(Message message)...
@@ -50,6 +51,22 @@ public class MDBExample implements MessageListener
         <para>In this example you can see that the MDB will consume messages from a queue that is
             mapped into JNDI with the binding <literal>queue/testQueue</literal>. This queue must be
             preconfigured in the usual way using the HornetQ configuration files.</para>
+        <para>The <literal>ResourceAdapter</literal> annotation is used to specify which ra adapter
+            should be used. To use this you will need to import <literal
+                >org.jboss.ejb3.annotation.ResourceAdapter</literal> which can be found in the
+                <literal>jboss-ejb3-ext-api.jar</literal> which can be found in the jboss
+            repository. Alternatively you can add use a deployment descriptor and add something like
+            the following to <literal
+            >jboss.xml</literal><programlisting>&lt;message-driven>
+   &lt;ejb-name>ExampleMDB&lt;/ejb-name>
+   &lt;resource-adapter-name>quartz-ra.rar&lt;/resource-adapter-name>
+&lt;/message-driven>
+</programlisting>You
+            can also rename the hornetq-ra.rar directory to jms-ra.rar and neither the annotation or
+            the extra descriptor information will be needed. If you do this you will need to edit
+            the <literal>jms-ds.xml</literal> datasource file and change <literal>rar-name</literal>
+            element.</para>
+        <para>All the examples shipped with the HornetQ distribution use the annotation.</para>
         <section>
             <title>Using Container Managed Transactions</title>
             <para>When an MDB is using Container Managed Transactions (CMT), the delivery of the
@@ -66,6 +83,7 @@ public class MDBExample implements MessageListener
                      })
 @TransactionManagement(value= TransactionManagementType.CONTAINER)
 @TransactionAttribute(value= TransactionAttributeType.REQUIRED)
+@ResourceAdapter("hornetq-ra.rar")
 public class MDB_CMP_TxRequiredExample implements MessageListener
 {
    public void onMessage(Message message)...
@@ -108,6 +126,7 @@ public class MDB_CMP_TxRequiredExample implements MessageListener
                      })
 @TransactionManagement(value = TransactionManagementType.CONTAINER)
 @TransactionAttribute(value = TransactionAttributeType.NOT_SUPPORTED)
+@ResourceAdapter("hornetq-ra.rar")
 public class MDB_CMP_TxLocalExample implements MessageListener
 {
    public void onMessage(Message message)...
@@ -126,6 +145,7 @@ public class MDB_CMP_TxLocalExample implements MessageListener
                         @ActivationConfigProperty(propertyName = "acknowledgeMode", propertyValue = "Dups-ok-acknowledge")
                      })
 @TransactionManagement(value= TransactionManagementType.BEAN)
+@ResourceAdapter("hornetq-ra.rar")
 public class MDB_BMPExample implements MessageListener
 {
    public void onMessage(Message message)
@@ -177,6 +197,7 @@ public class MDB_BMPExample implements MessageListener
                      })
 @TransactionManagement(value= TransactionManagementType.CONTAINER)
 @TransactionAttribute(value= TransactionAttributeType.REQUIRED)
+@ResourceAdapter("hornetq-ra.rar")
 public class MDBMessageSelectorExample implements MessageListener
 {
    public void onMessage(Message message)....
@@ -201,6 +222,7 @@ public class MDBMessageSelectorExample implements MessageListener
                      })
 @TransactionManagement(value= TransactionManagementType.CONTAINER)
 @TransactionAttribute(value= TransactionAttributeType.REQUIRED)
+@ResourceAdapter("hornetq-ra.rar")
 public class MDBMessageSendTxExample implements MessageListener
 {
    @Resource(mappedName = "java:JmsXA")
@@ -637,15 +659,14 @@ initialContext = new InitialContext(jndiParameters);</programlisting>
             as either the source or target server. Or could be on a third, separate JBoss AS
             instance.</para>
         <para>The bridge can also be used to bridge messages from other non HornetQ JMS servers, as
-            long as they are JMS 1.1 compliant.<note>
-                <para>Don't confuse a JMS bridge with a core bridge. A JMS bridge can be used to
-                    bridge any two JMS 1.1 compliant JMS providers and uses the JMS API. A core
-                    bridge (described in <xref linkend="core-bridges"/>) is used to bridge any two
-                    HornetQ instances and uses the core API. Always use a core bridge if you can in
-                    preference to a JMS bridge. The core bridge will typically provide better
-                    performance than a JMS bridge. Also the core bridge can provide <emphasis>once
-                        and only once</emphasis> delivery guarantees without using XA.</para>
-            </note></para>
+            long as they are JMS 1.1 compliant.<note><para>Don't confuse a JMS bridge with a core
+                    bridge. A JMS bridge can be used to bridge any two JMS 1.1 compliant JMS
+                    providers and uses the JMS API. A core bridge (described in <xref
+                        linkend="core-bridges"/>) is used to bridge any two HornetQ instances and
+                    uses the core API. Always use a core bridge if you can in preference to a JMS
+                    bridge. The core bridge will typically provide better performance than a JMS
+                    bridge. Also the core bridge can provide <emphasis>once and only once</emphasis>
+                    delivery guarantees without using XA.</para></note></para>
         <para>The bridge has built-in resilience to failure so if the source or target server
             connection is lost, e.g. due to network failure, the bridge will retry connecting to the
             source and/or target until they come back online. When it comes back online it will

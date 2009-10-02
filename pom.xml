@@ -264,6 +264,13 @@ Copyright 2009 Red Hat, Inc.
         <artifactId>commons-logging</artifactId>
         <version>1.1.0.jboss</version>
       </dependency>
+      
+      <!-- needed for javaee examples-->
+      <dependency>
+        <groupId>org.jboss.ejb3</groupId>
+        <artifactId>jboss-ejb3-ext-api</artifactId>
+        <version>1.0.0</version>
+      </dependency>
    </dependencies>
 
 

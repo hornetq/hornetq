@@ -53,7 +53,7 @@ Copyright 2009 Red Hat, Inc.
          <fileset dir="${src.dir}">
             <exclude name="**/messaging/**"/>
             <exclude name="conf/login-config.xml"/>
-             <exclude name="**/jms-ra.rar"/>
+             <!--<exclude name="**/jms-ra.rar"/>-->
          </fileset>
       </copy>
       <copy todir="${dest.dir}/conf">
@@ -78,7 +78,7 @@ Copyright 2009 Red Hat, Inc.
       <copy todir="${hornetq.sar.dir}">
         <fileset dir="${hornetq.config.dir}" includes="*"/>
       </copy>
-   	  <unzip src="${lib.dir}/hornetq-ra.rar" dest="${dest.dir}/deploy/jms-ra.rar"/>
+   	  <unzip src="${lib.dir}/hornetq-ra.rar" dest="${dest.dir}/deploy/hornetq-ra.rar"/>
    </target>
 
    <!-- The JBOSS_HOME environment variable and the directory must exist, we also check we are running

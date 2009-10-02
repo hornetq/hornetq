@@ -12,6 +12,8 @@
  */
 package org.hornetq.javaee.example.server;
 
+import org.jboss.ejb3.annotation.ResourceAdapter;
+
 import javax.annotation.Resource;
 import javax.ejb.ActivationConfigProperty;
 import javax.ejb.MessageDriven;
@@ -38,6 +40,7 @@ import javax.transaction.TransactionManager;
                      })
 @TransactionManagement(value= TransactionManagementType.CONTAINER)
 @TransactionAttribute(value= TransactionAttributeType.REQUIRED)
+@ResourceAdapter("hornetq-ra.rar")
 public class MDB_CMT_TxRequiredExample implements MessageListener
 {
    @Resource(mappedName = "java:/TransactionManager")
