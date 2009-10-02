@@ -1,9 +1,11 @@
 <html>
   <head>
     <title>HornetQ Client Kickoff Example</title>
-    <link rel="stylesheet" type="text/css" href="../../common/common.css">
+    <link rel="stylesheet" type="text/css" href="../../common/common.css" />
+    <link rel="stylesheet" type="text/css" href="../../common/prettify.css" />
+    <script type="text/javascript" src="../../common/prettify.js"></script>
   </head>
-  <body>
+  <body onload="prettyPrint()">
      <h1>Client Kickoff Example</h1>
 
      <p>This example shows how to kick off a client connected to HornetQ 
@@ -17,7 +19,7 @@
 
      <p>HornetQ exposes its managed resources by default on the platform MBeanServer.</p>
      <p>To access this MBeanServer remotely, the Java Virtual machine must be started with system properties:
-         <pre>
+         <pre class="prettyprint">
              <code>-Dcom.sun.management.jmxremote
              -Dcom.sun.management.jmxremote.port=3000
              -Dcom.sun.management.jmxremote.ssl=false
@@ -32,22 +34,22 @@
      <p><em>To run the example, simply type <code>ant</code> from this directory</em></p>
      <ol>
         <li>First we need to get an initial context so we can look-up the JMS connection factory and destination objects from JNDI. This initial context will get its properties from <a href="server0/client-jndi.properties">client-jndi.properties</a></li>
-        <pre>
+        <pre class="prettyprint">
             <code>InitialContext initialContext = getContext(0);</code>
         </pre>
 
         <li>We look up the JMS connection factory object from JNDI</li>
-        <pre>
+        <pre class="prettyprint">
             <code>ConnectionFactory cf = (ConnectionFactory) initialContext.lookup("/ConnectionFactory");</code>
         </pre>
 
         <li>We create a JMS connection</li>
-        <pre>
+        <pre class="prettyprint">
             <code>connection = cf.createConnection();</code>
         </pre>
         
         <li>We set a <code>ExceptionListener</code> on the connection to be notified after a problem occurred</li>
-        <pre>
+        <pre class="prettyprint">
             <code>final AtomicReference&lt;JMSException&gt; exception = new AtomicReference&lt;JMSException&gt;();
             connection.setExceptionListener(new ExceptionListener()
             {
@@ -59,13 +61,13 @@
         </pre>
 
         <li>We start the connection</li>
-        <pre>
+        <pre class="prettyprint">
             <code>connection.start();</code>
        </pre>
 
         <li>We create a MBean proxy to the HornetQServerControlMBean used to manage HornetQ server
             (see <a href="../jmx/readme.html">JMX example</a> for a complete explanation of the different steps)</li>
-        <pre>
+        <pre class="prettyprint">
             <code>ObjectName on = ObjectNames.getHornetQServerObjectName();
             JMXConnector connector = JMXConnectorFactory.connect(new JMXServiceURL(JMX_URL), new HashMap<String, String>());
             MBeanServerConnection mbsc = connector.getMBeanServerConnection();
@@ -77,7 +79,7 @@
         </pre>
 
         <li>Using the server MBean, we list the remote address connected to the server</li>
-        <pre>
+        <pre class="prettyprint">
             <code>String[] remoteAddresses = serverControl.listRemoteAddresses();
             for (String remoteAddress : remoteAddresses)
             {
@@ -89,12 +91,12 @@
         <p>It will display a single address corresponding to the connection opened at step 3.</p>
             
         <li>We close the connections corresponding to this remote address</li>
-        <pre>
+        <pre class="prettyprint">
               <code>serverControl.closeConnectionsForAddress(remoteAddresses[0]);</code>
         </pre>
 
         <p>Warnings be displayed on the server output:</p>
-        <pre>
+        <pre class="prettyprint">
             <code>org.hornetq.jms.example.SpawnedJMSServer out:11:22:33,034 WARN  @RMI TCP Connection(3)-192.168.0.10 [RemotingConnectionImpl] Connection failure has been detected connections for /192.168.0.10:52707 closed by management:0
             org.hornetq.jms.example.SpawnedJMSServer out:11:22:33,035 WARN  @RMI TCP Connection(3)-192.168.0.10 [ServerSessionImpl] Client connection failed, clearing up resources for session 4646da35-2fe8-11de-9ce9-752ccc2b26e4
             org.hornetq.jms.example.SpawnedJMSServer out:11:22:33,035 WARN  @RMI TCP Connection(3)-192.168.0.10 [ServerSessionImpl] Cleared up resources for session 4646da35-2fe8-11de-9ce9-752ccc2b26e4
@@ -102,7 +104,7 @@
         </pre>
         
         <li>We display the exception received by the connection's ExceptionListener</li>
-        <pre>
+        <pre class="prettyprint">
             <code>exception.get().printStackTrace();</code>
         </pre>
         
@@ -111,7 +113,7 @@
         
         <li>And finally, <b>always</b> remember to close your JMS connections and resources after use, in a <code>finally</code> block. Closing a JMS connection will automatically close all of its sessions, consumers, producer and browser objects</li>
 
-        <pre>
+        <pre class="prettyprint">
            <code>finally
            {
               if (initialContext != null)

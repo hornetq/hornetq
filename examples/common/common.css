@@ -7,12 +7,13 @@ h1 {
   font-size: 250%;
 }
 
-pre, code {
+code {
   background-color: lightgrey;
   color:#333;
 }
 
 pre {
+  background-color: lightgrey;
   display:block;     
   overflow:auto; 
   border: dotted grey 1px;

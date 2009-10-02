@@ -1,9 +1,11 @@
 <html>
   <head>
     <title>HornetQ JMS Security Example</title>
-    <link rel="stylesheet" type="text/css" href="../../common/common.css">
+    <link rel="stylesheet" type="text/css" href="../../common/common.css" />
+    <link rel="stylesheet" type="text/css" href="../../common/prettify.css" />
+    <script type="text/javascript" src="../../common/prettify.js"></script>
   </head>
-  <body>
+  <body onload="prettyPrint()">
      <h1>JMS Security Example</h1>
      <br>
      <p>This example shows you how configure and use security with HornetQ.</p>
@@ -24,7 +26,7 @@
      <p>First we need to configure users with roles. Users and Roles are configured in <code>hornetq-users.xml</code>. This example has four users
      configured as below </p>
      
-     <pre>
+     <pre class="prettyprint">
      <code>
 		   &lt;user name=&quot;bill&quot; password=&quot;hornetq&quot;&gt;
 		      &lt;role name=&quot;user&quot;/&gt;
@@ -58,7 +60,7 @@
      roles are used in controling the access privileges against HornetQ topics and queues. You can achieve this control by
      configuring proper permissions in <code>hornetq-configuration.xml</code>, like in the following
      </p>
-     <pre><code>
+     <pre class="prettyprint"><code>
       &lt;security-settings&gt;
          &lt;!-- any user can have full control of generic topics --&gt;
 		   &lt;security-setting match=&quot;jms.topic.#&quot;&gt;
@@ -115,14 +117,14 @@
      <br>
      <ol>
         <li>First we need to get an initial context so we can look-up the JMS connection factory and destination objects from JNDI. This initial context will get it's properties from the <code>client-jndi.properties</code> file in the directory <code>../common/config</code></li>
-        <pre>
+        <pre class="prettyprint">
            <code>
            InitialContext initialContext = getContext(0);
            </code>
         </pre>
 
         <li>We perform lookup on the topics</li>
-        <pre>
+        <pre class="prettyprint">
            <code>
            Topic genericTopic = (Topic) initialContext.lookup("/topic/genericTopic");
            Topic europeTopic = (Topic) initialContext.lookup("/topic/europeTopic");
@@ -131,14 +133,14 @@
         </pre>
 
         <li>We perform a lookup on the Connection Factory</li>
-        <pre>
+        <pre class="prettyprint">
            <code>
            ConnectionFactory cf = (ConnectionFactory) initialContext.lookup("/ConnectionFactory");
            </code>
         </pre>
 
         <li>We try to create a JMS Connection without user/password. It will fail.</li>
-        <pre>
+        <pre class="prettyprint">
            <code>
            try
            {
@@ -153,7 +155,7 @@
         </pre>
 
         <li>Bill tries to make a connection using wrong password</li>
-        <pre>
+        <pre class="prettyprint">
            <code>
            billConnection = null;
            try
@@ -169,7 +171,7 @@
         </pre>
 
         <li>Bill makes a good connection.</li>
-        <pre>
+        <pre class="prettyprint">
           <code>
            billConnection = createConnection("bill", "hornetq", cf);
            billConnection.start();
@@ -177,7 +179,7 @@
        </pre>
 
         <li>Andrew makes a good connection</li>
-         <pre>
+         <pre class="prettyprint">
            <code>
            andrewConnection = createConnection("andrew", "hornetq1", cf);
            andrewConnection.start();
@@ -185,7 +187,7 @@
          </pre>
 
         <li>Frank makes a good connection</li>
-        <pre>
+        <pre class="prettyprint">
            <code>
            frankConnection = createConnection("frank", "hornetq2", cf);
            frankConnection.start();
@@ -193,7 +195,7 @@
         </pre>
 
         <li>Sam makes a good connection</li>
-        <pre>
+        <pre class="prettyprint">
            <code>
            samConnection = createConnection("sam", "hornetq3", cf);
            samConnection.start();
@@ -201,7 +203,7 @@
         </pre>
 
         <li>We check every user can publish/subscribe genericTopics</li>
-        <pre>
+        <pre class="prettyprint">
            <code>
            checkUserSendAndReceive(genericTopic, billConnection, "bill");
            checkUserSendAndReceive(genericTopic, andrewConnection, "andrew");
@@ -211,56 +213,56 @@
         </pre>
 
         <li>We check permissions on news.europe.europeTopic for bill: can't send and can't receive</li>
-        <pre>
+        <pre class="prettyprint">
            <code>
            checkUserNoSendNoReceive(europeTopic, billConnection, "bill", andrewConnection, frankConnection);
            </code>
         </pre>
 
         <li>We check permissions on news.europe.europeTopic for andrew: can send but can't receive</li>
-        <pre>
+        <pre class="prettyprint">
            <code>
            checkUserSendNoReceive(europeTopic, andrewConnection, "andrew", frankConnection);
            </code>
         </pre>
 
         <li>We check permissions on news.europe.europeTopic for frank: can't send but can receive</li>
-        <pre>
+        <pre class="prettyprint">
            <code>
            checkUserReceiveNoSend(europeTopic, frankConnection, "frank", andrewConnection);
            </code>
         </pre>
 
         <li>We check permissions on news.europe.europeTopic for sam: can't send but can receive</li>
-        <pre>
+        <pre class="prettyprint">
            <code>
            checkUserReceiveNoSend(europeTopic, samConnection, "sam", andrewConnection);
            </code>
         </pre>
 
         <li>We check permissions on news.us.usTopic for bill: can't send and can't receive</li>
-        <pre>
+        <pre class="prettyprint">
            <code>
            checkUserNoSendNoReceive(usTopic, billConnection, "bill");
            </code>
         </pre>
 
         <li>We check permissions on news.us.usTopic for andrew: can't send and can't receive</li>
-        <pre>
+        <pre class="prettyprint">
            <code>
            checkUserNoSendNoReceive(usTopic, andrewConnection, "andrew");
            </code>
         </pre>
 
         <li>We check permissions on news.us.usTopic for frank: can both send and receive</li>
-        <pre>
+        <pre class="prettyprint">
            <code>
            checkUserSendAndReceive(usTopic, frankConnection, "frank");
            </code>
         </pre>
 
         <li>We check permissions on news.us.usTopic for sam: can't send but can receive</li>
-        <pre>
+        <pre class="prettyprint">
            <code>
            checkUserReceiveNoSend(usTopic, samConnection, "sam", frankConnection);
            </code>
@@ -268,7 +270,7 @@
         
         <li>And finally, <b>always</b> remember to close your JMS connections and resources after use, in a <code>finally</code> block. Closing a JMS connection will automatically close all of its sessions, consumers, producer and browser objects</li>
 
-        <pre>
+        <pre class="prettyprint">
            <code>
            finally
            {

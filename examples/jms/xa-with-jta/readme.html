@@ -1,9 +1,11 @@
 <html>
   <head>
     <title>HornetQ JMS XA with JTA Example</title>
-    <link rel="stylesheet" type="text/css" href="../../common/common.css">
+    <link rel="stylesheet" type="text/css" href="../../common/common.css" />
+    <link rel="stylesheet" type="text/css" href="../../common/prettify.css" />
+    <script type="text/javascript" src="../../common/prettify.js"></script>
   </head>
-  <body>
+  <body onload="prettyPrint()">
      <h1>JMS XA with JTA Example</h1>
      <br>
      <p>This example shows you how to use JTA interfaces to control transactions with HornetQ. JTA provides
@@ -27,59 +29,59 @@
      <br>
      <ol>
         <li>First we need to get an initial context so we can look-up the JMS connection factory and destination objects from JNDI. This initial context will get it's properties from the <code>client-jndi.properties</code> file in the directory <code>../common/config</code></li>
-        <pre>
+        <pre class="prettyprint">
            <code>InitialContext initialContext = getContext(0);</code>
         </pre>
 
         <li>We look-up the JMS queue object from JNDI</li>
-        <pre>
+        <pre class="prettyprint">
            <code>Queue queue = (Queue) initialContext.lookup("/queue/exampleQueue");</code>
         </pre>
 
         <li>We perform a lookup on the XA Connection Factory</li>
-        <pre>
+        <pre class="prettyprint">
            <code>XAConnectionFactory cf = (XAConnectionFactory) initialContext.lookup("/XAConnectionFactory");</code>
         </pre>
 
         <li>We create a JMS XAConnection</li>
-        <pre>
+        <pre class="prettyprint">
            <code>connection = cf.createXAConnection();</code>
         </pre>
 
         <li>We Start the connection</li>
-        <pre>
+        <pre class="prettyprint">
            <code>connection.start();</code>
         </pre>
 
         <li>We create a JMS XASession</li>
-        <pre>
+        <pre class="prettyprint">
           <code>XASession xaSession = connection.createXASession();</code>
        </pre>
 
         <li>We create a normal session</li>
-        <pre>
+        <pre class="prettyprint">
           <code>Session normalSession = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);</code>
        </pre>
 
         <li>We create a normal Message Producer</li>
-        <pre>
+        <pre class="prettyprint">
            <code>
            MessageProducer normalProducer = normalSession.createProducer(queue);
            </code>
        </pre>
 
         <li>We get the JMS Session</li>
-        <pre>
+        <pre class="prettyprint">
           <code>Session session = xaSession.getSession();</code>
        </pre>
 
         <li>We create a message consumer</li>
-        <pre>
+        <pre class="prettyprint">
           <code>MessageConsumer xaConsumer = session.createConsumer(queue); </code>
        </pre>
 
         <li>We create two Text Messages</li>
-        <pre>
+        <pre class="prettyprint">
           <code>
           TextMessage helloMessage = session.createTextMessage("hello");
           TextMessage worldMessage = session.createTextMessage("world");
@@ -87,22 +89,22 @@
        </pre>
 
         <li>We get the Transaction Manager</li>
-        <pre>
+        <pre class="prettyprint">
           <code>javax.transaction.TransactionManager txMgr = TransactionManager.transactionManager();</code>
        </pre>
 
         <li>We start a transaction</li>
-        <pre>
+        <pre class="prettyprint">
           <code>txMgr.begin();</code>
        </pre>
 
         <li>We get the JMS XAResource</li>
-        <pre>
+        <pre class="prettyprint">
           <code>XAResource xaRes = xaSession.getXAResource();</code>
        </pre>
 
         <li>We enlist the resources in the Transaction work</li>
-        <pre>
+        <pre class="prettyprint">
           <code>
           Transaction transaction = txMgr.getTransaction();
           transaction.enlistResource(new DummyXAResource());
@@ -111,7 +113,7 @@
        </pre>
 
         <li>We send two messages.</li>
-        <pre>
+        <pre class="prettyprint">
           <code>
          normalProducer.send(helloMessage);
          normalProducer.send(worldMessage);
@@ -119,7 +121,7 @@
        </pre>
 
         <li>We receive the messages</li>
-        <pre>
+        <pre class="prettyprint">
           <code>
           TextMessage rm1 = (TextMessage)xaConsumer.receive();
           System.out.println("Message received: " + rm1.getText());
@@ -129,12 +131,12 @@
        </pre>
 
         <li>We roll back the transaction</li>
-        <pre>
+        <pre class="prettyprint">
           <code>txMgr.rollback();</code>
        </pre>
 
         <li>We create another transaction </li>
-        <pre>
+        <pre class="prettyprint">
           <code>
           txMgr.begin();
           transaction = txMgr.getTransaction();
@@ -142,7 +144,7 @@
        </pre>
 
         <li>We enlist the resources to start the transaction work</li>
-        <pre>
+        <pre class="prettyprint">
           <code>         
           transaction.enlistResource(new DummyXAResource());
           transaction.enlistResource(xaRes);
@@ -150,7 +152,7 @@
        </pre>
 
         <li>We receive those messages again</li>
-        <pre>
+        <pre class="prettyprint">
            <code>
            rm1 = (TextMessage)xaConsumer.receive();
            System.out.println("Message received again: " + rm1.getText());
@@ -160,12 +162,12 @@
        </pre>
 
         <li>We commit</li>
-        <pre>
+        <pre class="prettyprint">
           <code>txMgr.commit();</code>
        </pre>
 
         <li>We check that no more messages are received.</li>
-        <pre>
+        <pre class="prettyprint">
           <code>
           TextMessage rm3 = (TextMessage)xaConsumer.receive(2000);
           if (rm3 == null)
@@ -181,7 +183,7 @@
 
         <li>And finally, <b>always</b> remember to close your JMS connections and resources after use, in a <code>finally</code> block. Closing a JMS connection will automatically close all of its sessions, consumers, producer and browser objects</li>
 
-        <pre>
+        <pre class="prettyprint">
            <code>finally
            {
               if (initialContext != null)

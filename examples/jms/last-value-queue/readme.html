@@ -1,9 +1,11 @@
 <html>
   <head>
     <title>HornetQ Last-Value Queue Example</title>
-    <link rel="stylesheet" type="text/css" href="../../common/common.css">
+    <link rel="stylesheet" type="text/css" href="../../common/common.css" />
+    <link rel="stylesheet" type="text/css" href="../../common/prettify.css" />
+    <script type="text/javascript" src="../../common/prettify.js"></script>
   </head>
-  <body>
+  <body onload="prettyPrint()">
      <h1>Last Value Queue Example</h1>
 
      <p>This example shows you how to define and deal with last-value queues.</p>
@@ -17,7 +19,7 @@
         
      <h2>Example setup</h2>
      <p>Last-Value queues are defined in the configuration file <a href="server0/hornetq-configuration.xml">hornetq-configuration.xml</a>:</p>
-     <pre>
+     <pre class="prettyprint">
          <code>&lt;address-setting match="jms.queue.lastValueQueue"&gt;
                 &lt;last-value-queue&gt;true&lt;/last-value-queue&gt;
          &lt;/address-setting&gt;</code>
@@ -27,29 +29,29 @@
      <p><i>To run the example, simply type <code>ant</code> from this directory</i></p>
      <ol>
         <li>First we need to get an initial context so we can look-up the JMS connection factory and destination objects from JNDI. This initial context will get it's properties from the <a href="server0/client-jndi.properties">client-jndi.properties</a></li>
-        <pre>
+        <pre class="prettyprint">
            <code>InitialContext initialContext = getContext();</code>
         </pre>
 
         <li>We look up the JMS queue object from JNDI</li>
-        <pre>
+        <pre class="prettyprint">
            <code>Queue queue = (Queue) initialContext.lookup("/queue/lastValueQueue");</code>
         </pre>
 
         <li>We look up the JMS connection factory object from JNDI</li>
-        <pre>
+        <pre class="prettyprint">
            <code>ConnectionFactory cf = (ConnectionFactory) initialContext.lookup("/ConnectionFactory");</code>
         </pre>
 
         <li>We create a JMS connection, a session and a producer for the queue</li>
-        <pre>
+        <pre class="prettyprint">
            <code> connection = cf.createConnection();
             Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
             MessageProducer producer = session.createProducer(queue);</code>
        </pre>
        
        <li>We will create and send a text message with the Last-Value property set to <code>STOCK_NAME</code></li>
-       <pre>
+       <pre class="prettyprint">
            <code>TextMessage message = session.createTextMessage("1st message with Last-Value property set");
            message.setStringProperty("_HQ_LVQ_NAME", "STOCK_NAME");
            producer.send(message);
@@ -59,7 +61,7 @@
        <p><em>The <em>Last-Value</em> key is defined in HornetQ's MessageImpl class. Its value is <code>"_HQ_LVQ_NAME"</code></em></p>
 
        <li>We will create and send a <em>second</em> text message with the Last-Value property set to <code>STOCK_NAME</code></li>
-       <pre>
+       <pre class="prettyprint">
            <code>message = session.createTextMessage("2nd message with Last-Value property set");
            message.setStringProperty("_HQ_LVQ_NAME", "STOCK_NAME");
            producer.send(message);
@@ -67,7 +69,7 @@
        </pre>
 
        <li>We will create and send a <em>third</em> text message with the Last-Value property set to <code>STOCK_NAME</code></li>
-       <pre>
+       <pre class="prettyprint">
            <code>message = session.createTextMessage("3rd message with Last-Value property set");
            message.setStringProperty("_HQ_LVQ_NAME", "STOCK_NAME");
            producer.send(message);
@@ -79,7 +81,7 @@
            Only the 3<sup>rd</sup> message remains in the queue.</em></p>
 
         <li>We will browse the queue. There will be a single message displayed: the 3<sup>rd</sup> message</li>
-        <pre>
+        <pre class="prettyprint">
             <code>QueueBrowser browser = session.createBrowser(queue);
             Enumeration enumeration = browser.getEnumeration();
             while (enumeration.hasMoreElements())
@@ -94,29 +96,29 @@
         <p><em>We will now consume the message on the queue</em></p>
 
         <li>We create a JMS message consumer on the queue</li>
-        <pre>
+        <pre class="prettyprint">
             <code>MessageConsumer messageConsumer = session.createConsumer(queue);</code>
         </pre>
         
         <li>We start the connection. In order for delivery to occur on any consumers or subscribers on a connection, the connection must be started</li>
-        <pre>
+        <pre class="prettyprint">
            <code>connection.start();</code>
         </pre>
 
         <li>We try to receive a message from the queue. It will be the 3<sup>rd</sup> message</li>
-        <pre>
+        <pre class="prettyprint">
            <code> TextMessage messageReceived = (TextMessage)messageConsumer.receive(5000);
             System.out.format("Received message: %s\n", messageReceived.getText());</code>
         </pre>
         
         <li>We will try to receive another message but there is no other on the queue. The <code>receive</code> method will timeout after 5 seconds</li>
-        <pre>
+        <pre class="prettyprint">
            <code> messageReceived = (TextMessage)messageConsumer.receive(5000);
            System.out.format("Received message: %s\n", messageReceived);</code>
         </pre>
 
         <li>And finally, <b>always</b> remember to close your JMS connections and resources after use, in a <code>finally</code> block. Closing a JMS connection will automatically close all of its sessions, consumers, producer and browser objects</li>
-        <pre>
+        <pre class="prettyprint">
            <code>finally
            {
               if (initialContext != null)

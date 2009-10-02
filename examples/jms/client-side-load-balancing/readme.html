@@ -1,9 +1,11 @@
 <html>
   <head>
     <title>HornetQ JMS Client Side Load-Balancing Example</title>
-    <link rel="stylesheet" type="text/css" href="../../common/common.css">
+    <link rel="stylesheet" type="text/css" href="../../common/common.css" />
+    <link rel="stylesheet" type="text/css" href="../../common/prettify.css" />
+    <script type="text/javascript" src="../../common/prettify.js"></script>
   </head>
-  <body>
+  <body onload="prettyPrint()">
      <h1>HornetQ JMS Client Side Load-Balancing Example</h1>
      <br>
      <p>This example demonstrates how subsequent connections created from a JMS Connection Factory can be created
@@ -27,25 +29,25 @@
      <br>
      <ol>
         <li> Get an initial context for looking up JNDI from server 0.</li>
-        <pre>
+        <pre class="prettyprint">>
            <code>
    initialContext = getContext(0);
    </code>
         </pre>
 
         <li>Look-up the JMS Queue object from JNDI</li>
-        <pre>
+        <pre class="prettyprint">
            <code>Queue queue = (Queue)initialContext.lookup("/queue/exampleQueue");</code>
         </pre>
 
         <li>Look-up a JMS Connection Factory object from JNDI on server 0</li>
-        <pre>
+        <pre class="prettyprint">
            <code>ConnectionFactory connectionFactory = (ConnectionFactory)initialContext.lookup("/ConnectionFactory");</code>
         </pre>
 
         <li>We create three connections, since we are using round-robin load-balancing this should
         result in each connection being connected to a different node of the cluster</li>
-        <pre>
+        <pre class="prettyprint">
            <code>
         connectionA = connectionFactory.createConnection();
          
@@ -56,7 +58,7 @@
         </pre>
 
         <li>We create a JMS Session on each of those connections</li>
-        <pre>
+        <pre class="prettyprint">
            <code>
         Session sessionA = connectionA.createSession(false, Session.AUTO_ACKNOWLEDGE);
          
@@ -67,7 +69,7 @@
         </pre>
 
         <li>We start the connections to ensure delivery occurs on them</li>
-        <pre>
+        <pre class="prettyprint">
           <code>
         connectionA.start();
 
@@ -78,7 +80,7 @@
         </pre>
         
         <li>We create JMS MessageConsumer objects on the sessions</li>
-        <pre>
+        <pre class="prettyprint">
           <code>
          MessageConsumer consumerA = sessionA.createConsumer(queue);
          
@@ -89,7 +91,7 @@
         </pre>
 
         <li>We create JMS MessageProducer objects on the sessions</li>
-        <pre>
+        <pre class="prettyprint">
            <code>
         MessageProducer producerA = sessionA.createProducer(queue);
          
@@ -100,7 +102,7 @@
         </pre>
         
         <li>We send some messages on each producer</li>
-        <pre>
+        <pre class="prettyprint">
            <code>
          final int numMessages = 10;
 
@@ -129,7 +131,7 @@
 
         <li>We now consume the messages from each node. The connections must be on different nodes
          since if they shared nodes then the consumers would receive the messages sent from different connections.</li>
-        <pre>
+        <pre class="prettyprint">
            <code>
          for (int i = 0; i < numMessages; i ++)
          {
@@ -150,7 +152,7 @@
 
         <li>And finally (no pun intended), <b>always</b> remember to close your JMS resources after use, in a <code>finally</code> block. Closing a JMS connection will automatically close all of its sessions, consumers, producer and browser objects</li>
 
-        <pre>
+        <pre class="prettyprint">
            <code>
 	finally
 	{

@@ -1,9 +1,11 @@
 <html>
   <head>
     <title>HornetQ Message Redistribution Example</title>
-    <link rel="stylesheet" type="text/css" href="../../common/common.css">
+    <link rel="stylesheet" type="text/css" href="../../common/common.css" />
+    <link rel="stylesheet" type="text/css" href="../../common/prettify.css" />
+    <script type="text/javascript" src="../../common/prettify.js"></script>
   </head>
-  <body>
+  <body onload="prettyPrint()">
      <h1>HornetQ Message Redistribution Example</h1>
      <br>
      <p>This example demonstrates message redistribution between queues with the same name deployed in different
@@ -24,7 +26,7 @@
      <p>Here's the relevant snippet from the <code>hornetq-queues.xml</code> configuration, which tells the server
      to use a redistribution delay of <code>0</code> on any jms queues, i.e. any queues whose name starts with
      <code>jms.</code></p>
-     <pre>
+     <pre class="prettyprint">
      <code>
   &lt;address-setting match="jms.#"&gt;
       &lt;redistribution-delay&gt;0&lt;/redistribution-delay&gt;
@@ -38,63 +40,63 @@
      <br>
      <ol>
         <li>Get an initial context for looking up JNDI from server 0</li>
-        <pre>
+        <pre class="prettyprint">
            <code>
    ic0 = getContext(0);
    </code>
         </pre>
 
         <li>Look-up the JMS Queue object from JNDI</li>
-        <pre>
+        <pre class="prettyprint">
            <code>Queue queue = (Queue)ic0.lookup("/queue/exampleQueue");</code>
         </pre>
 
         <li>Look-up a JMS Connection Factory object from JNDI on server 0</li>
-        <pre>
+        <pre class="prettyprint">
            <code>ConnectionFactory cf0 = (ConnectionFactory)ic0.lookup("/ConnectionFactory");</code>
         </pre>
 
         <li>Get an initial context for looking up JNDI from server 1.</li>
-        <pre>
+        <pre class="prettyprint">
            <code>ic1 = getContext(1);</code>
         </pre>
 
         <li>Look-up a JMS Connection Factory object from JNDI on server 1</li>
-        <pre>
+        <pre class="prettyprint">
            <code>ConnectionFactory cf1 = (ConnectionFactory)ic1.lookup("/ConnectionFactory");
            </code>
         </pre>
 
         <li>We create a JMS Connection connection0 which is a connection to server 0</li>
-        <pre>
+        <pre class="prettyprint">
           <code>
    connection0 = cf0.createConnection();
           </code>
         </pre>
         
         <li>We create a JMS Connection connection1 which is a connection to server 1</li>
-        <pre>
+        <pre class="prettyprint">
           <code>
    connection1 = cf1.createConnection();
           </code>
         </pre>
 
         <li>We create a JMS Session on server 0, note the session is CLIENT_ACKNOWLEDGE</li>
-        <pre>
+        <pre class="prettyprint">
            <code>
    Session session0 = connection0.createSession(false, Session.AUTO_ACKNOWLEDGE);
            </code>
         </pre>
         
         <li>We create a JMS Session on server 1, note the session is CLIENT_ACKNOWLEDGE</li>
-        <pre>
+        <pre class="prettyprint">
            <code>
    Session session1 = connection1.createSession(false, Session.AUTO_ACKNOWLEDGE);
             </code>
         </pre>
 
         <li>We start the connections to ensure delivery occurs on them</li>
-        <pre>
+        <pre class="prettyprint">
            <code>
    connection0.start();
 
@@ -103,7 +105,7 @@
         </pre>
 
         <li>We create JMS MessageConsumer objects on server 0 and server 1</li>
-        <pre>
+        <pre class="prettyprint">
            <code>
    MessageConsumer consumer0 = session0.createConsumer(queue);
 
@@ -112,13 +114,13 @@
         </pre>
 
         <li>We create a JMS MessageProducer object on server 0.</li>
-        <pre>
+        <pre class="prettyprint">
            <code>
    MessageProducer producer = session0.createProducer(queue);</code>
         </pre>
 
         <li>We send some messages to server 0.</li>
-        <pre>
+        <pre class="prettyprint">
            <code>
 	final int numMessages = 10;
 
@@ -140,7 +142,7 @@
          to nodes which have consumers with no or matching selectors. See the user manual for more details.</li>
          JMS Queues implement point-to-point message where each message is only ever consumed by a
          maximum of one consumer.
-        <pre>
+        <pre class="prettyprint">
            <code>
 	for (int i = 0; i < numMessages; i += 2)
 	{
@@ -158,7 +160,7 @@
         <li>We acknowledge the messages consumed on node 0. The sessions are CLIENT_ACKNOWLEDGE so
          messages will not get acknowledged until they are explicitly acknowledged.
          Note that we <b>do not</b> acknowledge the message consumed on node 1 yet.</li>
-        <pre>
+        <pre class="prettyprint">
            <code>
            message0.acknowledge();
            </code>
@@ -166,14 +168,14 @@
         
         <li>We now close the session and consumer on node 1. (Closing the session automatically closes the consumer)
         </li>
-        <pre>
+        <pre class="prettyprint">
            <code>session1.close();</code>
         </pre>
         
         <li>Since there is no more consumer on node 1, the messages on node 1 are now stranded (no local consumers)
         so HornetQ will redistribute them to node 0 so they can be consumed. We consume them from
         node 0.</li>
-        <pre>
+        <pre class="prettyprint">
            <code>
            for (int i = 0; i < numMessages; i += 2)
          {
@@ -185,14 +187,14 @@
         </pre> 
         
         <li>We ack the redistributed messages.</li>
-        <pre>
+        <pre class="prettyprint">
            <code>message0.acknowledge();</code>
         </pre>
            
         
         <li>And finally (no pun intended), <b>always</b> remember to close your resources after use, in a <code>finally</code> block. Closing a JMS connection will automatically close all of its sessions, consumers, producer and browser objects</li>
 
-        <pre>
+        <pre class="prettyprint">
            <code>
 	finally
 	{

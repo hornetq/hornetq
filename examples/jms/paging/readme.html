@@ -1,9 +1,11 @@
 <html>
   <head>
     <title>HornetQ Paging Example</title>
-    <link rel="stylesheet" type="text/css" href="../../common/common.css"/>
+    <link rel="stylesheet" type="text/css" href="../../common/common.css" />
+    <link rel="stylesheet" type="text/css" href="../../common/prettify.css" />
+    <script type="text/javascript" src="../../common/prettify.js"></script>
   </head>
-  <body>
+  <body onload="prettyPrint()">
      <h1>Paging Example</h1>
      <br>
      <p>This example shows how HornetQ would avoid running out of resources by paging messages.</p>
@@ -18,55 +20,55 @@
      <br>
      <ol>
         <li>First we need to get an initial context so we can look-up the JMS connection factory and destination objects from JNDI. This initial context will get it's properties from the <code>client-jndi.properties</code> file in the directory <code>../common/config</code></li>
-        <pre>
+        <pre class="prettyprint">
            <code>InitialContext initialContext = getContext();</code>
         </pre>
 
         <li>We look-up the JMS connection factory object from JNDI</li>
-        <pre>
+        <pre class="prettyprint">
            <code>ConnectionFactory cf = (ConnectionFactory) initialContext.lookup("/ConnectionFactory");</code>
         </pre>
 
         <li>We look-up the JMS queue object from JNDI. pagingQueue is configured to hold a very limited number of bytes in memory</li>
-        <pre>
+        <pre class="prettyprint">
            <code>Queue pageQueue = (Queue) initialContext.lookup("/queue/pagingQueue");</code>
         </pre>
 
         <li>We look-up the JMS queue object from JNDI.</li>
-        <pre>
+        <pre class="prettyprint">
            <code>Queue queue = (Queue) initialContext.lookup("/queue/exampleQueue");</code>
         </pre>
 
         <li>We create a JMS connection</li>
-        <pre>
+        <pre class="prettyprint">
            <code>connection = cf.createConnection();</code>
         </pre>
 
         <li>We create a JMS session. The session is created as non transacted. We will use client acknowledgement on this example.</li>
-        <pre>
+        <pre class="prettyprint">
            <code>Session session = connection.createSession(false, Session.CLIENT_ACKNOWLEDGE);</code>
         </pre>
 
 
          <li>Create a JMS Message Producer for pageQueueAddress</li>
-         <pre><code>
+         <pre class="prettyprint"><code>
          MessageProducer pageMessageProducer = session.createProducer(pageQueue);
          </pre></code>
          
          <li>We don't need persistent messages in order to use paging. (This step is optional)</li>
-         <pre><code>
+         <pre class="prettyprint"><code>
          pageMessageProducer.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
          </pre></code>
          
          <li>Create a Binary Bytes Message with 10K arbitrary bytes</li>
-         <pre><code>
+         <pre class="prettyprint"><code>
          BytesMessage message = session.createBytesMessage();
          message.writeBytes(new byte[10 * 1024]);
          </pre></code>
          
 
          <li>Send only 20 messages to the Queue. This will be already enough for pagingQueue. Look at ./paging/config/hornetq-queues.xml for the config.</li>
-         <pre><code>
+         <pre class="prettyprint"><code>
          for (int i = 0; i < 20; i++)
          {
             pageMessageProducer.send(message);
@@ -74,17 +76,17 @@
          </pre></code>
          
          <li>Create a JMS Message Producer</li>
-         <pre><code>
+         <pre class="prettyprint"><code>
          MessageProducer messageProducer = session.createProducer(queue);
          </pre></code>
          
          <li>We don't need persistent messages in order to use paging. (This step is optional)</li>
-         <pre><code>
+         <pre class="prettyprint"><code>
          messageProducer.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
          </pre></code>
 
          <li>Send the message for about 30K, which should be over the memory limit imposed by the server</li>
-         <pre><code>
+         <pre class="prettyprint"><code>
          for (int i = 0; i < 30000; i++)
          {
             messageProducer.send(message);
@@ -93,26 +95,26 @@
 
          <li>if you pause the example here, you will several files under ./build/data/paging</li>
          
-         <pre><code>
+         <pre class="prettyprint"><code>
          // Thread.sleep(30000); // if you want to just our of curiosity, you can sleep here and inspect the created files just for 
          </pre></code>
          
          
          <li>Create a JMS Message Consumer</li>
-         <pre><code>
+         <pre class="prettyprint"><code>
          MessageConsumer messageConsumer = session.createConsumer(queue);
          </pre></code>
          
 
          <li>Start the JMS Connection. This step will activate the subscribers to receive messages.</li>
-         <pre><code>
+         <pre class="prettyprint"><code>
          connection.start();
          </pre></code>
          
          
          <li>Receive the messages. It's important to ACK for messages as HornetQ will not read messages from paging until messages are ACKed</li>
          
-         <pre><code>
+         <pre class="prettyprint"><code>
          for (int i = 0; i < 30000; i++)
          {
             message = (BytesMessage)messageConsumer.receive(1000);
@@ -127,7 +129,7 @@
          </pre></code>
          
          <li>Receive the messages from the Queue names pageQueue. Create the proper consumer for that.</li>
-         <pre><code>
+         <pre class="prettyprint"><code>
          messageConsumer.close();
          messageConsumer = session.createConsumer(pageQueue);
 
@@ -143,7 +145,7 @@
 
         <li>And finally, <b>always</b> remember to close your JMS connections and resources after use, in a <code>finally</code> block. Closing a JMS connection will automatically close all of its sessions, consumers, producer and browser objects</li>
 
-        <pre>
+        <pre class="prettyprint">
            <code>finally
            {
               if (initialContext != null)

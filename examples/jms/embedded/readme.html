@@ -1,9 +1,11 @@
 <html>
    <head>
       <title>HornetQ Embedded JMS Server Example</title>
-      <link rel="stylesheet" type="text/css" href="../../common/common.css">
+      <link rel="stylesheet" type="text/css" href="../../common/common.css" />
+      <link rel="stylesheet" type="text/css" href="../../common/prettify.css" />
+      <script type="text/javascript" src="../../common/prettify.js"></script>
    </head>
-   <body>
+   <body onload="prettyPrint()">
       <h1>Embedded JMS Server Example</h1>
       
       <p>This examples shows how to setup and run an embedded JMS server with HornetQ.</p>
@@ -16,7 +18,7 @@
 
       <ol>
          <li>Create HornetQ core configuration, and set the properties accordingly</li>
-         <pre>
+         <pre class="prettyprint">
             <code>Configuration configuration = new ConfigurationImpl();
             configuration.setPersistenceEnabled(false);
             configuration.setSecurityEnabled(false);
@@ -24,7 +26,7 @@
             Configuration configuration = new ConfigurationImpl();</pre>
 
          <li>Create the HornetQ core server</li>
-         <pre>
+         <pre class="prettyprint">
             <code>HornetQServer hornetqServer = HornetQ.newHornetQServer(configuration);</code>
          </pre>
         
@@ -43,12 +45,12 @@
          </pre>
 
          <li>Create the JMS configuration</li>
-         <pre>
+         <pre class="prettyprint">
             <code>JMSConfiguration jmsConfig = new JMSConfigurationImpl();</code>
          </pre>
 
          <li>Configure context used to bind the JMS resources to JNDI</li>
-         <pre>
+         <pre class="prettyprint">
             <code>Hashtable&lt;String, String> env = new Hashtable&lt;String, String>();
             env.put("java.naming.factory.initial", "org.jnp.interfaces.NamingContextFactory");
             env.put("java.naming.provider.url", "jnp://localhost:1099");
@@ -58,20 +60,20 @@
          </pre>
 
          <li>Configure the JMS ConnectionFactory</li>
-         <pre>
+         <pre class="prettyprint">
             <code>TransportConfiguration connectorConfig = new TransportConfiguration(NettyConnectorFactory.class.getName());
             ConnectionFactoryConfiguration cfConfig = new ConnectionFactoryConfigurationImpl("cf", connectorConfig, "/cf");
             jmsConfig.getConnectionFactoryConfigurations().add(cfConfig);</code>
          </pre>
          
          <li>Configure the JMS Queue</li>
-         <pre>
+         <pre class="prettyprint">
             <code>QueueConfiguration queueConfig = new QueueConfigurationImpl("queue1", null, false, "/queue/queue1");
             jmsConfig.getQueueConfigurations().add(queueConfig);</code>
          </pre>
      
          <li>Start the JMS Server using the HornetQ core server and the JMS configuration</li>
-         <pre>
+         <pre class="prettyprint">
             <code>JMSServerManager jmsServer = new JMSServerManagerImpl(hornetqServer, jmsConfig);
             jmsServer.start();</code>
          </pre>
@@ -81,7 +83,7 @@
             used to run the JMS server.</p>
               
          <li>Lookup JMS resources defined in the configuration </li>
-         <pre>
+         <pre class="prettyprint">
             <code>ConnectionFactory cf = (ConnectionFactory)context.lookup("/cf");
             Queue queue = (Queue)context.lookup("/queue/queue1");</code>
          </pre>
@@ -92,12 +94,12 @@
          <p>Finally, we stop the JMS server and its associated resources.</p>
         
          <li>Stop the JMS server</li>
-         <pre>
+         <pre class="prettyprint">
             <code>jmsServer.stop();</code>
          </pre>
         
          <li>Stop the JNDI server</li>
-         <pre>
+         <pre class="prettyprint">
             <code>naming.stop();
             jndiServer.stop();</code>
          </pre>

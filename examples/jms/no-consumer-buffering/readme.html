@@ -1,9 +1,11 @@
 <html>
   <head>
     <title>HornetQ No Consumer Buffering Example</title>
-    <link rel="stylesheet" type="text/css" href="../../common/common.css">
+    <link rel="stylesheet" type="text/css" href="../../common/common.css" />
+    <link rel="stylesheet" type="text/css" href="../../common/prettify.css" />
+    <script type="text/javascript" src="../../common/prettify.js"></script>
   </head>
-  <body>
+  <body onload="prettyPrint()">
      <h1>HornetQ <br>No Consumer Buffering Example</h1>
      <br><br>
      <p>By default, HornetQ consumers buffer messages from the server in a client side buffer
@@ -27,7 +29,7 @@
      <h2>Example step-by-step</h2>
      <p>In this example we specify a <code>consumer-window-size</code> of <code>0</code> bytes in the <code>hornetq-jms.xml</code>
      file when deploying the connection factory:</p>
-     <pre>
+     <pre class="prettyprint">
      <code>
    &lt;connection-factory name="ConnectionFactory"&gt;
       &lt;connector-ref connector-name="netty-connector"/&gt;
@@ -53,43 +55,43 @@
      <br>
      <ol>
         <li>Create an initial context to perform the JNDI lookup.</li>
-        <pre>
+        <pre class="prettyprint">
            <code>initialContext = getContext(0);</code>
         </pre>
 
         <li>Perfom a lookup on the queue</li>
-        <pre>
+        <pre class="prettyprint">
            <code>Queue queue = (Queue)initialContext.lookup("/queue/exampleQueue");</code>
         </pre>
 
         <li>Perform a lookup on the Connection Factory</li>
-        <pre>
+        <pre class="prettyprint">
            <code>ConnectionFactory cf = (ConnectionFactory)initialContext.lookup("/ConnectionFactory");</code>
         </pre>
 
         <li>Create a JMS Connection</li>
-        <pre>
+        <pre class="prettyprint">
            <code>connection = cf.createConnection();</code>
         </pre>
 
         <li>Create a JMS Session</li>
-        <pre>
+        <pre class="prettyprint">
            <code>Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);</code>
         </pre>
 
         <li>Create a JMS MessageProducer</li>
-        <pre>
+        <pre class="prettyprint">
           <code>MessageProducer producer = session.createProducer(queue);</code>
         </pre>
 
         <li>Create a JMS MessageConsumer</li>
-        <pre>
+        <pre class="prettyprint">
            <code>MessageConsumer consumer1 = session.createConsumer(queue);</code>
         </pre>
         
         <li>Start the connection</li>
         
-        <pre>
+        <pre class="prettyprint">
            <code>
      connection.start();
            </code>
@@ -97,7 +99,7 @@
            
 
         <li>Send 10 messages to the queue</li>
-        <pre>
+        <pre class="prettyprint">
            <code>
      final int numMessages = 10;
          
@@ -111,13 +113,13 @@
         </pre>
         
         <li>Create another JMS MessageConsumer on the same queue.</li>
-        <pre>
+        <pre class="prettyprint">
            <code>MessageConsumer consumer2 = session.createConsumer(queue);</code>
         </pre>
         
         <li>Consume three messages from consumer2</li>
         
-        <pre>
+        <pre class="prettyprint">
            <code>
    for (int i = 0; i < 3; i++)
    {         
@@ -130,7 +132,7 @@
         
         <li>Consume five messages from consumer1</li>
         
-        <pre>
+        <pre class="prettyprint">
            <code>
    for (int i = 0; i < 5; i++)
    {         
@@ -143,7 +145,7 @@
                
         <li>Consume two more messages from consumer2</li>
         
-        <pre>
+        <pre class="prettyprint">
            <code>
    for (int i = 0; i < 2; i++)
    {         
@@ -157,7 +159,7 @@
 
         <li>Be sure to close our resources!</li>
 
-        <pre>
+        <pre class="prettyprint">
            <code>
            finally
            {

@@ -1,9 +1,11 @@
 <html>
   <head>
     <title>HornetQ Core Bridge Example</title>
-    <link rel="stylesheet" type="text/css" href="../../common/common.css">
+    <link rel="stylesheet" type="text/css" href="../../common/common.css" />
+    <link rel="stylesheet" type="text/css" href="../../common/prettify.css" />
+    <script type="text/javascript" src="../../common/prettify.js"></script>
   </head>
-  <body>
+  <body onload="prettyPrint()">
      <h1>HornetQ Core Bridge Example</h1>
      <br>
      
@@ -35,7 +37,7 @@
      <p>Moreover it is known that Aardvarks normally wear blue hats, and it's important that we only make sausages using
      Aardvarks with green hats, so on the way we are going transform the property "hat" from "green" to "blue".</p>  
      <p>Here's a snippet from <code>hornetq-configuration.xml</code> showing the bridge configuration</p>
-     <pre>
+     <pre class="prettyprint">
      <code>
      &lt;bridge name="my-bridge"&gt;
           &lt;queue-name&gt;jms.queue.sausage-factory&lt;/queue-name&gt;
@@ -52,91 +54,91 @@
      <br>
      <ol>
         <li>We create an initial context for looking up JNDI on node 0</li>
-        <pre>
+        <pre class="prettyprint">
            <code>
    ic0 = getContext(0);
    </code>
         </pre>
 
         <li>We look up the sausage-factory queue from node 0</li>
-        <pre>
+        <pre class="prettyprint">
            <code>Queue sausageFactory = (Queue)ic0.lookup("/queue/sausage-factory");</code>
         </pre>
 
         <li>We look up a JMS ConnectionFactory object from node 0</li>
-        <pre>
+        <pre class="prettyprint">
            <code>ConnectionFactory cf0 = (ConnectionFactory)ic0.lookup("/ConnectionFactory");</code>
         </pre>
 
         <li>We create an initial context for looking up JNDI on node 1</li>
-        <pre>
+        <pre class="prettyprint">
            <code>ic1 = getContext(1);</code>
         </pre>
 
         <li>We look up the mincing-machine queue on node 1</li>
-        <pre>
+        <pre class="prettyprint">
            <code>Queue mincingMachine = (Queue)ic1.lookup("/queue/mincing-machine");
            </code>
         </pre>
 
         <li>We look up a JMS ConnectionFactory object from node 1</li>
-        <pre>
+        <pre class="prettyprint">
           <code>
    ConnectionFactory cf1 = (ConnectionFactory)ic1.lookup("/ConnectionFactory");
           </code>
         </pre>
         
         <li>We create a JMS Connection connection0 which is a connection to server 0</li>
-        <pre>
+        <pre class="prettyprint">
           <code>
    connection0 = cf0.createConnection();
           </code>
         </pre>
         
         <li>We create a JMS Connection connection1 which is a connection to server 1</li>
-        <pre>
+        <pre class="prettyprint">
           <code>
    connection1 = cf1.createConnection();
           </code>
         </pre>
 
         <li>We create a JMS Session on server 0</li>
-        <pre>
+        <pre class="prettyprint">
            <code>
    Session session0 = connection0.createSession(false, Session.AUTO_ACKNOWLEDGE);
            </code>
         </pre>
         
         <li>We create a JMS Session on server 1</li>
-        <pre>
+        <pre class="prettyprint">
            <code>
    Session session1 = connection1.createSession(false, Session.AUTO_ACKNOWLEDGE);
             </code>
         </pre>
 
         <li>We start the connection to ensure delivery occurs on them</li>
-        <pre>
+        <pre class="prettyprint">
            <code>
    connection1.start();
            </code>
         </pre>
 
         <li>We create a JMS MessageConsumer object on server 1</li>
-        <pre>
+        <pre class="prettyprint">
            <code>
    MessageConsumer consumer = session1.createConsumer(mincingMachine);
            </code>
         </pre>
 
         <li>We create a JMS MessageProducer object on server 0.</li>
-        <pre>
+        <pre class="prettyprint">
            <code>
    MessageProducer producer = session0.createProducer(sausageFactory);</code>
         </pre>
 
         <li>We create and send a message representing an aardvark with a green hat to the sausage-factory
          on node 0</li>
-        <pre>
+        <pre class="prettyprint">
            <code>
          Message message = session0.createMessage();
 
@@ -150,7 +152,7 @@
         
         <li>We successfully receive the aardvark message from the mincing-machine one node 1. The aardvark's
          hat is now blue since it has been transformed!</li>
-        <pre>
+        <pre class="prettyprint">
            <code>
         Message receivedMessage = consumer.receive(5000);
            </code>
@@ -158,7 +160,7 @@
         
         <li>We create and send another message, this time representing a sasquatch with a mauve hat to the
           sausage-factory on node 0. This won't be bridged to the mincing-machine since we only want aardvarks, not sasquatches.</li>
-        <pre>
+        <pre class="prettyprint">
            <code>
          message = session0.createMessage();
 
@@ -171,7 +173,7 @@
         </pre>
         
         <li>We don't receive the sasquatch message since it's not an aardvark!</li>
-        <pre>
+        <pre class="prettyprint">
            <code>
          receivedMessage = (TextMessage)consumer.receive(1000);
            </code>
@@ -180,7 +182,7 @@
 
         <li>And finally (no pun intended), <b>always</b> remember to close your JMS resources after use, in a <code>finally</code> block. Closing a JMS connection will automatically close all of its sessions, consumers, producer and browser objects</li>
 
-        <pre>
+        <pre class="prettyprint">
            <code>
 	finally
 	{

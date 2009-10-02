@@ -1,9 +1,11 @@
 <html>
   <head>
     <title>HornetQ JMS Queue Selector Example</title>
-    <link rel="stylesheet" type="text/css" href="../../common/common.css">
+    <link rel="stylesheet" type="text/css" href="../../common/common.css" />
+    <link rel="stylesheet" type="text/css" href="../../common/prettify.css" />
+    <script type="text/javascript" src="../../common/prettify.js"></script>
   </head>
-  <body>
+  <body onload="prettyPrint()">
      <h1>JMS Queue Selector Example</h1>
      <br>
      <p>This example shows you how to selectively consume messages using message selectors with queue consumers.</p>
@@ -32,42 +34,42 @@
      <br>
      <ol>
         <li>First we need to get an initial context so we can look-up the JMS connection factory and destination objects from JNDI. This initial context will get it's properties from the <code>client-jndi.properties</code> file in the directory <code>../common/config</code></li>
-        <pre>
+        <pre class="prettyprint">
            <code>InitialContext initialContext = getContext();</code>
         </pre>
 
         <li>We look-up the JMS queue object from JNDI</li>
-        <pre>
+        <pre class="prettyprint">
            <code>Queue queue = (Queue) initialContext.lookup("/queue/exampleQueue");</code>
         </pre>
 
         <li>We look-up the JMS connection factory object from JNDI</li>
-        <pre>
+        <pre class="prettyprint">
            <code>ConnectionFactory cf = (ConnectionFactory) initialContext.lookup("/ConnectionFactory");</code>
         </pre>
 
         <li>We create a JMS connection</li>
-        <pre>
+        <pre class="prettyprint">
            <code>connection = cf.createConnection();</code>
         </pre>
 
         <li>We start the connection</li>
-        <pre>
+        <pre class="prettyprint">
            <code>connection.start();</code>
         </pre>
 
         <li>We create a JMS session. The session is created as non transacted and will auto acknowledge messages.</li>
-        <pre>
+        <pre class="prettyprint">
            <code>Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);</code>
         </pre>
 
         <li>We create a JMS message producer on the session. This will be used to send the messages.</li>
-        <pre>
+        <pre class="prettyprint">
           <code>MessageProducer messageProducer = session.createProducer(queue);</code>
        </pre>
 
         <li>We create two selectors.</li>
-         <pre>
+         <pre class="prettyprint">
            <code>
            String redSelector = "color='red'";
            String greenSelector = "color='green'";
@@ -75,7 +77,7 @@
          </pre>
 
         <li>We Create a JMS Message Consumer that receives 'red' messages.</li>
-        <pre>
+        <pre class="prettyprint">
           <code>
           MessageConsumer redConsumer = session.createConsumer(queue, redSelector);
           redConsumer.setMessageListener(new SimpleMessageListener("red"));
@@ -83,7 +85,7 @@
         </pre>
 
         <li>We Create a second JMS Message Consumer that receives 'green' messages.</li>
-        <pre>
+        <pre class="prettyprint">
           <code>
           MessageConsumer greenConsumer = session.createConsumer(queue, greenSelector);
           greenConsumer.setMessageListener(new SimpleMessageListener("green"));
@@ -93,7 +95,7 @@
         <li>We Create another JMS Message Consumer that receives all messages. Please not that the order
         of consumers on a queue is of significance. If the anyConsumer is created before the above two, the 
         result will be totally different.</li>
-        <pre>
+        <pre class="prettyprint">
           <code>
           MessageConsumer anyConsumer = session.createConsumer(queue);
           anyConsumer.setMessageListener(new SimpleMessageListener("any"));
@@ -101,7 +103,7 @@
         </pre>
 
         <li>We Create three messages, each has a different color property.</li>
-        <pre>
+        <pre class="prettyprint">
            <code>
            TextMessage redMessage = session.createTextMessage("Red");
            redMessage.setStringProperty("color", "red");
@@ -113,7 +115,7 @@
         </pre>
 
         <li>We send the messages to the topic</li>
-        <pre>
+        <pre class="prettyprint">
            <code>
            producer.send(redMessage);
            System.out.println("Message sent: " + redMessage.getText());
@@ -126,7 +128,7 @@
         
         <li>And finally, <b>always</b> remember to close your JMS connections and resources after use, in a <code>finally</code> block. Closing a JMS connection will automatically close all of its sessions, consumers, producer and browser objects</li>
 
-        <pre>
+        <pre class="prettyprint">
            <code>finally
            {
               if (initialContext != null)

@@ -1,9 +1,11 @@
 <html>
   <head>
     <title>HornetQ Application-Layer Failover Example</title>
-    <link rel="stylesheet" type="text/css" href="../../common/common.css">
+    <link rel="stylesheet" type="text/css" href="../../common/common.css" />
+    <link rel="stylesheet" type="text/css" href="../../common/prettify.css" />
+    <script type="text/javascript" src="../../common/prettify.js"></script>
   </head>
-  <body>
+  <body onload="prettyPrint()">
      <h1>HornetQ Application-Layer Failover Example</h1>
      <br>
      <p>HornetQ implements fully transparent <b>automatic</b> failover of connections from a live to backup node, this requires
@@ -29,18 +31,18 @@
      <br>
      <ol>
         <li> We create our JMS Connection, Session, MessageProducer and MessageConsumer on server 1</li>
-        <pre>
+        <pre class="prettyprint">
            <code>createJMSObjects(1);</code>
         </pre>
 
         <li>We set a JMS ExceptionListener on the connection. On failure this will be called and the connection,
          session, etc. will be manually recreated on the backup node.</li>
-        <pre>
+        <pre class="prettyprint">
            <code>connection.setExceptionListener(new ExampleListener());</code>
         </pre>
 
         <li>We send some messages to server 1, the live server.</li>
-        <pre>
+        <pre class="prettyprint">
            <code>
          final int numMessages = 10;
 
@@ -56,7 +58,7 @@
         </pre>
 
         <li>We consume those messages on server 1.</li>
-        <pre>
+        <pre class="prettyprint">
           <code>
           for (int i = 0; i < numMessages; i++)
          {
@@ -69,13 +71,13 @@
         
         <li>We now cause server 1, the live server to crash. After a little while the connection's
             ExceptionListener will register the failure and reconnection will occur.</li>
-        <pre>
+        <pre class="prettyprint">
            <code>killServer(1);</code>
         </pre>
         
         <li>The connection's ExceptionListener gets called, and we lookup the JMS objects and
         recreate the connection, session, etc on the other node 0.</li>
-        <pre>
+        <pre class="prettyprint">
            <code>
    private class ExampleListener implements ExceptionListener
    {
@@ -105,7 +107,7 @@
         </pre>
 
         <li>We are now connected to the other node. We now send some more messages.</li>
-        <pre>
+        <pre class="prettyprint">
            <code>
    for (int i = numMessages; i < numMessages * 2; i++)
          {
@@ -119,7 +121,7 @@
         </pre>
         
         <li>And consume them.</li>
-        <pre>
+        <pre class="prettyprint">
            <code>
    for (int i = 0; i < numMessages; i++)
          {
@@ -133,7 +135,7 @@
 
         <li>And finally (no pun intended), <b>always</b> remember to close your resources after use, in a <code>finally</code> block. Closing a JMS connection will automatically close all of its sessions, consumers, producer and browser objects</li>
 
-        <pre>
+        <pre class="prettyprint">
            <code>
 	finally
 	{

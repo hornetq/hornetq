@@ -1,9 +1,11 @@
 <html>
   <head>
     <title>HornetQ Asynchronous Send Acknowledgements Example</title>
-    <link rel="stylesheet" type="text/css" href="../../common/common.css">
+    <link rel="stylesheet" type="text/css" href="../../common/common.css" />
+    <link rel="stylesheet" type="text/css" href="../../common/prettify.css" />
+    <script type="text/javascript" src="../../common/prettify.js"></script>
   </head>
-  <body>
+  <body onload="prettyPrint()">
      <h1>Asynchronous Send Acknowledgements Example</h1>
      <br>
      <p>Asynchronous Send Acknowledgements are an advanced feature of HornetQ which allow you to
@@ -19,27 +21,27 @@
      <br>
      <ol>
         <li>First we need to get an initial context so we can look-up the JMS connection factory and destination objects from JNDI. This initial context will get it's properties from the <code>client-jndi.properties</code> file in the directory <code>../common/config</code></li>
-        <pre>
+        <pre class="prettyprint">
            <code>InitialContext initialContext = getContext();</code>
         </pre>
 
         <li>We look-up the JMS queue object from JNDI</li>
-        <pre>
+        <pre class="prettyprint">
            <code>Queue queue = (Queue) initialContext.lookup("/queue/exampleQueue");</code>
         </pre>
 
         <li>We look-up the JMS connection factory object from JNDI</li>
-        <pre>
+        <pre class="prettyprint">
            <code>ConnectionFactory cf = (ConnectionFactory) initialContext.lookup("/ConnectionFactory");</code>
         </pre>
 
         <li>We create a JMS connection</li>
-        <pre>
+        <pre class="prettyprint">
            <code>connection = cf.createConnection();</code>
         </pre>
 
         <li>Define a SendAcknowledgementHandler which will receive asynchronous acknowledgements</li>
-        <pre>
+        <pre class="prettyprint">
            <code>
          class MySendAcknowledgementsHandler implements SendAcknowledgementHandler
          {
@@ -54,12 +56,12 @@
         </pre>
 
         <li>Create a JMS session</li>
-        <pre>
+        <pre class="prettyprint">
           <code>Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);</code>
        </pre>
 
         <li>Set the handler on the underlying core session</li>
-        <pre>
+        <pre class="prettyprint">
            <code>
          ClientSession coreSession = ((HornetQSession)session).getCoreSession();
          
@@ -69,7 +71,7 @@
         </pre>
 
         <li>Create a JMS Message Producer</li>
-        <pre>
+        <pre class="prettyprint">
            <code>
          MessageProducer producer = session.createProducer(queue);
          
@@ -78,7 +80,7 @@
         </pre>
 
         <li>Send 5000 messages, the handler will get called asynchronously some time later after the messages are sent.</li>
-          <pre>
+          <pre class="prettyprint">
            <code>
          final int numMessages = 5000;
          
@@ -96,7 +98,7 @@
        
         <li>And finally, <b>always</b> remember to close your JMS connections and resources after use, in a <code>finally</code> block. Closing a JMS connection will automatically close all of its sessions, consumers, producer and browser objects</li>
 
-        <pre>
+        <pre class="prettyprint">
            <code>finally
            {
               if (initialContext != null)

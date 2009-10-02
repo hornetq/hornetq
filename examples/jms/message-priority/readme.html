@@ -1,9 +1,11 @@
 <html>
   <head>
     <title>HornetQ JMS Message Priority Example</title>
-    <link rel="stylesheet" type="text/css" href="../../common/common.css">
+    <link rel="stylesheet" type="text/css" href="../../common/common.css" />
+    <link rel="stylesheet" type="text/css" href="../../common/prettify.css" />
+    <script type="text/javascript" src="../../common/prettify.js"></script>
   </head>
-  <body>
+  <body onload="prettyPrint()">
      <h1>JMS Message Priority Example</h1>
      <br>
      <p>This example shows how messages with priorities are delivered.</p>
@@ -28,37 +30,37 @@
      <br>
      <ol>
         <li>First we need to get an initial context so we can look-up the JMS connection factory and destination objects from JNDI. This initial context will get it's properties from the <code>client-jndi.properties</code> file in the directory <code>../common/config</code></li>
-        <pre>
+        <pre class="prettyprint">
            <code>InitialContext initialContext = getContext();</code>
         </pre>
 
         <li>We look-up the JMS queue object from JNDI</li>
-        <pre>
+        <pre class="prettyprint">
            <code>Queue queue = (Queue) initialContext.lookup("/queue/exampleQueue");</code>
         </pre>
 
         <li>We look-up the JMS connection factory object from JNDI</li>
-        <pre>
+        <pre class="prettyprint">
            <code>ConnectionFactory cf = (ConnectionFactory) initialContext.lookup("/ConnectionFactory");</code>
         </pre>
 
         <li>We create a JMS connection</li>
-        <pre>
+        <pre class="prettyprint">
            <code>connection = cf.createConnection();</code>
         </pre>
 
         <li>We create a JMS session. The session is created as non transacted and will auto acknowledge messages.</li>
-        <pre>
+        <pre class="prettyprint">
            <code>Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);</code>
         </pre>
 
         <li>We create a JMS message producer on the session. This will be used to send the messages.</li>
-        <pre>
+        <pre class="prettyprint">
           <code>MessageProducer messageProducer = session.createProducer(topic);</code>
        </pre>
 
         <li>We Create a JMS Message Consumer.</li>
-        <pre>
+        <pre class="prettyprint">
            <code>
            MessageConsumer redConsumer = session.createConsumer(queue);
            redConsumer.setMessageListener(new SimpleMessageListener());
@@ -66,7 +68,7 @@
         </pre>
 
         <li>We Create three messages.</li>
-        <pre>
+        <pre class="prettyprint">
            <code>
            TextMessage[] sentMessages = new TextMessage[3];
            sentMessages[0] = session.createTextMessage("first message");
@@ -76,7 +78,7 @@
         </pre>
 
         <li>Send the Messages, each has a different priority.</li>
-        <pre>
+        <pre class="prettyprint">
            <code>
            producer.send(sentMessages[0]);
            System.out.println("Message sent: " + sentMessages[0].getText() + " with priority: " + sentMessages[0].getJMSPriority());
@@ -88,21 +90,21 @@
         </pre>
 
         <li>We start the connection now.</li>
-        <pre>
+        <pre class="prettyprint">
            <code>
            connection.start();
            </code>
         </pre>
 
         <li>We wait for message delivery completion</li>
-        <pre>
+        <pre class="prettyprint">
            <code>
            Thread.sleep(5000);
            </code>
         </pre>
 
         <li>We wait for message delivery completion</li>
-        <pre>
+        <pre class="prettyprint">
            <code>
            for (int i = 0; i < 3; i++)
            {
@@ -118,7 +120,7 @@
         
         <li>And finally, <b>always</b> remember to close your JMS connections and resources after use, in a <code>finally</code> block. Closing a JMS connection will automatically close all of its sessions, consumers, producer and browser objects</li>
 
-        <pre>
+        <pre class="prettyprint">
            <code>finally
            {
               if (initialContext != null)

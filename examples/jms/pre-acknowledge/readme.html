@@ -1,9 +1,11 @@
 <html>
   <head>
     <title>HornetQ JMS Pre-Acknowledge Example</title>
-    <link rel="stylesheet" type="text/css" href="../../common/common.css">
+    <link rel="stylesheet" type="text/css" href="../../common/common.css" />
+    <link rel="stylesheet" type="text/css" href="../../common/prettify.css" />
+    <script type="text/javascript" src="../../common/prettify.js"></script>
   </head>
-  <body>
+  <body onload="prettyPrint()">
      <h1>HornetQ JMS Pre-Acknowledge Example</h1>
      <br>
      <p>Standard JMS supports three acknowledgement modes: AUTO_ACKNOWLEDGE, CLIENT_ACKNOWLEDGE, and
@@ -29,14 +31,14 @@
      <br>
      <ol>
         <li>Create an initial context to perform the JNDI lookup.</li>
-        <pre>
+        <pre class="prettyprint">
            <code>
      initialContext = getContext(0);
      </code>
         </pre>
 
         <li>Perform the look-ups</li>
-        <pre>
+        <pre class="prettyprint">
            <code>
      Queue queue = (Queue)initialContext.lookup("/queue/exampleQueue");
 
@@ -45,7 +47,7 @@
         </pre>
 
         <li>Create a the JMS objects.</li>
-        <pre>
+        <pre class="prettyprint">
            <code>
      connection = cf.createConnection();
 
@@ -58,7 +60,7 @@
         </pre>
 
         <li>Create and send a message.</li>
-        <pre>
+        <pre class="prettyprint">
            <code>
      TextMessage message1 = session.createTextMessage("This is a text message 1");
 
@@ -70,7 +72,7 @@
 
         <li>Print out the message count of the queue. The queue contains one message as expected
         delivery has not yet started on the queue.</li>
-        <pre>
+        <pre class="prettyprint">
            <code>
      int count = getMessageCount(connection);
        
@@ -79,7 +81,7 @@
         </pre>
 
         <li>Start the Connection, delivery will now start. Give a little time for delivery to occur.</li>
-        <pre>
+        <pre class="prettyprint">
           <code>
      connection.start();
 
@@ -89,7 +91,7 @@
 
         <li>Print out the message count of the queue. It should now be zero, since the message has
          already been acknowledged even before the consumer has received it.</li>         
-        <pre>
+        <pre class="prettyprint">
            <code>
      count = getMessageCount(connection);         
      
@@ -98,7 +100,7 @@
         </pre>
 
         <li>Finally, receive the message.</li>
-        <pre>
+        <pre class="prettyprint">
            <code>
      TextMessage messageReceived = (TextMessage)messageConsumer.receive(5000);
 
@@ -107,7 +109,7 @@
         </pre>
 
         <li>Be sure to close our resources!</li>
-          <pre>
+          <pre class="prettyprint">
            <code>
      if (initialContext != null)
      {

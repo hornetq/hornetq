@@ -1,9 +1,11 @@
 <html>
   <head>
     <title>HornetQ JMS Automatic (Transparent) Failover Example</title>
-    <link rel="stylesheet" type="text/css" href="../../common/common.css">
+    <link rel="stylesheet" type="text/css" href="../../common/common.css" />
+    <link rel="stylesheet" type="text/css" href="../../common/prettify.css" />
+    <script type="text/javascript" src="../../common/prettify.js"></script>
   </head>
-  <body>
+  <body onload="prettyPrint()">
      <h1>HornetQ JMS Automatic (Transparent) Failover (HA) Example</h1>
      <br>
      <p>This example demonstrates two servers coupled as a live-backup pair for high availability (HA), and a client
@@ -25,53 +27,53 @@
      <br>
      <ol>
         <li> Get an initial context for looking up JNDI from server 1.</li>
-        <pre>
+        <pre class="prettyprint">
            <code>initialContext = getContext(1);</code>
         </pre>
 
         <li>Look-up the JMS Queue object from JNDI on server 1.</li>
-        <pre>
+        <pre class="prettyprint">
            <code>Queue queue = (Queue)initialContext.lookup("/queue/exampleQueue");</code>
         </pre>
 
         <li>Look-up a JMS Connection Factory object from JNDI on server 1</li>
-        <pre>
+        <pre class="prettyprint">
            <code>ConnectionFactory connectionFactory = (ConnectionFactory)initialContext.lookup("/ConnectionFactory");</code>
         </pre>
 
         <li>We create a JMS Connection</li>
-        <pre>
+        <pre class="prettyprint">
           <code>connection = connectionFactory.createConnection();</code>
         </pre>
         
         <li>We create a JMS Session</li>
-        <pre>
+        <pre class="prettyprint">
            <code>Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);</code>
         </pre>
         
         <li>We start the connection to ensure delivery occurs on them</li>
-        <pre>
+        <pre class="prettyprint">
            <code>
    connection.start();
            </code>
         </pre>
 
         <li>We create a JMS MessageConsumer</li>
-        <pre>
+        <pre class="prettyprint">
            <code>
    MessageConsumer consumer = session.createConsumer(queue);
            </code>
         </pre>
 
         <li>We create a JMS MessageProducer</li>
-        <pre>
+        <pre class="prettyprint">
            <code>
    MessageProducer producer = session.createProducer(queue);</code>
         </pre>
 
         <li>We send some messages to server 1, the live server. As we do operations on the live server they are
         transparently replicated to server 0 the backup server, behind the scenes.</li>
-        <pre>
+        <pre class="prettyprint">
            <code>
 	      final int numMessages = 10;
 
@@ -91,7 +93,7 @@
             fails over from server 1 to server 0. (In your real program you wouldn't need to sleep).
         </li>
        
-        <pre>
+        <pre class="prettyprint">
            <code>
 	      killServer(1); // This causes the live server to crash
          
@@ -102,7 +104,7 @@
         <li>We consume the messages sent before the crash of the live server. We are now transparently
             reconnected to server 0 - the backup server. Note that all this reconnection has been done
             without the client being aware it has been reconnected!</li>
-        <pre>
+        <pre class="prettyprint">
            <code>
          for (int i = 0; i < numMessages; i++)
          {
@@ -114,7 +116,7 @@
         </pre>
         
         <li>We now send some more messages.</li>
-        <pre>
+        <pre class="prettyprint">
            <code>
          for (int i = numMessages; i < numMessages * 2; i++)
          {
@@ -128,7 +130,7 @@
         </pre>
         
         <li>And consume them.</li>
-        <pre>
+        <pre class="prettyprint">
            <code>
          for (int i = 0; i < numMessages; i++)
          {
@@ -141,7 +143,7 @@
 
         <li>And finally (no pun intended), <b>always</b> remember to close your resources after use, in a <code>finally</code> block. Closing a JMS connection will automatically close all of its sessions, consumers, producer and browser objects</li>
 
-        <pre>
+        <pre class="prettyprint">
            <code>
 	finally
 	{

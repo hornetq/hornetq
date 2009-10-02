@@ -1,9 +1,11 @@
 <html>
   <head>
     <title>HornetQ XA Recovery Example</title>
-    <link rel="stylesheet" type="text/css" href="../../common/common.css">
+    <link rel="stylesheet" type="text/css" href="../../common/common.css" />
+    <link rel="stylesheet" type="text/css" href="../../common/prettify.css" />
+    <script type="text/javascript" src="../../common/prettify.js"></script>
   </head>
-  <body>
+  <body onload="prettyPrint()">
      <h1>XA Recovery Example</h1>
      
      <p>This example will show how to configure HornetQ XA recovery in JBoss AS (Application Server).</p>
@@ -27,7 +29,7 @@
      <p>You need to enable XA Recovery of HornetQ resources.</p>
      <p>In the <code>jta</code> section of the <code>$JBOSS_HOME/server/xarecovery-example-profile//conf/jbossts-properties.xml</code> configuration file, the following property
         is added:</p>
-     <pre>
+     <pre class="prettyprint">
          <code>&lt;property name="com.arjuna.ats.jta.recovery.XAResourceRecovery.HORNETQ1"
                       value="org.hornetq.jms.server.recovery.HornetQXAResourceRecovery;org.hornetq.core.remoting.impl.invm.InVMConnectorFactory"/&gt;</code>
      </pre>
@@ -62,18 +64,18 @@
      <ol>
          <li>First we need to get an initial context so we can look-up the JMS connection factory and destination objects from JNDI. This initial context will get it's properties from the <a href="config/jndi.properties">jndi.properties</a></li>
          </li>
-         <pre>
+         <pre class="prettyprint">
              <code>InitialContext initialContext = new InitialContext();</code>
          </pre>
 
          <li>We look up the EJB</li>
-         <pre>
+         <pre class="prettyprint">
              <code>XARecoveryExampleService service = (XARecoveryExampleService)initialContext.lookup("mdb-example/XARecoveryExampleBean/remote");</code>
          </pre>
 
          <li>We invoke the EJB's <code>send</code> method. This method will send a JMS text message (with the text passed in parameter)
              and crash the server when committing the transaction</li>
-         <pre>
+         <pre class="prettyprint">
              <code>String message = "This is a text message sent at " + new Date();
              System.out.println("invoking the EJB service with text: " + message);
              try
@@ -92,7 +94,7 @@
             in the terminal where you typed <code>ant deploy</code></em></p>
             
          <li>We will try to receive a message. Once the server is restarted, the message will be recovered and the consumer will receive it
-         <pre>
+         <pre class="prettyprint">
             <code>boolean received = false;
             while (!received)
             {
@@ -113,7 +115,7 @@
 
          <li>And finally, <b>always</b> remember to close your resources after use, in a <code>finally</code> block.</li>
          
-         <pre>
+         <pre class="prettyprint">
              <code>finally
              {
                 if (initialContext != null)
@@ -135,78 +137,78 @@
 
      <ol>
          <li>First, we create a new initial context</li>
-         <pre>
+         <pre class="prettyprint">
              <code>ic = new InitialContext();</code>
         </pre>
 
          <li>We look up the Transaction Manager</li>
-         <pre>
+         <pre class="prettyprint">
              <code>TransactionManager tm = (TransactionManager)ic.lookup("java:/TransactionManager");</code>
         </pre>
 
          <li>We look up the JMS <em>XA</em> Connection Factory (which is bound to <code>java:/JmsXA</code>)</li>
-         <pre>
+         <pre class="prettyprint">
              <code>XAConnectionFactory cf = (XAConnectionFactory)ic.lookup("java:/XAConnectionFactory");</code>
         </pre>
              
          <li>We look up the JMS Queue</li>
-         <pre>
+         <pre class="prettyprint">
              <code>Queue queue = (Queue)ic.lookup("queue/testQueue");</code>
         </pre>
              
          <li>We create a JMS XA connection, a XA session and a message producer for the queue</li>
-         <pre>
+         <pre class="prettyprint">
              <code>xaConnection = xacf.createXAConnection();
              XASession session = xaConnection.createXASession();
              MessageProducer messageProducer = session.createProducer(queue);</code>
         </pre>
              
          <li>We create a text message with the text passed in parameter of the EJB method</li>
-         <pre>
+         <pre class="prettyprint">
              <code>TextMessage message = session.createTextMessage(text);</code>
         </pre>
              
          <li>We create a <code>FailingXAResource</code>. For this example purpose, this XAResource implementation will
              call <code>Runtime.halt()</code> from its <code>commit()</code> method</li>
-         <pre>
+         <pre class="prettyprint">
              <code>XAResource failingXAResource = new FailingXAResource();</code>
          </pre>
 
          <li>We begin the transaction and retrieve it from the transaction manager</li>
-         <pre>
+         <pre class="prettyprint">
              <code>tm.begin();
              Transaction tx = tm.getTransaction();</code>
          </pre>
 
          <li>We enlist the failing XAResource</li>
-         <pre>
+         <pre class="prettyprint">
              <code>tx.enlistResource(failingXAResource);</code>
          </pre>
 
          <li>We enlist the <em>JMS</em> XA Resource</li>
-         <pre>
+         <pre class="prettyprint">
              <code>tx.enlistResource(session.getXAResource());</code>
          </pre>
 
          <li>We create a text message with the text passed in parameter of the EJB method and send it</li>
-         <pre>
+         <pre class="prettyprint">
              <code>TextMessage message = session.createTextMessage(text);
              messageProducer.send(message);
              System.out.format("Sent message: %s (%s)\n", message.getText(), message.getJMSMessageID());</code>
          </pre>
 
          <li>We delist the failing XAResource</li>
-         <pre>
+         <pre class="prettyprint">
              <code>tx.delistResource(failingXAResource);</code>
          </pre>
 
          <li>We delist the <em>JMS</em> XA Resource</li>
-         <pre>
+         <pre class="prettyprint">
              <code>tx.delistResource(session.getXAResource());</code>
          </pre>
          
          <li>We commit the transaction</li>
-         <pre>
+         <pre class="prettyprint">
              <code>System.out.println("committing the tx");
              tx.commit();</code>
          </pre>

@@ -1,9 +1,11 @@
 <html>
   <head>
     <title>HornetQ Java EE JCA Configuration Example</title>
-    <link rel="stylesheet" type="text/css" href="../../common/common.css">
+    <link rel="stylesheet" type="text/css" href="../../common/common.css" />
+    <link rel="stylesheet" type="text/css" href="../../common/prettify.css" />
+    <script type="text/javascript" src="../../common/prettify.js"></script>
   </head>
-  <body>
+  <body onload="prettyPrint()">
      <h1>Java EE Resource Adapter Configuration Example</h1>
      <p>This example demonstrates how to configure several properties on the HornetQ Resource Adapter. We setup two JBoss Servers. The enterprise application is being deployed in one application server while the MDBs and JMS Connections are pointing to a remote server</p>
      <p>This example is composed by two MDBs (MDBQueueA and MDBQueueB) and a StatlessSessionBean (StatelessSender). The main class (MDBRemoteClientExample) will call a method on StatelessSender and send a Message to Queue B.<p>
@@ -15,8 +17,7 @@
      <p>This ResourceAdapter is what provides integration for Message Drive Beans (MDBs) or DataSource integration on the application server.</p>
      <h2>MDB Properties</h2>
      <p>You can configure the adapter through ActivactionConfigProperties on the MDB. Example:</p>
-        <pre>
-           <code>
+        <pre class="prettyprint">
            @MessageDriven(name = "MessageMDBExample",
                activationConfig =
                      {
@@ -27,7 +28,6 @@
                         @ActivationConfigProperty(propertyName = "ConnectionParameters", propertyValue = "hornetq.remoting.netty.port=5545")
                      })
             public class MDBRemoteExample implements MessageListener
-         </code>
         </pre>
      <p>MDB Properties can also be defined on XML Files. The <a href="http://www.jboss.org/file-access/default/members/jbossejb3/freezone/docs/tutorial/1.0.6/html/Message_Driven_Beans_with_deployment_descriptor.html"> JBoss EJB3 Documentation</a> will have more information.</p>
 
@@ -35,7 +35,7 @@
      
      <p>Optionally you could also define the resource adapter you are using. On JBoss EJB3 there is a JBoss specific tag where you can define the Resource-adapter file name:</p>
      
-<pre><code>
+<pre class="prettyprint">
 
 ...
 import org.jboss.ejb3.annotation.ResourceAdapter;
@@ -48,7 +48,7 @@ import org.jboss.ejb3.annotation.ResourceAdapter;
                      @ResourceAdapter("example-hornetq-ra.rar")
 public class MDBRemoteExample implements MessageListener
 ...
-</code></pre>
+</pre>
 
      <p>In this example however we will configure the default adapter.</p>
 
@@ -58,8 +58,7 @@ public class MDBRemoteExample implements MessageListener
      <p>You can configure ConnectionFactories that you use outside of the MDB context, such as in your SessionBeans. On JBoss Application Server, that could be defined on a datasource deployment file (-ds.xml), using Configuration-properties on the connection factory.</p>
 
      <p>For example, jms-remote-ds.xml</p>        
-<pre>
-<code>
+<pre class="prettyprint">
 &lt;connection-factories&gt;
 
 
@@ -76,16 +75,13 @@ public class MDBRemoteExample implements MessageListener
 
 
 &lt;/connection-factories&gt;
-</code>
 </pre>     
 
      <h2>Resource Adapter Global Properties</h2>
      <p>It is possible to also change global configuration at the HornetQ resource adapter. The default installation script will install the HornetQ resource adapter at $JBOSS_HOME/server/<i>YOUR-SERVER</i>/deploy/hornetq-ra.rar.</p>
      <p>To change these properties, open the ra.xml under jms-ra.rar/META-INF</p>
      <p>Example for ra.xml:</p>
-<pre>
-<code>
-
+<pre class="prettyprint">
 &lt;?xml version="1.0" encoding="UTF-8"?&gt;
 
 &lt;connector xmlns="http://java.sun.com/xml/ns/j2ee"
@@ -126,7 +122,6 @@ public class MDBRemoteExample implements MessageListener
 
 
 ...
-</code>
 </pre>
      
      <p>Refer to the <i>Resource Adapter</i> Chapter on the <i>HornetQ Documentation</i> for more information about configuring the ra.xml properties.
@@ -144,53 +139,53 @@ public class MDBRemoteExample implements MessageListener
      <p><i> ** make sure that JBOSS_HOME is set to the JBoss installation directory</i></p>
      <br>
      <ol>
-        <li>First we need to get an initial context so we can look-up the EJB on the second server from JNDI. This initial context will get it's properties from the <code>jndi.properties</code> file in the directory <code>config</code></li>
-        <pre>
-           <code>initialContext = new InitialContext();</code>
-        </pre>
+         <li>First we need to get an initial context so we can look-up the EJB on the second server from JNDI. This initial context will get it's properties from the <code>jndi.properties</code> file in the directory <code>config</code></li>
+         <pre class="prettyprint">
+            initialContext = new InitialContext();
+         </pre>
 
          <li>Getting a reference to the Stateless Bean</li>
-         <pre><code>
-         StatelessSenderService sender = (StatelessSenderService)initialContext.lookup("mdb-example/StatelessSender/remote");
-         </code></pre>
+         <pre class="prettyprint">
+            StatelessSenderService sender = (StatelessSenderService)initialContext.lookup("mdb-example/StatelessSender/remote");
+         </pre>
          
          <li>Calling the Stateless Bean</li>
-         <pre><code>
-         sender.sendHello("Hello there MDB!");
-         </code></pre>
+         <pre class="prettyprint">
+            sender.sendHello("Hello there MDB!");
+         </pre>
 
          <li>On the second server we invoke the EJB StatelessSender: This will send 2 messages to server 1 using the configured outbound adapter</li>
-         <pre><code>
-         HornetQQueue destQueueA = new HornetQQueue("A");
-         HornetQQueue destQueueB = new HornetQQueue("B");
-         </code></pre>
+         <pre class="prettyprint">
+            HornetQQueue destQueueA = new HornetQQueue("A");
+            HornetQQueue destQueueB = new HornetQQueue("B");
+         </pre>
       
          <li>Create a connection to a remote server using a connection-factory (look at the deployed file jms-remote-ds.xml). JCA will actually manage this thorugh a <i>Connection Pool</i></li>
-         <pre><code>
-         Connection conn = connectionFactory.createConnection("guest", "guest");
-         </code></pre>
+         <pre class="prettyprint">
+            Connection conn = connectionFactory.createConnection("guest", "guest");
+         </pre>
       
          <li>Send a message to a QueueA on server1, which will be received by MDBQueueA on server1</li>
-         <pre><code>
-         Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         MessageProducer prodA = sess.createProducer(destQueueA);
-         prod.send(sess.createTextMessage(message));
-         </code></pre>
+         <pre class="prettyprint">
+            Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+            MessageProducer prodA = sess.createProducer(destQueueA);
+            prod.send(sess.createTextMessage(message));
+         </pre>
 
          <li>Send a message to a QueueB on the remote server1, which will be received by MDBQueueA on server2</li>
-         <pre><code>
-         MessageProducer prodB = sess.createProducer(destQueueB);
-         prodB.send(sess.createTextMessage(message));
-         </code></pre>
+         <pre class="prettyprint">
+            MessageProducer prodB = sess.createProducer(destQueueB);
+            prodB.send(sess.createTextMessage(message));
+         </pre>
 
          <li>Close the connection. (Since this is a JCA connection, this close will save the connection to a connection pool)</li>
-         <pre><code>
-         conn.close();
-         </code></pre>
+         <pre class="prettyprint">
+            conn.close();
+         </pre>
          
          <li>The message is received on the MDBQueueA on server1 which consumed from a local queue</li>
 
-         <pre><code>
+         <pre class="prettyprint">
 @MessageDriven(name = "MDB_QueueA",
                activationConfig =
                      {
@@ -201,12 +196,12 @@ public class MDBRemoteExample implements MessageListener
 public class MDBQueueA implements MessageListener
 {
    public void onMessage(Message message).....
-         </code></pre>         
+         </pre>         
           
 
          <li>Another message is received on MDBQueueB on server2 which consumed from a remote queue on server1.
 
-         <pre><code>
+         <pre class="prettyprint">
 @MessageDriven(name = "MDB_QueueB",
                activationConfig =
                      {
@@ -219,7 +214,7 @@ public class MDBQueueA implements MessageListener
 public class MDBQueueB implements MessageListener
 {
    public void onMessage(Message message).....
-         </code></pre>         
+         </pre>         
           
 
 

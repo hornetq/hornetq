@@ -1,86 +1,83 @@
 <html>
   <head>
     <title>HornetQ Embedded Example</title>
-    <link rel="stylesheet" type="text/css" href="../../common/common.css"/>
+    <link rel="stylesheet" type="text/css" href="../../common/common.css" />
+    <link rel="stylesheet" type="text/css" href="../../common/prettify.css" />
+    <script type="text/javascript" src="../../common/prettify.js"></script>
   </head>
-  <body>
+  <body onload="prettyPrint()">
      <h1>Micro Container Example</h1>
-     <br/>
+
      <p>This examples shows how to setup and run HornetQ through the Micro Container.</p>
      <p>Refer to the user's manual for the list of required Jars, since JBoss Micro Container requires a few jars.</p>
      <h2>Example step-by-step</h2>     
      <p><i>To run the example, simply type <code>ant</code> from this directory</i></p>
      <p>In this we don't use any configuration files. (Everything is embedded). We simply instantiate ConfigurationImpl, HornetQServer, start it and operate on JMS regularly</p>
-     <br/>
+
      <ol>
      
         <li>Start the server</li>
-        <pre>
-         hornetq = new HornetQBootstrapServer("./server0/hornetq-beans.xml");
-         hornetq.run();
+        <pre class="prettyprint">
+           hornetq = new HornetQBootstrapServer("./server0/hornetq-beans.xml");
+           hornetq.run();
         </pre>
      
         <li>As we are not using a JNDI environment we instantiate the objects directly</li>
-        <pre>
-           <code>ClientSessionFactory sf = new ClientSessionFactoryImpl (new TransportConfiguration(NettyConnectorFactory.class.getName()));</code>
+        <pre class="prettyprint">
+           ClientSessionFactory sf = new ClientSessionFactoryImpl (new TransportConfiguration(NettyConnectorFactory.class.getName()));
         </pre>
 
         <li>Create a Core Queue</li>
-        <pre>
-           <code>
-         ClientSession coreSession = sf.createSession(false, false, false);
-         final String queueName = "queue.exampleQueue";
-         coreSession.createQueue(queueName, queueName, true);
-         coreSession.close();
-           </code>
+        <pre class="prettyprint">
+           ClientSession coreSession = sf.createSession(false, false, false);
+           final String queueName = "queue.exampleQueue";
+           coreSession.createQueue(queueName, queueName, true);
+           coreSession.close();
         </pre>
 
         <li>Create the session and producer</li>
-        <pre>
-           <code>
-            session = sf.createSession();
+        <pre class="prettyprint">
+           session = sf.createSession();
                                    
-            ClientProducer producer = session.createProducer(queueName);
-            </code>
+           ClientProducer producer = session.createProducer(queueName);
         </pre>
 
         <li>Create and send a Message</li>
-        <pre><code>
-            ClientMessage message = session.createClientMessage(false);
-            message.putStringProperty(propName, "Hello sent at " + new Date());
-            System.out.println("Sending the message.");
-            producer.send(message);
-       </code></pre>
+        <pre class="prettyprint">
+           ClientMessage message = session.createClientMessage(false);
+           message.putStringProperty(propName, "Hello sent at " + new Date());
+           System.out.println("Sending the message.");
+           producer.send(message);
+        </pre>
 
         <li>Create the message consumer and start the connection</li>
-        <pre><code>
-            ClientConsumer messageConsumer = session.createConsumer(queueName);
-            session.start();</code></pre>
+        <pre class="prettyprint">
+           ClientConsumer messageConsumer = session.createConsumer(queueName);
+           session.start();
+        </pre>
 
         <li>Receive the message</li>
-        <pre><code>
-                        ClientMessage messageReceived = messageConsumer.receive(1000);
-            System.out.println("Received TextMessage:" + messageReceived.getProperty(propName));</code></pre>
+        <pre class="prettyprint">
+           ClientMessage messageReceived = messageConsumer.receive(1000);
+           System.out.println("Received TextMessage:" + messageReceived.getProperty(propName));
+         </pre>
 
         <li>Be sure to close our resources!</li>
 
-        <pre>
-           <code>
+        <pre class="prettyprint">
            finally
            {
               if (connection != null)
               {
                  connection.close();
               }
-           }</code>
+           }
         </pre>
 
         <li>Stop the server</li>
 
-        <pre>
-           <code>
+        <pre class="prettyprint">
            hornetq.shutdown();
-		   </code>
         </pre>
      </ol>
   </body>

@@ -1,9 +1,11 @@
 <html>
   <head>
     <title>HornetQ Message Counter Example</title>
-    <link rel="stylesheet" type="text/css" href="../../common/common.css">
+    <link rel="stylesheet" type="text/css" href="../../common/common.css" />
+    <link rel="stylesheet" type="text/css" href="../../common/prettify.css" />
+    <script type="text/javascript" src="../../common/prettify.js"></script>
   </head>
-  <body>
+  <body onload="prettyPrint()">
      <h1>JMS Message Counter Example</h1>
 
      <p>This example shows you how to use message counters to obtain message information for a JMS queue.</p>
@@ -13,7 +15,7 @@
      </p>
      <h2>Example setup</h2>
      <p>Message counter is configured in the server configuration file <a href="server0/hornetq-configuration.xml">hornetq-configuration.xml</a>:</p>
-     <pre>
+     <pre class="prettyprint">
          <code>&lt;message-counter-enabled&gt;true&lt;/message-counter-enabled&gt;
          &lt;message-counter-sample-period&gt;2000&lt;/message-counter-sample-period&gt;
          &lt;message-counter-max-day-history&gt;2&lt;/message-counter-max-day-history&gt;</code>
@@ -29,29 +31,29 @@
      <p><i>To run the example, simply type <code>ant</code> from this directory</i></p>
      <ol>
         <li>First we need to get an initial context so we can look-up the JMS connection factory and destination objects from JNDI. This initial context will get it's properties from the <code>client-jndi.properties</code> file in the directory <code>../common/config</code></li>
-        <pre>
+        <pre class="prettyprint">
            <code>InitialContext initialContext = getContext();</code>
         </pre>
 
         <li>We look up the JMS queue object from JNDI</li>
-        <pre>
+        <pre class="prettyprint">
            <code>Queue queue = (Queue) initialContext.lookup("/queue/exampleQueue");</code>
         </pre>
 
         <li>We look up the JMS connection factory object from JNDI</li>
-        <pre>
+        <pre class="prettyprint">
            <code>ConnectionFactory cf = (ConnectionFactory) initialContext.lookup("/ConnectionFactory");</code>
         </pre>
 
         <li>We create a JMS connection, session and producer for the queue</li>
-        <pre>
+        <pre class="prettyprint">
            <code> connection = cf.createQueueConnection();
             QueueSession session = connection.createQueueSession(false, Session.AUTO_ACKNOWLEDGE);
             MessageProducer producer = session.createProducer(queue);</code>
        </pre>
        
         <li>We create and send a JMS text message</li>
-        <pre>
+        <pre class="prettyprint">
             <code>TextMessage message = session.createTextMessage("This is a text message");
             producer.send(message);
             System.out.println("Sent message: " + message.getText());</code>
@@ -59,7 +61,7 @@
 
         <li>We will now sleep a little bit to be sure the queue is sample. Since we have configure the sample period to be 2 seconds,
             we will sleep for 3 seconds to be sure that a sample is taken</li>
-        <pre>
+        <pre class="prettyprint">
             <code>System.out.println("Sleep a little bit to have the queue sampled...");
             Thread.sleep(3000);</code>
         </pre>
@@ -69,7 +71,7 @@
             learn about managing HornetQ using JMS messages).</p>
 
        <li>We retrieve the JMX MBean used to manage the JMS queue</li>
-        <pre>
+        <pre class="prettyprint">
             <code>ObjectName on = ObjectNames.getJMSQueueObjectName(queue.getQueueName());
             JMXConnector connector = JMXConnectorFactory.connect(new JMXServiceURL(JMX_URL), new HashMap());
             MBeanServerConnection mbsc = connector.getMBeanServerConnection();
@@ -81,19 +83,19 @@
 
         <li>We retrieve the message counter and display them. MessageCounters are retrieved as <code>JSON Strings</code> for portability reason (wether
             JMX is used for management or JMS messages). To make it simpler to use them in the code, there is a <code>MessageCounterInfo</code> data structure.</li>
-        <pre>
+        <pre class="prettyprint">
             <code>String counters = queueControl.listMessageCounter();
             MessageCounterInfo messageCounter = MessageCounterInfo.fromJSON(counters);</code>>
         </pre>
         
         <li>We display the message counters</li>
-        <pre>
+        <pre class="prettyprint">
             <code>displayMessageCounter(messageCounter);</code>
         </pre>
         
         <p>The message counter contains a variety of metrics on the queue which is sampled (total messages added to the queue, current depth of the queue, deltas since the last sample, timestamp
             of the last message added, timestamp of the last sample, etc.)</p>
-        <pre>
+        <pre class="prettyprint">
             <code>private void displayMessageCounter(MessageCounterInfo counter)
                 {
                    System.out.format("%s (sample updated at %s)\n",  counter.getName(), counter.getUdpateTimestamp());
@@ -106,13 +108,13 @@
         </pre>
                 
         <li>We sleep again to have the queue sampled</li>
-        <pre>
+        <pre class="prettyprint">
             <code>System.out.println("Sleep a little bit again...");
             Thread.sleep(3000);</code>
         </pre>
         
         <li>We list the message counters again</li>
-        <pre>
+        <pre class="prettyprint">
             <code>counters = queueControl.listMessageCounter();
             messageCounter = MessageCounterInfo.fromJSON(counters);
             displayMessageCounter(messageCounter);</code>
@@ -121,29 +123,29 @@
         <p>We will now consume a message from the queue before listing a last time the message counters</p>
         
         <li>We create a consumer for the queue</li>
-        <pre>
+        <pre class="prettyprint">
             <code>MessageConsumer consumer = session.createConsumer(queue);</code>
         </pre>
         
         <li>We start the connection to receive messages on the consumer</li>
-        <pre>
+        <pre class="prettyprint">
            <code>connection.start();</code>
         </pre>
 
         <li>We receive a message from the queue</li>
-        <pre>
+        <pre class="prettyprint">
            <code>TextMessage messageReceived = (TextMessage)consumer.receive(5000);
            System.out.format("Received message: %s\n\n", messageReceived.getText());</code>
         </pre>
         
         <li>We sleep one last time to have the queue sampled</li>
-        <pre>
+        <pre class="prettyprint">
             <code>System.out.println("Sleep a little bit one last time...");
             Thread.sleep(3000);</code>
         </pre>
         
         <li>We list the message counters a final time (this time with no message in the queue)</li>
-        <pre>
+        <pre class="prettyprint">
             <code>counters = queueControl.listMessageCounter();
             messageCounter = MessageCounterInfo.fromJSON(counters);
             displayMessageCounter(messageCounter);</code>
@@ -152,7 +154,7 @@
         </p>    
         <li>And finally, <b>always</b> remember to close your JMS connections and resources after use, in a <code>finally</code> block. Closing a JMS connection will automatically close all of its sessions, consumers, producer and browser objects</li>
 
-        <pre>
+        <pre class="prettyprint">
            <code>finally
            {
               if (initialContext != null)

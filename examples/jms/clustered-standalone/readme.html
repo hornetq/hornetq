@@ -1,9 +1,11 @@
 <html>
   <head>
     <title>JMS Clustered Stand-alone Example</title>
-    <link rel="stylesheet" type="text/css" href="../../common/common.css">
+    <link rel="stylesheet" type="text/css" href="../../common/common.css" />
+    <link rel="stylesheet" type="text/css" href="../../common/prettify.css" />
+    <script type="text/javascript" src="../../common/prettify.js"></script>
   </head>
-  <body>
+  <body onload="prettyPrint()">
      <h1>JMS Clustered Stand-alone Example</h1>
      <br>
      <p>This example demonstrates a JMS Topic deployed on three different nodes.
@@ -14,7 +16,7 @@
      <p>This example uses HornetQ's default stand-alone clustered configuration.
         The relevant snippet from the server configuration, which tells the servers to form a cluster between the three nodes
      and to load balance the messages between the nodes is:</p>     
-     <pre>
+     <pre class="prettyprint">
      <code>&lt;cluster-connection name="my-cluster"&gt;
         &lt;address&gt;jms&lt;/address&gt;
         &lt;discovery-group-ref discovery-group-name="dg-group1"/&gt;
@@ -28,15 +30,15 @@
      <ul>
         <li>create 4 terminals (3 for the servers and 1 for the example client)</li>
         <li>in the first terminal, go to the <code>bin</code> directory and start the first server (with default configuration):
-           <pre><code>./run.sh ../config/stand-alone/clustered</code></pre>
+           <pre class="prettyprint"><code>./run.sh ../config/stand-alone/clustered</code></pre>
         <li>in the second terminal, start the second server:
-           <pre><code>export CLUSTER_PROPS="-Ddata.dir=../data-server2 -Djnp.port=2099 -Djnp.rmiPort=2098 -Dhornetq.remoting.netty.port=6445"
+           <pre class="prettyprint"><code>export CLUSTER_PROPS="-Ddata.dir=../data-server2 -Djnp.port=2099 -Djnp.rmiPort=2098 -Dhornetq.remoting.netty.port=6445"
 ./run.sh ../config/stand-alone/clustered</code></pre>
         <li>in the third terminal, start the third server (with default configuration):
-           <pre><code>export CLUSTER_PROPS="-Ddata.dir=../data-server3 -Djnp.port=3099 -Djnp.rmiPort=3098 -Dhornetq.remoting.netty.port=7445"
+           <pre class="prettyprint"><code>export CLUSTER_PROPS="-Ddata.dir=../data-server3 -Djnp.port=3099 -Djnp.rmiPort=3098 -Dhornetq.remoting.netty.port=7445"
 ./run.sh ../config/stand-alone/clustered</code></pre>
         <li>finally, in the fourth terminal, start the example
-           <pre><code>ant runRemote</code></pre>
+           <pre class="prettyprint"><code>ant runRemote</code></pre>
      <p>The example connects to the three cluster nodes using JNDI (which are retrieved from 
         <a href="server0/client-jndi.properties">server0</a>, <a href="server1/client-jndi.properties">server1</a>, and
         <a href="server2/client-jndi.properties">server2</a>' s JNDI properties file). The JNDI ports were specified

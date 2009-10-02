@@ -1,18 +1,20 @@
 <html>
   <head>
     <title>HornetQ Java EE HAJNDI Example</title>
-    <link rel="stylesheet" type="text/css" href="../../common/common.css">
+    <link rel="stylesheet" type="text/css" href="../../common/common.css" />
+    <link rel="stylesheet" type="text/css" href="../../common/prettify.css" />
+    <script type="text/javascript" src="../../common/prettify.js"></script>
   </head>
-  <body>
+  <body onload="prettyPrint()">
      <h1>Java EE HAJNDI Example</h1>
-     <br>
+
      <p>This example demonstrates the use of High Availability JNDI (HA-JNDI) to look-up HornetQ
      JMS Connection Factories, Queues and Topics.</p>
      <p>With normal JNDI you need to configure the client with the specific connection parameters
      (i.e. host and port) of the JNDI server from which you want to perform look-ups.</p>
      <p>This means if that server crashes, or is not available you won't be able to perform lookups.</p>
      <p>One solution would be for the client to maintain the connection params of all JNDI servers
-     in the cluster, but this is not practicle.</p>
+     in the cluster, but this is not practical.</p>
      <p>With HA-JNDI the client can be simplify configured with UDP address parameters and can transparently
      perform JNDI lookups without having to worry about a particular server being unavailable.</p>
      <p>HA-JNDI is a service of JBoss Application Server and is not available by default when running against
@@ -43,52 +45,43 @@
             <p>This JNDI is performing auto-discovery of the servers, by using the default UDP properties.</p>
             <p>You will find more information about these properties at the </p>
         </li>
-        <pre>
-           <code>         
-         Hashtable jndiParameters = new Hashtable();
-         jndiParameters.put("java.naming.factory.initial", "org.jnp.interfaces.NamingContextFactory");
-         jndiParameters.put("java.naming.factory.url.pkgs=", "org.jboss.naming:org.jnp.interfaces");
+        <pre class="prettyprint">
+           Hashtable jndiParameters = new Hashtable();
+           jndiParameters.put("java.naming.factory.initial", "org.jnp.interfaces.NamingContextFactory");
+           jndiParameters.put("java.naming.factory.url.pkgs=", "org.jboss.naming:org.jnp.interfaces");
          
-         initialContext = new InitialContext(jndiParameters);
-         </code>
+           initialContext = new InitialContext(jndiParameters);
         </pre>
         
         
         <li>Perform lookups in a loop. As long as you have at least one server alive, these lookups will still work fine
-         <pre>
-         <code>
-         for (int i = 0; i < 100; i++)
-         {
-            ConnectionFactory cf = (ConnectionFactory) initialContext.lookup("/ConnectionFactory");
-         </code>
+         <pre class="prettyprint">
+            for (int i = 0; i &lt; 100; i++)
+            {
+               ConnectionFactory cf = (ConnectionFactory) initialContext.lookup("/ConnectionFactory");
          </pre>
         </li>
 
         <li>Create and close a JMS Connection, just to show the downloaded Connection Factory is working
-        <pre>
-        <code>
-            connection = cf.createConnection();
-            connection.close();
-        </code>
+        <pre class="prettyprint">
+           connection = cf.createConnection();
+           connection.close();
         </pre>
         </li>
         
         
         <li>As the example sleeps here, use this time to kill one of the servers. You will realise that lookups will still work as long as you have a live server
         
-        <pre>
-        <code>
-            System.out.println("Connection " + i + " was created and closed. If you kill any of the servers now, the lookup operation on Step 2 will still work fine");
-            Thread.sleep(5000);
-         }
-        </code>
+        <pre class="prettyprint">
+           System.out.println("Connection " + i + " was created and closed. If you kill any of the servers now, the lookup operation on Step 2 will still work fine");
+           Thread.sleep(5000);
         </pre>
         </li>
         
         <li>And finally, <b>always</b> remember to close your JMS connections and resources after use, in a <code>finally</code> block. Closing a JMS connection will automatically close all of its sessions, consumers, producer and browser objects</li>
 
-        <pre>
-           <code>finally
+        <pre class="prettyprint">
+           finally
            {
               if (initialContext != null)
               {
@@ -98,11 +91,8 @@
               {
                  connection.close();
               }
-           }</code>
+           }
         </pre>
-
-
-
      </ol>
   </body>
 </html>

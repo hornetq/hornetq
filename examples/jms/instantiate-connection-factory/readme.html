@@ -1,9 +1,11 @@
 <html>
   <head>
     <title>HornetQ JMS Instantiate Connection Factory Example</title>
-    <link rel="stylesheet" type="text/css" href="../../common/common.css">
+    <link rel="stylesheet" type="text/css" href="../../common/common.css" />
+    <link rel="stylesheet" type="text/css" href="../../common/prettify.css" />
+    <script type="text/javascript" src="../../common/prettify.js"></script>
   </head>
-  <body>
+  <body onload="prettyPrint()">
      <h1>HornetQ JMS Instantiate Connection Factory Example</h1>
      <br>
      
@@ -31,7 +33,7 @@
         <li>Instead of looking it up from JNDI we directly instantiate the JMS Queue object. We
         pass in the name of the JMS Queue in the constructor. The actual JMS Queue must already be deployed on
         the server.</li>
-        <pre>
+        <pre class="prettyprint">
            <code>
      Queue queue = new HornetQQueue("exampleQueue");</code>
         </pre>
@@ -39,7 +41,7 @@
         <li>Instantiate the TransportConfiguration object. The TransportConfiguration instance encapsulates
         the connection details of the server we're connecting to. In this case we're using Netty as a transport, and
         we're specifying to connect on port 5446.</li>
-        <pre>
+        <pre class="prettyprint">
            <code>
      Map<String, Object> connectionParams = new HashMap<String, Object>();
 
@@ -52,55 +54,55 @@
         </pre>
 
         <li>Directly instantiate the JMS ConnectionFactory object using that TransportConfiguration.</li>
-        <pre>
+        <pre class="prettyprint">
            <code>
      ConnectionFactory cf = new HornetQConnectionFactory(transportConfiguration);           
            </code>
         </pre>
 
         <li>We create a JMS connection</li>
-        <pre>
+        <pre class="prettyprint">
            <code>connection = cf.createConnection();</code>
         </pre>
 
         <li>We create a JMS session. The session is created as non transacted and will auto acknowledge messages.</li>
-        <pre>
+        <pre class="prettyprint">
            <code>Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);</code>
         </pre>
 
         <li>We create a JMS message producer on the session. This will be used to send the messages.</li>
-        <pre>
+        <pre class="prettyprint">
           <code>MessageProducer messageProducer = session.createProducer(topic);</code>
        </pre>
 
         <li>We create a JMS text message that we are going to send.</li>
-        <pre>
+        <pre class="prettyprint">
            <code>TextMessage message = session.createTextMessage("This is a text message");</code>
         </pre>
 
         <li>We send message to the queue</li>
-        <pre>
+        <pre class="prettyprint">
            <code>messageProducer.send(message);</code>
         </pre>
 
         <li>We create a JMS Message Consumer to receive the message.</li>
-          <pre>
+          <pre class="prettyprint">
            <code>MessageConsumer messageConsumer = session.createConsumer(queue);</code>
         </pre>
 
         <li>We start the connection. In order for delivery to occur on any consumers or subscribers on a connection, the connection must be started</li>
-        <pre>
+        <pre class="prettyprint">
            <code>connection.start();</code>
         </pre>
 
         <li>The message arrives at the consumer. In this case we use a timeout of 5000 milliseconds but we could use a blocking 'receive()'</li>
-        <pre>
+        <pre class="prettyprint">
            <code>TextMessage messageReceived = (TextMessage) messageConsumer.receive(5000);</code>
         </pre>
 
         <li>And finally, <b>always</b> remember to close your resources after use, in a <code>finally</code> block.</li>
 
-        <pre>
+        <pre class="prettyprint">
            <code>finally
            {
               if (connection != null)

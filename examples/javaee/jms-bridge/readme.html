@@ -1,9 +1,11 @@
 <html>
   <head>
     <title>HornetQ JMS Bridge Example</title>
-    <link rel="stylesheet" type="text/css" href="../../common/common.css">
+    <link rel="stylesheet" type="text/css" href="../../common/common.css" />
+    <link rel="stylesheet" type="text/css" href="../../common/prettify.css" />
+    <script type="text/javascript" src="../../common/prettify.js"></script>
   </head>
-  <body>
+  <body onload="prettyPrint()">
      <h1>JMS Bridge Example</h1>
      
      <p>This example shows how to configure and run a JMS Bridge in JBoss AS 5.<br />
@@ -46,42 +48,42 @@
      <ol>
          <li>First we need to get an initial context so we can look up the JMS resources
          </li>
-         <pre>
-             <code>initialContext = new InitialContext();</code>
+         <pre class="prettyprint">
+             initialContext = new InitialContext();
          </pre>
 
          <li>We look up the JMS ConnectionFactory</li>
-         <pre>
-             <code>ConnectionFactory cf = (ConnectionFactory)initialContext.lookup("/ConnectionFactory");</code>
+         <pre class="prettyprint">
+             ConnectionFactory cf = (ConnectionFactory)initialContext.lookup("/ConnectionFactory");
          </pre>
 
          <p><em>First, we will send a message to the <em>source</em> queue</em>.</p>
          
          <li>We look up the JMS <em>source</em> queue</li>
-         <pre>
-             <code>Queue sourceQueue = (Queue)initialContext.lookup("/queue/source");</code>
+         <pre class="prettyprint">
+             Queue sourceQueue = (Queue)initialContext.lookup("/queue/source");
          </pre>
 
          <li>We create a JMS connection, a session and a message producer for the <em>source</em> queue</li>
-         <pre>
-             <code>sourceConnection = cf.createConnection();
+         <pre class="prettyprint">
+             sourceConnection = cf.createConnection();
              Session sourceSession = sourceConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
-             MessageProducer sourceProducer = sourceSession.createProducer(sourceQueue);</code>
+             MessageProducer sourceProducer = sourceSession.createProducer(sourceQueue);
          </pre>
 
          <li>We create and send a message to the <em>source</em> queue. We also display its Message ID.</li>
-         <pre>
-             <code>TextMessage message = sourceSession.createTextMessage("this is a text message");
+         <pre class="prettyprint">
+             TextMessage message = sourceSession.createTextMessage("this is a text message");
              sourceProducer.send(message);
              System.out.format("Sent message to %s: %s\n",
                                ((Queue)message.getJMSDestination()).getQueueName(),
                                message.getText());
-             System.out.format("Message ID : %s\n", message.getJMSMessageID());</code>
+             System.out.format("Message ID : %s\n", message.getJMSMessageID());
          </pre>
 
          <li>We close the <em>source</em> connection</li>
-         <pre>
-             <code>sourceConnection.close();</code>
+         <pre class="prettyprint">
+             sourceConnection.close();
          </pre>
          
          <p><em>Now that a message has been sent to the <em>source</em> queue, we will consume a message
@@ -90,45 +92,45 @@
              resent it to the <em>target</em> so that we can consume a message from it.</em></p>
              
          <li>We look up the JMS <em>target</em> queue</li>
-         <pre>
-             <code>Queue targetQueue = (Queue)initialContext.lookup("/queue/target");</code>
+         <pre class="prettyprint">
+             Queue targetQueue = (Queue)initialContext.lookup("/queue/target");
          </pre>
 
          <li>We create a connection, a session and a message consumer for the <em>target</em> queue</li>
-         <pre>
-             <code>targetConnection = cf.createConnection();
+         <pre class="prettyprint">
+             targetConnection = cf.createConnection();
              Session targetSession = targetConnection.createSession(false, Session.AUTO_ACKNOWLEDGE);
-             MessageConsumer targetConsumer = targetSession.createConsumer(targetQueue);</code>
+             MessageConsumer targetConsumer = targetSession.createConsumer(targetQueue);
          </pre>
 
          <li>We start the JMS connection to receive messages from the <em>target</em></li>
-         <pre>
-             <code>targetConnection.start();</code>
+         <pre class="prettyprint">
+             targetConnection.start();
          </pre>
 
          <li>We receive a message from the <em>target</em> queue. It has the same content than the message sent to the <em>source</em> queue</li>
-         <pre>
-             <code>TextMessage messageReceived = (TextMessage)consumer.receive(5000);
+         <pre class="prettyprint">
+             TextMessage messageReceived = (TextMessage)consumer.receive(5000);
              System.out.println("Received message: " + messageReceived.getText() +
                                          " (" +  messageReceived.getJMSMessageID() + ")");
-             </code>
+             
          </pre>
          
          <li>We now display the received message ID. It is not the same than the ID of the message sent to the <em>source</em> queue.
              The message received from the <em>target</em> queue was sent by the bridge, not by the <em>source</em> message producer</li>
-         <pre>
-             <code>System.out.format("Message ID         : %s\n", messageReceived.getJMSMessageID());</code>
+         <pre class="prettyprint">
+             System.out.format("Message ID         : %s\n", messageReceived.getJMSMessageID());
          </pre>
          
          <li>If you need to retrieve the message ID of the message <em>sent to the source</em>, you can use the property <code>HQ_BRIDGE_MSG_ID_LIST</code></li>
-         <pre>
-             <code>System.out.format("Bridged Message ID : %s\n", messageReceived.getStringProperty("HQ_BRIDGE_MSG_ID_LIST"));</code>
+         <pre class="prettyprint">
+             System.out.format("Bridged Message ID : %s\n", messageReceived.getStringProperty("HQ_BRIDGE_MSG_ID_LIST"));
          </pre>
         
          <li>And finally, <b>always</b> remember to close the JMS connections and resources after use, in a <code>finally</code> block. Closing a JMS connection will automatically close all of its sessions, consumers, producer and browser objects</li>
 
-         <pre>
-             <code>finally
+         <pre class="prettyprint">
+             finally
              {
                 if (initialContext != null)
                 {
@@ -142,7 +144,7 @@
                 {
                    targetConnection.close();
                 }     
-             }</code>
+             }
           </pre>
      </ol>
      
