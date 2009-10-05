@@ -17,9 +17,6 @@ import static org.hornetq.tests.util.RandomUtil.randomSimpleString;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.transaction.xa.XAResource;
-import javax.transaction.xa.Xid;
-
 import org.hornetq.core.client.ClientConsumer;
 import org.hornetq.core.client.ClientMessage;
 import org.hornetq.core.client.ClientProducer;
@@ -34,7 +31,6 @@ import org.hornetq.core.server.HornetQ;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.Queue;
 import org.hornetq.core.settings.impl.AddressSettings;
-import org.hornetq.core.transaction.impl.XidImpl;
 import org.hornetq.tests.util.UnitTestCase;
 import org.hornetq.utils.SimpleString;
 
@@ -49,7 +45,6 @@ public class DeadLetterAddressTest extends UnitTestCase
 
    public void testBasicSend() throws Exception
    {
-      Xid xid = new XidImpl("bq".getBytes(), 0, "gt".getBytes());
       SimpleString dla = new SimpleString("DLA");
       SimpleString qName = new SimpleString("q1");
       AddressSettings addressSettings = new AddressSettings();
@@ -62,15 +57,13 @@ public class DeadLetterAddressTest extends UnitTestCase
       ClientProducer producer = clientSession.createProducer(qName);
       producer.send(createTextMessage("heyho!", clientSession));
       clientSession.start();
-      clientSession.start(xid, XAResource.TMNOFLAGS);
       ClientConsumer clientConsumer = clientSession.createConsumer(qName);
       ClientMessage m = clientConsumer.receive(500);
       m.acknowledge();
       assertNotNull(m);
       assertEquals(m.getBody().readString(), "heyho!");
       // force a cancel
-      clientSession.end(xid, XAResource.TMSUCCESS);
-      clientSession.rollback(xid);
+      clientSession.rollback();
       m = clientConsumer.receive(500);
       assertNull(m);
       clientConsumer.close();
@@ -82,7 +75,6 @@ public class DeadLetterAddressTest extends UnitTestCase
 
    public void testBasicSendToMultipleQueues() throws Exception
    {
-      Xid xid = new XidImpl("bq".getBytes(), 0, "gt".getBytes());
       SimpleString dla = new SimpleString("DLA");
       SimpleString qName = new SimpleString("q1");
       AddressSettings addressSettings = new AddressSettings();
@@ -97,16 +89,13 @@ public class DeadLetterAddressTest extends UnitTestCase
       ClientProducer producer = clientSession.createProducer(qName);
       producer.send(createTextMessage("heyho!", clientSession));
       clientSession.start();
-      clientSession.start(xid, XAResource.TMNOFLAGS);
       ClientConsumer clientConsumer = clientSession.createConsumer(qName);
       ClientMessage m = clientConsumer.receive(500);
       m.acknowledge();
       assertNotNull(m);
       assertEquals(m.getBody().readString(), "heyho!");
       // force a cancel
-      clientSession.end(xid, XAResource.TMSUCCESS);
-      clientSession.rollback(xid);
-      clientSession.start(xid, XAResource.TMNOFLAGS);
+      clientSession.rollback();
       m = clientConsumer.receive(500);
       assertNull(m);
       clientConsumer.close();
@@ -126,7 +115,6 @@ public class DeadLetterAddressTest extends UnitTestCase
 
    public void testBasicSendToNoQueue() throws Exception
    {
-      Xid xid = new XidImpl("bq".getBytes(), 0, "gt".getBytes());
       SimpleString qName = new SimpleString("q1");
       AddressSettings addressSettings = new AddressSettings();
       addressSettings.setMaxDeliveryAttempts(1);
@@ -135,15 +123,13 @@ public class DeadLetterAddressTest extends UnitTestCase
       ClientProducer producer = clientSession.createProducer(qName);
       producer.send(createTextMessage("heyho!", clientSession));
       clientSession.start();
-      clientSession.start(xid, XAResource.TMNOFLAGS);
       ClientConsumer clientConsumer = clientSession.createConsumer(qName);
       ClientMessage m = clientConsumer.receive(500);
       m.acknowledge();
       assertNotNull(m);
       assertEquals(m.getBody().readString(), "heyho!");
       // force a cancel
-      clientSession.end(xid, XAResource.TMSUCCESS);
-      clientSession.rollback(xid);
+      clientSession.rollback();
       m = clientConsumer.receive(500);
       assertNull(m);
       clientConsumer.close();
@@ -153,7 +139,6 @@ public class DeadLetterAddressTest extends UnitTestCase
    {
       final int MAX_DELIVERIES = 16;
       final int NUM_MESSAGES = 5;
-      Xid xid = new XidImpl("bq".getBytes(), 0, "gt".getBytes());
       SimpleString dla = new SimpleString("DLA");
       SimpleString qName = new SimpleString("q1");
       AddressSettings addressSettings = new AddressSettings();
@@ -179,7 +164,6 @@ public class DeadLetterAddressTest extends UnitTestCase
 
       for (int i = 0; i < MAX_DELIVERIES; i++)
       {
-         clientSession.start(xid, XAResource.TMNOFLAGS);
          for (int j = 0; j < NUM_MESSAGES; j++)
          {
             ClientMessage tm = clientConsumer.receive(1000);
@@ -192,8 +176,7 @@ public class DeadLetterAddressTest extends UnitTestCase
             }
             assertEquals("Message:" + j, tm.getBody().readString());
          }
-         clientSession.end(xid, XAResource.TMSUCCESS);
-         clientSession.rollback(xid);
+         clientSession.rollback();
       }
 
       assertEquals(0, ((Queue)server.getPostOffice().getBinding(qName).getBindable()).getMessageCount());
@@ -231,7 +214,6 @@ public class DeadLetterAddressTest extends UnitTestCase
    public void testDeadlLetterAddressWithDefaultAddressSettings() throws Exception
    {
       int deliveryAttempt = 3;
-      Xid xid = new XidImpl("bq".getBytes(), 0, "gt".getBytes());
 
       SimpleString address = randomSimpleString();
       SimpleString queue = randomSimpleString();
@@ -253,13 +235,11 @@ public class DeadLetterAddressTest extends UnitTestCase
       ClientConsumer clientConsumer = clientSession.createConsumer(queue);
       for (int i = 0; i < deliveryAttempt; i++)
       {
-         clientSession.start(xid, XAResource.TMNOFLAGS);
          ClientMessage m = clientConsumer.receive(500);
          assertNotNull(m);
          assertEquals(i + 1, m.getDeliveryCount());
          m.acknowledge();
-         clientSession.end(xid, XAResource.TMSUCCESS);
-         clientSession.rollback(xid);
+         clientSession.rollback();
       }
       ClientMessage m = clientConsumer.receive(500);
       assertNull(m);
@@ -274,7 +254,6 @@ public class DeadLetterAddressTest extends UnitTestCase
    public void testDeadlLetterAddressWithWildcardAddressSettings() throws Exception
    {
       int deliveryAttempt = 3;
-      Xid xid = new XidImpl("bq".getBytes(), 0, "gt".getBytes());
 
       SimpleString address = randomSimpleString();
       SimpleString queue = randomSimpleString();
@@ -296,13 +275,11 @@ public class DeadLetterAddressTest extends UnitTestCase
       ClientConsumer clientConsumer = clientSession.createConsumer(queue);
       for (int i = 0; i < deliveryAttempt; i++)
       {
-         clientSession.start(xid, XAResource.TMNOFLAGS);
          ClientMessage m = clientConsumer.receive(500);
          assertNotNull(m);
          assertEquals(i + 1, m.getDeliveryCount());
          m.acknowledge();
-         clientSession.end(xid, XAResource.TMSUCCESS);
-         clientSession.rollback(xid);
+         clientSession.rollback();
       }
       ClientMessage m = clientConsumer.receive(500);
       assertNull(m);
@@ -318,7 +295,6 @@ public class DeadLetterAddressTest extends UnitTestCase
    {
       int defaultDeliveryAttempt = 3;
       int specificeDeliveryAttempt = defaultDeliveryAttempt + 1;
-      Xid xid = new XidImpl("bq".getBytes(), 0, "gt".getBytes());
 
       SimpleString address = new SimpleString("prefix.address");
       SimpleString queue = randomSimpleString();
@@ -351,26 +327,22 @@ public class DeadLetterAddressTest extends UnitTestCase
 
       for (int i = 0; i < defaultDeliveryAttempt; i++)
       {
-         clientSession.start(xid, XAResource.TMNOFLAGS);
          ClientMessage m = clientConsumer.receive(500);
          assertNotNull(m);
          assertEquals(i + 1, m.getDeliveryCount());
          m.acknowledge();
-         clientSession.end(xid, XAResource.TMSUCCESS);
-         clientSession.rollback(xid);
+         clientSession.rollback();
       }
 
       assertNull(defaultDeadLetterConsumer.receive(500));
       assertNull(specificDeadLetterConsumer.receive(500));
 
       // one more redelivery attempt:
-      clientSession.start(xid, XAResource.TMNOFLAGS);
       ClientMessage m = clientConsumer.receive(500);
       assertNotNull(m);
       assertEquals(specificeDeliveryAttempt, m.getDeliveryCount());
       m.acknowledge();
-      clientSession.end(xid, XAResource.TMSUCCESS);
-      clientSession.rollback(xid);
+      clientSession.rollback();
 
       assertNull(defaultDeadLetterConsumer.receive(500));
       assertNotNull(specificDeadLetterConsumer.receive(500));
@@ -390,7 +362,7 @@ public class DeadLetterAddressTest extends UnitTestCase
       server.start();
       // then we create a client as normal
       ClientSessionFactory sessionFactory = new ClientSessionFactoryImpl(new TransportConfiguration(INVM_CONNECTOR_FACTORY));
-      clientSession = sessionFactory.createSession(true, true, false);
+      clientSession = sessionFactory.createSession(false, true, false);
    }
 
    @Override
