@@ -187,7 +187,15 @@ public class FailureDeadlockTest extends UnitTestCase
    
          rc1.fail(new HornetQException(HornetQException.NOT_CONNECTED, "blah"));
    
-         Session sess2 = conn1.createSession(false, Session.AUTO_ACKNOWLEDGE);
+         try
+         {
+            Session sess2 = conn1.createSession(false, Session.AUTO_ACKNOWLEDGE);
+            fail("Should throw exception");
+         }
+         catch (JMSException e)
+         {
+            //Ok
+         }
    
          conn1.close();
       }

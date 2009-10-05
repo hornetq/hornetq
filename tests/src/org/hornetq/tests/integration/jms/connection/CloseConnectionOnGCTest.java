@@ -74,7 +74,7 @@ public class CloseConnectionOnGCTest extends JMSTestBase
       Connection conn2 = cf.createConnection();
       Connection conn3 = cf.createConnection();     
       
-      assertEquals(3, server.getRemotingService().getConnections().size());
+      assertEquals(1, server.getRemotingService().getConnections().size());
       
       conn1 = null;
       conn2 = null;
