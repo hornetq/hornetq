@@ -541,8 +541,6 @@ public class HornetQConnection implements Connection, QueueConnection, TopicConn
       try
       {
          initialSession = sessionFactory.createSession(username, password, false, false, false, false, 0);
-
-         initialSession.addFailureListener(listener);
       }
       catch (HornetQException me)
       {
