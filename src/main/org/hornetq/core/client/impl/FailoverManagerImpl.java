@@ -490,7 +490,7 @@ public class FailoverManagerImpl implements FailoverManager, ConnectionLifeCycle
       boolean done = false;
 
       synchronized (failoverLock)
-      {
+      {         
          if (connection == null || connection.getID() != connectionID)
          {
             // We already failed over/reconnected - probably the first failure came in, all the connections were failed
@@ -541,7 +541,7 @@ public class FailoverManagerImpl implements FailoverManager, ConnectionLifeCycle
          {
             attemptReconnect = reconnectAttempts != 0;
          }
-
+         
          if (attemptFailover || attemptReconnect)
          {
             lockChannel1();
@@ -627,6 +627,12 @@ public class FailoverManagerImpl implements FailoverManager, ConnectionLifeCycle
             {
                oldConnection.destroy();
             }
+         }
+         else
+         {
+            connection.destroy();
+            
+            connection = null;
          }
 
          // We always call the failure listeners

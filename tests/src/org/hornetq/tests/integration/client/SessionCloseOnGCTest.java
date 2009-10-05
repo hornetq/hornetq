@@ -271,7 +271,7 @@ public class SessionCloseOnGCTest extends ServiceTestBase
       ClientSession session2 = sf.createSession(false, true, true);
       ClientSession session3 = sf.createSession(false, true, true);
 
-      assertEquals(3, server.getRemotingService().getConnections().size());
+      assertEquals(1, server.getRemotingService().getConnections().size());
 
       WeakReference<ClientSession> ref1 = new WeakReference<ClientSession> (session1); 
       WeakReference<ClientSession> ref2 = new WeakReference<ClientSession> (session2); 
