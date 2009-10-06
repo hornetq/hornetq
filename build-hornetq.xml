@@ -279,6 +279,7 @@
       <path refid="jboss.jbossts.classpath"/>
       <path refid="apache.xerces.classpath"/>
       <path refid="log4j.log4j.classpath"/>
+   	  <path refid="apache.logging.classpath"/>
       <pathelement location="${test.dir}/config"/>
       <pathelement location="${src.config.dir}/common"/>
    </path>
@@ -1180,7 +1181,7 @@
                     haltonfailure="${junit.batchtest.haltonfailure}"
                     haltonerror="${junit.batchtest.haltonerror}">
             <formatter type="plain" usefile="${junit.formatter.usefile}"/>
-            <fileset dir="${test.jms.classes.dir}">
+            <fileset dir="${test.jms.classes.dir}">            	
                <include name="**/jms/tests/**/${test-mask}.class"/>
                <exclude name="**/jms/tests/XARecoveryTest.class"/>
                <exclude name="**/jms/tests/XAResourceRecoveryTest.class"/>
