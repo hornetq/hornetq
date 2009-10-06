@@ -32,7 +32,7 @@ import javax.naming.InitialContext;
 
 import org.hornetq.common.example.HornetQExample;
 import org.hornetq.core.management.MessageCounterInfo;
-import org.hornetq.core.management.ObjectNames;
+import org.hornetq.core.management.ObjectNameBuilder;
 import org.hornetq.jms.server.management.JMSQueueControl;
 
 /**
@@ -80,7 +80,7 @@ public class MessageCounterExample extends HornetQExample
          Thread.sleep(3000);
 
          // Step 7. Use JMX to retrieve the message counters using the JMSQueueControl
-         ObjectName on = ObjectNames.getJMSQueueObjectName(queue.getQueueName());
+         ObjectName on = ObjectNameBuilder.DEFAULT.getJMSQueueObjectName(queue.getQueueName());
          JMXConnector connector = JMXConnectorFactory.connect(new JMXServiceURL(JMX_URL), new HashMap());
          MBeanServerConnection mbsc = connector.getMBeanServerConnection();
          JMSQueueControl queueControl = (JMSQueueControl)MBeanServerInvocationHandler.newProxyInstance(mbsc,

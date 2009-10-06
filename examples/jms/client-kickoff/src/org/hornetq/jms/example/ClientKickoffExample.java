@@ -29,7 +29,7 @@ import javax.naming.InitialContext;
 
 import org.hornetq.common.example.HornetQExample;
 import org.hornetq.core.management.HornetQServerControl;
-import org.hornetq.core.management.ObjectNames;
+import org.hornetq.core.management.ObjectNameBuilder;
 
 /**
  * An example that shows how to kick off a client connected to HornetQby using JMX.
@@ -74,7 +74,7 @@ public class ClientKickoffExample extends HornetQExample
          connection.start();
 
          // Step 6. Create a HornetQServerControlMBean proxy to manage the server
-         ObjectName on = ObjectNames.getHornetQServerObjectName();
+         ObjectName on = ObjectNameBuilder.DEFAULT.getHornetQServerObjectName();
          JMXConnector connector = JMXConnectorFactory.connect(new JMXServiceURL(JMX_URL), new HashMap<String, String>());
          MBeanServerConnection mbsc = connector.getMBeanServerConnection();
          HornetQServerControl serverControl = (HornetQServerControl)MBeanServerInvocationHandler.newProxyInstance(mbsc,

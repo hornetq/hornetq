@@ -212,6 +212,13 @@
                             <entry>true</entry>
                         </row>
                         <row>
+                            <entry><link linkend="management.jmx.configuration"
+                                    >jmx-domain</link></entry>
+                            <entry>String</entry>
+                            <entry>the JMX domain used to registered HornetQ MBeans in the MBeanServer</entry>
+                            <entry>org.hornetq</entry>
+                        </row>
+                        <row>
                             <entry><link linkend="large.message.configuring"
                                     >large-messages-directory</link></entry>
                             <entry>String</entry>

@@ -123,6 +123,8 @@ public class FileConfiguration extends ConfigurationImpl
 
       jmxManagementEnabled = getBoolean(e, "jmx-management-enabled", jmxManagementEnabled);
 
+      jmxDomain = getString(e, "jmx-domain", jmxDomain, NOT_NULL_OR_EMPTY);
+
       securityInvalidationInterval = getLong(e, "security-invalidation-interval", securityInvalidationInterval, GT_ZERO);
 
       connectionTTLOverride = getLong(e, "connection-ttl-override", connectionTTLOverride, MINUS_ONE_OR_GT_ZERO);

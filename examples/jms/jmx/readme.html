@@ -71,9 +71,9 @@
         <p><em>Now that we have a message in the queue, we will manage the queue by retrieving the number of messages in the queue
             (i.e. 1) and by removing the message which has been sent in step 8.</em></p>
             
-        <li>We retrieve the <code>ObjectName</code> corresponding to the queue using a helper class <code>ObjectNames</code></li>
+        <li>We retrieve the <code>ObjectName</code> corresponding to the queue using a helper class <code>ObjectNameBuilder</code></li>
         <pre class="prettyprint">
-              <code>ObjectName on = ObjectNames.getJMSQueueObjectName(queue.getQueueName());</code>
+              <code>ObjectName on = ObjectNameBuilder.DEFAULT.getJMSQueueObjectName(queue.getQueueName());</code>
         </pre>
 
         <li>We create a JMX Connector to connect to the server's MBeanServer using the <a href="http://java.sun.com/j2se/1.5.0/docs/guide/management/agent.html#connecting">standard JMX service URL</a></li>
@@ -159,7 +159,7 @@
         <li>HornetQ defines a set of MBeans for this core 
             API (<a href="../../../docs/api/org/jboss/messaging/core/management/package-summary.html">org.hornetq.core.management</a>
              package) and its JMS API (in the <a href="../../../docs/api/org/jboss/messaging/jms/server/management/package-summary.html">org.hornetq.jms.server.management</a> package)
-        <li><a href="../../../docs/api/org/jboss/messaging/core/management/ObjectNames.html">ObjectNames</a> is a helper class used to build the ObjectName of HornetQ manageable resources</li>
+        <li><a href="../../../docs/api/org/jboss/messaging/core/management/ObjectNameBuilder.html">ObjectNameBuilder</a> is a helper class used to build the ObjectName of HornetQ manageable resources</li>
      </ul>
   </body>
 </html>

@@ -34,7 +34,7 @@ import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.management.BridgeControl;
 import org.hornetq.core.management.Notification;
 import org.hornetq.core.management.NotificationType;
-import org.hornetq.core.management.ObjectNames;
+import org.hornetq.core.management.ObjectNameBuilder;
 import org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
 import org.hornetq.core.server.HornetQ;
@@ -70,7 +70,7 @@ public class BridgeControlTest extends ManagementTestBase
 
    public void testAttributes() throws Exception
    {
-      checkResource(ObjectNames.getBridgeObjectName(bridgeConfig.getName()));
+      checkResource(ObjectNameBuilder.DEFAULT.getBridgeObjectName(bridgeConfig.getName()));
       BridgeControl bridgeControl = createBridgeControl(bridgeConfig.getName(), mbeanServer);
 
       assertEquals(bridgeConfig.getName(), bridgeControl.getName());
@@ -93,7 +93,7 @@ public class BridgeControlTest extends ManagementTestBase
 
    public void testStartStop() throws Exception
    {
-      checkResource(ObjectNames.getBridgeObjectName(bridgeConfig.getName()));
+      checkResource(ObjectNameBuilder.DEFAULT.getBridgeObjectName(bridgeConfig.getName()));
       BridgeControl bridgeControl = createBridgeControl(bridgeConfig.getName(), mbeanServer);
 
       // started by the server

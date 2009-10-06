@@ -68,7 +68,7 @@
         <li>We create a MBean proxy to the HornetQServerControlMBean used to manage HornetQ server
             (see <a href="../jmx/readme.html">JMX example</a> for a complete explanation of the different steps)</li>
         <pre class="prettyprint">
-            <code>ObjectName on = ObjectNames.getHornetQServerObjectName();
+            <code>ObjectName on = ObjectNameBuilder.DEFAULT.getHornetQServerObjectName();
             JMXConnector connector = JMXConnectorFactory.connect(new JMXServiceURL(JMX_URL), new HashMap<String, String>());
             MBeanServerConnection mbsc = connector.getMBeanServerConnection();
             HornetQServerControlMBean serverControl = (HornetQServerControlMBean)MBeanServerInvocationHandler.newProxyInstance(mbsc,
@@ -135,7 +135,7 @@
         <li>HornetQ defines a set of MBeans for this core 
             API (<a href="../../../docs/api/org/jboss/messaging/core/management/package-summary.html">org.hornetq.core.management</a>
              package) and its JMS API (in the <a href="../../../docs/api/org/jboss/messaging/jms/server/management/package-summary.html">org.hornetq.jms.server.management</a> package)
-        <li><a href="../../../docs/api/org/jboss/messaging/core/management/ObjectNames.html">ObjectNames</a> is a helper class used to build the ObjectName of HornetQ manageable resources</li>
+        <li><a href="../../../docs/api/org/jboss/messaging/core/management/ObjectNameBuilder.html">ObjectNameBuilder</a> is a helper class used to build the ObjectName of HornetQ manageable resources</li>
      </ul>
   </body>
 </html>

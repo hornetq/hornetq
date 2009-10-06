@@ -33,7 +33,7 @@ import org.hornetq.core.config.cluster.ClusterConnectionConfiguration;
 import org.hornetq.core.config.cluster.QueueConfiguration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.management.ClusterConnectionControl;
-import org.hornetq.core.management.ObjectNames;
+import org.hornetq.core.management.ObjectNameBuilder;
 import org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
 import org.hornetq.core.server.HornetQ;
@@ -73,7 +73,7 @@ public class ClusterConnectionControlTest extends ManagementTestBase
 
    public void testAttributes1() throws Exception
    {
-      checkResource(ObjectNames.getClusterConnectionObjectName(clusterConnectionConfig1.getName()));
+      checkResource(ObjectNameBuilder.DEFAULT.getClusterConnectionObjectName(clusterConnectionConfig1.getName()));
 
       ClusterConnectionControl clusterConnectionControl = createManagementControl(clusterConnectionConfig1.getName());
 
@@ -107,7 +107,7 @@ public class ClusterConnectionControlTest extends ManagementTestBase
    
    public void testAttributes2() throws Exception
    {
-      checkResource(ObjectNames.getClusterConnectionObjectName(clusterConnectionConfig2.getName()));
+      checkResource(ObjectNameBuilder.DEFAULT.getClusterConnectionObjectName(clusterConnectionConfig2.getName()));
 
       ClusterConnectionControl clusterConnectionControl = createManagementControl(clusterConnectionConfig2.getName());
 
@@ -131,7 +131,7 @@ public class ClusterConnectionControlTest extends ManagementTestBase
 
    public void testStartStop() throws Exception
    {
-      checkResource(ObjectNames.getClusterConnectionObjectName(clusterConnectionConfig1.getName()));
+      checkResource(ObjectNameBuilder.DEFAULT.getClusterConnectionObjectName(clusterConnectionConfig1.getName()));
       ClusterConnectionControl clusterConnectionControl = createManagementControl(clusterConnectionConfig1.getName());
 
       // started by the server

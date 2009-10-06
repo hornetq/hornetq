@@ -49,7 +49,7 @@ import javax.naming.InitialContext;
 
 import org.hornetq.core.config.TransportConfiguration;
 import org.hornetq.core.logging.Logger;
-import org.hornetq.core.management.ObjectNames;
+import org.hornetq.core.management.ObjectNameBuilder;
 import org.hornetq.core.management.ResourceNames;
 import org.hornetq.core.postoffice.Binding;
 import org.hornetq.core.postoffice.BindingType;
@@ -439,7 +439,7 @@ public class LocalTestServer implements Server, Runnable
 
    public List<String> listAllSubscribersForTopic(String s) throws Exception
    {
-      ObjectName objectName = ObjectNames.getJMSTopicObjectName(s);
+      ObjectName objectName = ObjectNameBuilder.DEFAULT.getJMSTopicObjectName(s);
       TopicControl topic = (TopicControl)MBeanServerInvocationHandler.newProxyInstance(ManagementFactory.getPlatformMBeanServer(),
                                                                                                  objectName,
                                                                                                  TopicControl.class,

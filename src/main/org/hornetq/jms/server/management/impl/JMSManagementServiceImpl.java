@@ -19,7 +19,6 @@ import javax.management.ObjectName;
 
 import org.hornetq.core.management.AddressControl;
 import org.hornetq.core.management.ManagementService;
-import org.hornetq.core.management.ObjectNames;
 import org.hornetq.core.management.QueueControl;
 import org.hornetq.core.management.ResourceNames;
 import org.hornetq.core.messagecounter.MessageCounter;
@@ -58,7 +57,7 @@ public class JMSManagementServiceImpl implements JMSManagementService
 
    public synchronized JMSServerControl registerJMSServer(final JMSServerManager server) throws Exception
    {
-      ObjectName objectName = ObjectNames.getJMSServerObjectName();
+      ObjectName objectName = managementService.getObjectNameBuilder().getJMSServerObjectName();
       JMSServerControlImpl control = new JMSServerControlImpl(server);
       managementService.registerInJMX(objectName,
                                       control);
@@ -68,7 +67,7 @@ public class JMSManagementServiceImpl implements JMSManagementService
 
    public synchronized void unregisterJMSServer() throws Exception
    {
-      ObjectName objectName = ObjectNames.getJMSServerObjectName();
+      ObjectName objectName = managementService.getObjectNameBuilder().getJMSServerObjectName();
       managementService.unregisterFromJMX(objectName);
       managementService.unregisterFromRegistry(ResourceNames.JMS_SERVER);
    }
@@ -85,7 +84,7 @@ public class JMSManagementServiceImpl implements JMSManagementService
                                                   coreQueueControl.isDurable(),
                                                   messageCounterManager.getMaxDayCount());
       messageCounterManager.registerMessageCounter(queue.getName(), counter);
-      ObjectName objectName = ObjectNames.getJMSQueueObjectName(queue.getQueueName());
+      ObjectName objectName = managementService.getObjectNameBuilder().getJMSQueueObjectName(queue.getQueueName());
       JMSQueueControlImpl control = new JMSQueueControlImpl(queue,
                                                     coreQueueControl,
                                                     jndiBinding,
@@ -96,7 +95,7 @@ public class JMSManagementServiceImpl implements JMSManagementService
 
    public synchronized void unregisterQueue(final String name) throws Exception
    {
-      ObjectName objectName = ObjectNames.getJMSQueueObjectName(name);
+      ObjectName objectName = managementService.getObjectNameBuilder().getJMSQueueObjectName(name);
       managementService.unregisterFromJMX(objectName);
       managementService.unregisterFromRegistry(ResourceNames.JMS_QUEUE + name);
    }
@@ -104,7 +103,7 @@ public class JMSManagementServiceImpl implements JMSManagementService
    public synchronized void registerTopic(final HornetQTopic topic,
                              final String jndiBinding) throws Exception
    {
-      ObjectName objectName = ObjectNames.getJMSTopicObjectName(topic.getTopicName());
+      ObjectName objectName = managementService.getObjectNameBuilder().getJMSTopicObjectName(topic.getTopicName());
       AddressControl addressControl = (AddressControl)managementService.getResource(ResourceNames.CORE_ADDRESS + topic.getAddress());
       JMSTopicControlImpl control = new JMSTopicControlImpl(topic, addressControl, jndiBinding, managementService);
       managementService.registerInJMX(objectName, control);
@@ -113,7 +112,7 @@ public class JMSManagementServiceImpl implements JMSManagementService
 
    public synchronized void unregisterTopic(final String name) throws Exception
    {
-      ObjectName objectName = ObjectNames.getJMSTopicObjectName(name);
+      ObjectName objectName = managementService.getObjectNameBuilder().getJMSTopicObjectName(name);
       managementService.unregisterFromJMX(objectName);
       managementService.unregisterFromRegistry(ResourceNames.JMS_TOPIC + name);
    }
@@ -122,7 +121,7 @@ public class JMSManagementServiceImpl implements JMSManagementService
                                          final HornetQConnectionFactory connectionFactory,
                                          final List<String> bindings) throws Exception
    {
-      ObjectName objectName = ObjectNames.getConnectionFactoryObjectName(name);
+      ObjectName objectName = managementService.getObjectNameBuilder().getConnectionFactoryObjectName(name);
       JMSConnectionFactoryControlImpl control = new JMSConnectionFactoryControlImpl(connectionFactory, name, bindings);
       managementService.registerInJMX(objectName, control);
       managementService.registerInRegistry(ResourceNames.JMS_CONNECTION_FACTORY + name, control);
@@ -130,7 +129,7 @@ public class JMSManagementServiceImpl implements JMSManagementService
 
    public synchronized void unregisterConnectionFactory(final String name) throws Exception
    {
-      ObjectName objectName = ObjectNames.getConnectionFactoryObjectName(name);
+      ObjectName objectName = managementService.getObjectNameBuilder().getConnectionFactoryObjectName(name);
       managementService.unregisterFromJMX(objectName);
       managementService.unregisterFromRegistry(ResourceNames.JMS_CONNECTION_FACTORY + name);
    }

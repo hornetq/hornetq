@@ -28,7 +28,7 @@ import org.hornetq.core.config.TransportConfiguration;
 import org.hornetq.core.config.cluster.DiscoveryGroupConfiguration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.logging.Logger;
-import org.hornetq.core.management.ObjectNames;
+import org.hornetq.core.management.ObjectNameBuilder;
 import org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
 import org.hornetq.core.remoting.impl.invm.TransportConstants;
@@ -96,7 +96,7 @@ public class JMSServerControlTest extends ManagementTestBase
       String queueName = randomString();
 
       checkNoBinding(context, queueJNDIBinding);
-      checkNoResource(ObjectNames.getJMSQueueObjectName(queueName));
+      checkNoResource(ObjectNameBuilder.DEFAULT.getJMSQueueObjectName(queueName));
 
       JMSServerControl control = createManagementControl();
       control.createQueue(queueName, queueJNDIBinding);
@@ -105,7 +105,7 @@ public class JMSServerControlTest extends ManagementTestBase
       assertTrue(o instanceof Queue);
       Queue queue = (Queue)o;
       assertEquals(queueName, queue.getQueueName());
-      checkResource(ObjectNames.getJMSQueueObjectName(queueName));
+      checkResource(ObjectNameBuilder.DEFAULT.getJMSQueueObjectName(queueName));
 
    }
 
@@ -115,18 +115,18 @@ public class JMSServerControlTest extends ManagementTestBase
       String queueName = randomString();
 
       checkNoBinding(context, queueJNDIBinding);
-      checkNoResource(ObjectNames.getJMSQueueObjectName(queueName));
+      checkNoResource(ObjectNameBuilder.DEFAULT.getJMSQueueObjectName(queueName));
 
       JMSServerControl control = createManagementControl();
       control.createQueue(queueName, queueJNDIBinding);
 
       checkBinding(context, queueJNDIBinding);
-      checkResource(ObjectNames.getJMSQueueObjectName(queueName));
+      checkResource(ObjectNameBuilder.DEFAULT.getJMSQueueObjectName(queueName));
 
       control.destroyQueue(queueName);
 
       checkNoBinding(context, queueJNDIBinding);
-      checkNoResource(ObjectNames.getJMSQueueObjectName(queueName));
+      checkNoResource(ObjectNameBuilder.DEFAULT.getJMSQueueObjectName(queueName));
    }
    
    public void testGetQueueNames() throws Exception
@@ -154,7 +154,7 @@ public class JMSServerControlTest extends ManagementTestBase
       String topicName = randomString();
 
       checkNoBinding(context, topicJNDIBinding);
-      checkNoResource(ObjectNames.getJMSTopicObjectName(topicName));
+      checkNoResource(ObjectNameBuilder.DEFAULT.getJMSTopicObjectName(topicName));
 
       JMSServerControl control = createManagementControl();
       control.createTopic(topicName, topicJNDIBinding);
@@ -163,7 +163,7 @@ public class JMSServerControlTest extends ManagementTestBase
       assertTrue(o instanceof Topic);
       Topic topic = (Topic)o;
       assertEquals(topicName, topic.getTopicName());
-      checkResource(ObjectNames.getJMSTopicObjectName(topicName));
+      checkResource(ObjectNameBuilder.DEFAULT.getJMSTopicObjectName(topicName));
    }
 
    public void testDestroyTopic() throws Exception
@@ -172,18 +172,18 @@ public class JMSServerControlTest extends ManagementTestBase
       String topicName = randomString();
 
       checkNoBinding(context, topicJNDIBinding);
-      checkNoResource(ObjectNames.getJMSTopicObjectName(topicName));
+      checkNoResource(ObjectNameBuilder.DEFAULT.getJMSTopicObjectName(topicName));
 
       JMSServerControl control = createManagementControl();
       control.createTopic(topicName, topicJNDIBinding);
 
       checkBinding(context, topicJNDIBinding);
-      checkResource(ObjectNames.getJMSTopicObjectName(topicName));
+      checkResource(ObjectNameBuilder.DEFAULT.getJMSTopicObjectName(topicName));
 
       control.destroyTopic(topicName);
 
       checkNoBinding(context, topicJNDIBinding);
-      checkNoResource(ObjectNames.getJMSTopicObjectName(topicName));
+      checkNoResource(ObjectNameBuilder.DEFAULT.getJMSTopicObjectName(topicName));
    }
    
    public void testGetTopicNames() throws Exception
@@ -639,7 +639,7 @@ public class JMSServerControlTest extends ManagementTestBase
       {
          checkNoBinding(context, cfJNDIBinding.toString());
       }
-      checkNoResource(ObjectNames.getConnectionFactoryObjectName(cfName));
+      checkNoResource(ObjectNameBuilder.DEFAULT.getConnectionFactoryObjectName(cfName));
 
       JMSServerControl control = createManagementControl();
       creator.createConnectionFactory(control, cfName, cfJNDIBindings);
@@ -652,7 +652,7 @@ public class JMSServerControlTest extends ManagementTestBase
          Connection connection = cf.createConnection();
          connection.close();
       }
-      checkResource(ObjectNames.getConnectionFactoryObjectName(cfName));
+      checkResource(ObjectNameBuilder.DEFAULT.getConnectionFactoryObjectName(cfName));
    }
 
    private JMSServerManager startHornetQServer(int discoveryPort) throws Exception

@@ -49,7 +49,7 @@ import org.hornetq.core.management.DivertControl;
 import org.hornetq.core.management.ManagementService;
 import org.hornetq.core.management.Notification;
 import org.hornetq.core.management.NotificationListener;
-import org.hornetq.core.management.ObjectNames;
+import org.hornetq.core.management.ObjectNameBuilder;
 import org.hornetq.core.management.ResourceNames;
 import org.hornetq.core.messagecounter.MessageCounter;
 import org.hornetq.core.messagecounter.MessageCounterManager;
@@ -126,6 +126,8 @@ public class ManagementServiceImpl implements ManagementService
 
    private final Set<NotificationListener> listeners = new org.hornetq.utils.ConcurrentHashSet<NotificationListener>();
 
+   private final ObjectNameBuilder objectNameBuilder;
+
    // Static --------------------------------------------------------
 
    private static void checkDefaultManagementClusterCredentials(String user, String password)
@@ -157,12 +159,18 @@ public class ManagementServiceImpl implements ManagementService
       registry = new HashMap<String, Object>();
       broadcaster = new NotificationBroadcasterSupport();
       notificationsEnabled = true;
+      objectNameBuilder = ObjectNameBuilder.create(configuration.getJMXDomain());
    }
 
    // Public --------------------------------------------------------
 
    // ManagementService implementation -------------------------
 
+   public ObjectNameBuilder getObjectNameBuilder()
+   {
+      return objectNameBuilder;
+   }
+   
    public MessageCounterManager getMessageCounterManager()
    {
       return messageCounterManager;
@@ -197,7 +205,7 @@ public class ManagementServiceImpl implements ManagementService
                                                             messagingServer,
                                                             messageCounterManager,
                                                             broadcaster);
-      ObjectName objectName = ObjectNames.getHornetQServerObjectName();
+      ObjectName objectName = objectNameBuilder.getHornetQServerObjectName();
       registerInJMX(objectName, messagingServerControl);
       registerInRegistry(ResourceNames.CORE_SERVER, messagingServerControl);
 
@@ -206,14 +214,14 @@ public class ManagementServiceImpl implements ManagementService
 
    public synchronized void unregisterServer() throws Exception
    {
-      ObjectName objectName = ObjectNames.getHornetQServerObjectName();
+      ObjectName objectName = objectNameBuilder.getHornetQServerObjectName();
       unregisterFromJMX(objectName);
       unregisterFromRegistry(ResourceNames.CORE_SERVER);
    }
 
    public synchronized void registerAddress(final SimpleString address) throws Exception
    {
-      ObjectName objectName = ObjectNames.getAddressObjectName(address);
+      ObjectName objectName = objectNameBuilder.getAddressObjectName(address);
       AddressControlImpl addressControl = new AddressControlImpl(address, postOffice, securityRepository);
 
       registerInJMX(objectName, addressControl);
@@ -228,7 +236,7 @@ public class ManagementServiceImpl implements ManagementService
 
    public synchronized void unregisterAddress(final SimpleString address) throws Exception
    {
-      ObjectName objectName = ObjectNames.getAddressObjectName(address);
+      ObjectName objectName = objectNameBuilder.getAddressObjectName(address);
 
       unregisterFromJMX(objectName);
       unregisterFromRegistry(ResourceNames.CORE_ADDRESS + address);
@@ -253,7 +261,7 @@ public class ManagementServiceImpl implements ManagementService
          queueControl.setMessageCounter(counter);
          messageCounterManager.registerMessageCounter(queue.getName().toString(), counter);
       }
-      ObjectName objectName = ObjectNames.getQueueObjectName(address, queue.getName());
+      ObjectName objectName = objectNameBuilder.getQueueObjectName(address, queue.getName());
       registerInJMX(objectName, queueControl);
       registerInRegistry(ResourceNames.CORE_QUEUE + queue.getName(), queueControl);
 
@@ -265,7 +273,7 @@ public class ManagementServiceImpl implements ManagementService
 
    public synchronized void unregisterQueue(final SimpleString name, final SimpleString address) throws Exception
    {
-      ObjectName objectName = ObjectNames.getQueueObjectName(address, name);
+      ObjectName objectName = objectNameBuilder.getQueueObjectName(address, name);
       unregisterFromJMX(objectName);
       unregisterFromRegistry(ResourceNames.CORE_QUEUE + name);
       messageCounterManager.unregisterMessageCounter(name.toString());
@@ -273,7 +281,7 @@ public class ManagementServiceImpl implements ManagementService
 
    public synchronized void registerDivert(Divert divert, DivertConfiguration config) throws Exception
    {
-      ObjectName objectName = ObjectNames.getDivertObjectName(divert.getUniqueName());
+      ObjectName objectName = objectNameBuilder.getDivertObjectName(divert.getUniqueName());
       DivertControl divertControl = new DivertControlImpl(divert, config);
       registerInJMX(objectName, new StandardMBean(divertControl, DivertControl.class));
       registerInRegistry(ResourceNames.CORE_DIVERT + config.getName(), divertControl);
@@ -286,14 +294,14 @@ public class ManagementServiceImpl implements ManagementService
 
    public synchronized void unregisterDivert(final SimpleString name) throws Exception
    {
-      ObjectName objectName = ObjectNames.getDivertObjectName(name);
+      ObjectName objectName = objectNameBuilder.getDivertObjectName(name);
       unregisterFromJMX(objectName);
       unregisterFromRegistry(ResourceNames.CORE_DIVERT + name);
    }
 
    public synchronized void registerAcceptor(final Acceptor acceptor, final TransportConfiguration configuration) throws Exception
    {
-      ObjectName objectName = ObjectNames.getAcceptorObjectName(configuration.getName());
+      ObjectName objectName = objectNameBuilder.getAcceptorObjectName(configuration.getName());
       AcceptorControl control = new AcceptorControlImpl(acceptor, configuration);
       registerInJMX(objectName, new StandardMBean(control, AcceptorControl.class));
       registerInRegistry(ResourceNames.CORE_ACCEPTOR + configuration.getName(), control);
@@ -326,7 +334,7 @@ public class ManagementServiceImpl implements ManagementService
 
    public synchronized void unregisterAcceptor(final String name) throws Exception
    {
-      ObjectName objectName = ObjectNames.getAcceptorObjectName(name);
+      ObjectName objectName = objectNameBuilder.getAcceptorObjectName(name);
       unregisterFromJMX(objectName);
       unregisterFromRegistry(ResourceNames.CORE_ACCEPTOR + name);
    }
@@ -335,7 +343,7 @@ public class ManagementServiceImpl implements ManagementService
                                                    BroadcastGroupConfiguration configuration) throws Exception
    {
       broadcastGroup.setNotificationService(this);
-      ObjectName objectName = ObjectNames.getBroadcastGroupObjectName(configuration.getName());
+      ObjectName objectName = objectNameBuilder.getBroadcastGroupObjectName(configuration.getName());
       BroadcastGroupControl control = new BroadcastGroupControlImpl(broadcastGroup, configuration);
       registerInJMX(objectName, new StandardMBean(control, BroadcastGroupControl.class));
       registerInRegistry(ResourceNames.CORE_BROADCAST_GROUP + configuration.getName(), control);
@@ -343,7 +351,7 @@ public class ManagementServiceImpl implements ManagementService
 
    public synchronized void unregisterBroadcastGroup(String name) throws Exception
    {
-      ObjectName objectName = ObjectNames.getBroadcastGroupObjectName(name);
+      ObjectName objectName = objectNameBuilder.getBroadcastGroupObjectName(name);
       unregisterFromJMX(objectName);
       unregisterFromRegistry(ResourceNames.CORE_BROADCAST_GROUP + name);
    }
@@ -352,7 +360,7 @@ public class ManagementServiceImpl implements ManagementService
                                                    DiscoveryGroupConfiguration configuration) throws Exception
    {
       discoveryGroup.setNotificationService(this);
-      ObjectName objectName = ObjectNames.getDiscoveryGroupObjectName(configuration.getName());
+      ObjectName objectName = objectNameBuilder.getDiscoveryGroupObjectName(configuration.getName());
       DiscoveryGroupControl control = new DiscoveryGroupControlImpl(discoveryGroup, configuration);
       registerInJMX(objectName, new StandardMBean(control, DiscoveryGroupControl.class));
       registerInRegistry(ResourceNames.CORE_DISCOVERY_GROUP + configuration.getName(), control);
@@ -360,7 +368,7 @@ public class ManagementServiceImpl implements ManagementService
 
    public synchronized void unregisterDiscoveryGroup(String name) throws Exception
    {
-      ObjectName objectName = ObjectNames.getDiscoveryGroupObjectName(name);
+      ObjectName objectName = objectNameBuilder.getDiscoveryGroupObjectName(name);
       unregisterFromJMX(objectName);
       unregisterFromRegistry(ResourceNames.CORE_DISCOVERY_GROUP + name);
    }
@@ -368,7 +376,7 @@ public class ManagementServiceImpl implements ManagementService
    public synchronized void registerBridge(Bridge bridge, BridgeConfiguration configuration) throws Exception
    {
       bridge.setNotificationService(this);
-      ObjectName objectName = ObjectNames.getBridgeObjectName(configuration.getName());
+      ObjectName objectName = objectNameBuilder.getBridgeObjectName(configuration.getName());
       BridgeControl control = new BridgeControlImpl(bridge, configuration);
       registerInJMX(objectName, new StandardMBean(control, BridgeControl.class));
       registerInRegistry(ResourceNames.CORE_BRIDGE + configuration.getName(), control);
@@ -376,7 +384,7 @@ public class ManagementServiceImpl implements ManagementService
 
    public synchronized void unregisterBridge(String name) throws Exception
    {
-      ObjectName objectName = ObjectNames.getBridgeObjectName(name);
+      ObjectName objectName = objectNameBuilder.getBridgeObjectName(name);
       unregisterFromJMX(objectName);
       unregisterFromRegistry(ResourceNames.CORE_BRIDGE + name);
    }
@@ -384,7 +392,7 @@ public class ManagementServiceImpl implements ManagementService
    public synchronized void registerCluster(final ClusterConnection cluster,
                                             final ClusterConnectionConfiguration configuration) throws Exception
    {
-      ObjectName objectName = ObjectNames.getClusterConnectionObjectName(configuration.getName());
+      ObjectName objectName = objectNameBuilder.getClusterConnectionObjectName(configuration.getName());
       ClusterConnectionControl control = new ClusterConnectionControlImpl(cluster, configuration);
       registerInJMX(objectName, new StandardMBean(control, ClusterConnectionControl.class));
       registerInRegistry(ResourceNames.CORE_CLUSTER_CONNECTION + configuration.getName(), control);
@@ -392,7 +400,7 @@ public class ManagementServiceImpl implements ManagementService
 
    public synchronized void unregisterCluster(final String name) throws Exception
    {
-      ObjectName objectName = ObjectNames.getClusterConnectionObjectName(name);
+      ObjectName objectName = objectNameBuilder.getClusterConnectionObjectName(name);
       unregisterFromJMX(objectName);
       unregisterFromRegistry(ResourceNames.CORE_CLUSTER_CONNECTION + name);
    }

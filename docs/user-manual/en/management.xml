@@ -485,7 +485,7 @@
    org.hornetq.jms.server.management.JMSQueueControl   
       </programlisting>
       <para>The MBean's <literal>ObjectName</literal> are built using the helper class <literal
-            >org.hornetq.core.management.ObjectNames</literal>. You can also use <literal
+            >org.hornetq.core.management.ObjectNameBuilder</literal>. You can also use <literal
             >jconsole</literal> to find the <literal>ObjectName</literal> of the MBeans you want to
          manage. </para>
       <para>Managing HornetQ using JMX is identical to management of any Java Applications using
@@ -505,6 +505,14 @@
                >Java Management guide</ulink> to configure the server for remote management (system
             properties must be set in <literal>run.sh</literal> or <literal>run.bat</literal>
             scripts).</para>
+         <para>By default, HornetQ server uses the JMX domain "org.hornetq". To manage several HornetQ servers
+            from the <emphasis>same</emphasis> MBeanServer, the JMX domain can be configured for each individual
+            HornetQ server by setting <literal>jmx-domain</literal> in <literal>hornetq-configuration.xml</literal>:
+         </para>
+         <programlisting>
+&lt;!-- use a specific JMX domain for HornetQ MBeans -->
+&lt;jmx-domain>my.org.hornetq&lt;/jmx-domain>            
+         </programlisting>
          <section>
             <title>MBeanServer configuration</title>
             <para>When HornetQ is run in standalone, it uses the Java Virtual Machine's <literal

@@ -93,6 +93,10 @@ public interface Configuration extends Serializable
 
    void setJMXManagementEnabled(boolean enabled);
 
+   String getJMXDomain();
+   
+   void setJMXDomain(String domain);
+   
    List<String> getInterceptorClassNames();
 
    void setInterceptorClassNames(List<String> interceptors);

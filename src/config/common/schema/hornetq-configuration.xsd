@@ -41,6 +41,8 @@
                 </xsd:element>              
 				<xsd:element maxOccurs="1" minOccurs="0" name="jmx-management-enabled" type="xsd:boolean">
 				</xsd:element>
+				<xsd:element maxOccurs="1" minOccurs="0" name="jmx-domain" type="xsd:string">
+				</xsd:element>
 				<xsd:element maxOccurs="1" minOccurs="0" name="message-counter-enabled" type="xsd:boolean">
 				</xsd:element>
             <xsd:element maxOccurs="1" minOccurs="0" name="message-counter-sample-period" type="xsd:long">

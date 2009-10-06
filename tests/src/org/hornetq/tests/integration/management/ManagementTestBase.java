@@ -20,7 +20,7 @@ import javax.management.ObjectName;
 import org.hornetq.core.client.ClientConsumer;
 import org.hornetq.core.client.ClientMessage;
 import org.hornetq.core.client.ClientSession;
-import org.hornetq.tests.util.UnitTestCase;
+import org.hornetq.tests.util.ServiceTestBase;
 import org.hornetq.utils.SimpleString;
 
 /**
@@ -30,7 +30,7 @@ import org.hornetq.utils.SimpleString;
  *
  *
  */
-public abstract class ManagementTestBase extends UnitTestCase
+public abstract class ManagementTestBase extends ServiceTestBase
 {
 
    // Constants -----------------------------------------------------

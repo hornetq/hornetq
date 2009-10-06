@@ -31,7 +31,7 @@ import javax.management.remote.JMXServiceURL;
 import javax.naming.InitialContext;
 
 import org.hornetq.common.example.HornetQExample;
-import org.hornetq.core.management.ObjectNames;
+import org.hornetq.core.management.ObjectNameBuilder;
 import org.hornetq.jms.server.management.JMSQueueControl;
 
 /**
@@ -80,7 +80,7 @@ public class JMXExample extends HornetQExample
          producer.send(message);
 
          // Step 9. Retrieve the ObjectName of the queue. This is used to identify the server resources to manage
-         ObjectName on = ObjectNames.getJMSQueueObjectName(queue.getQueueName());
+         ObjectName on = ObjectNameBuilder.DEFAULT.getJMSQueueObjectName(queue.getQueueName());
 
          // Step 10. Create JMX Connector to connect to the server's MBeanServer
          JMXConnector connector = JMXConnectorFactory.connect(new JMXServiceURL(JMX_URL), new HashMap());

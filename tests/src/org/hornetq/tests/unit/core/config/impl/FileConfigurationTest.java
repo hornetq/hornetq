@@ -49,6 +49,7 @@ public class FileConfigurationTest extends ConfigurationImplTest
       assertEquals("Frog", conf.getManagementClusterUser());
       assertEquals("Wombat", conf.getManagementClusterPassword());
       assertEquals(false, conf.isJMXManagementEnabled());
+      assertEquals("gro.qtenroh", conf.getJMXDomain());
       assertEquals(true, conf.isMessageCounterEnabled());
       assertEquals(5, conf.getMessageCounterMaxDayHistory());
       assertEquals(123456, conf.getMessageCounterSamplePeriod());

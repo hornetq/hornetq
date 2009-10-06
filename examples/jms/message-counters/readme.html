@@ -72,7 +72,7 @@
 
        <li>We retrieve the JMX MBean used to manage the JMS queue</li>
         <pre class="prettyprint">
-            <code>ObjectName on = ObjectNames.getJMSQueueObjectName(queue.getQueueName());
+            <code>ObjectName on = ObjectNameBuilder.DEFAULT.getJMSQueueObjectName(queue.getQueueName());
             JMXConnector connector = JMXConnectorFactory.connect(new JMXServiceURL(JMX_URL), new HashMap());
             MBeanServerConnection mbsc = connector.getMBeanServerConnection();
             JMSQueueControl queueControl = (JMSQueueControl)MBeanServerInvocationHandler.newProxyInstance(mbsc,

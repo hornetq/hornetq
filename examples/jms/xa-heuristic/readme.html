@@ -172,7 +172,7 @@
         <li>We list the prepared transactions</li>
         <pre class="prettyprint">
           <code>
-          ObjectName serverObject = ObjectNames.getMessagingServerObjectName();
+          ObjectName serverObject = ObjectNameBuilder.DEFAULT.getMessagingServerObjectName();
           String[] infos = (String[])mbsc.invoke(serverObject, "listPreparedTransactions", null, null);
          
           System.out.println("Prepared transactions: ");

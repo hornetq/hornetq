@@ -33,7 +33,7 @@ import org.hornetq.core.config.TransportConfiguration;
 import org.hornetq.core.config.cluster.BridgeConfiguration;
 import org.hornetq.core.config.cluster.QueueConfiguration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
-import org.hornetq.core.management.ObjectNames;
+import org.hornetq.core.management.ObjectNameBuilder;
 import org.hornetq.core.management.ResourceNames;
 import org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
@@ -70,7 +70,7 @@ public class BridgeControlUsingCoreTest extends ManagementTestBase
 
    public void testAttributes() throws Exception
    {
-      checkResource(ObjectNames.getBridgeObjectName(bridgeConfig.getName()));
+      checkResource(ObjectNameBuilder.DEFAULT.getBridgeObjectName(bridgeConfig.getName()));
       CoreMessagingProxy proxy = createProxy(bridgeConfig.getName());
 
       assertEquals(bridgeConfig.getName(), (String)proxy.retrieveAttributeValue("name"));
@@ -93,7 +93,7 @@ public class BridgeControlUsingCoreTest extends ManagementTestBase
 
    public void testStartStop() throws Exception
    {
-      checkResource(ObjectNames.getBridgeObjectName(bridgeConfig.getName()));
+      checkResource(ObjectNameBuilder.DEFAULT.getBridgeObjectName(bridgeConfig.getName()));
       CoreMessagingProxy proxy = createProxy(bridgeConfig.getName());
 
       // started by the server

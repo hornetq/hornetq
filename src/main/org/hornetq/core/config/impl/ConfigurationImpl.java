@@ -67,6 +67,8 @@ public class ConfigurationImpl implements Configuration
 
    public static final boolean DEFAULT_JMX_MANAGEMENT_ENABLED = true;
 
+   public static final String DEFAULT_JMX_DOMAIN = "org.hornetq";
+
    public static final long DEFAULT_CONNECTION_TTL_OVERRIDE = -1;
 
    public static final boolean DEFAULT_ASYNC_CONNECTION_EXECUTION_ENABLED = true;
@@ -190,6 +192,8 @@ public class ConfigurationImpl implements Configuration
    protected boolean securityEnabled = DEFAULT_SECURITY_ENABLED;
 
    protected boolean jmxManagementEnabled = DEFAULT_JMX_MANAGEMENT_ENABLED;
+
+   protected String jmxDomain = DEFAULT_JMX_DOMAIN;
 
    protected long connectionTTLOverride = DEFAULT_CONNECTION_TTL_OVERRIDE;
 
@@ -755,6 +759,16 @@ public class ConfigurationImpl implements Configuration
    public void setJMXManagementEnabled(final boolean enabled)
    {
       jmxManagementEnabled = enabled;
+   }
+   
+   public String getJMXDomain()
+   {
+      return jmxDomain;
+   }
+   
+   public void setJMXDomain(String domain)
+   {
+      jmxDomain = domain;
    }
 
    public void setAIOBufferTimeout(int timeout)

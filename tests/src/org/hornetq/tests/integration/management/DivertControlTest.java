@@ -22,7 +22,7 @@ import org.hornetq.core.config.cluster.DivertConfiguration;
 import org.hornetq.core.config.cluster.QueueConfiguration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.management.DivertControl;
-import org.hornetq.core.management.ObjectNames;
+import org.hornetq.core.management.ObjectNameBuilder;
 import org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
 import org.hornetq.core.server.HornetQ;
@@ -54,7 +54,7 @@ public class DivertControlTest extends ManagementTestBase
 
    public void testAttributes() throws Exception
    {
-      checkResource(ObjectNames.getDivertObjectName(new SimpleString(divertConfig.getName())));
+      checkResource(ObjectNameBuilder.DEFAULT.getDivertObjectName(new SimpleString(divertConfig.getName())));
       
       DivertControl divertControl = createManagementControl(divertConfig.getName());
 
@@ -114,7 +114,7 @@ public class DivertControlTest extends ManagementTestBase
    {
       service.stop();
 
-      checkNoResource(ObjectNames.getDivertObjectName(new SimpleString(divertConfig.getName())));
+      checkNoResource(ObjectNameBuilder.DEFAULT.getDivertObjectName(new SimpleString(divertConfig.getName())));
       
       service = null;
       

@@ -19,20 +19,21 @@ import static javax.management.ObjectName.quote;
 
 import javax.management.ObjectName;
 
+import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.utils.SimpleString;
 
 /**
- * A ObjectNames
+ * A ObjectNameBuilder
  *
  * @author <a href="jmesnil@redhat.com">Jeff Mesnil</a>
  *
  */
-public class ObjectNames
+public class ObjectNameBuilder
 {
 
    // Constants -----------------------------------------------------
 
-   public static final String DOMAIN = "org.hornetq";
+   public static ObjectNameBuilder DEFAULT = new ObjectNameBuilder(ConfigurationImpl.DEFAULT_JMX_DOMAIN);
 
    public static final String JMS_MODULE = "JMS";
 
@@ -40,91 +41,103 @@ public class ObjectNames
 
    // Attributes ----------------------------------------------------
 
+   private final String domain;
+
    // Static --------------------------------------------------------
 
-   public static ObjectName getHornetQServerObjectName() throws Exception
+   public static ObjectNameBuilder create(String domain)
    {
-      return getInstance(DOMAIN + ":module=Core,type=Server");
+      return new ObjectNameBuilder(domain);
    }
 
-   public static ObjectName getAddressObjectName(final SimpleString address) throws Exception
+   // Constructors --------------------------------------------------
+
+   private ObjectNameBuilder(String domain)
+   {
+      this.domain = domain;
+   }
+   
+   // Public --------------------------------------------------------
+
+   public ObjectName getHornetQServerObjectName() throws Exception
+   {
+      return getInstance(domain + ":module=Core,type=Server");
+   }
+
+   public ObjectName getAddressObjectName(final SimpleString address) throws Exception
    {
       return createObjectName(CORE_MODULE, "Address", address.toString());
    }
 
-   public static ObjectName getQueueObjectName(final SimpleString address, final SimpleString name) throws Exception
+   public ObjectName getQueueObjectName(final SimpleString address, final SimpleString name) throws Exception
    {
       return getInstance(format("%s:module=%s,type=%s,address=%s,name=%s",
-                                DOMAIN,
+                                domain,
                                 CORE_MODULE,
                                 "Queue",
                                 quote(address.toString()),
                                 quote(name.toString())));
    }
 
-   public static ObjectName getDivertObjectName(final SimpleString name) throws Exception
+   public ObjectName getDivertObjectName(final SimpleString name) throws Exception
    {
       return createObjectName(CORE_MODULE, "Divert", name.toString());
    }
 
-   public static ObjectName getAcceptorObjectName(final String name) throws Exception
+   public ObjectName getAcceptorObjectName(final String name) throws Exception
    {
       return createObjectName(CORE_MODULE, "Acceptor", name);
    }
 
-   public static ObjectName getBroadcastGroupObjectName(final String name) throws Exception
+   public ObjectName getBroadcastGroupObjectName(final String name) throws Exception
    {
       return createObjectName(CORE_MODULE, "BroadcastGroup", name);
    }
 
-   public static ObjectName getBridgeObjectName(final String name) throws Exception
+   public ObjectName getBridgeObjectName(final String name) throws Exception
    {
       return createObjectName(CORE_MODULE, "JMSBridge", name);
    }
    
-   public static ObjectName getClusterConnectionObjectName(String name) throws Exception
+   public ObjectName getClusterConnectionObjectName(String name) throws Exception
    {
       return createObjectName(CORE_MODULE, "ClusterConnection", name);
    }
 
-   public static ObjectName getDiscoveryGroupObjectName(final String name) throws Exception
+   public ObjectName getDiscoveryGroupObjectName(final String name) throws Exception
    {
       return createObjectName(CORE_MODULE, "DiscoveryGroup", name);
    }
 
-   public static ObjectName getJMSServerObjectName() throws Exception
+   public ObjectName getJMSServerObjectName() throws Exception
    {
-      return getInstance(DOMAIN + ":module=JMS,type=Server");
+      return getInstance(domain + ":module=JMS,type=Server");
    }
 
-   public static ObjectName getJMSQueueObjectName(final String name) throws Exception
+   public ObjectName getJMSQueueObjectName(final String name) throws Exception
    {
       return createObjectName(JMS_MODULE, "Queue", name);
    }
 
-   public static ObjectName getJMSTopicObjectName(final String name) throws Exception
+   public ObjectName getJMSTopicObjectName(final String name) throws Exception
    {
       return createObjectName(JMS_MODULE, "Topic", name);
    }
 
-   public static ObjectName getConnectionFactoryObjectName(final String name) throws Exception
+   public ObjectName getConnectionFactoryObjectName(final String name) throws Exception
    {
       return createObjectName(JMS_MODULE, "ConnectionFactory", name);
    }
-
-   // Constructors --------------------------------------------------
-
-   // Public --------------------------------------------------------
-
+   
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
 
    // Private -------------------------------------------------------
 
-   private static ObjectName createObjectName(final String module, final String type, final String name) throws Exception
+   private ObjectName createObjectName(final String module, final String type, final String name) throws Exception
    {
-      return getInstance(format("%s:module=%s,type=%s,name=%s", DOMAIN, module, type, quote(name)));
+      return getInstance(format("%s:module=%s,type=%s,name=%s", domain, module, type, quote(name)));
    }
 
    // Inner classes -------------------------------------------------

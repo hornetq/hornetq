@@ -37,7 +37,7 @@ import javax.transaction.xa.Xid;
 
 import org.hornetq.common.example.DummyXid;
 import org.hornetq.common.example.HornetQExample;
-import org.hornetq.core.management.ObjectNames;
+import org.hornetq.core.management.ObjectNameBuilder;
 import org.hornetq.utils.UUIDGenerator;
 
 /**
@@ -148,7 +148,7 @@ public class XAHeuristicExample extends HornetQExample
          MBeanServerConnection mbsc = connector.getMBeanServerConnection();
          
          //Step 27. List the prepared transactions
-         ObjectName serverObject = ObjectNames.getHornetQServerObjectName();
+         ObjectName serverObject = ObjectNameBuilder.DEFAULT.getHornetQServerObjectName();
          String[] infos = (String[])mbsc.invoke(serverObject, "listPreparedTransactions", null, null);
          
          System.out.println("Prepared transactions: ");
