@@ -51,21 +51,6 @@ public class QueueImplTest extends UnitTestCase
 
    private static final SimpleString address1 = new SimpleString("address1");
 
-   public void testID()
-   {
-      final long id = 123;
-
-      Queue queue = new QueueImpl(id, address1, queue1, null, false, true, scheduledExecutor, null, null, null);
-
-      assertEquals(id, queue.getPersistenceID());
-
-      final long id2 = 456;
-
-      queue.setPersistenceID(id2);
-
-      assertEquals(id2, queue.getPersistenceID());
-   }
-
    public void testName()
    {
       final SimpleString name = new SimpleString("oobblle");

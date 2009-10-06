@@ -45,10 +45,12 @@ public class DivertBinding implements Binding
    
    private final boolean exclusive;
    
-   private int id;
+   private final long id;
    
-   public DivertBinding(final SimpleString address, final Divert divert)
+   public DivertBinding(long id, final SimpleString address, final Divert divert)
    {
+      this.id = id;
+
       this.address = address;
       
       this.divert = divert;
@@ -62,14 +64,9 @@ public class DivertBinding implements Binding
       this.exclusive = divert.isExclusive();
    }
    
-   public int getID()
+   public long getID()
    {
       return id;
-   }
-   
-   public void setID(final int id)
-   {
-      this.id = id;
    }
    
    public Filter getFilter()

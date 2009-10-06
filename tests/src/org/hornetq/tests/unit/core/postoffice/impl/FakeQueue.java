@@ -19,7 +19,6 @@ import java.util.Set;
 import java.util.concurrent.Executor;
 
 import org.hornetq.core.filter.Filter;
-import org.hornetq.core.remoting.Channel;
 import org.hornetq.core.server.Consumer;
 import org.hornetq.core.server.Distributor;
 import org.hornetq.core.server.MessageReference;
@@ -311,9 +310,9 @@ public class FakeQueue implements Queue
    }
 
    /* (non-Javadoc)
-    * @see org.hornetq.core.server.Queue#getPersistenceID()
+    * @see org.hornetq.core.server.Queue#getID()
     */
-   public long getPersistenceID()
+   public long getID()
    {
 
       return 0;
@@ -482,13 +481,6 @@ public class FakeQueue implements Queue
 
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.server.Queue#setPersistenceID(long)
-    */
-   public void setPersistenceID(long id)
-   {
-
-   }
 
    /* (non-Javadoc)
     * @see org.hornetq.core.server.Bindable#preroute(org.hornetq.core.server.ServerMessage, org.hornetq.core.transaction.Transaction)

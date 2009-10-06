@@ -232,7 +232,7 @@ public class LastValueQueue extends QueueImpl
             }
             else
             {
-               storageManager.deleteMessageTransactional(tx.getID(), getPersistenceID(), msg.getMessageID());
+               storageManager.deleteMessageTransactional(tx.getID(), getID(), msg.getMessageID());
             }
          }
       }

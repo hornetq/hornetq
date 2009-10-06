@@ -41,7 +41,7 @@ public interface ClusterConnection extends HornetQComponent
    void handleReplicatedAddBinding(SimpleString address,
                                    SimpleString uniqueName,
                                    SimpleString routingName,
-                                   int queueID,
+                                   long queueID,
                                    SimpleString filterString,
                                    SimpleString queueName,                 
                                    int distance) throws Exception;

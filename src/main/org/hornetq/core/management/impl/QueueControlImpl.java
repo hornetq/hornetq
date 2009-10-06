@@ -159,9 +159,9 @@ public class QueueControlImpl extends StandardMBean implements QueueControl
       return queue.getMessagesAdded();
    }
 
-   public long getPersistenceID()
+   public long getID()
    {
-      return queue.getPersistenceID();
+      return queue.getID();
    }
 
    public long getScheduledCount()

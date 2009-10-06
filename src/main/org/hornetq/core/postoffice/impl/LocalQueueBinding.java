@@ -48,8 +48,6 @@ public class LocalQueueBinding implements QueueBinding
    
    private final SimpleString name;
    
-   private int id;
-   
    private SimpleString clusterName;
    
    public LocalQueueBinding(final SimpleString address, final Queue queue, final SimpleString nodeID)
@@ -65,14 +63,9 @@ public class LocalQueueBinding implements QueueBinding
       this.clusterName = name.concat(nodeID);
    }
    
-   public int getID()
+   public long getID()
    {
-      return id;
-   }
-   
-   public void setID(final int id)
-   {
-      this.id = id;
+      return queue.getID();
    }
    
    public Filter getFilter()

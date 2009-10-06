@@ -51,7 +51,7 @@ public class BindingsImpl implements Bindings
 
    private final Map<SimpleString, Integer> routingNamePositions = new ConcurrentHashMap<SimpleString, Integer>();
 
-   private final Map<Integer, Binding> bindingsMap = new ConcurrentHashMap<Integer, Binding>();
+   private final Map<Long, Binding> bindingsMap = new ConcurrentHashMap<Long, Binding>();
 
    private final List<Binding> exclusiveBindings = new CopyOnWriteArrayList<Binding>();
 
@@ -133,7 +133,7 @@ public class BindingsImpl implements Bindings
 
       while (buff.hasRemaining())
       {
-         int bindingID = buff.getInt();
+         long bindingID = buff.getLong();
 
          Binding binding = bindingsMap.get(bindingID);
 

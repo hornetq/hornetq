@@ -76,7 +76,7 @@ public class QueueImpl implements Queue
 
    public static final int NUM_PRIORITIES = 10;
 
-   private volatile long persistenceID = -1;
+   private final long id;
 
    private final SimpleString name;
 
@@ -140,7 +140,7 @@ public class QueueImpl implements Queue
 
    private volatile SimpleString expiryAddress;
 
-   public QueueImpl(final long persistenceID,
+   public QueueImpl(final long id,
                     final SimpleString address,
                     final SimpleString name,
                     final Filter filter,
@@ -151,7 +151,7 @@ public class QueueImpl implements Queue
                     final StorageManager storageManager,
                     final HierarchicalRepository<AddressSettings> addressSettingsRepository)
    {
-      this.persistenceID = persistenceID;
+      this.id = id;
 
       this.address = address;
 
@@ -259,7 +259,7 @@ public class QueueImpl implements Queue
                message.setStored();
             }
 
-            storageManager.storeReference(ref.getQueue().getPersistenceID(), message.getMessageID());
+            storageManager.storeReference(ref.getQueue().getID(), message.getMessageID());
          }
 
          if (scheduledDeliveryTime != null && durableRef)
@@ -283,7 +283,7 @@ public class QueueImpl implements Queue
             tx.putProperty(TransactionPropertyIndexes.CONTAINS_PERSISTENT, true);
 
             storageManager.storeReferenceTransactional(tx.getID(),
-                                                       ref.getQueue().getPersistenceID(),
+                                                       ref.getQueue().getID(),
                                                        message.getMessageID());
          }
 
@@ -373,14 +373,9 @@ public class QueueImpl implements Queue
       return name;
    }
 
-   public long getPersistenceID()
+   public long getID()
    {
-      return persistenceID;
-   }
-
-   public void setPersistenceID(final long id)
-   {
-      persistenceID = id;
+      return id;
    }
 
    public Filter getFilter()
@@ -662,7 +657,7 @@ public class QueueImpl implements Queue
 
       if (durableRef)
       {
-         storageManager.storeAcknowledge(persistenceID, message.getMessageID());
+         storageManager.storeAcknowledge(id, message.getMessageID());
       }
 
       postAcknowledge(ref);
@@ -676,7 +671,7 @@ public class QueueImpl implements Queue
 
       if (durableRef)
       {
-         storageManager.storeAcknowledgeTransactional(tx.getID(), persistenceID, message.getMessageID());
+         storageManager.storeAcknowledgeTransactional(tx.getID(), id, message.getMessageID());
 
          tx.putProperty(TransactionPropertyIndexes.CONTAINS_PERSISTENT, true);
       }

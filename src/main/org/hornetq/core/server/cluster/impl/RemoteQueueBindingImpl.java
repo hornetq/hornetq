@@ -51,7 +51,7 @@ public class RemoteQueueBindingImpl implements RemoteQueueBinding
 
    private final SimpleString routingName;
    
-   private final int remoteQueueID;
+   private final long remoteQueueID;
 
    private final Filter queueFilter;
 
@@ -63,19 +63,22 @@ public class RemoteQueueBindingImpl implements RemoteQueueBinding
 
    private final SimpleString idsHeaderName;
    
-   private int id;
+   private final long id;
       
    private final int distance;
    
-   public RemoteQueueBindingImpl(final SimpleString address,
+   public RemoteQueueBindingImpl(final long id,
+                                 final SimpleString address,
                                  final SimpleString uniqueName,
                                  final SimpleString routingName,
-                                 final int remoteQueueID,
+                                 final Long remoteQueueID,
                                  final SimpleString filterString,
-                                 final Queue storeAndForwardQueue,                     
+                                 final Queue storeAndForwardQueue,
                                  final SimpleString bridgeName,
                                  final int distance) throws Exception
    {
+      this.id = id;
+
       this.address = address;
 
       this.storeAndForwardQueue = storeAndForwardQueue;
@@ -100,14 +103,9 @@ public class RemoteQueueBindingImpl implements RemoteQueueBinding
       this.distance = distance;
    }
    
-   public int getID()
+   public long getID()
    {
       return id;
-   }
-   
-   public void setID(final int id)
-   {
-      this.id = id;
    }
    
    public SimpleString getAddress()
@@ -195,20 +193,20 @@ public class RemoteQueueBindingImpl implements RemoteQueueBinding
       
       if (ids == null)
       {
-         ids = new byte[4];
+         ids = new byte[8];
       }
       else
       {
-         byte[] newIds = new byte[ids.length + 4];
+         byte[] newIds = new byte[ids.length + 8];
          
-         System.arraycopy(ids, 0, newIds, 4, ids.length);
+         System.arraycopy(ids, 0, newIds, 8, ids.length);
                           
          ids = newIds;
       }
       
       ByteBuffer buff = ByteBuffer.wrap(ids);
       
-      buff.putInt(remoteQueueID);
+      buff.putLong(remoteQueueID);
       
       message.putBytesProperty(idsHeaderName, ids); 
    }

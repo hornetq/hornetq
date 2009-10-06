@@ -843,7 +843,7 @@ public class HornetQServerImpl implements HornetQServer
 
       if (queue.isDurable())
       {
-         storageManager.deleteQueueBinding(queue.getPersistenceID());
+         storageManager.deleteQueueBinding(queue.getID());
       }
 
       postOffice.removeBinding(queueName);
@@ -1169,7 +1169,7 @@ public class HornetQServerImpl implements HornetQServer
             filter = new FilterImpl(queueBindingInfo.getFilterString());
          }
 
-         Queue queue = queueFactory.createQueue(queueBindingInfo.getPersistenceID(),
+         Queue queue = queueFactory.createQueue(queueBindingInfo.getId(),
                                                 queueBindingInfo.getAddress(),
                                                 queueBindingInfo.getQueueName(),
                                                 filter,
@@ -1178,7 +1178,7 @@ public class HornetQServerImpl implements HornetQServer
 
          Binding binding = new LocalQueueBinding(queueBindingInfo.getAddress(), queue, nodeID);
 
-         queues.put(queueBindingInfo.getPersistenceID(), queue);
+         queues.put(queueBindingInfo.getId(), queue);
 
          postOffice.addBinding(binding);
 
@@ -1267,8 +1267,8 @@ public class HornetQServerImpl implements HornetQServer
          filter = new FilterImpl(filterString);
       }
 
-      final Queue queue = queueFactory.createQueue(-1, address, queueName, filter, durable, temporary);
-
+      final Queue queue = queueFactory.createQueue(storageManager.generateUniqueID(), address, queueName, filter, durable, temporary);
+      
       binding = new LocalQueueBinding(address, queue, nodeID);
 
       if (durable)
@@ -1339,7 +1339,7 @@ public class HornetQServerImpl implements HornetQServer
                                         pagingManager,
                                         storageManager);
 
-         Binding binding = new DivertBinding(sAddress, divert);
+         Binding binding = new DivertBinding(storageManager.generateUniqueID(), sAddress, divert);
 
          postOffice.addBinding(binding);
 

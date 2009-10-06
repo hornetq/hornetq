@@ -100,16 +100,6 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
 
    private final boolean persistIDCache;
 
-   // Each queue has a transient ID which lasts the lifetime of its binding. This is used in clustering when routing
-   // messages to particular queues on nodes. We could
-   // use the queue name on the node to identify it. But sometimes we need to route to maybe 10s of thousands of queues
-   // on a particular node, and all would
-   // have to be specified in the message. Specify 10000 ints takes up a lot less space than 10000 arbitrary queue names
-   // The drawback of this approach is we only allow up to 2^32 queues in memory at any one time
-   private int transientIDSequence;
-
-   private Set<Integer> transientIDs = new HashSet<Integer>();
-
    private Map<SimpleString, QueueInfo> queueInfos = new HashMap<SimpleString, QueueInfo>();
 
    private final Object notificationLock = new Object();
@@ -200,9 +190,6 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
       addressManager.clear();
 
       queueInfos.clear();
-
-      transientIDs.clear();
-
    }
 
    public boolean isStarted()
@@ -243,13 +230,13 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
 
                SimpleString address = (SimpleString)props.getProperty(ManagementHelper.HDR_ADDRESS);
 
-               Integer transientID = (Integer)props.getProperty(ManagementHelper.HDR_BINDING_ID);
+               Long id = (Long)props.getProperty(ManagementHelper.HDR_BINDING_ID);
 
                SimpleString filterString = (SimpleString)props.getProperty(ManagementHelper.HDR_FILTERSTRING);
 
                Integer distance = (Integer)props.getProperty(ManagementHelper.HDR_DISTANCE);
 
-               QueueInfo info = new QueueInfo(routingName, clusterName, address, filterString, transientID, distance);
+               QueueInfo info = new QueueInfo(routingName, clusterName, address, filterString, id, distance);
 
                queueInfos.put(clusterName, info);
 
@@ -435,8 +422,6 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
    // even though failover is complete
    public synchronized void addBinding(final Binding binding) throws Exception
    {
-      binding.setID(generateTransientID());
-
       addressManager.addBinding(binding);
       
       TypedProperties props = new TypedProperties();
@@ -449,7 +434,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
 
       props.putStringProperty(ManagementHelper.HDR_ROUTING_NAME, binding.getRoutingName());
 
-      props.putIntProperty(ManagementHelper.HDR_BINDING_ID, binding.getID());
+      props.putLongProperty(ManagementHelper.HDR_BINDING_ID, binding.getID());
 
       props.putIntProperty(ManagementHelper.HDR_DISTANCE, binding.getDistance());
 
@@ -504,8 +489,6 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
       props.putIntProperty(ManagementHelper.HDR_DISTANCE, binding.getDistance());
 
       managementService.sendNotification(new Notification(null, NotificationType.BINDING_REMOVED, props));
-
-      releaseTransientID(binding.getID());
 
       return binding;
    }
@@ -740,7 +723,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
                message.putStringProperty(ManagementHelper.HDR_ADDRESS, info.getAddress());
                message.putStringProperty(ManagementHelper.HDR_CLUSTER_NAME, info.getClusterName());
                message.putStringProperty(ManagementHelper.HDR_ROUTING_NAME, info.getRoutingName());
-               message.putIntProperty(ManagementHelper.HDR_BINDING_ID, info.getID());
+               message.putLongProperty(ManagementHelper.HDR_BINDING_ID, info.getID());
                message.putStringProperty(ManagementHelper.HDR_FILTERSTRING, info.getFilterString());
                message.putIntProperty(ManagementHelper.HDR_DISTANCE, info.getDistance());
 
@@ -820,30 +803,6 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
       message.putStringProperty(new SimpleString("foobar"), new SimpleString(uid));
 
       return message;
-   }
-
-   private int generateTransientID()
-   {
-      int start = transientIDSequence;
-      do
-      {
-         int id = transientIDSequence++;
-
-         if (!transientIDs.contains(id))
-         {
-            transientIDs.add(id);
-
-            return id;
-         }
-      }
-      while (transientIDSequence != start);
-
-      throw new IllegalStateException("Run out of queue ids!");
-   }
-
-   private void releaseTransientID(final int id)
-   {
-      transientIDs.remove(id);
    }
 
    private final PageMessageOperation getPageOperation(final Transaction tx)

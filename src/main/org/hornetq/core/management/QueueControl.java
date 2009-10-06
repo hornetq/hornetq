@@ -32,7 +32,7 @@ public interface QueueControl
 
    String getAddress();
 
-   long getPersistenceID();
+   long getID();
 
    boolean isTemporary();
 

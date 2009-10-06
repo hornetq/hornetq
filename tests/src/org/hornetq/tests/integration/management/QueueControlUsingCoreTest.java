@@ -130,9 +130,9 @@ public class QueueControlUsingCoreTest extends QueueControlTest
             return (String)proxy.retrieveAttributeValue("name");
          }
 
-         public long getPersistenceID()
+         public long getID()
          {
-            return (Long)proxy.retrieveAttributeValue("persistenceID");
+            return (Long)proxy.retrieveAttributeValue("ID");
          }
 
          public long getScheduledCount()

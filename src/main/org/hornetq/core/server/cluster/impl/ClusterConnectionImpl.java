@@ -577,14 +577,15 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
 
          SimpleString filterString = (SimpleString)message.getProperty(ManagementHelper.HDR_FILTERSTRING);
 
-         Integer queueID = (Integer)message.getProperty(ManagementHelper.HDR_BINDING_ID);
+         Long queueID = (Long)message.getProperty(ManagementHelper.HDR_BINDING_ID);
 
          if (queueID == null)
          {
             throw new IllegalStateException("queueID is null");
          }
 
-         RemoteQueueBinding binding = new RemoteQueueBindingImpl(queueAddress,
+         RemoteQueueBinding binding = new RemoteQueueBindingImpl(server.getStorageManager().generateUniqueID(),
+                                                                 queueAddress,
                                                                  clusterName,
                                                                  routingName,
                                                                  queueID,
@@ -721,7 +722,7 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
    public void handleReplicatedAddBinding(final SimpleString address,
                                           final SimpleString uniqueName,
                                           final SimpleString routingName,
-                                          final int queueID,
+                                          final long queueID,
                                           final SimpleString filterString,
                                           final SimpleString queueName,
                                           final int distance) throws Exception
@@ -735,7 +736,8 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
 
       Queue queue = (Queue)queueBinding.getBindable();
 
-      RemoteQueueBinding binding = new RemoteQueueBindingImpl(address,
+      RemoteQueueBinding binding = new RemoteQueueBindingImpl(server.getStorageManager().generateUniqueID(),
+                                                              address,
                                                               uniqueName,
                                                               routingName,
                                                               queueID,

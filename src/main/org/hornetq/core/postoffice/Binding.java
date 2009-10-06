@@ -48,9 +48,7 @@ public interface Binding
 
    boolean isExclusive();
    
-   int getID();
-   
-   void setID(int id);
+   long getID();
 
    int getDistance();
 }

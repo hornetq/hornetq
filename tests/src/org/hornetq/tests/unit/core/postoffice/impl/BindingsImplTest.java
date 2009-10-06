@@ -957,7 +957,7 @@ public class BindingsImplTest extends UnitTestCase
       /* (non-Javadoc)
        * @see org.hornetq.core.postoffice.Binding#getID()
        */
-      public int getID()
+      public long getID()
       {
 
          return 0;
@@ -1005,14 +1005,6 @@ public class BindingsImplTest extends UnitTestCase
       {
 
          return false;
-      }
-
-      /* (non-Javadoc)
-       * @see org.hornetq.core.postoffice.Binding#setID(int)
-       */
-      public void setID(final int id)
-      {
-
       }
 
       /* (non-Javadoc)

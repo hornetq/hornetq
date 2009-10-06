@@ -27,7 +27,7 @@ import org.hornetq.utils.SimpleString;
  */
 public interface QueueBindingInfo
 {
-   long getPersistenceID();
+   long getId();
    
    SimpleString getAddress();
    

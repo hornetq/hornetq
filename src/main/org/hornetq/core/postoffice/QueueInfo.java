@@ -40,7 +40,7 @@ public class QueueInfo implements Serializable
    
    private final SimpleString filterString;
    
-   private final int id;
+   private final long id;
    
    private List<SimpleString> filterStrings;
    
@@ -48,7 +48,7 @@ public class QueueInfo implements Serializable
    
    private final int distance;
    
-   public QueueInfo(final SimpleString routingName, final SimpleString clusterName, final SimpleString address, final SimpleString filterString, final int id,
+   public QueueInfo(final SimpleString routingName, final SimpleString clusterName, final SimpleString address, final SimpleString filterString, final Long id,
                     final Integer distance)
    {
       if (routingName == null)
@@ -100,7 +100,7 @@ public class QueueInfo implements Serializable
       return distance;
    }
    
-   public int getID()
+   public long getID()
    {
       return id;
    }

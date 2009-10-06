@@ -38,9 +38,7 @@ public interface Queue extends Bindable
 
    SimpleString getName();
 
-   long getPersistenceID();
-
-   void setPersistenceID(long id);
+   long getID();
 
    Filter getFilter();
 

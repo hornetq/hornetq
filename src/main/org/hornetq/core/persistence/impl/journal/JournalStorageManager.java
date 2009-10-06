@@ -310,7 +310,7 @@ public class JournalStorageManager implements StorageManager
    public void updateScheduledDeliveryTime(final MessageReference ref) throws Exception
    {
       ScheduledDeliveryEncoding encoding = new ScheduledDeliveryEncoding(ref.getScheduledDeliveryTime(),
-                                                                         ref.getQueue().getPersistenceID());
+                                                                         ref.getQueue().getID());
 
       messageJournal.appendUpdateRecord(ref.getMessage().getMessageID(),
                                         SET_SCHEDULED_DELIVERY_TIME,
@@ -400,7 +400,7 @@ public class JournalStorageManager implements StorageManager
    public void updateScheduledDeliveryTimeTransactional(final long txID, final MessageReference ref) throws Exception
    {
       ScheduledDeliveryEncoding encoding = new ScheduledDeliveryEncoding(ref.getScheduledDeliveryTime(),
-                                                                         ref.getQueue().getPersistenceID());
+                                                                         ref.getQueue().getID());
 
       messageJournal.appendUpdateRecordTransactional(txID,
                                                      ref.getMessage().getMessageID(),
@@ -457,7 +457,7 @@ public class JournalStorageManager implements StorageManager
 
    public void updateDeliveryCount(final MessageReference ref) throws Exception
    {
-      DeliveryCountUpdateEncoding updateInfo = new DeliveryCountUpdateEncoding(ref.getQueue().getPersistenceID(),
+      DeliveryCountUpdateEncoding updateInfo = new DeliveryCountUpdateEncoding(ref.getQueue().getID(),
                                                                                ref.getDeliveryCount());
 
       messageJournal.appendUpdateRecord(ref.getMessage().getMessageID(),
@@ -1003,11 +1003,7 @@ public class JournalStorageManager implements StorageManager
                                                                                           binding.getAddress(),
                                                                                           filterString);
 
-      long id = this.generateUniqueID();
-
-      queue.setPersistenceID(id);
-
-      bindingsJournal.appendAddRecord(id, QUEUE_BINDING_RECORD, bindingEncoding, true);
+      bindingsJournal.appendAddRecord(binding.getID(), QUEUE_BINDING_RECORD, bindingEncoding, true);
    }
 
    public void deleteQueueBinding(final long queueBindingID) throws Exception
@@ -1037,7 +1033,7 @@ public class JournalStorageManager implements StorageManager
 
             bindingEncoding.decode(buffer);
 
-            bindingEncoding.setPersistenceID(id);
+            bindingEncoding.setId(id);
 
             queueBindingInfos.add(bindingEncoding);          
          }
@@ -1265,7 +1261,7 @@ public class JournalStorageManager implements StorageManager
 
    private static class PersistentQueueBindingEncoding implements EncodingSupport, QueueBindingInfo
    {
-      long persistenceID;
+      long id;
 
       SimpleString name;
 
@@ -1286,14 +1282,14 @@ public class JournalStorageManager implements StorageManager
          this.filterString = filterString;
       }
 
-      public long getPersistenceID()
+      public long getId()
       {
-         return persistenceID;
+         return id;
       }
 
-      public void setPersistenceID(final long id)
+      public void setId(final long id)
       {
-         this.persistenceID = id;
+         this.id = id;
       }
 
       public SimpleString getAddress()
