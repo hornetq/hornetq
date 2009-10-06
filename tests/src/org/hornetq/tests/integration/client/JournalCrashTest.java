@@ -24,8 +24,8 @@ import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.journal.PreparedTransactionInfo;
 import org.hornetq.core.journal.RecordInfo;
-import org.hornetq.core.journal.impl.AIOSequentialFileFactory;
 import org.hornetq.core.journal.impl.JournalImpl;
+import org.hornetq.core.journal.impl.NIOSequentialFileFactory;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.tests.util.ServiceTestBase;
 import org.hornetq.tests.util.SpawnedVMSupport;
@@ -258,7 +258,7 @@ public class JournalCrashTest extends ServiceTestBase
     */
    private void printJournal() throws Exception
    {
-      AIOSequentialFileFactory factory = new AIOSequentialFileFactory(getJournalDir());
+      NIOSequentialFileFactory factory = new NIOSequentialFileFactory(getJournalDir());
       JournalImpl journal = new JournalImpl(ConfigurationImpl.DEFAULT_JOURNAL_FILE_SIZE,
                                             2,
                                             0,
