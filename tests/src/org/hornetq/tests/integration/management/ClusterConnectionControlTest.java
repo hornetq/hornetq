@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.management.MBeanServer;
 import javax.management.MBeanServerFactory;
 
 import org.hornetq.core.config.Configuration;
@@ -63,6 +64,8 @@ public class ClusterConnectionControlTest extends ManagementTestBase
    private ClusterConnectionConfiguration clusterConnectionConfig2;
 
    private HornetQServer server_1;
+
+   private MBeanServer mbeanServer_1;
 
    // Constructors --------------------------------------------------
 
@@ -198,7 +201,8 @@ public class ClusterConnectionControlTest extends ManagementTestBase
       conf_0.getClusterConfigurations().add(clusterConnectionConfig1);
       conf_0.getClusterConfigurations().add(clusterConnectionConfig2);
 
-      server_1 = HornetQ.newHornetQServer(conf_1, MBeanServerFactory.createMBeanServer(), false);
+      mbeanServer_1 = MBeanServerFactory.createMBeanServer();
+      server_1 = HornetQ.newHornetQServer(conf_1, mbeanServer_1, false);
       server_1.start();
 
       server_0 = HornetQ.newHornetQServer(conf_0, mbeanServer, false);
@@ -214,6 +218,9 @@ public class ClusterConnectionControlTest extends ManagementTestBase
       server_0 = null;
       
       server_1 = null;
+
+      MBeanServerFactory.releaseMBeanServer(mbeanServer_1);
+      mbeanServer_1 = null;
 
       super.tearDown();
    }

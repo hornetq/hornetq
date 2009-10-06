@@ -14,6 +14,7 @@
 package org.hornetq.core.management.impl;
 
 import java.util.List;
+import java.util.Map;
 
 import javax.management.StandardMBean;
 
@@ -78,6 +79,11 @@ public class ClusterConnectionControlImpl extends StandardMBean implements Clust
    {
       return configuration.getRetryInterval();
    }
+   
+   public String getNodeID()
+   {
+      return clusterConnection.getNodeID();
+   }
 
    public Object[] getStaticConnectorNamePairs()
    {
@@ -135,6 +141,11 @@ public class ClusterConnectionControlImpl extends StandardMBean implements Clust
       return configuration.isForwardWhenNoConsumers();
    }
 
+   public Map<String, String> getNodes() throws Exception
+   {
+      return clusterConnection.getNodes();
+   }
+   
    public boolean isStarted()
    {
       return clusterConnection.isStarted();

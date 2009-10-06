@@ -15,7 +15,6 @@
 package org.hornetq.core.server.cluster;
 
 import org.hornetq.core.client.MessageHandler;
-import org.hornetq.core.server.Queue;
 
 /**
  * A MessageFlowRecord
@@ -32,9 +31,8 @@ public interface MessageFlowRecord extends MessageHandler
    
    int getMaxHops();
    
-   void activate(Queue queue) throws Exception;
-   
-   //void reset() throws Exception;
-   
+   Bridge getBridge();
+
    void close() throws Exception;
+
 }

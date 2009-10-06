@@ -13,6 +13,8 @@
 
 package org.hornetq.core.management;
 
+import java.util.Map;
+
 
 
 /**
@@ -26,6 +28,8 @@ public interface ClusterConnectionControl extends HornetQComponentControl
    String getName();
 
    String getAddress();
+   
+   String getNodeID();
 
    boolean isDuplicateDetection();
 
@@ -40,4 +44,6 @@ public interface ClusterConnectionControl extends HornetQComponentControl
    String getDiscoveryGroupName();
 
    long getRetryInterval();
+   
+   Map<String, String> getNodes() throws Exception;
 }

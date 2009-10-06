@@ -13,6 +13,8 @@
 
 package org.hornetq.tests.integration.management;
 
+import java.util.Map;
+
 import org.hornetq.core.client.ClientSession;
 import org.hornetq.core.client.ClientSessionFactory;
 import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
@@ -84,6 +86,11 @@ public class ClusterConnectionControlUsingCoreTest extends ClusterConnectionCont
          {
             return (String)proxy.retrieveAttributeValue("staticConnectorNamePairsAsJSON");
          }
+         
+         public Map<String, String> getNodes() throws Exception
+         {
+            return (Map<String, String>)proxy.retrieveAttributeValue("nodes");
+         }
 
          public boolean isDuplicateDetection()
          {
@@ -98,6 +105,11 @@ public class ClusterConnectionControlUsingCoreTest extends ClusterConnectionCont
          public String getName()
          {
             return (String)proxy.retrieveAttributeValue("name");
+         }
+         
+         public String getNodeID()
+         {
+            return (String)proxy.retrieveAttributeValue("nodeID");
          }
 
          public boolean isStarted()

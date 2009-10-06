@@ -22,6 +22,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.concurrent.ScheduledExecutorService;
 
 import org.hornetq.core.client.ClientMessage;
@@ -254,7 +255,25 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
    {
       return name;
    }
+   
+   public String getNodeID()
+   {
+      return nodeUUID.toString();
+   }
 
+   public Map<String, String> getNodes()
+   {
+      Map<String, String> nodes = new HashMap<String, String>();
+      for (Entry<String, MessageFlowRecord> record : records.entrySet( ))
+      {
+         if (record.getValue().getBridge().getForwardingConnection() != null)
+         {
+            nodes.put(record.getKey(), record.getValue().getBridge().getForwardingConnection().getRemoteAddress());
+         }
+      }
+      return nodes;
+   }
+   
    public synchronized void activate()
    {
       if (!started)
@@ -442,18 +461,14 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
          clearBindings();
       }
 
-      public void activate(final Queue queue) throws Exception
-      {
-         this.queue = queue;
-
-         bridge.setQueue(queue);
-
-         bridge.start();
-      }
-
       public void setBridge(final Bridge bridge)
       {
          this.bridge = bridge;
+      }
+      
+      public Bridge getBridge()
+      {
+         return bridge;
       }
 
       public synchronized void onMessage(final ClientMessage message)

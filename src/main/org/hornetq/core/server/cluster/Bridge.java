@@ -15,6 +15,7 @@
 package org.hornetq.core.server.cluster;
 
 import org.hornetq.core.management.NotificationService;
+import org.hornetq.core.remoting.RemotingConnection;
 import org.hornetq.core.server.Consumer;
 import org.hornetq.core.server.HornetQComponent;
 import org.hornetq.core.server.Queue;
@@ -48,4 +49,6 @@ public interface Bridge extends Consumer, HornetQComponent
    void setQueue(Queue queue);
 
    void setNotificationService(NotificationService notificationService);
+
+   RemotingConnection getForwardingConnection();
 }
