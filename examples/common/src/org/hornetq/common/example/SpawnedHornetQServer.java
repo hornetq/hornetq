@@ -30,8 +30,7 @@ public class SpawnedHornetQServer
          killChecker.start();
          
          System.setProperty("java.naming.factory.initial", "org.jnp.interfaces.NamingContextFactory");
-         System.setProperty("java.naming.factory.url.pkgs", "org.jboss.naming:org.jnp.interfaces");
-         System.setProperty("org.jboss.logging.Logger.pluginClass", "org.hornetq.integration.logging.HornetQLoggerPlugin");
+         System.setProperty("java.naming.factory.url.pkgs", "org.jboss.naming:org.jnp.interfaces");         
          bootstrap = new HornetQBootstrapServer(args);
          bootstrap.run();
          System.out.println("STARTED::");

@@ -169,6 +169,10 @@ public interface Configuration extends Serializable
 
    void setPersistIDCache(boolean persist);
    
+   String getLogDelegateFactoryClassName();
+   
+   void setLogDelegateFactoryClassName(String className);
+   
    // Journal related attributes ------------------------------------------------------------
 
    String getBindingsDirectory();

@@ -2,6 +2,8 @@
                xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
                xsi:schemaLocation="urn:hornetq /schema/hornetq-configuration.xsd">
 
+   <log-delegate-factory-class-name>org.hornetq.integration.logging.Log4jLogDelegateFactory</log-delegate-factory-class-name>
+   
    <bindings-directory>${jboss.server.data.dir}/hornetq/bindings</bindings-directory>
 
    <journal-directory>${jboss.server.data.dir}/hornetq/journal</journal-directory>

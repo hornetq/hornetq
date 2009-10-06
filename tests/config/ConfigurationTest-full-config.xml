@@ -16,6 +16,7 @@
       <management-cluster-user>Frog</management-cluster-user>
       <management-cluster-password>Wombat</management-cluster-password>
       <jmx-management-enabled>false</jmx-management-enabled>
+      <log-delegate-factory-class-name>ocelot</log-delegate-factory-class-name>
       <message-counter-enabled>true</message-counter-enabled>
       <message-counter-max-day-history>5</message-counter-max-day-history>
       <message-counter-sample-period>123456</message-counter-sample-period>      

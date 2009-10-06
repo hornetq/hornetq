@@ -47,6 +47,7 @@ import org.hornetq.core.deployers.impl.SecurityDeployer;
 import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.filter.Filter;
 import org.hornetq.core.filter.impl.FilterImpl;
+import org.hornetq.core.logging.LogDelegateFactory;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.management.ManagementService;
 import org.hornetq.core.management.impl.HornetQServerControlImpl;
@@ -253,6 +254,8 @@ public class HornetQServerImpl implements HornetQServer
 
    public synchronized void start() throws Exception
    {
+      initialiseLogging();
+
       log.info((configuration.isBackup() ? "backup" : "live") + " server is starting..");
 
       if (started)
@@ -410,6 +413,8 @@ public class HornetQServerImpl implements HornetQServer
       nodeID = null;
 
       log.info("HornetQ Server version " + getVersion().getFullVersion() + " stopped");
+
+      Logger.reset();
    }
 
    // HornetQServer implementation
@@ -881,7 +886,7 @@ public class HornetQServerImpl implements HornetQServer
    {
       return threadPool;
    }
-   
+
    /** 
     * This method is protected as it may be used as a hook for creating a custom storage manager (on tests for instance) 
     * @return
@@ -897,8 +902,6 @@ public class HornetQServerImpl implements HornetQServer
          return new NullStorageManager();
       }
    }
-
-   
 
    // Private
    // --------------------------------------------------------------------------------------
@@ -966,9 +969,18 @@ public class HornetQServerImpl implements HornetQServer
                                                 scheduledPool,
                                                 managementConnectorID);
 
-      memoryManager = new MemoryManagerImpl(configuration.getMemoryWarningThreshold(), configuration.getMemoryMeasureInterval());
+      memoryManager = new MemoryManagerImpl(configuration.getMemoryWarningThreshold(),
+                                            configuration.getMemoryMeasureInterval());
 
       memoryManager.start();
+   }
+
+   private void initialiseLogging()
+   {
+      LogDelegateFactory logDelegateFactory =
+         (LogDelegateFactory)instantiateInstance(configuration.getLogDelegateFactoryClassName());
+      
+      Logger.setDelegateFactory(logDelegateFactory);
    }
 
    private void initialisePart2() throws Exception
@@ -1169,7 +1181,7 @@ public class HornetQServerImpl implements HornetQServer
          queues.put(queueBindingInfo.getPersistenceID(), queue);
 
          postOffice.addBinding(binding);
-         
+
          managementService.registerAddress(queueBindingInfo.getAddress());
          managementService.registerQueue(queue, queueBindingInfo.getAddress(), storageManager);
       }
@@ -1265,7 +1277,7 @@ public class HornetQServerImpl implements HornetQServer
       }
 
       postOffice.addBinding(binding);
-      
+
       managementService.registerAddress(address);
       managementService.registerQueue(queue, address, storageManager);
 
@@ -1341,19 +1353,26 @@ public class HornetQServerImpl implements HornetQServer
 
       if (transformerClassName != null)
       {
-         ClassLoader loader = Thread.currentThread().getContextClassLoader();
-         try
-         {
-            Class<?> clz = loader.loadClass(transformerClassName);
-            transformer = (Transformer)clz.newInstance();
-         }
-         catch (Exception e)
-         {
-            throw new IllegalArgumentException("Error instantiating transformer class \"" + transformerClassName + "\"",
-                                               e);
-         }
+         transformer = (Transformer)instantiateInstance(transformerClassName);
       }
+
       return transformer;
+   }
+
+   private Object instantiateInstance(final String className)
+   {
+      ClassLoader loader = Thread.currentThread().getContextClassLoader();
+      try
+      {
+         Class<?> clz = loader.loadClass(className);
+         Object object = clz.newInstance();
+
+         return object;
+      }
+      catch (Exception e)
+      {
+         throw new IllegalArgumentException("Error instantiating transformer class \"" + className + "\"", e);
+      }
    }
 
    // Inner classes

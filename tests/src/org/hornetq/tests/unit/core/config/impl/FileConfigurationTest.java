@@ -56,6 +56,7 @@ public class FileConfigurationTest extends ConfigurationImplTest
       assertEquals(98765, conf.getTransactionTimeout());
       assertEquals(56789, conf.getTransactionTimeoutScanPeriod());
       assertEquals(10111213, conf.getMessageExpiryScanPeriod());
+      assertEquals("ocelot", conf.getLogDelegateFactoryClassName());
       assertEquals(8, conf.getMessageExpiryThreadPriority());
       assertEquals(127, conf.getIDCacheSize());
       assertEquals(true, conf.isPersistIDCache());

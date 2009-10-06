@@ -10,8 +10,8 @@ if [ a"$2" = a ]; then FILENAME=hornetq-beans.xml; else FILENAME="$2"; fi
 export CLASSPATH=$CONFIG_DIR:$HORNETQ_HOME/schemas/
 #you can use the following line if you want to run with different ports
 #export CLUSTER_PROPS="-Djnp.port=1099 -Djnp.rmiPort=1098 -Djnp.host=localhost -Dhornetq.remoting.netty.host=localhost -Dhornetq.remoting.netty.port=5445"
-export JVM_ARGS="$CLUSTER_PROPS -XX:+UseParallelGC -XX:+AggressiveOpts -XX:+UseFastAccessorMethods -Xms512M -Xmx1024M -Dhornetq.config.dir=$CONFIG_DIR -Djava.util.logging.config.file=$CONFIG_DIR/logging.properties -Dorg.jboss.logging.Logger.pluginClass=org.hornetq.integration.logging.HornetQLoggerPlugin -Djava.library.path=."
-#export JVM_ARGS="-Xmx512M -Djava.util.logging.config.file=$CONFIG_DIR/logging.properties -Dhornetq.config.dir=$CONFIG_DIR  -Dorg.jboss.logging.Logger.pluginClass=org.hornetq.integration.logging.HornetQLoggerPlugin -Djava.library.path=. -Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=5005"
+export JVM_ARGS="$CLUSTER_PROPS -XX:+UseParallelGC -XX:+AggressiveOpts -XX:+UseFastAccessorMethods -Xms512M -Xmx1024M -Dhornetq.config.dir=$CONFIG_DIR -Djava.util.logging.config.file=$CONFIG_DIR/logging.properties -Djava.library.path=."
+#export JVM_ARGS="-Xmx512M -Djava.util.logging.config.file=$CONFIG_DIR/logging.properties -Dhornetq.config.dir=$CONFIG_DIR -Djava.library.path=. -Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=y,address=5005"
 
 for i in `ls $HORNETQ_HOME/lib/*.jar`; do
 	CLASSPATH=$i:$CLASSPATH

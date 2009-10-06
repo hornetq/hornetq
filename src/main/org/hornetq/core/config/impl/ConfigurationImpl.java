@@ -29,6 +29,7 @@ import org.hornetq.core.config.cluster.ClusterConnectionConfiguration;
 import org.hornetq.core.config.cluster.DiscoveryGroupConfiguration;
 import org.hornetq.core.config.cluster.DivertConfiguration;
 import org.hornetq.core.config.cluster.QueueConfiguration;
+import org.hornetq.core.logging.impl.JULLogDelegateFactory;
 import org.hornetq.core.server.JournalType;
 import org.hornetq.utils.SimpleString;
 
@@ -161,6 +162,8 @@ public class ConfigurationImpl implements Configuration
    public static final int DEFAULT_MEMORY_WARNING_THRESHOLD = 25;
    
    public static final long DEFAULT_MEMORY_MEASURE_INTERVAL = 3000; // in milliseconds
+   
+   public static final String DEFAULT_LOG_DELEGATE_FACTORY_CLASS_NAME = JULLogDelegateFactory.class.getCanonicalName();
 
    // Attributes -----------------------------------------------------------------------------
 
@@ -199,6 +202,8 @@ public class ConfigurationImpl implements Configuration
    protected int idCacheSize = DEFAULT_ID_CACHE_SIZE;
 
    protected boolean persistIDCache = DEFAULT_PERSIST_ID_CACHE;
+   
+   protected String logDelegateFactoryClassName = DEFAULT_LOG_DELEGATE_FACTORY_CLASS_NAME;
 
    protected List<String> interceptorClassNames = new ArrayList<String>();
 
@@ -1079,5 +1084,15 @@ public class ConfigurationImpl implements Configuration
    public void setMemoryMeasureInterval(long memoryMeasureInterval)
    {
       this.memoryMeasureInterval = memoryMeasureInterval;
+   }
+
+   public String getLogDelegateFactoryClassName()
+   {
+      return logDelegateFactoryClassName;
+   }
+
+   public void setLogDelegateFactoryClassName(String className)
+   {
+      this.logDelegateFactoryClassName = className;
    }
 }

@@ -35,6 +35,8 @@
                 </xsd:element>				
                 <xsd:element maxOccurs="1" minOccurs="0" name="management-cluster-password" type="xsd:string">
                 </xsd:element>				
+                <xsd:element maxOccurs="1" minOccurs="0" name="log-delegate-factory-class-name" type="xsd:string">
+                </xsd:element>
                 <xsd:element maxOccurs="1" minOccurs="0" name="management-request-timeout" type="xsd:long">
                 </xsd:element>              
 				<xsd:element maxOccurs="1" minOccurs="0" name="jmx-management-enabled" type="xsd:boolean">

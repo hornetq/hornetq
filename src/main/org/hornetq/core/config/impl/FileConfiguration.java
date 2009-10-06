@@ -152,6 +152,8 @@ public class FileConfiguration extends ConfigurationImpl
       managementClusterUser = getString(e, "management-cluster-user", managementClusterUser, NOT_NULL_OR_EMPTY);
 
       managementRequestTimeout = getLong(e, "management-request-timeout", managementRequestTimeout, GT_ZERO);
+      
+      logDelegateFactoryClassName = getString(e, "log-delegate-factory-class-name", logDelegateFactoryClassName, NOT_NULL_OR_EMPTY);
 
       NodeList interceptorNodes = e.getElementsByTagName("remoting-interceptors");
 
