@@ -255,6 +255,9 @@
       <path refid="jboss.jbossts.classpath"/>
       <path refid="apache.xerces.classpath"/>
       <path refid="log4j.log4j.classpath"/>
+ 	  <!-- we must include Apache commons logging   -->
+ 	  <!-- as a transitive dependency from JBoss TM -->
+ 	  <path refid="apache.logging.classpath"/>
    </path>
 
    <path id="emma.unit.test.execution.classpath">
@@ -279,6 +282,8 @@
       <path refid="jboss.jbossts.classpath"/>
       <path refid="apache.xerces.classpath"/>
       <path refid="log4j.log4j.classpath"/>
+	  <!-- we must include Apache commons logging   -->
+	  <!-- as a transitive dependency from JBoss TM -->
    	  <path refid="apache.logging.classpath"/>
       <pathelement location="${test.dir}/config"/>
       <pathelement location="${src.config.dir}/common"/>
