@@ -15,7 +15,9 @@ package org.hornetq.core.postoffice;
 
 import org.hornetq.core.paging.PagingManager;
 import org.hornetq.core.server.HornetQComponent;
+import org.hornetq.core.server.MessageReference;
 import org.hornetq.core.server.Queue;
+import org.hornetq.core.server.RoutingContext;
 import org.hornetq.core.server.ServerMessage;
 import org.hornetq.core.transaction.Transaction;
 import org.hornetq.utils.SimpleString;
@@ -50,11 +52,11 @@ public interface PostOffice extends HornetQComponent
    
    Bindings getMatchingBindings(SimpleString address);
 
-   void route(ServerMessage message) throws Exception;
+   void route(ServerMessage message, RoutingContext context) throws Exception;
    
-   void route(ServerMessage message, Transaction tx) throws Exception;
+   MessageReference reroute(ServerMessage message, Queue queue, Transaction tx) throws Exception;
    
-   boolean redistribute(ServerMessage message, final Queue originatingQueue, Transaction tx) throws Exception;
+   boolean redistribute(ServerMessage message, final Queue originatingQueue, RoutingContext context) throws Exception;
 
    PagingManager getPagingManager();
 

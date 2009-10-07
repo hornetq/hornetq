@@ -67,6 +67,7 @@ import org.hornetq.core.server.ServerMessage;
 import org.hornetq.core.server.cluster.Bridge;
 import org.hornetq.core.server.cluster.BroadcastGroup;
 import org.hornetq.core.server.cluster.ClusterConnection;
+import org.hornetq.core.server.impl.RoutingContextImpl;
 import org.hornetq.core.server.impl.ServerMessageImpl;
 import org.hornetq.core.settings.HierarchicalRepository;
 import org.hornetq.core.settings.impl.AddressSettings;
@@ -728,7 +729,7 @@ public class ManagementServiceImpl implements ManagementService
 
                notificationMessage.putTypedProperties(notifProps);
 
-               postOffice.route(notificationMessage, null);
+               postOffice.route(notificationMessage, new RoutingContextImpl(null));
             }
          }
       }

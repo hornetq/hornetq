@@ -80,7 +80,6 @@ import org.hornetq.core.server.ActivateCallback;
 import org.hornetq.core.server.Divert;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.MemoryManager;
-import org.hornetq.core.server.MessageReference;
 import org.hornetq.core.server.Queue;
 import org.hornetq.core.server.QueueFactory;
 import org.hornetq.core.server.ServerSession;
@@ -91,9 +90,7 @@ import org.hornetq.core.settings.HierarchicalRepository;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.core.settings.impl.HierarchicalObjectRepository;
 import org.hornetq.core.transaction.ResourceManager;
-import org.hornetq.core.transaction.Transaction;
 import org.hornetq.core.transaction.impl.ResourceManagerImpl;
-import org.hornetq.core.transaction.impl.TransactionImpl;
 import org.hornetq.core.version.Version;
 import org.hornetq.utils.ExecutorFactory;
 import org.hornetq.utils.HornetQThreadFactory;
@@ -572,7 +569,7 @@ public class HornetQServerImpl implements HornetQServer
                                                               executorFactory.getExecutor(),
                                                               channel,
                                                               managementService,
-                                                              queueFactory,
+                                                              // queueFactory,
                                                               this,
                                                               configuration.getManagementAddress());
 
@@ -763,35 +760,6 @@ public class HornetQServerImpl implements HornetQServer
       return nodeID;
    }
 
-   public void handleReplicateRedistribution(final SimpleString queueName, final long messageID) throws Exception
-   {
-      Binding binding = postOffice.getBinding(queueName);
-
-      if (binding == null)
-      {
-         throw new IllegalStateException("Cannot find queue " + queueName);
-      }
-
-      Queue queue = (Queue)binding.getBindable();
-
-      MessageReference reference = queue.removeFirstReference(messageID);
-
-      Transaction tx = new TransactionImpl(storageManager);
-
-      boolean routed = postOffice.redistribute(reference.getMessage(), queue, tx);
-
-      if (routed)
-      {
-         queue.acknowledge(tx, reference);
-
-         tx.commit();
-      }
-      else
-      {
-         throw new IllegalStateException("Must be routed");
-      }
-   }
-
    public Queue createQueue(final SimpleString address,
                             final SimpleString queueName,
                             final SimpleString filterString,
@@ -924,8 +892,6 @@ public class HornetQServerImpl implements HornetQServer
          {
             // Complete the startup procedure
 
-            log.info("Activating server");
-
             configuration.setBackup(false);
 
             initialisePart2();
@@ -977,9 +943,8 @@ public class HornetQServerImpl implements HornetQServer
 
    private void initialiseLogging()
    {
-      LogDelegateFactory logDelegateFactory =
-         (LogDelegateFactory)instantiateInstance(configuration.getLogDelegateFactoryClassName());
-      
+      LogDelegateFactory logDelegateFactory = (LogDelegateFactory)instantiateInstance(configuration.getLogDelegateFactoryClassName());
+
       Logger.setDelegateFactory(logDelegateFactory);
    }
 
@@ -1188,7 +1153,7 @@ public class HornetQServerImpl implements HornetQServer
 
       Map<SimpleString, List<Pair<byte[], Long>>> duplicateIDMap = new HashMap<SimpleString, List<Pair<byte[], Long>>>();
 
-      storageManager.loadMessageJournal(pagingManager, resourceManager, queues, duplicateIDMap);
+      storageManager.loadMessageJournal(postOffice, pagingManager, resourceManager, queues, duplicateIDMap);
 
       for (Map.Entry<SimpleString, List<Pair<byte[], Long>>> entry : duplicateIDMap.entrySet())
       {
@@ -1267,8 +1232,13 @@ public class HornetQServerImpl implements HornetQServer
          filter = new FilterImpl(filterString);
       }
 
-      final Queue queue = queueFactory.createQueue(storageManager.generateUniqueID(), address, queueName, filter, durable, temporary);
-      
+      final Queue queue = queueFactory.createQueue(storageManager.generateUniqueID(),
+                                                   address,
+                                                   queueName,
+                                                   filter,
+                                                   durable,
+                                                   temporary);
+
       binding = new LocalQueueBinding(address, queue, nodeID);
 
       if (durable)
@@ -1335,9 +1305,9 @@ public class HornetQServerImpl implements HornetQServer
                                         config.isExclusive(),
                                         filter,
                                         transformer,
-                                        postOffice,
-                                        pagingManager,
-                                        storageManager);
+                                        postOffice);
+         // pagingManager,
+         // storageManager);
 
          Binding binding = new DivertBinding(storageManager.generateUniqueID(), sAddress, divert);
 

@@ -85,7 +85,7 @@ import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.LargeServerMessage;
 import org.hornetq.core.server.MessageReference;
 import org.hornetq.core.server.Queue;
-import org.hornetq.core.server.QueueFactory;
+import org.hornetq.core.server.RoutingContext;
 import org.hornetq.core.server.ServerConsumer;
 import org.hornetq.core.server.ServerMessage;
 import org.hornetq.core.server.ServerSession;
@@ -159,10 +159,6 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
 
    private final SimpleString managementAddress;
 
-   private final QueueFactory queueFactory;
-
-   private final SimpleString nodeID;
-
    // The current currentLargeMessage being processed
    // In case of replication, currentLargeMessage should only be accessed within the replication callbacks
    private volatile LargeServerMessage currentLargeMessage;
@@ -187,8 +183,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
                             final SecurityStore securityStore,
                             final Executor executor,
                             final Channel channel,
-                            final ManagementService managementService,
-                            final QueueFactory queueFactory,
+                            final ManagementService managementService,                  
                             final HornetQServer server,
                             final SimpleString managementAddress) throws Exception
    {
@@ -234,10 +229,6 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
       this.server = server;
 
       this.managementAddress = managementAddress;
-
-      this.queueFactory = queueFactory;
-
-      this.nodeID = server.getNodeID();
 
       remotingConnection.addFailureListener(this);
 
@@ -1671,11 +1662,6 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
    // Public
    // ----------------------------------------------------------------------------
 
-   public Transaction getTransaction()
-   {
-      return tx;
-   }
-
    // Private
    // ----------------------------------------------------------------------------
 
@@ -1816,14 +1802,18 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
          }
          throw e;
       }
-
+      
+      RoutingContext context;
+      
       if (tx == null || autoCommitSends)
       {
-         postOffice.route(msg);
+         context = new RoutingContextImpl(null);
       }
       else
       {
-         postOffice.route(msg, tx);
+         context = new RoutingContextImpl(tx);
       }
+      
+      postOffice.route(msg, context);     
    }
 }

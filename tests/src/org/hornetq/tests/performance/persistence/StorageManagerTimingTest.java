@@ -23,9 +23,11 @@ import org.hornetq.core.buffers.ChannelBuffers;
 import org.hornetq.core.config.impl.FileConfiguration;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.persistence.impl.journal.JournalStorageManager;
+import org.hornetq.core.postoffice.PostOffice;
 import org.hornetq.core.server.JournalType;
 import org.hornetq.core.server.Queue;
 import org.hornetq.core.server.impl.ServerMessageImpl;
+import org.hornetq.tests.unit.core.server.impl.fakes.FakePostOffice;
 import org.hornetq.tests.util.UnitTestCase;
 import org.hornetq.utils.SimpleString;
 
@@ -117,12 +119,15 @@ public class StorageManagerTimingTest extends UnitTestCase
 
       configuration.setJournalType(journalType);
 
-      final JournalStorageManager journal = new JournalStorageManager(configuration, Executors.newCachedThreadPool());
+      PostOffice postOffice = new FakePostOffice();
+
+      final JournalStorageManager journal = new JournalStorageManager(configuration,
+                                                                      Executors.newCachedThreadPool());
       journal.start();
 
       HashMap<Long, Queue> queues = new HashMap<Long, Queue>();
 
-      journal.loadMessageJournal(null, null, queues, null);
+      journal.loadMessageJournal(postOffice, null, null, queues, null);
 
       final byte[] bytes = new byte[900];
 
@@ -163,11 +168,10 @@ public class StorageManagerTimingTest extends UnitTestCase
                   final SimpleString address = new SimpleString("Destination " + i);
 
                   ServerMessageImpl implMsg = new ServerMessageImpl(/* type */(byte)1, /* durable */
-                                                                    true, /* expiration */
-                                                                    0,
-                                                                    /* timestamp */0, /* priority */
-                                                                    (byte)0,
-                                                                    ChannelBuffers.wrappedBuffer(new byte[1024]));
+                  true, /* expiration */
+                  0,
+                  /* timestamp */0, /* priority */
+                  (byte)0, ChannelBuffers.wrappedBuffer(new byte[1024]));
 
                   implMsg.putStringProperty(new SimpleString("Key"), new SimpleString("This String is worthless!"));
 

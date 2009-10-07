@@ -51,6 +51,7 @@ import org.hornetq.core.paging.impl.PageTransactionInfoImpl;
 import org.hornetq.core.persistence.QueueBindingInfo;
 import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.core.postoffice.Binding;
+import org.hornetq.core.postoffice.PostOffice;
 import org.hornetq.core.remoting.impl.wireformat.XidCodecSupport;
 import org.hornetq.core.remoting.spi.HornetQBuffer;
 import org.hornetq.core.server.JournalType;
@@ -143,11 +144,11 @@ public class JournalStorageManager implements StorageManager
    private final String journalDir;
 
    private final String largeMessagesDirectory;
-
+   
    public JournalStorageManager(final Configuration config, final Executor executor)
    {
       this.executor = executor;
-
+      
       if (config.getJournalType() != JournalType.NIO && config.getJournalType() != JournalType.ASYNCIO)
       {
          throw new IllegalArgumentException("Only NIO and AsyncIO are supported journals");
@@ -250,7 +251,7 @@ public class JournalStorageManager implements StorageManager
 
       this.persistentID = id;
    }
-
+     
    public long generateUniqueID()
    {
       long id = idGenerator.generateID();
@@ -518,7 +519,8 @@ public class JournalStorageManager implements StorageManager
       
    }
 
-   public void loadMessageJournal(final PagingManager pagingManager,
+   public void loadMessageJournal(final PostOffice postOffice,
+                                  final PagingManager pagingManager,
                                   final ResourceManager resourceManager,
                                   final Map<Long, Queue> queues,
                                   final Map<SimpleString, List<Pair<byte[], Long>>> duplicateIDMap) throws Exception
@@ -730,8 +732,8 @@ public class JournalStorageManager implements StorageManager
             {
                record.message.putLongProperty(MessageImpl.HDR_SCHEDULED_DELIVERY_TIME, scheduledDeliveryTime);
             }
-
-            MessageReference ref = queue.reroute(record.message, null);
+            
+            MessageReference ref = postOffice.reroute(record.message, queue, null);
 
             ref.setDeliveryCount(record.deliveryCount);
 
@@ -742,13 +744,13 @@ public class JournalStorageManager implements StorageManager
          }
       }
 
-      loadPreparedTransactions(pagingManager, resourceManager, queues, preparedTransactions, duplicateIDMap);
+      loadPreparedTransactions(postOffice, pagingManager, resourceManager, queues, preparedTransactions, duplicateIDMap);
 
       for (LargeServerMessage msg : largeMessages)
       {
          if (msg.getRefCount() == 0)
          {
-            log.info("Large message: " + msg.getMessageID() + " didn't have any associated reference, file will be deleted");
+            log.debug("Large message: " + msg.getMessageID() + " didn't have any associated reference, file will be deleted");
             msg.decrementRefCount();
          }
       }
@@ -796,7 +798,8 @@ public class JournalStorageManager implements StorageManager
       return largeMessage;
    }
 
-   private void loadPreparedTransactions(final PagingManager pagingManager,
+   private void loadPreparedTransactions(final PostOffice postOffice,
+                                         final PagingManager pagingManager,
                                          final ResourceManager resourceManager,
                                          final Map<Long, Queue> queues,
                                          final List<PreparedTransactionInfo> preparedTransactions,
@@ -867,7 +870,7 @@ public class JournalStorageManager implements StorageManager
                      throw new IllegalStateException("Cannot find message with id " + messageID);
                   }
 
-                  queue.reroute(message, tx);
+                  postOffice.reroute(message, queue, tx);
 
                   break;
                }

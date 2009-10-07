@@ -499,7 +499,7 @@ public class ServerConsumerImpl implements ServerConsumer
                deliveringRefs.add(ref);
             }
 
-            ref.getQueue().referenceHandled();
+            ref.handled();
 
             ref.incrementDeliveryCount();
 

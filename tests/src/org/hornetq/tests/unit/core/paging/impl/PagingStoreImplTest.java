@@ -741,7 +741,7 @@ public class PagingStoreImplTest extends UnitTestCase
       {
          return 0;
       }
-      
+
       public SimpleString[] getStoreNames()
       {
          return null;
@@ -940,7 +940,8 @@ public class PagingStoreImplTest extends UnitTestCase
       /* (non-Javadoc)
        * @see org.hornetq.core.persistence.StorageManager#loadMessageJournal(org.hornetq.core.paging.PagingManager, java.util.Map, org.hornetq.core.transaction.ResourceManager, java.util.Map)
        */
-      public void loadMessageJournal(PagingManager pagingManager,
+      public void loadMessageJournal(PostOffice postOffice,
+                                     PagingManager pagingManager,
                                      ResourceManager resourceManager,
                                      Map<Long, Queue> queues,
                                      Map<SimpleString, List<Pair<byte[], Long>>> duplicateIDMap) throws Exception
@@ -1038,7 +1039,7 @@ public class PagingStoreImplTest extends UnitTestCase
       {
          return -1;
       }
-      
+
       public void deleteHeuristicCompletion(long txID) throws Exception
       {
       }

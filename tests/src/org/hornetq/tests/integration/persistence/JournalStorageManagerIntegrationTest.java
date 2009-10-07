@@ -47,7 +47,7 @@ public class JournalStorageManagerIntegrationTest extends ServiceTestBase
    public void testLargeMessageCopy() throws Exception
    {
       clearData();
-      
+
       Configuration configuration = createDefaultConfig();
 
       configuration.start();
@@ -63,13 +63,15 @@ public class JournalStorageManagerIntegrationTest extends ServiceTestBase
       byte[] data = new byte[1024];
 
       for (int i = 0; i < 110; i++)
+      {
          msg.addBytes(data);
+      }
 
       ServerMessage msg2 = msg.copy(2);
-      
+
       assertEquals(110 * 1024, msg.getBodySize());
       assertEquals(110 * 1024, msg2.getBodySize());
-      
+
    }
 
    // Package protected ---------------------------------------------

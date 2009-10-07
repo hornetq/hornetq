@@ -16,8 +16,8 @@ package org.hornetq.core.postoffice;
 import java.util.Collection;
 
 import org.hornetq.core.server.Queue;
+import org.hornetq.core.server.RoutingContext;
 import org.hornetq.core.server.ServerMessage;
-import org.hornetq.core.transaction.Transaction;
 
 /**
  * A Bindings
@@ -32,13 +32,13 @@ public interface Bindings
 {
    Collection<Binding> getBindings();
 
-   boolean route(ServerMessage message, Transaction tx) throws Exception;
-
    void addBinding(Binding binding);
 
    void removeBinding(Binding binding);
 
    void setRouteWhenNoConsumers(boolean takePriorityIntoAccount);
 
-   boolean redistribute(ServerMessage message, Queue originatingQueue, Transaction tx) throws Exception;
+   void redistribute(ServerMessage message, Queue originatingQueue, RoutingContext context) throws Exception;
+   
+   void route(ServerMessage message, RoutingContext context) throws Exception;
 }

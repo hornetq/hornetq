@@ -97,29 +97,6 @@ public class TransactionImpl implements Transaction
    // Transaction implementation
    // -----------------------------------------------------------
 
-   public Set<Queue> getDistinctQueues()
-   {
-      HashSet<Queue> queues = new HashSet<Queue>();
-
-      if (operations != null)
-      {
-         for (TransactionOperation op : operations)
-         {
-            Collection<Queue> q = op.getDistinctQueues();
-            if (q == null)
-            {
-               log.warn("Operation " + op + " returned null getDistinctQueues");
-            }
-            else
-            {
-               queues.addAll(q);
-            }
-         }
-      }
-
-      return queues;
-   }
-
    public long getID()
    {
       return id;
@@ -184,7 +161,7 @@ public class TransactionImpl implements Transaction
    }
 
    public void commit(boolean onePhase) throws Exception
-   {
+   {      
       synchronized (timeoutLock)
       {
          if (state == State.ROLLBACK_ONLY)

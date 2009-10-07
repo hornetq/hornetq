@@ -119,6 +119,11 @@ public class MessageReferenceImpl implements MessageReference
    {
       return queue;
    }
+   
+   public void handled()
+   {
+      queue.referenceHandled();
+   }
 
    // Public --------------------------------------------------------
 

@@ -30,8 +30,8 @@ import org.hornetq.core.postoffice.Binding;
 import org.hornetq.core.postoffice.Bindings;
 import org.hornetq.core.server.Bindable;
 import org.hornetq.core.server.Queue;
+import org.hornetq.core.server.RoutingContext;
 import org.hornetq.core.server.ServerMessage;
-import org.hornetq.core.transaction.Transaction;
 import org.hornetq.utils.SimpleString;
 
 /**
@@ -56,7 +56,7 @@ public class BindingsImpl implements Bindings
    private final List<Binding> exclusiveBindings = new CopyOnWriteArrayList<Binding>();
 
    private volatile boolean routeWhenNoConsumers;
-   
+
    public void setRouteWhenNoConsumers(final boolean routeWhenNoConsumers)
    {
       this.routeWhenNoConsumers = routeWhenNoConsumers;
@@ -122,51 +122,14 @@ public class BindingsImpl implements Bindings
 
       bindingsMap.remove(binding.getID());
    }
-
-   private boolean routeFromCluster(final ServerMessage message, final Transaction tx) throws Exception
-   {
-      byte[] ids = (byte[])message.removeProperty(MessageImpl.HDR_ROUTE_TO_IDS);
-
-      ByteBuffer buff = ByteBuffer.wrap(ids);
-
-      Set<Bindable> chosen = new HashSet<Bindable>();
-
-      while (buff.hasRemaining())
-      {
-         long bindingID = buff.getLong();
-
-         Binding binding = bindingsMap.get(bindingID);
-
-         if (binding == null)
-         {
-            return false;
-         }
-
-         binding.willRoute(message);
-
-         chosen.add(binding.getBindable());
-      }
-
-      for (Bindable bindable : chosen)
-      {
-         bindable.preroute(message, tx);
-      }
-
-      for (Bindable bindable : chosen)
-      {
-         bindable.route(message, tx);
-      }
-      
-      return true;
-   }
-
-   public boolean redistribute(final ServerMessage message, final Queue originatingQueue, final Transaction tx) throws Exception
+   
+   public void redistribute(final ServerMessage message, final Queue originatingQueue, final RoutingContext context) throws Exception
    {
       if (routeWhenNoConsumers)
       {
-         return false;
+         return;
       }
-      
+
       SimpleString routingName = originatingQueue.getName();
 
       List<Binding> bindings = routingNameBindingMap.get(routingName);
@@ -175,7 +138,7 @@ public class BindingsImpl implements Bindings
       {
          // The value can become null if it's concurrently removed while we're iterating - this is expected
          // ConcurrentHashMap behaviour!
-         return false;
+         return;
       }
 
       Integer ipos = routingNamePositions.get(routingName);
@@ -238,30 +201,22 @@ public class BindingsImpl implements Bindings
       {
          theBinding.willRoute(message);
 
-         theBinding.getBindable().preroute(message, tx);
-
-         theBinding.getBindable().route(message, tx);
-
-         return true;
-      }
-      else
-      {
-         return false;
+         theBinding.getBindable().route(message, context);
       }
    }
 
-   public boolean route(final ServerMessage message, final Transaction tx) throws Exception
+   public void route(final ServerMessage message, final RoutingContext context) throws Exception
    {
       boolean routed = false;
-      
+
       if (!exclusiveBindings.isEmpty())
       {
          for (Binding binding : exclusiveBindings)
          {
             if (binding.getFilter() == null || binding.getFilter().match(message))
             {
-               binding.getBindable().route(message, tx);
-               
+               binding.getBindable().route(message, context);
+
                routed = true;
             }
          }
@@ -271,7 +226,7 @@ public class BindingsImpl implements Bindings
       {
          if (message.getProperty(MessageImpl.HDR_FROM_CLUSTER) != null)
          {
-            routed = routeFromCluster(message, tx);
+            routeFromCluster(message, context);
          }
          else
          {
@@ -393,24 +348,34 @@ public class BindingsImpl implements Bindings
 
                routingNamePositions.put(routingName, pos);
             }
-
-            // TODO refactor to do this is one iteration
-
+            
             for (Bindable bindable : chosen)
             {
-               bindable.preroute(message, tx);
-            }
-
-            for (Bindable bindable : chosen)
-            {               
-               bindable.route(message, tx);
-               
-               routed = true;
+               bindable.route(message, context);
             }
          }
       }
-      
-      return routed;
+   }
+   
+   private void routeFromCluster(final ServerMessage message, final RoutingContext context) throws Exception
+   {
+      byte[] ids = (byte[])message.removeProperty(MessageImpl.HDR_ROUTE_TO_IDS);
+
+      ByteBuffer buff = ByteBuffer.wrap(ids);
+
+      while (buff.hasRemaining())
+      {
+         long bindingID = buff.getLong();
+
+         Binding binding = bindingsMap.get(bindingID);
+
+         if (binding != null)
+         {
+            binding.willRoute(message);
+
+            binding.getBindable().route(message, context);
+         }
+      }
    }
 
    private final int incrementPos(int pos, int length)

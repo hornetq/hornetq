@@ -36,6 +36,7 @@ import org.hornetq.core.management.NotificationType;
 import org.hornetq.core.message.impl.MessageImpl;
 import org.hornetq.core.paging.PageTransactionInfo;
 import org.hornetq.core.paging.PagingManager;
+import org.hornetq.core.paging.PagingStore;
 import org.hornetq.core.paging.impl.PageTransactionInfoImpl;
 import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.core.postoffice.AddressManager;
@@ -45,9 +46,12 @@ import org.hornetq.core.postoffice.Bindings;
 import org.hornetq.core.postoffice.DuplicateIDCache;
 import org.hornetq.core.postoffice.PostOffice;
 import org.hornetq.core.postoffice.QueueInfo;
+import org.hornetq.core.server.MessageReference;
 import org.hornetq.core.server.Queue;
 import org.hornetq.core.server.QueueFactory;
+import org.hornetq.core.server.RoutingContext;
 import org.hornetq.core.server.ServerMessage;
+import org.hornetq.core.server.impl.RoutingContextImpl;
 import org.hornetq.core.server.impl.ServerMessageImpl;
 import org.hornetq.core.settings.HierarchicalRepository;
 import org.hornetq.core.settings.impl.AddressSettings;
@@ -423,7 +427,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
    public synchronized void addBinding(final Binding binding) throws Exception
    {
       addressManager.addBinding(binding);
-      
+
       TypedProperties props = new TypedProperties();
 
       props.putIntProperty(ManagementHelper.HDR_BINDING_TYPE, binding.getType().toInt());
@@ -515,8 +519,8 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
       return addressManager.getMatchingBindings(address);
    }
 
-   public void route(final ServerMessage message, Transaction tx) throws Exception
-   {
+   public void route(final ServerMessage message, final RoutingContext context) throws Exception
+   {      
       SimpleString address = message.getDestination();
       
       byte[] duplicateIDBytes = null;
@@ -540,15 +544,15 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
 
          if (cache.contains(duplicateIDBytes))
          {
-            if (tx == null)
+            if (context.getTransaction() == null)
             {
-               log.trace("Duplicate message detected - message will not be routed");
+               log.trace("Duplicate message detected - message will not be routed");               
             }
             else
             {
-               log.trace("Duplicate message detected - transaction will be rejected");
+               log.trace("Duplicate message detected - transaction will be rejected");               
 
-               tx.markAsRollbackOnly(null);
+               context.getTransaction().markAsRollbackOnly(null);
             }
 
             return;
@@ -559,23 +563,26 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
 
       if (cache != null)
       {
-         if (tx == null)
+         if (context.getTransaction() == null)
          {
             // We need to store the duplicate id atomically with the message storage, so we need to create a tx for this
 
-            tx = new TransactionImpl(storageManager);
+            Transaction tx = new TransactionImpl(storageManager);
+            
+            context.setTransaction(tx);
 
             startedTx = true;
          }
 
-         cache.addToCache(duplicateIDBytes, tx);
+         cache.addToCache(duplicateIDBytes, context.getTransaction());
       }
 
-      if (tx == null)
+      if (context.getTransaction() == null)
       {
          if (pagingManager.page(message, true))
          {
             message.setStored();
+            
             return;
          }
       }
@@ -583,80 +590,142 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
       {
          SimpleString destination = message.getDestination();
 
-         boolean depage = tx.getProperty(TransactionPropertyIndexes.IS_DEPAGE) != null;
+         boolean depage = context.getTransaction().getProperty(TransactionPropertyIndexes.IS_DEPAGE) != null;
 
          if (!depage && pagingManager.isPaging(destination))
          {
-            getPageOperation(tx).addMessageToPage(message);
+            getPageOperation(context.getTransaction()).addMessageToPage(message);
 
             return;
          }
       }
 
       Bindings bindings = addressManager.getBindingsForRoutingAddress(address);
-
-      boolean routed;
       
       if (bindings != null)
       {
-         routed = bindings.route(message, tx);
-      }
-      else
-      {
-         routed = false;
+         context.incrementDepth();
+         
+         bindings.route(message, context);
+         
+         context.decrementDepth();
       }
 
-      if (!routed)
+      //The depth allows for recursion e.g. with diverts - we only want to process the route after any recursed routes
+      //have been processed
+      
+      if (context.getDepth() == 0)
       {
-         AddressSettings addressSettings = addressSettingsRepository.getMatch(address.toString());
-         
-         boolean sendToDLA = addressSettings.isSendToDLAOnNoRoute();
-         
-         if (sendToDLA)
+         if (context.getQueues().isEmpty())
          {
-            //Send to the DLA for the address
-            
-            SimpleString dlaAddress = addressSettings.getDeadLetterAddress();
-            
-            if (dlaAddress == null)
+            // Send to DLA if appropriate
+   
+            AddressSettings addressSettings = addressSettingsRepository.getMatch(address.toString());
+   
+            boolean sendToDLA = addressSettings.isSendToDLAOnNoRoute();
+   
+            if (sendToDLA)
             {
-               log.warn("Did not route to any bindings for address " + address + " and sendToDLAOnNoRoute is true " + 
-                        "but there is no DLA configured for the address, the message will be ignored.");
-            }
-            else
-            {
-               message.setOriginalHeaders(message, false);
-               
-               message.setDestination(dlaAddress);
-               
-               route(message, tx);
+               // Send to the DLA for the address
+   
+               SimpleString dlaAddress = addressSettings.getDeadLetterAddress();
+   
+               if (dlaAddress == null)
+               {
+                  log.warn("Did not route to any bindings for address " + address +
+                           " and sendToDLAOnNoRoute is true " +
+                           "but there is no DLA configured for the address, the message will be ignored.");
+               }
+               else
+               {
+                  message.setOriginalHeaders(message, false);
+   
+                  message.setDestination(dlaAddress);
+   
+                  route(message, context);
+               }
             }
          }
-      }
-
-      if (startedTx)
-      {
-         tx.commit();
+         else
+         {
+            processRoute(message, context);
+         }
+   
+         if (startedTx)
+         {
+            context.getTransaction().commit();
+         }
       }
    }
-
-   public void route(final ServerMessage message) throws Exception
+   
+   public MessageReference reroute(final ServerMessage message, final Queue queue, final Transaction tx) throws Exception
    {
-      route(message, null);
-   }
+      MessageReference reference = message.createReference(queue);
 
-   public boolean redistribute(final ServerMessage message, final Queue originatingQueue, final Transaction tx) throws Exception
-   {
-      Bindings bindings = addressManager.getBindingsForRoutingAddress(message.getDestination());
+      Long scheduledDeliveryTime = (Long)message.getProperty(MessageImpl.HDR_SCHEDULED_DELIVERY_TIME);
 
-      if (bindings != null)
+      if (scheduledDeliveryTime != null)
       {
-         return bindings.redistribute(message, originatingQueue, tx);
+         reference.setScheduledDeliveryTime(scheduledDeliveryTime);
+      }
+
+      message.incrementDurableRefCount();
+
+      message.setStored();
+         
+      int refCount = message.incrementRefCount();
+
+      PagingStore store = pagingManager.getPageStore(message.getDestination());
+
+      if (refCount == 1)
+      {
+         store.addSize(message.getMemoryEstimate());
+      }
+
+      store.addSize(reference.getMemoryEstimate());
+
+      if (tx == null)
+      {
+         queue.addLast(reference);
       }
       else
       {
-         return false;
+         List<MessageReference> refs = new ArrayList<MessageReference>(1);
+         
+         refs.add(reference);
+         
+         tx.addOperation(new AddOperation(refs));
       }
+      
+      return reference;
+   }
+   
+   public void route(final ServerMessage message) throws Exception
+   {
+      route(message, new RoutingContextImpl(null));
+   }
+
+   public boolean redistribute(final ServerMessage message, final Queue originatingQueue, final RoutingContext context) throws Exception
+   {      
+      Bindings bindings = addressManager.getBindingsForRoutingAddress(message.getDestination());
+
+      boolean res = false;
+      
+      if (bindings != null)
+      {
+         bindings.redistribute(message, originatingQueue, context);
+         
+         if (!context.getQueues().isEmpty())
+         {
+            processRoute(message, context);
+            
+            res = true;
+         }         
+      }
+      
+      log.info("redistribute called res is " + res);
+      
+      return res;
    }
 
    public PagingManager getPagingManager()
@@ -711,8 +780,9 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
          message.setBody(ChannelBuffers.EMPTY_BUFFER);
          message.setDestination(queueName);
          message.putBooleanProperty(HDR_RESET_QUEUE_DATA, true);
-         queue.preroute(message, null);
-         queue.route(message, null);
+         // queue.preroute(message, null);
+         // queue.route(message, null);
+         routeDirect(message, queue, false);
 
          for (QueueInfo info : queueInfos.values())
          {
@@ -727,7 +797,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
                message.putStringProperty(ManagementHelper.HDR_FILTERSTRING, info.getFilterString());
                message.putIntProperty(ManagementHelper.HDR_DISTANCE, info.getDistance());
 
-               routeDirect(queue, message);
+               routeDirect(message, queue, true);
 
                int consumersWithFilters = info.getFilterStrings() != null ? info.getFilterStrings().size() : 0;
 
@@ -740,7 +810,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
                   message.putStringProperty(ManagementHelper.HDR_ROUTING_NAME, info.getRoutingName());
                   message.putIntProperty(ManagementHelper.HDR_DISTANCE, info.getDistance());
 
-                  routeDirect(queue, message);
+                  routeDirect(message, queue, true);
                }
 
                if (info.getFilterStrings() != null)
@@ -755,7 +825,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
                      message.putStringProperty(ManagementHelper.HDR_FILTERSTRING, filterString);
                      message.putIntProperty(ManagementHelper.HDR_DISTANCE, info.getDistance());
 
-                     routeDirect(queue, message);
+                     routeDirect(message, queue, true);
                   }
                }
             }
@@ -766,9 +836,107 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
 
    // Private -----------------------------------------------------------------
 
+   private void routeDirect(final ServerMessage message, final Queue queue, final boolean applyFilters) throws Exception
+   {
+      if (!applyFilters || queue.getFilter() == null || queue.getFilter().match(message))
+      {
+         RoutingContext context = new RoutingContextImpl(null);
+
+         queue.route(message, context);
+
+         processRoute(message, context);
+      }
+   }
+
+   private void processRoute(final ServerMessage message, final RoutingContext context) throws Exception
+   {
+      List<MessageReference> refs = new ArrayList<MessageReference>();
+
+      Transaction tx = context.getTransaction();
+      
+      for (Queue queue : context.getQueues())
+      {
+         MessageReference reference = message.createReference(queue);
+
+         refs.add(reference);
+
+         Long scheduledDeliveryTime = (Long)message.getProperty(MessageImpl.HDR_SCHEDULED_DELIVERY_TIME);
+
+         if (scheduledDeliveryTime != null)
+         {
+            reference.setScheduledDeliveryTime(scheduledDeliveryTime);
+         }
+
+         if (message.isDurable() && queue.isDurable())
+         {
+            int durableRefCount = message.incrementDurableRefCount();
+
+            if (durableRefCount == 1)
+            {
+               if (tx != null)
+               {
+                  storageManager.storeMessageTransactional(tx.getID(), message);
+               }
+               else
+               {
+                  storageManager.storeMessage(message);
+               }
+
+               message.setStored();
+            }
+
+            if (tx != null)
+            {
+               storageManager.storeReferenceTransactional(tx.getID(), queue.getID(), message.getMessageID());
+
+               tx.putProperty(TransactionPropertyIndexes.CONTAINS_PERSISTENT, true);
+            }
+            else
+            {
+               storageManager.storeReference(queue.getID(), message.getMessageID());
+            }
+
+            if (scheduledDeliveryTime != null)
+            {
+               if (tx != null)
+               {
+                  storageManager.updateScheduledDeliveryTimeTransactional(tx.getID(), reference);
+               }
+               else
+               {
+                  storageManager.updateScheduledDeliveryTime(reference);
+               }
+            }
+         }
+
+         int refCount = message.incrementRefCount();
+
+         PagingStore store = pagingManager.getPageStore(message.getDestination());
+
+         if (refCount == 1)
+         {
+            store.addSize(message.getMemoryEstimate());
+         }
+
+         store.addSize(reference.getMemoryEstimate());
+      }
+      
+      if (tx != null)
+      {
+         tx.addOperation(new AddOperation(refs));
+      }
+      else
+      {         
+         for (MessageReference ref : refs)
+         {
+
+            ref.getQueue().addLast(ref);
+         }
+      }
+   }
+   
    private synchronized void startExpiryScanner()
    {
-
       if (reaperPeriod > 0)
       {
          reaperThread = new Thread(reaperRunnable, "HornetQ-expiry-reaper");
@@ -776,15 +944,6 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
          reaperThread.setPriority(reaperPriority);
 
          reaperThread.start();
-      }
-   }
-
-   private void routeDirect(final Queue queue, final ServerMessage message) throws Exception
-   {
-      if (queue.getFilter() == null || queue.getFilter().match(message))
-      {
-         queue.preroute(message, null);
-         queue.route(message, null);
       }
    }
 
@@ -1008,7 +1167,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
                   // This could happen when the PageStore left the pageState
 
                   // TODO is this correct - don't we lose transactionality here???
-                  route(message, null);
+                  route(message, new RoutingContextImpl(null));
                }
                first = false;
             }
@@ -1023,6 +1182,66 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
                   storageManager.storePageTransaction(tx.getID(), pageTransaction);
                }
             }
+         }
+      }
+   }
+   
+   private class AddOperation implements TransactionOperation
+   {
+      private final List<MessageReference> refs;
+
+      AddOperation(final List<MessageReference> refs)
+      {
+         this.refs = refs;
+      }
+
+      public void afterCommit(Transaction tx) throws Exception
+      {        
+         for (MessageReference ref : refs)
+         {
+            ref.getQueue().addLast(ref);
+         }
+      }
+
+      public void afterPrepare(Transaction tx) throws Exception
+      {
+      }
+
+      public void afterRollback(Transaction tx) throws Exception
+      {
+      }
+
+      public void beforeCommit(Transaction tx) throws Exception
+      {
+      }
+
+      public void beforePrepare(Transaction tx) throws Exception
+      {
+      }
+
+      public void beforeRollback(Transaction tx) throws Exception
+      {
+         // Reverse the ref counts, and paging sizes
+
+         for (MessageReference ref : refs)
+         {
+            ServerMessage message = ref.getMessage();
+
+            if (message.isDurable() && ref.getQueue().isDurable())
+            {
+               message.decrementDurableRefCount();
+            }
+
+            int count = message.decrementRefCount();
+
+            PagingStore store = pagingManager.getPageStore(message.getDestination());
+
+            if (count == 0)
+            {
+               store.addSize(-message.getMemoryEstimate());
+            }
+
+            store.addSize(-ref.getMemoryEstimate());
          }
       }
    }

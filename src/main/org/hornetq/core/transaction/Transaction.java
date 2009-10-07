@@ -13,12 +13,9 @@
 
 package org.hornetq.core.transaction;
 
-import java.util.Set;
-
 import javax.transaction.xa.Xid;
 
 import org.hornetq.core.exception.HornetQException;
-import org.hornetq.core.server.Queue;
 
 /**
  * A HornetQ internal transaction
@@ -62,8 +59,6 @@ public interface Transaction
    
    Object getProperty(int index);
    
-   Set<Queue> getDistinctQueues();
-
    static enum State
    {
       ACTIVE, PREPARED, COMMITTED, ROLLEDBACK, SUSPENDED, ROLLBACK_ONLY

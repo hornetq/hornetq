@@ -23,6 +23,7 @@ import org.hornetq.core.server.Consumer;
 import org.hornetq.core.server.HandleStatus;
 import org.hornetq.core.server.MessageReference;
 import org.hornetq.core.server.Queue;
+import org.hornetq.core.server.impl.RoutingContextImpl;
 import org.hornetq.core.transaction.Transaction;
 import org.hornetq.core.transaction.impl.TransactionImpl;
 import org.hornetq.utils.Future;
@@ -122,7 +123,7 @@ public class Redistributor implements Consumer
       
       final Transaction tx = new TransactionImpl(storageManager);
 
-      boolean routed = postOffice.redistribute(reference.getMessage(), queue, tx);
+      boolean routed = postOffice.redistribute(reference.getMessage(), queue, new RoutingContextImpl(tx));
 
       if (routed)
       {    
@@ -138,7 +139,7 @@ public class Redistributor implements Consumer
    
    private void doRedistribute(final MessageReference reference, final Transaction tx) throws Exception
    {
-      queue.referenceHandled();
+      reference.handled();
 
       queue.acknowledge(tx, reference);
 

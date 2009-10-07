@@ -12,55 +12,48 @@
  */
 package org.hornetq.core.server.impl;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ScheduledExecutorService;
 
 import org.hornetq.core.filter.Filter;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.message.impl.MessageImpl;
-import org.hornetq.core.paging.PagingManager;
-import org.hornetq.core.paging.PagingStore;
 import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.core.postoffice.PostOffice;
 import org.hornetq.core.server.MessageReference;
+import org.hornetq.core.server.Queue;
 import org.hornetq.core.server.ServerMessage;
 import org.hornetq.core.settings.HierarchicalRepository;
 import org.hornetq.core.settings.impl.AddressSettings;
-import org.hornetq.core.transaction.Transaction;
 import org.hornetq.utils.SimpleString;
 
 /**
  * A queue that will discard messages if a newer message with the same MessageImpl.HDR_LAST_VALUE_NAME property value.
  * In other words it only retains the last value
+ * 
  * This is useful for example, for stock prices, where you're only interested in the latest value
  * for a particular stock
+ * 
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a> rewrite
  */
 public class LastValueQueue extends QueueImpl
 {
    private static final Logger log = Logger.getLogger(LastValueQueue.class);
 
-   private final Map<SimpleString, ServerMessage> map = new HashMap<SimpleString, ServerMessage>();
-
-   private final PagingManager pagingManager;
-
-   private final StorageManager storageManager;
+   private final Map<SimpleString, HolderReference> map = new ConcurrentHashMap<SimpleString, HolderReference>();
 
    public LastValueQueue(final long persistenceID,
-                        final SimpleString address,
-                        final SimpleString name,
-                        final Filter filter,
-                        final boolean durable,
-                        final boolean temporary,
-                        final ScheduledExecutorService scheduledExecutor,
-                        final PostOffice postOffice,
-                        final StorageManager storageManager,
-                        final HierarchicalRepository<AddressSettings> addressSettingsRepository)
+                         final SimpleString address,
+                         final SimpleString name,
+                         final Filter filter,
+                         final boolean durable,
+                         final boolean temporary,
+                         final ScheduledExecutorService scheduledExecutor,
+                         final PostOffice postOffice,
+                         final StorageManager storageManager,
+                         final HierarchicalRepository<AddressSettings> addressSettingsRepository)
    {
       super(persistenceID,
             address,
@@ -72,213 +65,158 @@ public class LastValueQueue extends QueueImpl
             postOffice,
             storageManager,
             addressSettingsRepository);
-      this.pagingManager = postOffice.getPagingManager();
-      this.storageManager = storageManager;
    }
 
-   public void route(final ServerMessage message, final Transaction tx) throws Exception
-   {
-      SimpleString prop = (SimpleString)message.getProperty(MessageImpl.HDR_LAST_VALUE_NAME);
-      if (prop != null)
-      {
-         synchronized (map)
-         {
-            ServerMessage msg = map.put(prop, message);
-            // if an older message existed then we discard it
-            if (msg != null)
-            {
-               MessageReference ref;
-               if (tx != null)
-               {
-                  discardMessage(msg.getMessageID(), tx);
-               }
-               else
-               {
-                  ref = removeReferenceWithID(msg.getMessageID());
-                  if (ref != null)
-                  {
-                     discardMessage(ref, tx);
-                  }
-               }
-
-            }
-         }
-      }
-      super.route(message, tx);
-   }
-
-   public MessageReference reroute(final ServerMessage message, final Transaction tx) throws Exception
-   {
-      SimpleString prop = (SimpleString)message.getProperty(MessageImpl.HDR_LAST_VALUE_NAME);
-      if (prop != null)
-      {
-         synchronized (map)
-         {
-            ServerMessage msg = map.put(prop, message);
-            if (msg != null)
-            {
-               if (tx != null)
-               {
-                  rediscardMessage(msg.getMessageID(), tx);
-               }
-               else
-               {
-                  MessageReference ref = removeReferenceWithID(msg.getMessageID());
-                  rediscardMessage(ref);
-               }
-            }
-         }
-      }
-      return super.reroute(message, tx);
-   }
-
-   public void acknowledge(final MessageReference ref) throws Exception
-   {
-      super.acknowledge(ref);
-      SimpleString prop = (SimpleString)ref.getMessage().getProperty(MessageImpl.HDR_LAST_VALUE_NAME);
-      if (prop != null)
-      {
-         synchronized (map)
-         {
-            ServerMessage serverMessage = map.get(prop);
-            if (serverMessage != null && ref.getMessage().getMessageID() == serverMessage.getMessageID())
-            {
-               map.remove(prop);
-            }
-         }
-      }
-   }
-
-   public void cancel(final Transaction tx, final MessageReference ref) throws Exception
+   public synchronized void add(final MessageReference ref, final boolean first)
    {
       SimpleString prop = (SimpleString)ref.getMessage().getProperty(MessageImpl.HDR_LAST_VALUE_NAME);
+
       if (prop != null)
       {
-         synchronized (map)
-         {
-            ServerMessage msg = map.get(prop);
-            if (msg.getMessageID() == ref.getMessage().getMessageID())
+         HolderReference hr = map.get(prop);
+
+         if (!first)
+         {            
+            if (hr != null)
             {
-               super.cancel(tx, ref);
+               // We need to overwrite the old ref with the new one and ack the old one
+
+               MessageReference oldRef = hr.getReference();
+
+               super.referenceHandled();
+
+               try
+               {
+                  super.acknowledge(oldRef);
+               }
+               catch (Exception e)
+               {
+                  log.error("Failed to ack old reference", e);
+               }
+
+               hr.setReference(ref);
+
             }
             else
             {
-               discardMessage(ref, tx);
+               hr = new HolderReference(prop, ref);
+
+               map.put(prop, hr);
+
+               super.add(hr, first);
+            }
+         }
+         else
+         {
+            // Add to front
+
+            if (hr != null)
+            {
+               // We keep the current ref and ack the one we are returning
+
+               super.referenceHandled();
+
+               try
+               {
+                  super.acknowledge(ref);
+               }
+               catch (Exception e)
+               {
+                  log.error("Failed to ack old reference", e);
+               }
+            }
+            else
+            {
+               map.put(prop, (HolderReference)ref);
+
+               super.add(ref, first);
             }
          }
       }
       else
       {
-         super.cancel(tx, ref);
+         super.add(ref, first);
       }
    }
 
-   void postRollback(final LinkedList<MessageReference> refs) throws Exception
+   private class HolderReference implements MessageReference
    {
-      List<MessageReference> refsToDiscard = new ArrayList<MessageReference>();
-      List<SimpleString> refsToClear = new ArrayList<SimpleString>();
-      synchronized (map)
+      private final SimpleString prop;
+
+      private volatile MessageReference ref;
+
+      HolderReference(final SimpleString prop, final MessageReference ref)
       {
-         for (MessageReference ref : refs)
-         {
-            SimpleString prop = (SimpleString)ref.getMessage().getProperty(MessageImpl.HDR_LAST_VALUE_NAME);
-            if (prop != null)
-            {
-               ServerMessage msg = map.get(prop);
-               if (msg != null)
-               {
-                  if (msg.getMessageID() != ref.getMessage().getMessageID())
-                  {
-                     refsToDiscard.add(ref);
-                  }
-                  else
-                  {
-                     refsToClear.add(prop);
-                  }
-               }
-            }
-         }
-         for (SimpleString simpleString : refsToClear)
-         {
-            map.remove(simpleString);
-         }
-      }
-      for (MessageReference ref : refsToDiscard)
-      {
-         refs.remove(ref);
-         discardMessage(ref, null);
-      }
-      super.postRollback(refs);
-   }
+         this.prop = prop;
 
-   final void discardMessage(MessageReference ref, Transaction tx) throws Exception
-   {
-      deliveringCount.decrementAndGet();
-      PagingStore store = pagingManager.getPageStore(ref.getMessage().getDestination());
-      store.addSize(-ref.getMemoryEstimate());
-      QueueImpl queue = (QueueImpl)ref.getQueue();
-      ServerMessage msg = ref.getMessage();
-      boolean durableRef = msg.isDurable() && queue.isDurable();
-
-      if (durableRef)
-      {
-         int count = msg.decrementDurableRefCount();
-
-         if (count == 0)
-         {
-            if (tx == null)
-            {
-               storageManager.deleteMessage(msg.getMessageID());
-            }
-            else
-            {
-               storageManager.deleteMessageTransactional(tx.getID(), getID(), msg.getMessageID());
-            }
-         }
-      }
-   }
-
-   final void discardMessage(Long id, Transaction tx) throws Exception
-   {
-      RefsOperation oper = getRefsOperation(tx);
-      Iterator<MessageReference> iterator = oper.refsToAdd.iterator();
-
-      while (iterator.hasNext())
-      {
-         MessageReference ref = iterator.next();
-
-         if (ref.getMessage().getMessageID() == id)
-         {
-            iterator.remove();
-            discardMessage(ref, tx);
-            break;
-         }
+         this.ref = ref;
       }
 
-   }
-
-   final void rediscardMessage(long id, Transaction tx) throws Exception
-   {
-      RefsOperation oper = getRefsOperation(tx);
-      Iterator<MessageReference> iterator = oper.refsToAdd.iterator();
-
-      while (iterator.hasNext())
+      MessageReference getReference()
       {
-         MessageReference ref = iterator.next();
-
-         if (ref.getMessage().getMessageID() == id)
-         {
-            iterator.remove();
-            rediscardMessage(ref);
-            break;
-         }
+         return ref;
       }
-   }
 
-   final void rediscardMessage(MessageReference ref) throws Exception
-   {
-      deliveringCount.decrementAndGet();
-      PagingStore store = pagingManager.getPageStore(ref.getMessage().getDestination());
-      store.addSize(-ref.getMemoryEstimate());
+      public void handled()
+      {
+         // We need to remove the entry from the map just before it gets delivered
+
+         map.remove(prop);
+      }
+
+      void setReference(final MessageReference ref)
+      {
+         this.ref = ref;
+      }
+
+      public MessageReference copy(Queue queue)
+      {
+         return ref.copy(queue);
+      }
+
+      public void decrementDeliveryCount()
+      {
+         ref.decrementDeliveryCount();
+      }
+
+      public int getDeliveryCount()
+      {
+         return ref.getDeliveryCount();
+      }
+
+      public int getMemoryEstimate()
+      {
+         return ref.getMemoryEstimate();
+      }
+
+      public ServerMessage getMessage()
+      {
+         return ref.getMessage();
+      }
+
+      public Queue getQueue()
+      {
+         return ref.getQueue();
+      }
+
+      public long getScheduledDeliveryTime()
+      {
+         return ref.getScheduledDeliveryTime();
+      }
+
+      public void incrementDeliveryCount()
+      {
+         ref.incrementDeliveryCount();
+      }
+
+      public void setDeliveryCount(int deliveryCount)
+      {
+         ref.setDeliveryCount(deliveryCount);
+      }
+
+      public void setScheduledDeliveryTime(long scheduledDeliveryTime)
+      {
+         ref.setScheduledDeliveryTime(scheduledDeliveryTime);
+      }
    }
 }

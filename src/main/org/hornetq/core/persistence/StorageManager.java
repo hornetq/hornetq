@@ -21,6 +21,7 @@ import javax.transaction.xa.Xid;
 import org.hornetq.core.paging.PageTransactionInfo;
 import org.hornetq.core.paging.PagingManager;
 import org.hornetq.core.postoffice.Binding;
+import org.hornetq.core.postoffice.PostOffice;
 import org.hornetq.core.server.HornetQComponent;
 import org.hornetq.core.server.LargeServerMessage;
 import org.hornetq.core.server.MessageReference;
@@ -100,7 +101,8 @@ public interface StorageManager extends HornetQComponent
    
    void deleteHeuristicCompletion(long id) throws Exception;
    
-   void loadMessageJournal(PagingManager pagingManager,
+   void loadMessageJournal(PostOffice postOffice,
+                           PagingManager pagingManager,
                            ResourceManager resourceManager,
                            Map<Long, Queue> queues,
                            Map<SimpleString, List<Pair<byte[], Long>>> duplicateIDMap) throws Exception;

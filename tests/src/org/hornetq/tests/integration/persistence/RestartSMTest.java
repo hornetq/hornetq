@@ -24,8 +24,10 @@ import org.hornetq.core.config.Configuration;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.persistence.QueueBindingInfo;
 import org.hornetq.core.persistence.impl.journal.JournalStorageManager;
+import org.hornetq.core.postoffice.PostOffice;
 import org.hornetq.core.server.JournalType;
 import org.hornetq.core.server.Queue;
+import org.hornetq.tests.unit.core.server.impl.fakes.FakePostOffice;
 import org.hornetq.tests.util.ServiceTestBase;
 
 /**
@@ -42,7 +44,7 @@ public class RestartSMTest extends ServiceTestBase
 
    // Constants -----------------------------------------------------
    private static final Logger log = Logger.getLogger(RestartSMTest.class);
-                                                      
+
    // Attributes ----------------------------------------------------
 
    // Static --------------------------------------------------------
@@ -62,6 +64,8 @@ public class RestartSMTest extends ServiceTestBase
 
       configuration.setJournalType(JournalType.ASYNCIO);
 
+      PostOffice postOffice = new FakePostOffice();
+
       final JournalStorageManager journal = new JournalStorageManager(configuration, Executors.newCachedThreadPool());
       try
       {
@@ -74,7 +78,7 @@ public class RestartSMTest extends ServiceTestBase
 
          Map<Long, Queue> queues = new HashMap<Long, Queue>();
 
-         journal.loadMessageJournal(null, null, queues, null);
+         journal.loadMessageJournal(postOffice, null, null, queues, null);
 
          journal.stop();
 
@@ -84,7 +88,7 @@ public class RestartSMTest extends ServiceTestBase
 
          queues = new HashMap<Long, Queue>();
 
-         journal.loadMessageJournal(null, null, queues, null);
+         journal.loadMessageJournal(postOffice, null, null, queues, null);
 
          queueBindingInfos = new ArrayList<QueueBindingInfo>();
 

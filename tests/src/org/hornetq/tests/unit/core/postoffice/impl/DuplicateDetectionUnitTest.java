@@ -33,6 +33,7 @@ import org.hornetq.core.server.JournalType;
 import org.hornetq.core.server.Queue;
 import org.hornetq.core.server.ServerMessage;
 import org.hornetq.core.transaction.impl.ResourceManagerImpl;
+import org.hornetq.tests.unit.core.server.impl.fakes.FakePostOffice;
 import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.tests.util.ServiceTestBase;
 import org.hornetq.utils.Pair;
@@ -47,7 +48,6 @@ import org.hornetq.utils.SimpleString;
  */
 public class DuplicateDetectionUnitTest extends ServiceTestBase
 {
-
    // Constants -----------------------------------------------------
 
    // Attributes ----------------------------------------------------
@@ -77,6 +77,8 @@ public class DuplicateDetectionUnitTest extends ServiceTestBase
 
          Configuration configuration = createDefaultConfig();
 
+         PostOffice postOffice = new FakePostOffice();
+
          configuration.start();
 
          configuration.setJournalType(JournalType.ASYNCIO);
@@ -90,7 +92,8 @@ public class DuplicateDetectionUnitTest extends ServiceTestBase
 
          HashMap<SimpleString, List<Pair<byte[], Long>>> mapDups = new HashMap<SimpleString, List<Pair<byte[], Long>>>();
 
-         journal.loadMessageJournal(new FakePagingManager(),
+         journal.loadMessageJournal(postOffice,
+                                    new FakePagingManager(),
                                     new ResourceManagerImpl(0, 0, scheduledThreadPool),
                                     new HashMap<Long, Queue>(),
                                     mapDups);
@@ -110,7 +113,8 @@ public class DuplicateDetectionUnitTest extends ServiceTestBase
          journal.start();
          journal.loadBindingJournal(new ArrayList<QueueBindingInfo>());
 
-         journal.loadMessageJournal(new FakePagingManager(),
+         journal.loadMessageJournal(postOffice,
+                                    new FakePagingManager(),
                                     new ResourceManagerImpl(0, 0, scheduledThreadPool),
                                     new HashMap<Long, Queue>(),
                                     mapDups);
@@ -137,7 +141,8 @@ public class DuplicateDetectionUnitTest extends ServiceTestBase
          journal.start();
          journal.loadBindingJournal(new ArrayList<QueueBindingInfo>());
 
-         journal.loadMessageJournal(new FakePagingManager(),
+         journal.loadMessageJournal(postOffice,
+                                    new FakePagingManager(),
                                     new ResourceManagerImpl(0, 0, scheduledThreadPool),
                                     new HashMap<Long, Queue>(),
                                     mapDups);
@@ -196,7 +201,7 @@ public class DuplicateDetectionUnitTest extends ServiceTestBase
       {
          return 0;
       }
-      
+
       public SimpleString[] getStoreNames()
       {
          return null;

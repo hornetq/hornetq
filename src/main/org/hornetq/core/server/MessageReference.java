@@ -51,4 +51,6 @@ public interface MessageReference
    void decrementDeliveryCount();
 
    Queue getQueue();
+   
+   void handled();
 }

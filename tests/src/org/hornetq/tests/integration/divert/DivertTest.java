@@ -92,7 +92,7 @@ public class DivertTest extends ServiceTestBase
 
       ClientConsumer consumer2 = session.createConsumer(queueName2);
 
-      final int numMessages = 10;
+      final int numMessages = 1;
 
       final SimpleString propKey = new SimpleString("testkey");
 

@@ -229,7 +229,7 @@ public class FileDeploymentManager implements Runnable, DeploymentManager
                try
                {
                   Deployer deployer = entry.getValue().deployer;
-                  log.info("Undeploying " + deployer + " with url " + pair.a);
+                  log.debug("Undeploying " + deployer + " with url " + pair.a);
                   deployer.undeploy(pair.a);
                   toRemove.add(pair);
                }

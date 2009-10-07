@@ -21,6 +21,7 @@ import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
 import org.hornetq.core.config.TransportConfiguration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.exception.HornetQException;
+import org.hornetq.core.logging.Logger;
 import org.hornetq.core.message.impl.MessageImpl;
 import org.hornetq.core.server.HornetQ;
 import org.hornetq.core.server.HornetQServer;
@@ -33,6 +34,8 @@ import org.hornetq.utils.SimpleString;
  */
 public class LVQTest extends UnitTestCase
 {
+   private static final Logger log = Logger.getLogger(LVQTest.class);
+
    private HornetQServer server;
 
    private ClientSession clientSession;
@@ -127,13 +130,14 @@ public class LVQTest extends UnitTestCase
       clientSession.start();
       ClientMessage m = consumer.receive(1000);
       assertNotNull(m);
+      assertEquals(m.getBody().readString(), "m1");
       producer.send(m2);
       consumer.close();
       consumer = clientSession.createConsumer(qName1);
       m = consumer.receive(1000);
-      assertNotNull(m);
-      m.acknowledge();
-      assertEquals(m.getBody().readString(), "m2");
+      assertNotNull(m);      
+      assertEquals("m2", m.getBody().readString());
+      m.acknowledge();      
       m = consumer.receive(1000);
       assertNull(m);
    }

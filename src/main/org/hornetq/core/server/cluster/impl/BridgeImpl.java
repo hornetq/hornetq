@@ -392,7 +392,7 @@ public class BridgeImpl implements Bridge, FailureListener, SendAcknowledgementH
 
       synchronized (this)
       {
-         ref.getQueue().referenceHandled();
+         ref.handled();
 
          ServerMessage message = ref.getMessage();
 
@@ -500,10 +500,6 @@ public class BridgeImpl implements Bridge, FailureListener, SendAcknowledgementH
 
    private void fail()
    {
-      log.info("bridge " + name + " has failed");
-      
-      //executor.execute(new FailRunnable());
-      
       //This will get called even after the bridge reconnects - in this case
       //we want to cancel all unacked refs so they get resent
       //duplicate detection will ensure no dups are routed on the other side
@@ -670,8 +666,6 @@ public class BridgeImpl implements Bridge, FailureListener, SendAcknowledgementH
 
          queue.deliverAsync(executor);
          
-         log.info("Bridge " + name + " is now connected to destination ");
-
          return true;
       }
       catch (Exception e)

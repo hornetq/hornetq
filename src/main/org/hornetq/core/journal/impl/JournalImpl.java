@@ -1441,8 +1441,7 @@ public class JournalImpl implements TestableJournal
 
       try
       {
-
-         log.info("Starting compacting operation on journal");
+         log.debug("Starting compacting operation on journal");
 
          // We need to guarantee that the journal is frozen for this short time
          // We don't freeze the journal as we compact, only for the short time where we replace records
@@ -1582,7 +1581,7 @@ public class JournalImpl implements TestableJournal
          renameFiles(dataFilesToProcess, newDatafiles);
          deleteControlFile(controlFile);
 
-         log.info("Finished compacting on journal");
+         log.debug("Finished compacting on journal");
 
       }
       finally
@@ -2167,7 +2166,7 @@ public class JournalImpl implements TestableJournal
          try
          {
 
-            log.info("Cleaning up file " + file);
+            log.debug("Cleaning up file " + file);
 
             if (file.getPosCount() == 0)
             {
@@ -2221,7 +2220,7 @@ public class JournalImpl implements TestableJournal
       finally
       {
          compactingLock.readLock().unlock();
-         log.info("Clean up on file " + file + " done");
+         log.debug("Clean up on file " + file + " done");
       }
 
    }
@@ -2767,7 +2766,7 @@ public class JournalImpl implements TestableJournal
       {
          if (state != STATE_LOADED)
          {
-            throw new IllegalStateException("The journal was stopped");
+            throw new IllegalStateException("The journal is not loaded " + state);
          }
 
          int size = bb.capacity();
@@ -2845,11 +2844,14 @@ public class JournalImpl implements TestableJournal
             currentFile.getFile().write(bb, sync);
          }
 
-         return currentFile;
+         return currentFile;         
       }
       finally
       {
-         currentFile.getFile().enableAutoFlush();
+         if (currentFile != null)
+         {
+            currentFile.getFile().enableAutoFlush();
+         }
       }
 
    }

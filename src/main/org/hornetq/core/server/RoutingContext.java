@@ -13,18 +13,30 @@
 
 package org.hornetq.core.server;
 
+import java.util.List;
+
+import org.hornetq.core.transaction.Transaction;
 
 /**
- * A Bindable
+ * A RoutingContext
  *
- * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
- * 
- * Created 21 Dec 2008 09:10:18
+ * @author Tim Fox
  *
  *
  */
-public interface Bindable
+public interface RoutingContext
 {
-   void route(ServerMessage message, RoutingContext context) throws Exception;
+   Transaction getTransaction();
+   
+   void setTransaction(Transaction transaction);
+   
+   void addQueue(Queue queue);
+   
+   List<Queue> getQueues();
+   
+   void incrementDepth();
+   
+   void decrementDepth();
+   
+   int getDepth();
 }
-

@@ -38,7 +38,9 @@ import org.hornetq.core.paging.PagingStoreFactory;
 import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.core.postoffice.PostOffice;
 import org.hornetq.core.server.LargeServerMessage;
+import org.hornetq.core.server.RoutingContext;
 import org.hornetq.core.server.ServerMessage;
+import org.hornetq.core.server.impl.RoutingContextImpl;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.core.transaction.Transaction;
 import org.hornetq.core.transaction.TransactionPropertyIndexes;
@@ -593,6 +595,7 @@ public class PagingStoreImpl implements TestSupportPageStore
       if (onDepage(page.getPageId(), storeName, messages))
       {
          page.delete();
+         
          return true;
       }
       else
@@ -755,16 +758,14 @@ public class PagingStoreImpl implements TestSupportPageStore
       // back to where it was
 
       Transaction depageTransaction = new TransactionImpl(storageManager);
-
+      
       depageTransaction.putProperty(TransactionPropertyIndexes.IS_DEPAGE, Boolean.valueOf(true));
 
       HashSet<PageTransactionInfo> pageTransactionsToUpdate = new HashSet<PageTransactionInfo>();
 
       for (PagedMessage pagedMessage : pagedMessages)
       {
-         ServerMessage message = null;
-
-         message = pagedMessage.getMessage(storageManager);
+         ServerMessage message = pagedMessage.getMessage(storageManager);
          
          if (message.isLargeMessage())
          {
@@ -787,7 +788,6 @@ public class PagingStoreImpl implements TestSupportPageStore
                log.warn("Transaction " + pagedMessage.getTransactionID() +
                         " used during paging not found, ignoring message " +
                         message);
-
                continue;
             }
 
@@ -815,7 +815,7 @@ public class PagingStoreImpl implements TestSupportPageStore
                if (isTrace)
                {
                   trace("Rollback was called after prepare, ignoring message " + message);
-               }
+               }               
                continue;
             }
 
@@ -827,7 +827,7 @@ public class PagingStoreImpl implements TestSupportPageStore
             }
          }
 
-         postOffice.route(message, depageTransaction);
+         postOffice.route(message, new RoutingContextImpl(depageTransaction));
       }
 
       if (!running)

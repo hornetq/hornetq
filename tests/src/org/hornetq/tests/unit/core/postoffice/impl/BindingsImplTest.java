@@ -30,6 +30,7 @@ import org.hornetq.core.server.Bindable;
 import org.hornetq.core.server.MessageReference;
 import org.hornetq.core.server.Queue;
 import org.hornetq.core.server.ServerMessage;
+import org.hornetq.core.server.impl.RoutingContextImpl;
 import org.hornetq.core.transaction.Transaction;
 import org.hornetq.core.transaction.TransactionOperation;
 import org.hornetq.tests.util.UnitTestCase;
@@ -107,11 +108,11 @@ public class BindingsImplTest extends UnitTestCase
       {
          if (route)
          {
-            bind.route(new FakeMessage(), new FakeTransaction());
+            bind.route(new FakeMessage(), new RoutingContextImpl(new FakeTransaction()));
          }
          else
          {
-            bind.redistribute(new FakeMessage(), queue, new FakeTransaction());
+            bind.redistribute(new FakeMessage(), queue, new RoutingContextImpl(new FakeTransaction()));
          }
       }
    }

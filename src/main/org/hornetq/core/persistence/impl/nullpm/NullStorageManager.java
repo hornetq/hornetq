@@ -25,6 +25,7 @@ import org.hornetq.core.paging.PagingManager;
 import org.hornetq.core.persistence.QueueBindingInfo;
 import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.core.postoffice.Binding;
+import org.hornetq.core.postoffice.PostOffice;
 import org.hornetq.core.server.LargeServerMessage;
 import org.hornetq.core.server.MessageReference;
 import org.hornetq.core.server.Queue;
@@ -232,7 +233,8 @@ public class NullStorageManager implements StorageManager
    {
    }
    
-   public void loadMessageJournal(PagingManager pagingManager,
+   public void loadMessageJournal(PostOffice postOffice,
+                                  PagingManager pagingManager,
                                   ResourceManager resourceManager,
                                   Map<Long, Queue> queues,
                                   Map<SimpleString, List<Pair<byte[], Long>>> duplicateIDMap) throws Exception

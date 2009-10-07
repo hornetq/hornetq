@@ -414,7 +414,7 @@ public class JMSBridgeImplTest extends UnitTestCase
       bridge.setSourceDestinationFactory(sourceDF);
       bridge.setTargetConnectionFactoryFactory(targetCFF);
       bridge.setTargetDestinationFactory(targetDF);
-      bridge.setFailureRetryInterval(10);
+      bridge.setFailureRetryInterval(100);
       bridge.setMaxRetries(1);
       bridge.setMaxBatchSize(1);
       bridge.setMaxBatchTime(-1);

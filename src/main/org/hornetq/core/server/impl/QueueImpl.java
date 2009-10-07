@@ -14,7 +14,6 @@
 package org.hornetq.core.server.impl;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -47,6 +46,7 @@ import org.hornetq.core.server.Distributor;
 import org.hornetq.core.server.HandleStatus;
 import org.hornetq.core.server.MessageReference;
 import org.hornetq.core.server.Queue;
+import org.hornetq.core.server.RoutingContext;
 import org.hornetq.core.server.ScheduledDeliveryHandler;
 import org.hornetq.core.server.ServerMessage;
 import org.hornetq.core.server.cluster.impl.Redistributor;
@@ -210,133 +210,10 @@ public class QueueImpl implements Queue
    {
       return false;
    }
-
-   public void preroute(final ServerMessage message, final Transaction tx) throws Exception
+   
+   public void route(final ServerMessage message, final RoutingContext context) throws Exception
    {
-      int count = message.incrementRefCount();
-
-      if (count == 1)
-      {
-         PagingStore store = pagingManager.getPageStore(message.getDestination());
-
-         store.addSize(message.getMemoryEstimate());
-      }
-
-      boolean durableRef = message.isDurable() && durable;
-
-      if (durableRef)
-      {
-         message.incrementDurableRefCount();
-      }
-   }
-
-   public void route(final ServerMessage message, final Transaction tx) throws Exception
-   {
-      boolean durableRef = message.isDurable() && durable;
-
-      // If durable, must be persisted before anything is routed
-      MessageReference ref = message.createReference(this);
-
-      PagingStore store = pagingManager.getPageStore(message.getDestination());
-
-      store.addSize(ref.getMemoryEstimate());
-
-      Long scheduledDeliveryTime = (Long)message.getProperty(MessageImpl.HDR_SCHEDULED_DELIVERY_TIME);
-
-      if (scheduledDeliveryTime != null)
-      {
-         ref.setScheduledDeliveryTime(scheduledDeliveryTime);
-      }
-
-      if (tx == null)
-      {
-         if (durableRef)
-         {
-            if (!message.isStored())
-            {
-               storageManager.storeMessage(message);
-
-               message.setStored();
-            }
-
-            storageManager.storeReference(ref.getQueue().getID(), message.getMessageID());
-         }
-
-         if (scheduledDeliveryTime != null && durableRef)
-         {
-            storageManager.updateScheduledDeliveryTime(ref);
-         }
-
-         addLast(ref);
-      }
-      else
-      {
-         if (durableRef)
-         {
-            if (!message.isStored())
-            {
-               storageManager.storeMessageTransactional(tx.getID(), message);
-
-               message.setStored();
-            }
-
-            tx.putProperty(TransactionPropertyIndexes.CONTAINS_PERSISTENT, true);
-
-            storageManager.storeReferenceTransactional(tx.getID(),
-                                                       ref.getQueue().getID(),
-                                                       message.getMessageID());
-         }
-
-         if (scheduledDeliveryTime != null && durableRef)
-         {
-            storageManager.updateScheduledDeliveryTimeTransactional(tx.getID(), ref);
-         }
-
-         getRefsOperation(tx).addRef(ref);
-      }
-   }
-
-   public MessageReference reroute(final ServerMessage message, final Transaction tx) throws Exception
-   {
-      MessageReference ref = message.createReference(this);
-
-      int count = message.incrementRefCount();
-
-      PagingStore store = pagingManager.getPageStore(message.getDestination());
-
-      if (count == 1)
-      {
-         store.addSize(message.getMemoryEstimate());
-      }
-
-      store.addSize(ref.getMemoryEstimate());
-
-      boolean durableRef = message.isDurable() && durable;
-
-      if (durableRef)
-      {
-         message.incrementDurableRefCount();
-      }
-
-      Long scheduledDeliveryTime = (Long)message.getProperty(MessageImpl.HDR_SCHEDULED_DELIVERY_TIME);
-
-      if (scheduledDeliveryTime != null)
-      {
-         ref.setScheduledDeliveryTime(scheduledDeliveryTime);
-      }
-
-      if (tx == null)
-      {
-         addLast(ref);
-      }
-      else
-      {
-         getRefsOperation(tx).addRef(ref);
-      }
-
-      message.setStored();
-
-      return ref;
+      context.addQueue(this);
    }
 
    // Queue implementation ----------------------------------------------------------------------------------------
@@ -384,7 +261,7 @@ public class QueueImpl implements Queue
    }
 
    public void addLast(final MessageReference ref)
-   {
+   {      
       add(ref, false);
    }
 
@@ -1071,7 +948,7 @@ public class QueueImpl implements Queue
 
       copyMessage.setDestination(toAddress);
 
-      postOffice.route(copyMessage, tx);
+      postOffice.route(copyMessage, new RoutingContextImpl(tx));
 
       acknowledge(tx, ref);
    }
@@ -1158,7 +1035,7 @@ public class QueueImpl implements Queue
 
       copyMessage.setDestination(address);
 
-      postOffice.route(copyMessage, tx);
+      postOffice.route(copyMessage, new RoutingContextImpl(tx));
 
       acknowledge(tx, ref);
 
@@ -1253,7 +1130,7 @@ public class QueueImpl implements Queue
                   iterator.remove();
                }
 
-               referenceHandled();
+               reference.handled();
 
                try
                {
@@ -1316,7 +1193,7 @@ public class QueueImpl implements Queue
       }
    }
 
-   private synchronized void add(final MessageReference ref, final boolean first)
+   protected synchronized void add(final MessageReference ref, final boolean first)
    {
       if (!first)
       {
@@ -1558,14 +1435,11 @@ public class QueueImpl implements Queue
    {
       synchronized (this)
       {
+         direct = false;
+         
          for (MessageReference ref : refs)
          {
-            ServerMessage msg = ref.getMessage();
-
-            if (!scheduledDeliveryHandler.checkAndSchedule(ref))
-            {
-               messageReferences.addFirst(ref, msg.getPriority());
-            }
+            add(ref, true);            
          }
 
          deliver();
@@ -1633,14 +1507,7 @@ public class QueueImpl implements Queue
 
    final class RefsOperation implements TransactionOperation
    {
-      List<MessageReference> refsToAdd = new ArrayList<MessageReference>();
-
       List<MessageReference> refsToAck = new ArrayList<MessageReference>();
-
-      synchronized void addRef(final MessageReference ref)
-      {
-         refsToAdd.add(ref);
-      }
 
       synchronized void addAck(final MessageReference ref)
       {
@@ -1689,28 +1556,8 @@ public class QueueImpl implements Queue
          }
       }
 
-      /* (non-Javadoc)
-       * @see org.hornetq.core.transaction.TransactionOperation#getDistinctQueues()
-       */
-      public synchronized Collection<Queue> getDistinctQueues()
-      {
-         HashSet<Queue> queues = new HashSet<Queue>();
-
-         for (MessageReference ref : refsToAck)
-         {
-            queues.add(ref.getQueue());
-         }
-
-         return queues;
-      }
-
       public void afterCommit(final Transaction tx) throws Exception
       {
-         for (MessageReference ref : refsToAdd)
-         {
-            ref.getQueue().addLast(ref);
-         }
-
          for (MessageReference ref : refsToAck)
          {
             synchronized (ref.getQueue())
@@ -1726,25 +1573,6 @@ public class QueueImpl implements Queue
 
       public void beforeRollback(final Transaction tx) throws Exception
       {
-         Set<ServerMessage> msgs = new HashSet<ServerMessage>();
-
-         for (MessageReference ref : refsToAdd)
-         {
-            ServerMessage msg = ref.getMessage();
-
-            // Optimise this
-            PagingStore store = pagingManager.getPageStore(msg.getDestination());
-
-            store.addSize(-ref.getMemoryEstimate());
-
-            if (!msgs.contains(msg))
-            {
-               store.addSize(-msg.getMemoryEstimate());
-               msg.decrementRefCount();
-            }
-
-            msgs.add(msg);
-         }
       }
    }
 

@@ -13,9 +13,6 @@
 
 package org.hornetq.core.transaction;
 
-import java.util.Collection;
-
-import org.hornetq.core.server.Queue;
 
 /**
  * 
@@ -26,10 +23,6 @@ import org.hornetq.core.server.Queue;
  */
 public interface TransactionOperation
 {
-   
-   /** rollback will need a distinct list of Queues in order to lock those queues before calling rollback */
-   Collection<Queue> getDistinctQueues();
-   
    void beforePrepare(Transaction tx) throws Exception;
    
    void beforeCommit(Transaction tx) throws Exception;

@@ -19,7 +19,6 @@ import java.util.Set;
 import java.util.concurrent.Executor;
 
 import org.hornetq.core.filter.Filter;
-import org.hornetq.core.remoting.Channel;
 import org.hornetq.core.transaction.Transaction;
 import org.hornetq.utils.SimpleString;
 
@@ -34,8 +33,6 @@ import org.hornetq.utils.SimpleString;
  */
 public interface Queue extends Bindable
 {
-   MessageReference reroute(ServerMessage message, Transaction tx) throws Exception;
-
    SimpleString getName();
 
    long getID();

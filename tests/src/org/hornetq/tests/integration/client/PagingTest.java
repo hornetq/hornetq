@@ -149,6 +149,8 @@ public class PagingTest extends ServiceTestBase
             ClientMessage message2 = consumer.receive(RECEIVE_TIMEOUT);
 
             assertNotNull(message2);
+            
+            log.info("got message " + message2.getProperty(new SimpleString("id")));
 
             assertEquals(i, ((Integer)message2.getProperty(new SimpleString("id"))).intValue());
 
