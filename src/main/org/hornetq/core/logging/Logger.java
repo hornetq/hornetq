@@ -64,8 +64,15 @@ public class Logger
       LogDelegateFactory delegateFactory;
 
       // If a system property is specified then this overrides any delegate factory which is set
-      // programmatically - this is primarily of use so we can configure the logger delegate on the client side
-      String className = System.getProperty(LOGGER_DELEGATE_FACTORY_CLASS_NAME);
+      // programmatically - this is primarily of use so we can configure the logger delegate on the client side.
+      // call to System.getProperty is wrapped in a try block as it will fail if the client runs in a secured environment
+      String className = JULLogDelegateFactory.class.getName();
+      try
+      {
+         className = System.getProperty(LOGGER_DELEGATE_FACTORY_CLASS_NAME);
+      } catch (Exception e)
+      {
+      }
       
       if (className != null)
       {
