@@ -50,6 +50,8 @@ import org.hornetq.utils.Pair;
 
 /**
  * A DivertAndACKClientTest
+ * 
+ * https://jira.jboss.org/jira/browse/HORNETQ-165
  *
  * @author <mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
  *
@@ -73,7 +75,6 @@ public class DivertAndACKClientTest extends JMSTestBase
       HornetQQueue queueSource = (HornetQQueue)createQueue("Source");
       HornetQQueue queueTarget = (HornetQQueue)createQueue("Dest");
 
-     
       Connection connection = cf.createConnection();
       Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
@@ -97,7 +98,6 @@ public class DivertAndACKClientTest extends JMSTestBase
       HornetQQueue queueSource = (HornetQQueue)createQueue("Source");
       HornetQQueue queueTarget = (HornetQQueue)createQueue("Dest");
 
-     
       Connection connection = cf.createConnection();
       Session session = connection.createSession(false, Session.CLIENT_ACKNOWLEDGE);
 
@@ -119,12 +119,11 @@ public class DivertAndACKClientTest extends JMSTestBase
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
-   
+
    protected boolean usePersistence()
    {
       return true;
    }
-   
 
    protected Configuration createDefaultConfig(final boolean netty)
    {
@@ -142,7 +141,7 @@ public class DivertAndACKClientTest extends JMSTestBase
       divertList.add(divert);
 
       config.setDivertConfigurations(divertList);
- 
+
       return config;
    }
 
@@ -151,42 +150,42 @@ public class DivertAndACKClientTest extends JMSTestBase
    // Inner classes -------------------------------------------------
    protected void createCF(List<Pair<TransportConfiguration, TransportConfiguration>> connectorConfigs,
                            List<String> jndiBindings) throws Exception
-     {
-        int retryInterval = 1000;
-        double retryIntervalMultiplier = 1.0;
-        int reconnectAttempts = -1;
-        boolean failoverOnServerShutdown = true;
-        int callTimeout = 30000;
+   {
+      int retryInterval = 1000;
+      double retryIntervalMultiplier = 1.0;
+      int reconnectAttempts = -1;
+      boolean failoverOnServerShutdown = true;
+      int callTimeout = 30000;
 
-        jmsServer.createConnectionFactory("ManualReconnectionToSingleServerTest",
-                                              connectorConfigs,
-                                              null,
-                                              DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
-                                              DEFAULT_CONNECTION_TTL,
-                                              callTimeout,                               
-                                              DEFAULT_CACHE_LARGE_MESSAGE_CLIENT,
-                                              DEFAULT_MIN_LARGE_MESSAGE_SIZE,
-                                              DEFAULT_CONSUMER_WINDOW_SIZE,
-                                              DEFAULT_CONSUMER_MAX_RATE,
-                                              DEFAULT_PRODUCER_WINDOW_SIZE,
-                                              DEFAULT_PRODUCER_MAX_RATE,
-                                              false, // TODO: set this to true, and the test will fail
-                                              DEFAULT_BLOCK_ON_PERSISTENT_SEND,
-                                              DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND,
-                                              DEFAULT_AUTO_GROUP,
-                                              DEFAULT_PRE_ACKNOWLEDGE,
-                                              DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME,
-                                              DEFAULT_ACK_BATCH_SIZE,
-                                              DEFAULT_ACK_BATCH_SIZE,
-                                              DEFAULT_USE_GLOBAL_POOLS,
-                                              DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE,
-                                              DEFAULT_THREAD_POOL_MAX_SIZE,
-                                              retryInterval,
-                                              retryIntervalMultiplier,
-                                              DEFAULT_MAX_RETRY_INTERVAL,
-                                              reconnectAttempts,
-                                              failoverOnServerShutdown,
-                                              jndiBindings);
-     }
+      jmsServer.createConnectionFactory("ManualReconnectionToSingleServerTest",
+                                        connectorConfigs,
+                                        null,
+                                        DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
+                                        DEFAULT_CONNECTION_TTL,
+                                        callTimeout,
+                                        DEFAULT_CACHE_LARGE_MESSAGE_CLIENT,
+                                        DEFAULT_MIN_LARGE_MESSAGE_SIZE,
+                                        DEFAULT_CONSUMER_WINDOW_SIZE,
+                                        DEFAULT_CONSUMER_MAX_RATE,
+                                        DEFAULT_PRODUCER_WINDOW_SIZE,
+                                        DEFAULT_PRODUCER_MAX_RATE,
+                                        true,
+                                        DEFAULT_BLOCK_ON_PERSISTENT_SEND,
+                                        DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND,
+                                        DEFAULT_AUTO_GROUP,
+                                        DEFAULT_PRE_ACKNOWLEDGE,
+                                        DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME,
+                                        DEFAULT_ACK_BATCH_SIZE,
+                                        DEFAULT_ACK_BATCH_SIZE,
+                                        DEFAULT_USE_GLOBAL_POOLS,
+                                        DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE,
+                                        DEFAULT_THREAD_POOL_MAX_SIZE,
+                                        retryInterval,
+                                        retryIntervalMultiplier,
+                                        DEFAULT_MAX_RETRY_INTERVAL,
+                                        reconnectAttempts,
+                                        failoverOnServerShutdown,
+                                        jndiBindings);
+   }
 
 }
