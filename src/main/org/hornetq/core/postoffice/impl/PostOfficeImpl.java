@@ -528,16 +528,16 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
    {      
       SimpleString address = message.getDestination();
       
-      byte[] duplicateIDBytes = null;
-
       Object duplicateID = message.getProperty(MessageImpl.HDR_DUPLICATE_DETECTION_ID);
 
       DuplicateIDCache cache = null;
+      
+      byte[] duplicateIDBytes = null;
 
       if (duplicateID != null)
       {
          cache = getDuplicateIDCache(message.getDestination());
-
+                 
          if (duplicateID instanceof SimpleString)
          {
             duplicateIDBytes = ((SimpleString)duplicateID).getData();

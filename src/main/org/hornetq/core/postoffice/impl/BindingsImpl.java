@@ -15,10 +15,8 @@ package org.hornetq.core.postoffice.impl;
 
 import java.nio.ByteBuffer;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -28,7 +26,6 @@ import org.hornetq.core.logging.Logger;
 import org.hornetq.core.message.impl.MessageImpl;
 import org.hornetq.core.postoffice.Binding;
 import org.hornetq.core.postoffice.Bindings;
-import org.hornetq.core.server.Bindable;
 import org.hornetq.core.server.Queue;
 import org.hornetq.core.server.RoutingContext;
 import org.hornetq.core.server.ServerMessage;
@@ -199,9 +196,7 @@ public class BindingsImpl implements Bindings
 
       if (theBinding != null)
       {
-         theBinding.willRoute(message);
-
-         theBinding.getBindable().route(message, context);
+         theBinding.route(message, context);
       }
    }
 
@@ -230,8 +225,6 @@ public class BindingsImpl implements Bindings
          }
          else
          {
-            Set<Bindable> chosen = new HashSet<Bindable>();
-
             for (Map.Entry<SimpleString, List<Binding>> entry : routingNameBindingMap.entrySet())
             {
                SimpleString routingName = entry.getKey();
@@ -341,17 +334,10 @@ public class BindingsImpl implements Bindings
 
                if (theBinding != null)
                {
-                  theBinding.willRoute(message);
-
-                  chosen.add(theBinding.getBindable());
+                  theBinding.route(message, context);
                }
 
                routingNamePositions.put(routingName, pos);
-            }
-            
-            for (Bindable bindable : chosen)
-            {
-               bindable.route(message, context);
             }
          }
       }
@@ -371,9 +357,7 @@ public class BindingsImpl implements Bindings
 
          if (binding != null)
          {
-            binding.willRoute(message);
-
-            binding.getBindable().route(message, context);
+            binding.route(message, context);
          }
       }
    }

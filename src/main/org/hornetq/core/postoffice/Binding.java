@@ -15,6 +15,7 @@ package org.hornetq.core.postoffice;
 
 import org.hornetq.core.filter.Filter;
 import org.hornetq.core.server.Bindable;
+import org.hornetq.core.server.RoutingContext;
 import org.hornetq.core.server.ServerMessage;
 import org.hornetq.utils.SimpleString;
 
@@ -43,12 +44,11 @@ public interface Binding
    
    boolean isHighAcceptPriority(ServerMessage message);
    
-   //TODO find a better way
-   void willRoute(ServerMessage message);
-
    boolean isExclusive();
    
    long getID();
 
    int getDistance();
+   
+   void route(ServerMessage message, RoutingContext context) throws Exception;
 }

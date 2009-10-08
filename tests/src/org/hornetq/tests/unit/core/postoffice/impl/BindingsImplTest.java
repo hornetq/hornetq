@@ -29,6 +29,7 @@ import org.hornetq.core.remoting.spi.HornetQBuffer;
 import org.hornetq.core.server.Bindable;
 import org.hornetq.core.server.MessageReference;
 import org.hornetq.core.server.Queue;
+import org.hornetq.core.server.RoutingContext;
 import org.hornetq.core.server.ServerMessage;
 import org.hornetq.core.server.impl.RoutingContextImpl;
 import org.hornetq.core.transaction.Transaction;
@@ -1009,11 +1010,12 @@ public class BindingsImplTest extends UnitTestCase
       }
 
       /* (non-Javadoc)
-       * @see org.hornetq.core.postoffice.Binding#willRoute(org.hornetq.core.server.ServerMessage)
+       * @see org.hornetq.core.postoffice.Binding#route(org.hornetq.core.server.ServerMessage, org.hornetq.core.server.RoutingContext)
        */
-      public void willRoute(final ServerMessage message)
+      public void route(ServerMessage message, RoutingContext context) throws Exception
       {
-
+         // TODO Auto-generated method stub
+         
       }
 
    }

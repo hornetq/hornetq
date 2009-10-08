@@ -26,6 +26,7 @@ import org.hornetq.core.message.impl.MessageImpl;
 import org.hornetq.core.postoffice.BindingType;
 import org.hornetq.core.server.Bindable;
 import org.hornetq.core.server.Queue;
+import org.hornetq.core.server.RoutingContext;
 import org.hornetq.core.server.ServerMessage;
 import org.hornetq.core.server.cluster.RemoteQueueBinding;
 import org.hornetq.utils.SimpleString;
@@ -183,12 +184,8 @@ public class RemoteQueueBindingImpl implements RemoteQueueBinding
       return false;
    }
    
-   public void willRoute(final ServerMessage message)
-   {               
-      //We add a header with the name of the queue, holding a list of the transient ids of the queues to route to
-      
-      //TODO - this can be optimised
-      
+   public void route(final ServerMessage message, final RoutingContext context)
+   {
       byte[] ids = (byte[])message.getProperty(idsHeaderName);
       
       if (ids == null)
@@ -208,9 +205,16 @@ public class RemoteQueueBindingImpl implements RemoteQueueBinding
       
       buff.putLong(remoteQueueID);
       
-      message.putBytesProperty(idsHeaderName, ids); 
+      message.putBytesProperty(idsHeaderName, ids);
+      
+      if (!context.getQueues().contains(this.storeAndForwardQueue))
+      {
+         //There can be many remote bindings for the same node, we only want to add the message once to 
+         //the s & f queue for that node
+         context.getQueues().add(storeAndForwardQueue);
+      }
    }
-
+   
    public synchronized void addConsumer(final SimpleString filterString) throws Exception
    {
       if (filterString != null)

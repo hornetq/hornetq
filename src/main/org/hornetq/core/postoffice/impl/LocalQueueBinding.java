@@ -23,6 +23,7 @@ import org.hornetq.core.postoffice.QueueBinding;
 import org.hornetq.core.server.Bindable;
 import org.hornetq.core.server.Consumer;
 import org.hornetq.core.server.Queue;
+import org.hornetq.core.server.RoutingContext;
 import org.hornetq.core.server.ServerMessage;
 import org.hornetq.core.server.cluster.impl.Redistributor;
 import org.hornetq.utils.SimpleString;
@@ -144,10 +145,11 @@ public class LocalQueueBinding implements QueueBinding
       return false;
    }
    
-   public void willRoute(final ServerMessage message)
-   {              
+   public void route(final ServerMessage message, final RoutingContext context) throws Exception
+   {
+      queue.route(message, context);
    }
-     
+   
    public boolean isQueueBinding()
    {
       return true;

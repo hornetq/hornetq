@@ -19,6 +19,7 @@ import org.hornetq.core.postoffice.Binding;
 import org.hornetq.core.postoffice.BindingType;
 import org.hornetq.core.server.Bindable;
 import org.hornetq.core.server.Divert;
+import org.hornetq.core.server.RoutingContext;
 import org.hornetq.core.server.ServerMessage;
 import org.hornetq.utils.SimpleString;
 
@@ -109,8 +110,9 @@ public class DivertBinding implements Binding
       return true;
    }
    
-   public void willRoute(final ServerMessage message)
-   {      
+   public void route(final ServerMessage message, final RoutingContext context) throws Exception
+   {
+      divert.route(message, context);
    }
 
    public int getDistance()
