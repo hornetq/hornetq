@@ -568,7 +568,7 @@ public class QueueImpl implements Queue
       getRefsOperation(tx).addAck(ref);
    }
 
-   final RefsOperation getRefsOperation(final Transaction tx)
+   private final RefsOperation getRefsOperation(final Transaction tx)
    {
       synchronized (tx)
       {

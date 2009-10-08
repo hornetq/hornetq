@@ -164,6 +164,15 @@ public class FakePostOffice implements PostOffice
       
    }
 
+   /* (non-Javadoc)
+    * @see org.hornetq.core.postoffice.PostOffice#route(org.hornetq.core.server.ServerMessage)
+    */
+   public void route(ServerMessage message) throws Exception
+   {
+      // TODO Auto-generated method stub
+      
+   }
+
 
 
 }

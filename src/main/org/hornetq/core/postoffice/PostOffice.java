@@ -52,6 +52,8 @@ public interface PostOffice extends HornetQComponent
    
    Bindings getMatchingBindings(SimpleString address);
 
+   void route(ServerMessage message) throws Exception;
+   
    void route(ServerMessage message, RoutingContext context) throws Exception;
    
    MessageReference reroute(ServerMessage message, Queue queue, Transaction tx) throws Exception;

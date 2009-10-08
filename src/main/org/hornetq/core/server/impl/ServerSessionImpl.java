@@ -1803,17 +1803,13 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
          throw e;
       }
       
-      RoutingContext context;
-      
       if (tx == null || autoCommitSends)
       {
-         context = new RoutingContextImpl(null);
+         postOffice.route(msg);  
       }
       else
       {
-         context = new RoutingContextImpl(tx);
-      }
-      
-      postOffice.route(msg, context);     
+         postOffice.route(msg, new RoutingContextImpl(tx));   
+      }   
    }
 }

@@ -117,36 +117,4 @@ public class CloseConnectionOnGCTest extends JMSTestBase
                      
       assertEquals(0, server.getRemotingService().getConnections().size());
    }
-   
-   public static void checkWeakReferences(WeakReference<?>... references)
-   {
-
-      int i = 0;
-      boolean hasValue = false;
-
-      do
-      {
-         hasValue = false;
-
-         if (i > 0)
-         {
-            forceGC();
-         }
-
-         for (WeakReference<?> ref : references)
-         {
-            if (ref.get() != null)
-            {
-               hasValue = true;
-            }
-         }
-      }
-      while (i++ <= 30 && hasValue);
-
-      for (WeakReference<?> ref : references)
-      {
-         assertNull(ref.get());
-      }
-   }
-   
 }

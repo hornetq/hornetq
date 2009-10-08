@@ -518,6 +518,11 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
    {
       return addressManager.getMatchingBindings(address);
    }
+   
+   public void route(final ServerMessage message) throws Exception
+   { 
+      route(message, new RoutingContextImpl(null));
+   }
 
    public void route(final ServerMessage message, final RoutingContext context) throws Exception
    {      
@@ -700,11 +705,6 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
       return reference;
    }
    
-   public void route(final ServerMessage message) throws Exception
-   {
-      route(message, new RoutingContextImpl(null));
-   }
-
    public boolean redistribute(final ServerMessage message, final Queue originatingQueue, final RoutingContext context) throws Exception
    {      
       Bindings bindings = addressManager.getBindingsForRoutingAddress(message.getDestination());
@@ -1167,7 +1167,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
                   // This could happen when the PageStore left the pageState
 
                   // TODO is this correct - don't we lose transactionality here???
-                  route(message, new RoutingContextImpl(null));
+                  route(message);
                }
                first = false;
             }
