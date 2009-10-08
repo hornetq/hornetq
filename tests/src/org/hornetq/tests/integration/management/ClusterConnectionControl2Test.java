@@ -84,11 +84,24 @@ public class ClusterConnectionControl2Test extends ManagementTestBase
       assertEquals(0, nodes.size());
       
       server_1.start();
-      Thread.sleep(3000);
-
-      nodes = clusterConnectionControl_0.getNodes();
-      System.out.println(nodes);
+      long start = System.currentTimeMillis();
+      
+      while (true)
+      {
+         nodes = clusterConnectionControl_0.getNodes();
+         
+         if (nodes.size() != 1 && System.currentTimeMillis() - start < 30000)
+         {
+            Thread.sleep(100);
+         }
+         else
+         {
+            break;
+         }
+      }
+            
       assertEquals(1, nodes.size());
+      
       String remoteAddress = nodes.values().iterator().next();
       assertTrue(remoteAddress.endsWith(":" + port_1));
    }
