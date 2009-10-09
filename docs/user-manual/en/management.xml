@@ -211,6 +211,13 @@
                      if it was created with one, <literal>isDurable()</literal> to know wether the
                      queue is durable or not, etc.)</para>
                </listitem>
+  		<listitem>
+                  <para>Pausing and resuming Queues</para>
+                  <para>The <literal>QueueControl</literal> can pause and resume the underlying queue.
+		  When a queue is paused, it will receive messages but will not deliver them. When it's resume, it'll begin
+		delivering the queued messages, if any.
+		  </para>
+               </listitem>
             </itemizedlist>
          </section>
          <section>
@@ -432,6 +439,13 @@
                      its attributes (e.g. <literal>isTemporary()</literal> to know wether the queue
                      is temporary or not, <literal>isDurable()</literal> to know wether the queue is
                      durable or not, etc.)</para>
+               </listitem>
+                <listitem>
+                  <para>Pausing and resuming queues</para>
+                  <para>The <literal>JMSQueueControl</literal> can pause and resume the underlying queue. 
+			When the queue is paused it will continue to receive messages but will not deliver them. 
+			When resumed again it will deliver the enqueued messages, if any.
+		  </para>
                </listitem>
             </itemizedlist>
          </section>
