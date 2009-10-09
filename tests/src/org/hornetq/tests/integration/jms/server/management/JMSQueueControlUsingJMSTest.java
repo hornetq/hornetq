@@ -236,6 +236,21 @@ public class JMSQueueControlUsingJMSTest extends JMSQueueControlTest
          {
             return (String)proxy.retrieveAttributeValue("JNDIBinding");
          }
+
+         public boolean isPaused() throws Exception
+         {
+            return (Boolean)proxy.invokeOperation("isPaused");
+         }
+
+         public void pause() throws Exception
+         {
+           proxy.invokeOperation("pause");
+         }
+
+         public void resume() throws Exception
+         {
+            proxy.invokeOperation("resume");
+         }
       };
    }
 

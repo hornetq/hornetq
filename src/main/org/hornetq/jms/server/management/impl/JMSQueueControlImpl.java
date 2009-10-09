@@ -305,6 +305,21 @@ public class JMSQueueControlImpl extends StandardMBean implements JMSQueueContro
       return MessageCounterHelper.listMessageCounterHistoryAsHTML(new MessageCounter[] { counter });
    }
 
+   public boolean isPaused() throws Exception
+   {
+     return coreQueueControl.isPaused();
+   }
+
+   public void pause() throws Exception
+   {
+      coreQueueControl.pause();
+   }
+
+   public void resume() throws Exception
+   {
+      coreQueueControl.resume();      
+   }
+
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------

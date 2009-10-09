@@ -13,6 +13,7 @@
 
 package org.hornetq.tests.integration.jms.server.management;
 
+import static org.hornetq.tests.integration.management.ManagementControlHelper.createHornetQServerControl;
 import static org.hornetq.tests.integration.management.ManagementControlHelper.createJMSQueueControl;
 import static org.hornetq.tests.util.RandomUtil.randomLong;
 import static org.hornetq.tests.util.RandomUtil.randomSimpleString;
@@ -33,6 +34,8 @@ import javax.naming.Context;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.TransportConfiguration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
+import org.hornetq.core.management.HornetQServerControl;
+import org.hornetq.core.management.QueueControl;
 import org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
 import org.hornetq.core.server.HornetQ;
@@ -705,6 +708,28 @@ public class JMSQueueControlTest extends ManagementTestBase
 
       JMSUtil.consumeMessages(1, queue);
    }
+   
+
+   public void testPauseAndResume()
+   {
+
+      try
+      {
+         JMSQueueControl queueControl = createManagementControl();
+         
+         assertFalse(queueControl.isPaused());
+         queueControl.pause();
+         assertTrue(queueControl.isPaused());
+         queueControl.resume();
+         assertFalse(queueControl.isPaused());
+      }
+      catch (Exception e)
+      {
+         // TODO Auto-generated catch block
+         e.printStackTrace();
+      }
+   }
+
 
    // Package protected ---------------------------------------------
 

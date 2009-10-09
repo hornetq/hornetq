@@ -105,4 +105,14 @@ public interface JMSQueueControl extends DestinationControl
    @Operation(desc = "List the message counters history as HTML", impact = INFO)
    String listMessageCounterHistoryAsHTML() throws Exception;
 
+   @Operation(desc = "Pauses the queue.", impact = INFO)
+   void pause() throws Exception;
+   
+   @Operation(desc = "Returns true if the queue is paused.", impact = INFO)
+   boolean isPaused() throws Exception;
+   
+   @Operation(desc = "Resumes the queue.", impact = INFO)
+   void resume() throws Exception;
+   
+   
 }
