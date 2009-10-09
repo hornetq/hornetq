@@ -195,7 +195,7 @@
                             <entry>Boolean</entry>
                             <entry>if true wait for non transaction data to be synced to the journal
                                 before returning response to client.</entry>
-                            <entry>false</entry>
+                            <entry>true</entry>
                         </row>
                         <row>
                             <entry><link linkend="configuring.message.journal.journal-type"
@@ -213,9 +213,10 @@
                         </row>
                         <row>
                             <entry><link linkend="management.jmx.configuration"
-                                    >jmx-domain</link></entry>
+                                >jmx-domain</link></entry>
                             <entry>String</entry>
-                            <entry>the JMX domain used to registered HornetQ MBeans in the MBeanServer</entry>
+                            <entry>the JMX domain used to registered HornetQ MBeans in the
+                                MBeanServer</entry>
                             <entry>org.hornetq</entry>
                         </row>
                         <row>
@@ -842,7 +843,7 @@
                                     >connection-factory.block-on-persistent-send</link></entry>
                             <entry>Boolean</entry>
                             <entry>whether or not persistent messages are sent synchronously</entry>
-                            <entry>false</entry>
+                            <entry>true</entry>
                         </row>
                         <row>
                             <entry>connection-factory.call-timeout</entry>

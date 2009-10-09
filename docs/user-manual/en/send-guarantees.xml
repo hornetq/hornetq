@@ -50,7 +50,7 @@
                 <para><literal>BlockOnPersistentSend</literal>. If this is set to <literal
                         >true</literal> then all calls to send for persistent messages on non
                     transacted sessions will block until the message has reached the server, and a
-                    response has been sent back. The default value is <literal>false</literal>.
+                    response has been sent back. The default value is <literal>true</literal>.
                 </para>
             </listitem>
             <listitem>
@@ -85,7 +85,7 @@
                 >journal-sync-non-transactional</literal> is set to <literal>true</literal> the
             server will not send a response back to the client until the message has been persisted
             and the server has a guarantee that the data has been persisted to disk. The default
-            value for this parameter is <literal>false</literal>.</para>
+            value for this parameter is <literal>true</literal>.</para>
     </section>
     <section id="send-guarantees.nontrans.acks">
         <title>Guarantees of Non Transactional Acknowledgements</title>

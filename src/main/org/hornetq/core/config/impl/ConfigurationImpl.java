@@ -89,7 +89,7 @@ public class ConfigurationImpl implements Configuration
 
    public static final boolean DEFAULT_JOURNAL_SYNC_TRANSACTIONAL = true;
 
-   public static final boolean DEFAULT_JOURNAL_SYNC_NON_TRANSACTIONAL = false;
+   public static final boolean DEFAULT_JOURNAL_SYNC_NON_TRANSACTIONAL = true;
 
    public static final int DEFAULT_JOURNAL_FILE_SIZE = 10485760;
 

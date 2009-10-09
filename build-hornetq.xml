@@ -569,6 +569,7 @@
    <target name="jar"
            depends="jar-core, jar-core-client, jar-jms, jar-jms-client, jar-transports, jar-jboss-integration, jar-bootstrap, jar-logging, jar-ra, jar-mc, jar-jnp-client">
    </target>
+	
    <target name="jar-jnp-client" depends="init">
       <jar jarfile="${build.jars.dir}/${jnp.client.jar.name}">
          <zipfileset src="${org.jboss.naming.lib}/jnpserver.jar">

@@ -76,8 +76,8 @@
             <itemizedlist>
                <listitem>
                   <para>Listing, creating, deploying and destroying queues</para>
-                  <para>A list of deployed core queues can be retrieved using the 
-                      <literal>getQueueNames()</literal> method.</para>
+                  <para>A list of deployed core queues can be retrieved using the <literal
+                        >getQueueNames()</literal> method.</para>
                   <para>Core queues can be created or destroyed using the management operations
                         <literal>createQueue()</literal> or <literal>deployQueue()</literal> or
                         <literal>destroyQueue()</literal>)on the <literal
@@ -86,6 +86,13 @@
                         >core.server</literal>)</para>
                   <para><literal>createQueue</literal> will fail if the queue already exists while
                         <literal>deployQueue</literal> will do nothing.</para>
+               </listitem>
+               <listitem>
+                  <para>Pausing and resuming Queues</para>
+                  <para>The <literal>QueueControl</literal> can pause and resume the underlying
+                     queue. When a queue is paused, it will receive messages but will not deliver
+                     them. When it's resumed, it'll begin delivering the queued messages, if any.
+                  </para>
                </listitem>
                <listitem>
                   <para>Listing and closing remote connections</para>
@@ -106,9 +113,9 @@
                      Strings.) To commit or rollback a given prepared transaction, the <literal
                         >commitPreparedTransaction</literal>() or <literal
                         >rollbackPreparedTransaction()</literal> method can be used to resolve
-                     heuristic transactions. Heuristically completed transactions can be listed using 
-                     the <literal>listHeuristicCommittedTransactions()</literal> and 
-                     <literal>listHeuristicRolledBackTransactions</literal> methods.</para>
+                     heuristic transactions. Heuristically completed transactions can be listed
+                     using the <literal>listHeuristicCommittedTransactions()</literal> and <literal
+                        >listHeuristicRolledBackTransactions</literal> methods.</para>
                </listitem>
                <listitem>
                   <para>Enabling and resetting Message counters</para>
@@ -177,9 +184,10 @@
                   <para>Messages can also be removed from the queue by using the <literal
                         >removeMessages()</literal> method which returns a <literal
                         >boolean</literal> for the single message ID variant or the number of
-                     removed messages for the filter variant. The <literal>removeMessages()</literal>
-                     method takes a <literal>filter</literal> argument to remove only filtered messages. Setting
-                     the filter to an empty string will in effect remove all messages.</para>
+                     removed messages for the filter variant. The <literal
+                        >removeMessages()</literal> method takes a <literal>filter</literal>
+                     argument to remove only filtered messages. Setting the filter to an empty
+                     string will in effect remove all messages.</para>
                </listitem>
                <listitem>
                   <para>Counting messages</para>
@@ -211,12 +219,12 @@
                      if it was created with one, <literal>isDurable()</literal> to know wether the
                      queue is durable or not, etc.)</para>
                </listitem>
-  		<listitem>
+               <listitem>
                   <para>Pausing and resuming Queues</para>
-                  <para>The <literal>QueueControl</literal> can pause and resume the underlying queue.
-		  When a queue is paused, it will receive messages but will not deliver them. When it's resume, it'll begin
-		delivering the queued messages, if any.
-		  </para>
+                  <para>The <literal>QueueControl</literal> can pause and resume the underlying
+                     queue. When a queue is paused, it will receive messages but will not deliver
+                     them. When it's resume, it'll begin delivering the queued messages, if any.
+                  </para>
                </listitem>
             </itemizedlist>
          </section>
@@ -310,8 +318,8 @@
             <itemizedlist>
                <listitem>
                   <para>Listing, creating, destroying connection factories</para>
-                  <para>Names of the deployed connection factories can be retrieved by the
-					 <literal>getConnectionFactoryNames()</literal> method.</para>
+                  <para>Names of the deployed connection factories can be retrieved by the <literal
+                        >getConnectionFactoryNames()</literal> method.</para>
                   <para>JMS connection factories can be created or destroyed using the <literal
                         >createConnectionFactory()</literal> methods or <literal
                         >destroyConnectionFactory()</literal> methods. These connection factories
@@ -328,8 +336,8 @@
                </listitem>
                <listitem>
                   <para>Listing, creating, destroying queues</para>
-                  <para>Names of the deployed JMS queues can be retrieved by the
-					 <literal>getQueueNames()</literal> method.</para>
+                  <para>Names of the deployed JMS queues can be retrieved by the <literal
+                        >getQueueNames()</literal> method.</para>
                   <para>JMS queues can be created or destroyed using the <literal
                         >createQueue()</literal> methods or <literal>destroyQueue()</literal>
                      methods. These queues are bound to JNDI so that JMS clients can look them
@@ -337,8 +345,8 @@
                </listitem>
                <listitem>
                   <para>Listing, creating/destroying topics</para>
-                  <para>Names of the deployed topics can be retrieved by the
-					 <literal>getTopicNames()</literal> method.</para>
+                  <para>Names of the deployed topics can be retrieved by the <literal
+                        >getTopicNames()</literal> method.</para>
                   <para>JMS topics can be created or destroyed using the <literal
                         >createTopic()</literal> or <literal>destroyTopic()</literal> methods. These
                      topics are bound to JNDI so that JMS clients can look them up</para>
@@ -407,10 +415,10 @@
                   <para>Messages can also be removed from the queue by using the <literal
                         >removeMessages()</literal> method which returns a <literal
                         >boolean</literal> for the single message ID variant or the number of
-                     removed messages for the filter variant.
-                      The <literal>removeMessages()</literal>
-                      method takes a <literal>filter</literal> argument to remove only filtered messages. Setting
-                      the filter to an empty string will in effect remove all messages.</para>
+                     removed messages for the filter variant. The <literal
+                        >removeMessages()</literal> method takes a <literal>filter</literal>
+                     argument to remove only filtered messages. Setting the filter to an empty
+                     string will in effect remove all messages.</para>
                </listitem>
                <listitem>
                   <para>Counting messages</para>
@@ -440,12 +448,12 @@
                      is temporary or not, <literal>isDurable()</literal> to know wether the queue is
                      durable or not, etc.)</para>
                </listitem>
-                <listitem>
+               <listitem>
                   <para>Pausing and resuming queues</para>
-                  <para>The <literal>JMSQueueControl</literal> can pause and resume the underlying queue. 
-			When the queue is paused it will continue to receive messages but will not deliver them. 
-			When resumed again it will deliver the enqueued messages, if any.
-		  </para>
+                  <para>The <literal>JMSQueueControl</literal> can pause and resume the underlying
+                     queue. When the queue is paused it will continue to receive messages but will
+                     not deliver them. When resumed again it will deliver the enqueued messages, if
+                     any. </para>
                </listitem>
             </itemizedlist>
          </section>
@@ -519,10 +527,10 @@
                >Java Management guide</ulink> to configure the server for remote management (system
             properties must be set in <literal>run.sh</literal> or <literal>run.bat</literal>
             scripts).</para>
-         <para>By default, HornetQ server uses the JMX domain "org.hornetq". To manage several HornetQ servers
-            from the <emphasis>same</emphasis> MBeanServer, the JMX domain can be configured for each individual
-            HornetQ server by setting <literal>jmx-domain</literal> in <literal>hornetq-configuration.xml</literal>:
-         </para>
+         <para>By default, HornetQ server uses the JMX domain "org.hornetq". To manage several
+            HornetQ servers from the <emphasis>same</emphasis> MBeanServer, the JMX domain can be
+            configured for each individual HornetQ server by setting <literal>jmx-domain</literal>
+            in <literal>hornetq-configuration.xml</literal>: </para>
          <programlisting>
 &lt;!-- use a specific JMX domain for HornetQ MBeans -->
 &lt;jmx-domain>my.org.hornetq&lt;/jmx-domain>            

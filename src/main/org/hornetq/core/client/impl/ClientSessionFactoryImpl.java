@@ -79,7 +79,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
 
    public static final boolean DEFAULT_BLOCK_ON_ACKNOWLEDGE = false;
 
-   public static final boolean DEFAULT_BLOCK_ON_PERSISTENT_SEND = false;
+   public static final boolean DEFAULT_BLOCK_ON_PERSISTENT_SEND = true;
 
    public static final boolean DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND = false;
 

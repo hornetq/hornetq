@@ -53,6 +53,5 @@ public interface ServerMessage extends Message, EncodingSupport
 
    ServerMessage makeCopyForExpiryOrDLA(long newID, boolean expiry) throws Exception;
    
-   void setOriginalHeaders(ServerMessage other, boolean expiry);
-   
+   void setOriginalHeaders(ServerMessage other, boolean expiry);   
 }

@@ -642,6 +642,7 @@ public class BridgeImpl implements Bridge, FailureListener, SendAcknowledgementH
          csf.setRetryInterval(retryInterval);
          csf.setRetryIntervalMultiplier(retryIntervalMultiplier);
          csf.setReconnectAttempts(reconnectAttempts);
+         csf.setBlockOnPersistentSend(false);
 
          // Session is pre-acknowledge
          session = (ClientSessionInternal)csf.createSession(clusterUser, clusterPassword, false, true, true, true, 1);

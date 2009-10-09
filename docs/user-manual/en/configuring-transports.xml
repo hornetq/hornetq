@@ -204,13 +204,20 @@ etc
                         name or IP address to connect to (when configuring a connector) or to listen
                         on (when configuring an acceptor). The default value for this property is
                             <literal>localhost</literal>. When configuring acceptors, multiple hosts
-                        or IP addresses can be specified by separating them with commas.</para>
+                        or IP addresses can be specified by separating them with commas. It's not
+                        valid to specify multiple addresses when specifying the host for a
+                        connector; a connector makes a connection to one specific address.</para>
                     <note>
                         <para>Don't forget to specify a host name or ip address! If you want your
                             server able to accept connections from other nodes you must specify a
                             hostname or ip address at which the acceptor will bind and listen for
                             incoming connections. The default is localhost which of course is not
                             accessible from remote nodes!</para>
+                    </note>
+                    <note>
+                        <para>Although an address 0.0.0.0 is sometimes used by other systems to mean
+                            "bind to all available addresses", this is not a valid address for a
+                            Netty acceptor to bind to.</para>
                     </note>
                 </listitem>
                 <listitem>

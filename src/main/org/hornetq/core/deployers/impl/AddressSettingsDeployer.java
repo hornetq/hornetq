@@ -28,7 +28,6 @@ import org.w3c.dom.NodeList;
 public class AddressSettingsDeployer extends XmlDeployer
 {
    private static final Logger log = Logger.getLogger(AddressSettingsDeployer.class);
-
    
    private static final String DEAD_LETTER_ADDRESS_NODE_NAME = "dead-letter-address";
 
@@ -51,6 +50,8 @@ public class AddressSettingsDeployer extends XmlDeployer
    private static final String LVQ_NODE_NAME = "last-value-queue";
    
    private static final String REDISTRIBUTION_DELAY_NODE_NAME = "redistribution-delay";
+   
+   private static final String SEND_TO_DLA_ON_NO_ROUTE = "send-to-dla-on-no-route";
 
    private final HierarchicalRepository<AddressSettings> addressSettingsRepository;
 
@@ -138,6 +139,10 @@ public class AddressSettingsDeployer extends XmlDeployer
          else if (REDISTRIBUTION_DELAY_NODE_NAME.equalsIgnoreCase(child.getNodeName()))
          {           
             addressSettings.setRedistributionDelay(Long.valueOf(child.getTextContent().trim()));
+         }
+         else if (SEND_TO_DLA_ON_NO_ROUTE.equalsIgnoreCase(child.getNodeName()))
+         {           
+            addressSettings.setSendToDLAOnNoRoute(Boolean.valueOf(child.getTextContent().trim()));
          }
       }
 
