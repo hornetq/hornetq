@@ -88,28 +88,33 @@ public class FilterImpl implements Filter
    // Static ---------------------------------------------------------
 
    /**
-    * @return null if <code>filterStr</code> is null or a valid filter else
+    * @return null if <code>filterStr</code> is null or an empty String and a valid filter else
     * @throws HornetQException if the string does not correspond to a valid filter
     */
    public static Filter createFilter(final String filterStr) throws HornetQException
    {
-      Filter filter = filterStr == null ? null : new FilterImpl(new SimpleString(filterStr));
-      return filter;
+      return createFilter(SimpleString.toSimpleString(filterStr));
    }
    
    /**
-    * @return null if <code>filterStr</code> is null or a valid filter else
+    * @return null if <code>filterStr</code> is null or an empty String and a valid filter else
     * @throws HornetQException if the string does not correspond to a valid filter
     */
    public static Filter createFilter(final SimpleString filterStr) throws HornetQException
    {
-      Filter filter = filterStr == null ? null : new FilterImpl(filterStr);
-      return filter;
+      if (filterStr == null || filterStr.length() == 0)
+      {
+         return null;
+      }
+      else
+      {
+         return new FilterImpl(filterStr);
+      }
    }
 
    // Constructors ---------------------------------------------------
 
-   public FilterImpl(final SimpleString str) throws HornetQException
+   private FilterImpl(final SimpleString str) throws HornetQException
    {
       sfilterString = str;
 

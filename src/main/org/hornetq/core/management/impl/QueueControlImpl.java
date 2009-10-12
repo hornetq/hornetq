@@ -74,21 +74,6 @@ public class QueueControlImpl extends StandardMBean implements QueueControl
       return array.toString();
    }
 
-   /**
-    * Returns null if the string is null or empty
-    */
-   public static Filter createFilter(final String filterStr) throws HornetQException
-   {
-      if (filterStr == null || filterStr.trim().length() == 0)
-      {
-         return null;
-      }
-      else
-      {
-         return new FilterImpl(new SimpleString(filterStr));
-      }
-   }
-
    // Constructors --------------------------------------------------
 
    public QueueControlImpl(final Queue queue,
@@ -243,7 +228,7 @@ public class QueueControlImpl extends StandardMBean implements QueueControl
    {
       try
       {
-         Filter filter = createFilter(filterStr);
+         Filter filter = FilterImpl.createFilter(filterStr);
          List<MessageReference> refs = queue.list(filter);
          Map<String, Object>[] messages = new Map[refs.size()];
          int i = 0;
@@ -267,7 +252,7 @@ public class QueueControlImpl extends StandardMBean implements QueueControl
 
    public int countMessages(final String filterStr) throws Exception
    {
-      Filter filter = createFilter(filterStr);
+      Filter filter = FilterImpl.createFilter(filterStr);
       List<MessageReference> refs = queue.list(filter);
       return refs.size();
    }
@@ -286,7 +271,7 @@ public class QueueControlImpl extends StandardMBean implements QueueControl
 
    public int removeMessages(final String filterStr) throws Exception
    {
-      Filter filter = createFilter(filterStr);
+      Filter filter = FilterImpl.createFilter(filterStr);
       return queue.deleteMatchingReferences(filter);
    }
 
@@ -299,7 +284,7 @@ public class QueueControlImpl extends StandardMBean implements QueueControl
    {
       try
       {
-         Filter filter = createFilter(filterStr);
+         Filter filter = FilterImpl.createFilter(filterStr);
          return queue.expireReferences(filter);
       }
       catch (HornetQException e)
@@ -322,7 +307,7 @@ public class QueueControlImpl extends StandardMBean implements QueueControl
 
    public int moveMessages(final String filterStr, final String otherQueueName) throws Exception
    {
-      Filter filter = createFilter(filterStr);
+      Filter filter = FilterImpl.createFilter(filterStr);
 
       Binding binding = postOffice.getBinding(new SimpleString(otherQueueName));
 
@@ -336,7 +321,7 @@ public class QueueControlImpl extends StandardMBean implements QueueControl
 
    public int sendMessagesToDeadLetterAddress(final String filterStr) throws Exception
    {
-      Filter filter = createFilter(filterStr);
+      Filter filter = FilterImpl.createFilter(filterStr);
 
       List<MessageReference> refs = queue.list(filter);
 
@@ -355,7 +340,7 @@ public class QueueControlImpl extends StandardMBean implements QueueControl
 
    public int changeMessagesPriority(String filterStr, int newPriority) throws Exception
    {
-      Filter filter = createFilter(filterStr);
+      Filter filter = FilterImpl.createFilter(filterStr);
 
       List<MessageReference> refs = queue.list(filter);
 

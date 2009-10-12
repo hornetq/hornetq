@@ -1128,12 +1128,7 @@ public class HornetQServerImpl implements HornetQServer
 
       for (QueueBindingInfo queueBindingInfo : queueBindingInfos)
       {
-         Filter filter = null;
-
-         if (queueBindingInfo.getFilterString() != null)
-         {
-            filter = new FilterImpl(queueBindingInfo.getFilterString());
-         }
+         Filter filter = FilterImpl.createFilter(queueBindingInfo.getFilterString());
 
          Queue queue = queueFactory.createQueue(queueBindingInfo.getId(),
                                                 queueBindingInfo.getAddress(),
@@ -1226,12 +1221,7 @@ public class HornetQServerImpl implements HornetQServer
          }
       }
 
-      Filter filter = null;
-
-      if (filterString != null)
-      {
-         filter = new FilterImpl(filterString);
-      }
+      Filter filter = FilterImpl.createFilter(filterString);
 
       final Queue queue = queueFactory.createQueue(storageManager.generateUniqueID(),
                                                    address,
@@ -1293,12 +1283,7 @@ public class HornetQServerImpl implements HornetQServer
 
          Transformer transformer = instantiateTransformer(config.getTransformerClassName());
 
-         Filter filter = null;
-
-         if (config.getFilterString() != null)
-         {
-            filter = new FilterImpl(new SimpleString(config.getFilterString()));
-         }
+         Filter filter = FilterImpl.createFilter(config.getFilterString());
 
          Divert divert = new DivertImpl(new SimpleString(config.getForwardingAddress()),
                                         sName,

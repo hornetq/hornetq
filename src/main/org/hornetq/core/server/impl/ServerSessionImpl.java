@@ -346,12 +346,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
 
          securityStore.check(binding.getAddress(), CheckType.CONSUME, this);
 
-         Filter filter = null;
-
-         if (filterString != null)
-         {
-            filter = new FilterImpl(filterString);
-         }
+         Filter filter = FilterImpl.createFilter(filterString);;
 
          ServerConsumer consumer = new ServerConsumerImpl(packet.getID(),
                                                           this,

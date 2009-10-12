@@ -45,7 +45,7 @@ public class FilterTest  extends UnitTestCase
 
    public void testFilterForgets() throws Exception
    {
-      filter = new FilterImpl(new SimpleString("color = 'RED'"));  
+      filter = FilterImpl.createFilter(new SimpleString("color = 'RED'"));  
 
       message.putStringProperty(new SimpleString("color"), new SimpleString("RED"));
       assertTrue(filter.match(message));
@@ -57,17 +57,26 @@ public class FilterTest  extends UnitTestCase
    public void testInvalidString() throws Exception
    {
       testInvalidFilter("invalid");
+      testInvalidFilter(new SimpleString("invalid"));
       
       testInvalidFilter("color = 'red");
+      testInvalidFilter(new SimpleString("color = 'red"));
       
       testInvalidFilter("3");
-      
-      testInvalidFilter(null);
+      testInvalidFilter(new SimpleString("3"));      
+   }
+   
+   public void testNullFilter() throws Exception
+   {
+      assertNull(FilterImpl.createFilter((String)null));
+      assertNull(FilterImpl.createFilter(""));
+      assertNull(FilterImpl.createFilter((SimpleString)null));
+      assertNull(FilterImpl.createFilter(new SimpleString("")));      
    }
    
    public void testHQDurable() throws Exception
    {
-      filter = new FilterImpl(new SimpleString("HQDurable='DURABLE'"));
+      filter = FilterImpl.createFilter(new SimpleString("HQDurable='DURABLE'"));
       
       message.setDurable(true);
       
@@ -77,7 +86,7 @@ public class FilterTest  extends UnitTestCase
       
       assertFalse(filter.match(message));
       
-      filter = new FilterImpl(new SimpleString("HQDurable='NON_DURABLE'"));
+      filter = FilterImpl.createFilter(new SimpleString("HQDurable='NON_DURABLE'"));
       
       message = new ServerMessageImpl();
       message.setDurable(true);
@@ -96,8 +105,8 @@ public class FilterTest  extends UnitTestCase
       message.setBody(ChannelBuffers.wrappedBuffer(RandomUtil.randomBytes(1)));
       assertTrue(message.getEncodeSize() < 1024);
       
-      Filter moreThan128 = new FilterImpl(new SimpleString("HQSize > 128"));
-      Filter lessThan1024 = new FilterImpl(new SimpleString("HQSize < 1024"));
+      Filter moreThan128 = FilterImpl.createFilter(new SimpleString("HQSize > 128"));
+      Filter lessThan1024 = FilterImpl.createFilter(new SimpleString("HQSize < 1024"));
       
       assertFalse(moreThan128.match(message));
       assertTrue(lessThan1024.match(message));
@@ -111,7 +120,7 @@ public class FilterTest  extends UnitTestCase
 
    public void testHQPriority() throws Exception
    {
-      filter = new FilterImpl(new SimpleString("HQPriority=3"));
+      filter = FilterImpl.createFilter(new SimpleString("HQPriority=3"));
       
       for (int i = 0; i < 10; i++)
       {         
@@ -130,7 +139,7 @@ public class FilterTest  extends UnitTestCase
    
    public void testHQTimestamp() throws Exception
    {
-      filter = new FilterImpl(new SimpleString("HQTimestamp=12345678"));
+      filter = FilterImpl.createFilter(new SimpleString("HQTimestamp=12345678"));
       
       message.setTimestamp(87654321);
       
@@ -143,31 +152,31 @@ public class FilterTest  extends UnitTestCase
          
    public void testBooleanTrue() throws Exception
    {
-      filter = new FilterImpl(new SimpleString("MyBoolean=true"));
+      filter = FilterImpl.createFilter(new SimpleString("MyBoolean=true"));
       
       testBoolean("MyBoolean", true);
    }
    
    public void testDifferentNullString() throws Exception
    {
-      filter = new FilterImpl(new SimpleString("prop <> 'foo'"));
+      filter = FilterImpl.createFilter(new SimpleString("prop <> 'foo'"));
       assertTrue(filter.match(message));     
       
-      filter = new FilterImpl(new SimpleString("NOT (prop = 'foo')"));
+      filter = FilterImpl.createFilter(new SimpleString("NOT (prop = 'foo')"));
       assertTrue(filter.match(message));      
 
-      filter = new FilterImpl(new SimpleString("prop <> 'foo'"));
+      filter = FilterImpl.createFilter(new SimpleString("prop <> 'foo'"));
       doPutStringProperty("prop", "bar");
       assertTrue(filter.match(message));     
 
-      filter = new FilterImpl(new SimpleString("prop <> 'foo'"));
+      filter = FilterImpl.createFilter(new SimpleString("prop <> 'foo'"));
       doPutStringProperty("prop", "foo");
       assertFalse(filter.match(message));     
    }
    
    public void testBooleanFalse() throws Exception
    {
-      filter = new FilterImpl(new SimpleString("MyBoolean=false"));
+      filter = FilterImpl.createFilter(new SimpleString("MyBoolean=false"));
       testBoolean("MyBoolean", false);
    }
    
@@ -183,7 +192,7 @@ public class FilterTest  extends UnitTestCase
    public void testStringEquals() throws Exception
    {
       // First, simple test of string equality and inequality
-      filter = new FilterImpl(new SimpleString("MyString='astring'"));
+      filter = FilterImpl.createFilter(new SimpleString("MyString='astring'"));
       
       doPutStringProperty("MyString", "astring");
       assertTrue(filter.match(message));
@@ -192,7 +201,7 @@ public class FilterTest  extends UnitTestCase
       assertTrue(!filter.match(message));
       
       // test empty string
-      filter = new FilterImpl(new SimpleString("MyString=''"));
+      filter = FilterImpl.createFilter(new SimpleString("MyString=''"));
       
       doPutStringProperty("MyString", "");
       assertTrue("test 1", filter.match(message));
@@ -202,7 +211,7 @@ public class FilterTest  extends UnitTestCase
       
       // test literal apostrophes (which are escaped using two apostrophes
       // in selectors)
-      filter = new FilterImpl(new SimpleString("MyString='test JBoss''s filter'"));
+      filter = FilterImpl.createFilter(new SimpleString("MyString='test JBoss''s filter'"));
       
       // note: apostrophes are not escaped in string properties
       doPutStringProperty("MyString", "test JBoss's filter");
@@ -217,7 +226,7 @@ public class FilterTest  extends UnitTestCase
    public void testStringLike() throws Exception
    {
       // test LIKE operator with no wildcards
-      filter = new FilterImpl(new SimpleString("MyString LIKE 'astring'"));
+      filter = FilterImpl.createFilter(new SimpleString("MyString LIKE 'astring'"));
       assertFalse(filter.match(message));
       
       // test where LIKE operand matches
@@ -225,17 +234,17 @@ public class FilterTest  extends UnitTestCase
       assertTrue(filter.match(message));
       
       // test one character string
-      filter = new FilterImpl(new SimpleString("MyString LIKE 'a'"));
+      filter = FilterImpl.createFilter(new SimpleString("MyString LIKE 'a'"));
       doPutStringProperty("MyString","a");
       assertTrue(filter.match(message));
       
       // test empty string
-      filter = new FilterImpl(new SimpleString("MyString LIKE ''"));
+      filter = FilterImpl.createFilter(new SimpleString("MyString LIKE ''"));
       doPutStringProperty("MyString", "");
       assertTrue(filter.match(message));
       
       // tests where operand does not match
-      filter = new FilterImpl(new SimpleString("MyString LIKE 'astring'"));
+      filter = FilterImpl.createFilter(new SimpleString("MyString LIKE 'astring'"));
       
       // test with extra characters at beginning
       doPutStringProperty("MyString", "NOTastring");
@@ -271,7 +280,7 @@ public class FilterTest  extends UnitTestCase
       // matches any single character
       
       // first, some tests with the wildcard by itself
-      filter = new FilterImpl(new SimpleString("MyString LIKE '_'"));
+      filter = FilterImpl.createFilter(new SimpleString("MyString LIKE '_'"));
       assertFalse(filter.match(message));
       
       // test match against single character
@@ -288,7 +297,7 @@ public class FilterTest  extends UnitTestCase
       
       
       // next, tests with wildcard at the beginning of the string
-      filter = new FilterImpl(new SimpleString("MyString LIKE '_bcdf'"));
+      filter = FilterImpl.createFilter(new SimpleString("MyString LIKE '_bcdf'"));
       
       // test match at beginning of string
       doPutStringProperty("MyString", "abcdf");
@@ -323,7 +332,7 @@ public class FilterTest  extends UnitTestCase
       assertTrue(!filter.match(message));
       
       // next, tests with wildcard at the end of the string
-      filter = new FilterImpl(new SimpleString("MyString LIKE 'abcd_'"));
+      filter = FilterImpl.createFilter(new SimpleString("MyString LIKE 'abcd_'"));
       
       // test match at end of string
       doPutStringProperty("MyString", "abcdf");
@@ -360,7 +369,7 @@ public class FilterTest  extends UnitTestCase
       // test match in middle of string
       
       // next, tests with wildcard in the middle of the string
-      filter = new FilterImpl(new SimpleString("MyString LIKE 'ab_df'"));
+      filter = FilterImpl.createFilter(new SimpleString("MyString LIKE 'ab_df'"));
       
       // test match in the middle of string
       doPutStringProperty("MyString", "abcdf");
@@ -400,7 +409,7 @@ public class FilterTest  extends UnitTestCase
    public void testNotLikeExpression() throws Exception
    {
       //Should evaluate to true since the property MyString does not exist
-      filter = new FilterImpl(new SimpleString("NOT (MyString LIKE '%')"));
+      filter = FilterImpl.createFilter(new SimpleString("NOT (MyString LIKE '%')"));
 
       assertTrue(filter.match(message));
    }
@@ -413,7 +422,7 @@ public class FilterTest  extends UnitTestCase
       
       
       // first, some tests with the wildcard by itself
-      filter = new FilterImpl(new SimpleString("MyString LIKE '%'"));
+      filter = FilterImpl.createFilter(new SimpleString("MyString LIKE '%'"));
       assertFalse(filter.match(message));
       
       // test match against single character
@@ -433,7 +442,7 @@ public class FilterTest  extends UnitTestCase
       
       
       // next, tests with wildcard at the beginning of the string
-      filter = new FilterImpl(new SimpleString("MyString LIKE '%bcdf'"));
+      filter = FilterImpl.createFilter(new SimpleString("MyString LIKE '%bcdf'"));
       
       // test match with single character at beginning of string
       doPutStringProperty("MyString", "Xbcdf");
@@ -464,7 +473,7 @@ public class FilterTest  extends UnitTestCase
       assertTrue(filter.match(message));
       
       // next, tests with wildcard at the end of the string
-      filter = new FilterImpl(new SimpleString("MyString LIKE 'abcd%'"));
+      filter = FilterImpl.createFilter(new SimpleString("MyString LIKE 'abcd%'"));
       
       // test match of single character at end of string
       doPutStringProperty("MyString", "abcdf");
@@ -499,7 +508,7 @@ public class FilterTest  extends UnitTestCase
       assertTrue(filter.match(message));
       
       // next, tests with wildcard in the middle of the string
-      filter = new FilterImpl(new SimpleString("MyString LIKE 'ab%df'"));
+      filter = FilterImpl.createFilter(new SimpleString("MyString LIKE 'ab%df'"));
       
       // test match with single character in the middle of string
       doPutStringProperty("MyString", "abXdf");
@@ -551,7 +560,7 @@ public class FilterTest  extends UnitTestCase
       // wildcards of the current underlying RE engine,
       // GNU regexp.
       
-      filter = new FilterImpl(new SimpleString("MyString LIKE 'a^$b'"));
+      filter = FilterImpl.createFilter(new SimpleString("MyString LIKE 'a^$b'"));
       assertFalse(filter.match(message));
       
       doPutStringProperty("MyString", "a^$b");
@@ -559,67 +568,67 @@ public class FilterTest  extends UnitTestCase
       
       // this one has a double backslash since backslash
       // is interpreted specially by Java
-      filter = new FilterImpl(new SimpleString("MyString LIKE 'a\\dc'"));
+      filter = FilterImpl.createFilter(new SimpleString("MyString LIKE 'a\\dc'"));
       doPutStringProperty("MyString", "a\\dc");
       assertTrue(filter.match(message));
       
-      filter = new FilterImpl(new SimpleString("MyString LIKE 'a.c'"));
+      filter = FilterImpl.createFilter(new SimpleString("MyString LIKE 'a.c'"));
       doPutStringProperty("MyString", "abc");
       assertTrue(!filter.match(message));
       
-      filter = new FilterImpl(new SimpleString("MyString LIKE '[abc]'"));
+      filter = FilterImpl.createFilter(new SimpleString("MyString LIKE '[abc]'"));
       doPutStringProperty("MyString", "[abc]");
       assertTrue(filter.match(message));
       
-      filter = new FilterImpl(new SimpleString("MyString LIKE '[^abc]'"));
+      filter = FilterImpl.createFilter(new SimpleString("MyString LIKE '[^abc]'"));
       doPutStringProperty("MyString", "[^abc]");
       assertTrue(filter.match(message));
       
-      filter = new FilterImpl(new SimpleString("MyString LIKE '[a-c]'"));
+      filter = FilterImpl.createFilter(new SimpleString("MyString LIKE '[a-c]'"));
       doPutStringProperty("MyString", "[a-c]");
       assertTrue(filter.match(message));
       
-      filter = new FilterImpl(new SimpleString("MyString LIKE '[:alpha]'"));
+      filter = FilterImpl.createFilter(new SimpleString("MyString LIKE '[:alpha]'"));
       doPutStringProperty("MyString", "[:alpha]");
       assertTrue(filter.match(message));
       
-      filter = new FilterImpl(new SimpleString("MyString LIKE '(abc)'"));
+      filter = FilterImpl.createFilter(new SimpleString("MyString LIKE '(abc)'"));
       doPutStringProperty("MyString", "(abc)");
       assertTrue(filter.match(message));
       
-      filter = new FilterImpl(new SimpleString("MyString LIKE 'a|bc'"));
+      filter = FilterImpl.createFilter(new SimpleString("MyString LIKE 'a|bc'"));
       doPutStringProperty("MyString", "a|bc");
       assertTrue(filter.match(message));
       
-      filter = new FilterImpl(new SimpleString("MyString LIKE '(abc)?'"));
+      filter = FilterImpl.createFilter(new SimpleString("MyString LIKE '(abc)?'"));
       doPutStringProperty("MyString", "(abc)?");
       assertTrue(filter.match(message));
       
-      filter = new FilterImpl(new SimpleString("MyString LIKE '(abc)*'"));
+      filter = FilterImpl.createFilter(new SimpleString("MyString LIKE '(abc)*'"));
       doPutStringProperty("MyString", "(abc)*");
       assertTrue(filter.match(message));
       
-      filter = new FilterImpl(new SimpleString("MyString LIKE '(abc)+'"));
+      filter = FilterImpl.createFilter(new SimpleString("MyString LIKE '(abc)+'"));
       doPutStringProperty("MyString", "(abc)+");
       assertTrue(filter.match(message));
       
-      filter = new FilterImpl(new SimpleString("MyString LIKE '(abc){3}'"));
+      filter = FilterImpl.createFilter(new SimpleString("MyString LIKE '(abc){3}'"));
       doPutStringProperty("MyString", "(abc){3}");
       assertTrue(filter.match(message));
       
-      filter = new FilterImpl(new SimpleString("MyString LIKE '(abc){3,5}'"));
+      filter = FilterImpl.createFilter(new SimpleString("MyString LIKE '(abc){3,5}'"));
       doPutStringProperty("MyString", "(abc){3,5}");
       assertTrue(filter.match(message));
       
-      filter = new FilterImpl(new SimpleString("MyString LIKE '(abc){3,}'"));
+      filter = FilterImpl.createFilter(new SimpleString("MyString LIKE '(abc){3,}'"));
       doPutStringProperty("MyString", "(abc){3,}");
       assertTrue(filter.match(message));
       
-      filter = new FilterImpl(new SimpleString("MyString LIKE '(?=abc)'"));
+      filter = FilterImpl.createFilter(new SimpleString("MyString LIKE '(?=abc)'"));
       doPutStringProperty("MyString", "(?=abc)");
       assertTrue(filter.match(message));
       
-      filter = new FilterImpl(new SimpleString("MyString LIKE '(?!abc)'"));
+      filter = FilterImpl.createFilter(new SimpleString("MyString LIKE '(?!abc)'"));
       doPutStringProperty("MyString", "(?!abc)");
       assertTrue(filter.match(message));
    }
@@ -636,15 +645,20 @@ public class FilterTest  extends UnitTestCase
    {
       try
       {
-      	if (filterString != null)
-      	{
-      		filter = new FilterImpl(new SimpleString(filterString));
-      	}
-      	else
-      	{
-      		filter = new FilterImpl(null);
-      	}
-         
+         filter = FilterImpl.createFilter(filterString);
+         fail("Should throw exception");
+      }
+      catch (HornetQException e)
+      {
+         assertEquals(HornetQException.INVALID_FILTER_EXPRESSION, e.getCode());
+      }            
+   }
+   
+   private void testInvalidFilter(SimpleString filterString) throws Exception
+   {
+      try
+      {
+         filter = FilterImpl.createFilter(filterString);
          fail("Should throw exception");
       }
       catch (HornetQException e)

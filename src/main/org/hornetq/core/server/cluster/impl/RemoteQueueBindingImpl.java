@@ -90,14 +90,7 @@ public class RemoteQueueBindingImpl implements RemoteQueueBinding
       
       this.remoteQueueID = remoteQueueID;
 
-      if (filterString != null)
-      {
-         queueFilter = new FilterImpl(filterString);
-      }
-      else
-      {
-         queueFilter = null;
-      }
+      queueFilter = FilterImpl.createFilter(filterString);
       
       this.idsHeaderName = MessageImpl.HDR_ROUTE_TO_IDS.concat(bridgeName);
       
@@ -228,7 +221,7 @@ public class RemoteQueueBindingImpl implements RemoteQueueBinding
          {
             filterCounts.put(filterString, 0);
 
-            filters.add(new FilterImpl(filterString));
+            filters.add(FilterImpl.createFilter(filterString));
          }
          else
          {
