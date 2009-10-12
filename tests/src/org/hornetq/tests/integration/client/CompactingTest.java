@@ -115,6 +115,7 @@ public class CompactingTest extends ServiceTestBase
       for (int i = 0; i < 200; i++)
       {
          System.out.println("Iteration " + i);
+         // Sending non transactionally, so it would test non transactional stuff on the journal
          for (int j = 0; j < 1000; j++)
          {
             Message msg = session.createClientMessage(true);
@@ -123,6 +124,7 @@ public class CompactingTest extends ServiceTestBase
             prod.send(msg);
          }
 
+         // I need to guarantee a roundtrip to the server, to make sure everything is persisted
          session.commit();
 
          for (int j = 0; j < 1000; j++)
@@ -132,6 +134,7 @@ public class CompactingTest extends ServiceTestBase
             msg.acknowledge();
          }
 
+         // I need to guarantee a roundtrip to the server, to make sure everything is persisted
          session.commit();
 
       }
@@ -419,6 +422,7 @@ public class CompactingTest extends ServiceTestBase
    private void setupServer(JournalType journalType) throws Exception, HornetQException
    {
       Configuration config = createDefaultConfig();
+      config.setJournalSyncNonTransactional(false);
       config.setJournalFileSize(ConfigurationImpl.DEFAULT_JOURNAL_FILE_SIZE);
 
       config.setJournalType(journalType);
@@ -431,6 +435,8 @@ public class CompactingTest extends ServiceTestBase
       server.start();
 
       sf = createInVMFactory();
+      sf.setBlockOnPersistentSend(false);
+      sf.setBlockOnAcknowledge(false);
 
       ClientSession sess = sf.createSession();
 
