@@ -999,6 +999,7 @@ public class HornetQServerImpl implements HornetQServer
                                                                 this,
                                                                 queueFactory,
                                                                 scheduledPool,
+                                                                pagingManager, 
                                                                 configuration.isBackup());
 
       // Address settings need to deployed initially, since they're require on paging manager.start()

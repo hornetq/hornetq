@@ -31,6 +31,10 @@ public interface AddressControl
    String getRolesAsJSON() throws Exception;
    
    String[] getQueueNames() throws Exception;
+   
+   int getNumberOfPages() throws Exception;
+   
+   long getNumberOfBytesPerPage() throws Exception;
 
    // Operations ----------------------------------------------------
 

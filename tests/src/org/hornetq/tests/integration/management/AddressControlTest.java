@@ -20,6 +20,8 @@ import static org.hornetq.tests.util.RandomUtil.randomString;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.hornetq.core.client.ClientMessage;
+import org.hornetq.core.client.ClientProducer;
 import org.hornetq.core.client.ClientSession;
 import org.hornetq.core.client.ClientSessionFactory;
 import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
@@ -34,6 +36,7 @@ import org.hornetq.core.security.CheckType;
 import org.hornetq.core.security.Role;
 import org.hornetq.core.server.HornetQ;
 import org.hornetq.core.server.HornetQServer;
+import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.utils.SimpleString;
 
 /**
@@ -329,6 +332,83 @@ public class AddressControlTest extends ManagementTestBase
       }
 
       session.deleteQueue(queue);
+   }
+   
+   public void testGetNumberOfPages() throws Exception
+   {
+      session.close();
+      server.stop();
+      
+      SimpleString address = randomSimpleString();
+      
+      AddressSettings addressSettings = new AddressSettings();
+      addressSettings.setPageSizeBytes(1024);
+      addressSettings.setMaxSizeBytes(10 * 1024);    
+      int NUMBER_MESSAGES_BEFORE_PAGING = 14;
+      
+      server.getAddressSettingsRepository().addMatch(address.toString(), addressSettings);
+      server.start();  
+      
+      ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration(InVMConnectorFactory.class.getName()));      
+      session = sf.createSession(false, true, false);
+      session.start();      
+      session.createQueue(address, address, true);
+      
+      ClientProducer producer = session.createProducer(address);
+      
+      for (int i = 0; i < NUMBER_MESSAGES_BEFORE_PAGING; i++)
+      {
+         ClientMessage msg = session.createClientMessage(true);
+         msg.getBody().writeBytes(new byte[512]);
+         producer.send(msg);
+      }
+      session.commit();
+      
+      AddressControl addressControl = createManagementControl(address);
+      assertEquals(0, addressControl.getNumberOfPages());
+      
+      ClientMessage msg = session.createClientMessage(true);
+      msg.getBody().writeBytes(new byte[512]);
+      producer.send(msg);
+
+      session.commit();
+      assertEquals(1, addressControl.getNumberOfPages());
+      
+      msg = session.createClientMessage(true);
+      msg.getBody().writeBytes(new byte[512]);
+      producer.send(msg);
+
+      session.commit();
+      assertEquals(1, addressControl.getNumberOfPages());
+      
+      msg = session.createClientMessage(true);
+      msg.getBody().writeBytes(new byte[512]);
+      producer.send(msg);
+
+      session.commit();
+      assertEquals(2, addressControl.getNumberOfPages());
+   }
+   
+   public void testGetNumberOfBytesPerPage() throws Exception
+   {
+      SimpleString address = randomSimpleString();
+      session.createQueue(address, address, true);      
+      
+      AddressControl addressControl = createManagementControl(address);      
+      assertEquals(ConfigurationImpl.DEFAULT_JOURNAL_FILE_SIZE, addressControl.getNumberOfBytesPerPage());
+      
+      session.close();
+      server.stop();     
+      
+      AddressSettings addressSettings = new AddressSettings();
+      addressSettings.setPageSizeBytes(1024);
+      
+      server.getAddressSettingsRepository().addMatch(address.toString(), addressSettings);
+      server.start();
+      ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration(InVMConnectorFactory.class.getName()));
+      session = sf.createSession(false, true, false);
+      session.createQueue(address, address, true);  
+      assertEquals(1024, addressControl.getNumberOfBytesPerPage());
    }
 
    // Package protected ---------------------------------------------

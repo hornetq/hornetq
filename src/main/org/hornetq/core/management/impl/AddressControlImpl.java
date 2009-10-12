@@ -20,6 +20,7 @@ import javax.management.StandardMBean;
 
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.management.AddressControl;
+import org.hornetq.core.paging.PagingManager;
 import org.hornetq.core.postoffice.Binding;
 import org.hornetq.core.postoffice.Bindings;
 import org.hornetq.core.postoffice.PostOffice;
@@ -48,6 +49,8 @@ public class AddressControlImpl extends StandardMBean implements AddressControl
    private final SimpleString address;
 
    private final PostOffice postOffice;
+   
+   private final PagingManager pagingManager;
 
    private final HierarchicalRepository<Set<Role>> securityRepository;
 
@@ -57,12 +60,14 @@ public class AddressControlImpl extends StandardMBean implements AddressControl
 
    public AddressControlImpl(final SimpleString address,
                              final PostOffice postOffice,
+                             final PagingManager pagingManager, 
                              final HierarchicalRepository<Set<Role>> securityRepository)
       throws Exception
    {
       super(AddressControl.class);
       this.address = address;
       this.postOffice = postOffice;
+      this.pagingManager = pagingManager;
       this.securityRepository = securityRepository;
    }
 
@@ -125,6 +130,16 @@ public class AddressControlImpl extends StandardMBean implements AddressControl
          json.put(new JSONObject(role));
       }
       return json.toString();
+   }
+   
+   public long getNumberOfBytesPerPage() throws Exception
+   {
+      return pagingManager.getPageStore(address).getPageSizeBytes();
+   }
+
+   public int getNumberOfPages() throws Exception
+   {
+      return pagingManager.getPageStore(address).getNumberOfPages();     
    }
 
    public synchronized void addRole(final String name,

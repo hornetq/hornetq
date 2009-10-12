@@ -54,6 +54,7 @@ import org.hornetq.core.management.ResourceNames;
 import org.hornetq.core.messagecounter.MessageCounter;
 import org.hornetq.core.messagecounter.MessageCounterManager;
 import org.hornetq.core.messagecounter.impl.MessageCounterManagerImpl;
+import org.hornetq.core.paging.PagingManager;
 import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.core.postoffice.PostOffice;
 import org.hornetq.core.remoting.server.RemotingService;
@@ -96,6 +97,8 @@ public class ManagementServiceImpl implements ManagementService
    private final NotificationBroadcasterSupport broadcaster;
 
    private PostOffice postOffice;
+
+   private PagingManager pagingManager;
 
    private StorageManager storageManager;
 
@@ -187,6 +190,7 @@ public class ManagementServiceImpl implements ManagementService
                                                   final HornetQServer messagingServer,
                                                   final QueueFactory queueFactory,
                                                   final ScheduledExecutorService scheduledThreadPool,
+                                                  final PagingManager pagingManager, 
                                                   final boolean backup) throws Exception
    {
       this.postOffice = postOffice;
@@ -194,6 +198,7 @@ public class ManagementServiceImpl implements ManagementService
       this.securityRepository = securityRepository;
       this.storageManager = storageManager;
       this.messagingServer = messagingServer;
+      this.pagingManager = pagingManager;
 
       this.messageCounterManager = new MessageCounterManagerImpl(scheduledThreadPool);
       messageCounterManager.setMaxDayCount(configuration.getMessageCounterMaxDayHistory());
@@ -223,7 +228,7 @@ public class ManagementServiceImpl implements ManagementService
    public synchronized void registerAddress(final SimpleString address) throws Exception
    {
       ObjectName objectName = objectNameBuilder.getAddressObjectName(address);
-      AddressControlImpl addressControl = new AddressControlImpl(address, postOffice, securityRepository);
+      AddressControlImpl addressControl = new AddressControlImpl(address, postOffice, pagingManager, securityRepository);
 
       registerInJMX(objectName, addressControl);
 

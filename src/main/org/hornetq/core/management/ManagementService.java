@@ -28,6 +28,7 @@ import org.hornetq.core.config.cluster.DiscoveryGroupConfiguration;
 import org.hornetq.core.config.cluster.DivertConfiguration;
 import org.hornetq.core.management.impl.HornetQServerControlImpl;
 import org.hornetq.core.messagecounter.MessageCounterManager;
+import org.hornetq.core.paging.PagingManager;
 import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.core.postoffice.PostOffice;
 import org.hornetq.core.remoting.server.RemotingService;
@@ -81,6 +82,7 @@ public interface ManagementService extends NotificationService, HornetQComponent
                                          HornetQServer messagingServer,
                                          QueueFactory queueFactory,
                                          ScheduledExecutorService scheduledThreadPool,
+                                         final PagingManager pagingManager, 
                                          boolean backup) throws Exception;
 
    void unregisterServer() throws Exception;
