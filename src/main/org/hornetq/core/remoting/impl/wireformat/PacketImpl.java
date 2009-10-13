@@ -137,6 +137,8 @@ public class PacketImpl implements Packet
 
    public static final byte SESS_RECEIVE_CONTINUATION = 76;
 
+   public static final byte SESS_FORCE_CONSUMER_DELIVERY = 77;
+
    // Static --------------------------------------------------------
 
    public PacketImpl(final byte type)

@@ -280,10 +280,9 @@ public class QueueImpl implements Queue
       }
    }
 
-   // Only used in testing - do not call directly!
    public synchronized void deliverNow()
    {
-      deliver();
+      deliverRunner.run();
    }
 
    public synchronized void addConsumer(final Consumer consumer) throws Exception

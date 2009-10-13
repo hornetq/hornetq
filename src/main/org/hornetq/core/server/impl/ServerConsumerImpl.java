@@ -22,6 +22,7 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 import org.hornetq.core.buffers.ChannelBuffers;
+import org.hornetq.core.client.impl.ClientConsumerImpl;
 import org.hornetq.core.client.management.impl.ManagementHelper;
 import org.hornetq.core.filter.Filter;
 import org.hornetq.core.logging.Logger;
@@ -46,7 +47,6 @@ import org.hornetq.core.server.ServerMessage;
 import org.hornetq.core.server.ServerSession;
 import org.hornetq.core.transaction.Transaction;
 import org.hornetq.core.transaction.impl.TransactionImpl;
-import org.hornetq.utils.SimpleString;
 import org.hornetq.utils.TypedProperties;
 
 /**
@@ -255,9 +255,30 @@ public class ServerConsumerImpl implements ServerConsumer
       }
    }
 
-   public int getCountOfPendingDeliveries()
-   {
-      return deliveringRefs.size();
+   /**
+    * Prompt delivery and send a "forced delivery" message to the consumer.
+    * When the consumer receives such a "forced delivery" message, it discards it
+    * and knows that there are no other messages to be delivered.
+    */
+   public synchronized void forceDelivery(final long sequence)
+   {        
+      // The prompt delivery is called synchronously to ensure the "forced delivery" message is
+      // sent after any queue delivery.
+      executor.execute(new Runnable()
+      {         
+         public void run()
+         {
+            promptDelivery(false);
+            
+            ServerMessage forcedDeliveryMessage = new ServerMessageImpl(storageManager.generateUniqueID());
+            forcedDeliveryMessage.setBody(ChannelBuffers.EMPTY_BUFFER);
+            forcedDeliveryMessage.putLongProperty(ClientConsumerImpl.FORCED_DELIVERY_MESSAGE, sequence);
+            forcedDeliveryMessage.setDestination(messageQueue.getName());
+
+            final SessionReceiveMessage packet = new SessionReceiveMessage(id, forcedDeliveryMessage, 0);
+            channel.send(packet);
+         }
+      });
    }
 
    public LinkedList<MessageReference> cancelRefs(final boolean lastConsumedAsDelivered, final Transaction tx) throws Exception
@@ -305,7 +326,7 @@ public class ServerConsumerImpl implements ServerConsumer
       // Outside the lock
       if (started)
       {
-         promptDelivery();
+         promptDelivery(true);
       }
    }
 
@@ -331,7 +352,7 @@ public class ServerConsumerImpl implements ServerConsumer
 
          if (previous <= 0 && previous + credits > 0)
          {
-            promptDelivery();
+            promptDelivery(true);
          }
       }
    }
@@ -420,7 +441,7 @@ public class ServerConsumerImpl implements ServerConsumer
 
    // Private --------------------------------------------------------------------------------------
 
-   private void promptDelivery()
+   private void promptDelivery(boolean asyncDelivery)
    {
       lock.lock();
       try
@@ -435,11 +456,18 @@ public class ServerConsumerImpl implements ServerConsumer
          {
             if (browseOnly)
             {
-               executor.execute(browserDeliverer);
+               if (asyncDelivery)
+               {
+                  executor.execute(browserDeliverer);
+               }
+               else
+               {
+                  browserDeliverer.run();
+               }
             }
             else
             {
-               session.promptDelivery(messageQueue);
+               session.promptDelivery(messageQueue, asyncDelivery);
             }
          }
       }
@@ -590,7 +618,7 @@ public class ServerConsumerImpl implements ServerConsumer
                else
                {
                   // prompt Delivery only if chunk was finished
-                  session.promptDelivery(messageQueue);
+                  session.promptDelivery(messageQueue, true);
                }
             }
          }
@@ -865,7 +893,7 @@ public class ServerConsumerImpl implements ServerConsumer
             }
             catch (Exception e)
             {
-               log.warn("Exception while browser handled from " + messageQueue + ": " + current);
+               log.warn("Exception while browser handled from " + messageQueue + ": " + current, e);
                return;
             }
          }
@@ -886,7 +914,7 @@ public class ServerConsumerImpl implements ServerConsumer
             }
             catch (Exception e)
             {
-               log.warn("Exception while browser handled from " + messageQueue + ": " + ref);
+               log.warn("Exception while browser handled from " + messageQueue + ": " + ref, e);
                break;
             }
          }

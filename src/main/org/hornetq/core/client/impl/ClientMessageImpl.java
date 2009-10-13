@@ -211,6 +211,17 @@ public class ClientMessageImpl extends MessageImpl implements ClientMessageInter
          return true;
       }
    }
+   
+   @Override
+   public String toString()
+   {
+      return "ClientMessage[messageID=" + messageID +
+             ", durable=" +
+             durable +
+             ", destination=" +
+             getDestination() +
+             "]";
+   }
 
 
 }

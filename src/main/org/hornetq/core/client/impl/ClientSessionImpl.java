@@ -49,6 +49,7 @@ import org.hornetq.core.remoting.impl.wireformat.SessionAcknowledgeMessage;
 import org.hornetq.core.remoting.impl.wireformat.SessionBindingQueryMessage;
 import org.hornetq.core.remoting.impl.wireformat.SessionBindingQueryResponseMessage;
 import org.hornetq.core.remoting.impl.wireformat.SessionCloseMessage;
+import org.hornetq.core.remoting.impl.wireformat.SessionForceConsumerDelivery;
 import org.hornetq.core.remoting.impl.wireformat.SessionConsumerFlowCreditMessage;
 import org.hornetq.core.remoting.impl.wireformat.SessionCreateConsumerMessage;
 import org.hornetq.core.remoting.impl.wireformat.SessionDeleteQueueMessage;
@@ -328,6 +329,15 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
       SessionBindingQueryResponseMessage response = (SessionBindingQueryResponseMessage)channel.sendBlocking(request);
 
       return response;
+   }
+   
+   public void forceDelivery(long consumerID, long sequence) throws HornetQException
+   {
+      checkClosed();
+
+      SessionForceConsumerDelivery request = new SessionForceConsumerDelivery(consumerID, sequence);
+
+      channel.send(request);
    }
 
    public ClientConsumer createConsumer(final SimpleString queueName) throws HornetQException

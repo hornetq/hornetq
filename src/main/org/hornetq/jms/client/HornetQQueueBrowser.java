@@ -32,16 +32,14 @@ import org.hornetq.utils.SimpleString;
 /**
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
- *         <p/>
- *         $Id$
+ *
+ * $Id$
  */
 public class HornetQQueueBrowser implements QueueBrowser
 {
    // Constants ------------------------------------------------------------------------------------
 
    private static final Logger log = Logger.getLogger(HornetQQueueBrowser.class);
-
-   private static final long NEXT_MESSAGE_TIMEOUT = 1000;
 
    // Static ---------------------------------------------------------------------------------------
 
@@ -136,9 +134,7 @@ public class HornetQQueueBrowser implements QueueBrowser
          {
             try
             {
-               // todo change this to consumer.receiveImmediate() once
-               // https://jira.jboss.org/jira/browse/JBMESSAGING-1432 is completed
-               current = consumer.receive(NEXT_MESSAGE_TIMEOUT);
+               current = consumer.receiveImmediate();
             }
             catch (HornetQException e)
             {

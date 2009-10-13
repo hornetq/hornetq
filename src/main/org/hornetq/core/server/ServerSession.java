@@ -21,6 +21,7 @@ import org.hornetq.core.remoting.impl.wireformat.RollbackMessage;
 import org.hornetq.core.remoting.impl.wireformat.SessionAcknowledgeMessage;
 import org.hornetq.core.remoting.impl.wireformat.SessionBindingQueryMessage;
 import org.hornetq.core.remoting.impl.wireformat.SessionConsumerCloseMessage;
+import org.hornetq.core.remoting.impl.wireformat.SessionForceConsumerDelivery;
 import org.hornetq.core.remoting.impl.wireformat.SessionConsumerFlowCreditMessage;
 import org.hornetq.core.remoting.impl.wireformat.SessionCreateConsumerMessage;
 import org.hornetq.core.remoting.impl.wireformat.SessionDeleteQueueMessage;
@@ -66,7 +67,7 @@ public interface ServerSession
 
    void close() throws Exception;
 
-   void promptDelivery(Queue queue);
+   void promptDelivery(Queue queue, boolean async);
 
    void handleAcknowledge(final SessionAcknowledgeMessage packet);
 
@@ -123,6 +124,8 @@ public interface ServerSession
    void handleSend(SessionSendMessage packet);
 
    void handleSendLargeMessage(SessionSendLargeMessage packet);
+
+   void handleForceConsumerDelivery(SessionForceConsumerDelivery message);
 
    void handleClose(Packet packet);
 

@@ -30,8 +30,6 @@ public interface ServerConsumer extends Consumer
 	
 	void close() throws Exception;
 	
-	int getCountOfPendingDeliveries();
-
 	List<MessageReference> cancelRefs(boolean lastConsumedAsDelivered, Transaction tx) throws Exception;
 	
 	void setStarted(boolean started);
@@ -43,4 +41,6 @@ public interface ServerConsumer extends Consumer
 	MessageReference getExpired(long messageID) throws Exception;
 	
 	void acknowledge(boolean autoCommitAcks, Transaction tx, long messageID) throws Exception;
+
+   void forceDelivery(long sequence);
 }

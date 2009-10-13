@@ -15,6 +15,7 @@ package org.hornetq.core.client.impl;
 
 import java.io.File;
 import java.util.concurrent.Executor;
+import java.util.concurrent.atomic.AtomicLong;
 
 import org.hornetq.core.buffers.ChannelBuffers;
 import org.hornetq.core.client.ClientMessage;
@@ -52,6 +53,8 @@ public class ClientConsumerImpl implements ClientConsumerInternal
    public static final long CLOSE_TIMEOUT_MILLISECONDS = 10000;
 
    public static final int NUM_PRIORITIES = 10;
+   
+   public static final SimpleString FORCED_DELIVERY_MESSAGE = new SimpleString("_hornetq.forced.delivery.seq");
 
    // Attributes
    // -----------------------------------------------------------------------------------
@@ -108,6 +111,8 @@ public class ClientConsumerImpl implements ClientConsumerInternal
 
    private boolean stopped = false;
 
+   private final AtomicLong forceDeliveryCount = new AtomicLong(0);
+   
    // Constructors
    // ---------------------------------------------------------------------------------
 
@@ -146,7 +151,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
    // ClientConsumer implementation
    // -----------------------------------------------------------------
 
-   public ClientMessage receive(long timeout) throws HornetQException
+   private ClientMessage receive(long timeout, boolean forcingDelivery) throws HornetQException
    {
       checkClosed();
 
@@ -181,6 +186,8 @@ public class ClientConsumerImpl implements ClientConsumerInternal
          timeout = Long.MAX_VALUE;
       }
 
+      boolean deliveryForced = false;
+      
       long start = -1;
 
       long toWait = timeout;
@@ -194,13 +201,22 @@ public class ClientConsumerImpl implements ClientConsumerInternal
             synchronized (this)
             {
                while ((stopped || (m = buffer.removeFirst()) == null) && !closed && toWait > 0)
-
                {
                   if (start == -1)
                   {
                      start = System.currentTimeMillis();
                   }
 
+                  if (m == null && forcingDelivery)
+                  {                     
+                     // we only force delivery once per call to receive
+                     if (!deliveryForced)
+                     {
+                        session.forceDelivery(id, forceDeliveryCount.incrementAndGet());
+                        deliveryForced = true;
+                     }
+                  }
+                  
                   try
                   {
                      wait(toWait);
@@ -210,6 +226,11 @@ public class ClientConsumerImpl implements ClientConsumerInternal
                   }
 
                   if (m != null || closed)
+                  {
+                     break;
+                  }
+                  
+                  if (forcingDelivery && stopped)
                   {
                      break;
                   }
@@ -224,6 +245,20 @@ public class ClientConsumerImpl implements ClientConsumerInternal
 
             if (m != null)
             {
+               if (m.containsProperty(FORCED_DELIVERY_MESSAGE))
+               {
+                  Long seq = (Long)m.getProperty(FORCED_DELIVERY_MESSAGE);
+                  if (seq >= forceDeliveryCount.longValue())
+                  {
+                     // forced delivery messages are discarded, nothing has been delivered by the queue
+                     return null;
+                  }
+                  else
+                  {
+                     // ignore any previous forced delivery message
+                     continue;                  
+                  }
+               }
                // if we have already pre acked we cant expire
                boolean expired = m.isExpired();
 
@@ -269,14 +304,19 @@ public class ClientConsumerImpl implements ClientConsumerInternal
       }
    }
 
+   public ClientMessage receive(long timeout) throws HornetQException
+   {
+      return receive(timeout, false);
+   }
+   
    public ClientMessage receive() throws HornetQException
    {
-      return receive(0);
+      return receive(0, false);
    }
 
    public ClientMessage receiveImmediate() throws HornetQException
    {
-      return receive(-1);
+      return receive(0, true);
    }
 
    public MessageHandler getMessageHandler() throws HornetQException

@@ -56,6 +56,7 @@ import org.hornetq.core.remoting.impl.wireformat.SessionAcknowledgeMessage;
 import org.hornetq.core.remoting.impl.wireformat.SessionBindingQueryMessage;
 import org.hornetq.core.remoting.impl.wireformat.SessionBindingQueryResponseMessage;
 import org.hornetq.core.remoting.impl.wireformat.SessionConsumerCloseMessage;
+import org.hornetq.core.remoting.impl.wireformat.SessionForceConsumerDelivery;
 import org.hornetq.core.remoting.impl.wireformat.SessionConsumerFlowCreditMessage;
 import org.hornetq.core.remoting.impl.wireformat.SessionCreateConsumerMessage;
 import org.hornetq.core.remoting.impl.wireformat.SessionDeleteQueueMessage;
@@ -320,9 +321,16 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
       remotingConnection.removeFailureListener(this);
    }
 
-   public void promptDelivery(final Queue queue)
+   public void promptDelivery(final Queue queue, boolean async)
    {
-      queue.deliverAsync(executor);
+      if (async)
+      {
+         queue.deliverAsync(executor);
+      }
+      else
+      {
+         queue.deliverNow();
+      }
    }
 
    public void handleCreateConsumer(final SessionCreateConsumerMessage packet)
@@ -625,6 +633,20 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
       channel.confirm(packet);
 
       channel.send(response);
+   }
+   
+   public void handleForceConsumerDelivery(SessionForceConsumerDelivery message)
+   {
+      try
+      {
+         ServerConsumer consumer = consumers.get(message.getConsumerID());
+
+         consumer.forceDelivery(message.getSequence());
+      }
+      catch (Exception e)
+      {
+         log.error("Failed to query consumer deliveries", e);
+      }
    }
 
    public void handleAcknowledge(final SessionAcknowledgeMessage packet)

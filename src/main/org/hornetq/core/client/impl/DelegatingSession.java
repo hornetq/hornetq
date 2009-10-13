@@ -119,6 +119,11 @@ public class DelegatingSession implements ClientSessionInternal
       return session.bindingQuery(address);
    }
 
+   public void forceDelivery(long consumerID, long sequence) throws HornetQException
+   {
+      session.forceDelivery(consumerID, sequence);
+   }
+   
    public void cleanUp() throws Exception
    {
       session.cleanUp();

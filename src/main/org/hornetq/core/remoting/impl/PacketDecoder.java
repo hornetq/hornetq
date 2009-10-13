@@ -30,6 +30,7 @@ import static org.hornetq.core.remoting.impl.wireformat.PacketImpl.SESS_BINDINGQ
 import static org.hornetq.core.remoting.impl.wireformat.PacketImpl.SESS_CLOSE;
 import static org.hornetq.core.remoting.impl.wireformat.PacketImpl.SESS_COMMIT;
 import static org.hornetq.core.remoting.impl.wireformat.PacketImpl.SESS_CONSUMER_CLOSE;
+import static org.hornetq.core.remoting.impl.wireformat.PacketImpl.SESS_FORCE_CONSUMER_DELIVERY;
 import static org.hornetq.core.remoting.impl.wireformat.PacketImpl.SESS_CREATECONSUMER;
 import static org.hornetq.core.remoting.impl.wireformat.PacketImpl.SESS_EXPIRED;
 import static org.hornetq.core.remoting.impl.wireformat.PacketImpl.SESS_FLOWTOKEN;
@@ -77,6 +78,7 @@ import org.hornetq.core.remoting.impl.wireformat.SessionBindingQueryMessage;
 import org.hornetq.core.remoting.impl.wireformat.SessionBindingQueryResponseMessage;
 import org.hornetq.core.remoting.impl.wireformat.SessionCloseMessage;
 import org.hornetq.core.remoting.impl.wireformat.SessionConsumerCloseMessage;
+import org.hornetq.core.remoting.impl.wireformat.SessionForceConsumerDelivery;
 import org.hornetq.core.remoting.impl.wireformat.SessionConsumerFlowCreditMessage;
 import org.hornetq.core.remoting.impl.wireformat.SessionCreateConsumerMessage;
 import org.hornetq.core.remoting.impl.wireformat.SessionDeleteQueueMessage;
@@ -348,6 +350,11 @@ public class PacketDecoder
          case SESS_SEND_CONTINUATION:
          {
             packet = new SessionSendContinuationMessage();
+            break;
+         }        
+         case SESS_FORCE_CONSUMER_DELIVERY:
+         {
+            packet = new SessionForceConsumerDelivery();
             break;
          }        
          default:

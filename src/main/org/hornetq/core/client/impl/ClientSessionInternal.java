@@ -68,4 +68,6 @@ public interface ClientSessionInternal extends ClientSession
    FailoverManager getConnectionManager();
    
    void workDone();
+   
+   void forceDelivery(long consumerID, long sequence) throws HornetQException;
 }
