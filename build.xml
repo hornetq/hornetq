@@ -22,7 +22,17 @@ Copyright 2009 Red Hat, Inc.
 <!-- =========================================================================================== -->
 
 
-<project default="unit-tests" name="HornetQ">
+<project name="HornetQ" default="jar">
+
+   <property name="hornetq.run_script" value="false" />
+
+   <fail message="Please build by using the build.sh script (or build.bat on Windows)">
+      <condition>
+         <not>
+            <equals arg1="${hornetq.run_script}" arg2="true"/>
+         </not>
+      </condition>
+   </fail>
 
    <!--
         Setting "external.project" to true makes jbossbuild use the current directory, and not its
