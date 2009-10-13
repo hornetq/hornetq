@@ -18,6 +18,16 @@
 
 <project name="The HornetQ Project">
 
+   <property name="hornetq.run_script" value="false" />
+
+   <fail message="*** Please build by using the build.sh script (or build.bat on Windows) ***">
+      <condition>
+         <not>
+            <equals arg1="${hornetq.run_script}" arg2="true"/>
+         </not>
+      </condition>
+   </fail>
+
    <!-- ======================================================================================== -->
    <!-- javac + junit properties                                                                 -->
    <!-- ======================================================================================== -->
@@ -91,6 +101,7 @@
    <property name="build.api.dir" value="${build.dir}/api"/>
    <property name="native.bin.dir" value="native/bin"/>
    <property name="examples.dir" value="examples"/>
+   <property name="tools.dir" value="tools"/>
 
    <property name="build.distro.dir"
              value="${build.dir}/${build.artifact}"/>
@@ -103,6 +114,7 @@
    <property name="build.distro.api.dir" value="${build.distro.dir}/docs/api"/>
    <property name="build.distro.examples.dir" value="${build.distro.dir}/examples"/>
    <property name="build.distro.licenses.dir" value="${build.distro.dir}/licenses"/>
+   <property name="build.distro.tools.dir" value="${build.distro.dir}/tools"/>
    <property name="artifacts.dir" value="${build.dir}/artifacts"/>
 
    <!--default clustering server settings-->   
@@ -795,10 +807,13 @@
             <include name="run.bat"/>
             <include name="stop.sh"/>
             <include name="stop.bat"/>
+            <include name="build.sh"/>
+            <include name="build.bat"/>
          </fileset>
       </copy>
       <chmod file="${build.distro.bin.dir}/run.sh" perm="ugo+rx"/>
       <chmod file="${build.distro.bin.dir}/stop.sh" perm="ugo+rx"/>
+      <chmod file="${build.distro.bin.dir}/build.sh" perm="ugo+rx"/>
       <copy todir="${build.distro.bin.dir}">
          <fileset dir="${native.bin.dir}">
             <include name="*.so"/>
@@ -832,6 +847,20 @@
             <exclude name="**/*.*~"/>
          </fileset>
       </copy>
+
+      <chmod perm="ugo+rx" parallel="false" verbose="true">
+         <fileset dir="${build.distro.examples.dir}">  
+            <include name="**/build.sh"/>  
+         </fileset>  
+      </chmod>
+
+      <mkdir dir="${build.distro.tools.dir}/ant"/>
+
+      <copy todir="${build.distro.tools.dir}/ant">
+         <fileset dir="${tools.dir}/ant">
+            <include name="**"/>
+         </fileset>
+      </copy>
       
       <!-- examples-ant.properties allow the examples to be run from the source or from the distribution -->
       <!-- by configuring the correct lib/config location                                                -->
@@ -841,10 +870,13 @@
       <zip basedir="${build.dir}"
            destfile="${build.dir}/${build.artifact}.zip">
          <include name="${build.artifact}/**"/>
-         <!-- add run.sh & stop.sh using a zipfileset to preserve file permissions -->
+         <!-- add run.sh, stop.sh and build.sh using a zipfileset to preserve file permissions -->
          <exclude name="${build.artifact}/bin/*.sh"/>
+      	 <exclude name="${build.artifact}/examples/**/build.sh"/>
          <zipfileset dir="${build.dir}/${build.artifact}/bin"
                      includes="*.sh" filemode="755" prefix="${build.artifact}/bin"/>
+      	 <zipfileset dir="${build.dir}/${build.artifact}/examples" includes="**/build.sh" filemode="755"
+      	 	prefix="${build.artifact}/examples" />
       </zip>
 
       <tar basedir="${build.dir}"
@@ -853,8 +885,11 @@
          <include name="${build.artifact}/**"/>
          <!-- add run.sh & stop.sh using a tarfileset to preserve file permissions -->
          <exclude name="${build.artifact}/bin/*.sh"/>
+      	 <exclude name="${build.artifact}/examples/**/build.sh"/>
          <tarfileset dir="${build.dir}/${build.artifact}/bin"
                      includes="*.sh" filemode="755" prefix="${build.artifact}/bin"/>
+      	 <tarfileset dir="${build.dir}/${build.artifact}/examples" includes="**/build.sh" filemode="755"
+      	      	 	prefix="${build.artifact}/examples" />
       </tar>
       <gzip src="${build.dir}/${build.artifact}.tar"
             destfile="${build.dir}/${build.artifact}.tar.gz"/>

@@ -15,6 +15,17 @@
   ~ permissions and limitations under the License.
   -->
 <project default="compile" name="example" basedir=".">
+
+   <property name="hornetq.run_script" value="false" />
+
+   <fail message="*** Please build by using the build.sh script (or build.bat on Windows) *** ">
+      <condition>
+         <not>
+            <equals arg1="${hornetq.run_script}" arg2="true"/>
+         </not>
+      </condition>
+   </fail>
+
    <dirname property="imported.basedir" file="${ant.file.example}"/>
    <property file="${imported.basedir}/config/ant.properties"/>
 
