@@ -963,6 +963,7 @@ public class FailoverTest extends FailoverTestBase
       {
          public void connectionFailed(HornetQException me)
          {
+            log.info("calling listener");
             latch.countDown();
          }
       }
@@ -1019,6 +1020,8 @@ public class FailoverTest extends FailoverTestBase
       // Wait to be informed of failure
 
       boolean ok = latch.await(1000, TimeUnit.MILLISECONDS);
+      
+      log.info("waited for latch");
 
       assertTrue(ok);
 
@@ -1032,6 +1035,8 @@ public class FailoverTest extends FailoverTestBase
       {
          assertEquals(XAException.XA_RBOTHER, e.errorCode);
       }
+      
+      //Thread.sleep(30000);
 
       session1.close();
 

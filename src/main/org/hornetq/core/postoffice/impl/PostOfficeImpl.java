@@ -723,8 +723,6 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
          }         
       }
       
-      log.info("redistribute called res is " + res);
-      
       return res;
    }
 

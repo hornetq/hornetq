@@ -89,7 +89,7 @@ public class ConnectionFactoryConfigurationImpl implements ConnectionFactoryConf
    public int scheduledThreadPoolMaxSize = ClientSessionFactoryImpl.DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE;
 
    public int threadPoolMaxSize = ClientSessionFactoryImpl.DEFAULT_THREAD_POOL_MAX_SIZE;
-
+   
    public long retryInterval = ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL;
 
    public double retryIntervalMultiplier = ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL_MULTIPLIER;

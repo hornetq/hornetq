@@ -75,7 +75,7 @@ public class ChannelImpl implements Channel
 
    private final int confWindowSize;
 
-   private final Semaphore sendSemaphore;
+   private volatile Semaphore sendSemaphore;
 
    private int receivedBytes;
 
@@ -420,7 +420,7 @@ public class ChannelImpl implements Channel
       if (receivedBytes != 0)
       {
          receivedBytes = 0;
-
+         
          final Packet confirmed = new PacketsConfirmedMessage(lastReceivedCommandID);
 
          confirmed.setChannelID(id);
@@ -441,12 +441,35 @@ public class ChannelImpl implements Channel
          {
             receivedBytes = 0;
 
+ 
             final Packet confirmed = new PacketsConfirmedMessage(lastReceivedCommandID);
 
             confirmed.setChannelID(id);
 
             doWrite(confirmed);
          }
+      }
+   }
+   
+   public void clearCommands()
+   {
+      lastReceivedCommandID = -1;
+      
+      firstStoredCommandID = 0;
+      
+      resendCache.clear();
+      
+      Semaphore oldSemaphore = sendSemaphore;
+                 
+      if (oldSemaphore != null)
+      {
+         //Reset the semaphore
+         sendSemaphore = new Semaphore(windowSize, true);
+         
+         //Any threads blocking on the send semaphore should be allowed to return - we do this by just giving it
+         //a lot of permits - note we don't give it Integer.MAX_VALUE since then if if more releases come in that
+         //could end up with permit count going -ve which would cause subsequent sends to block
+         oldSemaphore.release(Integer.MAX_VALUE / 2);
       }
    }
 
@@ -520,11 +543,12 @@ public class ChannelImpl implements Channel
 
          if (packet == null)
          {
-            throw new IllegalStateException(System.identityHashCode(this) + " Can't find packet to clear: " +
+            log.warn("Can't find packet to clear: " +
                                             " last received command id " +
                                             lastReceivedCommandID +
                                             " first stored command id " +
                                             firstStoredCommandID);
+            return;
          }
 
          if (packet.getType() != PACKETS_CONFIRMED)

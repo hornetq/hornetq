@@ -371,9 +371,8 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
    {
       return createConsumer(queueName, filterString, consumerWindowSize, consumerMaxRate, browseOnly);
    }
-   
-   public ClientConsumer createConsumer(final SimpleString queueName,                                        
-                                        final boolean browseOnly) throws HornetQException
+
+   public ClientConsumer createConsumer(final SimpleString queueName, final boolean browseOnly) throws HornetQException
    {
       return createConsumer(queueName, null, consumerWindowSize, consumerMaxRate, browseOnly);
    }
@@ -382,7 +381,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
    {
       return createConsumer(toSimpleString(queueName), toSimpleString(filterString), browseOnly);
    }
-   
+
    public ClientConsumer createConsumer(final String queueName, final boolean browseOnly) throws HornetQException
    {
       return createConsumer(toSimpleString(queueName), null, browseOnly);
@@ -580,7 +579,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
       if (!started)
       {
          for (ClientConsumerInternal clientConsumerInternal : consumers.values())
-         {            
+         {
             clientConsumerInternal.start();
          }
 
@@ -691,7 +690,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
 
    public void removeConsumer(final ClientConsumerInternal consumer) throws HornetQException
    {
-      consumers.remove(consumer.getID());      
+      consumers.remove(consumer.getID());
    }
 
    public void removeProducer(final ClientProducerInternal producer)
@@ -786,17 +785,14 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
       sendAckHandler = handler;
    }
 
-    // Needs to be synchronized to prevent issues with occurring concurrently with close()
-   
-   //TODO - need to reenable
-   public synchronized boolean handleReattach(final RemotingConnection backupConnection)
+   // Needs to be synchronized to prevent issues with occurring concurrently with close()
+
+   public synchronized void handleFailover(final RemotingConnection backupConnection)
    {
       if (closed)
       {
-         return true;
+         return;
       }
-      
-      boolean ok = false;
 
       // We lock the channel to prevent any packets to be added to the resend
       // cache during the failover process
@@ -805,7 +801,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
       try
       {
          channel.transferConnection(backupConnection);
-         
+
          backupConnection.syncIDGeneratorSequence(remotingConnection.getIDGeneratorSequence());
 
          remotingConnection = backupConnection;
@@ -816,115 +812,44 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
 
          ReattachSessionResponseMessage response = (ReattachSessionResponseMessage)channel1.sendBlocking(request);
 
-         if (response.isSessionFound())
-         {                        
-            channel.replayCommands(response.getLastReceivedCommandID(), channel.getID());
+         if (response.isReattached())
+         {
+            // The session was found on the server - we reattached transparently ok
 
-            ok = true;
+            channel.replayCommands(response.getLastReceivedCommandID(), channel.getID());
          }
          else
          {
-            if (closedSent)
-            {
-               // a session re-attach may fail, if the session close was sent before failover started, hit the server,
-               // processed, then before the response was received back, failover occurred, re-attach was attempted. in
-               // this case it's ok - we don't want to call any failure listeners and we don't want to halt the rest of
-               // the failover process.
-               //
-               // however if session re-attach fails and the session was not in a call to close, then we DO want to call
-               // the session listeners so we return false
-               //
-               // Also session reattach will fail if the server is restarted - so the session is lost
-               ok = true;
-            }
-            else
-            {
-               log.warn(System.identityHashCode(this) + " Session not found on server when attempting to re-attach");
-            }
+            // The session wasn't found on the server - probably we're failing over onto a backup server where the
+            // session
+            // won't exist or the target server has been restarted - in this case the session will need to be recreated,
+            // and we'll need to recreate any consumers
+                        
+            Packet createRequest = new CreateSessionMessage(name,
+                                                            channel.getID(),
+                                                            version,
+                                                            username,
+                                                            password,
+                                                            minLargeMessageSize,
+                                                            xa,
+                                                            autoCommitSends,
+                                                            autoCommitAcks,
+                                                            preAcknowledge,
+                                                            producerWindowSize);
 
-            channel.returnBlocking();
-         }
-
-      }
-      catch (Throwable t)
-      {
-         log.error("Failed to handle failover", t);
-      }
-      finally
-      {
-         channel.unlock();
-      }
-
-      return ok;
-   }
-
-   public void workDone()
-   {
-      workDone = true;
-   }
-
-   // Needs to be synchronized to prevent issues with occurring concurrently with close()
-   public synchronized boolean handleFailover(final RemotingConnection backupConnection)
-   {
-      if (closed)
-      {
-         return true;
-      }
-      
-      boolean ok = false;
+            channel1.sendBlocking(createRequest);
             
-      // Need to stop all consumers outside the lock
-      for (ClientConsumerInternal consumer : consumers.values())
-      {
-         try
-         {
-            consumer.stop();
-         }
-         catch (HornetQException e)
-         {
-            log.error("Failed to stop consumer", e);
-         }
-
-         consumer.clearAtFailover();
-      }
-      
-      // We lock the channel to prevent any packets being sent during the failover process
-      channel.lock();
-      
-      try
-      {
-         channel.transferConnection(backupConnection);
-         
-         remotingConnection = backupConnection;
-
-         Packet request = new CreateSessionMessage(name,
-                                                   channel.getID(),
-                                                   version,
-                                                   username,
-                                                   password,
-                                                   minLargeMessageSize,
-                                                   xa,
-                                                   autoCommitSends,
-                                                   autoCommitAcks,
-                                                   preAcknowledge,
-                                                   producerWindowSize);
-
-         Channel channel1 = backupConnection.getChannel(1, -1, false);
-
-         CreateSessionResponseMessage response = (CreateSessionResponseMessage)channel1.sendBlocking(request);
-
-         if (response.isCreated())
-         {
-            // Session was created ok
-
-            // Now we need to recreate the consumers
-
+            channel.clearCommands();
+            
             for (Map.Entry<Long, ClientConsumerInternal> entry : consumers.entrySet())
             {
                SessionCreateConsumerMessage createConsumerRequest = new SessionCreateConsumerMessage(entry.getKey(),
-                                                                                                     entry.getValue().getQueueName(),
-                                                                                                     entry.getValue().getFilterString(),
-                                                                                                     entry.getValue().isBrowseOnly(),
+                                                                                                     entry.getValue()
+                                                                                                          .getQueueName(),
+                                                                                                     entry.getValue()
+                                                                                                          .getFilterString(),
+                                                                                                     entry.getValue()
+                                                                                                          .isBrowseOnly(),
                                                                                                      false);
 
                createConsumerRequest.setChannelID(channel.getID());
@@ -936,23 +861,24 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
                createConsumerRequest.encode(buffer);
 
                conn.write(buffer, false);
-               
+
                int clientWindowSize = calcWindowSize(entry.getValue().getClientWindowSize());
-                              
+
                if (clientWindowSize != 0)
                {
-                  SessionConsumerFlowCreditMessage packet = new SessionConsumerFlowCreditMessage(entry.getKey(), clientWindowSize);
-                  
+                  SessionConsumerFlowCreditMessage packet = new SessionConsumerFlowCreditMessage(entry.getKey(),
+                                                                                                 clientWindowSize);
+
                   packet.setChannelID(channel.getID());
-                  
+
                   buffer = conn.createBuffer(packet.getRequiredBufferSize());
 
                   packet.encode(buffer);
 
-                  conn.write(buffer, false);                  
+                  conn.write(buffer, false);
                }
             }
-            
+
             if ((!autoCommitAcks || !autoCommitSends) && workDone)
             {
                // Session is transacted - set for rollback only
@@ -968,30 +894,23 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
                {
                   consumer.start();
                }
-               
+
                Packet packet = new PacketImpl(PacketImpl.SESS_START);
-               
+
                packet.setChannelID(channel.getID());
-               
+
                Connection conn = channel.getConnection().getTransportConnection();
-               
+
                HornetQBuffer buffer = conn.createBuffer(packet.getRequiredBufferSize());
 
                packet.encode(buffer);
 
-               conn.write(buffer, false);                              
+               conn.write(buffer, false);
             }
-
-            ok = true;
-         }
-         else
-         {
-            // This means the server we failed onto is not ready to take new sessions - perhaps it hasn't actually
-            // failed over
+           
+            channel.returnBlocking();
          }
 
-         // We cause any blocking calls to return - since they won't get responses.
-         channel.returnBlocking();
       }
       catch (Throwable t)
       {
@@ -1001,8 +920,11 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
       {
          channel.unlock();
       }
-      
-      return ok;
+   }
+
+   public void workDone()
+   {
+      workDone = true;
    }
 
    public void returnBlocking()
@@ -1033,7 +955,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
    public void commit(final Xid xid, final boolean onePhase) throws XAException
    {
       checkXA();
-      
+
       if (rollbackOnly)
       {
          throw new XAException(XAException.XA_RBOTHER);
@@ -1049,7 +971,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
          SessionXAResponseMessage response = (SessionXAResponseMessage)channel.sendBlocking(packet);
 
          workDone = false;
-                  
+
          if (response.isError())
          {
             throw new XAException(response.getResponseCode());
@@ -1065,12 +987,12 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
    public void end(final Xid xid, final int flags) throws XAException
    {
       checkXA();
-      
+
       if (rollbackOnly)
       {
          throw new XAException(XAException.XA_RBOTHER);
       }
-      
+
       try
       {
          Packet packet;
@@ -1391,10 +1313,10 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
       {
          throw new IllegalArgumentException("Invalid window size " + windowSize);
       }
-      
+
       return clientWindowSize;
    }
-   
+
    /**
     * @param queueName
     * @param filterString
@@ -1410,10 +1332,14 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
                                                  final boolean browseOnly) throws HornetQException
    {
       checkClosed();
-      
+
       long consumerID = idGenerator.generateID();
 
-      SessionCreateConsumerMessage request = new SessionCreateConsumerMessage(consumerID, queueName, filterString, browseOnly, true);
+      SessionCreateConsumerMessage request = new SessionCreateConsumerMessage(consumerID,
+                                                                              queueName,
+                                                                              filterString,
+                                                                              browseOnly,
+                                                                              true);
 
       channel.sendBlocking(request);
 
@@ -1422,7 +1348,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
       // The value we send is just a hint
 
       int clientWindowSize = calcWindowSize(windowSize);
-      
+
       ClientConsumerInternal consumer = new ClientConsumerImpl(this,
                                                                consumerID,
                                                                queueName,

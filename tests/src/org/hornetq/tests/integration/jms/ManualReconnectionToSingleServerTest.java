@@ -177,6 +177,13 @@ public class ManualReconnectionToSingleServerTest extends UnitTestCase
       
       //Make sure it doesn't pass by just timing out on blocking send
       assertTrue(end - start < callTimeout);
+      
+      System.gc();
+      System.gc();
+      System.gc();
+      System.gc();
+      
+      Thread.sleep(30000);
 
    }
 
@@ -276,7 +283,7 @@ public class ManualReconnectionToSingleServerTest extends UnitTestCase
                                             DEFAULT_ACK_BATCH_SIZE,
                                             DEFAULT_USE_GLOBAL_POOLS,
                                             DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE,
-                                            DEFAULT_THREAD_POOL_MAX_SIZE,
+                                            DEFAULT_THREAD_POOL_MAX_SIZE,                                      
                                             retryInterval,
                                             retryIntervalMultiplier,
                                             1000,
@@ -287,19 +294,23 @@ public class ManualReconnectionToSingleServerTest extends UnitTestCase
 
    protected void disconnect()
    {
+      log.info("calling disocnnect");
       if (connection == null)
       {
+         log.info("connection is null");
          return;
       }
 
       try
       {
          connection.setExceptionListener(null);
+         log.info("closing the connection");
          connection.close();
          connection = null;
       }
       catch (Exception e)
       {
+         log.info("** got exception");
          e.printStackTrace();
       }
    }

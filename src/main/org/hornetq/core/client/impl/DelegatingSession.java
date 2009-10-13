@@ -368,16 +368,11 @@ public class DelegatingSession implements ClientSessionInternal
       return session.getXAResource();
    }
 
-   public boolean handleFailover(RemotingConnection backupConnection)
+   public void handleFailover(RemotingConnection backupConnection)
    {
-      return session.handleFailover(backupConnection);
+      session.handleFailover(backupConnection);
    }
    
-   public boolean handleReattach(RemotingConnection backupConnection)
-   {
-      return session.handleReattach(backupConnection);
-   }
-
    public void handleReceiveContinuation(long consumerID, SessionReceiveContinuationMessage continuation) throws Exception
    {
       session.handleReceiveContinuation(consumerID, continuation);

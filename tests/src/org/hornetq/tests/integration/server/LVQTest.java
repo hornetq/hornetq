@@ -526,6 +526,30 @@ public class LVQTest extends UnitTestCase
             //
          }
       }
+
+      if (clientSessionTxReceives != null)
+      {
+         try
+         {
+            clientSessionTxReceives.close();
+         }
+         catch (HornetQException e1)
+         {
+            //
+         }
+      }
+
+      if (clientSessionTxSends != null)
+      {
+         try
+         {
+            clientSessionTxSends.close();
+         }
+         catch (HornetQException e1)
+         {
+            //
+         }
+      }
       if (server != null && server.isStarted())
       {
          try

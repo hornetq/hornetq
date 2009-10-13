@@ -286,6 +286,8 @@ public class ConsumerTest extends ServiceTestBase
 
       consumer.setMessageHandler(null);
       consumer.receiveImmediate();
+      
+      session.close();
    }
 
    public void testNoReceiveWithListener() throws Exception
@@ -321,6 +323,8 @@ public class ConsumerTest extends ServiceTestBase
             fail("Wrong exception code");
          }
       }
+      
+      session.close();
    }
 
    // https://jira.jboss.org/jira/browse/HORNETQ-111

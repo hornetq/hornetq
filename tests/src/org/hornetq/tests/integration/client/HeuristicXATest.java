@@ -404,6 +404,8 @@ public class HeuristicXATest extends ServiceTestBase
          assertEquals(1, recoveredXids.length);
          assertEquals(xid, recoveredXids[0]);         
          assertEquals(0, session.recover(XAResource.TMENDRSCAN).length);
+         
+         session.close();
       }
       finally
       {
@@ -504,7 +506,8 @@ public class HeuristicXATest extends ServiceTestBase
          {
             assertEquals(0, jmxServer.listHeuristicRolledBackTransactions().length);              
          }
-         
+                  
+         session.close();
       }
       finally
       {

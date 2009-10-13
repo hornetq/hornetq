@@ -219,7 +219,7 @@ public class JMSTestBase extends ServiceTestBase
                                             DEFAULT_ACK_BATCH_SIZE,
                                             DEFAULT_USE_GLOBAL_POOLS,
                                             DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE,
-                                            DEFAULT_THREAD_POOL_MAX_SIZE,
+                                            DEFAULT_THREAD_POOL_MAX_SIZE,                                 
                                             retryInterval,
                                             retryIntervalMultiplier,
                                             DEFAULT_MAX_RETRY_INTERVAL,

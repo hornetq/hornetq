@@ -75,6 +75,8 @@ public class HornetQCrashTest extends TestCase
       Thread.sleep(250);
 
       assertFalse(ackReceived);
+      
+      session.close();
    }
 
    public static class AckInterceptor implements Interceptor

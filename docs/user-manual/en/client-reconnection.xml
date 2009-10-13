@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
 <!-- ============================================================================= -->
 <!-- Copyright © 2009 Red Hat, Inc. and others.                                    -->
 <!--                                                                               -->
@@ -17,14 +16,31 @@
 <!-- and agrees not to assert, Section 4d of CC-BY-SA to the fullest extent        -->
 <!-- permitted by applicable law.                                                  -->
 <!-- ============================================================================= -->
-
 <chapter id="client-reconnection">
     <title>Client Reconnection</title>
-    <para>HornetQ clients can be configured to automatically reconnect to the server in the
-        event that a failure is detected in the connection between the client and the server. If the
-        client successfully reconnects, and the server still has a record of the clients session
-        (i.e. the server was not restarted) then the client will transparently re-attach to the
-        session and it will be able to resume as if nothing had happened.</para>
+    <para>HornetQ clients can be configured to automatically reconnect to the server in the event
+        that a failure is detected in the connection between the client and the server. </para>
+    <para>By default, when a client connection reconnects, HornetQ will automatically recreate any
+        sessions and consumers on the server. If a particular session is transacted and messages
+        have already been sent or acknowledged in the current transaction but not committed yet,
+        then the transaction will be marked as rollback only. This is because HornetQ cannot
+        guarantee that those messages or acks have really reached the server because of the
+        connection failure. In this case, any subsequent attempt to commit the transaction will
+        throw an exception. This exception can be caught and the transaction can be retried.</para>
+    <para>If you are using the core API, the exception thrown will be instance of HornetQException
+        with the error code TRANSACTION_ROLLED_BACK. If you are using the JMS API, the exception
+        will be a javax.jms.TransactionRolledBackException. </para>
+    <para>For a transacted session if a connection failure occurred during the call to commit(),
+        it's not possible for the client to determine if the commit was successfully processed on
+        the server before failure. In this case, if the transaction is retried after reconnection,
+        be sure to use <link linkend="duplicate-detection">duplicate detection</link> in your messages to prevent them being processed more
+        than once. </para>
+    <para>For a non transacted session, after the sessions and consumers have been recreated,
+        messages or acknowledgements that were in transit at the time of the failure might have been
+        lost. This could result in lost sent messages or duplicate delivery of messages. If you want
+        guaranteed once and only once message delivery on failure, you need to use transacted
+        session with duplicate detection.</para>
+    <para>Reattach - TODO</para>
     <para>Client reconnection is also used internally by components such as core bridges to allow
         them to reconnect to their target servers.</para>
     <para>Client reconnection is configured using the following parameters:</para>
@@ -51,10 +67,21 @@
                 spaced at equal intervals.</para>
         </listitem>
         <listitem>
+            <para><literal>max-retry-interval</literal>. This optional parameter determines the
+                maximum retry interval that will be used. When setting <literal
+                    >retry-interval-multiplier</literal> it would otherwise be possible that
+                subsequent retries exponentially increase to ridiculously large values. By setting
+                this parameter you can set an upper limit on that value. The default value is
+                    <literal>2000</literal> milliseconds.</para>
+        </listitem>
+        <listitem>
             <para><literal>reconnect-attempts</literal>. This optional parameter determines the
                 total number of reconnect attempts the bridge will make before giving up and
                 shutting down. A value of <literal>-1</literal> signifies an unlimited number of
                 attempts. The default value is <literal>-1</literal>.</para>
+        </listitem>
+        <listitem>
+            <para><literal>use-reattach</literal>. </para>
         </listitem>
     </itemizedlist>
     <para>If you're using JMS, and you're using the JMS Service on the server to load your JMS
@@ -69,6 +96,7 @@
 &lt;/entries&gt;
 &lt;retry-interval&gt;1000&lt;/retry-interval&gt;
 &lt;retry-interval-multiplier&gt;1.5&lt;/retry-interval-multiplier&gt;
+&lt;max-retry-interval&gt;60000&lt;/max-retry-interval&gt;
 &lt;reconnect-attempts&gt;1000&lt;/reconnect-attempts&gt;
 &lt;/connection-factory&gt;          
     </programlisting>
@@ -76,8 +104,8 @@
         specify the parameters using the appropriate setter methods on the <literal
             >HornetQConnectionFactory</literal> immediately after creating it.</para>
     <para>If you're using the core API and instantiating the <literal>ClientSessionFactory</literal>
-        instance directly you can also specify the parameters using the appropriate setter methods on the
-            <literal>ClientSessionFactory</literal> immediately after creating it.</para>
+        instance directly you can also specify the parameters using the appropriate setter methods
+        on the <literal>ClientSessionFactory</literal> immediately after creating it.</para>
     <para>If your client does manage to reconnect but the session is no longer available on the
         server, for instance if the server has been restarted or it has timed out, then the client
         won't be able to re-attach, and any <literal>ExceptionListener</literal> or <literal

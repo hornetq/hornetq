@@ -382,7 +382,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
                                                     int dupsOKBatchSize,
                                                     boolean useGlobalPools,
                                                     int scheduledThreadPoolMaxSize,
-                                                    int threadPoolMaxSize,
+                                                    int threadPoolMaxSize,                                                  
                                                     long retryInterval,
                                                     double retryIntervalMultiplier,
                                                     long maxRetryInterval,
@@ -451,7 +451,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
                                                     long initialWaitTimeout,
                                                     boolean useGlobalPools,
                                                     int scheduledThreadPoolMaxSize,
-                                                    int threadPoolMaxSize,
+                                                    int threadPoolMaxSize,                                                  
                                                     long retryInterval,
                                                     double retryIntervalMultiplier,
                                                     long maxRetryInterval,
@@ -486,7 +486,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
          cf.setDiscoveryInitialWaitTimeout(initialWaitTimeout);
          cf.setUseGlobalPools(useGlobalPools);
          cf.setScheduledThreadPoolMaxSize(scheduledThreadPoolMaxSize);
-         cf.setThreadPoolMaxSize(threadPoolMaxSize);
+         cf.setThreadPoolMaxSize(threadPoolMaxSize);       
          cf.setRetryInterval(retryInterval);
          cf.setRetryIntervalMultiplier(retryIntervalMultiplier);
          cf.setMaxRetryInterval(maxRetryInterval);
@@ -766,7 +766,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
                                     config.getInitialWaitTimeout(),
                                     config.isUseGlobalPools(),
                                     config.getScheduledThreadPoolMaxSize(),
-                                    config.getThreadPoolMaxSize(),
+                                    config.getThreadPoolMaxSize(),                                    
                                     config.getRetryInterval(),
                                     config.getRetryIntervalMultiplier(),
                                     config.getMaxRetryInterval(),
@@ -798,7 +798,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
                                     config.getDupsOKBatchSize(),
                                     config.isUseGlobalPools(),
                                     config.getScheduledThreadPoolMaxSize(),
-                                    config.getThreadPoolMaxSize(),
+                                    config.getThreadPoolMaxSize(),                                    
                                     config.getRetryInterval(),
                                     config.getRetryIntervalMultiplier(),
                                     config.getMaxRetryInterval(),

@@ -536,10 +536,13 @@ public class HornetQServerImpl implements HornetQServer
       {
          // Backup server is not ready to accept connections
 
-         return new CreateSessionResponseMessage(false, version.getIncrementingVersion());
+         return new CreateSessionResponseMessage(version.getIncrementingVersion());
       }
 
-      securityStore.authenticate(username, password);
+      if (securityStore != null)
+      {
+         securityStore.authenticate(username, password);
+      }
 
       ServerSession currentSession = sessions.remove(name);
 
@@ -581,7 +584,7 @@ public class HornetQServerImpl implements HornetQServer
 
       channel.setHandler(handler);
 
-      return new CreateSessionResponseMessage(true, version.getIncrementingVersion());
+      return new CreateSessionResponseMessage(version.getIncrementingVersion());
    }
 
    public void removeSession(final String name) throws Exception

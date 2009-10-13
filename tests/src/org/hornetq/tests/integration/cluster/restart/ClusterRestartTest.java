@@ -96,7 +96,7 @@ public class ClusterRestartTest extends ClusterTestBase
       }
       finally
       {
-         //closeAllConsumers();
+         closeAllConsumers();
 
          closeAllSessionFactories();
 
@@ -172,7 +172,7 @@ public class ClusterRestartTest extends ClusterTestBase
       }
       finally
       {
-         //closeAllConsumers();
+         closeAllConsumers();
 
          closeAllSessionFactories();
 

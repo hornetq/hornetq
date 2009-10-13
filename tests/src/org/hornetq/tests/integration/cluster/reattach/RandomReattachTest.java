@@ -222,8 +222,6 @@ public class RandomReattachTest extends UnitTestCase
 
          sf.setReconnectAttempts(-1);
          
-         sf.setUseReattach(true);
-
          ClientSession session = sf.createSession(false, false, false);
 
          Failer failer = startFailer(1000, session);

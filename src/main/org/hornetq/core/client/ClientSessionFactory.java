@@ -146,10 +146,6 @@ public interface ClientSessionFactory
 
    void setReconnectAttempts(int reconnectAttempts);
    
-   boolean isUseReattach();
-   
-   void setUseReattach(boolean reattach);
-
    boolean isFailoverOnServerShutdown();
 
    void setFailoverOnServerShutdown(boolean failoverOnServerShutdown);

@@ -30,18 +30,14 @@ public class CreateSessionResponseMessage extends PacketImpl
 
    private int serverVersion;
    
-   private boolean created;
-
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   public CreateSessionResponseMessage(final boolean created, final int serverVersion)
+   public CreateSessionResponseMessage(final int serverVersion)
    {
       super(CREATESESSION_RESP);
       
-      this.created = created;
-
       this.serverVersion = serverVersion;
    }
 
@@ -52,11 +48,6 @@ public class CreateSessionResponseMessage extends PacketImpl
 
    // Public --------------------------------------------------------
 
-   public boolean isCreated()
-   {
-      return created;
-   }
-      
    @Override
    public boolean isResponse()
    {
@@ -70,21 +61,19 @@ public class CreateSessionResponseMessage extends PacketImpl
 
    @Override
    public void encodeBody(final HornetQBuffer buffer)
-   {
-      buffer.writeBoolean(created);
+   {     
       buffer.writeInt(serverVersion);
    }
 
    @Override
    public void decodeBody(final HornetQBuffer buffer)
-   {
-      created = buffer.readBoolean();
+   {      
       serverVersion = buffer.readInt();
    }
    
    public int getRequiredBufferSize()
    {
-      return BASIC_PACKET_SIZE + DataConstants.SIZE_BOOLEAN + DataConstants.SIZE_INT; 
+      return BASIC_PACKET_SIZE + DataConstants.SIZE_INT; 
    }
 
    @Override
@@ -97,7 +86,7 @@ public class CreateSessionResponseMessage extends PacketImpl
 
       CreateSessionResponseMessage r = (CreateSessionResponseMessage)other;
 
-      boolean matches = super.equals(other) && serverVersion == r.serverVersion && created == r.created;
+      boolean matches = super.equals(other) && serverVersion == r.serverVersion;
 
       return matches;
    }

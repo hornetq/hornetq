@@ -1323,8 +1323,7 @@ public abstract class MultiThreadRandomReattachTestBase extends MultiThreadReatt
    {
       final ClientSessionFactoryInternal sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory"));
       sf.setReconnectAttempts(-1);
-      sf.setUseReattach(true);
-      
+
       return sf;
    }
 

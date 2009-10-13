@@ -134,7 +134,7 @@ public interface ConnectionFactoryConfiguration
    int getThreadPoolMaxSize();
 
    void setThreadPoolMaxSize(int threadPoolMaxSize);
-
+   
    long getRetryInterval();
 
    void setRetryInterval(long retryInterval);

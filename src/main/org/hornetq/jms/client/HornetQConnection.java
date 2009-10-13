@@ -11,7 +11,6 @@
  * permissions and limitations under the License.
  */
 
-
 package org.hornetq.jms.client;
 
 import java.lang.ref.WeakReference;
@@ -244,8 +243,10 @@ public class HornetQConnection implements Connection, QueueConnection, TopicConn
 
    public synchronized void close() throws JMSException
    {
+      log.info("Closing jms connection");
       if (closed)
       {
+         log.info("Already closed");
          return;
       }
 
@@ -279,6 +280,7 @@ public class HornetQConnection implements Connection, QueueConnection, TopicConn
          {
             if (initialSession != null)
             {
+               log.info("closing initial session");
                initialSession.close();
             }
          }
@@ -541,7 +543,7 @@ public class HornetQConnection implements Connection, QueueConnection, TopicConn
       try
       {
          initialSession = sessionFactory.createSession(username, password, false, false, false, false, 0);
-         
+
          initialSession.addFailureListener(listener);
       }
       catch (HornetQException me)
@@ -567,7 +569,7 @@ public class HornetQConnection implements Connection, QueueConnection, TopicConn
          {
             return;
          }
-         
+
          HornetQConnection conn = connectionRef.get();
 
          if (conn != null)

@@ -31,19 +31,19 @@ public class ReattachSessionResponseMessage extends PacketImpl
 
    private int lastReceivedCommandID;
       
-   private boolean sessionFound;
+   private boolean reattached;
    
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   public ReattachSessionResponseMessage(final int lastReceivedCommandID, final boolean sessionFound)
+   public ReattachSessionResponseMessage(final int lastReceivedCommandID, final boolean reattached)
    {
       super(REATTACH_SESSION_RESP);
 
       this.lastReceivedCommandID = lastReceivedCommandID;
       
-      this.sessionFound = sessionFound;
+      this.reattached = reattached;
    }
    
    public ReattachSessionResponseMessage()
@@ -58,9 +58,9 @@ public class ReattachSessionResponseMessage extends PacketImpl
       return lastReceivedCommandID;
    }
    
-   public boolean isSessionFound()
+   public boolean isReattached()
    {
-      return sessionFound;
+      return reattached;
    }
    
    public int getRequiredBufferSize()
@@ -68,17 +68,16 @@ public class ReattachSessionResponseMessage extends PacketImpl
       return BASIC_PACKET_SIZE + DataConstants.SIZE_INT + DataConstants.SIZE_BOOLEAN;
    }
    
-
    public void encodeBody(final HornetQBuffer buffer)
    { 
       buffer.writeInt(lastReceivedCommandID);
-      buffer.writeBoolean(sessionFound);
+      buffer.writeBoolean(reattached);
    }
    
    public void decodeBody(final HornetQBuffer buffer)
    { 
       lastReceivedCommandID = buffer.readInt();
-      sessionFound = buffer.readBoolean();
+      reattached = buffer.readBoolean();
    }
    
    public boolean isResponse()

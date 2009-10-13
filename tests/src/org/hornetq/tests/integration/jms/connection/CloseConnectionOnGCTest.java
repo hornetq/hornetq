@@ -17,8 +17,8 @@ import java.lang.ref.WeakReference;
 import javax.jms.Connection;
 import javax.jms.Session;
 
-import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
 import org.hornetq.core.config.TransportConfiguration;
+import org.hornetq.core.logging.Logger;
 import org.hornetq.jms.client.HornetQConnectionFactory;
 import org.hornetq.tests.util.JMSTestBase;
 
@@ -32,6 +32,8 @@ import org.hornetq.tests.util.JMSTestBase;
  */
 public class CloseConnectionOnGCTest extends JMSTestBase
 {
+   private static final Logger log = Logger.getLogger(CloseConnectionOnGCTest.class);
+
    private HornetQConnectionFactory cf;
 
    @Override
@@ -52,9 +54,24 @@ public class CloseConnectionOnGCTest extends JMSTestBase
       super.tearDown();
    }
    
+   public void testFoo() throws Exception
+   {
+      for (int i = 0; i < 100; i++)
+      {
+         log.info("Iteration " + i);
+         
+         testCloseOneConnectionOnGC();
+      }
+   }
    
    public void testCloseOneConnectionOnGC() throws Exception
    {
+      //Debug - don't remove this until intermittent failure with this test is fixed
+      int initialConns = server.getRemotingService().getConnections().size();
+      
+      assertEquals(0, initialConns);
+      
+      
       Connection conn = cf.createConnection();
       
       WeakReference<Connection> wr = new WeakReference<Connection>(conn);

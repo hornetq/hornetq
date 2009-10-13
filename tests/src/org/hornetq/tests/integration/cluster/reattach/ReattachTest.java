@@ -79,7 +79,6 @@ public class ReattachTest extends UnitTestCase
       sf.setRetryInterval(retryInterval);
       sf.setRetryIntervalMultiplier(retryMultiplier);
       sf.setReconnectAttempts(reconnectAttempts);
-      sf.setUseReattach(true);
 
       ClientSession session = sf.createSession(false, true, true);
 
@@ -157,7 +156,6 @@ public class ReattachTest extends UnitTestCase
       sf.setRetryInterval(retryInterval);
       sf.setRetryIntervalMultiplier(retryMultiplier);
       sf.setReconnectAttempts(reconnectAttempts);
-      sf.setUseReattach(true);
 
       ClientSession session = sf.createSession(false, true, true);
 
@@ -247,7 +245,6 @@ public class ReattachTest extends UnitTestCase
       sf.setRetryInterval(retryInterval);
       sf.setRetryIntervalMultiplier(retryMultiplier);
       sf.setReconnectAttempts(reconnectAttempts);
-      sf.setUseReattach(true);
 
       ClientSession session = sf.createSession(false, true, true);
 
@@ -357,7 +354,6 @@ public class ReattachTest extends UnitTestCase
       sf.setRetryInterval(retryInterval);
       sf.setRetryIntervalMultiplier(retryMultiplier);
       sf.setReconnectAttempts(reconnectAttempts);
-      sf.setUseReattach(true);
 
       ClientSession session = sf.createSession(false, true, true);
 
@@ -434,7 +430,6 @@ public class ReattachTest extends UnitTestCase
       sf.setRetryInterval(retryInterval);
       sf.setRetryIntervalMultiplier(retryMultiplier);
       sf.setReconnectAttempts(reconnectAttempts);
-      sf.setUseReattach(true);
 
       ClientSession session = sf.createSession(false, true, true);
 
@@ -502,7 +497,6 @@ public class ReattachTest extends UnitTestCase
       sf.setRetryInterval(retryInterval);
       sf.setRetryIntervalMultiplier(retryMultiplier);
       sf.setReconnectAttempts(reconnectAttempts);
-      sf.setUseReattach(true);
 
       ClientSession session = sf.createSession(false, true, true);
 
@@ -594,7 +588,6 @@ public class ReattachTest extends UnitTestCase
       sf.setRetryInterval(retryInterval);
       sf.setRetryIntervalMultiplier(retryMultiplier);
       sf.setReconnectAttempts(reconnectAttempts);
-      sf.setUseReattach(true);
 
       ClientSession session = sf.createSession(false, true, true);
 
@@ -673,7 +666,6 @@ public class ReattachTest extends UnitTestCase
       sf.setRetryIntervalMultiplier(retryMultiplier);
       sf.setReconnectAttempts(reconnectAttempts);
       sf.setMaxRetryInterval(maxRetryInterval);
-      sf.setUseReattach(true);
 
       ClientSession session = sf.createSession(false, true, true);
 

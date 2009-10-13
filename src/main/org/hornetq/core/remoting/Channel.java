@@ -60,4 +60,6 @@ public interface Channel
    void flushConfirmations();  
    
    void handlePacket(Packet packet);
+   
+   void clearCommands();
 }

@@ -103,8 +103,6 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
 
    public static final int DEFAULT_RECONNECT_ATTEMPTS = 0;
    
-   public static final boolean DEFAULT_USE_REATTACH = false;
-
    public static final boolean DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN = false;
 
    public static final boolean DEFAULT_USE_GLOBAL_POOLS = true;
@@ -192,8 +190,6 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
 
    private int reconnectAttempts;
    
-   private boolean useReattach;
-
    private volatile boolean closed;
 
    private boolean failoverOnServerShutdown;
@@ -290,8 +286,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
                                                              retryInterval,
                                                              retryIntervalMultiplier,
                                                              maxRetryInterval,
-                                                             reconnectAttempts,
-                                                             useReattach,
+                                                             reconnectAttempts,                                                             
                                                              threadPool,
                                                              scheduledThreadPool,
                                                              interceptors);
@@ -363,8 +358,6 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
 
       reconnectAttempts = DEFAULT_RECONNECT_ATTEMPTS;
       
-      useReattach = DEFAULT_USE_REATTACH;
-
       failoverOnServerShutdown = DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN;
    }
 
@@ -666,17 +659,6 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
       this.reconnectAttempts = reconnectAttempts;
    }
    
-   public synchronized boolean isUseReattach()
-   {
-      return useReattach;
-   }
-
-   public synchronized void setUseReattach(boolean reattach)
-   {
-      checkWrite();
-      this.useReattach = reattach;
-   }
-
    public synchronized boolean isFailoverOnServerShutdown()
    {
       return failoverOnServerShutdown;
@@ -938,8 +920,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
                                                                             retryInterval,
                                                                             retryIntervalMultiplier,
                                                                             maxRetryInterval,
-                                                                            reconnectAttempts,
-                                                                            useReattach,
+                                                                            reconnectAttempts,                                                                            
                                                                             threadPool,
                                                                             scheduledThreadPool,
                                                                             interceptors);

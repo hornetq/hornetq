@@ -135,8 +135,6 @@ public class FailoverManagerImpl implements FailoverManager, ConnectionLifeCycle
 
    private final List<Interceptor> interceptors;
 
-   private final boolean useReattach;
-
    // Static
    // ---------------------------------------------------------------------------------------
 
@@ -153,8 +151,7 @@ public class FailoverManagerImpl implements FailoverManager, ConnectionLifeCycle
                                 final long retryInterval,
                                 final double retryIntervalMultiplier,
                                 final long maxRetryInterval,
-                                final int reconnectAttempts,
-                                final boolean useReattach,
+                                final int reconnectAttempts,                          
                                 final ExecutorService threadPool,
                                 final ScheduledExecutorService scheduledThreadPool,
                                 final List<Interceptor> interceptors)
@@ -197,8 +194,6 @@ public class FailoverManagerImpl implements FailoverManager, ConnectionLifeCycle
       this.maxRetryInterval = maxRetryInterval;
 
       this.reconnectAttempts = reconnectAttempts;
-
-      this.useReattach = useReattach;
 
       this.scheduledThreadPool = scheduledThreadPool;
 
@@ -487,8 +482,6 @@ public class FailoverManagerImpl implements FailoverManager, ConnectionLifeCycle
 
    private void failoverOrReconnect(final Object connectionID, final HornetQException me)
    {
-      boolean done = false;
-
       synchronized (failoverLock)
       {         
          if (connection == null || connection.getID() != connectionID)
@@ -610,23 +603,14 @@ public class FailoverManagerImpl implements FailoverManager, ConnectionLifeCycle
 
                backupTransportParams = null;
 
-               done = reattachSessions(reconnectAttempts == -1 ? -1 : reconnectAttempts + 1, false);
+               reconnectSessions(reconnectAttempts == -1 ? -1 : reconnectAttempts + 1);
             }
             else
             {
-               done = reattachSessions(reconnectAttempts, useReattach);
+               reconnectSessions(reconnectAttempts);
             }
-
-            if (done)
-            {
-               // Destroy the old connection
-
-               oldConnection.destroy();
-            }
-            else
-            {
-               oldConnection.destroy();
-            }
+            
+            oldConnection.destroy();
          }
          else
          {
@@ -663,7 +647,7 @@ public class FailoverManagerImpl implements FailoverManager, ConnectionLifeCycle
    /*
     * Re-attach sessions all pre-existing sessions to the new remoting connection
     */
-   private boolean reattachSessions(final int reconnectAttempts, final boolean reattach)
+   private void reconnectSessions(final int reconnectAttempts)
    {
       RemotingConnection backupConnection = getConnectionWithRetry(reconnectAttempts);
 
@@ -671,7 +655,7 @@ public class FailoverManagerImpl implements FailoverManager, ConnectionLifeCycle
       {
          log.warn("Failed to connect to server.");
 
-         return false;
+         return;
       }
 
       List<FailureListener> oldListeners = connection.getFailureListeners();
@@ -689,33 +673,11 @@ public class FailoverManagerImpl implements FailoverManager, ConnectionLifeCycle
       }
 
       backupConnection.setFailureListeners(newListeners);
-
-      boolean ok = true;
-
-      // If all connections got ok, then handle failover
+      
       for (ClientSessionInternal session : sessions)
       {
-         boolean b;
-
-         if (reattach)
-         {
-            b = session.handleReattach(backupConnection);
-         }
-         else
-         {
-            b = session.handleFailover(backupConnection);
-         }
-
-         if (!b)
-         {
-            // If a session fails to re-attach we doom the lot, but we make sure we try all sessions and don't exit
-            // early
-            // or connections might be left lying around
-            ok = false;
-         }
+         session.handleFailover(backupConnection);         
       }
-
-      return ok;
    }
 
    private RemotingConnection getConnectionWithRetry(final int reconnectAttempts)

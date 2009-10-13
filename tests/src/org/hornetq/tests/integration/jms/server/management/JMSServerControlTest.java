@@ -59,8 +59,9 @@ public class JMSServerControlTest extends ManagementTestBase
    // Attributes ----------------------------------------------------
 
    protected InVMContext context;
+
    private HornetQServer server;
-   
+
    private JMSServerManagerImpl serverManager;
 
    // Static --------------------------------------------------------
@@ -128,7 +129,7 @@ public class JMSServerControlTest extends ManagementTestBase
       checkNoBinding(context, queueJNDIBinding);
       checkNoResource(ObjectNameBuilder.DEFAULT.getJMSQueueObjectName(queueName));
    }
-   
+
    public void testGetQueueNames() throws Exception
    {
       String queueJNDIBinding = randomString();
@@ -185,7 +186,7 @@ public class JMSServerControlTest extends ManagementTestBase
       checkNoBinding(context, topicJNDIBinding);
       checkNoResource(ObjectNameBuilder.DEFAULT.getJMSTopicObjectName(topicName));
    }
-   
+
    public void testGetTopicNames() throws Exception
    {
       String topicJNDIBinding = randomString();
@@ -320,13 +321,9 @@ public class JMSServerControlTest extends ManagementTestBase
                                           0,
                                           TransportConstants.SERVER_ID_PROP_NAME,
                                           1);
-            
-            control.createConnectionFactory(cfName, 
-                                            InVMConnectorFactory.class.getName() + ", " + InVMConnectorFactory.class.getName(),
-                                            params,
-                                            "",
-                                            "",
-                                            jndiBindings);
+
+            control.createConnectionFactory(cfName, InVMConnectorFactory.class.getName() + ", " +
+                                                    InVMConnectorFactory.class.getName(), params, "", "", jndiBindings);
          }
       });
    }
@@ -352,7 +349,7 @@ public class JMSServerControlTest extends ManagementTestBase
       });
    }
 
-   // with 1 live and 1 backup 
+   // with 1 live and 1 backup
    public void testCreateConnectionFactory_4b() throws Exception
    {
       doCreateConnectionFactory(new ConnectionFactoryCreator()
@@ -431,7 +428,7 @@ public class JMSServerControlTest extends ManagementTestBase
                                             clientID,
                                             ClientSessionFactoryImpl.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
                                             ClientSessionFactoryImpl.DEFAULT_CONNECTION_TTL,
-                                            ClientSessionFactoryImpl.DEFAULT_CALL_TIMEOUT,                                            
+                                            ClientSessionFactoryImpl.DEFAULT_CALL_TIMEOUT,
                                             ClientSessionFactoryImpl.DEFAULT_CACHE_LARGE_MESSAGE_CLIENT,
                                             ClientSessionFactoryImpl.DEFAULT_MIN_LARGE_MESSAGE_SIZE,
                                             ClientSessionFactoryImpl.DEFAULT_CONSUMER_WINDOW_SIZE,
@@ -458,7 +455,7 @@ public class JMSServerControlTest extends ManagementTestBase
          }
       });
    }
-   
+
    public void testCreateConnectionFactory_7b() throws Exception
    {
       doCreateConnectionFactory(new ConnectionFactoryCreator()
@@ -476,7 +473,7 @@ public class JMSServerControlTest extends ManagementTestBase
                                             clientID,
                                             ClientSessionFactoryImpl.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
                                             ClientSessionFactoryImpl.DEFAULT_CONNECTION_TTL,
-                                            ClientSessionFactoryImpl.DEFAULT_CALL_TIMEOUT,                                            
+                                            ClientSessionFactoryImpl.DEFAULT_CALL_TIMEOUT,
                                             ClientSessionFactoryImpl.DEFAULT_CACHE_LARGE_MESSAGE_CLIENT,
                                             ClientSessionFactoryImpl.DEFAULT_MIN_LARGE_MESSAGE_SIZE,
                                             ClientSessionFactoryImpl.DEFAULT_CONSUMER_WINDOW_SIZE,
@@ -566,7 +563,7 @@ public class JMSServerControlTest extends ManagementTestBase
       }
 
    }
-   
+
    public void testGetConnectionFactoryNames() throws Exception
    {
       String cfBinding = randomString();
@@ -574,14 +571,17 @@ public class JMSServerControlTest extends ManagementTestBase
 
       JMSServerControl control = createManagementControl();
       assertEquals(0, control.getConnectionFactoryNames().length);
-      
+
       TransportConfiguration tcLive = new TransportConfiguration(InVMConnectorFactory.class.getName());
-      control.createConnectionFactory(cfName, tcLive.getFactoryClassName(), tcLive.getParams(), new String[] {cfBinding});
+      control.createConnectionFactory(cfName,
+                                      tcLive.getFactoryClassName(),
+                                      tcLive.getParams(),
+                                      new String[] { cfBinding });
 
       String[] cfNames = control.getConnectionFactoryNames();
       assertEquals(1, cfNames.length);
       assertEquals(cfName, cfNames[0]);
-      
+
       control.destroyConnectionFactory(cfName);
       assertEquals(0, control.getConnectionFactoryNames().length);
    }
@@ -612,11 +612,11 @@ public class JMSServerControlTest extends ManagementTestBase
    protected void tearDown() throws Exception
    {
       serverManager.stop();
-      
+
       server.stop();
-      
+
       serverManager = null;
-      
+
       server = null;
 
       super.tearDown();

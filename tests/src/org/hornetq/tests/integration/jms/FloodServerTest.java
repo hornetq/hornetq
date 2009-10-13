@@ -166,7 +166,7 @@ public class FloodServerTest extends UnitTestCase
                                             DEFAULT_ACK_BATCH_SIZE,
                                             DEFAULT_USE_GLOBAL_POOLS,
                                             DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE,
-                                            DEFAULT_THREAD_POOL_MAX_SIZE,
+                                            DEFAULT_THREAD_POOL_MAX_SIZE,                                           
                                             retryInterval,
                                             retryIntervalMultiplier,
                                             1000,

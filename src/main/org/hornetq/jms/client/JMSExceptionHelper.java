@@ -78,6 +78,10 @@ public class JMSExceptionHelper
             je =  new javax.jms.IllegalStateException(me.getMessage());
             break;
             
+         case HornetQException.TRANSACTION_ROLLED_BACK:
+            je =  new javax.jms.TransactionRolledBackException(me.getMessage());
+            break;
+            
          default:
             je = new JMSException(me.getMessage());
       }

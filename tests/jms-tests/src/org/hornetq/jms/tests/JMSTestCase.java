@@ -104,7 +104,7 @@ public class JMSTestCase extends HornetQServerTestCase
                                                     DEFAULT_ACK_BATCH_SIZE,
                                                     DEFAULT_USE_GLOBAL_POOLS,
                                                     DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE,
-                                                    DEFAULT_THREAD_POOL_MAX_SIZE,                                                     
+                                                    DEFAULT_THREAD_POOL_MAX_SIZE,                                                    
                                                     DEFAULT_RETRY_INTERVAL,
                                                     DEFAULT_RETRY_INTERVAL_MULTIPLIER,
                                                     DEFAULT_MAX_RETRY_INTERVAL,
