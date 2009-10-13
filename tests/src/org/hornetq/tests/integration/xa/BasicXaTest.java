@@ -221,6 +221,8 @@ public class BasicXaTest extends ServiceTestBase
       clientConsumer = clientSession.createConsumer(atestq);
       m = clientConsumer.receiveImmediate();
       assertNull(m);
+      
+      clientSession2.close();
 
    }
 
@@ -254,6 +256,13 @@ public class BasicXaTest extends ServiceTestBase
       {
          assertFalse(messageHandler.failedToAck);
       }
+      
+      clientSession2.close();
+      for (ClientSession session : clientSessions)
+      {
+         session.close();
+      }
+      
    }
 
    public void testSendMultipleQueues() throws Exception
@@ -348,7 +357,8 @@ public class BasicXaTest extends ServiceTestBase
       session.prepare(xid);
       session.commit(xid, false);
 
-
+      session.close();
+      
       xid = newXID();
       session = sessionFactory.createSession(true, false, false);
       session.start(xid, XAResource.TMNOFLAGS);
@@ -368,6 +378,7 @@ public class BasicXaTest extends ServiceTestBase
       session.end(xid, XAResource.TMSUCCESS);
       session.rollback(xid);
       
+      session.close();
 
       messagingService.stop();
       messagingService.start();
