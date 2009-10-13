@@ -261,7 +261,7 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
       return nodeUUID.toString();
    }
 
-   public Map<String, String> getNodes()
+   public synchronized Map<String, String> getNodes()
    {
       Map<String, String> nodes = new HashMap<String, String>();
       for (Entry<String, MessageFlowRecord> record : records.entrySet( ))
