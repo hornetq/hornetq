@@ -105,9 +105,7 @@ java.naming.factory.url.pkgs=org.jboss.naming:org.jnp.interfaces
             is the port used by the JNDI server and may vary depending on how you have configured
             your JNDI server.</para>
         <para>In the default standalone configuration, JNDI server ports are configured in the file
-                <literal>hornetq-beans.xml</literal> (or <literal>hornetq-beans.xml</literal> if
-            you're running JBoss Application Server) where the JNDIServer bean is confgured, here's
-            a snippet from the file:</para>
+                <literal>hornetq-beans.xml</literal> by setting properties on the <literal>JNDIServer</literal> bean:</para>
         <programlisting>
 &lt;bean name="JNDIServer" class="org.jnp.server.Main"&gt;
     &lt;property name="namingInfo"&gt;
@@ -124,6 +122,12 @@ java.naming.factory.url.pkgs=org.jboss.naming:org.jnp.interfaces
                 change it's bind address to something other than <literal
                 >localhost</literal>!</para>
         </note>
+        <note>
+            <para>The JNDIServer bean must be defined <emphasis>only when HornetQ is running in stand-alone mode</emphasis>.
+               When HornetQ is integrated to JBoss Application Server, JBoss AS will provide a ready-to-use
+               JNDI server without any additional configuration.</para>
+        </note>
+        
     </section>
     <section>
         <title>The code</title>
