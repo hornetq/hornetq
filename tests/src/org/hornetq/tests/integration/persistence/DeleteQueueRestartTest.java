@@ -14,6 +14,7 @@
 package org.hornetq.tests.integration.persistence;
 
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 import org.hornetq.core.client.ClientMessage;
 import org.hornetq.core.client.ClientProducer;
@@ -93,9 +94,9 @@ public class DeleteQueueRestartTest extends ServiceTestBase
          {
             try
             {
-               count.countDown();
                session.deleteQueue(ADDRESS);
                session.close();
+               count.countDown();
             }
             catch (HornetQException e)
             {
@@ -103,7 +104,7 @@ public class DeleteQueueRestartTest extends ServiceTestBase
          }
       }.start();
 
-      count.await();
+      assertTrue(count.await(5, TimeUnit.SECONDS));
 
       server.stop();
 

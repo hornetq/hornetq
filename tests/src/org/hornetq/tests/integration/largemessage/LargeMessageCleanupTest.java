@@ -160,6 +160,7 @@ public class LargeMessageCleanupTest extends LargeMessageTestBase
 
          validateNoFilesOnLargeDir();
 
+         session.close();
       }
       finally
       {
