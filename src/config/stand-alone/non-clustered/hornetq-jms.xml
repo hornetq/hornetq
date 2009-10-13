@@ -2,13 +2,11 @@
 	       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	       xsi:schemaLocation="urn:hornetq /schema/hornetq-jms.xsd">
 	
-	<connection-factory name="ConnectionFactory">
+	<connection-factory name="NettyConnectionFactory">
 		<connector-ref connector-name="netty"/>
 		<entries>
-			<entry name="ConnectionFactory"/>
-			<entry name="XAConnectionFactory"/>
-			<entry name="java:/ConnectionFactory"/>
-			<entry name="java:/XAConnectionFactory"/>
+			<entry name="/ConnectionFactory"/>
+			<entry name="/XAConnectionFactory"/>
 		</entries>
 	</connection-factory>
 	
