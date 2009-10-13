@@ -332,7 +332,7 @@ public class FileConfiguration extends ConfigurationImpl
 
       memoryWarningThreshold = getInteger(e, "memory-warning-threshold", memoryWarningThreshold, PERCENTAGE);
       
-      memoryMeasureInterval = getLong(e, "memory-measure-interval", memoryMeasureInterval, GT_ZERO); // in milliseconds
+      memoryMeasureInterval = getLong(e, "memory-measure-interval", memoryMeasureInterval, MINUS_ONE_OR_GT_ZERO); // in milliseconds
       
       started = true;
    }

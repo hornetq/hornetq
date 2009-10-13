@@ -394,6 +394,20 @@
                             <entry>true</entry>
                         </row>
                         <row>
+                            <entry><link linkend="perf-tuning.memory"
+                                >memory-measure-interval</link></entry>
+                            <entry>Long</entry>
+                            <entry>frequency to sample JVM memory in ms (or -1 to disable memory sampling)</entry>
+                            <entry>30000</entry>
+                        </row>
+                        <row>
+                            <entry><link linkend="perf-tuning.memory"
+                                >memory-warning-threshold</link></entry>
+                            <entry>Integer</entry>
+                            <entry>Percentage of available memory which threshold a warning log</entry>
+                            <entry>25</entry>
+                        </row>
+                        <row>
                             <entry><link linkend="configuring-transports.acceptors"
                                 >acceptors</link></entry>
                             <entry>Acceptor</entry>

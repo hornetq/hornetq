@@ -389,8 +389,11 @@ public class HornetQServerImpl implements HornetQServer
          pagingManager.stop();
       }
 
-      memoryManager.stop();
-
+      if (memoryManager != null)
+      {
+         memoryManager.stop();
+      }
+      
       pagingManager = null;
       securityStore = null;
       resourceManager = null;
@@ -938,10 +941,13 @@ public class HornetQServerImpl implements HornetQServer
                                                 scheduledPool,
                                                 managementConnectorID);
 
-      memoryManager = new MemoryManagerImpl(configuration.getMemoryWarningThreshold(),
-                                            configuration.getMemoryMeasureInterval());
+      if (configuration.getMemoryMeasureInterval() != -1)
+      {
+         memoryManager = new MemoryManagerImpl(configuration.getMemoryWarningThreshold(),
+                                               configuration.getMemoryMeasureInterval());
 
-      memoryManager.start();
+         memoryManager.start();
+      }
    }
 
    private void initialiseLogging()

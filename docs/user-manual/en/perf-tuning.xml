@@ -193,7 +193,7 @@ serveruser     hard    nofile  20000
                     garbage collection algorithm, e.g. using the JVM argument <literal
                         >-XX:+UseParallelGC</literal> on Sun JDKs.</para>
             </listitem>
-            <listitem>
+            <listitem id="perf-tuning.memory">
                 <para>Memory settings. Give as much memory as you can to the server. HornetQ can run
                     in low memory by using paging (described in <xref linkend="paging"/>) but if it
                     can run with all queues in RAM this will improve performance. The amount of
@@ -201,6 +201,13 @@ serveruser     hard    nofile  20000
                     size and number of your messages. Use the JVM arguments <literal>-Xms</literal>
                     and <literal>-Xmx</literal> to set server available RAM. We recommend setting
                     them to the same high value.</para>
+                <para>HornetQ will regularly sample JVM memory and reports if the available memory is below
+                   a configurable threshold. Use this information to properly set JVM memory and paging.
+                   The sample frequency can be configured by setting <literal>memory-measure-interval</literal>
+                   in <literal>hornetq-configuration.xml</literal> (default is 30000ms, set it to -1 to disable
+                   memory sampling). When the available memory goes below the configured threshold, a warning is logged.
+                   The threshold can be configured by setting <literal>memory-warning-threshold</literal> in 
+                   <literal>hornetq-configuration.xml</literal> (default is 25%).</para>
             </listitem>
             <listitem>
                 <para>Aggressive options. Different JVMs provide different sets of JVM tuning
@@ -256,7 +263,7 @@ serveruser     hard    nofile  20000
                     Instead the temporary queue should be re-used for many requests.</para>
             </listitem>
             <listitem>
-                <para>Don't use Mesage Driven Beans for the sake of it. As soon as you start using MDBs you are greatly
+                <para>Don't use Message-Driven Beans for the sake of it. As soon as you start using MDBs you are greatly
                 increasing the codepath for each message received compared to a straightforward message consumer, since a lot of
                 extra application server code is executed. Ask yourself
                 do you really need MDBs? Can you accomplish the same task using just a normal message consumer?</para>
