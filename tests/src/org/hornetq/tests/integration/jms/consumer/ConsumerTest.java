@@ -180,6 +180,8 @@ public class ConsumerTest extends JMSTestBase
 
       consumer.setMessageListener(null);
       consumer.receiveNoWait();
+      
+      conn.close();
    }
 
    public void testCantReceiveWhenListenerIsSet() throws Exception
@@ -204,5 +206,7 @@ public class ConsumerTest extends JMSTestBase
       {
          // Ok
       }
+      
+      conn.close();
    }
 }
