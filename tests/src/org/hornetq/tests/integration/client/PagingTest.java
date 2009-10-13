@@ -1103,6 +1103,13 @@ public class PagingTest extends ServiceTestBase
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
+   
+   protected Configuration createDefaultConfig()
+   {
+      Configuration config = super.createDefaultConfig();
+      config.setJournalSyncNonTransactional(false);
+      return config;
+   }
 
    // Private -------------------------------------------------------
 
