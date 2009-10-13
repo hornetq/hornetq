@@ -43,11 +43,11 @@
         
      <h2>Example step-by-step</h2>
 
-     <p><em>You need to deploy the example <em>before starting the server</em>, type <code>ant deploy</code> from this directory<br />
-    Once the example is deployed in JBoss AS 5, type <code>ant run</code> to start the example. <br />
-    This will crash the server: when informed, type <code>ant restart</code> in the terminal where you deployed the example
+     <p><em>You need to deploy the example <em>before starting the server</em>, simply type <code>./build.sh deploy</code> (or <code>build.bat deploy</code> on windows) from this directory<br />
+    Once the example is deployed in JBoss AS 5, simply type <code>./build.sh run</code> (or <code>build.bat run</code> on windows) to start the example. <br />
+    This will crash the server: when informed, simply type <code>./build.sh restart</code> (or <code>build.bat restart</code> on windows) in the terminal where you deployed the example
     to restart the server.<br />
-    Type <code>ant undeploy</code> to undeploy the example from JBoss AS 5.</em></p>
+    Type <code>./build.sh undeploy</code> (or <code>build.bat undeploy</code> on windows) to undeploy the example from JBoss AS 5.</em></p>
      
      The example code is composed of 2 main classes:
      <dl>
@@ -90,8 +90,8 @@
              }</code>
          </pre>
          
-         <p><em>At that time, the server is crashed and must be restarted by typing <code>ant restart</code>
-            in the terminal where you typed <code>ant deploy</code></em></p>
+         <p><em>At that time, the server is crashed and must be restarted by typing <code>./build.sh restart</code> (or <code>build.bat restart</code> on windows)
+            in the terminal where you typed <code>./build.sh deploy</code> (or <code>build.bat deploy</code> on windows)</em></p>
             
          <li>We will try to receive a message. Once the server is restarted, the message will be recovered and the consumer will receive it
          <pre class="prettyprint">

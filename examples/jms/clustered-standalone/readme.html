@@ -24,7 +24,7 @@
      </code>
      </pre>    
      <h2>Example step-by-step</h2>
-     <p><i>To run the example, simply type <code>ant run</code> from this directory</i>. This will 
+     <p><i>To run the example, simply type <code>./build.sh</code> (or <code>build.bat</code> on windows) from this directory</i>. This will 
         automatically start the 3 cluster nodes, each with its specific configuration.</p>
      <p>To start the tests <em>manually</em>, the following steps are:</p>
      <ul>
@@ -38,7 +38,7 @@
            <pre class="prettyprint"><code>export CLUSTER_PROPS="-Ddata.dir=../data-server3 -Djnp.port=3099 -Djnp.rmiPort=3098 -Dhornetq.remoting.netty.port=7445"
 ./run.sh ../config/stand-alone/clustered</code></pre>
         <li>finally, in the fourth terminal, start the example
-           <pre class="prettyprint"><code>ant runRemote</code></pre>
+           <pre class="prettyprint"><code>./build.sh runRemote</code> (or <code>build.bat runRemote</code> on windows)</pre>
      <p>The example connects to the three cluster nodes using JNDI (which are retrieved from 
         <a href="server0/client-jndi.properties">server0</a>, <a href="server1/client-jndi.properties">server1</a>, and
         <a href="server2/client-jndi.properties">server2</a>' s JNDI properties file). The JNDI ports were specified

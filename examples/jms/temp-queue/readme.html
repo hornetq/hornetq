@@ -12,7 +12,7 @@
      <p>TemporaryQueue is a JMS queue that lives within lifetime of its connection. It is often used in request-reply type messaging where the reply is sent through a temporary destination. The temporary queue is often created as a server resource, so after using, the user should call delete() method to release the resources. Please consult the JMS 1.1 specification for full details.</p>
      <br>
      <h2>Example step-by-step</h2>
-     <p><i>To run the example, simply type <code>ant</code> from this directory</i></p>
+     <p><i>To run the example, simply type <code>./build.sh</code> (or <code>build.bat</code> on windows) from this directory</i></p>
      <br>
      <ol>
         <li>First we need to get an initial context so we can look-up the JMS connection factory from JNDI. This initial context will get it's properties from the <code>client-jndi.properties</code> file in the directory <code>../common/config</code></li>
