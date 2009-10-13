@@ -29,9 +29,7 @@
     <section>
         <title>JMS Examples</title>
         <para>To run a JMS example, simply <literal>cd</literal> into the appropriate example
-            directory and type <literal>ant</literal>.</para>
-        <para>You will need to have Apache 1.7.0 or later ant installed on your system with the ant
-                <literal>bin</literal> directory on your path.</para>
+            directory and type <literal>./build.sh</literal> (or <literal>build.bat</literal> if you are on Windows).</para>
         <para>Here's a listing of the examples with a brief description.</para>
         <section id="application-level-failover">
             <title>Application-Layer Failover</title>

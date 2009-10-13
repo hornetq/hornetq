@@ -28,9 +28,7 @@
          <para>Java EE Examples - these demonstrate application server integration, e.g. MDBs, EJBs,
             Servlets, etc.</para>
       </listitem>
-   </itemizedlist>
-   <para>All the examples are run using ant. You will need ant installed on your system and the ant
-         <literal>bin</literal> directory on your path.</para>
+   </itemizedlist>   
    <section id="examples.jms">
       <title>The JMS examples</title>
       <para>The JMS Examples all follow the same format. Each examples is contained in its own
@@ -57,7 +55,7 @@
          user manual.</para>
       <para>Firstly open a Shell or a Command prompt and navigate to the <literal
             >examples/jms/queue</literal> directory.</para>
-      <para>Type the command <literal>ant</literal> and you should see the following output:</para>
+      <para>Type the command <literal>./build.sh</literal> (or <literal>build.bat</literal> if you are running on Windows), and you should see the following output:</para>
       <programlisting>Buildfile: build.xml
 
 run:
@@ -132,7 +130,7 @@ Total time: 13 seconds
       <programlisting>export JBOSS_HOME=/home/jbossas5.1/build/output/jboss-5.1.0.GA</programlisting>
       <para>Once set we can then deploy the application, from inside the <literal
             >examples/javaee/mdb</literal> directory run the command:</para>
-      <programlisting>ant deploy</programlisting>
+      <programlisting>./build.sh deploy</programlisting>
       <para>This will make a copy of the messaging profile in the JBoss Application server and start
          the server.</para>
       <para>In the shell window you should see something like the following output:</para>
@@ -186,7 +184,7 @@ deploy-ear:
 </programlisting>
       <para>We can now run the example, do this by running the following command from within the
             <literal>mdb</literal> directory.</para>
-      <programlisting>ant</programlisting>
+      <programlisting>./build.sh</programlisting>
       <para>You should see some output similar to the following:</para>
       <programlisting>Buildfile: build.xml
 
@@ -206,7 +204,7 @@ Total time: 7 seconds</programlisting>
       <programlisting>16:27:54,703 INFO  [STDOUT] message This is a text message received</programlisting>
       <para>The application can then be undeployed by running the following command from within the
             <literal>mdb</literal> directory.</para>
-      <programlisting>ant undeploy</programlisting>
+      <programlisting>./build.sh undeploy</programlisting>
       <para>This should so some output similar to the following:</para>
       <programlisting>Buildfile: build.xml
 
