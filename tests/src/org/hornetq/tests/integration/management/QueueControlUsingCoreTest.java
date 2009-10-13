@@ -51,10 +51,6 @@ public class QueueControlUsingCoreTest extends QueueControlTest
    @Override
    protected QueueControl createManagementControl(final SimpleString address, final SimpleString queue) throws Exception
    {
-      ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration(InVMConnectorFactory.class.getName()));
-      session = sf.createSession(false, true, true);
-      session.start();
-
       return new QueueControl()
       {
          private final CoreMessagingProxy proxy = new CoreMessagingProxy(session,
@@ -273,6 +269,16 @@ public class QueueControlUsingCoreTest extends QueueControlTest
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
+
+   @Override
+   protected void setUp() throws Exception
+   {
+      super.setUp();
+
+      ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration(InVMConnectorFactory.class.getName()));
+      session = sf.createSession(false, true, true);
+      session.start();
+   }
 
    @Override
    protected void tearDown() throws Exception
