@@ -71,7 +71,11 @@ public class LVQRecoveryTest extends ServiceTestBase
       producer.send(m4);
       clientSessionXa.end(xid, XAResource.TMSUCCESS);
       clientSessionXa.prepare(xid);
+
+      clientSession.close();
+      clientSessionXa.close();
       restartServer();
+      
       clientSessionXa.commit(xid, true);
       ClientConsumer consumer = clientSession.createConsumer(qName1);
       clientSession.start();
@@ -139,7 +143,10 @@ public class LVQRecoveryTest extends ServiceTestBase
       clientSessionXa.end(xid, XAResource.TMSUCCESS);
       clientSessionXa.prepare(xid);
 
+      clientSession.close();
+      clientSessionXa.close();
       restartServer();
+      
       clientSessionXa.rollback(xid);
       consumer = clientSession.createConsumer(qName1);
       clientSession.start();
