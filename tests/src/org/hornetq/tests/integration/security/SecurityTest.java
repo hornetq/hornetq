@@ -58,7 +58,7 @@ public class SecurityTest extends ServiceTestBase
    private static final String addressA = "addressA";
 
    private static final String queueA = "queueA";
-
+   
    public void testCreateSessionWithNullUserPass() throws Exception
    {
       Configuration configuration = createDefaultConfig(false);
@@ -75,6 +75,8 @@ public class SecurityTest extends ServiceTestBase
          try
          {
             ClientSession session = cf.createSession(false, true, true);
+            
+            session.close();
          }
          catch (HornetQException e)
          {
@@ -102,7 +104,7 @@ public class SecurityTest extends ServiceTestBase
          try
          {
             ClientSession session = cf.createSession(false, true, true);
-            fail("should not throw exception");
+            fail("should throw exception");
          }
          catch (HornetQException e)
          {
@@ -164,6 +166,8 @@ public class SecurityTest extends ServiceTestBase
          try
          {
             ClientSession session = cf.createSession("newuser", "apass", false, true, true, false, -1);
+            
+            session.close();
          }
          catch (HornetQException e)
          {
@@ -890,6 +894,8 @@ public class SecurityTest extends ServiceTestBase
          session.close();
 
          senSession.close();
+         
+         sendingSession.close();
       }
       finally
       {
@@ -1041,6 +1047,8 @@ public class SecurityTest extends ServiceTestBase
          try
          {
             ClientSession session = cf.createSession(false, true, true);
+            
+            session.close();
          }
          catch (HornetQException e)
          {
@@ -1217,6 +1225,16 @@ public class SecurityTest extends ServiceTestBase
 
          //Step 18. Check permissions on news.us.usTopic for same: can't send but can receive
          checkUserReceiveNoSend(usQueueName, samConnection, adminSession);
+         
+         billConnection.close();
+
+         andrewConnection.close();
+
+         frankConnection.close();
+
+         samConnection.close();
+         
+         adminSession.close();
       }
       finally
       {
