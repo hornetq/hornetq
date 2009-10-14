@@ -27,11 +27,6 @@
                 performance, clustered, asynchronous messaging system.</para>
         </listitem>
         <listitem>
-            <para>HornetQ is an example of Message Oriented Middleware (MoM) For a description of
-                MoMs and other messaging concepts please see the <xref linkend="messaging-concepts"
-                />.</para>
-        </listitem>
-        <listitem>
             <para>For answers to more questions about what HornetQ is and isn't please visit
                 the <ulink url="http://www.jboss.org/community/wiki/HornetQGeneralFAQs">FAQs wiki
                     page</ulink>.</para>
@@ -40,8 +35,8 @@
     <para>Why use HornetQ? Here are just a few of the reasons:</para>
     <itemizedlist>
         <listitem>
-            <para>100% open source software. HornetQ is licenced using the Apache Software License v
-                2.0 to minimise barriers to adoption.</para>
+            <para>100% open source software. HornetQ is licenced using the Apache Software License v2.0
+                to minimise barriers to adoption.</para>
         </listitem>
         <listitem>
             <para>HornetQ is designed with usability in mind.</para>
