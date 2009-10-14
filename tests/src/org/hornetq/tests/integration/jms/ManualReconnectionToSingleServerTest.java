@@ -31,6 +31,7 @@ import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_PROD
 import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE;
 import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_THREAD_POOL_MAX_SIZE;
 import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_USE_GLOBAL_POOLS;
+import static org.hornetq.tests.util.RandomUtil.randomString;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -45,8 +46,8 @@ import javax.jms.Message;
 import javax.jms.MessageConsumer;
 import javax.jms.MessageListener;
 import javax.jms.MessageProducer;
+import javax.jms.Queue;
 import javax.jms.Session;
-import javax.jms.Topic;
 import javax.naming.Context;
 
 import org.hornetq.core.config.Configuration;
@@ -63,9 +64,6 @@ import org.hornetq.tests.util.UnitTestCase;
 import org.hornetq.utils.Pair;
 
 /**
- * Connection tests. Contains all connection tests, except tests relating to closing a connection,
- * which go to ConnectionClosedTest.
- *
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  */
 public class ManualReconnectionToSingleServerTest extends UnitTestCase
@@ -121,7 +119,7 @@ public class ManualReconnectionToSingleServerTest extends UnitTestCase
 
    private InVMContext context;
 
-   private final String topicName = "my-topic";
+   private final String queueName = randomString();
 
    // Static --------------------------------------------------------
 
@@ -157,7 +155,7 @@ public class ManualReconnectionToSingleServerTest extends UnitTestCase
          {
             killServer();
             Thread.sleep(5000);
-            restartServer();
+            startServer();
             afterRestart = true;
          }
       }
@@ -176,15 +174,7 @@ public class ManualReconnectionToSingleServerTest extends UnitTestCase
       log.info("That took " + (end - start));
       
       //Make sure it doesn't pass by just timing out on blocking send
-      assertTrue(end - start < callTimeout);
-      
-      System.gc();
-      System.gc();
-      System.gc();
-      System.gc();
-      
-      Thread.sleep(30000);
-
+      assertTrue(end - start < callTimeout);      
    }
 
    // Package protected ---------------------------------------------
@@ -204,13 +194,7 @@ public class ManualReconnectionToSingleServerTest extends UnitTestCase
       server.start();
 
       serverManager = new JMSServerManagerImpl(server);
-      context = new InVMContext();
-      serverManager.setContext(context);
-      serverManager.start();
-      serverManager.activated();
-      
-      serverManager.createTopic(topicName, topicName);
-      registerConnectionFactory();
+      startServer();
    }
 
    @Override
@@ -225,24 +209,27 @@ public class ManualReconnectionToSingleServerTest extends UnitTestCase
       connection = null;
 
       super.tearDown();
+      
+      System.gc();
    }
 
    // Private -------------------------------------------------------
 
    // Inner classes -------------------------------------------------
 
-   private void restartServer() throws Exception
+   private void startServer() throws Exception
    {
       serverManager.start();
       serverManager.activated();
       context = new InVMContext();
       serverManager.setContext(context);      
-      serverManager.createTopic(topicName, topicName);
+      serverManager.createQueue(queueName, queueName, null, false);
       registerConnectionFactory();
    }
 
    private void killServer() throws Exception
    {
+      context = null;
       serverManager.stop();
    }
 
@@ -294,7 +281,7 @@ public class ManualReconnectionToSingleServerTest extends UnitTestCase
 
    protected void disconnect()
    {
-      log.info("calling disocnnect");
+      log.info("calling disconnect");
       if (connection == null)
       {
          log.info("connection is null");
@@ -319,14 +306,18 @@ public class ManualReconnectionToSingleServerTest extends UnitTestCase
    {
       try
       {
+         if (context == null)
+         {
+            return;
+         }
          Context initialContext = context;
-         Topic topic;
+         Queue queue;
          ConnectionFactory cf;
          while (true)
          {            
             try
             {
-               topic = (Topic)initialContext.lookup(topicName);
+               queue = (Queue)initialContext.lookup(queueName);
                cf = (ConnectionFactory)initialContext.lookup("/cf");
                break;
             }
@@ -339,16 +330,26 @@ public class ManualReconnectionToSingleServerTest extends UnitTestCase
          connection = cf.createConnection();
          connection.setExceptionListener(exceptionListener);
          session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
-         producer = session.createProducer(topic);
+         producer = session.createProducer(queue);
          System.out.println("creating consumer");
-         consumer = session.createConsumer(topic);
+         consumer = session.createConsumer(queue);
          consumer.setMessageListener(listener);
          connection.start();
          System.out.println("started new connection");
       }
       catch (Exception e)
       {
-         e.printStackTrace();
+         if (connection != null)
+         {
+            try
+            {
+               connection.close();
+            }
+            catch (JMSException e1)
+            {
+               e1.printStackTrace();
+            }
+         }
       }
    }
 }
