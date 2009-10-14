@@ -84,9 +84,9 @@ public class ManualReconnectionToSingleServerTest extends UnitTestCase
 
    private CountDownLatch reconnectionLatch = new CountDownLatch(1);
 
-   private boolean afterRestart = false;
+   private volatile boolean afterRestart = false;
 
-   private boolean receivedMessagesAfterRestart = false;
+   private volatile boolean receivedMessagesAfterRestart = false;
    
    private int callTimeout;
 
@@ -98,7 +98,7 @@ public class ManualReconnectionToSingleServerTest extends UnitTestCase
          {
             receivedMessagesAfterRestart = true;
          }
-         System.out.println(receivedMessagesAfterRestart + " " + msg);
+         log.info(receivedMessagesAfterRestart + " " + msg);
       }
    };
 

@@ -128,12 +128,11 @@ public class NettyConnector implements Connector
    private ConcurrentMap<Object, Connection> connections = new ConcurrentHashMap<Object, Connection>();
 
    private final String servletPath;
-   
+
    private final VirtualExecutorService virtualExecutor;
 
    private ScheduledExecutorService scheduledThreadPool;
 
-   
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
@@ -224,10 +223,10 @@ public class NettyConnector implements Connector
       this.tcpReceiveBufferSize = ConfigurationHelper.getIntProperty(TransportConstants.TCP_RECEIVEBUFFER_SIZE_PROPNAME,
                                                                      TransportConstants.DEFAULT_TCP_RECEIVEBUFFER_SIZE,
                                                                      configuration);
-      
-      virtualExecutor = new VirtualExecutorService(threadPool); 
-      
-      this.scheduledThreadPool = scheduledThreadPool;      
+
+      virtualExecutor = new VirtualExecutorService(threadPool);
+
+      this.scheduledThreadPool = scheduledThreadPool;
    }
 
    public synchronized void start()
@@ -235,10 +234,10 @@ public class NettyConnector implements Connector
       if (channelFactory != null)
       {
          return;
-      }   
-      
+      }
+
       if (useNio)
-      {    
+      {
          channelFactory = new NioClientSocketChannelFactory(virtualExecutor, virtualExecutor);
       }
       else
@@ -287,7 +286,7 @@ public class NettyConnector implements Connector
          context = null; // Unused
       }
 
-      if(context != null && useServlet)
+      if (context != null && useServlet)
       {
          bootstrap.setOption("sslContext", context);
       }
@@ -312,9 +311,11 @@ public class NettyConnector implements Connector
             return pipeline;
          }
       });
-      if(!Version.ID.equals(VersionLoader.getVersion().getNettyVersion()))
+      if (!Version.ID.equals(VersionLoader.getVersion().getNettyVersion()))
       {
-          log.warn("Unexpected Netty Version was expecting " + VersionLoader.getVersion().getNettyVersion() + " using " + Version.ID);
+         log.warn("Unexpected Netty Version was expecting " + VersionLoader.getVersion().getNettyVersion() +
+                  " using " +
+                  Version.ID);
       }
       log.debug("Started Netty Connector version " + Version.ID);
    }
@@ -366,7 +367,7 @@ public class NettyConnector implements Connector
          }
       }
       address = new InetSocketAddress(host, port);
-      
+
       ChannelFuture future = bootstrap.connect(address);
       future.awaitUninterruptibly();
 
@@ -408,12 +409,12 @@ public class NettyConnector implements Connector
       else
       {
          Throwable t = future.getCause();
-         
+
          if (t != null && !(t instanceof ConnectException))
          {
             log.error("Failed to create netty connection", future.getCause());
          }
-         
+
          return null;
       }
    }
@@ -469,7 +470,10 @@ public class NettyConnector implements Connector
          if (httpClientIdleScanPeriod > 0)
          {
             task = new HttpIdleTimer();
-            java.util.concurrent.Future<?> future = scheduledThreadPool.scheduleAtFixedRate(task, httpClientIdleScanPeriod, httpClientIdleScanPeriod, TimeUnit.MILLISECONDS);
+            java.util.concurrent.Future<?> future = scheduledThreadPool.scheduleAtFixedRate(task,
+                                                                                            httpClientIdleScanPeriod,
+                                                                                            httpClientIdleScanPeriod,
+                                                                                            TimeUnit.MILLISECONDS);
             task.setFuture(future);
          }
       }
@@ -548,6 +552,7 @@ public class NettyConnector implements Connector
       private class HttpIdleTimer implements Runnable
       {
          private boolean closed = false;
+
          private java.util.concurrent.Future<?> future;
 
          public synchronized void run()
@@ -556,7 +561,7 @@ public class NettyConnector implements Connector
             {
                return;
             }
-            
+
             if (!waitingGet && System.currentTimeMillis() > lastSendTime + httpMaxClientIdleTime)
             {
                HttpRequest httpRequest = new DefaultHttpRequest(HttpVersion.HTTP_1_1, HttpMethod.GET, url);
@@ -569,15 +574,15 @@ public class NettyConnector implements Connector
          {
             this.future = future;
          }
-         
+
          public void close()
          {
             if (future != null)
-            {             
+            {
                future.cancel(false);
             }
-            
-            closed  = true;
+
+            closed = true;
          }
       }
    }

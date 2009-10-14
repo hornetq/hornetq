@@ -243,17 +243,15 @@ public class HornetQConnection implements Connection, QueueConnection, TopicConn
 
    public synchronized void close() throws JMSException
    {
-      log.info("Closing jms connection");
       if (closed)
       {
-         log.info("Already closed");
          return;
       }
 
       try
       {
          for (HornetQSession session : new HashSet<HornetQSession>(sessions))
-         {
+         {            
             session.close();
          }
 
@@ -279,8 +277,7 @@ public class HornetQConnection implements Connection, QueueConnection, TopicConn
          finally
          {
             if (initialSession != null)
-            {
-               log.info("closing initial session");
+            {               
                initialSession.close();
             }
          }
