@@ -366,8 +366,7 @@ public class ResourceAdapterTest extends ServiceTestBase
          
          HornetQResourceAdapter ra = new HornetQResourceAdapter();
 
-         ra.setConnectorClassName("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory");
-         ra.setConnectionParameters("bm.remoting.invm.serverid=0");
+         ra.setConnectorClassName("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory");        
          ra.setUserName("userGlobal");
          ra.setPassword("passwordGlobal");
          ra.start(fakeCTX);

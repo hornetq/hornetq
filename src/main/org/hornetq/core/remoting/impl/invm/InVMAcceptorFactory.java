@@ -13,6 +13,7 @@
 package org.hornetq.core.remoting.impl.invm;
 
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ScheduledExecutorService;
 
@@ -29,13 +30,18 @@ import org.hornetq.core.remoting.spi.ConnectionLifeCycleListener;
  */
 public class InVMAcceptorFactory implements AcceptorFactory
 {
-
    public Acceptor createAcceptor(final Map<String, Object> configuration,
-            final BufferHandler handler, final ConnectionLifeCycleListener listener,
-            final Executor threadPool,
-            final ScheduledExecutorService scheduledThreadPool)
+                                  final BufferHandler handler,
+                                  final ConnectionLifeCycleListener listener,
+                                  final Executor threadPool,
+                                  final ScheduledExecutorService scheduledThreadPool)
    {
       return new InVMAcceptor(configuration, handler, listener, threadPool);
+   }
+
+   public Set<String> getAllowableProperties()
+   {
+      return TransportConstants.ALLOWABLE_ACCEPTOR_KEYS;
    }
 
 }

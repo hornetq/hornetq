@@ -49,6 +49,7 @@ import org.hornetq.core.remoting.spi.ConnectorFactory;
 import org.hornetq.core.remoting.spi.HornetQBuffer;
 import org.hornetq.core.version.Version;
 import org.hornetq.utils.ConcurrentHashSet;
+import org.hornetq.utils.ConfigurationHelper;
 import org.hornetq.utils.ExecutorFactory;
 import org.hornetq.utils.OrderedExecutorFactory;
 import org.hornetq.utils.UUIDGenerator;
@@ -142,19 +143,19 @@ public class FailoverManagerImpl implements FailoverManager, ConnectionLifeCycle
    // ---------------------------------------------------------------------------------
 
    public FailoverManagerImpl(final ClientSessionFactory sessionFactory,
-                                final TransportConfiguration connectorConfig,
-                                final TransportConfiguration backupConfig,
-                                final boolean failoverOnServerShutdown,
-                                final long callTimeout,
-                                final long clientFailureCheckPeriod,
-                                final long connectionTTL,
-                                final long retryInterval,
-                                final double retryIntervalMultiplier,
-                                final long maxRetryInterval,
-                                final int reconnectAttempts,                          
-                                final ExecutorService threadPool,
-                                final ScheduledExecutorService scheduledThreadPool,
-                                final List<Interceptor> interceptors)
+                              final TransportConfiguration connectorConfig,
+                              final TransportConfiguration backupConfig,
+                              final boolean failoverOnServerShutdown,
+                              final long callTimeout,
+                              final long clientFailureCheckPeriod,
+                              final long connectionTTL,
+                              final long retryInterval,
+                              final double retryIntervalMultiplier,
+                              final long maxRetryInterval,
+                              final int reconnectAttempts,
+                              final ExecutorService threadPool,
+                              final ScheduledExecutorService scheduledThreadPool,
+                              final List<Interceptor> interceptors)
    {
       this.sessionFactory = sessionFactory;
 
@@ -168,11 +169,15 @@ public class FailoverManagerImpl implements FailoverManager, ConnectionLifeCycle
 
       transportParams = connectorConfig.getParams();
 
+      checkTransportKeys(connectorFactory, transportParams);
+
       if (backupConfig != null)
       {
          backupConnectorFactory = instantiateConnectorFactory(backupConfig.getFactoryClassName());
 
          backupTransportParams = backupConfig.getParams();
+
+         checkTransportKeys(backupConnectorFactory, backupTransportParams);
       }
       else
       {
@@ -483,7 +488,7 @@ public class FailoverManagerImpl implements FailoverManager, ConnectionLifeCycle
    private void failoverOrReconnect(final Object connectionID, final HornetQException me)
    {
       synchronized (failoverLock)
-      {         
+      {
          if (connection == null || connection.getID() != connectionID)
          {
             // We already failed over/reconnected - probably the first failure came in, all the connections were failed
@@ -534,7 +539,7 @@ public class FailoverManagerImpl implements FailoverManager, ConnectionLifeCycle
          {
             attemptReconnect = reconnectAttempts != 0;
          }
-         
+
          if (attemptFailover || attemptReconnect)
          {
             lockChannel1();
@@ -609,13 +614,13 @@ public class FailoverManagerImpl implements FailoverManager, ConnectionLifeCycle
             {
                reconnectSessions(reconnectAttempts);
             }
-            
+
             oldConnection.destroy();
          }
          else
          {
             connection.destroy();
-            
+
             connection = null;
          }
 
@@ -673,10 +678,10 @@ public class FailoverManagerImpl implements FailoverManager, ConnectionLifeCycle
       }
 
       backupConnection.setFailureListeners(newListeners);
-      
+
       for (ClientSessionInternal session : sessions)
       {
-         session.handleFailover(backupConnection);         
+         session.handleFailover(backupConnection);
       }
    }
 
@@ -884,9 +889,9 @@ public class FailoverManagerImpl implements FailoverManager, ConnectionLifeCycle
             {
                pingRunnable.run();
             }
-         }                 
-      }  
-      
+         }
+      }
+
       return connection;
    }
 
@@ -924,6 +929,23 @@ public class FailoverManagerImpl implements FailoverManager, ConnectionLifeCycle
       Channel channel1 = connection.getChannel(1, -1, false);
 
       channel1.returnBlocking();
+   }
+
+   private void checkTransportKeys(final ConnectorFactory factory, final Map<String, Object> params)
+   {
+      if (params != null)
+      {
+         Set<String> invalid = ConfigurationHelper.checkKeys(factory.getAllowableProperties(), params.keySet());
+
+         if (!invalid.isEmpty())
+         {
+            String msg = ConfigurationHelper.stringSetToCommaListString("The following keys are invalid for configuring a connector: ",
+                                                                        invalid);
+
+            throw new IllegalStateException(msg);
+
+         }
+      }
    }
 
    private class Channel0Handler implements ChannelHandler

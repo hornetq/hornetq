@@ -12,6 +12,7 @@
  */
 package org.hornetq.core.remoting.spi;
 
+
 /**
  * 
  * A Connector

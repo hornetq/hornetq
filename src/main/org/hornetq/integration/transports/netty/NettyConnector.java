@@ -154,7 +154,7 @@ public class NettyConnector implements Connector
       {
          throw new IllegalArgumentException("Invalid argument null handler");
       }
-
+      
       this.listener = listener;
 
       this.handler = handler;

@@ -13,7 +13,9 @@
 
 package org.hornetq.tests.integration.largemessage.mock;
 
+import java.util.Collections;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ScheduledExecutorService;
 
@@ -52,6 +54,14 @@ public class MockConnectorFactory implements ConnectorFactory
                                     final Executor executor, ScheduledExecutorService scheduledThreadPool)
    {
       return new MockConnector(configuration, handler, listener);
+   }
+
+   /* (non-Javadoc)
+    * @see org.hornetq.core.remoting.spi.ConnectorFactory#getAllowableProperties()
+    */
+   public Set<String> getAllowableProperties()
+   {
+      return Collections.EMPTY_SET;
    }
 
    // Package protected ---------------------------------------------

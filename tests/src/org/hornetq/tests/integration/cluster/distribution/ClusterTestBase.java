@@ -1091,13 +1091,16 @@ public class ClusterTestBase extends ServiceTestBase
 
    protected Map<String, Object> generateParams(int node, boolean netty)
    {
-      Map<String, Object> params = new HashMap<String, Object>();
-      params.put(SERVER_ID_PROP_NAME, node);
+      Map<String, Object> params = new HashMap<String, Object>();      
 
       if (netty)
       {
          params.put(org.hornetq.integration.transports.netty.TransportConstants.PORT_PROP_NAME,
                     org.hornetq.integration.transports.netty.TransportConstants.DEFAULT_PORT + node);
+      }
+      else
+      {
+         params.put(SERVER_ID_PROP_NAME, node);
       }
 
       return params;

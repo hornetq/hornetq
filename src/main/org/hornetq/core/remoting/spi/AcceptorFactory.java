@@ -14,6 +14,7 @@
 package org.hornetq.core.remoting.spi;
 
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ScheduledExecutorService;
 
@@ -29,4 +30,6 @@ public interface AcceptorFactory
                            ConnectionLifeCycleListener listener,
                            Executor threadPool,
                            ScheduledExecutorService scheduledThreadPool);
+   
+   Set<String> getAllowableProperties();
 }

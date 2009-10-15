@@ -12,6 +12,10 @@
  */
 package org.hornetq.integration.transports.netty;
 
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
+
 /**
  * A TransportConstants
  * 
@@ -99,5 +103,50 @@ public class TransportConstants
    public static final boolean DEFAULT_HTTP_REQUIRES_SESSION_ID = false;
 
    public static final String DEFAULT_SERVLET_PATH = "/messaging/HornetQServlet";
+
+   public static final Set<String> ALLOWABLE_CONNECTOR_KEYS;
+
+   public static final Set<String> ALLOWABLE_ACCEPTOR_KEYS;
+
+   static
+   {
+      Set<String> allowableAcceptorKeys = new HashSet<String>();
+      allowableAcceptorKeys.add(SSL_ENABLED_PROP_NAME);
+      allowableAcceptorKeys.add(HTTP_ENABLED_PROP_NAME);
+      allowableAcceptorKeys.add(HTTP_RESPONSE_TIME_PROP_NAME);
+      allowableAcceptorKeys.add(HTTP_SERVER_SCAN_PERIOD_PROP_NAME);                  
+      allowableAcceptorKeys.add(USE_NIO_PROP_NAME);
+      allowableAcceptorKeys.add(USE_INVM_PROP_NAME);
+      allowableAcceptorKeys.add(HOST_PROP_NAME);
+      allowableAcceptorKeys.add(PORT_PROP_NAME);
+      allowableAcceptorKeys.add(KEYSTORE_PATH_PROP_NAME);
+      allowableAcceptorKeys.add(KEYSTORE_PASSWORD_PROP_NAME);
+      allowableAcceptorKeys.add(TRUSTSTORE_PATH_PROP_NAME);
+      allowableAcceptorKeys.add(TRUSTSTORE_PASSWORD_PROP_NAME);
+      allowableAcceptorKeys.add(TCP_NODELAY_PROPNAME);
+      allowableAcceptorKeys.add(TCP_SENDBUFFER_SIZE_PROPNAME);
+      allowableAcceptorKeys.add(TCP_RECEIVEBUFFER_SIZE_PROPNAME);
+      
+      ALLOWABLE_CONNECTOR_KEYS = Collections.unmodifiableSet(allowableAcceptorKeys);
+      
+      Set<String> allowableConnectorKeys = new HashSet<String>();
+      allowableConnectorKeys.add(SSL_ENABLED_PROP_NAME);
+      allowableConnectorKeys.add(HTTP_ENABLED_PROP_NAME);
+      allowableConnectorKeys.add(HTTP_CLIENT_IDLE_PROP_NAME);
+      allowableConnectorKeys.add(HTTP_CLIENT_IDLE_SCAN_PERIOD);           
+      allowableConnectorKeys.add(HTTP_REQUIRES_SESSION_ID);
+      allowableConnectorKeys.add(USE_SERVLET_PROP_NAME);
+      allowableConnectorKeys.add(SERVLET_PATH);
+      allowableConnectorKeys.add(USE_NIO_PROP_NAME);      
+      allowableConnectorKeys.add(HOST_PROP_NAME);
+      allowableConnectorKeys.add(PORT_PROP_NAME);
+      allowableConnectorKeys.add(KEYSTORE_PATH_PROP_NAME);
+      allowableConnectorKeys.add(KEYSTORE_PASSWORD_PROP_NAME);          
+      allowableConnectorKeys.add(TCP_NODELAY_PROPNAME);
+      allowableConnectorKeys.add(TCP_SENDBUFFER_SIZE_PROPNAME);
+      allowableConnectorKeys.add(TCP_RECEIVEBUFFER_SIZE_PROPNAME);
+      
+      ALLOWABLE_ACCEPTOR_KEYS = Collections.unmodifiableSet(allowableConnectorKeys);
+   }
 
 }

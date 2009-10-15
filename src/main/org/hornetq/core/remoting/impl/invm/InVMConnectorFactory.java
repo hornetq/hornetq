@@ -13,6 +13,7 @@
 package org.hornetq.core.remoting.impl.invm;
 
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ScheduledExecutorService;
 
@@ -45,6 +46,11 @@ public class InVMConnectorFactory implements ConnectorFactory
       {         
          return connector;
       }
+   }
+   
+   public Set<String> getAllowableProperties()
+   {
+      return TransportConstants.ALLOWABLE_CONNECTOR_KEYS;
    }
 
 }

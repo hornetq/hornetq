@@ -157,7 +157,7 @@ public class ManagementServiceImplTest extends UnitTestCase
    {
       Configuration conf  = new ConfigurationImpl();
       conf.setJMXManagementEnabled(false);
-      ManagementServiceImpl managementService = new ManagementServiceImpl(null, conf, -1);
+      ManagementServiceImpl managementService = new ManagementServiceImpl(null, conf);
       
       SimpleString address = randomSimpleString();
       managementService.registerAddress(address);

@@ -14,6 +14,7 @@
 package org.hornetq.integration.transports.netty;
 
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ScheduledExecutorService;
 
@@ -37,4 +38,10 @@ public class NettyConnectorFactory implements ConnectorFactory
    {
       return new NettyConnector(configuration, handler, listener, threadPool, scheduledThreadPool);
    }
+   
+   public Set<String> getAllowableProperties()
+   {
+      return TransportConstants.ALLOWABLE_CONNECTOR_KEYS;
+   }
+   
 }

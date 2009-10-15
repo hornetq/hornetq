@@ -28,7 +28,6 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.management.MBeanServer;
 
@@ -183,10 +182,6 @@ public class HornetQServerImpl implements HornetQServer
 
    private boolean initialised;
 
-   private int managementConnectorID;
-
-   private static AtomicInteger managementConnectorSequence = new AtomicInteger(0);
-
    private FailoverManager replicatingFailoverManager;
 
    private final Set<ActivateCallback> activateCallbacks = new HashSet<ActivateCallback>();
@@ -243,7 +238,7 @@ public class HornetQServerImpl implements HornetQServer
 
       addressSettingsRepository.setDefault(new AddressSettings());
 
-      this.managementConnectorID = managementConnectorSequence.decrementAndGet();
+     // this.managementConnectorID = managementConnectorSequence.decrementAndGet();
    }
 
    // lifecycle methods
@@ -932,14 +927,13 @@ public class HornetQServerImpl implements HornetQServer
       scheduledPool = new ScheduledThreadPoolExecutor(configuration.getScheduledThreadPoolMaxSize(),
                                                       new HornetQThreadFactory("HornetQ-scheduled-threads", false));
 
-      managementService = new ManagementServiceImpl(mbeanServer, configuration, managementConnectorID);
+      managementService = new ManagementServiceImpl(mbeanServer, configuration);
 
       remotingService = new RemotingServiceImpl(configuration,
                                                 this,
                                                 managementService,
                                                 threadPool,
-                                                scheduledPool,
-                                                managementConnectorID);
+                                                scheduledPool);
 
       if (configuration.getMemoryMeasureInterval() != -1)
       {

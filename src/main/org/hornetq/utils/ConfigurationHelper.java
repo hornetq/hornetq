@@ -12,7 +12,9 @@
  */
 package org.hornetq.utils;
 
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import org.hornetq.core.logging.Logger;
 
@@ -116,7 +118,7 @@ public class ConfigurationHelper
          }
       }
    }
-
+   
    public static boolean getBooleanProperty(final String propName, final boolean def, final Map<String, Object> props)
    {
       if (props == null)
@@ -149,4 +151,36 @@ public class ConfigurationHelper
          }
       }
    }
+   
+   public static Set<String> checkKeys(final Set<String> allowableKeys, final Set<String> keys)
+   {
+      Set<String> invalid = new HashSet<String>();
+      
+      for (String key : keys)
+      {
+         if (!allowableKeys.contains(key))
+         {
+            invalid.add(key);
+         }
+      }
+      return invalid;
+   }
+   
+   public static String stringSetToCommaListString(final String msg, final Set<String> invalid)
+   {
+      StringBuilder sb = new StringBuilder();
+      sb.append(msg);
+      int count = 0;
+      for (String key : invalid)
+      {
+         sb.append(key);
+         if (count != invalid.size() - 1)
+         {
+            sb.append(", ");
+         }
+         count++;
+      }
+      return sb.toString();
+   }
+
 }
