@@ -19,6 +19,10 @@ pre {
   border: dotted grey 1px;
 }
 
+abbr {
+  border-bottom: 1px dotted #333; cursor: help;
+}
+
 .missing-doc {
   background-color: red;
   border: dotted black 1px;

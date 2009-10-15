@@ -1,0 +1,15 @@
+<configuration xmlns="urn:hornetq"
+            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+            xsi:schemaLocation="urn:hornetq /schema/hornetq-jms.xsd">
+
+   <connection-factory name="ConnectionFactory">
+      <connector-ref connector-name="netty"/>
+      <entries>
+         <entry name="/source/ConnectionFactory"/>
+      </entries>
+   </connection-factory>
+
+   <topic name="topic">
+      <entry name="/source/topic"/>
+   </topic>
+</configuration>
