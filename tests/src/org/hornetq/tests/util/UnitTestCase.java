@@ -96,6 +96,19 @@ public class UnitTestCase extends TestCase
    
    // Static --------------------------------------------------------
 
+   /**
+    * @param name
+    */
+   public UnitTestCase(String name)
+   {
+      super(name);
+   }
+
+   public UnitTestCase()
+   {
+      super();
+   }
+
    public static void forceGC()
    {
       WeakReference<Object> dumbReference = new WeakReference<Object>(new Object());

@@ -1105,6 +1105,78 @@ public class PagingStoreImplTest extends UnitTestCase
       {
       }
 
+      /* (non-Javadoc)
+       * @see org.hornetq.core.persistence.StorageManager#afterReplicated(java.lang.Runnable)
+       */
+      public void afterReplicated(Runnable run)
+      {
+         
+         
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.persistence.StorageManager#completeReplication()
+       */
+      public void completeReplication()
+      {
+         
+         
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.persistence.StorageManager#createLargeMessage(byte[])
+       */
+      public LargeServerMessage createLargeMessage(long messageId, byte[] header)
+      {
+         
+         return null;
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.persistence.StorageManager#isReplicated()
+       */
+      public boolean isReplicated()
+      {
+         
+         return false;
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.persistence.StorageManager#loadInternalOnly()
+       */
+      public void loadInternalOnly() throws Exception
+      {
+         
+         
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.persistence.StorageManager#pageClosed(org.hornetq.utils.SimpleString, int)
+       */
+      public void pageClosed(SimpleString storeName, int pageNumber)
+      {
+         
+         
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.persistence.StorageManager#pageDeleted(org.hornetq.utils.SimpleString, int)
+       */
+      public void pageDeleted(SimpleString storeName, int pageNumber)
+      {
+         
+         
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.persistence.StorageManager#pageWrite(org.hornetq.core.paging.PagedMessage, int)
+       */
+      public void pageWrite(PagedMessage message, int pageNumber)
+      {
+         
+         
+      }
+
    }
 
    class FakeStoreFactory implements PagingStoreFactory

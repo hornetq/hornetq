@@ -38,8 +38,6 @@ public class BatchingIDGenerator implements IDGenerator
    private static final Logger log = Logger.getLogger(BatchingIDGenerator.class);
 
 
-   public static final byte ID_COUNTER_RECORD = 24;
-
    // Attributes ----------------------------------------------------
 
    // Static --------------------------------------------------------
@@ -127,7 +125,7 @@ public class BatchingIDGenerator implements IDGenerator
    {
       try
       {
-         journalStorage.appendAddRecord(journalID, ID_COUNTER_RECORD, new IDCounterEncoding(id), true);
+         journalStorage.appendAddRecord(journalID, JournalStorageManager.ID_COUNTER_RECORD, new IDCounterEncoding(id), true);
       }
       catch (Exception e)
       {

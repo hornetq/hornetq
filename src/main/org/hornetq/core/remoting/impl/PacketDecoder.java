@@ -13,6 +13,19 @@
 
 package org.hornetq.core.remoting.impl;
 
+import static org.hornetq.core.remoting.impl.wireformat.PacketImpl.REPLICATION_LARGE_MESSAGE_BEGIN;
+import static org.hornetq.core.remoting.impl.wireformat.PacketImpl.REPLICATION_LARGE_MESSAGE_END;
+import static org.hornetq.core.remoting.impl.wireformat.PacketImpl.REPLICATION_LARGE_MESSAGE_WRITE;
+import static org.hornetq.core.remoting.impl.wireformat.PacketImpl.REPLICATION_PAGE_EVENT;
+import static org.hornetq.core.remoting.impl.wireformat.PacketImpl.REPLICATION_PAGE_WRITE;
+import static org.hornetq.core.remoting.impl.wireformat.PacketImpl.REPLICATION_PREPARE;
+import static org.hornetq.core.remoting.impl.wireformat.PacketImpl.REPLICATION_DELETE_TX;
+import static org.hornetq.core.remoting.impl.wireformat.PacketImpl.REPLICATION_COMMIT_ROLLBACK;
+import static org.hornetq.core.remoting.impl.wireformat.PacketImpl.REPLICATION_APPEND_TX;
+import static org.hornetq.core.remoting.impl.wireformat.PacketImpl.REPLICATION_DELETE;
+import static org.hornetq.core.remoting.impl.wireformat.PacketImpl.REPLICATION_RESPONSE;
+import static org.hornetq.core.remoting.impl.wireformat.PacketImpl.REPLICATION_APPEND;
+import static org.hornetq.core.remoting.impl.wireformat.PacketImpl.CREATE_REPLICATION;
 import static org.hornetq.core.remoting.impl.wireformat.PacketImpl.CREATESESSION;
 import static org.hornetq.core.remoting.impl.wireformat.PacketImpl.CREATESESSION_RESP;
 import static org.hornetq.core.remoting.impl.wireformat.PacketImpl.CREATE_QUEUE;
@@ -63,6 +76,7 @@ import static org.hornetq.core.remoting.impl.wireformat.PacketImpl.SESS_XA_SUSPE
 
 import org.hornetq.core.remoting.Packet;
 import org.hornetq.core.remoting.impl.wireformat.CreateQueueMessage;
+import org.hornetq.core.remoting.impl.wireformat.CreateReplicationSessionMessage;
 import org.hornetq.core.remoting.impl.wireformat.CreateSessionMessage;
 import org.hornetq.core.remoting.impl.wireformat.CreateSessionResponseMessage;
 import org.hornetq.core.remoting.impl.wireformat.HornetQExceptionMessage;
@@ -72,6 +86,18 @@ import org.hornetq.core.remoting.impl.wireformat.PacketsConfirmedMessage;
 import org.hornetq.core.remoting.impl.wireformat.Ping;
 import org.hornetq.core.remoting.impl.wireformat.ReattachSessionMessage;
 import org.hornetq.core.remoting.impl.wireformat.ReattachSessionResponseMessage;
+import org.hornetq.core.remoting.impl.wireformat.ReplicationAddMessage;
+import org.hornetq.core.remoting.impl.wireformat.ReplicationAddTXMessage;
+import org.hornetq.core.remoting.impl.wireformat.ReplicationCommitMessage;
+import org.hornetq.core.remoting.impl.wireformat.ReplicationDeleteMessage;
+import org.hornetq.core.remoting.impl.wireformat.ReplicationDeleteTXMessage;
+import org.hornetq.core.remoting.impl.wireformat.ReplicationLargeMessageBeingMessage;
+import org.hornetq.core.remoting.impl.wireformat.ReplicationLargeMessageWriteMessage;
+import org.hornetq.core.remoting.impl.wireformat.ReplicationLargemessageEndMessage;
+import org.hornetq.core.remoting.impl.wireformat.ReplicationPageEventMessage;
+import org.hornetq.core.remoting.impl.wireformat.ReplicationPageWriteMessage;
+import org.hornetq.core.remoting.impl.wireformat.ReplicationPrepareMessage;
+import org.hornetq.core.remoting.impl.wireformat.ReplicationResponseMessage;
 import org.hornetq.core.remoting.impl.wireformat.RollbackMessage;
 import org.hornetq.core.remoting.impl.wireformat.SessionAcknowledgeMessage;
 import org.hornetq.core.remoting.impl.wireformat.SessionBindingQueryMessage;
@@ -351,7 +377,72 @@ public class PacketDecoder
          {
             packet = new SessionSendContinuationMessage();
             break;
-         }        
+         }
+         case CREATE_REPLICATION:
+         {
+            packet = new CreateReplicationSessionMessage();
+            break;
+         }
+         case REPLICATION_APPEND:
+         {
+            packet = new ReplicationAddMessage();
+            break;
+         }
+         case REPLICATION_APPEND_TX:
+         {
+            packet = new ReplicationAddTXMessage();
+            break;
+         }
+         case REPLICATION_DELETE:
+         {
+            packet = new ReplicationDeleteMessage();
+            break;
+         }
+         case REPLICATION_DELETE_TX:
+         {
+            packet = new ReplicationDeleteTXMessage();
+            break;
+         }
+         case REPLICATION_PREPARE:
+         {
+            packet = new ReplicationPrepareMessage();
+            break;
+         }
+         case REPLICATION_COMMIT_ROLLBACK:
+         {
+            packet = new ReplicationCommitMessage();
+            break;
+         }
+         case REPLICATION_RESPONSE:
+         {
+            packet = new ReplicationResponseMessage();
+            break;
+         }
+         case REPLICATION_PAGE_WRITE:
+         {
+            packet = new ReplicationPageWriteMessage();
+            break;
+         }
+         case REPLICATION_PAGE_EVENT:
+         {
+            packet = new ReplicationPageEventMessage();
+            break;
+         }
+         case REPLICATION_LARGE_MESSAGE_BEGIN:
+         {
+            packet = new ReplicationLargeMessageBeingMessage();
+            break;
+         }
+         case REPLICATION_LARGE_MESSAGE_END:
+         {
+            packet = new ReplicationLargemessageEndMessage();
+            break;
+         }
+         case REPLICATION_LARGE_MESSAGE_WRITE:
+         {
+            packet = new ReplicationLargeMessageWriteMessage();
+            break;
+         }
          case SESS_FORCE_CONSUMER_DELIVERY:
          {
             packet = new SessionForceConsumerDelivery();

@@ -16,6 +16,7 @@ package org.hornetq.core.server.impl;
 import static org.hornetq.core.remoting.impl.wireformat.PacketImpl.CREATESESSION;
 import static org.hornetq.core.remoting.impl.wireformat.PacketImpl.CREATE_QUEUE;
 import static org.hornetq.core.remoting.impl.wireformat.PacketImpl.REATTACH_SESSION;
+import static org.hornetq.core.remoting.impl.wireformat.PacketImpl.CREATE_REPLICATION;
 
 import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.logging.Logger;
@@ -24,9 +25,12 @@ import org.hornetq.core.remoting.ChannelHandler;
 import org.hornetq.core.remoting.Packet;
 import org.hornetq.core.remoting.RemotingConnection;
 import org.hornetq.core.remoting.impl.wireformat.CreateQueueMessage;
+import org.hornetq.core.remoting.impl.wireformat.CreateReplicationSessionMessage;
 import org.hornetq.core.remoting.impl.wireformat.CreateSessionMessage;
 import org.hornetq.core.remoting.impl.wireformat.HornetQExceptionMessage;
+import org.hornetq.core.remoting.impl.wireformat.NullResponseMessage;
 import org.hornetq.core.remoting.impl.wireformat.ReattachSessionMessage;
+import org.hornetq.core.replication.ReplicationEndpoint;
 import org.hornetq.core.server.HornetQServer;
 
 /**
@@ -88,6 +92,16 @@ public class HornetQPacketHandler implements ChannelHandler
             CreateQueueMessage request = (CreateQueueMessage)packet;
             
             handleCreateQueue(request);
+
+            break;
+         }         
+         case CREATE_REPLICATION:
+         {
+            // Create queue can also be fielded here in the case of a replicated store and forward queue creation
+
+            CreateReplicationSessionMessage request = (CreateReplicationSessionMessage)packet;
+            
+            handleCreateReplication(request);
 
             break;
          }         
@@ -174,6 +188,38 @@ public class HornetQPacketHandler implements ChannelHandler
          log.error("Failed to handle create queue", e);
       }
    }
+   
+   private void handleCreateReplication(CreateReplicationSessionMessage request)
+   {
+      Packet response;
+
+      try
+      {
+         Channel channel = connection.getChannel(request.getSessionChannelID(), request.getWindowSize(), false);
+         ReplicationEndpoint endpoint = server.createReplicationEndpoint(channel);
+         channel.setHandler(endpoint);
+         response = new NullResponseMessage();
+
+      }
+      catch  (Exception e)
+      {
+         log.warn(e.getMessage(), e);
+         
+         if (e instanceof HornetQException)
+         {
+            response = new HornetQExceptionMessage((HornetQException)e);
+         }
+         else
+         {
+            response = new HornetQExceptionMessage(new HornetQException(HornetQException.INTERNAL_ERROR));
+         }
+      }
+
+      channel1.send(response);
+   }
+   
+   
+
 
    
 }

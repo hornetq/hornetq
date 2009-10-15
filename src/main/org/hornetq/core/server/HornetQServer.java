@@ -19,14 +19,17 @@ import java.util.Set;
 import javax.management.MBeanServer;
 
 import org.hornetq.core.config.Configuration;
+import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.management.ManagementService;
 import org.hornetq.core.management.impl.HornetQServerControlImpl;
 import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.core.postoffice.PostOffice;
+import org.hornetq.core.remoting.Channel;
 import org.hornetq.core.remoting.RemotingConnection;
 import org.hornetq.core.remoting.impl.wireformat.CreateSessionResponseMessage;
 import org.hornetq.core.remoting.impl.wireformat.ReattachSessionResponseMessage;
 import org.hornetq.core.remoting.server.RemotingService;
+import org.hornetq.core.replication.ReplicationEndpoint;
 import org.hornetq.core.security.HornetQSecurityManager;
 import org.hornetq.core.security.Role;
 import org.hornetq.core.server.cluster.ClusterManager;
@@ -36,7 +39,6 @@ import org.hornetq.core.transaction.ResourceManager;
 import org.hornetq.core.version.Version;
 import org.hornetq.utils.ExecutorFactory;
 import org.hornetq.utils.SimpleString;
-import org.hornetq.utils.UUID;
 
 /**
  * This interface defines the internal interface of the HornetQ Server exposed to other components of the server. The
@@ -69,6 +71,8 @@ public interface HornetQServer extends HornetQComponent
    void unregisterActivateCallback(ActivateCallback callback);
 
    ReattachSessionResponseMessage reattachSession(RemotingConnection connection, String name, int lastReceivedCommandID) throws Exception;
+   
+   ReplicationEndpoint createReplicationEndpoint(Channel channel) throws Exception;
 
    CreateSessionResponseMessage createSession(String name,
                                               long channelID,                                              

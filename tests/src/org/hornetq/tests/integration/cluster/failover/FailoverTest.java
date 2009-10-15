@@ -78,6 +78,18 @@ public class FailoverTest extends FailoverTestBase
 
    // Public --------------------------------------------------------
 
+   /**
+    * @param name
+    */
+   public FailoverTest(String name)
+   {
+      super(name);
+   }
+   
+   public FailoverTest()
+   {
+   }
+
    public void testNonTransacted() throws Exception
    {
       ClientSessionFactoryInternal sf = getSessionFactory();
@@ -109,23 +121,14 @@ public class FailoverTest extends FailoverTestBase
       {
          ClientMessage message = session.createClientMessage(i % 2 == 0);
 
-         message.getBody().writeString("message" + i);
+         setBody(i, message);
 
          message.putIntProperty("counter", i);
 
          producer.send(message);
       }
 
-      RemotingConnection conn = ((ClientSessionInternal)session).getConnection();
-
-      // Simulate failure on connection
-      conn.fail(new HornetQException(HornetQException.NOT_CONNECTED));
-
-      // Wait to be informed of failure
-
-      boolean ok = latch.await(1000, TimeUnit.MILLISECONDS);
-
-      assertTrue(ok);
+      fail(session, latch);
       
       log.info("got here 1");
 
@@ -143,7 +146,7 @@ public class FailoverTest extends FailoverTestBase
 
             assertNotNull(message);
 
-            assertEquals("message" + i, message.getBody().readString());
+            assertMessageBody(i, message);
 
             assertEquals(i, message.getProperty("counter"));
 
@@ -157,6 +160,26 @@ public class FailoverTest extends FailoverTestBase
       assertEquals(0, sf.numSessions());
 
       assertEquals(0, sf.numConnections());
+   }
+
+   /**
+    * @param session
+    * @param latch
+    * @throws InterruptedException
+    */
+   private void fail(ClientSession session, final CountDownLatch latch) throws InterruptedException
+   {
+      
+      RemotingConnection conn = ((ClientSessionInternal)session).getConnection();
+
+      // Simulate failure on connection
+      conn.fail(new HornetQException(HornetQException.NOT_CONNECTED));
+
+      // Wait to be informed of failure
+
+      boolean ok = latch.await(1000, TimeUnit.MILLISECONDS);
+
+      assertTrue(ok);
    }
 
    public void testTransactedMessagesSentSoRollback() throws Exception
@@ -190,23 +213,14 @@ public class FailoverTest extends FailoverTestBase
       {
          ClientMessage message = session.createClientMessage(i % 2 == 0);
 
-         message.getBody().writeString("message" + i);
+         setBody(i, message);
 
          message.putIntProperty("counter", i);
 
          producer.send(message);
       }
-
-      RemotingConnection conn = ((ClientSessionInternal)session).getConnection();
-
-      // Simulate failure on connection
-      conn.fail(new HornetQException(HornetQException.NOT_CONNECTED));
-
-      // Wait to be informed of failure
-
-      boolean ok = latch.await(1000, TimeUnit.MILLISECONDS);
-
-      assertTrue(ok);
+      
+      fail(session, latch);
 
       try
       {
@@ -265,7 +279,7 @@ public class FailoverTest extends FailoverTestBase
       {
          ClientMessage message = session.createClientMessage(i % 2 == 0);
 
-         message.getBody().writeString("message" + i);
+         setBody(i, message);
 
          message.putIntProperty("counter", i);
 
@@ -274,16 +288,7 @@ public class FailoverTest extends FailoverTestBase
 
       session.commit();
 
-      RemotingConnection conn = ((ClientSessionInternal)session).getConnection();
-
-      // Simulate failure on connection
-      conn.fail(new HornetQException(HornetQException.NOT_CONNECTED));
-
-      // Wait to be informed of failure
-
-      boolean ok = latch.await(1000, TimeUnit.MILLISECONDS);
-
-      assertTrue(ok);
+      fail(session, latch);
 
       // committing again should work since didn't send anything since last commit
 
@@ -303,7 +308,7 @@ public class FailoverTest extends FailoverTestBase
 
             assertNotNull(message);
 
-            assertEquals("message" + i, message.getBody().readString());
+            assertMessageBody(i, message);
 
             assertEquals(i, message.getProperty("counter"));
 
@@ -351,7 +356,7 @@ public class FailoverTest extends FailoverTestBase
       {
          ClientMessage message = session1.createClientMessage(i % 2 == 0);
 
-         message.getBody().writeString("message" + i);
+         setBody(i, message);
 
          message.putIntProperty("counter", i);
 
@@ -372,23 +377,14 @@ public class FailoverTest extends FailoverTestBase
 
          assertNotNull(message);
 
-         assertEquals("message" + i, message.getBody().readString());
+         assertMessageBody(i, message);
 
          assertEquals(i, message.getProperty("counter"));
 
          message.acknowledge();
       }
 
-      RemotingConnection conn = ((ClientSessionInternal)session2).getConnection();
-
-      // Simulate failure on connection
-      conn.fail(new HornetQException(HornetQException.NOT_CONNECTED));
-
-      // Wait to be informed of failure
-
-      boolean ok = latch.await(1000, TimeUnit.MILLISECONDS);
-
-      assertTrue(ok);
+      fail(session2, latch);
 
       try
       {
@@ -441,7 +437,7 @@ public class FailoverTest extends FailoverTestBase
       {
          ClientMessage message = session1.createClientMessage(true);
 
-         message.getBody().writeString("message" + i);
+         setBody(i, message);
 
          message.putIntProperty("counter", i);
 
@@ -462,7 +458,7 @@ public class FailoverTest extends FailoverTestBase
 
          assertNotNull(message);
 
-         assertEquals("message" + i, message.getBody().readString());
+         assertMessageBody(i, message);
 
          assertEquals(i, message.getProperty("counter"));
 
@@ -473,16 +469,7 @@ public class FailoverTest extends FailoverTestBase
 
       consumer.close();
 
-      RemotingConnection conn = ((ClientSessionInternal)session2).getConnection();
-
-      // Simulate failure on connection
-      conn.fail(new HornetQException(HornetQException.NOT_CONNECTED));
-
-      // Wait to be informed of failure
-
-      boolean ok = latch.await(1000, TimeUnit.MILLISECONDS);
-
-      assertTrue(ok);
+      fail(session2, latch);
 
       consumer = session2.createConsumer(ADDRESS);
 
@@ -492,7 +479,7 @@ public class FailoverTest extends FailoverTestBase
 
          assertNotNull(message);
 
-         assertEquals("message" + i, message.getBody().readString());
+         assertMessageBody(i, message);
 
          assertEquals(i, message.getProperty("counter"));
 
@@ -545,23 +532,14 @@ public class FailoverTest extends FailoverTestBase
       {
          ClientMessage message = session.createClientMessage(i % 2 == 0);
 
-         message.getBody().writeString("message" + i);
+         setBody(i, message);
 
          message.putIntProperty("counter", i);
 
          producer.send(message);
       }
 
-      RemotingConnection conn = ((ClientSessionInternal)session).getConnection();
-
-      // Simulate failure on connection
-      conn.fail(new HornetQException(HornetQException.NOT_CONNECTED));
-
-      // Wait to be informed of failure
-
-      boolean ok = latch.await(1000, TimeUnit.MILLISECONDS);
-
-      assertTrue(ok);
+      fail(session, latch);
 
       try
       {
@@ -624,7 +602,7 @@ public class FailoverTest extends FailoverTestBase
       {
          ClientMessage message = session.createClientMessage(i % 2 == 0);
 
-         message.getBody().writeString("message" + i);
+         setBody(i, message);
 
          message.putIntProperty("counter", i);
 
@@ -633,16 +611,7 @@ public class FailoverTest extends FailoverTestBase
 
       session.end(xid, XAResource.TMSUCCESS);
 
-      RemotingConnection conn = ((ClientSessionInternal)session).getConnection();
-
-      // Simulate failure on connection
-      conn.fail(new HornetQException(HornetQException.NOT_CONNECTED));
-
-      // Wait to be informed of failure
-
-      boolean ok = latch.await(1000, TimeUnit.MILLISECONDS);
-
-      assertTrue(ok);
+      fail(session, latch);
 
       try
       {
@@ -706,7 +675,7 @@ public class FailoverTest extends FailoverTestBase
       {
          ClientMessage message = session.createClientMessage(i % 2 == 0);
 
-         message.getBody().writeString("message" + i);
+         setBody(i, message);
 
          message.putIntProperty("counter", i);
 
@@ -717,16 +686,7 @@ public class FailoverTest extends FailoverTestBase
 
       session.prepare(xid);
 
-      RemotingConnection conn = ((ClientSessionInternal)session).getConnection();
-
-      // Simulate failure on connection
-      conn.fail(new HornetQException(HornetQException.NOT_CONNECTED));
-
-      // Wait to be informed of failure
-
-      boolean ok = latch.await(1000, TimeUnit.MILLISECONDS);
-
-      assertTrue(ok);
+      fail(session, latch);
 
       try
       {
@@ -789,7 +749,7 @@ public class FailoverTest extends FailoverTestBase
       {
          ClientMessage message = session.createClientMessage(i % 2 == 0);
 
-         message.getBody().writeString("message" + i);
+         setBody(i, message);
 
          message.putIntProperty("counter", i);
 
@@ -802,16 +762,7 @@ public class FailoverTest extends FailoverTestBase
 
       session.commit(xid, false);
 
-      RemotingConnection conn = ((ClientSessionInternal)session).getConnection();
-
-      // Simulate failure on connection
-      conn.fail(new HornetQException(HornetQException.NOT_CONNECTED));
-
-      // Wait to be informed of failure
-
-      boolean ok = latch.await(1000, TimeUnit.MILLISECONDS);
-
-      assertTrue(ok);
+      fail(session, latch);
 
       ClientConsumer consumer = session.createConsumer(ADDRESS);
 
@@ -831,7 +782,7 @@ public class FailoverTest extends FailoverTestBase
 
             assertNotNull(message);
 
-            assertEquals("message" + i, message.getBody().readString());
+            assertMessageBody(i, message);
 
             assertEquals(i, message.getProperty("counter"));
 
@@ -883,7 +834,7 @@ public class FailoverTest extends FailoverTestBase
       {
          ClientMessage message = session1.createClientMessage(i % 2 == 0);
 
-         message.getBody().writeString("message" + i);
+         setBody(i, message);
 
          message.putIntProperty("counter", i);
 
@@ -908,23 +859,14 @@ public class FailoverTest extends FailoverTestBase
 
          assertNotNull(message);
 
-         assertEquals("message" + i, message.getBody().readString());
+         assertMessageBody(i, message);
 
          assertEquals(i, message.getProperty("counter"));
 
          message.acknowledge();
       }
 
-      RemotingConnection conn = ((ClientSessionInternal)session2).getConnection();
-
-      // Simulate failure on connection
-      conn.fail(new HornetQException(HornetQException.NOT_CONNECTED));
-
-      // Wait to be informed of failure
-
-      boolean ok = latch.await(1000, TimeUnit.MILLISECONDS);
-
-      assertTrue(ok);
+      fail(session2, latch);
 
       try
       {
@@ -978,7 +920,7 @@ public class FailoverTest extends FailoverTestBase
       {
          ClientMessage message = session1.createClientMessage(i % 2 == 0);
 
-         message.getBody().writeString("message" + i);
+         setBody(i, message);
 
          message.putIntProperty("counter", i);
 
@@ -1003,7 +945,7 @@ public class FailoverTest extends FailoverTestBase
 
          assertNotNull(message);
 
-         assertEquals("message" + i, message.getBody().readString());
+         assertMessageBody(i, message);
 
          assertEquals(i, message.getProperty("counter"));
 
@@ -1079,7 +1021,7 @@ public class FailoverTest extends FailoverTestBase
       {
          ClientMessage message = session1.createClientMessage(i % 2 == 0);
 
-         message.getBody().writeString("message" + i);
+         setBody(i, message);
 
          message.putIntProperty("counter", i);
 
@@ -1104,7 +1046,7 @@ public class FailoverTest extends FailoverTestBase
 
          assertNotNull(message);
 
-         assertEquals("message" + i, message.getBody().readString());
+         assertMessageBody(i, message);
 
          assertEquals(i, message.getProperty("counter"));
 
@@ -1115,16 +1057,7 @@ public class FailoverTest extends FailoverTestBase
 
       session2.prepare(xid);
 
-      RemotingConnection conn = ((ClientSessionInternal)session2).getConnection();
-
-      // Simulate failure on connection
-      conn.fail(new HornetQException(HornetQException.NOT_CONNECTED));
-
-      // Wait to be informed of failure
-
-      boolean ok = latch.await(1000, TimeUnit.MILLISECONDS);
-
-      assertTrue(ok);
+      fail(session2, latch);
 
       try
       {
@@ -1243,7 +1176,7 @@ public class FailoverTest extends FailoverTestBase
       {
          ClientMessage message = sendSession.createClientMessage(true);
 
-         message.getBody().writeString("message" + i);
+         setBody(i, message);
 
          message.putIntProperty("counter", i);
 
@@ -1278,7 +1211,7 @@ public class FailoverTest extends FailoverTestBase
 
                assertNotNull(message);
 
-               assertEquals("message" + i, message.getBody().readString());
+               assertMessageBody(i, message);
 
                assertEquals(i, message.getProperty("counter"));
 
@@ -1334,7 +1267,7 @@ public class FailoverTest extends FailoverTestBase
       {
          ClientMessage message = session.createClientMessage(i % 2 == 0);
 
-         message.getBody().writeString("message" + i);
+         setBody(i, message);
 
          message.putIntProperty("counter", i);
 
@@ -1351,21 +1284,12 @@ public class FailoverTest extends FailoverTestBase
 
          assertNotNull(message);
 
-         assertEquals("message" + i, message.getBody().readString());
+         assertMessageBody(i, message);
 
          assertEquals(i, message.getProperty("counter"));
       }
 
-      RemotingConnection conn = ((ClientSessionInternal)session).getConnection();
-
-      // Simulate failure on connection
-      conn.fail(new HornetQException(HornetQException.NOT_CONNECTED));
-
-      // Wait to be informed of failure
-
-      boolean ok = latch.await(1000, TimeUnit.MILLISECONDS);
-
-      assertTrue(ok);
+      fail(session, latch);
 
       for (int i = 0; i < numMessages; i++)
       {
@@ -1377,7 +1301,7 @@ public class FailoverTest extends FailoverTestBase
 
             assertNotNull(message);
 
-            assertEquals("message" + i, message.getBody().readString());
+            assertMessageBody(i, message);
 
             assertEquals(i, message.getProperty("counter"));
 
@@ -1423,7 +1347,7 @@ public class FailoverTest extends FailoverTestBase
       {
          ClientMessage message = session.createClientMessage(i % 2 == 0);
 
-         message.getBody().writeString("message" + i);
+         setBody(i, message);
 
          message.putIntProperty("counter", i);
 
@@ -1440,21 +1364,12 @@ public class FailoverTest extends FailoverTestBase
 
          assertNotNull(message);
 
-         assertEquals("message" + i, message.getBody().readString());
+         assertMessageBody(i, message);
 
          assertEquals(i, message.getProperty("counter"));
       }
 
-      RemotingConnection conn = ((ClientSessionInternal)session).getConnection();
-
-      // Simulate failure on connection
-      conn.fail(new HornetQException(HornetQException.NOT_CONNECTED));
-
-      // Wait to be informed of failure
-
-      boolean ok = latch.await(1000, TimeUnit.MILLISECONDS);
-
-      assertTrue(ok);
+      fail(session, latch);
 
       // Should get the same ones after failover since we didn't ack
 
@@ -1468,7 +1383,7 @@ public class FailoverTest extends FailoverTestBase
 
             assertNotNull(message);
 
-            assertEquals("message" + i, message.getBody().readString());
+            assertMessageBody(i, message);
 
             assertEquals(i, message.getProperty("counter"));
 
@@ -1515,7 +1430,7 @@ public class FailoverTest extends FailoverTestBase
       {
          ClientMessage message = session.createClientMessage(i % 2 == 0);
 
-         message.getBody().writeString("message" + i);
+         setBody(i, message);
 
          message.putIntProperty("counter", i);
 
@@ -1532,23 +1447,14 @@ public class FailoverTest extends FailoverTestBase
 
          assertNotNull(message);
 
-         assertEquals("message" + i, message.getBody().readString());
+         assertMessageBody(i, message);
 
          assertEquals(i, message.getProperty("counter"));
 
          message.acknowledge();
       }
 
-      RemotingConnection conn = ((ClientSessionInternal)session).getConnection();
-
-      // Simulate failure on connection
-      conn.fail(new HornetQException(HornetQException.NOT_CONNECTED));
-
-      // Wait to be informed of failure
-
-      boolean ok = latch.await(1000, TimeUnit.MILLISECONDS);
-
-      assertTrue(ok);
+      fail(session, latch);
 
       // Send some more
 
@@ -1556,7 +1462,7 @@ public class FailoverTest extends FailoverTestBase
       {
          ClientMessage message = session.createClientMessage(i % 2 == 0);
 
-         message.getBody().writeString("message" + i);
+         setBody(i, message);
 
          message.putIntProperty("counter", i);
 
@@ -1571,7 +1477,7 @@ public class FailoverTest extends FailoverTestBase
 
          assertNotNull(message);
 
-         assertEquals("message" + i, message.getBody().readString());
+         assertMessageBody(i, message);
 
          assertEquals(i, message.getProperty("counter"));
 
@@ -1642,16 +1548,7 @@ public class FailoverTest extends FailoverTestBase
 
       Thread.sleep(500);
 
-      RemotingConnection conn = ((ClientSessionInternal)session).getConnection();
-
-      // Simulate failure on connection
-      conn.fail(new HornetQException(HornetQException.NOT_CONNECTED));
-
-      // Wait to be informed of failure
-
-      boolean ok = latch.await(1000, TimeUnit.MILLISECONDS);
-
-      assertTrue(ok);
+      fail(session, latch);
 
       sender.join();
 
@@ -1706,7 +1603,7 @@ public class FailoverTest extends FailoverTestBase
             message.putStringProperty(MessageImpl.HDR_DUPLICATE_DETECTION_ID, new SimpleString(txID));
          }
          
-         message.getBody().writeString("message" + i);
+         setBody(i, message);
 
          message.putIntProperty("counter", i);
 
@@ -1759,15 +1656,7 @@ public class FailoverTest extends FailoverTestBase
 
       Thread.sleep(500);
 
-      RemotingConnection conn = ((ClientSessionInternal)session).getConnection();
-
-      conn.fail(new HornetQException(HornetQException.NOT_CONNECTED));
-
-      // Wait to be informed of failure
-
-      boolean ok = latch.await(1000, TimeUnit.MILLISECONDS);
-
-      assertTrue(ok);
+      fail(session, latch);
 
       committer.join();
 
@@ -1792,7 +1681,7 @@ public class FailoverTest extends FailoverTestBase
             message.putStringProperty(MessageImpl.HDR_DUPLICATE_DETECTION_ID, new SimpleString(txID));
          }
 
-         message.getBody().writeString("message" + i);
+         setBody(i, message);
 
          message.putIntProperty("counter", i);
 
@@ -1811,7 +1700,7 @@ public class FailoverTest extends FailoverTestBase
 
          assertNotNull(message);
 
-         assertEquals("message" + i, message.getBody().readString());
+         assertMessageBody(i, message);
 
          assertEquals(i, message.getProperty("counter"));
 
@@ -1861,7 +1750,7 @@ public class FailoverTest extends FailoverTestBase
       {
          ClientMessage message = session.createClientMessage(true);
 
-         message.getBody().writeString("message" + i);
+         setBody(i, message);
 
          message.putIntProperty("counter", i);
 
@@ -1914,15 +1803,7 @@ public class FailoverTest extends FailoverTestBase
 
       Thread.sleep(500);
 
-      RemotingConnection conn = ((ClientSessionInternal)session).getConnection();
-
-      conn.fail(new HornetQException(HornetQException.NOT_CONNECTED));
-
-      // Wait to be informed of failure
-
-      boolean ok = latch.await(1000, TimeUnit.MILLISECONDS);
-
-      assertTrue(ok);
+      fail(session, latch);
 
       committer.join();
 
@@ -1940,7 +1821,7 @@ public class FailoverTest extends FailoverTestBase
       {
          ClientMessage message = session2.createClientMessage(true);
 
-         message.getBody().writeString("message" + i);
+         setBody(i, message);
 
          message.putIntProperty("counter", i);
 
@@ -1959,7 +1840,7 @@ public class FailoverTest extends FailoverTestBase
 
          assertNotNull(message);
 
-         assertEquals("message" + i, message.getBody().readString());
+         assertMessageBody(i, message);
 
          assertEquals(i, message.getProperty("counter"));
 
@@ -2013,6 +1894,26 @@ public class FailoverTest extends FailoverTestBase
 
          return new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory", server1Params);
       }
+   }
+
+
+   /**
+    * @param i
+    * @param message
+    */
+   protected void assertMessageBody(int i, ClientMessage message)
+   {
+      assertEquals("message" + i, message.getBody().readString());
+   }
+
+   /**
+    * @param i
+    * @param message
+    * @throws Exception 
+    */
+   protected void setBody(int i, ClientMessage message) throws Exception
+   {
+      message.getBody().writeString("message" + i);
    }
 
    // Private -------------------------------------------------------

@@ -19,6 +19,7 @@ import java.util.Map;
 import javax.transaction.xa.Xid;
 
 import org.hornetq.core.paging.PageTransactionInfo;
+import org.hornetq.core.paging.PagedMessage;
 import org.hornetq.core.paging.PagingManager;
 import org.hornetq.core.postoffice.Binding;
 import org.hornetq.core.postoffice.PostOffice;
@@ -44,6 +45,18 @@ import org.hornetq.utils.UUID;
 public interface StorageManager extends HornetQComponent
 {
    // Message related operations
+   
+   void pageClosed(SimpleString storeName, int pageNumber);
+   
+   void pageDeleted(SimpleString storeName, int pageNumber);
+   
+   void pageWrite(PagedMessage message, int pageNumber);
+   
+   boolean isReplicated();
+   
+   void afterReplicated(Runnable run);
+   
+   void completeReplication();
    
    UUID getPersistentID();
    
@@ -87,6 +100,8 @@ public interface StorageManager extends HornetQComponent
 
    LargeServerMessage createLargeMessage();
 
+   LargeServerMessage createLargeMessage(long id, byte [] header);
+
    void prepare(long txID, Xid xid) throws Exception;
 
    void commit(long txID) throws Exception;
@@ -97,15 +112,21 @@ public interface StorageManager extends HornetQComponent
 
    void deletePageTransactional(long txID, long recordID) throws Exception;
 
+   /** This method is only useful at the backup side. We only load internal structures making the journals ready for
+    *  append mode on the backup side. */
+   void loadInternalOnly() throws Exception;
+
+   
+   public void loadMessageJournal(final PostOffice postOffice,
+                                  final PagingManager pagingManager,
+                                  final ResourceManager resourceManager,
+                                  final Map<Long, Queue> queues,
+                                  final Map<SimpleString, List<Pair<byte[], Long>>> duplicateIDMap) throws Exception;
+
    long storeHeuristicCompletion(Xid xid, boolean isCommit) throws Exception;
    
    void deleteHeuristicCompletion(long id) throws Exception;
    
-   void loadMessageJournal(PostOffice postOffice,
-                           PagingManager pagingManager,
-                           ResourceManager resourceManager,
-                           Map<Long, Queue> queues,
-                           Map<SimpleString, List<Pair<byte[], Long>>> duplicateIDMap) throws Exception;
 
    // Bindings related operations
 

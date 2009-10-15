@@ -48,7 +48,9 @@ public interface FailoverManager
                                final boolean blockOnPersistentSend) throws HornetQException;
 
    void removeSession(final ClientSessionInternal session);
-
+   
+   public RemotingConnection getConnection();
+   
    int numConnections();
 
    int numSessions();

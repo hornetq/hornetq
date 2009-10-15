@@ -13,6 +13,7 @@
 
 package org.hornetq.core.journal;
 
+import org.hornetq.core.journal.impl.JournalFile;
 
 /**
  * 
@@ -46,17 +47,20 @@ public interface TestableJournal extends Journal
 
    int getMaxAIO();
 
-   /** This method could be promoted to {@link Journal} interface when we decide to use the loadManager 
-    *  instead of load(List,List)
-    */
-   long load(LoaderCallback reloadManager) throws Exception;
-
    void forceMoveNextFile() throws Exception;
 
    void setAutoReclaim(boolean autoReclaim);
 
    boolean isAutoReclaim();
 
+   void compact() throws Exception;
+   
+   /** This method is called automatically when a new file is opened.
+    * @return true if it needs to re-check due to cleanup or other factors  */
+   boolean checkReclaimStatus() throws Exception;
+
+   
+   JournalFile[] getDataFiles();
    
 
 }

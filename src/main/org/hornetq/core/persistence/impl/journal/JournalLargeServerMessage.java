@@ -91,10 +91,8 @@ public class JournalLargeServerMessage extends ServerMessageImpl implements Larg
       {
          file.open();
       }
-
-      file.position(file.size());
-
-      file.write(ByteBuffer.wrap(bytes), false);
+      
+      storageManager.addBytesToLargeMessage(file, this.getMessageID(), bytes);
 
       bodySize += bytes.length;
    }
@@ -232,6 +230,7 @@ public class JournalLargeServerMessage extends ServerMessageImpl implements Larg
    public synchronized void deleteFile() throws Exception
    {
       validateFile();
+      releaseResources();
       storageManager.deleteFile(file);
    }
    
@@ -262,10 +261,11 @@ public class JournalLargeServerMessage extends ServerMessageImpl implements Larg
    {
       super.setStored();
       releaseResources();
+      
+      
       if (file != null && linkMessage == null)
       {
-         SequentialFile fileToRename = storageManager.createFileForLargeMessage(getMessageID(), isStored());
-         file.renameTo(fileToRename.getFileName());
+         storageManager.completeLargeMessage(this);
       }
    }
 
@@ -303,6 +303,12 @@ public class JournalLargeServerMessage extends ServerMessageImpl implements Larg
       JournalLargeServerMessage newMessage = new JournalLargeServerMessage(linkMessage == null ? this : (JournalLargeServerMessage)linkMessage, newfile, newID);
 
       return newMessage;
+   }
+   
+   
+   public SequentialFile getFile()
+   {
+      return file;
    }
 
    // Package protected ---------------------------------------------

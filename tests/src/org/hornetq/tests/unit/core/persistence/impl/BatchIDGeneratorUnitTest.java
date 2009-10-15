@@ -23,6 +23,7 @@ import org.hornetq.core.journal.RecordInfo;
 import org.hornetq.core.journal.impl.JournalImpl;
 import org.hornetq.core.journal.impl.NIOSequentialFileFactory;
 import org.hornetq.core.persistence.impl.journal.BatchingIDGenerator;
+import org.hornetq.core.persistence.impl.journal.JournalStorageManager;
 import org.hornetq.core.remoting.spi.HornetQBuffer;
 import org.hornetq.tests.util.UnitTestCase;
 
@@ -142,7 +143,7 @@ public class BatchIDGeneratorUnitTest extends UnitTestCase
 
       for (RecordInfo record : records)
       {
-         if (record.userRecordType == BatchingIDGenerator.ID_COUNTER_RECORD)
+         if (record.userRecordType == JournalStorageManager.ID_COUNTER_RECORD)
          {
             HornetQBuffer buffer = ChannelBuffers.wrappedBuffer(record.data);
             batch.loadState(record.id, buffer);

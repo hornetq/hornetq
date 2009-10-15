@@ -54,6 +54,8 @@ public interface PagingStore extends HornetQComponent
    public boolean readPage() throws Exception;
    
    Page getCurrentPage();
+   
+   Page createPage(final int page) throws Exception;
 
    /**
     * 

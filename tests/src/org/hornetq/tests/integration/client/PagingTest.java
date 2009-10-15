@@ -17,6 +17,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import junit.framework.AssertionFailedError;
+import junit.framework.TestSuite;
 
 import org.hornetq.core.buffers.ChannelBuffers;
 import org.hornetq.core.client.ClientConsumer;
@@ -46,7 +47,17 @@ import org.hornetq.utils.SimpleString;
  */
 public class PagingTest extends ServiceTestBase
 {
-
+   
+   public PagingTest(String name)
+   {
+      super(name);
+   }
+   
+   public PagingTest()
+   {
+      super();
+   }
+   
    // Constants -----------------------------------------------------
    private static final Logger log = Logger.getLogger(PagingTest.class);
 

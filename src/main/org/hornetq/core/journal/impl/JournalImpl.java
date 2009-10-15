@@ -1163,6 +1163,16 @@ public class JournalImpl implements TestableJournal
    {
       appendDeleteRecordTransactional(txID, id, NullEncoding.instance);
    }
+   
+   /* (non-Javadoc)
+    * @see org.hornetq.core.journal.Journal#appendPrepareRecord(long, byte[], boolean)
+    */
+   public void appendPrepareRecord(long txID, byte[] transactionData, boolean sync) throws Exception
+   {
+      appendPrepareRecord(txID, new ByteArrayEncoding(transactionData), sync);
+   }
+
+
 
    /** 
     * 
@@ -2148,7 +2158,7 @@ public class JournalImpl implements TestableJournal
       return (compactMinFiles * compactPercentage);
    }
 
-   public synchronized void cleanUp(final JournalFile file) throws Exception
+   private synchronized void cleanUp(final JournalFile file) throws Exception
    {
       if (state != STATE_LOADED)
       {
@@ -2225,7 +2235,7 @@ public class JournalImpl implements TestableJournal
 
    }
 
-   public void checkCompact() throws Exception
+   private void checkCompact() throws Exception
    {
       if (compactMinFiles == 0)
       {
@@ -3344,7 +3354,12 @@ public class JournalImpl implements TestableJournal
    private static class NullEncoding implements EncodingSupport
    {
 
-      static NullEncoding instance = new NullEncoding();
+      private static NullEncoding instance = new NullEncoding();
+      
+      public static NullEncoding getInstance()
+      {
+         return instance;
+      }
 
       public void decode(final HornetQBuffer buffer)
       {

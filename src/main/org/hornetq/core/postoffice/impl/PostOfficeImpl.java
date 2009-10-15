@@ -848,7 +848,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
 
    private void processRoute(final ServerMessage message, final RoutingContext context) throws Exception
    {
-      List<MessageReference> refs = new ArrayList<MessageReference>();
+      final List<MessageReference> refs = new ArrayList<MessageReference>();
 
       Transaction tx = context.getTransaction();
       
@@ -924,12 +924,33 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
          tx.addOperation(new AddOperation(refs));
       }
       else
-      {         
-         for (MessageReference ref : refs)
+      {
+         if (storageManager.isReplicated())
          {
-
-            ref.getQueue().addLast(ref);
+            storageManager.afterReplicated(new Runnable()
+            {
+               public void run()
+               {
+                  deliverReferences(refs);
+               }
+            });
          }
+         else
+         {
+            deliverReferences(refs);
+         }
+      }
+   }
+
+   /**
+    * @param refs
+    */
+   private void deliverReferences(final List<MessageReference> refs)
+   {
+      for (MessageReference ref : refs)
+      {
+  
+         ref.getQueue().addLast(ref);
       }
    }
    

@@ -145,17 +145,37 @@ public class Redistributor implements Consumer
 
       tx.commit();
 
-      count++;
-
-      if (count == batchSize)
+      
+      Runnable action = new Runnable()
       {
-         // We continue the next batch on a different thread, so as not to keep the delivery thread busy for a very
-         // long time in the case there are many messages in the queue
-         active = false;
-
-         executor.execute(new Prompter());
-
-         count = 0;
+         public void run()
+         {
+            
+            count++;
+      
+            if (count == batchSize)
+            {
+               // We continue the next batch on a different thread, so as not to keep the delivery thread busy for a very
+               // long time in the case there are many messages in the queue
+               active = false;
+      
+               
+               executor.execute(new Prompter());
+      
+               count = 0;
+            }
+            
+         }
+      };
+      
+      if (storageManager.isReplicated())
+      {
+         storageManager.afterReplicated(action);
+         storageManager.completeReplication();
+      }
+      else
+      {
+         action.run();
       }
    }
 

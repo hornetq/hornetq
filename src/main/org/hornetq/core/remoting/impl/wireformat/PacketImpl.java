@@ -28,16 +28,17 @@ public class PacketImpl implements Packet
    // Constants -------------------------------------------------------------------------
 
    private static final Logger log = Logger.getLogger(PacketImpl.class);
-   
+
    // The minimal size for all the packets, Common data for all the packets (look at PacketImpl.encode)
-   protected static final int BASIC_PACKET_SIZE = DataConstants.SIZE_INT + DataConstants.SIZE_BYTE + DataConstants.SIZE_LONG;
+   protected static final int BASIC_PACKET_SIZE = DataConstants.SIZE_INT + DataConstants.SIZE_BYTE +
+                                                  DataConstants.SIZE_LONG;
 
    private long channelID;
 
    private final byte type;
-   
+
    private int size;
-   
+
    // The packet types
    // -----------------------------------------------------------------------------------
 
@@ -65,12 +66,13 @@ public class PacketImpl implements Packet
 
    public static final byte DELETE_QUEUE = 35;
 
+   public static final byte CREATE_REPLICATION = 36;
 
    // Session
    public static final byte SESS_CREATECONSUMER = 40;
 
    public static final byte SESS_ACKNOWLEDGE = 41;
-   
+
    public static final byte SESS_EXPIRED = 42;
 
    public static final byte SESS_COMMIT = 43;
@@ -126,7 +128,7 @@ public class PacketImpl implements Packet
    public static final byte SESS_FLOWTOKEN = 70;
 
    public static final byte SESS_SEND = 71;
-   
+
    public static final byte SESS_SEND_LARGE = 72;
 
    public static final byte SESS_SEND_CONTINUATION = 73;
@@ -139,6 +141,31 @@ public class PacketImpl implements Packet
 
    public static final byte SESS_FORCE_CONSUMER_DELIVERY = 77;
 
+   // Replication
+
+   public static final byte REPLICATION_RESPONSE = 80;
+
+   public static final byte REPLICATION_APPEND = 81;
+
+   public static final byte REPLICATION_APPEND_TX = 82;
+
+   public static final byte REPLICATION_DELETE = 83;
+
+   public static final byte REPLICATION_DELETE_TX = 84;
+   
+   public static final byte REPLICATION_PREPARE = 85;
+   
+   public static final byte REPLICATION_COMMIT_ROLLBACK = 86;
+   
+   public static final byte REPLICATION_PAGE_WRITE = 87;
+
+   public static final byte REPLICATION_PAGE_EVENT = 88;
+   
+   public static final byte REPLICATION_LARGE_MESSAGE_BEGIN = 89;
+   
+   public static final byte REPLICATION_LARGE_MESSAGE_END = 90;
+   
+   public static final byte REPLICATION_LARGE_MESSAGE_WRITE = 91;
    // Static --------------------------------------------------------
 
    public PacketImpl(final byte type)
@@ -147,7 +174,6 @@ public class PacketImpl implements Packet
    }
 
    // Public --------------------------------------------------------
-
 
    public byte getType()
    {
@@ -163,40 +189,40 @@ public class PacketImpl implements Packet
    {
       this.channelID = channelID;
    }
-   
+
    public int encode(final HornetQBuffer buffer)
    {
       // The standard header fields
       buffer.writeInt(0); // The length gets filled in at the end
       buffer.writeByte(type);
       buffer.writeLong(channelID);
-      
+
       encodeBody(buffer);
 
       size = buffer.writerIndex();
-      
+
       // The length doesn't include the actual length byte
       int len = size - DataConstants.SIZE_INT;
 
       buffer.setInt(0, len);
-      
+
       return size;
    }
 
    public void decode(final HornetQBuffer buffer)
    {
       channelID = buffer.readLong();
-      
+
       decodeBody(buffer);
-      
+
       size = buffer.readerIndex();
    }
-   
+
    public final int getPacketSize()
    {
       return size;
    }
-   
+
    public int getRequiredBufferSize()
    {
       return BASIC_PACKET_SIZE;
@@ -252,7 +278,7 @@ public class PacketImpl implements Packet
    {
       return DataConstants.SIZE_INT + str.length() * 2;
    }
-   
+
    protected int nullableStringEncodeSize(String str)
    {
       return DataConstants.SIZE_BOOLEAN + (str != null ? stringEncodeSize(str) : 0);

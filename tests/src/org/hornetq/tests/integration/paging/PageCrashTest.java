@@ -310,7 +310,7 @@ public class PageCrashTest extends ServiceTestBase
             }
 
             @Override
-            protected Page createPage(final int page) throws Exception
+            public Page createPage(final int page) throws Exception
             {
 
                Page originalPage = super.createPage(page);

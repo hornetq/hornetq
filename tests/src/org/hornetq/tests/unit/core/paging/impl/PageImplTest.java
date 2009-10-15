@@ -24,6 +24,7 @@ import org.hornetq.core.journal.impl.NIOSequentialFileFactory;
 import org.hornetq.core.paging.PagedMessage;
 import org.hornetq.core.paging.impl.PageImpl;
 import org.hornetq.core.paging.impl.PagedMessageImpl;
+import org.hornetq.core.persistence.impl.nullpm.NullStorageManager;
 import org.hornetq.core.remoting.spi.HornetQBuffer;
 import org.hornetq.core.server.ServerMessage;
 import org.hornetq.core.server.impl.ServerMessageImpl;
@@ -77,7 +78,7 @@ public class PageImplTest extends UnitTestCase
 
       SequentialFile file = factory.createSequentialFile("00010.page", 1);
 
-      PageImpl impl = new PageImpl(factory, file, 10);
+      PageImpl impl = new PageImpl(new SimpleString("something"), new NullStorageManager(), factory, file, 10);
 
       assertEquals(10, impl.getPageId());
 
@@ -94,7 +95,7 @@ public class PageImplTest extends UnitTestCase
 
       file = factory.createSequentialFile("00010.page", 1);
       file.open();
-      impl = new PageImpl(factory, file, 10);
+      impl = new PageImpl(new SimpleString("something"), new NullStorageManager(), factory, file, 10);
 
       List<PagedMessage> msgs = impl.read();
 
@@ -124,7 +125,7 @@ public class PageImplTest extends UnitTestCase
 
       SequentialFile file = factory.createSequentialFile("00010.page", 1);
 
-      PageImpl impl = new PageImpl(factory, file, 10);
+      PageImpl impl = new PageImpl(new SimpleString("something"), new NullStorageManager(), factory, file, 10);
 
       assertEquals(10, impl.getPageId());
 
@@ -167,7 +168,7 @@ public class PageImplTest extends UnitTestCase
 
       file = factory.createSequentialFile("00010.page", 1);
       file.open();
-      impl = new PageImpl(factory, file, 10);
+      impl = new PageImpl(new SimpleString("something"), new NullStorageManager(), factory, file, 10);
 
       List<PagedMessage> msgs = impl.read();
 

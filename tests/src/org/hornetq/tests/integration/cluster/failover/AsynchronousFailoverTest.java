@@ -406,35 +406,14 @@ public class AsynchronousFailoverTest extends FailoverTestBase
    @Override
    protected TransportConfiguration getAcceptorTransportConfiguration(boolean live)
    {
-      if (live)
-      {
-         return new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory");
-      }
-      else
-      {
-         Map<String, Object> server1Params = new HashMap<String, Object>();
-
-         server1Params.put(TransportConstants.SERVER_ID_PROP_NAME, 1);
-
-         return new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory", server1Params);
-      }
+      return getInVMTransportAcceptorConfiguration(live);
    }
 
    @Override
    protected TransportConfiguration getConnectorTransportConfiguration(final boolean live)
    {
-      if (live)
-      {
-         return new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory");
-      }
-      else
-      {
-         Map<String, Object> server1Params = new HashMap<String, Object>();
-
-         server1Params.put(TransportConstants.SERVER_ID_PROP_NAME, 1);
-
-         return new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory", server1Params);
-      }
+      return getInVMConnectorTransportConfiguration(live);
    }
+   
 
 }

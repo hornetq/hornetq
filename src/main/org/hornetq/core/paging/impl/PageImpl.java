@@ -28,6 +28,8 @@ import org.hornetq.core.journal.SequentialFileFactory;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.paging.Page;
 import org.hornetq.core.paging.PagedMessage;
+import org.hornetq.core.persistence.StorageManager;
+import org.hornetq.utils.SimpleString;
 
 /**
  * 
@@ -59,16 +61,22 @@ public class PageImpl implements Page
    private final SequentialFileFactory fileFactory;
 
    private final AtomicInteger size = new AtomicInteger(0);
+   
+   private final StorageManager storageManager;
+   
+   private final SimpleString storeName;
 
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
-   public PageImpl(final SequentialFileFactory factory, final SequentialFile file, final int pageId) throws Exception
+   public PageImpl(final SimpleString storeName, final StorageManager storageManager, final SequentialFileFactory factory, final SequentialFile file, final int pageId) throws Exception
    {
       this.pageId = pageId;
       this.file = file;
-      fileFactory = factory;
+      this.fileFactory = factory;
+      this.storageManager = storageManager;
+      this.storeName = storeName;
    }
 
    // Public --------------------------------------------------------
@@ -154,9 +162,11 @@ public class PageImpl implements Page
       numberOfMessages.incrementAndGet();
       size.addAndGet(buffer.limit());
       
+      storageManager.pageWrite(message, pageId);
+      
       if (message.getMessage(null).isLargeMessage())
       {
-         // If we don't sync on large messages we could have the risk of files unnatended files on disk
+         // If we don't sync on large messages we could have the risk of unattended files on disk
          sync();
       }
    }
@@ -175,11 +185,20 @@ public class PageImpl implements Page
 
    public void close() throws Exception
    {
+      if (storageManager != null)
+      {
+         storageManager.pageClosed(storeName, pageId);
+      }
       file.close();
    }
 
    public void delete() throws Exception
    {
+      if (storageManager != null)
+      {
+         storageManager.pageDeleted(storeName, pageId);
+      }
+      
       if (suspiciousRecords)
       {
          log.warn("File " + file.getFileName() +

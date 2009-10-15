@@ -31,34 +31,12 @@ public class NettyAsynchronousFailoverTest extends AsynchronousFailoverTest
    @Override
    protected TransportConfiguration getAcceptorTransportConfiguration(boolean live)
    {
-      if (live)
-      {
-         return new TransportConfiguration("org.hornetq.integration.transports.netty.NettyAcceptorFactory");
-      }
-      else
-      {
-         Map<String, Object> server1Params  = new HashMap<String, Object>();
-                  
-         server1Params.put(TransportConstants.PORT_PROP_NAME, TransportConstants.DEFAULT_PORT + 1);
-         
-         return new TransportConfiguration("org.hornetq.integration.transports.netty.NettyAcceptorFactory", server1Params);
-      }
+      return getNettyAcceptorTransportConfiguration(live);
    }
    
    @Override
    protected TransportConfiguration getConnectorTransportConfiguration(final boolean live)
    {
-      if (live)
-      {
-         return new TransportConfiguration("org.hornetq.integration.transports.netty.NettyConnectorFactory");
-      }
-      else
-      {
-         Map<String, Object> server1Params  = new HashMap<String, Object>();
-         
-         server1Params.put(TransportConstants.PORT_PROP_NAME, TransportConstants.DEFAULT_PORT + 1);
-         
-         return new TransportConfiguration("org.hornetq.integration.transports.netty.NettyConnectorFactory", server1Params);
-      }
+      return getNettyConnectorTransportConfiguration(live);
    }
 }

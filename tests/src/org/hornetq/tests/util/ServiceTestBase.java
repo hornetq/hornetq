@@ -67,6 +67,16 @@ public class ServiceTestBase extends UnitTestCase
 
    // Constructors --------------------------------------------------
 
+   public ServiceTestBase()
+   {
+      super();
+   }
+   
+   public ServiceTestBase(String name)
+   {
+      super(name);
+   }
+   
    // Public --------------------------------------------------------
 
    // Package protected ---------------------------------------------

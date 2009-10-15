@@ -19,13 +19,16 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import javax.transaction.xa.Xid;
 
+import org.hornetq.core.buffers.ChannelBuffers;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.paging.PageTransactionInfo;
+import org.hornetq.core.paging.PagedMessage;
 import org.hornetq.core.paging.PagingManager;
 import org.hornetq.core.persistence.QueueBindingInfo;
 import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.core.postoffice.Binding;
 import org.hornetq.core.postoffice.PostOffice;
+import org.hornetq.core.remoting.spi.HornetQBuffer;
 import org.hornetq.core.server.LargeServerMessage;
 import org.hornetq.core.server.MessageReference;
 import org.hornetq.core.server.Queue;
@@ -183,6 +186,20 @@ public class NullStorageManager implements StorageManager
       return new NullStorageLargeServerMessage();
    }
    
+   public LargeServerMessage createLargeMessage(long id, byte[] header)
+   {
+      NullStorageLargeServerMessage largeMessage = new NullStorageLargeServerMessage();
+
+      HornetQBuffer headerBuffer = ChannelBuffers.wrappedBuffer(header);
+
+      largeMessage.decodeProperties(headerBuffer);
+      
+      largeMessage.setMessageID(id);
+      
+      return largeMessage;     
+   }
+   
+   
    public long generateUniqueID()
    {
       long id = idSequence.getAndIncrement();
@@ -248,5 +265,57 @@ public class NullStorageManager implements StorageManager
    public void deleteDuplicateID(final long recordID) throws Exception
    {
    }
+
+   /* (non-Javadoc)
+    * @see org.hornetq.core.persistence.StorageManager#loadInternalOnly()
+    */
+   public void loadInternalOnly() throws Exception
+   {
+   }
+
+   /* (non-Javadoc)
+    * @see org.hornetq.core.persistence.StorageManager#afterReplicated(java.lang.Runnable)
+    */
+   public void afterReplicated(Runnable run)
+   {
+      run.run();
+   }
+
+   /* (non-Javadoc)
+    * @see org.hornetq.core.persistence.StorageManager#isReplicated()
+    */
+   public boolean isReplicated()
+   {
+      return false;
+   }
+
+   /* (non-Javadoc)
+    * @see org.hornetq.core.persistence.StorageManager#completeReplication()
+    */
+   public void completeReplication()
+   {
+   }
+
+   /* (non-Javadoc)
+    * @see org.hornetq.core.persistence.StorageManager#pageClosed(org.hornetq.utils.SimpleString, int)
+    */
+   public void pageClosed(SimpleString storeName, int pageNumber)
+   {
+   }
+
+   /* (non-Javadoc)
+    * @see org.hornetq.core.persistence.StorageManager#pageDeleted(org.hornetq.utils.SimpleString, int)
+    */
+   public void pageDeleted(SimpleString storeName, int pageNumber)
+   {
+   }
+
+   /* (non-Javadoc)
+    * @see org.hornetq.core.persistence.StorageManager#pageWrite(org.hornetq.core.paging.PagedMessage, int)
+    */
+   public void pageWrite(PagedMessage message, int pageNumber)
+   {
+   }
+
 
 }

@@ -206,20 +206,50 @@ public class TransactionImpl implements Transaction
                operation.beforeCommit(this);
             }
          }
+         
+         // TODO: Verify Exception handling here with Tim
+         Runnable execAfterCommit = null;
+         
+         if (operations != null)
+         {
+            execAfterCommit = new Runnable()
+            {
+               public void run()
+               {
+                  for (TransactionOperation operation : operations)
+                  {
+                     try
+                     {
+                        operation.afterCommit(TransactionImpl.this);
+                     }
+                     catch (Exception e)
+                     {
+                        log.warn(e.getMessage(), e);
+                     }
+                  }
+               }
+            };
+         }
 
          if ((getProperty(TransactionPropertyIndexes.CONTAINS_PERSISTENT) != null) || (xid != null && state == State.PREPARED))
          {
             storageManager.commit(id);
-         }
-
-         state = State.COMMITTED;
-
-         if (operations != null)
-         {
-            for (TransactionOperation operation : operations)
+            state = State.COMMITTED;
+            if (execAfterCommit != null)
             {
-               operation.afterCommit(this);
+               if (storageManager.isReplicated())
+               {
+                  storageManager.afterReplicated(execAfterCommit);
+               }
+               else
+               {
+                  execAfterCommit.run();
+               }
             }
+         }
+         else if (execAfterCommit != null)
+         {
+            execAfterCommit.run();
          }
       }
    }

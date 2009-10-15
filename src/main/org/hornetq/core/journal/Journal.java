@@ -71,9 +71,14 @@ public interface Journal extends HornetQComponent
     */
    void appendPrepareRecord(long txID, EncodingSupport transactionData, boolean sync) throws Exception;
 
+   void appendPrepareRecord(long txID, byte[] transactionData, boolean sync) throws Exception;
+
    void appendRollbackRecord(long txID, boolean sync) throws Exception;
 
    // Load
+   
+   long load(LoaderCallback reloadManager) throws Exception;
+
 
    long load(List<RecordInfo> committedRecords, List<PreparedTransactionInfo> preparedTransactions, TransactionFailureCallback transactionFailure) throws Exception;
 
@@ -81,22 +86,5 @@ public interface Journal extends HornetQComponent
 
    void perfBlast(int pages) throws Exception;
 
-   /** This method is called automatically when a new file is opened.
-    * @return true if it needs to re-check due to cleanup or other factors  */
-   boolean checkReclaimStatus() throws Exception;
-
-   /** This method check for the need of compacting based on the minCompactPercentage 
-    * This method is usually called automatically when new files are opened
-   */
-   void checkCompact() throws Exception;
-
-   /**
-    * Eliminate deleted records of the journal.
-    * @throws Exception 
-    */
-   void compact() throws Exception;
-   
-   
-   JournalFile[] getDataFiles();
 
 }

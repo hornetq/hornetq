@@ -161,7 +161,6 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
    private final SimpleString managementAddress;
 
    // The current currentLargeMessage being processed
-   // In case of replication, currentLargeMessage should only be accessed within the replication callbacks
    private volatile LargeServerMessage currentLargeMessage;
 
    private ServerSessionPacketHandler handler;
@@ -414,9 +413,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
          }
       }
 
-      channel.confirm(packet);
-
-      channel.send(response);
+      sendResponse(packet, response, false, false);
    }
 
    public void handleCreateQueue(final CreateQueueMessage packet)
@@ -489,9 +486,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
          }
       }
 
-      channel.confirm(packet);
-
-      channel.send(response);
+      sendResponse(packet, response, false, false);
    }
 
    public void handleDeleteQueue(final SessionDeleteQueueMessage packet)
@@ -527,9 +522,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
          }
       }
 
-      channel.confirm(packet);
-
-      channel.send(response);
+      sendResponse(packet, response, false, false);
    }
 
    public void handleExecuteQueueQuery(final SessionQueueQueryMessage packet)
@@ -584,9 +577,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
          }
       }
 
-      channel.confirm(packet);
-
-      channel.send(response);
+      sendResponse(packet, response, false, false);
    }
 
    public void handleExecuteBindingQuery(final SessionBindingQueryMessage packet)
@@ -630,9 +621,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
          }
       }
 
-      channel.confirm(packet);
-
-      channel.send(response);
+      sendResponse(packet, response, false, false);
    }
    
    public void handleForceConsumerDelivery(SessionForceConsumerDelivery message)
@@ -681,12 +670,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
          }
       }
 
-      channel.confirm(packet);
-
-      if (response != null)
-      {
-         channel.send(response);
-      }
+      sendResponse(packet, response, false, false);
    }
 
    public void handleExpired(final SessionExpiredMessage packet)
@@ -705,7 +689,8 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
          log.error("Failed to acknowledge", e);
       }
 
-      channel.confirm(packet);
+
+      sendResponse(packet, null, false, false);
    }
 
    public void handleCommit(final Packet packet)
@@ -736,9 +721,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
          tx = new TransactionImpl(storageManager);
       }
 
-      channel.confirm(packet);
-
-      channel.send(response);
+      sendResponse(packet, response, false, false);
    }
 
    public void handleRollback(final RollbackMessage packet)
@@ -765,9 +748,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
          }
       }
 
-      channel.confirm(packet);
-
-      channel.send(response);
+      sendResponse(packet, response, false, false);
    }
 
    public void handleXACommit(final SessionXACommitMessage packet)
@@ -839,9 +820,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
          }
       }
 
-      channel.confirm(packet);
-
-      channel.send(response);
+      sendResponse(packet, response, false, false);
    }
 
    public void handleXAEnd(final SessionXAEndMessage packet)
@@ -913,9 +892,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
          }
       }
 
-      channel.confirm(packet);
-
-      channel.send(response);
+      sendResponse(packet, response, false, false);
    }
 
    public void handleXAForget(final SessionXAForgetMessage packet)
@@ -940,9 +917,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
       
       Packet response = new SessionXAResponseMessage((code != XAResource.XA_OK), code, null);
 
-      channel.confirm(packet);
-
-      channel.send(response);
+      sendResponse(packet, response, false, false);
    }
 
    public void handleXAJoin(final SessionXAJoinMessage packet)
@@ -991,9 +966,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
          }
       }
 
-      channel.confirm(packet);
-
-      channel.send(response);
+      sendResponse(packet, response, false, false);
    }
 
    public void handleXAResume(final SessionXAResumeMessage packet)
@@ -1053,9 +1026,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
          }
       }
 
-      channel.confirm(packet);
-
-      channel.send(response);
+      sendResponse(packet, response, false, false);
    }
 
    public void handleXARollback(final SessionXARollbackMessage packet)
@@ -1127,9 +1098,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
          }
       }
 
-      channel.confirm(packet);
-
-      channel.send(response);
+      sendResponse(packet, response, false, false);
    }
 
    public void handleXAStart(final SessionXAStartMessage packet)
@@ -1178,9 +1147,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
          }
       }
 
-      channel.confirm(packet);
-
-      channel.send(response);
+      sendResponse(packet, response, false, false);
    }
 
    public void handleXASuspend(final Packet packet)
@@ -1227,9 +1194,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
          }
       }
 
-      channel.confirm(packet);
-
-      channel.send(response);
+      sendResponse(packet, response, false, false);
    }
 
    public void handleXAPrepare(final SessionXAPrepareMessage packet)
@@ -1287,9 +1252,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
          }
       }
 
-      channel.confirm(packet);
-
-      channel.send(response);
+      sendResponse(packet, response, false, false);
    }
 
    public void handleGetInDoubtXids(final Packet packet)
@@ -1300,34 +1263,28 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
       indoubtsXids.addAll(resourceManager.getHeuristicRolledbackTransactions());
       Packet response = new SessionXAGetInDoubtXidsResponseMessage(indoubtsXids);
       
-      channel.confirm(packet);
-
-      channel.send(response);
+      sendResponse(packet, response, false, false);
    }
 
    public void handleGetXATimeout(final Packet packet)
    {
       Packet response = new SessionXAGetTimeoutResponseMessage(resourceManager.getTimeoutSeconds());
 
-      channel.confirm(packet);
-
-      channel.send(response);
+      sendResponse(packet, response, false, false);
    }
 
    public void handleSetXATimeout(final SessionXASetTimeoutMessage packet)
    {
       Packet response = new SessionXASetTimeoutResponseMessage(resourceManager.setTimeoutSeconds(packet.getTimeoutSeconds()));
 
-      channel.confirm(packet);
-
-      channel.send(response);
+      sendResponse(packet, response, false, false);
    }
 
    public void handleStart(final Packet packet)
    {
       setStarted(true);
 
-      channel.confirm(packet);
+      sendResponse(packet, null, false, false);
    }
 
    public void handleStop(final Packet packet)
@@ -1336,9 +1293,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
 
       setStarted(false);
 
-      channel.confirm(packet);
-
-      channel.send(response);
+      sendResponse(packet, response, false, false);
    }
 
    public void handleClose(final Packet packet)
@@ -1365,14 +1320,8 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
          }
       }
 
-      channel.confirm(packet);
+      sendResponse(packet, response, true, true);
 
-      // We flush the confirmations to make sure any send confirmations get handled on the client side
-      channel.flushConfirmations();
-
-      channel.send(response);
-
-      channel.close();
    }
 
    public void handleCloseConsumer(final SessionConsumerCloseMessage packet)
@@ -1408,9 +1357,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
          }
       }
 
-      channel.confirm(packet);
-
-      channel.send(response);
+      sendResponse(packet, response, false, false);
    }
 
    public void handleReceiveConsumerCredits(final SessionConsumerFlowCreditMessage packet)
@@ -1432,13 +1379,16 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
          log.error("Failed to receive credits " + this.server.getConfiguration().isBackup(), e);
       }
 
-      channel.confirm(packet);
+
+      sendResponse(packet, null, false, false);
    }
 
    public void handleSendLargeMessage(final SessionSendLargeMessage packet)
    {
       // need to create the LargeMessage before continue
-      final LargeServerMessage msg = doCreateLargeMessage(packet);
+      long id = storageManager.generateUniqueID();
+
+      final LargeServerMessage msg = doCreateLargeMessage(id, packet);
 
       if (msg == null)
       {
@@ -1456,18 +1406,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
 
       currentLargeMessage = msg;
 
-      try
-      {
-         long id = storageManager.generateUniqueID();
-
-         currentLargeMessage.setMessageID(id);
-      }
-      catch (Exception e)
-      {
-         log.error("Failed to send message", e);
-      }
-
-      channel.confirm(packet);
+      sendResponse(packet, null, false, false);
    }
 
    public void handleSend(final SessionSendMessage packet)
@@ -1514,13 +1453,8 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
             }
          }
       }
-
-      channel.confirm(packet);
-
-      if (response != null)
-      {
-         channel.send(response);
-      }
+      
+      sendResponse(packet, response, false, false);
    }
 
    public void handleSendContinuations(final SessionSendContinuationMessage packet)
@@ -1569,12 +1503,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
          }
       }
 
-      channel.confirm(packet);
-
-      if (response != null)
-      {
-         channel.send(response);
-      }
+      sendResponse(packet, response, false, false);
    }
 
    public int transferConnection(final RemotingConnection newConnection, final int lastReceivedCommandID)
@@ -1682,6 +1611,63 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
    // Private
    // ----------------------------------------------------------------------------
 
+   /**
+    * Respond to client after replication
+    * @param packet
+    * @param response
+    */
+   private void sendResponse(final Packet confirmPacket, final Packet response, final boolean flush, final boolean closeChannel)
+   {
+      if (storageManager.isReplicated())
+      {
+         storageManager.afterReplicated(new Runnable()
+         {
+            public void run()
+            {
+               doSendResponse(confirmPacket, response, flush, closeChannel);
+            }
+
+         });
+         storageManager.completeReplication();
+      }
+      else
+      {
+         doSendResponse(confirmPacket, response, flush, closeChannel);
+      }
+   }
+   
+   /**
+    * @param confirmPacket
+    * @param response
+    * @param flush
+    * @param closeChannel
+    */
+   private void doSendResponse(final Packet confirmPacket,
+                               final Packet response,
+                               final boolean flush,
+                               final boolean closeChannel)
+   {
+      if (confirmPacket != null)
+      {
+         channel.confirm(confirmPacket);
+         if (flush)
+         {
+            channel.flushConfirmations();
+         }
+      }
+
+      if (response != null)
+      {
+         channel.send(response);
+      }
+      
+      if (closeChannel)
+      {
+         channel.close();
+      }
+   }
+
+
    private void setStarted(final boolean s)
    {
       Set<ServerConsumer> consumersClone = new HashSet<ServerConsumer>(consumers.values());
@@ -1700,11 +1686,11 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
     * @param packet
     * @throws Exception
     */
-   private LargeServerMessage doCreateLargeMessage(final SessionSendLargeMessage packet)
+   private LargeServerMessage doCreateLargeMessage(long id, final SessionSendLargeMessage packet)
    {
       try
       {
-         return createLargeMessageStorage(packet.getLargeMessageHeader());
+         return createLargeMessageStorage(id, packet.getLargeMessageHeader());
       }
       catch (Exception e)
       {
@@ -1747,15 +1733,9 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
       }
    }
 
-   private LargeServerMessage createLargeMessageStorage(final byte[] header) throws Exception
+   private LargeServerMessage createLargeMessageStorage(final long id, final byte[] header) throws Exception
    {
-      LargeServerMessage largeMessage = storageManager.createLargeMessage();
-
-      HornetQBuffer headerBuffer = ChannelBuffers.wrappedBuffer(header);
-
-      largeMessage.decodeProperties(headerBuffer);
-
-      return largeMessage;
+      return storageManager.createLargeMessage(id, header);
    }
 
    private void doRollback(final boolean lastMessageAsDelived, final Transaction theTx) throws Exception

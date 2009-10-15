@@ -83,7 +83,7 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
 
    private final Configuration config;
 
-   private volatile HornetQServer server;
+   private final HornetQServer server;
 
    private ManagementService managementService;
 
@@ -107,6 +107,8 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
    {
       transportConfigs = config.getAcceptorConfigurations();
 
+      this.server = server;
+
       ClassLoader loader = Thread.currentThread().getContextClassLoader();
       for (String interceptorClass : config.getInterceptorClassNames())
       {
@@ -122,7 +124,6 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
       }
 
       this.config = config;
-      this.server = server;
       this.managementService = managementService;
       this.threadPool = threadPool;
       this.scheduledThreadPool = scheduledThreadPool;
@@ -240,7 +241,10 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
 
       connections.clear();
 
-      managementService.unregisterAcceptors();
+      if (managementService != null)
+      {
+         managementService.unregisterAcceptors();
+      }
 
       started = false;
    }
@@ -297,10 +301,13 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
                                                                                                                       : null);
 
       Channel channel1 = rc.getChannel(1, -1, false);
-
-      ChannelHandler handler = new HornetQPacketHandler(server, channel1, rc);
+      
+      ChannelHandler handler = createHandler(rc, channel1); 
 
       channel1.setHandler(handler);
+
+
+      
 
       long ttl = ClientSessionFactoryImpl.DEFAULT_CONNECTION_TTL;
       if (config.getConnectionTTLOverride() != -1)
@@ -385,6 +392,14 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
+
+   /**
+    * Subclasses (on tests) may use this to create a different channel.
+    */
+   protected ChannelHandler createHandler(final RemotingConnection rc, Channel channel)
+   {
+      return new HornetQPacketHandler(server, channel, rc);
+   }
 
    // Private -------------------------------------------------------
 
