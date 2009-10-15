@@ -26,8 +26,7 @@ rem but it may be an indication that javac is not available on the command line.
 if "x%JAVA_HOME%" == "x" (
   echo WARNING: JAVA_HOME is not set. Build may fail.
   echo Set JAVA_HOME to the directory of your local JDK to avoid this message.
-) 
-else (
+) else (
   if exist "%JAVA_HOME%\bin\javac.exe" (
     echo Build script found javac.
 ) else (
@@ -41,18 +40,20 @@ rem Set the new one
 
 if "x%OVERRIDE_ANT_HOME%" == "x" (
   set "ANT_HOME=tools\ant"
-) 
-else (
-  set "ANT_HOME=%OVERRIDE_ANT_HOME" 
+) else (
+ echo hit alternate
+ set "ANT_HOME=%OVERRIDE_ANT_HOME%" 
 )
 
 rem build HornetQ
 
-echo "Using the following ant version from %ANT_HOME%:"
+echo Using the following ant version from %ANT_HOME%:
 
-call tools\ant\bin\ant.bat -version
+echo calling %ANT_HOME%\bin\ant.bat -version
+call %ANT_HOME%\bin\ant.bat -version
 
-call tools\ant\bin\ant.bat %* -Dhornetq.run_script=true
+echo calling %ANT_HOME%\bin\ant.bat %* -Dhornetq.run_script=true
+call %ANT_HOME%\bin\ant.bat %* -Dhornetq.run_script=true
 
 rem Restore the original ANT_HOME values
 set "ANT_HOME=%ORIG_ANT_HOME%"
