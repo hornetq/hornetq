@@ -17,7 +17,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import junit.framework.AssertionFailedError;
-import junit.framework.TestSuite;
 
 import org.hornetq.core.buffers.ChannelBuffers;
 import org.hornetq.core.client.ClientConsumer;
@@ -161,8 +160,6 @@ public class PagingTest extends ServiceTestBase
 
             assertNotNull(message2);
             
-            log.info("got message " + message2.getProperty(new SimpleString("id")));
-
             assertEquals(i, ((Integer)message2.getProperty(new SimpleString("id"))).intValue());
 
             message2.acknowledge();
