@@ -13,7 +13,7 @@
 
 package org.hornetq.tests.integration.largemessage.mock;
 
-import java.util.Collections;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Executor;
@@ -61,7 +61,11 @@ public class MockConnectorFactory implements ConnectorFactory
     */
    public Set<String> getAllowableProperties()
    {
-      return Collections.EMPTY_SET;
+      Set<String> set = new HashSet<String>();
+      
+      set.add("callback");
+      
+      return set;
    }
 
    // Package protected ---------------------------------------------

@@ -226,7 +226,7 @@ public class JMSServerControlTest extends ManagementTestBase
          public void createConnectionFactory(JMSServerControl control, String cfName, Object[] bindings) throws Exception
          {
             String jndiBindings = toCSV(bindings);
-            String params = "\"key1\"=1, \"key2\"=false, \"key3\"=\"value3\"";
+            String params = "\"" + TransportConstants.SERVER_ID_PROP_NAME + "\"=1";
 
             control.createConnectionFactory(cfName, InVMConnectorFactory.class.getName(), params, jndiBindings);
          }
@@ -258,8 +258,8 @@ public class JMSServerControlTest extends ManagementTestBase
          public void createConnectionFactory(JMSServerControl control, String cfName, Object[] bindings) throws Exception
          {
             String clientID = randomString();
-            String jndiBindings = toCSV(bindings);
-            String params = "\"key1\"=1, \"key2\"=false, \"key3\"=\"value3\"";
+            String jndiBindings = toCSV(bindings);           
+            String params = "\"" + TransportConstants.SERVER_ID_PROP_NAME + "\"=1";
 
             control.createConnectionFactory(cfName,
                                             InVMConnectorFactory.class.getName(),
@@ -295,8 +295,8 @@ public class JMSServerControlTest extends ManagementTestBase
       {
          public void createConnectionFactory(JMSServerControl control, String cfName, Object[] bindings) throws Exception
          {
-            String jndiBindings = toCSV(bindings);
-            String params = "\"key1\"=1, \"key2\"=false, \"key3\"=\"value3\"";
+            String jndiBindings = toCSV(bindings);           
+            String params = "\"" + TransportConstants.SERVER_ID_PROP_NAME + "\"=1";
 
             control.createConnectionFactory(cfName,
                                             InVMConnectorFactory.class.getName(),
