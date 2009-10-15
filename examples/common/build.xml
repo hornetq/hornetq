@@ -199,11 +199,12 @@
             <exclude name="common/build.xml"/>
             <exclude name="core/perf/build.xml"/>
             <exclude name="jms/applet/build.xml"/>
+            <exclude name="jms/jms-bridge/build.xml"/>
             <exclude name="jms/perf/build.xml"/>
          </fileset>
       </subant>
    	
-   	  <echo message="Do not forget to run jms/applet example manually!" />
+   	  <echo message="Do not forget to run jms/applet &amp; jms-bridge examples manually!" />
    </target>
 
 </project>
