@@ -98,7 +98,8 @@ public interface QueueControl
    @Operation(desc = "Send the message corresponding to the given messageID to this queue's Dead Letter Address", impact = ACTION)
    boolean sendMessageToDeadLetterAddress(@Parameter(name = "messageID", desc = "A message ID") long messageID) throws Exception;
 
-   int sendMessagesToDeadLetterAddress(String filterStr) throws Exception;
+   @Operation(desc = "Send the messages corresponding to the given filter to this queue's Dead Letter Address", impact = ACTION)
+   int sendMessagesToDeadLetterAddress(@Parameter(name = "filter", desc = "A message filter (can be empty)") String filterStr) throws Exception;
 
    @Operation(desc = "Change the priority of the message corresponding to the given messageID", impact = ACTION)
    boolean changeMessagePriority(@Parameter(name = "messageID", desc = "A message ID") long messageID,

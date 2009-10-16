@@ -246,6 +246,12 @@ public class JMSQueueControlImpl extends StandardMBean implements JMSQueueContro
       }
       return true;
    }
+   
+   public int sendMessagesToDeadLetterAddress(String filterStr) throws Exception
+   {
+      String filter = createFilterFromJMSSelector(filterStr);
+      return coreQueueControl.sendMessagesToDeadLetterAddress(filter);
+   }
 
    public boolean changeMessagePriority(final String messageID, final int newPriority) throws Exception
    {
@@ -256,6 +262,12 @@ public class JMSQueueControlImpl extends StandardMBean implements JMSQueueContro
          throw new IllegalArgumentException("No message found for JMSMessageID: " + messageID);
       }
       return true;
+   }
+   
+   public int changeMessagesPriority(String filterStr, int newPriority) throws Exception
+   {
+      String filter = createFilterFromJMSSelector(filterStr);
+      return coreQueueControl.changeMessagesPriority(filter, newPriority);
    }
 
    public boolean moveMessage(String messageID, String otherQueueName) throws Exception
@@ -288,6 +300,11 @@ public class JMSQueueControlImpl extends StandardMBean implements JMSQueueContro
       {
          throw new IllegalStateException(e);
       }
+   }
+   
+   public void resetMessageCounter() throws Exception
+   {
+      coreQueueControl.resetMessageCounter();
    }
 
    public String listMessageCounterAsHTML()

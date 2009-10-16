@@ -81,8 +81,15 @@ public interface JMSQueueControl extends DestinationControl
    @Operation(desc = "Send the message corresponding to the given messageID to the queue's Dead Letter Queue", impact = ACTION)
    boolean sendMessageToDeadLetterAddress(@Parameter(name = "messageID", desc = "A message ID") String messageID) throws Exception;
 
+   @Operation(desc = "Send the messages corresponding to the given filter to this queue's Dead Letter Address", impact = ACTION)
+   int sendMessagesToDeadLetterAddress(@Parameter(name = "filter", desc = "A message filter (can be empty)") String filterStr) throws Exception;
+
    @Operation(desc = "Change the priority of the message corresponding to the given messageID", impact = ACTION)
    boolean changeMessagePriority(@Parameter(name = "messageID", desc = "A message ID") String messageID,
+                                 @Parameter(name = "newPriority", desc = "the new priority (between 0 and 9)") int newPriority) throws Exception;
+
+   @Operation(desc = "Change the priority of the messages corresponding to the given filter", impact = ACTION)
+   int changeMessagesPriority(@Parameter(name = "filter", desc = "A message filter") String filter,
                                  @Parameter(name = "newPriority", desc = "the new priority (between 0 and 9)") int newPriority) throws Exception;
 
    @Operation(desc = "Move the message corresponding to the given messageID to another queue", impact = ACTION)
@@ -95,6 +102,9 @@ public interface JMSQueueControl extends DestinationControl
 
    @Operation(desc = "List the message counters", impact = INFO)
    String listMessageCounter() throws Exception;
+
+   @Operation(desc = "Reset the message counters", impact = INFO)
+   void resetMessageCounter() throws Exception;
 
    @Operation(desc = "List the message counters as HTML", impact = INFO)
    String listMessageCounterAsHTML() throws Exception;

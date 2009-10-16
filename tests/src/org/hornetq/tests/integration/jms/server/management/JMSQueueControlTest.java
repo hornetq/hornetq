@@ -344,6 +344,45 @@ public class JMSQueueControlTest extends ManagementTestBase
       {
       }
    }
+   
+   public void testChangeMessagesPriority() throws Exception
+   {
+      String key = "key";
+      long matchingValue = randomLong();
+      long unmatchingValue = matchingValue + 1;
+      String filter = "key = " + matchingValue;
+      int newPriority = 9;
+
+      Connection connection = JMSUtil.createConnection(InVMConnectorFactory.class.getName());
+      Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+      // send on queue
+      Message msg_1 = JMSUtil.sendMessageWithProperty(session, queue, key, matchingValue);
+      Message msg_2 = JMSUtil.sendMessageWithProperty(session, queue, key, unmatchingValue);
+
+      JMSQueueControl queueControl = createManagementControl();
+      assertEquals(2, queueControl.getMessageCount());
+
+      int changedMessagesCount = queueControl.changeMessagesPriority(filter, newPriority);
+      assertEquals(1, changedMessagesCount);
+      assertEquals(2, queueControl.getMessageCount());
+
+      connection.start();
+      MessageConsumer consumer = session.createConsumer(queue);
+      Message message = consumer.receive(500);
+      assertNotNull(message);
+      assertEquals(msg_1.getJMSMessageID(), message.getJMSMessageID());
+      assertEquals(9, message.getJMSPriority());
+      assertEquals(matchingValue, message.getLongProperty(key));
+
+      message = consumer.receive(500);
+      assertNotNull(message);
+      assertEquals(msg_2.getJMSMessageID(), message.getJMSMessageID());
+      assertEquals(unmatchingValue, message.getLongProperty(key));
+
+      assertNull(consumer.receive(500));
+
+      connection.close();
+   }
 
    public void testGetExpiryAddress() throws Exception
    {
@@ -560,6 +599,52 @@ public class JMSQueueControlTest extends ManagementTestBase
       {
       }
 
+   }
+   
+   public void testSendMessagesToDeadLetterAddress() throws Exception
+   {
+      String key = "key";
+      long matchingValue = randomLong();
+      long unmatchingValue = matchingValue + 1;
+      String filter = "key = " + matchingValue;
+
+      String deadLetterQueue = randomString();
+      serverManager.createQueue(deadLetterQueue, deadLetterQueue, null, true);
+      HornetQQueue dlq = new HornetQQueue(deadLetterQueue);
+
+      Connection conn = createConnection();
+      Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+
+      // send 2 messages on queue
+      JMSUtil.sendMessageWithProperty(sess, queue, key, matchingValue);
+      JMSUtil.sendMessageWithProperty(sess, queue, key, unmatchingValue);
+
+      JMSQueueControl queueControl = createManagementControl();
+      JMSQueueControl dlqControl = ManagementControlHelper.createJMSQueueControl(dlq, mbeanServer);
+
+      assertEquals(2, queueControl.getMessageCount());
+      assertEquals(0, dlqControl.getMessageCount());
+
+      queueControl.setDeadLetterAddress(dlq.getAddress());
+
+      int deadMessageCount = queueControl.sendMessagesToDeadLetterAddress(filter);
+      assertEquals(1, deadMessageCount);
+      assertEquals(1, queueControl.getMessageCount());
+      assertEquals(1, dlqControl.getMessageCount());
+
+      conn.start();
+      MessageConsumer consumer = sess.createConsumer(queue);
+
+      Message message = consumer.receive(500);
+      assertNotNull(message);
+      assertEquals(unmatchingValue, message.getLongProperty(key));
+
+      // check there is a single message to consume from deadletter queue
+      JMSUtil.consumeMessages(1, dlq);
+
+      conn.close();
+      
+      serverManager.destroyQueue(deadLetterQueue);
    }
 
    public void testMoveMessages() throws Exception

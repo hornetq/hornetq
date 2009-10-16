@@ -90,6 +90,11 @@ public class JMSQueueControlUsingJMSTest extends JMSQueueControlTest
          {
             return (Boolean)proxy.invokeOperation("changeMessagePriority", messageID, newPriority);
          }
+         
+         public int changeMessagesPriority(String filter, int newPriority) throws Exception
+         {
+            return (Integer)proxy.invokeOperation("changeMessagesPriority", filter, newPriority);
+         }
 
          public int countMessages(String filter) throws Exception
          {
@@ -160,6 +165,11 @@ public class JMSQueueControlUsingJMSTest extends JMSQueueControlTest
          {
             return (String)proxy.invokeOperation("listMessageCounter");
          }
+         
+         public void resetMessageCounter() throws Exception
+         {
+            proxy.invokeOperation("resetMessageCounter");
+         }
 
          public String listMessageCounterAsHTML() throws Exception
          {
@@ -217,6 +227,11 @@ public class JMSQueueControlUsingJMSTest extends JMSQueueControlTest
             return (Boolean)proxy.invokeOperation("sendMessageToDeadLetterAddress", messageID);
          }
 
+         public int sendMessagesToDeadLetterAddress(String filterStr) throws Exception
+         {
+            return (Integer)proxy.invokeOperation("sendMessagesToDeadLetterAddress", filterStr);
+         }
+         
          public void setDeadLetterAddress(String deadLetterAddress) throws Exception
          {
             proxy.invokeOperation("setDeadLetterAddress", deadLetterAddress);
