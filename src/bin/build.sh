@@ -30,7 +30,8 @@ die() {
 }
 
 # Save off the original ANT_HOME value
-export ORIG_ANT_HOME=$ANT_HOME
+ORIG_ANT_HOME=$ANT_HOME
+export ORIG_ANT_HOME
 
 # Set the temporary ANT_HOME
 
@@ -38,11 +39,15 @@ if [ -n "$OVERRIDE_ANT_HOME" ]; then
 
   echo "ANT_HOME is ${OVERRIDE_ANT_HOME}"
   
-  export ANT_HOME=$OVERRIDE_ANT_HOME	
+  ANT_HOME=$OVERRIDE_ANT_HOME
+  
+  export ANT_HOME	
 
 else
 
-   export ANT_HOME=tools/ant	
+   ANT_HOME=tools/ant
+   
+   export ANT_HOME	
 
 fi
 
@@ -71,4 +76,6 @@ $ANT_HOME/bin/ant "$@" -Dhornetq.run_script=true
 
 
 # Restore the original path
-export ANT_HOME=$ORIG_ANT_HOME
+ANT_HOME=$ORIG_ANT_HOME
+
+export ANT_HOME
