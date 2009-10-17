@@ -192,9 +192,9 @@ public class HornetQServerImpl implements HornetQServer
    private boolean initialised;
 
    private FailoverManager replicationFailoverManager;
-   
+
    private ReplicationManager replicationManager;
-   
+
    private ReplicationEndpoint replicationEndpoint;
 
    private final Set<ActivateCallback> activateCallbacks = new HashSet<ActivateCallback>();
@@ -251,7 +251,7 @@ public class HornetQServerImpl implements HornetQServer
 
       addressSettingsRepository.setDefault(new AddressSettings());
 
-     // this.managementConnectorID = managementConnectorSequence.decrementAndGet();
+      // this.managementConnectorID = managementConnectorSequence.decrementAndGet();
    }
 
    // lifecycle methods
@@ -351,7 +351,7 @@ public class HornetQServerImpl implements HornetQServer
       {
          storageManager.stop();
       }
-      
+
       if (replicationEndpoint != null)
       {
          replicationEndpoint.stop();
@@ -407,7 +407,7 @@ public class HornetQServerImpl implements HornetQServer
       {
          memoryManager.stop();
       }
-      
+
       pagingManager = null;
       securityStore = null;
       resourceManager = null;
@@ -603,22 +603,21 @@ public class HornetQServerImpl implements HornetQServer
 
       return new CreateSessionResponseMessage(version.getIncrementingVersion());
    }
-   
+
    public synchronized ReplicationEndpoint createReplicationEndpoint(final Channel channel) throws Exception
    {
       if (!configuration.isBackup())
       {
          throw new HornetQException(HornetQException.ILLEGAL_STATE, "Connected server is not a backup server");
       }
-      
+
       if (replicationEndpoint == null)
       {
          replicationEndpoint = new ReplicationEndpointImpl(this);
          replicationEndpoint.setChannel(channel);
          replicationEndpoint.start();
       }
-      
-      
+
       return replicationEndpoint;
    }
 
@@ -658,81 +657,6 @@ public class HornetQServerImpl implements HornetQServer
       {
          return initialised;
       }
-   }
-
-   // public void initialiseBackup(final UUID theUUID, final long liveUniqueID) throws Exception
-   // {
-   // if (theUUID == null)
-   // {
-   // throw new IllegalArgumentException("node id is null");
-   // }
-   //
-   // synchronized (initialiseLock)
-   // {
-   // if (initialised)
-   // {
-   // throw new IllegalStateException("Server is already initialised");
-   // }
-   //
-   // this.uuid = theUUID;
-   //
-   // this.nodeID = new SimpleString(uuid.toString());
-   //
-   // initialisePart2();
-   //
-   // long backupID = storageManager.getCurrentUniqueID();
-   //
-   // if (liveUniqueID != backupID)
-   // {
-   // initialised = false;
-   //
-   // throw new IllegalStateException("Live and backup unique ids different (" + liveUniqueID +
-   // ":" +
-   // backupID +
-   // "). You're probably trying to restart a live backup pair after a crash");
-   // }
-   //
-   // log.info("Backup server is now operational");
-   // }
-   // }
-
-   private boolean startReplication() throws Exception
-   {
-      String backupConnectorName = configuration.getBackupConnectorName();
-
-      if (backupConnectorName != null)
-      {
-         TransportConfiguration backupConnector = configuration.getConnectorConfigurations().get(backupConnectorName);
-
-         if (backupConnector == null)
-         {
-            log.warn("connector with name '" + backupConnectorName + "' is not defined in the configuration.");
-         }
-         else
-         {
-            
-            replicationFailoverManager = new FailoverManagerImpl((ClientSessionFactory)null,
-                                                          backupConnector,
-                                                          null,
-                                                          false,
-                                                          ClientSessionFactoryImpl.DEFAULT_CALL_TIMEOUT,
-                                                          ClientSessionFactoryImpl.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
-                                                          ClientSessionFactoryImpl.DEFAULT_CONNECTION_TTL,
-                                                          0,
-                                                          1.0d,
-                                                          0,
-                                                          1,
-                                                          threadPool,
-                                                          scheduledPool,
-                                                          null);
-  
-            
-            this.replicationManager = new ReplicationManagerImpl(replicationFailoverManager, this.executorFactory.getExecutor());
-            replicationManager.start();
-         }
-      }
-
-      return true;
    }
 
    public HornetQServerControlImpl getHornetQServerControl()
@@ -841,6 +765,30 @@ public class HornetQServerImpl implements HornetQServer
    // Protected
    // ------------------------------------------------------------------------------------
 
+   /**
+    * Protected so tests can change this behaviour
+    * @param backupConnector
+    */
+   protected FailoverManagerImpl createBackupConnection(final TransportConfiguration backupConnector,
+                                                        final ExecutorService threadPool,
+                                                        final ScheduledExecutorService scheduledPool)
+   {
+      return new FailoverManagerImpl((ClientSessionFactory)null,
+                                     backupConnector,
+                                     null,
+                                     false,
+                                     ClientSessionFactoryImpl.DEFAULT_CALL_TIMEOUT,
+                                     ClientSessionFactoryImpl.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
+                                     ClientSessionFactoryImpl.DEFAULT_CONNECTION_TTL,
+                                     0,
+                                     1.0d,
+                                     0,
+                                     1,
+                                     threadPool,
+                                     scheduledPool,
+                                     null);
+   }
+
    protected PagingManager createPagingManager()
    {
       return new PagingManagerImpl(new PagingStoreFactoryNIO(configuration.getPagingDirectory(), executorFactory),
@@ -873,6 +821,33 @@ public class HornetQServerImpl implements HornetQServer
 
    // Private
    // --------------------------------------------------------------------------------------
+   
+   private boolean startReplication() throws Exception
+   {
+      String backupConnectorName = configuration.getBackupConnectorName();
+
+      if (backupConnectorName != null)
+      {
+         TransportConfiguration backupConnector = configuration.getConnectorConfigurations().get(backupConnectorName);
+
+         if (backupConnector == null)
+         {
+            log.warn("connector with name '" + backupConnectorName + "' is not defined in the configuration.");
+         }
+         else
+         {
+
+            replicationFailoverManager = createBackupConnection(backupConnector, threadPool, scheduledPool);
+
+            this.replicationManager = new ReplicationManagerImpl(replicationFailoverManager,
+                                                                 this.executorFactory.getExecutor());
+            replicationManager.start();
+         }
+      }
+
+      return true;
+   }
+
 
    private synchronized void callActivateCallbacks()
    {
@@ -895,10 +870,10 @@ public class HornetQServerImpl implements HornetQServer
                log.warn("There is no replication endpoint, can't activate this backup server");
                throw new HornetQException(HornetQException.INTERNAL_ERROR, "Can't activate the server");
             }
-            
+
             replicationEndpoint.stop();
          }
-         
+
          // Complete the startup procedure
 
          log.info("Activating server");
@@ -933,11 +908,7 @@ public class HornetQServerImpl implements HornetQServer
 
       managementService = new ManagementServiceImpl(mbeanServer, configuration);
 
-      remotingService = new RemotingServiceImpl(configuration,
-                                                this,
-                                                managementService,
-                                                threadPool,
-                                                scheduledPool);
+      remotingService = new RemotingServiceImpl(configuration, this, managementService, threadPool, scheduledPool);
 
       if (configuration.getMemoryMeasureInterval() != -1)
       {
@@ -964,7 +935,6 @@ public class HornetQServerImpl implements HornetQServer
          deploymentManager = new FileDeploymentManager(configuration.getFileDeployerScanPeriod());
       }
 
-      
       startReplication();
 
       this.storageManager = createStorageManager();
@@ -1009,7 +979,7 @@ public class HornetQServerImpl implements HornetQServer
                                                                 this,
                                                                 queueFactory,
                                                                 scheduledPool,
-                                                                pagingManager, 
+                                                                pagingManager,
                                                                 configuration.isBackup());
 
       // Address settings need to deployed initially, since they're require on paging manager.start()

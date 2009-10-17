@@ -15,6 +15,7 @@ package org.hornetq.tests.integration.replication;
 
 import static org.hornetq.tests.util.RandomUtil.randomString;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
@@ -24,6 +25,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.hornetq.core.buffers.ChannelBuffers;
 import org.hornetq.core.client.ClientSessionFactory;
@@ -46,6 +48,9 @@ import org.hornetq.core.paging.impl.PagedMessageImpl;
 import org.hornetq.core.paging.impl.PagingManagerImpl;
 import org.hornetq.core.paging.impl.PagingStoreFactoryNIO;
 import org.hornetq.core.persistence.StorageManager;
+import org.hornetq.core.remoting.Interceptor;
+import org.hornetq.core.remoting.Packet;
+import org.hornetq.core.remoting.RemotingConnection;
 import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
 import org.hornetq.core.remoting.spi.HornetQBuffer;
 import org.hornetq.core.replication.impl.ReplicatedJournal;
@@ -79,8 +84,6 @@ public class ReplicationTest extends ServiceTestBase
 
    private ExecutorService executor;
 
-   private FailoverManager connectionManager;
-
    private ScheduledExecutorService scheduledExecutor;
 
    // Static --------------------------------------------------------
@@ -98,11 +101,13 @@ public class ReplicationTest extends ServiceTestBase
 
       HornetQServer server = new HornetQServerImpl(config);
 
+      FailoverManager failoverManager = createFailoverManager();
+
       server.start();
 
       try
       {
-         ReplicationManagerImpl manager = new ReplicationManagerImpl(connectionManager, executor);
+         ReplicationManagerImpl manager = new ReplicationManagerImpl(failoverManager, executor);
          manager.start();
          manager.stop();
       }
@@ -123,9 +128,12 @@ public class ReplicationTest extends ServiceTestBase
 
       server.start();
 
+      FailoverManager failoverManager = createFailoverManager();
+
       try
       {
-         ReplicationManagerImpl manager = new ReplicationManagerImpl(connectionManager, executor);
+         ReplicationManagerImpl manager = new ReplicationManagerImpl(failoverManager, executor);
+
          try
          {
             manager.start();
@@ -154,9 +162,11 @@ public class ReplicationTest extends ServiceTestBase
 
       server.start();
 
+      FailoverManager failoverManager = createFailoverManager();
+
       try
       {
-         ReplicationManagerImpl manager = new ReplicationManagerImpl(connectionManager, executor);
+         ReplicationManagerImpl manager = new ReplicationManagerImpl(failoverManager, executor);
          manager.start();
 
          Journal replicatedJournal = new ReplicatedJournal((byte)1, new FakeJournal(), manager);
@@ -212,12 +222,12 @@ public class ReplicationTest extends ServiceTestBase
                                                          server.getConfiguration(),
                                                          server.getExecutorFactory(),
                                                          server.getAddressSettingsRepository());
-         
+
          PagingStore store = pagingManager.getPageStore(dummy);
          store.start();
          assertEquals(5, store.getNumberOfPages());
          store.stop();
-         
+
          manager.pageDeleted(dummy, 1);
          manager.pageDeleted(dummy, 2);
          manager.pageDeleted(dummy, 3);
@@ -226,25 +236,24 @@ public class ReplicationTest extends ServiceTestBase
          manager.pageDeleted(dummy, 6);
 
          blockOnReplication(manager);
-         
+
          ServerMessageImpl serverMsg = new ServerMessageImpl();
          serverMsg.setMessageID(500);
          serverMsg.setDestination(new SimpleString("tttt"));
-         
-         
+
          HornetQBuffer buffer = ChannelBuffers.dynamicBuffer(100);
          serverMsg.encodeProperties(buffer);
-         
+
          manager.largeMessageBegin(500);
 
          manager.largeMessageWrite(500, new byte[1024]);
-         
+
          manager.largeMessageEnd(500);
-         
+
          blockOnReplication(manager);
-         
+
          store.start();
-         
+
          assertEquals(0, store.getNumberOfPages());
 
          manager.stop();
@@ -255,26 +264,49 @@ public class ReplicationTest extends ServiceTestBase
       }
    }
 
-
    public void testSendPacketsWithFailure() throws Exception
    {
 
       Configuration config = createDefaultConfig(false);
 
       config.setBackup(true);
+      
+      final AtomicBoolean returnIntercept = new AtomicBoolean(true);
+
+      final Interceptor intercept = new Interceptor()
+      {
+
+         public boolean intercept(Packet packet, RemotingConnection connection) throws HornetQException
+         {
+            if (returnIntercept.get())
+            {
+               System.out.println("Returning true");
+            }
+            return returnIntercept.get();
+         }
+
+      };
 
       HornetQServer server = new HornetQServerImpl(config);
 
       server.start();
 
+      final ArrayList<Interceptor> listInterceptor = new ArrayList<Interceptor>();
+      listInterceptor.add(intercept);
+
+      FailoverManager failoverManager = createFailoverManager(listInterceptor);
+
       try
       {
-         ReplicationManagerImpl manager = new ReplicationManagerImpl(connectionManager, executor);
+         ReplicationManagerImpl manager = new ReplicationManagerImpl(failoverManager, executor);
          manager.start();
 
          Journal replicatedJournal = new ReplicatedJournal((byte)1, new FakeJournal(), manager);
 
-         for (int i = 0 ; i < 500; i++)
+         Thread.sleep(100);
+         returnIntercept.set(false);
+
+         for (int i = 0; i < 500; i++)
          {
             replicatedJournal.appendAddRecord(i, (byte)1, new FakeData(), false);
          }
@@ -287,10 +319,12 @@ public class ReplicationTest extends ServiceTestBase
                latch.countDown();
             }
          });
-         
+
          manager.closeContext();
          
-         assertTrue(latch.await(10, TimeUnit.SECONDS));
+         server.stop();
+
+         assertTrue(latch.await(50, TimeUnit.SECONDS));
       }
       finally
       {
@@ -314,7 +348,7 @@ public class ReplicationTest extends ServiceTestBase
          }
 
       });
-      
+
       assertTrue(latch.await(30, TimeUnit.SECONDS));
    }
 
@@ -329,9 +363,11 @@ public class ReplicationTest extends ServiceTestBase
 
       server.start();
 
+      FailoverManager failoverManager = createFailoverManager();
+
       try
       {
-         ReplicationManagerImpl manager = new ReplicationManagerImpl(connectionManager, executor);
+         ReplicationManagerImpl manager = new ReplicationManagerImpl(failoverManager, executor);
          manager.start();
 
          Journal replicatedJournal = new ReplicatedJournal((byte)1, new FakeJournal(), manager);
@@ -395,24 +431,6 @@ public class ReplicationTest extends ServiceTestBase
    }
 
    // Package protected ---------------------------------------------
-   /*class LocalRemotingServiceImpl extends RemotingServiceImpl
-   {
-      
-      public LocalRemotingServiceImpl(final Configuration config,
-                                 final HornetQServer server,
-                                 final ManagementService managementService,
-                                 final Executor threadPool,
-                                 final ScheduledExecutorService scheduledThreadPool)
-      {
-         super(config, server, managementService, threadPool, scheduledThreadPool);
-      }
-
-      protected ChannelHandler createHandler(RemotingConnection conn, Channel channel)
-      {
-         return super.createHandler(conn, channel);
-      }
-
-   }*/
 
    // Protected -----------------------------------------------------
 
@@ -426,25 +444,33 @@ public class ReplicationTest extends ServiceTestBase
 
       scheduledExecutor = new ScheduledThreadPoolExecutor(10, tFactory);
 
+   }
+
+   private FailoverManagerImpl createFailoverManager()
+   {
+      return createFailoverManager(null);
+   }
+
+   private FailoverManagerImpl createFailoverManager(List<Interceptor> interceptors)
+   {
       TransportConfiguration connectorConfig = new TransportConfiguration(InVMConnectorFactory.class.getName(),
                                                                           new HashMap<String, Object>(),
                                                                           randomString());
 
-      connectionManager = new FailoverManagerImpl((ClientSessionFactory)null,
-                                                  connectorConfig,
-                                                      null,
-                                                      false,
-                                                      ClientSessionFactoryImpl.DEFAULT_CALL_TIMEOUT,
-                                                      ClientSessionFactoryImpl.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
-                                                      ClientSessionFactoryImpl.DEFAULT_CONNECTION_TTL,
-                                                      0,
-                                                      1.0d,
-                                                      0,
-                                                      1,
-                                                      executor,
-                                                      scheduledExecutor,
-                                                      null);
-
+      return new FailoverManagerImpl((ClientSessionFactory)null,
+                                     connectorConfig,
+                                     null,
+                                     false,
+                                     ClientSessionFactoryImpl.DEFAULT_CALL_TIMEOUT,
+                                     ClientSessionFactoryImpl.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
+                                     ClientSessionFactoryImpl.DEFAULT_CONNECTION_TTL,
+                                     0,
+                                     1.0d,
+                                     0,
+                                     1,
+                                     executor,
+                                     scheduledExecutor,
+                                     interceptors);
    }
 
    protected void tearDown() throws Exception
@@ -455,8 +481,6 @@ public class ReplicationTest extends ServiceTestBase
       scheduledExecutor.shutdown();
 
       tFactory = null;
-
-      connectionManager = null;
 
       scheduledExecutor = null;
 

@@ -34,5 +34,8 @@ public interface ReplicationContext
    
    /** To be called when there are no more operations pending */
    void complete();
+   
+   /** Flush all pending callbacks on the Context */
+   void flush();
 
 }

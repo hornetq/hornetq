@@ -48,17 +48,17 @@ public class ReplicatedJournal implements Journal
 
    private final ReplicationManager replicationManager;
 
-   private final Journal replicatedJournal;
+   private final Journal localJournal;
 
    private final byte journalID;
 
    public ReplicatedJournal(final byte journaID,
-                                final Journal replicatedJournal,
+                                final Journal localJournal,
                                 final ReplicationManager replicationManager)
    {
       super();
       journalID = journaID;
-      this.replicatedJournal = replicatedJournal;
+      this.localJournal = localJournal;
       this.replicationManager = replicationManager;
    }
 
@@ -100,7 +100,7 @@ public class ReplicatedJournal implements Journal
          trace("Append record id = " + id + " recordType = " + recordType);
       }
       replicationManager.appendAddRecord(journalID, id, recordType, record);
-      replicatedJournal.appendAddRecord(id, recordType, record, sync);
+      localJournal.appendAddRecord(id, recordType, record, sync);
    }
 
    /**
@@ -134,7 +134,7 @@ public class ReplicatedJournal implements Journal
          trace("Append record TXid = " + id + " recordType = " + recordType);
       }
       replicationManager.appendAddRecordTransactional(journalID, txID, id, recordType, record);
-      replicatedJournal.appendAddRecordTransactional(txID, id, recordType, record);
+      localJournal.appendAddRecordTransactional(txID, id, recordType, record);
    }
 
    /**
@@ -150,7 +150,7 @@ public class ReplicatedJournal implements Journal
          trace("AppendCommit " + txID);
       }
       replicationManager.appendCommitRecord(journalID, txID);
-      replicatedJournal.appendCommitRecord(txID, sync);
+      localJournal.appendCommitRecord(txID, sync);
    }
 
    /**
@@ -166,7 +166,7 @@ public class ReplicatedJournal implements Journal
          trace("AppendDelete " + id);
       }
       replicationManager.appendDeleteRecord(journalID, id);
-      replicatedJournal.appendDeleteRecord(id, sync);
+      localJournal.appendDeleteRecord(id, sync);
    }
 
    /**
@@ -195,7 +195,7 @@ public class ReplicatedJournal implements Journal
          trace("AppendDelete txID=" + txID + " id=" + id);
       }
       replicationManager.appendDeleteRecordTransactional(journalID, txID, id, record);
-      replicatedJournal.appendDeleteRecordTransactional(txID, id, record);
+      localJournal.appendDeleteRecordTransactional(txID, id, record);
    }
 
    /**
@@ -211,7 +211,7 @@ public class ReplicatedJournal implements Journal
          trace("AppendDelete (noencoding) txID=" + txID + " id=" + id);
       }
       replicationManager.appendDeleteRecordTransactional(journalID, txID, id);
-      replicatedJournal.appendDeleteRecordTransactional(txID, id);
+      localJournal.appendDeleteRecordTransactional(txID, id);
    }
 
    /**
@@ -240,7 +240,7 @@ public class ReplicatedJournal implements Journal
          trace("AppendPrepare txID=" + txID);
       }
       replicationManager.appendPrepareRecord(journalID, txID, transactionData);
-      replicatedJournal.appendPrepareRecord(txID, transactionData, sync);
+      localJournal.appendPrepareRecord(txID, transactionData, sync);
    }
 
    /**
@@ -256,7 +256,7 @@ public class ReplicatedJournal implements Journal
          trace("AppendRollback " + txID);
       }
       replicationManager.appendRollbackRecord(journalID, txID);
-      replicatedJournal.appendRollbackRecord(txID, sync);
+      localJournal.appendRollbackRecord(txID, sync);
    }
 
    /**
@@ -287,7 +287,7 @@ public class ReplicatedJournal implements Journal
          trace("AppendUpdateRecord id = " + id + " , recordType = " + recordType);
       }
       replicationManager.appendUpdateRecord(journalID, id, recordType, record);
-      replicatedJournal.appendUpdateRecord(id, recordType, record, sync);
+      localJournal.appendUpdateRecord(id, recordType, record, sync);
    }
 
    /**
@@ -324,7 +324,7 @@ public class ReplicatedJournal implements Journal
          trace("AppendUpdateRecord txid=" + txID + " id = " + id + " , recordType = " + recordType);
       }
       replicationManager.appendUpdateRecordTransactional(journalID, txID, id, recordType, record);
-      replicatedJournal.appendUpdateRecordTransactional(txID, id, recordType, record);
+      localJournal.appendUpdateRecordTransactional(txID, id, recordType, record);
    }
 
    /**
@@ -339,7 +339,7 @@ public class ReplicatedJournal implements Journal
                     final List<PreparedTransactionInfo> preparedTransactions,
                     final TransactionFailureCallback transactionFailure) throws Exception
    {
-      return replicatedJournal.load(committedRecords, preparedTransactions, transactionFailure);
+      return localJournal.load(committedRecords, preparedTransactions, transactionFailure);
    }
 
    /**
@@ -350,7 +350,7 @@ public class ReplicatedJournal implements Journal
     */
    public long load(final LoaderCallback reloadManager) throws Exception
    {
-      return replicatedJournal.load(reloadManager);
+      return localJournal.load(reloadManager);
    }
 
    /**
@@ -360,7 +360,7 @@ public class ReplicatedJournal implements Journal
     */
    public void perfBlast(final int pages) throws Exception
    {
-      replicatedJournal.perfBlast(pages);
+      localJournal.perfBlast(pages);
    }
 
    /**
@@ -369,7 +369,7 @@ public class ReplicatedJournal implements Journal
     */
    public void start() throws Exception
    {
-      replicatedJournal.start();
+      localJournal.start();
    }
 
    /**
@@ -378,7 +378,7 @@ public class ReplicatedJournal implements Journal
     */
    public void stop() throws Exception
    {
-      replicatedJournal.stop();
+      localJournal.stop();
    }
 
    /* (non-Javadoc)
@@ -386,7 +386,7 @@ public class ReplicatedJournal implements Journal
     */
    public int getAlignment() throws Exception
    {
-      return replicatedJournal.getAlignment();
+      return localJournal.getAlignment();
    }
 
    /* (non-Javadoc)
@@ -394,7 +394,7 @@ public class ReplicatedJournal implements Journal
     */
    public boolean isStarted()
    {
-      return replicatedJournal.isStarted();
+      return localJournal.isStarted();
    }
 
    // Package protected ---------------------------------------------

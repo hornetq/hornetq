@@ -19,11 +19,13 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Executor;
 
 import org.hornetq.core.client.impl.FailoverManager;
+import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.journal.EncodingSupport;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.paging.PagedMessage;
 import org.hornetq.core.remoting.Channel;
 import org.hornetq.core.remoting.ChannelHandler;
+import org.hornetq.core.remoting.FailureListener;
 import org.hornetq.core.remoting.Packet;
 import org.hornetq.core.remoting.RemotingConnection;
 import org.hornetq.core.remoting.impl.wireformat.CreateReplicationSessionMessage;
@@ -40,8 +42,8 @@ import org.hornetq.core.remoting.impl.wireformat.ReplicationPageEventMessage;
 import org.hornetq.core.remoting.impl.wireformat.ReplicationPageWriteMessage;
 import org.hornetq.core.remoting.impl.wireformat.ReplicationPrepareMessage;
 import org.hornetq.core.remoting.spi.HornetQBuffer;
-import org.hornetq.core.replication.ReplicationManager;
 import org.hornetq.core.replication.ReplicationContext;
+import org.hornetq.core.replication.ReplicationManager;
 import org.hornetq.utils.ConcurrentHashSet;
 import org.hornetq.utils.SimpleString;
 
@@ -79,11 +81,11 @@ public class ReplicationManagerImpl implements ReplicationManager
 
    private final Executor executor;
 
-   private final ThreadLocal<ReplicationContext> repliToken = new ThreadLocal<ReplicationContext>();
+   private final ThreadLocal<ReplicationContext> tlReplicationContext = new ThreadLocal<ReplicationContext>();
 
    private final Queue<ReplicationContext> pendingTokens = new ConcurrentLinkedQueue<ReplicationContext>();
 
-   private final ConcurrentHashSet<ReplicationContext> activeTokens = new ConcurrentHashSet<ReplicationContext>();
+   private final ConcurrentHashSet<ReplicationContext> activeContexts = new ConcurrentHashSet<ReplicationContext>();
 
    // Static --------------------------------------------------------
 
@@ -255,7 +257,7 @@ public class ReplicationManagerImpl implements ReplicationManager
          sendReplicatePacket(new ReplicationPageWriteMessage(message, pageNumber));
       }
    }
-   
+
    /* (non-Javadoc)
     * @see org.hornetq.core.replication.ReplicationManager#largeMessageBegin(byte[])
     */
@@ -300,8 +302,6 @@ public class ReplicationManagerImpl implements ReplicationManager
       }
    }
 
-   
-
    /* (non-Javadoc)
     * @see org.hornetq.core.server.HornetQComponent#isStarted()
     */
@@ -330,6 +330,22 @@ public class ReplicationManagerImpl implements ReplicationManager
 
       mainChannel.sendBlocking(replicationStartPackage);
 
+      failoverManager.addFailureListener(new FailureListener()
+      {
+         public void connectionFailed(HornetQException me)
+         {
+            log.warn("Connection to the backup node failed, removing replication now");
+            try
+            {
+               stop();
+            }
+            catch (Exception e)
+            {
+               log.warn(e.getMessage(), e);
+            }
+         }
+      });
+
       started = true;
 
       enabled = true;
@@ -340,6 +356,16 @@ public class ReplicationManagerImpl implements ReplicationManager
     */
    public void stop() throws Exception
    {
+      enabled = false;
+      
+      for (ReplicationContext ctx : activeContexts)
+      {
+         ctx.complete();
+         ctx.flush();
+      }
+      
+      activeContexts.clear();
+      
       if (replicatingChannel != null)
       {
          replicatingChannel.close();
@@ -353,16 +379,18 @@ public class ReplicationManagerImpl implements ReplicationManager
       }
 
       connection = null;
+
+      started = false;
    }
 
    public ReplicationContext getContext()
    {
-      ReplicationContext token = repliToken.get();
+      ReplicationContext token = tlReplicationContext.get();
       if (token == null)
       {
          token = new ReplicationContextImpl(executor);
-         activeTokens.add(token);
-         repliToken.set(token);
+         activeContexts.add(token);
+         tlReplicationContext.set(token);
       }
       return token;
    }
@@ -380,17 +408,17 @@ public class ReplicationManagerImpl implements ReplicationManager
     */
    public void closeContext()
    {
-      final ReplicationContext token = repliToken.get();
+      final ReplicationContext token = tlReplicationContext.get();
       if (token != null)
       {
          // Disassociate thread local
-         repliToken.set(null);
+         tlReplicationContext.set(null);
          // Remove from pending tokens as soon as this is complete
          token.addReplicationAction(new Runnable()
          {
             public void run()
             {
-               activeTokens.remove(token);
+               activeContexts.remove(token);
             }
          });
       }
@@ -401,7 +429,7 @@ public class ReplicationManagerImpl implements ReplicationManager
     */
    public Set<ReplicationContext> getActiveTokens()
    {
-      return activeTokens;
+      return activeContexts;
    }
 
    private void sendReplicatePacket(final Packet packet)

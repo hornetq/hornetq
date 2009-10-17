@@ -53,14 +53,22 @@ public class ReplicationContextImpl implements ReplicationContext
    {
       if (--pendings == 0)
       {
-         if (tasks != null)
+         flush();
+      }
+   }
+
+   /**
+    * 
+    */
+   public void flush()
+   {
+      if (tasks != null)
+      {
+         for (Runnable run : tasks)
          {
-            for (Runnable run : tasks)
-            {
-               executor.execute(run);
-            }
-            tasks.clear();
+            executor.execute(run);
          }
+         tasks.clear();
       }
    }
    

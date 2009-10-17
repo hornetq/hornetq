@@ -54,10 +54,6 @@ public class NIOSequentialFile extends AbstractSequentialFile
       return 1;
    }
 
-   public void flush()
-   {
-   }
-
    public int calculateBlockStart(final int position) throws Exception
    {
       return position;

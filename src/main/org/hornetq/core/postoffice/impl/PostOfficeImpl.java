@@ -1100,7 +1100,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
          return Collections.emptySet();
       }
 
-      public void afterCommit(final Transaction tx) throws Exception
+      public void afterCommit(final Transaction tx)
       {
          // If part of the transaction goes to the queue, and part goes to paging, we can't let depage start for the
          // transaction until all the messages were added to the queue
@@ -1214,7 +1214,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
          this.refs = refs;
       }
 
-      public void afterCommit(Transaction tx) throws Exception
+      public void afterCommit(Transaction tx)
       {        
          for (MessageReference ref : refs)
          {
