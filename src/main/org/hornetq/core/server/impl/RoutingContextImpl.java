@@ -23,7 +23,7 @@ import org.hornetq.core.transaction.Transaction;
 /**
  * A RoutingContextImpl
  *
- * @author tim
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  *
  */

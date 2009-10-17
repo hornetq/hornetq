@@ -19,6 +19,7 @@ import org.hornetq.core.remoting.RemotingConnection;
 import org.hornetq.core.remoting.impl.wireformat.SessionReceiveContinuationMessage;
 import org.hornetq.core.remoting.impl.wireformat.SessionReceiveMessage;
 import org.hornetq.core.remoting.spi.HornetQBuffer;
+import org.hornetq.utils.SimpleString;
 
 /**
  * A ClientSessionInternal
@@ -55,8 +56,6 @@ public interface ClientSessionInternal extends ClientSession
 
    void handleFailover(RemotingConnection backupConnection);
    
-  // boolean handleReattach(RemotingConnection backupConnection);
-
    RemotingConnection getConnection();
 
    void cleanUp() throws Exception;
@@ -70,4 +69,6 @@ public interface ClientSessionInternal extends ClientSession
    void workDone();
    
    void forceDelivery(long consumerID, long sequence) throws HornetQException;
+   
+   //void sendProducerCreditsMessage(int credits, SimpleString destination);
 }

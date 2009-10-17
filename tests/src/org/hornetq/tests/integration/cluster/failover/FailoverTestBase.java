@@ -30,7 +30,7 @@ import org.hornetq.utils.SimpleString;
 /**
  * A FailoverTestBase
  *
- * @author tim
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  *
  */

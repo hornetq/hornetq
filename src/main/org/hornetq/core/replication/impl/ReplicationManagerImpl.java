@@ -468,8 +468,7 @@ public class ReplicationManagerImpl implements ReplicationManager
       ReplicationContext tokenPolled = pendingTokens.poll();
       if (tokenPolled == null)
       {
-         // We should debug the logs if this happens
-         log.warn("Missing replication token on the stack. There is a bug on the ReplicatoinManager since this was not supposed to happen");
+         throw new IllegalStateException("Missing replication token on the queue.");
       }
       else
       {

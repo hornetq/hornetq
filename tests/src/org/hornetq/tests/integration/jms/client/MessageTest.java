@@ -27,7 +27,7 @@ import org.hornetq.tests.util.JMSTestBase;
  * 
  * A MessageTest
  *
- * @author tim
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  *
  */

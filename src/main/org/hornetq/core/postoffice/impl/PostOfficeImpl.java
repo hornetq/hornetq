@@ -931,13 +931,13 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
             {
                public void run()
                {
-                  deliverReferences(refs);
+                  addReferences(refs);
                }
             });
          }
          else
          {
-            deliverReferences(refs);
+            addReferences(refs);
          }
       }
    }
@@ -945,11 +945,10 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
    /**
     * @param refs
     */
-   private void deliverReferences(final List<MessageReference> refs)
+   private void addReferences(final List<MessageReference> refs)
    {
       for (MessageReference ref : refs)
-      {
-  
+      {  
          ref.getQueue().addLast(ref);
       }
    }

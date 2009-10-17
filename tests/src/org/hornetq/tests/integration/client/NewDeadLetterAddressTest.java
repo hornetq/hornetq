@@ -12,14 +12,6 @@
  */
 package org.hornetq.tests.integration.client;
 
-import static org.hornetq.tests.util.RandomUtil.randomSimpleString;
-
-import java.util.HashMap;
-import java.util.Map;
-
-import javax.transaction.xa.XAResource;
-import javax.transaction.xa.Xid;
-
 import org.hornetq.core.client.ClientConsumer;
 import org.hornetq.core.client.ClientMessage;
 import org.hornetq.core.client.ClientProducer;
@@ -29,12 +21,9 @@ import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
 import org.hornetq.core.config.TransportConfiguration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.exception.HornetQException;
-import org.hornetq.core.message.impl.MessageImpl;
 import org.hornetq.core.server.HornetQ;
 import org.hornetq.core.server.HornetQServer;
-import org.hornetq.core.server.Queue;
 import org.hornetq.core.settings.impl.AddressSettings;
-import org.hornetq.core.transaction.impl.XidImpl;
 import org.hornetq.tests.util.UnitTestCase;
 import org.hornetq.utils.SimpleString;
 
@@ -42,7 +31,7 @@ import org.hornetq.utils.SimpleString;
  * 
  * A NewDeadLetterAddressTest
  *
- * @author tim fox
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  *
  */

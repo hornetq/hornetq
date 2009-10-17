@@ -22,7 +22,7 @@ import org.hornetq.core.exception.HornetQException;
  * To Add this interceptor, you have to modify hornetq-configuration.xml
  * 
  * @author clebert.suconic@jboss.com
- * @author tim.fox@jboss.com
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  */
 public interface Interceptor
 {   

@@ -80,9 +80,6 @@
                 shutting down. A value of <literal>-1</literal> signifies an unlimited number of
                 attempts. The default value is <literal>-1</literal>.</para>
         </listitem>
-        <listitem>
-            <para><literal>use-reattach</literal>. </para>
-        </listitem>
     </itemizedlist>
     <para>If you're using JMS, and you're using the JMS Service on the server to load your JMS
         connection factory instances directly into JNDI, then you can specify these parameters in
