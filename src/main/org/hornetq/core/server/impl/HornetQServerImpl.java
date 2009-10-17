@@ -50,6 +50,7 @@ import org.hornetq.core.deployers.impl.SecurityDeployer;
 import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.filter.Filter;
 import org.hornetq.core.filter.impl.FilterImpl;
+import org.hornetq.core.journal.impl.SyncSpeedTest;
 import org.hornetq.core.logging.LogDelegateFactory;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.management.ManagementService;
@@ -69,7 +70,6 @@ import org.hornetq.core.postoffice.impl.DivertBinding;
 import org.hornetq.core.postoffice.impl.LocalQueueBinding;
 import org.hornetq.core.postoffice.impl.PostOfficeImpl;
 import org.hornetq.core.remoting.Channel;
-import org.hornetq.core.remoting.Interceptor;
 import org.hornetq.core.remoting.RemotingConnection;
 import org.hornetq.core.remoting.impl.wireformat.CreateSessionResponseMessage;
 import org.hornetq.core.remoting.impl.wireformat.ReattachSessionResponseMessage;
@@ -266,6 +266,13 @@ public class HornetQServerImpl implements HornetQServer
       if (started)
       {
          return;
+      }
+      
+      if (configuration.isRunSyncSpeedTest())
+      {
+         SyncSpeedTest test = new SyncSpeedTest();
+         
+         test.run();
       }
 
       initialisePart1();
@@ -1020,7 +1027,7 @@ public class HornetQServerImpl implements HornetQServer
             securityDeployer.start();
          }
       }
-
+            
       // Load the journal and populate queues, transactions and caches in memory
       loadJournal();
 

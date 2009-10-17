@@ -110,6 +110,8 @@ public class ConfigurationImpl implements Configuration
    public static final boolean DEFAULT_JOURNAL_LOG_WRITE_RATE = false;
 
    public static final int DEFAULT_JOURNAL_PERF_BLAST_PAGES = -1;
+   
+   public static final boolean DEFAULT_RUN_SYNC_SPEED_TEST = false;
 
    public static final boolean DEFAULT_WILDCARD_ROUTING_ENABLED = true;
 
@@ -270,6 +272,8 @@ public class ConfigurationImpl implements Configuration
    protected boolean logJournalWriteRate = DEFAULT_JOURNAL_LOG_WRITE_RATE;
 
    protected int journalPerfBlastPages = DEFAULT_JOURNAL_PERF_BLAST_PAGES;
+   
+   protected boolean runSyncSpeedTest = DEFAULT_RUN_SYNC_SPEED_TEST;
 
    protected boolean wildcardRoutingEnabled = DEFAULT_WILDCARD_ROUTING_ENABLED;
 
@@ -669,6 +673,16 @@ public class ConfigurationImpl implements Configuration
    public void setJournalPerfBlastPages(int journalPerfBlastPages)
    {
       this.journalPerfBlastPages = journalPerfBlastPages;
+   }
+   
+   public boolean isRunSyncSpeedTest()
+   {
+      return runSyncSpeedTest;
+   }
+
+   public void setRunSyncSpeedTest(boolean run)
+   {
+      this.runSyncSpeedTest = run;
    }
 
    public boolean isCreateBindingsDir()
@@ -1109,4 +1123,5 @@ public class ConfigurationImpl implements Configuration
    {
       this.logDelegateFactoryClassName = className;
    }
+   
 }

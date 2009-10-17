@@ -243,6 +243,8 @@ public interface Configuration extends Serializable
    
    void setLogJournalWriteRate(boolean rate);
    
+   //Undocumented attributes
+   
    int getJournalPerfBlastPages();
    
    void setJournalPerfBlastPages(int pages);
@@ -258,6 +260,10 @@ public interface Configuration extends Serializable
    long getMemoryMeasureInterval();
 
    void setMemoryMeasureInterval(long memoryMeasureInterval);
+   
+   boolean isRunSyncSpeedTest();
+   
+   void setRunSyncSpeedTest(boolean run);
    
    // Paging Properties --------------------------------------------------------------------
 

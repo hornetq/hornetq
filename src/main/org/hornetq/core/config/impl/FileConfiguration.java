@@ -319,6 +319,8 @@ public class FileConfiguration extends ConfigurationImpl
       logJournalWriteRate = getBoolean(e, "log-journal-write-rate", DEFAULT_JOURNAL_LOG_WRITE_RATE);
       
       journalPerfBlastPages = getInteger(e, "perf-blast-pages", DEFAULT_JOURNAL_PERF_BLAST_PAGES, MINUS_ONE_OR_GT_ZERO);
+      
+      runSyncSpeedTest = getBoolean(e, "run-sync-speed-test", runSyncSpeedTest);
 
       wildcardRoutingEnabled = getBoolean(e, "wild-card-routing-enabled", wildcardRoutingEnabled);
 
