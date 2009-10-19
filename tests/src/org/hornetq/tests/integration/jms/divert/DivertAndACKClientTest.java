@@ -169,7 +169,7 @@ public class DivertAndACKClientTest extends JMSTestBase
                                         DEFAULT_CONSUMER_MAX_RATE,
                                         DEFAULT_PRODUCER_WINDOW_SIZE,
                                         DEFAULT_PRODUCER_MAX_RATE,
-                                        true,
+                                        true, // this test needs to block on ACK
                                         DEFAULT_BLOCK_ON_PERSISTENT_SEND,
                                         DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND,
                                         DEFAULT_AUTO_GROUP,
