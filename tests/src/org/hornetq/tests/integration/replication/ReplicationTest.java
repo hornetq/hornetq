@@ -270,31 +270,18 @@ public class ReplicationTest extends ServiceTestBase
       Configuration config = createDefaultConfig(false);
 
       config.setBackup(true);
+
+      ArrayList<String> intercepts = new ArrayList<String>();
       
-      final AtomicBoolean returnIntercept = new AtomicBoolean(true);
-
-      final Interceptor intercept = new Interceptor()
-      {
-
-         public boolean intercept(Packet packet, RemotingConnection connection) throws HornetQException
-         {
-            if (returnIntercept.get())
-            {
-               System.out.println("Returning true");
-            }
-            return returnIntercept.get();
-         }
-
-      };
-
+      intercepts.add(TestInterceptor.class.getName());
+      
+      config.setInterceptorClassNames(intercepts);
+      
       HornetQServer server = new HornetQServerImpl(config);
 
       server.start();
 
-      final ArrayList<Interceptor> listInterceptor = new ArrayList<Interceptor>();
-      listInterceptor.add(intercept);
-
-      FailoverManager failoverManager = createFailoverManager(listInterceptor);
+      FailoverManager failoverManager = createFailoverManager();
 
       try
       {
@@ -304,7 +291,7 @@ public class ReplicationTest extends ServiceTestBase
          Journal replicatedJournal = new ReplicatedJournal((byte)1, new FakeJournal(), manager);
 
          Thread.sleep(100);
-         returnIntercept.set(false);
+         TestInterceptor.value.set(false);
 
          for (int i = 0; i < 500; i++)
          {
@@ -507,6 +494,17 @@ public class ReplicationTest extends ServiceTestBase
    // Private -------------------------------------------------------
 
    // Inner classes -------------------------------------------------
+   public static class TestInterceptor implements Interceptor
+   {
+      static AtomicBoolean value = new AtomicBoolean(true);
+
+      public boolean intercept(Packet packet, RemotingConnection connection) throws HornetQException
+      {
+         return value.get();
+      }
+
+   };
+
 
    static class FakeJournal implements Journal
    {
