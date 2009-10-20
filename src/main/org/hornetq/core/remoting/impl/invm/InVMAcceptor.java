@@ -19,6 +19,9 @@ import java.util.concurrent.Executor;
 
 import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.logging.Logger;
+import org.hornetq.core.management.Notification;
+import org.hornetq.core.management.NotificationService;
+import org.hornetq.core.management.NotificationType;
 import org.hornetq.core.remoting.spi.Acceptor;
 import org.hornetq.core.remoting.spi.BufferHandler;
 import org.hornetq.core.remoting.spi.Connection;
@@ -26,6 +29,8 @@ import org.hornetq.core.remoting.spi.ConnectionLifeCycleListener;
 import org.hornetq.utils.ConfigurationHelper;
 import org.hornetq.utils.ExecutorFactory;
 import org.hornetq.utils.OrderedExecutorFactory;
+import org.hornetq.utils.SimpleString;
+import org.hornetq.utils.TypedProperties;
 
 /**
  * A InVMAcceptor
@@ -51,6 +56,8 @@ public class InVMAcceptor implements Acceptor
    
    private boolean paused;
 
+   private NotificationService notificationService;
+
    public InVMAcceptor(final Map<String, Object> configuration,
                        final BufferHandler handler,
                        final ConnectionLifeCycleListener listener,
@@ -74,6 +81,15 @@ public class InVMAcceptor implements Acceptor
 
       InVMRegistry.instance.registerAcceptor(id, this);
 
+      if (notificationService != null)
+      {
+         TypedProperties props = new TypedProperties();
+         props.putStringProperty(new SimpleString("factory"), new SimpleString(InVMAcceptorFactory.class.getName()));
+         props.putIntProperty(new SimpleString("id"), id);
+         Notification notification = new Notification(null, NotificationType.ACCEPTOR_STARTED, props);
+         notificationService.sendNotification(notification);
+      }
+      
       started = true;
       
       paused = false;
@@ -98,6 +114,23 @@ public class InVMAcceptor implements Acceptor
 
       connections.clear();
 
+      if (notificationService != null)
+      {
+         TypedProperties props = new TypedProperties();
+         props.putStringProperty(new SimpleString("factory"), new SimpleString(InVMAcceptorFactory.class.getName()));
+         props.putIntProperty(new SimpleString("id"), id);
+         Notification notification = new Notification(null, NotificationType.ACCEPTOR_STOPPED, props);
+         try
+         {
+            notificationService.sendNotification(notification);
+         }
+         catch (Exception e)
+         {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+         }
+      }
+      
       started = false;
       
       paused = false;
@@ -133,6 +166,11 @@ public class InVMAcceptor implements Acceptor
       InVMRegistry.instance.registerAcceptor(id, this);
       
       paused = false;
+   }
+   
+   public void setNotificationService(NotificationService notificationService)
+   {
+      this.notificationService = notificationService;
    }
 
    public BufferHandler getHandler()

@@ -33,12 +33,16 @@ import org.hornetq.core.config.cluster.ClusterConnectionConfiguration;
 import org.hornetq.core.config.cluster.QueueConfiguration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.management.ClusterConnectionControl;
+import org.hornetq.core.management.Notification;
+import org.hornetq.core.management.NotificationType;
 import org.hornetq.core.management.ObjectNameBuilder;
 import org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
 import org.hornetq.core.server.HornetQ;
 import org.hornetq.core.server.HornetQServer;
+import org.hornetq.tests.integration.SimpleNotificationService;
 import org.hornetq.utils.Pair;
+import org.hornetq.utils.SimpleString;
 import org.hornetq.utils.json.JSONArray;
 import org.hornetq.utils.json.JSONObject;
 
@@ -144,6 +148,31 @@ public class ClusterConnectionControlTest extends ManagementTestBase
       assertTrue(clusterConnectionControl.isStarted());
    }
 
+   public void testNotifications() throws Exception
+   {
+      SimpleNotificationService.Listener notifListener = new SimpleNotificationService.Listener();
+      checkResource(ObjectNameBuilder.DEFAULT.getClusterConnectionObjectName(clusterConnectionConfig1.getName()));
+      ClusterConnectionControl clusterConnectionControl = createManagementControl(clusterConnectionConfig1.getName());
+
+      server_0.getManagementService().addNotificationListener(notifListener);
+      
+      assertEquals(0, notifListener.getNotifications().size());
+      
+      clusterConnectionControl.stop();
+      
+      assertTrue(notifListener.getNotifications().size() > 0);
+      Notification notif = notifListener.getNotifications().get(notifListener.getNotifications().size() - 1);
+      assertEquals(NotificationType.CLUSTER_CONNECTION_STOPPED, notif.getType());
+      assertEquals(clusterConnectionControl.getName(), (notif.getProperties().getProperty(new SimpleString("name")).toString()));
+      
+      clusterConnectionControl.start();
+      
+      assertTrue(notifListener.getNotifications().size() > 0);
+      notif = notifListener.getNotifications().get(notifListener.getNotifications().size() - 1);
+      assertEquals(NotificationType.CLUSTER_CONNECTION_STARTED, notif.getType());
+      assertEquals(clusterConnectionControl.getName(), (notif.getProperties().getProperty(new SimpleString("name")).toString()));      
+   }
+   
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------

@@ -25,10 +25,14 @@ import org.hornetq.core.config.TransportConfiguration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.management.AcceptorControl;
+import org.hornetq.core.management.Notification;
+import org.hornetq.core.management.NotificationType;
 import org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory;
 import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
 import org.hornetq.core.server.HornetQ;
 import org.hornetq.core.server.HornetQServer;
+import org.hornetq.tests.integration.SimpleNotificationService;
+import org.hornetq.utils.SimpleString;
 
 /**
  * A AcceptorControlTest
@@ -132,6 +136,42 @@ public class AcceptorControlTest extends ManagementTestBase
       {
       }
       
+   }
+   
+   public void testNotifications() throws Exception
+   {
+      TransportConfiguration acceptorConfig = new TransportConfiguration(InVMAcceptorFactory.class.getName(),
+                                                                         new HashMap<String, Object>(),
+                                                                         randomString());
+      Configuration conf = new ConfigurationImpl();
+      conf.setSecurityEnabled(false);
+      conf.setJMXManagementEnabled(true);
+      conf.getAcceptorConfigurations().add(acceptorConfig);
+      service = HornetQ.newHornetQServer(conf, mbeanServer, false);
+      service.start();
+
+      AcceptorControl acceptorControl = createManagementControl(acceptorConfig.getName());
+
+      
+      SimpleNotificationService.Listener notifListener = new SimpleNotificationService.Listener();
+
+      service.getManagementService().addNotificationListener(notifListener);
+      
+      assertEquals(0, notifListener.getNotifications().size());
+      
+      acceptorControl.stop();
+      
+      assertEquals(1, notifListener.getNotifications().size());
+      Notification notif = notifListener.getNotifications().get(0);
+      assertEquals(NotificationType.ACCEPTOR_STOPPED, notif.getType());
+      assertEquals(InVMAcceptorFactory.class.getName(), (notif.getProperties().getProperty(new SimpleString("factory")).toString()));
+      
+      acceptorControl.start();
+      
+      assertEquals(2, notifListener.getNotifications().size());
+      notif = notifListener.getNotifications().get(1);
+      assertEquals(NotificationType.ACCEPTOR_STARTED, notif.getType());
+      assertEquals(InVMAcceptorFactory.class.getName(), (notif.getProperties().getProperty(new SimpleString("factory")).toString()));      
    }
 
    // Package protected ---------------------------------------------

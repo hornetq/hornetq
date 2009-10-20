@@ -31,12 +31,17 @@ import javax.net.ssl.SSLContext;
 import org.hornetq.core.config.TransportConfiguration;
 import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.logging.Logger;
+import org.hornetq.core.management.Notification;
+import org.hornetq.core.management.NotificationService;
+import org.hornetq.core.management.NotificationType;
 import org.hornetq.core.remoting.impl.ssl.SSLSupport;
 import org.hornetq.core.remoting.spi.Acceptor;
 import org.hornetq.core.remoting.spi.BufferHandler;
 import org.hornetq.core.remoting.spi.Connection;
 import org.hornetq.core.remoting.spi.ConnectionLifeCycleListener;
 import org.hornetq.utils.ConfigurationHelper;
+import org.hornetq.utils.SimpleString;
+import org.hornetq.utils.TypedProperties;
 import org.hornetq.utils.VersionLoader;
 import org.jboss.netty.bootstrap.ServerBootstrap;
 import org.jboss.netty.channel.Channel;
@@ -120,6 +125,8 @@ public class NettyAcceptor implements Acceptor
    private ConcurrentMap<Object, Connection> connections = new ConcurrentHashMap<Object, Connection>();
 
    private final Executor threadPool;
+
+   private NotificationService notificationService;
 
    public NettyAcceptor(final Map<String, Object> configuration,
                         final BufferHandler handler,
@@ -303,6 +310,16 @@ public class NettyAcceptor implements Acceptor
           log.warn("Unexpected Netty Version was expecting " + VersionLoader.getVersion().getNettyVersion() + " using " + Version.ID);
       }
 
+      if (notificationService != null)
+      {
+         TypedProperties props = new TypedProperties();
+         props.putStringProperty(new SimpleString("factory"), new SimpleString(NettyAcceptorFactory.class.getName()));
+         props.putStringProperty(new SimpleString("host"), new SimpleString(host));
+         props.putIntProperty(new SimpleString("port"), port);
+         Notification notification = new Notification(null, NotificationType.ACCEPTOR_STARTED, props);
+         notificationService.sendNotification(notification);
+      }
+      
       log.info("Started Netty Acceptor version " + Version.ID);
    }
 
@@ -364,6 +381,24 @@ public class NettyAcceptor implements Acceptor
       }
 
       connections.clear();
+    
+      if (notificationService != null)
+      {
+         TypedProperties props = new TypedProperties();
+         props.putStringProperty(new SimpleString("factory"), new SimpleString(NettyAcceptorFactory.class.getName()));
+         props.putStringProperty(new SimpleString("host"), new SimpleString(host));
+         props.putIntProperty(new SimpleString("port"), port);
+         Notification notification = new Notification(null, NotificationType.ACCEPTOR_STOPPED, props);
+         try
+         {
+            notificationService.sendNotification(notification);
+         }
+         catch (Exception e)
+         {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+         }
+      }
       
       paused = false;
    }
@@ -414,6 +449,11 @@ public class NettyAcceptor implements Acceptor
       paused = false;
    }
 
+   public void setNotificationService(final NotificationService notificationService)
+   {
+      this.notificationService = notificationService;
+   }
+   
    // Inner classes -----------------------------------------------------------------------------
 
    @ChannelPipelineCoverage("one")

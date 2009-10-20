@@ -174,6 +174,7 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
 
             if (managementService != null)
             {
+               acceptor.setNotificationService(managementService);
                managementService.registerAcceptor(acceptor, info);
             }
          }
