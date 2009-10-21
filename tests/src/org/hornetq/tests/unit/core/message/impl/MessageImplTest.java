@@ -26,6 +26,7 @@ import static org.hornetq.tests.util.RandomUtil.randomString;
 import java.util.Set;
 
 import org.hornetq.core.buffers.ChannelBuffers;
+import org.hornetq.core.client.impl.ClientMessageImpl;
 import org.hornetq.core.journal.EncodingSupport;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.message.Message;
@@ -39,15 +40,10 @@ import org.hornetq.utils.SimpleString;
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */
-public abstract class MessageImplTestBase extends UnitTestCase
+public class MessageImplTest extends UnitTestCase
 {
-   private static final Logger log = Logger.getLogger(MessageImplTestBase.class);
+   private static final Logger log = Logger.getLogger(MessageImplTest.class);
 
-   protected abstract Message createMessage(final byte type, final boolean durable, final long expiration,
-                                   final long timestamp, final byte priority, HornetQBuffer buffer);
-      
-   protected abstract Message createMessage();
-      
    public void testEncodeDecode()
    {
       for (int j = 0; j < 10; j++)
@@ -57,16 +53,16 @@ public abstract class MessageImplTestBase extends UnitTestCase
          {
             bytes[i] = randomByte();
          }
-         HornetQBuffer body = ChannelBuffers.wrappedBuffer(bytes);      
-         Message message = createMessage(randomByte(), randomBoolean(), randomLong(),
-                                         randomLong(), randomByte(), body);
+         HornetQBuffer body = ChannelBuffers.wrappedBuffer(bytes);
+         Message message1 = new ClientMessageImpl(randomByte(), randomBoolean(), randomLong(), randomLong(), randomByte(), body);      
+         Message message = message1;
          message.setDestination(new SimpleString("oasoas"));
          
          message.putStringProperty(new SimpleString("prop1"), new SimpleString("blah1"));
          message.putStringProperty(new SimpleString("prop2"), new SimpleString("blah2"));      
          HornetQBuffer buffer = ChannelBuffers.buffer(message.getEncodeSize()); 
          message.encode(buffer);      
-         Message message2 = createMessage();      
+         Message message2 = new ClientMessageImpl(false);      
          message2.decode(buffer);      
          assertMessagesEquivalent(message, message2);
       }
@@ -88,9 +84,9 @@ public abstract class MessageImplTestBase extends UnitTestCase
          final long expiration = randomLong();
          final long timestamp = randomLong();
          final byte priority = randomByte();
+         Message message1 = new ClientMessageImpl(type, durable, expiration, timestamp, priority, body);
    
-         Message message = createMessage(type, durable, expiration,
-                                         timestamp, priority, body);
+         Message message = message1;
          
          assertEquals(type, message.getType());
          assertEquals(durable, message.isDurable());
@@ -126,7 +122,7 @@ public abstract class MessageImplTestBase extends UnitTestCase
    
    public void testExpired()
    {
-      Message message = createMessage();
+      Message message = new ClientMessageImpl(false);
       
       assertEquals(0, message.getExpiration());
       assertFalse(message.isExpired());
@@ -150,7 +146,7 @@ public abstract class MessageImplTestBase extends UnitTestCase
             
       SimpleString address = new SimpleString("Simple Destination ");
       
-      Message msg = createMessage(); 
+      Message msg = new ClientMessageImpl(false); 
 
       byte[] bytes = new byte[]{(byte)1, (byte)2, (byte)3};
       msg.setBody(ChannelBuffers.wrappedBuffer(bytes));
@@ -172,7 +168,7 @@ public abstract class MessageImplTestBase extends UnitTestCase
    {
       for (int j = 0; j < 10; j++)
       {
-         Message msg = createMessage();
+         Message msg = new ClientMessageImpl(false);
          
          SimpleString prop1 = new SimpleString("prop1");
          boolean val1 = randomBoolean();
