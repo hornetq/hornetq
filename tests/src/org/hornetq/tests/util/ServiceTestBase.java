@@ -193,6 +193,19 @@ public class ServiceTestBase extends UnitTestCase
                           -1,
                           new HashMap<String, AddressSettings>());
    }
+   
+   protected HornetQServer createClusteredServerWithParams(final int index,
+                                                           final boolean realFiles,
+                                                           final int pageSize,
+                                                           final int maxAddressSize,
+                                                           final Map<String, Object> params)
+   {
+      return createServer(realFiles,
+                          createClusteredDefaultConfig(index, params, INVM_ACCEPTOR_FACTORY),
+                          pageSize,
+                          maxAddressSize,
+                          new HashMap<String, AddressSettings>());
+   }
 
    protected Configuration createDefaultConfig()
    {
