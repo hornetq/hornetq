@@ -20,6 +20,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.hornetq.core.buffers.ChannelBuffers;
 import org.hornetq.core.client.ClientConsumer;
 import org.hornetq.core.client.ClientMessage;
 import org.hornetq.core.client.ClientProducer;
@@ -534,6 +535,145 @@ public class BridgeTest extends ServiceTestBase
       server1.stop();
    }
    
+
+   // https://jira.jboss.org/jira/browse/HORNETQ-182
+   public void disabled_testBridgeWithPaging() throws Exception
+   {
+      HornetQServer server0 = null;
+      HornetQServer server1 = null;
+
+      final int PAGE_MAX = 100 * 1024;
+
+      final int PAGE_SIZE = 10 * 1024;
+
+      try
+      {
+
+         Map<String, Object> server0Params = new HashMap<String, Object>();
+         server0 = createClusteredServerWithParams(0, true, PAGE_SIZE, PAGE_MAX, server0Params);
+
+         Map<String, Object> server1Params = new HashMap<String, Object>();
+         server1Params.put(SERVER_ID_PROP_NAME, 1);
+         server1 = createClusteredServerWithParams(1, true, server1Params);
+
+         final String testAddress = "testAddress";
+         final String queueName0 = "queue0";
+         final String forwardAddress = "forwardAddress";
+         final String queueName1 = "queue1";
+
+         Map<String, TransportConfiguration> connectors = new HashMap<String, TransportConfiguration>();
+         TransportConfiguration server0tc = new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory",
+                                                                       server0Params);
+
+         TransportConfiguration server1tc = new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory",
+                                                                       server1Params);
+         connectors.put(server1tc.getName(), server1tc);
+
+         server0.getConfiguration().setConnectorConfigurations(connectors);
+
+         Pair<String, String> connectorPair = new Pair<String, String>(server1tc.getName(), null);
+
+         BridgeConfiguration bridgeConfiguration = new BridgeConfiguration("bridge1",
+                                                                           queueName0,
+                                                                           forwardAddress,
+                                                                           null,
+                                                                           null,
+                                                                           1000,
+                                                                           1d,
+                                                                           -1,
+                                                                           true,
+                                                                           false,
+                                                                           connectorPair);
+
+         List<BridgeConfiguration> bridgeConfigs = new ArrayList<BridgeConfiguration>();
+         bridgeConfigs.add(bridgeConfiguration);
+         server0.getConfiguration().setBridgeConfigurations(bridgeConfigs);
+
+         QueueConfiguration queueConfig0 = new QueueConfiguration(testAddress, queueName0, null, true);
+         List<QueueConfiguration> queueConfigs0 = new ArrayList<QueueConfiguration>();
+         queueConfigs0.add(queueConfig0);
+         server0.getConfiguration().setQueueConfigurations(queueConfigs0);
+
+         QueueConfiguration queueConfig1 = new QueueConfiguration(forwardAddress, queueName1, null, true);
+         List<QueueConfiguration> queueConfigs1 = new ArrayList<QueueConfiguration>();
+         queueConfigs1.add(queueConfig1);
+         server1.getConfiguration().setQueueConfigurations(queueConfigs1);
+
+         server1.start();
+         server0.start();
+
+         ClientSessionFactory sf0 = new ClientSessionFactoryImpl(server0tc);
+
+         ClientSessionFactory sf1 = new ClientSessionFactoryImpl(server1tc);
+
+         ClientSession session0 = sf0.createSession(false, true, true);
+
+         ClientSession session1 = sf1.createSession(false, true, true);
+
+         ClientProducer producer0 = session0.createProducer(new SimpleString(testAddress));
+
+         ClientConsumer consumer1 = session1.createConsumer(queueName1);
+
+         session1.start();
+
+         final int numMessages = 500;
+
+         final SimpleString propKey = new SimpleString("testkey");
+
+         for (int i = 0; i < numMessages; i++)
+         {
+            ClientMessage message = session0.createClientMessage(false);
+            
+            message.setBody(ChannelBuffers.wrappedBuffer(new byte[1024]));
+
+            message.putIntProperty(propKey, i);
+
+            producer0.send(message);
+         }
+
+         for (int i = 0; i < numMessages; i++)
+         {
+            ClientMessage message = consumer1.receive(200);
+
+            assertNotNull(message);
+
+            assertEquals((Integer)i, (Integer)message.getProperty(propKey));
+
+            message.acknowledge();
+         }
+
+         assertNull(consumer1.receive(200));
+
+         session0.close();
+
+         session1.close();
+
+         sf0.close();
+
+         sf1.close();
+
+      }
+      finally
+      {
+         try
+         {
+            server0.stop();
+         }
+         catch (Throwable ignored)
+         {
+         }
+
+         try
+         {
+            server1.stop();
+         }
+         catch (Throwable ignored)
+         {
+         }
+      }
+
+   }
+
    
    protected void setUp() throws Exception
    {
