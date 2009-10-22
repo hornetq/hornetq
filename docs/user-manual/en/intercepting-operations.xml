@@ -21,8 +21,8 @@
 <chapter id="intercepting-operations">
    <title>Intercepting Operations</title>
    <para>HornetQ supports <emphasis>interceptors</emphasis> to intercept packets entering
-      and leaving the server. Any supplied interceptors would be called for any packet entering or
-      leaving the server, this allows custom code to be executed, e.g. for auditing packets,
+       the server. Any supplied interceptors would be called for any packet entering 
+        the server, this allows custom code to be executed, e.g. for auditing packets,
       filtering or other reasons. Interceptors can change the packets they intercept.</para>
    <section>
       <title>Implementing The Interceptors</title>
@@ -59,6 +59,14 @@ public interface Interceptor
          </programlisting>
       <para>The interceptors classes (and their dependencies) must be added to the server classpath
          to be properly instantiated and called.</para>
+   </section>
+   <section>
+      <title>Interceptors on the Client Side</title>
+      <para>The interceptors can also be run on the client side to intercept packets
+         <emphasis>sent by the server</emphasis> by adding the interceptor to the <code>ClientSessionFactory</code>
+         with the <code>addInterceptor()</code> method.</para>
+      <para>The interceptors classes (and their dependencies) must be added to the client classpath
+         to be properly instantiated and called from the client side.</para>
    </section>
    <section>
       <title>Example</title>
