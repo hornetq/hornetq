@@ -130,6 +130,8 @@ public class MultiThreadCompactorTest extends ServiceTestBase
    private void addEmptyTransaction(Xid xid) throws HornetQException, XAException
    {
       ClientSessionFactory sf = createInVMFactory();
+      sf.setBlockOnNonPersistentSend(false);
+      sf.setBlockOnAcknowledge(false);
       ClientSession session = sf.createSession(true, false, false);
       session.start(xid, XAResource.TMNOFLAGS);
       session.end(xid, XAResource.TMSUCCESS);
@@ -141,6 +143,8 @@ public class MultiThreadCompactorTest extends ServiceTestBase
    private void checkEmptyXID(Xid xid) throws HornetQException, XAException
    {
       ClientSessionFactory sf = createInVMFactory();
+      sf.setBlockOnNonPersistentSend(false);
+      sf.setBlockOnAcknowledge(false);
       ClientSession session = sf.createSession(true, false, false);
 
       Xid[] xids = session.recover(XAResource.TMSTARTRSCAN);
@@ -343,7 +347,9 @@ public class MultiThreadCompactorTest extends ServiceTestBase
       server.start();
 
       sf = createNettyFactory();
-
+      sf.setBlockOnPersistentSend(false);
+      sf.setBlockOnAcknowledge(false);
+      
       ClientSession sess = sf.createSession();
 
       try
