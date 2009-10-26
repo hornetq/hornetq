@@ -287,6 +287,7 @@ public class JournalLargeServerMessage extends ServerMessageImpl implements Larg
    @Override
    public synchronized ServerMessage copy(final long newID) throws Exception
    {
+      // Incrementing the reference counting to avoid deletion of the linkedMessage
       incrementRefCount();
       
       long idToUse = messageID;
@@ -297,8 +298,6 @@ public class JournalLargeServerMessage extends ServerMessageImpl implements Larg
       }
 
       SequentialFile newfile = storageManager.createFileForLargeMessage(idToUse, isStored());
-
-      file.open();
 
       JournalLargeServerMessage newMessage = new JournalLargeServerMessage(linkMessage == null ? this : (JournalLargeServerMessage)linkMessage, newfile, newID);
 
