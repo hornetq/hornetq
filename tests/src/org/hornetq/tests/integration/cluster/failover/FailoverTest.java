@@ -271,6 +271,10 @@ public class FailoverTest extends FailoverTestBase
 
       session.addFailureListener(new MyListener());
 
+      ClientConsumer consumer = session.createConsumer(ADDRESS);
+
+      session.start();
+
       ClientProducer producer = session.createProducer(ADDRESS);
 
       final int numMessages = 100;
@@ -294,9 +298,6 @@ public class FailoverTest extends FailoverTestBase
 
       session.commit();
 
-      ClientConsumer consumer = session.createConsumer(ADDRESS);
-
-      session.start();
 
       for (int i = 0; i < numMessages; i++)
       {
@@ -316,6 +317,8 @@ public class FailoverTest extends FailoverTestBase
          }
       }
 
+      assertNull(consumer.receive(1000));
+      
       session.commit();
 
       session.close();
@@ -488,6 +491,8 @@ public class FailoverTest extends FailoverTestBase
 
       session2.commit();
 
+      assertNull(consumer.receive(1000));
+      
       session1.close();
 
       session2.close();

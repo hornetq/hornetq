@@ -881,7 +881,6 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
             if ((!autoCommitAcks || !autoCommitSends) && workDone)
             {
                // Session is transacted - set for rollback only
-
                // FIXME - there is a race condition here - a commit could sneak in before this is set
                rollbackOnly = true;
             }
@@ -891,6 +890,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
             {
                for (ClientConsumerInternal consumer : consumers.values())
                {
+                  consumer.clearAtFailover();
                   consumer.start();
                }
 
