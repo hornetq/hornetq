@@ -934,13 +934,6 @@
                             <entry>false</entry>
                         </row>
                         <row>
-                            <entry><link linkend="connection-ttl.session.multiplexing"
-                                    >connection-factory.max-connections</link></entry>
-                            <entry>Integer</entry>
-                            <entry>the maximum number of connections per factory</entry>
-                            <entry>8</entry>
-                        </row>
-                        <row>
                             <entry><link linkend="large-messages.core.config"
                                     >connection-factory.min-large-message-size</link></entry>
                             <entry>Integer</entry>

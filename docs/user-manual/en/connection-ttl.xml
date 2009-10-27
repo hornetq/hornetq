@@ -175,29 +175,4 @@ at org.acme.yourproject.YourClass (YourClass.java:666)
         <para>If you do set this parameter to <literal>false</literal> please do so with
             caution.</para>
     </section>
-    <section id="connection-ttl.session.multiplexing">
-        <title>Session Multiplexing</title>
-        <para>Each <literal>ClientSessionFactory</literal> creates connections on demand to the same
-            server as you create sessions. Each instance will create up to a maximum of <literal
-                >maxConnections</literal> connections to the same server. Subsequent sessions will
-            use one of the already created connections in a round-robin fashion.</para>
-        <para>To illustrate this, let's say <literal>maxConnections</literal> is set to <literal
-                >8</literal>. The first eight sessions that you create will have a new underlying
-            connection created for them, the next eight you create will use one of the previously
-            created connections.</para>
-        <para>The default value for <literal>maxConnections</literal> is <literal>8</literal>, if
-            you prefer you can set it to a lower value so each factory maintains only one underlying
-            connection. We choose a default value of <literal>8</literal> because on the server side
-            each packet read from a particular connection is read serially by the same thread, so,
-            if all traffic from the clients sessions is multiplexed on the same connection it will
-            all be processed by the same thread on the server, which might not be a good use of
-            cores on the server. By choosing <literal>8</literal> then different sessions traffic
-            from the same client can be processed by different cores. If you have many different
-            clients then this may not be relevant anyway.</para>
-        <para>To change the value of <literal>maxConnections</literal> simply use the setter method
-            on the <literal>ClientSessionFactory</literal> immediately after constructing it, or if
-            you are using JMS use the setter on the <literal>HornetQConnectionFactory</literal> or
-            specify the <literal>max-connections</literal> parameter in the connection factory xml
-            configuration in <literal>hornetq-jms.xml</literal>.</para>
-    </section>
 </chapter>
