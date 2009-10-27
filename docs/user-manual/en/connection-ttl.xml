@@ -17,11 +17,10 @@
 <!-- permitted by applicable law.                                                  -->
 <!-- ============================================================================= -->
 <chapter id="connection-ttl">
-    <title>Dead Connections and Session Multiplexing</title>
+    <title>Detecting Dead Connections</title>
     <para>In this section we will discuss connection time-to-live (TTL) and explain how HornetQ
         deals with crashed clients and clients which have exited without cleanly closing their
-        resources. We'll also discuss how HornetQ multiplexes several sessions on a single
-        connection.</para>
+        resources.</para>
     <section id="dead.connections">
         <title>Cleaning up Dead Connection Resources on the Server</title>
         <para>Before a HornetQ client application exits it is considered good practice that it
