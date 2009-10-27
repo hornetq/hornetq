@@ -52,7 +52,7 @@ public class AddressSettings implements Mergeable<AddressSettings>
    
    public static final boolean DEFAULT_SEND_TO_DLA_ON_NO_ROUTE = false;
 
-   private Integer maxSizeBytes = null;
+   private Long maxSizeBytes = null;
 
    private Integer pageSizeBytes = null;
 
@@ -106,12 +106,12 @@ public class AddressSettings implements Mergeable<AddressSettings>
       pageSizeBytes = pageSize;
    }
 
-   public int getMaxSizeBytes()
+   public long getMaxSizeBytes()
    {
       return maxSizeBytes != null ? maxSizeBytes : DEFAULT_MAX_SIZE_BYTES;
    }
 
-   public void setMaxSizeBytes(final int maxSizeBytes)
+   public void setMaxSizeBytes(final long maxSizeBytes)
    {
       this.maxSizeBytes = maxSizeBytes;
    }
