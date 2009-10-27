@@ -475,6 +475,11 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
       workDone = false;
    }
 
+   public boolean isRollbackOnly()
+   {
+      return rollbackOnly;
+   }
+   
    public void rollback() throws HornetQException
    {
       rollback(false);
@@ -511,6 +516,8 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
       {
          start();
       }
+      
+      rollbackOnly = false;
    }
 
    public ClientMessage createClientMessage(final byte type,
@@ -711,8 +718,6 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
          }
 
          clMessage.setFlowControlSize(message.getRequiredBufferSize());
-
-         workDone();
 
          consumer.handleMessage(message.getClientMessage());
       }

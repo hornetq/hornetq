@@ -1,0 +1,139 @@
+<html>
+  <head>
+    <title>HornetQ JMS Failover With Transaction Example</title>
+    <link rel="stylesheet" type="text/css" href="../../common/common.css" />
+    <link rel="stylesheet" type="text/css" href="../../common/prettify.css" />
+    <script type="text/javascript" src="../../common/prettify.js"></script>
+  </head>
+  <body onload="prettyPrint()">
+     <h1>JMS Failover With Transaction Example</h1>
+     
+     <p>This example demonstrates two servers coupled as a live-backup pair for high availability (HA), and a client
+     connection failing over from live to backup when the live server is crashed.</p>
+     <p>Failover behavior differs wether the JMS session is transacter or not.</p>
+     <p>When a <em>transacted</em> JMS session is used, once-and-only once delivery is guaranteed.</p>
+     <ul>
+        <li>if the failover occurs while there is an in-flight transaction, the transaction will be flagged as <em>rollback only</em> and the JMS client will need to retry the transaction work.</li>
+        <li>if the failover occurs while there is <em>no</em> in-flight transaction, the failover will be transparent to the user.</li>
+     </ul>
+     <p>HornetQ also provides an example for <a href="../non-transactional-failover/readme.html">non-transaction failover</a>.</p>
+     <p>For more information on HornetQ failover and HA, and clustering in general, please see the clustering
+     section of the user manual.</p>
+
+     <h2>Example step-by-step</h2>
+     <p><i>To run the example, simply type <code>./build.sh</code> (or <code>build.bat</code> on windows) from this directory</i></p>
+     <p>In this example, the live server is server 1, and the backup server is server 0</p>
+     <p>The connection will initially be created to server1, server 1 will crash, and the client will carry on
+     seamlessly on server 0, the backup server.</p>
+     <br>
+     <ol>
+        <li>Get an initial context for looking up JNDI from server #1.</li>
+        <pre class="prettyprint">
+           initialContext = getContext(1);
+        </pre>
+
+        <li>Look up the JMS resources from JNDI on server #1.</li>
+        <pre class="prettyprint">
+           Queue queue = (Queue)initialContext.lookup("/queue/exampleQueue");
+           ConnectionFactory connectionFactory = (ConnectionFactory)initialContext.lookup("/ConnectionFactory");
+        </pre>
+
+        <li>Create a JMS Connection</li>
+        <pre class="prettyprint">
+           connection = connectionFactory.createConnection();
+        </pre>
+        
+        <li>Create a JMS <em>transacted</em> Session</li>
+        <pre class="prettyprint">
+           Session session = connection.createSession(true, 0);
+        </pre>
+        
+        <li>Start the connection to ensure delivery occurs</li>
+        <pre class="prettyprint">
+           connection.start();
+        </pre>
+
+        <li>Create a JMS MessageProducer</li>
+        <pre class="prettyprint">
+           MessageProducer producer = session.createProducer(queue);
+        </pre>
+
+        <li>Create a JMS MessageConsumer</li>
+        <pre class="prettyprint">
+           MessageConsumer consumer = session.createConsumer(queue);
+        </pre>
+
+        <li>Send some messages to server #1 and commit the session</li>
+        <pre class="prettyprint">
+           for (int i = 0; i &lt; numMessages; i++)
+           {
+              TextMessage message = session.createTextMessage("This is text message " + i);
+              producer.send(message);
+              System.out.println("Sent message: " + message.getText());
+           }
+           session.commit();
+        </pre>
+        
+        <li>Crash server #1, the live server, and wait a little while to make sure
+            it has really crashed.<br />
+            When server #1 crashes, the client automatically detects the failure and automatically
+            fails over from server #1 to server #0 (in your real program you wouldn't need to sleep).
+        </li>
+        <pre class="prettyprint">
+           killServer(1); // This causes the live server to crash
+           Thread.sleep(2000); // Just wait a little while to make sure the live server has really crashed.
+        </pre> 
+        
+        <li>The client is transparently reconnected to server #0 - the backup server.
+           As no work has been done by the session during the failover, we can <em>transparently</em> consume messages
+           from the session.</li>
+        <pre class="prettyprint">
+           for (int i = 0; i &lt; numMessages; i++)
+           {
+              TextMessage message0 = (TextMessage)consumer.receive(5000);
+              System.out.println("Got message: " + message0.getText());
+           }         
+           session.commit();
+        </pre>
+        
+        <li>Send some more messages and commit the session</li>
+        <pre class="prettyprint">
+           for (int i = numMessages; i &lt; numMessages * 2; i++)
+           {
+              TextMessage message = session.createTextMessage("This is text message " + i);
+              producer.send(message);
+              System.out.println("Sent message: " + message.getText());
+           }
+           session.commit();
+        </pre>
+        
+        <li>Consume them</li>
+        <pre class="prettyprint">
+           for (int i = 0; i &lt; numMessages; i++)
+           {
+              TextMessage message0 = (TextMessage)consumer.receive(5000);
+              System.out.println("Got message: " + message0.getText());
+           }
+           session.commit();
+        </pre>
+
+        <li>And finally, <strong>always</strong> remember to close your resources after use, in a <code>finally</code> block. Closing a JMS connection will automatically close all of its sessions, consumers, producer and browser objects</li>
+
+        <pre class="prettyprint">
+           finally
+           {
+              if (connection != null)
+              {
+                 connection.close();
+              }
+
+              if (initialContext != null)
+              {
+                 initialContext.close();
+              }
+           }
+        </pre>
+
+     </ol>
+  </body>
+</html>

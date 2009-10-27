@@ -117,6 +117,8 @@ public interface ClientSession extends XAResource
 
    XAResource getXAResource();
 
+   boolean isRollbackOnly();
+
    void commit() throws HornetQException;
 
    void rollback() throws HornetQException;

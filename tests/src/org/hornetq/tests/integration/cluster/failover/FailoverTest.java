@@ -222,6 +222,8 @@ public class FailoverTest extends FailoverTestBase
       
       fail(session, latch);
 
+      assertTrue(session.isRollbackOnly());
+
       try
       {
          session.commit();
@@ -271,10 +273,6 @@ public class FailoverTest extends FailoverTestBase
 
       session.addFailureListener(new MyListener());
 
-      ClientConsumer consumer = session.createConsumer(ADDRESS);
-
-      session.start();
-
       ClientProducer producer = session.createProducer(ADDRESS);
 
       final int numMessages = 100;
@@ -296,8 +294,13 @@ public class FailoverTest extends FailoverTestBase
 
       // committing again should work since didn't send anything since last commit
 
+      assertFalse(session.isRollbackOnly());
+
       session.commit();
 
+      ClientConsumer consumer = session.createConsumer(ADDRESS);
+
+      session.start();
 
       for (int i = 0; i < numMessages; i++)
       {
@@ -328,6 +331,95 @@ public class FailoverTest extends FailoverTestBase
       assertEquals(0, sf.numConnections());
    }
 
+   public void testTransactedMessagesWithConsumerStartedBedoreFailover() throws Exception
+   {
+      ClientSessionFactoryInternal sf = getSessionFactory();
+
+      sf.setBlockOnNonPersistentSend(true);
+      sf.setBlockOnPersistentSend(true);
+
+      ClientSession session = sf.createSession(false, false);
+
+      session.createQueue(ADDRESS, ADDRESS, null, true);
+
+      final CountDownLatch latch = new CountDownLatch(1);
+
+      class MyListener implements FailureListener
+      {
+         public void connectionFailed(HornetQException me)
+         {
+            latch.countDown();
+         }
+      }
+
+      session.addFailureListener(new MyListener());
+
+      // create a consumer and start the session before failover
+      ClientConsumer consumer = session.createConsumer(ADDRESS);
+
+      session.start();
+
+      ClientProducer producer = session.createProducer(ADDRESS);
+
+      final int numMessages = 100;
+
+      for (int i = 0; i < numMessages; i++)
+      {
+         ClientMessage message = session.createClientMessage(i % 2 == 0);
+
+         setBody(i, message);
+
+         message.putIntProperty("counter", i);
+
+         producer.send(message);
+      }
+
+      // messages will be delivered to the consumer when the session is committed
+      session.commit();
+
+      assertFalse(session.isRollbackOnly());
+
+      fail(session, latch);
+
+      session.commit();
+      
+      session.close();
+      
+      session = sf.createSession(false, false);
+      
+      consumer = session.createConsumer(ADDRESS);
+
+      session.start();
+      
+      for (int i = 0; i < numMessages; i++)
+      {
+         // Only the persistent messages will survive
+
+         if (i % 2 == 0)
+         {
+            ClientMessage message = consumer.receive(1000);
+
+            assertNotNull(message);
+
+            assertMessageBody(i, message);
+
+            assertEquals(i, message.getProperty("counter"));
+
+            message.acknowledge();
+         }
+      }
+
+      assertNull(consumer.receive(1000));
+      
+      session.commit();
+
+      session.close();
+
+      assertEquals(0, sf.numSessions());
+
+      assertEquals(0, sf.numConnections());
+   }
+   
    public void testTransactedMessagesConsumedSoRollback() throws Exception
    {
       ClientSessionFactoryInternal sf = getSessionFactory();
@@ -389,6 +481,8 @@ public class FailoverTest extends FailoverTestBase
 
       fail(session2, latch);
 
+      assertTrue(session2.isRollbackOnly());
+      
       try
       {
          session2.commit();
@@ -474,6 +568,8 @@ public class FailoverTest extends FailoverTestBase
 
       fail(session2, latch);
 
+      assertFalse(session2.isRollbackOnly());
+      
       consumer = session2.createConsumer(ADDRESS);
 
       for (int i = numMessages / 2; i < numMessages; i++)
@@ -1637,7 +1733,8 @@ public class FailoverTest extends FailoverTestBase
 
                   try
                   {
-                     session.commit();                     
+                     session.commit();
+                     fail("commit succeeded");
                   }
                   catch (HornetQException e2)
                   {

@@ -245,6 +245,8 @@ public class ClientConsumerImpl implements ClientConsumerInternal
 
             if (m != null)
             {
+               session.workDone();
+               
                if (m.containsProperty(FORCED_DELIVERY_MESSAGE))
                {
                   Long seq = (Long)m.getProperty(FORCED_DELIVERY_MESSAGE);
@@ -707,6 +709,9 @@ public class ClientConsumerImpl implements ClientConsumerInternal
       {
          return;
       }
+
+      session.workDone();
+      
       // We pull the message from the buffer from inside the Runnable so we can ensure priority
       // ordering. If we just added a Runnable with the message to the executor immediately as we get it
       // we could not do that

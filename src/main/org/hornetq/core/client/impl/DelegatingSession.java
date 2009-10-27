@@ -462,6 +462,11 @@ public class DelegatingSession implements ClientSessionInternal
    {
       session.rollback();
    }
+   
+   public boolean isRollbackOnly()
+   {
+      return session.isRollbackOnly();
+   }
 
    public void rollback(boolean considerLastMessageAsDelivered) throws HornetQException
    {

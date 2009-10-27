@@ -50,6 +50,7 @@
 	<classpathentry kind="src" path="examples/jms/message-group/src"/>
 	<classpathentry kind="src" path="examples/jms/message-priority/src"/>
 	<classpathentry kind="src" path="examples/jms/no-consumer-buffering/src"/>
+	<classpathentry kind="src" path="examples/jms/non-transaction-failover/src"/>
 	<classpathentry kind="src" path="examples/jms/paging/src"/>
 	<classpathentry kind="src" path="examples/jms/perf/src"/>
 	<classpathentry kind="src" path="examples/jms/pre-acknowledge/src"/>
@@ -72,6 +73,7 @@
 	<classpathentry kind="src" path="examples/jms/topic-hierarchies/src"/>
 	<classpathentry kind="src" path="examples/jms/topic-selector-example1/src"/>
 	<classpathentry kind="src" path="examples/jms/topic-selector-example2/src"/>
+	<classpathentry kind="src" path="examples/jms/transaction-failover/src"/>
 	<classpathentry kind="src" path="examples/jms/transactional/src"/>
 	<classpathentry kind="src" path="examples/jms/xa-heuristic/src"/>
 	<classpathentry kind="src" path="examples/jms/xa-receive/src"/>

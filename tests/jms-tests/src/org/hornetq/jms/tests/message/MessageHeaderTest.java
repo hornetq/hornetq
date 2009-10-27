@@ -1028,6 +1028,12 @@ public class MessageHeaderTest extends MessageHeaderTestBase
       {
       }
 
+      public boolean isRollbackOnly()
+      {
+
+         return false;
+      }
+
       public void rollback() throws HornetQException
       {
       }
