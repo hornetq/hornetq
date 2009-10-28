@@ -76,7 +76,7 @@
         </listitem>
         <listitem>
             <para><literal>reconnect-attempts</literal>. This optional parameter determines the
-                total number of reconnect attempts the bridge will make before giving up and
+                total number of reconnect attempts to make before giving up and
                 shutting down. A value of <literal>-1</literal> signifies an unlimited number of
                 attempts. The default value is <literal>0</literal>.</para>
         </listitem>
