@@ -78,7 +78,7 @@
             <para><literal>reconnect-attempts</literal>. This optional parameter determines the
                 total number of reconnect attempts the bridge will make before giving up and
                 shutting down. A value of <literal>-1</literal> signifies an unlimited number of
-                attempts. The default value is <literal>-1</literal>.</para>
+                attempts. The default value is <literal>0</literal>.</para>
         </listitem>
     </itemizedlist>
     <para>If you're using JMS, and you're using the JMS Service on the server to load your JMS

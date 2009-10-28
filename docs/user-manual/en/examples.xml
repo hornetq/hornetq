@@ -33,10 +33,7 @@
         <para>Here's a listing of the examples with a brief description.</para>
         <section id="application-level-failover">
             <title>Application-Layer Failover</title>
-            <para>HornetQ implements fully transparent automatic failover of connections from a live
-                to backup node, this requires no special coding for failover, and is described in a
-                different example. Automatic failover requires server replication.</para>
-            <para>However, HornetQ also supports Application-Layer failover, useful in the case that
+            <para>HornetQ also supports Application-Layer failover, useful in the case that
                 replication is not enabled on the server side.</para>
             <para>With Application-Layer failover, it's up to the application to register a JMS
                     <literal>ExceptionListener</literal> with HornetQ which will be called by
@@ -49,18 +46,6 @@
                 failover, since the old session object dies and a new one is created, any
                 uncommitted work in the old session will be lost, and any unacknowledged messages
                 might be redelivered.</para>
-        </section>
-        <section id="automatic-failover">
-            <title>Automatic (Transparent) Failover</title>
-            <para>The <literal>automatic-failover</literal> example demonstrates two servers coupled
-                as a live-backup pair for high availability (HA), and a client connection
-                transparently failing over from live to backup when the live server is
-                crashed.</para>
-            <para>HornetQ implements seamless, transparent failover of client connections between
-                live and backup servers. This is implemented by the replication of state between
-                live and backup nodes. When replication is configured and a live node crashes, the
-                client connections can carry on as if nothing happened and carry on sending and
-                consuming messages.</para>
         </section>
         <section>
             <title>Automatic Reconnect</title>
@@ -334,6 +319,19 @@
             <para>In some case buffering is not desirable, and HornetQ allows it to be switched off.
                 This example demonstrates that.</para>
         </section>
+        <section id="examples.non-transaction-failover">
+            <title>Non-Transaction Failover With Server Data Replication</title>
+            <para>The <literal>non-transaction-failover</literal> example demonstrates two servers coupled
+                as a live-backup pair for high availability (HA), and a client using a <emphasis>non-transacted
+                </emphasis> JMS session failing over from live to backup when the live server is
+                crashed.</para>
+            <para>HornetQ implements failover of client connections between
+                live and backup servers. This is implemented by the replication of state between
+                live and backup nodes. When replication is configured and a live node crashes, the
+                client connections can carry and continue to send and consume messages. When non-transacted
+                 sessions are used, once and only once message delivery is not guaranteed and it is possible
+                 that some messages will be lost or delivered twice.</para>
+        </section>
         <section id="examples.paging">
             <title>Paging</title>
             <para>The <literal>paging</literal> example shows how HornetQ can support huge queues
@@ -437,6 +435,18 @@
             <title>Topic Selector 2</title>
             <para>The <literal>topic-selector-example1</literal> example shows you how to
                 selectively consume messages using message selectors with topic consumers.</para>
+        </section>
+        <section id="examples.transaction-failover">
+            <title>Transaction Failover With Data Replication</title>
+            <para>The <literal>transaction-failover</literal> example demonstrates two servers coupled
+                as a live-backup pair for high availability (HA), and a client using a transacted JMS
+                session failing over from live to backup when the live server is
+                crashed.</para>
+            <para>HornetQ implements failover of client connections between
+                live and backup servers. This is implemented by the replication of data between
+                live and backup nodes. When replication is configured and a live node crashes, the
+                client connections can carry and continue to send and consume messages. When transacted
+                sessions are used, once and only once message delivery is guaranteed.</para>
         </section>
         <section>
             <title>Transactional Session</title>
