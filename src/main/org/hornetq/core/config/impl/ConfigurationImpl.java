@@ -31,6 +31,7 @@ import org.hornetq.core.config.cluster.DivertConfiguration;
 import org.hornetq.core.config.cluster.QueueConfiguration;
 import org.hornetq.core.logging.impl.JULLogDelegateFactory;
 import org.hornetq.core.server.JournalType;
+import org.hornetq.core.server.group.impl.GroupingHandlerConfiguration;
 import org.hornetq.utils.SimpleString;
 
 /**
@@ -110,7 +111,7 @@ public class ConfigurationImpl implements Configuration
    public static final boolean DEFAULT_JOURNAL_LOG_WRITE_RATE = false;
 
    public static final int DEFAULT_JOURNAL_PERF_BLAST_PAGES = -1;
-   
+
    public static final boolean DEFAULT_RUN_SYNC_SPEED_TEST = false;
 
    public static final boolean DEFAULT_WILDCARD_ROUTING_ENABLED = true;
@@ -272,7 +273,7 @@ public class ConfigurationImpl implements Configuration
    protected boolean logJournalWriteRate = DEFAULT_JOURNAL_LOG_WRITE_RATE;
 
    protected int journalPerfBlastPages = DEFAULT_JOURNAL_PERF_BLAST_PAGES;
-   
+
    protected boolean runSyncSpeedTest = DEFAULT_RUN_SYNC_SPEED_TEST;
 
    protected boolean wildcardRoutingEnabled = DEFAULT_WILDCARD_ROUTING_ENABLED;
@@ -303,6 +304,8 @@ public class ConfigurationImpl implements Configuration
    protected int memoryWarningThreshold = DEFAULT_MEMORY_WARNING_THRESHOLD;
    
    protected long memoryMeasureInterval = DEFAULT_MEMORY_MEASURE_INTERVAL;
+
+   protected GroupingHandlerConfiguration groupingHandlerConfiguration;
 
    // Public -------------------------------------------------------------------------
 
@@ -484,6 +487,17 @@ public class ConfigurationImpl implements Configuration
    {
       this.backupConnectorName = backupConnectorName;
    }
+
+   public GroupingHandlerConfiguration getGroupingHandlerConfiguration()
+   {
+      return groupingHandlerConfiguration;
+   }
+
+   public void setGroupingHandlerConfiguration(GroupingHandlerConfiguration groupingHandlerConfiguration)
+   {
+      this.groupingHandlerConfiguration = groupingHandlerConfiguration;
+   }
+
 
    public List<BridgeConfiguration> getBridgeConfigurations()
    {
@@ -674,7 +688,7 @@ public class ConfigurationImpl implements Configuration
    {
       this.journalPerfBlastPages = journalPerfBlastPages;
    }
-   
+
    public boolean isRunSyncSpeedTest()
    {
       return runSyncSpeedTest;
@@ -1123,5 +1137,5 @@ public class ConfigurationImpl implements Configuration
    {
       this.logDelegateFactoryClassName = className;
    }
-   
+
 }

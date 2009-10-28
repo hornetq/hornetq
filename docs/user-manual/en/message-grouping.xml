@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
 <!-- ============================================================================= -->
 <!-- Copyright © 2009 Red Hat, Inc. and others.                                    -->
 <!--                                                                               -->
@@ -17,7 +16,6 @@
 <!-- and agrees not to assert, Section 4d of CC-BY-SA to the fullest extent        -->
 <!-- permitted by applicable law.                                                  -->
 <!-- ============================================================================= -->
-
 <chapter id="message-grouping">
    <title>Message Grouping</title>
    <para>Message groups are sets of messages that has the following characteristics:</para>
@@ -62,7 +60,7 @@
  producer.send(message);          
        </programlisting>
       <para>Alternatively, you can set <literal>autogroup</literal> to true on the <literal
-            >HornetQConnectonFactory</literal> which will pick a random unique id.  This can also be
+            >HornetQConnectonFactory</literal> which will pick a random unique id. This can also be
          set in the <literal>hornetq-jms.xml</literal> file like this:</para>
       <programlisting>&lt;connection-factory name="ConnectionFactory">
       &lt;connector-ref connector-name="netty-connector"/>
@@ -74,7 +72,78 @@
    </section>
    <section>
       <title>Example</title>
-      <para>See <xref linkend="examples.message-group" /> for an example which 
-         shows how message groups are configured and used with JMS.</para>
+      <para>See <xref linkend="examples.message-group"/> for an example which shows how message
+         groups are configured and used with JMS.</para>
+   </section>
+   <section>
+      <title> Clustered Grouping</title>
+      <para>Using the Grouping function in a cluster is a bit more complex. This is because messages
+         with a particular group id can arrive on any node so each node needs to know about which
+         group id's are bound to which consumer on which node. To solve this there is the notion of
+         a grouping handler. Each node will have its own grouping handler and when a messages is
+         sent with a group id assigned, the handlers will decide between them which route the
+         message should take. There are 2 types of handlers, Local and Remote. Each cluster should
+         assign 1 node to have a local grouping handler and all the other nodes should have remote
+         handlers, Its the local handler that actually makes the decsion as to what route should be
+         used, all the other remote handler converse with this. Here is a sample config for both
+         types of handler, this should be configured in the <emphasis role="italic"
+            >hornetq-configuration.xml</emphasis>
+         file.<programlisting>   &lt;grouping-handler name="my-grouping-handler">
+      &lt;type>LOCAL&lt;/type>
+      &lt;address>jms&lt;/address>
+      &lt;timeout>5000&lt;/timeout>
+   &lt;/grouping-handler>
+
+   &lt;grouping-handler name="my-grouping-handler">
+      &lt;type>REMOTE&lt;/type>
+      &lt;address>jms&lt;/address>
+      &lt;timeout>5000&lt;/timeout>
+   &lt;/grouping-handler></programlisting></para>
+      <para>The <emphasis role="italic">address</emphasis> attribute referes to a cluster connection
+         and the address it uses, refer to the clustering section on how to configure clusters. The
+            <emphasis role="italic">timeout</emphasis> attribute referes to how long to wait for a
+         decision to be made, an exception will be thrown during the send if this timeout is
+         reached, this ensures that strict ordering is kept.</para>
+      <para>The decision as to where a message should be routed to is initially proposed by the node
+         that receives the message. The node will pick a suitable route as per the normal clustered
+         routing conditions, i.e. round robin available queues, use a local queue first and choose a
+         queue that has a consumer. If the proposal is excepted by the grouping handlers the node
+         will route messages to this queue from that point on, if rejected an alternative route will
+         be offered and the node will again route to that queue indefinately. All other nodes will
+         also route to the queue chosen at proposal time. Once the message arrives at the queue then
+         normal single server message group semantics take over and the message ispinned to a
+         consumer on that queue.</para>
+      <para>You may have noticed that there is a single point of failure with the single local
+         handler. If this node crashes then no decisions will be able to be made. Any messages sent
+         will be not be delivered and an exception thrown. To avoid this happening Local Handlers
+         can be replicated on another backup node. Simple create your back up node and configure it
+         with the same Local handler.</para>
+      <para/>
+      <section>
+         <title>Clustered Grouping Best Practices</title>
+         <para>Some best practices should be followed when using clustered grouping, these
+               are<orderedlist><listitem><para>Make sure your consumers are distributed evenly
+                     across the different nodes if possible. This is only an issue if you are
+                     creating and closing consumers regularly. Since messages are always routed to
+                     the same queue once pinned, removing a consumer from this queue may leave it
+                     with no consumers meaning the queue will just keep receiving the messages.
+                     Avoid closing consumers or make sure that you always have plenty of consumers,
+                     i.e., if you have 3 nodes have 3
+                     consumers.</para></listitem><listitem><para>Use durable queues if possible. If
+                     queues are removed once a group is bound to it, then it is possible that other
+                     nodes may still try to route messages to it. This can be avoided by making sure
+                     that the queue is deleted by the session that is sending the messages. This
+                     means that when the next message is sent it is sent to the node where the queue
+                     was deleted meaning a new proposal can succesfully take place. Alternatively
+                     you could just start using a different group
+                     id.</para></listitem><listitem><para>Always make sure that the node that has
+                     the Local Grouping Handler is replicated. These means that on failover grouping
+                     will still occur.</para></listitem></orderedlist></para>
+      </section>
+      <section>
+         <title>Clustered Grouping Example</title>
+         <para>See <xref linkend="examples.clustered.grouping"/> for an example of how to configure
+            message groups with a HornetQ cluster</para>
+      </section>
    </section>
 </chapter>

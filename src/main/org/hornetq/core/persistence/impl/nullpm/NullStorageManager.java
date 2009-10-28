@@ -26,6 +26,7 @@ import org.hornetq.core.paging.PagedMessage;
 import org.hornetq.core.paging.PagingManager;
 import org.hornetq.core.persistence.QueueBindingInfo;
 import org.hornetq.core.persistence.StorageManager;
+import org.hornetq.core.persistence.GroupingInfo;
 import org.hornetq.core.postoffice.Binding;
 import org.hornetq.core.postoffice.PostOffice;
 import org.hornetq.core.remoting.spi.HornetQBuffer;
@@ -33,6 +34,7 @@ import org.hornetq.core.server.LargeServerMessage;
 import org.hornetq.core.server.MessageReference;
 import org.hornetq.core.server.Queue;
 import org.hornetq.core.server.ServerMessage;
+import org.hornetq.core.server.group.impl.GroupBinding;
 import org.hornetq.core.transaction.ResourceManager;
 import org.hornetq.utils.Pair;
 import org.hornetq.utils.SimpleString;
@@ -78,7 +80,7 @@ public class NullStorageManager implements StorageManager
    {
    }
 
-   public void loadBindingJournal(final List<QueueBindingInfo> queueBindingInfos) throws Exception
+   public void loadBindingJournal(List<QueueBindingInfo> queueBindingInfos, List<GroupingInfo> groupingInfos) throws Exception
    {
 
    }
@@ -185,7 +187,7 @@ public class NullStorageManager implements StorageManager
    {
       return new NullStorageLargeServerMessage();
    }
-   
+
    public LargeServerMessage createLargeMessage(long id, byte[] header)
    {
       NullStorageLargeServerMessage largeMessage = new NullStorageLargeServerMessage();
@@ -193,13 +195,13 @@ public class NullStorageManager implements StorageManager
       HornetQBuffer headerBuffer = ChannelBuffers.wrappedBuffer(header);
 
       largeMessage.decodeProperties(headerBuffer);
-      
+
       largeMessage.setMessageID(id);
-      
-      return largeMessage;     
+
+      return largeMessage;
    }
-   
-   
+
+
    public long generateUniqueID()
    {
       long id = idSequence.getAndIncrement();
@@ -317,5 +319,14 @@ public class NullStorageManager implements StorageManager
    {
    }
 
+   public void addGrouping(GroupBinding groupBinding) throws Exception
+   {
+      //To change body of implemented methods use File | Settings | File Templates.
+   }
+
+   public void deleteGrouping(GroupBinding groupBinding) throws Exception
+   {
+      //To change body of implemented methods use File | Settings | File Templates.
+   }
 
 }

@@ -28,6 +28,7 @@ import org.hornetq.core.server.LargeServerMessage;
 import org.hornetq.core.server.MessageReference;
 import org.hornetq.core.server.Queue;
 import org.hornetq.core.server.ServerMessage;
+import org.hornetq.core.server.group.impl.GroupBinding;
 import org.hornetq.core.transaction.ResourceManager;
 import org.hornetq.utils.Pair;
 import org.hornetq.utils.SimpleString;
@@ -45,19 +46,19 @@ import org.hornetq.utils.UUID;
 public interface StorageManager extends HornetQComponent
 {
    // Message related operations
-   
+
    void pageClosed(SimpleString storeName, int pageNumber);
-   
+
    void pageDeleted(SimpleString storeName, int pageNumber);
-   
+
    void pageWrite(PagedMessage message, int pageNumber);
-   
+
    boolean isReplicated();
-   
+
    void afterReplicated(Runnable run);
-   
+
    void completeReplication();
-   
+
    UUID getPersistentID();
    
    void setPersistentID(UUID id) throws Exception;
@@ -126,7 +127,7 @@ public interface StorageManager extends HornetQComponent
    long storeHeuristicCompletion(Xid xid, boolean isCommit) throws Exception;
    
    void deleteHeuristicCompletion(long id) throws Exception;
-   
+
 
    // Bindings related operations
 
@@ -134,5 +135,11 @@ public interface StorageManager extends HornetQComponent
    
    void deleteQueueBinding(long queueBindingID) throws Exception;
    
-   void loadBindingJournal(List<QueueBindingInfo> queueBindingInfos) throws Exception;
+   void loadBindingJournal(List<QueueBindingInfo> queueBindingInfos, List<GroupingInfo> groupingInfos) throws Exception;
+
+   //grouping relateed operations
+   void addGrouping(GroupBinding groupBinding) throws Exception;
+
+
+   void deleteGrouping(GroupBinding groupBinding) throws Exception;
 }

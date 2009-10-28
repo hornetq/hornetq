@@ -46,6 +46,7 @@ import org.hornetq.core.config.cluster.DiscoveryGroupConfiguration;
 import org.hornetq.core.config.cluster.DivertConfiguration;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.server.JournalType;
+import org.hornetq.core.server.group.impl.GroupingHandlerConfiguration;
 import org.hornetq.utils.Pair;
 import org.hornetq.utils.SimpleString;
 import org.hornetq.utils.XMLUtil;
@@ -253,6 +254,15 @@ public class FileConfiguration extends ConfigurationImpl
          parseBridgeConfiguration(mfNode);
       }
 
+      NodeList gaNodes = e.getElementsByTagName("grouping-handler");
+
+      for (int i = 0; i < gaNodes.getLength(); i++)
+      {
+         Element gaNode = (Element) gaNodes.item(i);
+
+         parseGroupingHandlerConfiguration(gaNode);
+      }
+
       NodeList ccNodes = e.getElementsByTagName("cluster-connection");
 
       for (int i = 0; i < ccNodes.getLength(); i++)
@@ -319,7 +329,7 @@ public class FileConfiguration extends ConfigurationImpl
       logJournalWriteRate = getBoolean(e, "log-journal-write-rate", DEFAULT_JOURNAL_LOG_WRITE_RATE);
       
       journalPerfBlastPages = getInteger(e, "perf-blast-pages", DEFAULT_JOURNAL_PERF_BLAST_PAGES, MINUS_ONE_OR_GT_ZERO);
-      
+
       runSyncSpeedTest = getBoolean(e, "run-sync-speed-test", runSyncSpeedTest);
 
       wildcardRoutingEnabled = getBoolean(e, "wild-card-routing-enabled", wildcardRoutingEnabled);
@@ -567,6 +577,19 @@ public class FileConfiguration extends ConfigurationImpl
 
       clusterConfigurations.add(config);
    }
+
+   private void parseGroupingHandlerConfiguration(final Element node)
+   {
+      String name = node.getAttribute("name");
+      String type = getString(node, "type", null, NOT_NULL_OR_EMPTY);
+      String address = getString(node, "address",null, NOT_NULL_OR_EMPTY);
+      Integer timeout = getInteger(node, "timeout", GroupingHandlerConfiguration.DEFAULT_TIMEOUT, GT_ZERO);
+      groupingHandlerConfiguration = new GroupingHandlerConfiguration(new SimpleString(name),
+                                  type.equals(GroupingHandlerConfiguration.TYPE.LOCAL.getType())? GroupingHandlerConfiguration.TYPE.LOCAL: GroupingHandlerConfiguration.TYPE.REMOTE,
+                                  new SimpleString(address),
+                                  timeout);
+   }
+
 
    private void parseBridgeConfiguration(final Element brNode)
    {

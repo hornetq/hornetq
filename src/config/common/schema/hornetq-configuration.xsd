@@ -132,6 +132,8 @@
                         </xsd:sequence>
                     </xsd:complexType>
                 </xsd:element>
+            <xsd:element maxOccurs="1" minOccurs="0" name="grouping-handler" type="groupingHandlerType">
+            </xsd:element>
 				<xsd:element maxOccurs="1" minOccurs="0" name="paging-directory" type="xsd:string">
 				</xsd:element>
 				<xsd:element maxOccurs="1" minOccurs="0" name="bindings-directory" type="xsd:string">
@@ -392,6 +394,22 @@
 			<xsd:enumeration value="NIO"/>
 		</xsd:restriction>
 	</xsd:simpleType>
+
+   <xsd:complexType name="groupingHandlerType">
+      <xsd:sequence>
+         <xsd:element maxOccurs="1" minOccurs="1" name="type" type="groupingHandlerTypeType"/>
+         <xsd:element maxOccurs="1" minOccurs="1" name="address" type="xsd:string"/>
+         <xsd:element maxOccurs="1" minOccurs="0" name="timeout" type="xsd:int"/>
+      </xsd:sequence>
+       <xsd:attribute name="name" type="xsd:string" use="required"/>
+   </xsd:complexType>
+
+   <xsd:simpleType name="groupingHandlerTypeType">
+      <xsd:restriction base="xsd:string">
+         <xsd:enumeration value="LOCAL"/>
+         <xsd:enumeration value="REMOTE"/>
+      </xsd:restriction>
+   </xsd:simpleType>
 
   <xsd:element name="security-settings">
       <xsd:complexType>

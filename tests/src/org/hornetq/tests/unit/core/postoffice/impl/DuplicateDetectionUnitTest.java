@@ -26,6 +26,7 @@ import org.hornetq.core.paging.PageTransactionInfo;
 import org.hornetq.core.paging.PagingManager;
 import org.hornetq.core.paging.PagingStore;
 import org.hornetq.core.persistence.QueueBindingInfo;
+import org.hornetq.core.persistence.GroupingInfo;
 import org.hornetq.core.persistence.impl.journal.JournalStorageManager;
 import org.hornetq.core.postoffice.PostOffice;
 import org.hornetq.core.postoffice.impl.DuplicateIDCacheImpl;
@@ -88,7 +89,7 @@ public class DuplicateDetectionUnitTest extends ServiceTestBase
          journal = new JournalStorageManager(configuration, Executors.newCachedThreadPool());
 
          journal.start();
-         journal.loadBindingJournal(new ArrayList<QueueBindingInfo>());
+         journal.loadBindingJournal(new ArrayList<QueueBindingInfo>(), new ArrayList<GroupingInfo>());
 
          HashMap<SimpleString, List<Pair<byte[], Long>>> mapDups = new HashMap<SimpleString, List<Pair<byte[], Long>>>();
 
@@ -111,7 +112,7 @@ public class DuplicateDetectionUnitTest extends ServiceTestBase
 
          journal = new JournalStorageManager(configuration, Executors.newCachedThreadPool());
          journal.start();
-         journal.loadBindingJournal(new ArrayList<QueueBindingInfo>());
+         journal.loadBindingJournal(new ArrayList<QueueBindingInfo>(), new ArrayList<GroupingInfo>());
 
          journal.loadMessageJournal(postOffice,
                                     new FakePagingManager(),
@@ -139,7 +140,7 @@ public class DuplicateDetectionUnitTest extends ServiceTestBase
 
          journal = new JournalStorageManager(configuration, Executors.newCachedThreadPool());
          journal.start();
-         journal.loadBindingJournal(new ArrayList<QueueBindingInfo>());
+         journal.loadBindingJournal(new ArrayList<QueueBindingInfo>(), new ArrayList<GroupingInfo>());
 
          journal.loadMessageJournal(postOffice,
                                     new FakePagingManager(),

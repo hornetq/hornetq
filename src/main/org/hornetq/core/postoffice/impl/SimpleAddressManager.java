@@ -21,6 +21,7 @@ import org.hornetq.core.postoffice.Address;
 import org.hornetq.core.postoffice.AddressManager;
 import org.hornetq.core.postoffice.Binding;
 import org.hornetq.core.postoffice.Bindings;
+import org.hornetq.core.postoffice.BindingsFactory;
 import org.hornetq.utils.SimpleString;
 
 /**
@@ -37,6 +38,13 @@ public class SimpleAddressManager implements AddressManager
    private final ConcurrentMap<SimpleString, Bindings> mappings = new ConcurrentHashMap<SimpleString, Bindings>();
 
    private final ConcurrentMap<SimpleString, Binding> nameMap = new ConcurrentHashMap<SimpleString, Binding>();
+
+   private final BindingsFactory bindingsFactory;
+
+   public SimpleAddressManager(BindingsFactory bindingsFactory)
+   {
+      this.bindingsFactory = bindingsFactory;
+   }
 
    public boolean addBinding(final Binding binding)
    {
@@ -81,7 +89,7 @@ public class SimpleAddressManager implements AddressManager
    {
       Address add = new AddressImpl(address);
       
-      Bindings bindings = new BindingsImpl();
+      Bindings bindings = bindingsFactory.createBindings();
       
       for (Binding binding: nameMap.values())
       {
@@ -152,7 +160,7 @@ public class SimpleAddressManager implements AddressManager
 
       if (bindings == null)
       {
-         bindings = new BindingsImpl();
+         bindings = bindingsFactory.createBindings();
 
          prevBindings = mappings.putIfAbsent(address, bindings);
 

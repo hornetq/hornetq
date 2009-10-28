@@ -81,7 +81,7 @@ public class BindingsImplTest extends UnitTestCase
    {
       final FakeBinding fake = new FakeBinding(new SimpleString("a"));
 
-      final BindingsImpl bind = new BindingsImpl();
+      final BindingsImpl bind = new BindingsImpl(null);
       bind.addBinding(fake);
       bind.addBinding(new FakeBinding(new SimpleString("a")));
       bind.addBinding(new FakeBinding(new SimpleString("a")));

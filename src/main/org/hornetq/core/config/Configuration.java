@@ -25,6 +25,7 @@ import org.hornetq.core.config.cluster.DiscoveryGroupConfiguration;
 import org.hornetq.core.config.cluster.DivertConfiguration;
 import org.hornetq.core.config.cluster.QueueConfiguration;
 import org.hornetq.core.server.JournalType;
+import org.hornetq.core.server.group.impl.GroupingHandlerConfiguration;
 import org.hornetq.utils.SimpleString;
 
 /**
@@ -128,6 +129,10 @@ public interface Configuration extends Serializable
    Map<String, DiscoveryGroupConfiguration> getDiscoveryGroupConfigurations();
 
    void setDiscoveryGroupConfigurations(Map<String, DiscoveryGroupConfiguration> configs);
+
+   GroupingHandlerConfiguration getGroupingHandlerConfiguration();
+
+   void setGroupingHandlerConfiguration(GroupingHandlerConfiguration groupingHandlerConfiguration);
 
    List<BridgeConfiguration> getBridgeConfigurations();
 
@@ -242,9 +247,9 @@ public interface Configuration extends Serializable
    boolean isLogJournalWriteRate();
    
    void setLogJournalWriteRate(boolean rate);
-   
+
    //Undocumented attributes
-   
+
    int getJournalPerfBlastPages();
    
    void setJournalPerfBlastPages(int pages);
@@ -260,11 +265,11 @@ public interface Configuration extends Serializable
    long getMemoryMeasureInterval();
 
    void setMemoryMeasureInterval(long memoryMeasureInterval);
-   
+
    boolean isRunSyncSpeedTest();
-   
+
    void setRunSyncSpeedTest(boolean run);
-   
+
    // Paging Properties --------------------------------------------------------------------
 
    String getPagingDirectory();

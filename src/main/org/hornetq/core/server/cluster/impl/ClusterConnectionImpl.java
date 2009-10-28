@@ -40,6 +40,8 @@ import org.hornetq.core.postoffice.Bindings;
 import org.hornetq.core.postoffice.PostOffice;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.Queue;
+import org.hornetq.core.server.group.impl.Response;
+import org.hornetq.core.server.group.impl.Proposal;
 import org.hornetq.core.server.cluster.Bridge;
 import org.hornetq.core.server.cluster.ClusterConnection;
 import org.hornetq.core.server.cluster.MessageFlowRecord;
@@ -541,6 +543,11 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
                }
                case SECURITY_AUTHENTICATION_VIOLATION:
                case SECURITY_PERMISSION_VIOLATION:
+               case PROPOSAL:
+                  doProposalReceived(message);
+                  break;
+               case PROPOSAL_RESPONSE:
+                  doProposalResponseReceived(message);
                   break;
                default:
                {
@@ -552,6 +559,49 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
          {
             log.error("Failed to handle message", e);
          }
+      }
+
+      /*
+      * Inform the grouping handler of a proposal
+      * */
+      private synchronized void doProposalReceived(final ClientMessage message) throws Exception
+      {
+         SimpleString type = (SimpleString) message.getProperty(ManagementHelper.HDR_PROPOSAL_GROUP_ID);
+
+         if (type == null)
+         {
+            throw new IllegalStateException("proposal type is null");
+         }
+
+         SimpleString val = (SimpleString) message.getProperty(ManagementHelper.HDR_PROPOSAL_VALUE);
+
+         Integer hops = (Integer) message.getProperty(ManagementHelper.HDR_DISTANCE);
+
+         Response response = server.getGroupingHandler().receive(new Proposal(type, val), hops + 1);
+
+         if(response != null)
+         {
+            server.getGroupingHandler().send(response, 0);
+         }
+      }
+
+      /*
+      * Inform the grouping handler of a response from a proposal
+      *
+      * */
+      private synchronized void doProposalResponseReceived(final ClientMessage message) throws Exception
+      {
+         SimpleString type = (SimpleString) message.getProperty(ManagementHelper.HDR_PROPOSAL_GROUP_ID);
+         if (type == null)
+         {
+            throw new IllegalStateException("proposal type is null");
+         }
+         SimpleString val = (SimpleString)  message.getProperty(ManagementHelper.HDR_PROPOSAL_VALUE);
+         SimpleString alt = (SimpleString) message.getProperty(ManagementHelper.HDR_PROPOSAL_ALT_VALUE);
+         Integer hops = (Integer) message.getProperty(ManagementHelper.HDR_DISTANCE);
+         Response response = new Response(type, val, alt);
+         server.getGroupingHandler().proposed(response);
+         server.getGroupingHandler().send(response, hops + 1);
       }
 
       private synchronized void clearBindings() throws Exception
@@ -779,4 +829,9 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
       theBindings.setRouteWhenNoConsumers(routeWhenNoConsumers);
    }
 
+   //for testing only
+   public Map<String, MessageFlowRecord> getRecords()
+   {
+      return records;
+   }
 }

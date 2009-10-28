@@ -61,6 +61,7 @@ import org.hornetq.core.paging.impl.PagingManagerImpl;
 import org.hornetq.core.paging.impl.PagingStoreFactoryNIO;
 import org.hornetq.core.persistence.QueueBindingInfo;
 import org.hornetq.core.persistence.StorageManager;
+import org.hornetq.core.persistence.GroupingInfo;
 import org.hornetq.core.persistence.impl.journal.JournalStorageManager;
 import org.hornetq.core.persistence.impl.nullpm.NullStorageManager;
 import org.hornetq.core.postoffice.Binding;
@@ -91,6 +92,11 @@ import org.hornetq.core.server.MemoryManager;
 import org.hornetq.core.server.Queue;
 import org.hornetq.core.server.QueueFactory;
 import org.hornetq.core.server.ServerSession;
+import org.hornetq.core.server.group.GroupingHandler;
+import org.hornetq.core.server.group.impl.GroupingHandlerConfiguration;
+import org.hornetq.core.server.group.impl.LocalGroupingHandler;
+import org.hornetq.core.server.group.impl.RemoteGroupingHandler;
+import org.hornetq.core.server.group.impl.GroupBinding;
 import org.hornetq.core.server.cluster.ClusterManager;
 import org.hornetq.core.server.cluster.Transformer;
 import org.hornetq.core.server.cluster.impl.ClusterManagerImpl;
@@ -199,6 +205,8 @@ public class HornetQServerImpl implements HornetQServer
 
    private final Set<ActivateCallback> activateCallbacks = new HashSet<ActivateCallback>();
 
+   private GroupingHandler groupingHandler;
+
    // Constructors
    // ---------------------------------------------------------------------------------
 
@@ -267,11 +275,11 @@ public class HornetQServerImpl implements HornetQServer
       {
          return;
       }
-      
+
       if (configuration.isRunSyncSpeedTest())
       {
          SyncSpeedTest test = new SyncSpeedTest();
-         
+
          test.run();
       }
 
@@ -321,6 +329,11 @@ public class HornetQServerImpl implements HornetQServer
          clusterManager.stop();
       }
 
+      if(groupingHandler != null)
+      {
+         managementService.removeNotificationListener(groupingHandler);
+         groupingHandler = null;
+      }
       // Need to flush all sessions to make sure all confirmations get sent back to client
 
       for (ServerSession session : sessions.values())
@@ -763,6 +776,16 @@ public class HornetQServerImpl implements HornetQServer
       return executorFactory;
    }
 
+   public void setGroupingHandler(GroupingHandler groupingHandler)
+   {
+      this.groupingHandler = groupingHandler;
+   }
+
+   public GroupingHandler getGroupingHandler()
+   {
+      return groupingHandler;
+   }
+
    // Public
    // ---------------------------------------------------------------------------------------
 
@@ -828,7 +851,7 @@ public class HornetQServerImpl implements HornetQServer
 
    // Private
    // --------------------------------------------------------------------------------------
-   
+
    private boolean startReplication() throws Exception
    {
       String backupConnectorName = configuration.getBackupConnectorName();
@@ -964,7 +987,8 @@ public class HornetQServerImpl implements HornetQServer
       resourceManager = new ResourceManagerImpl((int)(configuration.getTransactionTimeout() / 1000),
                                                 configuration.getTransactionTimeoutScanPeriod(),
                                                 scheduledPool);
-      postOffice = new PostOfficeImpl(storageManager,
+      postOffice = new PostOfficeImpl(this,
+                                      storageManager,
                                       pagingManager,
                                       queueFactory,
                                       managementService,
@@ -1027,7 +1051,7 @@ public class HornetQServerImpl implements HornetQServer
             securityDeployer.start();
          }
       }
-            
+      deployGroupingHandlerConfiguration(configuration.getGroupingHandlerConfiguration());
       // Load the journal and populate queues, transactions and caches in memory
       loadJournal();
 
@@ -1106,7 +1130,9 @@ public class HornetQServerImpl implements HornetQServer
    {
       List<QueueBindingInfo> queueBindingInfos = new ArrayList<QueueBindingInfo>();
 
-      storageManager.loadBindingJournal(queueBindingInfos);
+      List<GroupingInfo> groupingInfos = new ArrayList<GroupingInfo>();
+
+      storageManager.loadBindingJournal(queueBindingInfos, groupingInfos);
 
       // Set the node id - must be before we load the queues into the postoffice, but after we load the journal
       setNodeID();
@@ -1132,6 +1158,14 @@ public class HornetQServerImpl implements HornetQServer
 
          managementService.registerAddress(queueBindingInfo.getAddress());
          managementService.registerQueue(queue, queueBindingInfo.getAddress(), storageManager);
+      }
+
+      for (GroupingInfo groupingInfo : groupingInfos)
+      {
+         if(groupingHandler != null)
+         {
+            groupingHandler.addGroupBinding(new GroupBinding(groupingInfo.getId(), groupingInfo.getGroupId(), groupingInfo.getClusterName()));
+         }
       }
 
       Map<SimpleString, List<Pair<byte[], Long>>> duplicateIDMap = new HashMap<SimpleString, List<Pair<byte[], Long>>>();
@@ -1287,6 +1321,27 @@ public class HornetQServerImpl implements HornetQServer
          postOffice.addBinding(binding);
 
          managementService.registerDivert(divert, config);
+      }
+   }
+
+   private synchronized void deployGroupingHandlerConfiguration(final GroupingHandlerConfiguration config) throws Exception
+   {
+      if (config != null)
+      {
+         GroupingHandler groupingHandler;
+         if (config.getType() == GroupingHandlerConfiguration.TYPE.LOCAL)
+         {
+            groupingHandler = new LocalGroupingHandler(managementService, config.getName(), config.getAddress(), 
+                  getStorageManager(),
+                  config.getTimeout());
+         }
+         else
+         {
+            groupingHandler = new RemoteGroupingHandler(managementService, config.getName(), config.getAddress(), config.getTimeout());
+         }
+         log.info("deploying grouping handler: " + groupingHandler);
+         this.groupingHandler = groupingHandler;
+         managementService.addNotificationListener(groupingHandler);
       }
    }
 

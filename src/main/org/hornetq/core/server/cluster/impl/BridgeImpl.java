@@ -559,26 +559,30 @@ public class BridgeImpl implements Bridge, FailureListener, SendAcknowledgementH
          SimpleString notifQueueName = new SimpleString(qName);
 
          SimpleString filter = new SimpleString(ManagementHelper.HDR_BINDING_TYPE + "<>" +
-                                                BindingType.DIVERT.toInt() +
-                                                " AND " +
-                                                ManagementHelper.HDR_NOTIFICATION_TYPE +
-                                                " IN ('" +
-                                                NotificationType.BINDING_ADDED +
-                                                "','" +
-                                                NotificationType.BINDING_REMOVED +
-                                                "','" +
-                                                NotificationType.CONSUMER_CREATED +
-                                                "','" +
-                                                NotificationType.CONSUMER_CLOSED +
-                                                "') AND " +
-                                                ManagementHelper.HDR_DISTANCE +
-                                                "<" +
-                                                flowRecord.getMaxHops() +
-                                                " AND (" +
-                                                ManagementHelper.HDR_ADDRESS +
-                                                " LIKE '" +
-                                                flowRecord.getAddress() +
-                                                "%')");
+                                                   BindingType.DIVERT.toInt() +
+                                                   " AND " +
+                                                   ManagementHelper.HDR_NOTIFICATION_TYPE +
+                                                   " IN ('" +
+                                                   NotificationType.BINDING_ADDED +
+                                                   "','" +
+                                                   NotificationType.BINDING_REMOVED +
+                                                   "','" +
+                                                   NotificationType.CONSUMER_CREATED +
+                                                   "','" +
+                                                   NotificationType.CONSUMER_CLOSED +
+                                                   "','" +
+                                                   NotificationType.PROPOSAL +
+                                                   "','" +
+                                                   NotificationType.PROPOSAL_RESPONSE +
+                                                   "') AND " +
+                                                   ManagementHelper.HDR_DISTANCE +
+                                                   "<" +
+                                                   flowRecord.getMaxHops() +
+                                                   " AND (" +
+                                                   ManagementHelper.HDR_ADDRESS +
+                                                   " LIKE '" +
+                                                   flowRecord.getAddress() +
+                                                   "%')");
 
          // The queue can't be temporary, since if the node with the bridge crashes then is restarted quickly
          // it might get deleted on the target when it does connection cleanup

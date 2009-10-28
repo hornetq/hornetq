@@ -46,7 +46,9 @@ import org.hornetq.core.postoffice.Bindings;
 import org.hornetq.core.postoffice.DuplicateIDCache;
 import org.hornetq.core.postoffice.PostOffice;
 import org.hornetq.core.postoffice.QueueInfo;
+import org.hornetq.core.postoffice.BindingsFactory;
 import org.hornetq.core.server.MessageReference;
+import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.Queue;
 import org.hornetq.core.server.QueueFactory;
 import org.hornetq.core.server.RoutingContext;
@@ -72,7 +74,7 @@ import org.hornetq.utils.UUIDGenerator;
  * @author <a href="jmesnil@redhat.com">Jeff Mesnil</a>
  * @author <a href="csuconic@redhat.com">Clebert Suconic</a>
  */
-public class PostOfficeImpl implements PostOffice, NotificationListener
+public class PostOfficeImpl implements PostOffice, NotificationListener, BindingsFactory
 {
    private static final Logger log = Logger.getLogger(PostOfficeImpl.class);
 
@@ -112,7 +114,10 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
 
    private final HierarchicalRepository<AddressSettings> addressSettingsRepository;
 
-   public PostOfficeImpl(final StorageManager storageManager,
+   private final HornetQServer server;
+
+   public PostOfficeImpl(final HornetQServer server,
+                         final StorageManager storageManager,
                          final PagingManager pagingManager,
                          final QueueFactory bindableFactory,
                          final ManagementService managementService,
@@ -122,7 +127,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
                          final int idCacheSize,
                          final boolean persistIDCache,
                          final ExecutorFactory orderedExecutorFactory,
-                         HierarchicalRepository<AddressSettings> addressSettingsRepository)
+                         final HierarchicalRepository<AddressSettings> addressSettingsRepository)
 
    {
       this.storageManager = storageManager;
@@ -139,11 +144,11 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
 
       if (enableWildCardRouting)
       {
-         addressManager = new WildcardAddressManager();
+         addressManager = new WildcardAddressManager(this);
       }
       else
       {
-         addressManager = new SimpleAddressManager();
+         addressManager = new SimpleAddressManager(this);
       }
 
       this.idCacheSize = idCacheSize;
@@ -153,6 +158,8 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
       this.redistributorExecutorFactory = orderedExecutorFactory;
 
       this.addressSettingsRepository = addressSettingsRepository;
+
+      this.server = server;
    }
 
    // HornetQComponent implementation ---------------------------------------
@@ -427,7 +434,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
    public synchronized void addBinding(final Binding binding) throws Exception
    {
       addressManager.addBinding(binding);
-
+      
       TypedProperties props = new TypedProperties();
 
       props.putIntProperty(ManagementHelper.HDR_BINDING_TYPE, binding.getType().toInt());
@@ -503,7 +510,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
 
       if (bindings == null)
       {
-         bindings = new BindingsImpl();
+         bindings = createBindings();
       }
 
       return bindings;
@@ -518,26 +525,26 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
    {
       return addressManager.getMatchingBindings(address);
    }
-   
+
    public void route(final ServerMessage message) throws Exception
-   { 
+   {
       route(message, new RoutingContextImpl(null));
    }
 
    public void route(final ServerMessage message, final RoutingContext context) throws Exception
-   {      
+   {
       SimpleString address = message.getDestination();
       
       Object duplicateID = message.getProperty(MessageImpl.HDR_DUPLICATE_DETECTION_ID);
 
       DuplicateIDCache cache = null;
-      
+
       byte[] duplicateIDBytes = null;
 
       if (duplicateID != null)
       {
          cache = getDuplicateIDCache(message.getDestination());
-                 
+
          if (duplicateID instanceof SimpleString)
          {
             duplicateIDBytes = ((SimpleString)duplicateID).getData();
@@ -551,11 +558,11 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
          {
             if (context.getTransaction() == null)
             {
-               log.trace("Duplicate message detected - message will not be routed");               
+               log.trace("Duplicate message detected - message will not be routed");
             }
             else
             {
-               log.trace("Duplicate message detected - transaction will be rejected");               
+               log.trace("Duplicate message detected - transaction will be rejected");
 
                context.getTransaction().markAsRollbackOnly(null);
             }
@@ -573,7 +580,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
             // We need to store the duplicate id atomically with the message storage, so we need to create a tx for this
 
             Transaction tx = new TransactionImpl(storageManager);
-            
+
             context.setTransaction(tx);
 
             startedTx = true;
@@ -587,7 +594,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
          if (pagingManager.page(message, true))
          {
             message.setStored();
-            
+
             return;
          }
       }
@@ -606,63 +613,62 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
       }
 
       Bindings bindings = addressManager.getBindingsForRoutingAddress(address);
-      
+
       if (bindings != null)
       {
          context.incrementDepth();
-         
+
          bindings.route(message, context);
-         
+
          context.decrementDepth();
       }
 
       //The depth allows for recursion e.g. with diverts - we only want to process the route after any recursed routes
       //have been processed
-      
+
       if (context.getDepth() == 0)
       {
          if (context.getQueues().isEmpty())
          {
             // Send to DLA if appropriate
-   
-            AddressSettings addressSettings = addressSettingsRepository.getMatch(address.toString());
-   
-            boolean sendToDLA = addressSettings.isSendToDLAOnNoRoute();
-   
-            if (sendToDLA)
+
+         AddressSettings addressSettings = addressSettingsRepository.getMatch(address.toString());
+         
+         boolean sendToDLA = addressSettings.isSendToDLAOnNoRoute();
+         
+         if (sendToDLA)
+         {
+            //Send to the DLA for the address
+            
+            SimpleString dlaAddress = addressSettings.getDeadLetterAddress();
+            
+            if (dlaAddress == null)
             {
-               // Send to the DLA for the address
-   
-               SimpleString dlaAddress = addressSettings.getDeadLetterAddress();
-   
-               if (dlaAddress == null)
-               {
-                  log.warn("Did not route to any bindings for address " + address +
-                           " and sendToDLAOnNoRoute is true " +
-                           "but there is no DLA configured for the address, the message will be ignored.");
-               }
-               else
-               {
-                  message.setOriginalHeaders(message, false);
-   
-                  message.setDestination(dlaAddress);
-   
+               log.warn("Did not route to any bindings for address " + address + " and sendToDLAOnNoRoute is true " + 
+                        "but there is no DLA configured for the address, the message will be ignored.");
+            }
+            else
+            {
+               message.setOriginalHeaders(message, false);
+               
+               message.setDestination(dlaAddress);
+               
                   route(message, context);
-               }
             }
          }
+      }
          else
          {
             processRoute(message, context);
          }
-   
-         if (startedTx)
-         {
+
+      if (startedTx)
+      {
             context.getTransaction().commit();
-         }
       }
    }
-   
+   }
+
    public MessageReference reroute(final ServerMessage message, final Queue queue, final Transaction tx) throws Exception
    {
       MessageReference reference = message.createReference(queue);
@@ -672,18 +678,18 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
       if (scheduledDeliveryTime != null)
       {
          reference.setScheduledDeliveryTime(scheduledDeliveryTime);
-      }
+   }
 
       message.incrementDurableRefCount();
 
       message.setStored();
-         
+
       int refCount = message.incrementRefCount();
 
       PagingStore store = pagingManager.getPageStore(message.getDestination());
 
       if (refCount == 1)
-      {
+   {
          store.addSize(message.getMemoryEstimate());
       }
 
@@ -696,33 +702,33 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
       else
       {
          List<MessageReference> refs = new ArrayList<MessageReference>(1);
-         
+
          refs.add(reference);
-         
+
          tx.addOperation(new AddOperation(refs));
       }
-      
+
       return reference;
    }
-   
+
    public boolean redistribute(final ServerMessage message, final Queue originatingQueue, final RoutingContext context) throws Exception
-   {      
+   {
       Bindings bindings = addressManager.getBindingsForRoutingAddress(message.getDestination());
 
       boolean res = false;
-      
+
       if (bindings != null)
       {
          bindings.redistribute(message, originatingQueue, context);
-         
+
          if (!context.getQueues().isEmpty())
          {
             processRoute(message, context);
-            
+
             res = true;
-         }         
+         }
       }
-      
+
       return res;
    }
 
@@ -847,11 +853,11 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
    }
 
    private void processRoute(final ServerMessage message, final RoutingContext context) throws Exception
-   {
+      {
       final List<MessageReference> refs = new ArrayList<MessageReference>();
 
       Transaction tx = context.getTransaction();
-      
+
       for (Queue queue : context.getQueues())
       {
          MessageReference reference = message.createReference(queue);
@@ -863,7 +869,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
          if (scheduledDeliveryTime != null)
          {
             reference.setScheduledDeliveryTime(scheduledDeliveryTime);
-         }
+      }
 
          if (message.isDurable() && queue.isDurable())
          {
@@ -874,7 +880,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
                if (tx != null)
                {
                   storageManager.storeMessageTransactional(tx.getID(), message);
-               }
+   }
                else
                {
                   storageManager.storeMessage(message);
@@ -884,22 +890,22 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
             }
 
             if (tx != null)
-            {
+   {
                storageManager.storeReferenceTransactional(tx.getID(), queue.getID(), message.getMessageID());
 
                tx.putProperty(TransactionPropertyIndexes.CONTAINS_PERSISTENT, true);
             }
             else
-            {
+      {
                storageManager.storeReference(queue.getID(), message.getMessageID());
-            }
+      }
 
             if (scheduledDeliveryTime != null)
             {
                if (tx != null)
                {
                   storageManager.updateScheduledDeliveryTimeTransactional(tx.getID(), reference);
-               }
+   }
                else
                {
                   storageManager.updateScheduledDeliveryTime(reference);
@@ -918,7 +924,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
 
          store.addSize(reference.getMemoryEstimate());
       }
-      
+
       if (tx != null)
       {
          tx.addOperation(new AddOperation(refs));
@@ -948,11 +954,11 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
    private void addReferences(final List<MessageReference> refs)
    {
       for (MessageReference ref : refs)
-      {  
+      {
          ref.getQueue().addLast(ref);
       }
    }
-   
+
    private synchronized void startExpiryScanner()
    {
       if (reaperPeriod > 0)
@@ -1203,7 +1209,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
          }
       }
    }
-   
+
    private class AddOperation implements TransactionOperation
    {
       private final List<MessageReference> refs;
@@ -1211,14 +1217,14 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
       AddOperation(final List<MessageReference> refs)
       {
          this.refs = refs;
-      }
+   }
 
       public void afterCommit(Transaction tx)
-      {        
+      {
          for (MessageReference ref : refs)
          {
             ref.getQueue().addLast(ref);
-         }
+}
       }
 
       public void afterPrepare(Transaction tx) throws Exception
@@ -1262,5 +1268,10 @@ public class PostOfficeImpl implements PostOffice, NotificationListener
             store.addSize(-ref.getMemoryEstimate());
          }
       }
+   }
+
+   public Bindings createBindings()
+   {
+      return new BindingsImpl(server.getGroupingHandler());
    }
 }

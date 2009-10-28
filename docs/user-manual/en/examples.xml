@@ -29,7 +29,8 @@
     <section>
         <title>JMS Examples</title>
         <para>To run a JMS example, simply <literal>cd</literal> into the appropriate example
-            directory and type <literal>./build.sh</literal> (or <literal>build.bat</literal> if you are on Windows).</para>
+            directory and type <literal>./build.sh</literal> (or <literal>build.bat</literal> if you
+            are on Windows).</para>
         <para>Here's a listing of the examples with a brief description.</para>
         <section id="application-level-failover">
             <title>Application-Layer Failover</title>
@@ -89,6 +90,12 @@
                 subsequent connections created from a JMS <literal>ConnectionFactory</literal> can
                 be created to different nodes of the cluster. In other words it demonstrates how
                 HornetQ does client side load balancing of connections across the cluster.</para>
+        </section>
+        <section id="examples.clustered.grouping">
+            <title>Clustered Grouping</title>
+            <para>This is similar to the message grouping example except that it demonstrates it
+                working over a cluster. Messages sent to different nodes with the same group id will
+                be sent to the same node and the same consumer.</para>
         </section>
         <section>
             <title>Clustered Queue</title>

@@ -21,6 +21,7 @@ import org.hornetq.core.logging.Logger;
 import org.hornetq.core.postoffice.Address;
 import org.hornetq.core.postoffice.Binding;
 import org.hornetq.core.postoffice.Bindings;
+import org.hornetq.core.postoffice.BindingsFactory;
 import org.hornetq.utils.SimpleString;
 
 /**
@@ -49,6 +50,11 @@ public class WildcardAddressManager extends SimpleAddressManager
    private final Map<SimpleString, Address> addresses = new HashMap<SimpleString, Address>();
 
    private final Map<SimpleString, Address> wildCardAddresses = new HashMap<SimpleString, Address>();
+
+   public WildcardAddressManager(BindingsFactory bindingsFactory)
+   {
+      super(bindingsFactory);
+   }
 
    public Bindings getBindingsForRoutingAddress(final SimpleString address)
    {

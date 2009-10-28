@@ -71,6 +71,12 @@ public class ManagementHelper
 
    public static final SimpleString HDR_CHECK_TYPE = new SimpleString("_HQ_CheckType");
 
+   public static final SimpleString HDR_PROPOSAL_GROUP_ID = new SimpleString("_JBM_ProposalGroupId");
+
+   public static final SimpleString HDR_PROPOSAL_VALUE = new SimpleString("_JBM_ProposalValue");
+
+   public static final SimpleString HDR_PROPOSAL_ALT_VALUE = new SimpleString("_JBM_ProposalAltValue");
+
    // Attributes ----------------------------------------------------
 
    // Static --------------------------------------------------------
