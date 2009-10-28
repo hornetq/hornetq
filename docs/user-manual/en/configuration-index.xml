@@ -838,6 +838,35 @@
                             <entry>false</entry>
                         </row>
                         <row>
+                            <entry><link linkend="clusters.static.servers"
+                                    >connection-factory.connector-ref.connector-name (attribute)</link></entry>
+                            <entry>String</entry>
+                            <entry>Name of the connector to connect to the live server</entry>
+                            <entry />
+                        </row>
+                        <row>
+                            <entry><link linkend="clusters.static.servers"
+                                    >connection-factory.connector-ref.backup-connector-name (attribute)</link></entry>
+                            <entry>String</entry>
+                            <entry>Name of the connector to connect to the backup server</entry>
+                            <entry />
+                        </row>
+                        <row>
+                            <entry><link linkend="clusters-discovery.groups.clientside"
+                                    >connection-factory.discovery-group-ref.discovery-group-name (attribute)</link></entry>
+                            <entry>String</entry>
+                            <entry>Name of discovery group used by this connection factory</entry>
+                            <entry />
+                        </row>
+                        <row>
+                            <entry><link linkend="clusters-discovery.groups.clientside"
+                                    >connection-factory.discovery-initial-wait-timeout</link></entry>
+                            <entry>Long</entry>
+                            <entry>the initial time to wait (in ms) for discovery groups to wait for
+                                broadcasts</entry>
+                            <entry>2000</entry>
+                        </row>
+                        <row>
                             <entry><link linkend="send-guarantees.nontrans.acks"
                                     >connection-factory.block-on-acknowledge</link></entry>
                             <entry>Boolean</entry>
@@ -911,14 +940,6 @@
                             <entry>1024 * 1024</entry>
                         </row>
                         <row>
-                            <entry><link linkend="clusters-discovery.groups.clientside"
-                                    >connection-factory.discovery-initial-wait-timeout</link></entry>
-                            <entry>Long</entry>
-                            <entry>the initial time to wait (in ms) for discovery groups to wait for
-                                broadcasts</entry>
-                            <entry>2000</entry>
-                        </row>
-                        <row>
                             <entry><link linkend="using-jms.dupsokbatchsize"
                                     >connection-factory.dups-ok-batch-size</link></entry>
                             <entry>Integer</entry>
@@ -927,7 +948,7 @@
                             <entry>1024 * 1024</entry>
                         </row>
                         <row>
-                            <entry><link linkend="ha.client.automatic"
+                            <entry><link linkend="ha.automatic.failover"
                                     >connection-factory.failover-on-server-shutdown</link></entry>
                             <entry>Boolean</entry>
                             <entry>whether or not to failover on server shutdown</entry>

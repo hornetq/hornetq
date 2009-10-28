@@ -145,7 +145,7 @@
         </section>
         <section id="clusters.discovery-groups">
             <title>Discovery Groups</title>
-            <para>While the broadcast group defines who connector information is broadcast from a
+            <para>While the broadcast group defines how connector information is broadcasted from a
                 server, a discovery group defines how connector information is received from a
                 multicast address.</para>
             <para>A discovery group maintains a list of connector pairs - one for each broadcast by
@@ -161,7 +161,7 @@
                 </listitem>
                 <listitem>
                     <para>By messaging clients so they can discovery what servers in the cluster
-                        that they can connect to.</para>
+                        they can connect to.</para>
                 </listitem>
             </itemizedlist>
         </section>
@@ -582,7 +582,7 @@ ClientSession session2 = factory.createClientSession(...);</programlisting>
                     balancing policy applied to that list of servers.</para>
             </section>
         </section>
-        <section>
+        <section id="clusters.static.servers">
             <title>Specifying List of Servers to form a Cluster</title>
             <para>Let's take a look at an example where each cluster connection is defined for a
                 symmetric cluster, but we're not using discovery for each node to discover its

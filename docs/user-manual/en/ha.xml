@@ -119,6 +119,9 @@
                 <para>In order for live - backup pairs to operate properly with a shared store, both servers
                    must have configured the location of journal directory to point
                         to the <emphasis>same shared location</emphasis> (as explained in <xref linkend="configuring.message.journal" />)</para>
+               <para>If clients will use automatic failover with JMS, the live server will need to configure a connector
+                  to the backup server and reference it from its <literal>hornetq-jms.xml</literal> configuration as explained
+                  in <xref linkend="ha.automatic.failover" />.</para>
              </section>
              <section>
                  <title>Synchronization of live-backup pairs</title>
@@ -139,7 +142,7 @@
          <listitem><para>application-level failover</para></listitem>
       </itemizedlist>
       
-    <section id="ha.client.automatic">
+    <section id="ha.automatic.failover">
         <title>Automatic Client Failover</title>
         <para>HornetQ clients can be configured with knowledge of live and backup servers, so that
             in event of connection failure of the client - live server connection, the client will
@@ -152,8 +155,9 @@
         <para>HornetQ clients can be configured with the list of live-backup server pairs in a
             number of different ways. They can be configured explicitly or probably the most common
             way of doing this is to use <emphasis>server discovery</emphasis> for the client to
-            automatically discover the list. For full details on how to configure clients please see
-                <xref linkend="clusters.server-discovery"/>.</para>
+            automatically discover the list. For full details on how to configure server discovery, please see
+                <xref linkend="clusters.server-discovery"/>. Alternatively, the clients can  explicitely specifies pairs of
+                live-backup server as explained in <xref linkend="clusters.static.servers" />.</para>
         <para>To enable automatic client failover, the client must be configured to allow non-zero reconnection attempts
            (as explained in <xref linkend="client-reconnection" />).</para>
         <para>Sometimes you want a client to failover onto a backup server even if the live server
