@@ -299,7 +299,7 @@
                 <para>HornetQServer</para>
                 <para>This is the core server. It's where 99% of the magic happens</para>
             </listitem>
-            <listitem>
+            <listitem id="bean-jmsservermanager">
                 <para>JMSServerManager</para>
                 <para>This deploys any JMS Objects such as JMS Queues, Topics and ConnectionFactory
                     instances from <literal>hornetq-jms.xml</literal> files on the disk. It also
@@ -307,6 +307,69 @@
                     just translates and delegates its work to the core server. If you don't need to
                     deploy JMS Queues, Topics and ConnectionFactorys from server side configuration
                     and don't require the JMS management interface this can be disabled.</para>
+            </listitem>
+        </itemizedlist>
+    </section>
+    <section id="server.microkernel.configuration">
+        <title>JBoss AS4 MBean Service.</title>
+        <note>
+            <para>The section is only to configure HornetQ on JBoss AS4. The service funtionality is similar to Microcontainer Beans</para>
+        </note>
+        <para>
+            <programlisting>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;server&gt;
+
+   &lt;mbean code="org.hornetq.service.HornetQFileConfigurationService"
+      name="org.hornetq:service=HornetQFileConfigurationService"&gt;
+   &lt;/mbean&gt;
+
+   &lt;mbean code="org.hornetq.service.JBossASSecurityManagerService"
+      name="org.hornetq:service=JBossASSecurityManagerService"&gt;
+   &lt;/mbean&gt;
+
+   &lt;mbean code="org.hornetq.service.HornetQStarterService" 
+      name="org.hornetq:service=HornetQStarterService"&gt;
+      &lt;!--lets let the JMS Server start us--&gt;
+         &lt;attribute name="Start"&gt;false&lt;/attribute&gt;
+
+      &lt;depends optional-attribute-name="SecurityManagerService"
+         proxy-type="attribute"&gt;org.hornetq:service=JBossASSecurityManagerService&lt;/depends&gt;
+      &lt;depends optional-attribute-name="ConfigurationService"
+         proxy-type="attribute"&gt;org.hornetq:service=HornetQFileConfigurationService&lt;/depends&gt;
+   &lt;/mbean&gt;
+
+   &lt;mbean code="org.hornetq.service.HornetQJMSStarterService"
+      name="org.hornetq:service=HornetQJMSStarterService"&gt;
+      &lt;depends optional-attribute-name="HornetQServer"
+         proxy-type="attribute"&gt;org.hornetq:service=HornetQStarterService&lt;/depends&gt;
+   &lt;/mbean&gt;
+   
+&lt;/server&gt;
+            </programlisting>
+        </para>
+        <para>This jboss-service.xml configuration file is included inside the hornetq-service.sar on AS4 with embebbed HornetQ.
+        As you can see, on this configuration file we are starting various services:</para>
+        <itemizedlist>
+            <listitem>
+                <para>HornetQFileConfigurationService</para>
+                <para>This services instances the configuration object that reads the Configuration File 
+                inside the SAR archive and configure the HornetQ instance.</para>
+            </listitem>
+            <listitem>
+                <para>JBossASSecurityManagerService</para>
+                <para>The service that starts the Security Manager as the Microcontainer Bean.</para>
+            </listitem>
+            <listitem>
+                <para>HornetQStarterService</para>
+                <para>The HornetQ core server that depends on JBossASSecurityManagerService and HornetQFileConfigurationService MBeans</para>
+            </listitem>
+            <listitem>
+                <para>HornetQJMSStarterService</para>
+                <para>This is the core server. It's where 99% of the magic happens</para>
+            </listitem>
+            <listitem>
+                <para>JMSServerManager</para>
+                <para>Has the responsability to start the JMSServerManager and the same behaviour that JMSServerManager Bean</para>
             </listitem>
         </itemizedlist>
     </section>

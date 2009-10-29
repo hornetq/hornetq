@@ -62,7 +62,8 @@ public class JBossASSecurityManager implements HornetQSecurityManager, HornetQCo
    private String securityDomainName = "java:/jaas/hornetq";
    
    private boolean started;
-   
+   private boolean isAs5 = true;
+
    public boolean validateUser(final String user, final String password)
    {      
       SimplePrincipal principal = new SimplePrincipal(user);
@@ -99,7 +100,7 @@ public class JBossASSecurityManager implements HornetQSecurityManager, HornetQCo
       // security my be screwed up, on account of thread local security stack being corrupted.
       if (authenticated)
       {
-         SecurityActions.pushSubjectContext(principal, passwordChars, subject, securityDomainName);
+         pushSecurityContext(principal, passwordChars, subject);
          Set<Principal> rolePrincipals = getRolePrincipals(checkType, roles);
 
          authenticated = realmMapping.doesUserHaveRole(principal, rolePrincipals);
@@ -108,11 +109,35 @@ public class JBossASSecurityManager implements HornetQSecurityManager, HornetQCo
          {
             log.trace("user " + user + (authenticated ? " is " : " is NOT ") + "authorized");
          }
-         SecurityActions.popSubjectContext();
+         popSecurityContext();
       }
       return authenticated;
    }
-   
+
+   private void popSecurityContext()
+   {
+      if(isAs5)
+      {
+         SecurityActions.popSubjectContext();
+      }
+      else
+      {
+         AS4SecurityActions.popSubjectContext();
+      }
+   }
+
+   private void pushSecurityContext(SimplePrincipal principal, char[] passwordChars, Subject subject)
+   {
+      if(isAs5)
+      {
+         SecurityActions.pushSubjectContext(principal, passwordChars, subject, securityDomainName);
+      }
+      else
+      {
+         AS4SecurityActions.pushSubjectContext(principal, passwordChars, subject);
+      }
+   }
+
    public void addRole(String user, String role)
    {
       // NO-OP
@@ -197,5 +222,10 @@ public class JBossASSecurityManager implements HornetQSecurityManager, HornetQCo
    public void setSecurityDomainName(String securityDomainName)
    {
       this.securityDomainName = securityDomainName;
+   }
+
+   public void setAs5(boolean as5)
+   {
+      isAs5 = as5;
    }
 }

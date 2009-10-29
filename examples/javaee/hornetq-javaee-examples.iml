@@ -17,6 +17,8 @@
       <sourceFolder url="file://$MODULE_DIR$/servlet-ssl-example/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/servlet-transport/src" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/xarecovery/src" isTestSource="false" />
+      <excludeFolder url="file://$MODULE_DIR$/mdb-bmt/build" />
+      <excludeFolder url="file://$MODULE_DIR$/mdb-bmt/server" />
       <excludeFolder url="file://$MODULE_DIR$/mdb-cmt-tx-required/build" />
       <excludeFolder url="file://$MODULE_DIR$/output" />
       <excludeFolder url="file://$MODULE_DIR$/servlet-ssl-example/build" />

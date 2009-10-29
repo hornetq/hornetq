@@ -139,6 +139,10 @@ Copyright 2009 Red Hat, Inc.
       <ant antfile="build-hornetq.xml" target="jar-transports"/>
    </target>   
    
+   <target name="jar-jboss-service" depends="createthirdparty">
+      <ant antfile="build-hornetq.xml" target="jar-jboss-service"/>
+   </target>
+	
    <target name="jar-security" depends="createthirdparty">
       <ant antfile="build-hornetq.xml" target="jar-security"/>
    </target> 

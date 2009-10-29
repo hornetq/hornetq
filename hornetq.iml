@@ -29,7 +29,9 @@
       <excludeFolder url="file://$MODULE_DIR$/output/jar" />
       <excludeFolder url="file://$MODULE_DIR$/output/lib" />
       <excludeFolder url="file://$MODULE_DIR$/output/scoped-sar" />
+      <excludeFolder url="file://$MODULE_DIR$/production" />
       <excludeFolder url="file://$MODULE_DIR$/release" />
+      <excludeFolder url="file://$MODULE_DIR$/test" />
       <excludeFolder url="file://$MODULE_DIR$/tests/ObjectStore" />
       <excludeFolder url="file://$MODULE_DIR$/tests/build" />
       <excludeFolder url="file://$MODULE_DIR$/tests/jms-tests/build" />

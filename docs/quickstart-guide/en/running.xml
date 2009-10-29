@@ -40,10 +40,10 @@
          by running <literal>./run.sh ../config/stand-alone/clustered</literal> or another config of
          your choosing. This is the same for the stop script and the windows bat files.</para>
    </section>
-   <section id="running.jboss.as">
+   <section id="running.jboss.as5">
       <title>HornetQ In JBoss AS 5</title>
       <para>To run HornetQ in JBoss AS 5, you need to create the <link
-            linkend="installation.jboss">AS 5 profiles for HornetQ</link> first. Then run
+            linkend="installation.jboss.as5">AS 5 profiles for HornetQ</link> first. Then run
          JBoss AS 5 with one these profiles. For example, to run JBoss AS 5 with a
             <emphasis>non-clustered</emphasis> HornetQ server, got to <literal
             >$JBOSS_HOME/bin</literal> directory and type:</para>
@@ -60,5 +60,11 @@
         15:19:43,601 INFO  [ServerImpl] JBoss (Microcontainer) [5.1.0.CR1 (build: 
         SVNTag=JBoss_5_1_0_CR1 date=200904091504)] Started in 1m:8s:121ms
       </programlisting>
+   </section>
+   <section id="running.jboss.as4">
+      <title>HornetQ In JBoss AS 5</title>
+         <para>To run HornetQ in JBoss AS 4 you must follow the same steps described for AS5 without forgetting to create the <link
+            linkend="installation.jboss.as4">AS 4 profiles for HornetQ</link> first.
+         </para>
    </section>
 </chapter>

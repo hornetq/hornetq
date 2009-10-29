@@ -67,6 +67,7 @@
    <property name="ra.rar.name" value="hornetq-ra.rar"/>
    <property name="netty.jar.name" value="netty.jar"/>
    <property name="mc.jar.name" value="jboss-mc.jar"/>
+   <property name="service.sar.name" value="hornetq-service.sar"/>
    <property name="resources.jar.name" value="hornetq-resources.jar"/>
 
    <!--source and build dirs-->
@@ -76,6 +77,7 @@
    <property name="build.jms.classes.dir" value="${build.dir}/classes/jms"/>
    <property name="build.transports.classes.dir" value="${build.dir}/classes/transports"/>
    <property name="build.jboss.integration.classes.dir" value="${build.dir}/classes/jboss-integration"/>
+   <property name="build.service.classes.dir" value="${build.dir}/classes/service"/>
    <property name="build.bootstrap.classes.dir" value="${build.dir}/classes/bootstrap"/>
    <property name="build.logging.classes.dir" value="${build.dir}/classes/logging"/>
    <property name="build.ra.classes.dir" value="${build.dir}/classes/ra"/>
@@ -90,6 +92,7 @@
    <property name="src.config.trunk.clustered.dir" value="${src.dir}/config/trunk/clustered"/>
    <property name="src.config.jbossas.non-clustered.dir" value="${src.dir}/config/jboss-as/non-clustered"/>    
    <property name="src.config.jbossas.clustered.dir" value="${src.dir}/config/jboss-as/clustered"/>
+   <property name="src.config.service.dir" value="${src.dir}/config/service"/>
    <property name="src.schema.dir" value="${src.config.dir}/common/schema"/>
    <property name="src.bin.dir" value="${src.dir}/bin"/>
    <property name="doc.dir" value="docs"/>
@@ -188,6 +191,12 @@
       <path refid="org.jboss.security.classpath"/>
       <path refid="org.jboss.integration.classpath"/>
       <path refid="org.jboss.javaee.classpath"/>
+   </path>
+   
+   <path id="jboss.service.compilation.classpath">
+      <path refid="org.jboss.javaee.classpath"/>
+      <path location="${build.core.classes.dir}"/>
+      <path location="${build.jboss.integration.classes.dir}"/>
    </path>
 
    <path id="bootstrap.compilation.classpath">
@@ -339,6 +348,7 @@
       <mkdir dir="${build.jms.classes.dir}"/>
       <mkdir dir="${build.transports.classes.dir}"/>
       <mkdir dir="${build.jboss.integration.classes.dir}"/>
+      <mkdir dir="${build.service.classes.dir}"/>
       <mkdir dir="${build.bootstrap.classes.dir}"/>
       <mkdir dir="${build.logging.classes.dir}"/>
       <mkdir dir="${build.ra.classes.dir}"/>
@@ -466,6 +476,31 @@
          <classpath refid="jboss.integration.compilation.classpath"/>
       </javac>
    </target>
+   
+   <!-- author: Lucas Amador -->
+   <target name="compile-jboss-service" depends="compile-core">
+      <javac destdir="${build.service.classes.dir}"
+             target="${javac.target}"
+             source="${javac.source}"
+             optimize="${javac.optimize}"
+             debug="${javac.debug}"
+             depend="${javac.depend}"
+             verbose="${javac.verbose}"
+             deprecation="${javac.deprecation}"
+             includeAntRuntime="${javac.include.ant.runtime}"
+             includeJavaRuntime="${javac.include.java.runtime}"
+             failonerror="${javac.fail.onerror}">
+         <src>
+            <pathelement path="${src.main.dir}"/>
+         </src>
+         <include name="org/hornetq/service/**/*.java"/>
+         <classpath refid="jboss.service.compilation.classpath"/>
+      </javac>
+   	<copy file="${src.config.service.dir}/jboss-service.xml"
+   	      tofile="${build.service.classes.dir}/META-INF/jboss-service.xml" overwrite="true" />
+      <!--<copy file="${src.config.service.dir}/hornetq-configuration.xml"
+            tofile="${build.service.classes.dir}/META-INF/hornetq-configuration.xml" overwrite="true" />-->
+   </target>
 
    <target name="compile-bootstrap" depends="compile-core">
       <javac destdir="${build.bootstrap.classes.dir}"
@@ -579,7 +614,7 @@
    <!-- ======================================================================================== -->
 
    <target name="jar"
-           depends="jar-core, jar-core-client, jar-jms, jar-jms-client, jar-transports, jar-jboss-integration, jar-bootstrap, jar-logging, jar-ra, jar-mc, jar-jnp-client">
+           depends="jar-core, jar-core-client, jar-jms, jar-jms-client, jar-transports, jar-jboss-integration, jar-jboss-service, jar-bootstrap, jar-logging, jar-ra, jar-mc, jar-jnp-client">
    </target>
 	
    <target name="jar-jnp-client" depends="init">
@@ -659,6 +694,15 @@
 
       <jar jarfile="${build.jars.dir}/${jboss.integration.jar.name}">
          <fileset dir="${build.jboss.integration.classes.dir}" includes="**"/>
+      </jar>
+
+   </target>
+   
+	<!-- author: Lucas Amador -->
+   <target name="jar-jboss-service" depends="compile-jboss-service">
+
+      <jar jarfile="${build.jars.dir}/${service.sar.name}">
+         <fileset dir="${build.service.classes.dir}" includes="**"/>
       </jar>
 
    </target>
@@ -761,6 +805,7 @@
             <include name="${jms.jar.name}"/>
             <include name="${transports.jar.name}"/>
             <include name="${jboss.integration.jar.name}"/>
+            <include name="${service.sar.name}"/>
             <include name="${bootstrap.jar.name}"/>
             <include name="${logging.jar.name}"/>
             <include name="${mc.jar.name}"/>

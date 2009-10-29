@@ -50,6 +50,9 @@
       <fileset dir="${hornetq.jars.dir}">
          <include name="**/*.jar"/>
       </fileset>
+      <fileset dir="${jars.dir}">
+         <include name="**/*.jar"/>
+      </fileset>
       <fileset dir="${jboss.home}/client">
          <include name="**/*.jar"/>
       </fileset>
