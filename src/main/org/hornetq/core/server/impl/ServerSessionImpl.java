@@ -636,6 +636,8 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
       {
          log.error("Failed to query consumer deliveries", e);
       }
+      
+      sendResponse(message, null, false, false);
    }
 
    public void handleAcknowledge(final SessionAcknowledgeMessage packet)

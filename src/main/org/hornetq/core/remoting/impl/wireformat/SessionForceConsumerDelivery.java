@@ -100,11 +100,6 @@ public class SessionForceConsumerDelivery extends PacketImpl
       return super.equals(other) && this.consumerID == r.consumerID && this.sequence == r.sequence;
    }
 
-   public final boolean isRequiresConfirmations()
-   {
-      return false;
-   }
-
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
