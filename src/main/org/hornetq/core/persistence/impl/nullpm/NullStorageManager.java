@@ -321,12 +321,17 @@ public class NullStorageManager implements StorageManager
 
    public void addGrouping(GroupBinding groupBinding) throws Exception
    {
-      //To change body of implemented methods use File | Settings | File Templates.
    }
 
    public void deleteGrouping(GroupBinding groupBinding) throws Exception
    {
-      //To change body of implemented methods use File | Settings | File Templates.
+   }
+
+   /* (non-Javadoc)
+    * @see org.hornetq.core.persistence.StorageManager#blockOnReplication(long)
+    */
+   public void waitOnReplication(long timeout) throws Exception
+   {
    }
 
 }

@@ -26,11 +26,12 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executor;
+import java.util.concurrent.TimeUnit;
 
 import javax.transaction.xa.Xid;
 
-import org.hornetq.core.buffers.ChannelBuffer;
 import org.hornetq.core.buffers.ChannelBuffers;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.exception.HornetQException;
@@ -52,9 +53,9 @@ import org.hornetq.core.paging.PageTransactionInfo;
 import org.hornetq.core.paging.PagedMessage;
 import org.hornetq.core.paging.PagingManager;
 import org.hornetq.core.paging.impl.PageTransactionInfoImpl;
+import org.hornetq.core.persistence.GroupingInfo;
 import org.hornetq.core.persistence.QueueBindingInfo;
 import org.hornetq.core.persistence.StorageManager;
-import org.hornetq.core.persistence.GroupingInfo;
 import org.hornetq.core.postoffice.Binding;
 import org.hornetq.core.postoffice.PostOffice;
 import org.hornetq.core.remoting.impl.wireformat.XidCodecSupport;
@@ -295,6 +296,26 @@ public class JournalStorageManager implements StorageManager
    public boolean isReplicated()
    {
       return replicator != null;
+   }
+
+   /* (non-Javadoc)
+    * @see org.hornetq.core.persistence.StorageManager#blockOnReplication()
+    */
+   public void waitOnReplication(final long timeout) throws Exception
+   {
+      final CountDownLatch latch = new CountDownLatch(1);
+      afterReplicated(new Runnable()
+      {
+         public void run()
+         {
+            latch.countDown();
+         }
+      });
+      completeReplication();
+      if (!latch.await(timeout, TimeUnit.MILLISECONDS))
+      {
+         throw new IllegalStateException("no response received from replication");
+      }
    }
 
    // TODO: shouldn't those page methods be on the PageManager?
@@ -1142,17 +1163,16 @@ public class JournalStorageManager implements StorageManager
          resourceManager.putTransaction(xid, tx);
       }
    }
+   
    //grouping handler operations
    public void addGrouping(GroupBinding groupBinding) throws Exception
    {
       GroupingEncoding groupingEncoding = new GroupingEncoding(groupBinding.getId(), groupBinding.getGroupId(), groupBinding.getClusterName());
-      System.out.println("groupingEncoding = " + groupingEncoding);
       bindingsJournal.appendAddRecord(groupBinding.getId(), GROUP_RECORD, groupingEncoding, true);
    }
 
    public void deleteGrouping(GroupBinding groupBinding) throws Exception
    {
-      System.out.println("deleting groupBinding = " + groupBinding);
       bindingsJournal.appendDeleteRecord(groupBinding.getId(), true);
    }
 

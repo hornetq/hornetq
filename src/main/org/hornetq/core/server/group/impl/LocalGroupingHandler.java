@@ -12,23 +12,20 @@
  */
 package org.hornetq.core.server.group.impl;
 
-import org.hornetq.core.management.NotificationType;
-import org.hornetq.core.management.Notification;
-import org.hornetq.core.management.ManagementService;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
+
 import org.hornetq.core.client.management.impl.ManagementHelper;
-import org.hornetq.core.postoffice.BindingType;
 import org.hornetq.core.logging.Logger;
-import org.hornetq.core.server.group.GroupingHandler;
+import org.hornetq.core.management.ManagementService;
+import org.hornetq.core.management.Notification;
+import org.hornetq.core.management.NotificationType;
 import org.hornetq.core.persistence.StorageManager;
+import org.hornetq.core.postoffice.BindingType;
+import org.hornetq.core.server.group.GroupingHandler;
 import org.hornetq.utils.SimpleString;
 import org.hornetq.utils.TypedProperties;
-
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-import java.util.HashMap;
-import java.util.List;
-import java.util.ArrayList;
 
 /**
  * A Local Grouping handler. All the Remote handlers will talk with us
@@ -88,19 +85,7 @@ public class LocalGroupingHandler implements GroupingHandler
          storageManager.addGrouping(groupBinding);
          if (storageManager.isReplicated())
          {
-            final CountDownLatch latch = new CountDownLatch(1);
-            storageManager.afterReplicated(new Runnable()
-            {
-               public void run()
-               {
-                  latch.countDown();
-                  storageManager.completeReplication();
-               }
-            });
-            if (!latch.await(timeout, TimeUnit.MILLISECONDS))
-            {
-               throw new IllegalStateException("no response received from group handler for " + proposal.getGroupId());
-            }
+            storageManager.waitOnReplication(timeout);
          }
          return new Response(groupBinding.getGroupId(), groupBinding.getClusterName());
       }

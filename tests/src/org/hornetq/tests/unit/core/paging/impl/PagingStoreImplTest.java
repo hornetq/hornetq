@@ -1189,6 +1189,13 @@ public class PagingStoreImplTest extends UnitTestCase
          
       }
 
+      /* (non-Javadoc)
+       * @see org.hornetq.core.persistence.StorageManager#blockOnReplication(long)
+       */
+      public void waitOnReplication(long timeout) throws Exception
+      {
+      }
+
    }
 
    class FakeStoreFactory implements PagingStoreFactory

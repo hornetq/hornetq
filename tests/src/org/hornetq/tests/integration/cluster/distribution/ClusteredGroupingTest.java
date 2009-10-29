@@ -12,18 +12,17 @@
  */
 package org.hornetq.tests.integration.cluster.distribution;
 
-import org.hornetq.core.message.impl.MessageImpl;
-import org.hornetq.core.server.group.impl.GroupingHandlerConfiguration;
-import org.hornetq.core.server.group.impl.Response;
-import org.hornetq.core.server.group.impl.Proposal;
-import org.hornetq.core.server.group.impl.GroupBinding;
-import org.hornetq.core.server.group.GroupingHandler;
-import org.hornetq.core.exception.HornetQException;
-import org.hornetq.core.management.Notification;
-import org.hornetq.utils.SimpleString;
-
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+
+import org.hornetq.core.management.Notification;
+import org.hornetq.core.message.impl.MessageImpl;
+import org.hornetq.core.server.group.GroupingHandler;
+import org.hornetq.core.server.group.impl.GroupBinding;
+import org.hornetq.core.server.group.impl.GroupingHandlerConfiguration;
+import org.hornetq.core.server.group.impl.Proposal;
+import org.hornetq.core.server.group.impl.Response;
+import org.hornetq.utils.SimpleString;
 
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
