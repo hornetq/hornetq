@@ -16,7 +16,8 @@ package org.hornetq.tests.integration.journal;
 import java.io.File;
 import java.nio.ByteBuffer;
 
-import org.hornetq.core.asyncio.impl.AsynchronousFileImpl;
+import junit.framework.TestSuite;
+
 import org.hornetq.core.journal.SequentialFile;
 import org.hornetq.core.journal.SequentialFileFactory;
 import org.hornetq.core.journal.impl.AIOSequentialFileFactory;
@@ -31,19 +32,16 @@ import org.hornetq.tests.unit.core.journal.impl.SequentialFileFactoryTestBase;
  */
 public class AIOSequentialFileFactoryTest extends SequentialFileFactoryTestBase
 {
-
+   
+   public static TestSuite suite()
+   {
+      return createAIOTestSuite(AIOSequentialFileFactoryTest.class);
+   }
+   
    @Override
    protected void setUp() throws Exception
    {
       super.setUp();
-
-      if (!AsynchronousFileImpl.isLoaded())
-      {
-         fail(String.format("libAIO is not loaded on %s %s %s",
-                            System.getProperty("os.name"),
-                            System.getProperty("os.arch"),
-                            System.getProperty("os.version")));
-      }
 
       File file = new File(getTestDir());
 

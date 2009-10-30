@@ -19,6 +19,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import junit.framework.TestSuite;
+
 import org.hornetq.core.asyncio.AIOCallback;
 import org.hornetq.core.asyncio.impl.AsynchronousFileImpl;
 import org.hornetq.core.asyncio.impl.TimedBuffer;
@@ -40,6 +42,12 @@ public class TimedBufferTest extends UnitTestCase
    // Attributes ----------------------------------------------------
 
    // Static --------------------------------------------------------
+   
+   public static TestSuite suite()
+   {
+      return createAIOTestSuite(TimedBufferTest.class);
+   }
+
 
    // Constructors --------------------------------------------------
 

@@ -16,6 +16,7 @@ package org.hornetq.tests.integration.client;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.hornetq.core.asyncio.impl.AsynchronousFileImpl;
 import org.hornetq.core.buffers.ChannelBuffers;
 import org.hornetq.core.client.ClientConsumer;
 import org.hornetq.core.client.ClientMessage;
@@ -70,12 +71,15 @@ public class CompactingTest extends ServiceTestBase
 
    public void testCleanupAIO() throws Throwable
    {
-      for (int i = 0; i < 3; i++)
+      if (AsynchronousFileImpl.isLoaded())
       {
-         System.out.println("Test # " + i);
-         internalTestCleanup(JournalType.ASYNCIO);
-         tearDown();
-         setUp();
+         for (int i = 0; i < 3; i++)
+         {
+            System.out.println("Test # " + i);
+            internalTestCleanup(JournalType.ASYNCIO);
+            tearDown();
+            setUp();
+         }
       }
    }
 

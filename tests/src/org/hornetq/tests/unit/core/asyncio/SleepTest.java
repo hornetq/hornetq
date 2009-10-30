@@ -15,8 +15,10 @@
 package org.hornetq.tests.unit.core.asyncio;
 
 import junit.framework.TestCase;
+import junit.framework.TestSuite;
 
 import org.hornetq.core.asyncio.impl.AsynchronousFileImpl;
+import org.hornetq.tests.util.UnitTestCase;
 
 /**
  * A SleepTest
@@ -25,7 +27,7 @@ import org.hornetq.core.asyncio.impl.AsynchronousFileImpl;
  *
  *
  */
-public class SleepTest extends TestCase
+public class SleepTest extends UnitTestCase
 {
 
    // Constants -----------------------------------------------------
@@ -33,6 +35,11 @@ public class SleepTest extends TestCase
    // Attributes ----------------------------------------------------
 
    // Static --------------------------------------------------------
+   
+   public static TestSuite suite()
+   {
+      return createAIOTestSuite(SleepTest.class);
+   }
 
    // Constructors --------------------------------------------------
 

@@ -41,12 +41,14 @@ import javax.transaction.xa.XAException;
 import javax.transaction.xa.Xid;
 
 import junit.framework.TestCase;
+import junit.framework.TestSuite;
 
 import org.hornetq.core.asyncio.impl.AsynchronousFileImpl;
 import org.hornetq.core.buffers.ChannelBuffers;
 import org.hornetq.core.client.ClientMessage;
 import org.hornetq.core.client.ClientSession;
 import org.hornetq.core.exception.HornetQException;
+import org.hornetq.core.journal.impl.AIOSequentialFileFactory;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.postoffice.Binding;
 import org.hornetq.core.postoffice.Bindings;
@@ -187,6 +189,23 @@ public class UnitTestCase extends TestCase
       
       
       return str.toString();
+   }
+   
+   protected static TestSuite createAIOTestSuite(Class<?> clazz)
+   {
+      TestSuite suite = new TestSuite(clazz.getName() + " testsuite");
+      
+      if (AIOSequentialFileFactory.isSupported())
+      {
+         suite.addTestSuite(clazz);
+      }
+      else
+      {
+         // System.out goes towards JUnit report
+         System.out.println("Test " + clazz.getName() + " ignored as AIO is not available");
+      }
+
+      return suite;
    }
    
    public static String dumpBytes(byte[] bytes)

@@ -16,6 +16,8 @@ package org.hornetq.tests.integration.journal;
 
 import java.io.File;
 
+import junit.framework.TestSuite;
+
 import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.journal.SequentialFileFactory;
 import org.hornetq.core.journal.impl.AIOSequentialFileFactory;
@@ -29,6 +31,13 @@ import org.hornetq.core.journal.impl.AIOSequentialFileFactory;
  */
 public class AIOJournalCompactTest extends NIOJournalCompactTest
 {
+
+   
+   public static TestSuite suite()
+   {
+      return createAIOTestSuite(AIOJournalCompactTest.class);
+   }
+   
 
    // Constants -----------------------------------------------------
 

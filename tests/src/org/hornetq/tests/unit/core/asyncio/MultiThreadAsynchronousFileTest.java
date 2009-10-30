@@ -21,6 +21,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import junit.framework.TestSuite;
+
 import org.hornetq.core.asyncio.AIOCallback;
 import org.hornetq.core.asyncio.impl.AsynchronousFileImpl;
 import org.hornetq.core.logging.Logger;
@@ -38,6 +40,11 @@ import org.hornetq.utils.HornetQThreadFactory;
  *   */
 public class MultiThreadAsynchronousFileTest extends AIOTestBase
 {
+   
+   public static TestSuite suite()
+   {
+      return createAIOTestSuite(MultiThreadAsynchronousFileTest.class);
+   }
 
    static Logger log = Logger.getLogger(MultiThreadAsynchronousFileTest.class);
 

@@ -15,6 +15,8 @@ package org.hornetq.tests.integration.journal;
 
 import java.io.File;
 
+import junit.framework.TestSuite;
+
 import org.hornetq.core.asyncio.impl.AsynchronousFileImpl;
 import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.journal.SequentialFileFactory;
@@ -38,6 +40,12 @@ import org.hornetq.tests.unit.core.journal.impl.JournalImplTestUnit;
 public class RealAIOJournalImplTest extends JournalImplTestUnit
 {
    private static final Logger log = Logger.getLogger(RealAIOJournalImplTest.class);
+   
+   public static TestSuite suite()
+   {
+      // Ignore tests if AIO is not installed
+      return createAIOTestSuite(RealAIOJournalImplTest.class);
+   }
 
    @Override
    protected void setUp() throws Exception

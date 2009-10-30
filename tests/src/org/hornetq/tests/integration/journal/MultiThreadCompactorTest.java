@@ -21,6 +21,7 @@ import javax.transaction.xa.XAException;
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
 
+import org.hornetq.core.asyncio.impl.AsynchronousFileImpl;
 import org.hornetq.core.buffers.ChannelBuffers;
 import org.hornetq.core.client.ClientConsumer;
 import org.hornetq.core.client.ClientMessage;
@@ -34,6 +35,7 @@ import org.hornetq.core.journal.PreparedTransactionInfo;
 import org.hornetq.core.journal.RecordInfo;
 import org.hornetq.core.journal.impl.AIOSequentialFileFactory;
 import org.hornetq.core.journal.impl.JournalImpl;
+import org.hornetq.core.journal.impl.NIOSequentialFileFactory;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.JournalType;
 import org.hornetq.tests.util.ServiceTestBase;
@@ -88,7 +90,7 @@ public class MultiThreadCompactorTest extends ServiceTestBase
          internalTestProduceAndConsume();
          stopServer();
 
-         AIOSequentialFileFactory factory = new AIOSequentialFileFactory(getJournalDir());
+         NIOSequentialFileFactory factory = new NIOSequentialFileFactory(getJournalDir());
          JournalImpl journal = new JournalImpl(ConfigurationImpl.DEFAULT_JOURNAL_FILE_SIZE,
                                                2,
                                                0,
@@ -97,8 +99,10 @@ public class MultiThreadCompactorTest extends ServiceTestBase
                                                "hornetq-data",
                                                "hq",
                                                100);
+         
          List<RecordInfo> committedRecords = new ArrayList<RecordInfo>();
          List<PreparedTransactionInfo> preparedTransactions = new ArrayList<PreparedTransactionInfo>();
+         
          journal.start();
          journal.load(committedRecords, preparedTransactions, null);
 
@@ -324,6 +328,10 @@ public class MultiThreadCompactorTest extends ServiceTestBase
 
    private void setupServer(JournalType journalType) throws Exception, HornetQException
    {
+      if (!AsynchronousFileImpl.isLoaded())
+      {
+         journalType = JournalType.NIO;
+      }
       if (server == null)
       {
          Configuration config = createDefaultConfig(true);
