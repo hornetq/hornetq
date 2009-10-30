@@ -55,6 +55,7 @@ import org.hornetq.utils.Pair;
 import org.hornetq.utils.SimpleString;
 import org.hornetq.utils.TypedProperties;
 import org.hornetq.utils.UUID;
+import org.hornetq.utils.UUIDGenerator;
 
 /**
  * A Core BridgeImpl
@@ -380,14 +381,14 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
       {
          return HandleStatus.NO_MATCH;
       }
-
-      if (!active)
-      {
-         return HandleStatus.BUSY;
-      }
-
+      
       synchronized (this)
       {
+         if (!active)
+         {
+            return HandleStatus.BUSY;
+         }
+
          ref.handled();
 
          ServerMessage message = ref.getMessage();
@@ -516,13 +517,19 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
          {
             if (beforeReconnect)
             {
-               active = false;
+               synchronized (this)
+               {
+                  active = false;
+               }
+               
                cancelRefs();
             }
             else
             {
                setupNotificationConsumer();
+               
                active = true;
+               
                if (queue != null)
                {
                   queue.deliverAsync(executor);
@@ -562,11 +569,7 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
 
          // Get the queue data
 
-         // Create a queue to catch the notifications - the name must be deterministic on live and backup, but
-         // different each time this is called
-         // Otherwise it may already exist if server is restarted before it has been deleted on backup
-
-         String qName = "notif." + nodeUUID.toString() + "." + name.toString();
+         String qName = "notif." + UUIDGenerator.getInstance().generateStringUUID();
 
          SimpleString notifQueueName = new SimpleString(qName);
 
@@ -596,26 +599,8 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
                                                 flowRecord.getAddress() +
                                                 "%')");
 
-         // The queue can't be temporary, since if the node with the bridge crashes then is restarted quickly
-         // it might get deleted on the target when it does connection cleanup
-
-         // When the backup activates the queue might already exist, so we catch this and ignore
-         try
-         {
-            session.createQueue(managementNotificationAddress, notifQueueName, filter, false);
-         }
-         catch (HornetQException me)
-         {
-            if (me.getCode() == HornetQException.QUEUE_EXISTS)
-            {
-               // Ok
-            }
-            else
-            {
-               throw me;
-            }
-         }
-
+         session.createQueue(managementNotificationAddress, notifQueueName, filter, false);
+         
          notifConsumer = session.createConsumer(notifQueueName);
 
          notifConsumer.setMessageHandler(flowRecord);
