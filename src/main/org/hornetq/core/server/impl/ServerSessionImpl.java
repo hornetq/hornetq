@@ -16,6 +16,7 @@ package org.hornetq.core.server.impl;
 import static org.hornetq.core.management.NotificationType.CONSUMER_CREATED;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -27,7 +28,6 @@ import javax.transaction.xa.XAException;
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
 
-import org.hornetq.core.buffers.ChannelBuffers;
 import org.hornetq.core.client.impl.ClientMessageImpl;
 import org.hornetq.core.client.management.impl.ManagementHelper;
 import org.hornetq.core.exception.HornetQException;
@@ -36,6 +36,7 @@ import org.hornetq.core.filter.impl.FilterImpl;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.management.ManagementService;
 import org.hornetq.core.management.Notification;
+import org.hornetq.core.paging.PagingStore;
 import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.core.postoffice.Binding;
 import org.hornetq.core.postoffice.BindingType;
@@ -56,13 +57,15 @@ import org.hornetq.core.remoting.impl.wireformat.SessionAcknowledgeMessage;
 import org.hornetq.core.remoting.impl.wireformat.SessionBindingQueryMessage;
 import org.hornetq.core.remoting.impl.wireformat.SessionBindingQueryResponseMessage;
 import org.hornetq.core.remoting.impl.wireformat.SessionConsumerCloseMessage;
-import org.hornetq.core.remoting.impl.wireformat.SessionForceConsumerDelivery;
 import org.hornetq.core.remoting.impl.wireformat.SessionConsumerFlowCreditMessage;
 import org.hornetq.core.remoting.impl.wireformat.SessionCreateConsumerMessage;
 import org.hornetq.core.remoting.impl.wireformat.SessionDeleteQueueMessage;
 import org.hornetq.core.remoting.impl.wireformat.SessionExpiredMessage;
+import org.hornetq.core.remoting.impl.wireformat.SessionForceConsumerDelivery;
+import org.hornetq.core.remoting.impl.wireformat.SessionProducerCreditsMessage;
 import org.hornetq.core.remoting.impl.wireformat.SessionQueueQueryMessage;
 import org.hornetq.core.remoting.impl.wireformat.SessionQueueQueryResponseMessage;
+import org.hornetq.core.remoting.impl.wireformat.SessionRequestProducerCreditsMessage;
 import org.hornetq.core.remoting.impl.wireformat.SessionSendContinuationMessage;
 import org.hornetq.core.remoting.impl.wireformat.SessionSendLargeMessage;
 import org.hornetq.core.remoting.impl.wireformat.SessionSendMessage;
@@ -79,7 +82,6 @@ import org.hornetq.core.remoting.impl.wireformat.SessionXARollbackMessage;
 import org.hornetq.core.remoting.impl.wireformat.SessionXASetTimeoutMessage;
 import org.hornetq.core.remoting.impl.wireformat.SessionXASetTimeoutResponseMessage;
 import org.hornetq.core.remoting.impl.wireformat.SessionXAStartMessage;
-import org.hornetq.core.remoting.spi.HornetQBuffer;
 import org.hornetq.core.security.CheckType;
 import org.hornetq.core.security.SecurityStore;
 import org.hornetq.core.server.HornetQServer;
@@ -183,7 +185,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
                             final SecurityStore securityStore,
                             final Executor executor,
                             final Channel channel,
-                            final ManagementService managementService,                  
+                            final ManagementService managementService,
                             final HornetQServer server,
                             final SimpleString managementAddress) throws Exception
    {
@@ -285,7 +287,9 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
       }
    }
 
-   public void close() throws Exception
+   private boolean closed;
+
+   public synchronized void close() throws Exception
    {
       if (tx != null && tx.getXid() == null)
       {
@@ -318,6 +322,15 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
       }
 
       remotingConnection.removeFailureListener(this);
+
+      // Return any outstanding credits
+      
+      closed = true;
+
+      for (CreditManagerHolder holder : creditManagerHolders.values())
+      {
+         holder.store.returnProducerCredits(holder.outstandingCredits);
+      }
    }
 
    public void promptDelivery(final Queue queue, boolean async)
@@ -362,7 +375,6 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
                                                           started,
                                                           browseOnly,
                                                           storageManager,
-                                                          postOffice.getPagingManager(),
                                                           channel,
                                                           preAcknowledge,
                                                           updateDeliveries,
@@ -623,7 +635,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
 
       sendResponse(packet, response, false, false);
    }
-   
+
    public void handleForceConsumerDelivery(SessionForceConsumerDelivery message)
    {
       try
@@ -690,7 +702,6 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
       {
          log.error("Failed to acknowledge", e);
       }
-
 
       sendResponse(packet, null, false, false);
    }
@@ -776,16 +787,22 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
                // checked heuristic committed transactions
                if (resourceManager.getHeuristicCommittedTransactions().contains(xid))
                {
-                  response = new SessionXAResponseMessage(true, XAException.XA_HEURCOM, "transaction has been heuristically committed: " + xid);
+                  response = new SessionXAResponseMessage(true,
+                                                          XAException.XA_HEURCOM,
+                                                          "transaction has been heuristically committed: " + xid);
                }
                // checked heuristic rolled back transactions
                else if (resourceManager.getHeuristicRolledbackTransactions().contains(xid))
                {
-                  response = new SessionXAResponseMessage(true, XAException.XA_HEURRB, "transaction has been heuristically rolled back: " + xid);
-               } 
+                  response = new SessionXAResponseMessage(true,
+                                                          XAException.XA_HEURRB,
+                                                          "transaction has been heuristically rolled back: " + xid);
+               }
                else
                {
-                  response = new SessionXAResponseMessage(true, XAException.XAER_NOTA, "Cannot find xid in resource manager: " + xid);
+                  response = new SessionXAResponseMessage(true,
+                                                          XAException.XAER_NOTA,
+                                                          "Cannot find xid in resource manager: " + xid);
                }
             }
             else
@@ -912,11 +929,12 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
             e.printStackTrace();
             code = XAException.XAER_RMERR;
          }
-      } else
+      }
+      else
       {
          code = XAException.XAER_NOTA;
       }
-      
+
       Packet response = new SessionXAResponseMessage((code != XAResource.XA_OK), code, null);
 
       sendResponse(packet, response, false, false);
@@ -1054,16 +1072,22 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
                // checked heuristic committed transactions
                if (resourceManager.getHeuristicCommittedTransactions().contains(xid))
                {
-                  response = new SessionXAResponseMessage(true, XAException.XA_HEURCOM, "transaction has ben heuristically committed: " + xid);
+                  response = new SessionXAResponseMessage(true,
+                                                          XAException.XA_HEURCOM,
+                                                          "transaction has ben heuristically committed: " + xid);
                }
                // checked heuristic rolled back transactions
                else if (resourceManager.getHeuristicRolledbackTransactions().contains(xid))
                {
-                  response = new SessionXAResponseMessage(true, XAException.XA_HEURRB, "transaction has ben heuristically rolled back: " + xid);
-               } 
+                  response = new SessionXAResponseMessage(true,
+                                                          XAException.XA_HEURRB,
+                                                          "transaction has ben heuristically rolled back: " + xid);
+               }
                else
                {
-                  response = new SessionXAResponseMessage(true, XAException.XAER_NOTA, "Cannot find xid in resource manager: " + xid);
+                  response = new SessionXAResponseMessage(true,
+                                                          XAException.XAER_NOTA,
+                                                          "Cannot find xid in resource manager: " + xid);
                }
             }
             else
@@ -1264,7 +1288,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
       indoubtsXids.addAll(resourceManager.getHeuristicCommittedTransactions());
       indoubtsXids.addAll(resourceManager.getHeuristicRolledbackTransactions());
       Packet response = new SessionXAGetInDoubtXidsResponseMessage(indoubtsXids);
-      
+
       sendResponse(packet, response, false, false);
    }
 
@@ -1381,7 +1405,6 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
          log.error("Failed to receive credits " + this.server.getConfiguration().isBackup(), e);
       }
 
-
       sendResponse(packet, null, false, false);
    }
 
@@ -1392,33 +1415,30 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
 
       final LargeServerMessage msg = doCreateLargeMessage(id, packet);
 
-      if (msg == null)
+      if (msg != null)
       {
-         // packet logged an error, and played with channel.returns... and nothing needs to be done now
-         return;
+         // With a send we must make sure it is replicated to backup before being processed on live
+         // or can end up with delivery being processed on backup before original send
+
+         if (currentLargeMessage != null)
+         {
+            log.warn("Replacing incomplete LargeMessage with ID=" + currentLargeMessage.getMessageID());
+         }
+
+         currentLargeMessage = msg;
+
+         sendResponse(packet, null, false, false);
       }
-
-      // With a send we must make sure it is replicated to backup before being processed on live
-      // or can end up with delivery being processed on backup before original send
-
-      if (currentLargeMessage != null)
-      {
-         log.warn("Replacing incomplete LargeMessage with ID=" + currentLargeMessage.getMessageID());
-      }
-
-      currentLargeMessage = msg;
-
-      sendResponse(packet, null, false, false);
    }
 
    public void handleSend(final SessionSendMessage packet)
    {
       Packet response = null;
 
+      ServerMessage message = packet.getServerMessage();
+            
       try
-      {
-         ServerMessage message = packet.getServerMessage();
-
+      {         
          long id = storageManager.generateUniqueID();
 
          message.setMessageID(id);
@@ -1455,7 +1475,18 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
             }
          }
       }
-      
+      finally
+      {
+         try
+         {
+            releaseOutStanding(message);
+         }
+         catch (Exception e)
+         {
+            log.error("Failed to release outstanding credits", e);
+         }
+      }
+
       sendResponse(packet, response, false, false);
    }
 
@@ -1479,8 +1510,10 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
             currentLargeMessage = null;
 
             message.releaseResources();
-
+                        
             send(message);
+            
+            releaseOutStanding(message);
          }
 
          if (packet.isRequiresResponse())
@@ -1508,10 +1541,89 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
       sendResponse(packet, response, false, false);
    }
 
+   private static final class CreditManagerHolder
+   {
+      CreditManagerHolder(final PagingStore store)
+      {
+         this.store = store;
+
+         this.manager = store.getProducerCreditManager();
+      }
+
+      final PagingStore store;
+
+      final ServerProducerCreditManager manager;
+
+      volatile int outstandingCredits;
+   }
+
+   private Map<SimpleString, CreditManagerHolder> creditManagerHolders = new HashMap<SimpleString, CreditManagerHolder>();
+
+   private CreditManagerHolder getCreditManagerHolder(final SimpleString address) throws Exception
+   {
+      CreditManagerHolder holder = creditManagerHolders.get(address);
+
+      if (holder == null)
+      {
+         PagingStore store = postOffice.getPagingManager().getPageStore(address);
+
+         holder = new CreditManagerHolder(store);
+
+         creditManagerHolders.put(address, holder);
+      }
+
+      return holder;
+   }
+
+   public void handleRequestProducerCredits(final SessionRequestProducerCreditsMessage packet) throws Exception
+   {
+      final SimpleString address = packet.getAddress();
+
+      final CreditManagerHolder holder = this.getCreditManagerHolder(address);
+
+      int credits = packet.getCredits();
+
+      int gotCredits = holder.manager.acquireCredits(credits, new CreditsAvailableRunnable()
+      {
+         public boolean run(int credits)
+         {
+            synchronized (ServerSessionImpl.this)
+            {
+               if (!closed)
+               {
+                  sendProducerCredits(holder, credits, address);
+
+                  return true;
+               }
+               else
+               {
+                  return false;
+               }
+            }
+         }
+      });
+
+      if (gotCredits > 0)
+      {
+         sendProducerCredits(holder, gotCredits, address);
+      }
+
+      sendResponse(packet, null, false, false);
+   }
+
+   private void sendProducerCredits(final CreditManagerHolder holder, final int credits, final SimpleString address)
+   {
+      holder.outstandingCredits += credits;
+
+      Packet packet = new SessionProducerCreditsMessage(credits, address);
+
+      channel.send(packet);
+   }
+
    public int transferConnection(final RemotingConnection newConnection, final int lastReceivedCommandID)
    {
       boolean wasStarted = this.started;
-      
+
       if (wasStarted)
       {
          this.setStarted(false);
@@ -1528,7 +1640,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
       // received responses that the backup did not know about.
 
       channel.transferConnection(newConnection);
-      
+
       newConnection.syncIDGeneratorSequence(remotingConnection.getIDGeneratorSequence());
 
       remotingConnection = newConnection;
@@ -1544,7 +1656,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
       {
          this.setStarted(true);
       }
-      
+
       return serverLastReceivedCommandID;
    }
 
@@ -1618,7 +1730,10 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
     * @param packet
     * @param response
     */
-   private void sendResponse(final Packet confirmPacket, final Packet response, final boolean flush, final boolean closeChannel)
+   private void sendResponse(final Packet confirmPacket,
+                             final Packet response,
+                             final boolean flush,
+                             final boolean closeChannel)
    {
       if (storageManager.isReplicated())
       {
@@ -1637,7 +1752,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
          doSendResponse(confirmPacket, response, flush, closeChannel);
       }
    }
-   
+
    /**
     * @param confirmPacket
     * @param response
@@ -1662,13 +1777,12 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
       {
          channel.send(response);
       }
-      
+
       if (closeChannel)
       {
          channel.close();
       }
    }
-
 
    private void setStarted(final boolean s)
    {
@@ -1785,6 +1899,28 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
 
       tx = new TransactionImpl(storageManager);
    }
+   
+   /*
+    * The way flow producer flow control works is as follows:
+    * The client can only send messages as long as it has credits. It requests credits from the server
+    * which the server immediately sends if it has them. If the address is full it adds the request to
+    * a list of waiting and the credits will get sent as soon as some free up.
+    * The amount of real memory taken up by a message and references on the server is likely to be larger
+    * than the encode size of the message. Therefore when a message arrives on the server, more credits
+    * are taken corresponding to the real in memory size of the message and refs, and the original credits are
+    * returned. When a session closes any outstanding credits will be returned.
+    * 
+    */
+   private void releaseOutStanding(final ServerMessage message) throws Exception
+   {
+      CreditManagerHolder holder = getCreditManagerHolder(message.getDestination());
+      
+      int size = message.getEncodeSize();
+      
+      holder.outstandingCredits -= size;
+      
+      holder.store.returnProducerCredits(size);
+   }
 
    private void send(final ServerMessage msg) throws Exception
    {
@@ -1801,14 +1937,14 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
          }
          throw e;
       }
-      
+
       if (tx == null || autoCommitSends)
       {
-         postOffice.route(msg);  
+         postOffice.route(msg);
       }
       else
       {
-         postOffice.route(msg, new RoutingContextImpl(tx));   
-      }   
+         postOffice.route(msg, tx);
+      }  
    }
 }

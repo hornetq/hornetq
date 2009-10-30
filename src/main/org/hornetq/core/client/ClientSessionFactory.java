@@ -82,10 +82,14 @@ public interface ClientSessionFactory
 
    void setConsumerMaxRate(int consumerMaxRate);
 
+   int getConfirmationWindowSize();
+
+   void setConfirmationWindowSize(int confirmationWindowSize);
+
    int getProducerWindowSize();
 
    void setProducerWindowSize(int producerWindowSize);
-
+   
    int getProducerMaxRate();
 
    void setProducerMaxRate(int producerMaxRate);

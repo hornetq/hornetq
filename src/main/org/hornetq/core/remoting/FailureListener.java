@@ -25,8 +25,5 @@ import org.hornetq.core.exception.HornetQException;
  */
 public interface FailureListener
 {
-   /**
-    * @return <code>false</code> to stop calling subsequent failure listeners
-    */
    void connectionFailed(HornetQException me);
 }

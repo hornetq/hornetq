@@ -15,28 +15,24 @@ package org.hornetq.core.postoffice.impl;
 
 import java.nio.ByteBuffer;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
+import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.filter.Filter;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.message.impl.MessageImpl;
 import org.hornetq.core.postoffice.Binding;
 import org.hornetq.core.postoffice.Bindings;
-import org.hornetq.core.server.Bindable;
 import org.hornetq.core.server.Queue;
 import org.hornetq.core.server.RoutingContext;
 import org.hornetq.core.server.ServerMessage;
+import org.hornetq.core.server.group.GroupingHandler;
 import org.hornetq.core.server.group.impl.Proposal;
 import org.hornetq.core.server.group.impl.Response;
-import org.hornetq.core.server.group.GroupingHandler;
-import org.hornetq.core.transaction.Transaction;
-import org.hornetq.core.exception.HornetQException;
 import org.hornetq.utils.SimpleString;
 
 /**
@@ -135,85 +131,92 @@ public class BindingsImpl implements Bindings
       bindingsMap.remove(binding.getID());
    }
 
-   public void redistribute(final ServerMessage message, final Queue originatingQueue, final RoutingContext context) throws Exception
+   public boolean redistribute(final ServerMessage message, final Queue originatingQueue, final RoutingContext context) throws Exception
+   {
+
+      if (routeWhenNoConsumers)
       {
-         if (routeWhenNoConsumers)
+         return false;
+      }
+
+      SimpleString routingName = originatingQueue.getName();
+
+      List<Binding> bindings = routingNameBindingMap.get(routingName);
+
+      if (bindings == null)
+      {
+         // The value can become null if it's concurrently removed while we're iterating - this is expected
+         // ConcurrentHashMap behaviour!
+         return false;
+      }
+
+      Integer ipos = routingNamePositions.get(routingName);
+
+      int pos = ipos != null ? ipos.intValue() : 0;
+
+      int length = bindings.size();
+
+      int startPos = pos;
+
+      Binding theBinding = null;
+
+      // TODO - combine this with similar logic in route()
+      while (true)
+      {
+         Binding binding;
+         try
          {
-            return;
+            binding = bindings.get(pos);
          }
-
-         SimpleString routingName = originatingQueue.getName();
-
-         List<Binding> bindings = routingNameBindingMap.get(routingName);
-
-         if (bindings == null)
+         catch (IndexOutOfBoundsException e)
          {
-            // The value can become null if it's concurrently removed while we're iterating - this is expected
-            // ConcurrentHashMap behaviour!
-            return;
-         }
-
-         Integer ipos = routingNamePositions.get(routingName);
-
-         int pos = ipos != null ? ipos.intValue() : 0;
-
-         int length = bindings.size();
-
-         int startPos = pos;
-
-         Binding theBinding = null;
-
-         // TODO - combine this with similar logic in route()
-         while (true)
-         {
-            Binding binding;
-            try
+            // This can occur if binding is removed while in route
+            if (!bindings.isEmpty())
             {
-               binding = bindings.get(pos);
+               pos = 0;
+               startPos = 0;
+               length = bindings.size();
+
+               continue;
             }
-            catch (IndexOutOfBoundsException e)
-            {
-               // This can occur if binding is removed while in route
-               if (!bindings.isEmpty())
-               {
-                  pos = 0;
-                  startPos = 0;
-                  length = bindings.size();
-
-                  continue;
-               }
-               else
-               {
-                  break;
-               }
-            }
-
-            pos = incrementPos(pos, length);
-
-            Filter filter = binding.getFilter();
-
-            boolean highPrior = binding.isHighAcceptPriority(message);
-
-            if (highPrior && binding.getBindable() != originatingQueue && (filter == null || filter.match(message)))
-            {
-               theBinding = binding;
-
-               break;
-            }
-
-            if (pos == startPos)
+            else
             {
                break;
             }
          }
 
-         routingNamePositions.put(routingName, pos);
+         pos = incrementPos(pos, length);
 
-         if (theBinding != null)
+         Filter filter = binding.getFilter();
+
+         boolean highPrior = binding.isHighAcceptPriority(message);
+
+         if (highPrior && binding.getBindable() != originatingQueue && (filter == null || filter.match(message)))
          {
-            theBinding.route(message, context);
+            theBinding = binding;
+
+            break;
+         }
+
+         if (pos == startPos)
+         {
+            break;
          }
       }
+
+      routingNamePositions.put(routingName, pos);
+
+      if (theBinding != null)
+      {
+         theBinding.route(message, context);
+
+         return true;
+      }
+      else
+      {
+         return false;
+      }
+   }
 
    public void route(final ServerMessage message, final RoutingContext context) throws Exception
    {
@@ -258,7 +261,6 @@ public class BindingsImpl implements Bindings
                }
 
                Binding theBinding = getNextBinding(message, routingName, bindings);
-
 
                if (theBinding != null)
                {
@@ -368,10 +370,11 @@ public class BindingsImpl implements Bindings
       return theBinding;
    }
 
-   private void routeUsingStrictOrdering(ServerMessage message, RoutingContext context, GroupingHandler groupingGroupingHandler)
-         throws Exception
+   private void routeUsingStrictOrdering(final ServerMessage message,
+                                         final RoutingContext context,
+                                         final GroupingHandler groupingGroupingHandler) throws Exception
    {
-      SimpleString groupId = (SimpleString) message.getProperty(MessageImpl.HDR_GROUP_ID);
+      SimpleString groupId = (SimpleString)message.getProperty(MessageImpl.HDR_GROUP_ID);
 
       for (Map.Entry<SimpleString, List<Binding>> entry : routingNameBindingMap.entrySet())
       {
@@ -386,20 +389,20 @@ public class BindingsImpl implements Bindings
             continue;
          }
 
-         //concat a full group id, this is for when a binding has multiple bindings
+         // concat a full group id, this is for when a binding has multiple bindings
          SimpleString fullID = groupId.concat(".").concat(routingName);
 
-         //see if there is already a response
+         // see if there is already a response
          Response resp = groupingGroupingHandler.getProposal(fullID);
 
          if (resp == null)
          {
-            //ok lets find the next binding to propose
+            // ok lets find the next binding to propose
             Binding theBinding = getNextBinding(message, routingName, bindings);
-            //TODO https://jira.jboss.org/jira/browse/HORNETQ-191
+            // TODO https://jira.jboss.org/jira/browse/HORNETQ-191
             resp = groupingGroupingHandler.propose(new Proposal(fullID, theBinding.getClusterName()));
 
-            //if our proposal was declined find the correct binding to use
+            // if our proposal was declined find the correct binding to use
             if (resp.getAlternativeClusterName() != null)
             {
                theBinding = null;
@@ -413,19 +416,21 @@ public class BindingsImpl implements Bindings
                }
             }
 
-            //and lets route it
+            // and lets route it
             if (theBinding != null)
             {
                theBinding.route(message, context);
             }
             else
             {
-               throw new HornetQException(HornetQException.QUEUE_DOES_NOT_EXIST, "queue " + resp.getChosenClusterName() + " has been removed cannot deliver message, queues should not be removed when grouping is used");
+               throw new HornetQException(HornetQException.QUEUE_DOES_NOT_EXIST,
+                                          "queue " + resp.getChosenClusterName() +
+                                                   " has been removed cannot deliver message, queues should not be removed when grouping is used");
             }
          }
          else
          {
-            //ok, we need to find the binding and route it
+            // ok, we need to find the binding and route it
             Binding chosen = null;
             for (Binding binding : bindings)
             {
@@ -441,14 +446,12 @@ public class BindingsImpl implements Bindings
             }
             else
             {
-               throw new HornetQException(HornetQException.QUEUE_DOES_NOT_EXIST, "queue " + resp.getChosenClusterName() + " has been removed cannot deliver message, queues should not be removed when grouping is used");
+               throw new HornetQException(HornetQException.QUEUE_DOES_NOT_EXIST,
+                                          "queue " + resp.getChosenClusterName() +
+                                                   " has been removed cannot deliver message, queues should not be removed when grouping is used");
             }
          }
-
-
       }
-
-
    }
 
    private void routeFromCluster(final ServerMessage message, final RoutingContext context) throws Exception

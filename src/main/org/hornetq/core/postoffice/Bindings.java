@@ -38,7 +38,7 @@ public interface Bindings
 
    void setRouteWhenNoConsumers(boolean takePriorityIntoAccount);
 
-   void redistribute(ServerMessage message, Queue originatingQueue, RoutingContext context) throws Exception;
+   boolean redistribute(ServerMessage message, Queue originatingQueue, RoutingContext context) throws Exception;
    
    void route(ServerMessage message, RoutingContext context) throws Exception;
 }

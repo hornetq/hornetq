@@ -17,6 +17,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.message.impl.MessageImpl;
+import org.hornetq.core.paging.PagingStore;
 import org.hornetq.core.remoting.spi.HornetQBuffer;
 import org.hornetq.core.server.MessageReference;
 import org.hornetq.core.server.Queue;
@@ -111,9 +112,38 @@ public class ServerMessageImpl extends MessageImpl implements ServerMessage
       stored = true;
    }
 
-   public int incrementRefCount()
+   public int incrementRefCount(final PagingStore pagingStore, final MessageReference reference) throws Exception
    {
-      return refCount.incrementAndGet();
+      int count = refCount.incrementAndGet();
+      
+      if (pagingStore != null)
+      {
+         if (count == 1)
+         {
+            pagingStore.addSize(this, true);
+         }
+         
+         pagingStore.addSize(reference, true);
+      }
+      
+      return count;
+   }
+   
+   public int decrementRefCount(final PagingStore pagingStore, final MessageReference reference) throws Exception
+   {
+      int count = refCount.decrementAndGet();
+      
+      if (pagingStore != null)
+      {
+         if (count == 0)
+         {
+            pagingStore.addSize(this, false);
+         }
+         
+         pagingStore.addSize(reference, false);
+      }
+      
+      return count;
    }
 
    public int incrementDurableRefCount()
@@ -126,10 +156,7 @@ public class ServerMessageImpl extends MessageImpl implements ServerMessage
       return durableRefCount.decrementAndGet();
    }
 
-   public int decrementRefCount()
-   {
-      return refCount.decrementAndGet();
-   }
+   
 
    public int getRefCount()
    {
@@ -170,9 +197,7 @@ public class ServerMessageImpl extends MessageImpl implements ServerMessage
 
    public ServerMessage copy() throws Exception
    {
-      ServerMessage m = new ServerMessageImpl(this);
-
-      return m;
+      return new ServerMessageImpl(this);
    }
 
    public ServerMessage makeCopyForExpiryOrDLA(final long newID, final boolean expiry) throws Exception

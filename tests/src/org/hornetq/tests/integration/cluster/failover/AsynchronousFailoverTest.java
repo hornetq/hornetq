@@ -22,13 +22,13 @@ import org.hornetq.core.client.ClientConsumer;
 import org.hornetq.core.client.ClientMessage;
 import org.hornetq.core.client.ClientProducer;
 import org.hornetq.core.client.ClientSession;
+import org.hornetq.core.client.SessionFailureListener;
 import org.hornetq.core.client.impl.ClientSessionFactoryInternal;
 import org.hornetq.core.client.impl.ClientSessionInternal;
 import org.hornetq.core.client.impl.DelegatingSession;
 import org.hornetq.core.config.TransportConfiguration;
 import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.logging.Logger;
-import org.hornetq.core.remoting.FailureListener;
 import org.hornetq.core.remoting.RemotingConnection;
 
 /**
@@ -48,13 +48,17 @@ public class AsynchronousFailoverTest extends FailoverTestBase
 
    private volatile ClientSessionFactoryInternal sf;
 
-   class MyListener implements FailureListener
+   class MyListener implements SessionFailureListener
    {
       CountDownLatch latch = new CountDownLatch(1);
 
       public void connectionFailed(HornetQException me)
       {
          latch.countDown();
+      }
+      
+      public void beforeReconnect(HornetQException me)
+      {            
       }
    }
 

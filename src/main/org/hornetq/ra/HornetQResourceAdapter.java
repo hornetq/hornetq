@@ -628,33 +628,33 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
    }
 
    /**
-    * Get producer window size
+    * Get confirmation window size
     *
     * @return The value
     */
-   public Integer getProducerWindowSize()
+   public Integer getConfirmationWindowSize()
    {
       if (trace)
       {
-         log.trace("getProducerWindowSize()");
+         log.trace("getConfirmationWindowSize()");
       }
 
-      return raProperties.getProducerWindowSize();
+      return raProperties.getConfirmationWindowSize();
    }
 
    /**
-    * Set producer window size
+    * Set confirmation window size
     *
-    * @param producerWindowSize The value
+    * @param confirmationWindowSize The value
     */
-   public void setProducerWindowSize(final Integer producerWindowSize)
+   public void setConfirmationWindowSize(final Integer confirmationWindowSize)
    {
       if (trace)
       {
-         log.trace("setProducerWindowSize(" + producerWindowSize + ")");
+         log.trace("setConfirmationWindowSize(" + confirmationWindowSize + ")");
       }
 
-      raProperties.setProducerWindowSize(producerWindowSize);
+      raProperties.setConfirmationWindowSize(confirmationWindowSize);
    }
 
    /**
@@ -1477,11 +1477,11 @@ public class HornetQResourceAdapter implements ResourceAdapter, Serializable
       {
          cf.setProducerMaxRate(val2);
       }
-      val2 = overrideProperties.getProducerWindowSize() != null ? overrideProperties.getProducerWindowSize()
-                                                               : raProperties.getProducerWindowSize();
+      val2 = overrideProperties.getConfirmationWindowSize() != null ? overrideProperties.getConfirmationWindowSize()
+                                                               : raProperties.getConfirmationWindowSize();
       if (val2 != null)
       {
-         cf.setProducerWindowSize(val2);
+         cf.setConfirmationWindowSize(val2);
       }
       val2 = overrideProperties.getReconnectAttempts() != null ? overrideProperties.getReconnectAttempts()
                                                               : raProperties.getReconnectAttempts();

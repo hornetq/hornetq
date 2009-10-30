@@ -22,6 +22,8 @@ import org.hornetq.core.remoting.Channel;
 import org.hornetq.core.remoting.ChannelHandler;
 import org.hornetq.core.remoting.Packet;
 import org.hornetq.core.remoting.impl.wireformat.HornetQExceptionMessage;
+import org.hornetq.core.remoting.impl.wireformat.PacketImpl;
+import org.hornetq.core.remoting.impl.wireformat.SessionProducerCreditsMessage;
 import org.hornetq.core.remoting.impl.wireformat.SessionReceiveContinuationMessage;
 import org.hornetq.core.remoting.impl.wireformat.SessionReceiveMessage;
 
@@ -75,6 +77,14 @@ public class ClientSessionPacketHandler implements ChannelHandler
                {
                   clientSession.handleReceiveMessage(message.getConsumerID(), message);
                }
+               
+               break;
+            }
+            case PacketImpl.SESS_PRODUCER_CREDITS:
+            {
+               SessionProducerCreditsMessage message = (SessionProducerCreditsMessage)packet;
+               
+               clientSession.handleReceiveProducerCredits(message.getAddress(), message.getCredits());
                
                break;
             }

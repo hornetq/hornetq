@@ -135,6 +135,22 @@ public class NullStorageLargeServerMessage extends ServerMessageImpl implements 
       return true;
    }
 
+   /* (non-Javadoc)
+    * @see org.hornetq.core.server.LargeServerMessage#decrementDelayDeletionCount()
+    */
+   public void decrementDelayDeletionCount() throws Exception
+   {
+
+   }
+
+   /* (non-Javadoc)
+    * @see org.hornetq.core.server.LargeServerMessage#incrementDelayDeletionCount()
+    */
+   public void incrementDelayDeletionCount()
+   {
+
+   }
+
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------

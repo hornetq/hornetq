@@ -140,6 +140,10 @@ public class PacketImpl implements Packet
    public static final byte SESS_RECEIVE_CONTINUATION = 76;
 
    public static final byte SESS_FORCE_CONSUMER_DELIVERY = 77;
+   
+   public static final byte SESS_PRODUCER_REQUEST_CREDITS = 78;
+   
+   public static final byte SESS_PRODUCER_CREDITS = 79;
 
    // Replication
 
@@ -212,7 +216,7 @@ public class PacketImpl implements Packet
    public void decode(final HornetQBuffer buffer)
    {
       channelID = buffer.readLong();
-
+      
       decodeBody(buffer);
 
       size = buffer.readerIndex();

@@ -15,6 +15,7 @@ package org.hornetq.core.server;
 
 import org.hornetq.core.journal.EncodingSupport;
 import org.hornetq.core.message.Message;
+import org.hornetq.core.paging.PagingStore;
 
 /**
  * 
@@ -30,13 +31,15 @@ public interface ServerMessage extends Message, EncodingSupport
 
    MessageReference createReference(Queue queue);
 
-   int incrementRefCount();
+   int incrementRefCount(PagingStore pagingStore, MessageReference reference)
+      throws Exception;
 
+   int decrementRefCount(PagingStore pagingStore, MessageReference reference)
+      throws Exception;
+   
    int incrementDurableRefCount();
 
    int decrementDurableRefCount();
-
-   int decrementRefCount();
 
    ServerMessage copy(long newID) throws Exception;
    

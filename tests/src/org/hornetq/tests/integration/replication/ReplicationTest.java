@@ -242,7 +242,7 @@ public class ReplicationTest extends ServiceTestBase
          serverMsg.setDestination(new SimpleString("tttt"));
 
          HornetQBuffer buffer = ChannelBuffers.dynamicBuffer(100);
-         serverMsg.encodeProperties(buffer);
+         serverMsg.encodeHeadersAndProperties(buffer);
 
          manager.largeMessageBegin(500);
 

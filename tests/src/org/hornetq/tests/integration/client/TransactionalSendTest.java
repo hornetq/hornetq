@@ -23,7 +23,7 @@ import org.hornetq.utils.SimpleString;
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>
  */
-public class SendTest extends ServiceTestBase
+public class TransactionalSendTest extends ServiceTestBase
 {
    public final SimpleString addressA = new SimpleString("addressA");
 

@@ -39,6 +39,7 @@ import org.hornetq.core.client.ClientMessage;
 import org.hornetq.core.client.ClientProducer;
 import org.hornetq.core.client.ClientSession;
 import org.hornetq.core.client.SendAcknowledgementHandler;
+import org.hornetq.core.client.SessionFailureListener;
 import org.hornetq.core.client.impl.ClientMessageImpl;
 import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.remoting.FailureListener;
@@ -1155,6 +1156,45 @@ public class MessageHeaderTest extends MessageHeaderTestBase
 
       public void start(Xid xid, int i) throws XAException
       {
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.client.ClientSession#createBuffer(byte[])
+       */
+      public HornetQBuffer createBuffer(byte[] bytes)
+      {
+         // TODO Auto-generated method stub
+         return null;
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.client.ClientSession#createBuffer(int)
+       */
+      public HornetQBuffer createBuffer(int size)
+      {
+         // TODO Auto-generated method stub
+         return null;
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.client.ClientSession#createClientMessage(boolean, org.hornetq.core.remoting.spi.HornetQBuffer)
+       */
+      public ClientMessage createClientMessage(boolean durable, HornetQBuffer buffer)
+      {
+         // TODO Auto-generated method stub
+         return null;
+      }
+
+      public void addFailureListener(SessionFailureListener listener)
+      {
+         // TODO Auto-generated method stub
+         
+      }
+
+      public boolean removeFailureListener(SessionFailureListener listener)
+      {
+         // TODO Auto-generated method stub
+         return false;
       }
    }
    

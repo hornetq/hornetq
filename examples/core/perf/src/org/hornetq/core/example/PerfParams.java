@@ -39,7 +39,9 @@ public class PerfParams implements Serializable
    private int tcpBufferSize;
    private boolean tcpNoDelay;
    private boolean preAck;
-   private int sendWindow;
+   private int confirmationWindow;
+   private int producerWindow;
+   private int consumerWindow;
    private boolean blockOnPersistent = true;
    private boolean blockOnACK = true;
      
@@ -222,15 +224,33 @@ public class PerfParams implements Serializable
       this.preAck = preAck;
    }
 
-   public synchronized int getSendWindow()
+   public synchronized int getConfirmationWindow()
    {
-      return sendWindow;
+      return confirmationWindow;
    }
 
-   public synchronized void setSendWindow(int sendWindow)
+   public synchronized void setConfirmationWindow(int confirmationWindow)
    {
-      this.sendWindow = sendWindow;
+      this.confirmationWindow = confirmationWindow;
    }
 
+   public int getProducerWindow()
+   {
+      return producerWindow;
+   }
 
+   public void setProducerWindow(int producerWindow)
+   {
+      this.producerWindow = producerWindow;
+   }
+
+   public int getConsumerWindow()
+   {
+      return consumerWindow;
+   }
+
+   public void setConsumerWindow(int consumerWindow)
+   {
+      this.consumerWindow = consumerWindow;
+   }
 }

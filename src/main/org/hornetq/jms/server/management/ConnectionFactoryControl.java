@@ -42,7 +42,7 @@ public interface ConnectionFactoryControl
 
    int getProducerMaxRate();
 
-   int getProducerWindowSize();
+   int getConfirmationWindowSize();
 
    boolean isBlockOnAcknowledge();
 

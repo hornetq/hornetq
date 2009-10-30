@@ -25,6 +25,7 @@ import org.hornetq.core.client.ClientMessage;
 import org.hornetq.core.client.ClientProducer;
 import org.hornetq.core.client.ClientSessionFactory;
 import org.hornetq.core.client.SendAcknowledgementHandler;
+import org.hornetq.core.client.SessionFailureListener;
 import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
 import org.hornetq.core.client.impl.ClientSessionInternal;
 import org.hornetq.core.client.management.impl.ManagementHelper;
@@ -41,7 +42,6 @@ import org.hornetq.core.message.Message;
 import org.hornetq.core.message.impl.MessageImpl;
 import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.core.postoffice.BindingType;
-import org.hornetq.core.remoting.FailureListener;
 import org.hornetq.core.remoting.RemotingConnection;
 import org.hornetq.core.server.HandleStatus;
 import org.hornetq.core.server.MessageReference;
@@ -66,7 +66,7 @@ import org.hornetq.utils.UUID;
  *
  *
  */
-public class BridgeImpl implements Bridge, FailureListener, SendAcknowledgementHandler
+public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowledgementHandler
 {
    // Constants -----------------------------------------------------
 
@@ -241,7 +241,7 @@ public class BridgeImpl implements Bridge, FailureListener, SendAcknowledgementH
    }
 
    private void cancelRefs() throws Exception
-   {      
+   {
       MessageReference ref;
 
       LinkedList<MessageReference> list = new LinkedList<MessageReference>();
@@ -257,11 +257,7 @@ public class BridgeImpl implements Bridge, FailureListener, SendAcknowledgementH
          queue = ref2.getQueue();
          queue.cancel(ref2);
       }
-      
-      if (queue != null)
-      {
-         queue.deliverAsync(executor);
-      }
+
    }
 
    public void stop() throws Exception
@@ -474,7 +470,12 @@ public class BridgeImpl implements Bridge, FailureListener, SendAcknowledgementH
 
    public void connectionFailed(final HornetQException me)
    {
-      fail();
+      fail(false);
+   }
+
+   public void beforeReconnect(final HornetQException exception)
+   {
+      fail(true);
    }
 
    // Package protected ---------------------------------------------
@@ -498,48 +499,59 @@ public class BridgeImpl implements Bridge, FailureListener, SendAcknowledgementH
       }
    }
 
-   private void fail()
+   private void fail(final boolean beforeReconnect)
    {
-      //This will get called even after the bridge reconnects - in this case
-      //we want to cancel all unacked refs so they get resent
-      //duplicate detection will ensure no dups are routed on the other side
-      
+      // This will get called even after the bridge reconnects - in this case
+      // we want to cancel all unacked refs so they get resent
+      // duplicate detection will ensure no dups are routed on the other side
+
       if (session.getConnection().isDestroyed())
       {
          active = false;
       }
-      
+
       try
       {
          if (!session.getConnection().isDestroyed())
          {
-            setupNotificationConsumer();
-            
-            cancelRefs();
+            if (beforeReconnect)
+            {
+               active = false;
+               cancelRefs();
+            }
+            else
+            {
+               setupNotificationConsumer();
+               active = true;
+               if (queue != null)
+               {
+                  queue.deliverAsync(executor);
+               }
+            }
          }
       }
       catch (Exception e)
       {
          log.error("Failed to cancel refs", e);
       }
-   }   
-         
+   }
+
    private ClientConsumer notifConsumer;
-      
+
    // TODO - we should move this code to the ClusterConnectorImpl - and just execute it when the bridge
    // connection is opened and closed - we can use
    // a callback to tell us that
    private void setupNotificationConsumer() throws Exception
-   {           
+   {
       if (flowRecord != null)
       {
-         
+
          if (notifConsumer != null)
          {
             try
             {
                notifConsumer.close();
-               
+
                notifConsumer = null;
             }
             catch (HornetQException e)
@@ -547,7 +559,7 @@ public class BridgeImpl implements Bridge, FailureListener, SendAcknowledgementH
                log.error("Failed to close consumer", e);
             }
          }
-         
+
          // Get the queue data
 
          // Create a queue to catch the notifications - the name must be deterministic on live and backup, but
@@ -559,30 +571,30 @@ public class BridgeImpl implements Bridge, FailureListener, SendAcknowledgementH
          SimpleString notifQueueName = new SimpleString(qName);
 
          SimpleString filter = new SimpleString(ManagementHelper.HDR_BINDING_TYPE + "<>" +
-                                                   BindingType.DIVERT.toInt() +
-                                                   " AND " +
-                                                   ManagementHelper.HDR_NOTIFICATION_TYPE +
-                                                   " IN ('" +
-                                                   NotificationType.BINDING_ADDED +
-                                                   "','" +
-                                                   NotificationType.BINDING_REMOVED +
-                                                   "','" +
-                                                   NotificationType.CONSUMER_CREATED +
-                                                   "','" +
-                                                   NotificationType.CONSUMER_CLOSED +
-                                                   "','" +
-                                                   NotificationType.PROPOSAL +
-                                                   "','" +
-                                                   NotificationType.PROPOSAL_RESPONSE +
-                                                   "') AND " +
-                                                   ManagementHelper.HDR_DISTANCE +
-                                                   "<" +
-                                                   flowRecord.getMaxHops() +
-                                                   " AND (" +
-                                                   ManagementHelper.HDR_ADDRESS +
-                                                   " LIKE '" +
-                                                   flowRecord.getAddress() +
-                                                   "%')");
+                                                BindingType.DIVERT.toInt() +
+                                                " AND " +
+                                                ManagementHelper.HDR_NOTIFICATION_TYPE +
+                                                " IN ('" +
+                                                NotificationType.BINDING_ADDED +
+                                                "','" +
+                                                NotificationType.BINDING_REMOVED +
+                                                "','" +
+                                                NotificationType.CONSUMER_CREATED +
+                                                "','" +
+                                                NotificationType.CONSUMER_CLOSED +
+                                                "','" +
+                                                NotificationType.PROPOSAL +
+                                                "','" +
+                                                NotificationType.PROPOSAL_RESPONSE +
+                                                "') AND " +
+                                                ManagementHelper.HDR_DISTANCE +
+                                                "<" +
+                                                flowRecord.getMaxHops() +
+                                                " AND (" +
+                                                ManagementHelper.HDR_ADDRESS +
+                                                " LIKE '" +
+                                                flowRecord.getAddress() +
+                                                "%')");
 
          // The queue can't be temporary, since if the node with the bridge crashes then is restarted quickly
          // it might get deleted on the target when it does connection cleanup
@@ -632,7 +644,7 @@ public class BridgeImpl implements Bridge, FailureListener, SendAcknowledgementH
       }
 
       try
-      {                          
+      {
          if (discoveryAddress != null)
          {
             csf = new ClientSessionFactoryImpl(discoveryAddress, discoveryPort);
@@ -664,19 +676,19 @@ public class BridgeImpl implements Bridge, FailureListener, SendAcknowledgementH
          session.setSendAcknowledgementHandler(BridgeImpl.this);
 
          setupNotificationConsumer();
-                  
+
          active = true;
-                 
+
          queue.addConsumer(BridgeImpl.this);
 
          queue.deliverAsync(executor);
-         
+
          return true;
       }
       catch (Exception e)
       {
          log.warn("Bridge " + name + " is unable to connect to destination. It will be disabled.");
-         
+
          return false;
       }
    }
@@ -710,6 +722,11 @@ public class BridgeImpl implements Bridge, FailureListener, SendAcknowledgementH
             queue.removeConsumer(BridgeImpl.this);
 
             cancelRefs();
+
+            if (queue != null)
+            {
+               queue.deliverAsync(executor);
+            }
          }
          catch (Exception e)
          {
@@ -730,41 +747,41 @@ public class BridgeImpl implements Bridge, FailureListener, SendAcknowledgementH
          }
       }
    }
-   
-//   private class FailRunnable implements Runnable
-//   {
-//      public void run()
-//      {
-//         synchronized (BridgeImpl.this)
-//         {
-//            if (!started)
-//            {
-//               return;
-//            }
-//
-//            active = false;
-//         }
-//
-//         try
-//         {
-//            queue.removeConsumer(BridgeImpl.this);
-//
-//            session.cleanUp();
-//
-//            cancelRefs();
-//
-//            csf.close();
-//         }
-//         catch (Exception e)
-//         {
-//            log.error("Failed to stop", e);
-//         }
-//         
-//         if (!createObjects())
-//         {
-//            started = false;
-//         }
-//      }
-//   }
+
+   // private class FailRunnable implements Runnable
+   // {
+   // public void run()
+   // {
+   // synchronized (BridgeImpl.this)
+   // {
+   // if (!started)
+   // {
+   // return;
+   // }
+   //
+   // active = false;
+   // }
+   //
+   // try
+   // {
+   // queue.removeConsumer(BridgeImpl.this);
+   //
+   // session.cleanUp();
+   //
+   // cancelRefs();
+   //
+   // csf.close();
+   // }
+   // catch (Exception e)
+   // {
+   // log.error("Failed to stop", e);
+   // }
+   //         
+   // if (!createObjects())
+   // {
+   // started = false;
+   // }
+   // }
+   // }
 
 }

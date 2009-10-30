@@ -18,6 +18,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Executor;
 
+import org.hornetq.core.client.SessionFailureListener;
 import org.hornetq.core.client.impl.FailoverManager;
 import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.journal.EncodingSupport;
@@ -25,7 +26,6 @@ import org.hornetq.core.logging.Logger;
 import org.hornetq.core.paging.PagedMessage;
 import org.hornetq.core.remoting.Channel;
 import org.hornetq.core.remoting.ChannelHandler;
-import org.hornetq.core.remoting.FailureListener;
 import org.hornetq.core.remoting.Packet;
 import org.hornetq.core.remoting.RemotingConnection;
 import org.hornetq.core.remoting.impl.wireformat.CreateReplicationSessionMessage;
@@ -63,7 +63,7 @@ public class ReplicationManagerImpl implements ReplicationManager
    // Attributes ----------------------------------------------------
 
    // TODO: where should this be configured?
-   private static final int WINDOW_SIZE = 1024 * 1024;
+   private static final int CONF_WINDOW_SIZE = 1024 * 1024;
 
    private final ResponseHandler responseHandler = new ResponseHandler();
 
@@ -319,18 +319,18 @@ public class ReplicationManagerImpl implements ReplicationManager
 
       long channelID = connection.generateChannelID();
 
-      Channel mainChannel = connection.getChannel(1, -1, false);
+      Channel mainChannel = connection.getChannel(1, -1);
 
-      replicatingChannel = connection.getChannel(channelID, WINDOW_SIZE, false);
+      replicatingChannel = connection.getChannel(channelID, CONF_WINDOW_SIZE);
 
       replicatingChannel.setHandler(responseHandler);
 
       CreateReplicationSessionMessage replicationStartPackage = new CreateReplicationSessionMessage(channelID,
-                                                                                                    WINDOW_SIZE);
+                                                                                                    CONF_WINDOW_SIZE);
 
       mainChannel.sendBlocking(replicationStartPackage);
 
-      failoverManager.addFailureListener(new FailureListener()
+      failoverManager.addFailureListener(new SessionFailureListener()
       {
          public void connectionFailed(HornetQException me)
          {
@@ -343,6 +343,10 @@ public class ReplicationManagerImpl implements ReplicationManager
             {
                log.warn(e.getMessage(), e);
             }
+         }
+         
+         public void beforeReconnect(HornetQException me)
+         {            
          }
       });
 

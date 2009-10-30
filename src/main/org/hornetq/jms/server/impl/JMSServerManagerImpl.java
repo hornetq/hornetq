@@ -370,7 +370,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
                                                     int minLargeMessageSize,
                                                     int consumerWindowSize,
                                                     int consumerMaxRate,
-                                                    int producerWindowSize,
+                                                    int confirmationWindowSize,
                                                     int producerMaxRate,
                                                     boolean blockOnAcknowledge,
                                                     boolean blockOnPersistentSend,
@@ -403,7 +403,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
          cf.setMinLargeMessageSize(minLargeMessageSize);
          cf.setConsumerWindowSize(consumerWindowSize);
          cf.setConsumerMaxRate(consumerMaxRate);
-         cf.setProducerWindowSize(producerWindowSize);
+         cf.setConfirmationWindowSize(confirmationWindowSize);
          cf.setProducerMaxRate(producerMaxRate);
          cf.setBlockOnAcknowledge(blockOnAcknowledge);
          cf.setBlockOnPersistentSend(blockOnPersistentSend);
@@ -438,7 +438,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
                                                     int minLargeMessageSize,
                                                     int consumerWindowSize,
                                                     int consumerMaxRate,
-                                                    int producerWindowSize,
+                                                    int confirmationWindowSize,
                                                     int producerMaxRate,
                                                     boolean blockOnAcknowledge,
                                                     boolean blockOnPersistentSend,
@@ -473,7 +473,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
          cf.setMinLargeMessageSize(minLargeMessageSize);
          cf.setConsumerWindowSize(consumerWindowSize);
          cf.setConsumerMaxRate(consumerMaxRate);
-         cf.setProducerWindowSize(producerWindowSize);
+         cf.setConfirmationWindowSize(confirmationWindowSize);
          cf.setProducerMaxRate(producerMaxRate);
          cf.setBlockOnAcknowledge(blockOnAcknowledge);
          cf.setBlockOnPersistentSend(blockOnPersistentSend);
@@ -753,7 +753,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
                                     config.getMinLargeMessageSize(),
                                     config.getConsumerWindowSize(),
                                     config.getConsumerMaxRate(),
-                                    config.getProducerWindowSize(),
+                                    config.getConfirmationWindowSize(),
                                     config.getProducerMaxRate(),
                                     config.isBlockOnAcknowledge(),
                                     config.isBlockOnPersistentSend(),
@@ -786,7 +786,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
                                     config.getMinLargeMessageSize(),
                                     config.getConsumerWindowSize(),
                                     config.getConsumerMaxRate(),
-                                    config.getProducerWindowSize(),
+                                    config.getConfirmationWindowSize(),
                                     config.getProducerMaxRate(),
                                     config.isBlockOnAcknowledge(),
                                     config.isBlockOnPersistentSend(),

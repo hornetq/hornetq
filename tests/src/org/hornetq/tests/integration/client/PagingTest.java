@@ -30,6 +30,7 @@ import org.hornetq.core.message.impl.MessageImpl;
 import org.hornetq.core.remoting.spi.HornetQBuffer;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.Queue;
+import org.hornetq.core.settings.impl.AddressFullMessagePolicy;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.tests.util.ServiceTestBase;
 import org.hornetq.utils.DataConstants;
@@ -635,7 +636,7 @@ public class PagingTest extends ServiceTestBase
       HashMap<String, AddressSettings> settings = new HashMap<String, AddressSettings>();
 
       AddressSettings set = new AddressSettings();
-      set.setDropMessagesWhenFull(true);
+      set.setAddressFullMessagePolicy(AddressFullMessagePolicy.DROP);
 
       settings.put(ADDRESS.toString(), set);
 

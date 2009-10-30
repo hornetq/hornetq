@@ -330,14 +330,14 @@ public class HornetQConnectionFactory implements ConnectionFactory, QueueConnect
       sessionFactory.setConsumerMaxRate(consumerMaxRate);
    }
 
-   public synchronized int getProducerWindowSize()
+   public synchronized int getConfirmationWindowSize()
    {
-      return sessionFactory.getProducerWindowSize();
+      return sessionFactory.getConfirmationWindowSize();
    }
 
-   public synchronized void setProducerWindowSize(int producerWindowSize)
+   public synchronized void setConfirmationWindowSize(int confirmationWindowSize)
    {
-      sessionFactory.setProducerWindowSize(producerWindowSize);
+      sessionFactory.setConfirmationWindowSize(confirmationWindowSize);
    }
 
    public synchronized int getProducerMaxRate()

@@ -16,6 +16,7 @@ package org.hornetq.core.journal.impl;
 import java.io.File;
 import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
+import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 
 import org.hornetq.core.logging.Logger;
@@ -45,14 +46,12 @@ public class SyncSpeedTest
          e.printStackTrace();
       }
    }
-      
+   
    public void run() throws Exception
-   {  
-      log.info("******* Starting file sync speed test *******");
+   {
+      int fileSize = 1024 * 1024 * 100;
       
-      int fileSize = 1024 * 1024 * 10;
-      
-      int recordSize = 1024;
+      int recordSize = 10 * 1024;
       
       int its = 10 * 1024;
       
@@ -75,31 +74,91 @@ public class SyncSpeedTest
       
       channel.position(0);
       
+      MappedByteBuffer mappedBB = channel.map(FileChannel.MapMode.READ_WRITE, 0, fileSize);
+      
+      mappedBB.load();
+      // mappedBB.order(java.nio.ByteOrder.LITTLE_ENDIAN);
+      System.out.println("isLoaded=" + mappedBB.isLoaded() + "; isDirect=" + mappedBB.isDirect() + "; byteOrder=" + mappedBB.order());
+      
       ByteBuffer bb1 = generateBuffer(recordSize, (byte)'h');
             
-      log.info("Measuring");
+      System.out.println("Measuring");
       
       long start = System.currentTimeMillis();
       
       for (int i = 0; i < its; i++)
       {
-         write(bb1, channel, recordSize);
-         
-         channel.force(false);
+        bb1.flip();
+        mappedBB.position(0);
+        mappedBB.put(bb1);
+        mappedBB.force();
+        
+         //write(bb1, channel, recordSize);
+         // channel.force(false);
       }
       
       long end = System.currentTimeMillis();
       
       double rate = 1000 * ((double)its) / (end - start);
       
-      log.info("Rate of " + rate + " syncs per sec");
-      
-      rfile.close();
-      
+      System.out.println("Rate of " + rate + " syncs per sec");
       file.delete();
-                  
-      log.info("****** test complete *****");
    }
+      
+//   public void run() throws Exception
+//   {  
+//      log.info("******* Starting file sync speed test *******");
+//      
+//      int fileSize = 1024 * 1024 * 10;
+//      
+//      int recordSize = 1024;
+//      
+//      int its = 10 * 1024;
+//      
+//      File file = new File("sync-speed-test.dat");
+//      
+//      if (file.exists())
+//      {
+//         file.delete();
+//      }
+//      
+//      RandomAccessFile rfile = new RandomAccessFile(file, "rw");
+//      
+//      FileChannel channel = rfile.getChannel();
+//      
+//      ByteBuffer bb = generateBuffer(fileSize, (byte)'x');
+//      
+//      write(bb, channel, fileSize);
+//            
+//      channel.force(false);
+//      
+//      channel.position(0);
+//      
+//      ByteBuffer bb1 = generateBuffer(recordSize, (byte)'h');
+//            
+//      log.info("Measuring");
+//      
+//      long start = System.currentTimeMillis();
+//      
+//      for (int i = 0; i < its; i++)
+//      {
+//         write(bb1, channel, recordSize);
+//         
+//         channel.force(false);
+//      }
+//      
+//      long end = System.currentTimeMillis();
+//      
+//      double rate = 1000 * ((double)its) / (end - start);
+//      
+//      log.info("Rate of " + rate + " syncs per sec");
+//      
+//      rfile.close();
+//      
+//      file.delete();
+//                  
+//      log.info("****** test complete *****");
+//   }
    
    private void write(final ByteBuffer buffer, final FileChannel channel, final int size) throws Exception
    {

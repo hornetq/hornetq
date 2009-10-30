@@ -329,7 +329,7 @@ public class HornetQServerImpl implements HornetQServer
          clusterManager.stop();
       }
 
-      if(groupingHandler != null)
+      if (groupingHandler != null)
       {
          managementService.removeNotificationListener(groupingHandler);
          groupingHandler = null;
@@ -536,10 +536,32 @@ public class HornetQServerImpl implements HornetQServer
       }
       else
       {
-         // Reconnect the channel to the new connection
-         int serverLastReceivedCommandID = session.transferConnection(connection, lastReceivedCommandID);
+         if (session.getChannel().getConfirmationWindowSize() == -1)
+         {
+            // Even though session exists, we can't reattach since confi window size == -1,
+            // i.e. we don't have a resend cache for commands, so we just close the old session
+            // and let the client recreate
 
-         return new ReattachSessionResponseMessage(serverLastReceivedCommandID, true);
+            try
+            {
+               session.close();
+            }
+            catch (Exception e)
+            {
+               log.error("Failed to close session", e);
+            }
+
+            sessions.remove(name);
+            
+            return new ReattachSessionResponseMessage(-1, false);
+         }
+         else
+         {
+            // Reconnect the channel to the new connection
+            int serverLastReceivedCommandID = session.transferConnection(connection, lastReceivedCommandID);
+
+            return new ReattachSessionResponseMessage(serverLastReceivedCommandID, true);
+         }
       }
    }
 
@@ -590,7 +612,7 @@ public class HornetQServerImpl implements HornetQServer
          currentSession.getChannel().close();
       }
 
-      Channel channel = connection.getChannel(channelID, sendWindowSize, false);
+      Channel channel = connection.getChannel(channelID, sendWindowSize);
 
       final ServerSessionImpl session = new ServerSessionImpl(name,
                                                               username,
@@ -878,7 +900,6 @@ public class HornetQServerImpl implements HornetQServer
       return true;
    }
 
-
    private synchronized void callActivateCallbacks()
    {
       for (ActivateCallback callback : activateCallbacks)
@@ -1162,9 +1183,11 @@ public class HornetQServerImpl implements HornetQServer
 
       for (GroupingInfo groupingInfo : groupingInfos)
       {
-         if(groupingHandler != null)
+         if (groupingHandler != null)
          {
-            groupingHandler.addGroupBinding(new GroupBinding(groupingInfo.getId(), groupingInfo.getGroupId(), groupingInfo.getClusterName()));
+            groupingHandler.addGroupBinding(new GroupBinding(groupingInfo.getId(),
+                                                             groupingInfo.getGroupId(),
+                                                             groupingInfo.getClusterName()));
          }
       }
 
@@ -1331,13 +1354,18 @@ public class HornetQServerImpl implements HornetQServer
          GroupingHandler groupingHandler;
          if (config.getType() == GroupingHandlerConfiguration.TYPE.LOCAL)
          {
-            groupingHandler = new LocalGroupingHandler(managementService, config.getName(), config.getAddress(), 
-                  getStorageManager(),
-                  config.getTimeout());
+            groupingHandler = new LocalGroupingHandler(managementService,
+                                                       config.getName(),
+                                                       config.getAddress(),
+                                                       getStorageManager(),
+                                                       config.getTimeout());
          }
          else
          {
-            groupingHandler = new RemoteGroupingHandler(managementService, config.getName(), config.getAddress(), config.getTimeout());
+            groupingHandler = new RemoteGroupingHandler(managementService,
+                                                        config.getName(),
+                                                        config.getAddress(),
+                                                        config.getTimeout());
          }
          log.info("deploying grouping handler: " + groupingHandler);
          this.groupingHandler = groupingHandler;

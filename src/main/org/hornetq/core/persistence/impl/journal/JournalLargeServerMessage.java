@@ -16,11 +16,14 @@ package org.hornetq.core.persistence.impl.journal;
 import static org.hornetq.utils.DataConstants.SIZE_INT;
 
 import java.nio.ByteBuffer;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.hornetq.core.journal.SequentialFile;
 import org.hornetq.core.logging.Logger;
+import org.hornetq.core.paging.PagingStore;
 import org.hornetq.core.remoting.spi.HornetQBuffer;
 import org.hornetq.core.server.LargeServerMessage;
+import org.hornetq.core.server.MessageReference;
 import org.hornetq.core.server.ServerMessage;
 import org.hornetq.core.server.impl.ServerMessageImpl;
 
@@ -91,7 +94,7 @@ public class JournalLargeServerMessage extends ServerMessageImpl implements Larg
       {
          file.open();
       }
-      
+
       storageManager.addBytesToLargeMessage(file, this.getMessageID(), bytes);
 
       bodySize += bytes.length;
@@ -161,13 +164,13 @@ public class JournalLargeServerMessage extends ServerMessageImpl implements Larg
    @Override
    public synchronized int getEncodeSize()
    {
-      return getPropertiesEncodeSize();
+      return getHeadersAndPropertiesEncodeSize();
    }
 
    @Override
    public void encode(final HornetQBuffer buffer)
    {
-      encodeProperties(buffer);
+      encodeHeadersAndProperties(buffer);
    }
 
    @Override
@@ -183,22 +186,34 @@ public class JournalLargeServerMessage extends ServerMessageImpl implements Larg
          // File still null, this wasn't supposed to happen ever.
          log.warn(e.getMessage(), e);
       }
-      decodeProperties(buffer);
+      decodeHeadersAndProperties(buffer);
    }
 
-   @Override
-   public int decrementRefCount()
-   {
-      int currentRefCount = super.decrementRefCount();
+   private final AtomicInteger delayDeletionCount = new AtomicInteger(0);
 
-      // We use <= as this could be used by load.
-      // because of a failure, no references were loaded, so we have 0... and we still need to delete the associated files
-      if (currentRefCount <= 0)
+   public synchronized void incrementDelayDeletionCount()
+   {
+      this.delayDeletionCount.incrementAndGet();
+   }
+   
+   public synchronized void decrementDelayDeletionCount() throws Exception
+   {
+      int count = this.delayDeletionCount.decrementAndGet();
+      
+      if (count == 0)
+      {
+         checkDelete();
+      }
+   }
+
+   private void checkDelete() throws Exception
+   {
+      if (getRefCount() <= 0)
       {
          if (linkMessage != null)
          {
             // This file is linked to another message, deleting the reference where it belongs on this case
-            linkMessage.decrementRefCount();
+            linkMessage.decrementDelayDeletionCount();
          }
          else
          {
@@ -217,6 +232,20 @@ public class JournalLargeServerMessage extends ServerMessageImpl implements Larg
             }
          }
       }
+   }
+
+   @Override
+   public synchronized int decrementRefCount(PagingStore pagingStore, MessageReference reference) throws Exception
+   {
+      int currentRefCount = super.decrementRefCount(pagingStore, reference);
+
+      // We use <= as this could be used by load.
+      // because of a failure, no references were loaded, so we have 0... and we still need to delete the associated
+      // files
+      if (delayDeletionCount.get() <= 0)
+      {
+         checkDelete();
+      }
 
       return currentRefCount;
    }
@@ -233,7 +262,7 @@ public class JournalLargeServerMessage extends ServerMessageImpl implements Larg
       releaseResources();
       storageManager.deleteFile(file);
    }
-   
+
    public boolean isFileExists() throws Exception
    {
       SequentialFile localfile = storageManager.createFileForLargeMessage(getMessageID(), isStored());
@@ -249,20 +278,18 @@ public class JournalLargeServerMessage extends ServerMessageImpl implements Larg
       if (memoryEstimate == -1)
       {
          // The body won't be on memory (aways on-file), so we don't consider this for paging
-         memoryEstimate = getPropertiesEncodeSize() + SIZE_INT + getEncodeSize() + (16 + 4) * 2 + 1;
+         memoryEstimate = getHeadersAndPropertiesEncodeSize() + SIZE_INT + getEncodeSize() + (16 + 4) * 2 + 1;
       }
 
       return memoryEstimate;
    }
-   
-   
+
    @Override
    public void setStored() throws Exception
    {
       super.setStored();
       releaseResources();
-      
-      
+
       if (file != null && linkMessage == null)
       {
          storageManager.completeLargeMessage(this);
@@ -287,11 +314,10 @@ public class JournalLargeServerMessage extends ServerMessageImpl implements Larg
    @Override
    public synchronized ServerMessage copy(final long newID) throws Exception
    {
-      // Incrementing the reference counting to avoid deletion of the linkedMessage
-      incrementRefCount();
-      
+      incrementDelayDeletionCount();
+
       long idToUse = messageID;
-      
+
       if (linkMessage != null)
       {
          idToUse = linkMessage.getMessageID();
@@ -299,12 +325,14 @@ public class JournalLargeServerMessage extends ServerMessageImpl implements Larg
 
       SequentialFile newfile = storageManager.createFileForLargeMessage(idToUse, isStored());
 
-      JournalLargeServerMessage newMessage = new JournalLargeServerMessage(linkMessage == null ? this : (JournalLargeServerMessage)linkMessage, newfile, newID);
+      ServerMessage newMessage = new JournalLargeServerMessage(linkMessage == null ? this
+                                                                                              : (JournalLargeServerMessage)linkMessage,
+                                                                           newfile,
+                                                                           newID);
 
       return newMessage;
    }
-   
-   
+
    public SequentialFile getFile()
    {
       return file;
@@ -341,13 +369,13 @@ public class JournalLargeServerMessage extends ServerMessageImpl implements Larg
       }
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.server.LargeServerMessage#getLinkedMessage()
-    */
-   public LargeServerMessage getLinkedMessage()
-   {
-      return linkMessage;
-   }
+//   /* (non-Javadoc)
+//    * @see org.hornetq.core.server.LargeServerMessage#getLinkedMessage()
+//    */
+//   public LargeServerMessage getLinkedMessage()
+//   {
+//      return linkMessage;
+//   }
 
    /* (non-Javadoc)
     * @see org.hornetq.core.server.LargeServerMessage#setLinkedMessage(org.hornetq.core.server.LargeServerMessage)

@@ -23,9 +23,9 @@ import org.hornetq.core.client.ClientConsumer;
 import org.hornetq.core.client.ClientMessage;
 import org.hornetq.core.client.ClientProducer;
 import org.hornetq.core.client.SendAcknowledgementHandler;
+import org.hornetq.core.client.SessionFailureListener;
 import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.logging.Logger;
-import org.hornetq.core.remoting.FailureListener;
 import org.hornetq.core.remoting.RemotingConnection;
 import org.hornetq.core.remoting.impl.wireformat.SessionBindingQueryResponseMessage;
 import org.hornetq.core.remoting.impl.wireformat.SessionQueueQueryResponseMessage;
@@ -104,7 +104,7 @@ public class DelegatingSession implements ClientSessionInternal
       session.addConsumer(consumer);
    }
 
-   public void addFailureListener(FailureListener listener)
+   public void addFailureListener(SessionFailureListener listener)
    {
       session.addFailureListener(listener);
    }
@@ -149,11 +149,6 @@ public class DelegatingSession implements ClientSessionInternal
       session.commit(xid, onePhase);
    }
 
-   public HornetQBuffer createBuffer(int size)
-   {
-      return session.createBuffer(size);
-   }
-
    public ClientMessage createClientMessage(boolean durable)
    {
       return session.createClientMessage(durable);
@@ -168,6 +163,22 @@ public class DelegatingSession implements ClientSessionInternal
    {
       return session.createClientMessage(type, durable);
    }
+   
+   public ClientMessage createClientMessage(boolean durable, HornetQBuffer buffer)
+   {
+      return session.createClientMessage(durable, buffer);
+   }    
+   
+   public HornetQBuffer createBuffer(byte[] bytes)
+   {
+      return session.createBuffer(bytes);
+   }
+
+   public HornetQBuffer createBuffer(int size)
+   {
+      return session.createBuffer(size);
+   }
+
 
    public ClientConsumer createConsumer(SimpleString queueName, SimpleString filterString, boolean browseOnly) throws HornetQException
    {
@@ -443,7 +454,7 @@ public class DelegatingSession implements ClientSessionInternal
       session.removeConsumer(consumer);
    }
 
-   public boolean removeFailureListener(FailureListener listener)
+   public boolean removeFailureListener(SessionFailureListener listener)
    {
       return session.removeFailureListener(listener);
    }
@@ -517,4 +528,19 @@ public class DelegatingSession implements ClientSessionInternal
    {
       session.workDone();
    }
+
+   public void sendProducerCreditsMessage(int credits, SimpleString destination)
+   {
+      session.sendProducerCreditsMessage(credits, destination);
+   }
+
+   public ClientProducerCredits getCredits(SimpleString address)
+   {
+      return session.getCredits(address);
+   }
+
+   public void handleReceiveProducerCredits(SimpleString address, int credits)
+   {
+      session.handleReceiveProducerCredits(address, credits);
+   }  
 }

@@ -86,7 +86,7 @@ public interface HornetQServer extends HornetQComponent
                                               boolean autoCommitAcks,
                                               boolean preAcknowledge,
                                               boolean xa,
-                                              int producerWindowSize) throws Exception;
+                                              int confirmationWindowSize) throws Exception;
 
    void removeSession(String name) throws Exception;
 

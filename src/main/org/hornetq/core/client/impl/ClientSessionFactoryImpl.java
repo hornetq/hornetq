@@ -73,6 +73,8 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
 
    public static final int DEFAULT_CONSUMER_MAX_RATE = -1;
 
+   public static final int DEFAULT_CONFIRMATION_WINDOW_SIZE = -1;
+
    public static final int DEFAULT_PRODUCER_WINDOW_SIZE = 1024 * 1024;
 
    public static final int DEFAULT_PRODUCER_MAX_RATE = -1;
@@ -98,11 +100,11 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
    public static final long DEFAULT_RETRY_INTERVAL = 2000;
 
    public static final double DEFAULT_RETRY_INTERVAL_MULTIPLIER = 1d;
-   
+
    public static final long DEFAULT_MAX_RETRY_INTERVAL = 2000;
 
    public static final int DEFAULT_RECONNECT_ATTEMPTS = 0;
-   
+
    public static final boolean DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN = false;
 
    public static final boolean DEFAULT_USE_GLOBAL_POOLS = true;
@@ -158,6 +160,8 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
 
    private int consumerMaxRate;
 
+   private int confirmationWindowSize;
+
    private int producerWindowSize;
 
    private int producerMaxRate;
@@ -185,15 +189,15 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
    private long retryInterval;
 
    private double retryIntervalMultiplier;
-   
+
    private long maxRetryInterval;
 
    private int reconnectAttempts;
-   
+
    private volatile boolean closed;
 
    private boolean failoverOnServerShutdown;
-   
+
    private final List<Interceptor> interceptors = new CopyOnWriteArrayList<Interceptor>();
 
    private static ExecutorService globalThreadPool;
@@ -235,7 +239,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
       else
       {
          ThreadFactory factory = new HornetQThreadFactory("HornetQ-client-factory-threads-" + System.identityHashCode(this),
-                                                      true);
+                                                          true);
 
          if (threadPoolMaxSize == -1)
          {
@@ -246,7 +250,8 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
             threadPool = Executors.newFixedThreadPool(threadPoolMaxSize, factory);
          }
 
-         factory = new HornetQThreadFactory("HornetQ-client-factory-pinger-threads-" + System.identityHashCode(this), true);
+         factory = new HornetQThreadFactory("HornetQ-client-factory-pinger-threads-" + System.identityHashCode(this),
+                                            true);
 
          scheduledThreadPool = Executors.newScheduledThreadPool(scheduledThreadPoolMaxSize, factory);
       }
@@ -277,19 +282,19 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
          for (Pair<TransportConfiguration, TransportConfiguration> pair : staticConnectors)
          {
             FailoverManager cm = new FailoverManagerImpl(this,
-                                                             pair.a,
-                                                             pair.b,
-                                                             failoverOnServerShutdown,                                                            
-                                                             callTimeout,
-                                                             clientFailureCheckPeriod,
-                                                             connectionTTL,
-                                                             retryInterval,
-                                                             retryIntervalMultiplier,
-                                                             maxRetryInterval,
-                                                             reconnectAttempts,                                                             
-                                                             threadPool,
-                                                             scheduledThreadPool,
-                                                             interceptors);
+                                                         pair.a,
+                                                         pair.b,
+                                                         failoverOnServerShutdown,
+                                                         callTimeout,
+                                                         clientFailureCheckPeriod,
+                                                         connectionTTL,
+                                                         retryInterval,
+                                                         retryIntervalMultiplier,
+                                                         maxRetryInterval,
+                                                         reconnectAttempts,
+                                                         threadPool,
+                                                         scheduledThreadPool,
+                                                         interceptors);
 
             failoverManagerMap.put(pair, cm);
          }
@@ -324,6 +329,8 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
 
       consumerMaxRate = DEFAULT_CONSUMER_MAX_RATE;
 
+      confirmationWindowSize = DEFAULT_CONFIRMATION_WINDOW_SIZE;
+
       producerWindowSize = DEFAULT_PRODUCER_WINDOW_SIZE;
 
       producerMaxRate = DEFAULT_PRODUCER_MAX_RATE;
@@ -353,11 +360,11 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
       retryInterval = DEFAULT_RETRY_INTERVAL;
 
       retryIntervalMultiplier = DEFAULT_RETRY_INTERVAL_MULTIPLIER;
-      
+
       maxRetryInterval = DEFAULT_MAX_RETRY_INTERVAL;
 
       reconnectAttempts = DEFAULT_RECONNECT_ATTEMPTS;
-      
+
       failoverOnServerShutdown = DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN;
    }
 
@@ -483,12 +490,23 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
       this.consumerMaxRate = consumerMaxRate;
    }
 
+   public synchronized int getConfirmationWindowSize()
+   {
+      return confirmationWindowSize;
+   }
+
+   public synchronized void setConfirmationWindowSize(int confirmationWindowSize)
+   {
+      checkWrite();
+      this.confirmationWindowSize = confirmationWindowSize;
+   }
+
    public synchronized int getProducerWindowSize()
    {
       return producerWindowSize;
    }
 
-   public synchronized void setProducerWindowSize(int producerWindowSize)
+   public synchronized void setProducerWindowSize(final int producerWindowSize)
    {
       checkWrite();
       this.producerWindowSize = producerWindowSize;
@@ -625,7 +643,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
       checkWrite();
       this.retryInterval = retryInterval;
    }
-   
+
    public synchronized long getMaxRetryInterval()
    {
       return maxRetryInterval;
@@ -658,7 +676,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
       checkWrite();
       this.reconnectAttempts = reconnectAttempts;
    }
-   
+
    public synchronized boolean isFailoverOnServerShutdown()
    {
       return failoverOnServerShutdown;
@@ -707,7 +725,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
    {
       return discoveryRefreshTimeout;
    }
-   
+
    public void addInterceptor(final Interceptor interceptor)
    {
       interceptors.add(interceptor);
@@ -740,18 +758,10 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
                                    preAcknowledge,
                                    ackBatchSize);
    }
-   
-   
 
    public ClientSession createSession(boolean autoCommitSends, boolean autoCommitAcks, int ackBatchSize) throws HornetQException
    {
-      return createSessionInternal(null,
-                                   null,
-                                   false,
-                                   autoCommitSends,
-                                   autoCommitAcks,
-                                   preAcknowledge,
-                                   ackBatchSize);
+      return createSessionInternal(null, null, false, autoCommitSends, autoCommitAcks, preAcknowledge, ackBatchSize);
    }
 
    public ClientSession createXASession() throws HornetQException
@@ -835,7 +845,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
             log.error("Failed to stop discovery group", e);
          }
       }
-      
+
       for (FailoverManager failoverManager : failoverManagerMap.values())
       {
          failoverManager.causeExit();
@@ -891,7 +901,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
       }
 
       Iterator<Map.Entry<Pair<TransportConfiguration, TransportConfiguration>, FailoverManager>> iter = failoverManagerMap.entrySet()
-                                                                                                                              .iterator();
+                                                                                                                          .iterator();
       while (iter.hasNext())
       {
          Map.Entry<Pair<TransportConfiguration, TransportConfiguration>, FailoverManager> entry = iter.next();
@@ -911,19 +921,19 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
             // Create a new failoverManager
 
             FailoverManager failoverManager = new FailoverManagerImpl(this,
-                                                                            connectorPair.a,
-                                                                            connectorPair.b,
-                                                                            failoverOnServerShutdown,                                                                          
-                                                                            callTimeout,
-                                                                            clientFailureCheckPeriod,
-                                                                            connectionTTL,
-                                                                            retryInterval,
-                                                                            retryIntervalMultiplier,
-                                                                            maxRetryInterval,
-                                                                            reconnectAttempts,                                                                            
-                                                                            threadPool,
-                                                                            scheduledThreadPool,
-                                                                            interceptors);
+                                                                      connectorPair.a,
+                                                                      connectorPair.b,
+                                                                      failoverOnServerShutdown,
+                                                                      callTimeout,
+                                                                      clientFailureCheckPeriod,
+                                                                      connectionTTL,
+                                                                      retryInterval,
+                                                                      retryIntervalMultiplier,
+                                                                      maxRetryInterval,
+                                                                      reconnectAttempts,
+                                                                      threadPool,
+                                                                      scheduledThreadPool,
+                                                                      interceptors);
 
             failoverManagerMap.put(connectorPair, failoverManager);
          }
@@ -991,7 +1001,7 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
          if (!ok)
          {
             throw new HornetQException(HornetQException.CONNECTION_TIMEDOUT,
-                                         "Timed out waiting to receive initial broadcast from discovery group");
+                                       "Timed out waiting to receive initial broadcast from discovery group");
          }
       }
 
@@ -1002,22 +1012,23 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
          FailoverManager failoverManager = failoverManagerArray[pos];
 
          ClientSession session = failoverManager.createSession(username,
-                                                                 password,
-                                                                 xa,
-                                                                 autoCommitSends,
-                                                                 autoCommitAcks,
-                                                                 preAcknowledge,
-                                                                 ackBatchSize,
-                                                                 cacheLargeMessagesClient,
-                                                                 minLargeMessageSize,
-                                                                 blockOnAcknowledge,
-                                                                 autoGroup,
-                                                                 producerWindowSize,
-                                                                 consumerWindowSize,
-                                                                 producerMaxRate,
-                                                                 consumerMaxRate,
-                                                                 blockOnNonPersistentSend,
-                                                                 blockOnPersistentSend);
+                                                               password,
+                                                               xa,
+                                                               autoCommitSends,
+                                                               autoCommitAcks,
+                                                               preAcknowledge,
+                                                               ackBatchSize,
+                                                               cacheLargeMessagesClient,
+                                                               minLargeMessageSize,
+                                                               blockOnAcknowledge,
+                                                               autoGroup,
+                                                               confirmationWindowSize,
+                                                               producerWindowSize,
+                                                               consumerWindowSize,
+                                                               producerMaxRate,
+                                                               consumerMaxRate,
+                                                               blockOnNonPersistentSend,
+                                                               blockOnPersistentSend);
 
          return session;
       }

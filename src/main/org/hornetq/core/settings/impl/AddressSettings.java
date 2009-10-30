@@ -36,10 +36,10 @@ public class AddressSettings implements Mergeable<AddressSettings>
 
    public static final int DEFAULT_MAX_SIZE_BYTES = -1;
 
-   public static final boolean DEFAULT_DROP_MESSAGES_WHEN_FULL = false;
+   public static final AddressFullMessagePolicy DEFAULT_ADDRESS_FULL_MESSAGE_POLICY = AddressFullMessagePolicy.PAGE;
 
    public static final int DEFAULT_PAGE_SIZE = 10 * 1024 * 1024;
-
+   
    public static final int DEFAULT_MAX_DELIVERY_ATTEMPTS = 10;
 
    public static final int DEFAULT_MESSAGE_COUNTER_HISTORY_DAY_LIMIT = 0;
@@ -49,8 +49,10 @@ public class AddressSettings implements Mergeable<AddressSettings>
    public static final boolean DEFAULT_LAST_VALUE_QUEUE = false;
 
    public static final long DEFAULT_REDISTRIBUTION_DELAY = -1;
-   
+
    public static final boolean DEFAULT_SEND_TO_DLA_ON_NO_ROUTE = false;
+
+   private AddressFullMessagePolicy addressFullMessagePolicy = null;
 
    private Long maxSizeBytes = null;
 
@@ -73,7 +75,7 @@ public class AddressSettings implements Mergeable<AddressSettings>
    private Boolean lastValueQueue = null;
 
    private Long redistributionDelay = null;
-   
+
    private Boolean sendToDLAOnNoRoute = null;
 
    public boolean isLastValueQueue()
@@ -86,21 +88,21 @@ public class AddressSettings implements Mergeable<AddressSettings>
       this.lastValueQueue = lastValueQueue;
    }
 
+   public AddressFullMessagePolicy getAddressFullMessagePolicy()
+   {
+      return addressFullMessagePolicy != null ? addressFullMessagePolicy : DEFAULT_ADDRESS_FULL_MESSAGE_POLICY;
+   }
+
+   public void setAddressFullMessagePolicy(final AddressFullMessagePolicy addressFullMessagePolicy)
+   {
+      this.addressFullMessagePolicy = addressFullMessagePolicy;
+   }
+
    public int getPageSizeBytes()
    {
       return pageSizeBytes != null ? pageSizeBytes : DEFAULT_PAGE_SIZE;
    }
 
-   public boolean isDropMessagesWhenFull()
-   {
-      return dropMessagesWhenFull != null ? dropMessagesWhenFull : DEFAULT_DROP_MESSAGES_WHEN_FULL;
-   }
-   
-   public void setDropMessagesWhenFull(final boolean value)
-   {
-      dropMessagesWhenFull = value;
-   }
-      
    public void setPageSizeBytes(final int pageSize)
    {
       pageSizeBytes = pageSize;
@@ -176,7 +178,7 @@ public class AddressSettings implements Mergeable<AddressSettings>
    {
       this.expiryAddress = expiryAddress;
    }
-   
+
    public boolean isSendToDLAOnNoRoute()
    {
       return sendToDLAOnNoRoute != null ? sendToDLAOnNoRoute : DEFAULT_SEND_TO_DLA_ON_NO_ROUTE;
@@ -265,6 +267,10 @@ public class AddressSettings implements Mergeable<AddressSettings>
       if (sendToDLAOnNoRoute == null)
       {
          sendToDLAOnNoRoute = merged.sendToDLAOnNoRoute;
+      }
+      if (addressFullMessagePolicy == null)
+      {
+         addressFullMessagePolicy = merged.addressFullMessagePolicy;
       }
    }
 

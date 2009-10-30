@@ -21,11 +21,11 @@ import javax.transaction.xa.Xid;
 
 import org.hornetq.core.client.ClientSession;
 import org.hornetq.core.client.ClientSessionFactory;
+import org.hornetq.core.client.SessionFailureListener;
 import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
 import org.hornetq.core.config.TransportConfiguration;
 import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.logging.Logger;
-import org.hornetq.core.remoting.FailureListener;
 
 /**
  * XAResourceWrapper.
@@ -42,7 +42,7 @@ import org.hornetq.core.remoting.FailureListener;
  * 
  * @version $Revision: 45341 $
  */
-public class HornetQXAResourceWrapper implements XAResource, FailureListener
+public class HornetQXAResourceWrapper implements XAResource, SessionFailureListener
 {
    /** The log */
    private static final Logger log = Logger.getLogger(HornetQXAResourceWrapper.class);
@@ -215,6 +215,10 @@ public class HornetQXAResourceWrapper implements XAResource, FailureListener
    {
       log.warn("Notified of connection failure in recovery connectionFactory for provider " + connectorFactoryClassName, me);
       close();
+   }
+   
+   public void beforeReconnect(HornetQException me)
+   {            
    }
 
    /**

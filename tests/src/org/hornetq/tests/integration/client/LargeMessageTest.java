@@ -80,8 +80,6 @@ public class LargeMessageTest extends LargeMessageTestBase
 
          server.start();
 
-         log.info("*********** starting test");
-
          ClientSessionFactory sf = createInVMFactory();
 
          session = sf.createSession(false, false, false);
@@ -91,8 +89,6 @@ public class LargeMessageTest extends LargeMessageTestBase
          ClientProducer producer = session.createProducer(ADDRESS);
 
          Message clientFile = createLargeClientMessage(session, messageSize, true);
-
-         log.info("*********** sending large message");
 
          producer.send(clientFile);
 
@@ -153,8 +149,6 @@ public class LargeMessageTest extends LargeMessageTestBase
 
          server.start();
 
-         log.info("*********** starting test");
-
          ClientSessionFactory sf = createInVMFactory();
 
          session = sf.createSession(false, false, false);
@@ -176,8 +170,6 @@ public class LargeMessageTest extends LargeMessageTestBase
          ClientProducer producer = session.createProducer(ADDRESS);
 
          Message clientFile = createLargeClientMessage(session, messageSize, true);
-
-         log.info("*********** sending large message");
 
          producer.send(clientFile);
 
@@ -1124,7 +1116,6 @@ public class LargeMessageTest extends LargeMessageTestBase
    public void testPageOnLargeMessageNullPersistence() throws Exception
    {
       testPageOnLargeMessage(false, false);
-
    }
 
    public void testSendSmallMessageXA() throws Exception
@@ -1328,8 +1319,6 @@ public class LargeMessageTest extends LargeMessageTestBase
 
             server.stop();
 
-            log.info("Restartning");
-
             server = createServer(true);
 
             server.start();
@@ -1483,8 +1472,6 @@ public class LargeMessageTest extends LargeMessageTestBase
          int numberOfBytes = 200000;
 
          session.start();
-
-         log.info("Session started");
 
          ClientProducer producer = session.createProducer(ADDRESS);
 
@@ -2028,7 +2015,7 @@ public class LargeMessageTest extends LargeMessageTestBase
 
             producer.send(message);
          }
-
+         
          ClientMessage clientFile = createLargeClientMessage(session, numberOfBytesBigMessage);
 
          producer.send(clientFile);
@@ -2054,8 +2041,6 @@ public class LargeMessageTest extends LargeMessageTestBase
          for (int i = 0; i < 100; i++)
          {
             ClientMessage message2 = consumer.receive(RECEIVE_WAIT_TIME);
-
-            log.debug("got message " + i);
 
             assertNotNull(message2);
 

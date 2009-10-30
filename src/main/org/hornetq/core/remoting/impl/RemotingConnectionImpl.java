@@ -20,7 +20,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Executor;
 
-import org.hornetq.core.client.ClientMessage;
 import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.remoting.Channel;
@@ -30,11 +29,9 @@ import org.hornetq.core.remoting.Interceptor;
 import org.hornetq.core.remoting.Packet;
 import org.hornetq.core.remoting.RemotingConnection;
 import org.hornetq.core.remoting.impl.wireformat.PacketImpl;
-import org.hornetq.core.remoting.impl.wireformat.SessionReceiveMessage;
 import org.hornetq.core.remoting.spi.Connection;
 import org.hornetq.core.remoting.spi.HornetQBuffer;
 import org.hornetq.utils.SimpleIDGenerator;
-import org.hornetq.utils.SimpleString;
 
 /**
  * @author <a href="tim.fox@jboss.com">Tim Fox</a>
@@ -79,8 +76,6 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
    private boolean idGeneratorSynced = false;
 
    private final Object transferLock = new Object();
-
-   // private boolean frozen;
 
    private final Object failLock = new Object();
 
@@ -162,13 +157,13 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
       return transportConnection.getRemoteAddress();
    }
 
-   public synchronized Channel getChannel(final long channelID, final int windowSize, final boolean block)
+   public synchronized Channel getChannel(final long channelID, final int confWindowSize)
    {
       Channel channel = channels.get(channelID);
 
       if (channel == null)
       {
-         channel = new ChannelImpl(this, channelID, windowSize, block);
+         channel = new ChannelImpl(this, channelID, confWindowSize);
 
          channels.put(channelID, channel);
       }
@@ -363,7 +358,7 @@ public class RemotingConnectionImpl extends AbstractBufferHandler implements Rem
             try
             {
                boolean callNext = interceptor.intercept(packet, this);
-
+               
                if (!callNext)
                {
                   // abort

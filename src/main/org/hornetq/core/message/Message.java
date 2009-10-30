@@ -68,11 +68,11 @@ public interface Message
    void decode(HornetQBuffer buffer);
    
    
-   int getPropertiesEncodeSize();
+   int getHeadersAndPropertiesEncodeSize();
    
-   void encodeProperties(HornetQBuffer buffer);
+   void encodeHeadersAndProperties(HornetQBuffer buffer);
    
-   void decodeProperties(HornetQBuffer buffer);
+   void decodeHeadersAndProperties(HornetQBuffer buffer);
       
    int getBodySize();
 

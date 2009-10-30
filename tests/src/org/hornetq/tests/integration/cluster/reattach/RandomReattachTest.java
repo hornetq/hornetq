@@ -221,6 +221,7 @@ public class RandomReattachTest extends UnitTestCase
          ClientSessionFactoryImpl sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory"));
 
          sf.setReconnectAttempts(-1);
+         sf.setConfirmationWindowSize(1024 * 1024);
          
          ClientSession session = sf.createSession(false, false, false);
 

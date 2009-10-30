@@ -77,17 +77,24 @@ public class DivertImpl implements Divert
    public void route(ServerMessage message, final RoutingContext context) throws Exception
    {      
       SimpleString originalDestination = message.getDestination();
-
-      message.setDestination(forwardAddress);
+     
+      //We must make a copy of the message, otherwise things like returning credits to the page won't work
+      //properly on ack, since the original destination will be overwritten
       
-      message.putStringProperty(HDR_ORIGINAL_DESTINATION, originalDestination);
+      //TODO we can optimise this so it doesn't copy if it's not routed anywhere else
+     
+      ServerMessage copy = message.copy();
+      
+      copy.setDestination(forwardAddress);
+      
+      copy.putStringProperty(HDR_ORIGINAL_DESTINATION, originalDestination);
 
       if (transformer != null)
       {
-         message = transformer.transform(message);
+         copy = transformer.transform(copy);
       }
 
-      postOffice.route(message, context);          
+      postOffice.route(copy, context.getTransaction());          
    }
 
    public SimpleString getRoutingName()

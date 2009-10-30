@@ -29,8 +29,6 @@ import org.hornetq.core.logging.Logger;
 import org.hornetq.core.management.ManagementService;
 import org.hornetq.core.management.Notification;
 import org.hornetq.core.management.NotificationType;
-import org.hornetq.core.paging.PagingManager;
-import org.hornetq.core.paging.PagingStore;
 import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.core.postoffice.Binding;
 import org.hornetq.core.postoffice.QueueBinding;
@@ -110,8 +108,6 @@ public class ServerConsumerImpl implements ServerConsumer
 
    private final StorageManager storageManager;
 
-   private final PagingManager pagingManager;
-
    private final java.util.Queue<MessageReference> deliveringRefs = new ConcurrentLinkedQueue<MessageReference>();
 
    private final Channel channel;
@@ -134,7 +130,6 @@ public class ServerConsumerImpl implements ServerConsumer
                              final boolean started,
                              final boolean browseOnly,
                              final StorageManager storageManager,
-                             final PagingManager pagingManager,
                              final Channel channel,
                              final boolean preAcknowledge,
                              final boolean updateDeliveries,
@@ -163,8 +158,6 @@ public class ServerConsumerImpl implements ServerConsumer
       this.channel = channel;
 
       this.preAcknowledge = preAcknowledge;
-
-      this.pagingManager = pagingManager;
 
       this.managementService = managementService;
 
@@ -206,7 +199,7 @@ public class ServerConsumerImpl implements ServerConsumer
 
       if (largeMessageDeliverer != null)
       {
-         largeMessageDeliverer.close();
+         largeMessageDeliverer.finish();
       }
 
       if (!browseOnly)
@@ -546,7 +539,7 @@ public class ServerConsumerImpl implements ServerConsumer
                if (message.isLargeMessage())
                {
                   // we must hold one reference, or the file will be deleted before it could be delivered
-                  message.incrementRefCount();
+                  ((LargeServerMessage)message).incrementDelayDeletionCount();
                }
 
                // With pre-ack, we ack *before* sending to the client
@@ -573,6 +566,7 @@ public class ServerConsumerImpl implements ServerConsumer
    }
 
    private void deliverLargeMessage(final MessageReference ref, final ServerMessage message)
+      throws Exception
    {
       pendingLargeMessagesCounter.incrementAndGet();
 
@@ -622,6 +616,10 @@ public class ServerConsumerImpl implements ServerConsumer
                }
             }
          }
+         catch (Exception e)
+         {
+            log.error("Failed to run large message deliverer", e);
+         }
          finally
          {
             lock.unlock();
@@ -646,18 +644,18 @@ public class ServerConsumerImpl implements ServerConsumer
       private volatile long positionPendingLargeMessage;
 
       public LargeMessageDeliverer(final LargeServerMessage message, final MessageReference ref)
+         throws Exception
       {
          pendingLargeMessage = message;
 
-         // we must hold one reference, or the file will be deleted before it could be delivered
-         pendingLargeMessage.incrementRefCount();
+         pendingLargeMessage.incrementDelayDeletionCount();
 
          sizePendingLargeMessage = pendingLargeMessage.getLargeBodySize();
 
          this.ref = ref;
       }
 
-      public boolean deliver()
+      public boolean deliver() throws Exception
       {
          lock.lock();
 
@@ -672,6 +670,7 @@ public class ServerConsumerImpl implements ServerConsumer
             {
                return false;
             }
+            
             SessionReceiveMessage initialMessage;
 
             if (sentFirstMessage)
@@ -682,9 +681,9 @@ public class ServerConsumerImpl implements ServerConsumer
             {
                sentFirstMessage = true;
 
-               HornetQBuffer headerBuffer = ChannelBuffers.buffer(pendingLargeMessage.getPropertiesEncodeSize());
+               HornetQBuffer headerBuffer = ChannelBuffers.buffer(pendingLargeMessage.getHeadersAndPropertiesEncodeSize());
 
-               pendingLargeMessage.encodeProperties(headerBuffer);
+               pendingLargeMessage.encodeHeadersAndProperties(headerBuffer);
 
                initialMessage = new SessionReceiveMessage(id,
                                                           headerBuffer.array(),
@@ -697,6 +696,8 @@ public class ServerConsumerImpl implements ServerConsumer
             if (availableCredits != null)
             {
                // Flow control needs to be done in advance.
+               
+               //Again WHY? Is this necessary now we don't replicate sessions?
                precalculateAvailableCredits = preCalculateFlowControl(initialMessage);
             }
             else
@@ -759,7 +760,7 @@ public class ServerConsumerImpl implements ServerConsumer
                trace("Finished deliverLargeMessage");
             }
 
-            close();
+            finish();
 
             return true;
          }
@@ -772,37 +773,16 @@ public class ServerConsumerImpl implements ServerConsumer
       /**
        * 
        */
-      public void close()
+      public void finish() throws Exception
       {
          pendingLargeMessage.releaseResources();
-
-         int counter = pendingLargeMessage.decrementRefCount();
+         
+         pendingLargeMessage.decrementDelayDeletionCount();
 
          if (preAcknowledge && !browseOnly)
          {
             // PreAck will have an extra reference
-            counter = pendingLargeMessage.decrementRefCount();
-         }
-
-         if (!browseOnly)
-         {
-            // We added a reference to avoid deleting the file before it was delivered
-            // if (pendingLargeMessage.decrementRefCount() == 0)
-            if (counter == 0)
-            {
-               // The decrement was deferred to large-message, hence we need to
-               // subtract the size inside largeMessage
-               try
-               {
-                  PagingStore store = pagingManager.getPageStore(binding.getAddress());
-                  store.addSize(-pendingLargeMessage.getMemoryEstimate());
-               }
-               catch (Exception e)
-               {
-                  // This shouldn't happen as the pageStore should have been initialized already.
-                  log.error("Error getting pageStore", e);
-               }
-            }
+            pendingLargeMessage.decrementDelayDeletionCount();
          }
 
          largeMessageDeliverer = null;

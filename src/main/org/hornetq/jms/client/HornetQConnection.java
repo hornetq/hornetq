@@ -41,9 +41,9 @@ import javax.jms.XATopicSession;
 
 import org.hornetq.core.client.ClientSession;
 import org.hornetq.core.client.ClientSessionFactory;
+import org.hornetq.core.client.SessionFailureListener;
 import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.logging.Logger;
-import org.hornetq.core.remoting.FailureListener;
 import org.hornetq.core.version.Version;
 import org.hornetq.utils.SimpleString;
 import org.hornetq.utils.UUIDGenerator;
@@ -104,7 +104,7 @@ public class HornetQConnection implements Connection, QueueConnection, TopicConn
 
    private final String password;
 
-   private final FailureListener listener = new JMSFailureListener(this);
+   private final SessionFailureListener listener = new JMSFailureListener(this);
 
    private final Version thisVersion;
 
@@ -551,7 +551,7 @@ public class HornetQConnection implements Connection, QueueConnection, TopicConn
 
    // Inner classes --------------------------------------------------------------------------------
 
-   private static class JMSFailureListener implements FailureListener
+   private static class JMSFailureListener implements SessionFailureListener
    {
       private WeakReference<HornetQConnection> connectionRef;
 
@@ -598,6 +598,10 @@ public class HornetQConnection implements Connection, QueueConnection, TopicConn
                }
             }
          }
+      }
+      
+      public void beforeReconnect(final HornetQException me)
+      {            
       }
 
    }

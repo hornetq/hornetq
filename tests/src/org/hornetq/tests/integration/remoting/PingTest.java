@@ -17,6 +17,7 @@ import java.util.Set;
 
 import org.hornetq.core.client.ClientSession;
 import org.hornetq.core.client.ClientSessionFactory;
+import org.hornetq.core.client.SessionFailureListener;
 import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
 import org.hornetq.core.client.impl.ClientSessionFactoryInternal;
 import org.hornetq.core.client.impl.FailoverManagerImpl;
@@ -24,7 +25,6 @@ import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.TransportConfiguration;
 import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.logging.Logger;
-import org.hornetq.core.remoting.FailureListener;
 import org.hornetq.core.remoting.RemotingConnection;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.tests.util.ServiceTestBase;
@@ -71,7 +71,7 @@ public class PingTest extends ServiceTestBase
       super.tearDown();
    }
 
-   class Listener implements FailureListener
+   class Listener implements SessionFailureListener
    {
       volatile HornetQException me;
 
@@ -83,6 +83,10 @@ public class PingTest extends ServiceTestBase
       public HornetQException getException()
       {
          return me;
+      }
+      
+      public void beforeReconnect(HornetQException exception)
+      {               
       }
    };
 
@@ -318,10 +322,8 @@ public class PingTest extends ServiceTestBase
 
       serverConn.addFailureListener(serverListener);
 
-      //((RemotingServiceImpl)server.getRemotingService()).stopPingingForConnectionID(serverConn.getID());
-      
       //Setting the handler to null will prevent server sending pings back to client
-      serverConn.getChannel(0, -1, false).setHandler(null);
+      serverConn.getChannel(0, -1).setHandler(null);
 
       for (int i = 0; i < 1000; i++)
       {

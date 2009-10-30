@@ -48,6 +48,7 @@ import org.hornetq.core.logging.Logger;
 import org.hornetq.core.remoting.ChannelHandler;
 import org.hornetq.core.remoting.Packet;
 import org.hornetq.core.remoting.impl.wireformat.CreateQueueMessage;
+import org.hornetq.core.remoting.impl.wireformat.PacketImpl;
 import org.hornetq.core.remoting.impl.wireformat.RollbackMessage;
 import org.hornetq.core.remoting.impl.wireformat.SessionAcknowledgeMessage;
 import org.hornetq.core.remoting.impl.wireformat.SessionBindingQueryMessage;
@@ -58,6 +59,7 @@ import org.hornetq.core.remoting.impl.wireformat.SessionCreateConsumerMessage;
 import org.hornetq.core.remoting.impl.wireformat.SessionDeleteQueueMessage;
 import org.hornetq.core.remoting.impl.wireformat.SessionExpiredMessage;
 import org.hornetq.core.remoting.impl.wireformat.SessionQueueQueryMessage;
+import org.hornetq.core.remoting.impl.wireformat.SessionRequestProducerCreditsMessage;
 import org.hornetq.core.remoting.impl.wireformat.SessionSendContinuationMessage;
 import org.hornetq.core.remoting.impl.wireformat.SessionSendLargeMessage;
 import org.hornetq.core.remoting.impl.wireformat.SessionSendMessage;
@@ -274,6 +276,13 @@ public class ServerSessionPacketHandler implements ChannelHandler
                SessionForceConsumerDelivery message = (SessionForceConsumerDelivery)packet;
                session.handleForceConsumerDelivery(message);
                break;               
+            }
+            case PacketImpl.SESS_PRODUCER_REQUEST_CREDITS:
+            {
+               SessionRequestProducerCreditsMessage message = (SessionRequestProducerCreditsMessage)
+               packet;
+               session.handleRequestProducerCredits(message);
+               break;
             }
          }
       }

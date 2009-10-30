@@ -32,7 +32,7 @@ public interface RemotingConnection extends BufferHandler
 
    String getRemoteAddress();
 
-   Channel getChannel(long channelID, int windowSize, boolean block);
+   Channel getChannel(long channelID, int confWindowSize);
    
    void putChannel(long channelID, Channel channel);
    

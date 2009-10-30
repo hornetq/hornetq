@@ -51,6 +51,7 @@ import org.hornetq.core.server.ScheduledDeliveryHandler;
 import org.hornetq.core.server.ServerMessage;
 import org.hornetq.core.server.cluster.impl.Redistributor;
 import org.hornetq.core.settings.HierarchicalRepository;
+import org.hornetq.core.settings.impl.AddressFullMessagePolicy;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.core.transaction.Transaction;
 import org.hornetq.core.transaction.TransactionOperation;
@@ -210,7 +211,7 @@ public class QueueImpl implements Queue
    {
       return false;
    }
-   
+
    public void route(final ServerMessage message, final RoutingContext context) throws Exception
    {
       context.addQueue(this);
@@ -261,7 +262,7 @@ public class QueueImpl implements Queue
    }
 
    public void addLast(final MessageReference ref)
-   {      
+   {
       add(ref, false);
    }
 
@@ -947,7 +948,7 @@ public class QueueImpl implements Queue
 
       copyMessage.setDestination(toAddress);
 
-      postOffice.route(copyMessage, new RoutingContextImpl(tx));
+      postOffice.route(copyMessage, tx);
 
       acknowledge(tx, ref);
    }
@@ -967,7 +968,7 @@ public class QueueImpl implements Queue
       long newID = storageManager.generateUniqueID();
 
       ServerMessage copy = message.makeCopyForExpiryOrDLA(newID, expiry);
-      
+
       return copy;
    }
 
@@ -1034,7 +1035,7 @@ public class QueueImpl implements Queue
 
       copyMessage.setDestination(address);
 
-      postOffice.route(copyMessage, new RoutingContextImpl(tx));
+      postOffice.route(copyMessage, tx);
 
       acknowledge(tx, ref);
 
@@ -1110,7 +1111,7 @@ public class QueueImpl implements Queue
                promptDelivery = false;
                return;
             }
-            
+
             continue;
          }
          else
@@ -1158,7 +1159,7 @@ public class QueueImpl implements Queue
          }
 
          HandleStatus status = handle(reference, consumer);
-         
+
          if (status == HandleStatus.HANDLED)
          {
             if (iterator == null)
@@ -1409,25 +1410,20 @@ public class QueueImpl implements Queue
 
       queue.deliveringCount.decrementAndGet();
 
-      // TODO: We could optimize this by storing the paging-store for the address on the Queue. We would need to know
-      // the Address for the Queue
       PagingStore store;
-
       if (pagingManager != null)
       {
+         // TODO: We could optimize this by storing the paging-store for the address on the Queue. We would need to know
+         // the Address for the Queue
          store = pagingManager.getPageStore(ref.getMessage().getDestination());
-
-         store.addSize(-ref.getMemoryEstimate());
       }
       else
       {
          store = null;
       }
 
-      if (message.decrementRefCount() == 0 && store != null)
-      {
-         store.addSize(-ref.getMessage().getMemoryEstimate());
-      }
+      message.decrementRefCount(store, ref);
+
    }
 
    void postRollback(LinkedList<MessageReference> refs) throws Exception
@@ -1435,10 +1431,10 @@ public class QueueImpl implements Queue
       synchronized (this)
       {
          direct = false;
-         
+
          for (MessageReference ref : refs)
          {
-            add(ref, true);            
+            add(ref, true);
          }
 
          deliver();
@@ -1467,7 +1463,7 @@ public class QueueImpl implements Queue
       if (pagingStore != null)
       {
          // If the queue is empty, we need to check if there are pending messages, and throw a warning
-         if (pagingStore.isPaging() && !pagingStore.isDropWhenMaxSize())
+         if (pagingStore.isPaging() && pagingStore.getAddressFullMessagePolicy() == AddressFullMessagePolicy.PAGE)
          {
             // This is just a *request* to depage. Depage will only happens if there is space on the Address
             // and GlobalSize
@@ -1603,7 +1599,7 @@ public class QueueImpl implements Queue
    public synchronized void resume()
    {
       paused = false;
-      
+
       deliver();
    }
 

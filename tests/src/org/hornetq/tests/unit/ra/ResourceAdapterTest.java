@@ -83,7 +83,7 @@ public class ResourceAdapterTest extends ServiceTestBase
       assertEquals(factory.getDupsOKBatchSize(), ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE);     
       assertEquals(factory.getMinLargeMessageSize(), ClientSessionFactoryImpl.DEFAULT_MIN_LARGE_MESSAGE_SIZE);
       assertEquals(factory.getProducerMaxRate(), ClientSessionFactoryImpl.DEFAULT_PRODUCER_MAX_RATE);
-      assertEquals(factory.getProducerWindowSize(), ClientSessionFactoryImpl.DEFAULT_PRODUCER_WINDOW_SIZE);
+      assertEquals(factory.getConfirmationWindowSize(), ClientSessionFactoryImpl.DEFAULT_CONFIRMATION_WINDOW_SIZE);
       assertEquals(factory.getReconnectAttempts(), ClientSessionFactoryImpl.DEFAULT_RECONNECT_ATTEMPTS);
       assertEquals(factory.getRetryInterval(), ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL);
       assertEquals(factory.getRetryIntervalMultiplier(), ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL_MULTIPLIER);
@@ -127,7 +127,7 @@ public class ResourceAdapterTest extends ServiceTestBase
       assertEquals(factory.getDupsOKBatchSize(), ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE);     
       assertEquals(factory.getMinLargeMessageSize(), ClientSessionFactoryImpl.DEFAULT_MIN_LARGE_MESSAGE_SIZE);
       assertEquals(factory.getProducerMaxRate(), ClientSessionFactoryImpl.DEFAULT_PRODUCER_MAX_RATE);
-      assertEquals(factory.getProducerWindowSize(), ClientSessionFactoryImpl.DEFAULT_PRODUCER_WINDOW_SIZE);
+      assertEquals(factory.getConfirmationWindowSize(), ClientSessionFactoryImpl.DEFAULT_CONFIRMATION_WINDOW_SIZE);
       assertEquals(factory.getReconnectAttempts(), ClientSessionFactoryImpl.DEFAULT_RECONNECT_ATTEMPTS);
       assertEquals(factory.getRetryInterval(), ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL);
       assertEquals(factory.getRetryIntervalMultiplier(), ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL_MULTIPLIER);
@@ -165,7 +165,7 @@ public class ResourceAdapterTest extends ServiceTestBase
       ra.setMinLargeMessageSize(10);
       ra.setPreAcknowledge(!ClientSessionFactoryImpl.DEFAULT_PRE_ACKNOWLEDGE);
       ra.setProducerMaxRate(11);
-      ra.setProducerWindowSize(12);
+      ra.setConfirmationWindowSize(12);
       ra.setReconnectAttempts(13);
       ra.setRetryInterval(14l);
       ra.setRetryIntervalMultiplier(15d);
@@ -188,7 +188,7 @@ public class ResourceAdapterTest extends ServiceTestBase
       assertEquals(factory.getDupsOKBatchSize(), 8);     
       assertEquals(factory.getMinLargeMessageSize(), 10);
       assertEquals(factory.getProducerMaxRate(), 11);
-      assertEquals(factory.getProducerWindowSize(), 12);
+      assertEquals(factory.getConfirmationWindowSize(), 12);
       assertEquals(factory.getReconnectAttempts(), 13);
       assertEquals(factory.getRetryInterval(), 14);
       assertEquals(factory.getRetryIntervalMultiplier(), 15d);
@@ -227,7 +227,7 @@ public class ResourceAdapterTest extends ServiceTestBase
       connectionFactoryProperties.setMinLargeMessageSize(10);
       connectionFactoryProperties.setPreAcknowledge(!ClientSessionFactoryImpl.DEFAULT_PRE_ACKNOWLEDGE);
       connectionFactoryProperties.setProducerMaxRate(11);
-      connectionFactoryProperties.setProducerWindowSize(12);
+      connectionFactoryProperties.setConfirmationWindowSize(12);
       connectionFactoryProperties.setReconnectAttempts(13);
       connectionFactoryProperties.setRetryInterval(14l);
       connectionFactoryProperties.setRetryIntervalMultiplier(15d);
@@ -250,7 +250,7 @@ public class ResourceAdapterTest extends ServiceTestBase
       assertEquals(factory.getDupsOKBatchSize(), 8);      
       assertEquals(factory.getMinLargeMessageSize(), 10);
       assertEquals(factory.getProducerMaxRate(), 11);
-      assertEquals(factory.getProducerWindowSize(), 12);
+      assertEquals(factory.getConfirmationWindowSize(), 12);
       assertEquals(factory.getReconnectAttempts(), 13);
       assertEquals(factory.getRetryInterval(), 14);
       assertEquals(factory.getRetryIntervalMultiplier(), 15d);

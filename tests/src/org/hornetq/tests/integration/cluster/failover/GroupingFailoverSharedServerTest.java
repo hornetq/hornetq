@@ -31,55 +31,54 @@ import java.util.Map;
 public class GroupingFailoverSharedServerTest extends GroupingFailoverTestBase
 {
    protected void setupReplicatedServer(int node, boolean fileStorage, boolean netty, int backupNode)
+   {
+      if (servers[node] != null)
       {
-         if (servers[node] != null)
-         {
-            throw new IllegalArgumentException("Already a server at node " + node);
-         }
-
-         Configuration configuration = new ConfigurationImpl();
-
-         configuration.setSecurityEnabled(false);
-         configuration.setBindingsDirectory(getBindingsDir(backupNode, false));
-         configuration.setJournalMinFiles(2);
-         configuration.setJournalMaxAIO(1000);
-         configuration.setJournalDirectory(getJournalDir(backupNode, false));
-         configuration.setJournalFileSize(100 * 1024);
-         configuration.setJournalType(JournalType.ASYNCIO);
-         configuration.setJournalMaxAIO(1000);
-         configuration.setPagingDirectory(getPageDir(backupNode, false));
-         configuration.setLargeMessagesDirectory(getLargeMessagesDir(backupNode, false));
-         configuration.setClustered(true);
-         configuration.setJournalCompactMinFiles(0);
-         configuration.setBackup(true);
-         configuration.setSharedStore(true);
-
-
-         configuration.getAcceptorConfigurations().clear();
-
-         Map<String, Object> params = generateParams(node, netty);
-
-         TransportConfiguration invmtc = new TransportConfiguration(INVM_ACCEPTOR_FACTORY, params);
-         configuration.getAcceptorConfigurations().add(invmtc);
-
-         if (netty)
-         {
-            TransportConfiguration nettytc = new TransportConfiguration(NETTY_ACCEPTOR_FACTORY, params);
-            configuration.getAcceptorConfigurations().add(nettytc);
-         }
-
-         HornetQServer server;
-
-         if (fileStorage)
-         {
-            server = HornetQ.newHornetQServer(configuration);
-         }
-         else
-         {
-            server = HornetQ.newHornetQServer(configuration, false);
-         }
-         servers[node] = server;
+         throw new IllegalArgumentException("Already a server at node " + node);
       }
+
+      Configuration configuration = new ConfigurationImpl();
+
+      configuration.setSecurityEnabled(false);
+      configuration.setBindingsDirectory(getBindingsDir(backupNode, false));
+      configuration.setJournalMinFiles(2);
+      configuration.setJournalMaxAIO(1000);
+      configuration.setJournalDirectory(getJournalDir(backupNode, false));
+      configuration.setJournalFileSize(100 * 1024);
+      configuration.setJournalType(JournalType.ASYNCIO);
+      configuration.setJournalMaxAIO(1000);
+      configuration.setPagingDirectory(getPageDir(backupNode, false));
+      configuration.setLargeMessagesDirectory(getLargeMessagesDir(backupNode, false));
+      configuration.setClustered(true);
+      configuration.setJournalCompactMinFiles(0);
+      configuration.setBackup(true);
+      configuration.setSharedStore(true);
+
+      configuration.getAcceptorConfigurations().clear();
+
+      Map<String, Object> params = generateParams(node, netty);
+
+      TransportConfiguration invmtc = new TransportConfiguration(INVM_ACCEPTOR_FACTORY, params);
+      configuration.getAcceptorConfigurations().add(invmtc);
+
+      if (netty)
+      {
+         TransportConfiguration nettytc = new TransportConfiguration(NETTY_ACCEPTOR_FACTORY, params);
+         configuration.getAcceptorConfigurations().add(nettytc);
+      }
+
+      HornetQServer server;
+
+      if (fileStorage)
+      {
+         server = HornetQ.newHornetQServer(configuration);
+      }
+      else
+      {
+         server = HornetQ.newHornetQServer(configuration, false);
+      }
+      servers[node] = server;
+   }
 
    public void setupMasterServer(int i, boolean fileStorage, boolean netty)
    {

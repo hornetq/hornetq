@@ -17,6 +17,7 @@ import org.hornetq.core.client.ClientConsumer;
 import org.hornetq.core.client.ClientMessage;
 import org.hornetq.core.client.ClientProducer;
 import org.hornetq.core.client.ClientSession;
+import org.hornetq.core.client.SessionFailureListener;
 import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
 import org.hornetq.core.client.impl.ClientSessionFactoryInternal;
 import org.hornetq.core.client.impl.ClientSessionInternal;
@@ -25,7 +26,6 @@ import org.hornetq.core.config.TransportConfiguration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.logging.Logger;
-import org.hornetq.core.remoting.FailureListener;
 import org.hornetq.core.remoting.RemotingConnection;
 import org.hornetq.core.remoting.impl.invm.InVMConnector;
 import org.hornetq.core.remoting.impl.invm.InVMRegistry;
@@ -79,6 +79,7 @@ public class ReattachTest extends UnitTestCase
       sf.setRetryInterval(retryInterval);
       sf.setRetryIntervalMultiplier(retryMultiplier);
       sf.setReconnectAttempts(reconnectAttempts);
+      sf.setConfirmationWindowSize(1024 * 1024);
 
       ClientSession session = sf.createSession(false, true, true);
 
@@ -156,6 +157,7 @@ public class ReattachTest extends UnitTestCase
       sf.setRetryInterval(retryInterval);
       sf.setRetryIntervalMultiplier(retryMultiplier);
       sf.setReconnectAttempts(reconnectAttempts);
+      sf.setConfirmationWindowSize(1024 * 1024);
 
       ClientSession session = sf.createSession(false, true, true);
 
@@ -245,18 +247,23 @@ public class ReattachTest extends UnitTestCase
       sf.setRetryInterval(retryInterval);
       sf.setRetryIntervalMultiplier(retryMultiplier);
       sf.setReconnectAttempts(reconnectAttempts);
+      sf.setConfirmationWindowSize(1024 * 1024);
 
       ClientSession session = sf.createSession(false, true, true);
 
       ClientSession session2 = sf.createSession(false, true, true);
 
-      class MyFailureListener implements FailureListener
+      class MyFailureListener implements SessionFailureListener
       {
          volatile boolean failed;
 
          public void connectionFailed(HornetQException me)
          {
             failed = true;
+         }
+         
+         public void beforeReconnect(HornetQException exception)
+         {               
          }
       }
 
@@ -354,6 +361,7 @@ public class ReattachTest extends UnitTestCase
       sf.setRetryInterval(retryInterval);
       sf.setRetryIntervalMultiplier(retryMultiplier);
       sf.setReconnectAttempts(reconnectAttempts);
+      sf.setConfirmationWindowSize(1024 * 1024);
 
       ClientSession session = sf.createSession(false, true, true);
 
@@ -430,7 +438,8 @@ public class ReattachTest extends UnitTestCase
       sf.setRetryInterval(retryInterval);
       sf.setRetryIntervalMultiplier(retryMultiplier);
       sf.setReconnectAttempts(reconnectAttempts);
-
+      sf.setConfirmationWindowSize(1024 * 1024);
+      
       ClientSession session = sf.createSession(false, true, true);
 
       session.createQueue(ADDRESS, ADDRESS, null, false);
@@ -497,6 +506,7 @@ public class ReattachTest extends UnitTestCase
       sf.setRetryInterval(retryInterval);
       sf.setRetryIntervalMultiplier(retryMultiplier);
       sf.setReconnectAttempts(reconnectAttempts);
+      sf.setConfirmationWindowSize(1024 * 1024);
 
       ClientSession session = sf.createSession(false, true, true);
 
@@ -588,6 +598,7 @@ public class ReattachTest extends UnitTestCase
       sf.setRetryInterval(retryInterval);
       sf.setRetryIntervalMultiplier(retryMultiplier);
       sf.setReconnectAttempts(reconnectAttempts);
+      sf.setConfirmationWindowSize(1024 * 1024);
 
       ClientSession session = sf.createSession(false, true, true);
 
@@ -666,6 +677,7 @@ public class ReattachTest extends UnitTestCase
       sf.setRetryIntervalMultiplier(retryMultiplier);
       sf.setReconnectAttempts(reconnectAttempts);
       sf.setMaxRetryInterval(maxRetryInterval);
+      sf.setConfirmationWindowSize(1024 * 1024);
 
       ClientSession session = sf.createSession(false, true, true);
 

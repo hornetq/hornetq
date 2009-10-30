@@ -541,14 +541,14 @@ public class HornetQRAManagedConnectionFactory implements ManagedConnectionFacto
       mcfProperties.setConsumerMaxRate(consumerMaxRate);
    }
 
-   public Integer getProducerWindowSize()
+   public Integer getConfirmationWindowSize()
    {
-      return mcfProperties.getProducerWindowSize();
+      return mcfProperties.getConfirmationWindowSize();
    }
 
-   public void setProducerWindowSize(Integer producerWindowSize)
+   public void setConfirmationWindowSize(Integer confirmationWindowSize)
    {
-      mcfProperties.setProducerWindowSize(producerWindowSize);
+      mcfProperties.setConfirmationWindowSize(confirmationWindowSize);
    }
 
    public Integer getProducerMaxRate()

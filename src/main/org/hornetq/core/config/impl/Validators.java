@@ -16,6 +16,7 @@ package org.hornetq.core.config.impl;
 import static java.lang.String.format;
 
 import org.hornetq.core.server.JournalType;
+import org.hornetq.core.settings.impl.AddressFullMessagePolicy;
 
 /**
  * A Validators
@@ -32,12 +33,12 @@ public class Validators
    // Attributes ----------------------------------------------------
 
    // Static --------------------------------------------------------
-   
+
    public static interface Validator
    {
       void validate(String name, Object value);
    }
-   
+
    public static Validator NO_CHECK = new Validator()
    {
       public void validate(String name, Object value)
@@ -45,7 +46,7 @@ public class Validators
          return;
       }
    };
-   
+
    public static Validator NOT_NULL_OR_EMPTY = new Validator()
    {
       public void validate(String name, Object value)
@@ -79,9 +80,11 @@ public class Validators
       public void validate(String name, Object value)
       {
          Number val = (Number)value;
-         if (val != null && val.intValue()< 0 || val.intValue() > 100)
+         if (val != null && val.intValue() < 0 || val.intValue() > 100)
          {
-            throw new IllegalArgumentException(format("%s  must be a valid percentual value between 0 and 100 (actual value: %s)", name, val));
+            throw new IllegalArgumentException(format("%s  must be a valid percentual value between 0 and 100 (actual value: %s)",
+                                                      name,
+                                                      val));
          }
       }
    };
@@ -168,6 +171,20 @@ public class Validators
          if (val == null || !val.equals(JournalType.NIO.toString()) && !val.equals(JournalType.ASYNCIO.toString()))
          {
             throw new IllegalArgumentException("Invalid journal type " + val);
+         }
+      }
+   };
+
+   public static final Validator ADDRESS_FULL_MESSAGE_POLICY_TYPE = new Validator()
+   {
+      public void validate(String name, Object value)
+      {
+         String val = (String)value;
+         if (val == null || !val.equals(AddressFullMessagePolicy.PAGE.toString()) &&
+             !val.equals(AddressFullMessagePolicy.DROP.toString()) &&
+             !val.equals(AddressFullMessagePolicy.BLOCK.toString()))
+         {
+            throw new IllegalArgumentException("Invalid address full message policy type " + val);
          }
       }
    };

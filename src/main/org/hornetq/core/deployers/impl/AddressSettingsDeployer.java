@@ -13,9 +13,11 @@
 
 package org.hornetq.core.deployers.impl;
 
+import org.hornetq.core.config.impl.Validators;
 import org.hornetq.core.deployers.DeploymentManager;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.settings.HierarchicalRepository;
+import org.hornetq.core.settings.impl.AddressFullMessagePolicy;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.utils.SimpleString;
 import org.w3c.dom.Node;
@@ -39,7 +41,7 @@ public class AddressSettingsDeployer extends XmlDeployer
 
    private static final String MAX_SIZE_BYTES_NODE_NAME = "max-size-bytes";
 
-   private static final String DROP_MESSAGES_WHEN_FULL_NODE_NAME = "drop-messages-when-full";
+   private static final String ADDRESS_FULL_MESSAGE_POLICY_NODE_NAME = "address-full-policy";
 
    private static final String PAGE_SIZE_BYTES_NODE_NAME = "page-size-bytes";
 
@@ -124,9 +126,24 @@ public class AddressSettingsDeployer extends XmlDeployer
          {
             addressSettings.setMessageCounterHistoryDayLimit(Integer.valueOf(child.getTextContent()));
          }
-         else if (DROP_MESSAGES_WHEN_FULL_NODE_NAME.equalsIgnoreCase(child.getNodeName()))
+         else if (ADDRESS_FULL_MESSAGE_POLICY_NODE_NAME.equalsIgnoreCase(child.getNodeName()))
          {
-            addressSettings.setDropMessagesWhenFull(Boolean.valueOf(child.getTextContent().trim()));
+            String value = child.getTextContent().trim();
+            Validators.ADDRESS_FULL_MESSAGE_POLICY_TYPE.validate(ADDRESS_FULL_MESSAGE_POLICY_NODE_NAME, value);
+            AddressFullMessagePolicy policy = null;
+            if (value.equals(AddressFullMessagePolicy.BLOCK.toString()))
+            {
+               policy = AddressFullMessagePolicy.BLOCK;
+            }
+            else if (value.equals(AddressFullMessagePolicy.DROP.toString()))
+            {
+               policy = AddressFullMessagePolicy.DROP;
+            }
+            else if (value.equals(AddressFullMessagePolicy.PAGE.toString()))
+            {
+               policy = AddressFullMessagePolicy.PAGE;
+            }            
+            addressSettings.setAddressFullMessagePolicy(policy);
          }
          else if (LVQ_NODE_NAME.equalsIgnoreCase(child.getNodeName()))
          {

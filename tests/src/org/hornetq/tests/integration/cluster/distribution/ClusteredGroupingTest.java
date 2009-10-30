@@ -998,8 +998,6 @@ public class ClusteredGroupingTest extends ClusterTestBase
    }
 
 
-
-
    public boolean isNetty()
    {
       return true;

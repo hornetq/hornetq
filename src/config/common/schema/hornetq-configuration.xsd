@@ -460,8 +460,8 @@
         </xsd:element>
         <xsd:element maxOccurs="1" minOccurs="0" name="page-size-bytes" type="xsd:int">
         </xsd:element>
-        <xsd:element maxOccurs="1" minOccurs="0" name="drop-messages-when-full" type="xsd:boolean">
-        </xsd:element>
+        <xsd:element maxOccurs="1" minOccurs="0" name="address-full-policy" type="addressFullMessagePolicyType">
+		</xsd:element>        
         <xsd:element maxOccurs="1" minOccurs="0" name="distribution-policy-class" type="xsd:string">
         </xsd:element>
         <xsd:element maxOccurs="1" minOccurs="0" name="message-counter-history-day-limit" type="xsd:int">
@@ -507,4 +507,14 @@
 		<xsd:attribute name="connector-name" type="xsd:IDREF" use="required">
 		</xsd:attribute>
 	</xsd:complexType>
+	
+	<xsd:simpleType name="addressFullMessagePolicyType">
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="DROP"/>
+			<xsd:enumeration value="PAGE"/>
+			<xsd:enumeration value="BLOCK"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	
+	
 </xsd:schema>

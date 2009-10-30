@@ -489,7 +489,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
 
       ClientMessageInternal currentChunkMessage = new ClientMessageImpl(packet.getDeliveryCount());
 
-      currentChunkMessage.decodeProperties(ChannelBuffers.wrappedBuffer(packet.getLargeMessageHeader()));
+      currentChunkMessage.decodeHeadersAndProperties(ChannelBuffers.wrappedBuffer(packet.getLargeMessageHeader()));
 
       currentChunkMessage.setLargeMessage(true);
 

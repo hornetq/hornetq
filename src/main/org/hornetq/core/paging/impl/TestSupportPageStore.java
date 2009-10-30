@@ -35,4 +35,6 @@ public interface TestSupportPageStore extends PagingStore
    Page depage() throws Exception;
 
    void forceAnotherPage() throws Exception;
+   
+   boolean isExceededAvailableCredits();
 }

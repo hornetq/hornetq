@@ -194,7 +194,7 @@ public class NullStorageManager implements StorageManager
 
       HornetQBuffer headerBuffer = ChannelBuffers.wrappedBuffer(header);
 
-      largeMessage.decodeProperties(headerBuffer);
+      largeMessage.decodeHeadersAndProperties(headerBuffer);
 
       largeMessage.setMessageID(id);
 

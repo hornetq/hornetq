@@ -29,6 +29,7 @@ import org.hornetq.core.client.ClientMessage;
 import org.hornetq.core.client.ClientProducer;
 import org.hornetq.core.client.ClientSession;
 import org.hornetq.core.client.ClientSessionFactory;
+import org.hornetq.core.client.SessionFailureListener;
 import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
 import org.hornetq.core.client.impl.ClientSessionFactoryInternal;
 import org.hornetq.core.client.impl.ClientSessionInternal;
@@ -36,7 +37,6 @@ import org.hornetq.core.config.TransportConfiguration;
 import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.message.impl.MessageImpl;
-import org.hornetq.core.remoting.FailureListener;
 import org.hornetq.core.remoting.Interceptor;
 import org.hornetq.core.remoting.RemotingConnection;
 import org.hornetq.core.remoting.impl.invm.TransportConstants;
@@ -89,6 +89,13 @@ public class FailoverTest extends FailoverTestBase
    public FailoverTest()
    {
    }
+   
+   abstract class BaseListener implements SessionFailureListener
+   {
+      public void beforeReconnect(HornetQException me)
+      {            
+      }
+   }
 
    public void testNonTransacted() throws Exception
    {
@@ -103,12 +110,12 @@ public class FailoverTest extends FailoverTestBase
 
       final CountDownLatch latch = new CountDownLatch(1);
 
-      class MyListener implements FailureListener
+      class MyListener extends BaseListener
       {
          public void connectionFailed(HornetQException me)
          {
             latch.countDown();
-         }
+         }                 
       }
 
       session.addFailureListener(new MyListener());
@@ -195,12 +202,14 @@ public class FailoverTest extends FailoverTestBase
 
       final CountDownLatch latch = new CountDownLatch(1);
 
-      class MyListener implements FailureListener
+      class MyListener  extends BaseListener
       {
          public void connectionFailed(HornetQException me)
          {
             latch.countDown();
          }
+         
+         
       }
 
       session.addFailureListener(new MyListener());
@@ -263,7 +272,7 @@ public class FailoverTest extends FailoverTestBase
 
       final CountDownLatch latch = new CountDownLatch(1);
 
-      class MyListener implements FailureListener
+      class MyListener  extends BaseListener
       {
          public void connectionFailed(HornetQException me)
          {
@@ -344,7 +353,7 @@ public class FailoverTest extends FailoverTestBase
 
       final CountDownLatch latch = new CountDownLatch(1);
 
-      class MyListener implements FailureListener
+      class MyListener  extends BaseListener
       {
          public void connectionFailed(HornetQException me)
          {
@@ -433,7 +442,7 @@ public class FailoverTest extends FailoverTestBase
 
       final CountDownLatch latch = new CountDownLatch(1);
 
-      class MyListener implements FailureListener
+      class MyListener  extends BaseListener
       {
          public void connectionFailed(HornetQException me)
          {
@@ -516,7 +525,7 @@ public class FailoverTest extends FailoverTestBase
 
       final CountDownLatch latch = new CountDownLatch(1);
 
-      class MyListener implements FailureListener
+      class MyListener  extends BaseListener
       {
          public void connectionFailed(HornetQException me)
          {
@@ -613,7 +622,7 @@ public class FailoverTest extends FailoverTestBase
 
       final CountDownLatch latch = new CountDownLatch(1);
 
-      class MyListener implements FailureListener
+      class MyListener  extends BaseListener
       {
          public void connectionFailed(HornetQException me)
          {
@@ -683,7 +692,7 @@ public class FailoverTest extends FailoverTestBase
 
       final CountDownLatch latch = new CountDownLatch(1);
 
-      class MyListener implements FailureListener
+      class MyListener  extends BaseListener
       {
          public void connectionFailed(HornetQException me)
          {
@@ -756,7 +765,7 @@ public class FailoverTest extends FailoverTestBase
 
       final CountDownLatch latch = new CountDownLatch(1);
 
-      class MyListener implements FailureListener
+      class MyListener  extends BaseListener
       {
          public void connectionFailed(HornetQException me)
          {
@@ -830,7 +839,7 @@ public class FailoverTest extends FailoverTestBase
 
       final CountDownLatch latch = new CountDownLatch(1);
 
-      class MyListener implements FailureListener
+      class MyListener  extends BaseListener
       {
          public void connectionFailed(HornetQException me)
          {
@@ -917,7 +926,7 @@ public class FailoverTest extends FailoverTestBase
 
       final CountDownLatch latch = new CountDownLatch(1);
 
-      class MyListener implements FailureListener
+      class MyListener  extends BaseListener
       {
          public void connectionFailed(HornetQException me)
          {
@@ -1002,7 +1011,7 @@ public class FailoverTest extends FailoverTestBase
 
       final CountDownLatch latch = new CountDownLatch(1);
 
-      class MyListener implements FailureListener
+      class MyListener  extends BaseListener
       {
          public void connectionFailed(HornetQException me)
          {
@@ -1104,7 +1113,7 @@ public class FailoverTest extends FailoverTestBase
 
       final CountDownLatch latch = new CountDownLatch(1);
 
-      class MyListener implements FailureListener
+      class MyListener  extends BaseListener
       {
          public void connectionFailed(HornetQException me)
          {
@@ -1188,7 +1197,7 @@ public class FailoverTest extends FailoverTestBase
 
       final CountDownLatch latch = new CountDownLatch(1);
 
-      class MyListener implements FailureListener
+      class MyListener  extends BaseListener
       {
          public void connectionFailed(HornetQException me)
          {
@@ -1235,7 +1244,7 @@ public class FailoverTest extends FailoverTestBase
 
       Map<ClientSession, List<ClientConsumer>> sessionConsumerMap = new HashMap<ClientSession, List<ClientConsumer>>();
 
-      class MyListener implements FailureListener
+      class MyListener  extends BaseListener
       {
          CountDownLatch latch = new CountDownLatch(1);
 
@@ -1350,7 +1359,7 @@ public class FailoverTest extends FailoverTestBase
 
       final CountDownLatch latch = new CountDownLatch(1);
 
-      class MyListener implements FailureListener
+      class MyListener  extends BaseListener
       {
          public void connectionFailed(HornetQException me)
          {
@@ -1430,7 +1439,7 @@ public class FailoverTest extends FailoverTestBase
 
       final CountDownLatch latch = new CountDownLatch(1);
 
-      class MyListener implements FailureListener
+      class MyListener  extends BaseListener
       {
          public void connectionFailed(HornetQException me)
          {
@@ -1513,7 +1522,7 @@ public class FailoverTest extends FailoverTestBase
 
       final CountDownLatch latch = new CountDownLatch(1);
 
-      class MyListener implements FailureListener
+      class MyListener  extends BaseListener
       {
          public void connectionFailed(HornetQException me)
          {
@@ -1610,7 +1619,7 @@ public class FailoverTest extends FailoverTestBase
 
       final CountDownLatch latch = new CountDownLatch(1);
 
-      class MyListener implements FailureListener
+      class MyListener  extends BaseListener
       {
          public void connectionFailed(HornetQException me)
          {
@@ -1678,7 +1687,7 @@ public class FailoverTest extends FailoverTestBase
 
       final CountDownLatch latch = new CountDownLatch(1);
 
-      class MyListener implements FailureListener
+      class MyListener  extends BaseListener
       {
          public void connectionFailed(HornetQException me)
          {
@@ -1834,7 +1843,7 @@ public class FailoverTest extends FailoverTestBase
 
       final CountDownLatch latch = new CountDownLatch(1);
 
-      class MyListener implements FailureListener
+      class MyListener  extends BaseListener
       {
          public void connectionFailed(HornetQException me)
          {

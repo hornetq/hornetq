@@ -34,9 +34,9 @@ public interface RoutingContext
    
    List<Queue> getQueues();
    
-   void incrementDepth();
+   //void incrementDepth();
    
-   void decrementDepth();
+  // void decrementDepth();
    
-   int getDepth();
+   //int getDepth();
 }

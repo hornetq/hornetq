@@ -118,7 +118,9 @@ public abstract class PerfBase
       int tcpBufferSize = Integer.valueOf(props.getProperty("tcp-buffer"));
       boolean tcpNoDelay = Boolean.valueOf(props.getProperty("tcp-no-delay"));
       boolean preAck = Boolean.valueOf(props.getProperty("pre-ack"));
-      int sendWindowSize = Integer.valueOf(props.getProperty("send-window"));
+      int confirmationWindowSize = Integer.valueOf(props.getProperty("confirmation-window"));
+      int producerWindowSize = Integer.valueOf(props.getProperty("producer-window"));
+      int consumerWindowSize = Integer.valueOf(props.getProperty("consumer-window"));
       boolean blockOnACK = Boolean.valueOf(props.getProperty("block-ack", "false"));
       boolean blockOnPersistent = Boolean.valueOf(props.getProperty("block-persistent", "false"));
 
@@ -137,7 +139,9 @@ public abstract class PerfBase
       log.info("tcp buffer: " + tcpBufferSize);
       log.info("tcp no delay: " + tcpNoDelay);
       log.info("pre-ack: " + preAck);
-      log.info("send-window: " + sendWindowSize);
+      log.info("confirmation-window: " + confirmationWindowSize);
+      log.info("producer-window: " + producerWindowSize);
+      log.info("consumer-window: " + consumerWindowSize);
       log.info("block-ack:" + blockOnACK);
       log.info("block-persistent:" + blockOnPersistent);
 
@@ -157,7 +161,9 @@ public abstract class PerfBase
       perfParams.setTcpBufferSize(tcpBufferSize);
       perfParams.setTcpNoDelay(tcpNoDelay);
       perfParams.setPreAck(preAck);
-      perfParams.setSendWindow(sendWindowSize);
+      perfParams.setConfirmationWindow(confirmationWindowSize);
+      perfParams.setProducerWindow(producerWindowSize);
+      perfParams.setConsumerWindow(consumerWindowSize);
       perfParams.setBlockOnACK(blockOnACK);
       perfParams.setBlockOnPersistent(blockOnPersistent);
 
@@ -190,7 +196,9 @@ public abstract class PerfBase
 
       factory = new ClientSessionFactoryImpl(new TransportConfiguration(NettyConnectorFactory.class.getName(), params));
       factory.setPreAcknowledge(perfParams.isPreAck());
-      factory.setProducerWindowSize(perfParams.getSendWindow());
+      factory.setConfirmationWindowSize(perfParams.getConfirmationWindow());
+      factory.setProducerWindowSize(perfParams.getProducerWindow());
+      factory.setConsumerWindowSize(perfParams.getConsumerWindow());
 
       factory.setAckBatchSize(perfParams.getBatchSize());
       

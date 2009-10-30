@@ -22,6 +22,7 @@ import javax.transaction.xa.Xid;
 
 import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.filter.Filter;
+import org.hornetq.core.paging.PagingStore;
 import org.hornetq.core.postoffice.Binding;
 import org.hornetq.core.postoffice.BindingType;
 import org.hornetq.core.postoffice.impl.BindingsImpl;
@@ -442,7 +443,7 @@ public class BindingsImplTest extends UnitTestCase
       /* (non-Javadoc)
        * @see org.hornetq.core.message.Message#decodeProperties(org.hornetq.core.remoting.spi.HornetQBuffer)
        */
-      public void decodeProperties(final HornetQBuffer buffer)
+      public void decodeHeadersAndProperties(final HornetQBuffer buffer)
       {
 
       }
@@ -474,7 +475,7 @@ public class BindingsImplTest extends UnitTestCase
       /* (non-Javadoc)
        * @see org.hornetq.core.message.Message#encodeProperties(org.hornetq.core.remoting.spi.HornetQBuffer)
        */
-      public void encodeProperties(final HornetQBuffer buffer)
+      public void encodeHeadersAndProperties(final HornetQBuffer buffer)
       {
 
       }
@@ -554,7 +555,7 @@ public class BindingsImplTest extends UnitTestCase
       /* (non-Javadoc)
        * @see org.hornetq.core.message.Message#getPropertiesEncodeSize()
        */
-      public int getPropertiesEncodeSize()
+      public int getHeadersAndPropertiesEncodeSize()
       {
 
          return 0;
@@ -880,6 +881,24 @@ public class BindingsImplTest extends UnitTestCase
       {
          
          return null;
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.server.ServerMessage#decrementRefCount(org.hornetq.core.paging.PagingStore, org.hornetq.core.server.MessageReference)
+       */
+      public int decrementRefCount(PagingStore pagingStore, MessageReference reference) throws Exception
+      {
+         // TODO Auto-generated method stub
+         return 0;
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.server.ServerMessage#incrementRefCount(org.hornetq.core.paging.PagingStore, org.hornetq.core.server.MessageReference)
+       */
+      public int incrementRefCount(PagingStore pagingStore, MessageReference reference) throws Exception
+      {
+         // TODO Auto-generated method stub
+         return 0;
       }
 
    }

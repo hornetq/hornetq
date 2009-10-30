@@ -423,7 +423,7 @@ public class JournalStorageManager implements StorageManager
 
       HornetQBuffer headerBuffer = ChannelBuffers.wrappedBuffer(header);
 
-      largeMessage.decodeProperties(headerBuffer);
+      largeMessage.decodeHeadersAndProperties(headerBuffer);
 
       largeMessage.setMessageID(id);
 
@@ -678,7 +678,7 @@ public class JournalStorageManager implements StorageManager
                try
                {
                   LargeServerMessage serverMessage = parseLargeMessage(messages, buff);
-                  serverMessage.decrementRefCount();
+                  serverMessage.decrementDelayDeletionCount();
                }
                catch (Exception e)
                {
@@ -923,7 +923,7 @@ public class JournalStorageManager implements StorageManager
          {
             log.debug("Large message: " + msg.getMessageID() +
                       " didn't have any associated reference, file will be deleted");
-            msg.decrementRefCount();
+            msg.decrementDelayDeletionCount();
          }
       }
       
@@ -963,7 +963,7 @@ public class JournalStorageManager implements StorageManager
             messages.put(originalMessageID, originalMessage);
          }
          
-         originalMessage.incrementRefCount();
+         originalMessage.incrementDelayDeletionCount();
          
          largeMessage.setLinkedMessage(originalMessage);
       }

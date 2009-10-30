@@ -29,9 +29,6 @@ public interface LargeServerMessage extends ServerMessage
    /** When a large message is copied (e.g. ExpiryQueue) instead of copying the file, we specify a link between the messages */
    void setLinkedMessage(LargeServerMessage message);
    
-   /** When a large message is copied (e.g. ExpiryQueue) instead of copying the file, we specify a link between the messages */
-   LargeServerMessage getLinkedMessage();
-   
    boolean isFileExists() throws Exception;
 
    /** Close the files if opened */
@@ -40,4 +37,8 @@ public interface LargeServerMessage extends ServerMessage
    long getLargeBodySize();
    
    void deleteFile() throws Exception;
+   
+   void incrementDelayDeletionCount();
+   
+   void decrementDelayDeletionCount() throws Exception;
 }

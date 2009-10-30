@@ -123,7 +123,7 @@ public class Redistributor implements Consumer
       
       final Transaction tx = new TransactionImpl(storageManager);
 
-      boolean routed = postOffice.redistribute(reference.getMessage(), queue, new RoutingContextImpl(tx));
+      boolean routed = postOffice.redistribute(reference.getMessage(), queue, tx);
 
       if (routed)
       {    

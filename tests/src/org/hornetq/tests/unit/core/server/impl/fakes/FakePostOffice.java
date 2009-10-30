@@ -137,23 +137,7 @@ public class FakePostOffice implements PostOffice
       return null;
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.postoffice.PostOffice#reroute(org.hornetq.core.server.ServerMessage, org.hornetq.core.server.Queue, org.hornetq.core.transaction.Transaction)
-    */
-   public MessageReference reroute(ServerMessage message, Queue queue, Transaction tx) throws Exception
-   {
-      // TODO Auto-generated method stub
-      return null;
-   }
-
-   /* (non-Javadoc)
-    * @see org.hornetq.core.postoffice.PostOffice#route(org.hornetq.core.server.ServerMessage, org.hornetq.core.server.RoutingContext)
-    */
-   public void route(ServerMessage message, RoutingContext context) throws Exception
-   {
-      // TODO Auto-generated method stub
-      
-   }
+  
 
    /* (non-Javadoc)
     * @see org.hornetq.core.postoffice.PostOffice#sendQueueInfoToQueue(org.hornetq.utils.SimpleString, org.hornetq.utils.SimpleString)
@@ -168,6 +152,24 @@ public class FakePostOffice implements PostOffice
     * @see org.hornetq.core.postoffice.PostOffice#route(org.hornetq.core.server.ServerMessage)
     */
    public void route(ServerMessage message) throws Exception
+   {
+      // TODO Auto-generated method stub
+      
+   }
+
+   public boolean redistribute(ServerMessage message, Queue originatingQueue, Transaction tx) throws Exception
+   {
+      // TODO Auto-generated method stub
+      return false;
+   }
+
+   public MessageReference reroute(ServerMessage message, Queue queue, Transaction tx) throws Exception
+   {
+      // TODO Auto-generated method stub
+      return null;
+   }
+
+   public void route(ServerMessage message, Transaction tx) throws Exception
    {
       // TODO Auto-generated method stub
       

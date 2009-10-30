@@ -77,6 +77,11 @@ public class ClientMessageImpl extends MessageImpl implements ClientMessageInter
       super((byte)0, durable, 0, System.currentTimeMillis(), (byte)4, body);
    }
    
+   public ClientMessageImpl(final boolean durable, final byte[] bytes)
+   {
+      super((byte)0, durable, 0, System.currentTimeMillis(), (byte)4, ChannelBuffers.dynamicBuffer(bytes));
+   }
+   
    public ClientMessageImpl(final boolean durable)
    {
       super((byte)0, durable, 0, System.currentTimeMillis(), (byte)4, ChannelBuffers.dynamicBuffer(1024));

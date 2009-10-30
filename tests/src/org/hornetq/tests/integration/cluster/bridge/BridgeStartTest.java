@@ -323,9 +323,9 @@ public class BridgeStartTest extends ServiceTestBase
          sf1.close();
 
          log.info("stopping server 1");
-         
+
          server1.stop();
-         
+
          log.info("stopped server 1");
 
          for (int i = 0; i < numMessages; i++)
@@ -336,11 +336,11 @@ public class BridgeStartTest extends ServiceTestBase
 
             producer0.send(message);
          }
-         
+
          log.info("sent some more messages");
 
          server1.start();
-         
+
          log.info("started server1");
 
          sf1 = new ClientSessionFactoryImpl(server1tc);
@@ -350,7 +350,7 @@ public class BridgeStartTest extends ServiceTestBase
          consumer1 = session1.createConsumer(queueName1);
 
          session1.start();
-         
+
          log.info("started session");
 
          for (int i = 0; i < numMessages; i++)
@@ -546,7 +546,7 @@ public class BridgeStartTest extends ServiceTestBase
                                                                         1d,
                                                                         1,
                                                                         false,
-                                                                        false,
+                                                                        true,
                                                                         connectorPair);
 
       List<BridgeConfiguration> bridgeConfigs = new ArrayList<BridgeConfiguration>();
@@ -611,9 +611,11 @@ public class BridgeStartTest extends ServiceTestBase
 
       Bridge bridge = server0.getClusterManager().getBridges().get(bridgeName);
 
+      log.info("stopping bridge manually");
+      
       bridge.stop();
 
-      for (int i = 0; i < numMessages; i++)
+      for (int i = numMessages; i < numMessages * 2; i++)
       {
          ClientMessage message = session0.createClientMessage(false);
 
@@ -626,7 +628,12 @@ public class BridgeStartTest extends ServiceTestBase
 
       bridge.start();
 
-      for (int i = 0; i < numMessages; i++)
+      log.info("started bridge");
+      
+      //The previous messages will get resent, but with duplicate detection they will be rejected
+      //at the target
+
+      for (int i = numMessages; i < numMessages * 2; i++)
       {
          ClientMessage message = consumer1.receive(1000);
 
@@ -679,7 +686,7 @@ public class BridgeStartTest extends ServiceTestBase
 
       server1.stop();
    }
-   
+
    protected void setUp() throws Exception
    {
       super.setUp();

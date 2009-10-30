@@ -21,9 +21,9 @@ import org.hornetq.core.client.ClientMessage;
 import org.hornetq.core.client.ClientProducer;
 import org.hornetq.core.client.ClientSession;
 import org.hornetq.core.client.ClientSessionFactory;
+import org.hornetq.core.client.SessionFailureListener;
 import org.hornetq.core.client.impl.ClientSessionInternal;
 import org.hornetq.core.exception.HornetQException;
-import org.hornetq.core.remoting.FailureListener;
 import org.hornetq.core.remoting.RemotingConnection;
 import org.hornetq.core.remoting.impl.wireformat.SessionBindingQueryResponseMessage;
 import org.hornetq.core.remoting.impl.wireformat.SessionQueueQueryResponseMessage;
@@ -50,11 +50,15 @@ public class SessionTest extends ServiceTestBase
          ClientSessionFactory cf = createInVMFactory();
          ClientSession clientSession = cf.createSession(false, true, true);
          final CountDownLatch latch = new CountDownLatch(1);
-         clientSession.addFailureListener(new FailureListener()
+         clientSession.addFailureListener(new SessionFailureListener()
          {
             public void connectionFailed(HornetQException me)
             {
                latch.countDown();
+            }
+            
+            public void beforeReconnect(HornetQException me)
+            {            
             }
          });
          
@@ -83,13 +87,17 @@ public class SessionTest extends ServiceTestBase
          server.start();
          ClientSessionFactory cf = createInVMFactory();
          ClientSession clientSession = cf.createSession(false, true, true);
-         class MyFailureListener implements FailureListener
+         class MyFailureListener implements SessionFailureListener
          {
             boolean called = false;
 
             public void connectionFailed(HornetQException me)
             {
                called = true;
+            }
+            
+            public void beforeReconnect(HornetQException me)
+            {            
             }
          }
 

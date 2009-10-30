@@ -18,7 +18,6 @@ import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.remoting.RemotingConnection;
 import org.hornetq.core.remoting.impl.wireformat.SessionReceiveContinuationMessage;
 import org.hornetq.core.remoting.impl.wireformat.SessionReceiveMessage;
-import org.hornetq.core.remoting.spi.HornetQBuffer;
 import org.hornetq.utils.SimpleString;
 
 /**
@@ -35,8 +34,6 @@ public interface ClientSessionInternal extends ClientSession
    boolean isCacheLargeMessageClient();
 
    int getMinLargeMessageSize();
-
-   HornetQBuffer createBuffer(int size);
 
    void expire(long consumerID, long messageID) throws HornetQException;
 
@@ -70,5 +67,9 @@ public interface ClientSessionInternal extends ClientSession
    
    void forceDelivery(long consumerID, long sequence) throws HornetQException;
    
-   //void sendProducerCreditsMessage(int credits, SimpleString destination);
+   void sendProducerCreditsMessage(int credits, SimpleString destination);
+   
+   ClientProducerCredits getCredits(SimpleString address);
+   
+   void handleReceiveProducerCredits(SimpleString address, int credits);
 }

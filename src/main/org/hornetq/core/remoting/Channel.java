@@ -62,4 +62,6 @@ public interface Channel
    void handlePacket(Packet packet);
    
    void clearCommands();
+   
+   int getConfirmationWindowSize();
 }

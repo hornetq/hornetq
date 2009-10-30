@@ -132,7 +132,7 @@ public class JMSServerDeployer extends XmlDeployer
          int transactionBatchSize = getInteger(e, "transaction-batch-size", ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE, GT_ZERO);
          int consumerWindowSize = getInteger(e, "consumer-window-size", ClientSessionFactoryImpl.DEFAULT_CONSUMER_WINDOW_SIZE, GE_ZERO);
          int consumerMaxRate = getInteger(e, "consumer-max-rate", ClientSessionFactoryImpl.DEFAULT_CONSUMER_MAX_RATE, MINUS_ONE_OR_GT_ZERO);
-         int producerWindowSize = getInteger(e, "producer-window-size", ClientSessionFactoryImpl.DEFAULT_PRODUCER_WINDOW_SIZE, GT_ZERO);
+         int confirmationWindowSize = getInteger(e, "confirmation-window-size", ClientSessionFactoryImpl.DEFAULT_CONFIRMATION_WINDOW_SIZE, MINUS_ONE_OR_GT_ZERO);
          int producerMaxRate = getInteger(e, "producer-max-rate", ClientSessionFactoryImpl.DEFAULT_PRODUCER_MAX_RATE, MINUS_ONE_OR_GT_ZERO);
          boolean cacheLargeMessagesClient = getBoolean(e, "cache-large-message-client", ClientSessionFactoryImpl.DEFAULT_CACHE_LARGE_MESSAGE_CLIENT);
          int minLargeMessageSize = getInteger(e, "min-large-message-size", ClientSessionFactoryImpl.DEFAULT_MIN_LARGE_MESSAGE_SIZE, GT_ZERO);
@@ -240,7 +240,7 @@ public class JMSServerDeployer extends XmlDeployer
                                                      minLargeMessageSize,
                                                      consumerWindowSize,
                                                      consumerMaxRate,
-                                                     producerWindowSize,
+                                                     confirmationWindowSize,
                                                      producerMaxRate,
                                                      blockOnAcknowledge,
                                                      blockOnPersistentSend,
@@ -273,7 +273,7 @@ public class JMSServerDeployer extends XmlDeployer
                                                      minLargeMessageSize,
                                                      consumerWindowSize,
                                                      consumerMaxRate,
-                                                     producerWindowSize,
+                                                     confirmationWindowSize,
                                                      producerMaxRate,
                                                      blockOnAcknowledge,
                                                      blockOnPersistentSend,

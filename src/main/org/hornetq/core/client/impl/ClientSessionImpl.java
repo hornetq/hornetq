@@ -31,6 +31,7 @@ import org.hornetq.core.client.ClientConsumer;
 import org.hornetq.core.client.ClientMessage;
 import org.hornetq.core.client.ClientProducer;
 import org.hornetq.core.client.SendAcknowledgementHandler;
+import org.hornetq.core.client.SessionFailureListener;
 import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.remoting.Channel;
@@ -57,6 +58,7 @@ import org.hornetq.core.remoting.impl.wireformat.SessionQueueQueryMessage;
 import org.hornetq.core.remoting.impl.wireformat.SessionQueueQueryResponseMessage;
 import org.hornetq.core.remoting.impl.wireformat.SessionReceiveContinuationMessage;
 import org.hornetq.core.remoting.impl.wireformat.SessionReceiveMessage;
+import org.hornetq.core.remoting.impl.wireformat.SessionRequestProducerCreditsMessage;
 import org.hornetq.core.remoting.impl.wireformat.SessionSendMessage;
 import org.hornetq.core.remoting.impl.wireformat.SessionXACommitMessage;
 import org.hornetq.core.remoting.impl.wireformat.SessionXAEndMessage;
@@ -107,7 +109,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
 
    // Attributes ----------------------------------------------------------------------------
 
-   private final FailoverManager connectionManager;
+   private final FailoverManager failoverManager;
 
    private final String name;
 
@@ -144,9 +146,11 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
 
    private final int consumerMaxRate;
 
-   private final int producerWindowSize;
+   private final int confirmationWindowSize;
 
    private final int producerMaxRate;
+   
+   private final int producerWindowSize;
 
    private final boolean blockOnNonPersistentSend;
 
@@ -165,11 +169,11 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
 
    private final IDGenerator idGenerator = new SimpleIDGenerator(0);
 
+   private final ClientProducerCreditManager producerCreditManager;
+
    private volatile boolean started;
 
    private SendAcknowledgementHandler sendAckHandler;
-
-   private volatile boolean closedSent;
 
    private volatile boolean rollbackOnly;
 
@@ -190,6 +194,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
                             final int ackBatchSize,
                             final int consumerWindowSize,
                             final int consumerMaxRate,
+                            final int confirmationWindowSize,                            
                             final int producerWindowSize,
                             final int producerMaxRate,
                             final boolean blockOnNonPersistentSend,
@@ -201,7 +206,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
                             final Channel channel,
                             final Executor executor) throws HornetQException
    {
-      this.connectionManager = connectionManager;
+      this.failoverManager = connectionManager;
 
       this.name = name;
 
@@ -235,8 +240,10 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
 
       this.consumerMaxRate = consumerMaxRate;
 
-      this.producerWindowSize = producerWindowSize;
+      this.confirmationWindowSize = confirmationWindowSize;
 
+      this.producerWindowSize = producerWindowSize;
+      
       this.producerMaxRate = producerMaxRate;
 
       this.blockOnNonPersistentSend = blockOnNonPersistentSend;
@@ -246,6 +253,8 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
       this.cacheLargeMessageClient = cacheLargeMessageClient;
 
       this.minLargeMessageSize = minLargeMessageSize;
+
+      producerCreditManager = new ClientProducerCreditManagerImpl(this, producerWindowSize);
    }
 
    // ClientSession implementation
@@ -329,7 +338,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
 
       return response;
    }
-   
+
    public void forceDelivery(long consumerID, long sequence) throws HornetQException
    {
       checkClosed();
@@ -544,13 +553,20 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
 
       return new ClientMessageImpl(durable, body);
    }
-
-   /* (non-Javadoc)
-    * @see org.hornetq.core.client.impl.ClientSessionInternal#createBuffer(int)
-    */
+   
+   public ClientMessage createClientMessage(final boolean durable, final HornetQBuffer buffer)
+   {
+      return new ClientMessageImpl(durable, buffer);
+   }
+   
    public HornetQBuffer createBuffer(final int size)
    {
       return ChannelBuffers.dynamicBuffer(size);
+   }
+   
+   public HornetQBuffer createBuffer(final byte[] bytes)
+   {
+      return ChannelBuffers.dynamicBuffer(bytes);
    }
 
    public boolean isClosed()
@@ -612,14 +628,14 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
       }
    }
 
-   public void addFailureListener(final FailureListener listener)
+   public void addFailureListener(final SessionFailureListener listener)
    {
-      connectionManager.addFailureListener(listener);
+      failoverManager.addFailureListener(listener);
    }
 
-   public boolean removeFailureListener(final FailureListener listener)
+   public boolean removeFailureListener(final SessionFailureListener listener)
    {
-      return connectionManager.removeFailureListener(listener);
+      return failoverManager.removeFailureListener(listener);
    }
 
    public int getVersion()
@@ -756,9 +772,9 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
 
       try
       {
+         producerCreditManager.close();
+         
          closeChildren();
-
-         closedSent = true;
 
          channel.sendBlocking(new SessionCloseMessage());
       }
@@ -776,7 +792,9 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
       {
          return;
       }
-
+      
+      producerCreditManager.close();
+      
       cleanUpChildren();
 
       doCleanup();
@@ -798,6 +816,8 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
          return;
       }
 
+      boolean resetCreditManager = false;
+      
       // We lock the channel to prevent any packets to be added to the resend
       // cache during the failover process
       channel.lock();
@@ -812,7 +832,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
 
          Packet request = new ReattachSessionMessage(name, channel.getLastReceivedCommandID());
 
-         Channel channel1 = backupConnection.getChannel(1, -1, false);
+         Channel channel1 = backupConnection.getChannel(1, -1);
 
          ReattachSessionResponseMessage response = (ReattachSessionResponseMessage)channel1.sendBlocking(request);
 
@@ -828,7 +848,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
             // session
             // won't exist or the target server has been restarted - in this case the session will need to be recreated,
             // and we'll need to recreate any consumers
-                        
+
             Packet createRequest = new CreateSessionMessage(name,
                                                             channel.getID(),
                                                             version,
@@ -839,12 +859,12 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
                                                             autoCommitSends,
                                                             autoCommitAcks,
                                                             preAcknowledge,
-                                                            producerWindowSize);
+                                                            confirmationWindowSize);
 
             channel1.sendBlocking(createRequest);
             
             channel.clearCommands();
-            
+
             for (Map.Entry<Long, ClientConsumerInternal> entry : consumers.entrySet())
             {
                SessionCreateConsumerMessage createConsumerRequest = new SessionCreateConsumerMessage(entry.getKey(),
@@ -911,10 +931,11 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
 
                conn.write(buffer, false);
             }
-           
-            channel.returnBlocking();
-         }
 
+            resetCreditManager = true;
+            
+            channel.returnBlocking();
+         }                 
       }
       catch (Throwable t)
       {
@@ -923,6 +944,11 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
       finally
       {
          channel.unlock();
+      }
+      
+      if (resetCreditManager)
+      {
+         producerCreditManager.reset();        
       }
    }
 
@@ -938,7 +964,22 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
 
    public FailoverManager getConnectionManager()
    {
-      return connectionManager;
+      return failoverManager;
+   }
+
+   public void sendProducerCreditsMessage(final int credits, final SimpleString destination)
+   {
+      channel.send(new SessionRequestProducerCreditsMessage(credits, destination));
+   }
+   
+   public ClientProducerCredits getCredits(final SimpleString address)
+   {
+      return producerCreditManager.getCredits(address);
+   }
+   
+   public void handleReceiveProducerCredits(final SimpleString address, final int credits)
+   {
+      producerCreditManager.receiveCredits(address, credits);
    }
 
    // CommandConfirmationHandler implementation ------------------------------------
@@ -1087,7 +1128,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
 
       ClientSessionInternal other = (ClientSessionInternal)xares;
 
-      return connectionManager == other.getConnectionManager();
+      return failoverManager == other.getConnectionManager();
    }
 
    public int prepare(final Xid xid) throws XAException
@@ -1256,7 +1297,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
    // FailureListener implementation --------------------------------------------
 
    public void connectionFailed(final HornetQException me)
-   {
+   {      
       try
       {
          cleanUp();
@@ -1288,7 +1329,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
 
    // Private
    // ----------------------------------------------------------------------------
-
+     
    private int calcWindowSize(final int windowSize)
    {
       int clientWindowSize;
@@ -1386,7 +1427,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
                                                  final boolean blockOnPersistentSend) throws HornetQException
    {
       checkClosed();
-
+      
       ClientProducerInternal producer = new ClientProducerImpl(this,
                                                                address,
                                                                maxRate == -1 ? null
@@ -1438,7 +1479,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
    }
 
    private void doCleanup()
-   {
+   {      
       remotingConnection.removeFailureListener(this);
 
       synchronized (this)
@@ -1448,7 +1489,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
          channel.close();
       }
 
-      connectionManager.removeSession(this);
+      failoverManager.removeSession(this);      
    }
 
    private void cleanUpChildren() throws Exception

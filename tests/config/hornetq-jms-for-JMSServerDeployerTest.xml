@@ -14,7 +14,7 @@
       <call-timeout>5678</call-timeout>
       <consumer-window-size>12345</consumer-window-size>
       <consumer-max-rate>6789</consumer-max-rate>
-      <producer-window-size>123456</producer-window-size>
+      <confirmation-window-size>123456</confirmation-window-size>
       <producer-max-rate>789</producer-max-rate>
       <min-large-message-size>12</min-large-message-size>
       <client-id>TestClientID</client-id>

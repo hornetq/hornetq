@@ -156,7 +156,7 @@ public class LargeMessageTestBase extends ServiceTestBase
 
          if (producerWindow > 0)
          {
-            sf.setProducerWindowSize(producerWindow);
+            sf.setConfirmationWindowSize(producerWindow);
          }
 
          sf.setMinLargeMessageSize(minSize);

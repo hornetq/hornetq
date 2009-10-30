@@ -75,7 +75,7 @@ public class ProducerTest  extends ServiceTestBase
          }
       });
       ClientSessionFactory cf = createInVMFactory();
-      cf.setProducerWindowSize(100);
+      cf.setConfirmationWindowSize(100);
       ClientSession session = cf.createSession(false, true, true);
       ClientProducer producer = session.createProducer(QUEUE);
       ClientMessage message = session.createClientMessage(true);

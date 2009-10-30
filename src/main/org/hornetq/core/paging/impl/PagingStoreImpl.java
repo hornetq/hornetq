@@ -38,9 +38,12 @@ import org.hornetq.core.paging.PagingStoreFactory;
 import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.core.postoffice.PostOffice;
 import org.hornetq.core.server.LargeServerMessage;
-import org.hornetq.core.server.RoutingContext;
+import org.hornetq.core.server.MessageReference;
 import org.hornetq.core.server.ServerMessage;
 import org.hornetq.core.server.impl.RoutingContextImpl;
+import org.hornetq.core.server.impl.ServerProducerCreditManager;
+import org.hornetq.core.server.impl.ServerProducerCreditManagerImpl;
+import org.hornetq.core.settings.impl.AddressFullMessagePolicy;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.core.transaction.Transaction;
 import org.hornetq.core.transaction.TransactionPropertyIndexes;
@@ -52,6 +55,7 @@ import org.hornetq.utils.SimpleString;
  * @see PagingStore
  * 
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
+ * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */
 public class PagingStoreImpl implements TestSupportPageStore
@@ -80,7 +84,7 @@ public class PagingStoreImpl implements TestSupportPageStore
 
    private final long pageSize;
 
-   private final boolean dropMessagesWhenFull;
+   private final AddressFullMessagePolicy addressFullMessagePolicy;
 
    private boolean printedDropMessagesWarning;
 
@@ -107,9 +111,15 @@ public class PagingStoreImpl implements TestSupportPageStore
     * We need to perform checks on currentPage with minimal locking
     * */
    private final ReadWriteLock currentPageLock = new ReentrantReadWriteLock();
-
+   
+   private final ServerProducerCreditManager creditManager;
+   
+   private boolean exceededAvailableCredits;
+   
    private volatile boolean running = false;
-
+   
+   private final AtomicLong availableProducerCredits = new AtomicLong(0);
+   
    // Static --------------------------------------------------------
 
    private static final boolean isTrace = log.isTraceEnabled();
@@ -148,7 +158,7 @@ public class PagingStoreImpl implements TestSupportPageStore
 
       pageSize = addressSettings.getPageSizeBytes();
 
-      dropMessagesWhenFull = addressSettings.isDropMessagesWhenFull();
+      this.addressFullMessagePolicy = addressSettings.getAddressFullMessagePolicy();
 
       this.executor = executor;
 
@@ -157,6 +167,10 @@ public class PagingStoreImpl implements TestSupportPageStore
       this.fileFactory = fileFactory;
 
       this.storeFactory = storeFactory;
+      
+      this.availableProducerCredits.set(maxSize);
+      
+      this.creditManager = new ServerProducerCreditManagerImpl(this);            
    }
 
    // Public --------------------------------------------------------
@@ -174,9 +188,9 @@ public class PagingStoreImpl implements TestSupportPageStore
       return maxSize;
    }
 
-   public boolean isDropWhenMaxSize()
+   public AddressFullMessagePolicy getAddressFullMessagePolicy()
    {
-      return dropMessagesWhenFull;
+      return addressFullMessagePolicy;
    }
 
    public long getPageSizeBytes()
@@ -189,9 +203,9 @@ public class PagingStoreImpl implements TestSupportPageStore
       currentPageLock.readLock().lock();
       try
       {
-         if (isDropWhenMaxSize())
+         if (addressFullMessagePolicy != AddressFullMessagePolicy.PAGE)
          {
-            return isDrop();
+            return isFull();
          }
          else
          {
@@ -213,12 +227,104 @@ public class PagingStoreImpl implements TestSupportPageStore
    {
       return storeName;
    }
-
-   public void addSize(final long size) throws Exception
+   
+   public boolean isExceededAvailableCredits()
    {
-      if (isDropWhenMaxSize())
+      return exceededAvailableCredits;
+   }
+   
+   public synchronized int getAvailableProducerCredits(final int credits)
+   {           
+      if (maxSize != -1 && addressFullMessagePolicy == AddressFullMessagePolicy.BLOCK)
+      {        
+         long avail = availableProducerCredits.get();
+                           
+         if (avail > 0)
+         {
+            long take = Math.min(avail, credits);
+            
+            availableProducerCredits.addAndGet(-take);
+                        
+            return (int)take;
+         }
+         
+         return 0;
+      }
+      else
+      {
+         return credits;
+      }
+   }
+   
+   public void returnProducerCredits(final int credits)
+   {
+      checkReleaseProducerFlowControlCredits(-credits);
+   }
+   
+   private synchronized void checkReleaseProducerFlowControlCredits(final long size)
+   {
+      if (addressFullMessagePolicy == AddressFullMessagePolicy.BLOCK && maxSize != -1)
+      {         
+         long avail = availableProducerCredits.addAndGet(-size);
+         
+         if (avail > 0)
+         {
+            int used = creditManager.creditsReleased((int)avail);
+          
+            long num = availableProducerCredits.addAndGet(-used);
+            
+            if (num < 0)
+            {
+               log.warn("Available credits has gone negative");
+               
+               exceededAvailableCredits = true;
+            }
+         }     
+      }
+   }
+   
+   public void addSize(final ServerMessage message, final boolean add) throws Exception
+   {            
+      long size = message.getMemoryEstimate();
+      
+      if (add)
+      {
+         checkReleaseProducerFlowControlCredits(size);
+         
+         addSize(size);
+      }
+      else
+      {
+         checkReleaseProducerFlowControlCredits(-size);
+         
+         addSize(-size);
+      }
+   }
+         
+   public void addSize(final MessageReference reference, final boolean add) throws Exception
+   {
+      long size = reference.getMemoryEstimate();
+      
+      if (add)
+      {
+         checkReleaseProducerFlowControlCredits(size);
+         
+         addSize(size);
+      }
+      else
+      {
+         checkReleaseProducerFlowControlCredits(-size);
+         
+         addSize(-size);
+      }
+   }
+   
+   private void addSize(final long size) throws Exception
+   {          
+      if (addressFullMessagePolicy != AddressFullMessagePolicy.PAGE)
       {
          addAddressSize(size);
+         
          pagingManager.addSize(size);
 
          return;
@@ -268,10 +374,12 @@ public class PagingStoreImpl implements TestSupportPageStore
       {
          throw new IllegalStateException("PagingStore(" + getStoreName() + ") not initialized");
       }
+      
+      boolean full = isFull();
 
-      if (dropMessagesWhenFull)
+      if (addressFullMessagePolicy == AddressFullMessagePolicy.DROP)
       {
-         if (isDrop())
+         if (full)
          {
             if (!printedDropMessagesWarning)
             {
@@ -287,6 +395,10 @@ public class PagingStoreImpl implements TestSupportPageStore
          {
             return false;
          }
+      }
+      else if (addressFullMessagePolicy == AddressFullMessagePolicy.BLOCK)
+      {
+         return false;
       }
 
       // We need to ensure a read lock, as depage could change the paging state
@@ -637,6 +749,11 @@ public class PagingStoreImpl implements TestSupportPageStore
 
       return new PageImpl(this.storeName, storageManager, fileFactory, file, page);
    }
+   
+   public ServerProducerCreditManager getProducerCreditManager()
+   {
+      return creditManager;
+   }
 
    
    // TestSupportPageStore ------------------------------------------
@@ -827,7 +944,7 @@ public class PagingStoreImpl implements TestSupportPageStore
             }
          }
 
-         postOffice.route(message, new RoutingContextImpl(depageTransaction));
+         postOffice.route(message, depageTransaction);
       }
 
       if (!running)
@@ -963,7 +1080,7 @@ public class PagingStoreImpl implements TestSupportPageStore
    }
 
    // To be used on isDropMessagesWhenFull
-   private boolean isDrop()
+   private boolean isFull()
    {
       return getMaxSizeBytes() > 0 && getAddressSize() > getMaxSizeBytes();
    }

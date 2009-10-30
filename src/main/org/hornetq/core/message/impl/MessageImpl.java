@@ -169,17 +169,17 @@ public abstract class MessageImpl implements Message
 
    public void encode(final HornetQBuffer buffer)
    {
-      encodeProperties(buffer);
+      encodeHeadersAndProperties(buffer);
       buffer.writeInt(getBodySize());
       encodeBody(buffer);
    }
    
    public int getEncodeSize()
    {
-      return getPropertiesEncodeSize() + SIZE_INT + getBodySize();
+      return getHeadersAndPropertiesEncodeSize() + SIZE_INT + getBodySize();
    }
 
-   public int getPropertiesEncodeSize()
+   public int getHeadersAndPropertiesEncodeSize()
    {
       return SIZE_LONG + /* Destination */SimpleString.sizeofString(destination) +
       /* Type */SIZE_BYTE +
@@ -195,7 +195,7 @@ public abstract class MessageImpl implements Message
       return body.writerIndex();
    }
 
-   public void encodeProperties(HornetQBuffer buffer)
+   public void encodeHeadersAndProperties(HornetQBuffer buffer)
    {
       buffer.writeLong(messageID);
       buffer.writeSimpleString(destination);
@@ -221,12 +221,12 @@ public abstract class MessageImpl implements Message
 
    public void decode(final HornetQBuffer buffer)
    {
-      decodeProperties(buffer);
+      decodeHeadersAndProperties(buffer);
 
       decodeBody(buffer);
    }
 
-   public void decodeProperties(final HornetQBuffer buffer)
+   public void decodeHeadersAndProperties(final HornetQBuffer buffer)
    {
       messageID = buffer.readLong();
       destination = buffer.readSimpleString();

@@ -15,7 +15,6 @@ package org.hornetq.core.client.impl;
 
 import static org.hornetq.utils.SimpleString.toSimpleString;
 
-import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -70,6 +69,8 @@ public class ClientProducerImpl implements ClientProducerInternal
    private final SimpleString groupID;
 
    private final int minLargeMessageSize;
+   
+   private final ClientProducerCredits credits;
 
    // Static ---------------------------------------------------------------------------------------
 
@@ -106,6 +107,15 @@ public class ClientProducerImpl implements ClientProducerInternal
       }
 
       this.minLargeMessageSize = minLargeMessageSize;
+      
+      if (address != null)
+      {
+         credits = session.getCredits(address);
+      }
+      else
+      {
+         credits = null;
+      }
    }
 
    // ClientProducer implementation ----------------------------------------------------------------
@@ -116,7 +126,7 @@ public class ClientProducerImpl implements ClientProducerInternal
    }
 
    public void send(final Message msg) throws HornetQException
-   {
+   {     
       checkClosed();
 
       doSend(null, msg);
@@ -191,13 +201,20 @@ public class ClientProducerImpl implements ClientProducerInternal
 
    private void doSend(final SimpleString address, final Message msg) throws HornetQException
    {
+      ClientProducerCredits theCredits;
+      
       if (address != null)
       {
          msg.setDestination(address);
+         
+         //Anonymous
+         theCredits = session.getCredits(address);
       }
       else
       {
          msg.setDestination(this.address);
+         
+         theCredits = credits;
       }
 
       if (rateLimiter != null)
@@ -217,11 +234,11 @@ public class ClientProducerImpl implements ClientProducerInternal
       SessionSendMessage message = new SessionSendMessage(msg, sendBlocking);
       
       session.workDone();
-
+            
       if (msg.getBodyInputStream() != null || msg.getEncodeSize() >= minLargeMessageSize || msg.isLargeMessage())
       {
          sendMessageInChunks(sendBlocking, msg);
-      }
+      }      
       else if (sendBlocking)
       {
          channel.sendBlocking(message);
@@ -229,6 +246,19 @@ public class ClientProducerImpl implements ClientProducerInternal
       else
       {
          channel.send(message);
+      }
+      
+      try
+      {
+         //This will block if credits are not available
+         
+         //Note, that for a large message, the encode size only includes the properties + headers
+         //Not the continuations, but this is ok since we are only interested in limiting the amount of
+         //data in *memory* and continuations go straight to the disk
+         theCredits.acquireCredits(msg.getEncodeSize());
+      }
+      catch (InterruptedException e)
+      {         
       }
    }
 
@@ -238,7 +268,7 @@ public class ClientProducerImpl implements ClientProducerInternal
     */
    private void sendMessageInChunks(final boolean sendBlocking, final Message msg) throws HornetQException
    {
-      int headerSize = msg.getPropertiesEncodeSize();
+      int headerSize = msg.getHeadersAndPropertiesEncodeSize();
 
       if (headerSize >= minLargeMessageSize)
       {
@@ -253,7 +283,7 @@ public class ClientProducerImpl implements ClientProducerInternal
       }
 
       HornetQBuffer headerBuffer = ChannelBuffers.buffer(headerSize);
-      msg.encodeProperties(headerBuffer);
+      msg.encodeHeadersAndProperties(headerBuffer);
 
       SessionSendLargeMessage initialChunk = new SessionSendLargeMessage(headerBuffer.array());
 

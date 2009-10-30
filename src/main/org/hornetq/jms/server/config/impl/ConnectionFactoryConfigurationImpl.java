@@ -62,7 +62,7 @@ public class ConnectionFactoryConfigurationImpl implements ConnectionFactoryConf
 
    public int consumerMaxRate = ClientSessionFactoryImpl.DEFAULT_CONSUMER_MAX_RATE;
 
-   public int producerWindowSize = ClientSessionFactoryImpl.DEFAULT_PRODUCER_WINDOW_SIZE;
+   public int confirmationWindowSize = ClientSessionFactoryImpl.DEFAULT_CONFIRMATION_WINDOW_SIZE;
 
    public int producerMaxRate = ClientSessionFactoryImpl.DEFAULT_PRODUCER_MAX_RATE;
 
@@ -269,14 +269,14 @@ public class ConnectionFactoryConfigurationImpl implements ConnectionFactoryConf
       this.consumerMaxRate = consumerMaxRate;
    }
 
-   public int getProducerWindowSize()
+   public int getConfirmationWindowSize()
    {
-      return producerWindowSize;
+      return confirmationWindowSize;
    }
 
-   public void setProducerWindowSize(int producerWindowSize)
+   public void setConfirmationWindowSize(int confirmationWindowSize)
    {
-      this.producerWindowSize = producerWindowSize;
+      this.confirmationWindowSize = confirmationWindowSize;
    }
 
    public int getProducerMaxRate()

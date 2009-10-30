@@ -986,7 +986,7 @@
                         </row>
                         <row>
                             <entry><link linkend="command-buffering"
-                                    >connection-factory.producer-window-size</link></entry>
+                                    >connection-factory.confirmation-window-size</link></entry>
                             <entry>Integer</entry>
                             <entry>the window size (in bytes) for sending messages</entry>
                             <entry>1024 * 1024</entry>

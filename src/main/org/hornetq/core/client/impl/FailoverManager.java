@@ -14,8 +14,8 @@
 package org.hornetq.core.client.impl;
 
 import org.hornetq.core.client.ClientSession;
+import org.hornetq.core.client.SessionFailureListener;
 import org.hornetq.core.exception.HornetQException;
-import org.hornetq.core.remoting.FailureListener;
 import org.hornetq.core.remoting.RemotingConnection;
 
 /**
@@ -40,6 +40,7 @@ public interface FailoverManager
                                final int minLargeMessageSize,
                                final boolean blockOnAcknowledge,
                                final boolean autoGroup,
+                               final int confirmationWindowSize,
                                final int producerWindowSize,
                                final int consumerWindowSize,
                                final int producerMaxRate,
@@ -55,9 +56,9 @@ public interface FailoverManager
 
    int numSessions();
    
-   void addFailureListener(FailureListener listener);
+   void addFailureListener(SessionFailureListener listener);
 
-   boolean removeFailureListener(FailureListener listener);
+   boolean removeFailureListener(SessionFailureListener listener);
    
    void causeExit();
 }

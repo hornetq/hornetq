@@ -489,8 +489,11 @@ public class BridgeReconnectTest extends BridgeTestBase
 
       ClientProducer prod0 = session0.createProducer(testAddress);
 
+      log.info("stopping server1");
       server1.stop();
+      log.info("restarting server1");
       server1.start();
+      log.info("server 1 restarted");
 
       ClientSessionFactory csf1 = new ClientSessionFactoryImpl(server1tc);
       ClientSession session1 = csf1.createSession(false, true, true);
@@ -510,13 +513,18 @@ public class BridgeReconnectTest extends BridgeTestBase
 
          prod0.send(message);
       }
+      
+      log.info("sent messages");
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage r1 = cons1.receive(1500);
+         ClientMessage r1 = cons1.receive(30000);
          assertNotNull(r1);
          assertEquals(i, r1.getProperty(propKey));
+         log.info("got message " + r1.getProperty(propKey));
       }
+      
+      log.info("got messages");
 
       session0.close();
       session1.close();

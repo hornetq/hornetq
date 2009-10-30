@@ -19,6 +19,7 @@ import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.remoting.FailureListener;
 import org.hornetq.core.remoting.impl.wireformat.SessionBindingQueryResponseMessage;
 import org.hornetq.core.remoting.impl.wireformat.SessionQueueQueryResponseMessage;
+import org.hornetq.core.remoting.spi.HornetQBuffer;
 import org.hornetq.utils.SimpleString;
 
 /*
@@ -42,7 +43,7 @@ public interface ClientSession extends XAResource
     * Queues created by this method are <em>not</em> temporary
     */
    void createQueue(String address, String queueName) throws HornetQException;
-   
+
    void createQueue(String address, String queueName, boolean durable) throws HornetQException;
 
    void createQueue(SimpleString address, SimpleString queueName, SimpleString filterString, boolean durable) throws HornetQException;
@@ -66,7 +67,7 @@ public interface ClientSession extends XAResource
    ClientConsumer createConsumer(SimpleString queueName, SimpleString filterString) throws HornetQException;
 
    ClientConsumer createConsumer(SimpleString queueName, SimpleString filterString, boolean browseOnly) throws HornetQException;
-   
+
    ClientConsumer createConsumer(SimpleString queueName, boolean browseOnly) throws HornetQException;
 
    ClientConsumer createConsumer(SimpleString queueName,
@@ -80,7 +81,7 @@ public interface ClientSession extends XAResource
    ClientConsumer createConsumer(String queueName, String filterString) throws HornetQException;
 
    ClientConsumer createConsumer(String queueName, String filterString, boolean browseOnly) throws HornetQException;
-   
+
    ClientConsumer createConsumer(String queueName, boolean browseOnly) throws HornetQException;
 
    ClientConsumer createConsumer(String queueName, String filterString, int windowSize, int maxRate, boolean browseOnly) throws HornetQException;
@@ -141,23 +142,25 @@ public interface ClientSession extends XAResource
 
    boolean isXA();
 
-   ClientMessage createClientMessage(final byte type,
-                                     final boolean durable,
-                                     final long expiration,
-                                     final long timestamp,
-                                     final byte priority);
+   ClientMessage createClientMessage(byte type, boolean durable, long expiration, long timestamp, byte priority);
 
-   ClientMessage createClientMessage(final byte type, final boolean durable);
+   ClientMessage createClientMessage(byte type, boolean durable);
 
-   ClientMessage createClientMessage(final boolean durable);
+   ClientMessage createClientMessage(boolean durable);
+
+   ClientMessage createClientMessage(boolean durable, HornetQBuffer buffer);
+
+   HornetQBuffer createBuffer(byte[] bytes);
+
+   HornetQBuffer createBuffer(int size);
 
    void start() throws HornetQException;
 
    void stop() throws HornetQException;
 
-   void addFailureListener(FailureListener listener);
+   void addFailureListener(SessionFailureListener listener);
 
-   boolean removeFailureListener(FailureListener listener);
+   boolean removeFailureListener(SessionFailureListener listener);
 
    int getVersion();
 

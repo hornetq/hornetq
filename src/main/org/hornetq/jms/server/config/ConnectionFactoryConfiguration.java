@@ -79,9 +79,9 @@ public interface ConnectionFactoryConfiguration
 
    void setConsumerMaxRate(int consumerMaxRate);
 
-   int getProducerWindowSize();
+   int getConfirmationWindowSize();
 
-   void setProducerWindowSize(int producerWindowSize);
+   void setConfirmationWindowSize(int confirmationWindowSize);
 
    int getProducerMaxRate();
 

@@ -52,7 +52,7 @@ public class HornetQCrashTest extends TestCase
       ClientSessionFactory clientSessionFactory = new ClientSessionFactoryImpl(new TransportConfiguration(InVMConnectorFactory.class.getName()));
 
       // Force an ack at once - this means the send call will block
-      clientSessionFactory.setProducerWindowSize(1);
+      clientSessionFactory.setConfirmationWindowSize(1);
 
       ClientSession session = clientSessionFactory.createSession();
       

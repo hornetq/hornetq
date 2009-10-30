@@ -22,12 +22,12 @@ import org.hornetq.core.client.ClientConsumer;
 import org.hornetq.core.client.ClientMessage;
 import org.hornetq.core.client.ClientProducer;
 import org.hornetq.core.client.ClientSession;
+import org.hornetq.core.client.SessionFailureListener;
 import org.hornetq.core.client.impl.ClientSessionFactoryInternal;
 import org.hornetq.core.client.impl.ClientSessionInternal;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.TransportConfiguration;
 import org.hornetq.core.exception.HornetQException;
-import org.hornetq.core.remoting.FailureListener;
 import org.hornetq.core.remoting.RemotingConnection;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.settings.impl.AddressSettings;
@@ -88,12 +88,17 @@ public class PagingFailoverTest extends FailoverTestBase
 
          final CountDownLatch latch = new CountDownLatch(1);
 
-         class MyListener implements FailureListener
+         class MyListener implements SessionFailureListener
          {
             public void connectionFailed(HornetQException me)
             {
                latch.countDown();
             }
+            
+            public void beforeReconnect(HornetQException exception)
+            {               
+            }
+            
          }
 
          session.addFailureListener(new MyListener());

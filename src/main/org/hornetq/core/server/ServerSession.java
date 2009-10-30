@@ -21,12 +21,13 @@ import org.hornetq.core.remoting.impl.wireformat.RollbackMessage;
 import org.hornetq.core.remoting.impl.wireformat.SessionAcknowledgeMessage;
 import org.hornetq.core.remoting.impl.wireformat.SessionBindingQueryMessage;
 import org.hornetq.core.remoting.impl.wireformat.SessionConsumerCloseMessage;
-import org.hornetq.core.remoting.impl.wireformat.SessionForceConsumerDelivery;
 import org.hornetq.core.remoting.impl.wireformat.SessionConsumerFlowCreditMessage;
 import org.hornetq.core.remoting.impl.wireformat.SessionCreateConsumerMessage;
 import org.hornetq.core.remoting.impl.wireformat.SessionDeleteQueueMessage;
 import org.hornetq.core.remoting.impl.wireformat.SessionExpiredMessage;
+import org.hornetq.core.remoting.impl.wireformat.SessionForceConsumerDelivery;
 import org.hornetq.core.remoting.impl.wireformat.SessionQueueQueryMessage;
+import org.hornetq.core.remoting.impl.wireformat.SessionRequestProducerCreditsMessage;
 import org.hornetq.core.remoting.impl.wireformat.SessionSendContinuationMessage;
 import org.hornetq.core.remoting.impl.wireformat.SessionSendLargeMessage;
 import org.hornetq.core.remoting.impl.wireformat.SessionSendMessage;
@@ -126,6 +127,9 @@ public interface ServerSession
    void handleSendLargeMessage(SessionSendLargeMessage packet);
 
    void handleForceConsumerDelivery(SessionForceConsumerDelivery message);
+   
+   void handleRequestProducerCredits(SessionRequestProducerCreditsMessage message)
+      throws Exception;
 
    void handleClose(Packet packet);
 
@@ -136,5 +140,4 @@ public interface ServerSession
    ServerSessionPacketHandler getHandler();
    
    void setHandler(ServerSessionPacketHandler handler);
-
 }

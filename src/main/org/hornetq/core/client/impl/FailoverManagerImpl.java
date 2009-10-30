@@ -27,6 +27,7 @@ import java.util.concurrent.locks.Lock;
 
 import org.hornetq.core.client.ClientSession;
 import org.hornetq.core.client.ClientSessionFactory;
+import org.hornetq.core.client.SessionFailureListener;
 import org.hornetq.core.config.TransportConfiguration;
 import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.logging.Logger;
@@ -124,7 +125,7 @@ public class FailoverManagerImpl implements FailoverManager, ConnectionLifeCycle
 
    private boolean failoverOnServerShutdown;
 
-   private Set<FailureListener> listeners = new ConcurrentHashSet<FailureListener>();
+   private Set<SessionFailureListener> listeners = new ConcurrentHashSet<SessionFailureListener>();
 
    private Connector connector;
 
@@ -239,6 +240,7 @@ public class FailoverManagerImpl implements FailoverManager, ConnectionLifeCycle
                                       final int minLargeMessageSize,
                                       final boolean blockOnAcknowledge,
                                       final boolean autoGroup,
+                                      final int confWindowSize,
                                       final int producerWindowSize,
                                       final int consumerWindowSize,
                                       final int producerMaxRate,
@@ -280,7 +282,7 @@ public class FailoverManagerImpl implements FailoverManager, ConnectionLifeCycle
 
                   }
 
-                  channel1 = connection.getChannel(1, -1, false);
+                  channel1 = connection.getChannel(1, -1);
 
                   // Lock it - this must be done while the failoverLock is held
                   channel1.getLock().lock();
@@ -306,7 +308,7 @@ public class FailoverManagerImpl implements FailoverManager, ConnectionLifeCycle
                                                          autoCommitSends,
                                                          autoCommitAcks,
                                                          preAcknowledge,
-                                                         producerWindowSize);
+                                                         confWindowSize);
 
                Packet pResponse;
                try
@@ -337,8 +339,7 @@ public class FailoverManagerImpl implements FailoverManager, ConnectionLifeCycle
                CreateSessionResponseMessage response = (CreateSessionResponseMessage)pResponse;
 
                Channel sessionChannel = connection.getChannel(sessionChannelID,
-                                                              producerWindowSize,
-                                                              producerWindowSize != -1);
+                                                              confWindowSize);
 
                ClientSessionInternal session = new ClientSessionImpl(this,
                                                                      name,
@@ -353,6 +354,7 @@ public class FailoverManagerImpl implements FailoverManager, ConnectionLifeCycle
                                                                      ackBatchSize,
                                                                      consumerWindowSize,
                                                                      consumerMaxRate,
+                                                                     confWindowSize,
                                                                      producerWindowSize,
                                                                      producerMaxRate,
                                                                      blockOnNonPersistentSend,
@@ -446,12 +448,12 @@ public class FailoverManagerImpl implements FailoverManager, ConnectionLifeCycle
       return sessions.size();
    }
 
-   public void addFailureListener(FailureListener listener)
+   public void addFailureListener(final SessionFailureListener listener)
    {
       listeners.add(listener);
    }
 
-   public boolean removeFailureListener(FailureListener listener)
+   public boolean removeFailureListener(final SessionFailureListener listener)
    {
       return listeners.remove(listener);
    }
@@ -497,6 +499,9 @@ public class FailoverManagerImpl implements FailoverManager, ConnectionLifeCycle
             // listeners again
             return;
          }
+         
+         //We call before reconnection occurs to give the user a chance to do cleanup, like cancel messages
+         callFailureListeners(me, false);
 
          // Now get locks on all channel 1s, whilst holding the failoverLock - this makes sure
          // There are either no threads executing in createSession, or one is blocking on a createSession
@@ -539,7 +544,7 @@ public class FailoverManagerImpl implements FailoverManager, ConnectionLifeCycle
          {
             attemptReconnect = reconnectAttempts != 0;
          }
-
+         
          if (attemptFailover || attemptReconnect)
          {
             lockChannel1();
@@ -622,22 +627,28 @@ public class FailoverManagerImpl implements FailoverManager, ConnectionLifeCycle
             connection.destroy();
 
             connection = null;
-         }
-
-         // We always call the failure listeners
-         callFailureListeners(me);
+         }        
+         
+         callFailureListeners(me, true);
       }
    }
 
-   private void callFailureListeners(final HornetQException me)
+   private void callFailureListeners(final HornetQException me, final boolean afterReconnect)
    {
-      final List<FailureListener> listenersClone = new ArrayList<FailureListener>(listeners);
+      final List<SessionFailureListener> listenersClone = new ArrayList<SessionFailureListener>(listeners);
 
-      for (final FailureListener listener : listenersClone)
+      for (final SessionFailureListener listener : listenersClone)
       {
          try
          {
-            listener.connectionFailed(me);
+            if (afterReconnect)
+            {
+               listener.connectionFailed(me);
+            }
+            else
+            {
+               listener.beforeReconnect(me);
+            }
          }
          catch (final Throwable t)
          {
@@ -653,9 +664,9 @@ public class FailoverManagerImpl implements FailoverManager, ConnectionLifeCycle
     * Re-attach sessions all pre-existing sessions to the new remoting connection
     */
    private void reconnectSessions(final int reconnectAttempts)
-   {
+   {  
       RemotingConnection backupConnection = getConnectionWithRetry(reconnectAttempts);
-
+      
       if (backupConnection == null)
       {
          log.warn("Failed to connect to server.");
@@ -722,7 +733,7 @@ public class FailoverManagerImpl implements FailoverManager, ConnectionLifeCycle
                catch (InterruptedException ignore)
                {
                }
-
+               
                // Exponential back-off
                long newInterval = (long)((double)interval * retryIntervalMultiplier);
 
@@ -870,7 +881,7 @@ public class FailoverManagerImpl implements FailoverManager, ConnectionLifeCycle
 
          connection.addFailureListener(new DelegatingFailureListener(connection.getID()));
 
-         connection.getChannel(0, -1, false).setHandler(new Channel0Handler(connection));
+         connection.getChannel(0, -1).setHandler(new Channel0Handler(connection));
 
          if (clientFailureCheckPeriod != -1)
          {
@@ -912,21 +923,21 @@ public class FailoverManagerImpl implements FailoverManager, ConnectionLifeCycle
 
    private void lockChannel1()
    {
-      Channel channel1 = connection.getChannel(1, -1, false);
+      Channel channel1 = connection.getChannel(1, -1);
 
       channel1.getLock().lock();
    }
 
    private void unlockChannel1()
    {
-      Channel channel1 = connection.getChannel(1, -1, false);
+      Channel channel1 = connection.getChannel(1, -1);
 
       channel1.getLock().unlock();
    }
 
    private void forceReturnChannel1()
    {
-      Channel channel1 = connection.getChannel(1, -1, false);
+      Channel channel1 = connection.getChannel(1, -1);
 
       channel1.returnBlocking();
    }
@@ -981,8 +992,6 @@ public class FailoverManagerImpl implements FailoverManager, ConnectionLifeCycle
    {
       public void bufferReceived(final Object connectionID, final HornetQBuffer buffer)
       {
-         // ConnectionEntry entry = connections.get(connectionID);
-
          if (connection != null && connectionID == connection.getID())
          {
             connection.bufferReceived(connectionID, buffer);
@@ -1073,7 +1082,7 @@ public class FailoverManagerImpl implements FailoverManager, ConnectionLifeCycle
 
          Ping ping = new Ping(connectionTTL);
 
-         Channel channel0 = connection.getChannel(0, -1, false);
+         Channel channel0 = connection.getChannel(0, -1);
 
          channel0.send(ping);
       }

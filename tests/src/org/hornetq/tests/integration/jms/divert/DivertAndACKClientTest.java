@@ -27,7 +27,7 @@ import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_MAX_
 import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_MIN_LARGE_MESSAGE_SIZE;
 import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_PRE_ACKNOWLEDGE;
 import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_PRODUCER_MAX_RATE;
-import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_PRODUCER_WINDOW_SIZE;
+import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CONFIRMATION_WINDOW_SIZE;
 import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE;
 import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_THREAD_POOL_MAX_SIZE;
 import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_USE_GLOBAL_POOLS;
@@ -167,7 +167,7 @@ public class DivertAndACKClientTest extends JMSTestBase
                                         DEFAULT_MIN_LARGE_MESSAGE_SIZE,
                                         DEFAULT_CONSUMER_WINDOW_SIZE,
                                         DEFAULT_CONSUMER_MAX_RATE,
-                                        DEFAULT_PRODUCER_WINDOW_SIZE,
+                                        DEFAULT_CONFIRMATION_WINDOW_SIZE,
                                         DEFAULT_PRODUCER_MAX_RATE,
                                         true, // this test needs to block on ACK
                                         DEFAULT_BLOCK_ON_PERSISTENT_SEND,

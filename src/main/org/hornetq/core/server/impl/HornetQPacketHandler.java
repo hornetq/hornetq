@@ -189,17 +189,19 @@ public class HornetQPacketHandler implements ChannelHandler
       }
    }
    
-   private void handleCreateReplication(CreateReplicationSessionMessage request)
+   private void handleCreateReplication(final CreateReplicationSessionMessage request)
    {
       Packet response;
 
       try
       {
-         Channel channel = connection.getChannel(request.getSessionChannelID(), request.getWindowSize(), false);
+         Channel channel = connection.getChannel(request.getSessionChannelID(), request.getWindowSize());
+         
          ReplicationEndpoint endpoint = server.createReplicationEndpoint(channel);
+         
          channel.setHandler(endpoint);
+         
          response = new NullResponseMessage();
-
       }
       catch  (Exception e)
       {

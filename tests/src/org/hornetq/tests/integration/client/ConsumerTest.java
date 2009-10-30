@@ -15,8 +15,6 @@ package org.hornetq.tests.integration.client;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-import javax.jms.ObjectMessage;
-
 import org.hornetq.core.client.ClientConsumer;
 import org.hornetq.core.client.ClientMessage;
 import org.hornetq.core.client.ClientProducer;
@@ -244,7 +242,7 @@ public class ConsumerTest extends ServiceTestBase
          }
       });
       ClientSessionFactory sfReceive = createInVMFactory();
-      sfReceive.setProducerWindowSize(100);
+      sfReceive.setConfirmationWindowSize(100);
       sfReceive.setAckBatchSize(-1);
       ClientSession sessionRec = sfReceive.createSession(false, true, true);
       ClientConsumer consumer = sessionRec.createConsumer(QUEUE);

@@ -90,9 +90,9 @@ public class JMSConnectionFactoryControlImpl extends StandardMBean implements Co
       return cf.getProducerMaxRate();
    }
 
-   public int getProducerWindowSize()
+   public int getConfirmationWindowSize()
    {
-      return cf.getProducerWindowSize();
+      return cf.getConfirmationWindowSize();
    }
 
    public int getDupsOKBatchSize()

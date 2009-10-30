@@ -72,7 +72,7 @@ public class SessionSendAcknowledgementHandlerTest extends ServiceTestBase
    {
       ClientSessionFactory csf = createInVMFactory();
       
-      csf.setProducerWindowSize(1024);
+      csf.setConfirmationWindowSize(1024);
 
       ClientSession session = csf.createSession(null, null, false, true, true, false, 1);
       

@@ -16,7 +16,6 @@ package org.hornetq.core.remoting.impl;
 import static org.hornetq.core.remoting.impl.wireformat.PacketImpl.PACKETS_CONFIRMED;
 
 import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
@@ -71,44 +70,27 @@ public class ChannelImpl implements Channel
 
    private boolean failingOver;
 
-   private final int windowSize;
-
    private final int confWindowSize;
-
-   private volatile Semaphore sendSemaphore;
 
    private int receivedBytes;
 
    private CommandConfirmationHandler commandConfirmationHandler;
 
-   public ChannelImpl(final RemotingConnection connection, final long id, final int windowSize, final boolean block)
+   public ChannelImpl(final RemotingConnection connection, final long id, final int confWindowSize)
    {
       this.connection = connection;
 
       this.id = id;
 
-      this.windowSize = windowSize;
+      this.confWindowSize = confWindowSize;
 
-      this.confWindowSize = (int)(0.75 * windowSize);
-
-      if (this.windowSize != -1)
+      if (confWindowSize != -1)
       {
          resendCache = new ConcurrentLinkedQueue<Packet>();
-
-         if (block)
-         {
-            sendSemaphore = new Semaphore(windowSize, true);
-         }
-         else
-         {
-            sendSemaphore = null;
-         }
       }
       else
       {
          resendCache = null;
-
-         sendSemaphore = null;
       }
    }
 
@@ -125,6 +107,11 @@ public class ChannelImpl implements Channel
    public Lock getLock()
    {
       return lock;
+   }
+   
+   public int getConfirmationWindowSize()
+   {
+      return confWindowSize;
    }
 
    public void returnBlocking()
@@ -158,14 +145,14 @@ public class ChannelImpl implements Channel
 
    // This must never called by more than one thread concurrently
    public void send(final Packet packet, final boolean flush)
-   {
+   {      
       synchronized (sendLock)
       {
          packet.setChannelID(id);
 
          final HornetQBuffer buffer = connection.getTransportConnection().createBuffer(packet.getRequiredBufferSize());
 
-         int size = packet.encode(buffer);
+         packet.encode(buffer);
 
          lock.lock();
 
@@ -194,20 +181,6 @@ public class ChannelImpl implements Channel
          {
             lock.unlock();
          }
-         
-         // Must block on semaphore outside the main lock or this can prevent failover from occurring, also after the
-         // packet is sent to assure we get some credits back
-         if (sendSemaphore != null && packet.getType() != PACKETS_CONFIRMED)
-         {            
-            try
-            {
-               sendSemaphore.acquire(size);
-            }
-            catch (InterruptedException e)
-            {
-               throw new IllegalStateException("Semaphore interrupted");
-            }
-         }
       }
    }
 
@@ -231,7 +204,7 @@ public class ChannelImpl implements Channel
 
          final HornetQBuffer buffer = connection.getTransportConnection().createBuffer(packet.getRequiredBufferSize());
 
-         int size = packet.encode(buffer);
+         packet.encode(buffer);
 
          lock.lock();
 
@@ -293,9 +266,9 @@ public class ChannelImpl implements Channel
             if (response.getType() == PacketImpl.EXCEPTION)
             {
                final HornetQExceptionMessage mem = (HornetQExceptionMessage)response;
-               
+
                HornetQException e = mem.getException();
-               
+
                e.fillInStackTrace();
 
                throw e;
@@ -305,19 +278,7 @@ public class ChannelImpl implements Channel
          {
             lock.unlock();
          }
-         // Must block on semaphore outside the main lock or this can prevent failover from occurring, also after the
-         // packet is sent to assure we get some credits back
-         if (sendSemaphore != null && packet.getType() != PACKETS_CONFIRMED)
-         {
-            try
-            {
-               sendSemaphore.acquire(size);
-            }
-            catch (InterruptedException e)
-            {
-               throw new IllegalStateException("Semaphore interrupted");
-            }
-         }
+
          return response;
       }
    }
@@ -342,14 +303,6 @@ public class ChannelImpl implements Channel
       if (closed)
       {
          return;
-      }
-      
-      if (sendSemaphore != null)
-      {
-         //Any threads blocking on the send semaphore should be allowed to return - we do this by just giving it
-         //a lot of permits - note we don't give it Integer.MAX_VALUE since then if if more releases come in that
-         //could end up with permit count going -ve which would cause subsequent sends to block
-         sendSemaphore.release(Integer.MAX_VALUE / 2);
       }
 
       if (!connection.isDestroyed() && !connection.removeChannel(id))
@@ -380,13 +333,16 @@ public class ChannelImpl implements Channel
 
    public void replayCommands(final int otherLastReceivedCommandID, final long newChannelID)
    {
-      clearUpTo(otherLastReceivedCommandID);
-         
-      for (final Packet packet : resendCache)
+      if (resendCache != null)
       {
-         packet.setChannelID(newChannelID);
-         
-         doWrite(packet);
+         clearUpTo(otherLastReceivedCommandID);
+
+         for (final Packet packet : resendCache)
+         {
+            packet.setChannelID(newChannelID);
+
+            doWrite(packet);
+         }
       }
    }
 
@@ -420,7 +376,7 @@ public class ChannelImpl implements Channel
       if (receivedBytes != 0)
       {
          receivedBytes = 0;
-         
+
          final Packet confirmed = new PacketsConfirmedMessage(lastReceivedCommandID);
 
          confirmed.setChannelID(id);
@@ -441,7 +397,6 @@ public class ChannelImpl implements Channel
          {
             receivedBytes = 0;
 
- 
             final Packet confirmed = new PacketsConfirmedMessage(lastReceivedCommandID);
 
             confirmed.setChannelID(id);
@@ -450,26 +405,16 @@ public class ChannelImpl implements Channel
          }
       }
    }
-   
+
    public void clearCommands()
    {
-      lastReceivedCommandID = -1;
-      
-      firstStoredCommandID = 0;
-      
-      resendCache.clear();
-      
-      Semaphore oldSemaphore = sendSemaphore;
-                 
-      if (oldSemaphore != null)
+      if (resendCache != null)
       {
-         //Reset the semaphore
-         sendSemaphore = new Semaphore(windowSize, true);
-         
-         //Any threads blocking on the send semaphore should be allowed to return - we do this by just giving it
-         //a lot of permits - note we don't give it Integer.MAX_VALUE since then if if more releases come in that
-         //could end up with permit count going -ve which would cause subsequent sends to block
-         oldSemaphore.release(Integer.MAX_VALUE / 2);
+         lastReceivedCommandID = -1;
+
+         firstStoredCommandID = 0;
+
+         resendCache.clear();
       }
    }
 
@@ -543,11 +488,10 @@ public class ChannelImpl implements Channel
 
          if (packet == null)
          {
-            log.warn("Can't find packet to clear: " +
-                                            " last received command id " +
-                                            lastReceivedCommandID +
-                                            " first stored command id " +
-                                            firstStoredCommandID);
+            log.warn("Can't find packet to clear: " + " last received command id " +
+                     lastReceivedCommandID +
+                     " first stored command id " +
+                     firstStoredCommandID);
             return;
          }
 
@@ -563,10 +507,5 @@ public class ChannelImpl implements Channel
       }
 
       firstStoredCommandID += numberToClear;
-
-      if (sendSemaphore != null)
-      {
-         sendSemaphore.release(sizeToFree);
-      }
    }
 }

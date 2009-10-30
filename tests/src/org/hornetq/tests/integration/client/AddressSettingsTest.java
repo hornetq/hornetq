@@ -37,8 +37,6 @@ public class AddressSettingsTest extends ServiceTestBase
 
    private SimpleString addressC = new SimpleString("addressC");
 
-   private SimpleString addressC2 = new SimpleString("add.addressC");
-
    private SimpleString queueA = new SimpleString("queueA");
 
    private SimpleString queueB = new SimpleString("queueB");

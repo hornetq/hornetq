@@ -507,9 +507,9 @@ public class MDBMessageSendTxExample implements MessageListener
                             <entry>The max rate a consumer can receive.</entry>
                         </row>
                         <row>
-                            <entry>ProducerWindowSize</entry>
+                            <entry>ConfirmationWindowSize</entry>
                             <entry>integer</entry>
-                            <entry>The window size for the sending of messages.</entry>
+                            <entry>The window size for confirmations.</entry>
                         </row>
                         <row>
                             <entry>ProducerMaxRate</entry>

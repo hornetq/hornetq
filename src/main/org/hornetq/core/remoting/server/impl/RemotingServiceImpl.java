@@ -230,7 +230,7 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
 
       for (ConnectionEntry entry : connections.values())
       {
-         entry.connection.getChannel(0, -1, false).sendAndFlush(new PacketImpl(DISCONNECT));
+         entry.connection.getChannel(0, -1).sendAndFlush(new PacketImpl(DISCONNECT));
       }
 
       for (Acceptor acceptor : acceptors)
@@ -301,25 +301,24 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
                                                                                                                                .getExecutor()
                                                                                                                       : null);
 
-      Channel channel1 = rc.getChannel(1, -1, false);
+      Channel channel1 = rc.getChannel(1, -1);
       
       ChannelHandler handler = createHandler(rc, channel1); 
 
       channel1.setHandler(handler);
-
-
-      
-
+     
       long ttl = ClientSessionFactoryImpl.DEFAULT_CONNECTION_TTL;
+      
       if (config.getConnectionTTLOverride() != -1)
       {
          ttl = config.getConnectionTTLOverride();
       }
+      
       final ConnectionEntry entry = new ConnectionEntry(rc, System.currentTimeMillis(), ttl);
 
       connections.put(connection.getID(), entry);
 
-      final Channel channel0 = rc.getChannel(0, -1, false);
+      final Channel channel0 = rc.getChannel(0, -1);
 
       channel0.setHandler(new ChannelHandler()
       {

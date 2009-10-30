@@ -77,7 +77,7 @@ public class HornetQConnectionFactoryTest extends UnitTestCase
                           ClientSessionFactoryImpl.DEFAULT_MIN_LARGE_MESSAGE_SIZE,
                           ClientSessionFactoryImpl.DEFAULT_CONSUMER_WINDOW_SIZE,
                           ClientSessionFactoryImpl.DEFAULT_CONSUMER_MAX_RATE,
-                          ClientSessionFactoryImpl.DEFAULT_PRODUCER_WINDOW_SIZE,
+                          ClientSessionFactoryImpl.DEFAULT_CONFIRMATION_WINDOW_SIZE,
                           ClientSessionFactoryImpl.DEFAULT_PRODUCER_MAX_RATE,
                           ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_ACKNOWLEDGE,
                           ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_PERSISTENT_SEND,
@@ -147,7 +147,7 @@ public class HornetQConnectionFactoryTest extends UnitTestCase
                           ClientSessionFactoryImpl.DEFAULT_MIN_LARGE_MESSAGE_SIZE,
                           ClientSessionFactoryImpl.DEFAULT_CONSUMER_WINDOW_SIZE,
                           ClientSessionFactoryImpl.DEFAULT_CONSUMER_MAX_RATE,
-                          ClientSessionFactoryImpl.DEFAULT_PRODUCER_WINDOW_SIZE,
+                          ClientSessionFactoryImpl.DEFAULT_CONFIRMATION_WINDOW_SIZE,
                           ClientSessionFactoryImpl.DEFAULT_PRODUCER_MAX_RATE,
                           ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_ACKNOWLEDGE,
                           ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_PERSISTENT_SEND,
@@ -194,7 +194,7 @@ public class HornetQConnectionFactoryTest extends UnitTestCase
                           ClientSessionFactoryImpl.DEFAULT_MIN_LARGE_MESSAGE_SIZE,
                           ClientSessionFactoryImpl.DEFAULT_CONSUMER_WINDOW_SIZE,
                           ClientSessionFactoryImpl.DEFAULT_CONSUMER_MAX_RATE,
-                          ClientSessionFactoryImpl.DEFAULT_PRODUCER_WINDOW_SIZE,
+                          ClientSessionFactoryImpl.DEFAULT_CONFIRMATION_WINDOW_SIZE,
                           ClientSessionFactoryImpl.DEFAULT_PRODUCER_MAX_RATE,
                           ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_ACKNOWLEDGE,
                           ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_PERSISTENT_SEND,
@@ -242,7 +242,7 @@ public class HornetQConnectionFactoryTest extends UnitTestCase
                           ClientSessionFactoryImpl.DEFAULT_MIN_LARGE_MESSAGE_SIZE,
                           ClientSessionFactoryImpl.DEFAULT_CONSUMER_WINDOW_SIZE,
                           ClientSessionFactoryImpl.DEFAULT_CONSUMER_MAX_RATE,
-                          ClientSessionFactoryImpl.DEFAULT_PRODUCER_WINDOW_SIZE,
+                          ClientSessionFactoryImpl.DEFAULT_CONFIRMATION_WINDOW_SIZE,
                           ClientSessionFactoryImpl.DEFAULT_PRODUCER_MAX_RATE,
                           ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_ACKNOWLEDGE,
                           ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_PERSISTENT_SEND,
@@ -290,7 +290,7 @@ public class HornetQConnectionFactoryTest extends UnitTestCase
                           ClientSessionFactoryImpl.DEFAULT_MIN_LARGE_MESSAGE_SIZE,
                           ClientSessionFactoryImpl.DEFAULT_CONSUMER_WINDOW_SIZE,
                           ClientSessionFactoryImpl.DEFAULT_CONSUMER_MAX_RATE,
-                          ClientSessionFactoryImpl.DEFAULT_PRODUCER_WINDOW_SIZE,
+                          ClientSessionFactoryImpl.DEFAULT_CONFIRMATION_WINDOW_SIZE,
                           ClientSessionFactoryImpl.DEFAULT_PRODUCER_MAX_RATE,
                           ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_ACKNOWLEDGE,
                           ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_PERSISTENT_SEND,
@@ -335,7 +335,7 @@ public class HornetQConnectionFactoryTest extends UnitTestCase
       int minLargeMessageSize = RandomUtil.randomPositiveInt();
       int consumerWindowSize = RandomUtil.randomPositiveInt();
       int consumerMaxRate = RandomUtil.randomPositiveInt();
-      int producerWindowSize = RandomUtil.randomPositiveInt();
+      int confirmationWindowSize = RandomUtil.randomPositiveInt();
       int producerMaxRate = RandomUtil.randomPositiveInt();
       boolean blockOnAcknowledge = RandomUtil.randomBoolean();
       boolean blockOnPersistentSend = RandomUtil.randomBoolean();
@@ -363,7 +363,7 @@ public class HornetQConnectionFactoryTest extends UnitTestCase
       cf.setMinLargeMessageSize(minLargeMessageSize);
       cf.setConsumerWindowSize(consumerWindowSize);
       cf.setConsumerMaxRate(consumerMaxRate);
-      cf.setProducerWindowSize(producerWindowSize);
+      cf.setConfirmationWindowSize(confirmationWindowSize);
       cf.setProducerMaxRate(producerMaxRate);
       cf.setBlockOnAcknowledge(blockOnAcknowledge);
       cf.setBlockOnPersistentSend(blockOnPersistentSend);
@@ -391,7 +391,7 @@ public class HornetQConnectionFactoryTest extends UnitTestCase
       assertEquals(minLargeMessageSize, cf.getMinLargeMessageSize());
       assertEquals(consumerWindowSize, cf.getConsumerWindowSize());
       assertEquals(consumerMaxRate, cf.getConsumerMaxRate());
-      assertEquals(producerWindowSize, cf.getProducerWindowSize());
+      assertEquals(confirmationWindowSize, cf.getConfirmationWindowSize());
       assertEquals(producerMaxRate, cf.getProducerMaxRate());
       assertEquals(blockOnAcknowledge, cf.isBlockOnAcknowledge());
       assertEquals(blockOnPersistentSend, cf.isBlockOnPersistentSend());
@@ -428,7 +428,7 @@ public class HornetQConnectionFactoryTest extends UnitTestCase
       int minLargeMessageSize = RandomUtil.randomPositiveInt();
       int consumerWindowSize = RandomUtil.randomPositiveInt();
       int consumerMaxRate = RandomUtil.randomPositiveInt();
-      int producerWindowSize = RandomUtil.randomPositiveInt();
+      int confirmationWindowSize = RandomUtil.randomPositiveInt();
       int producerMaxRate = RandomUtil.randomPositiveInt();
       boolean blockOnAcknowledge = RandomUtil.randomBoolean();
       boolean blockOnPersistentSend = RandomUtil.randomBoolean();
@@ -548,7 +548,7 @@ public class HornetQConnectionFactoryTest extends UnitTestCase
       }
       try
       {
-         cf.setProducerWindowSize(producerWindowSize);
+         cf.setConfirmationWindowSize(confirmationWindowSize);
          fail("Should throw exception");
       }
       catch (IllegalStateException e)
@@ -720,7 +720,7 @@ public class HornetQConnectionFactoryTest extends UnitTestCase
       cf.getMinLargeMessageSize();
       cf.getConsumerWindowSize();
       cf.getConsumerMaxRate();
-      cf.getProducerWindowSize();
+      cf.getConfirmationWindowSize();
       cf.getProducerMaxRate();
       cf.isBlockOnAcknowledge();
       cf.isBlockOnPersistentSend();
@@ -753,7 +753,7 @@ public class HornetQConnectionFactoryTest extends UnitTestCase
                                     int minLargeMessageSize,
                                     int consumerWindowSize,
                                     int consumerMaxRate,
-                                    int producerWindowSize,
+                                    int confirmationWindowSize,
                                     int producerMaxRate,
                                     boolean blockOnAcknowledge,
                                     boolean blockOnPersistentSend,
@@ -796,7 +796,7 @@ public class HornetQConnectionFactoryTest extends UnitTestCase
       assertEquals(cf.getMinLargeMessageSize(), minLargeMessageSize);
       assertEquals(cf.getConsumerWindowSize(), consumerWindowSize);
       assertEquals(cf.getConsumerMaxRate(), consumerMaxRate);
-      assertEquals(cf.getProducerWindowSize(), producerWindowSize);
+      assertEquals(cf.getConfirmationWindowSize(), confirmationWindowSize);
       assertEquals(cf.getProducerMaxRate(), producerMaxRate);
       assertEquals(cf.isBlockOnAcknowledge(), blockOnAcknowledge);
       assertEquals(cf.isBlockOnPersistentSend(), blockOnPersistentSend);

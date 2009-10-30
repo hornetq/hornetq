@@ -75,7 +75,7 @@ public class ConnectionFactoryProperties
 
    private Integer consumerMaxRate;
 
-   private Integer producerWindowSize;
+   private Integer confirmationWindowSize;
 
    private Integer producerMaxRate;
 
@@ -413,24 +413,24 @@ public class ConnectionFactoryProperties
       this.consumerMaxRate = consumerMaxRate;
    }
 
-   public Integer getProducerWindowSize()
+   public Integer getConfirmationWindowSize()
    {
       if (trace)
       {
-         log.trace("getProducerWindowSize()");
+         log.trace("getConfirmationWindowSize()");
       }
       hasBeenUpdated = true;
-      return producerWindowSize;
+      return confirmationWindowSize;
    }
 
-   public void setProducerWindowSize(Integer producerWindowSize)
+   public void setConfirmationWindowSize(Integer confirmationWindowSize)
    {
       if (trace)
       {
-         log.trace("setProducerWindowSize(" + producerWindowSize + ")");
+         log.trace("setConfirmationWindowSize(" + confirmationWindowSize + ")");
       }
       hasBeenUpdated = true;
-      this.producerWindowSize = producerWindowSize;
+      this.confirmationWindowSize = confirmationWindowSize;
    }
 
    public Integer getProducerMaxRate()
