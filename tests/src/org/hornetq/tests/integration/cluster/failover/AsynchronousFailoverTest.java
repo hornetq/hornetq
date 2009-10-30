@@ -13,8 +13,8 @@
 
 package org.hornetq.tests.integration.cluster.failover;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
@@ -30,7 +30,6 @@ import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.remoting.FailureListener;
 import org.hornetq.core.remoting.RemotingConnection;
-import org.hornetq.core.remoting.impl.invm.TransportConstants;
 
 /**
  * A MultiThreadFailoverTest
@@ -108,6 +107,11 @@ public class AsynchronousFailoverTest extends FailoverTestBase
       {
          failed = true;
       }
+      
+      void reset()
+      {
+         failed = false;
+      }
    }
 
    private void runTest(final TestRunner runnable) throws Exception
@@ -177,6 +181,7 @@ public class AsynchronousFailoverTest extends FailoverTestBase
             if (i != numIts - 1)
             {
                tearDown();
+               runnable.reset();
                setUp();
             }
          }
@@ -224,6 +229,7 @@ public class AsynchronousFailoverTest extends FailoverTestBase
                }
                catch (HornetQException e)
                {
+                  log.info("exception when sending message with counter " + i);
                   assertEquals(e.getCode(), HornetQException.UNBLOCKED);
 
                   retry = true;
@@ -236,7 +242,9 @@ public class AsynchronousFailoverTest extends FailoverTestBase
 
          session.start();
 
+         List<Integer> counts = new ArrayList<Integer>(1000);
          int lastCount = -1;
+         boolean counterGap = false;
          while (true)
          {
             ClientMessage message = consumer.receive(500);
@@ -246,12 +254,26 @@ public class AsynchronousFailoverTest extends FailoverTestBase
                break;
             }
 
-            // There may be some missing or duplicate messages - but the order should be correct
-
+            // messages must remain ordered but there could be a "jump" if messages
+            // are missing or duplicated
             int count = (Integer)message.getProperty("counter");
-
-            assertTrue("count:" + count + " last count:" + lastCount, count >= lastCount);
-
+            counts.add(count);
+            if (count != lastCount + 1)
+            {
+               if (counterGap)
+               {
+                  fail("got a another counter gap at " + count + ": " + counts);
+               }
+               else
+               {
+                  if (lastCount != -1)
+                  {
+                     log.info("got first counter gap at " + count);                  
+                     counterGap = true;
+                  }
+               }
+            }
+            
             lastCount = count;
 
             message.acknowledge();
