@@ -208,7 +208,11 @@ public class ClientConsumerImpl implements ClientConsumerInternal
                   }
 
                   if (m == null && forcingDelivery)
-                  {                     
+                  {
+                     if (stopped)
+                     {
+                        break;
+                     }
                      // we only force delivery once per call to receive
                      if (!deliveryForced)
                      {

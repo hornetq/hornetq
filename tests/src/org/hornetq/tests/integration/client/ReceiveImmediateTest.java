@@ -83,6 +83,39 @@ public class ReceiveImmediateTest extends ServiceTestBase
    {
       doConsumerReceiveImmediate(true);
    }
+   
+   public void testConsumerReceiveImmediateWithSessionStop() throws Exception
+   {
+      sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory"));
+      sf.setBlockOnNonPersistentSend(true);
+      sf.setBlockOnAcknowledge(true);
+      sf.setAckBatchSize(0);
+      
+      ClientSession session = sf.createSession(false, true, true);
+
+      session.createQueue(ADDRESS, QUEUE, null, false);
+
+      ClientConsumer consumer = session.createConsumer(QUEUE, null, false);
+      session.start();
+            
+      session.stop();
+      assertNull(consumer.receiveImmediate());
+      
+      session.start();
+      long start = System.currentTimeMillis();
+      ClientMessage msg = consumer.receive(2000);
+      long end = System.currentTimeMillis();
+      assertNull(msg);
+      // we waited for at least 2000ms
+      assertTrue("waited only " + (end - start), end - start >= 2000);
+
+      consumer.close();
+
+      session.close();
+
+      sf.close();
+
+   }
 
    private void doConsumerReceiveImmediateWithNoMessages(boolean browser) throws Exception
    {
