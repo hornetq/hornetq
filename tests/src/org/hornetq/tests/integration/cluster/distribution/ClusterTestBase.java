@@ -1115,13 +1115,17 @@ public class ClusterTestBase extends ServiceTestBase
 
       Map<String, Object> params = generateParams(node, netty);
 
-      TransportConfiguration invmtc = new TransportConfiguration(INVM_ACCEPTOR_FACTORY, params);
-      configuration.getAcceptorConfigurations().add(invmtc);
+
 
       if (netty)
       {
          TransportConfiguration nettytc = new TransportConfiguration(NETTY_ACCEPTOR_FACTORY, params);
          configuration.getAcceptorConfigurations().add(nettytc);
+      }
+      else
+      {
+         TransportConfiguration invmtc = new TransportConfiguration(INVM_ACCEPTOR_FACTORY, params);
+         configuration.getAcceptorConfigurations().add(invmtc);  
       }
 
       HornetQServer server;
