@@ -29,6 +29,7 @@ import org.hornetq.core.persistence.impl.nullpm.NullStorageManager;
 import org.hornetq.core.server.ServerMessage;
 import org.hornetq.core.server.impl.ServerMessageImpl;
 import org.hornetq.core.settings.HierarchicalRepository;
+import org.hornetq.core.settings.impl.AddressFullMessagePolicy;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.core.settings.impl.HierarchicalObjectRepository;
 import org.hornetq.tests.util.RandomUtil;
@@ -58,7 +59,10 @@ public class PagingManagerImplTest extends UnitTestCase
    {
       
       HierarchicalRepository<AddressSettings> addressSettings = new HierarchicalObjectRepository<AddressSettings>();
-      addressSettings.setDefault(new AddressSettings());
+      AddressSettings settings = new AddressSettings();
+      settings.setAddressFullMessagePolicy(AddressFullMessagePolicy.PAGE);
+      addressSettings.setDefault(settings);
+      
       
       PagingManagerImpl managerImpl = new PagingManagerImpl(new PagingStoreFactoryNIO(getPageDir(), new OrderedExecutorFactory(Executors.newCachedThreadPool())),
                                                             new NullStorageManager(),
