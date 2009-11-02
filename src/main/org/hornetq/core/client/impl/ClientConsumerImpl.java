@@ -233,11 +233,6 @@ public class ClientConsumerImpl implements ClientConsumerInternal
                   {
                      break;
                   }
-                  
-                  if (forcingDelivery && stopped)
-                  {
-                     break;
-                  }
 
                   long now = System.currentTimeMillis();
 
