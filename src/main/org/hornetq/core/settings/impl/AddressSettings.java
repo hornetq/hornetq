@@ -36,7 +36,7 @@ public class AddressSettings implements Mergeable<AddressSettings>
 
    public static final int DEFAULT_MAX_SIZE_BYTES = -1;
 
-   public static final AddressFullMessagePolicy DEFAULT_ADDRESS_FULL_MESSAGE_POLICY = AddressFullMessagePolicy.BLOCK;
+   public static final AddressFullMessagePolicy DEFAULT_ADDRESS_FULL_MESSAGE_POLICY = AddressFullMessagePolicy.PAGE;
 
    public static final int DEFAULT_PAGE_SIZE = 10 * 1024 * 1024;
    

@@ -120,7 +120,7 @@ public class AsynchronousFailoverTest extends FailoverTestBase
 
    private void runTest(final TestRunner runnable) throws Exception
    {
-      final int numIts = 10;
+      final int numIts = 1;
       
       DelegatingSession.debug = true;
 
