@@ -35,16 +35,16 @@ public class MessageRedistributionTest extends ClusterTestBase
    {
       super.setUp();
 
-         start();
+      start();
    }
-   
+
    private void start() throws Exception
    {
       setupServers();
-      
-      setRedistributionDelay(0);   
+
+      setRedistributionDelay(0);
    }
-   
+
    private void stop() throws Exception
    {
       stopServers();
@@ -71,7 +71,7 @@ public class MessageRedistributionTest extends ClusterTestBase
    public void testRedistributionWhenConsumerIsClosed() throws Exception
    {
       setupCluster(false);
-      
+
       log.info("Doing test");
 
       startServers(0, 1, 2);
@@ -105,7 +105,7 @@ public class MessageRedistributionTest extends ClusterTestBase
       removeConsumer(1);
 
       verifyReceiveRoundRobinInSomeOrderWithCounts(false, ids1, 0, 2);
-      
+
       log.info("Test done");
    }
 
@@ -358,100 +358,98 @@ public class MessageRedistributionTest extends ClusterTestBase
       verifyReceiveAll(20, 1);
       verifyNotReceive(1);
    }
-   
+
    public void testBackAndForth() throws Exception
    {
       for (int i = 0; i < 10; i++)
       {
          setupCluster(false);
-   
+
          startServers(0, 1, 2);
-   
+
          setupSessionFactory(0, isNetty());
          setupSessionFactory(1, isNetty());
          setupSessionFactory(2, isNetty());
-         
+
          final String ADDRESS = "queues.testaddress";
          final String QUEUE = "queue0";
-   
-   
+
          createQueue(0, ADDRESS, QUEUE, null, false);
          createQueue(1, ADDRESS, QUEUE, null, false);
          createQueue(2, ADDRESS, QUEUE, null, false);
-   
+
          addConsumer(0, 0, QUEUE, null);
-   
+
          waitForBindings(0, ADDRESS, 1, 1, true);
          waitForBindings(1, ADDRESS, 1, 0, true);
          waitForBindings(2, ADDRESS, 1, 0, true);
-   
+
          waitForBindings(0, ADDRESS, 2, 0, false);
          waitForBindings(1, ADDRESS, 2, 1, false);
          waitForBindings(2, ADDRESS, 2, 1, false);
-   
+
          send(0, ADDRESS, 20, false, null);
-         
+
          waitForMessages(0, ADDRESS, 20);
-   
+
          removeConsumer(0);
-         
+
          waitForBindings(0, ADDRESS, 1, 0, true);
          waitForBindings(1, ADDRESS, 1, 0, true);
          waitForBindings(2, ADDRESS, 1, 0, true);
-   
+
          waitForBindings(0, ADDRESS, 2, 0, false);
          waitForBindings(1, ADDRESS, 2, 0, false);
          waitForBindings(2, ADDRESS, 2, 0, false);
-   
+
          addConsumer(1, 1, QUEUE, null);
-         
+
          waitForBindings(0, ADDRESS, 1, 0, true);
          waitForBindings(1, ADDRESS, 1, 1, true);
          waitForBindings(2, ADDRESS, 1, 0, true);
-         
+
          waitForMessages(1, ADDRESS, 20);
          waitForMessages(0, ADDRESS, 0);
-         
-   
+
          waitForBindings(0, ADDRESS, 2, 1, false);
          waitForBindings(1, ADDRESS, 2, 0, false);
          waitForBindings(2, ADDRESS, 2, 1, false);
-         
+
          removeConsumer(1);
-         
+
          waitForBindings(0, ADDRESS, 1, 0, true);
          waitForBindings(1, ADDRESS, 1, 0, true);
          waitForBindings(2, ADDRESS, 1, 0, true);
-   
+
          waitForBindings(0, ADDRESS, 2, 0, false);
          waitForBindings(1, ADDRESS, 2, 0, false);
          waitForBindings(2, ADDRESS, 2, 0, false);
-   
+
          addConsumer(0, 0, QUEUE, null);
-         
+
          waitForBindings(0, ADDRESS, 1, 1, true);
          waitForBindings(1, ADDRESS, 1, 0, true);
          waitForBindings(2, ADDRESS, 1, 0, true);
-         
+
          waitForBindings(0, ADDRESS, 2, 0, false);
          waitForBindings(1, ADDRESS, 2, 1, false);
          waitForBindings(2, ADDRESS, 2, 1, false);
-   
+
          waitForMessages(0, ADDRESS, 20);
-         
+
          verifyReceiveAll(20, 0);
          verifyNotReceive(0);
-         
+
          addConsumer(1, 1, QUEUE, null);
          verifyNotReceive(1);
          removeConsumer(1);
-         
+
          stop();
          start();
       }
-      
+
    }
-   
+
    public void testRedistributionToQueuesWhereNotAllMessagesMatch() throws Exception
    {
       setupCluster(false);
@@ -469,7 +467,7 @@ public class MessageRedistributionTest extends ClusterTestBase
       createQueue(1, "queues.testaddress", "queue0", null, false);
       createQueue(2, "queues.testaddress", "queue0", null, false);
 
-      addConsumer(0, 0, "queue0", null);      
+      addConsumer(0, 0, "queue0", null);
 
       waitForBindings(0, "queues.testaddress", 1, 1, true);
       waitForBindings(1, "queues.testaddress", 1, 0, true);
@@ -483,18 +481,18 @@ public class MessageRedistributionTest extends ClusterTestBase
       sendInRange(0, "queues.testaddress", 10, 20, false, filter2);
 
       removeConsumer(0);
-      addConsumer(1, 1, "queue0", filter1);      
-      addConsumer(2, 2, "queue0", filter2);      
+      addConsumer(1, 1, "queue0", filter1);
+      addConsumer(2, 2, "queue0", filter2);
 
       verifyReceiveAllInRange(0, 10, 1);
       verifyReceiveAllInRange(10, 20, 2);
    }
-   
+
    public void testDelayedRedistribution() throws Exception
    {
       final long delay = 1000;
       setRedistributionDelay(delay);
-      
+
       setupCluster(false);
 
       startServers(0, 1, 2);
@@ -507,7 +505,7 @@ public class MessageRedistributionTest extends ClusterTestBase
       createQueue(1, "queues.testaddress", "queue0", null, false);
       createQueue(2, "queues.testaddress", "queue0", null, false);
 
-      addConsumer(0, 0, "queue0", null);      
+      addConsumer(0, 0, "queue0", null);
 
       waitForBindings(0, "queues.testaddress", 1, 1, true);
       waitForBindings(1, "queues.testaddress", 1, 0, true);
@@ -520,20 +518,20 @@ public class MessageRedistributionTest extends ClusterTestBase
       send(0, "queues.testaddress", 20, false, null);
 
       long start = System.currentTimeMillis();
-      
+
       removeConsumer(0);
-      addConsumer(1, 1, "queue0", null);      
-           
+      addConsumer(1, 1, "queue0", null);
+
       long minReceiveTime = start + delay;
-      
+
       verifyReceiveAllNotBefore(minReceiveTime, 20, 1);
    }
-   
+
    public void testDelayedRedistributionCancelled() throws Exception
    {
       final long delay = 1000;
       setRedistributionDelay(delay);
-      
+
       setupCluster(false);
 
       startServers(0, 1, 2);
@@ -546,7 +544,7 @@ public class MessageRedistributionTest extends ClusterTestBase
       createQueue(1, "queues.testaddress", "queue0", null, false);
       createQueue(2, "queues.testaddress", "queue0", null, false);
 
-      addConsumer(0, 0, "queue0", null);      
+      addConsumer(0, 0, "queue0", null);
 
       waitForBindings(0, "queues.testaddress", 1, 1, true);
       waitForBindings(1, "queues.testaddress", 1, 0, true);
@@ -559,18 +557,18 @@ public class MessageRedistributionTest extends ClusterTestBase
       send(0, "queues.testaddress", 20, false, null);
 
       removeConsumer(0);
-      addConsumer(1, 1, "queue0", null);     
-      
+      addConsumer(1, 1, "queue0", null);
+
       Thread.sleep(delay / 2);
-      
-      //Add it back on the local queue - this should stop any redistributionm
-      addConsumer(0, 0, "queue0", null); 
-      
+
+      // Add it back on the local queue - this should stop any redistributionm
+      addConsumer(0, 0, "queue0", null);
+
       Thread.sleep(delay);
-           
+
       verifyReceiveAll(20, 0);
    }
-   
+
    public void testRedistributionNumberOfMessagesGreaterThanBatchSize() throws Exception
    {
       setupCluster(false);
@@ -585,7 +583,7 @@ public class MessageRedistributionTest extends ClusterTestBase
       createQueue(1, "queues.testaddress", "queue0", null, false);
       createQueue(2, "queues.testaddress", "queue0", null, false);
 
-      addConsumer(0, 0, "queue0", null);      
+      addConsumer(0, 0, "queue0", null);
 
       waitForBindings(0, "queues.testaddress", 1, 1, true);
       waitForBindings(1, "queues.testaddress", 1, 0, true);
@@ -598,8 +596,8 @@ public class MessageRedistributionTest extends ClusterTestBase
       send(0, "queues.testaddress", QueueImpl.REDISTRIBUTOR_BATCH_SIZE * 2, false, null);
 
       removeConsumer(0);
-      addConsumer(1, 1, "queue0", null);      
-           
+      addConsumer(1, 1, "queue0", null);
+
       verifyReceiveAll(QueueImpl.REDISTRIBUTOR_BATCH_SIZE * 2, 1);
    }
 
@@ -636,7 +634,7 @@ public class MessageRedistributionTest extends ClusterTestBase
       closeAllSessionFactories();
 
       stopServers(0, 1, 2);
-      
+
       clearServer(0, 1, 2);
    }
 

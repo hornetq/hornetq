@@ -49,10 +49,8 @@ public class HornetQPacketHandler implements ChannelHandler
    private final Channel channel1;
 
    private final RemotingConnection connection;
-   
-   public HornetQPacketHandler(final HornetQServer server,
-                                       final Channel channel1,
-                                       final RemotingConnection connection)
+
+   public HornetQPacketHandler(final HornetQServer server, final Channel channel1, final RemotingConnection connection)
    {
       this.server = server;
 
@@ -64,11 +62,11 @@ public class HornetQPacketHandler implements ChannelHandler
    public void handlePacket(final Packet packet)
    {
       byte type = packet.getType();
-      
+
       // All these operations need to be idempotent since they are outside of the session
       // reliability replay functionality
       switch (type)
-      {         
+      {
          case CREATESESSION:
          {
             CreateSessionMessage request = (CreateSessionMessage)packet;
@@ -76,7 +74,7 @@ public class HornetQPacketHandler implements ChannelHandler
             handleCreateSession(request);
 
             break;
-         }         
+         }
          case REATTACH_SESSION:
          {
             ReattachSessionMessage request = (ReattachSessionMessage)packet;
@@ -90,21 +88,21 @@ public class HornetQPacketHandler implements ChannelHandler
             // Create queue can also be fielded here in the case of a replicated store and forward queue creation
 
             CreateQueueMessage request = (CreateQueueMessage)packet;
-            
+
             handleCreateQueue(request);
 
             break;
-         }         
+         }
          case CREATE_REPLICATION:
          {
             // Create queue can also be fielded here in the case of a replicated store and forward queue creation
 
             CreateReplicationSessionMessage request = (CreateReplicationSessionMessage)packet;
-            
+
             handleCreateReplication(request);
 
             break;
-         }         
+         }
          default:
          {
             log.error("Invalid packet " + packet);
@@ -118,7 +116,7 @@ public class HornetQPacketHandler implements ChannelHandler
       try
       {
          response = server.createSession(request.getName(),
-                                         request.getSessionChannelID(),                                         
+                                         request.getSessionChannelID(),
                                          request.getUsername(),
                                          request.getPassword(),
                                          request.getMinLargeMessageSize(),
@@ -129,11 +127,6 @@ public class HornetQPacketHandler implements ChannelHandler
                                          request.isPreAcknowledge(),
                                          request.isXA(),
                                          request.getWindowSize());
-         
-         if (response == null)
-         {
-            response = new HornetQExceptionMessage(new HornetQException(HornetQException.INCOMPATIBLE_CLIENT_SERVER_VERSIONS));
-         }
       }
       catch (Exception e)
       {
@@ -148,10 +141,10 @@ public class HornetQPacketHandler implements ChannelHandler
             response = new HornetQExceptionMessage(new HornetQException(HornetQException.INTERNAL_ERROR));
          }
       }
-      
-      channel1.send(response);    
+
+      channel1.send(response);
    }
-   
+
    private void handleReattachSession(final ReattachSessionMessage request)
    {
       Packet response;
@@ -181,14 +174,18 @@ public class HornetQPacketHandler implements ChannelHandler
    {
       try
       {
-         server.createQueue(request.getAddress(), request.getQueueName(), request.getFilterString(), request.isDurable(), request.isTemporary());
+         server.createQueue(request.getAddress(),
+                            request.getQueueName(),
+                            request.getFilterString(),
+                            request.isDurable(),
+                            request.isTemporary());
       }
       catch (Exception e)
       {
          log.error("Failed to handle create queue", e);
       }
    }
-   
+
    private void handleCreateReplication(final CreateReplicationSessionMessage request)
    {
       Packet response;
@@ -196,17 +193,17 @@ public class HornetQPacketHandler implements ChannelHandler
       try
       {
          Channel channel = connection.getChannel(request.getSessionChannelID(), request.getWindowSize());
-         
+
          ReplicationEndpoint endpoint = server.createReplicationEndpoint(channel);
-         
+
          channel.setHandler(endpoint);
-         
+
          response = new NullResponseMessage();
       }
-      catch  (Exception e)
+      catch (Exception e)
       {
          log.warn(e.getMessage(), e);
-         
+
          if (e instanceof HornetQException)
          {
             response = new HornetQExceptionMessage((HornetQException)e);
@@ -219,9 +216,5 @@ public class HornetQPacketHandler implements ChannelHandler
 
       channel1.send(response);
    }
-   
-   
 
-
-   
 }

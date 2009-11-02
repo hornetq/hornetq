@@ -61,6 +61,8 @@ public class HornetQException extends Exception
    public static final int LARGE_MESSAGE_ERROR_BODY = 110;
    
    public static final int TRANSACTION_ROLLED_BACK = 111;
+   
+   public static final int SESSION_CREATION_REJECTED = 112;
 
    
    // Native Error codes ----------------------------------------------

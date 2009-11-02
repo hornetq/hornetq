@@ -135,9 +135,9 @@ public class HornetQServerImpl implements HornetQServer
    // Attributes
    // -----------------------------------------------------------------------------------
 
-   private SimpleString nodeID;
+   private volatile SimpleString nodeID;
 
-   private UUID uuid;
+   private volatile UUID uuid;
 
    private final Version version;
 
@@ -149,39 +149,39 @@ public class HornetQServerImpl implements HornetQServer
 
    private volatile boolean started;
 
-   private SecurityStore securityStore;
+   private volatile SecurityStore securityStore;
 
    private final HierarchicalRepository<AddressSettings> addressSettingsRepository;
 
-   private QueueFactory queueFactory;
+   private volatile QueueFactory queueFactory;
 
-   private PagingManager pagingManager;
+   private volatile PagingManager pagingManager;
 
-   private PostOffice postOffice;
+   private volatile PostOffice postOffice;
 
-   private ExecutorService threadPool;
+   private volatile ExecutorService threadPool;
 
-   private ScheduledExecutorService scheduledPool;
+   private volatile ScheduledExecutorService scheduledPool;
 
-   private ExecutorFactory executorFactory;
+   private volatile ExecutorFactory executorFactory;
 
-   private HierarchicalRepository<Set<Role>> securityRepository;
+   private volatile HierarchicalRepository<Set<Role>> securityRepository;
 
-   private ResourceManager resourceManager;
+   private volatile ResourceManager resourceManager;
 
-   private HornetQServerControlImpl messagingServerControl;
+   private volatile HornetQServerControlImpl messagingServerControl;
 
-   private ClusterManager clusterManager;
+   private volatile ClusterManager clusterManager;
 
-   private StorageManager storageManager;
+   private volatile StorageManager storageManager;
 
-   private RemotingService remotingService;
+   private volatile RemotingService remotingService;
 
-   private ManagementService managementService;
+   private volatile ManagementService managementService;
 
    private MemoryManager memoryManager;
 
-   private DeploymentManager deploymentManager;
+   private volatile DeploymentManager deploymentManager;
 
    private Deployer basicUserCredentialsDeployer;
 
@@ -205,7 +205,7 @@ public class HornetQServerImpl implements HornetQServer
 
    private final Set<ActivateCallback> activateCallbacks = new HashSet<ActivateCallback>();
 
-   private GroupingHandler groupingHandler;
+   private volatile GroupingHandler groupingHandler;
 
    // Constructors
    // ---------------------------------------------------------------------------------
@@ -258,8 +258,6 @@ public class HornetQServerImpl implements HornetQServer
       this.addressSettingsRepository = new HierarchicalObjectRepository<AddressSettings>();
 
       addressSettingsRepository.setDefault(new AddressSettings());
-
-      // this.managementConnectorID = managementConnectorSequence.decrementAndGet();
    }
 
    // lifecycle methods
@@ -317,92 +315,130 @@ public class HornetQServerImpl implements HornetQServer
       super.finalize();
    }
 
-   public synchronized void stop() throws Exception
+   public void stop() throws Exception
    {
-      if (!started)
+      synchronized (this)
       {
-         return;
-      }
-
-      if (clusterManager != null)
-      {
-         clusterManager.stop();
-      }
-
-      if (groupingHandler != null)
-      {
-         managementService.removeNotificationListener(groupingHandler);
-         groupingHandler = null;
-      }
-      // Need to flush all sessions to make sure all confirmations get sent back to client
-
-      for (ServerSession session : sessions.values())
-      {
-         session.getChannel().flushConfirmations();
-      }
-
-      remotingService.stop();
-
-      // Stop the deployers
-      if (configuration.isFileDeploymentEnabled())
-      {
-         basicUserCredentialsDeployer.stop();
-
-         addressSettingsDeployer.stop();
-
-         if (queueDeployer != null)
+         if (!started)
          {
-            queueDeployer.stop();
+            return;
          }
 
-         if (securityDeployer != null)
+         if (clusterManager != null)
          {
-            securityDeployer.stop();
+            clusterManager.stop();
          }
 
-         deploymentManager.stop();
+         if (groupingHandler != null)
+         {
+            managementService.removeNotificationListener(groupingHandler);
+            groupingHandler = null;
+         }
+         // Need to flush all sessions to make sure all confirmations get sent back to client
+
+         for (ServerSession session : sessions.values())
+         {
+            session.getChannel().flushConfirmations();
+         }
+
+         remotingService.stop();
+
+         // Stop the deployers
+         if (configuration.isFileDeploymentEnabled())
+         {
+            basicUserCredentialsDeployer.stop();
+
+            addressSettingsDeployer.stop();
+
+            if (queueDeployer != null)
+            {
+               queueDeployer.stop();
+            }
+
+            if (securityDeployer != null)
+            {
+               securityDeployer.stop();
+            }
+
+            deploymentManager.stop();
+         }
+
+         managementService.unregisterServer();
+
+         managementService.stop();
+
+         if (storageManager != null)
+         {
+            storageManager.stop();
+         }
+
+         if (replicationEndpoint != null)
+         {
+            replicationEndpoint.stop();
+            replicationEndpoint = null;
+         }
+
+         if (securityManager != null)
+         {
+            securityManager.stop();
+         }
+
+         if (resourceManager != null)
+         {
+            resourceManager.stop();
+         }
+
+         if (postOffice != null)
+         {
+            postOffice.stop();
+         }
+
+         // Need to shutdown pools before shutting down paging manager to make sure everything is written ok
+
+         List<Runnable> tasks = scheduledPool.shutdownNow();
+
+         for (Runnable task : tasks)
+         {
+            log.debug("Waiting for " + task);
+         }
+
+         threadPool.shutdown();
+
+         scheduledPool = null;
+
+         if (pagingManager != null)
+         {
+            pagingManager.stop();
+         }
+
+         if (memoryManager != null)
+         {
+            memoryManager.stop();
+         }
+
+         pagingManager = null;
+         securityStore = null;
+         resourceManager = null;
+         postOffice = null;
+         securityRepository = null;
+         securityStore = null;
+         queueFactory = null;
+         resourceManager = null;
+         messagingServerControl = null;
+         memoryManager = null;
+
+         sessions.clear();
+
+         started = false;
+         initialised = false;
+         uuid = null;
+         nodeID = null;
+
+         log.info("HornetQ Server version " + getVersion().getFullVersion() + " stopped");
+
+         Logger.reset();
       }
 
-      managementService.unregisterServer();
-
-      managementService.stop();
-
-      if (storageManager != null)
-      {
-         storageManager.stop();
-      }
-
-      if (replicationEndpoint != null)
-      {
-         replicationEndpoint.stop();
-         replicationEndpoint = null;
-      }
-
-      if (securityManager != null)
-      {
-         securityManager.stop();
-      }
-
-      if (resourceManager != null)
-      {
-         resourceManager.stop();
-      }
-
-      if (postOffice != null)
-      {
-         postOffice.stop();
-      }
-
-      // Need to shutdown pools before shutting down paging manager to make sure everything is written ok
-
-      List<Runnable> tasks = scheduledPool.shutdownNow();
-
-      for (Runnable task : tasks)
-      {
-         log.debug("Waiting for " + task);
-      }
-
-      threadPool.shutdown();
       try
       {
          if (!threadPool.awaitTermination(30000, TimeUnit.MILLISECONDS))
@@ -414,41 +450,7 @@ public class HornetQServerImpl implements HornetQServer
       {
          // Ignore
       }
-
-      scheduledPool = null;
       threadPool = null;
-
-      if (pagingManager != null)
-      {
-         pagingManager.stop();
-      }
-
-      if (memoryManager != null)
-      {
-         memoryManager.stop();
-      }
-
-      pagingManager = null;
-      securityStore = null;
-      resourceManager = null;
-      postOffice = null;
-      securityRepository = null;
-      securityStore = null;
-      queueFactory = null;
-      resourceManager = null;
-      messagingServerControl = null;
-      memoryManager = null;
-
-      sessions.clear();
-
-      started = false;
-      initialised = false;
-      uuid = null;
-      nodeID = null;
-
-      log.info("HornetQ Server version " + getVersion().getFullVersion() + " stopped");
-
-      Logger.reset();
    }
 
    // HornetQServer implementation
@@ -509,7 +511,7 @@ public class HornetQServerImpl implements HornetQServer
       return version;
    }
 
-   public boolean isStarted()
+   public synchronized boolean isStarted()
    {
       return started;
    }
@@ -520,9 +522,14 @@ public class HornetQServerImpl implements HornetQServer
    }
 
    public ReattachSessionResponseMessage reattachSession(final RemotingConnection connection,
-                                                         final String name,
-                                                         final int lastReceivedCommandID) throws Exception
+                                                                      final String name,
+                                                                      final int lastReceivedCommandID) throws Exception
    {
+      if (!started)
+      {
+         return null;
+      }
+
       ServerSession session = sessions.get(name);
 
       if (!checkActivate())
@@ -552,7 +559,7 @@ public class HornetQServerImpl implements HornetQServer
             }
 
             sessions.remove(name);
-            
+
             return new ReattachSessionResponseMessage(-1, false);
          }
          else
@@ -566,18 +573,23 @@ public class HornetQServerImpl implements HornetQServer
    }
 
    public CreateSessionResponseMessage createSession(final String name,
-                                                     final long channelID,
-                                                     final String username,
-                                                     final String password,
-                                                     final int minLargeMessageSize,
-                                                     final int incrementingVersion,
-                                                     final RemotingConnection connection,
-                                                     final boolean autoCommitSends,
-                                                     final boolean autoCommitAcks,
-                                                     final boolean preAcknowledge,
-                                                     final boolean xa,
-                                                     final int sendWindowSize) throws Exception
+                                                                  final long channelID,
+                                                                  final String username,
+                                                                  final String password,
+                                                                  final int minLargeMessageSize,
+                                                                  final int incrementingVersion,
+                                                                  final RemotingConnection connection,
+                                                                  final boolean autoCommitSends,
+                                                                  final boolean autoCommitAcks,
+                                                                  final boolean preAcknowledge,
+                                                                  final boolean xa,
+                                                                  final int sendWindowSize) throws Exception
    {
+      if (!started)
+      {
+         throw new HornetQException(HornetQException.SESSION_CREATION_REJECTED, "Server not started");
+      }
+
       if (version.getIncrementingVersion() != incrementingVersion)
       {
          log.warn("Client with version " + incrementingVersion +
@@ -588,14 +600,14 @@ public class HornetQServerImpl implements HornetQServer
                   ". " +
                   "Please ensure all clients and servers are upgraded to the same version for them to " +
                   "interoperate properly");
-         return null;
+         throw new HornetQException(HornetQException.INCOMPATIBLE_CLIENT_SERVER_VERSIONS, "Server and client versions incompatible");
       }
 
       if (!checkActivate())
       {
          // Backup server is not ready to accept connections
 
-         return new CreateSessionResponseMessage(version.getIncrementingVersion());
+         throw new HornetQException(HornetQException.SESSION_CREATION_REJECTED, "Server will not accept create session requests");
       }
 
       if (securityStore != null)
@@ -673,7 +685,7 @@ public class HornetQServerImpl implements HornetQServer
       return sessions.get(name);
    }
 
-   public List<ServerSession> getSessions(final String connectionID)
+   public synchronized List<ServerSession> getSessions(final String connectionID)
    {
       Set<Entry<String, ServerSession>> sessionEntries = sessions.entrySet();
       List<ServerSession> matchingSessions = new ArrayList<ServerSession>();
@@ -688,11 +700,12 @@ public class HornetQServerImpl implements HornetQServer
       return matchingSessions;
    }
 
-   public Set<ServerSession> getSessions()
+   public synchronized Set<ServerSession> getSessions()
    {
       return new HashSet<ServerSession>(sessions.values());
    }
 
+   //TODO - should this really be here?? It's only used in tests
    public boolean isInitialised()
    {
       synchronized (initialiseLock)
@@ -727,19 +740,19 @@ public class HornetQServerImpl implements HornetQServer
    }
 
    public Queue createQueue(final SimpleString address,
-                            final SimpleString queueName,
-                            final SimpleString filterString,
-                            final boolean durable,
-                            final boolean temporary) throws Exception
+                                         final SimpleString queueName,
+                                         final SimpleString filterString,
+                                         final boolean durable,
+                                         final boolean temporary) throws Exception
    {
       return createQueue(address, queueName, filterString, durable, temporary, false);
    }
 
    public Queue deployQueue(final SimpleString address,
-                            final SimpleString queueName,
-                            final SimpleString filterString,
-                            final boolean durable,
-                            final boolean temporary) throws Exception
+                                         final SimpleString queueName,
+                                         final SimpleString filterString,
+                                         final boolean durable,
+                                         final boolean temporary) throws Exception
    {
       return createQueue(address, queueName, filterString, durable, temporary, true);
    }
@@ -793,12 +806,12 @@ public class HornetQServerImpl implements HornetQServer
       activateCallbacks.remove(callback);
    }
 
-   public ExecutorFactory getExecutorFactory()
+   public synchronized ExecutorFactory getExecutorFactory()
    {
       return executorFactory;
    }
 
-   public void setGroupingHandler(GroupingHandler groupingHandler)
+   public void setGroupingHandler(final GroupingHandler groupingHandler)
    {
       this.groupingHandler = groupingHandler;
    }
@@ -900,7 +913,7 @@ public class HornetQServerImpl implements HornetQServer
       return true;
    }
 
-   private synchronized void callActivateCallbacks()
+   private void callActivateCallbacks()
    {
       for (ActivateCallback callback : activateCallbacks)
       {

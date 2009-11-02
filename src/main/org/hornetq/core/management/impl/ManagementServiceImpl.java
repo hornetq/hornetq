@@ -695,7 +695,7 @@ public class ManagementServiceImpl implements ManagementService
                }
 
                // start sending notification *messages* only when the *remoting service* if started
-               if (messagingServer == null || !messagingServer.isStarted() ||
+               if (messagingServer == null || 
                    !messagingServer.getRemotingService().isStarted())
                {
                   return;
