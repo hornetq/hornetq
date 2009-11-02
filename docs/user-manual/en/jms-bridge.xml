@@ -98,7 +98,12 @@
                &lt;parameter>&lt;null />&lt;/parameter>
                &lt;!-- Add MessageID In Header -->
                &lt;parameter>true&lt;/parameter>
-           &lt;/constructor>
+               &lt;!-- register the JMS Bridge in the AS MBeanServer -->
+               &lt;parameter>
+                   &lt;inject bean="MBeanServer"/>
+               &lt;/parameter>
+               &lt;parameter>org.hornetq:service=JMSBridge&lt;/parameter>
+             &lt;/constructor>
            &lt;property name="transactionManager">
                &lt;inject bean="RealTransactionManager"/>
            &lt;/property>
@@ -172,6 +177,10 @@
          &lt;/constructor>
       &lt;/bean>
 
+      &lt;bean name="MBeanServer" class="javax.management.MBeanServer">
+         &lt;constructor factoryClass="org.jboss.mx.util.MBeanServerLocator"
+                      factoryMethod="locateJBoss"/>
+      &lt;/bean>
 &lt;/deployment></programlisting>
         <section>
             <title>JMS Bridge Parameters</title>
@@ -318,6 +327,16 @@
                             it back it will be able to correlate it. </para>
                     </note>
                 </listitem>
+               <listitem>
+                   <para>MBean Server</para>
+                   <para>To manage the JMS Bridge using JMX, set the MBeanServer where the JMS Bridge MBean
+                      must be registered (e.g. the JVM Platform MBeanServer or JBoss AS MBeanServer)</para>
+               </listitem>
+               <listitem>
+                   <para>ObjectName</para>
+                   <para>If you set the MBeanServer, you also need to set the ObjectName used to register
+                      the JMS Bridge MBean (must be unique)</para>
+               </listitem>
             </itemizedlist>
         </section>
         <section>

@@ -107,6 +107,11 @@
                <parameter><null /></parameter>
                <!-- concatenate JMS messageID to the target's message header -->
                <parameter>true</parameter>
+               <!-- register the JMS Bridge in the JMX MBeanServer -->
+               <parameter>
+                   <inject bean="MBeanServer"/>
+               </parameter>
+               <parameter>org.hornetq:service=JMSBridge</parameter>
            </constructor>
            <property name="transactionManager">
                <inject bean="TransactionManager"/>

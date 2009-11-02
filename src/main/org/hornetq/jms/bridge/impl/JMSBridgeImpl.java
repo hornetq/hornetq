@@ -27,13 +27,15 @@ import javax.jms.ExceptionListener;
 import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.MessageConsumer;
-import javax.jms.MessageListener;
 import javax.jms.MessageProducer;
 import javax.jms.Session;
 import javax.jms.Topic;
 import javax.jms.XAConnection;
 import javax.jms.XAConnectionFactory;
 import javax.jms.XASession;
+import javax.management.MBeanServer;
+import javax.management.ObjectName;
+import javax.management.StandardMBean;
 import javax.transaction.Transaction;
 import javax.transaction.TransactionManager;
 import javax.transaction.xa.XAResource;
@@ -44,6 +46,7 @@ import org.hornetq.core.server.HornetQComponent;
 import org.hornetq.jms.bridge.ConnectionFactoryFactory;
 import org.hornetq.jms.bridge.DestinationFactory;
 import org.hornetq.jms.bridge.JMSBridge;
+import org.hornetq.jms.bridge.JMSBridgeControl;
 import org.hornetq.jms.bridge.QualityOfServiceMode;
 import org.hornetq.jms.client.HornetQMessage;
 import org.hornetq.jms.client.HornetQSession;
@@ -150,6 +153,10 @@ public class JMSBridgeImpl implements HornetQComponent, JMSBridge
    private String transactionManagerLocatorClass = "org.hornetq.integration.jboss.tm.JBoss5TransactionManagerLocator";
 
    private String transactionManagerLocatorMethod = "getTm";
+
+   private MBeanServer mbeanServer;
+
+   private ObjectName objectName;
    
    private static final int FORWARD_MODE_XA = 0;
    
@@ -164,7 +171,23 @@ public class JMSBridgeImpl implements HornetQComponent, JMSBridge
    {      
       this.messages = new LinkedList<Message>();      
    }
-   
+
+   public JMSBridgeImpl(ConnectionFactoryFactory sourceCff, ConnectionFactoryFactory targetCff,
+                        DestinationFactory sourceDestinationFactory, DestinationFactory targetDestinationFactory,         
+                        String sourceUsername, String sourcePassword,
+                        String targetUsername, String targetPassword,
+                        String selector, long failureRetryInterval,
+                        int maxRetries,
+                        QualityOfServiceMode qosMode,
+                        int maxBatchSize, long maxBatchTime,
+                        String subName, String clientID,
+                        boolean addMessageIDInHeader) {
+      
+      this(sourceCff, targetCff, sourceDestinationFactory, targetDestinationFactory, sourceUsername, 
+           sourcePassword, targetUsername, targetPassword, selector, failureRetryInterval, maxRetries, 
+           qosMode, maxBatchSize, maxBatchTime, subName, clientID, addMessageIDInHeader, null, null);
+   }
+
    public JMSBridgeImpl(ConnectionFactoryFactory sourceCff, ConnectionFactoryFactory targetCff,
                  DestinationFactory sourceDestinationFactory, DestinationFactory targetDestinationFactory,         
                  String sourceUsername, String sourcePassword,
@@ -174,7 +197,9 @@ public class JMSBridgeImpl implements HornetQComponent, JMSBridge
                  QualityOfServiceMode qosMode,
                  int maxBatchSize, long maxBatchTime,
                  String subName, String clientID,
-                 boolean addMessageIDInHeader)
+                 boolean addMessageIDInHeader,
+                 MBeanServer mbeanServer,
+                 String objectName)
    {            
       this();
       
@@ -211,8 +236,32 @@ public class JMSBridgeImpl implements HornetQComponent, JMSBridge
       this.clientID = clientID;
       
       this.addMessageIDInHeader = addMessageIDInHeader;
-              
-      checkParams();
+         
+      checkParams();      
+
+      if(mbeanServer != null)
+      {
+         if(objectName != null)
+         {
+            this.mbeanServer = mbeanServer;
+
+            try
+            {
+               JMSBridgeControlImpl controlBean = new JMSBridgeControlImpl(this);
+               this.objectName = ObjectName.getInstance(objectName);
+               StandardMBean mbean = new StandardMBean(controlBean, JMSBridgeControl.class);
+               mbeanServer.registerMBean(mbean, this.objectName);
+               log.debug("Registered JMSBridge instance as: " + this.objectName.getCanonicalName());
+            }
+            catch (Exception e)
+            {
+               throw new IllegalStateException("Failed to register JMSBridge MBean", e);
+            }
+         }
+         else {
+            throw new IllegalArgumentException("objectName is required when specifying an MBeanServer");
+         }
+      }
       
       if (trace)
       {
@@ -381,6 +430,21 @@ public class JMSBridgeImpl implements HornetQComponent, JMSBridge
    public synchronized boolean isStarted()
    {
       return started;
+   }
+   
+   public void destroy()
+   {
+      if (mbeanServer != null && objectName != null)
+      {
+         try
+         {
+            mbeanServer.unregisterMBean(objectName);
+         }
+         catch (Exception e)
+         {
+            log.warn("Failed to unregisted JMS Bridge " + objectName);
+         }
+      }
    }
 
    // JMSBridge implementation ------------------------------------------------------------

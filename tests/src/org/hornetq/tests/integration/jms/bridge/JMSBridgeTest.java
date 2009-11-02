@@ -12,6 +12,7 @@
  */
 package org.hornetq.tests.integration.jms.bridge;
 
+import java.lang.management.ManagementFactory;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -23,6 +24,8 @@ import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
 import javax.jms.Session;
 import javax.jms.TextMessage;
+import javax.management.MBeanServer;
+import javax.management.ObjectName;
 import javax.transaction.Transaction;
 import javax.transaction.TransactionManager;
 
@@ -1600,6 +1603,26 @@ public class JMSBridgeTest extends BridgeTestBase
       }
    }
 
+   public void testMBeanServer() throws Exception {
+      
+      MBeanServer mbeanServer = ManagementFactory.getPlatformMBeanServer();
+      ObjectName objectName = new ObjectName("example.jmsbridge:service=JMSBridge");
+      
+      JMSBridgeImpl bridge = new JMSBridgeImpl(cff0, cff0, sourceQueueFactory, localTargetQueueFactory,
+                              null, null, null, null,
+                              null, 5000, 10, QualityOfServiceMode.AT_MOST_ONCE,
+                              1, -1,
+                              null, null, false,
+                              mbeanServer, 
+                              objectName.getCanonicalName());      
+
+      assertTrue(mbeanServer.isRegistered(objectName));
+      
+      bridge.destroy();
+      
+      assertFalse(mbeanServer.isRegistered(objectName));
+   }
+   
    public TransactionManager getNewTm()
    {
       return newTransactionManager();

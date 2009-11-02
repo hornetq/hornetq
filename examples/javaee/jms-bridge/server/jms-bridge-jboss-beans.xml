@@ -48,6 +48,11 @@
                <parameter><null /></parameter>
                <!-- concatenate JMS messageID to the target's message header -->
                <parameter>true</parameter>
+               <!-- register the JMS Bridge in the AS MBeanServer -->
+               <parameter>
+                   <inject bean="MBeanServer"/>
+               </parameter>
+               <parameter>org.hornetq:service=JMSBridge</parameter>
            </constructor>
            <property name="transactionManager">
                <inject bean="RealTransactionManager"/>
@@ -116,6 +121,11 @@
                </entry>
             </map>
          </constructor>
+      </bean>
+
+      <bean name="MBeanServer" class="javax.management.MBeanServer">
+         <constructor factoryClass="org.jboss.mx.util.MBeanServerLocator"
+                      factoryMethod="locateJBoss"/>
       </bean>
 
 </deployment>
