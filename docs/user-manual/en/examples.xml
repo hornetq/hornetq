@@ -194,6 +194,11 @@
                 for security. HornetQ can leverage JAAS to delegate user authentication and
                 authorization to existing security infrastructure.</para>
         </section>
+        <section id="examples.jms.jms-bridge">
+            <title>JMS Bridge</title>
+            <para>The <literal>jms-brige</literal> example shows how to setup a bridge
+            between two standalone HornetQ servers.</para>
+        </section>
         <section id="examples.jmx">
             <title>JMX Management</title>
             <para>The <literal>jmx</literal> example shows how to manage HornetQ using JMX.</para>
@@ -512,7 +517,7 @@
             <para>This example demonstrates how to configure several properties on the HornetQ JCA
                 resource adaptor.</para>
         </section>
-        <section id="jms-bridge-example">
+        <section id="examples.javaee.jms-bridge">
             <title>JMS Bridge</title>
             <para>An example demonstrating the use of the HornetQ JMS bridge.</para>
         </section>

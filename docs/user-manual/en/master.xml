@@ -40,6 +40,7 @@
         <!ENTITY transaction-config      SYSTEM "transaction-config.xml">
         <!ENTITY intercepting-operations SYSTEM "intercepting-operations.xml">
         <!ENTITY interoperability        SYSTEM "interoperability.xml">
+        <!ENTITY jms-bridge              SYSTEM "jms-bridge.xml">
         <!ENTITY jms-core-mapping        SYSTEM "jms-core-mapping.xml">
         <!ENTITY large-messages          SYSTEM "large-messages.xml">
         <!ENTITY last-value-queues       SYSTEM "last-value-queues.xml">
@@ -109,6 +110,7 @@
    &management;
    &security;   
    &appserver-integration;   
+   &jms-bridge;   
    &client-reconnection;
    &diverts;
    &core-bridges;
