@@ -257,7 +257,7 @@ public class FailoverManagerImpl implements FailoverManager, ConnectionLifeCycle
          {
             Version clientVersion = VersionLoader.getVersion();
 
-            RemotingConnection connection = null;
+            RemotingConnection theConnection = null;
 
             Lock lock = null;
 
@@ -267,9 +267,9 @@ public class FailoverManagerImpl implements FailoverManager, ConnectionLifeCycle
 
                synchronized (failoverLock)
                {
-                  connection = getConnectionWithRetry(reconnectAttempts);
+                  theConnection = getConnectionWithRetry(reconnectAttempts);
 
-                  if (connection == null)
+                  if (theConnection == null)
                   {
                      if (exitLoop)
                      {
@@ -282,7 +282,7 @@ public class FailoverManagerImpl implements FailoverManager, ConnectionLifeCycle
 
                   }
 
-                  channel1 = connection.getChannel(1, -1);
+                  channel1 = theConnection.getChannel(1, -1);
 
                   // Lock it - this must be done while the failoverLock is held
                   channel1.getLock().lock();
@@ -296,7 +296,7 @@ public class FailoverManagerImpl implements FailoverManager, ConnectionLifeCycle
                   inCreateSession = true;
                }
 
-               long sessionChannelID = connection.generateChannelID();
+               long sessionChannelID = theConnection.generateChannelID();
 
                Packet request = new CreateSessionMessage(name,
                                                          sessionChannelID,
@@ -322,10 +322,6 @@ public class FailoverManagerImpl implements FailoverManager, ConnectionLifeCycle
                      // This means the thread was blocked on create session and failover unblocked it
                      // so failover could occur
 
-                     // So we just need to return our connections and flag for retry
-
-                     checkCloseConnection();
-
                      retry = true;
 
                      continue;
@@ -337,8 +333,8 @@ public class FailoverManagerImpl implements FailoverManager, ConnectionLifeCycle
                }
 
                CreateSessionResponseMessage response = (CreateSessionResponseMessage)pResponse;
-
-               Channel sessionChannel = connection.getChannel(sessionChannelID,
+               
+               Channel sessionChannel = theConnection.getChannel(sessionChannelID,
                                                               confWindowSize);
 
                ClientSessionInternal session = new ClientSessionImpl(this,
@@ -361,7 +357,7 @@ public class FailoverManagerImpl implements FailoverManager, ConnectionLifeCycle
                                                                      blockOnPersistentSend,
                                                                      cacheLargeMessageClient,
                                                                      minLargeMessageSize,
-                                                                     connection,
+                                                                     theConnection,
                                                                      response.getServerVersion(),
                                                                      sessionChannel,
                                                                      orderedExecutorFactory.getExecutor());
@@ -382,8 +378,6 @@ public class FailoverManagerImpl implements FailoverManager, ConnectionLifeCycle
 
                   lock = null;
                }
-
-               checkCloseConnection();
 
                if (t instanceof HornetQException)
                {
@@ -613,11 +607,11 @@ public class FailoverManagerImpl implements FailoverManager, ConnectionLifeCycle
 
                backupTransportParams = null;
 
-               reconnectSessions(reconnectAttempts == -1 ? -1 : reconnectAttempts + 1);
+               reconnectSessions(oldConnection, reconnectAttempts == -1 ? -1 : reconnectAttempts + 1);
             }
             else
             {
-               reconnectSessions(reconnectAttempts);
+               reconnectSessions(oldConnection, reconnectAttempts);
             }
 
             oldConnection.destroy();
@@ -663,8 +657,8 @@ public class FailoverManagerImpl implements FailoverManager, ConnectionLifeCycle
    /*
     * Re-attach sessions all pre-existing sessions to the new remoting connection
     */
-   private void reconnectSessions(final int reconnectAttempts)
-   {  
+   private void reconnectSessions(final RemotingConnection oldConnection, final int reconnectAttempts)
+   {        
       RemotingConnection backupConnection = getConnectionWithRetry(reconnectAttempts);
       
       if (backupConnection == null)
@@ -673,9 +667,9 @@ public class FailoverManagerImpl implements FailoverManager, ConnectionLifeCycle
 
          return;
       }
-
-      List<FailureListener> oldListeners = connection.getFailureListeners();
-
+      
+      List<FailureListener> oldListeners = oldConnection.getFailureListeners();
+      
       List<FailureListener> newListeners = new ArrayList<FailureListener>(backupConnection.getFailureListeners());
 
       for (FailureListener listener : oldListeners)
@@ -709,9 +703,9 @@ public class FailoverManagerImpl implements FailoverManager, ConnectionLifeCycle
             return null;
          }
 
-         RemotingConnection connection = getConnection();
+         RemotingConnection theConnection = getConnection();
 
-         if (connection == null)
+         if (theConnection == null)
          {
             // Failed to get connection
 
@@ -751,7 +745,7 @@ public class FailoverManagerImpl implements FailoverManager, ConnectionLifeCycle
          }
          else
          {
-            return connection;
+            return theConnection;
          }
       }
    }
@@ -764,7 +758,7 @@ public class FailoverManagerImpl implements FailoverManager, ConnectionLifeCycle
          {
             pingRunnable.cancel();
 
-            boolean ok = pingerFuture.cancel(false);
+            pingerFuture.cancel(false);
 
             pingRunnable = null;
 
