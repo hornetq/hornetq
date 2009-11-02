@@ -55,6 +55,7 @@ import org.hornetq.core.server.group.impl.GroupBinding;
 import org.hornetq.core.server.impl.ServerMessageImpl;
 import org.hornetq.core.settings.HierarchicalRepository;
 import org.hornetq.core.settings.impl.AddressSettings;
+import org.hornetq.core.settings.impl.AddressFullMessagePolicy;
 import org.hornetq.core.transaction.ResourceManager;
 import org.hornetq.tests.unit.core.journal.impl.fakes.FakeSequentialFileFactory;
 import org.hornetq.tests.unit.core.server.impl.fakes.FakePostOffice;
@@ -173,13 +174,15 @@ public class PagingStoreImplTest extends UnitTestCase
 
       PagingStoreFactory storeFactory = new FakeStoreFactory(factory);
 
+      AddressSettings addressSettings = new AddressSettings();
+      addressSettings.setAddressFullMessagePolicy(AddressFullMessagePolicy.PAGE);
       PagingStore storeImpl = new PagingStoreImpl(createMockManager(),
                                                   createStorageManagerMock(),
                                                   createPostOfficeMock(),
                                                   factory,
                                                   storeFactory,
                                                   destinationTestName,
-                                                  new AddressSettings(),
+                                                  addressSettings,
                                                   executor);
 
       storeImpl.start();
@@ -230,13 +233,15 @@ public class PagingStoreImplTest extends UnitTestCase
 
       PagingStoreFactory storeFactory = new FakeStoreFactory(factory);
 
+      AddressSettings addressSettings = new AddressSettings();
+      addressSettings.setAddressFullMessagePolicy(AddressFullMessagePolicy.PAGE);
       TestSupportPageStore storeImpl = new PagingStoreImpl(createMockManager(),
                                                            createStorageManagerMock(),
                                                            createPostOfficeMock(),
                                                            factory,
                                                            storeFactory,
                                                            destinationTestName,
-                                                           new AddressSettings(),
+                                                           addressSettings,
                                                            executor);
 
       storeImpl.start();
@@ -293,13 +298,15 @@ public class PagingStoreImplTest extends UnitTestCase
 
       PagingStoreFactory storeFactory = new FakeStoreFactory(factory);
 
+      AddressSettings addressSettings = new AddressSettings();
+      addressSettings.setAddressFullMessagePolicy(AddressFullMessagePolicy.PAGE);
       TestSupportPageStore storeImpl = new PagingStoreImpl(createMockManager(),
                                                            createStorageManagerMock(),
                                                            createPostOfficeMock(),
                                                            factory,
                                                            storeFactory,
                                                            destinationTestName,
-                                                           new AddressSettings(),
+                                                           addressSettings,
                                                            executor);
 
       storeImpl.start();
@@ -433,6 +440,7 @@ public class PagingStoreImplTest extends UnitTestCase
 
       AddressSettings settings = new AddressSettings();
       settings.setPageSizeBytes(MAX_SIZE);
+      settings.setAddressFullMessagePolicy(AddressFullMessagePolicy.PAGE);
 
       final TestSupportPageStore storeImpl = new PagingStoreImpl(createMockManager(),
                                                                  createStorageManagerMock(),
