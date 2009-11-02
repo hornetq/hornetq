@@ -27,13 +27,13 @@
       <!-- In VM acceptor -->
       <acceptor name="in-vm">
          <factory-class>org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory</factory-class>
-         <param key="hornetq.remoting.invm.serverid" value="0" type="Integer"/>
+         <param key="serverid" value="0"/>
       </acceptor>
 
       <!-- Netty TCP Acceptor -->
       <acceptor name="netty">
          <factory-class>org.hornetq.integration.transports.netty.NettyAcceptorFactory</factory-class>
-         <param key="hornetq.remoting.netty.port" value="${hornetq.remoting.netty.port:5445}" type="Integer"/>
+         <param key="port" value="${hornetq.remoting.netty.port:5445}"/>
       </acceptor>
    </acceptors>
 

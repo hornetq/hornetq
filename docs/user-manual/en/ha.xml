@@ -66,8 +66,8 @@
      &lt;!-- backup server is located on host "192.168.0.11" and port "5445" -->
      &lt;connector name="backup-connector">
        &lt;factory-class>org.hornetq.integration.transports.netty.NettyConnectorFactory&lt;/factory-class>
-       &lt;param key="hornetq.remoting.netty.host" value="192.168.0.11" type="String"/>
-       &lt;param key="hornetq.remoting.netty.port" value="5445" type="Integer"/>
+       &lt;param key="host" value="192.168.0.11"/>
+       &lt;param key="port" value="5445"/>
      &lt;/connector>
   &lt;/connectors></programlisting>
               <para>Secondly, on the backup server, we flag the server as a backup and make sure it has an acceptor that the live server can connect to:</para>
@@ -77,8 +77,8 @@
   &lt;acceptors>
      &lt;acceptor name="acceptor">
         &lt;factory-class>org.hornetq.integration.transports.netty.NettyAcceptorFactory&lt;/factory-class>
-        &lt;param key="hornetq.remoting.netty.host" value="192.168.0.11" type="String"/>
-        &lt;param key="hornetq.remoting.netty.port" value="5445" type="Integer"/>
+        &lt;param key="host" value="192.168.0.11"/>
+        &lt;param key="port" value="5445"/>
      &lt;/acceptor>
   &lt;/acceptors>               
               </programlisting>

@@ -269,18 +269,6 @@
 	<xsd:complexType name="paramType">
 		<xsd:attribute name="key" type="xsd:string" use="required"/>
 		<xsd:attribute name="value" type="xsd:string" use="required"/>
-		<xsd:attribute name="type" use="required">
-			<xsd:simpleType>
-				<xsd:restriction base="xsd:string">
-					<xsd:enumeration value="String"/>
-					<xsd:enumeration value="Integer"/>
-					<xsd:enumeration value="Long"/>
-					<xsd:enumeration value="Boolean"/>
-					<xsd:enumeration value="Float"/>
-					<xsd:enumeration value="Double"/>
-				</xsd:restriction>
-			</xsd:simpleType>
-		</xsd:attribute>
 	</xsd:complexType>
 
 	<xsd:complexType name="connectorType">

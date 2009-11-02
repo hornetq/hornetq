@@ -7,16 +7,16 @@
    <connectors>      
       <connector name="netty">
          <factory-class>org.hornetq.integration.transports.netty.NettyConnectorFactory</factory-class>
-         <param key="hornetq.remoting.netty.host"  value="${hornetq.remoting.netty.host:localhost}" type="String"/>
-         <param key="hornetq.remoting.netty.port"  value="${hornetq.remoting.netty.port:5445}" type="Integer"/>
+         <param key="host"  value="${hornetq.remoting.netty.host:localhost}"/>
+         <param key="port"  value="${hornetq.remoting.netty.port:5445}"/>
       </connector>
    </connectors>
 
    <acceptors>
       <acceptor name="netty">
          <factory-class>org.hornetq.integration.transports.netty.NettyAcceptorFactory</factory-class>
-         <param key="hornetq.remoting.netty.host"  value="${hornetq.remoting.netty.host:localhost}" type="String"/>
-         <param key="hornetq.remoting.netty.port"  value="${hornetq.remoting.netty.port:5445}" type="Integer"/>
+         <param key="host"  value="${hornetq.remoting.netty.host:localhost}"/>
+         <param key="port"  value="${hornetq.remoting.netty.port:5445}"/>
       </acceptor>
    </acceptors>
 

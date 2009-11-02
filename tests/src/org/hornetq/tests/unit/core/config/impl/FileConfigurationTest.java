@@ -94,50 +94,22 @@ public class FileConfigurationTest extends ConfigurationImplTest
       TransportConfiguration tc = conf.getConnectorConfigurations().get("connector1");
       assertNotNull(tc);
       assertEquals("org.hornetq.tests.unit.core.config.impl.TestConnectorFactory1", tc.getFactoryClassName());
-      Object param = tc.getParams().get("a1");
-      assertTrue(param instanceof String);
-      assertEquals("v1", param);
-      param = tc.getParams().get("a2");
-      assertTrue(param instanceof Long);
-      assertEquals(123, ((Long)param).longValue());
-      param = tc.getParams().get("a3");
-      assertTrue(param instanceof Integer);
-      assertEquals(345, param);
-      param = tc.getParams().get("a4");
-      assertTrue(param instanceof String);
-      assertEquals("v4", param);
+      assertEquals("v1", tc.getParams().get("a1"));
+      assertEquals("123", tc.getParams().get("a2"));
+      assertEquals("345", tc.getParams().get("a3"));
+      assertEquals("v4", tc.getParams().get("a4"));
       
       tc = conf.getConnectorConfigurations().get("connector2");
       assertNotNull(tc);
       assertEquals("org.hornetq.tests.unit.core.config.impl.TestConnectorFactory2", tc.getFactoryClassName());
-      param = tc.getParams().get("b1");
-      assertTrue(param instanceof String);
-      assertEquals("w1", param);
-      param = tc.getParams().get("b2");
-      assertTrue(param instanceof Long);
-      assertEquals(234, ((Long)param).longValue());
-      param = tc.getParams().get("b3");
-      assertTrue(param instanceof Integer);
-      assertEquals(456, param);
-      param = tc.getParams().get("b4");
-      assertTrue(param instanceof String);
-      assertEquals("w4", param);
+      assertEquals("w1", tc.getParams().get("b1"));
+      assertEquals("234", tc.getParams().get("b2"));
 
       tc = conf.getConnectorConfigurations().get("backup-connector");
       assertNotNull(tc);
       assertEquals("org.hornetq.tests.unit.core.config.impl.TestConnectorFactory3", tc.getFactoryClassName());
-      param = tc.getParams().get("c1");
-      assertTrue(param instanceof String);
-      assertEquals("x1", param);
-      param = tc.getParams().get("c2");
-      assertTrue(param instanceof Long);
-      assertEquals(345, ((Long)param).longValue());
-      param = tc.getParams().get("c3");
-      assertTrue(param instanceof Integer);
-      assertEquals(567, param);
-      param = tc.getParams().get("c4");
-      assertTrue(param instanceof String);
-      assertEquals("x4", param);
+      assertEquals("x1", tc.getParams().get("c1"));
+      assertEquals("345", tc.getParams().get("c2"));
 
       assertEquals(2, conf.getAcceptorConfigurations().size());
       for (TransportConfiguration ac: conf.getAcceptorConfigurations())
@@ -145,34 +117,14 @@ public class FileConfigurationTest extends ConfigurationImplTest
          if (ac.getFactoryClassName().equals("org.hornetq.tests.unit.core.config.impl.TestAcceptorFactory1"))
          {
             assertEquals("org.hornetq.tests.unit.core.config.impl.TestAcceptorFactory1", ac.getFactoryClassName());
-            param = ac.getParams().get("d1");
-            assertTrue(param instanceof String);
-            assertEquals("y1", param);
-            param = ac.getParams().get("d2");
-            assertTrue(param instanceof Long);
-            assertEquals(456, ((Long)param).longValue());
-            param = ac.getParams().get("d3");
-            assertTrue(param instanceof Integer);
-            assertEquals(678, param);
-            param = ac.getParams().get("d4");
-            assertTrue(param instanceof String);
-            assertEquals("y4", param);
+            assertEquals("y1", ac.getParams().get("d1"));
+            assertEquals("456", ac.getParams().get("d2"));
          }
          else
          {
             assertEquals("org.hornetq.tests.unit.core.config.impl.TestAcceptorFactory2", ac.getFactoryClassName());
-            param = ac.getParams().get("e1");
-            assertTrue(param instanceof String);
-            assertEquals("z1", param);
-            param = ac.getParams().get("e2");
-            assertTrue(param instanceof Long);
-            assertEquals(567, ((Long)param).longValue());
-            param = ac.getParams().get("e3");
-            assertTrue(param instanceof Integer);
-            assertEquals(789, param);
-            param = ac.getParams().get("e4");
-            assertTrue(param instanceof String);
-            assertEquals("z4", param);
+            assertEquals("z1", ac.getParams().get("e1"));
+            assertEquals("567", ac.getParams().get("e2"));
          }
       }
       

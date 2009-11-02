@@ -529,16 +529,6 @@ public class XMLUtil
       return nodes;
    }
 
-   // Quick dirty replace - use a reg exp to use true default value
-   private static String doReplace(String s, String propertyName, String defaultValue)
-   {
-      String sysProp = System.getProperty(propertyName);
-
-      s = s.replace("${" + propertyName + ":" + defaultValue + "}", sysProp == null ? defaultValue : sysProp);
-
-      return s;
-   }
-
    // Inner classes --------------------------------------------------------------------------------
 
 }

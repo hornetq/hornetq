@@ -154,7 +154,7 @@
                 <para>Enable <ulink url="http://en.wikipedia.org/wiki/Nagle's_algorithm">Nagle's
                         algorithm</ulink>. If you are sending many small messages, such that more
                     than one can fit in a single IP packet thus providing better performance. This
-                    is done by setting <literal>hornetq.remoting.netty.tcpnodelay</literal> to false
+                    is done by setting <literal>tcpnodelay</literal> to false
                     with the Netty transports. See <xref linkend="configuring-transports"/> for more
                     information on this. </para>
             </listitem>

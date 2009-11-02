@@ -25,6 +25,7 @@ import org.hornetq.core.config.TransportConfiguration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.server.HornetQ;
 import org.hornetq.core.server.HornetQServer;
+import org.hornetq.integration.transports.netty.TransportConstants;
 import org.hornetq.jms.client.HornetQTextMessage;
 import org.hornetq.tests.util.UnitTestCase;
 import org.hornetq.utils.SimpleString;
@@ -43,7 +44,7 @@ public class CoreClientOverHttpTest extends UnitTestCase
       conf.setSecurityEnabled(false);
 
       HashMap<String, Object> params = new HashMap<String, Object>();
-      params.put("hornetq.remoting.netty.httpenabled", true);
+      params.put(TransportConstants.HTTP_ENABLED_PROP_NAME, true);
       conf.getAcceptorConfigurations().add(new TransportConfiguration(NETTY_ACCEPTOR_FACTORY, params));
 
       HornetQServer server = HornetQ.newHornetQServer(conf, false);
@@ -95,7 +96,7 @@ public class CoreClientOverHttpTest extends UnitTestCase
       conf.setSecurityEnabled(false);
 
       HashMap<String, Object> params = new HashMap<String, Object>();
-      params.put("hornetq.remoting.netty.httpenabled", true);
+      params.put(TransportConstants.HTTP_ENABLED_PROP_NAME, true);
       conf.getAcceptorConfigurations().add(new TransportConfiguration(NETTY_ACCEPTOR_FACTORY, params));
 
       HornetQServer server = HornetQ.newHornetQServer(conf, false);

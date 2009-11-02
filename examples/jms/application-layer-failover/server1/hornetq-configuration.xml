@@ -7,7 +7,7 @@
    <connectors>
       <connector name="netty-connector">
          <factory-class>org.hornetq.integration.transports.netty.NettyConnectorFactory</factory-class>
-         <param key="hornetq.remoting.netty.port" value="5446" type="Integer"/>
+         <param key="port" value="5446"/>
       </connector>
    </connectors>
 
@@ -15,7 +15,7 @@
    <acceptors>
       <acceptor name="netty-acceptor">
          <factory-class>org.hornetq.integration.transports.netty.NettyAcceptorFactory</factory-class>
-         <param key="hornetq.remoting.netty.port" value="5446" type="Integer"/>
+         <param key="port" value="5446"/>
       </acceptor>
    </acceptors>
 

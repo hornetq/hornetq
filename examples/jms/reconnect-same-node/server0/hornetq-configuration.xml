@@ -7,14 +7,14 @@
    <connectors>
       <connector name="netty-connector">
          <factory-class>org.hornetq.integration.transports.netty.NettyConnectorFactory</factory-class>
-         <param key="hornetq.remoting.netty.port" value="5445" type="Integer"/>
+         <param key="port" value="5445"/>
       </connector>
       
       <!-- We just use this connector so we can send management operations while the other acceptor
       is stopped -->
      <connector name="netty-connector2">
          <factory-class>org.hornetq.integration.transports.netty.NettyConnectorFactory</factory-class>
-         <param key="hornetq.remoting.netty.port" value="5446" type="Integer"/>
+         <param key="port" value="5446"/>
       </connector>
    </connectors>
    
@@ -22,14 +22,14 @@
    <acceptors>
       <acceptor name="netty-acceptor">
          <factory-class>org.hornetq.integration.transports.netty.NettyAcceptorFactory</factory-class>
-         <param key="hornetq.remoting.netty.port" value="5445" type="Integer"/>
+         <param key="port" value="5445"/>
       </acceptor>
 
       <!-- We just use this acceptor so we can send management operations while the other acceptor
       is stopped -->
       <acceptor name="netty-acceptor2">
          <factory-class>org.hornetq.integration.transports.netty.NettyAcceptorFactory</factory-class>
-         <param key="hornetq.remoting.netty.port" value="5446" type="Integer"/>
+         <param key="port" value="5446"/>
       </acceptor>
    </acceptors>
    

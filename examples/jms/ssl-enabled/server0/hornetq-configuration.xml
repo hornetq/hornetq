@@ -7,11 +7,11 @@
    <connectors>
       <connector name="netty-ssl-connector">
          <factory-class>org.hornetq.integration.transports.netty.NettyConnectorFactory</factory-class>
-         <param key="hornetq.remoting.netty.host" value="localhost" type="String"/>
-         <param key="hornetq.remoting.netty.port" value="5500" type="Integer"/>	                     
-         <param key="hornetq.remoting.netty.sslenabled" value="true" type="Boolean"/>
-         <param key="hornetq.remoting.netty.keystorepath" value="server0/hornetq.example.keystore" type="String"/>
-         <param key="hornetq.remoting.netty.keystorepassword" value="hornetqexample" type="String"/>
+         <param key="host" value="localhost"/>
+         <param key="port" value="5500"/>
+         <param key="sslenabled" value="true"/>
+         <param key="keystorepath" value="server0/hornetq.example.keystore"/>
+         <param key="keystorepassword" value="hornetqexample"/>
       </connector>
    </connectors>
    
@@ -19,13 +19,13 @@
    <acceptors>
       <acceptor name="netty-ssl-acceptor">
          <factory-class>org.hornetq.integration.transports.netty.NettyAcceptorFactory</factory-class>
-         <param key="hornetq.remoting.netty.host" value="localhost" type="String"/>
-         <param key="hornetq.remoting.netty.port" value="5500" type="Integer"/>	                     
-         <param key="hornetq.remoting.netty.sslenabled" value="true" type="Boolean"/>
-         <param key="hornetq.remoting.netty.keystorepath" value="hornetq.example.keystore" type="String"/>
-         <param key="hornetq.remoting.netty.keystorepassword" value="hornetqexample" type="String"/>
-         <param key="hornetq.remoting.netty.truststorepath" value="hornetq.example.truststore" type="String"/>
-         <param key="hornetq.remoting.netty.truststorepassword" value="hornetqexample" type="String"/>
+         <param key="host" value="localhost"/>
+         <param key="port" value="5500"/>
+         <param key="sslenabled" value="true"/>
+         <param key="keystorepath" value="hornetq.example.keystore"/>
+         <param key="keystorepassword" value="hornetqexample"/>
+         <param key="truststorepath" value="hornetq.example.truststore"/>
+         <param key="truststorepassword" value="hornetqexample"/>
       </acceptor>
    </acceptors>
 

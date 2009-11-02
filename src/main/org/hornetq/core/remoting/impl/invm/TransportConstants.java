@@ -24,7 +24,7 @@ import java.util.Set;
  */
 public class TransportConstants
 {
-   public static final String SERVER_ID_PROP_NAME = "hornetq.remoting.invm.serverid";
+   public static final String SERVER_ID_PROP_NAME = "serverid";
    
    public static final Set<String> ALLOWABLE_CONNECTOR_KEYS;
 

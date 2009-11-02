@@ -14,13 +14,13 @@
 
       <connector name="netty-servlet">
          <factory-class>org.hornetq.integration.transports.netty.NettyConnectorFactory</factory-class>
-         <param key="hornetq.remoting.netty.host" value="localhost" type="String"/>
-         <param key="hornetq.remoting.netty.port" value="8443" type="Integer"/>
-         <param key="hornetq.remoting.netty.useservlet" value="true" type="Boolean"/>
-         <param key="hornetq.remoting.netty.servletpath" value="/hornetq/HornetQServlet" type="String"/>
-         <param key="hornetq.remoting.netty.sslenabled" value="true" type="Boolean"/>
-         <param key="hornetq.remoting.netty.keystorepath" value="server/hornetq.example.keystore" type="String"/>
-         <param key="hornetq.remoting.netty.keystorepassword" value="hornetqexample" type="String"/>
+         <param key="host" value="localhost"/>
+         <param key="port" value="8443"/>
+         <param key="useservlet" value="true"/>
+         <param key="servletpath" value="/hornetq/HornetQServlet"/>
+         <param key="sslenabled" value="true"/>
+         <param key="keystorepath" value="server/hornetq.example.keystore"/>
+         <param key="keystorepassword" value="hornetqexample"/>
       </connector>
 
    </connectors>
@@ -29,14 +29,14 @@
 
       <acceptor name="netty-servlet">
          <factory-class>org.hornetq.integration.transports.netty.NettyAcceptorFactory</factory-class>
-         <param key="hornetq.remoting.netty.useinvm" value="true" type="Boolean"/>
-         <param key="hornetq.remoting.netty.host" value="org.hornetq" type="String"/>
+         <param key="useinvm" value="true"/>
+         <param key="host" value="org.hornetq"/>
       </acceptor>
 
       <acceptor name="netty-invm">
          <factory-class>org.hornetq.integration.transports.netty.NettyAcceptorFactory</factory-class>
-         <param key="hornetq.remoting.netty.useinvm" value="true" type="Boolean"/>
-         <param key="hornetq.remoting.netty.host" value="org.hornetq" type="String"/>
+         <param key="useinvm" value="true"/>
+         <param key="host" value="org.hornetq"/>
       </acceptor>
 
    </acceptors>

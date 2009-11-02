@@ -176,8 +176,8 @@
             this with a connector configuration:</para>
         <programlisting>&lt;connector name="netty">
          &lt;factory-class>org.hornetq.integration.transports.netty.NettyConnectorFactory&lt;/factory-class>
-         &lt;param key="hornetq.remoting.netty.host"  value="${hornetq.remoting.netty.host:localhost}" type="String"/>
-         &lt;param key="hornetq.remoting.netty.port"  value="${hornetq.remoting.netty.port:5445}" type="Integer"/>
+         &lt;param key="host"  value="${hornetq.remoting.netty.host:localhost}" type="String"/>
+         &lt;param key="port"  value="${hornetq.remoting.netty.port:5445}" type="Integer"/>
 &lt;/connector></programlisting>
         <para>here you can see we have replaced 2 values with system properties <literal
                 >hornetq.remoting.netty.host</literal> and <literal

@@ -7,10 +7,10 @@
    <acceptors>
       <acceptor name="netty-acceptor">
          <factory-class>org.hornetq.integration.transports.netty.NettyAcceptorFactory</factory-class>    
-         <param key="hornetq.remoting.netty.tcpnodelay" value="false" type="Boolean"/>
-         <param key="hornetq.remoting.netty.tcpsendbuffersize" value="1048576" type="Boolean"/>
-         <param key="hornetq.remoting.netty.tcpreceivebuffersize" value="1048576" type="Boolean"/>
-         <param key="hornetq.remoting.netty.host" value="172.16.8.10" type="String"/>
+         <param key="tcpnodelay" value="false"/>
+         <param key="tcpsendbuffersize" value="1048576"/>
+         <param key="tcpreceivebuffersize" value="1048576"/>
+         <param key="host" value="172.16.8.10"/>
       </acceptor>
    </acceptors>
    

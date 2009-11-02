@@ -60,40 +60,32 @@
       <connectors>
          <connector name="connector1">
             <factory-class>org.hornetq.tests.unit.core.config.impl.TestConnectorFactory1</factory-class>
-            <param key="a1" value="v1" type="String"/>
-            <param key="a2" value="123" type="Long"/>
-            <param key="a3" value="345" type="Integer"/>
-            <param key="a4" value="v4" type="String"/>      
+            <param key="a1" value="v1"/>
+            <param key="a2" value="123"/>
+            <param key="a3" value="345"/>
+            <param key="a4" value="v4"/>      
          </connector>
          <connector name="connector2">
             <factory-class>org.hornetq.tests.unit.core.config.impl.TestConnectorFactory2</factory-class>
-            <param key="b1" value="w1" type="String"/>
-            <param key="b2" value="234" type="Long"/>
-            <param key="b3" value="456" type="Integer"/>
-            <param key="b4" value="w4" type="String"/>      
+            <param key="b1" value="w1"/>
+            <param key="b2" value="234"/>
          </connector>
          <connector name="backup-connector">
             <factory-class>org.hornetq.tests.unit.core.config.impl.TestConnectorFactory3</factory-class>
-            <param key="c1" value="x1" type="String"/>
-            <param key="c2" value="345" type="Long"/>
-            <param key="c3" value="567" type="Integer"/>
-            <param key="c4" value="x4" type="String"/>      
+            <param key="c1" value="x1"/>
+            <param key="c2" value="345"/>
          </connector>
       </connectors>
       <acceptors>
          <acceptor name="acceptor1">
             <factory-class>org.hornetq.tests.unit.core.config.impl.TestAcceptorFactory1</factory-class>           
-            <param key="d1" value="y1" type="String"/>
-            <param key="d2" value="456" type="Long"/>
-            <param key="d3" value="678" type="Integer"/>
-            <param key="d4" value="y4" type="String"/>                     
+            <param key="d1" value="y1"/>
+            <param key="d2" value="456"/>
          </acceptor>
    	     <acceptor name="acceptor2">
    	        <factory-class>org.hornetq.tests.unit.core.config.impl.TestAcceptorFactory2</factory-class>           
-   	        <param key="e1" value="z1" type="String"/>
-   	        <param key="e2" value="567" type="Long"/>
-   	        <param key="e3" value="789" type="Integer"/>
-   	        <param key="e4" value="z4" type="String"/>            
+   	        <param key="e1" value="z1"/>
+   	        <param key="e2" value="567"/>
    	     </acceptor>
       </acceptors>
       <broadcast-groups>

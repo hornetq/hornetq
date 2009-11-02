@@ -141,6 +141,7 @@ public class NettyAcceptor implements Acceptor
       this.sslEnabled = ConfigurationHelper.getBooleanProperty(TransportConstants.SSL_ENABLED_PROP_NAME,
                                                                TransportConstants.DEFAULT_SSL_ENABLED,
                                                                configuration);
+
       this.httpEnabled = ConfigurationHelper.getBooleanProperty(TransportConstants.HTTP_ENABLED_PROP_NAME,
                                                                 TransportConstants.DEFAULT_HTTP_ENABLED,
                                                                 configuration);

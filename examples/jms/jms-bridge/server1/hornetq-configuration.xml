@@ -8,7 +8,7 @@
          <!-- **************************************** -->
          <!-- Replace with the *target* server address -->
          <!-- **************************************** -->
-         <param key="hornetq.remoting.netty.host" value="@TARGET_SERVER@" type="String"/>
+         <param key="host" value="@TARGET_SERVER@"/>
       </connector>
    </connectors>
 
@@ -16,7 +16,7 @@
       <acceptor name="netty">
          <factory-class>org.hornetq.integration.transports.netty.NettyAcceptorFactory</factory-class>
          <!-- the server accepts connections on all the server addresses -->
-         <param key="hornetq.remoting.netty.host" value="0.0.0.0" type="String"/>
+         <param key="host" value="0.0.0.0"/>
       </acceptor>
    </acceptors>
 

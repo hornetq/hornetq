@@ -36,6 +36,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
 import org.hornetq.core.config.TransportConfiguration;
@@ -391,36 +392,12 @@ public class FileConfiguration extends ConfigurationImpl
 
          Node nValue = attributes.getNamedItem("value");
 
-         Node nType = attributes.getNamedItem("type");
-
-         String type = nType.getTextContent();
-
-         if (type.equalsIgnoreCase("Integer"))
-         {
-            int iVal = org.hornetq.utils.XMLUtil.parseInt(nValue);
-
-            params.put(key, iVal);
-         }
-         else if (type.equalsIgnoreCase("Long"))
-         {
-            long lVal = org.hornetq.utils.XMLUtil.parseLong(nValue);
-
-            params.put(key, lVal);
-         }
-         else if (type.equalsIgnoreCase("String"))
-         {
-            params.put(key, nValue.getTextContent().trim());
-         }
-         else if (type.equalsIgnoreCase("Boolean"))
-         {
-            boolean bVal = org.hornetq.utils.XMLUtil.parseBoolean(nValue);
-
-            params.put(key, bVal);
-         }
-         else
-         {
-            throw new IllegalArgumentException("Invalid parameter type " + type);
-         }
+         params.put(key, nValue.getTextContent());
+      }
+      
+      for (Entry<String, Object> entry : params.entrySet())
+      {
+         System.out.println(entry.getKey() + "=" + entry.getValue());
       }
 
       return new TransportConfiguration(clazz, params, name);

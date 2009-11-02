@@ -35,7 +35,7 @@
         &lt;factory-class&gt;
 org.hornetq.integration.transports.netty.NettyAcceptorFactory
         &lt;/factory-class&gt;
-        &lt;param key="hornetq.remoting.netty.port" value="5446" type="Integer"/&gt;
+        &lt;param key="port" value="5446"/&gt;
     &lt;/acceptor&gt;
 &lt;/acceptors&gt;            
         </programlisting>
@@ -60,8 +60,6 @@ org.hornetq.integration.transports.netty.NettyAcceptorFactory
             passed straight through to the underlying transport.</para>
         <para>Examples of key-value pairs for a particular transport would be, say, to configure the
             IP address to bind to, or the port to listen at.</para>
-        <para>Keys are always strings and values can be of type Long, Integer, String or
-            Boolean.</para>
     </section>
     <section id="understanding.connectors">
         <title>Understanding Connectors</title>
@@ -75,7 +73,7 @@ org.hornetq.integration.transports.netty.NettyAcceptorFactory
         &lt;factory-class&gt;
             org.hornetq.integration.transports.netty.NettyConnectorFactory
         &lt;/factory-class&gt;
-        &lt;param key="hornetq.remoting.netty.port" value="5446" type="Integer"/&gt;
+        &lt;param key="port" value="5446"/&gt;
     &lt;/connector&gt;
 &lt;/connectors&gt;            
         </programlisting>
@@ -190,7 +188,7 @@ etc
                 can be used to configure Netty for simple TCP:</para>
             <itemizedlist>
                 <listitem>
-                    <para><literal>hornetq.remoting.netty.usenio</literal>. If this is <literal
+                    <para><literal>usenio</literal>. If this is <literal
                             >true</literal> then Java non blocking NIO will be used. If set to
                             <literal>false</literal> than old blocking Java IO will be used.</para>
                     <para>We highly recommend that you use non blocking Java NIO. Java NIO does not
@@ -200,7 +198,7 @@ etc
                             <literal>true</literal>.</para>
                 </listitem>
                 <listitem>
-                    <para><literal>hornetq.remoting.netty.host</literal>. This specified the host
+                    <para><literal>host</literal>. This specified the host
                         name or IP address to connect to (when configuring a connector) or to listen
                         on (when configuring an acceptor). The default value for this property is
                             <literal>localhost</literal>. When configuring acceptors, multiple hosts
@@ -218,20 +216,20 @@ etc
                     </note>
                 </listitem>
                 <listitem>
-                    <para><literal>hornetq.remoting.netty.port</literal>. This specified the port to
+                    <para><literal>port</literal>. This specified the port to
                         connect to (when configuring a connector) or to listen on (when configuring
                         an acceptor). The default value for this property is <literal
                         >5445</literal>.</para>
                 </listitem>
                 <listitem>
-                    <para><literal>hornetq.remoting.netty.tcpnodelay</literal>. If this is <literal
+                    <para><literal>tcpnodelay</literal>. If this is <literal
                             >true</literal> then <ulink
                             url="http://en.wikipedia.org/wiki/Nagle's_algorithm">Nagle's
                             algorithm</ulink> will be enabled. The default value for this property
                         is <literal>true</literal>.</para>
                 </listitem>
                 <listitem>
-                    <para><literal>hornetq.remoting.netty.tcpsendbuffersize</literal>. This
+                    <para><literal>tcpsendbuffersize</literal>. This
                         parameter determines the size of the TCP send buffer in bytes. The default
                         value for this property is <literal>32768</literal> bytes (32KiB).</para>
                     <para>TCP buffer sizes should be tuned according to the bandwidth and latency of
@@ -248,7 +246,7 @@ etc
                         defaults.</para>
                 </listitem>
                 <listitem>
-                    <para><literal>hornetq.remoting.netty.tcpreceivebuffersize</literal>. This
+                    <para><literal>tcpreceivebuffersize</literal>. This
                         parameter determines the size of the TCP receive buffer in bytes. The
                         default value for this property is <literal>32768</literal> bytes
                         (32KiB).</para>
@@ -264,24 +262,24 @@ etc
                 additional properties:</para>
             <itemizedlist>
                 <listitem>
-                    <para><literal>hornetq.remoting.netty.sslenabled</literal>. Must be <literal
+                    <para><literal>sslenabled</literal>. Must be <literal
                             >true</literal> to enable SSL.</para>
                 </listitem>
                 <listitem>
-                    <para><literal>hornetq.remoting.netty.keystorepath</literal>. This is the path
+                    <para><literal>keystorepath</literal>. This is the path
                         to the SSL key store on the client which holds the client
                         certificates.</para>
                 </listitem>
                 <listitem>
-                    <para><literal>hornetq.remoting.netty.keystorepassword</literal>. This is the
+                    <para><literal>keystorepassword</literal>. This is the
                         password for the client certificate key store on the client.</para>
                 </listitem>
                 <listitem>
-                    <para><literal>hornetq.remoting.netty.truststorepath</literal>. This is the path
+                    <para><literal>truststorepath</literal>. This is the path
                         to the trusted client certificate store on the server.</para>
                 </listitem>
                 <listitem>
-                    <para><literal>hornetq.remoting.netty.truststorepassword</literal>. This is the
+                    <para><literal>truststorepassword</literal>. This is the
                         password to the trusted client certificate store on the server.</para>
                 </listitem>
             </itemizedlist>
@@ -295,29 +293,29 @@ etc
                 properties:</para>
             <itemizedlist>
                 <listitem>
-                    <para><literal>hornetq.remoting.netty.httpenabled</literal>. Must be <literal
+                    <para><literal>httpenabled</literal>. Must be <literal
                             >true</literal> to enable HTTP.</para>
                 </listitem>
                 <listitem>
-                    <para><literal>hornetq.remoting.netty.httpclientidletime</literal>. How long a
+                    <para><literal>httpclientidletime</literal>. How long a
                         client can be idle before sending an empty http request to keep the
                         connection alive</para>
                 </listitem>
                 <listitem>
-                    <para><literal>hornetq.remoting.netty.httpclientidlescanperiod</literal>. How
+                    <para><literal>httpclientidlescanperiod</literal>. How
                         often, in milliseconds, to scan for idle clients</para>
                 </listitem>
                 <listitem>
-                    <para><literal>hornetq.remoting.netty.httpresponsetime</literal>. How long the
+                    <para><literal>httpresponsetime</literal>. How long the
                         server can wait before sending an empty http response to keep the connection
                         alive</para>
                 </listitem>
                 <listitem>
-                    <para><literal>hornetq.remoting.netty.httpserverscanperiod</literal>. How often,
+                    <para><literal>httpserverscanperiod</literal>. How often,
                         in milliseconds, to scan for clients needing responses</para>
                 </listitem>
                 <listitem>
-                    <para><literal>hornetq.remoting.netty.httprequiressessionid</literal>. If true
+                    <para><literal>httprequiressessionid</literal>. If true
                         the client will wait after the first call to receive a session id. Used the
                         http connector is connecting to servlet acceptor (not recommended) </para>
                 </listitem>
@@ -377,8 +375,8 @@ etc
          &lt;factory-class>
             org.hornetq.integration.transports.netty.NettyAcceptorFactory
          &lt;/factory-class>
-         &lt;param key="hornetq.remoting.netty.useinvm" value="true" type="Boolean"/>
-         &lt;param key="hornetq.remoting.netty.host" value="org.hornetq" type="String"/>
+         &lt;param key="useinvm" value="true"/>
+         &lt;param key="host" value="org.hornetq"/>
       &lt;/acceptor>
 
 &lt;/acceptors>                                         
@@ -393,11 +391,10 @@ etc
          &lt;factory-class>
             org.hornetq.integration.transports.netty.NettyConnectorFactory
          &lt;/factory-class>
-         &lt;param key="hornetq.remoting.netty.host" value="localhost" type="String"/>
-         &lt;param key="hornetq.remoting.netty.port" value="8080" type="Integer"/>
-         &lt;param key="hornetq.remoting.netty.useservlet" value="true" type="Boolean"/>
-         &lt;param key="hornetq.remoting.netty.servletpath" 
-            value="/messaging/HornetQServlet" type="String"/>
+         &lt;param key="host" value="localhost"/>
+         &lt;param key="port" value="8080"/>
+         &lt;param key="useservlet" value="true"/>
+         &lt;param key="servletpath" value="/messaging/HornetQServlet"/>
       &lt;/connector>
 
  &lt;/connectors></programlisting>
@@ -408,24 +405,24 @@ etc
                 <listitem>
                     <para>endpoint - This is the name of the netty acceptor that the servlet will
                         forward its packets too. You can see it matches the name of the <literal
-                            >hornetq.remoting.netty.host</literal> param.</para>
+                            >host</literal> param.</para>
                 </listitem>
             </itemizedlist>
             <para>The servlet pattern configured in the <literal>web.xml</literal> is the path of
                 the URL that is used. The connector param <literal
-                    >hornetq.remoting.netty.servletpath</literal> on the connector config must match
+                    >servletpath</literal> on the connector config must match
                 this using the application context of the web app if there is one.</para>
             <para>Its also possible to use the servlet transport over SSL. simply add the following
                 configuration to the
                 connector:<programlisting>    &lt;connector name="netty-servlet">
          &lt;factory-class>org.hornetq.integration.transports.netty.NettyConnectorFactory&lt;/factory-class>
-         &lt;param key="hornetq.remoting.netty.host" value="localhost" type="String"/>
-         &lt;param key="hornetq.remoting.netty.port" value="8443" type="Integer"/>
-         &lt;param key="hornetq.remoting.netty.useservlet" value="true" type="Boolean"/>
-         &lt;param key="hornetq.remoting.netty.servletpath" value="/messaging/HornetQServlet" type="String"/>
-         &lt;param key="hornetq.remoting.netty.sslenabled" value="true" type="Boolean"/>
-         &lt;param key="hornetq.remoting.netty.keystorepath" value="path to a keystoree" type="String"/>
-         &lt;param key="hornetq.remoting.netty.keystorepassword" value="keystore password" type="String"/>
+         &lt;param key="host" value="localhost"/>
+         &lt;param key="port" value="8443"/>
+         &lt;param key="useservlet" value="true"/>
+         &lt;param key="servletpath" value="/messaging/HornetQServlet"/>
+         &lt;param key="sslenabled" value="true"/>
+         &lt;param key="keystorepath" value="path to a keystoree"/>
+         &lt;param key="keystorepassword" value="keystore password"/>
       &lt;/connector>
 </programlisting></para>
             <para>You will also have to configure the Application server to use a KeyStore. Edit the
