@@ -138,13 +138,15 @@ public class PagingStoreImplTest extends UnitTestCase
    {
       SequentialFileFactory factory = new FakeSequentialFileFactory();
 
+      AddressSettings addressSettings = new AddressSettings();
+      addressSettings.setAddressFullMessagePolicy(AddressFullMessagePolicy.PAGE);
       PagingStore storeImpl = new PagingStoreImpl(createMockManager(),
                                                   createStorageManagerMock(),
                                                   createPostOfficeMock(),
                                                   factory,
                                                   null,
                                                   destinationTestName,
-                                                  new AddressSettings(),
+                                                  addressSettings,
                                                   executor);
 
       storeImpl.start();
@@ -216,7 +218,7 @@ public class PagingStoreImplTest extends UnitTestCase
                                       factory,
                                       null,
                                       destinationTestName,
-                                      new AddressSettings(),
+                                      addressSettings,
                                       executor);
 
       storeImpl.start();
