@@ -17,7 +17,6 @@
 <!-- permitted by applicable law.                                                  -->
 <!-- ============================================================================= -->
 <chapter id="jms-bridge">
-   <section>
         <title>The JMS Bridge</title>
         <para>HornetQ includes a fully functional JMS message bridge.</para>
         <para>The function of the bridge is to consume messages from a source queue or topic, and
@@ -417,5 +416,4 @@
                     and use a JMS Bridge between two standalone HornetQ servers.</para>
             </section>
         </section>
-    </section>
 </chapter>
