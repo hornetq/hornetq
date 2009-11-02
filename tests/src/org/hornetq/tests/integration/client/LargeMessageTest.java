@@ -35,6 +35,7 @@ import org.hornetq.core.remoting.spi.HornetQBuffer;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.Queue;
 import org.hornetq.core.settings.impl.AddressSettings;
+import org.hornetq.core.settings.impl.AddressFullMessagePolicy;
 import org.hornetq.tests.integration.largemessage.LargeMessageTestBase;
 import org.hornetq.utils.DataConstants;
 import org.hornetq.utils.SimpleString;
@@ -1965,8 +1966,12 @@ public class LargeMessageTest extends LargeMessageTestBase
 
       final int PAGE_SIZE = 10 * 1024;
 
-      server = createServer(realFiles, config, PAGE_SIZE, PAGE_MAX, new HashMap<String, AddressSettings>());
+      HashMap<String, AddressSettings> map = new HashMap<String, AddressSettings>();
 
+      AddressSettings value = new AddressSettings();
+      value.setAddressFullMessagePolicy(AddressFullMessagePolicy.PAGE);
+      map.put(ADDRESS.toString(), value);
+      server = createServer(realFiles, config, PAGE_SIZE, PAGE_MAX, map);
       server.start();
 
       final int numberOfBytes = 1024;
@@ -2026,7 +2031,7 @@ public class LargeMessageTest extends LargeMessageTestBase
          {
             server.stop();
 
-            server = createServer(true, config, PAGE_SIZE, PAGE_MAX, new HashMap<String, AddressSettings>());
+            server = createServer(true, config, PAGE_SIZE, PAGE_MAX, map);
             server.start();
 
             sf = createInVMFactory();
