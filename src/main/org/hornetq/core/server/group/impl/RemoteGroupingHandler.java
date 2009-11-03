@@ -13,10 +13,10 @@
 package org.hornetq.core.server.group.impl;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
@@ -48,7 +48,7 @@ public class RemoteGroupingHandler implements GroupingHandler
 
    private final SimpleString address;
 
-   private final Map<SimpleString, Response> responses = new HashMap<SimpleString, Response>();
+   private final Map<SimpleString, Response> responses = new ConcurrentHashMap<SimpleString, Response>();
 
    private final Lock lock = new ReentrantLock();
 
@@ -56,7 +56,7 @@ public class RemoteGroupingHandler implements GroupingHandler
 
    private final int timeout;
 
-   private final ConcurrentHashMap<SimpleString, List<SimpleString>> groupMap = new ConcurrentHashMap<SimpleString, List<SimpleString>>();
+   private final ConcurrentMap<SimpleString, List<SimpleString>> groupMap = new ConcurrentHashMap<SimpleString, List<SimpleString>>();
 
    public RemoteGroupingHandler(final ManagementService managementService,
                                 final SimpleString name,
