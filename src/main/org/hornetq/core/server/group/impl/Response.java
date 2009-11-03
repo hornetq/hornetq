@@ -27,17 +27,17 @@ public class Response
 
    private final SimpleString alternativeClusterName;
 
-   private SimpleString groupId;
+   private final SimpleString groupId;
 
-   public Response(SimpleString groupId, SimpleString clusterName)
+   public Response(final SimpleString groupId, final SimpleString clusterName)
    {
       this(groupId, clusterName, null);
    }
 
-   public Response(SimpleString groupId, SimpleString clusterName, SimpleString alternativeClusterName)
+   public Response(final SimpleString groupId, final SimpleString clusterName, final SimpleString alternativeClusterName)
    {
       this.groupId = groupId;
-      this.accepted = alternativeClusterName == null;
+      accepted = alternativeClusterName == null;
       this.clusterName = clusterName;
       this.alternativeClusterName = alternativeClusterName;
    }
@@ -59,13 +59,17 @@ public class Response
 
    public SimpleString getChosenClusterName()
    {
-      return alternativeClusterName != null? alternativeClusterName : clusterName;
+      return alternativeClusterName != null ? alternativeClusterName : clusterName;
    }
 
    @Override
    public String toString()
    {
-      return "accepted = " + accepted + " clusterName = " + clusterName + " alternativeClusterName = " + alternativeClusterName;
+      return "accepted = " + accepted +
+             " clusterName = " +
+             clusterName +
+             " alternativeClusterName = " +
+             alternativeClusterName;
    }
 
    public SimpleString getGroupId()

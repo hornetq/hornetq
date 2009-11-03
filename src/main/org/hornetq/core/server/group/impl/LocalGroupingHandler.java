@@ -36,19 +36,25 @@ public class LocalGroupingHandler implements GroupingHandler
 {
    private static Logger log = Logger.getLogger(LocalGroupingHandler.class);
 
-   private ConcurrentHashMap<SimpleString, GroupBinding> map = new ConcurrentHashMap<SimpleString, GroupBinding>();
+   private final ConcurrentHashMap<SimpleString, GroupBinding> map = new ConcurrentHashMap<SimpleString, GroupBinding>();
 
-   private ConcurrentHashMap<SimpleString, List<GroupBinding>> groupMap = new ConcurrentHashMap<SimpleString, List<GroupBinding>>();
+   private final ConcurrentHashMap<SimpleString, List<GroupBinding>> groupMap = new ConcurrentHashMap<SimpleString, List<GroupBinding>>();
 
    private final SimpleString name;
 
    private final ManagementService managementService;
 
-   private SimpleString address;
-   private StorageManager storageManager;
-   private int timeout;
+   private final SimpleString address;
 
-   public LocalGroupingHandler(final ManagementService managementService, final SimpleString name, final SimpleString address, StorageManager storageManager, int timeout)
+   private final StorageManager storageManager;
+
+   private final int timeout;
+
+   public LocalGroupingHandler(final ManagementService managementService,
+                               final SimpleString name,
+                               final SimpleString address,
+                               final StorageManager storageManager,
+                               final int timeout)
    {
       this.managementService = managementService;
       this.name = name;
@@ -62,8 +68,7 @@ public class LocalGroupingHandler implements GroupingHandler
       return name;
    }
 
-
-   public Response propose(Proposal proposal) throws Exception
+   public Response propose(final Proposal proposal) throws Exception
    {
       log.info("proposing proposal " + proposal);
       if (proposal.getClusterName() == null)
@@ -77,7 +82,7 @@ public class LocalGroupingHandler implements GroupingHandler
          groupBinding.setId(storageManager.generateUniqueID());
          List<GroupBinding> newList = new ArrayList<GroupBinding>();
          List<GroupBinding> oldList = groupMap.putIfAbsent(groupBinding.getClusterName(), newList);
-         if(oldList != null)
+         if (oldList != null)
          {
             newList = oldList;
          }
@@ -96,11 +101,11 @@ public class LocalGroupingHandler implements GroupingHandler
       }
    }
 
-   public void proposed(Response response) throws Exception
+   public void proposed(final Response response) throws Exception
    {
    }
 
-   public void send(Response response, int distance) throws Exception
+   public void send(final Response response, final int distance) throws Exception
    {
       TypedProperties props = new TypedProperties();
       props.putStringProperty(ManagementHelper.HDR_PROPOSAL_GROUP_ID, response.getGroupId());
@@ -113,35 +118,36 @@ public class LocalGroupingHandler implements GroupingHandler
       managementService.sendNotification(notification);
    }
 
-   public Response receive(Proposal proposal, int distance) throws Exception
+   public Response receive(final Proposal proposal, final int distance) throws Exception
    {
       log.trace("received proposal " + proposal);
       return propose(proposal);
    }
 
-   public void addGroupBinding(GroupBinding groupBinding)
+   public void addGroupBinding(final GroupBinding groupBinding)
    {
       map.put(groupBinding.getGroupId(), groupBinding);
       List<GroupBinding> newList = new ArrayList<GroupBinding>();
       List<GroupBinding> oldList = groupMap.putIfAbsent(groupBinding.getClusterName(), newList);
-      if(oldList != null)
+      if (oldList != null)
       {
          newList = oldList;
       }
       newList.add(groupBinding);
    }
 
-   public Response getProposal(SimpleString fullID)
+   public Response getProposal(final SimpleString fullID)
    {
       GroupBinding original = map.get(fullID);
       return original == null ? null : new Response(fullID, original.getClusterName());
    }
 
-   public void onNotification(Notification notification)
+   public void onNotification(final Notification notification)
    {
       if (notification.getType() == NotificationType.BINDING_REMOVED)
       {
-         SimpleString clusterName = (SimpleString) notification.getProperties().getProperty(ManagementHelper.HDR_CLUSTER_NAME);
+         SimpleString clusterName = (SimpleString)notification.getProperties()
+                                                              .getProperty(ManagementHelper.HDR_CLUSTER_NAME);
          List<GroupBinding> list = groupMap.remove(clusterName);
          if (list != null)
          {
@@ -164,4 +170,3 @@ public class LocalGroupingHandler implements GroupingHandler
       }
    }
 }
-

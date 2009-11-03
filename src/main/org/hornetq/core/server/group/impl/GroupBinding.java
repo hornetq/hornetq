@@ -28,13 +28,13 @@ public class GroupBinding
 
    private final SimpleString clusterName;
 
-   public GroupBinding(SimpleString groupId, SimpleString clusterName)
+   public GroupBinding(final SimpleString groupId, final SimpleString clusterName)
    {
       this.groupId = groupId;
       this.clusterName = clusterName;
    }
 
-   public GroupBinding(long id, SimpleString groupId, SimpleString clusterName)
+   public GroupBinding(final long id, final SimpleString groupId, final SimpleString clusterName)
    {
       this.id = id;
       this.groupId = groupId;
@@ -46,7 +46,7 @@ public class GroupBinding
       return id;
    }
 
-   public void setId(long id)
+   public void setId(final long id)
    {
       this.id = id;
    }

@@ -12,12 +12,11 @@
  */
 package org.hornetq.core.server.group;
 
-import org.hornetq.utils.SimpleString;
+import org.hornetq.core.management.NotificationListener;
+import org.hornetq.core.server.group.impl.GroupBinding;
 import org.hornetq.core.server.group.impl.Proposal;
 import org.hornetq.core.server.group.impl.Response;
-import org.hornetq.core.server.group.impl.GroupBinding;
-import org.hornetq.core.management.NotificationListener;
-import org.hornetq.core.management.Notification;
+import org.hornetq.utils.SimpleString;
 
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>

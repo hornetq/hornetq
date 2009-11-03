@@ -12,25 +12,25 @@
  */
 package org.hornetq.core.server.group.impl;
 
-import org.hornetq.core.management.NotificationType;
-import org.hornetq.core.management.Notification;
-import org.hornetq.core.management.ManagementService;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
+import java.util.logging.Logger;
+
 import org.hornetq.core.client.management.impl.ManagementHelper;
+import org.hornetq.core.management.ManagementService;
+import org.hornetq.core.management.Notification;
+import org.hornetq.core.management.NotificationType;
 import org.hornetq.core.postoffice.BindingType;
 import org.hornetq.core.server.group.GroupingHandler;
 import org.hornetq.utils.SimpleString;
 import org.hornetq.utils.TypedProperties;
-
-import java.util.logging.Logger;
-import java.util.Map;
-import java.util.HashMap;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
-import java.util.concurrent.locks.Condition;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * A remote Grouping handler. This will use management notifications to communicate with the node that has the Local
@@ -48,7 +48,7 @@ public class RemoteGroupingHandler implements GroupingHandler
 
    private final SimpleString address;
 
-   private Map<SimpleString, Response> responses = new HashMap<SimpleString, Response>();
+   private final Map<SimpleString, Response> responses = new HashMap<SimpleString, Response>();
 
    private final Lock lock = new ReentrantLock();
 
@@ -56,9 +56,12 @@ public class RemoteGroupingHandler implements GroupingHandler
 
    private final int timeout;
 
-   private ConcurrentHashMap<SimpleString, List<SimpleString>> groupMap = new ConcurrentHashMap<SimpleString, List<SimpleString>>();
+   private final ConcurrentHashMap<SimpleString, List<SimpleString>> groupMap = new ConcurrentHashMap<SimpleString, List<SimpleString>>();
 
-   public RemoteGroupingHandler(final ManagementService managementService, final SimpleString name, final SimpleString address, int timeout)
+   public RemoteGroupingHandler(final ManagementService managementService,
+                                final SimpleString name,
+                                final SimpleString address,
+                                final int timeout)
    {
       this.name = name;
       this.address = address;
@@ -73,9 +76,9 @@ public class RemoteGroupingHandler implements GroupingHandler
 
    public Response propose(final Proposal proposal) throws Exception
    {
-      //sanity check in case it is already selected
+      // sanity check in case it is already selected
       Response response = responses.get(proposal.getGroupId());
-      if( response != null)
+      if (response != null)
       {
          return response;
       }
@@ -111,19 +114,19 @@ public class RemoteGroupingHandler implements GroupingHandler
       {
          lock.unlock();
       }
-      if(response == null)
+      if (response == null)
       {
          throw new IllegalStateException("no response received from group handler for " + proposal.getGroupId());
       }
       return response;
    }
 
-   public Response getProposal(SimpleString fullID)
+   public Response getProposal(final SimpleString fullID)
    {
       return responses.get(fullID);
    }
 
-   public void proposed(Response response) throws Exception
+   public void proposed(final Response response) throws Exception
    {
       try
       {
@@ -131,7 +134,7 @@ public class RemoteGroupingHandler implements GroupingHandler
          responses.put(response.getGroupId(), response);
          List<SimpleString> newList = new ArrayList<SimpleString>();
          List<SimpleString> oldList = groupMap.putIfAbsent(response.getChosenClusterName(), newList);
-         if(oldList != null)
+         if (oldList != null)
          {
             newList = oldList;
          }
@@ -144,7 +147,7 @@ public class RemoteGroupingHandler implements GroupingHandler
       }
    }
 
-   public Response receive(Proposal proposal, int distance) throws Exception
+   public Response receive(final Proposal proposal, final int distance) throws Exception
    {
       TypedProperties props = new TypedProperties();
       props.putStringProperty(ManagementHelper.HDR_PROPOSAL_GROUP_ID, proposal.getGroupId());
@@ -157,29 +160,30 @@ public class RemoteGroupingHandler implements GroupingHandler
       return null;
    }
 
-   public void send(Response response, int distance) throws Exception
+   public void send(final Response response, final int distance) throws Exception
    {
-      //NO-OP
+      // NO-OP
    }
 
-   public void addGroupBinding(GroupBinding groupBinding)
+   public void addGroupBinding(final GroupBinding groupBinding)
    {
-      //NO-OP
+      // NO-OP
    }
 
-   public void onNotification(Notification notification)
+   public void onNotification(final Notification notification)
    {
-      //removing the groupid if the binding has been removed
-      if(notification.getType() == NotificationType.BINDING_REMOVED)
+      // removing the groupid if the binding has been removed
+      if (notification.getType() == NotificationType.BINDING_REMOVED)
       {
-         SimpleString clusterName = (SimpleString) notification.getProperties().getProperty(ManagementHelper.HDR_CLUSTER_NAME);
+         SimpleString clusterName = (SimpleString)notification.getProperties()
+                                                              .getProperty(ManagementHelper.HDR_CLUSTER_NAME);
          groupMap.remove(clusterName);
          List<SimpleString> list = groupMap.remove(clusterName);
          if (list != null)
          {
             for (SimpleString val : list)
             {
-               if(val != null)
+               if (val != null)
                {
                   responses.remove(val);
                }
@@ -189,4 +193,3 @@ public class RemoteGroupingHandler implements GroupingHandler
       }
    }
 }
-

@@ -31,12 +31,15 @@ public class GroupingHandlerConfiguration
 
    public static final int DEFAULT_TIMEOUT = 5000;
 
-   public GroupingHandlerConfiguration(final SimpleString name, final TYPE type, SimpleString address)
+   public GroupingHandlerConfiguration(final SimpleString name, final TYPE type, final SimpleString address)
    {
       this(name, type, address, DEFAULT_TIMEOUT);
    }
 
-   public GroupingHandlerConfiguration(final SimpleString name, final TYPE type, SimpleString address, int timeout)
+   public GroupingHandlerConfiguration(final SimpleString name,
+                                       final TYPE type,
+                                       final SimpleString address,
+                                       final int timeout)
    {
       this.type = type;
       this.name = name;
@@ -66,12 +69,11 @@ public class GroupingHandlerConfiguration
 
    public enum TYPE
    {
-      LOCAL("LOCAL"),
-      REMOTE("REMOTE");
+      LOCAL("LOCAL"), REMOTE("REMOTE");
 
       private String type;
 
-      TYPE(String type)
+      TYPE(final String type)
       {
          this.type = type;
       }

@@ -25,7 +25,7 @@ public class Proposal
 
    private final SimpleString clusterName;
 
-   public Proposal(SimpleString groupId, SimpleString clusterName)
+   public Proposal(final SimpleString groupId, final SimpleString clusterName)
    {
       this.clusterName = clusterName;
       this.groupId = groupId;
@@ -47,4 +47,3 @@ public class Proposal
       return getGroupId() + ":" + clusterName;
    }
 }
-
