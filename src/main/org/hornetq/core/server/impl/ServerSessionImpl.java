@@ -88,7 +88,6 @@ import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.LargeServerMessage;
 import org.hornetq.core.server.MessageReference;
 import org.hornetq.core.server.Queue;
-import org.hornetq.core.server.RoutingContext;
 import org.hornetq.core.server.ServerConsumer;
 import org.hornetq.core.server.ServerMessage;
 import org.hornetq.core.server.ServerSession;
@@ -166,6 +165,8 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
    private volatile LargeServerMessage currentLargeMessage;
 
    private ServerSessionPacketHandler handler;
+   
+   private boolean closed;
 
    // Constructors ---------------------------------------------------------------------------------
 
@@ -286,8 +287,6 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
          throw new IllegalStateException("Cannot find consumer with id " + consumer.getID() + " to remove");
       }
    }
-
-   private boolean closed;
 
    public synchronized void close() throws Exception
    {

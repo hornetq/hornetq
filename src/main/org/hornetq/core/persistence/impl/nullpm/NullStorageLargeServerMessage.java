@@ -153,6 +153,12 @@ public class NullStorageLargeServerMessage extends ServerMessageImpl implements 
    {
 
    }
+   
+   @Override
+   public synchronized int getEncodeSize()
+   {
+      return getHeadersAndPropertiesEncodeSize();
+   }
 
    public LargeMessageEncodingContext createNewContext()
    {

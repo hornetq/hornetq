@@ -86,7 +86,7 @@ public class ProducerFlowControlTest extends ServiceTestBase
       testFlowControl(false, 1000, 0, 10 * 1024, 1024, 1024, 1024, 1, 1, 0, false);
    }
 
-   public void testFlowControlLargeMessagesSmallWindowSize() throws Exception
+   public void testFlowControlLargerMessagesSmallWindowSize() throws Exception
    {
       testFlowControl(false, 1000, 10 * 1024, 10 * 1024, 1024, 1024, 1024, 1, 1, 0, false);
    }
@@ -141,7 +141,7 @@ public class ProducerFlowControlTest extends ServiceTestBase
       testFlowControl(true, 1000, 0, 10 * 1024, 1024, 1024, 1024, 1, 1, 0, false);
    }
 
-   public void testFlowControlLargeMessagesSmallWindowSizeNetty() throws Exception
+   public void testFlowControlLargerMessagesSmallWindowSizeNetty() throws Exception
    {
       testFlowControl(true, 1000, 10 * 1024, 10 * 1024, 1024, 1024, 1024, 1, 1, 0, false);
    }
@@ -173,11 +173,50 @@ public class ProducerFlowControlTest extends ServiceTestBase
                                 final long consumerDelay,
                                 final boolean anon) throws Exception
    {
+      testFlowControl(netty,
+                      numMessages,
+                      messageSize,
+                      maxSize,
+                      producerWindowSize,
+                      consumerWindowSize,
+                      ackBatchSize,
+                      numConsumers,
+                      numProducers,
+                      consumerDelay,
+                      anon,
+                      -1,
+                      false);
+   }
+   
+   public void testFlowControlLargeMessages() throws Exception
+   {
+      testFlowControl(true, 1000, 10000, 100 * 1024, 1024, 1024, 0, 1, 1, 0, false, 1000, true);
+   }
+   
+   public void testFlowControlLargeMessages2() throws Exception
+   {
+      testFlowControl(true, 1000, 10000, -1, 1024, 0, 0, 1, 1, 0, false, 1000, true);
+   }
+
+   private void testFlowControl(final boolean netty,
+                                final int numMessages,
+                                final int messageSize,
+                                final int maxSize,
+                                final int producerWindowSize,
+                                final int consumerWindowSize,
+                                final int ackBatchSize,
+                                final int numConsumers,
+                                final int numProducers,
+                                final long consumerDelay,
+                                final boolean anon,
+                                final int minLargeMessageSize,
+                                final boolean realFiles) throws Exception
+   {
       final SimpleString address = new SimpleString("testaddress");
 
       Configuration config = super.createDefaultConfig(netty);
 
-      HornetQServer server = createServer(false, config);
+      HornetQServer server = createServer(realFiles, config);
 
       AddressSettings addressSettings = new AddressSettings();
       addressSettings.setMaxSizeBytes(maxSize);
@@ -203,6 +242,11 @@ public class ProducerFlowControlTest extends ServiceTestBase
       sf.setConsumerWindowSize(consumerWindowSize);
       sf.setAckBatchSize(ackBatchSize);
 
+      if (minLargeMessageSize != -1)
+      {
+         sf.setMinLargeMessageSize(minLargeMessageSize);
+      }
+
       ClientSession session = sf.createSession(false, true, true, true);
 
       final String queueName = "testqueue";
@@ -212,8 +256,7 @@ public class ProducerFlowControlTest extends ServiceTestBase
          session.createQueue(address, new SimpleString(queueName + i), null, false);
       }
 
-      session.start();
-
+      
       class MyHandler implements MessageHandler
       {
          int count = 0;
@@ -226,6 +269,16 @@ public class ProducerFlowControlTest extends ServiceTestBase
          {
             try
             {
+               log.info("got message " + count);
+               
+               int availBytes = message.getBody().readableBytes();
+               
+               assertEquals(messageSize, availBytes);
+               
+               byte[] bytes = new byte[availBytes];
+               
+               message.getBody().readBytes(bytes);
+               
                message.acknowledge();
 
                if (++count == numMessages * numProducers)
@@ -253,6 +306,8 @@ public class ProducerFlowControlTest extends ServiceTestBase
       {
          handlers[i] = new MyHandler();
 
+         log.info("created consumer");
+         
          ClientConsumer consumer = session.createConsumer(new SimpleString(queueName + i));
 
          consumer.setMessageHandler(handlers[i]);
@@ -289,10 +344,16 @@ public class ProducerFlowControlTest extends ServiceTestBase
             else
             {
                producers[j].send(message);
+               
+               //log.info("sent message " + i);
             }
 
          }
       }
+      
+      log.info("sent messages");
+      
+      session.start();
 
       for (int i = 0; i < numConsumers; i++)
       {
@@ -713,7 +774,6 @@ public class ProducerFlowControlTest extends ServiceTestBase
       assertFalse(store.isExceededAvailableCredits());
 
       server.stop();
-   }     
-   
-   
+   }
+
 }

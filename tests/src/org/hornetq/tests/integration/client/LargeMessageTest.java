@@ -14,6 +14,8 @@
 package org.hornetq.tests.integration.client;
 
 import java.util.HashMap;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
@@ -26,6 +28,7 @@ import org.hornetq.core.client.ClientMessage;
 import org.hornetq.core.client.ClientProducer;
 import org.hornetq.core.client.ClientSession;
 import org.hornetq.core.client.ClientSessionFactory;
+import org.hornetq.core.client.MessageHandler;
 import org.hornetq.core.client.impl.ClientConsumerInternal;
 import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
 import org.hornetq.core.config.Configuration;
@@ -69,6 +72,256 @@ public class LargeMessageTest extends LargeMessageTestBase
    // Constructors --------------------------------------------------
 
    // Public --------------------------------------------------------
+
+//   public void testFlowControlWithSyncReceiveNettyZeroConsumerWindowSize() throws Exception
+//   {
+//      testFlowControlWithSyncReceive(true, 0);
+//   }
+//   
+//   public void testFlowControlWithSyncReceiveInVMZeroConsumerWindowSize() throws Exception
+//   {
+//      testFlowControlWithSyncReceive(false, 0);
+//   }
+//   
+//   public void testFlowControlWithSyncReceiveNettySmallConsumerWindowSize() throws Exception
+//   {
+//      testFlowControlWithSyncReceive(true, 1000);
+//   }
+//   
+//   public void testFlowControlWithSyncReceiveInVMSmallConsumerWindowSize() throws Exception
+//   {
+//      testFlowControlWithSyncReceive(false, 1000);
+//   }
+//   
+//   private void testFlowControlWithSyncReceive(final boolean netty, final int consumerWindowSize) throws Exception
+//   {      
+//      ClientSession session = null;
+//
+//      try
+//      {
+//         if (netty)
+//         {
+//            server = createServer(true, createDefaultConfig(true));
+//         }
+//         else
+//         {
+//            server = createServer(true);
+//         }
+//
+//         server.start();
+//
+//         ClientSessionFactory sf = createInVMFactory();
+//         
+//         sf.setConsumerWindowSize(consumerWindowSize);
+//         sf.setMinLargeMessageSize(1000);
+//
+//         int messageSize = 10000;
+//
+//         session = sf.createSession(false, true, true);
+//
+//         session.createTemporaryQueue(ADDRESS, ADDRESS);
+//
+//         ClientProducer producer = session.createProducer(ADDRESS);
+//
+//         final int numMessages = 1000;
+//
+//         for (int i = 0; i < numMessages; i++)
+//         {
+//            Message clientFile = createLargeClientMessage(session, messageSize, true);
+//
+//            producer.send(clientFile);
+//            
+//            log.info("Sent message " + i);
+//         }
+//
+//         ClientConsumer consumer = session.createConsumer(ADDRESS);
+//         
+//         session.start();
+//         
+//         for (int i = 0; i < numMessages; i++)
+//         {
+//            ClientMessage msg = consumer.receive(1000);
+//            
+//            int availBytes = msg.getBody().readableBytes();
+//            
+//            assertEquals(messageSize, availBytes);
+//            
+//            byte[] bytes = new byte[availBytes];
+//            
+//            msg.getBody().readBytes(bytes);
+//
+//            msg.acknowledge();
+//            
+//            log.info("Received message " + i);
+//         }
+//         
+//         session.close();
+//
+//         validateNoFilesOnLargeDir();
+//      }
+//      finally
+//      {
+//         try
+//         {
+//            server.stop();
+//         }
+//         catch (Throwable ignored)
+//         {
+//         }
+//
+//         try
+//         {
+//            session.close();
+//         }
+//         catch (Throwable ignored)
+//         {
+//         }
+//      }
+//   }
+//   
+//   public void testFlowControlWithListenerNettyZeroConsumerWindowSize() throws Exception
+//   {
+//      testFlowControlWithListener(true, 0);
+//   }
+//   
+//   public void testFlowControlWithListenerInVMZeroConsumerWindowSize() throws Exception
+//   {
+//      testFlowControlWithListener(false, 0);
+//   }
+//   
+//   public void testFlowControlWithListenerNettySmallConsumerWindowSize() throws Exception
+//   {
+//      testFlowControlWithListener(true, 1000);
+//   }
+//   
+//   public void testFlowControlWithListenerInVMSmallConsumerWindowSize() throws Exception
+//   {
+//      testFlowControlWithListener(false, 1000);
+//   }
+   
+   private void testFlowControlWithListener(final boolean netty, final int consumerWindowSize) throws Exception
+   {      
+      ClientSession session = null;
+
+      try
+      {
+         if (netty)
+         {
+            server = createServer(true, createDefaultConfig(true));
+         }
+         else
+         {
+            server = createServer(true);
+         }
+
+         server.start();
+
+         ClientSessionFactory sf;
+         
+         if (netty)
+         {
+            sf = createNettyFactory();
+         }
+         else
+         {
+            sf = createInVMFactory();
+         }
+         
+         sf.setConsumerWindowSize(consumerWindowSize);
+         sf.setMinLargeMessageSize(1000);
+
+         final int messageSize = 10000;
+
+         session = sf.createSession(false, true, true);
+
+         session.createTemporaryQueue(ADDRESS, ADDRESS);
+
+         ClientProducer producer = session.createProducer(ADDRESS);
+
+         final int numMessages = 1000;
+
+         for (int i = 0; i < numMessages; i++)
+         {
+            Message clientFile = createLargeClientMessage(session, messageSize, false);
+
+            producer.send(clientFile);
+            
+            log.info("Sent message " + i);
+         }
+
+         ClientConsumer consumer = session.createConsumer(ADDRESS);
+         
+         class MyHandler implements MessageHandler
+         {
+            int count = 0;
+
+            final CountDownLatch latch = new CountDownLatch(1);
+
+            volatile Exception exception;
+
+            public void onMessage(ClientMessage message)
+            {
+               try
+               {
+                  log.info("got message " + count);
+                  
+                  int availBytes = message.getBody().readableBytes();
+                  
+                  assertEquals(messageSize, availBytes);
+                  
+                  byte[] bytes = new byte[availBytes];
+                  
+                  message.getBody().readBytes(bytes);
+                  
+                  message.acknowledge();
+
+                  if (++count == numMessages)
+                  {
+                     latch.countDown();
+                  }
+               }
+               catch (Exception e)
+               {
+                  log.error("Failed to handle message", e);
+
+                  this.exception = e;
+               }
+            }
+         }
+         
+         MyHandler handler = new MyHandler();
+         
+         consumer.setMessageHandler(handler);
+         
+         session.start();
+         
+         handler.latch.await(10000, TimeUnit.MILLISECONDS);
+         
+         assertNull(handler.exception);
+         
+         session.close();
+
+         validateNoFilesOnLargeDir();
+      }
+      finally
+      {
+         try
+         {
+            server.stop();
+         }
+         catch (Throwable ignored)
+         {
+         }
+
+         try
+         {
+            session.close();
+         }
+         catch (Throwable ignored)
+         {
+         }
+      }
+   }
 
    public void testCloseConsumer() throws Exception
    {
@@ -437,9 +690,9 @@ public class LargeMessageTest extends LargeMessageTestBase
          consumerExpiry = session.createConsumer(ADDRESS_DLA);
 
          msg1 = consumerExpiry.receive(5000);
-         
+
          assertNotNull(msg1);
-         
+
          msg1.acknowledge();
 
          for (int i = 0; i < messageSize; i++)
@@ -545,7 +798,7 @@ public class LargeMessageTest extends LargeMessageTestBase
          consumerExpiry.close();
 
          for (int i = 0; i < 10; i++)
-         { 
+         {
             consumerExpiry = session.createConsumer(ADDRESS_DLA);
 
             msg1 = consumerExpiry.receive(5000);
@@ -1054,37 +1307,121 @@ public class LargeMessageTest extends LargeMessageTestBase
 
    public void testFilePersistenceDelayed() throws Exception
    {
-      testChunks(false, false, true, false, true, false, false, false, false, 1, LARGE_MESSAGE_SIZE, RECEIVE_WAIT_TIME, 2000);
+      testChunks(false,
+                 false,
+                 true,
+                 false,
+                 true,
+                 false,
+                 false,
+                 false,
+                 false,
+                 1,
+                 LARGE_MESSAGE_SIZE,
+                 RECEIVE_WAIT_TIME,
+                 2000);
    }
 
    public void testFilePersistenceDelayedConsumer() throws Exception
    {
-      testChunks(false, false, true, false, true, false, false, false, true, 1, LARGE_MESSAGE_SIZE, RECEIVE_WAIT_TIME, 2000);
+      testChunks(false,
+                 false,
+                 true,
+                 false,
+                 true,
+                 false,
+                 false,
+                 false,
+                 true,
+                 1,
+                 LARGE_MESSAGE_SIZE,
+                 RECEIVE_WAIT_TIME,
+                 2000);
    }
 
    public void testFilePersistenceDelayedXA() throws Exception
    {
-      testChunks(true, false, true, false, true, false, false, false, false, 1, LARGE_MESSAGE_SIZE, RECEIVE_WAIT_TIME, 2000);
+      testChunks(true,
+                 false,
+                 true,
+                 false,
+                 true,
+                 false,
+                 false,
+                 false,
+                 false,
+                 1,
+                 LARGE_MESSAGE_SIZE,
+                 RECEIVE_WAIT_TIME,
+                 2000);
    }
 
    public void testFilePersistenceDelayedXAConsumer() throws Exception
    {
-      testChunks(true, false, true, false, true, false, false, false, true, 1, LARGE_MESSAGE_SIZE, RECEIVE_WAIT_TIME, 2000);
+      testChunks(true,
+                 false,
+                 true,
+                 false,
+                 true,
+                 false,
+                 false,
+                 false,
+                 true,
+                 1,
+                 LARGE_MESSAGE_SIZE,
+                 RECEIVE_WAIT_TIME,
+                 2000);
    }
 
    public void testNullPersistence() throws Exception
    {
-      testChunks(false, false, true, false, false, false, false, true, true, 1, LARGE_MESSAGE_SIZE, RECEIVE_WAIT_TIME, 0);
+      testChunks(false,
+                 false,
+                 true,
+                 false,
+                 false,
+                 false,
+                 false,
+                 true,
+                 true,
+                 1,
+                 LARGE_MESSAGE_SIZE,
+                 RECEIVE_WAIT_TIME,
+                 0);
    }
 
    public void testNullPersistenceConsumer() throws Exception
    {
-      testChunks(false, false, true, false, false, false, false, true, true, 1, LARGE_MESSAGE_SIZE, RECEIVE_WAIT_TIME, 0);
+      testChunks(false,
+                 false,
+                 true,
+                 false,
+                 false,
+                 false,
+                 false,
+                 true,
+                 true,
+                 1,
+                 LARGE_MESSAGE_SIZE,
+                 RECEIVE_WAIT_TIME,
+                 0);
    }
 
    public void testNullPersistenceXA() throws Exception
    {
-      testChunks(true, false, true, false, false, false, false, true, false, 1, LARGE_MESSAGE_SIZE, RECEIVE_WAIT_TIME, 0);
+      testChunks(true,
+                 false,
+                 true,
+                 false,
+                 false,
+                 false,
+                 false,
+                 true,
+                 false,
+                 1,
+                 LARGE_MESSAGE_SIZE,
+                 RECEIVE_WAIT_TIME,
+                 0);
    }
 
    public void testNullPersistenceXAConsumer() throws Exception
@@ -1094,22 +1431,70 @@ public class LargeMessageTest extends LargeMessageTestBase
 
    public void testNullPersistenceDelayed() throws Exception
    {
-      testChunks(false, false, true, false, false, false, false, false, false, 100, LARGE_MESSAGE_SIZE, RECEIVE_WAIT_TIME, 100);
+      testChunks(false,
+                 false,
+                 true,
+                 false,
+                 false,
+                 false,
+                 false,
+                 false,
+                 false,
+                 100,
+                 LARGE_MESSAGE_SIZE,
+                 RECEIVE_WAIT_TIME,
+                 100);
    }
 
    public void testNullPersistenceDelayedConsumer() throws Exception
    {
-      testChunks(false, false, true, false, false, false, false, false, true, 100, LARGE_MESSAGE_SIZE, RECEIVE_WAIT_TIME, 100);
+      testChunks(false,
+                 false,
+                 true,
+                 false,
+                 false,
+                 false,
+                 false,
+                 false,
+                 true,
+                 100,
+                 LARGE_MESSAGE_SIZE,
+                 RECEIVE_WAIT_TIME,
+                 100);
    }
 
    public void testNullPersistenceDelayedXA() throws Exception
    {
-      testChunks(true, false, true, false, false, false, false, false, false, 100, LARGE_MESSAGE_SIZE, RECEIVE_WAIT_TIME, 100);
+      testChunks(true,
+                 false,
+                 true,
+                 false,
+                 false,
+                 false,
+                 false,
+                 false,
+                 false,
+                 100,
+                 LARGE_MESSAGE_SIZE,
+                 RECEIVE_WAIT_TIME,
+                 100);
    }
 
    public void testNullPersistenceDelayedXAConsumer() throws Exception
    {
-      testChunks(true, false, true, false, false, false, false, false, true, 100, LARGE_MESSAGE_SIZE, RECEIVE_WAIT_TIME, 100);
+      testChunks(true,
+                 false,
+                 true,
+                 false,
+                 false,
+                 false,
+                 false,
+                 false,
+                 true,
+                 100,
+                 LARGE_MESSAGE_SIZE,
+                 RECEIVE_WAIT_TIME,
+                 100);
    }
 
    public void testPageOnLargeMessage() throws Exception
@@ -1355,7 +1740,7 @@ public class LargeMessageTest extends LargeMessageTestBase
    {
       internalTestSendRollback(true, true);
    }
-   
+
    public void testSendRollbackXANonDurable() throws Exception
    {
       internalTestSendRollback(true, false);
@@ -1365,7 +1750,7 @@ public class LargeMessageTest extends LargeMessageTestBase
    {
       internalTestSendRollback(false, true);
    }
-   
+
    public void testSendRollbackNonDurable() throws Exception
    {
       internalTestSendRollback(false, false);
@@ -2032,7 +2417,7 @@ public class LargeMessageTest extends LargeMessageTestBase
 
             producer.send(message);
          }
-         
+
          ClientMessage clientFile = createLargeClientMessage(session, numberOfBytesBigMessage);
 
          producer.send(clientFile);

@@ -236,8 +236,19 @@ public class ClientProducerImpl implements ClientProducerInternal
       SessionSendMessage message = new SessionSendMessage(msg, sendBlocking);
       
       session.workDone();
-            
+      
+      boolean large;
+      
       if (msg.getBodyInputStream() != null || msg.getEncodeSize() >= minLargeMessageSize || msg.isLargeMessage())
+      {
+         large = true;
+      }
+      else
+      {
+         large = false;
+      }
+            
+      if (large)
       {
          sendMessageInChunks(sendBlocking, msg);
       }      
@@ -257,7 +268,17 @@ public class ClientProducerImpl implements ClientProducerInternal
          //Note, that for a large message, the encode size only includes the properties + headers
          //Not the continuations, but this is ok since we are only interested in limiting the amount of
          //data in *memory* and continuations go straight to the disk
-         theCredits.acquireCredits(msg.getEncodeSize());
+         
+         if (large)
+         {
+            //TODO this is pretty hacky - we should define consistent meanings of encode size             
+                        
+            theCredits.acquireCredits(msg.getHeadersAndPropertiesEncodeSize());
+         }
+         else
+         {         
+            theCredits.acquireCredits(msg.getEncodeSize());
+         }
       }
       catch (InterruptedException e)
       {         

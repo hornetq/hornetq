@@ -70,7 +70,6 @@ public class LocalGroupingHandler implements GroupingHandler
 
    public Response propose(final Proposal proposal) throws Exception
    {
-      log.info("proposing proposal " + proposal);
       if (proposal.getClusterName() == null)
       {
          GroupBinding original = map.get(proposal.getGroupId());

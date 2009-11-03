@@ -101,8 +101,6 @@ public class RemoteGroupingHandler implements GroupingHandler
 
          Notification notification = new Notification(null, NotificationType.PROPOSAL, props);
 
-         log.info("sending proposal " + proposal);
-
          managementService.sendNotification(notification);
 
          sendCondition.await(timeout, TimeUnit.MILLISECONDS);
