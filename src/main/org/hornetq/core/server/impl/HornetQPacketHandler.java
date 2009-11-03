@@ -15,8 +15,8 @@ package org.hornetq.core.server.impl;
 
 import static org.hornetq.core.remoting.impl.wireformat.PacketImpl.CREATESESSION;
 import static org.hornetq.core.remoting.impl.wireformat.PacketImpl.CREATE_QUEUE;
-import static org.hornetq.core.remoting.impl.wireformat.PacketImpl.REATTACH_SESSION;
 import static org.hornetq.core.remoting.impl.wireformat.PacketImpl.CREATE_REPLICATION;
+import static org.hornetq.core.remoting.impl.wireformat.PacketImpl.REATTACH_SESSION;
 
 import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.logging.Logger;
@@ -194,7 +194,7 @@ public class HornetQPacketHandler implements ChannelHandler
       {
          Channel channel = connection.getChannel(request.getSessionChannelID(), request.getWindowSize());
 
-         ReplicationEndpoint endpoint = server.createReplicationEndpoint(channel);
+         ReplicationEndpoint endpoint = server.connectToReplicationEndpoint(channel);
 
          channel.setHandler(endpoint);
 

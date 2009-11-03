@@ -29,7 +29,6 @@ import org.hornetq.core.client.ClientProducer;
 import org.hornetq.core.client.ClientSession;
 import org.hornetq.core.client.ClientSessionFactory;
 import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
-import org.hornetq.core.client.impl.FailoverManagerImpl;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.TransportConfiguration;
 import org.hornetq.core.config.cluster.BroadcastGroupConfiguration;
@@ -37,6 +36,7 @@ import org.hornetq.core.config.cluster.ClusterConnectionConfiguration;
 import org.hornetq.core.config.cluster.DiscoveryGroupConfiguration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.logging.Logger;
+import org.hornetq.core.message.impl.MessageImpl;
 import org.hornetq.core.postoffice.Binding;
 import org.hornetq.core.postoffice.Bindings;
 import org.hornetq.core.postoffice.PostOffice;
@@ -45,11 +45,10 @@ import org.hornetq.core.postoffice.impl.LocalQueueBinding;
 import org.hornetq.core.server.HornetQ;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.JournalType;
-import org.hornetq.core.server.group.impl.GroupingHandlerConfiguration;
-import org.hornetq.core.server.group.GroupingHandler;
 import org.hornetq.core.server.cluster.ClusterConnection;
 import org.hornetq.core.server.cluster.RemoteQueueBinding;
-import org.hornetq.core.message.impl.MessageImpl;
+import org.hornetq.core.server.group.GroupingHandler;
+import org.hornetq.core.server.group.impl.GroupingHandlerConfiguration;
 import org.hornetq.integration.transports.netty.TransportConstants;
 import org.hornetq.tests.util.ServiceTestBase;
 import org.hornetq.utils.Pair;
@@ -68,7 +67,7 @@ public class ClusterTestBase extends ServiceTestBase
 {
    private static final Logger log = Logger.getLogger(ClusterTestBase.class);
 
-   private static final int[] PORTS = {TransportConstants.DEFAULT_PORT,
+   private static final int[] PORTS = { TransportConstants.DEFAULT_PORT,
                                        TransportConstants.DEFAULT_PORT + 1,
                                        TransportConstants.DEFAULT_PORT + 2,
                                        TransportConstants.DEFAULT_PORT + 3,
@@ -77,8 +76,7 @@ public class ClusterTestBase extends ServiceTestBase
                                        TransportConstants.DEFAULT_PORT + 6,
                                        TransportConstants.DEFAULT_PORT + 7,
                                        TransportConstants.DEFAULT_PORT + 8,
-                                       TransportConstants.DEFAULT_PORT + 9,
-   };
+                                       TransportConstants.DEFAULT_PORT + 9, };
 
    private static final long WAIT_TIMEOUT = 10000;
 
@@ -136,7 +134,7 @@ public class ClusterTestBase extends ServiceTestBase
 
    protected HornetQServer[] servers = new HornetQServer[MAX_SERVERS];
 
-   private ClientSessionFactory[] sfs = new ClientSessionFactory[MAX_SERVERS];
+   protected ClientSessionFactory[] sfs = new ClientSessionFactory[MAX_SERVERS];
 
    protected void waitForMessages(int node, final String address, final int count) throws Exception
    {
@@ -169,11 +167,11 @@ public class ClusterTestBase extends ServiceTestBase
       }
       while (System.currentTimeMillis() - start < WAIT_TIMEOUT);
 
-      //System.out.println(threadDump(" - fired by ClusterTestBase::waitForBindings"));
+      // System.out.println(threadDump(" - fired by ClusterTestBase::waitForBindings"));
 
       throw new IllegalStateException("Timed out waiting for messages (messageCount = " + messageCount +
-            ", expecting = " +
-            count);
+                                      ", expecting = " +
+                                      count);
    }
 
    protected void waitForServerRestart(int node) throws Exception
@@ -181,7 +179,7 @@ public class ClusterTestBase extends ServiceTestBase
       long start = System.currentTimeMillis();
       do
       {
-         if(servers[node].isInitialised())
+         if (servers[node].isInitialised())
          {
             return;
          }
@@ -201,15 +199,15 @@ public class ClusterTestBase extends ServiceTestBase
                                   final int consumerCount,
                                   final boolean local) throws Exception
    {
-//      log.info("waiting for bindings on node " + node +
-//               " address " +
-//               address +
-//               " count " +
-//               count +
-//               " consumerCount " +
-//               consumerCount +
-//               " local " +
-//               local);
+      System.out.println("waiting for bindings on node " + node +
+                         " address " +
+                         address +
+                         " count " +
+                         count +
+                         " consumerCount " +
+                         consumerCount +
+                         " local " +
+                         local);
       HornetQServer server = this.servers[node];
 
       if (server == null)
@@ -237,7 +235,7 @@ public class ClusterTestBase extends ServiceTestBase
          {
             if ((binding instanceof LocalQueueBinding && local) || (binding instanceof RemoteQueueBinding && !local))
             {
-               QueueBinding qBinding = (QueueBinding) binding;
+               QueueBinding qBinding = (QueueBinding)binding;
 
                bindingCount++;
 
@@ -245,7 +243,7 @@ public class ClusterTestBase extends ServiceTestBase
             }
          }
 
-         //log.info(node + " binding count " + bindingCount + " consumer Count " + totConsumers);
+         // log.info(node + " binding count " + bindingCount + " consumer Count " + totConsumers);
 
          if (bindingCount == count && totConsumers == consumerCount)
          {
@@ -260,8 +258,8 @@ public class ClusterTestBase extends ServiceTestBase
       // System.out.println(threadDump(" - fired by ClusterTestBase::waitForBindings"));
 
       String msg = "Timed out waiting for bindings (bindingCount = " + bindingCount +
-            ", totConsumers = " +
-            totConsumers;
+                   ", totConsumers = " +
+                   totConsumers;
 
       log.error(msg);
 
@@ -438,12 +436,23 @@ public class ClusterTestBase extends ServiceTestBase
       session.close();
    }
 
-   protected void sendWithProperty(int node, String address, int numMessages, boolean durable, SimpleString key, SimpleString val) throws Exception
+   protected void sendWithProperty(int node,
+                                   String address,
+                                   int numMessages,
+                                   boolean durable,
+                                   SimpleString key,
+                                   SimpleString val) throws Exception
    {
       sendInRange(node, address, 0, numMessages, durable, key, val);
    }
 
-   protected void sendInRange(int node, String address, int msgStart, int msgEnd, boolean durable, SimpleString key, SimpleString val) throws Exception
+   protected void sendInRange(int node,
+                              String address,
+                              int msgStart,
+                              int msgEnd,
+                              boolean durable,
+                              SimpleString key,
+                              SimpleString val) throws Exception
    {
       ClientSessionFactory sf = this.sfs[node];
 
@@ -475,8 +484,11 @@ public class ClusterTestBase extends ServiceTestBase
 
    protected void setUpGroupHandler(GroupingHandlerConfiguration.TYPE type, int node, int timeout)
    {
-      this.servers[node].getConfiguration().setGroupingHandlerConfiguration(
-            new GroupingHandlerConfiguration(new SimpleString("grouparbitrator"), type, new SimpleString("queues"), timeout));
+      this.servers[node].getConfiguration()
+                        .setGroupingHandlerConfiguration(new GroupingHandlerConfiguration(new SimpleString("grouparbitrator"),
+                                                                                          type,
+                                                                                          new SimpleString("queues"),
+                                                                                          timeout));
    }
 
    protected void setUpGroupHandler(GroupingHandler groupingHandler, int node)
@@ -499,17 +511,12 @@ public class ClusterTestBase extends ServiceTestBase
       verifyReceiveAllInRangeNotBefore(false, -1, msgStart, msgEnd, consumerIDs);
    }
 
-   protected void verifyReceiveAllWithGroupIDRoundRobin(
-         int msgStart,
-         int msgEnd,
-         int... consumerIDs) throws Exception
+   protected void verifyReceiveAllWithGroupIDRoundRobin(int msgStart, int msgEnd, int... consumerIDs) throws Exception
    {
       verifyReceiveAllWithGroupIDRoundRobin(true, -1, msgStart, msgEnd, consumerIDs);
    }
 
-   protected int verifyReceiveAllOnSingleConsumer(int msgStart,
-                                                  int msgEnd,
-                                                  int... consumerIDs) throws Exception
+   protected int verifyReceiveAllOnSingleConsumer(int msgStart, int msgEnd, int... consumerIDs) throws Exception
    {
       return verifyReceiveAllOnSingleConsumer(true, msgStart, msgEnd, consumerIDs);
    }
@@ -553,7 +560,7 @@ public class ClusterTestBase extends ServiceTestBase
                assertTrue("Message received too soon", System.currentTimeMillis() >= firstReceiveTime);
             }
 
-            SimpleString id = (SimpleString) message.getProperty(MessageImpl.HDR_GROUP_ID);
+            SimpleString id = (SimpleString)message.getProperty(MessageImpl.HDR_GROUP_ID);
             System.out.println("received " + id + " on consumer " + consumerIDs[i]);
             if (groupIdsReceived.get(id) == null)
             {
@@ -561,20 +568,20 @@ public class ClusterTestBase extends ServiceTestBase
             }
             else if (groupIdsReceived.get(id) != i)
             {
-               fail("consumer " + groupIdsReceived.get(id) + " already bound to groupid " + id + " received on consumer " + i);
+               fail("consumer " + groupIdsReceived.get(id) +
+                    " already bound to groupid " +
+                    id +
+                    " received on consumer " +
+                    i);
             }
 
          }
 
       }
 
-
    }
 
-   protected int verifyReceiveAllOnSingleConsumer(boolean ack,
-                                                  int msgStart,
-                                                  int msgEnd,
-                                                  int... consumerIDs) throws Exception
+   protected int verifyReceiveAllOnSingleConsumer(boolean ack, int msgStart, int msgEnd, int... consumerIDs) throws Exception
    {
       int groupIdsReceived = -1;
       for (int i = 0; i < consumerIDs.length; i++)
@@ -649,7 +656,7 @@ public class ClusterTestBase extends ServiceTestBase
                assertTrue("Message received too soon", System.currentTimeMillis() >= firstReceiveTime);
             }
 
-            if (j != (Integer) (message.getProperty(COUNT_PROP)))
+            if (j != (Integer)(message.getProperty(COUNT_PROP)))
             {
                outOfOrder = true;
                System.out.println("Message j=" + j + " was received out of order = " + message.getProperty(COUNT_PROP));
@@ -707,8 +714,8 @@ public class ClusterTestBase extends ServiceTestBase
             if (message != null)
             {
                log.info("check receive Consumer " + consumerIDs[i] +
-                     " received message " +
-                     message.getProperty(COUNT_PROP));
+                        " received message " +
+                        message.getProperty(COUNT_PROP));
             }
             else
             {
@@ -779,7 +786,7 @@ public class ClusterTestBase extends ServiceTestBase
 
             if (message != null)
             {
-               int count = (Integer) message.getProperty(COUNT_PROP);
+               int count = (Integer)message.getProperty(COUNT_PROP);
 
                Integer prevCount = countMap.get(i);
 
@@ -799,7 +806,7 @@ public class ClusterTestBase extends ServiceTestBase
                   message.acknowledge();
                }
 
-               //log.info("consumer " + consumerIDs[i] +" returns " + count);
+               // log.info("consumer " + consumerIDs[i] +" returns " + count);
             }
             else
             {
@@ -841,7 +848,7 @@ public class ClusterTestBase extends ServiceTestBase
 
             if (message != null)
             {
-               int count = (Integer) message.getProperty(COUNT_PROP);
+               int count = (Integer)message.getProperty(COUNT_PROP);
 
                // log.info("consumer " + consumerIDs[i] + " received message " + count);
 
@@ -889,7 +896,7 @@ public class ClusterTestBase extends ServiceTestBase
 
          assertNotNull(list);
 
-         int elem = (Integer) list.poll();
+         int elem = (Integer)list.poll();
 
          assertEquals(messageCounts[i], elem);
 
@@ -929,7 +936,7 @@ public class ClusterTestBase extends ServiceTestBase
 
          if (message != null)
          {
-            int count = (Integer) message.getProperty(COUNT_PROP);
+            int count = (Integer)message.getProperty(COUNT_PROP);
 
             ints.add(count);
          }
@@ -1011,17 +1018,20 @@ public class ClusterTestBase extends ServiceTestBase
          serverTotc = new TransportConfiguration(INVM_CONNECTOR_FACTORY, params);
       }
 
-      Map<String, Object> backupParams = generateParams(backupNode, netty);
+      TransportConfiguration serverBackuptc = null;
 
-      TransportConfiguration serverBackuptc;
+      if (backupNode != -1)
+      {
+         Map<String, Object> backupParams = generateParams(backupNode, netty);
 
-      if (netty)
-      {
-         serverBackuptc = new TransportConfiguration(NETTY_CONNECTOR_FACTORY, backupParams);
-      }
-      else
-      {
-         serverBackuptc = new TransportConfiguration(INVM_CONNECTOR_FACTORY, backupParams);
+         if (netty)
+         {
+            serverBackuptc = new TransportConfiguration(NETTY_CONNECTOR_FACTORY, backupParams);
+         }
+         else
+         {
+            serverBackuptc = new TransportConfiguration(INVM_CONNECTOR_FACTORY, backupParams);
+         }
       }
 
       ClientSessionFactory sf = new ClientSessionFactoryImpl(serverTotc, serverBackuptc);
@@ -1068,6 +1078,16 @@ public class ClusterTestBase extends ServiceTestBase
 
    protected void setupServer(int node, boolean fileStorage, boolean netty, boolean backup, int backupNode)
    {
+      setupServer(node, fileStorage, true, netty, backup, backupNode);
+   }
+
+   protected void setupServer(int node,
+                              boolean fileStorage,
+                              boolean sharedStorage,
+                              boolean netty,
+                              boolean backup,
+                              int backupNode)
+   {
       if (servers[node] != null)
       {
          throw new IllegalArgumentException("Already a server at node " + node);
@@ -1076,15 +1096,28 @@ public class ClusterTestBase extends ServiceTestBase
       Configuration configuration = new ConfigurationImpl();
 
       configuration.setSecurityEnabled(false);
-      configuration.setBindingsDirectory(getBindingsDir(node, backup));
       configuration.setJournalMinFiles(2);
       configuration.setJournalMaxAIO(1000);
-      configuration.setJournalDirectory(getJournalDir(node, backup));
       configuration.setJournalFileSize(100 * 1024);
       configuration.setJournalType(JournalType.ASYNCIO);
       configuration.setJournalMaxAIO(1000);
-      configuration.setPagingDirectory(getPageDir(node, backup));
-      configuration.setLargeMessagesDirectory(getLargeMessagesDir(node, backup));
+      configuration.setSharedStore(sharedStorage);
+      if (sharedStorage)
+      {
+         // Shared storage will share the node between the backup and live node
+         int nodeDirectoryToUse = backupNode == -1 ? node : backupNode;
+         configuration.setBindingsDirectory(getBindingsDir(nodeDirectoryToUse, false));
+         configuration.setJournalDirectory(getJournalDir(nodeDirectoryToUse, false));
+         configuration.setPagingDirectory(getPageDir(nodeDirectoryToUse, false));
+         configuration.setLargeMessagesDirectory(getLargeMessagesDir(nodeDirectoryToUse, false));
+      }
+      else
+      {
+         configuration.setBindingsDirectory(getBindingsDir(node, backup));
+         configuration.setJournalDirectory(getJournalDir(node, backup));
+         configuration.setPagingDirectory(getPageDir(node, backup));
+         configuration.setLargeMessagesDirectory(getLargeMessagesDir(node, backup));
+      }
       configuration.setClustered(true);
       configuration.setJournalCompactMinFiles(0);
       configuration.setBackup(backup);
@@ -1141,7 +1174,6 @@ public class ClusterTestBase extends ServiceTestBase
       servers[node] = server;
    }
 
-  
    protected void setupServerWithDiscovery(int node,
                                            String groupAddress,
                                            int port,
@@ -1238,21 +1270,21 @@ public class ClusterTestBase extends ServiceTestBase
          configuration.getConnectorConfigurations().put(nettytc_c.getName(), nettytc_c);
 
          connectorPairs.add(new Pair<String, String>(nettytc_c.getName(),
-               nettyBackuptc == null ? null : nettyBackuptc.getName()));
+                                                     nettyBackuptc == null ? null : nettyBackuptc.getName()));
       }
       else
       {
          connectorPairs.add(new Pair<String, String>(invmtc_c.getName(), invmBackuptc == null ? null
-               : invmBackuptc.getName()));
+                                                                                             : invmBackuptc.getName()));
       }
 
       BroadcastGroupConfiguration bcConfig = new BroadcastGroupConfiguration("bg1",
-            null,
-            -1,
-            groupAddress,
-            port,
-            250,
-            connectorPairs);
+                                                                             null,
+                                                                             -1,
+                                                                             groupAddress,
+                                                                             port,
+                                                                             250,
+                                                                             connectorPairs);
 
       configuration.getBroadcastGroupConfigurations().add(bcConfig);
 
@@ -1280,7 +1312,7 @@ public class ClusterTestBase extends ServiceTestBase
       if (netty)
       {
          params.put(org.hornetq.integration.transports.netty.TransportConstants.PORT_PROP_NAME,
-               org.hornetq.integration.transports.netty.TransportConstants.DEFAULT_PORT + node);
+                    org.hornetq.integration.transports.netty.TransportConstants.DEFAULT_PORT + node);
       }
       else
       {
@@ -1351,12 +1383,12 @@ public class ClusterTestBase extends ServiceTestBase
       pairs.add(connectorPair);
 
       ClusterConnectionConfiguration clusterConf = new ClusterConnectionConfiguration(name,
-            address,
-            100,
-            true,
-            forwardWhenNoConsumers,
-            maxHops,
-            pairs);
+                                                                                      address,
+                                                                                      100,
+                                                                                      true,
+                                                                                      forwardWhenNoConsumers,
+                                                                                      maxHops,
+                                                                                      pairs);
       serverFrom.getConfiguration().getClusterConfigurations().add(clusterConf);
    }
 
@@ -1402,12 +1434,12 @@ public class ClusterTestBase extends ServiceTestBase
       }
 
       ClusterConnectionConfiguration clusterConf = new ClusterConnectionConfiguration(name,
-            address,
-            250,
-            true,
-            forwardWhenNoConsumers,
-            maxHops,
-            pairs);
+                                                                                      address,
+                                                                                      250,
+                                                                                      true,
+                                                                                      forwardWhenNoConsumers,
+                                                                                      maxHops,
+                                                                                      pairs);
 
       serverFrom.getConfiguration().getClusterConfigurations().add(clusterConf);
    }
@@ -1466,18 +1498,16 @@ public class ClusterTestBase extends ServiceTestBase
 
          Pair<String, String> connectorPair = new Pair<String, String>(serverTotc.getName(), serverBackupTotc.getName());
 
-         // Pair<String, String> connectorPair = new Pair<String, String>(serverTotc.getName(), null);
-
          pairs.add(connectorPair);
       }
 
       ClusterConnectionConfiguration clusterConf = new ClusterConnectionConfiguration(name,
-            address,
-            250,
-            true,
-            forwardWhenNoConsumers,
-            maxHops,
-            pairs);
+                                                                                      address,
+                                                                                      250,
+                                                                                      true,
+                                                                                      forwardWhenNoConsumers,
+                                                                                      maxHops,
+                                                                                      pairs);
 
       serverFrom.getConfiguration().getClusterConfigurations().add(clusterConf);
    }
@@ -1498,12 +1528,12 @@ public class ClusterTestBase extends ServiceTestBase
       }
 
       ClusterConnectionConfiguration clusterConf = new ClusterConnectionConfiguration(name,
-            address,
-            100,
-            true,
-            forwardWhenNoConsumers,
-            maxHops,
-            discoveryGroupName);
+                                                                                      address,
+                                                                                      100,
+                                                                                      true,
+                                                                                      forwardWhenNoConsumers,
+                                                                                      maxHops,
+                                                                                      discoveryGroupName);
       List<ClusterConnectionConfiguration> clusterConfs = server.getConfiguration().getClusterConfigurations();
 
       clusterConfs.add(clusterConf);

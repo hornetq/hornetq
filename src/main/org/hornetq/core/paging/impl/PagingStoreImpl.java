@@ -40,7 +40,6 @@ import org.hornetq.core.postoffice.PostOffice;
 import org.hornetq.core.server.LargeServerMessage;
 import org.hornetq.core.server.MessageReference;
 import org.hornetq.core.server.ServerMessage;
-import org.hornetq.core.server.impl.RoutingContextImpl;
 import org.hornetq.core.server.impl.ServerProducerCreditManager;
 import org.hornetq.core.server.impl.ServerProducerCreditManagerImpl;
 import org.hornetq.core.settings.impl.AddressFullMessagePolicy;
@@ -971,6 +970,9 @@ public class PagingStoreImpl implements TestSupportPageStore
       }
 
       depageTransaction.commit();
+      
+      // StorageManager does the check: if (replicated) -> do the proper cleanup already 
+      storageManager.completeReplication();
 
       if (isTrace)
       {

@@ -37,6 +37,7 @@ import org.hornetq.core.config.TransportConfiguration;
 import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.journal.EncodingSupport;
 import org.hornetq.core.journal.Journal;
+import org.hornetq.core.journal.JournalLoadInformation;
 import org.hornetq.core.journal.LoaderCallback;
 import org.hornetq.core.journal.PreparedTransactionInfo;
 import org.hornetq.core.journal.RecordInfo;
@@ -107,9 +108,91 @@ public class ReplicationTest extends ServiceTestBase
 
       try
       {
-         ReplicationManagerImpl manager = new ReplicationManagerImpl(failoverManager, executor);
+         ReplicationManagerImpl manager = new ReplicationManagerImpl(failoverManager,
+                                                                     executor);
          manager.start();
          manager.stop();
+      }
+      finally
+      {
+         server.stop();
+      }
+   }
+
+   public void testInvalidJournal() throws Exception
+   {
+
+      Configuration config = createDefaultConfig(false);
+
+      config.setBackup(true);
+
+      HornetQServer server = new HornetQServerImpl(config);
+
+      FailoverManager failoverManager = createFailoverManager();
+
+      server.start();
+
+      try
+      {
+         ReplicationManagerImpl manager = new ReplicationManagerImpl(failoverManager,
+                                                                     executor);
+         manager.start();
+         try
+         {
+            manager.compareJournals(new JournalLoadInformation[]{new JournalLoadInformation(2,2), new JournalLoadInformation(2,2)});
+            fail("Exception was expected");
+         }
+         catch (HornetQException e)
+         {
+            e.printStackTrace();
+            assertEquals(HornetQException.ILLEGAL_STATE, e.getCode());
+         }
+
+         manager.compareJournals(new JournalLoadInformation[]{new JournalLoadInformation(), new JournalLoadInformation()});
+
+         manager.stop();
+      }
+      finally
+      {
+         server.stop();
+      }
+   }
+
+   // should throw an exception if a second server connects to the same backup
+   public void testInvalidConnection() throws Exception
+   {
+
+      Configuration config = createDefaultConfig(false);
+
+      config.setBackup(true);
+
+      HornetQServer server = new HornetQServerImpl(config);
+
+      FailoverManager failoverManager = createFailoverManager();
+
+      server.start();
+
+      try
+      {
+         ReplicationManagerImpl manager = new ReplicationManagerImpl(failoverManager,
+                                                                     executor);
+
+         manager.start();
+
+         try
+         {
+            ReplicationManagerImpl manager2 = new ReplicationManagerImpl(failoverManager,
+                                                                         executor);
+
+            manager2.start();
+            fail("Exception was expected");
+         }
+         catch (Exception e)
+         {
+         }
+
+         manager.stop();
+
       }
       finally
       {
@@ -132,7 +215,8 @@ public class ReplicationTest extends ServiceTestBase
 
       try
       {
-         ReplicationManagerImpl manager = new ReplicationManagerImpl(failoverManager, executor);
+         ReplicationManagerImpl manager = new ReplicationManagerImpl(failoverManager,
+                                                                     executor);
 
          try
          {
@@ -166,7 +250,8 @@ public class ReplicationTest extends ServiceTestBase
 
       try
       {
-         ReplicationManagerImpl manager = new ReplicationManagerImpl(failoverManager, executor);
+         ReplicationManagerImpl manager = new ReplicationManagerImpl(failoverManager,
+                                                                     executor);
          manager.start();
 
          Journal replicatedJournal = new ReplicatedJournal((byte)1, new FakeJournal(), manager);
@@ -184,11 +269,9 @@ public class ReplicationTest extends ServiceTestBase
          replicatedJournal.appendPrepareRecord(3, new FakeData(), false);
          replicatedJournal.appendRollbackRecord(3, false);
 
-         blockOnReplication(manager);
-
          assertEquals(1, manager.getActiveTokens().size());
 
-         manager.closeContext();
+         blockOnReplication(manager);
 
          for (int i = 0; i < 100; i++)
          {
@@ -272,11 +355,11 @@ public class ReplicationTest extends ServiceTestBase
       config.setBackup(true);
 
       ArrayList<String> intercepts = new ArrayList<String>();
-      
+
       intercepts.add(TestInterceptor.class.getName());
-      
+
       config.setInterceptorClassNames(intercepts);
-      
+
       HornetQServer server = new HornetQServerImpl(config);
 
       server.start();
@@ -285,7 +368,8 @@ public class ReplicationTest extends ServiceTestBase
 
       try
       {
-         ReplicationManagerImpl manager = new ReplicationManagerImpl(failoverManager, executor);
+         ReplicationManagerImpl manager = new ReplicationManagerImpl(failoverManager,
+                                                                      executor);
          manager.start();
 
          Journal replicatedJournal = new ReplicatedJournal((byte)1, new FakeJournal(), manager);
@@ -308,7 +392,7 @@ public class ReplicationTest extends ServiceTestBase
          });
 
          manager.closeContext();
-         
+
          server.stop();
 
          assertTrue(latch.await(50, TimeUnit.SECONDS));
@@ -336,7 +420,26 @@ public class ReplicationTest extends ServiceTestBase
 
       });
 
+      manager.closeContext();
+
       assertTrue(latch.await(30, TimeUnit.SECONDS));
+   }
+
+   public void testNoServer() throws Exception
+   {
+      FailoverManager failoverManager = createFailoverManager();
+
+      try
+      {
+         ReplicationManagerImpl manager = new ReplicationManagerImpl(failoverManager,
+                                                                     executor);
+         manager.start();
+         fail("Exception expected");
+      }
+      catch (HornetQException expected)
+      {
+         assertEquals(HornetQException.ILLEGAL_STATE, expected.getCode());
+      }
    }
 
    public void testNoActions() throws Exception
@@ -354,7 +457,8 @@ public class ReplicationTest extends ServiceTestBase
 
       try
       {
-         ReplicationManagerImpl manager = new ReplicationManagerImpl(failoverManager, executor);
+         ReplicationManagerImpl manager = new ReplicationManagerImpl(failoverManager,
+                                                                     executor);
          manager.start();
 
          Journal replicatedJournal = new ReplicatedJournal((byte)1, new FakeJournal(), manager);
@@ -371,10 +475,12 @@ public class ReplicationTest extends ServiceTestBase
             }
 
          });
-         assertTrue(latch.await(1, TimeUnit.SECONDS));
+
          assertEquals(1, manager.getActiveTokens().size());
 
          manager.closeContext();
+
+         assertTrue(latch.await(1, TimeUnit.SECONDS));
 
          for (int i = 0; i < 100; i++)
          {
@@ -504,7 +610,6 @@ public class ReplicationTest extends ServiceTestBase
       }
 
    };
-
 
    static class FakeJournal implements Journal
    {
@@ -649,21 +754,21 @@ public class ReplicationTest extends ServiceTestBase
       /* (non-Javadoc)
        * @see org.hornetq.core.journal.Journal#load(org.hornetq.core.journal.LoaderCallback)
        */
-      public long load(LoaderCallback reloadManager) throws Exception
+      public JournalLoadInformation load(LoaderCallback reloadManager) throws Exception
       {
 
-         return 0;
+         return new JournalLoadInformation();
       }
 
       /* (non-Javadoc)
        * @see org.hornetq.core.journal.Journal#load(java.util.List, java.util.List, org.hornetq.core.journal.TransactionFailureCallback)
        */
-      public long load(List<RecordInfo> committedRecords,
-                       List<PreparedTransactionInfo> preparedTransactions,
-                       TransactionFailureCallback transactionFailure) throws Exception
+      public JournalLoadInformation load(List<RecordInfo> committedRecords,
+                                         List<PreparedTransactionInfo> preparedTransactions,
+                                         TransactionFailureCallback transactionFailure) throws Exception
       {
 
-         return 0;
+         return new JournalLoadInformation();
       }
 
       /* (non-Javadoc)
@@ -697,6 +802,22 @@ public class ReplicationTest extends ServiceTestBase
       public void stop() throws Exception
       {
 
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.journal.Journal#loadInternalOnly()
+       */
+      public JournalLoadInformation loadInternalOnly() throws Exception
+      {
+         return new JournalLoadInformation();
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.journal.Journal#getNumberOfRecords()
+       */
+      public int getNumberOfRecords()
+      {
+         return 0;
       }
 
    }

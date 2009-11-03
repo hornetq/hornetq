@@ -50,6 +50,7 @@ import org.hornetq.core.deployers.impl.SecurityDeployer;
 import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.filter.Filter;
 import org.hornetq.core.filter.impl.FilterImpl;
+import org.hornetq.core.journal.JournalLoadInformation;
 import org.hornetq.core.journal.impl.SyncSpeedTest;
 import org.hornetq.core.logging.LogDelegateFactory;
 import org.hornetq.core.logging.Logger;
@@ -267,12 +268,13 @@ public class HornetQServerImpl implements HornetQServer
    {
       initialiseLogging();
 
-      log.info((configuration.isBackup() ? "backup" : "live") + " server is starting..");
-
       if (started)
       {
+         log.info((configuration.isBackup() ? "backup" : "live") + " is already started, ignoring the call to start..");
          return;
       }
+
+      log.info((configuration.isBackup() ? "backup" : "live") + " server is starting..");
 
       if (configuration.isRunSyncSpeedTest())
       {
@@ -285,6 +287,11 @@ public class HornetQServerImpl implements HornetQServer
 
       if (configuration.isBackup())
       {
+         if (!configuration.isSharedStore())
+         {
+            this.replicationEndpoint = new ReplicationEndpointImpl(this);
+            this.replicationEndpoint.start();
+         }
          // We defer actually initialisation until the live node has contacted the backup
          log.info("Backup server initialised");
       }
@@ -658,19 +665,20 @@ public class HornetQServerImpl implements HornetQServer
       return new CreateSessionResponseMessage(version.getIncrementingVersion());
    }
 
-   public synchronized ReplicationEndpoint createReplicationEndpoint(final Channel channel) throws Exception
+   public synchronized ReplicationEndpoint connectToReplicationEndpoint(final Channel channel) throws Exception
    {
       if (!configuration.isBackup())
       {
          throw new HornetQException(HornetQException.ILLEGAL_STATE, "Connected server is not a backup server");
       }
 
-      if (replicationEndpoint == null)
+      if (replicationEndpoint.getChannel() != null)
       {
-         replicationEndpoint = new ReplicationEndpointImpl(this);
-         replicationEndpoint.setChannel(channel);
-         replicationEndpoint.start();
+         throw new HornetQException(HornetQException.ILLEGAL_STATE, "Backup replication server is already connected to another server");
       }
+      
+      replicationEndpoint.setChannel(channel);
+      
 
       return replicationEndpoint;
    }
@@ -891,7 +899,7 @@ public class HornetQServerImpl implements HornetQServer
    {
       String backupConnectorName = configuration.getBackupConnectorName();
 
-      if (backupConnectorName != null)
+      if (!configuration.isSharedStore() && backupConnectorName != null)
       {
          TransportConfiguration backupConnector = configuration.getConnectorConfigurations().get(backupConnectorName);
 
@@ -1086,8 +1094,12 @@ public class HornetQServerImpl implements HornetQServer
          }
       }
       deployGroupingHandlerConfiguration(configuration.getGroupingHandlerConfiguration());
+      
       // Load the journal and populate queues, transactions and caches in memory
-      loadJournal();
+      JournalLoadInformation[] journalInfo = loadJournals();
+      
+      compareJournals(journalInfo);
+
 
       // Deploy any queues in the Configuration class - if there's no file deployment we still need
       // to load those
@@ -1149,6 +1161,17 @@ public class HornetQServerImpl implements HornetQServer
       initialised = true;
    }
 
+   /**
+    * @param journalInfo
+    */
+   private void compareJournals(JournalLoadInformation[] journalInfo) throws Exception
+   {
+      if (replicationManager != null)
+      {
+         replicationManager.compareJournals(journalInfo);
+      }
+   }
+
    private void deployQueuesFromConfiguration() throws Exception
    {
       for (QueueConfiguration config : configuration.getQueueConfigurations())
@@ -1160,13 +1183,15 @@ public class HornetQServerImpl implements HornetQServer
       }
    }
 
-   private void loadJournal() throws Exception
+   private JournalLoadInformation[] loadJournals() throws Exception
    {
+      JournalLoadInformation[] journalInfo = new JournalLoadInformation[2];
+      
       List<QueueBindingInfo> queueBindingInfos = new ArrayList<QueueBindingInfo>();
 
       List<GroupingInfo> groupingInfos = new ArrayList<GroupingInfo>();
 
-      storageManager.loadBindingJournal(queueBindingInfos, groupingInfos);
+      journalInfo[0] = storageManager.loadBindingJournal(queueBindingInfos, groupingInfos);
 
       // Set the node id - must be before we load the queues into the postoffice, but after we load the journal
       setNodeID();
@@ -1206,7 +1231,7 @@ public class HornetQServerImpl implements HornetQServer
 
       Map<SimpleString, List<Pair<byte[], Long>>> duplicateIDMap = new HashMap<SimpleString, List<Pair<byte[], Long>>>();
 
-      storageManager.loadMessageJournal(postOffice, pagingManager, resourceManager, queues, duplicateIDMap);
+      journalInfo[1] = storageManager.loadMessageJournal(postOffice, pagingManager, resourceManager, queues, duplicateIDMap);
 
       for (Map.Entry<SimpleString, List<Pair<byte[], Long>>> entry : duplicateIDMap.entrySet())
       {
@@ -1219,6 +1244,8 @@ public class HornetQServerImpl implements HornetQServer
             cache.load(entry.getValue());
          }
       }
+      
+      return journalInfo;
    }
 
    private void setNodeID() throws Exception

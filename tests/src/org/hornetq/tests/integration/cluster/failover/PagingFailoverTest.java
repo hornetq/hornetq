@@ -135,7 +135,7 @@ public class PagingFailoverTest extends FailoverTestBase
 
          for (int i = 0; i < MIDDLE; i++)
          {
-            ClientMessage msg = cons.receive(10000);
+            ClientMessage msg = cons.receive(20000);
             assertNotNull(msg);
             msg.acknowledge();
             if (transacted && i % 10 == 0)

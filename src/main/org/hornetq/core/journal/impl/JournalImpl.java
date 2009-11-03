@@ -36,6 +36,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -44,6 +45,7 @@ import org.hornetq.core.buffers.ChannelBuffer;
 import org.hornetq.core.buffers.ChannelBuffers;
 import org.hornetq.core.journal.EncodingSupport;
 import org.hornetq.core.journal.IOCallback;
+import org.hornetq.core.journal.JournalLoadInformation;
 import org.hornetq.core.journal.LoaderCallback;
 import org.hornetq.core.journal.PreparedTransactionInfo;
 import org.hornetq.core.journal.RecordInfo;
@@ -1163,7 +1165,7 @@ public class JournalImpl implements TestableJournal
    {
       appendDeleteRecordTransactional(txID, id, NullEncoding.instance);
    }
-   
+
    /* (non-Javadoc)
     * @see org.hornetq.core.journal.Journal#appendPrepareRecord(long, byte[], boolean)
     */
@@ -1171,8 +1173,6 @@ public class JournalImpl implements TestableJournal
    {
       appendPrepareRecord(txID, new ByteArrayEncoding(transactionData), sync);
    }
-
-
 
    /** 
     * 
@@ -1360,19 +1360,48 @@ public class JournalImpl implements TestableJournal
       return fileFactory.getAlignment();
    }
 
+   public synchronized JournalLoadInformation loadInternalOnly() throws Exception
+   {
+      LoaderCallback dummyLoader = new LoaderCallback()
+      {
+
+         public void failedTransaction(long transactionID, List<RecordInfo> records, List<RecordInfo> recordsToDelete)
+         {
+         }
+
+         public void updateRecord(RecordInfo info)
+         {
+         }
+
+         public void deleteRecord(long id)
+         {
+         }
+
+         public void addRecord(RecordInfo info)
+         {
+         }
+
+         public void addPreparedTransaction(PreparedTransactionInfo preparedTransaction)
+         {
+         }
+      };
+
+      return this.load(dummyLoader);
+   }
+
    /**
     * @see JournalImpl#load(LoaderCallback)
     */
-   public synchronized long load(final List<RecordInfo> committedRecords,
-                                 final List<PreparedTransactionInfo> preparedTransactions,
-                                 final TransactionFailureCallback failureCallback) throws Exception
+   public synchronized JournalLoadInformation load(final List<RecordInfo> committedRecords,
+                                               final List<PreparedTransactionInfo> preparedTransactions,
+                                               final TransactionFailureCallback failureCallback) throws Exception
    {
       final Set<Long> recordsToDelete = new HashSet<Long>();
       final List<RecordInfo> records = new ArrayList<RecordInfo>();
 
       final int DELETE_FLUSH = 20000;
 
-      long maxID = load(new LoaderCallback()
+      JournalLoadInformation info = load(new LoaderCallback()
       {
          public void addPreparedTransaction(final PreparedTransactionInfo preparedTransaction)
          {
@@ -1429,7 +1458,7 @@ public class JournalImpl implements TestableJournal
          }
       }
 
-      return maxID;
+      return info;
    }
 
    /**
@@ -1649,7 +1678,7 @@ public class JournalImpl implements TestableJournal
     * <p> * FileID and NumberOfElements are the transaction summary, and they will be repeated (N)umberOfFiles times </p> 
     * 
     * */
-   public synchronized long load(final LoaderCallback loadManager) throws Exception
+   public synchronized JournalLoadInformation load(final LoaderCallback loadManager) throws Exception
    {
       if (state != STATE_STARTED)
       {
@@ -1676,7 +1705,8 @@ public class JournalImpl implements TestableJournal
 
       int lastDataPos = SIZE_HEADER;
 
-      long maxID = -1;
+      final AtomicLong maxID = new AtomicLong(-1);
+      // long maxID = -1;
 
       for (final JournalFile file : orderedFiles)
       {
@@ -1687,12 +1717,23 @@ public class JournalImpl implements TestableJournal
          int resultLastPost = readJournalFile(fileFactory, file, new JournalReaderCallback()
          {
 
+            private void checkID(final long id)
+            {
+               if (id > maxID.longValue())
+               {
+                  maxID.set(id);
+               }
+            }
+
             public void onReadAddRecord(final RecordInfo info) throws Exception
             {
                if (trace && LOAD_TRACE)
                {
                   trace("AddRecord: " + info);
                }
+
+               checkID(info.id);
+
                hasData.set(true);
 
                loadManager.addRecord(info);
@@ -1706,6 +1747,9 @@ public class JournalImpl implements TestableJournal
                {
                   trace("UpdateRecord: " + info);
                }
+
+               checkID(info.id);
+
                hasData.set(true);
 
                loadManager.updateRecord(info);
@@ -1752,6 +1796,8 @@ public class JournalImpl implements TestableJournal
                {
                   trace((info.isUpdate ? "updateRecordTX: " : "addRecordTX: ") + info + ", txid = " + transactionID);
                }
+
+               checkID(info.id);
 
                hasData.set(true);
 
@@ -2034,11 +2080,21 @@ public class JournalImpl implements TestableJournal
 
             // Remove the transactionInfo
             transactions.remove(transaction.transactionID);
-            
-            loadManager.failedTransaction(transaction.transactionID, transaction.recordInfos, transaction.recordsToDelete);
+
+            loadManager.failedTransaction(transaction.transactionID,
+                                          transaction.recordInfos,
+                                          transaction.recordsToDelete);
          }
          else
          {
+            for (RecordInfo info : transaction.recordInfos)
+            {
+               if (info.id > maxID.get())
+               {
+                  maxID.set(info.id);
+               }
+            }
+
             PreparedTransactionInfo info = new PreparedTransactionInfo(transaction.transactionID, transaction.extraData);
 
             info.records.addAll(transaction.recordInfos);
@@ -2053,7 +2109,7 @@ public class JournalImpl implements TestableJournal
 
       checkReclaimStatus();
 
-      return maxID;
+      return new JournalLoadInformation(records.size(), maxID.longValue());
    }
 
    /** 
@@ -2531,6 +2587,11 @@ public class JournalImpl implements TestableJournal
       }
    }
 
+   public int getNumberOfRecords()
+   {
+      return this.records.size();
+   }
+
    // Public
    // -----------------------------------------------------------------------------
 
@@ -2854,7 +2915,7 @@ public class JournalImpl implements TestableJournal
             currentFile.getFile().write(bb, sync);
          }
 
-         return currentFile;         
+         return currentFile;
       }
       finally
       {
@@ -3355,7 +3416,7 @@ public class JournalImpl implements TestableJournal
    {
 
       private static NullEncoding instance = new NullEncoding();
-      
+
       public static NullEncoding getInstance()
       {
          return instance;

@@ -15,7 +15,9 @@ package org.hornetq.core.replication;
 
 import java.util.Set;
 
+import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.journal.EncodingSupport;
+import org.hornetq.core.journal.JournalLoadInformation;
 import org.hornetq.core.paging.PagedMessage;
 import org.hornetq.core.server.HornetQComponent;
 import org.hornetq.utils.SimpleString;
@@ -79,5 +81,11 @@ public interface ReplicationManager extends HornetQComponent
    void largeMessageWrite(long messageId, byte [] body);
    
    void largeMessageDelete(long messageId);
+
+   /**
+    * @param journalInfo
+    * @throws HornetQException 
+    */
+   void compareJournals(JournalLoadInformation[] journalInfo) throws HornetQException;
 
 }

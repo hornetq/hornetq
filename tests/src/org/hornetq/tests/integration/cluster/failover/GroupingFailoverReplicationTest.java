@@ -80,6 +80,6 @@ public class GroupingFailoverReplicationTest extends GroupingFailoverTestBase
 
    void setupMasterServer(int i, boolean fileStorage, boolean netty)
    {
-      setupServer(i, fileStorage, netty, 2);
+      setupServer(i, fileStorage, false, netty, false, 2);
    }
 }

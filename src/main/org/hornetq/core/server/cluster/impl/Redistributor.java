@@ -23,7 +23,6 @@ import org.hornetq.core.server.Consumer;
 import org.hornetq.core.server.HandleStatus;
 import org.hornetq.core.server.MessageReference;
 import org.hornetq.core.server.Queue;
-import org.hornetq.core.server.impl.RoutingContextImpl;
 import org.hornetq.core.transaction.Transaction;
 import org.hornetq.core.transaction.impl.TransactionImpl;
 import org.hornetq.utils.Future;
@@ -145,38 +144,39 @@ public class Redistributor implements Consumer
 
       tx.commit();
 
-      
-      Runnable action = new Runnable()
-      {
-         public void run()
-         {
-            
-            count++;
-      
-            if (count == batchSize)
-            {
-               // We continue the next batch on a different thread, so as not to keep the delivery thread busy for a very
-               // long time in the case there are many messages in the queue
-               active = false;
-      
-               
-               executor.execute(new Prompter());
-      
-               count = 0;
-            }
-            
-         }
-      };
-      
       if (storageManager.isReplicated())
       {
-         storageManager.afterReplicated(action);
+         storageManager.afterReplicated(new Runnable()
+         {
+            public void run()
+            {
+               execPrompter();
+            }
+         });
          storageManager.completeReplication();
       }
       else
       {
-         action.run();
+         execPrompter();
       }
+   }
+   
+   private void execPrompter()
+   {
+      count++;
+      
+      if (count == batchSize)
+      {
+         // We continue the next batch on a different thread, so as not to keep the delivery thread busy for a very
+         // long time in the case there are many messages in the queue
+         active = false;
+
+         
+         executor.execute(new Prompter());
+
+         count = 0;
+      }
+      
    }
 
    private class Prompter implements Runnable

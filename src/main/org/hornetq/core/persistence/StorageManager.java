@@ -18,6 +18,7 @@ import java.util.Map;
 
 import javax.transaction.xa.Xid;
 
+import org.hornetq.core.journal.JournalLoadInformation;
 import org.hornetq.core.paging.PageTransactionInfo;
 import org.hornetq.core.paging.PagedMessage;
 import org.hornetq.core.paging.PagingManager;
@@ -119,10 +120,10 @@ public interface StorageManager extends HornetQComponent
 
    /** This method is only useful at the backup side. We only load internal structures making the journals ready for
     *  append mode on the backup side. */
-   void loadInternalOnly() throws Exception;
+   JournalLoadInformation[] loadInternalOnly() throws Exception;
 
    
-   public void loadMessageJournal(final PostOffice postOffice,
+   JournalLoadInformation loadMessageJournal(final PostOffice postOffice,
                                   final PagingManager pagingManager,
                                   final ResourceManager resourceManager,
                                   final Map<Long, Queue> queues,
@@ -139,7 +140,7 @@ public interface StorageManager extends HornetQComponent
    
    void deleteQueueBinding(long queueBindingID) throws Exception;
    
-   void loadBindingJournal(List<QueueBindingInfo> queueBindingInfos, List<GroupingInfo> groupingInfos) throws Exception;
+   JournalLoadInformation loadBindingJournal(List<QueueBindingInfo> queueBindingInfos, List<GroupingInfo> groupingInfos) throws Exception;
 
    //grouping relateed operations
    void addGrouping(GroupBinding groupBinding) throws Exception;

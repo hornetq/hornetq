@@ -22,6 +22,7 @@ import org.hornetq.core.client.SessionFailureListener;
 import org.hornetq.core.client.impl.FailoverManager;
 import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.journal.EncodingSupport;
+import org.hornetq.core.journal.JournalLoadInformation;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.paging.PagedMessage;
 import org.hornetq.core.remoting.Channel;
@@ -33,6 +34,7 @@ import org.hornetq.core.remoting.impl.wireformat.PacketImpl;
 import org.hornetq.core.remoting.impl.wireformat.ReplicationAddMessage;
 import org.hornetq.core.remoting.impl.wireformat.ReplicationAddTXMessage;
 import org.hornetq.core.remoting.impl.wireformat.ReplicationCommitMessage;
+import org.hornetq.core.remoting.impl.wireformat.ReplicationCompareDataMessage;
 import org.hornetq.core.remoting.impl.wireformat.ReplicationDeleteMessage;
 import org.hornetq.core.remoting.impl.wireformat.ReplicationDeleteTXMessage;
 import org.hornetq.core.remoting.impl.wireformat.ReplicationLargeMessageBeingMessage;
@@ -86,7 +88,7 @@ public class ReplicationManagerImpl implements ReplicationManager
    private final Queue<ReplicationContext> pendingTokens = new ConcurrentLinkedQueue<ReplicationContext>();
 
    private final ConcurrentHashSet<ReplicationContext> activeContexts = new ConcurrentHashSet<ReplicationContext>();
-
+ 
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
@@ -304,7 +306,18 @@ public class ReplicationManagerImpl implements ReplicationManager
     */
    public synchronized void start() throws Exception
    {
+      if (started)
+      {
+         throw new IllegalStateException("ReplicationManager is already started");
+      }
       connection = failoverManager.getConnection();
+
+      if (connection == null)
+      {
+         log.warn("Backup server MUST be started before live server. Initialisation will not proceed.");
+         throw new HornetQException(HornetQException.ILLEGAL_STATE,
+                                    "Backup server MUST be started before live server. Initialisation will not proceed.");
+      }
 
       long channelID = connection.generateChannelID();
 
@@ -381,7 +394,7 @@ public class ReplicationManagerImpl implements ReplicationManager
       ReplicationContext token = tlReplicationContext.get();
       if (token == null)
       {
-         token = new ReplicationContextImpl(executor);
+         token = new ReplicationContextImpl();
          activeContexts.add(token);
          tlReplicationContext.set(token);
       }
@@ -414,6 +427,7 @@ public class ReplicationManagerImpl implements ReplicationManager
                activeContexts.remove(token);
             }
          });
+         token.complete();
       }
    }
 
@@ -455,6 +469,15 @@ public class ReplicationManagerImpl implements ReplicationManager
          repliToken.replicated();
       }
    }
+   
+   /* (non-Javadoc)
+    * @see org.hornetq.core.replication.ReplicationManager#compareJournals(org.hornetq.core.journal.JournalLoadInformation[])
+    */
+   public void compareJournals(JournalLoadInformation[] journalInfo) throws HornetQException
+   {
+      replicatingChannel.sendBlocking(new ReplicationCompareDataMessage(journalInfo));
+   }
+
 
    private void replicated()
    {

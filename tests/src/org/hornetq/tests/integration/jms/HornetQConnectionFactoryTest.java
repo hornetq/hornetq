@@ -863,6 +863,7 @@ public class HornetQConnectionFactoryTest extends UnitTestCase
                 .add(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory",
                                                 backupParams));
       backupConf.setBackup(true);
+      backupConf.setSharedStore(true);
       backupService = HornetQ.newHornetQServer(backupConf, false);
       backupService.start();
 
@@ -877,6 +878,7 @@ public class HornetQConnectionFactoryTest extends UnitTestCase
       connectors.put(backupTC.getName(), backupTC);
       connectors.put(liveTC.getName(), liveTC);
       liveConf.setConnectorConfigurations(connectors);
+      liveConf.setSharedStore(true);
       liveConf.setBackupConnectorName(backupTC.getName());
       liveConf.setClustered(true);
 

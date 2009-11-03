@@ -12,27 +12,21 @@
  */
 package org.hornetq.tests.integration.cluster.failover;
 
-import org.hornetq.tests.integration.cluster.distribution.ClusterTestBase;
-import org.hornetq.core.config.Configuration;
-import org.hornetq.core.config.TransportConfiguration;
-import org.hornetq.core.config.impl.ConfigurationImpl;
-import org.hornetq.core.server.JournalType;
-import org.hornetq.core.server.HornetQServer;
-import org.hornetq.core.server.HornetQ;
-import org.hornetq.core.server.cluster.impl.ClusterConnectionImpl;
-import org.hornetq.core.server.cluster.MessageFlowRecord;
-import org.hornetq.core.server.group.impl.GroupingHandlerConfiguration;
-import org.hornetq.core.message.impl.MessageImpl;
-import org.hornetq.core.client.ClientSession;
-import org.hornetq.core.client.impl.ClientSessionInternal;
-import org.hornetq.core.remoting.RemotingConnection;
-import org.hornetq.core.remoting.FailureListener;
-import org.hornetq.core.exception.HornetQException;
-import org.hornetq.utils.SimpleString;
-
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+
+import org.hornetq.core.client.ClientSession;
+import org.hornetq.core.client.impl.ClientSessionInternal;
+import org.hornetq.core.exception.HornetQException;
+import org.hornetq.core.message.impl.MessageImpl;
+import org.hornetq.core.remoting.FailureListener;
+import org.hornetq.core.remoting.RemotingConnection;
+import org.hornetq.core.server.cluster.MessageFlowRecord;
+import org.hornetq.core.server.cluster.impl.ClusterConnectionImpl;
+import org.hornetq.core.server.group.impl.GroupingHandlerConfiguration;
+import org.hornetq.tests.integration.cluster.distribution.ClusterTestBase;
+import org.hornetq.utils.SimpleString;
 
 /**
  * @author <a href="mailto:andy.taylor@jboss.org">Andy Taylor</a>

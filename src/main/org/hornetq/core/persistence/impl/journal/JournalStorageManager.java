@@ -38,7 +38,7 @@ import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.filter.Filter;
 import org.hornetq.core.journal.EncodingSupport;
 import org.hornetq.core.journal.Journal;
-import org.hornetq.core.journal.LoaderCallback;
+import org.hornetq.core.journal.JournalLoadInformation;
 import org.hornetq.core.journal.PreparedTransactionInfo;
 import org.hornetq.core.journal.RecordInfo;
 import org.hornetq.core.journal.SequentialFile;
@@ -678,7 +678,7 @@ public class JournalStorageManager implements StorageManager
 
    }
 
-   public void loadMessageJournal(final PostOffice postOffice,
+   public JournalLoadInformation loadMessageJournal(final PostOffice postOffice,
                                   final PagingManager pagingManager,
                                   final ResourceManager resourceManager,
                                   final Map<Long, Queue> queues,
@@ -690,7 +690,7 @@ public class JournalStorageManager implements StorageManager
 
       Map<Long, ServerMessage> messages = new HashMap<Long, ServerMessage>();
 
-      messageJournal.load(records, preparedTransactions, new LargeMessageTXFailureCallback(messages));
+      JournalLoadInformation info = messageJournal.load(records, preparedTransactions, new LargeMessageTXFailureCallback(messages));
       
       ArrayList<LargeServerMessage> largeMessages = new ArrayList<LargeServerMessage>();
 
@@ -919,6 +919,8 @@ public class JournalStorageManager implements StorageManager
       {
          messageJournal.perfBlast(perfBlastPages);
       }
+      
+      return info;
    }
 
    /**
@@ -1189,13 +1191,13 @@ public class JournalStorageManager implements StorageManager
       bindingsJournal.appendDeleteRecord(queueBindingID, true);
    }
 
-   public void loadBindingJournal(final List<QueueBindingInfo> queueBindingInfos, final List<GroupingInfo> groupingInfos) throws Exception
+   public JournalLoadInformation loadBindingJournal(final List<QueueBindingInfo> queueBindingInfos, final List<GroupingInfo> groupingInfos) throws Exception
    {
       List<RecordInfo> records = new ArrayList<RecordInfo>();
 
       List<PreparedTransactionInfo> preparedTransactions = new ArrayList<PreparedTransactionInfo>();
 
-      bindingsJournal.load(records, preparedTransactions, null);
+      JournalLoadInformation bindingsInfo = bindingsJournal.load(records, preparedTransactions, null);
 
       for (RecordInfo record : records)
       {
@@ -1239,6 +1241,8 @@ public class JournalStorageManager implements StorageManager
             throw new IllegalStateException("Invalid record type " + rec);
          }
       }
+      
+      return bindingsInfo;
    }
 
    // HornetQComponent implementation
@@ -1296,34 +1300,13 @@ public class JournalStorageManager implements StorageManager
    /* (non-Javadoc)
     * @see org.hornetq.core.persistence.StorageManager#loadInternalOnly()
     */
-   public void loadInternalOnly() throws Exception
+   public JournalLoadInformation[] loadInternalOnly() throws Exception
    {
-      LoaderCallback dummyLoader = new LoaderCallback()
-      {
-
-         public void failedTransaction(long transactionID, List<RecordInfo> records, List<RecordInfo> recordsToDelete)
-         {
-         }
-
-         public void updateRecord(RecordInfo info)
-         {
-         }
-
-         public void deleteRecord(long id)
-         {
-         }
-
-         public void addRecord(RecordInfo info)
-         {
-         }
-
-         public void addPreparedTransaction(PreparedTransactionInfo preparedTransaction)
-         {
-         }
-      };
-
-      bindingsJournal.load(dummyLoader);
-      messageJournal.load(dummyLoader);
+      JournalLoadInformation[] info = new JournalLoadInformation[2];
+      info[0] = bindingsJournal.loadInternalOnly();
+      info[1] = messageJournal.loadInternalOnly();
+      
+      return info;
    }
 
    // Public -----------------------------------------------------------------------------------

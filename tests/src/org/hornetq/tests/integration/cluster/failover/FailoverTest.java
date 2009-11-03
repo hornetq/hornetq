@@ -85,15 +85,15 @@ public class FailoverTest extends FailoverTestBase
    {
       super(name);
    }
-   
+
    public FailoverTest()
    {
    }
-   
+
    abstract class BaseListener implements SessionFailureListener
    {
       public void beforeReconnect(HornetQException me)
-      {            
+      {
       }
    }
 
@@ -115,7 +115,7 @@ public class FailoverTest extends FailoverTestBase
          public void connectionFailed(HornetQException me)
          {
             latch.countDown();
-         }                 
+         }
       }
 
       session.addFailureListener(new MyListener());
@@ -136,7 +136,7 @@ public class FailoverTest extends FailoverTestBase
       }
 
       fail(session, latch);
-      
+
       log.info("got here 1");
 
       ClientConsumer consumer = session.createConsumer(ADDRESS);
@@ -169,6 +169,77 @@ public class FailoverTest extends FailoverTestBase
       assertEquals(0, sf.numConnections());
    }
 
+   
+   /** It doesn't fail, but it restart both servers, live and backup, and the data should be received after the restart,
+    *  and the servers should be able to connect without any problems. */
+   public void testRestartServers() throws Exception
+   {
+      ClientSessionFactoryInternal sf = getSessionFactory();
+
+      sf.setBlockOnNonPersistentSend(true);
+      sf.setBlockOnPersistentSend(true);
+
+      ClientSession session = sf.createSession(true, true);
+
+      session.createQueue(ADDRESS, ADDRESS, null, true);
+
+      ClientProducer producer = session.createProducer(ADDRESS);
+
+      final int numMessages = 100;
+
+      for (int i = 0; i < numMessages; i++)
+      {
+         ClientMessage message = session.createClientMessage(true);
+
+         setBody(i, message);
+
+         message.putIntProperty("counter", i);
+
+         producer.send(message);
+      }
+
+      session.commit();
+
+      session.close();
+
+      server0Service.stop();
+      server1Service.stop();
+
+      server1Service.start();
+      server0Service.start();
+
+      sf = getSessionFactory();
+
+      sf.setBlockOnNonPersistentSend(true);
+      sf.setBlockOnPersistentSend(true);
+
+      session = sf.createSession(true, true);
+
+      ClientConsumer consumer = session.createConsumer(ADDRESS);
+
+      session.start();
+
+      for (int i = 0; i < numMessages; i++)
+      {
+         ClientMessage message = consumer.receive(1000);
+
+         assertNotNull(message);
+
+         assertMessageBody(i, message);
+
+         assertEquals(i, message.getProperty("counter"));
+
+         message.acknowledge();
+      }
+
+      log.info("closing session");
+      session.close();
+
+      assertEquals(0, sf.numSessions());
+
+      assertEquals(0, sf.numConnections());
+   }
+
    /**
     * @param session
     * @param latch
@@ -176,7 +247,7 @@ public class FailoverTest extends FailoverTestBase
     */
    private void fail(ClientSession session, final CountDownLatch latch) throws InterruptedException
    {
-      
+
       RemotingConnection conn = ((ClientSessionInternal)session).getConnection();
 
       // Simulate failure on connection
@@ -202,14 +273,13 @@ public class FailoverTest extends FailoverTestBase
 
       final CountDownLatch latch = new CountDownLatch(1);
 
-      class MyListener  extends BaseListener
+      class MyListener extends BaseListener
       {
          public void connectionFailed(HornetQException me)
          {
             latch.countDown();
          }
-         
-         
+
       }
 
       session.addFailureListener(new MyListener());
@@ -228,7 +298,7 @@ public class FailoverTest extends FailoverTestBase
 
          producer.send(message);
       }
-      
+
       fail(session, latch);
 
       assertTrue(session.isRollbackOnly());
@@ -272,7 +342,7 @@ public class FailoverTest extends FailoverTestBase
 
       final CountDownLatch latch = new CountDownLatch(1);
 
-      class MyListener  extends BaseListener
+      class MyListener extends BaseListener
       {
          public void connectionFailed(HornetQException me)
          {
@@ -330,7 +400,7 @@ public class FailoverTest extends FailoverTestBase
       }
 
       assertNull(consumer.receive(1000));
-      
+
       session.commit();
 
       session.close();
@@ -353,7 +423,7 @@ public class FailoverTest extends FailoverTestBase
 
       final CountDownLatch latch = new CountDownLatch(1);
 
-      class MyListener  extends BaseListener
+      class MyListener extends BaseListener
       {
          public void connectionFailed(HornetQException me)
          {
@@ -391,15 +461,15 @@ public class FailoverTest extends FailoverTestBase
       fail(session, latch);
 
       session.commit();
-      
+
       session.close();
-      
+
       session = sf.createSession(false, false);
-      
+
       consumer = session.createConsumer(ADDRESS);
 
       session.start();
-      
+
       for (int i = 0; i < numMessages; i++)
       {
          // Only the persistent messages will survive
@@ -419,7 +489,7 @@ public class FailoverTest extends FailoverTestBase
       }
 
       assertNull(consumer.receive(1000));
-      
+
       session.commit();
 
       session.close();
@@ -428,7 +498,7 @@ public class FailoverTest extends FailoverTestBase
 
       assertEquals(0, sf.numConnections());
    }
-   
+
    public void testTransactedMessagesConsumedSoRollback() throws Exception
    {
       ClientSessionFactoryInternal sf = getSessionFactory();
@@ -442,7 +512,7 @@ public class FailoverTest extends FailoverTestBase
 
       final CountDownLatch latch = new CountDownLatch(1);
 
-      class MyListener  extends BaseListener
+      class MyListener extends BaseListener
       {
          public void connectionFailed(HornetQException me)
          {
@@ -491,7 +561,7 @@ public class FailoverTest extends FailoverTestBase
       fail(session2, latch);
 
       assertTrue(session2.isRollbackOnly());
-      
+
       try
       {
          session2.commit();
@@ -525,7 +595,7 @@ public class FailoverTest extends FailoverTestBase
 
       final CountDownLatch latch = new CountDownLatch(1);
 
-      class MyListener  extends BaseListener
+      class MyListener extends BaseListener
       {
          public void connectionFailed(HornetQException me)
          {
@@ -578,7 +648,7 @@ public class FailoverTest extends FailoverTestBase
       fail(session2, latch);
 
       assertFalse(session2.isRollbackOnly());
-      
+
       consumer = session2.createConsumer(ADDRESS);
 
       for (int i = numMessages / 2; i < numMessages; i++)
@@ -597,7 +667,7 @@ public class FailoverTest extends FailoverTestBase
       session2.commit();
 
       assertNull(consumer.receive(1000));
-      
+
       session1.close();
 
       session2.close();
@@ -622,7 +692,7 @@ public class FailoverTest extends FailoverTestBase
 
       final CountDownLatch latch = new CountDownLatch(1);
 
-      class MyListener  extends BaseListener
+      class MyListener extends BaseListener
       {
          public void connectionFailed(HornetQException me)
          {
@@ -692,7 +762,7 @@ public class FailoverTest extends FailoverTestBase
 
       final CountDownLatch latch = new CountDownLatch(1);
 
-      class MyListener  extends BaseListener
+      class MyListener extends BaseListener
       {
          public void connectionFailed(HornetQException me)
          {
@@ -765,7 +835,7 @@ public class FailoverTest extends FailoverTestBase
 
       final CountDownLatch latch = new CountDownLatch(1);
 
-      class MyListener  extends BaseListener
+      class MyListener extends BaseListener
       {
          public void connectionFailed(HornetQException me)
          {
@@ -839,7 +909,7 @@ public class FailoverTest extends FailoverTestBase
 
       final CountDownLatch latch = new CountDownLatch(1);
 
-      class MyListener  extends BaseListener
+      class MyListener extends BaseListener
       {
          public void connectionFailed(HornetQException me)
          {
@@ -926,7 +996,7 @@ public class FailoverTest extends FailoverTestBase
 
       final CountDownLatch latch = new CountDownLatch(1);
 
-      class MyListener  extends BaseListener
+      class MyListener extends BaseListener
       {
          public void connectionFailed(HornetQException me)
          {
@@ -1011,7 +1081,7 @@ public class FailoverTest extends FailoverTestBase
 
       final CountDownLatch latch = new CountDownLatch(1);
 
-      class MyListener  extends BaseListener
+      class MyListener extends BaseListener
       {
          public void connectionFailed(HornetQException me)
          {
@@ -1072,7 +1142,7 @@ public class FailoverTest extends FailoverTestBase
       // Wait to be informed of failure
 
       boolean ok = latch.await(1000, TimeUnit.MILLISECONDS);
-      
+
       log.info("waited for latch");
 
       assertTrue(ok);
@@ -1087,8 +1157,8 @@ public class FailoverTest extends FailoverTestBase
       {
          assertEquals(XAException.XA_RBOTHER, e.errorCode);
       }
-      
-      //Thread.sleep(30000);
+
+      // Thread.sleep(30000);
 
       session1.close();
 
@@ -1113,7 +1183,7 @@ public class FailoverTest extends FailoverTestBase
 
       final CountDownLatch latch = new CountDownLatch(1);
 
-      class MyListener  extends BaseListener
+      class MyListener extends BaseListener
       {
          public void connectionFailed(HornetQException me)
          {
@@ -1197,7 +1267,7 @@ public class FailoverTest extends FailoverTestBase
 
       final CountDownLatch latch = new CountDownLatch(1);
 
-      class MyListener  extends BaseListener
+      class MyListener extends BaseListener
       {
          public void connectionFailed(HornetQException me)
          {
@@ -1244,7 +1314,7 @@ public class FailoverTest extends FailoverTestBase
 
       Map<ClientSession, List<ClientConsumer>> sessionConsumerMap = new HashMap<ClientSession, List<ClientConsumer>>();
 
-      class MyListener  extends BaseListener
+      class MyListener extends BaseListener
       {
          CountDownLatch latch = new CountDownLatch(1);
 
@@ -1342,7 +1412,6 @@ public class FailoverTest extends FailoverTestBase
       assertEquals(0, sf.numConnections());
    }
 
-   
    /*
     * Browser will get reset to beginning after failover
     */
@@ -1359,7 +1428,7 @@ public class FailoverTest extends FailoverTestBase
 
       final CountDownLatch latch = new CountDownLatch(1);
 
-      class MyListener  extends BaseListener
+      class MyListener extends BaseListener
       {
          public void connectionFailed(HornetQException me)
          {
@@ -1439,7 +1508,7 @@ public class FailoverTest extends FailoverTestBase
 
       final CountDownLatch latch = new CountDownLatch(1);
 
-      class MyListener  extends BaseListener
+      class MyListener extends BaseListener
       {
          public void connectionFailed(HornetQException me)
          {
@@ -1522,7 +1591,7 @@ public class FailoverTest extends FailoverTestBase
 
       final CountDownLatch latch = new CountDownLatch(1);
 
-      class MyListener  extends BaseListener
+      class MyListener extends BaseListener
       {
          public void connectionFailed(HornetQException me)
          {
@@ -1619,7 +1688,7 @@ public class FailoverTest extends FailoverTestBase
 
       final CountDownLatch latch = new CountDownLatch(1);
 
-      class MyListener  extends BaseListener
+      class MyListener extends BaseListener
       {
          public void connectionFailed(HornetQException me)
          {
@@ -1687,7 +1756,7 @@ public class FailoverTest extends FailoverTestBase
 
       final CountDownLatch latch = new CountDownLatch(1);
 
-      class MyListener  extends BaseListener
+      class MyListener extends BaseListener
       {
          public void connectionFailed(HornetQException me)
          {
@@ -1708,11 +1777,11 @@ public class FailoverTest extends FailoverTestBase
          ClientMessage message = session.createClientMessage(true);
 
          if (i == 0)
-         { 
+         {
             // Only need to add it on one message per tx
             message.putStringProperty(MessageImpl.HDR_DUPLICATE_DETECTION_ID, new SimpleString(txID));
          }
-         
+
          setBody(i, message);
 
          message.putIntProperty("counter", i);
@@ -1787,7 +1856,7 @@ public class FailoverTest extends FailoverTestBase
          ClientMessage message = session2.createClientMessage(true);
 
          if (i == 0)
-         { 
+         {
             // Only need to add it on one message per tx
             message.putStringProperty(MessageImpl.HDR_DUPLICATE_DETECTION_ID, new SimpleString(txID));
          }
@@ -1843,7 +1912,7 @@ public class FailoverTest extends FailoverTestBase
 
       final CountDownLatch latch = new CountDownLatch(1);
 
-      class MyListener  extends BaseListener
+      class MyListener extends BaseListener
       {
          public void connectionFailed(HornetQException me)
          {
@@ -2006,7 +2075,6 @@ public class FailoverTest extends FailoverTestBase
          return new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory", server1Params);
       }
    }
-
 
    /**
     * @param i

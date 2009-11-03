@@ -15,7 +15,6 @@ package org.hornetq.core.journal;
 
 import java.util.List;
 
-import org.hornetq.core.journal.impl.JournalFile;
 import org.hornetq.core.server.HornetQComponent;
 
 /**
@@ -77,12 +76,19 @@ public interface Journal extends HornetQComponent
 
    // Load
    
-   long load(LoaderCallback reloadManager) throws Exception;
+   JournalLoadInformation load(LoaderCallback reloadManager) throws Exception;
+
+   /** Load internal data structures and not expose any data.
+    *  This is only useful if you're using the journal but not interested on the current data.
+    *  Useful in situations where the journal is being replicated, copied... etc. */
+   JournalLoadInformation loadInternalOnly() throws Exception;
 
 
-   long load(List<RecordInfo> committedRecords, List<PreparedTransactionInfo> preparedTransactions, TransactionFailureCallback transactionFailure) throws Exception;
+   JournalLoadInformation load(List<RecordInfo> committedRecords, List<PreparedTransactionInfo> preparedTransactions, TransactionFailureCallback transactionFailure) throws Exception;
 
    int getAlignment() throws Exception;
+   
+   int getNumberOfRecords();
 
    void perfBlast(int pages) throws Exception;
 

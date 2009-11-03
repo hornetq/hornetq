@@ -17,6 +17,7 @@ import java.util.List;
 
 import org.hornetq.core.journal.EncodingSupport;
 import org.hornetq.core.journal.Journal;
+import org.hornetq.core.journal.JournalLoadInformation;
 import org.hornetq.core.journal.LoaderCallback;
 import org.hornetq.core.journal.PreparedTransactionInfo;
 import org.hornetq.core.journal.RecordInfo;
@@ -44,7 +45,12 @@ public class ReplicatedJournal implements Journal
 
    // Attributes ----------------------------------------------------
 
-   private static final boolean trace = log.isTraceEnabled();
+   private static final boolean trace = false;
+   
+   private static void trace(String message)
+   {
+      System.out.println("ReplicatedJournal::" + message);
+   }
 
    private final ReplicationManager replicationManager;
 
@@ -64,10 +70,6 @@ public class ReplicatedJournal implements Journal
 
    // Static --------------------------------------------------------
    
-   private static void trace(String message)
-   {
-      log.trace(message);
-   }
 
    // Constructors --------------------------------------------------
 
@@ -335,7 +337,7 @@ public class ReplicatedJournal implements Journal
     * @throws Exception
     * @see org.hornetq.core.journal.Journal#load(java.util.List, java.util.List, org.hornetq.core.journal.TransactionFailureCallback)
     */
-   public long load(final List<RecordInfo> committedRecords,
+   public JournalLoadInformation load(final List<RecordInfo> committedRecords,
                     final List<PreparedTransactionInfo> preparedTransactions,
                     final TransactionFailureCallback transactionFailure) throws Exception
    {
@@ -348,7 +350,7 @@ public class ReplicatedJournal implements Journal
     * @throws Exception
     * @see org.hornetq.core.journal.Journal#load(org.hornetq.core.journal.LoaderCallback)
     */
-   public long load(final LoaderCallback reloadManager) throws Exception
+   public JournalLoadInformation load(final LoaderCallback reloadManager) throws Exception
    {
       return localJournal.load(reloadManager);
    }
@@ -395,6 +397,22 @@ public class ReplicatedJournal implements Journal
    public boolean isStarted()
    {
       return localJournal.isStarted();
+   }
+
+   /* (non-Javadoc)
+    * @see org.hornetq.core.journal.Journal#loadInternalOnly()
+    */
+   public JournalLoadInformation loadInternalOnly() throws Exception
+   {
+      return localJournal.loadInternalOnly();
+   }
+
+   /* (non-Javadoc)
+    * @see org.hornetq.core.journal.Journal#getNumberOfRecords()
+    */
+   public int getNumberOfRecords()
+   {
+      return localJournal.getNumberOfRecords();
    }
 
    // Package protected ---------------------------------------------

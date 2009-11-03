@@ -28,6 +28,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import javax.transaction.xa.Xid;
 
 import org.hornetq.core.buffers.ChannelBuffers;
+import org.hornetq.core.journal.JournalLoadInformation;
 import org.hornetq.core.journal.SequentialFile;
 import org.hornetq.core.journal.SequentialFileFactory;
 import org.hornetq.core.journal.impl.NIOSequentialFileFactory;
@@ -47,6 +48,7 @@ import org.hornetq.core.persistence.GroupingInfo;
 import org.hornetq.core.postoffice.Binding;
 import org.hornetq.core.postoffice.PostOffice;
 import org.hornetq.core.remoting.spi.HornetQBuffer;
+import org.hornetq.core.replication.ReplicationManager;
 import org.hornetq.core.server.LargeServerMessage;
 import org.hornetq.core.server.MessageReference;
 import org.hornetq.core.server.Queue;
@@ -945,8 +947,9 @@ public class PagingStoreImplTest extends UnitTestCase
       /* (non-Javadoc)
        * @see org.hornetq.core.persistence.StorageManager#loadBindingJournal(java.util.List)
        */
-      public void loadBindingJournal(final List<QueueBindingInfo> queueBindingInfos, List<GroupingInfo> groupingInfos) throws Exception
+      public JournalLoadInformation loadBindingJournal(final List<QueueBindingInfo> queueBindingInfos, List<GroupingInfo> groupingInfos) throws Exception
       {
+         return new JournalLoadInformation();
       }
 
       public void addGrouping(GroupBinding groupBinding) throws Exception
@@ -962,12 +965,13 @@ public class PagingStoreImplTest extends UnitTestCase
       /* (non-Javadoc)
        * @see org.hornetq.core.persistence.StorageManager#loadMessageJournal(org.hornetq.core.paging.PagingManager, java.util.Map, org.hornetq.core.transaction.ResourceManager, java.util.Map)
        */
-      public void loadMessageJournal(PostOffice postOffice,
+      public JournalLoadInformation loadMessageJournal(PostOffice postOffice,
                                      PagingManager pagingManager,
                                      ResourceManager resourceManager,
                                      Map<Long, Queue> queues,
                                      Map<SimpleString, List<Pair<byte[], Long>>> duplicateIDMap) throws Exception
       {
+         return new JournalLoadInformation();
       }
 
       /* (non-Javadoc)
@@ -1166,10 +1170,9 @@ public class PagingStoreImplTest extends UnitTestCase
       /* (non-Javadoc)
        * @see org.hornetq.core.persistence.StorageManager#loadInternalOnly()
        */
-      public void loadInternalOnly() throws Exception
+      public JournalLoadInformation[] loadInternalOnly() throws Exception
       {
-         
-         
+         return null; 
       }
 
       /* (non-Javadoc)
@@ -1203,6 +1206,13 @@ public class PagingStoreImplTest extends UnitTestCase
        * @see org.hornetq.core.persistence.StorageManager#blockOnReplication(long)
        */
       public void waitOnReplication(long timeout) throws Exception
+      {
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.persistence.StorageManager#setReplicator(org.hornetq.core.replication.ReplicationManager)
+       */
+      public void setReplicator(ReplicationManager replicator)
       {
       }
 

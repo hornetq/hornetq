@@ -20,16 +20,17 @@ import java.util.concurrent.atomic.AtomicLong;
 import javax.transaction.xa.Xid;
 
 import org.hornetq.core.buffers.ChannelBuffers;
-import org.hornetq.core.logging.Logger;
+import org.hornetq.core.journal.JournalLoadInformation;
 import org.hornetq.core.paging.PageTransactionInfo;
 import org.hornetq.core.paging.PagedMessage;
 import org.hornetq.core.paging.PagingManager;
+import org.hornetq.core.persistence.GroupingInfo;
 import org.hornetq.core.persistence.QueueBindingInfo;
 import org.hornetq.core.persistence.StorageManager;
-import org.hornetq.core.persistence.GroupingInfo;
 import org.hornetq.core.postoffice.Binding;
 import org.hornetq.core.postoffice.PostOffice;
 import org.hornetq.core.remoting.spi.HornetQBuffer;
+import org.hornetq.core.replication.ReplicationManager;
 import org.hornetq.core.server.LargeServerMessage;
 import org.hornetq.core.server.MessageReference;
 import org.hornetq.core.server.Queue;
@@ -50,8 +51,6 @@ import org.hornetq.utils.UUID;
  */
 public class NullStorageManager implements StorageManager
 {
-   private static final Logger log = Logger.getLogger(NullStorageManager.class);
-   
    private final AtomicLong idSequence = new AtomicLong(0);
    
    private UUID id;
@@ -80,9 +79,9 @@ public class NullStorageManager implements StorageManager
    {
    }
 
-   public void loadBindingJournal(List<QueueBindingInfo> queueBindingInfos, List<GroupingInfo> groupingInfos) throws Exception
+   public JournalLoadInformation loadBindingJournal(List<QueueBindingInfo> queueBindingInfos, List<GroupingInfo> groupingInfos) throws Exception
    {
-
+      return new JournalLoadInformation();
    }
 
    public void prepare(final long txID, final Xid xid) throws Exception
@@ -252,12 +251,13 @@ public class NullStorageManager implements StorageManager
    {
    }
    
-   public void loadMessageJournal(PostOffice postOffice,
+   public JournalLoadInformation loadMessageJournal(PostOffice postOffice,
                                   PagingManager pagingManager,
                                   ResourceManager resourceManager,
                                   Map<Long, Queue> queues,
                                   Map<SimpleString, List<Pair<byte[], Long>>> duplicateIDMap) throws Exception
    {
+      return new JournalLoadInformation();
    }
 
    public void deleteDuplicateIDTransactional(final long txID, final long recordID) throws Exception
@@ -271,8 +271,9 @@ public class NullStorageManager implements StorageManager
    /* (non-Javadoc)
     * @see org.hornetq.core.persistence.StorageManager#loadInternalOnly()
     */
-   public void loadInternalOnly() throws Exception
+   public JournalLoadInformation[] loadInternalOnly() throws Exception
    {
+      return null;
    }
 
    /* (non-Javadoc)
@@ -332,6 +333,14 @@ public class NullStorageManager implements StorageManager
     */
    public void waitOnReplication(long timeout) throws Exception
    {
+   }
+
+   /* (non-Javadoc)
+    * @see org.hornetq.core.persistence.StorageManager#setReplicator(org.hornetq.core.replication.ReplicationManager)
+    */
+   public void setReplicator(ReplicationManager replicator)
+   {
+      throw new IllegalStateException("Null Persistence should never be used as replicated");
    }
 
 }

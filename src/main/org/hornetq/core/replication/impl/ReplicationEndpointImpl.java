@@ -16,12 +16,15 @@ package org.hornetq.core.replication.impl;
 import static org.hornetq.core.remoting.impl.wireformat.PacketImpl.REPLICATION_LARGE_MESSAGE_BEGIN;
 import static org.hornetq.core.remoting.impl.wireformat.PacketImpl.REPLICATION_LARGE_MESSAGE_END;
 import static org.hornetq.core.remoting.impl.wireformat.PacketImpl.REPLICATION_LARGE_MESSAGE_WRITE;
+import static org.hornetq.core.remoting.impl.wireformat.PacketImpl.REPLICATION_COMPARE_DATA;
 
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 import org.hornetq.core.config.Configuration;
+import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.journal.Journal;
+import org.hornetq.core.journal.JournalLoadInformation;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.paging.Page;
 import org.hornetq.core.paging.PagedMessage;
@@ -31,10 +34,13 @@ import org.hornetq.core.paging.impl.PagingStoreFactoryNIO;
 import org.hornetq.core.persistence.impl.journal.JournalStorageManager;
 import org.hornetq.core.remoting.Channel;
 import org.hornetq.core.remoting.Packet;
+import org.hornetq.core.remoting.impl.wireformat.HornetQExceptionMessage;
+import org.hornetq.core.remoting.impl.wireformat.NullResponseMessage;
 import org.hornetq.core.remoting.impl.wireformat.PacketImpl;
 import org.hornetq.core.remoting.impl.wireformat.ReplicationAddMessage;
 import org.hornetq.core.remoting.impl.wireformat.ReplicationAddTXMessage;
 import org.hornetq.core.remoting.impl.wireformat.ReplicationCommitMessage;
+import org.hornetq.core.remoting.impl.wireformat.ReplicationCompareDataMessage;
 import org.hornetq.core.remoting.impl.wireformat.ReplicationDeleteMessage;
 import org.hornetq.core.remoting.impl.wireformat.ReplicationDeleteTXMessage;
 import org.hornetq.core.remoting.impl.wireformat.ReplicationLargeMessageBeingMessage;
@@ -84,6 +90,8 @@ public class ReplicationEndpointImpl implements ReplicationEndpoint
 
    private PagingManager pageManager;
 
+   private JournalLoadInformation[] journalLoadInformation;
+
    private final ConcurrentMap<SimpleString, ConcurrentMap<Integer, Page>> pageIndex = new ConcurrentHashMap<SimpleString, ConcurrentMap<Integer, Page>>();
 
    private final ConcurrentMap<Long, LargeServerMessage> largeMessages = new ConcurrentHashMap<Long, LargeServerMessage>();
@@ -101,6 +109,8 @@ public class ReplicationEndpointImpl implements ReplicationEndpoint
     */
    public void handlePacket(final Packet packet)
    {
+      PacketImpl response = new ReplicationResponseMessage();
+
       try
       {
          if (packet.getType() == PacketImpl.REPLICATION_APPEND)
@@ -147,6 +157,11 @@ public class ReplicationEndpointImpl implements ReplicationEndpoint
          {
             handleLargeMessageEnd((ReplicationLargemessageEndMessage)packet);
          }
+         else if (packet.getType() == REPLICATION_COMPARE_DATA)
+         {
+            handleCompareDataMessage((ReplicationCompareDataMessage)packet);
+            response = new NullResponseMessage();
+         }
          else
          {
             log.warn("Packet " + packet + " can't be processed by the ReplicationEndpoint");
@@ -154,10 +169,10 @@ public class ReplicationEndpointImpl implements ReplicationEndpoint
       }
       catch (Exception e)
       {
-         // TODO: what to do when the IO fails on the backup side? should we shutdown the backup?
          log.warn(e.getMessage(), e);
+         response = new HornetQExceptionMessage((HornetQException)e);
       }
-      channel.send(new ReplicationResponseMessage());
+      channel.send(response);
    }
 
    /* (non-Javadoc)
@@ -182,7 +197,7 @@ public class ReplicationEndpointImpl implements ReplicationEndpoint
       messagingJournal = storage.getMessageJournal();
 
       // We only need to load internal structures on the backup...
-      storage.loadInternalOnly();
+      journalLoadInformation = storage.loadInternalOnly();
 
       pageManager = new PagingManagerImpl(new PagingStoreFactoryNIO(config.getPagingDirectory(),
                                                                     server.getExecutorFactory()),
@@ -199,7 +214,12 @@ public class ReplicationEndpointImpl implements ReplicationEndpoint
     */
    public void stop() throws Exception
    {
-      channel.close();
+      // This could be null if the backup server is being
+      // shut down without any live server connecting here
+      if (channel != null)
+      {
+         channel.close();
+      }
       storage.stop();
 
       for (ConcurrentMap<Integer, Page> map : pageIndex.values())
@@ -243,6 +263,52 @@ public class ReplicationEndpointImpl implements ReplicationEndpoint
       this.channel = channel;
    }
 
+   public void compareJournalInformation(JournalLoadInformation[] journalInformation) throws HornetQException
+   {
+      if (this.journalLoadInformation == null || this.journalLoadInformation.length != journalInformation.length)
+      {
+         throw new HornetQException(HornetQException.INTERNAL_ERROR,
+                                    "Live Node contains more journals than the backup node. Probably a version match error");
+      }
+
+      for (int i = 0; i < journalInformation.length; i++)
+      {
+         if (!journalInformation[i].equals(this.journalLoadInformation[i]))
+         {
+            log.warn("Journal comparisson mismatch:\n" + journalParametersToString(journalInformation));
+            throw new HornetQException(HornetQException.ILLEGAL_STATE,
+                                       "Backup node can't connect to the live node as the data differs");
+         }
+      }
+
+   }
+
+   /**
+    * @param journalInformation
+    */
+   private String journalParametersToString(JournalLoadInformation[] journalInformation)
+   {
+      return "**********************************************************\n" +
+               "parameters:\n" +
+               "Bindings = " +
+               journalInformation[0] +
+               "\n" +
+               "Messaging = " +
+               journalInformation[1] +
+               "\n" +
+               "**********************************************************" +
+               "\n" +
+               "Expected:" +
+               "\n" +
+               "Bindings = " +
+               this.journalLoadInformation[0] +
+               "\n" +
+               "Messaging = " +
+               this.journalLoadInformation[1] +
+               "\n" +
+               "**********************************************************";
+   }
+
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
@@ -279,6 +345,15 @@ public class ReplicationEndpointImpl implements ReplicationEndpoint
          message.addBytes(packet.getBody());
       }
    }
+   
+      /**
+    * @param request
+    */
+   private void handleCompareDataMessage(ReplicationCompareDataMessage request) throws HornetQException
+   {
+      compareJournalInformation(request.getJournalInformation());
+   }
+   
 
    private LargeServerMessage lookupLargeMessage(long messageId, boolean delete)
    {
@@ -301,7 +376,6 @@ public class ReplicationEndpointImpl implements ReplicationEndpoint
       return message;
 
    }
-
    /**
     * @param packet
     */

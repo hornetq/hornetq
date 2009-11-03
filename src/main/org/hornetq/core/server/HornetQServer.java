@@ -20,6 +20,7 @@ import javax.management.MBeanServer;
 
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.exception.HornetQException;
+import org.hornetq.core.journal.JournalLoadInformation;
 import org.hornetq.core.management.ManagementService;
 import org.hornetq.core.management.impl.HornetQServerControlImpl;
 import org.hornetq.core.persistence.StorageManager;
@@ -73,7 +74,9 @@ public interface HornetQServer extends HornetQComponent
 
    ReattachSessionResponseMessage reattachSession(RemotingConnection connection, String name, int lastReceivedCommandID) throws Exception;
 
-   ReplicationEndpoint createReplicationEndpoint(Channel channel) throws Exception;
+   /** The journal at the backup server has to be equivalent as the journal used on the live node. 
+    *  Or else the backup node is out of sync. */
+   ReplicationEndpoint connectToReplicationEndpoint(Channel channel) throws Exception;
 
    CreateSessionResponseMessage createSession(String name,
                                               long channelID,                                              

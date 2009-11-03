@@ -853,6 +853,7 @@ public class SessionFactoryTest extends ServiceTestBase
       Configuration backupConf = new ConfigurationImpl();
       backupConf.setSecurityEnabled(false);
       backupConf.setClustered(true);
+      backupConf.setSharedStore(true);
       backupParams.put(TransportConstants.SERVER_ID_PROP_NAME, 1);
       backupConf.getAcceptorConfigurations()
                 .add(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory",
@@ -873,6 +874,7 @@ public class SessionFactoryTest extends ServiceTestBase
       connectors.put(liveTC.getName(), liveTC);
       liveConf.setConnectorConfigurations(connectors);
       liveConf.setBackupConnectorName(backupTC.getName());
+      liveConf.setSharedStore(true);
       liveConf.setClustered(true);
 
       List<Pair<String, String>> connectorNames = new ArrayList<Pair<String, String>>();

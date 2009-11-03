@@ -170,6 +170,8 @@ public class PacketImpl implements Packet
    public static final byte REPLICATION_LARGE_MESSAGE_END = 90;
    
    public static final byte REPLICATION_LARGE_MESSAGE_WRITE = 91;
+   
+   public static final byte REPLICATION_COMPARE_DATA = 92;
    // Static --------------------------------------------------------
 
    public PacketImpl(final byte type)

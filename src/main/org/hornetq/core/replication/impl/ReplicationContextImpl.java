@@ -14,7 +14,8 @@
 package org.hornetq.core.replication.impl;
 
 import java.util.ArrayList;
-import java.util.concurrent.Executor;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.hornetq.core.replication.ReplicationContext;
 
@@ -27,75 +28,78 @@ import org.hornetq.core.replication.ReplicationContext;
  */
 public class ReplicationContextImpl implements ReplicationContext
 {
-   final Executor executor;
+   private List<Runnable> tasks;
    
-   private ArrayList<Runnable> tasks;
+   private AtomicInteger pendings = new AtomicInteger(0);
    
-   private volatile int pendings;
+   private volatile boolean complete = false;
    
    /**
     * @param executor
     */
-   public ReplicationContextImpl(Executor executor)
+   public ReplicationContextImpl()
    {
       super();
-      this.executor = executor;
    }
 
    /** To be called by the replication manager, when new replication is added to the queue */
-   public synchronized void linedUp()
+   public void linedUp()
    {
-      pendings++;
+      pendings.incrementAndGet();
+   }
+
+   /** You may have several actions to be done after a replication operation is completed. */
+   public void addReplicationAction(Runnable runnable)
+   {
+      if (complete)
+      {
+         // Sanity check, this shouldn't happen
+         throw new IllegalStateException("The Replication Context is complete, and no more tasks are accepted");
+      }
+
+      if (tasks == null)
+      {
+         // No need to use Concurrent, we only add from a single thread.
+         // We don't add any more Runnables after it is complete
+         tasks = new ArrayList<Runnable>();
+      }
+      
+      tasks.add(runnable);
    }
 
    /** To be called by the replication manager, when data is confirmed on the channel */
    public synchronized void replicated()
    {
-      if (--pendings == 0)
+      if (pendings.decrementAndGet() == 0 && complete)
       {
          flush();
       }
    }
 
-   /**
-    * 
+
+   /* (non-Javadoc)
+    * @see org.hornetq.core.replication.ReplicationToken#complete()
     */
-   public void flush()
+   public synchronized void complete()
+   {
+      complete = true;
+      if (pendings.get() == 0 && complete)
+      {
+         flush();
+      }
+  }
+   
+   public synchronized void flush()
    {
       if (tasks != null)
       {
          for (Runnable run : tasks)
          {
-            executor.execute(run);
+            run.run();
          }
          tasks.clear();
       }
    }
    
-   /** You may have several actions to be done after a replication operation is completed. */
-   public synchronized void addReplicationAction(Runnable runnable)
-   {
-      if (pendings == 0)
-      {
-         executor.execute(runnable);
-      }
-      else
-      {
-         if (tasks == null)
-         {
-            tasks = new ArrayList<Runnable>();
-         }
-         
-         tasks.add(runnable);
-      }
-   }
-
-   /* (non-Javadoc)
-    * @see org.hornetq.core.replication.ReplicationToken#complete()
-    */
-   public void complete()
-   {
-      // TODO Auto-generated method stub
-      
-   }
+   
 }
