@@ -36,15 +36,10 @@ import org.hornetq.core.remoting.Channel;
 import org.hornetq.core.remoting.impl.wireformat.SessionReceiveContinuationMessage;
 import org.hornetq.core.remoting.impl.wireformat.SessionReceiveMessage;
 import org.hornetq.core.remoting.spi.HornetQBuffer;
-import org.hornetq.core.server.HandleStatus;
-import org.hornetq.core.server.LargeServerMessage;
-import org.hornetq.core.server.MessageReference;
-import org.hornetq.core.server.Queue;
-import org.hornetq.core.server.ServerConsumer;
-import org.hornetq.core.server.ServerMessage;
-import org.hornetq.core.server.ServerSession;
+import org.hornetq.core.server.*;
 import org.hornetq.core.transaction.Transaction;
 import org.hornetq.core.transaction.impl.TransactionImpl;
+import org.hornetq.core.message.LargeMessageEncodingContext;
 import org.hornetq.utils.TypedProperties;
 
 /**
@@ -643,6 +638,8 @@ public class ServerConsumerImpl implements ServerConsumer
       /** The current position on the message being processed */
       private volatile long positionPendingLargeMessage;
 
+      private LargeMessageEncodingContext context;
+
       public LargeMessageDeliverer(final LargeServerMessage message, final MessageReference ref)
          throws Exception
       {
@@ -689,6 +686,8 @@ public class ServerConsumerImpl implements ServerConsumer
                                                           headerBuffer.array(),
                                                           pendingLargeMessage.getLargeBodySize(),
                                                           ref.getDeliveryCount());
+               context = pendingLargeMessage.createNewContext();
+               context.open();
             }
 
             int precalculateAvailableCredits;
@@ -726,7 +725,7 @@ public class ServerConsumerImpl implements ServerConsumer
                   return false;
                }
 
-               SessionReceiveContinuationMessage chunk = createChunkSend();
+               SessionReceiveContinuationMessage chunk = createChunkSend(context);
 
                int chunkLen = chunk.getBody().length;
 
@@ -759,7 +758,7 @@ public class ServerConsumerImpl implements ServerConsumer
             {
                trace("Finished deliverLargeMessage");
             }
-
+            context.close();
             finish();
 
             return true;
@@ -826,7 +825,7 @@ public class ServerConsumerImpl implements ServerConsumer
          }
       }
 
-      private SessionReceiveContinuationMessage createChunkSend()
+      private SessionReceiveContinuationMessage createChunkSend(LargeMessageEncodingContext context)
       {
          SessionReceiveContinuationMessage chunk;
 
@@ -836,7 +835,8 @@ public class ServerConsumerImpl implements ServerConsumer
 
          HornetQBuffer bodyBuffer = ChannelBuffers.buffer(localChunkLen);
 
-         pendingLargeMessage.encodeBody(bodyBuffer, positionPendingLargeMessage, localChunkLen);
+         //pendingLargeMessage.encodeBody(bodyBuffer, positionPendingLargeMessage, localChunkLen);
+         pendingLargeMessage.encodeBody(bodyBuffer, context, localChunkLen);
 
          chunk = new SessionReceiveContinuationMessage(id,
                                                        bodyBuffer.array(),

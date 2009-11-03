@@ -85,4 +85,5 @@ public interface SequentialFile
 
    void enableAutoFlush();
 
+   SequentialFile copy();
 }

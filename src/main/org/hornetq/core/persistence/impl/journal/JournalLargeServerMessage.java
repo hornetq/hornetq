@@ -25,6 +25,7 @@ import org.hornetq.core.remoting.spi.HornetQBuffer;
 import org.hornetq.core.server.LargeServerMessage;
 import org.hornetq.core.server.MessageReference;
 import org.hornetq.core.server.ServerMessage;
+import org.hornetq.core.message.LargeMessageEncodingContext;
 import org.hornetq.core.server.impl.ServerMessageImpl;
 
 /**
@@ -105,24 +106,14 @@ public class JournalLargeServerMessage extends ServerMessageImpl implements Larg
       bodySize += bytes.length;
    }
 
-   @Override
-   public synchronized void encodeBody(final HornetQBuffer bufferOut, final long start, final int size)
+   public void encodeBody(final HornetQBuffer bufferOut, LargeMessageEncodingContext context, int size)
    {
       try
       {
-         validateFile();
-
          // This could maybe be optimized (maybe reading directly into bufferOut)
          ByteBuffer bufferRead = ByteBuffer.allocate(size);
-         if (!file.isOpen())
-         {
-            file.open();
-         }
 
-         int bytesRead = 0;
-         file.position(start);
-
-         bytesRead = file.read(bufferRead);
+         int bytesRead = context.write(bufferRead);
 
          bufferRead.flip();
 
@@ -198,6 +189,11 @@ public class JournalLargeServerMessage extends ServerMessageImpl implements Larg
       {
          checkDelete();
       }
+   }
+
+   public LargeMessageEncodingContext createNewContext()
+   {
+      return new DecodingContext();
    }
 
    private void checkDelete() throws Exception
@@ -375,11 +371,33 @@ public class JournalLargeServerMessage extends ServerMessageImpl implements Larg
       {
          throw new RuntimeException("could not setup linked file", e);
       }
-      finally
-      {
-      }
    }
 
    // Inner classes -------------------------------------------------
 
+   class DecodingContext implements LargeMessageEncodingContext
+   {
+      private SequentialFile cFile;
+      
+      public void open() throws Exception
+      {
+         cFile = file.copy();
+         cFile.open();
+      }
+
+      public void close() throws Exception
+      {
+         cFile.close();
+      }
+
+      public int write(ByteBuffer bufferRead) throws Exception
+      {
+         return cFile.read(bufferRead);
+      }
+
+      public int write(HornetQBuffer bufferOut, int size)
+      {
+         return -1;
+      }
+   }
 }

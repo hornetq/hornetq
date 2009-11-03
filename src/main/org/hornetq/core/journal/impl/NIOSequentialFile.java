@@ -20,6 +20,7 @@ import java.nio.channels.FileChannel;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.hornetq.core.journal.IOCallback;
+import org.hornetq.core.journal.SequentialFile;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.remoting.spi.HornetQBuffer;
 
@@ -46,6 +47,11 @@ public class NIOSequentialFile extends AbstractSequentialFile
    public NIOSequentialFile(final String directory, final String fileName)
    {
       super(directory, new File(directory + "/" + fileName));
+   }
+
+   public NIOSequentialFile(File file)
+   {
+      super(file.getParent(), new File(file.getPath()));
    }
 
    public int getAlignment()
@@ -265,4 +271,8 @@ public class NIOSequentialFile extends AbstractSequentialFile
    {
    }
 
+   public SequentialFile copy()
+   {
+      return new NIOSequentialFile(getFile());
+   }
 }

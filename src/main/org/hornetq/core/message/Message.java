@@ -18,6 +18,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.hornetq.core.remoting.spi.HornetQBuffer;
+import org.hornetq.core.message.LargeMessageEncodingContext;
 import org.hornetq.utils.SimpleString;
 import org.hornetq.utils.TypedProperties;
 
@@ -81,7 +82,7 @@ public interface Message
    long getLargeBodySize();
          
    // Used on Message chunk
-   void encodeBody(HornetQBuffer buffer, long start, int size);
+   void encodeBody(final HornetQBuffer bufferOut, LargeMessageEncodingContext context, int size);
    
    /** Set the InputStream used on a message that will be sent over a producer */
    void setBodyInputStream(InputStream stream);

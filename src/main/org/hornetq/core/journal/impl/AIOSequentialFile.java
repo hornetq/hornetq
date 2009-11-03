@@ -29,6 +29,7 @@ import org.hornetq.core.asyncio.impl.TimedBuffer;
 import org.hornetq.core.asyncio.impl.TimedBufferObserver;
 import org.hornetq.core.journal.IOCallback;
 import org.hornetq.core.journal.SequentialFileFactory;
+import org.hornetq.core.journal.SequentialFile;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.remoting.spi.HornetQBuffer;
 
@@ -124,6 +125,11 @@ public class AIOSequentialFile extends AbstractSequentialFile
    public void enableAutoFlush()
    {
       timedBuffer.enableAutoFlush();
+   }
+
+   public SequentialFile copy()
+   {
+      return new AIOSequentialFile(factory, -1, -1, getFile().getParent(), getFileName(), maxIO, bufferCallback, executor, pollerExecutor);
    }
 
    public synchronized void close() throws Exception

@@ -365,7 +365,7 @@ public class LargeMessageTestBase extends ServiceTestBase
                                  log.debug("Read " + b + " bytes");
                               }
 
-                              assertEquals(getSamplebyte(b), buffer.readByte());
+                              assertEquals("byte pos" + b + " is incorrect", getSamplebyte(b), buffer.readByte());
                            }
                         }
                      }

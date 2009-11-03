@@ -17,11 +17,13 @@ import static org.hornetq.utils.SimpleString.toSimpleString;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.ByteBuffer;
 
 import org.hornetq.core.buffers.ChannelBuffers;
 import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.message.Message;
+import org.hornetq.core.message.LargeMessageEncodingContext;
 import org.hornetq.core.message.impl.MessageImpl;
 import org.hornetq.core.remoting.Channel;
 import org.hornetq.core.remoting.impl.wireformat.SessionSendContinuationMessage;
@@ -368,6 +370,8 @@ public class ClientProducerImpl implements ClientProducerInternal
       {
          final long bodySize = msg.getLargeBodySize();
 
+         LargeMessageEncodingContext context = new DecodingContext(msg);
+
          for (int pos = 0; pos < bodySize;)
          {
             final boolean lastChunk;
@@ -376,7 +380,7 @@ public class ClientProducerImpl implements ClientProducerInternal
 
             final HornetQBuffer bodyBuffer = ChannelBuffers.buffer(chunkLength);
 
-            msg.encodeBody(bodyBuffer, pos, chunkLength);
+            msg.encodeBody(bodyBuffer, context, chunkLength);
 
             pos += chunkLength;
 
@@ -408,5 +412,34 @@ public class ClientProducerImpl implements ClientProducerInternal
    }
 
    // Inner Classes --------------------------------------------------------------------------------
+   class DecodingContext implements LargeMessageEncodingContext
+   {
+      private final Message message;
+      private int lastPos = 0;
 
+      public DecodingContext(Message message)
+      {
+         this.message = message;
+      }
+
+      public void open() throws Exception
+      {
+      }
+
+      public void close() throws Exception
+      {
+      }
+
+      public int write(ByteBuffer bufferRead) throws Exception
+      {
+         return -1;
+      }
+
+      public int write(HornetQBuffer bufferOut, int size)
+      {
+         bufferOut.writeBytes(message.getBody(), lastPos, size);
+         lastPos += size;
+         return size;
+      }
+   }
 }

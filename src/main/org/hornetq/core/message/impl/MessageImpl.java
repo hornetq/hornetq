@@ -27,6 +27,7 @@ import org.hornetq.core.buffers.ChannelBuffers;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.message.Message;
 import org.hornetq.core.remoting.spi.HornetQBuffer;
+import org.hornetq.core.message.LargeMessageEncodingContext;
 import org.hornetq.utils.SimpleString;
 import org.hornetq.utils.TypedProperties;
 
@@ -213,10 +214,10 @@ public abstract class MessageImpl implements Message
       buffer.writeBytes(localBody.array(), 0, localBody.writerIndex());
    }
 
-   // Used on Message chunk
-   public void encodeBody(HornetQBuffer buffer, long start, int size)
+   // Used on Message chunk side
+   public void encodeBody(final HornetQBuffer bufferOut, LargeMessageEncodingContext context, int size)
    {
-      buffer.writeBytes(body, (int)start, size);
+      context.write(bufferOut, size);
    }
 
    public void decode(final HornetQBuffer buffer)

@@ -27,14 +27,11 @@ import org.hornetq.core.postoffice.Binding;
 import org.hornetq.core.postoffice.BindingType;
 import org.hornetq.core.postoffice.impl.BindingsImpl;
 import org.hornetq.core.remoting.spi.HornetQBuffer;
-import org.hornetq.core.server.Bindable;
-import org.hornetq.core.server.MessageReference;
-import org.hornetq.core.server.Queue;
-import org.hornetq.core.server.RoutingContext;
-import org.hornetq.core.server.ServerMessage;
+import org.hornetq.core.server.*;
 import org.hornetq.core.server.impl.RoutingContextImpl;
 import org.hornetq.core.transaction.Transaction;
 import org.hornetq.core.transaction.TransactionOperation;
+import org.hornetq.core.message.LargeMessageEncodingContext;
 import org.hornetq.tests.util.UnitTestCase;
 import org.hornetq.utils.SimpleString;
 import org.hornetq.utils.TypedProperties;
@@ -456,12 +453,9 @@ public class BindingsImplTest extends UnitTestCase
 
       }
 
-      /* (non-Javadoc)
-       * @see org.hornetq.core.message.Message#encodeBody(org.hornetq.core.remoting.spi.HornetQBuffer, long, int)
-       */
-      public void encodeBody(final HornetQBuffer buffer, final long start, final int size)
+      public void encodeBody(HornetQBuffer bufferOut, LargeMessageEncodingContext context, int size)
       {
-
+         //To change body of implemented methods use File | Settings | File Templates.
       }
 
       /* (non-Javadoc)

@@ -596,6 +596,11 @@ public class FakeSequentialFileFactory implements SequentialFileFactory
       {
       }
 
+      public SequentialFile copy()
+      {
+         return null;  //To change body of implemented methods use File | Settings | File Templates.
+      }
+
       /* (non-Javadoc)
        * @see org.hornetq.core.journal.SequentialFile#write(org.hornetq.core.remoting.spi.HornetQBuffer, boolean, org.hornetq.core.journal.IOCallback)
        */
@@ -696,5 +701,6 @@ public class FakeSequentialFileFactory implements SequentialFileFactory
    public void testFlush()
    {
    }
+
 
 }
