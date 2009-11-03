@@ -193,6 +193,7 @@ public class ClusteredGroupingTest extends ClusterTestBase
       }
    }
 
+
    public void testGroupingSendTo2queues() throws Exception
    {
       setupServer(0, isFileStorage(), isNetty());
@@ -230,9 +231,9 @@ public class ClusteredGroupingTest extends ClusterTestBase
          waitForBindings(1, "queues.testaddress", 1, 1, true);
          waitForBindings(2, "queues.testaddress", 1, 1, true);
 
-         /*waitForBindings(0, "queues.testaddress", 2, 2, false);
+         waitForBindings(0, "queues.testaddress", 2, 2, false);
          waitForBindings(1, "queues.testaddress", 2, 2, false);
-         waitForBindings(2, "queues.testaddress", 2, 2, false);*/
+         waitForBindings(2, "queues.testaddress", 2, 2, false);
 
          sendInRange(0, "queues.testaddress", 0, 10, false, MessageImpl.HDR_GROUP_ID, new SimpleString("id1"));
 
@@ -796,75 +797,6 @@ public class ClusteredGroupingTest extends ClusterTestBase
       }
    }
 
-   public void testGroupingSendTo3queuesSendingNodeGoesDown() throws Exception
-   {
-      setupServer(0, isFileStorage(), isNetty());
-      setupServer(1, isFileStorage(), isNetty());
-      setupServer(2, isFileStorage(), isNetty());
-
-      setupClusterConnection("cluster0", "queues", false, 1, isNetty(), 0, 1, 2);
-
-      setupClusterConnection("cluster1", "queues", false, 1, isNetty(), 1, 0, 2);
-
-      setupClusterConnection("cluster2", "queues", false, 1, isNetty(), 2, 0, 1);
-
-
-      setUpGroupHandler(GroupingHandlerConfiguration.TYPE.LOCAL, 0);
-      setUpGroupHandler(GroupingHandlerConfiguration.TYPE.REMOTE, 1);
-      setUpGroupHandler(GroupingHandlerConfiguration.TYPE.REMOTE, 2);
-
-      startServers(0, 1, 2);
-
-      try
-      {
-
-         setupSessionFactory(0, isNetty());
-         setupSessionFactory(1, isNetty());
-         setupSessionFactory(2, isNetty());
-
-         createQueue(0, "queues.testaddress", "queue0", null, true);
-         createQueue(1, "queues.testaddress", "queue0", null, true);
-         createQueue(2, "queues.testaddress", "queue0", null, true);
-
-         addConsumer(0, 1, "queue0", null);
-
-         waitForBindings(0, "queues.testaddress", 1, 0, true);
-         waitForBindings(1, "queues.testaddress", 1, 1, true);
-         waitForBindings(2, "queues.testaddress", 1, 0, true);
-
-         waitForBindings(0, "queues.testaddress", 2, 1, false);
-         waitForBindings(1, "queues.testaddress", 2, 0, false);
-         waitForBindings(2, "queues.testaddress", 2, 1, false);
-
-         sendInRange(1, "queues.testaddress", 0, 10, false, MessageImpl.HDR_GROUP_ID, new SimpleString("id1"));
-
-         verifyReceiveAllInRange(0, 10, 0);
-         closeSessionFactory(0);
-         stopServers(0);
-
-         sendInRange(2, "queues.testaddress", 10, 20, false, MessageImpl.HDR_GROUP_ID, new SimpleString("id1"));
-
-
-         setUpGroupHandler(GroupingHandlerConfiguration.TYPE.LOCAL, 0);
-         startServers(0);
-         waitForBindings(0, "queues.testaddress", 1, 0, true);
-         setupSessionFactory(0, isNetty());
-         verifyReceiveAllInRange(10, 20, 0);
-         sendInRange(0, "queues.testaddress", 20, 30, false, MessageImpl.HDR_GROUP_ID, new SimpleString("id1"));
-
-         verifyReceiveAllInRange(20, 30, 0);
-
-         System.out.println("*****************************************************************************");
-      }
-      finally
-      {
-         //closeAllConsumers();
-
-         closeAllSessionFactories();
-
-         stopServers(0, 1, 2);
-      }
-   }
 
    public void testGroupingMultipleQueuesOnAddress() throws Exception
    {
