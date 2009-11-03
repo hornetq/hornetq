@@ -36,6 +36,9 @@ import org.hornetq.core.server.impl.ServerMessageImpl;
  *
  *
  */
+
+
+//FIXME - this class should be renamed to just large message
 public class JournalLargeServerMessage extends ServerMessageImpl implements LargeServerMessage
 {
    // Constants -----------------------------------------------------
@@ -54,6 +57,8 @@ public class JournalLargeServerMessage extends ServerMessageImpl implements Larg
    private SequentialFile file;
 
    private long bodySize = -1;
+   
+   private final AtomicInteger delayDeletionCount = new AtomicInteger(0);
 
    // Static --------------------------------------------------------
 
@@ -177,29 +182,18 @@ public class JournalLargeServerMessage extends ServerMessageImpl implements Larg
    public void decode(final HornetQBuffer buffer)
    {
       file = null;
-      try
-      {
-         this.setStored();
-      }
-      catch (Exception e)
-      {
-         // File still null, this wasn't supposed to happen ever.
-         log.warn(e.getMessage(), e);
-      }
       decodeHeadersAndProperties(buffer);
    }
-
-   private final AtomicInteger delayDeletionCount = new AtomicInteger(0);
 
    public synchronized void incrementDelayDeletionCount()
    {
       this.delayDeletionCount.incrementAndGet();
    }
-   
+
    public synchronized void decrementDelayDeletionCount() throws Exception
    {
       int count = this.delayDeletionCount.decrementAndGet();
-      
+
       if (count == 0)
       {
          checkDelete();
@@ -207,7 +201,7 @@ public class JournalLargeServerMessage extends ServerMessageImpl implements Larg
    }
 
    private void checkDelete() throws Exception
-   {
+   {      
       if (getRefCount() <= 0)
       {
          if (linkMessage != null)
@@ -265,7 +259,7 @@ public class JournalLargeServerMessage extends ServerMessageImpl implements Larg
 
    public boolean isFileExists() throws Exception
    {
-      SequentialFile localfile = storageManager.createFileForLargeMessage(getMessageID(), isStored());
+      SequentialFile localfile = storageManager.createFileForLargeMessage(getMessageID());
       return localfile.exists();
    }
 
@@ -282,18 +276,6 @@ public class JournalLargeServerMessage extends ServerMessageImpl implements Larg
       }
 
       return memoryEstimate;
-   }
-
-   @Override
-   public void setStored() throws Exception
-   {
-      super.setStored();
-      releaseResources();
-
-      if (file != null && linkMessage == null)
-      {
-         storageManager.completeLargeMessage(this);
-      }
    }
 
    public synchronized void releaseResources()
@@ -323,12 +305,12 @@ public class JournalLargeServerMessage extends ServerMessageImpl implements Larg
          idToUse = linkMessage.getMessageID();
       }
 
-      SequentialFile newfile = storageManager.createFileForLargeMessage(idToUse, isStored());
+      SequentialFile newfile = storageManager.createFileForLargeMessage(idToUse);
 
       ServerMessage newMessage = new JournalLargeServerMessage(linkMessage == null ? this
-                                                                                              : (JournalLargeServerMessage)linkMessage,
-                                                                           newfile,
-                                                                           newID);
+                                                                                  : (JournalLargeServerMessage)linkMessage,
+                                                               newfile,
+                                                               newID);
 
       return newMessage;
    }
@@ -360,7 +342,7 @@ public class JournalLargeServerMessage extends ServerMessageImpl implements Larg
             throw new RuntimeException("MessageID not set on LargeMessage");
          }
 
-         file = storageManager.createFileForLargeMessage(getMessageID(), isStored());
+         file = storageManager.createFileForLargeMessage(getMessageID());
 
          file.open();
 
@@ -368,14 +350,6 @@ public class JournalLargeServerMessage extends ServerMessageImpl implements Larg
 
       }
    }
-
-//   /* (non-Javadoc)
-//    * @see org.hornetq.core.server.LargeServerMessage#getLinkedMessage()
-//    */
-//   public LargeServerMessage getLinkedMessage()
-//   {
-//      return linkMessage;
-//   }
 
    /* (non-Javadoc)
     * @see org.hornetq.core.server.LargeServerMessage#setLinkedMessage(org.hornetq.core.server.LargeServerMessage)
@@ -390,7 +364,7 @@ public class JournalLargeServerMessage extends ServerMessageImpl implements Larg
 
       this.linkMessage = message;
 
-      file = storageManager.createFileForLargeMessage(message.getMessageID(), true);
+      file = storageManager.createFileForLargeMessage(message.getMessageID());
       try
       {
          file.open();

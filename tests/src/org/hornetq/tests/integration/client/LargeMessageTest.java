@@ -37,6 +37,7 @@ import org.hornetq.core.server.Queue;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.core.settings.impl.AddressFullMessagePolicy;
 import org.hornetq.tests.integration.largemessage.LargeMessageTestBase;
+import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.utils.DataConstants;
 import org.hornetq.utils.SimpleString;
 
@@ -436,8 +437,10 @@ public class LargeMessageTest extends LargeMessageTestBase
          consumerExpiry = session.createConsumer(ADDRESS_DLA);
 
          msg1 = consumerExpiry.receive(5000);
+         
          assertNotNull(msg1);
-         // msg1.acknowledge();
+         
+         msg1.acknowledge();
 
          for (int i = 0; i < messageSize; i++)
          {
@@ -1348,19 +1351,28 @@ public class LargeMessageTest extends LargeMessageTestBase
 
    }
 
-   public void testSendRollbackXA() throws Exception
+   public void testSendRollbackXADurable() throws Exception
    {
-      internalTestSendRollback(true);
+      internalTestSendRollback(true, true);
+   }
+   
+   public void testSendRollbackXANonDurable() throws Exception
+   {
+      internalTestSendRollback(true, false);
    }
 
-   public void testSendRollback() throws Exception
+   public void testSendRollbackDurable() throws Exception
    {
-      internalTestSendRollback(false);
+      internalTestSendRollback(false, true);
+   }
+   
+   public void testSendRollbackNonDurable() throws Exception
+   {
+      internalTestSendRollback(false, false);
    }
 
-   private void internalTestSendRollback(final boolean isXA) throws Exception
+   private void internalTestSendRollback(final boolean isXA, final boolean durable) throws Exception
    {
-
       ClientSession session = null;
 
       try
@@ -1379,13 +1391,13 @@ public class LargeMessageTest extends LargeMessageTestBase
 
          if (isXA)
          {
-            xid = newXID();
+            xid = RandomUtil.randomXid();
             session.start(xid, XAResource.TMNOFLAGS);
          }
 
          ClientProducer producer = session.createProducer(ADDRESS);
 
-         Message clientFile = createLargeClientMessage(session, 50000, false);
+         Message clientFile = createLargeClientMessage(session, 50000, durable);
 
          for (int i = 0; i < 1; i++)
          {

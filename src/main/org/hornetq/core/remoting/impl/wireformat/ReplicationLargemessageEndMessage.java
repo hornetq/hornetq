@@ -31,8 +31,6 @@ public class ReplicationLargemessageEndMessage extends PacketImpl
 
    long messageId;
 
-   boolean isDelete;
-
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
@@ -42,11 +40,10 @@ public class ReplicationLargemessageEndMessage extends PacketImpl
       super(REPLICATION_LARGE_MESSAGE_END);
    }
 
-   public ReplicationLargemessageEndMessage(final long messageId, final boolean isDelete)
+   public ReplicationLargemessageEndMessage(final long messageId)
    {
       this();
       this.messageId = messageId;
-      this.isDelete = isDelete;
    }
 
    // Public --------------------------------------------------------
@@ -54,21 +51,19 @@ public class ReplicationLargemessageEndMessage extends PacketImpl
    @Override
    public int getRequiredBufferSize()
    {
-      return BASIC_PACKET_SIZE + DataConstants.SIZE_LONG + DataConstants.SIZE_BOOLEAN;
+      return BASIC_PACKET_SIZE + DataConstants.SIZE_LONG;
    }
 
    @Override
    public void encodeBody(final HornetQBuffer buffer)
    {
       buffer.writeLong(messageId);
-      buffer.writeBoolean(isDelete);
    }
 
    @Override
    public void decodeBody(final HornetQBuffer buffer)
    {
       messageId = buffer.readLong();
-      isDelete = buffer.readBoolean();
    }
 
    /**
@@ -77,14 +72,6 @@ public class ReplicationLargemessageEndMessage extends PacketImpl
    public long getMessageId()
    {
       return messageId;
-   }
-
-   /**
-    * @return the isDelete
-    */
-   public boolean isDelete()
-   {
-      return isDelete;
    }
 
    // Package protected ---------------------------------------------

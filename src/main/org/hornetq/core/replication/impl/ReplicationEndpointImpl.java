@@ -66,7 +66,7 @@ public class ReplicationEndpointImpl implements ReplicationEndpoint
    // Attributes ----------------------------------------------------
 
    private static final boolean trace = log.isTraceEnabled();
-   
+
    private static void trace(String msg)
    {
       log.trace(msg);
@@ -85,7 +85,7 @@ public class ReplicationEndpointImpl implements ReplicationEndpoint
    private PagingManager pageManager;
 
    private final ConcurrentMap<SimpleString, ConcurrentMap<Integer, Page>> pageIndex = new ConcurrentHashMap<SimpleString, ConcurrentMap<Integer, Page>>();
-   
+
    private final ConcurrentMap<Long, LargeServerMessage> largeMessages = new ConcurrentHashMap<Long, LargeServerMessage>();
 
    // Constructors --------------------------------------------------
@@ -201,7 +201,7 @@ public class ReplicationEndpointImpl implements ReplicationEndpoint
    {
       channel.close();
       storage.stop();
-      
+
       for (ConcurrentMap<Integer, Page> map : pageIndex.values())
       {
          for (Page page : map.values())
@@ -216,15 +216,14 @@ public class ReplicationEndpointImpl implements ReplicationEndpoint
             }
          }
       }
-      
+
       pageIndex.clear();
-      
-      
+
       for (LargeServerMessage largeMessage : largeMessages.values())
       {
          largeMessage.releaseResources();
       }
-      
+
       largeMessages.clear();
    }
 
@@ -254,30 +253,17 @@ public class ReplicationEndpointImpl implements ReplicationEndpoint
     */
    private void handleLargeMessageEnd(ReplicationLargemessageEndMessage packet)
    {
-      LargeServerMessage message = lookupLargeMessage(packet.getMessageId(), packet.isDelete());
+      LargeServerMessage message = lookupLargeMessage(packet.getMessageId(), true);
+      
       if (message != null)
       {
-         if (packet.isDelete())
+         try
          {
-            try
-            {
-               message.deleteFile();
-            }
-            catch (Exception e)
-            {
-               log.warn("Error deleting large message ID = " + packet.getMessageId(), e);
-            }
+            message.deleteFile();
          }
-         else
+         catch (Exception e)
          {
-            try
-            {
-               message.setStored();
-            }
-            catch (Exception e)
-            {
-               log.warn("Error deleting large message ID = " + packet.getMessageId(), e);
-            }
+            log.warn("Error deleting large message ID = " + packet.getMessageId(), e);
          }
       }
    }
@@ -293,13 +279,12 @@ public class ReplicationEndpointImpl implements ReplicationEndpoint
          message.addBytes(packet.getBody());
       }
    }
-   
-   
-   private LargeServerMessage lookupLargeMessage(long messageId, boolean isDelete)
+
+   private LargeServerMessage lookupLargeMessage(long messageId, boolean delete)
    {
       LargeServerMessage message;
-      
-      if (isDelete)
+
+      if (delete)
       {
          message = largeMessages.remove(messageId);
       }
@@ -307,12 +292,12 @@ public class ReplicationEndpointImpl implements ReplicationEndpoint
       {
          message = largeMessages.get(messageId);
       }
-      
+
       if (message == null)
       {
          log.warn("Large MessageID " + messageId + "  is not available on backup server. Ignoring replication message");
       }
-      
+
       return message;
 
    }
@@ -327,7 +312,6 @@ public class ReplicationEndpointImpl implements ReplicationEndpoint
       trace("Receiving Large Message " + largeMessage.getMessageID() + " on backup");
       this.largeMessages.put(largeMessage.getMessageID(), largeMessage);
    }
-
 
    /**
     * @param packet
@@ -433,12 +417,11 @@ public class ReplicationEndpointImpl implements ReplicationEndpoint
       ConcurrentMap<Integer, Page> pages = getPageMap(packet.getStoreName());
 
       Page page = pages.remove(packet.getPageNumber());
-      
+
       if (page == null)
       {
          page = getPage(packet.getStoreName(), packet.getPageNumber());
       }
-      
 
       if (page != null)
       {

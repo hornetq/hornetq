@@ -42,8 +42,6 @@ public class ServerMessageImpl extends MessageImpl implements ServerMessage
    /** Global reference counts for paging control */
    private final AtomicInteger refCount = new AtomicInteger(0);
 
-   private volatile boolean stored;
-
    // We cache this
    private volatile int memoryEstimate = -1;
 
@@ -100,16 +98,6 @@ public class ServerMessageImpl extends MessageImpl implements ServerMessage
       MessageReference ref = new MessageReferenceImpl(this, queue);
 
       return ref;
-   }
-
-   public boolean isStored()
-   {
-      return stored;
-   }
-
-   public void setStored() throws Exception
-   {
-      stored = true;
    }
 
    public int incrementRefCount(final PagingStore pagingStore, final MessageReference reference) throws Exception

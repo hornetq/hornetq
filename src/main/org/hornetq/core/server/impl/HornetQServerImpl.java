@@ -1379,9 +1379,10 @@ public class HornetQServerImpl implements HornetQServer
                                                         config.getName(),
                                                         config.getAddress(),
                                                         config.getTimeout());
-         }
-         log.info("deploying grouping handler: " + groupingHandler);
+         }        
+         
          this.groupingHandler = groupingHandler;
+         
          managementService.addNotificationListener(groupingHandler);
       }
    }

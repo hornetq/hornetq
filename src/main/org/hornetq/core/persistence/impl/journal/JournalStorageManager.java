@@ -95,8 +95,9 @@ public class JournalStorageManager implements StorageManager
 
    private static final long CHECKPOINT_BATCH_SIZE = Integer.MAX_VALUE;
 
-   //grouping journal record type
+   // grouping journal record type
    public static final byte GROUP_RECORD = 41;
+
    // Bindings journal record type
 
    public static final byte QUEUE_BINDING_RECORD = 21;
@@ -190,13 +191,13 @@ public class JournalStorageManager implements StorageManager
       SequentialFileFactory bindingsFF = new NIOSequentialFileFactory(bindingsDir);
 
       Journal localBindings = new JournalImpl(1024 * 1024,
-                                        2,
-                                        config.getJournalCompactMinFiles(),
-                                        config.getJournalCompactPercentage(),
-                                        bindingsFF,
-                                        "hornetq-bindings",
-                                        "bindings",
-                                        1);
+                                              2,
+                                              config.getJournalCompactMinFiles(),
+                                              config.getJournalCompactPercentage(),
+                                              bindingsFF,
+                                              "hornetq-bindings",
+                                              "bindings",
+                                              1);
 
       if (replicator != null)
       {
@@ -254,17 +255,17 @@ public class JournalStorageManager implements StorageManager
       }
       else
       {
-      this.idGenerator = new BatchingIDGenerator(0, CHECKPOINT_BATCH_SIZE, bindingsJournal);
+         this.idGenerator = new BatchingIDGenerator(0, CHECKPOINT_BATCH_SIZE, bindingsJournal);
       }
 
       Journal localMessage = new JournalImpl(config.getJournalFileSize(),
-                                       config.getJournalMinFiles(),
-                                       config.getJournalCompactMinFiles(),
-                                       config.getJournalCompactPercentage(),
-                                       journalFF,
-                                       "hornetq-data",
-                                       "hq",
-                                       config.getJournalMaxAIO());
+                                             config.getJournalMinFiles(),
+                                             config.getJournalCompactMinFiles(),
+                                             config.getJournalCompactPercentage(),
+                                             journalFF,
+                                             "hornetq-data",
+                                             "hq",
+                                             config.getJournalMaxAIO());
 
       if (replicator != null)
       {
@@ -471,8 +472,8 @@ public class JournalStorageManager implements StorageManager
 
    public void updateScheduledDeliveryTime(final MessageReference ref) throws Exception
    {
-      ScheduledDeliveryEncoding encoding = new ScheduledDeliveryEncoding(ref.getScheduledDeliveryTime(),
-                                                                         ref.getQueue().getID());
+      ScheduledDeliveryEncoding encoding = new ScheduledDeliveryEncoding(ref.getScheduledDeliveryTime(), ref.getQueue()
+                                                                                                            .getID());
 
       messageJournal.appendUpdateRecord(ref.getMessage().getMessageID(),
                                         SET_SCHEDULED_DELIVERY_TIME,
@@ -548,12 +549,12 @@ public class JournalStorageManager implements StorageManager
       messageJournal.appendAddRecord(id, HEURISTIC_COMPLETION, new HeuristicCompletionEncoding(xid, isCommit), true);
       return id;
    }
-   
+
    public void deleteHeuristicCompletion(long id) throws Exception
    {
       messageJournal.appendDeleteRecord(id, true);
    }
-   
+
    public void deletePageTransactional(final long txID, final long recordID) throws Exception
    {
       messageJournal.appendDeleteRecordTransactional(txID, recordID);
@@ -561,8 +562,8 @@ public class JournalStorageManager implements StorageManager
 
    public void updateScheduledDeliveryTimeTransactional(final long txID, final MessageReference ref) throws Exception
    {
-      ScheduledDeliveryEncoding encoding = new ScheduledDeliveryEncoding(ref.getScheduledDeliveryTime(),
-                                                                         ref.getQueue().getID());
+      ScheduledDeliveryEncoding encoding = new ScheduledDeliveryEncoding(ref.getScheduledDeliveryTime(), ref.getQueue()
+                                                                                                            .getID());
 
       messageJournal.appendUpdateRecordTransactional(txID,
                                                      ref.getMessage().getMessageID(),
@@ -627,19 +628,6 @@ public class JournalStorageManager implements StorageManager
                                         updateInfo,
                                         syncNonTransactional);
    }
-   /**
-    * @param journalLargeServerMessage
-    * @throws Exception
-    */
-   public void completeLargeMessage(JournalLargeServerMessage message) throws Exception
-   {
-      if (isReplicated())
-      {
-         replicator.largeMessageEnd(message.getMessageID());
-      }
-      SequentialFile fileToRename = createFileForLargeMessage(message.getMessageID(), true);
-      message.getFile().renameTo(fileToRename.getFileName());
-   }
 
    private static final class AddMessageRecord
    {
@@ -654,11 +642,11 @@ public class JournalStorageManager implements StorageManager
 
       int deliveryCount;
    }
-   
+
    private class LargeMessageTXFailureCallback implements TransactionFailureCallback
    {
       private final Map<Long, ServerMessage> messages;
-      
+
       public LargeMessageTXFailureCallback(Map<Long, ServerMessage> messages)
       {
          super();
@@ -687,7 +675,7 @@ public class JournalStorageManager implements StorageManager
             }
          }
       }
-      
+
    }
 
    public void loadMessageJournal(final PostOffice postOffice,
@@ -701,7 +689,7 @@ public class JournalStorageManager implements StorageManager
       List<PreparedTransactionInfo> preparedTransactions = new ArrayList<PreparedTransactionInfo>();
 
       Map<Long, ServerMessage> messages = new HashMap<Long, ServerMessage>();
-      
+
       messageJournal.load(records, preparedTransactions, new LargeMessageTXFailureCallback(messages));
       
       ArrayList<LargeServerMessage> largeMessages = new ArrayList<LargeServerMessage>();
@@ -926,7 +914,7 @@ public class JournalStorageManager implements StorageManager
             msg.decrementDelayDeletionCount();
          }
       }
-      
+
       if (perfBlastPages != -1)
       {
          messageJournal.perfBlast(perfBlastPages);
@@ -946,25 +934,24 @@ public class JournalStorageManager implements StorageManager
       LargeMessageEncoding messageEncoding = new LargeMessageEncoding(largeMessage);
 
       messageEncoding.decode(buff);
-      
+
       Long originalMessageID = (Long)largeMessage.getProperties().getProperty(MessageImpl.HDR_ORIG_MESSAGE_ID);
-      
+
       // Using the linked file by the original file
       if (originalMessageID != null)
       {
          LargeServerMessage originalMessage = (LargeServerMessage)messages.get(originalMessageID);
-         
+
          if (originalMessage == null)
          {
             // this could happen if the message was deleted but the file still exists as the file still being used
             originalMessage = createLargeMessage();
             originalMessage.setMessageID(originalMessageID);
-            originalMessage.setStored();
             messages.put(originalMessageID, originalMessage);
          }
-         
+
          originalMessage.incrementDelayDeletionCount();
-         
+
          largeMessage.setLinkedMessage(originalMessage);
       }
       return largeMessage;
@@ -992,7 +979,7 @@ public class JournalStorageManager implements StorageManager
 
          // Use same method as load message journal to prune out acks, so they don't get added.
          // Then have reacknowledge(tx) methods on queue, which needs to add the page size
-
+  
          // first get any sent messages for this tx and recreate
          for (RecordInfo record : preparedTransaction.records)
          {
@@ -1001,13 +988,13 @@ public class JournalStorageManager implements StorageManager
             HornetQBuffer buff = ChannelBuffers.wrappedBuffer(data);
 
             byte recordType = record.getUserRecordType();
-
+            
             switch (recordType)
             {
                case ADD_LARGE_MESSAGE:
-               {
+               {                 
                   messages.put(record.id, parseLargeMessage(messages, buff));
-                  
+
                   break;
                }
                case ADD_MESSAGE:
@@ -1022,6 +1009,7 @@ public class JournalStorageManager implements StorageManager
                }
                case ADD_REF:
                {
+                
                   long messageID = record.id;
 
                   RefEncoding encoding = new RefEncoding();
@@ -1163,11 +1151,13 @@ public class JournalStorageManager implements StorageManager
          resourceManager.putTransaction(xid, tx);
       }
    }
-   
-   //grouping handler operations
+
+   // grouping handler operations
    public void addGrouping(GroupBinding groupBinding) throws Exception
    {
-      GroupingEncoding groupingEncoding = new GroupingEncoding(groupBinding.getId(), groupBinding.getGroupId(), groupBinding.getClusterName());
+      GroupingEncoding groupingEncoding = new GroupingEncoding(groupBinding.getId(),
+                                                               groupBinding.getGroupId(),
+                                                               groupBinding.getClusterName());
       bindingsJournal.appendAddRecord(groupBinding.getId(), GROUP_RECORD, groupingEncoding, true);
    }
 
@@ -1222,7 +1212,7 @@ public class JournalStorageManager implements StorageManager
 
             bindingEncoding.setId(id);
 
-            queueBindingInfos.add(bindingEncoding);          
+            queueBindingInfos.add(bindingEncoding);
          }
          else if (rec == PERSISTENT_ID_RECORD)
          {
@@ -1236,7 +1226,7 @@ public class JournalStorageManager implements StorageManager
          {
             idGenerator.loadState(record.id, buffer);
          }
-         else if(rec == GROUP_RECORD)
+         else if (rec == GROUP_RECORD)
          {
             GroupingEncoding encoding = new GroupingEncoding();
             encoding.decode(buffer);
@@ -1285,7 +1275,7 @@ public class JournalStorageManager implements StorageManager
       // Must call close to make sure last id is persisted
       if (idGenerator != null)
       {
-      idGenerator.close();
+         idGenerator.close();
       }
 
       bindingsJournal.stop();
@@ -1371,7 +1361,7 @@ public class JournalStorageManager implements StorageManager
       if (executor == null)
       {
          deleteAction.run();
-   }
+      }
       else
       {
          executor.execute(deleteAction);
@@ -1382,16 +1372,9 @@ public class JournalStorageManager implements StorageManager
     * @param messageID
     * @return
     */
-   SequentialFile createFileForLargeMessage(final long messageID, final boolean stored)
+   SequentialFile createFileForLargeMessage(final long messageID)
    {
-      if (stored)
-      {
-         return largeMessagesFactory.createSequentialFile(messageID + ".msg", -1);
-      }
-      else
-      {
-         return largeMessagesFactory.createSequentialFile(messageID + ".tmp", -1);
-      }
+      return largeMessagesFactory.createSequentialFile(messageID + ".msg", -1);      
    }
 
    // Private ----------------------------------------------------------------------------------
@@ -1464,13 +1447,13 @@ public class JournalStorageManager implements StorageManager
          return XidCodecSupport.getXidEncodeLength(xid);
       }
    }
-   
+
    private static class HeuristicCompletionEncoding implements EncodingSupport
    {
       Xid xid;
 
       boolean isCommit;
-      
+
       HeuristicCompletionEncoding(final Xid xid, final boolean isCommit)
       {
          this.xid = xid;
@@ -1920,6 +1903,5 @@ public class JournalStorageManager implements StorageManager
       }
 
    }
-
 
 }

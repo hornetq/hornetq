@@ -78,8 +78,6 @@ public interface ReplicationManager extends HornetQComponent
    
    void largeMessageWrite(long messageId, byte [] body);
    
-   void largeMessageEnd(long messageId);
-   
    void largeMessageDelete(long messageId);
 
 }

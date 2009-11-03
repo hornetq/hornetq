@@ -276,18 +276,7 @@ public class ReplicationManagerImpl implements ReplicationManager
    {
       if (enabled)
       {
-         sendReplicatePacket(new ReplicationLargemessageEndMessage(messageId, true));
-      }
-   }
-
-   /* (non-Javadoc)
-    * @see org.hornetq.core.replication.ReplicationManager#largeMessageEnd(long)
-    */
-   public void largeMessageEnd(long messageId)
-   {
-      if (enabled)
-      {
-         sendReplicatePacket(new ReplicationLargemessageEndMessage(messageId, false));
+         sendReplicatePacket(new ReplicationLargemessageEndMessage(messageId));
       }
    }
 

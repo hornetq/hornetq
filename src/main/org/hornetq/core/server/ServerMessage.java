@@ -47,11 +47,6 @@ public interface ServerMessage extends Message, EncodingSupport
 
    int getMemoryEstimate();
 
-   //TODO - do we really need this? Can't we use durable ref count?
-   void setStored() throws Exception;
-
-   boolean isStored();
-
    int getRefCount();
 
    ServerMessage makeCopyForExpiryOrDLA(long newID, boolean expiry) throws Exception;

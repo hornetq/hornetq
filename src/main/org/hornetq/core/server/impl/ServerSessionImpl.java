@@ -324,7 +324,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
       remotingConnection.removeFailureListener(this);
 
       // Return any outstanding credits
-      
+
       closed = true;
 
       for (CreditManagerHolder holder : creditManagerHolders.values())
@@ -648,7 +648,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
       {
          log.error("Failed to query consumer deliveries", e);
       }
-      
+
       sendResponse(message, null, false, false);
    }
 
@@ -1064,9 +1064,9 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
             response = new SessionXAResponseMessage(true, XAException.XAER_PROTO, msg);
          }
          else
-         {
+         {                     
             Transaction theTx = resourceManager.removeTransaction(xid);
-
+            
             if (theTx == null)
             {
                // checked heuristic committed transactions
@@ -1436,9 +1436,9 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
       Packet response = null;
 
       ServerMessage message = packet.getServerMessage();
-            
+
       try
-      {         
+      {
          long id = storageManager.generateUniqueID();
 
          message.setMessageID(id);
@@ -1510,9 +1510,9 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
             currentLargeMessage = null;
 
             message.releaseResources();
-                        
+
             send(message);
-            
+
             releaseOutStanding(message);
          }
 
@@ -1857,7 +1857,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
    private void doRollback(final boolean lastMessageAsDelived, final Transaction theTx) throws Exception
    {
       boolean wasStarted = started;
-
+      
       List<MessageReference> toCancel = new ArrayList<MessageReference>();
 
       for (ServerConsumer consumer : consumers.values())
@@ -1874,7 +1874,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
       {
          ref.getQueue().cancel(theTx, ref);
       }
-
+            
       theTx.rollback();
 
       if (wasStarted)
@@ -1899,7 +1899,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
 
       tx = new TransactionImpl(storageManager);
    }
-   
+
    /*
     * The way flow producer flow control works is as follows:
     * The client can only send messages as long as it has credits. It requests credits from the server
@@ -1914,11 +1914,11 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
    private void releaseOutStanding(final ServerMessage message) throws Exception
    {
       CreditManagerHolder holder = getCreditManagerHolder(message.getDestination());
-      
+
       int size = message.getEncodeSize();
-      
+
       holder.outstandingCredits -= size;
-      
+
       holder.store.returnProducerCredits(size);
    }
 
@@ -1945,6 +1945,6 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
       else
       {
          postOffice.route(msg, tx);
-      }  
+      }
    }
 }

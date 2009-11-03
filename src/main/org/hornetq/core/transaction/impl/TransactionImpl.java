@@ -62,7 +62,7 @@ public class TransactionImpl implements Transaction
    private final long createTime;
 
    public TransactionImpl(final StorageManager storageManager)
-   {
+   {    
       this.storageManager = storageManager;
 
       xid = null;
@@ -73,7 +73,7 @@ public class TransactionImpl implements Transaction
    }
 
    public TransactionImpl(final Xid xid, final StorageManager storageManager, final PostOffice postOffice)
-   {
+   {      
       this.storageManager = storageManager;
 
       this.xid = xid;
@@ -84,7 +84,7 @@ public class TransactionImpl implements Transaction
    }
 
    public TransactionImpl(final long id, final Xid xid, final StorageManager storageManager)
-   {
+   {    
       this.storageManager = storageManager;
 
       this.xid = xid;
@@ -276,7 +276,7 @@ public class TransactionImpl implements Transaction
          if (operations != null)
          {
             for (TransactionOperation operation : operations)
-            {
+            {              
                operation.beforeRollback(this);
             }
          }

@@ -600,8 +600,6 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
       {
          if (pagingManager.page(message, true))
          {
-            message.setStored();
-
             return;
          }
       }
@@ -668,7 +666,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
    }
 
    public MessageReference reroute(final ServerMessage message, final Queue queue, final Transaction tx) throws Exception
-   {
+   {     
       MessageReference reference = message.createReference(queue);
 
       Long scheduledDeliveryTime = (Long)message.getProperty(MessageImpl.HDR_SCHEDULED_DELIVERY_TIME);
@@ -679,8 +677,6 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
       }
 
       message.incrementDurableRefCount();
-
-      message.setStored();
 
       PagingStore store = pagingManager.getPageStore(message.getDestination());
 
@@ -865,11 +861,11 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
          {
             reference.setScheduledDeliveryTime(scheduledDeliveryTime);
          }
-
+         
          if (message.isDurable() && queue.isDurable())
          {
             int durableRefCount = message.incrementDurableRefCount();
-
+            
             if (durableRefCount == 1)
             {
                if (tx != null)
@@ -880,8 +876,6 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
                {
                   storageManager.storeMessage(message);
                }
-
-               message.setStored();
             }
 
             if (tx != null)
@@ -1163,7 +1157,6 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
             {
                if (pagingManager.page(message, tx.getID(), first))
                {
-                  message.setStored();
                   if (message.isDurable())
                   {
                      // We only create pageTransactions if using persistent messages
@@ -1232,7 +1225,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
       public void beforeRollback(Transaction tx) throws Exception
       {
          // Reverse the ref counts, and paging sizes
-
+         
          for (MessageReference ref : refs)
          {
             ServerMessage message = ref.getMessage();

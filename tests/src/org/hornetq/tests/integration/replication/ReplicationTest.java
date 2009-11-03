@@ -248,7 +248,7 @@ public class ReplicationTest extends ServiceTestBase
 
          manager.largeMessageWrite(500, new byte[1024]);
 
-         manager.largeMessageEnd(500);
+         manager.largeMessageDelete(500);
 
          blockOnReplication(manager);
 
