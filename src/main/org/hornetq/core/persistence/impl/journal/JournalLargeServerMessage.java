@@ -66,7 +66,7 @@ public class JournalLargeServerMessage extends ServerMessageImpl implements Larg
 
    public JournalLargeServerMessage(final JournalStorageManager storageManager)
    {
-      this.storageManager = storageManager;
+      this.storageManager = storageManager;      
    }
 
    /**
@@ -83,7 +83,7 @@ public class JournalLargeServerMessage extends ServerMessageImpl implements Larg
       storageManager = copy.storageManager;
       file = fileCopy;
       bodySize = copy.bodySize;
-      setMessageID(newID);
+      setMessageID(newID);      
    }
 
    // Public --------------------------------------------------------
@@ -259,7 +259,7 @@ public class JournalLargeServerMessage extends ServerMessageImpl implements Larg
 
    public boolean isFileExists() throws Exception
    {
-      SequentialFile localfile = storageManager.createFileForLargeMessage(getMessageID());
+      SequentialFile localfile = storageManager.createFileForLargeMessage(getMessageID(), durable);
       return localfile.exists();
    }
 
@@ -305,7 +305,7 @@ public class JournalLargeServerMessage extends ServerMessageImpl implements Larg
          idToUse = linkMessage.getMessageID();
       }
 
-      SequentialFile newfile = storageManager.createFileForLargeMessage(idToUse);
+      SequentialFile newfile = storageManager.createFileForLargeMessage(idToUse, durable);
 
       ServerMessage newMessage = new JournalLargeServerMessage(linkMessage == null ? this
                                                                                   : (JournalLargeServerMessage)linkMessage,
@@ -341,8 +341,8 @@ public class JournalLargeServerMessage extends ServerMessageImpl implements Larg
          {
             throw new RuntimeException("MessageID not set on LargeMessage");
          }
-
-         file = storageManager.createFileForLargeMessage(getMessageID());
+        
+         file = storageManager.createFileForLargeMessage(getMessageID(), durable);
 
          file.open();
 
@@ -364,7 +364,7 @@ public class JournalLargeServerMessage extends ServerMessageImpl implements Larg
 
       this.linkMessage = message;
 
-      file = storageManager.createFileForLargeMessage(message.getMessageID());
+      file = storageManager.createFileForLargeMessage(message.getMessageID(), durable);
       try
       {
          file.open();

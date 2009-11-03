@@ -946,6 +946,7 @@ public class JournalStorageManager implements StorageManager
          {
             // this could happen if the message was deleted but the file still exists as the file still being used
             originalMessage = createLargeMessage();
+            originalMessage.setDurable(true);
             originalMessage.setMessageID(originalMessageID);
             messages.put(originalMessageID, originalMessage);
          }
@@ -1372,9 +1373,16 @@ public class JournalStorageManager implements StorageManager
     * @param messageID
     * @return
     */
-   SequentialFile createFileForLargeMessage(final long messageID)
+   SequentialFile createFileForLargeMessage(final long messageID, final boolean durable)
    {
-      return largeMessagesFactory.createSequentialFile(messageID + ".msg", -1);      
+      if (durable)
+      {
+         return largeMessagesFactory.createSequentialFile(messageID + ".msg", -1);
+      }
+      else
+      {
+         return largeMessagesFactory.createSequentialFile(messageID + ".tmp", -1);
+      }
    }
 
    // Private ----------------------------------------------------------------------------------
