@@ -49,9 +49,14 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
 
    private static final boolean isTrace = log.isTraceEnabled();
 
+   protected boolean isNetty()
+   {
+      return true;
+   }
+   
    private int getMessageEncodeSize(final SimpleString address) throws Exception
    {
-      ClientSessionFactory cf = createInVMFactory();
+      ClientSessionFactory cf = createFactory(isNetty());
       ClientSession session = cf.createSession(false, true, true);
       ClientMessage message = session.createClientMessage(false);
       // we need to set the destination so we can calculate the encodesize correctly
@@ -69,8 +74,8 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
    * */
    public void testSendWindowSize() throws Exception
    {
-      HornetQServer messagingService = createServer(false);
-      ClientSessionFactory cf = createInVMFactory();
+      HornetQServer messagingService = createServer(false, isNetty());
+      ClientSessionFactory cf = createFactory(isNetty());
       try
       {
          messagingService.start();
@@ -124,7 +129,7 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
 
    public void testSlowConsumerBufferingOne() throws Exception
    {
-      HornetQServer server = createServer(false);
+      HornetQServer server = createServer(false, isNetty());
 
       ClientSession sessionB = null;
       ClientSession session = null;
@@ -135,7 +140,7 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
 
          server.start();
 
-         ClientSessionFactory sf = createInVMFactory();
+         ClientSessionFactory sf = createFactory(isNetty());
          sf.setConsumerWindowSize(1);
 
          session = sf.createSession(false, true, true);
@@ -216,7 +221,7 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
 
    private void internalTestSlowConsumerNoBuffer(final boolean largeMessages) throws Exception
    {
-      HornetQServer server = createServer(false);
+      HornetQServer server = createServer(false, isNetty());
 
       ClientSession sessionB = null;
       ClientSession session = null;
@@ -227,7 +232,7 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
 
          server.start();
 
-         ClientSessionFactory sf = createInVMFactory();
+         ClientSessionFactory sf = createFactory(isNetty());
          sf.setConsumerWindowSize(0);
 
          if (largeMessages)
@@ -346,7 +351,7 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
 
    private void internalTestSlowConsumerNoBuffer2(final boolean largeMessages) throws Exception
    {
-      HornetQServer server = createServer(false);
+      HornetQServer server = createServer(false, isNetty());
 
       ClientSession session1 = null;
       ClientSession session2 = null;
@@ -357,7 +362,7 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
 
          server.start();
 
-         ClientSessionFactory sf = createInVMFactory();
+         ClientSessionFactory sf = createFactory(isNetty());
 
          sf.setConsumerWindowSize(0);
 
@@ -529,7 +534,7 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
    public void internalTestSlowConsumerOnMessageHandlerNoBuffers(final boolean largeMessages) throws Exception
    {
 
-      HornetQServer server = createServer(false);
+      HornetQServer server = createServer(false, isNetty());
 
       ClientSession sessionB = null;
       ClientSession session = null;
@@ -540,7 +545,7 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
 
          server.start();
 
-         ClientSessionFactory sf = createInVMFactory();
+         ClientSessionFactory sf = createFactory(isNetty());
          sf.setConsumerWindowSize(0);
 
          if (largeMessages)
@@ -694,7 +699,7 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
 
    private void internalTestSlowConsumerOnMessageHandlerBufferOne(final boolean largeMessage) throws Exception
    {
-      HornetQServer server = createServer(false);
+      HornetQServer server = createServer(false, isNetty());
 
       ClientSession sessionB = null;
       ClientSession session = null;
@@ -705,7 +710,7 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
 
          server.start();
 
-         ClientSessionFactory sf = createInVMFactory();
+         ClientSessionFactory sf = createFactory(isNetty());
          sf.setConsumerWindowSize(1);
 
          if (largeMessage)
@@ -865,7 +870,7 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
    private void testNoWindowRoundRobin(final boolean largeMessages) throws Exception
    {
 
-      HornetQServer server = createServer(false);
+      HornetQServer server = createServer(false, isNetty());
 
       ClientSession sessionA = null;
       ClientSession sessionB = null;
@@ -876,7 +881,7 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
 
          server.start();
 
-         ClientSessionFactory sf = createInVMFactory();
+         ClientSessionFactory sf = createFactory(isNetty());
          sf.setConsumerWindowSize(-1);
          if (largeMessages)
          {

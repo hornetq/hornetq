@@ -38,7 +38,6 @@ import org.hornetq.core.remoting.spi.HornetQBuffer;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.Queue;
 import org.hornetq.core.settings.impl.AddressSettings;
-import org.hornetq.core.settings.impl.AddressFullMessagePolicy;
 import org.hornetq.tests.integration.largemessage.LargeMessageTestBase;
 import org.hornetq.tests.util.RandomUtil;
 import org.hornetq.utils.DataConstants;
@@ -73,45 +72,35 @@ public class LargeMessageTest extends LargeMessageTestBase
 
    // Public --------------------------------------------------------
 
-//   public void testFlowControlWithSyncReceiveNettyZeroConsumerWindowSize() throws Exception
+   protected boolean isNetty()
+   {
+      return false;
+   }
+
+///  Those tests are duplicating ConsumerWindowSizeTest and NettyConsumerWindowSizeTest. Do we need those here?
+// 
+//   public void testFlowControlWithSyncReceiveZeroConsumerWindowSize() throws Exception
 //   {
-//      testFlowControlWithSyncReceive(true, 0);
+//      testFlowControlWithSyncReceive(0);
 //   }
-//   
-//   public void testFlowControlWithSyncReceiveInVMZeroConsumerWindowSize() throws Exception
+//
+//   public void testFlowControlWithSyncReceiveSmallConsumerWindowSize() throws Exception
 //   {
-//      testFlowControlWithSyncReceive(false, 0);
+//      testFlowControlWithSyncReceive(1000);
 //   }
-//   
-//   public void testFlowControlWithSyncReceiveNettySmallConsumerWindowSize() throws Exception
+//
+//   private void testFlowControlWithSyncReceive(final int consumerWindowSize) throws Exception
 //   {
-//      testFlowControlWithSyncReceive(true, 1000);
-//   }
-//   
-//   public void testFlowControlWithSyncReceiveInVMSmallConsumerWindowSize() throws Exception
-//   {
-//      testFlowControlWithSyncReceive(false, 1000);
-//   }
-//   
-//   private void testFlowControlWithSyncReceive(final boolean netty, final int consumerWindowSize) throws Exception
-//   {      
 //      ClientSession session = null;
 //
 //      try
 //      {
-//         if (netty)
-//         {
-//            server = createServer(true, createDefaultConfig(true));
-//         }
-//         else
-//         {
-//            server = createServer(true);
-//         }
+//         server = createServer(true, isNetty());
 //
 //         server.start();
 //
-//         ClientSessionFactory sf = createInVMFactory();
-//         
+//         ClientSessionFactory sf = createFactory(isNetty());
+//
 //         sf.setConsumerWindowSize(consumerWindowSize);
 //         sf.setMinLargeMessageSize(1000);
 //
@@ -130,31 +119,31 @@ public class LargeMessageTest extends LargeMessageTestBase
 //            Message clientFile = createLargeClientMessage(session, messageSize, true);
 //
 //            producer.send(clientFile);
-//            
+//
 //            log.info("Sent message " + i);
 //         }
 //
 //         ClientConsumer consumer = session.createConsumer(ADDRESS);
-//         
+//
 //         session.start();
-//         
+//
 //         for (int i = 0; i < numMessages; i++)
 //         {
 //            ClientMessage msg = consumer.receive(1000);
-//            
+//
 //            int availBytes = msg.getBody().readableBytes();
-//            
+//
 //            assertEquals(messageSize, availBytes);
-//            
+//
 //            byte[] bytes = new byte[availBytes];
-//            
+//
 //            msg.getBody().readBytes(bytes);
 //
 //            msg.acknowledge();
-//            
+//
 //            log.info("Received message " + i);
 //         }
-//         
+//
 //         session.close();
 //
 //         validateNoFilesOnLargeDir();
@@ -178,150 +167,126 @@ public class LargeMessageTest extends LargeMessageTestBase
 //         }
 //      }
 //   }
-//   
-//   public void testFlowControlWithListenerNettyZeroConsumerWindowSize() throws Exception
+//
+//   public void testFlowControlWithListenerZeroConsumerWindowSize() throws Exception
 //   {
-//      testFlowControlWithListener(true, 0);
+//      testFlowControlWithListener(0);
 //   }
-//   
-//   public void testFlowControlWithListenerInVMZeroConsumerWindowSize() throws Exception
+//
+//   public void testFlowControlWithListenerSmallConsumerWindowSize() throws Exception
 //   {
-//      testFlowControlWithListener(false, 0);
+//      testFlowControlWithListener(1000);
 //   }
-//   
-//   public void testFlowControlWithListenerNettySmallConsumerWindowSize() throws Exception
+//
+//   private void testFlowControlWithListener(final int consumerWindowSize) throws Exception
 //   {
-//      testFlowControlWithListener(true, 1000);
+//      ClientSession session = null;
+//
+//      try
+//      {
+//         server = createServer(true, isNetty());
+//
+//         server.start();
+//
+//         ClientSessionFactory sf;
+//
+//         sf = createFactory(isNetty());
+//
+//         sf.setConsumerWindowSize(consumerWindowSize);
+//         sf.setMinLargeMessageSize(1000);
+//
+//         final int messageSize = 10000;
+//
+//         session = sf.createSession(false, true, true);
+//
+//         session.createTemporaryQueue(ADDRESS, ADDRESS);
+//
+//         ClientProducer producer = session.createProducer(ADDRESS);
+//
+//         final int numMessages = 1000;
+//
+//         for (int i = 0; i < numMessages; i++)
+//         {
+//            Message clientFile = createLargeClientMessage(session, messageSize, false);
+//
+//            producer.send(clientFile);
+//
+//            log.info("Sent message " + i);
+//         }
+//
+//         ClientConsumer consumer = session.createConsumer(ADDRESS);
+//
+//         class MyHandler implements MessageHandler
+//         {
+//            int count = 0;
+//
+//            final CountDownLatch latch = new CountDownLatch(1);
+//
+//            volatile Exception exception;
+//
+//            public void onMessage(ClientMessage message)
+//            {
+//               try
+//               {
+//                  log.info("got message " + count);
+//
+//                  int availBytes = message.getBody().readableBytes();
+//
+//                  assertEquals(messageSize, availBytes);
+//
+//                  byte[] bytes = new byte[availBytes];
+//
+//                  message.getBody().readBytes(bytes);
+//
+//                  message.acknowledge();
+//
+//                  if (++count == numMessages)
+//                  {
+//                     latch.countDown();
+//                  }
+//               }
+//               catch (Exception e)
+//               {
+//                  log.error("Failed to handle message", e);
+//
+//                  this.exception = e;
+//               }
+//            }
+//         }
+//
+//         MyHandler handler = new MyHandler();
+//
+//         consumer.setMessageHandler(handler);
+//
+//         session.start();
+//
+//         handler.latch.await(10000, TimeUnit.MILLISECONDS);
+//
+//         assertNull(handler.exception);
+//
+//         session.close();
+//
+//         validateNoFilesOnLargeDir();
+//      }
+//      finally
+//      {
+//         try
+//         {
+//            server.stop();
+//         }
+//         catch (Throwable ignored)
+//         {
+//         }
+//
+//         try
+//         {
+//            session.close();
+//         }
+//         catch (Throwable ignored)
+//         {
+//         }
+//      }
 //   }
-//   
-//   public void testFlowControlWithListenerInVMSmallConsumerWindowSize() throws Exception
-//   {
-//      testFlowControlWithListener(false, 1000);
-//   }
-   
-   private void testFlowControlWithListener(final boolean netty, final int consumerWindowSize) throws Exception
-   {      
-      ClientSession session = null;
-
-      try
-      {
-         if (netty)
-         {
-            server = createServer(true, createDefaultConfig(true));
-         }
-         else
-         {
-            server = createServer(true);
-         }
-
-         server.start();
-
-         ClientSessionFactory sf;
-         
-         if (netty)
-         {
-            sf = createNettyFactory();
-         }
-         else
-         {
-            sf = createInVMFactory();
-         }
-         
-         sf.setConsumerWindowSize(consumerWindowSize);
-         sf.setMinLargeMessageSize(1000);
-
-         final int messageSize = 10000;
-
-         session = sf.createSession(false, true, true);
-
-         session.createTemporaryQueue(ADDRESS, ADDRESS);
-
-         ClientProducer producer = session.createProducer(ADDRESS);
-
-         final int numMessages = 1000;
-
-         for (int i = 0; i < numMessages; i++)
-         {
-            Message clientFile = createLargeClientMessage(session, messageSize, false);
-
-            producer.send(clientFile);
-            
-            log.info("Sent message " + i);
-         }
-
-         ClientConsumer consumer = session.createConsumer(ADDRESS);
-         
-         class MyHandler implements MessageHandler
-         {
-            int count = 0;
-
-            final CountDownLatch latch = new CountDownLatch(1);
-
-            volatile Exception exception;
-
-            public void onMessage(ClientMessage message)
-            {
-               try
-               {
-                  log.info("got message " + count);
-                  
-                  int availBytes = message.getBody().readableBytes();
-                  
-                  assertEquals(messageSize, availBytes);
-                  
-                  byte[] bytes = new byte[availBytes];
-                  
-                  message.getBody().readBytes(bytes);
-                  
-                  message.acknowledge();
-
-                  if (++count == numMessages)
-                  {
-                     latch.countDown();
-                  }
-               }
-               catch (Exception e)
-               {
-                  log.error("Failed to handle message", e);
-
-                  this.exception = e;
-               }
-            }
-         }
-         
-         MyHandler handler = new MyHandler();
-         
-         consumer.setMessageHandler(handler);
-         
-         session.start();
-         
-         handler.latch.await(10000, TimeUnit.MILLISECONDS);
-         
-         assertNull(handler.exception);
-         
-         session.close();
-
-         validateNoFilesOnLargeDir();
-      }
-      finally
-      {
-         try
-         {
-            server.stop();
-         }
-         catch (Throwable ignored)
-         {
-         }
-
-         try
-         {
-            session.close();
-         }
-         catch (Throwable ignored)
-         {
-         }
-      }
-   }
 
    public void testCloseConsumer() throws Exception
    {
@@ -331,11 +296,11 @@ public class LargeMessageTest extends LargeMessageTestBase
 
       try
       {
-         server = createServer(true);
+         server = createServer(true, isNetty());
 
          server.start();
 
-         ClientSessionFactory sf = createInVMFactory();
+         ClientSessionFactory sf = createFactory(isNetty());
 
          session = sf.createSession(false, false, false);
 
@@ -400,11 +365,11 @@ public class LargeMessageTest extends LargeMessageTestBase
 
       try
       {
-         server = createServer(true);
+         server = createServer(true, isNetty());
 
          server.start();
 
-         ClientSessionFactory sf = createInVMFactory();
+         ClientSessionFactory sf = createFactory(isNetty());
 
          session = sf.createSession(false, false, false);
 
@@ -453,11 +418,11 @@ public class LargeMessageTest extends LargeMessageTestBase
          session.close();
          server.stop();
 
-         server = createServer(true);
+         server = createServer(true, isNetty());
 
          server.start();
 
-         sf = createInVMFactory();
+         sf = createFactory(isNetty());
 
          session = sf.createSession(false, false, false);
 
@@ -527,11 +492,12 @@ public class LargeMessageTest extends LargeMessageTestBase
 
       try
       {
-         server = createServer(true);
+         server = createServer(true, isNetty());
 
          server.start();
 
-         ClientSessionFactory sf = createInVMFactory();
+         ClientSessionFactory sf = createFactory(isNetty());
+         
 
          session = sf.createSession(false, false, false);
 
@@ -607,11 +573,11 @@ public class LargeMessageTest extends LargeMessageTestBase
 
       try
       {
-         server = createServer(true);
+         server = createServer(true, isNetty());
 
          server.start();
 
-         ClientSessionFactory sf = createInVMFactory();
+         ClientSessionFactory sf = createFactory(isNetty());
 
          SimpleString ADDRESS_DLA = ADDRESS.concat("-dla");
          SimpleString ADDRESS_EXPIRY = ADDRESS.concat("-expiry");
@@ -742,11 +708,11 @@ public class LargeMessageTest extends LargeMessageTestBase
 
       try
       {
-         server = createServer(true);
+         server = createServer(true, isNetty());
 
          server.start();
 
-         ClientSessionFactory sf = createInVMFactory();
+         ClientSessionFactory sf = createFactory(isNetty());
 
          SimpleString ADDRESS_DLA = ADDRESS.concat("-dla");
          SimpleString ADDRESS_EXPIRY = ADDRESS.concat("-expiry");
@@ -818,11 +784,11 @@ public class LargeMessageTest extends LargeMessageTestBase
          session.close();
          server.stop();
 
-         server = createServer(true);
+         server = createServer(true, isNetty());
 
          server.start();
 
-         sf = createInVMFactory();
+         sf = createFactory(isNetty());
 
          session = sf.createSession(false, false, false);
 
@@ -877,7 +843,7 @@ public class LargeMessageTest extends LargeMessageTestBase
 
       try
       {
-         server = createServer(true);
+         server = createServer(true, isNetty());
 
          server.start();
 
@@ -889,7 +855,7 @@ public class LargeMessageTest extends LargeMessageTestBase
 
          server.getAddressSettingsRepository().addMatch("*", addressSettings);
 
-         ClientSessionFactory sf = createInVMFactory();
+         ClientSessionFactory sf = createFactory(isNetty());
 
          session = sf.createSession(false, false, false);
 
@@ -927,11 +893,11 @@ public class LargeMessageTest extends LargeMessageTestBase
          session.close();
          server.stop();
 
-         server = createServer(true);
+         server = createServer(true, isNetty());
 
          server.start();
 
-         sf = createInVMFactory();
+         sf = createFactory(isNetty());
 
          session = sf.createSession(false, false, false);
 
@@ -992,11 +958,11 @@ public class LargeMessageTest extends LargeMessageTestBase
 
       try
       {
-         server = createServer(true);
+         server = createServer(true, isNetty());
 
          server.start();
 
-         ClientSessionFactory sf = createInVMFactory();
+         ClientSessionFactory sf = createFactory(isNetty());
 
          session = sf.createSession(false, false, false);
 
@@ -1502,11 +1468,6 @@ public class LargeMessageTest extends LargeMessageTestBase
       testPageOnLargeMessage(true, false);
    }
 
-   public void testPageOnLargeMessageNullPersistence() throws Exception
-   {
-      testPageOnLargeMessage(false, false);
-   }
-
    public void testSendSmallMessageXA() throws Exception
    {
       testChunks(true, false, true, false, true, false, false, true, false, 100, 4, RECEIVE_WAIT_TIME, 0);
@@ -1595,13 +1556,13 @@ public class LargeMessageTest extends LargeMessageTestBase
       try
       {
 
-         server = createServer(true);
+         server = createServer(true, isNetty());
 
          server.start();
 
          SimpleString queue[] = new SimpleString[] { new SimpleString("queue1"), new SimpleString("queue2") };
 
-         ClientSessionFactory sf = createInVMFactory();
+         ClientSessionFactory sf = createFactory(isNetty());
 
          ClientSession session = sf.createSession(null, null, false, true, true, false, 0);
 
@@ -1678,13 +1639,13 @@ public class LargeMessageTest extends LargeMessageTestBase
       try
       {
 
-         server = createServer(true);
+         server = createServer(true, isNetty());
 
          server.start();
 
          SimpleString queue[] = new SimpleString[] { new SimpleString("queue1"), new SimpleString("queue2") };
 
-         ClientSessionFactory sf = createInVMFactory();
+         ClientSessionFactory sf = createFactory(isNetty());
 
          ClientSession session = sf.createSession(null, null, false, true, true, false, 0);
 
@@ -1708,11 +1669,11 @@ public class LargeMessageTest extends LargeMessageTestBase
 
             server.stop();
 
-            server = createServer(true);
+            server = createServer(true, isNetty());
 
             server.start();
 
-            sf = createInVMFactory();
+            sf = createFactory(isNetty());
 
             session = sf.createSession(null, null, false, true, true, false, 0);
          }
@@ -1762,11 +1723,11 @@ public class LargeMessageTest extends LargeMessageTestBase
 
       try
       {
-         server = createServer(true);
+         server = createServer(true, isNetty());
 
          server.start();
 
-         ClientSessionFactory sf = createInVMFactory();
+         ClientSessionFactory sf = createFactory(isNetty());
 
          session = sf.createSession(isXA, false, false);
 
@@ -1849,11 +1810,11 @@ public class LargeMessageTest extends LargeMessageTestBase
       try
       {
 
-         server = createServer(true);
+         server = createServer(true, isNetty());
 
          server.start();
 
-         ClientSessionFactory sf = createInVMFactory();
+         ClientSessionFactory sf = createFactory(isNetty());
 
          ClientSession session = sf.createSession(isXA, false, false);
 
@@ -1983,11 +1944,11 @@ public class LargeMessageTest extends LargeMessageTestBase
       try
       {
 
-         server = createServer(true);
+         server = createServer(true, isNetty());
 
          server.start();
 
-         ClientSessionFactory sf = createInVMFactory();
+         ClientSessionFactory sf = createFactory(isNetty());
 
          sf.setMinLargeMessageSize(1024);
          sf.setConsumerWindowSize(1024 * 1024);
@@ -2085,11 +2046,11 @@ public class LargeMessageTest extends LargeMessageTestBase
       try
       {
 
-         server = createServer(true);
+         server = createServer(true, isNetty());
 
          server.start();
 
-         ClientSessionFactory sf = createInVMFactory();
+         ClientSessionFactory sf = createFactory(isNetty());
 
          sf.setMinLargeMessageSize(1024);
          sf.setConsumerWindowSize(1024 * 1024);
@@ -2187,11 +2148,11 @@ public class LargeMessageTest extends LargeMessageTestBase
       try
       {
 
-         server = createServer(true);
+         server = createServer(true, isNetty());
 
          server.start();
 
-         ClientSessionFactory sf = createInVMFactory();
+         ClientSessionFactory sf = createFactory(isNetty());
 
          sf.setMinLargeMessageSize(100 * 1024);
 
@@ -2260,11 +2221,11 @@ public class LargeMessageTest extends LargeMessageTestBase
       try
       {
 
-         server = createServer(true);
+         server = createServer(true, isNetty());
 
          server.start();
 
-         ClientSessionFactory sf = createInVMFactory();
+         ClientSessionFactory sf = createFactory(isNetty());
 
          sf.setMinLargeMessageSize(1024);
 
@@ -2357,7 +2318,7 @@ public class LargeMessageTest extends LargeMessageTestBase
 
    protected void testPageOnLargeMessage(final boolean realFiles, final boolean sendBlocking) throws Exception
    {
-      Configuration config = createDefaultConfig();
+      Configuration config = createDefaultConfig(isNetty());
 
       final int PAGE_MAX = 20 * 1024;
 
@@ -2366,7 +2327,6 @@ public class LargeMessageTest extends LargeMessageTestBase
       HashMap<String, AddressSettings> map = new HashMap<String, AddressSettings>();
 
       AddressSettings value = new AddressSettings();
-      value.setAddressFullMessagePolicy(AddressFullMessagePolicy.PAGE);
       map.put(ADDRESS.toString(), value);
       server = createServer(realFiles, config, PAGE_SIZE, PAGE_MAX, map);
       server.start();
@@ -2377,7 +2337,7 @@ public class LargeMessageTest extends LargeMessageTestBase
 
       try
       {
-         ClientSessionFactory sf = createInVMFactory();
+         ClientSessionFactory sf = createFactory(isNetty());
 
          if (sendBlocking)
          {
@@ -2431,7 +2391,7 @@ public class LargeMessageTest extends LargeMessageTestBase
             server = createServer(true, config, PAGE_SIZE, PAGE_MAX, map);
             server.start();
 
-            sf = createInVMFactory();
+            sf = createFactory(isNetty());
          }
 
          session = sf.createSession(null, null, false, true, true, false, 0);

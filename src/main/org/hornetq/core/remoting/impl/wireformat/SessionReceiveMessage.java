@@ -31,12 +31,6 @@ public class SessionReceiveMessage extends PacketImpl
 {
    // Constants -----------------------------------------------------
 
-   public static final int SESSION_RECEIVE_MESSAGE_LARGE_MESSAGE_SIZE = BASIC_PACKET_SIZE + DataConstants.SIZE_LONG +
-                                                                       DataConstants.SIZE_LONG +
-                                                                       DataConstants.SIZE_INT +
-                                                                       DataConstants.SIZE_BOOLEAN +
-                                                                       DataConstants.SIZE_INT;
-
    private static final Logger log = Logger.getLogger(SessionReceiveMessage.class);
 
    // Attributes ----------------------------------------------------
@@ -142,14 +136,30 @@ public class SessionReceiveMessage extends PacketImpl
    {
       if (largeMessage)
       {
-         return SESSION_RECEIVE_MESSAGE_LARGE_MESSAGE_SIZE + largeMessageHeader.length;
+         return BASIC_PACKET_SIZE + 
+                // consumerID
+                DataConstants.SIZE_LONG +
+                // deliveryCount
+                DataConstants.SIZE_INT +
+                // largeMessage (boolean)
+                DataConstants.SIZE_BOOLEAN +
+                // LargeMessageSize (Long)
+                DataConstants.SIZE_LONG +
+                // largeMessageHeader.length (int)
+                DataConstants.SIZE_INT +
+                // ByteArray size
+                largeMessageHeader.length;
       }
       else
       {
          return BASIC_PACKET_SIZE + 
+                // consumerID
                 DataConstants.SIZE_LONG +
+                // deliveryCount
                 DataConstants.SIZE_INT +
+                // isLargeMessage
                 DataConstants.SIZE_BOOLEAN +
+                // message.encoding
                 (serverMessage != null ? serverMessage.getEncodeSize() : clientMessage.getEncodeSize());
       }
    }

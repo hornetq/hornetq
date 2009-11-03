@@ -331,7 +331,7 @@ public class ServerConsumerImpl implements ServerConsumer
 
          if (trace)
          {
-            log.trace("Received " + credits +
+            trace("Received " + credits +
                       " credits, previous value = " +
                       previous +
                       " currentValue = " +
@@ -695,8 +695,8 @@ public class ServerConsumerImpl implements ServerConsumer
             if (availableCredits != null)
             {
                // Flow control needs to be done in advance.
-               
-               //Again WHY? Is this necessary now we don't replicate sessions?
+               // If we take out credits as we send, the client would be sending credits back as we are delivering
+               // as a result we would fire up a lot of packets over using the channel.
                precalculateAvailableCredits = preCalculateFlowControl(initialMessage);
             }
             else

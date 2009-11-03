@@ -162,7 +162,7 @@ public class LargeMessageBufferImpl implements ChannelBuffer, LargeMessageBuffer
 
                outStream.write(packet.getBody());
 
-               flowControlCredit = packet.getPacketSize();
+               flowControlCredit = packet.getRequiredBufferSize();
                continues = packet.isContinues();
 
                notifyAll();
@@ -248,7 +248,7 @@ public class LargeMessageBufferImpl implements ChannelBuffer, LargeMessageBuffer
             {
                break;
             }
-            totalFlowControl += packet.getPacketSize();
+            totalFlowControl += packet.getRequiredBufferSize();
             continues = packet.isContinues();
             sendPacketToOutput(output, packet);
          }
@@ -1239,7 +1239,7 @@ public class LargeMessageBufferImpl implements ChannelBuffer, LargeMessageBuffer
             throw new IndexOutOfBoundsException();
          }
 
-         consumerInternal.flowControl(currentPacket.getPacketSize(), !currentPacket.isContinues());
+         consumerInternal.flowControl(currentPacket.getRequiredBufferSize(), !currentPacket.isContinues());
 
          packetPosition += sizeToAdd;
 

@@ -143,7 +143,13 @@ public class ServiceTestBase extends UnitTestCase
 
    protected HornetQServer createServer(final boolean realFiles)
    {
-      return createServer(realFiles, createDefaultConfig(), -1, -1, new HashMap<String, AddressSettings>());
+      return createServer(realFiles, false);
+   }
+
+
+   protected HornetQServer createServer(final boolean realFiles, final boolean netty)
+   {
+      return createServer(realFiles, createDefaultConfig(netty), -1, -1, new HashMap<String, AddressSettings>());
    }
 
    protected HornetQServer createServer(final boolean realFiles, final Configuration configuration)
@@ -289,6 +295,18 @@ public class ServiceTestBase extends UnitTestCase
       return configuration;
    }
 
+   protected ClientSessionFactory createFactory(boolean isNetty)
+   {
+      if (isNetty)
+      {
+         return createNettyFactory();
+      }
+      else
+      {
+         return createInVMFactory();
+      }
+   }
+   
    protected ClientSessionFactory createInVMFactory()
    {
       return createFactory(INVM_CONNECTOR_FACTORY);

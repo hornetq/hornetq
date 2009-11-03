@@ -480,7 +480,8 @@ public class ClientConsumerImpl implements ClientConsumerInternal
       }
 
       // Flow control for the first packet, we will have others
-      flowControl(packet.getPacketSize(), false);
+      // It's using the RequiredBufferSize as the getSize() could be different between transports
+      flowControl(packet.getRequiredBufferSize(), false);
 
       ClientMessageInternal currentChunkMessage = new ClientMessageImpl(packet.getDeliveryCount());
 
@@ -512,7 +513,6 @@ public class ClientConsumerImpl implements ClientConsumerInternal
       {
          return;
       }
-
       currentLargeMessageBuffer.addPacket(chunk);
    }
 
