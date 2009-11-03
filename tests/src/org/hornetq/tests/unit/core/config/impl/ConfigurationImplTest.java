@@ -95,6 +95,7 @@ public class ConfigurationImplTest extends UnitTestCase
       assertEquals(ConfigurationImpl.DEFAULT_SERVER_DUMP_INTERVAL, conf.getServerDumpInterval());
       assertEquals(ConfigurationImpl.DEFAULT_MEMORY_WARNING_THRESHOLD, conf.getMemoryWarningThreshold());
       assertEquals(ConfigurationImpl.DEFAULT_MEMORY_MEASURE_INTERVAL, conf.getMemoryMeasureInterval());
+      assertEquals(ConfigurationImpl.DEFAULT_BACKUP_WINDOW_SIZE, conf.getBackupWindowSize());
    }
 
    public void testSetGetAttributes()
@@ -293,6 +294,10 @@ public class ConfigurationImplTest extends UnitTestCase
          l = randomLong();
          conf.setTransactionTimeoutScanPeriod(l);
          assertEquals(l, conf.getTransactionTimeoutScanPeriod());
+         
+         i = randomInt();
+         conf.setBackupWindowSize(i);
+         assertEquals(i, conf.getBackupWindowSize());
          
          s = randomString();
          conf.setManagementClusterPassword(s);
@@ -510,6 +515,10 @@ public class ConfigurationImplTest extends UnitTestCase
       s = randomString();
       conf.setManagementClusterPassword(s);
       assertEquals(s, conf.getManagementClusterPassword());
+      
+      i = randomInt();
+      conf.setBackupWindowSize(i);
+      assertEquals(i, conf.getBackupWindowSize());
 
       ByteArrayOutputStream baos = new ByteArrayOutputStream();
       ObjectOutputStream oos = new ObjectOutputStream(baos);

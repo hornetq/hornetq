@@ -49,7 +49,7 @@ public class ConfigurationImpl implements Configuration
    public static final boolean DEFAULT_PERSIST_DELIVERY_COUNT_BEFORE_DELIVERY = false;
 
    public static final boolean DEFAULT_BACKUP = false;
-   
+
    public static final boolean DEFAULT_SHARED_STORE = false;
 
    public static final boolean DEFAULT_FILE_DEPLOYMENT_ENABLED = false;
@@ -165,9 +165,11 @@ public class ConfigurationImpl implements Configuration
    public static final long DEFAULT_SERVER_DUMP_INTERVAL = -1;
 
    public static final int DEFAULT_MEMORY_WARNING_THRESHOLD = 25;
-   
+
    public static final long DEFAULT_MEMORY_MEASURE_INTERVAL = 3000; // in milliseconds
-   
+
+   public static final int DEFAULT_BACKUP_WINDOW_SIZE = 1024 * 1024;
+
    public static final String DEFAULT_LOG_DELEGATE_FACTORY_CLASS_NAME = JULLogDelegateFactory.class.getCanonicalName();
 
    // Attributes -----------------------------------------------------------------------------
@@ -175,9 +177,9 @@ public class ConfigurationImpl implements Configuration
    protected boolean clustered = DEFAULT_CLUSTERED;
 
    protected boolean backup = DEFAULT_BACKUP;
-   
+
    protected boolean sharedStore = DEFAULT_SHARED_STORE;
-       
+
    protected boolean fileDeploymentEnabled = DEFAULT_FILE_DEPLOYMENT_ENABLED;
 
    protected boolean persistenceEnabled = DEFAULT_PERSISTENCE_ENABLED;
@@ -209,7 +211,7 @@ public class ConfigurationImpl implements Configuration
    protected int idCacheSize = DEFAULT_ID_CACHE_SIZE;
 
    protected boolean persistIDCache = DEFAULT_PERSIST_ID_CACHE;
-   
+
    protected String logDelegateFactoryClassName = DEFAULT_LOG_DELEGATE_FACTORY_CLASS_NAME;
 
    protected List<String> interceptorClassNames = new ArrayList<String>();
@@ -219,6 +221,8 @@ public class ConfigurationImpl implements Configuration
    protected Set<TransportConfiguration> acceptorConfigs = new HashSet<TransportConfiguration>();
 
    protected String backupConnectorName;
+
+   protected int backupWindowSize = DEFAULT_BACKUP_WINDOW_SIZE;
 
    protected List<BridgeConfiguration> bridgeConfigurations = new ArrayList<BridgeConfiguration>();
 
@@ -302,7 +306,7 @@ public class ConfigurationImpl implements Configuration
 
    // percentage of free memory which triggers warning from the memory manager
    protected int memoryWarningThreshold = DEFAULT_MEMORY_WARNING_THRESHOLD;
-   
+
    protected long memoryMeasureInterval = DEFAULT_MEMORY_MEASURE_INTERVAL;
 
    protected GroupingHandlerConfiguration groupingHandlerConfiguration;
@@ -387,7 +391,7 @@ public class ConfigurationImpl implements Configuration
    {
       this.backup = backup;
    }
-   
+
    public boolean isSharedStore()
    {
       return sharedStore;
@@ -488,6 +492,19 @@ public class ConfigurationImpl implements Configuration
       this.backupConnectorName = backupConnectorName;
    }
 
+   /* (non-Javadoc)
+    * @see org.hornetq.core.config.Configuration#getBackupWindowSize()
+    */
+   public int getBackupWindowSize()
+   {
+      return backupWindowSize;
+   }
+
+   public void setBackupWindowSize(int windowSize)
+   {
+      this.backupWindowSize = windowSize;
+   }
+
    public GroupingHandlerConfiguration getGroupingHandlerConfiguration()
    {
       return groupingHandlerConfiguration;
@@ -497,7 +514,6 @@ public class ConfigurationImpl implements Configuration
    {
       this.groupingHandlerConfiguration = groupingHandlerConfiguration;
    }
-
 
    public List<BridgeConfiguration> getBridgeConfigurations()
    {
@@ -788,12 +804,12 @@ public class ConfigurationImpl implements Configuration
    {
       jmxManagementEnabled = enabled;
    }
-   
+
    public String getJMXDomain()
    {
       return jmxDomain;
    }
-   
+
    public void setJMXDomain(String domain)
    {
       jmxDomain = domain;
@@ -944,7 +960,13 @@ public class ConfigurationImpl implements Configuration
       }
       else if (!bindingsDirectory.equals(other.bindingsDirectory))
          return false;
-       if (clustered != other.clustered)
+
+      if (backupWindowSize != other.backupWindowSize)
+      {
+         return false;
+      }
+      
+      if (clustered != other.clustered)
          return false;
       if (connectionTTLOverride != other.connectionTTLOverride)
          return false;
@@ -952,7 +974,7 @@ public class ConfigurationImpl implements Configuration
          return false;
       if (createJournalDir != other.createJournalDir)
          return false;
-      
+
       if (fileDeploymentEnabled != other.fileDeploymentEnabled)
          return false;
       if (fileDeploymentScanPeriod != other.fileDeploymentScanPeriod)
@@ -1107,12 +1129,12 @@ public class ConfigurationImpl implements Configuration
    {
       this.serverDumpInterval = intervalInMilliseconds;
    }
-   
+
    public int getMemoryWarningThreshold()
    {
-      return memoryWarningThreshold ;
+      return memoryWarningThreshold;
    }
-   
+
    public void setMemoryWarningThreshold(int memoryWarningThreshold)
    {
       this.memoryWarningThreshold = memoryWarningThreshold;
@@ -1120,9 +1142,9 @@ public class ConfigurationImpl implements Configuration
 
    public long getMemoryMeasureInterval()
    {
-      return memoryMeasureInterval ;
+      return memoryMeasureInterval;
    }
-   
+
    public void setMemoryMeasureInterval(long memoryMeasureInterval)
    {
       this.memoryMeasureInterval = memoryMeasureInterval;

@@ -347,6 +347,8 @@ public class FileConfiguration extends ConfigurationImpl
       
       memoryMeasureInterval = getLong(e, "memory-measure-interval", memoryMeasureInterval, MINUS_ONE_OR_GT_ZERO); // in milliseconds
       
+      backupWindowSize = getInteger(e, "backup-window-size", DEFAULT_BACKUP_WINDOW_SIZE, MINUS_ONE_OR_GT_ZERO);
+      
       started = true;
    }
    

@@ -34,6 +34,7 @@ import org.hornetq.core.client.impl.FailoverManager;
 import org.hornetq.core.client.impl.FailoverManagerImpl;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.TransportConfiguration;
+import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.journal.EncodingSupport;
 import org.hornetq.core.journal.Journal;
@@ -108,8 +109,7 @@ public class ReplicationTest extends ServiceTestBase
 
       try
       {
-         ReplicationManagerImpl manager = new ReplicationManagerImpl(failoverManager,
-                                                                     executor);
+         ReplicationManagerImpl manager = new ReplicationManagerImpl(failoverManager, ConfigurationImpl.DEFAULT_BACKUP_WINDOW_SIZE);
          manager.start();
          manager.stop();
       }
@@ -134,8 +134,7 @@ public class ReplicationTest extends ServiceTestBase
 
       try
       {
-         ReplicationManagerImpl manager = new ReplicationManagerImpl(failoverManager,
-                                                                     executor);
+         ReplicationManagerImpl manager = new ReplicationManagerImpl(failoverManager, ConfigurationImpl.DEFAULT_BACKUP_WINDOW_SIZE);
          manager.start();
          try
          {
@@ -174,15 +173,13 @@ public class ReplicationTest extends ServiceTestBase
 
       try
       {
-         ReplicationManagerImpl manager = new ReplicationManagerImpl(failoverManager,
-                                                                     executor);
+         ReplicationManagerImpl manager = new ReplicationManagerImpl(failoverManager, ConfigurationImpl.DEFAULT_BACKUP_WINDOW_SIZE);
 
          manager.start();
 
          try
          {
-            ReplicationManagerImpl manager2 = new ReplicationManagerImpl(failoverManager,
-                                                                         executor);
+            ReplicationManagerImpl manager2 = new ReplicationManagerImpl(failoverManager, ConfigurationImpl.DEFAULT_BACKUP_WINDOW_SIZE);
 
             manager2.start();
             fail("Exception was expected");
@@ -215,8 +212,7 @@ public class ReplicationTest extends ServiceTestBase
 
       try
       {
-         ReplicationManagerImpl manager = new ReplicationManagerImpl(failoverManager,
-                                                                     executor);
+         ReplicationManagerImpl manager = new ReplicationManagerImpl(failoverManager, ConfigurationImpl.DEFAULT_BACKUP_WINDOW_SIZE);
 
          try
          {
@@ -250,8 +246,7 @@ public class ReplicationTest extends ServiceTestBase
 
       try
       {
-         ReplicationManagerImpl manager = new ReplicationManagerImpl(failoverManager,
-                                                                     executor);
+         ReplicationManagerImpl manager = new ReplicationManagerImpl(failoverManager, ConfigurationImpl.DEFAULT_BACKUP_WINDOW_SIZE);
          manager.start();
 
          Journal replicatedJournal = new ReplicatedJournal((byte)1, new FakeJournal(), manager);
@@ -368,8 +363,7 @@ public class ReplicationTest extends ServiceTestBase
 
       try
       {
-         ReplicationManagerImpl manager = new ReplicationManagerImpl(failoverManager,
-                                                                      executor);
+         ReplicationManagerImpl manager = new ReplicationManagerImpl(failoverManager, ConfigurationImpl.DEFAULT_BACKUP_WINDOW_SIZE);
          manager.start();
 
          Journal replicatedJournal = new ReplicatedJournal((byte)1, new FakeJournal(), manager);
@@ -431,8 +425,7 @@ public class ReplicationTest extends ServiceTestBase
 
       try
       {
-         ReplicationManagerImpl manager = new ReplicationManagerImpl(failoverManager,
-                                                                     executor);
+         ReplicationManagerImpl manager = new ReplicationManagerImpl(failoverManager, ConfigurationImpl.DEFAULT_BACKUP_WINDOW_SIZE);
          manager.start();
          fail("Exception expected");
       }
@@ -457,8 +450,7 @@ public class ReplicationTest extends ServiceTestBase
 
       try
       {
-         ReplicationManagerImpl manager = new ReplicationManagerImpl(failoverManager,
-                                                                     executor);
+         ReplicationManagerImpl manager = new ReplicationManagerImpl(failoverManager, ConfigurationImpl.DEFAULT_BACKUP_WINDOW_SIZE);
          manager.start();
 
          Journal replicatedJournal = new ReplicatedJournal((byte)1, new FakeJournal(), manager);

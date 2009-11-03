@@ -57,6 +57,14 @@
                             <entry/>
                         </row>
                         <row>
+                            <entry><link linkend="configuring.live.backup"
+                                >backup-window-size</link></entry>
+                            <entry>int</entry>
+                            <entry>The Window Size used to flow control between live and backup</entry>
+                            <entry/>
+                            <entry>1 MiB</entry>
+                        </row>
+                        <row>
                             <entry><link linkend="configuring.bindings.journal"
                                     >bindings-directory</link></entry>
                             <entry>String</entry>

@@ -119,6 +119,10 @@ public interface Configuration extends Serializable
    void setConnectorConfigurations(Map<String, TransportConfiguration> infos);
 
    String getBackupConnectorName();
+   
+   int getBackupWindowSize();
+   
+   void setBackupWindowSize(int windowSize);
 
    void setBackupConnectorName(String name);
 

@@ -912,8 +912,7 @@ public class HornetQServerImpl implements HornetQServer
 
             replicationFailoverManager = createBackupConnection(backupConnector, threadPool, scheduledPool);
 
-            this.replicationManager = new ReplicationManagerImpl(replicationFailoverManager,
-                                                                 this.executorFactory.getExecutor());
+            this.replicationManager = new ReplicationManagerImpl(replicationFailoverManager, configuration.getBackupWindowSize());
             replicationManager.start();
          }
       }

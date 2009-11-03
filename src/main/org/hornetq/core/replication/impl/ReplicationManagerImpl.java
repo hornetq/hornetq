@@ -16,7 +16,6 @@ package org.hornetq.core.replication.impl;
 import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.Executor;
 
 import org.hornetq.core.client.SessionFailureListener;
 import org.hornetq.core.client.impl.FailoverManager;
@@ -64,8 +63,7 @@ public class ReplicationManagerImpl implements ReplicationManager
 
    // Attributes ----------------------------------------------------
 
-   // TODO: where should this be configured?
-   private static final int CONF_WINDOW_SIZE = 1024 * 1024;
+   private final int backupWindowSize;
 
    private final ResponseHandler responseHandler = new ResponseHandler();
 
@@ -81,8 +79,6 @@ public class ReplicationManagerImpl implements ReplicationManager
 
    private final Object replicationLock = new Object();
 
-   private final Executor executor;
-
    private final ThreadLocal<ReplicationContext> tlReplicationContext = new ThreadLocal<ReplicationContext>();
 
    private final Queue<ReplicationContext> pendingTokens = new ConcurrentLinkedQueue<ReplicationContext>();
@@ -96,11 +92,11 @@ public class ReplicationManagerImpl implements ReplicationManager
    /**
     * @param replicationConnectionManager
     */
-   public ReplicationManagerImpl(final FailoverManager failoverManager, final Executor executor)
+   public ReplicationManagerImpl(final FailoverManager failoverManager, final int backupWindowSize)
    {
       super();
       this.failoverManager = failoverManager;
-      this.executor = executor;
+      this.backupWindowSize = backupWindowSize;
    }
 
    // Public --------------------------------------------------------
@@ -323,12 +319,12 @@ public class ReplicationManagerImpl implements ReplicationManager
 
       Channel mainChannel = connection.getChannel(1, -1);
 
-      replicatingChannel = connection.getChannel(channelID, CONF_WINDOW_SIZE);
+      replicatingChannel = connection.getChannel(channelID, backupWindowSize);
 
       replicatingChannel.setHandler(responseHandler);
 
       CreateReplicationSessionMessage replicationStartPackage = new CreateReplicationSessionMessage(channelID,
-                                                                                                    CONF_WINDOW_SIZE);
+                                                                                                    backupWindowSize);
 
       mainChannel.sendBlocking(replicationStartPackage);
 

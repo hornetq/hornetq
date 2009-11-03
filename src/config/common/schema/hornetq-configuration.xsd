@@ -75,6 +75,8 @@
 				</xsd:element>
 				<xsd:element maxOccurs="1" minOccurs="0" name="backup-connector-ref" type="backup-connectorType">
 				</xsd:element>
+				<xsd:element maxOccurs="1" minOccurs="0" name="backup-window-size" type="xsd:int">
+				</xsd:element>
 				<xsd:element maxOccurs="1" minOccurs="0" name="connectors">
                     <xsd:complexType>
                         <xsd:sequence>
