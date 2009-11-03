@@ -1,5 +1,5 @@
 /*
- * Copyright 2009 Red Hat, Inc.
+60 * Copyright 2009 Red Hat, Inc.
  * Red Hat licenses this file to you under the Apache License, version
  * 2.0 (the "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
@@ -14,10 +14,7 @@
 package org.hornetq.core.transaction.impl;
 
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import javax.transaction.xa.Xid;
 
@@ -25,7 +22,6 @@ import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.core.postoffice.PostOffice;
-import org.hornetq.core.server.Queue;
 import org.hornetq.core.transaction.Transaction;
 import org.hornetq.core.transaction.TransactionOperation;
 import org.hornetq.core.transaction.TransactionPropertyIndexes;
@@ -207,7 +203,6 @@ public class TransactionImpl implements Transaction
             }
          }
          
-         // TODO: Verify Exception handling here with Tim
          Runnable execAfterCommit = null;
          
          if (operations != null)
@@ -224,6 +219,8 @@ public class TransactionImpl implements Transaction
                      }
                      catch (Exception e)
                      {
+                        // https://jira.jboss.org/jira/browse/HORNETQ-188
+                        // After commit shouldn't thow an exception
                         log.warn(e.getMessage(), e);
                      }
                   }
