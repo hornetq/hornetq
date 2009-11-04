@@ -565,9 +565,8 @@ public class ScheduledMessageTest extends ServiceTestBase
       session.start(xid, XAResource.TMNOFLAGS);
       ClientProducer producer = session.createProducer(atestq);
       ClientMessage message = createDurableMessage(session, "testINVMCoreClient");
-      Calendar cal = Calendar.getInstance();
-      cal.roll(Calendar.SECOND, 10);
-      message.putLongProperty(MessageImpl.HDR_SCHEDULED_DELIVERY_TIME, cal.getTimeInMillis());
+      long time = System.currentTimeMillis() + 1000;
+      message.putLongProperty(MessageImpl.HDR_SCHEDULED_DELIVERY_TIME, time);
       producer.send(message);
       session.end(xid, XAResource.TMSUCCESS);
       session.prepare(xid);
@@ -589,8 +588,10 @@ public class ScheduledMessageTest extends ServiceTestBase
 
       session.start();
       session.start(xid2, XAResource.TMNOFLAGS);
-      ClientMessage message2 = consumer.receive(10000);
-      assertTrue(System.currentTimeMillis() >= cal.getTimeInMillis());
+      ClientMessage message2 = consumer.receive(11000);
+      long end = System.currentTimeMillis();
+      System.out.println("elapsed time = " + (end - time));
+      assertTrue(end  >= time);
       assertNotNull(message2);
       assertEquals("testINVMCoreClient", message2.getBody().readString());
 
