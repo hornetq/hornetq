@@ -2407,7 +2407,7 @@ public class JournalImpl implements TestableJournal
     *  It will call waitComplete on every transaction, so any assertions on the file system will be correct after this */
    public void debugWait() throws Exception
    {
-      fileFactory.testFlush();
+      fileFactory.flush();
 
       for (JournalTransaction tx : transactions.values())
       {
@@ -2559,7 +2559,7 @@ public class JournalImpl implements TestableJournal
             log.warn("Couldn't stop journal executor after 60 seconds");
          }
 
-         fileFactory.stop();
+         fileFactory.flush();
 
          if (currentFile != null && currentFile.getFile().isOpen())
          {
@@ -2570,6 +2570,8 @@ public class JournalImpl implements TestableJournal
          {
             file.getFile().close();
          }
+         
+         fileFactory.stop();
 
          currentFile = null;
 

@@ -698,7 +698,7 @@ public class FakeSequentialFileFactory implements SequentialFileFactory
    /* (non-Javadoc)
     * @see org.hornetq.core.journal.SequentialFileFactory#testFlush()
     */
-   public void testFlush()
+   public void flush()
    {
    }
 

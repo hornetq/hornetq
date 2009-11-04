@@ -64,7 +64,7 @@ public abstract class AbstractSequentialFactory implements SequentialFileFactory
    {
    }
    
-   public void testFlush()
+   public void flush()
    {
    }
 

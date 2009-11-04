@@ -71,7 +71,7 @@ public class ClientProducerImpl implements ClientProducerInternal
    private final SimpleString groupID;
 
    private final int minLargeMessageSize;
-   
+
    private final ClientProducerCredits credits;
 
    // Static ---------------------------------------------------------------------------------------
@@ -109,7 +109,7 @@ public class ClientProducerImpl implements ClientProducerInternal
       }
 
       this.minLargeMessageSize = minLargeMessageSize;
-      
+
       if (address != null)
       {
          credits = session.getCredits(address);
@@ -128,7 +128,7 @@ public class ClientProducerImpl implements ClientProducerInternal
    }
 
    public void send(final Message msg) throws HornetQException
-   {     
+   {
       checkClosed();
 
       doSend(null, msg);
@@ -204,18 +204,18 @@ public class ClientProducerImpl implements ClientProducerInternal
    private void doSend(final SimpleString address, final Message msg) throws HornetQException
    {
       ClientProducerCredits theCredits;
-      
+
       if (address != null)
       {
          msg.setDestination(address);
-         
-         //Anonymous
+
+         // Anonymous
          theCredits = session.getCredits(address);
       }
       else
       {
          msg.setDestination(this.address);
-         
+
          theCredits = credits;
       }
 
@@ -234,24 +234,24 @@ public class ClientProducerImpl implements ClientProducerInternal
       boolean sendBlocking = msg.isDurable() ? blockOnPersistentSend : blockOnNonPersistentSend;
 
       SessionSendMessage message = new SessionSendMessage(msg, sendBlocking);
-      
+
       session.workDone();
-      
-      boolean large;
-      
+
+      boolean isLarge;
+
       if (msg.getBodyInputStream() != null || msg.getEncodeSize() >= minLargeMessageSize || msg.isLargeMessage())
       {
-         large = true;
+         isLarge = true;
       }
       else
       {
-         large = false;
+         isLarge = false;
       }
-            
-      if (large)
+
+      if (isLarge)
       {
-         sendMessageInChunks(sendBlocking, msg);
-      }      
+         largeMessageSend(sendBlocking, msg);
+      }
       else if (sendBlocking)
       {
          channel.sendBlocking(message);
@@ -260,36 +260,47 @@ public class ClientProducerImpl implements ClientProducerInternal
       {
          channel.send(message);
       }
-      
+
       try
       {
-         //This will block if credits are not available
-         
-         //Note, that for a large message, the encode size only includes the properties + headers
-         //Not the continuations, but this is ok since we are only interested in limiting the amount of
-         //data in *memory* and continuations go straight to the disk
-         
-         if (large)
+         // This will block if credits are not available
+
+         // Note, that for a large message, the encode size only includes the properties + headers
+         // Not the continuations, but this is ok since we are only interested in limiting the amount of
+         // data in *memory* and continuations go straight to the disk
+
+         if (isLarge)
          {
-            //TODO this is pretty hacky - we should define consistent meanings of encode size             
-                        
+            // TODO this is pretty hacky - we should define consistent meanings of encode size
+
             theCredits.acquireCredits(msg.getHeadersAndPropertiesEncodeSize());
          }
          else
-         {         
+         {
             theCredits.acquireCredits(msg.getEncodeSize());
          }
       }
       catch (InterruptedException e)
-      {         
+      {
       }
    }
 
+   private void checkClosed() throws HornetQException
+   {
+      if (closed)
+      {
+         throw new HornetQException(HornetQException.OBJECT_CLOSED, "Producer is closed");
+      }
+   }
+   
+   
+   // Methods to send Large Messages----------------------------------------------------------------
+   
    /**
     * @param msg
     * @throws HornetQException
     */
-   private void sendMessageInChunks(final boolean sendBlocking, final Message msg) throws HornetQException
+   private void largeMessageSend(final boolean sendBlocking, final Message msg) throws HornetQException
    {
       int headerSize = msg.getHeadersAndPropertiesEncodeSize();
 
@@ -313,129 +324,144 @@ public class ClientProducerImpl implements ClientProducerInternal
       channel.send(initialChunk);
 
       InputStream input = msg.getBodyInputStream();
-      
+
       if (input != null)
       {
-         boolean lastChunk = false;
-
-         while (!lastChunk)
-         {
-            byte[] buff = new byte[minLargeMessageSize];
-            
-            int pos = 0;
-                                   
-            do
-            {               
-               int numberOfBytesRead;
-               
-               int wanted = minLargeMessageSize - pos;
-               
-               try
-               {
-                  numberOfBytesRead = input.read(buff, pos, wanted);
-               }
-               catch (IOException e)
-               {
-                  throw new HornetQException(HornetQException.LARGE_MESSAGE_ERROR_BODY,
-                                             "Error reading the LargeMessageBody",
-                                             e);
-               }
-               
-               if (numberOfBytesRead == -1)
-               {                  
-                  lastChunk = true;
-                  
-                  break;
-               }
-                                             
-               pos += numberOfBytesRead;
-            }
-            while (pos < minLargeMessageSize);
-                        
-            if (lastChunk)
-            {
-               byte[] buff2 = new byte[pos];
-               
-               System.arraycopy(buff, 0, buff2, 0, pos);
-               
-               buff = buff2;
-            }
-            
-            final SessionSendContinuationMessage chunk = new SessionSendContinuationMessage(buff,                                                                                           
-                                                                                            !lastChunk,
-                                                                                            lastChunk && sendBlocking);
-
-            if (sendBlocking && lastChunk)
-            {
-               // When sending it blocking, only the last chunk will be blocking.
-               channel.sendBlocking(chunk);
-            }
-            else
-            {
-               channel.send(chunk);
-            }
-         }
-
-         try
-         {
-            input.close();
-         }
-         catch (IOException e)
-         {
-            throw new HornetQException(HornetQException.LARGE_MESSAGE_ERROR_BODY,
-                                       "Error closing stream from LargeMessageBody",
-                                       e);
-         }
+         largeMessageSendStreamed(sendBlocking, input);
       }
       else
       {
-         final long bodySize = msg.getLargeBodySize();
+         largeMessageSendBuffered(sendBlocking, msg);
+      }
+   }
 
-         LargeMessageEncodingContext context = new DecodingContext(msg);
+   /**
+    * @param sendBlocking
+    * @param msg
+    * @throws HornetQException
+    */
+   private void largeMessageSendBuffered(final boolean sendBlocking, final Message msg) throws HornetQException
+   {
+      final long bodySize = msg.getLargeBodySize();
 
-         for (int pos = 0; pos < bodySize;)
+      LargeMessageEncodingContext context = new DecodingContext(msg);
+
+      for (int pos = 0; pos < bodySize;)
+      {
+         final boolean lastChunk;
+
+         final int chunkLength = Math.min((int)(bodySize - pos), minLargeMessageSize);
+
+         final HornetQBuffer bodyBuffer = ChannelBuffers.buffer(chunkLength);
+
+         msg.encodeBody(bodyBuffer, context, chunkLength);
+
+         pos += chunkLength;
+
+         lastChunk = pos >= bodySize;
+
+         final SessionSendContinuationMessage chunk = new SessionSendContinuationMessage(bodyBuffer.array(),
+                                                                                         !lastChunk,
+                                                                                         lastChunk && sendBlocking);
+
+         if (sendBlocking && lastChunk)
          {
-            final boolean lastChunk;
-
-            final int chunkLength = Math.min((int)(bodySize - pos), minLargeMessageSize);
-
-            final HornetQBuffer bodyBuffer = ChannelBuffers.buffer(chunkLength);
-
-            msg.encodeBody(bodyBuffer, context, chunkLength);
-
-            pos += chunkLength;
-
-            lastChunk = pos >= bodySize;
-
-            final SessionSendContinuationMessage chunk = new SessionSendContinuationMessage(bodyBuffer.array(),                                                                                            
-                                                                                            !lastChunk,
-                                                                                            lastChunk && sendBlocking);
-
-            if (sendBlocking && lastChunk)
-            {
-               // When sending it blocking, only the last chunk will be blocking.
-               channel.sendBlocking(chunk);
-            }
-            else
-            {
-               channel.send(chunk);
-            }
+            // When sending it blocking, only the last chunk will be blocking.
+            channel.sendBlocking(chunk);
+         }
+         else
+         {
+            channel.send(chunk);
          }
       }
    }
 
-   private void checkClosed() throws HornetQException
+   /**
+    * @param sendBlocking
+    * @param input
+    * @throws HornetQException
+    */
+   private void largeMessageSendStreamed(final boolean sendBlocking, InputStream input) throws HornetQException
    {
-      if (closed)
+      boolean lastPacket = false;
+
+      while (!lastPacket)
       {
-         throw new HornetQException(HornetQException.OBJECT_CLOSED, "Producer is closed");
+         byte[] buff = new byte[minLargeMessageSize];
+
+         int pos = 0;
+
+         do
+         {
+            int numberOfBytesRead;
+
+            int wanted = minLargeMessageSize - pos;
+
+            try
+            {
+               numberOfBytesRead = input.read(buff, pos, wanted);
+            }
+            catch (IOException e)
+            {
+               throw new HornetQException(HornetQException.LARGE_MESSAGE_ERROR_BODY,
+                                          "Error reading the LargeMessageBody",
+                                          e);
+            }
+
+            if (numberOfBytesRead == -1)
+            {
+               lastPacket = true;
+
+               break;
+            }
+
+            pos += numberOfBytesRead;
+         }
+         while (pos < minLargeMessageSize);
+
+         if (lastPacket)
+         {
+            byte[] buff2 = new byte[pos];
+
+            System.arraycopy(buff, 0, buff2, 0, pos);
+
+            buff = buff2;
+         }
+
+         final SessionSendContinuationMessage chunk = new SessionSendContinuationMessage(buff,
+                                                                                         !lastPacket,
+                                                                                         lastPacket && sendBlocking);
+
+         if (sendBlocking && lastPacket)
+         {
+            // When sending it blocking, only the last chunk will be blocking.
+            channel.sendBlocking(chunk);
+         }
+         else
+         {
+            channel.send(chunk);
+         }
+      }
+
+      try
+      {
+         input.close();
+      }
+      catch (IOException e)
+      {
+         throw new HornetQException(HornetQException.LARGE_MESSAGE_ERROR_BODY,
+                                    "Error closing stream from LargeMessageBody",
+                                    e);
       }
    }
+
+
 
    // Inner Classes --------------------------------------------------------------------------------
    class DecodingContext implements LargeMessageEncodingContext
    {
       private final Message message;
+
       private int lastPos = 0;
 
       public DecodingContext(Message message)

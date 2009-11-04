@@ -199,15 +199,15 @@ public class ClusterTestBase extends ServiceTestBase
                                   final int consumerCount,
                                   final boolean local) throws Exception
    {
-      System.out.println("waiting for bindings on node " + node +
-                         " address " +
-                         address +
-                         " count " +
-                         count +
-                         " consumerCount " +
-                         consumerCount +
-                         " local " +
-                         local);
+//      System.out.println("waiting for bindings on node " + node +
+//                         " address " +
+//                         address +
+//                         " count " +
+//                         count +
+//                         " consumerCount " +
+//                         consumerCount +
+//                         " local " +
+//                         local);
       HornetQServer server = this.servers[node];
 
       if (server == null)

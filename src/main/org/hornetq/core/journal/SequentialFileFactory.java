@@ -61,8 +61,7 @@ public interface SequentialFileFactory
     */
    void createDirs() throws Exception;
    
-   // used on tests only
-   void testFlush();
+   void flush();
 
 
 }

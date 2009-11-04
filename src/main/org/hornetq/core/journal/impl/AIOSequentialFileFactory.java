@@ -15,8 +15,9 @@ package org.hornetq.core.journal.impl;
 
 import java.nio.ByteBuffer;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import org.hornetq.core.asyncio.BufferCallback;
 import org.hornetq.core.asyncio.impl.AsynchronousFileImpl;
@@ -35,6 +36,10 @@ import org.hornetq.utils.HornetQThreadFactory;
  */
 public class AIOSequentialFileFactory extends AbstractSequentialFactory
 {
+   
+   // Timeout used to wait executors to shutdown
+   private static final int EXECUTOR_TIMEOUT = 60;
+   
    private static final Logger log = Logger.getLogger(AIOSequentialFileFactory.class);
 
    private static final boolean trace = log.isTraceEnabled();
@@ -52,11 +57,9 @@ public class AIOSequentialFileFactory extends AbstractSequentialFactory
    /** A single AIO write executor for every AIO File.
     *  This is used only for AIO & instant operations. We only need one executor-thread for the entire journal as we always have only one active file.
     *  And even if we had multiple files at a given moment, this should still be ok, as we control max-io in a semaphore, guaranteeing AIO calls don't block on disk calls */
-   private final Executor writeExecutor = Executors.newSingleThreadExecutor(new HornetQThreadFactory("HornetQ-AIO-writer-pool" + System.identityHashCode(this),
-                                                                                                 true));
+   private ExecutorService writeExecutor;
 
-   private final Executor pollerExecutor = Executors.newCachedThreadPool(new HornetQThreadFactory("HornetQ-AIO-poller-pool" + System.identityHashCode(this),
-                                                                                              true));
+   private ExecutorService pollerExecutor;
 
    private final int bufferSize;
 
@@ -102,7 +105,7 @@ public class AIOSequentialFileFactory extends AbstractSequentialFactory
       }
    }
 
-   public void testFlush()
+   public void flush()
    {
       timedBuffer.flush();
    }
@@ -184,12 +187,45 @@ public class AIOSequentialFileFactory extends AbstractSequentialFactory
    public void start()
    {
       timedBuffer.start();
+      
+      writeExecutor = Executors.newSingleThreadExecutor(new HornetQThreadFactory("HornetQ-AIO-writer-pool" + System.identityHashCode(this),
+                                                                                                         true));
+
+      pollerExecutor = Executors.newCachedThreadPool(new HornetQThreadFactory("HornetQ-AIO-poller-pool" + System.identityHashCode(this),
+                                                                                                      true));
+
+
    }
 
    public void stop()
    {
       buffersControl.stop();
       timedBuffer.stop();
+      
+      this.writeExecutor.shutdown();
+      try
+      {
+         if (!this.writeExecutor.awaitTermination(EXECUTOR_TIMEOUT, TimeUnit.SECONDS))
+         {
+            log.warn("Timed out on AIO writer shutdown", new Exception("Timed out on AIO writer shutdown"));
+         }
+      }
+      catch (InterruptedException e)
+      {
+      }
+      
+      this.pollerExecutor.shutdown();
+
+      try
+      {
+         if (!this.pollerExecutor.awaitTermination(EXECUTOR_TIMEOUT, TimeUnit.SECONDS))
+         {
+            log.warn("Timed out on AIO poller shutdown", new Exception("Timed out on AIO writer shutdown"));
+         }
+      }
+      catch (InterruptedException e)
+      {
+      }
    }
 
    protected void finalize()

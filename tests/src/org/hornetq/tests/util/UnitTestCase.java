@@ -170,7 +170,7 @@ public class UnitTestCase extends TestCase
       Map<Thread, StackTraceElement[]> stackTrace = Thread.getAllStackTraces();
 
       out.println("*******************************************************************************");
-      out.println("Complete Thread dump" + msg);
+      out.println("Complete Thread dump " + msg);
 
       for (Map.Entry<Thread, StackTraceElement[]> el : stackTrace.entrySet())
       {
@@ -184,7 +184,7 @@ public class UnitTestCase extends TestCase
       }
       
       out.println("===============================================================================");
-      out.println("End Thread dump" + msg);
+      out.println("End Thread dump " + msg);
       out.println("*******************************************************************************");
       
       

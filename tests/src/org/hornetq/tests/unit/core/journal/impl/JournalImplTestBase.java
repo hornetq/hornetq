@@ -69,6 +69,8 @@ public abstract class JournalImplTestBase extends UnitTestCase
       super.setUp();
 
       resetFileFactory();
+      
+      fileFactory.start();
 
       transactions.clear();
 
@@ -88,6 +90,8 @@ public abstract class JournalImplTestBase extends UnitTestCase
          {
          }
       }
+      
+      fileFactory.stop();
 
       fileFactory = null;
 
