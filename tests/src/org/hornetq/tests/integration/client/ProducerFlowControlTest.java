@@ -44,125 +44,104 @@ public class ProducerFlowControlTest extends ServiceTestBase
 {
    private static final Logger log = Logger.getLogger(ProducerFlowControlTest.class);
 
+   protected boolean isNetty()
+   {
+      return false;
+   }
+
    // TODO need to test crashing a producer with unused credits returns them to the pool
 
    public void testFlowControlSingleConsumer() throws Exception
    {
-      testFlowControl(false, 1000, 500, 10 * 1024, 1024, 1024, 1024, 1, 1, 0, false);
+      testFlowControl(1000, 500, 10 * 1024, 1024, 1024, 1024, 1, 1, 0, false);
    }
 
    public void testFlowControlAnon() throws Exception
    {
-      testFlowControl(false, 1000, 500, 10 * 1024, 1024, 1024, 1024, 1, 1, 0, true);
+      testFlowControl(1000, 500, 10 * 1024, 1024, 1024, 1024, 1, 1, 0, true);
    }
 
    public void testFlowControlSingleConsumerLargeMaxSize() throws Exception
    {
-      testFlowControl(false, 1000, 500, 1024 * 1024, 1024, 1024, 1024, 1, 1, 0, false);
+      testFlowControl(1000, 500, 1024 * 1024, 1024, 1024, 1024, 1, 1, 0, false);
    }
 
    public void testFlowControlMultipleConsumers() throws Exception
    {
-      testFlowControl(false, 1000, 500, 10 * 1024, 1024, 1024, 1024, 5, 1, 0, false);
+      testFlowControl(1000, 500, 10 * 1024, 1024, 1024, 1024, 5, 1, 0, false);
    }
 
    public void testFlowControlZeroConsumerWindowSize() throws Exception
    {
-      testFlowControl(false, 1000, 500, 10 * 1024, 1024, 0, 1024, 1, 1, 0, false);
+      testFlowControl(1000, 500, 10 * 1024, 1024, 0, 1024, 1, 1, 0, false);
    }
 
    public void testFlowControlZeroAckBatchSize() throws Exception
    {
-      testFlowControl(false, 1000, 500, 10 * 1024, 1024, 1024, 0, 1, 1, 0, false);
+      testFlowControl(1000, 500, 10 * 1024, 1024, 1024, 0, 1, 1, 0, false);
    }
 
    public void testFlowControlSingleConsumerSlowConsumer() throws Exception
    {
-      testFlowControl(false, 100, 500, 1024, 512, 512, 512, 1, 1, 10, false);
+      testFlowControl(100, 500, 1024, 512, 512, 512, 1, 1, 10, false);
    }
 
    public void testFlowControlSmallMessages() throws Exception
    {
-      testFlowControl(false, 1000, 0, 10 * 1024, 1024, 1024, 1024, 1, 1, 0, false);
+      testFlowControl(1000, 0, 10 * 1024, 1024, 1024, 1024, 1, 1, 0, false);
    }
 
    public void testFlowControlLargerMessagesSmallWindowSize() throws Exception
    {
-      testFlowControl(false, 1000, 10 * 1024, 10 * 1024, 1024, 1024, 1024, 1, 1, 0, false);
+      testFlowControl(1000, 10 * 1024, 10 * 1024, 1024, 1024, 1024, 1, 1, 0, false);
    }
 
    public void testFlowControlMultipleProducers() throws Exception
    {
-      testFlowControl(false, 1000, 500, 1024 * 1024, 1024, 1024, 1024, 1, 5, 0, false);
+      testFlowControl(1000, 500, 1024 * 1024, 1024, 1024, 1024, 1, 5, 0, false);
    }
 
    public void testFlowControlMultipleProducersAndConsumers() throws Exception
    {
-      testFlowControl(false, 500, 500, 100 * 1024, 1024, 1024, 1024, 1, 3, 3, false);
+      testFlowControl(500, 500, 100 * 1024, 1024, 1024, 1024, 1, 3, 3, false);
    }
 
    public void testFlowControlMultipleProducersAnon() throws Exception
    {
-      testFlowControl(false, 1000, 500, 1024 * 1024, 1024, 1024, 1024, 1, 5, 0, true);
+      testFlowControl(1000, 500, 1024 * 1024, 1024, 1024, 1024, 1, 5, 0, true);
    }
 
-   public void testFlowControlSingleConsumerNetty() throws Exception
+   public void testFlowControlLargeMessages2() throws Exception
    {
-      testFlowControl(true, 1000, 500, 10 * 1024, 1024, 1024, 1024, 1, 1, 0, false);
+      testFlowControl(1000, 10000, -1, 1024, 0, 0, 1, 1, 0, false, 1000, true);
    }
 
-   public void testFlowControlSingleConsumerLargeMaxSizeNetty() throws Exception
+   public void testFlowControlLargeMessages3() throws Exception
    {
-      testFlowControl(true, 1000, 500, 1024 * 1024, 1024, 1024, 1024, 1, 1, 0, false);
+      testFlowControl(1000, 10000, 100 * 1024, 1024, 1024, 0, 1, 1, 0, false, 1000, true);
    }
 
-   public void testFlowControlMultipleConsumersNetty() throws Exception
+   public void testFlowControlLargeMessages4() throws Exception
    {
-      testFlowControl(true, 1000, 500, 10 * 1024, 1024, 1024, 1024, 5, 1, 0, false);
+      testFlowControl(1000, 10000, 100 * 1024, 1024, 1024, 1024, 1, 1, 0, false, 1000, true);
    }
 
-   public void testFlowControlZeroConsumerWindowSizeNetty() throws Exception
+   public void testFlowControlLargeMessages5() throws Exception
    {
-      testFlowControl(true, 1000, 500, 10 * 1024, 1024, 0, 1024, 1, 1, 0, false);
+      testFlowControl(1000, 10000, 100 * 1024, 1024, -1, 1024, 1, 1, 0, false, 1000, true);
    }
 
-   public void testFlowControlZeroAckBatchSizeNetty() throws Exception
+   public void testFlowControlLargeMessages6() throws Exception
    {
-      testFlowControl(true, 1000, 500, 10 * 1024, 1024, 1024, 0, 1, 1, 0, false);
+      testFlowControl(1000, 10000, 100 * 1024, 1024, 1024, 1024, 1, 1, 0, true, 1000, true);
    }
-
-   public void testFlowControlSingleConsumerSlowConsumerNetty() throws Exception
+   
+   public void testFlowControlLargeMessages7() throws Exception
    {
-      testFlowControl(true, 100, 500, 1024, 512, 512, 512, 1, 1, 10, false);
+      testFlowControl(1000, 10000, 100 * 1024, 1024, 1024, 1024, 2, 2, 0, true, 1000, true);
    }
 
-   public void testFlowControlSmallMessagesNetty() throws Exception
-   {
-      testFlowControl(true, 1000, 0, 10 * 1024, 1024, 1024, 1024, 1, 1, 0, false);
-   }
-
-   public void testFlowControlLargerMessagesSmallWindowSizeNetty() throws Exception
-   {
-      testFlowControl(true, 1000, 10 * 1024, 10 * 1024, 1024, 1024, 1024, 1, 1, 0, false);
-   }
-
-   public void testFlowControlMultipleProducersNetty() throws Exception
-   {
-      testFlowControl(true, 1000, 500, 1024 * 1024, 1024, 1024, 1024, 1, 5, 0, false);
-   }
-
-   public void testFlowControlMultipleProducersAndConsumersNetty() throws Exception
-   {
-      testFlowControl(false, 500, 500, 100 * 1024, 1024, 1024, 1024, 1, 3, 3, false);
-   }
-
-   public void testFlowControlMultipleProducersAnonNetty() throws Exception
-   {
-      testFlowControl(true, 1000, 500, 1024 * 1024, 1024, 1024, 1024, 1, 5, 0, true);
-   }
-
-   private void testFlowControl(final boolean netty,
-                                final int numMessages,
+   private void testFlowControl(final int numMessages,
                                 final int messageSize,
                                 final int maxSize,
                                 final int producerWindowSize,
@@ -173,8 +152,7 @@ public class ProducerFlowControlTest extends ServiceTestBase
                                 final long consumerDelay,
                                 final boolean anon) throws Exception
    {
-      testFlowControl(netty,
-                      numMessages,
+      testFlowControl(numMessages,
                       messageSize,
                       maxSize,
                       producerWindowSize,
@@ -187,19 +165,8 @@ public class ProducerFlowControlTest extends ServiceTestBase
                       -1,
                       false);
    }
-   
-//   public void testFlowControlLargeMessages() throws Exception
-//   {
-//      testFlowControl(true, 1000, 10000, 100 * 1024, 1024, 1024, 0, 1, 1, 0, false, 1000, true);
-//   }
-//   
-//   public void testFlowControlLargeMessages2() throws Exception
-//   {
-//      testFlowControl(true, 1000, 10000, -1, 1024, 0, 0, 1, 1, 0, false, 1000, true);
-//   }
 
-   private void testFlowControl(final boolean netty,
-                                final int numMessages,
+   private void testFlowControl(final int numMessages,
                                 final int messageSize,
                                 final int maxSize,
                                 final int producerWindowSize,
@@ -214,7 +181,7 @@ public class ProducerFlowControlTest extends ServiceTestBase
    {
       final SimpleString address = new SimpleString("testaddress");
 
-      Configuration config = super.createDefaultConfig(netty);
+      Configuration config = super.createDefaultConfig(isNetty());
 
       HornetQServer server = createServer(realFiles, config);
 
@@ -229,7 +196,7 @@ public class ProducerFlowControlTest extends ServiceTestBase
 
       ClientSessionFactory sf;
 
-      if (netty)
+      if (isNetty())
       {
          sf = createNettyFactory();
       }
@@ -248,7 +215,7 @@ public class ProducerFlowControlTest extends ServiceTestBase
       }
 
       ClientSession session = sf.createSession(false, true, true, true);
-      
+
       session.start();
 
       final String queueName = "testqueue";
@@ -258,7 +225,6 @@ public class ProducerFlowControlTest extends ServiceTestBase
          session.createQueue(address, new SimpleString(queueName + i), null, false);
       }
 
-      
       class MyHandler implements MessageHandler
       {
          int count = 0;
@@ -271,16 +237,16 @@ public class ProducerFlowControlTest extends ServiceTestBase
          {
             try
             {
-               log.info("got message " + count);
-               
+               // log.info("got message " + count);
+
                int availBytes = message.getBody().readableBytes();
-               
+
                assertEquals(messageSize, availBytes);
-               
+
                byte[] bytes = new byte[availBytes];
-               
+
                message.getBody().readBytes(bytes);
-               
+
                message.acknowledge();
 
                if (++count == numMessages * numProducers)
@@ -309,7 +275,7 @@ public class ProducerFlowControlTest extends ServiceTestBase
          handlers[i] = new MyHandler();
 
          log.info("created consumer");
-         
+
          ClientConsumer consumer = session.createConsumer(new SimpleString(queueName + i));
 
          consumer.setMessageHandler(handlers[i]);
@@ -346,16 +312,15 @@ public class ProducerFlowControlTest extends ServiceTestBase
             else
             {
                producers[j].send(message);
-               
-               //log.info("sent message " + i);
+
+               // log.info("sent message " + i);
             }
 
          }
       }
-      
-      log.info("sent messages");
-      
-      
+
+      // log.info("sent messages");
+
       for (int i = 0; i < numConsumers; i++)
       {
          handlers[i].latch.await();

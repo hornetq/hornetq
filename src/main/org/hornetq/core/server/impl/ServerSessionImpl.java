@@ -165,7 +165,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
    private volatile LargeServerMessage currentLargeMessage;
 
    private ServerSessionPacketHandler handler;
-   
+
    private boolean closed;
 
    // Constructors ---------------------------------------------------------------------------------
@@ -368,17 +368,17 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
          Filter filter = FilterImpl.createFilter(filterString);;
 
          ServerConsumer consumer = new ServerConsumerImpl(packet.getID(),
-                                                          this,
-                                                          (QueueBinding)binding,
-                                                          filter,
-                                                          started,
-                                                          browseOnly,
-                                                          storageManager,
-                                                          channel,
-                                                          preAcknowledge,
-                                                          updateDeliveries,
-                                                          executor,
-                                                          managementService);
+                                                           this,
+                                                           (QueueBinding)binding,
+                                                           filter,
+                                                           started,
+                                                           browseOnly,
+                                                           storageManager,
+                                                           channel,
+                                                           preAcknowledge,
+                                                           updateDeliveries,
+                                                           executor,
+                                                           managementService);
 
          consumers.put(consumer.getID(), consumer);
 
@@ -1063,9 +1063,9 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
             response = new SessionXAResponseMessage(true, XAException.XAER_PROTO, msg);
          }
          else
-         {                     
+         {
             Transaction theTx = resourceManager.removeTransaction(xid);
-            
+
             if (theTx == null)
             {
                // checked heuristic committed transactions
@@ -1856,7 +1856,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
    private void doRollback(final boolean lastMessageAsDelived, final Transaction theTx) throws Exception
    {
       boolean wasStarted = started;
-      
+
       List<MessageReference> toCancel = new ArrayList<MessageReference>();
 
       for (ServerConsumer consumer : consumers.values())
@@ -1873,7 +1873,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
       {
          ref.getQueue().cancel(theTx, ref);
       }
-            
+
       theTx.rollback();
 
       if (wasStarted)

@@ -214,7 +214,7 @@ public class LargeMessageTestBase extends ServiceTestBase
          }
 
          sendMessages(numberOfMessages, numberOfBytes, delayDelivery, session, producer);
-
+         
          if (isXA)
          {
             session.end(xid, XAResource.TMSUCCESS);
@@ -270,9 +270,6 @@ public class LargeMessageTestBase extends ServiceTestBase
 
          for (int iteration = testBrowser ? 0 : 1; iteration < 2; iteration++)
          {
-
-            log.debug("Iteration: " + iteration);
-
             session.stop();
 
             // first time with a browser
@@ -289,11 +286,8 @@ public class LargeMessageTestBase extends ServiceTestBase
 
                   public void onMessage(final ClientMessage message)
                   {
-
                      try
                      {
-                        log.debug("Message on consumer: " + msgCounter);
-
                         if (delayDelivery > 0)
                         {
                            long originalTime = (Long)message.getProperty(new SimpleString("original-time"));
@@ -307,7 +301,7 @@ public class LargeMessageTestBase extends ServiceTestBase
                         }
 
                         assertNotNull(message);
-
+                        
                         if (delayDelivery <= 0)
                         {
                            // right now there is no guarantee of ordered delivered on multiple scheduledMessages with
@@ -365,7 +359,7 @@ public class LargeMessageTestBase extends ServiceTestBase
                                  log.debug("Read " + b + " bytes");
                               }
 
-                              assertEquals("byte pos" + b + " is incorrect", getSamplebyte(b), buffer.readByte());
+                              assertEquals(getSamplebyte(b), buffer.readByte());
                            }
                         }
                      }
@@ -389,7 +383,6 @@ public class LargeMessageTestBase extends ServiceTestBase
 
                assertTrue(latchDone.await(waitOnConsumer, TimeUnit.SECONDS));
                assertEquals(0, errors.get());
-
             }
             else
             {
@@ -498,8 +491,8 @@ public class LargeMessageTestBase extends ServiceTestBase
                   session.start(xid, XAResource.TMNOFLAGS);
                }
                else
-               {
-                  session.rollback();
+               {    
+                  session.rollback();                 
                }
             }
             else

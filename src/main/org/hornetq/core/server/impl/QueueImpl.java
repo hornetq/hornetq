@@ -1342,7 +1342,6 @@ public class QueueImpl implements Queue
 
    private synchronized HandleStatus handle(final MessageReference reference, final Consumer consumer)
    {
-
       HandleStatus status;
       try
       {

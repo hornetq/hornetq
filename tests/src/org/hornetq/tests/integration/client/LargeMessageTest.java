@@ -14,8 +14,6 @@
 package org.hornetq.tests.integration.client;
 
 import java.util.HashMap;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
@@ -28,7 +26,6 @@ import org.hornetq.core.client.ClientMessage;
 import org.hornetq.core.client.ClientProducer;
 import org.hornetq.core.client.ClientSession;
 import org.hornetq.core.client.ClientSessionFactory;
-import org.hornetq.core.client.MessageHandler;
 import org.hornetq.core.client.impl.ClientConsumerInternal;
 import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
 import org.hornetq.core.config.Configuration;
@@ -286,7 +283,6 @@ public class LargeMessageTest extends LargeMessageTestBase
          server.start();
 
          ClientSessionFactory sf = createFactory(isNetty());
-         
 
          session = sf.createSession(false, false, false);
 
