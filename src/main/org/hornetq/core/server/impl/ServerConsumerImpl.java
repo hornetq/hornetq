@@ -94,7 +94,7 @@ public class ServerConsumerImpl implements ServerConsumer
 
    private volatile LargeMessageDeliverer largeMessageDeliverer = null;
 
-   private boolean largeMessageInDelivery;
+   private volatile boolean largeMessageInDelivery;
 
    /**
     * if we are a browse only consumer we don't need to worry about acknowledgemenets or being started/stopeed by the session.
@@ -199,8 +199,6 @@ public class ServerConsumerImpl implements ServerConsumer
          {
             return HandleStatus.BUSY;
          }
-
-         // note: Since we schedule deliveries to start under replication, we use a counter of pendingLargeMessages.
 
          // If there is a pendingLargeMessage we can't take another message
          // This has to be checked inside the lock as the set to null is done inside the lock
@@ -625,7 +623,7 @@ public class ServerConsumerImpl implements ServerConsumer
       private final long sizePendingLargeMessage;
 
       /** The current message being processed */
-      private LargeServerMessage largeMessage;
+      private volatile LargeServerMessage largeMessage;
 
       private final MessageReference ref;
 
@@ -757,6 +755,13 @@ public class ServerConsumerImpl implements ServerConsumer
          lock.lock();
          try
          {
+            if (largeMessage == null)
+            {
+               // handleClose could be calling close while handleDeliver is also calling finish.
+               // As a result one of them could get here after the largeMessage is already gone. 
+               // On that case we just ignore this call
+               return;
+            }
             context.close();
 
             largeMessage.releaseResources();
