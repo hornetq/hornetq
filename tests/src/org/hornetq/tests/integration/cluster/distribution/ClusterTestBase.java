@@ -417,23 +417,27 @@ public class ClusterTestBase extends ServiceTestBase
 
       ClientSession session = sf.createSession(false, true, true);
 
-      ClientProducer producer = session.createProducer(address);
-
-      for (int i = msgStart; i < msgEnd; i++)
+      try
       {
-         ClientMessage message = session.createClientMessage(durable);
+         ClientProducer producer = session.createProducer(address);
 
-         if (filterVal != null)
+         for (int i = msgStart; i < msgEnd; i++)
          {
-            message.putStringProperty(FILTER_PROP, new SimpleString(filterVal));
+            ClientMessage message = session.createClientMessage(durable);
+
+            if (filterVal != null)
+            {
+               message.putStringProperty(FILTER_PROP, new SimpleString(filterVal));
+            }
+
+            message.putIntProperty(COUNT_PROP, i);
+
+            producer.send(message);
          }
-
-         message.putIntProperty(COUNT_PROP, i);
-
-         producer.send(message);
+      } finally
+      {
+         session.close();
       }
-
-      session.close();
    }
 
    protected void sendWithProperty(int node,
@@ -463,18 +467,23 @@ public class ClusterTestBase extends ServiceTestBase
 
       ClientSession session = sf.createSession(false, true, true);
 
-      ClientProducer producer = session.createProducer(address);
-
-      for (int i = msgStart; i < msgEnd; i++)
+      try
       {
-         ClientMessage message = session.createClientMessage(durable);
+         ClientProducer producer = session.createProducer(address);
 
-         message.putStringProperty(key, val);
-         message.putIntProperty(COUNT_PROP, i);
-         producer.send(message);
+         for (int i = msgStart; i < msgEnd; i++)
+         {
+            ClientMessage message = session.createClientMessage(durable);
+
+            message.putStringProperty(key, val);
+            message.putIntProperty(COUNT_PROP, i);
+            producer.send(message);
+         }
       }
-
-      session.close();
+      finally
+      {
+         session.close();
+      }
    }
 
    protected void setUpGroupHandler(GroupingHandlerConfiguration.TYPE type, int node)
