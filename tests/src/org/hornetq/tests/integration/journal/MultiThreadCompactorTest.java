@@ -33,7 +33,6 @@ import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.journal.PreparedTransactionInfo;
 import org.hornetq.core.journal.RecordInfo;
-import org.hornetq.core.journal.impl.AIOSequentialFileFactory;
 import org.hornetq.core.journal.impl.JournalImpl;
 import org.hornetq.core.journal.impl.NIOSequentialFileFactory;
 import org.hornetq.core.server.HornetQServer;
@@ -99,10 +98,10 @@ public class MultiThreadCompactorTest extends ServiceTestBase
                                                "hornetq-data",
                                                "hq",
                                                100);
-         
+
          List<RecordInfo> committedRecords = new ArrayList<RecordInfo>();
          List<PreparedTransactionInfo> preparedTransactions = new ArrayList<PreparedTransactionInfo>();
-         
+
          journal.start();
          journal.load(committedRecords, preparedTransactions, null);
 
@@ -156,7 +155,7 @@ public class MultiThreadCompactorTest extends ServiceTestBase
       assertEquals(xid, xids[0]);
 
       session.rollback(xid);
-      
+
       session.close();
       sf.close();
    }
@@ -243,7 +242,7 @@ public class MultiThreadCompactorTest extends ServiceTestBase
       setupServer(JournalType.ASYNCIO);
       drainQueue(0, QUEUE);
       drainQueue(0, new SimpleString("LAZY-QUEUE"));
-      
+
       checkEmptyXID(xid);
 
    }
@@ -268,7 +267,7 @@ public class MultiThreadCompactorTest extends ServiceTestBase
 
          if (i % 100 == 0)
          {
-            System.out.println("Received #" + i + "  on thread after start");
+            // System.out.println("Received #" + i + "  on thread after start");
          }
          msg.acknowledge();
       }
@@ -345,11 +344,10 @@ public class MultiThreadCompactorTest extends ServiceTestBase
 
          config.setJournalCompactMinFiles(ConfigurationImpl.DEFAULT_JOURNAL_COMPACT_MIN_FILES);
          config.setJournalCompactPercentage(ConfigurationImpl.DEFAULT_JOURNAL_COMPACT_PERCENTAGE);
-         
+
          // This test is supposed to not sync.. All the ACKs are async, and it was supposed to not sync
          config.setJournalSyncNonTransactional(false);
-         
-         
+
          // config.setJournalCompactMinFiles(0);
          // config.setJournalCompactPercentage(0);
 
@@ -361,7 +359,7 @@ public class MultiThreadCompactorTest extends ServiceTestBase
       sf = createNettyFactory();
       sf.setBlockOnPersistentSend(false);
       sf.setBlockOnAcknowledge(false);
-      
+
       ClientSession sess = sf.createSession();
 
       try
@@ -446,7 +444,7 @@ public class MultiThreadCompactorTest extends ServiceTestBase
                }
                if (i % 100 == 0)
                {
-                  System.out.println(Thread.currentThread().getName() + "::sent #" + i);
+                  // System.out.println(Thread.currentThread().getName() + "::sent #" + i);
                }
                ClientMessage msg = session.createClientMessage(true);
                msg.setBody(ChannelBuffers.wrappedBuffer(new byte[1024]));
@@ -514,7 +512,7 @@ public class MultiThreadCompactorTest extends ServiceTestBase
                }
                if (i % 100 == 0)
                {
-                  System.out.println(Thread.currentThread().getName() + "::received #" + i);
+                  // System.out.println(Thread.currentThread().getName() + "::received #" + i);
                }
             }
 
