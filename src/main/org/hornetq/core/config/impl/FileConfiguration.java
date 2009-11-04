@@ -396,11 +396,6 @@ public class FileConfiguration extends ConfigurationImpl
 
          params.put(key, nValue.getTextContent());
       }
-      
-      for (Entry<String, Object> entry : params.entrySet())
-      {
-         System.out.println(entry.getKey() + "=" + entry.getValue());
-      }
 
       return new TransportConfiguration(clazz, params, name);
    }
