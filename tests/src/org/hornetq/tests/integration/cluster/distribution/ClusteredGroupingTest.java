@@ -643,7 +643,7 @@ public class ClusteredGroupingTest extends ClusterTestBase
       }
       finally
       {
-         //closeAllConsumers();
+         closeAllConsumers();
 
          closeAllSessionFactories();
 
@@ -715,7 +715,7 @@ public class ClusteredGroupingTest extends ClusterTestBase
       }
       finally
       {
-         //closeAllConsumers();
+         closeAllConsumers();
 
          closeAllSessionFactories();
 
@@ -789,7 +789,7 @@ public class ClusteredGroupingTest extends ClusterTestBase
       }
       finally
       {
-         //closeAllConsumers();
+         closeAllConsumers();
 
          closeAllSessionFactories();
 
