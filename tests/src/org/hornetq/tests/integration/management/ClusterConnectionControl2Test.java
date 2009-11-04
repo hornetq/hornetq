@@ -92,7 +92,7 @@ public class ClusterConnectionControl2Test extends ManagementTestBase
          
          if (nodes.size() != 1 && System.currentTimeMillis() - start < 30000)
          {
-            Thread.sleep(100);
+            Thread.sleep(500);
          }
          else
          {
@@ -132,10 +132,10 @@ public class ClusterConnectionControl2Test extends ManagementTestBase
 
       clusterConnectionConfig_0 = new ClusterConnectionConfiguration(clusterName,
                                                                    queueConfig.getAddress(),
-                                                                   randomPositiveLong(),
-                                                                   randomBoolean(),
-                                                                   randomBoolean(),
-                                                                   randomPositiveInt(),
+                                                                   1000,
+                                                                   false,
+                                                                   false,
+                                                                   1,
                                                                    discoveryName);
       List<Pair<String, String>> connectorInfos = new ArrayList<Pair<String, String>>();
       connectorInfos.add(new Pair<String, String>("netty", null));
