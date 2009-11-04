@@ -208,7 +208,8 @@ public class HornetQAdmin implements Admin
 
    public void startServer() throws Exception
    {
-      serverProcess = SpawnedVMSupport.spawnVM(SpawnedJMSServer.class.getName(), false);
+      String[] vmArgs = new String[] {"-Dorg.hornetq.logger-delegate-factory-class-name=org.hornetq.jms.SysoutLoggerDelegateFactory"};
+      serverProcess = SpawnedVMSupport.spawnVM(SpawnedJMSServer.class.getName(), vmArgs, false);
       InputStreamReader isr = new InputStreamReader(serverProcess.getInputStream());
      
       final BufferedReader br = new BufferedReader(isr);
@@ -228,7 +229,7 @@ public class HornetQAdmin implements Admin
                      String line = null;
                      while ((line = br.readLine()) != null)
                      {
-                        System.out.println("server output: " + line);
+                        System.out.println("SERVER: " + line);
                      }
                   }
                   catch (Exception e)
