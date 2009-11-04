@@ -1401,7 +1401,16 @@ public class QueueImpl implements Queue
             // One decrements the ref count, then the other stores a delete, the delete gets committed, but the first
             // ack isn't committed, then the server crashes and on
             // recovery the message is deleted even though the other ack never committed
-            storageManager.deleteMessage(message.getMessageID());
+
+            //also note then when this happens as part of a trasaction its the tx commt of the ack that is important not this
+            try
+            {
+               storageManager.deleteMessage(message.getMessageID());
+            }
+            catch (Exception e)
+            {
+               log.warn("Unable to remove message id = " + message.getMessageID() + " please remove manually");
+            }
          }
       }
 
