@@ -345,7 +345,11 @@ public class MultiThreadCompactorTest extends ServiceTestBase
 
          config.setJournalCompactMinFiles(ConfigurationImpl.DEFAULT_JOURNAL_COMPACT_MIN_FILES);
          config.setJournalCompactPercentage(ConfigurationImpl.DEFAULT_JOURNAL_COMPACT_PERCENTAGE);
-
+         
+         // This test is supposed to not sync.. All the ACKs are async, and it was supposed to not sync
+         config.setJournalSyncNonTransactional(false);
+         
+         
          // config.setJournalCompactMinFiles(0);
          // config.setJournalCompactPercentage(0);
 
@@ -442,7 +446,7 @@ public class MultiThreadCompactorTest extends ServiceTestBase
                }
                if (i % 100 == 0)
                {
-                  // System.out.println(Thread.currentThread().getName() + "::sent #" + i);
+                  System.out.println(Thread.currentThread().getName() + "::sent #" + i);
                }
                ClientMessage msg = session.createClientMessage(true);
                msg.setBody(ChannelBuffers.wrappedBuffer(new byte[1024]));
@@ -472,7 +476,7 @@ public class MultiThreadCompactorTest extends ServiceTestBase
             }
             catch (Throwable e)
             {
-               e.printStackTrace();
+               this.e = e;
             }
          }
       }
@@ -510,7 +514,7 @@ public class MultiThreadCompactorTest extends ServiceTestBase
                }
                if (i % 100 == 0)
                {
-                  // System.out.println(Thread.currentThread().getName() + "::received #" + i);
+                  System.out.println(Thread.currentThread().getName() + "::received #" + i);
                }
             }
 
