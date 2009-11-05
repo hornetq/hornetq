@@ -60,6 +60,7 @@ import org.hornetq.utils.SimpleString;
 public class PagingStoreImpl implements TestSupportPageStore
 {
    // Constants -----------------------------------------------------
+   
    private static final Logger log = Logger.getLogger(PagingStoreImpl.class);
 
    // Attributes ----------------------------------------------------
@@ -864,6 +865,7 @@ public class PagingStoreImpl implements TestSupportPageStore
                {
                   currentPage.sync();
                }
+               
                return true;
             }
             else
