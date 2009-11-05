@@ -51,7 +51,7 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
 
    protected boolean isNetty()
    {
-      return true;
+      return false;
    }
 
    private int getMessageEncodeSize(final SimpleString address) throws Exception
