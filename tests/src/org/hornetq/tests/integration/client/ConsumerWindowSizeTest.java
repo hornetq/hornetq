@@ -53,7 +53,7 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
    {
       return true;
    }
-   
+
    private int getMessageEncodeSize(final SimpleString address) throws Exception
    {
       ClientSessionFactory cf = createFactory(isNetty());
@@ -214,7 +214,7 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
       internalTestSlowConsumerNoBuffer(false);
    }
 
-//   I believe this test became invalid after we started using another thread to deliver the large message
+   // I believe this test became invalid after we started using another thread to deliver the large message
    public void disabled_testSlowConsumerNoBufferLargeMessages() throws Exception
    {
       internalTestSlowConsumerNoBuffer(true);
@@ -863,11 +863,6 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
       testNoWindowRoundRobin(false);
    }
 
-   public void testNoWindowRoundRobinLargeMessage() throws Exception
-   {
-      testNoWindowRoundRobin(true);
-   }
-
    private void testNoWindowRoundRobin(final boolean largeMessages) throws Exception
    {
 
@@ -926,7 +921,7 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
                   {
                      Thread.sleep(10);
                   }
-                  
+
                   assertNull(consumerImpl.getAvailableCredits());
                }
             }
