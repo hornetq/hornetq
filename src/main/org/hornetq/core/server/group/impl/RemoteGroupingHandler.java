@@ -175,7 +175,6 @@ public class RemoteGroupingHandler implements GroupingHandler
       {
          SimpleString clusterName = (SimpleString)notification.getProperties()
                                                               .getProperty(ManagementHelper.HDR_CLUSTER_NAME);
-         groupMap.remove(clusterName);
          List<SimpleString> list = groupMap.remove(clusterName);
          if (list != null)
          {

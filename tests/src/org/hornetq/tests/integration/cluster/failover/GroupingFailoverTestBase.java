@@ -65,11 +65,11 @@ public abstract class GroupingFailoverTestBase extends ClusterTestBase
          createQueue(0, "queues.testaddress", "queue0", null, true);
          createQueue(1, "queues.testaddress", "queue0", null, true);
 
+         waitForBindings(0, "queues.testaddress", 1, 0, true);
+         waitForBindings(1, "queues.testaddress", 1, 0, true);
+         
          addConsumer(0, 0, "queue0", null);
          addConsumer(1, 1, "queue0", null);
-
-         waitForBindings(0, "queues.testaddress", 1, 1, true);
-         waitForBindings(1, "queues.testaddress", 1, 1, true);
 
          waitForBindings(0, "queues.testaddress", 1, 1, false);
          waitForBindings(1, "queues.testaddress", 1, 1, false);
@@ -168,11 +168,13 @@ public abstract class GroupingFailoverTestBase extends ClusterTestBase
          createQueue(0, "queues.testaddress", "queue0", null, true);
          createQueue(1, "queues.testaddress", "queue0", null, true);
 
+
+         waitForBindings(0, "queues.testaddress", 1, 0, true);
+         waitForBindings(1, "queues.testaddress", 1, 0, true);
+
          addConsumer(0, 0, "queue0", null);
          addConsumer(1, 1, "queue0", null);
 
-         waitForBindings(0, "queues.testaddress", 1, 1, true);
-         waitForBindings(1, "queues.testaddress", 1, 1, true);
 
          waitForBindings(0, "queues.testaddress", 1, 1, false);
          waitForBindings(1, "queues.testaddress", 1, 1, false);
