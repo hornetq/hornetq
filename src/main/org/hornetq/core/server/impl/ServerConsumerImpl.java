@@ -93,7 +93,7 @@ public class ServerConsumerImpl implements ServerConsumer
    private boolean started;
 
    private volatile LargeMessageDeliverer largeMessageDeliverer = null;
-  
+
    private boolean largeMessageInDelivery;
 
    /**
@@ -143,7 +143,7 @@ public class ServerConsumerImpl implements ServerConsumer
 
       this.binding = binding;
 
-      this.messageQueue = binding.getQueue();
+      messageQueue = binding.getQueue();
 
       this.executor = executor;
 
@@ -159,7 +159,7 @@ public class ServerConsumerImpl implements ServerConsumer
 
       this.managementService = managementService;
 
-      this.minLargeMessageSize = session.getMinLargeMessageSize();
+      minLargeMessageSize = session.getMinLargeMessageSize();
 
       this.updateDeliveries = updateDeliveries;
 
@@ -349,7 +349,7 @@ public class ServerConsumerImpl implements ServerConsumer
             forcedDeliveryMessage.setDestination(messageQueue.getName());
 
             final SessionReceiveMessage packet = new SessionReceiveMessage(id, forcedDeliveryMessage, 0);
-            
+
             channel.send(packet);
          }
       });
@@ -515,7 +515,7 @@ public class ServerConsumerImpl implements ServerConsumer
 
    // Private --------------------------------------------------------------------------------------
 
-   private void promptDelivery(boolean asyncDelivery)
+   private void promptDelivery(final boolean asyncDelivery)
    {
       lock.lock();
       try
@@ -747,9 +747,6 @@ public class ServerConsumerImpl implements ServerConsumer
          }
       }
 
-      /**
-       * 
-       */
       public void finish() throws Exception
       {
          lock.lock();
@@ -758,7 +755,7 @@ public class ServerConsumerImpl implements ServerConsumer
             if (largeMessage == null)
             {
                // handleClose could be calling close while handleDeliver is also calling finish.
-               // As a result one of them could get here after the largeMessage is already gone. 
+               // As a result one of them could get here after the largeMessage is already gone.
                // On that case we just ignore this call
                return;
             }
@@ -786,7 +783,7 @@ public class ServerConsumerImpl implements ServerConsumer
          }
       }
 
-      private SessionReceiveContinuationMessage createChunkSend(LargeMessageEncodingContext context)
+      private SessionReceiveContinuationMessage createChunkSend(final LargeMessageEncodingContext context)
       {
          SessionReceiveContinuationMessage chunk;
 
@@ -844,7 +841,7 @@ public class ServerConsumerImpl implements ServerConsumer
 
          while (iterator.hasNext())
          {
-            MessageReference ref = (MessageReference)iterator.next();
+            MessageReference ref = iterator.next();
             try
             {
                HandleStatus status = handle(ref);
