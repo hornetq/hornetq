@@ -94,7 +94,8 @@ public class ServerConsumerImpl implements ServerConsumer
 
    private volatile LargeMessageDeliverer largeMessageDeliverer = null;
 
-   private volatile boolean largeMessageInDelivery;
+   // Note, this does not need to be volatile since it is only accessed when the lock is held
+   private boolean largeMessageInDelivery;
 
    /**
     * if we are a browse only consumer we don't need to worry about acknowledgemenets or being started/stopeed by the session.
@@ -349,6 +350,7 @@ public class ServerConsumerImpl implements ServerConsumer
             forcedDeliveryMessage.setDestination(messageQueue.getName());
 
             final SessionReceiveMessage packet = new SessionReceiveMessage(id, forcedDeliveryMessage, 0);
+            
             channel.send(packet);
          }
       });
@@ -622,8 +624,10 @@ public class ServerConsumerImpl implements ServerConsumer
    {
       private final long sizePendingLargeMessage;
 
-      /** The current message being processed */
-      private volatile LargeServerMessage largeMessage;
+      /** The current message being processed
+       *  Note, this does not need to be volatile since it is only accessed when the lock is held
+       */
+      private LargeServerMessage largeMessage;
 
       private final MessageReference ref;
 
