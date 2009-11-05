@@ -20,10 +20,10 @@ import static org.hornetq.core.remoting.impl.wireformat.PacketImpl.SESS_BINDINGQ
 import static org.hornetq.core.remoting.impl.wireformat.PacketImpl.SESS_CLOSE;
 import static org.hornetq.core.remoting.impl.wireformat.PacketImpl.SESS_COMMIT;
 import static org.hornetq.core.remoting.impl.wireformat.PacketImpl.SESS_CONSUMER_CLOSE;
-import static org.hornetq.core.remoting.impl.wireformat.PacketImpl.SESS_FORCE_CONSUMER_DELIVERY;
 import static org.hornetq.core.remoting.impl.wireformat.PacketImpl.SESS_CREATECONSUMER;
 import static org.hornetq.core.remoting.impl.wireformat.PacketImpl.SESS_EXPIRED;
 import static org.hornetq.core.remoting.impl.wireformat.PacketImpl.SESS_FLOWTOKEN;
+import static org.hornetq.core.remoting.impl.wireformat.PacketImpl.SESS_FORCE_CONSUMER_DELIVERY;
 import static org.hornetq.core.remoting.impl.wireformat.PacketImpl.SESS_QUEUEQUERY;
 import static org.hornetq.core.remoting.impl.wireformat.PacketImpl.SESS_ROLLBACK;
 import static org.hornetq.core.remoting.impl.wireformat.PacketImpl.SESS_SEND;
@@ -53,11 +53,11 @@ import org.hornetq.core.remoting.impl.wireformat.RollbackMessage;
 import org.hornetq.core.remoting.impl.wireformat.SessionAcknowledgeMessage;
 import org.hornetq.core.remoting.impl.wireformat.SessionBindingQueryMessage;
 import org.hornetq.core.remoting.impl.wireformat.SessionConsumerCloseMessage;
-import org.hornetq.core.remoting.impl.wireformat.SessionForceConsumerDelivery;
 import org.hornetq.core.remoting.impl.wireformat.SessionConsumerFlowCreditMessage;
 import org.hornetq.core.remoting.impl.wireformat.SessionCreateConsumerMessage;
 import org.hornetq.core.remoting.impl.wireformat.SessionDeleteQueueMessage;
 import org.hornetq.core.remoting.impl.wireformat.SessionExpiredMessage;
+import org.hornetq.core.remoting.impl.wireformat.SessionForceConsumerDelivery;
 import org.hornetq.core.remoting.impl.wireformat.SessionQueueQueryMessage;
 import org.hornetq.core.remoting.impl.wireformat.SessionRequestProducerCreditsMessage;
 import org.hornetq.core.remoting.impl.wireformat.SessionSendContinuationMessage;
@@ -275,12 +275,11 @@ public class ServerSessionPacketHandler implements ChannelHandler
             {
                SessionForceConsumerDelivery message = (SessionForceConsumerDelivery)packet;
                session.handleForceConsumerDelivery(message);
-               break;               
+               break;
             }
             case PacketImpl.SESS_PRODUCER_REQUEST_CREDITS:
             {
-               SessionRequestProducerCreditsMessage message = (SessionRequestProducerCreditsMessage)
-               packet;
+               SessionRequestProducerCreditsMessage message = (SessionRequestProducerCreditsMessage)packet;
                session.handleRequestProducerCredits(message);
                break;
             }

@@ -28,12 +28,12 @@ public abstract class DistributorImpl implements Distributor
 
    protected final List<Consumer> consumers = new ArrayList<Consumer>();
 
-   public void addConsumer(Consumer consumer)
+   public void addConsumer(final Consumer consumer)
    {
       consumers.add(consumer);
    }
 
-   public boolean removeConsumer(Consumer consumer)
+   public boolean removeConsumer(final Consumer consumer)
    {
       return consumers.remove(consumer);
    }

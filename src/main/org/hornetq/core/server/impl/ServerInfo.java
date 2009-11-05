@@ -34,7 +34,7 @@ public class ServerInfo
 {
    private final HornetQServer server;
 
-   private PagingManager pagingManager;
+   private final PagingManager pagingManager;
 
    // Constants -----------------------------------------------------
 
@@ -57,8 +57,8 @@ public class ServerInfo
       long maxMemory = Runtime.getRuntime().maxMemory();
       long totalMemory = Runtime.getRuntime().totalMemory();
       long freeMemory = Runtime.getRuntime().freeMemory();
-      long availableMemory = freeMemory + (maxMemory - totalMemory);                              
-      double availableMemoryPercent = 100.0 * (double)availableMemory / maxMemory;     
+      long availableMemory = freeMemory + maxMemory - totalMemory;
+      double availableMemoryPercent = 100.0 * availableMemory / maxMemory;
       ThreadMXBean threadMXBean = ManagementFactory.getThreadMXBean();
 
       String info = "\n**** Server Dump ****\n";
@@ -90,7 +90,9 @@ public class ServerInfo
          try
          {
             pageStore = pagingManager.getPageStore(storeName);
-            info += String.format("\t%s: %s\n", storeName, SizeFormatterUtil.sizeof(pageStore.getPageSizeBytes() * pageStore.getNumberOfPages()));         
+            info += String.format("\t%s: %s\n",
+                                  storeName,
+                                  SizeFormatterUtil.sizeof(pageStore.getPageSizeBytes() * pageStore.getNumberOfPages()));
          }
          catch (Exception e)
          {

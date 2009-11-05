@@ -73,7 +73,7 @@ public abstract class MessageImpl implements Message
 
    protected long messageID;
 
-   private SimpleString destination;
+   protected SimpleString destination;
 
    protected byte type;
 

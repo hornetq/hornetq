@@ -242,10 +242,11 @@ public class PageCrashTest extends ServiceTestBase
       @Override
       protected PagingManager createPagingManager()
       {
-         return new PagingManagerImpl(new FailurePagingStoreFactoryNIO(super.getConfiguration().getPagingDirectory()),
+         return new PagingManagerImpl(new FailurePagingStoreFactoryNIO(super.getConfiguration().getPagingDirectory(),
+                                                                       super.getConfiguration()
+                                                                            .isJournalSyncNonTransactional()),
                                       super.getStorageManager(),
-                                      super.getAddressSettingsRepository(),
-                                      super.getConfiguration().isJournalSyncNonTransactional());
+                                      super.getAddressSettingsRepository());
       }
 
       class FailurePagingStoreFactoryNIO extends PagingStoreFactoryNIO
@@ -255,9 +256,9 @@ public class PageCrashTest extends ServiceTestBase
           * @param directory
           * @param maxThreads
           */
-         public FailurePagingStoreFactoryNIO(final String directory)
+         public FailurePagingStoreFactoryNIO(final String directory, final boolean syncNonTransactional)
          {
-            super(directory, new OrderedExecutorFactory(Executors.newCachedThreadPool()));
+            super(directory, new OrderedExecutorFactory(Executors.newCachedThreadPool()), syncNonTransactional);
          }
 
          // Constants -----------------------------------------------------
@@ -277,7 +278,7 @@ public class PageCrashTest extends ServiceTestBase
             factoryField.setAccessible(true);
 
             OrderedExecutorFactory factory = (org.hornetq.utils.OrderedExecutorFactory)factoryField.get(this);
-            return new FailingPagingStore(destinationName, settings, factory.getExecutor());
+            return new FailingPagingStore(destinationName, settings, factory.getExecutor(), syncNonTransactional);
          }
 
          // Package protected ---------------------------------------------
@@ -297,16 +298,19 @@ public class PageCrashTest extends ServiceTestBase
              */
             public FailingPagingStore(final SimpleString storeName,
                                       final AddressSettings addressSettings,
-                                      final Executor executor)
+                                      final Executor executor,
+                                      final boolean syncNonTransactional)
             {
-               super(getPostOffice().getPagingManager(),
+               super(storeName,
+                     getPostOffice().getPagingManager(),
                      getStorageManager(),
                      getPostOffice(),
                      null,
                      FailurePagingStoreFactoryNIO.this,
                      storeName,
                      addressSettings,
-                     executor);
+                     executor,
+                     syncNonTransactional);
             }
 
             @Override

@@ -43,6 +43,7 @@ public class RoundRobinDistributor extends DistributorImpl
       return super.removeConsumer(consumer);
    }
 
+   @Override
    public synchronized int getConsumerCount()
    {
       return super.getConsumerCount();
@@ -54,11 +55,11 @@ public class RoundRobinDistributor extends DistributorImpl
       incrementPosition();
       return consumer;
    }
-   
+
    private synchronized void incrementPosition()
    {
       pos++;
-      
+
       if (pos == consumers.size())
       {
          pos = 0;

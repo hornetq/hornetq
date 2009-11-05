@@ -45,6 +45,8 @@ public class ServerMessageImpl extends MessageImpl implements ServerMessage
    // We cache this
    private volatile int memoryEstimate = -1;
 
+   private PagingStore pagingStore;
+
    /*
     * Constructor for when reading from network
     */
@@ -88,7 +90,7 @@ public class ServerMessageImpl extends MessageImpl implements ServerMessage
       messageID = id;
    }
 
-   public void setType(byte type)
+   public void setType(final byte type)
    {
       this.type = type;
    }
@@ -103,34 +105,34 @@ public class ServerMessageImpl extends MessageImpl implements ServerMessage
    public int incrementRefCount(final PagingStore pagingStore, final MessageReference reference) throws Exception
    {
       int count = refCount.incrementAndGet();
-      
+
       if (pagingStore != null)
       {
          if (count == 1)
          {
             pagingStore.addSize(this, true);
          }
-         
+
          pagingStore.addSize(reference, true);
       }
-      
+
       return count;
    }
-   
+
    public int decrementRefCount(final PagingStore pagingStore, final MessageReference reference) throws Exception
    {
       int count = refCount.decrementAndGet();
-      
+
       if (pagingStore != null)
       {
          if (count == 0)
          {
             pagingStore.addSize(this, false);
          }
-         
+
          pagingStore.addSize(reference, false);
       }
-      
+
       return count;
    }
 
@@ -144,8 +146,6 @@ public class ServerMessageImpl extends MessageImpl implements ServerMessage
       return durableRefCount.decrementAndGet();
    }
 
-   
-
    public int getRefCount()
    {
       return refCount.get();
@@ -158,7 +158,7 @@ public class ServerMessageImpl extends MessageImpl implements ServerMessage
 
    public long getLargeBodySize()
    {
-      return (long)getBodySize();
+      return getBodySize();
    }
 
    public int getMemoryEstimate()
@@ -200,18 +200,18 @@ public class ServerMessageImpl extends MessageImpl implements ServerMessage
       */
 
       ServerMessage copy = copy(newID);
-      
+
       copy.setOriginalHeaders(this, expiry);
 
       return copy;
    }
-   
+
    public void setOriginalHeaders(final ServerMessage other, final boolean expiry)
    {
       if (other.getProperty(HDR_ORIG_MESSAGE_ID) != null)
       {
          putStringProperty(HDR_ORIGINAL_DESTINATION, (SimpleString)other.getProperty(HDR_ORIGINAL_DESTINATION));
-         
+
          putLongProperty(HDR_ORIG_MESSAGE_ID, (Long)other.getProperty(HDR_ORIG_MESSAGE_ID));
       }
       else
@@ -222,15 +222,65 @@ public class ServerMessageImpl extends MessageImpl implements ServerMessage
 
          putLongProperty(HDR_ORIG_MESSAGE_ID, other.getMessageID());
       }
-      
+
       // reset expiry
       setExpiration(0);
-            
+
       if (expiry)
-      {         
+      {
          long actualExpiryTime = System.currentTimeMillis();
 
          putLongProperty(HDR_ACTUAL_EXPIRY_TIME, actualExpiryTime);
+      }
+   }
+
+   public void setPagingStore(final PagingStore pagingStore)
+   {
+      this.pagingStore = pagingStore;
+
+      // On the server side, we reset the address to point to the instance of address in the paging store
+      // Otherwise each message would have its own copy of the address String which would take up more memory
+      destination = pagingStore.getAddress();
+   }
+
+   public PagingStore getPagingStore()
+   {
+      return pagingStore;
+   }
+
+   public boolean page(final boolean duplicateDetection) throws Exception
+   {
+      if (pagingStore != null)
+      {
+         return pagingStore.page(this, duplicateDetection);
+      }
+      else
+      {
+         return false;
+      }
+   }
+
+   public boolean page(final long transactionID, final boolean duplicateDetection) throws Exception
+   {
+      if (pagingStore != null)
+      {
+         return pagingStore.page(this, transactionID, duplicateDetection);
+      }
+      else
+      {
+         return false;
+      }
+   }
+
+   public boolean storeIsPaging()
+   {
+      if (pagingStore != null)
+      {
+         return pagingStore.isPaging();
+      }
+      else
+      {
+         return false;
       }
    }
 

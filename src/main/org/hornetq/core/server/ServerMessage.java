@@ -52,4 +52,14 @@ public interface ServerMessage extends Message, EncodingSupport
    ServerMessage makeCopyForExpiryOrDLA(long newID, boolean expiry) throws Exception;
    
    void setOriginalHeaders(ServerMessage other, boolean expiry);   
+   
+   void setPagingStore(PagingStore store);
+   
+   PagingStore getPagingStore();
+   
+   boolean page(boolean duplicateDetection) throws Exception;
+   
+   boolean page(long transactionID, boolean duplicateDetection) throws Exception;
+   
+   boolean storeIsPaging();
 }

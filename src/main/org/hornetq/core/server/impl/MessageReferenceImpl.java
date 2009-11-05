@@ -47,11 +47,11 @@ public class MessageReferenceImpl implements MessageReference
 
    public MessageReferenceImpl(final MessageReferenceImpl other, final Queue queue)
    {
-      this.deliveryCount = other.deliveryCount;
+      deliveryCount = other.deliveryCount;
 
-      this.scheduledDeliveryTime = other.scheduledDeliveryTime;
+      scheduledDeliveryTime = other.scheduledDeliveryTime;
 
-      this.message = other.message;
+      message = other.message;
 
       this.queue = queue;
    }
@@ -94,7 +94,7 @@ public class MessageReferenceImpl implements MessageReference
    {
       deliveryCount++;
    }
-   
+
    public void decrementDeliveryCount()
    {
       deliveryCount--;
@@ -119,7 +119,7 @@ public class MessageReferenceImpl implements MessageReference
    {
       return queue;
    }
-   
+
    public void handled()
    {
       queue.referenceHandled();
@@ -127,6 +127,7 @@ public class MessageReferenceImpl implements MessageReference
 
    // Public --------------------------------------------------------
 
+   @Override
    public String toString()
    {
       return "Reference[" + getMessage().getMessageID() +

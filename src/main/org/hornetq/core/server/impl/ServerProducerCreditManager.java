@@ -15,7 +15,6 @@ package org.hornetq.core.server.impl;
 
 import org.hornetq.core.paging.PagingStore;
 
-
 /**
  * A ServerProducerCreditManager
  *
@@ -26,10 +25,10 @@ import org.hornetq.core.paging.PagingStore;
 public interface ServerProducerCreditManager
 {
    int creditsReleased(int credits);
-   
+
    int acquireCredits(int credits, CreditsAvailableRunnable runnable);
-   
+
    int waitingEntries();
-   
+
    PagingStore getStore();
 }

@@ -13,12 +13,9 @@
 
 package org.hornetq.core.paging;
 
-import java.util.Collection;
-
 import org.hornetq.core.journal.SequentialFile;
 import org.hornetq.core.postoffice.PostOffice;
 import org.hornetq.core.server.HornetQComponent;
-import org.hornetq.core.server.ServerMessage;
 import org.hornetq.utils.SimpleString;
 
 /**
@@ -57,35 +54,6 @@ public interface PagingManager extends HornetQComponent
    void resumeDepages() throws Exception;
 
    /**
-    * To be used by transactions only.
-    * If you're sure you will page if isPaging, just call the method page and look at its return. 
-    * @param destination
-    * @return
-    */
-   boolean isPaging(SimpleString destination) throws Exception;
-
-   /**
-    * Page, only if destination is in page mode.
-    * @param message
-    * @param sync - Sync should be called right after the write
-    * @return false if destination is not on page mode
-    */
-
-   // FIXME - why are these methods still on PagingManager???
-   // The current code is doing a lookup every time through this class just to call page store!!
-   boolean page(ServerMessage message, boolean duplicateDetection) throws Exception;
-
-   /**
-    * Page, only if destination is in page mode.
-    * @param message
-    * @return false if destination is not on page mode
-    */
-
-   // FIXME - why are these methods still on PagingManager???
-   // The current code is doing a lookup every time through this class just to call page store!!
-   boolean page(ServerMessage message, long transactionId, boolean duplicateDetection) throws Exception;
-
-   /**
     * Point to inform/restoring Transactions used when the messages were added into paging
     * */
    void addTransaction(PageTransactionInfo pageTransaction);
@@ -94,9 +62,6 @@ public interface PagingManager extends HornetQComponent
     * Point to inform/restoring Transactions used when the messages were added into paging
     * */
    PageTransactionInfo getTransaction(long transactionID);
-
-   /** Sync current-pages on disk for these destinations */
-   void sync(Collection<SimpleString> destinationsToSync) throws Exception;
 
    /**
     * @param transactionID

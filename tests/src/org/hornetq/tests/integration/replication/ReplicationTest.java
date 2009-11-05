@@ -109,7 +109,8 @@ public class ReplicationTest extends ServiceTestBase
 
       try
       {
-         ReplicationManagerImpl manager = new ReplicationManagerImpl(failoverManager, ConfigurationImpl.DEFAULT_BACKUP_WINDOW_SIZE);
+         ReplicationManagerImpl manager = new ReplicationManagerImpl(failoverManager,
+                                                                     ConfigurationImpl.DEFAULT_BACKUP_WINDOW_SIZE);
          manager.start();
          manager.stop();
       }
@@ -134,11 +135,13 @@ public class ReplicationTest extends ServiceTestBase
 
       try
       {
-         ReplicationManagerImpl manager = new ReplicationManagerImpl(failoverManager, ConfigurationImpl.DEFAULT_BACKUP_WINDOW_SIZE);
+         ReplicationManagerImpl manager = new ReplicationManagerImpl(failoverManager,
+                                                                     ConfigurationImpl.DEFAULT_BACKUP_WINDOW_SIZE);
          manager.start();
          try
          {
-            manager.compareJournals(new JournalLoadInformation[]{new JournalLoadInformation(2,2), new JournalLoadInformation(2,2)});
+            manager.compareJournals(new JournalLoadInformation[] { new JournalLoadInformation(2, 2),
+                                                                  new JournalLoadInformation(2, 2) });
             fail("Exception was expected");
          }
          catch (HornetQException e)
@@ -147,7 +150,8 @@ public class ReplicationTest extends ServiceTestBase
             assertEquals(HornetQException.ILLEGAL_STATE, e.getCode());
          }
 
-         manager.compareJournals(new JournalLoadInformation[]{new JournalLoadInformation(), new JournalLoadInformation()});
+         manager.compareJournals(new JournalLoadInformation[] { new JournalLoadInformation(),
+                                                               new JournalLoadInformation() });
 
          manager.stop();
       }
@@ -173,13 +177,15 @@ public class ReplicationTest extends ServiceTestBase
 
       try
       {
-         ReplicationManagerImpl manager = new ReplicationManagerImpl(failoverManager, ConfigurationImpl.DEFAULT_BACKUP_WINDOW_SIZE);
+         ReplicationManagerImpl manager = new ReplicationManagerImpl(failoverManager,
+                                                                     ConfigurationImpl.DEFAULT_BACKUP_WINDOW_SIZE);
 
          manager.start();
 
          try
          {
-            ReplicationManagerImpl manager2 = new ReplicationManagerImpl(failoverManager, ConfigurationImpl.DEFAULT_BACKUP_WINDOW_SIZE);
+            ReplicationManagerImpl manager2 = new ReplicationManagerImpl(failoverManager,
+                                                                         ConfigurationImpl.DEFAULT_BACKUP_WINDOW_SIZE);
 
             manager2.start();
             fail("Exception was expected");
@@ -212,7 +218,8 @@ public class ReplicationTest extends ServiceTestBase
 
       try
       {
-         ReplicationManagerImpl manager = new ReplicationManagerImpl(failoverManager, ConfigurationImpl.DEFAULT_BACKUP_WINDOW_SIZE);
+         ReplicationManagerImpl manager = new ReplicationManagerImpl(failoverManager,
+                                                                     ConfigurationImpl.DEFAULT_BACKUP_WINDOW_SIZE);
 
          try
          {
@@ -246,7 +253,8 @@ public class ReplicationTest extends ServiceTestBase
 
       try
       {
-         ReplicationManagerImpl manager = new ReplicationManagerImpl(failoverManager, ConfigurationImpl.DEFAULT_BACKUP_WINDOW_SIZE);
+         ReplicationManagerImpl manager = new ReplicationManagerImpl(failoverManager,
+                                                                     ConfigurationImpl.DEFAULT_BACKUP_WINDOW_SIZE);
          manager.start();
 
          Journal replicatedJournal = new ReplicatedJournal((byte)1, new FakeJournal(), manager);
@@ -363,7 +371,8 @@ public class ReplicationTest extends ServiceTestBase
 
       try
       {
-         ReplicationManagerImpl manager = new ReplicationManagerImpl(failoverManager, ConfigurationImpl.DEFAULT_BACKUP_WINDOW_SIZE);
+         ReplicationManagerImpl manager = new ReplicationManagerImpl(failoverManager,
+                                                                     ConfigurationImpl.DEFAULT_BACKUP_WINDOW_SIZE);
          manager.start();
 
          Journal replicatedJournal = new ReplicatedJournal((byte)1, new FakeJournal(), manager);
@@ -425,7 +434,8 @@ public class ReplicationTest extends ServiceTestBase
 
       try
       {
-         ReplicationManagerImpl manager = new ReplicationManagerImpl(failoverManager, ConfigurationImpl.DEFAULT_BACKUP_WINDOW_SIZE);
+         ReplicationManagerImpl manager = new ReplicationManagerImpl(failoverManager,
+                                                                     ConfigurationImpl.DEFAULT_BACKUP_WINDOW_SIZE);
          manager.start();
          fail("Exception expected");
       }
@@ -450,7 +460,8 @@ public class ReplicationTest extends ServiceTestBase
 
       try
       {
-         ReplicationManagerImpl manager = new ReplicationManagerImpl(failoverManager, ConfigurationImpl.DEFAULT_BACKUP_WINDOW_SIZE);
+         ReplicationManagerImpl manager = new ReplicationManagerImpl(failoverManager,
+                                                                     ConfigurationImpl.DEFAULT_BACKUP_WINDOW_SIZE);
          manager.start();
 
          Journal replicatedJournal = new ReplicatedJournal((byte)1, new FakeJournal(), manager);
@@ -580,10 +591,10 @@ public class ReplicationTest extends ServiceTestBase
    {
 
       PagingManager paging = new PagingManagerImpl(new PagingStoreFactoryNIO(configuration.getPagingDirectory(),
-                                                                             executorFactory),
+                                                                             executorFactory,
+                                                                             false),
                                                    storageManager,
-                                                   addressSettingsRepository,
-                                                   false);
+                                                   addressSettingsRepository);
 
       paging.start();
       return paging;

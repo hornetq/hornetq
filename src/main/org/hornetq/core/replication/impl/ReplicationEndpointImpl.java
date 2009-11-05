@@ -200,10 +200,10 @@ public class ReplicationEndpointImpl implements ReplicationEndpoint
       journalLoadInformation = storage.loadInternalOnly();
 
       pageManager = new PagingManagerImpl(new PagingStoreFactoryNIO(config.getPagingDirectory(),
-                                                                    server.getExecutorFactory()),
+                                                                    server.getExecutorFactory(),
+                                                                    config.isJournalSyncNonTransactional()),
                                           storage,
-                                          server.getAddressSettingsRepository(),
-                                          false);
+                                          server.getAddressSettingsRepository());
 
       pageManager.start();
 

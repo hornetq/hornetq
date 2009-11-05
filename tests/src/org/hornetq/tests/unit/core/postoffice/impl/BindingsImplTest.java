@@ -895,6 +895,36 @@ public class BindingsImplTest extends UnitTestCase
          return 0;
       }
 
+      public PagingStore getPagingStore()
+      {
+         // TODO Auto-generated method stub
+         return null;
+      }
+
+      public void setPagingStore(PagingStore store)
+      {
+         // TODO Auto-generated method stub
+         
+      }
+
+      public boolean page(boolean duplicateDetection) throws Exception
+      {
+         // TODO Auto-generated method stub
+         return false;
+      }
+
+      public boolean page(long transactionID, boolean duplicateDetection) throws Exception
+      {
+         // TODO Auto-generated method stub
+         return false;
+      }
+
+      public boolean storeIsPaging()
+      {
+         // TODO Auto-generated method stub
+         return false;
+      }
+
    }
 
    class FakeFilter implements Filter

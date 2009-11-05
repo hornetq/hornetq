@@ -29,19 +29,19 @@ import org.hornetq.core.transaction.Transaction;
  */
 public class RoutingContextImpl implements RoutingContext
 {
-   private List<Queue> queues = new ArrayList<Queue>();
-   
+   private final List<Queue> queues = new ArrayList<Queue>();
+
    private Transaction transaction;
-   
+
    private int depth;
-   
+
    public RoutingContextImpl(final Transaction transaction)
    {
       this.transaction = transaction;
    }
 
    public void addQueue(final Queue queue)
-   {  
+   {
       queues.add(queue);
    }
 
@@ -49,12 +49,12 @@ public class RoutingContextImpl implements RoutingContext
    {
       return transaction;
    }
-   
+
    public void setTransaction(final Transaction tx)
    {
-      this.transaction = tx;
+      transaction = tx;
    }
-   
+
    public List<Queue> getQueues()
    {
       return queues;

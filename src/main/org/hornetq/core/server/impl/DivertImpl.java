@@ -50,7 +50,7 @@ public class DivertImpl implements Divert
    private final Filter filter;
 
    private final Transformer transformer;
-   
+
    public DivertImpl(final SimpleString forwardAddress,
                      final SimpleString uniqueName,
                      final SimpleString routingName,
@@ -74,19 +74,19 @@ public class DivertImpl implements Divert
       this.postOffice = postOffice;
    }
 
-   public void route(ServerMessage message, final RoutingContext context) throws Exception
-   {      
+   public void route(final ServerMessage message, final RoutingContext context) throws Exception
+   {
       SimpleString originalDestination = message.getDestination();
-     
-      //We must make a copy of the message, otherwise things like returning credits to the page won't work
-      //properly on ack, since the original destination will be overwritten
-      
-      //TODO we can optimise this so it doesn't copy if it's not routed anywhere else
-     
+
+      // We must make a copy of the message, otherwise things like returning credits to the page won't work
+      // properly on ack, since the original destination will be overwritten
+
+      // TODO we can optimise this so it doesn't copy if it's not routed anywhere else
+
       ServerMessage copy = message.copy();
-      
+
       copy.setDestination(forwardAddress);
-      
+
       copy.putStringProperty(HDR_ORIGINAL_DESTINATION, originalDestination);
 
       if (transformer != null)
@@ -94,7 +94,7 @@ public class DivertImpl implements Divert
          copy = transformer.transform(copy);
       }
 
-      postOffice.route(copy, context.getTransaction());          
+      postOffice.route(copy, context.getTransaction());
    }
 
    public SimpleString getRoutingName()
@@ -111,7 +111,7 @@ public class DivertImpl implements Divert
    {
       return exclusive;
    }
-   
+
    public Filter getFilter()
    {
       return filter;

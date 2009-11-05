@@ -57,6 +57,8 @@ public class PagingStoreFactoryNIO implements PagingStoreFactory
    private final String directory;
 
    private final ExecutorFactory executorFactory;
+   
+   protected final boolean syncNonTransactional;
 
    private PagingManager pagingManager;
 
@@ -68,11 +70,14 @@ public class PagingStoreFactoryNIO implements PagingStoreFactory
 
    // Constructors --------------------------------------------------
 
-   public PagingStoreFactoryNIO(final String directory, final ExecutorFactory executorFactory)
+   public PagingStoreFactoryNIO(final String directory, final ExecutorFactory executorFactory,
+                                final boolean syncNonTransactional)
    {
       this.directory = directory;
 
       this.executorFactory = executorFactory;
+      
+      this.syncNonTransactional = syncNonTransactional;
    }
 
    // Public --------------------------------------------------------
@@ -81,17 +86,19 @@ public class PagingStoreFactoryNIO implements PagingStoreFactory
    {
    }
 
-   public synchronized PagingStore newStore(final SimpleString destinationName, final AddressSettings settings) throws Exception
+   public synchronized PagingStore newStore(final SimpleString address, final AddressSettings settings) throws Exception
    {
 
-      return new PagingStoreImpl(pagingManager,
+      return new PagingStoreImpl(address,
+                                 pagingManager,
                                  storageManager,
                                  postOffice,
                                  null,
                                  this,
-                                 destinationName,
+                                 address,
                                  settings,
-                                 executorFactory.getExecutor());
+                                 executorFactory.getExecutor(),
+                                 syncNonTransactional);
    }
 
    /**
@@ -168,31 +175,33 @@ public class PagingStoreFactoryNIO implements PagingStoreFactory
 
             BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(addressFile)));
 
-            String destination;
+            String addressString;
             
             try
             {
-               destination = reader.readLine();
+               addressString = reader.readLine();
             }
             finally
             {
                reader.close();
             }
 
-            SimpleString destinationName = new SimpleString(destination);
+            SimpleString address = new SimpleString(addressString);
 
             SequentialFileFactory factory = newFileFactory(guid);
 
-            AddressSettings settings = addressSettingsRepository.getMatch(destinationName.toString());
+            AddressSettings settings = addressSettingsRepository.getMatch(address.toString());
 
-            PagingStore store = new PagingStoreImpl(pagingManager,
+            PagingStore store = new PagingStoreImpl(address,
+                                                    pagingManager,
                                                     storageManager,
                                                     postOffice,
                                                     factory,
                                                     this,
-                                                    destinationName,
+                                                    address,
                                                     settings,
-                                                    executorFactory.getExecutor());
+                                                    executorFactory.getExecutor(),
+                                                    syncNonTransactional);
 
             storesReturn.add(store);
          }

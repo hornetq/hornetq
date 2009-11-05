@@ -123,7 +123,7 @@ public class QueueImpl implements Queue
 
    private final ScheduledExecutorService scheduledExecutor;
 
-   private SimpleString address;
+   private final SimpleString address;
 
    private Redistributor redistributor;
 
@@ -137,7 +137,7 @@ public class QueueImpl implements Queue
 
    private final Map<Consumer, Iterator<MessageReference>> iterators = new HashMap<Consumer, Iterator<MessageReference>>();
 
-   private ConcurrentMap<SimpleString, Consumer> groups = new ConcurrentHashMap<SimpleString, Consumer>();
+   private final ConcurrentMap<SimpleString, Consumer> groups = new ConcurrentHashMap<SimpleString, Consumer>();
 
    private volatile SimpleString expiryAddress;
 
@@ -877,7 +877,7 @@ public class QueueImpl implements Queue
    @Override
    public String toString()
    {
-      return "QueueImpl(name=" + this.name.toString() + ")";
+      return "QueueImpl(name=" + name.toString() + ")";
    }
 
    // Private
@@ -1402,7 +1402,8 @@ public class QueueImpl implements Queue
             // ack isn't committed, then the server crashes and on
             // recovery the message is deleted even though the other ack never committed
 
-            //also note then when this happens as part of a trasaction its the tx commt of the ack that is important not this
+            // also note then when this happens as part of a trasaction its the tx commt of the ack that is important
+            // not this
             try
             {
                storageManager.deleteMessage(message.getMessageID());
@@ -1434,7 +1435,7 @@ public class QueueImpl implements Queue
 
    }
 
-   void postRollback(LinkedList<MessageReference> refs) throws Exception
+   void postRollback(final LinkedList<MessageReference> refs) throws Exception
    {
       synchronized (this)
       {
@@ -1449,7 +1450,7 @@ public class QueueImpl implements Queue
       }
    }
 
-   private synchronized void initPagingStore(SimpleString destination)
+   private synchronized void initPagingStore(final SimpleString destination)
    {
       // PagingManager would be null only on testcases
       if (pagingStore == null && pagingManager != null)
@@ -1496,14 +1497,14 @@ public class QueueImpl implements Queue
          // Must be set to false *before* executing to avoid race
          waitingToDeliver.set(false);
 
-         QueueImpl.this.lockDelivery();
+         lockDelivery();
          try
          {
             deliver();
          }
          finally
          {
-            QueueImpl.this.unlockDelivery();
+            unlockDelivery();
          }
       }
    }

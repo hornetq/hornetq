@@ -60,9 +60,9 @@ import org.hornetq.core.management.impl.ManagementServiceImpl;
 import org.hornetq.core.paging.PagingManager;
 import org.hornetq.core.paging.impl.PagingManagerImpl;
 import org.hornetq.core.paging.impl.PagingStoreFactoryNIO;
+import org.hornetq.core.persistence.GroupingInfo;
 import org.hornetq.core.persistence.QueueBindingInfo;
 import org.hornetq.core.persistence.StorageManager;
-import org.hornetq.core.persistence.GroupingInfo;
 import org.hornetq.core.persistence.impl.journal.JournalStorageManager;
 import org.hornetq.core.persistence.impl.nullpm.NullStorageManager;
 import org.hornetq.core.postoffice.Binding;
@@ -93,14 +93,14 @@ import org.hornetq.core.server.MemoryManager;
 import org.hornetq.core.server.Queue;
 import org.hornetq.core.server.QueueFactory;
 import org.hornetq.core.server.ServerSession;
-import org.hornetq.core.server.group.GroupingHandler;
-import org.hornetq.core.server.group.impl.GroupingHandlerConfiguration;
-import org.hornetq.core.server.group.impl.LocalGroupingHandler;
-import org.hornetq.core.server.group.impl.RemoteGroupingHandler;
-import org.hornetq.core.server.group.impl.GroupBinding;
 import org.hornetq.core.server.cluster.ClusterManager;
 import org.hornetq.core.server.cluster.Transformer;
 import org.hornetq.core.server.cluster.impl.ClusterManagerImpl;
+import org.hornetq.core.server.group.GroupingHandler;
+import org.hornetq.core.server.group.impl.GroupBinding;
+import org.hornetq.core.server.group.impl.GroupingHandlerConfiguration;
+import org.hornetq.core.server.group.impl.LocalGroupingHandler;
+import org.hornetq.core.server.group.impl.RemoteGroupingHandler;
 import org.hornetq.core.settings.HierarchicalRepository;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.core.settings.impl.HierarchicalObjectRepository;
@@ -221,7 +221,7 @@ public class HornetQServerImpl implements HornetQServer
       this(configuration, null, null);
    }
 
-   public HornetQServerImpl(final Configuration configuration, MBeanServer mbeanServer)
+   public HornetQServerImpl(final Configuration configuration, final MBeanServer mbeanServer)
    {
       this(configuration, mbeanServer, null);
    }
@@ -256,7 +256,7 @@ public class HornetQServerImpl implements HornetQServer
 
       this.securityManager = securityManager;
 
-      this.addressSettingsRepository = new HierarchicalObjectRepository<AddressSettings>();
+      addressSettingsRepository = new HierarchicalObjectRepository<AddressSettings>();
 
       addressSettingsRepository.setDefault(new AddressSettings());
    }
@@ -289,8 +289,8 @@ public class HornetQServerImpl implements HornetQServer
       {
          if (!configuration.isSharedStore())
          {
-            this.replicationEndpoint = new ReplicationEndpointImpl(this);
-            this.replicationEndpoint.start();
+            replicationEndpoint = new ReplicationEndpointImpl(this);
+            replicationEndpoint.start();
          }
          // We defer actually initialisation until the live node has contacted the backup
          log.info("Backup server initialised");
@@ -529,8 +529,8 @@ public class HornetQServerImpl implements HornetQServer
    }
 
    public ReattachSessionResponseMessage reattachSession(final RemotingConnection connection,
-                                                                      final String name,
-                                                                      final int lastReceivedCommandID) throws Exception
+                                                         final String name,
+                                                         final int lastReceivedCommandID) throws Exception
    {
       if (!started)
       {
@@ -580,17 +580,17 @@ public class HornetQServerImpl implements HornetQServer
    }
 
    public CreateSessionResponseMessage createSession(final String name,
-                                                                  final long channelID,
-                                                                  final String username,
-                                                                  final String password,
-                                                                  final int minLargeMessageSize,
-                                                                  final int incrementingVersion,
-                                                                  final RemotingConnection connection,
-                                                                  final boolean autoCommitSends,
-                                                                  final boolean autoCommitAcks,
-                                                                  final boolean preAcknowledge,
-                                                                  final boolean xa,
-                                                                  final int sendWindowSize) throws Exception
+                                                     final long channelID,
+                                                     final String username,
+                                                     final String password,
+                                                     final int minLargeMessageSize,
+                                                     final int incrementingVersion,
+                                                     final RemotingConnection connection,
+                                                     final boolean autoCommitSends,
+                                                     final boolean autoCommitAcks,
+                                                     final boolean preAcknowledge,
+                                                     final boolean xa,
+                                                     final int sendWindowSize) throws Exception
    {
       if (!started)
       {
@@ -607,14 +607,16 @@ public class HornetQServerImpl implements HornetQServer
                   ". " +
                   "Please ensure all clients and servers are upgraded to the same version for them to " +
                   "interoperate properly");
-         throw new HornetQException(HornetQException.INCOMPATIBLE_CLIENT_SERVER_VERSIONS, "Server and client versions incompatible");
+         throw new HornetQException(HornetQException.INCOMPATIBLE_CLIENT_SERVER_VERSIONS,
+                                    "Server and client versions incompatible");
       }
 
       if (!checkActivate())
       {
          // Backup server is not ready to accept connections
 
-         throw new HornetQException(HornetQException.SESSION_CREATION_REJECTED, "Server will not accept create session requests");
+         throw new HornetQException(HornetQException.SESSION_CREATION_REJECTED,
+                                    "Server will not accept create session requests");
       }
 
       if (securityStore != null)
@@ -674,11 +676,11 @@ public class HornetQServerImpl implements HornetQServer
 
       if (replicationEndpoint.getChannel() != null)
       {
-         throw new HornetQException(HornetQException.ILLEGAL_STATE, "Backup replication server is already connected to another server");
+         throw new HornetQException(HornetQException.ILLEGAL_STATE,
+                                    "Backup replication server is already connected to another server");
       }
-      
+
       replicationEndpoint.setChannel(channel);
-      
 
       return replicationEndpoint;
    }
@@ -713,7 +715,7 @@ public class HornetQServerImpl implements HornetQServer
       return new HashSet<ServerSession>(sessions.values());
    }
 
-   //TODO - should this really be here?? It's only used in tests
+   // TODO - should this really be here?? It's only used in tests
    public boolean isInitialised()
    {
       synchronized (initialiseLock)
@@ -748,19 +750,19 @@ public class HornetQServerImpl implements HornetQServer
    }
 
    public Queue createQueue(final SimpleString address,
-                                         final SimpleString queueName,
-                                         final SimpleString filterString,
-                                         final boolean durable,
-                                         final boolean temporary) throws Exception
+                            final SimpleString queueName,
+                            final SimpleString filterString,
+                            final boolean durable,
+                            final boolean temporary) throws Exception
    {
       return createQueue(address, queueName, filterString, durable, temporary, false);
    }
 
    public Queue deployQueue(final SimpleString address,
-                                         final SimpleString queueName,
-                                         final SimpleString filterString,
-                                         final boolean durable,
-                                         final boolean temporary) throws Exception
+                            final SimpleString queueName,
+                            final SimpleString filterString,
+                            final boolean durable,
+                            final boolean temporary) throws Exception
    {
       return createQueue(address, queueName, filterString, durable, temporary, true);
    }
@@ -864,10 +866,11 @@ public class HornetQServerImpl implements HornetQServer
 
    protected PagingManager createPagingManager()
    {
-      return new PagingManagerImpl(new PagingStoreFactoryNIO(configuration.getPagingDirectory(), executorFactory),
+      return new PagingManagerImpl(new PagingStoreFactoryNIO(configuration.getPagingDirectory(),
+                                                             executorFactory,
+                                                             configuration.isJournalSyncNonTransactional()),
                                    storageManager,
-                                   addressSettingsRepository,
-                                   configuration.isJournalSyncNonTransactional());
+                                   addressSettingsRepository);
    }
 
    /** for use on sub-classes */
@@ -912,7 +915,8 @@ public class HornetQServerImpl implements HornetQServer
 
             replicationFailoverManager = createBackupConnection(backupConnector, threadPool, scheduledPool);
 
-            this.replicationManager = new ReplicationManagerImpl(replicationFailoverManager, configuration.getBackupWindowSize());
+            replicationManager = new ReplicationManagerImpl(replicationFailoverManager,
+                                                            configuration.getBackupWindowSize());
             replicationManager.start();
          }
       }
@@ -1008,7 +1012,7 @@ public class HornetQServerImpl implements HornetQServer
 
       startReplication();
 
-      this.storageManager = createStorageManager();
+      storageManager = createStorageManager();
 
       securityRepository = new HierarchicalObjectRepository<Set<Role>>();
       securityRepository.setDefault(new HashSet<Role>());
@@ -1093,12 +1097,11 @@ public class HornetQServerImpl implements HornetQServer
          }
       }
       deployGroupingHandlerConfiguration(configuration.getGroupingHandlerConfiguration());
-      
+
       // Load the journal and populate queues, transactions and caches in memory
       JournalLoadInformation[] journalInfo = loadJournals();
-      
-      compareJournals(journalInfo);
 
+      compareJournals(journalInfo);
 
       // Deploy any queues in the Configuration class - if there's no file deployment we still need
       // to load those
@@ -1163,7 +1166,7 @@ public class HornetQServerImpl implements HornetQServer
    /**
     * @param journalInfo
     */
-   private void compareJournals(JournalLoadInformation[] journalInfo) throws Exception
+   private void compareJournals(final JournalLoadInformation[] journalInfo) throws Exception
    {
       if (replicationManager != null)
       {
@@ -1185,7 +1188,7 @@ public class HornetQServerImpl implements HornetQServer
    private JournalLoadInformation[] loadJournals() throws Exception
    {
       JournalLoadInformation[] journalInfo = new JournalLoadInformation[2];
-      
+
       List<QueueBindingInfo> queueBindingInfos = new ArrayList<QueueBindingInfo>();
 
       List<GroupingInfo> groupingInfos = new ArrayList<GroupingInfo>();
@@ -1230,7 +1233,11 @@ public class HornetQServerImpl implements HornetQServer
 
       Map<SimpleString, List<Pair<byte[], Long>>> duplicateIDMap = new HashMap<SimpleString, List<Pair<byte[], Long>>>();
 
-      journalInfo[1] = storageManager.loadMessageJournal(postOffice, pagingManager, resourceManager, queues, duplicateIDMap);
+      journalInfo[1] = storageManager.loadMessageJournal(postOffice,
+                                                         pagingManager,
+                                                         resourceManager,
+                                                         queues,
+                                                         duplicateIDMap);
 
       for (Map.Entry<SimpleString, List<Pair<byte[], Long>>> entry : duplicateIDMap.entrySet())
       {
@@ -1243,7 +1250,7 @@ public class HornetQServerImpl implements HornetQServer
             cache.load(entry.getValue());
          }
       }
-      
+
       return journalInfo;
    }
 
@@ -1405,10 +1412,10 @@ public class HornetQServerImpl implements HornetQServer
                                                         config.getName(),
                                                         config.getAddress(),
                                                         config.getTimeout());
-         }        
-         
+         }
+
          this.groupingHandler = groupingHandler;
-         
+
          managementService.addNotificationListener(groupingHandler);
       }
    }

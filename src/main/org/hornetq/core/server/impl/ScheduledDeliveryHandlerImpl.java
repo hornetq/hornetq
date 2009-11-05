@@ -41,7 +41,7 @@ public class ScheduledDeliveryHandlerImpl implements ScheduledDeliveryHandler
    private final ScheduledExecutorService scheduledExecutor;
 
    private final Map<Long, ScheduledDeliveryRunnable> scheduledRunnables = new LinkedHashMap<Long, ScheduledDeliveryRunnable>();
-   
+
    private boolean rescheduled;
 
    public ScheduledDeliveryHandlerImpl(final ScheduledExecutorService scheduledExecutor)
@@ -67,13 +67,13 @@ public class ScheduledDeliveryHandlerImpl implements ScheduledDeliveryHandler
             scheduledRunnables.put(ref.getMessage().getMessageID(), runnable);
          }
 
-         scheduleDelivery(runnable, deliveryTime);         
+         scheduleDelivery(runnable, deliveryTime);
 
          return true;
       }
       return false;
    }
-   
+
    public void reSchedule()
    {
       synchronized (scheduledRunnables)
@@ -84,7 +84,7 @@ public class ScheduledDeliveryHandlerImpl implements ScheduledDeliveryHandler
             {
                scheduleDelivery(runnable, runnable.getReference().getScheduledDeliveryTime());
             }
-            
+
             rescheduled = true;
          }
       }
@@ -98,7 +98,7 @@ public class ScheduledDeliveryHandlerImpl implements ScheduledDeliveryHandler
    public List<MessageReference> getScheduledReferences()
    {
       List<MessageReference> refs = new ArrayList<MessageReference>();
-      
+
       synchronized (scheduledRunnables)
       {
          for (ScheduledDeliveryRunnable scheduledRunnable : scheduledRunnables.values())
@@ -112,13 +112,13 @@ public class ScheduledDeliveryHandlerImpl implements ScheduledDeliveryHandler
    public List<MessageReference> cancel()
    {
       List<MessageReference> refs = new ArrayList<MessageReference>();
-      
+
       synchronized (scheduledRunnables)
       {
          for (ScheduledDeliveryRunnable runnable : scheduledRunnables.values())
          {
             runnable.cancel();
-            
+
             refs.add(runnable.getReference());
          }
 
@@ -126,8 +126,8 @@ public class ScheduledDeliveryHandlerImpl implements ScheduledDeliveryHandler
       }
       return refs;
    }
-   
-   public MessageReference removeReferenceWithID(long id)
+
+   public MessageReference removeReferenceWithID(final long id)
    {
       synchronized (scheduledRunnables)
       {

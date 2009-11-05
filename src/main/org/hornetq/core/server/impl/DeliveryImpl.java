@@ -9,7 +9,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
  * implied.  See the License for the specific language governing
  * permissions and limitations under the License.
- */ 
+ */
 
 package org.hornetq.core.server.impl;
 
@@ -24,25 +24,24 @@ import org.hornetq.core.server.MessageReference;
  *
  */
 public class DeliveryImpl implements Delivery
-{ 
+{
    private final long consumerID;
-   
+
    private final MessageReference reference;
-        
-   public DeliveryImpl(final long consumerID,
-                       final MessageReference reference)
-   {      
+
+   public DeliveryImpl(final long consumerID, final MessageReference reference)
+   {
       this.consumerID = consumerID;
-      this.reference = reference;      
+      this.reference = reference;
    }
 
    public long getConsumerID()
    {
       return consumerID;
    }
-   
+
    public MessageReference getReference()
    {
       return reference;
-   }     
+   }
 }

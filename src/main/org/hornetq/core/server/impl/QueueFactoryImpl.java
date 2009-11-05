@@ -72,15 +72,15 @@ public class QueueFactoryImpl implements QueueFactory
       if (addressSettings.isLastValueQueue())
       {
          queue = new LastValueQueue(persistenceID,
-                                   address,
-                                   name,
-                                   filter,
-                                   durable,
-                                   temporary,
-                                   scheduledExecutor,
-                                   postOffice,
-                                   storageManager,
-                                   addressSettingsRepository);
+                                    address,
+                                    name,
+                                    filter,
+                                    durable,
+                                    temporary,
+                                    scheduledExecutor,
+                                    postOffice,
+                                    storageManager,
+                                    addressSettingsRepository);
       }
       else
       {

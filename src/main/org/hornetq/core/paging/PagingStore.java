@@ -33,12 +33,11 @@ import org.hornetq.utils.SimpleString;
  */
 public interface PagingStore extends HornetQComponent
 {
+   SimpleString getAddress();
+   
    int getNumberOfPages();
 
    SimpleString getStoreName();
-
-   /** Maximum number of bytes allowed in memory */
-   long getMaxSizeBytes();
 
    AddressFullMessagePolicy getAddressFullMessagePolicy();
 
@@ -46,18 +45,13 @@ public interface PagingStore extends HornetQComponent
 
    long getAddressSize();
 
-   /** @return true if paging was started, or false if paging was already started before this call */
-   boolean startPaging() throws Exception;
-
    boolean isPaging();
 
    void sync() throws Exception;
 
-   boolean page(PagedMessage message, boolean sync, boolean duplicateDetection) throws Exception;
+   boolean page(ServerMessage message, long transactionId, boolean duplicateDetection) throws Exception;
    
-   public boolean readPage() throws Exception;
-   
-   Page getCurrentPage();
+   boolean page(ServerMessage message, boolean duplicateDetection) throws Exception;
    
    Page createPage(final int page) throws Exception;
 

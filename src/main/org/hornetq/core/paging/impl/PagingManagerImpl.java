@@ -13,7 +13,6 @@
 
 package org.hornetq.core.paging.impl;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -27,7 +26,6 @@ import org.hornetq.core.paging.PagingStore;
 import org.hornetq.core.paging.PagingStoreFactory;
 import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.core.postoffice.PostOffice;
-import org.hornetq.core.server.ServerMessage;
 import org.hornetq.core.settings.HierarchicalRepository;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.utils.SimpleString;
@@ -47,8 +45,6 @@ public class PagingManagerImpl implements PagingManager
 
    private volatile boolean started = false;
 
-   // private volatile boolean backup;
-
    private final AtomicLong totalMemoryBytes = new AtomicLong(0);
 
    private final ConcurrentMap<SimpleString, PagingStore> stores = new ConcurrentHashMap<SimpleString, PagingStore>();
@@ -58,8 +54,6 @@ public class PagingManagerImpl implements PagingManager
    private final PagingStoreFactory pagingStoreFactory;
 
    private final StorageManager storageManager;
-
-   private final boolean syncNonTransactional;
 
    private final ConcurrentMap</*TransactionID*/Long, PageTransactionInfo> transactions = new ConcurrentHashMap<Long, PageTransactionInfo>();
 
@@ -73,13 +67,11 @@ public class PagingManagerImpl implements PagingManager
 
    public PagingManagerImpl(final PagingStoreFactory pagingSPI,
                             final StorageManager storageManager,
-                            final HierarchicalRepository<AddressSettings> addressSettingsRepository,
-                            final boolean syncNonTransactional)
+                            final HierarchicalRepository<AddressSettings> addressSettingsRepository)
    {
       pagingStoreFactory = pagingSPI;
       this.addressSettingsRepository = addressSettingsRepository;
       this.storageManager = storageManager;
-      this.syncNonTransactional = syncNonTransactional;
    }
 
    // Public
@@ -150,28 +142,6 @@ public class PagingManagerImpl implements PagingManager
       pagingStoreFactory.setPostOffice(postOffice);
    }
 
-   public boolean isPaging(final SimpleString destination) throws Exception
-   {
-      return getPageStore(destination).isPaging();
-   }
-
-   public boolean page(final ServerMessage message, final long transactionId, final boolean duplicateDetection) throws Exception
-   {
-      // The sync on transactions is done on commit only
-      return getPageStore(message.getDestination()).page(new PagedMessageImpl(message, transactionId),
-                                                         false,
-                                                         duplicateDetection);
-   }
-
-   public boolean page(final ServerMessage message, final boolean duplicateDetection) throws Exception
-   {
-      // If non Durable, there is no need to sync as there is no requirement for persistence for those messages in case
-      // of crash
-      return getPageStore(message.getDestination()).page(new PagedMessageImpl(message),
-                                                         syncNonTransactional && message.isDurable(),
-                                                         duplicateDetection);
-   }
-
    public void addTransaction(final PageTransactionInfo pageTransaction)
    {
       transactions.put(pageTransaction.getTransactionID(), pageTransaction);
@@ -185,14 +155,6 @@ public class PagingManagerImpl implements PagingManager
    public PageTransactionInfo getTransaction(final long id)
    {
       return transactions.get(id);
-   }
-
-   public void sync(final Collection<SimpleString> destinationsToSync) throws Exception
-   {
-      for (SimpleString destination : destinationsToSync)
-      {
-         getPageStore(destination).sync();
-      }
    }
 
    // HornetQComponent implementation

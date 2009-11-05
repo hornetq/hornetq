@@ -20,6 +20,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -598,18 +599,16 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
 
       if (context.getTransaction() == null)
       {
-         if (pagingManager.page(message, true))
+         if (message.page(true))
          {
             return;
          }
       }
       else
       {
-         SimpleString destination = message.getDestination();
-
          boolean depage = context.getTransaction().getProperty(TransactionPropertyIndexes.IS_DEPAGE) != null;
 
-         if (!depage && pagingManager.isPaging(destination))
+         if (!depage && message.storeIsPaging())
          {
             getPageOperation(context.getTransaction()).addMessageToPage(message);
 
@@ -1149,20 +1148,20 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
 
             boolean pagingPersistent = false;
 
-            HashSet<SimpleString> pagedDestinationsToSync = new HashSet<SimpleString>();
+            Set<PagingStore> pagingStoresToSync = new HashSet<PagingStore>();
 
             // We only need to add the dupl id header once per transaction
             boolean first = true;
             for (ServerMessage message : messagesToPage)
             {
-               if (pagingManager.page(message, tx.getID(), first))
+               if (message.page(tx.getID(), first))
                {
                   if (message.isDurable())
                   {
                      // We only create pageTransactions if using persistent messages
                      pageTransaction.increment();
                      pagingPersistent = true;
-                     pagedDestinationsToSync.add(message.getDestination());
+                     pagingStoresToSync.add(message.getPagingStore());
                   }
                }
                else
@@ -1179,9 +1178,13 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
             {
                tx.putProperty(TransactionPropertyIndexes.CONTAINS_PERSISTENT, true);
 
-               if (!pagedDestinationsToSync.isEmpty())
+               if (!pagingStoresToSync.isEmpty())
                {
-                  pagingManager.sync(pagedDestinationsToSync);
+                  for (PagingStore store: pagingStoresToSync)
+                  {
+                     store.sync();
+                  }
+
                   storageManager.storePageTransaction(tx.getID(), pageTransaction);
                }
             }

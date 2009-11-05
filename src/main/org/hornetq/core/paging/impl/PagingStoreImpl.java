@@ -64,6 +64,8 @@ public class PagingStoreImpl implements TestSupportPageStore
 
    // Attributes ----------------------------------------------------
 
+   private final SimpleString address;
+
    private final StorageManager storageManager;
 
    private final PostOffice postOffice;
@@ -110,15 +112,17 @@ public class PagingStoreImpl implements TestSupportPageStore
     * We need to perform checks on currentPage with minimal locking
     * */
    private final ReadWriteLock currentPageLock = new ReentrantReadWriteLock();
-   
+
    private final ServerProducerCreditManager creditManager;
-   
+
    private boolean exceededAvailableCredits;
-   
+
    private volatile boolean running = false;
-   
+
    private final AtomicLong availableProducerCredits = new AtomicLong(0);
-   
+
+   protected final boolean syncNonTransactional;
+
    // Static --------------------------------------------------------
 
    private static final boolean isTrace = log.isTraceEnabled();
@@ -133,19 +137,23 @@ public class PagingStoreImpl implements TestSupportPageStore
 
    // Constructors --------------------------------------------------
 
-   public PagingStoreImpl(final PagingManager pagingManager,
+   public PagingStoreImpl(final SimpleString address,
+                          final PagingManager pagingManager,
                           final StorageManager storageManager,
                           final PostOffice postOffice,
                           final SequentialFileFactory fileFactory,
                           final PagingStoreFactory storeFactory,
                           final SimpleString storeName,
                           final AddressSettings addressSettings,
-                          final Executor executor)
+                          final Executor executor,
+                          final boolean syncNonTransactional)
    {
       if (pagingManager == null)
       {
          throw new IllegalStateException("Paging Manager can't be null");
       }
+
+      this.address = address;
 
       this.storageManager = storageManager;
 
@@ -166,25 +174,26 @@ public class PagingStoreImpl implements TestSupportPageStore
       this.fileFactory = fileFactory;
 
       this.storeFactory = storeFactory;
-      
+
       this.availableProducerCredits.set(maxSize);
-      
-      this.creditManager = new ServerProducerCreditManagerImpl(this);            
+
+      this.creditManager = new ServerProducerCreditManagerImpl(this);
+
+      this.syncNonTransactional = syncNonTransactional;
    }
 
    // Public --------------------------------------------------------
 
    // PagingStore implementation ------------------------------------
 
+   public SimpleString getAddress()
+   {
+      return address;
+   }
+
    public long getAddressSize()
    {
       return sizeInBytes.get();
-   }
-
-   /** Maximum number of bytes allowed in memory */
-   public long getMaxSizeBytes()
-   {
-      return maxSize;
    }
 
    public AddressFullMessagePolicy getAddressFullMessagePolicy()
@@ -200,6 +209,7 @@ public class PagingStoreImpl implements TestSupportPageStore
    public boolean isPaging()
    {
       currentPageLock.readLock().lock();
+      
       try
       {
          if (addressFullMessagePolicy != AddressFullMessagePolicy.PAGE)
@@ -226,27 +236,27 @@ public class PagingStoreImpl implements TestSupportPageStore
    {
       return storeName;
    }
-   
+
    public boolean isExceededAvailableCredits()
    {
       return exceededAvailableCredits;
    }
-   
+
    public synchronized int getAvailableProducerCredits(final int credits)
-   {           
+   {
       if (maxSize != -1 && addressFullMessagePolicy == AddressFullMessagePolicy.BLOCK)
-      {        
+      {
          long avail = availableProducerCredits.get();
-                           
+
          if (avail > 0)
          {
             long take = Math.min(avail, credits);
-            
+
             availableProducerCredits.addAndGet(-take);
-                        
+
             return (int)take;
          }
-         
+
          return 0;
       }
       else
@@ -254,243 +264,62 @@ public class PagingStoreImpl implements TestSupportPageStore
          return credits;
       }
    }
-   
+
    public void returnProducerCredits(final int credits)
    {
       checkReleaseProducerFlowControlCredits(-credits);
    }
-   
-   private synchronized void checkReleaseProducerFlowControlCredits(final long size)
-   {
-      if (addressFullMessagePolicy == AddressFullMessagePolicy.BLOCK && maxSize != -1)
-      {         
-         long avail = availableProducerCredits.addAndGet(-size);
-         
-         if (avail > 0)
-         {
-            int used = creditManager.creditsReleased((int)avail);
-          
-            long num = availableProducerCredits.addAndGet(-used);
-            
-            if (num < 0)
-            {
-               log.warn("Available credits has gone negative");
-               
-               exceededAvailableCredits = true;
-            }
-         }     
-      }
-   }
+
    
    public void addSize(final ServerMessage message, final boolean add) throws Exception
-   {            
+   {
       long size = message.getMemoryEstimate();
-      
+
       if (add)
       {
          checkReleaseProducerFlowControlCredits(size);
-         
+
          addSize(size);
       }
       else
       {
          checkReleaseProducerFlowControlCredits(-size);
-         
+
          addSize(-size);
       }
    }
-         
+
    public void addSize(final MessageReference reference, final boolean add) throws Exception
    {
       long size = reference.getMemoryEstimate();
-      
+
       if (add)
       {
          checkReleaseProducerFlowControlCredits(size);
-         
+
          addSize(size);
       }
       else
       {
          checkReleaseProducerFlowControlCredits(-size);
-         
+
          addSize(-size);
       }
    }
    
-   private void addSize(final long size) throws Exception
-   {          
-      if (addressFullMessagePolicy != AddressFullMessagePolicy.PAGE)
-      {
-         addAddressSize(size);
-         
-         pagingManager.addSize(size);
-
-         return;
-      }
-      else
-      {
-         pagingManager.addSize(size);
-
-         final long addressSize = addAddressSize(size);
-
-         if (size > 0)
-         {
-            if (maxSize > 0 && addressSize > maxSize)
-            {
-               if (startPaging())
-               {
-                  if (isTrace)
-                  {
-                     trace("Starting paging on " + getStoreName() + ", size = " + addressSize + ", maxSize=" + maxSize);
-                  }
-               }
-            }
-         }
-         else
-         {
-            // When in Global mode, we use the default page size as the mark to start depage
-            if (maxSize > 0 && currentPage != null && addressSize <= maxSize - pageSize && !depaging.get())
-            {
-               if (startDepaging())
-               {
-                  if (isTrace)
-                  {
-                     trace("Starting depaging Thread, size = " + addressSize);
-                  }
-               }
-            }
-         }
-
-         return;
-      }
-   }
-
-   // TODO all of this can be simplified
-   public boolean page(final PagedMessage message, final boolean sync, final boolean duplicateDetection) throws Exception
+   public boolean page(final ServerMessage message, final long transactionID, final boolean duplicateDetection) throws Exception
    {
-      if (!running)
-      {
-         throw new IllegalStateException("PagingStore(" + getStoreName() + ") not initialized");
-      }
-      
-      boolean full = isFull();
-
-      if (addressFullMessagePolicy == AddressFullMessagePolicy.DROP)
-      {
-         if (full)
-         {
-            if (!printedDropMessagesWarning)
-            {
-               printedDropMessagesWarning = true;
-
-               log.warn("Messages are being dropped on address " + getStoreName());
-            }
-
-            // Address is full, we just pretend we are paging, and drop the data
-            return true;
-         }
-         else
-         {
-            return false;
-         }
-      }
-      else if (addressFullMessagePolicy == AddressFullMessagePolicy.BLOCK)
-      {
-         return false;
-      }
-
-      // We need to ensure a read lock, as depage could change the paging state
-      currentPageLock.readLock().lock();
-
-      try
-      {
-         // First check done concurrently, to avoid synchronization and increase throughput
-         if (currentPage == null)
-         {
-            return false;
-         }
-      }
-      finally
-      {
-         currentPageLock.readLock().unlock();
-      }
-
-      writeLock.lock();
-
-      try
-      {
-         if (currentPage == null)
-         {
-            return false;
-         }
-
-         if (duplicateDetection)
-         {
-            // We set the duplicate detection header to prevent the message being depaged more than once in case of
-            // failure during depage
-
-            ServerMessage msg = message.getMessage(storageManager);
-
-            byte[] bytes = new byte[8];
-
-            ByteBuffer buff = ByteBuffer.wrap(bytes);
-
-            buff.putLong(msg.getMessageID());
-
-            msg.putBytesProperty(MessageImpl.HDR_DUPLICATE_DETECTION_ID, bytes);
-         }
-
-         int bytesToWrite = message.getEncodeSize() + PageImpl.SIZE_RECORD;
-
-         if (currentPageSize.addAndGet(bytesToWrite) > pageSize && currentPage.getNumberOfMessages() > 0)
-         {
-            // Make sure nothing is currently validating or using currentPage
-            currentPageLock.writeLock().lock();
-            try
-            {
-               openNewPage();
-
-               // openNewPage will set currentPageSize to zero, we need to set it again
-               currentPageSize.addAndGet(bytesToWrite);
-            }
-            finally
-            {
-               currentPageLock.writeLock().unlock();
-            }
-         }
-
-         currentPageLock.readLock().lock();
-
-         try
-         {
-            if (currentPage != null)
-            {
-               currentPage.write(message);
-
-               if (sync)
-               {
-                  currentPage.sync();
-               }
-               return true;
-            }
-            else
-            {
-               return false;
-            }
-         }
-         finally
-         {
-            currentPageLock.readLock().unlock();
-         }
-      }
-      finally
-      {
-         writeLock.unlock();
-      }
-
+      // The sync on transactions is done on commit only
+      return page(message, transactionID, false, duplicateDetection);
    }
 
+   public boolean page(final ServerMessage message, final boolean duplicateDetection) throws Exception
+   {
+      // If non Durable, there is no need to sync as there is no requirement for persistence for those messages in case
+      // of crash
+      return page(message, -1, syncNonTransactional && message.isDurable(), duplicateDetection);
+   }
+   
    public void sync() throws Exception
    {
       currentPageLock.readLock().lock();
@@ -685,43 +514,12 @@ public class PagingStoreImpl implements TestSupportPageStore
       }
    }
 
-   /**
-    * Depage one page-file, read it and send it to the pagingManager / postoffice
-    * @return
-    * @throws Exception
-    */
-   public boolean readPage() throws Exception
-   {
-      Page page = depage();
-
-      if (page == null)
-      {
-         return false;
-      }
-
-      page.open();
-
-      List<PagedMessage> messages = page.read();
-
-      if (onDepage(page.getPageId(), storeName, messages))
-      {
-         page.delete();
-         
-         return true;
-      }
-      else
-      {
-         return false;
-      }
-
-   }
-
+   
    public Page getCurrentPage()
    {
       return currentPage;
    }
 
-   
    public Page createPage(final int page) throws Exception
    {
       String fileName = createFileName(page);
@@ -748,13 +546,12 @@ public class PagingStoreImpl implements TestSupportPageStore
 
       return new PageImpl(this.storeName, storageManager, fileFactory, file, page);
    }
-   
+
    public ServerProducerCreditManager getProducerCreditManager()
    {
       return creditManager;
    }
 
-   
    // TestSupportPageStore ------------------------------------------
 
    public void forceAnotherPage() throws Exception
@@ -851,6 +648,242 @@ public class PagingStoreImpl implements TestSupportPageStore
    // Private -------------------------------------------------------
 
    /**
+    * Depage one page-file, read it and send it to the pagingManager / postoffice
+    * @return
+    * @throws Exception
+    */
+   private boolean readPage() throws Exception
+   {
+      Page page = depage();
+
+      if (page == null)
+      {
+         return false;
+      }
+
+      page.open();
+
+      List<PagedMessage> messages = page.read();
+
+      if (onDepage(page.getPageId(), storeName, messages))
+      {
+         page.delete();
+
+         return true;
+      }
+      else
+      {
+         return false;
+      }
+
+   }
+
+   
+   private synchronized void checkReleaseProducerFlowControlCredits(final long size)
+   {
+      if (addressFullMessagePolicy == AddressFullMessagePolicy.BLOCK && maxSize != -1)
+      {
+         long avail = availableProducerCredits.addAndGet(-size);
+
+         if (avail > 0)
+         {
+            int used = creditManager.creditsReleased((int)avail);
+
+            long num = availableProducerCredits.addAndGet(-used);
+
+            if (num < 0)
+            {
+               log.warn("Available credits has gone negative");
+
+               exceededAvailableCredits = true;
+            }
+         }
+      }
+   }
+
+   
+   private void addSize(final long size) throws Exception
+   {
+      if (addressFullMessagePolicy != AddressFullMessagePolicy.PAGE)
+      {
+         addAddressSize(size);
+
+         pagingManager.addSize(size);
+
+         return;
+      }
+      else
+      {
+         pagingManager.addSize(size);
+
+         final long addressSize = addAddressSize(size);
+
+         if (size > 0)
+         {
+            if (maxSize > 0 && addressSize > maxSize)
+            {
+               if (startPaging())
+               {
+                  if (isTrace)
+                  {
+                     trace("Starting paging on " + getStoreName() + ", size = " + addressSize + ", maxSize=" + maxSize);
+                  }
+               }
+            }
+         }
+         else
+         {
+            // When in Global mode, we use the default page size as the mark to start depage
+            if (maxSize > 0 && currentPage != null && addressSize <= maxSize - pageSize && !depaging.get())
+            {
+               if (startDepaging())
+               {
+                  if (isTrace)
+                  {
+                     trace("Starting depaging Thread, size = " + addressSize);
+                  }
+               }
+            }
+         }
+
+         return;
+      }
+   }
+   
+   private boolean page(final ServerMessage message, final long transactionID, final boolean sync, final boolean duplicateDetection) throws Exception
+   {
+      if (!running)
+      {
+         throw new IllegalStateException("PagingStore(" + getStoreName() + ") not initialized");
+      }
+
+      boolean full = isFull();
+
+      if (addressFullMessagePolicy == AddressFullMessagePolicy.DROP)
+      {
+         if (full)
+         {
+            if (!printedDropMessagesWarning)
+            {
+               printedDropMessagesWarning = true;
+
+               log.warn("Messages are being dropped on address " + getStoreName());
+            }
+
+            // Address is full, we just pretend we are paging, and drop the data
+            return true;
+         }
+         else
+         {
+            return false;
+         }
+      }
+      else if (addressFullMessagePolicy == AddressFullMessagePolicy.BLOCK)
+      {
+         return false;
+      }
+
+      // We need to ensure a read lock, as depage could change the paging state
+      currentPageLock.readLock().lock();
+
+      try
+      {
+         // First check done concurrently, to avoid synchronization and increase throughput
+         if (currentPage == null)
+         {
+            return false;
+         }
+      }
+      finally
+      {
+         currentPageLock.readLock().unlock();
+      }
+
+      writeLock.lock();
+
+      try
+      {
+         if (currentPage == null)
+         {
+            return false;
+         }
+
+         if (duplicateDetection)
+         {
+            // We set the duplicate detection header to prevent the message being depaged more than once in case of
+            // failure during depage
+            
+            byte[] bytes = new byte[8];
+
+            ByteBuffer buff = ByteBuffer.wrap(bytes);
+
+            buff.putLong(message.getMessageID());
+
+            message.putBytesProperty(MessageImpl.HDR_DUPLICATE_DETECTION_ID, bytes);
+         }
+
+         int bytesToWrite = message.getEncodeSize() + PageImpl.SIZE_RECORD;
+
+         if (currentPageSize.addAndGet(bytesToWrite) > pageSize && currentPage.getNumberOfMessages() > 0)
+         {
+            // Make sure nothing is currently validating or using currentPage
+            currentPageLock.writeLock().lock();
+            try
+            {
+               openNewPage();
+
+               // openNewPage will set currentPageSize to zero, we need to set it again
+               currentPageSize.addAndGet(bytesToWrite);
+            }
+            finally
+            {
+               currentPageLock.writeLock().unlock();
+            }
+         }
+
+         currentPageLock.readLock().lock();
+
+         try
+         {
+            if (currentPage != null)
+            {
+               PagedMessage pagedMessage;
+               
+               if (transactionID != -1)
+               {
+                  pagedMessage = new PagedMessageImpl(message, transactionID);
+               }
+               else
+               {
+                  pagedMessage = new PagedMessageImpl(message);
+               }
+               
+               currentPage.write(pagedMessage);
+
+               if (sync)
+               {
+                  currentPage.sync();
+               }
+               return true;
+            }
+            else
+            {
+               return false;
+            }
+         }
+         finally
+         {
+            currentPageLock.readLock().unlock();
+         }
+      }
+      finally
+      {
+         writeLock.unlock();
+      }
+
+   }
+   
+   /**
     * This method will remove files from the page system and and route them, doing it transactionally
     *     
     * If persistent messages are also used, it will update eventual PageTransactions
@@ -868,13 +901,12 @@ public class PagingStoreImpl implements TestSupportPageStore
          // nothing to be done on this case.
          return true;
       }
-      
 
       // Depage has to be done atomically, in case of failure it should be
       // back to where it was
 
       Transaction depageTransaction = new TransactionImpl(storageManager);
-      
+
       depageTransaction.putProperty(TransactionPropertyIndexes.IS_DEPAGE, Boolean.valueOf(true));
 
       HashSet<PageTransactionInfo> pageTransactionsToUpdate = new HashSet<PageTransactionInfo>();
@@ -882,13 +914,14 @@ public class PagingStoreImpl implements TestSupportPageStore
       for (PagedMessage pagedMessage : pagedMessages)
       {
          ServerMessage message = pagedMessage.getMessage(storageManager);
-         
+
          if (message.isLargeMessage())
          {
             LargeServerMessage largeMsg = (LargeServerMessage)message;
             if (!largeMsg.isFileExists())
             {
-               log.warn("File for large message " + largeMsg.getMessageID() + " doesn't exist, so ignoring depage for this large message");
+               log.warn("File for large message " + largeMsg.getMessageID() +
+                        " doesn't exist, so ignoring depage for this large message");
                continue;
             }
          }
@@ -931,7 +964,7 @@ public class PagingStoreImpl implements TestSupportPageStore
                if (isTrace)
                {
                   trace("Rollback was called after prepare, ignoring message " + message);
-               }               
+               }
                continue;
             }
 
@@ -970,8 +1003,8 @@ public class PagingStoreImpl implements TestSupportPageStore
       }
 
       depageTransaction.commit();
-      
-      // StorageManager does the check: if (replicated) -> do the proper cleanup already 
+
+      // StorageManager does the check: if (replicated) -> do the proper cleanup already
       storageManager.completeReplication();
 
       if (isTrace)
@@ -987,7 +1020,7 @@ public class PagingStoreImpl implements TestSupportPageStore
     */
    private boolean isAddressFull(final long nextPageSize)
    {
-      return getMaxSizeBytes() > 0 && getAddressSize() + nextPageSize > getMaxSizeBytes();
+      return maxSize > 0 && getAddressSize() + nextPageSize > maxSize;
    }
 
    private long addAddressSize(final long delta)
@@ -1012,7 +1045,7 @@ public class PagingStoreImpl implements TestSupportPageStore
                " addressSize = " +
                this.getAddressSize() +
                " addressMax " +
-               this.getMaxSizeBytes() +
+               maxSize +
                " isPaging = " +
                isPaging() +
                " addressFull = " +
@@ -1050,9 +1083,8 @@ public class PagingStoreImpl implements TestSupportPageStore
          {
             currentPage.close();
          }
-         
+
          currentPage = createPage(currentPageId);
-         
 
          currentPageSize.set(0);
 
@@ -1084,7 +1116,7 @@ public class PagingStoreImpl implements TestSupportPageStore
    // To be used on isDropMessagesWhenFull
    private boolean isFull()
    {
-      return getMaxSizeBytes() > 0 && getAddressSize() > getMaxSizeBytes();
+      return maxSize > 0 && getAddressSize() > maxSize;
    }
 
    // Inner classes -------------------------------------------------

@@ -168,6 +168,8 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
 
    private boolean closed;
 
+   private final Map<SimpleString, CreditManagerHolder> creditManagerHolders = new HashMap<SimpleString, CreditManagerHolder>();
+
    // Constructors ---------------------------------------------------------------------------------
 
    public ServerSessionImpl(final String name,
@@ -190,7 +192,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
                             final HornetQServer server,
                             final SimpleString managementAddress) throws Exception
    {
-      this.id = channel.getID();
+      id = channel.getID();
 
       this.username = username;
 
@@ -332,7 +334,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
       }
    }
 
-   public void promptDelivery(final Queue queue, boolean async)
+   public void promptDelivery(final Queue queue, final boolean async)
    {
       if (async)
       {
@@ -368,17 +370,17 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
          Filter filter = FilterImpl.createFilter(filterString);;
 
          ServerConsumer consumer = new ServerConsumerImpl(packet.getID(),
-                                                           this,
-                                                           (QueueBinding)binding,
-                                                           filter,
-                                                           started,
-                                                           browseOnly,
-                                                           storageManager,
-                                                           channel,
-                                                           preAcknowledge,
-                                                           updateDeliveries,
-                                                           executor,
-                                                           managementService);
+                                                          this,
+                                                          (QueueBinding)binding,
+                                                          filter,
+                                                          started,
+                                                          browseOnly,
+                                                          storageManager,
+                                                          channel,
+                                                          preAcknowledge,
+                                                          updateDeliveries,
+                                                          executor,
+                                                          managementService);
 
          consumers.put(consumer.getID(), consumer);
 
@@ -635,7 +637,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
       sendResponse(packet, response, false, false);
    }
 
-   public void handleForceConsumerDelivery(SessionForceConsumerDelivery message)
+   public void handleForceConsumerDelivery(final SessionForceConsumerDelivery message)
    {
       try
       {
@@ -1401,7 +1403,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
       }
       catch (Exception e)
       {
-         log.error("Failed to receive credits " + this.server.getConfiguration().isBackup(), e);
+         log.error("Failed to receive credits " + server.getConfiguration().isBackup(), e);
       }
 
       sendResponse(packet, null, false, false);
@@ -1412,13 +1414,10 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
       // need to create the LargeMessage before continue
       long id = storageManager.generateUniqueID();
 
-      final LargeServerMessage msg = doCreateLargeMessage(id, packet);
+      LargeServerMessage msg = doCreateLargeMessage(id, packet);
 
       if (msg != null)
       {
-         // With a send we must make sure it is replicated to backup before being processed on live
-         // or can end up with delivery being processed on backup before original send
-
          if (currentLargeMessage != null)
          {
             log.warn("Replacing incomplete LargeMessage with ID=" + currentLargeMessage.getMessageID());
@@ -1438,6 +1437,8 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
 
       try
       {
+         setPagingStore(message);
+
          long id = storageManager.generateUniqueID();
 
          message.setMessageID(id);
@@ -1499,22 +1500,22 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
          {
             throw new HornetQException(HornetQException.ILLEGAL_STATE, "large-message not initialized on server");
          }
-         
-         //Immediately release the credits for the continuations- these don't contrinute to the in-memory size
-         //of the message
-         
+
+         // Immediately release the credits for the continuations- these don't contrinute to the in-memory size
+         // of the message
+
          releaseOutStanding(currentLargeMessage, packet.getRequiredBufferSize());
-         
+
          currentLargeMessage.addBytes(packet.getBody());
 
          if (!packet.isContinues())
-         {                        
+         {
             currentLargeMessage.releaseResources();
 
             send(currentLargeMessage);
 
             releaseOutStanding(currentLargeMessage, currentLargeMessage.getEncodeSize());
-            
+
             currentLargeMessage = null;
          }
 
@@ -1543,40 +1544,6 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
       sendResponse(packet, response, false, false);
    }
 
-   private static final class CreditManagerHolder
-   {
-      CreditManagerHolder(final PagingStore store)
-      {
-         this.store = store;
-
-         this.manager = store.getProducerCreditManager();
-      }
-
-      final PagingStore store;
-
-      final ServerProducerCreditManager manager;
-
-      volatile int outstandingCredits;
-   }
-
-   private Map<SimpleString, CreditManagerHolder> creditManagerHolders = new HashMap<SimpleString, CreditManagerHolder>();
-
-   private CreditManagerHolder getCreditManagerHolder(final SimpleString address) throws Exception
-   {
-      CreditManagerHolder holder = creditManagerHolders.get(address);
-
-      if (holder == null)
-      {
-         PagingStore store = postOffice.getPagingManager().getPageStore(address);
-
-         holder = new CreditManagerHolder(store);
-
-         creditManagerHolders.put(address, holder);
-      }
-
-      return holder;
-   }
-
    public void handleRequestProducerCredits(final SessionRequestProducerCreditsMessage packet) throws Exception
    {
       final SimpleString address = packet.getAddress();
@@ -1587,7 +1554,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
 
       int gotCredits = holder.manager.acquireCredits(credits, new CreditsAvailableRunnable()
       {
-         public boolean run(int credits)
+         public boolean run(final int credits)
          {
             synchronized (ServerSessionImpl.this)
             {
@@ -1613,22 +1580,13 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
       sendResponse(packet, null, false, false);
    }
 
-   private void sendProducerCredits(final CreditManagerHolder holder, final int credits, final SimpleString address)
-   {
-      holder.outstandingCredits += credits;
-
-      Packet packet = new SessionProducerCreditsMessage(credits, address);
-
-      channel.send(packet);
-   }
-
    public int transferConnection(final RemotingConnection newConnection, final int lastReceivedCommandID)
    {
-      boolean wasStarted = this.started;
+      boolean wasStarted = started;
 
       if (wasStarted)
       {
-         this.setStarted(false);
+         setStarted(false);
       }
 
       remotingConnection.removeFailureListener(this);
@@ -1652,11 +1610,11 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
 
       int serverLastReceivedCommandID = channel.getLastReceivedCommandID();
 
-      channel.replayCommands(lastReceivedCommandID, this.id);
+      channel.replayCommands(lastReceivedCommandID, id);
 
       if (wasStarted)
       {
-         this.setStarted(true);
+         setStarted(true);
       }
 
       return serverLastReceivedCommandID;
@@ -1804,11 +1762,15 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
     * @param packet
     * @throws Exception
     */
-   private LargeServerMessage doCreateLargeMessage(long id, final SessionSendLargeMessage packet)
+   private LargeServerMessage doCreateLargeMessage(final long id, final SessionSendLargeMessage packet)
    {
       try
       {
-         return createLargeMessageStorage(id, packet.getLargeMessageHeader());
+         LargeServerMessage msg = createLargeMessageStorage(id, packet.getLargeMessageHeader());
+
+         setPagingStore(msg);
+
+         return msg;
       }
       catch (Exception e)
       {
@@ -1888,7 +1850,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
       }
    }
 
-   private void rollback(boolean lastMessageAsDelived) throws Exception
+   private void rollback(final boolean lastMessageAsDelived) throws Exception
    {
       if (tx == null)
       {
@@ -1915,15 +1877,66 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
     */
    private void releaseOutStanding(final ServerMessage message, final int credits) throws Exception
    {
-      CreditManagerHolder holder = getCreditManagerHolder(message.getDestination());
+      CreditManagerHolder holder = getCreditManagerHolder(message);
 
       holder.outstandingCredits -= credits;
 
       holder.store.returnProducerCredits(credits);
    }
-   
+
+   // TODO can we combine these two methods....
+   private CreditManagerHolder getCreditManagerHolder(final SimpleString address) throws Exception
+   {
+      CreditManagerHolder holder = creditManagerHolders.get(address);
+
+      if (holder == null)
+      {
+         PagingStore store = postOffice.getPagingManager().getPageStore(address);
+
+         holder = new CreditManagerHolder(store);
+
+         creditManagerHolders.put(address, holder);
+      }
+
+      return holder;
+   }
+
+   private CreditManagerHolder getCreditManagerHolder(final ServerMessage message) throws Exception
+   {
+      SimpleString address = message.getDestination();
+
+      CreditManagerHolder holder = creditManagerHolders.get(address);
+
+      if (holder == null)
+      {
+         holder = new CreditManagerHolder(message.getPagingStore());
+
+         creditManagerHolders.put(address, holder);
+      }
+
+      return holder;
+   }
+
+   private void setPagingStore(final ServerMessage message) throws Exception
+   {
+      PagingStore store = postOffice.getPagingManager().getPageStore(message.getDestination());
+
+      message.setPagingStore(store);
+   }
+
+   private void sendProducerCredits(final CreditManagerHolder holder, final int credits, final SimpleString address)
+   {
+      holder.outstandingCredits += credits;
+
+      Packet packet = new SessionProducerCreditsMessage(credits, address);
+
+      channel.send(packet);
+   }
+
    private void send(final ServerMessage msg) throws Exception
    {
+      // Look up the paging store
+
       // check the user has write access to this address.
       try
       {
@@ -1946,5 +1959,21 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
       {
          postOffice.route(msg, tx);
       }
+   }
+
+   private static final class CreditManagerHolder
+   {
+      CreditManagerHolder(final PagingStore store)
+      {
+         this.store = store;
+
+         manager = store.getProducerCreditManager();
+      }
+
+      final PagingStore store;
+
+      final ServerProducerCreditManager manager;
+
+      volatile int outstandingCredits;
    }
 }

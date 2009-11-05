@@ -18,6 +18,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
@@ -39,12 +40,11 @@ import org.hornetq.core.paging.PagingManager;
 import org.hornetq.core.paging.PagingStore;
 import org.hornetq.core.paging.PagingStoreFactory;
 import org.hornetq.core.paging.impl.PageTransactionInfoImpl;
-import org.hornetq.core.paging.impl.PagedMessageImpl;
 import org.hornetq.core.paging.impl.PagingStoreImpl;
 import org.hornetq.core.paging.impl.TestSupportPageStore;
+import org.hornetq.core.persistence.GroupingInfo;
 import org.hornetq.core.persistence.QueueBindingInfo;
 import org.hornetq.core.persistence.StorageManager;
-import org.hornetq.core.persistence.GroupingInfo;
 import org.hornetq.core.postoffice.Binding;
 import org.hornetq.core.postoffice.PostOffice;
 import org.hornetq.core.remoting.spi.HornetQBuffer;
@@ -56,8 +56,8 @@ import org.hornetq.core.server.ServerMessage;
 import org.hornetq.core.server.group.impl.GroupBinding;
 import org.hornetq.core.server.impl.ServerMessageImpl;
 import org.hornetq.core.settings.HierarchicalRepository;
-import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.core.settings.impl.AddressFullMessagePolicy;
+import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.core.transaction.ResourceManager;
 import org.hornetq.tests.unit.core.journal.impl.fakes.FakeSequentialFileFactory;
 import org.hornetq.tests.unit.core.server.impl.fakes.FakePostOffice;
@@ -142,14 +142,17 @@ public class PagingStoreImplTest extends UnitTestCase
 
       AddressSettings addressSettings = new AddressSettings();
       addressSettings.setAddressFullMessagePolicy(AddressFullMessagePolicy.PAGE);
-      PagingStore storeImpl = new PagingStoreImpl(createMockManager(),
+
+      PagingStore storeImpl = new PagingStoreImpl(destinationTestName,
+                                                  createMockManager(),
                                                   createStorageManagerMock(),
                                                   createPostOfficeMock(),
                                                   factory,
                                                   null,
                                                   destinationTestName,
                                                   addressSettings,
-                                                  executor);
+                                                  executor,
+                                                  true);
 
       storeImpl.start();
 
@@ -180,14 +183,16 @@ public class PagingStoreImplTest extends UnitTestCase
 
       AddressSettings addressSettings = new AddressSettings();
       addressSettings.setAddressFullMessagePolicy(AddressFullMessagePolicy.PAGE);
-      PagingStore storeImpl = new PagingStoreImpl(createMockManager(),
-                                                  createStorageManagerMock(),
-                                                  createPostOfficeMock(),
-                                                  factory,
-                                                  storeFactory,
-                                                  destinationTestName,
-                                                  addressSettings,
-                                                  executor);
+      TestSupportPageStore storeImpl = new PagingStoreImpl(destinationTestName,
+                                                           createMockManager(),
+                                                           createStorageManagerMock(),
+                                                           createPostOfficeMock(),
+                                                           factory,
+                                                           storeFactory,
+                                                           destinationTestName,
+                                                           addressSettings,
+                                                           executor,
+                                                           true);
 
       storeImpl.start();
 
@@ -204,24 +209,26 @@ public class PagingStoreImplTest extends UnitTestCase
       buffers.add(buffer);
       SimpleString destination = new SimpleString("test");
 
-      PagedMessageImpl msg = createMessage(destination, buffer);
+      ServerMessage msg = createMessage(storeImpl, destination, buffer);
 
       assertTrue(storeImpl.isPaging());
 
-      assertTrue(storeImpl.page(msg, true, true));
+      assertTrue(storeImpl.page(msg, true));
 
       assertEquals(1, storeImpl.getNumberOfPages());
 
       storeImpl.sync();
 
-      storeImpl = new PagingStoreImpl(createMockManager(),
+      storeImpl = new PagingStoreImpl(destinationTestName,
+                                      createMockManager(),
                                       createStorageManagerMock(),
                                       createPostOfficeMock(),
                                       factory,
                                       null,
                                       destinationTestName,
                                       addressSettings,
-                                      executor);
+                                      executor,
+                                      true);
 
       storeImpl.start();
 
@@ -239,14 +246,16 @@ public class PagingStoreImplTest extends UnitTestCase
 
       AddressSettings addressSettings = new AddressSettings();
       addressSettings.setAddressFullMessagePolicy(AddressFullMessagePolicy.PAGE);
-      TestSupportPageStore storeImpl = new PagingStoreImpl(createMockManager(),
+      TestSupportPageStore storeImpl = new PagingStoreImpl(destinationTestName,
+                                                           createMockManager(),
                                                            createStorageManagerMock(),
                                                            createPostOfficeMock(),
                                                            factory,
                                                            storeFactory,
                                                            destinationTestName,
                                                            addressSettings,
-                                                           executor);
+                                                           executor,
+                                                           true);
 
       storeImpl.start();
 
@@ -263,9 +272,9 @@ public class PagingStoreImplTest extends UnitTestCase
 
          buffers.add(buffer);
 
-         PagedMessageImpl msg = createMessage(destination, buffer);
+         ServerMessage msg = createMessage(storeImpl, destination, buffer);
 
-         assertTrue(storeImpl.page(msg, true, true));
+         assertTrue(storeImpl.page(msg, true));
       }
 
       assertEquals(1, storeImpl.getNumberOfPages());
@@ -304,14 +313,16 @@ public class PagingStoreImplTest extends UnitTestCase
 
       AddressSettings addressSettings = new AddressSettings();
       addressSettings.setAddressFullMessagePolicy(AddressFullMessagePolicy.PAGE);
-      TestSupportPageStore storeImpl = new PagingStoreImpl(createMockManager(),
+      TestSupportPageStore storeImpl = new PagingStoreImpl(destinationTestName,
+                                                           createMockManager(),
                                                            createStorageManagerMock(),
                                                            createPostOfficeMock(),
                                                            factory,
                                                            storeFactory,
                                                            destinationTestName,
                                                            addressSettings,
-                                                           executor);
+                                                           executor,
+                                                           true);
 
       storeImpl.start();
 
@@ -335,9 +346,9 @@ public class PagingStoreImplTest extends UnitTestCase
             storeImpl.forceAnotherPage();
          }
 
-         PagedMessageImpl msg = createMessage(destination, buffer);
+         ServerMessage msg = createMessage(storeImpl, destination, buffer);
 
-         assertTrue(storeImpl.page(msg, true, true));
+         assertTrue(storeImpl.page(msg, true));
       }
 
       assertEquals(2, storeImpl.getNumberOfPages());
@@ -367,9 +378,9 @@ public class PagingStoreImplTest extends UnitTestCase
 
       assertTrue(storeImpl.isPaging());
 
-      PagedMessageImpl msg = createMessage(destination, buffers.get(0));
+      ServerMessage msg = createMessage(storeImpl, destination, buffers.get(0));
 
-      assertTrue(storeImpl.page(msg, true, true));
+      assertTrue(storeImpl.page(msg, true));
 
       Page newPage = storeImpl.depage();
 
@@ -387,11 +398,11 @@ public class PagingStoreImplTest extends UnitTestCase
 
       assertFalse(storeImpl.isPaging());
 
-      assertFalse(storeImpl.page(msg, true, true));
+      assertFalse(storeImpl.page(msg, true));
 
       storeImpl.startPaging();
 
-      assertTrue(storeImpl.page(msg, true, true));
+      assertTrue(storeImpl.page(msg, true));
 
       Page page = storeImpl.depage();
 
@@ -427,7 +438,6 @@ public class PagingStoreImplTest extends UnitTestCase
    protected void testConcurrentPaging(final SequentialFileFactory factory, final int numberOfThreads) throws Exception,
                                                                                                       InterruptedException
    {
-
       PagingStoreFactory storeFactory = new FakeStoreFactory(factory);
 
       final int MAX_SIZE = 1024 * 10;
@@ -438,7 +448,7 @@ public class PagingStoreImplTest extends UnitTestCase
 
       final CountDownLatch latchStart = new CountDownLatch(numberOfThreads);
 
-      final ConcurrentHashMap<Long, PagedMessageImpl> buffers = new ConcurrentHashMap<Long, PagedMessageImpl>();
+      final ConcurrentHashMap<Long, ServerMessage> buffers = new ConcurrentHashMap<Long, ServerMessage>();
 
       final ArrayList<Page> readPages = new ArrayList<Page>();
 
@@ -446,14 +456,16 @@ public class PagingStoreImplTest extends UnitTestCase
       settings.setPageSizeBytes(MAX_SIZE);
       settings.setAddressFullMessagePolicy(AddressFullMessagePolicy.PAGE);
 
-      final TestSupportPageStore storeImpl = new PagingStoreImpl(createMockManager(),
+      final TestSupportPageStore storeImpl = new PagingStoreImpl(destinationTestName,
+                                                                 createMockManager(),
                                                                  createStorageManagerMock(),
                                                                  createPostOfficeMock(),
                                                                  factory,
                                                                  storeFactory,
                                                                  new SimpleString("test"),
                                                                  settings,
-                                                                 executor);
+                                                                 executor,
+                                                                 true);
 
       storeImpl.start();
 
@@ -480,8 +492,8 @@ public class PagingStoreImplTest extends UnitTestCase
                while (true)
                {
                   long id = messageIdGenerator.incrementAndGet();
-                  PagedMessageImpl msg = createMessage(destination, createRandomBuffer(id, 5));
-                  if (storeImpl.page(msg, false, true))
+                  ServerMessage msg = createMessage(storeImpl, destination, createRandomBuffer(id, 5));                  
+                  if (storeImpl.page(msg, true))
                   {
                      buffers.put(id, msg);
                   }
@@ -564,7 +576,7 @@ public class PagingStoreImplTest extends UnitTestCase
          throw consumer.e;
       }
 
-      final ConcurrentHashMap<Long, PagedMessage> buffers2 = new ConcurrentHashMap<Long, PagedMessage>();
+      final ConcurrentMap<Long, ServerMessage> buffers2 = new ConcurrentHashMap<Long, ServerMessage>();
 
       for (Page page : readPages)
       {
@@ -577,13 +589,11 @@ public class PagingStoreImplTest extends UnitTestCase
             long id = msg.getMessage(null).getBody().readLong();
             msg.getMessage(null).getBody().resetReaderIndex();
 
-            PagedMessageImpl msgWritten = buffers.remove(id);
-            buffers2.put(id, msg);
+            ServerMessage msgWritten = buffers.remove(id);
+            buffers2.put(id, msg.getMessage(null));
             assertNotNull(msgWritten);
-            assertEquals(msg.getMessage(null).getDestination(), msgWritten.getMessage(null).getDestination());
-            assertEqualsByteArrays(msgWritten.getMessage(null).getBody().array(), msg.getMessage(null)
-                                                                                     .getBody()
-                                                                                     .array());
+            assertEquals(msg.getMessage(null).getDestination(), msgWritten.getDestination());
+            assertEqualsByteArrays(msgWritten.getBody().array(), msg.getMessage(null).getBody().array());
          }
       }
 
@@ -601,14 +611,16 @@ public class PagingStoreImplTest extends UnitTestCase
          fileTmp.close();
       }
 
-      TestSupportPageStore storeImpl2 = new PagingStoreImpl(createMockManager(),
+      TestSupportPageStore storeImpl2 = new PagingStoreImpl(destinationTestName,
+                                                            createMockManager(),
                                                             createStorageManagerMock(),
                                                             createPostOfficeMock(),
                                                             factory,
                                                             storeFactory,
                                                             new SimpleString("test"),
                                                             settings,
-                                                            executor);
+                                                            executor,
+                                                            true);
       storeImpl2.start();
 
       int numberOfPages = storeImpl2.getNumberOfPages();
@@ -621,9 +633,9 @@ public class PagingStoreImplTest extends UnitTestCase
       assertEquals(numberOfPages, storeImpl2.getNumberOfPages());
 
       long lastMessageId = messageIdGenerator.incrementAndGet();
-      PagedMessage lastMsg = createMessage(destination, createRandomBuffer(lastMessageId, 5));
+      ServerMessage lastMsg = createMessage(storeImpl, destination, createRandomBuffer(lastMessageId, 5));
 
-      storeImpl2.page(lastMsg, false, true);
+      storeImpl2.page(lastMsg, true);
       buffers2.put(lastMessageId, lastMsg);
 
       Page lastPage = null;
@@ -647,12 +659,10 @@ public class PagingStoreImplTest extends UnitTestCase
          {
 
             long id = msg.getMessage(null).getBody().readLong();
-            PagedMessage msgWritten = buffers2.remove(id);
+            ServerMessage msgWritten = buffers2.remove(id);
             assertNotNull(msgWritten);
-            assertEquals(msg.getMessage(null).getDestination(), msgWritten.getMessage(null).getDestination());
-            assertEqualsByteArrays(msgWritten.getMessage(null).getBody().array(), msg.getMessage(null)
-                                                                                     .getBody()
-                                                                                     .array());
+            assertEquals(msg.getMessage(null).getDestination(), msgWritten.getDestination());
+            assertEqualsByteArrays(msgWritten.getBody().array(), msg.getMessage(null).getBody().array());
          }
       }
 
@@ -663,14 +673,11 @@ public class PagingStoreImplTest extends UnitTestCase
 
       lastMessages.get(0).getMessage(null).getBody().resetReaderIndex();
       assertEquals(lastMessages.get(0).getMessage(null).getBody().readLong(), lastMessageId);
-      assertEqualsByteArrays(lastMessages.get(0).getMessage(null).getBody().array(), lastMsg.getMessage(null)
-                                                                                            .getBody()
-                                                                                            .array());
+      assertEqualsByteArrays(lastMessages.get(0).getMessage(null).getBody().array(), lastMsg.getBody().array());
 
       assertEquals(0, buffers2.size());
 
       assertEquals(0, storeImpl.getAddressSize());
-
    }
 
    /**
@@ -691,12 +698,15 @@ public class PagingStoreImplTest extends UnitTestCase
       return new FakePostOffice();
    }
 
-   private PagedMessageImpl createMessage(final SimpleString destination, final HornetQBuffer buffer)
+   private ServerMessage createMessage(final PagingStore store, final SimpleString destination, final HornetQBuffer buffer)
    {
       ServerMessage msg = new ServerMessageImpl((byte)1, true, 0, System.currentTimeMillis(), (byte)0, buffer);
 
       msg.setDestination(destination);
-      return new PagedMessageImpl(msg);
+      
+      msg.setPagingStore(store);
+
+      return msg;
    }
 
    private HornetQBuffer createRandomBuffer(final long id, final int size)
@@ -947,29 +957,30 @@ public class PagingStoreImplTest extends UnitTestCase
       /* (non-Javadoc)
        * @see org.hornetq.core.persistence.StorageManager#loadBindingJournal(java.util.List)
        */
-      public JournalLoadInformation loadBindingJournal(final List<QueueBindingInfo> queueBindingInfos, List<GroupingInfo> groupingInfos) throws Exception
+      public JournalLoadInformation loadBindingJournal(final List<QueueBindingInfo> queueBindingInfos,
+                                                       List<GroupingInfo> groupingInfos) throws Exception
       {
          return new JournalLoadInformation();
       }
 
       public void addGrouping(GroupBinding groupBinding) throws Exception
       {
-         //To change body of implemented methods use File | Settings | File Templates.
+         // To change body of implemented methods use File | Settings | File Templates.
       }
 
       public void deleteGrouping(GroupBinding groupBinding) throws Exception
       {
-         //To change body of implemented methods use File | Settings | File Templates.
+         // To change body of implemented methods use File | Settings | File Templates.
       }
 
       /* (non-Javadoc)
        * @see org.hornetq.core.persistence.StorageManager#loadMessageJournal(org.hornetq.core.paging.PagingManager, java.util.Map, org.hornetq.core.transaction.ResourceManager, java.util.Map)
        */
       public JournalLoadInformation loadMessageJournal(PostOffice postOffice,
-                                     PagingManager pagingManager,
-                                     ResourceManager resourceManager,
-                                     Map<Long, Queue> queues,
-                                     Map<SimpleString, List<Pair<byte[], Long>>> duplicateIDMap) throws Exception
+                                                       PagingManager pagingManager,
+                                                       ResourceManager resourceManager,
+                                                       Map<Long, Queue> queues,
+                                                       Map<SimpleString, List<Pair<byte[], Long>>> duplicateIDMap) throws Exception
       {
          return new JournalLoadInformation();
       }
@@ -1136,8 +1147,7 @@ public class PagingStoreImplTest extends UnitTestCase
        */
       public void afterReplicated(Runnable run)
       {
-         
-         
+
       }
 
       /* (non-Javadoc)
@@ -1145,8 +1155,7 @@ public class PagingStoreImplTest extends UnitTestCase
        */
       public void completeReplication()
       {
-         
-         
+
       }
 
       /* (non-Javadoc)
@@ -1154,7 +1163,7 @@ public class PagingStoreImplTest extends UnitTestCase
        */
       public LargeServerMessage createLargeMessage(long messageId, byte[] header)
       {
-         
+
          return null;
       }
 
@@ -1163,7 +1172,7 @@ public class PagingStoreImplTest extends UnitTestCase
        */
       public boolean isReplicated()
       {
-         
+
          return false;
       }
 
@@ -1172,7 +1181,7 @@ public class PagingStoreImplTest extends UnitTestCase
        */
       public JournalLoadInformation[] loadInternalOnly() throws Exception
       {
-         return null; 
+         return null;
       }
 
       /* (non-Javadoc)
@@ -1180,8 +1189,7 @@ public class PagingStoreImplTest extends UnitTestCase
        */
       public void pageClosed(SimpleString storeName, int pageNumber)
       {
-         
-         
+
       }
 
       /* (non-Javadoc)
@@ -1189,8 +1197,7 @@ public class PagingStoreImplTest extends UnitTestCase
        */
       public void pageDeleted(SimpleString storeName, int pageNumber)
       {
-         
-         
+
       }
 
       /* (non-Javadoc)
@@ -1198,8 +1205,7 @@ public class PagingStoreImplTest extends UnitTestCase
        */
       public void pageWrite(PagedMessage message, int pageNumber)
       {
-         
-         
+
       }
 
       /* (non-Javadoc)
@@ -1292,8 +1298,6 @@ public class PagingStoreImplTest extends UnitTestCase
       public void stop() throws InterruptedException
       {
       }
-
-
 
    }
 

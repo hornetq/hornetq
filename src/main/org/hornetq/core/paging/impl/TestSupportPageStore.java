@@ -37,4 +37,9 @@ public interface TestSupportPageStore extends PagingStore
    void forceAnotherPage() throws Exception;
    
    boolean isExceededAvailableCredits();
+   
+   /** @return true if paging was started, or false if paging was already started before this call */
+   boolean startPaging() throws Exception;
+   
+   Page getCurrentPage();         
 }

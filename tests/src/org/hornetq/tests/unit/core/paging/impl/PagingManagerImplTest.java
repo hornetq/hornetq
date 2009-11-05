@@ -64,10 +64,9 @@ public class PagingManagerImplTest extends UnitTestCase
       addressSettings.setDefault(settings);
       
       
-      PagingManagerImpl managerImpl = new PagingManagerImpl(new PagingStoreFactoryNIO(getPageDir(), new OrderedExecutorFactory(Executors.newCachedThreadPool())),
+      PagingManagerImpl managerImpl = new PagingManagerImpl(new PagingStoreFactoryNIO(getPageDir(), new OrderedExecutorFactory(Executors.newCachedThreadPool()), true),
                                                             new NullStorageManager(),
-                                                            addressSettings,
-                                                            true);
+                                                            addressSettings);
 
       managerImpl.start();
 
@@ -75,11 +74,11 @@ public class PagingManagerImplTest extends UnitTestCase
 
       ServerMessage msg = createMessage(1l, new SimpleString("simple-test"), createRandomBuffer(10));
 
-      assertFalse(store.page(new PagedMessageImpl(msg), true, true));
+      assertFalse(store.page(msg, true));
 
       store.startPaging();
 
-      assertTrue(store.page(new PagedMessageImpl(msg), true, true));
+      assertTrue(store.page(msg, true));
 
       Page page = store.depage();
 
@@ -97,7 +96,7 @@ public class PagingManagerImplTest extends UnitTestCase
 
       assertNull(store.depage());
 
-      assertFalse(store.page(new PagedMessageImpl(msg), true, true));
+      assertFalse(store.page(msg, true));
    }
 
 

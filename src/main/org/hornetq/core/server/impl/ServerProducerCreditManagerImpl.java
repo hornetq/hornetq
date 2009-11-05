@@ -91,7 +91,7 @@ public class ServerProducerCreditManagerImpl implements ServerProducerCreditMana
                entry.credits -= credits;
 
                boolean sent = sendCredits(entry.waiting, credits);
-               
+
                if (sent)
                {
                   credits = 0;

@@ -27,6 +27,7 @@ import org.hornetq.core.client.ClientSessionFactory;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.message.impl.MessageImpl;
+import org.hornetq.core.paging.impl.TestSupportPageStore;
 import org.hornetq.core.remoting.spi.HornetQBuffer;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.Queue;
@@ -47,17 +48,17 @@ import org.hornetq.utils.SimpleString;
  */
 public class PagingTest extends ServiceTestBase
 {
-   
+
    public PagingTest(String name)
    {
       super(name);
    }
-   
+
    public PagingTest()
    {
       super();
    }
-   
+
    // Constants -----------------------------------------------------
    private static final Logger log = Logger.getLogger(PagingTest.class);
 
@@ -160,7 +161,7 @@ public class PagingTest extends ServiceTestBase
             ClientMessage message2 = consumer.receive(RECEIVE_TIMEOUT);
 
             assertNotNull(message2);
-            
+
             assertEquals(i, ((Integer)message2.getProperty(new SimpleString("id"))).intValue());
 
             message2.acknowledge();
@@ -244,7 +245,7 @@ public class PagingTest extends ServiceTestBase
             message.setBody(bodyLocal);
 
             // Stop sending message as soon as we start paging
-            if (server.getPostOffice().getPagingManager().isPaging(ADDRESS))
+            if (server.getPostOffice().getPagingManager().getPageStore(ADDRESS).isPaging())
             {
                break;
             }
@@ -253,7 +254,7 @@ public class PagingTest extends ServiceTestBase
             producer.send(message);
          }
 
-         assertTrue(server.getPostOffice().getPagingManager().isPaging(ADDRESS));
+         assertTrue(server.getPostOffice().getPagingManager().getPageStore(ADDRESS).isPaging());
 
          session.start();
 
@@ -389,8 +390,12 @@ public class PagingTest extends ServiceTestBase
             message.setBody(ChannelBuffers.wrappedBuffer(body));
             message.putIntProperty(new SimpleString("id"), i);
 
+            TestSupportPageStore store = (TestSupportPageStore)server.getPostOffice()
+                                                                     .getPagingManager()
+                                                                     .getPageStore(ADDRESS);
+
             // Worse scenario possible... only schedule what's on pages
-            if (server.getPostOffice().getPagingManager().getPageStore(ADDRESS).getCurrentPage() != null)
+            if (store.getCurrentPage() != null)
             {
                message.putLongProperty(MessageImpl.HDR_SCHEDULED_DELIVERY_TIME, scheduledTime);
             }
@@ -1112,7 +1117,7 @@ public class PagingTest extends ServiceTestBase
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
-   
+
    protected Configuration createDefaultConfig()
    {
       Configuration config = super.createDefaultConfig();

@@ -67,6 +67,7 @@ public class LastValueQueue extends QueueImpl
             addressSettingsRepository);
    }
 
+   @Override
    public synchronized void add(final MessageReference ref, final boolean first)
    {
       SimpleString prop = (SimpleString)ref.getMessage().getProperty(MessageImpl.HDR_LAST_VALUE_NAME);
@@ -76,7 +77,7 @@ public class LastValueQueue extends QueueImpl
          HolderReference hr = map.get(prop);
 
          if (!first)
-         {            
+         {
             if (hr != null)
             {
                // We need to overwrite the old ref with the new one and ack the old one
@@ -169,7 +170,7 @@ public class LastValueQueue extends QueueImpl
          this.ref = ref;
       }
 
-      public MessageReference copy(Queue queue)
+      public MessageReference copy(final Queue queue)
       {
          return ref.copy(queue);
       }
@@ -209,12 +210,12 @@ public class LastValueQueue extends QueueImpl
          ref.incrementDeliveryCount();
       }
 
-      public void setDeliveryCount(int deliveryCount)
+      public void setDeliveryCount(final int deliveryCount)
       {
          ref.setDeliveryCount(deliveryCount);
       }
 
-      public void setScheduledDeliveryTime(long scheduledDeliveryTime)
+      public void setScheduledDeliveryTime(final long scheduledDeliveryTime)
       {
          ref.setScheduledDeliveryTime(scheduledDeliveryTime);
       }
