@@ -398,7 +398,7 @@ public class JournalStorageManager implements StorageManager
 
    public LargeServerMessage createLargeMessage()
    {
-      return new JournalLargeServerMessage(this);
+      return new FileLargeServerMessage(this);
    }
 
    public void addBytesToLargeMessage(SequentialFile file, long messageId, final byte[] bytes) throws Exception
@@ -420,7 +420,7 @@ public class JournalStorageManager implements StorageManager
          replicator.largeMessageBegin(id);
       }
 
-      JournalLargeServerMessage largeMessage = (JournalLargeServerMessage)createLargeMessage();
+      FileLargeServerMessage largeMessage = (FileLargeServerMessage)createLargeMessage();
 
       HornetQBuffer headerBuffer = ChannelBuffers.wrappedBuffer(header);
 

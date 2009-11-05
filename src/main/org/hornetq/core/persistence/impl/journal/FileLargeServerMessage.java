@@ -37,14 +37,11 @@ import org.hornetq.core.server.impl.ServerMessageImpl;
  *
  *
  */
-
-
-//FIXME - this class should be renamed to just large message
-public class JournalLargeServerMessage extends ServerMessageImpl implements LargeServerMessage
+public class FileLargeServerMessage extends ServerMessageImpl implements LargeServerMessage
 {
    // Constants -----------------------------------------------------
 
-   private static final Logger log = Logger.getLogger(JournalLargeServerMessage.class);
+   private static final Logger log = Logger.getLogger(FileLargeServerMessage.class);
 
    private static boolean isTrace = log.isTraceEnabled();
 
@@ -65,7 +62,7 @@ public class JournalLargeServerMessage extends ServerMessageImpl implements Larg
 
    // Constructors --------------------------------------------------
 
-   public JournalLargeServerMessage(final JournalStorageManager storageManager)
+   public FileLargeServerMessage(final JournalStorageManager storageManager)
    {
       this.storageManager = storageManager;      
    }
@@ -75,7 +72,7 @@ public class JournalLargeServerMessage extends ServerMessageImpl implements Larg
     * @param copy
     * @param fileCopy
     */
-   private JournalLargeServerMessage(final JournalLargeServerMessage copy,
+   private FileLargeServerMessage(final FileLargeServerMessage copy,
                                      final SequentialFile fileCopy,
                                      final long newID)
    {
@@ -95,7 +92,7 @@ public class JournalLargeServerMessage extends ServerMessageImpl implements Larg
    public synchronized void addBytes(final byte[] bytes) throws Exception
    {
       validateFile();
-
+      
       if (!file.isOpen())
       {
          file.open();
@@ -303,8 +300,8 @@ public class JournalLargeServerMessage extends ServerMessageImpl implements Larg
 
       SequentialFile newfile = storageManager.createFileForLargeMessage(idToUse, durable);
 
-      ServerMessage newMessage = new JournalLargeServerMessage(linkMessage == null ? this
-                                                                                  : (JournalLargeServerMessage)linkMessage,
+      ServerMessage newMessage = new FileLargeServerMessage(linkMessage == null ? this
+                                                                                  : (FileLargeServerMessage)linkMessage,
                                                                newfile,
                                                                newID);
 
