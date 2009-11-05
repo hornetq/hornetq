@@ -93,8 +93,7 @@ public class ServerConsumerImpl implements ServerConsumer
    private boolean started;
 
    private volatile LargeMessageDeliverer largeMessageDeliverer = null;
-
-   // Note, this does not need to be volatile since it is only accessed when the lock is held
+  
    private boolean largeMessageInDelivery;
 
    /**
@@ -624,17 +623,14 @@ public class ServerConsumerImpl implements ServerConsumer
    {
       private final long sizePendingLargeMessage;
 
-      /** The current message being processed
-       *  Note, this does not need to be volatile since it is only accessed when the lock is held
-       */
       private LargeServerMessage largeMessage;
 
       private final MessageReference ref;
 
-      private volatile boolean sentInitialPacket = false;
+      private boolean sentInitialPacket = false;
 
       /** The current position on the message being processed */
-      private volatile long positionPendingLargeMessage;
+      private long positionPendingLargeMessage;
 
       private LargeMessageEncodingContext context;
 
