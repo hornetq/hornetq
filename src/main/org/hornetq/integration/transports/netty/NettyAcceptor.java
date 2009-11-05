@@ -64,6 +64,7 @@ import org.jboss.netty.handler.codec.http.HttpRequestDecoder;
 import org.jboss.netty.handler.codec.http.HttpResponseEncoder;
 import org.jboss.netty.handler.ssl.SslHandler;
 import org.jboss.netty.util.Version;
+import org.jboss.netty.util.VirtualExecutorService;
 
 /**
  * A Netty TCP Acceptor that supports SSL

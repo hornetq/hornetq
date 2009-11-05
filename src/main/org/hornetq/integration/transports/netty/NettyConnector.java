@@ -72,6 +72,7 @@ import org.jboss.netty.handler.codec.http.HttpResponseDecoder;
 import org.jboss.netty.handler.codec.http.HttpVersion;
 import org.jboss.netty.handler.ssl.SslHandler;
 import org.jboss.netty.util.Version;
+import org.jboss.netty.util.VirtualExecutorService;
 
 /**
  * A NettyConnector
