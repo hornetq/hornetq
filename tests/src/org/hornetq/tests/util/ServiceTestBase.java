@@ -47,7 +47,7 @@ import org.hornetq.jms.client.HornetQTextMessage;
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
  *
  */
-public class ServiceTestBase extends UnitTestCase
+public abstract class ServiceTestBase extends UnitTestCase
 {
 
    // Constants -----------------------------------------------------

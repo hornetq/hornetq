@@ -155,7 +155,7 @@ public class FailoverTest extends FailoverTestBase
 
             assertMessageBody(i, message);
 
-            assertEquals(i, message.getProperty("counter"));
+            assertEquals(i, message.getObjectProperty("counter"));
 
             message.acknowledge();
          }
@@ -227,7 +227,7 @@ public class FailoverTest extends FailoverTestBase
 
          assertMessageBody(i, message);
 
-         assertEquals(i, message.getProperty("counter"));
+         assertEquals(i, message.getObjectProperty("counter"));
 
          message.acknowledge();
       }
@@ -393,7 +393,7 @@ public class FailoverTest extends FailoverTestBase
 
             assertMessageBody(i, message);
 
-            assertEquals(i, message.getProperty("counter"));
+            assertEquals(i, message.getObjectProperty("counter"));
 
             message.acknowledge();
          }
@@ -482,7 +482,7 @@ public class FailoverTest extends FailoverTestBase
 
             assertMessageBody(i, message);
 
-            assertEquals(i, message.getProperty("counter"));
+            assertEquals(i, message.getObjectProperty("counter"));
 
             message.acknowledge();
          }
@@ -553,7 +553,7 @@ public class FailoverTest extends FailoverTestBase
 
          assertMessageBody(i, message);
 
-         assertEquals(i, message.getProperty("counter"));
+         assertEquals(i, message.getObjectProperty("counter"));
 
          message.acknowledge();
       }
@@ -636,7 +636,7 @@ public class FailoverTest extends FailoverTestBase
 
          assertMessageBody(i, message);
 
-         assertEquals(i, message.getProperty("counter"));
+         assertEquals(i, message.getObjectProperty("counter"));
 
          message.acknowledge();
       }
@@ -659,7 +659,7 @@ public class FailoverTest extends FailoverTestBase
 
          assertMessageBody(i, message);
 
-         assertEquals(i, message.getProperty("counter"));
+         assertEquals(i, message.getObjectProperty("counter"));
 
          message.acknowledge();
       }
@@ -964,7 +964,7 @@ public class FailoverTest extends FailoverTestBase
 
             assertMessageBody(i, message);
 
-            assertEquals(i, message.getProperty("counter"));
+            assertEquals(i, message.getObjectProperty("counter"));
 
             message.acknowledge();
          }
@@ -1041,7 +1041,7 @@ public class FailoverTest extends FailoverTestBase
 
          assertMessageBody(i, message);
 
-         assertEquals(i, message.getProperty("counter"));
+         assertEquals(i, message.getObjectProperty("counter"));
 
          message.acknowledge();
       }
@@ -1127,7 +1127,7 @@ public class FailoverTest extends FailoverTestBase
 
          assertMessageBody(i, message);
 
-         assertEquals(i, message.getProperty("counter"));
+         assertEquals(i, message.getObjectProperty("counter"));
 
          message.acknowledge();
       }
@@ -1228,7 +1228,7 @@ public class FailoverTest extends FailoverTestBase
 
          assertMessageBody(i, message);
 
-         assertEquals(i, message.getProperty("counter"));
+         assertEquals(i, message.getObjectProperty("counter"));
 
          message.acknowledge();
       }
@@ -1393,7 +1393,7 @@ public class FailoverTest extends FailoverTestBase
 
                assertMessageBody(i, message);
 
-               assertEquals(i, message.getProperty("counter"));
+               assertEquals(i, message.getObjectProperty("counter"));
 
                message.acknowledge();
             }
@@ -1465,7 +1465,7 @@ public class FailoverTest extends FailoverTestBase
 
          assertMessageBody(i, message);
 
-         assertEquals(i, message.getProperty("counter"));
+         assertEquals(i, message.getObjectProperty("counter"));
       }
 
       fail(session, latch);
@@ -1482,7 +1482,7 @@ public class FailoverTest extends FailoverTestBase
 
             assertMessageBody(i, message);
 
-            assertEquals(i, message.getProperty("counter"));
+            assertEquals(i, message.getObjectProperty("counter"));
 
             message.acknowledge();
          }
@@ -1545,7 +1545,7 @@ public class FailoverTest extends FailoverTestBase
 
          assertMessageBody(i, message);
 
-         assertEquals(i, message.getProperty("counter"));
+         assertEquals(i, message.getObjectProperty("counter"));
       }
 
       fail(session, latch);
@@ -1564,7 +1564,7 @@ public class FailoverTest extends FailoverTestBase
 
             assertMessageBody(i, message);
 
-            assertEquals(i, message.getProperty("counter"));
+            assertEquals(i, message.getObjectProperty("counter"));
 
             message.acknowledge();
          }
@@ -1628,7 +1628,7 @@ public class FailoverTest extends FailoverTestBase
 
          assertMessageBody(i, message);
 
-         assertEquals(i, message.getProperty("counter"));
+         assertEquals(i, message.getObjectProperty("counter"));
 
          message.acknowledge();
       }
@@ -1658,7 +1658,7 @@ public class FailoverTest extends FailoverTestBase
 
          assertMessageBody(i, message);
 
-         assertEquals(i, message.getProperty("counter"));
+         assertEquals(i, message.getObjectProperty("counter"));
 
          message.acknowledge();
       }
@@ -1882,7 +1882,7 @@ public class FailoverTest extends FailoverTestBase
 
          assertMessageBody(i, message);
 
-         assertEquals(i, message.getProperty("counter"));
+         assertEquals(i, message.getObjectProperty("counter"));
 
          message.acknowledge();
       }
@@ -2022,7 +2022,7 @@ public class FailoverTest extends FailoverTestBase
 
          assertMessageBody(i, message);
 
-         assertEquals(i, message.getProperty("counter"));
+         assertEquals(i, message.getObjectProperty("counter"));
 
          message.acknowledge();
       }

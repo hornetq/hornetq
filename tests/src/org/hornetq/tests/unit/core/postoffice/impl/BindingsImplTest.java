@@ -22,16 +22,21 @@ import javax.transaction.xa.Xid;
 
 import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.filter.Filter;
+import org.hornetq.core.message.LargeMessageEncodingContext;
+import org.hornetq.core.message.PropertyConversionException;
 import org.hornetq.core.paging.PagingStore;
 import org.hornetq.core.postoffice.Binding;
 import org.hornetq.core.postoffice.BindingType;
 import org.hornetq.core.postoffice.impl.BindingsImpl;
 import org.hornetq.core.remoting.spi.HornetQBuffer;
-import org.hornetq.core.server.*;
+import org.hornetq.core.server.Bindable;
+import org.hornetq.core.server.MessageReference;
+import org.hornetq.core.server.Queue;
+import org.hornetq.core.server.RoutingContext;
+import org.hornetq.core.server.ServerMessage;
 import org.hornetq.core.server.impl.RoutingContextImpl;
 import org.hornetq.core.transaction.Transaction;
 import org.hornetq.core.transaction.TransactionOperation;
-import org.hornetq.core.message.LargeMessageEncodingContext;
 import org.hornetq.tests.util.UnitTestCase;
 import org.hornetq.utils.SimpleString;
 import org.hornetq.utils.TypedProperties;
@@ -289,7 +294,7 @@ public class BindingsImplTest extends UnitTestCase
       public void setOriginalHeaders(ServerMessage other, boolean expiry)
       {
          // TODO Auto-generated method stub
-         
+
       }
 
       public Map<String, Object> toMap()
@@ -455,7 +460,7 @@ public class BindingsImplTest extends UnitTestCase
 
       public void encodeBody(HornetQBuffer bufferOut, LargeMessageEncodingContext context, int size)
       {
-         //To change body of implemented methods use File | Settings | File Templates.
+         // To change body of implemented methods use File | Settings | File Templates.
       }
 
       /* (non-Javadoc)
@@ -680,6 +685,24 @@ public class BindingsImplTest extends UnitTestCase
       {
 
       }
+      
+      /* (non-Javadoc)
+       * @see org.hornetq.core.message.Message#putObjectProperty(org.hornetq.utils.SimpleString, java.lang.Object)
+       */
+      public void putObjectProperty(SimpleString key, Object value)
+      {
+         // TODO Auto-generated method stub
+         
+      }
+      
+      /* (non-Javadoc)
+       * @see org.hornetq.core.message.Message#putObjectProperty(java.lang.String, java.lang.Object)
+       */
+      public void putObjectProperty(String key, Object value)
+      {
+         // TODO Auto-generated method stub
+         
+      }
 
       /* (non-Javadoc)
        * @see org.hornetq.core.message.Message#putTypedProperties(org.hornetq.utils.TypedProperties)
@@ -774,16 +797,16 @@ public class BindingsImplTest extends UnitTestCase
        */
       public boolean containsProperty(String key)
       {
-         
+
          return false;
       }
 
       /* (non-Javadoc)
        * @see org.hornetq.core.message.Message#getProperty(java.lang.String)
        */
-      public Object getProperty(String key)
+      public Object getObjectProperty(String key)
       {
-         
+
          return null;
       }
 
@@ -792,8 +815,7 @@ public class BindingsImplTest extends UnitTestCase
        */
       public void putBooleanProperty(String key, boolean value)
       {
-         
-         
+
       }
 
       /* (non-Javadoc)
@@ -801,8 +823,7 @@ public class BindingsImplTest extends UnitTestCase
        */
       public void putByteProperty(String key, byte value)
       {
-         
-         
+
       }
 
       /* (non-Javadoc)
@@ -810,8 +831,7 @@ public class BindingsImplTest extends UnitTestCase
        */
       public void putBytesProperty(String key, byte[] value)
       {
-         
-         
+
       }
 
       /* (non-Javadoc)
@@ -819,8 +839,7 @@ public class BindingsImplTest extends UnitTestCase
        */
       public void putDoubleProperty(String key, double value)
       {
-         
-         
+
       }
 
       /* (non-Javadoc)
@@ -828,8 +847,7 @@ public class BindingsImplTest extends UnitTestCase
        */
       public void putFloatProperty(String key, float value)
       {
-         
-         
+
       }
 
       /* (non-Javadoc)
@@ -837,8 +855,7 @@ public class BindingsImplTest extends UnitTestCase
        */
       public void putIntProperty(String key, int value)
       {
-         
-         
+
       }
 
       /* (non-Javadoc)
@@ -846,8 +863,7 @@ public class BindingsImplTest extends UnitTestCase
        */
       public void putLongProperty(String key, long value)
       {
-         
-         
+
       }
 
       /* (non-Javadoc)
@@ -855,8 +871,7 @@ public class BindingsImplTest extends UnitTestCase
        */
       public void putShortProperty(String key, short value)
       {
-         
-         
+
       }
 
       /* (non-Javadoc)
@@ -864,8 +879,7 @@ public class BindingsImplTest extends UnitTestCase
        */
       public void putStringProperty(String key, String value)
       {
-         
-         
+
       }
 
       /* (non-Javadoc)
@@ -873,8 +887,98 @@ public class BindingsImplTest extends UnitTestCase
        */
       public Object removeProperty(String key)
       {
-         
+
          return null;
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.message.Message#getStringProperty(org.hornetq.utils.SimpleString)
+       */
+      public String getStringProperty(SimpleString key)
+      {
+         // TODO Auto-generated method stub
+         return null;
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.message.Message#getBooleanProperty(org.hornetq.utils.SimpleString)
+       */
+      public Boolean getBooleanProperty(SimpleString key)
+      {
+         // TODO Auto-generated method stub
+         return false;
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.message.Message#getByteProperty(org.hornetq.utils.SimpleString)
+       */
+      public Byte getByteProperty(SimpleString key)
+      {
+         // TODO Auto-generated method stub
+         return 0;
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.message.Message#getBytesProperty(org.hornetq.utils.SimpleString)
+       */
+      public byte[] getBytesProperty(SimpleString key) throws PropertyConversionException
+      {
+         // TODO Auto-generated method stub
+         return null;
+      }
+      
+      /* (non-Javadoc)
+       * @see org.hornetq.core.message.Message#getDoubleProperty(org.hornetq.utils.SimpleString)
+       */
+      public Double getDoubleProperty(SimpleString key)
+      {
+         // TODO Auto-generated method stub
+         return 0.0;
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.message.Message#getFloatProperty(org.hornetq.utils.SimpleString)
+       */
+      public Float getFloatProperty(SimpleString key)
+      {
+         // TODO Auto-generated method stub
+         return 0f;
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.message.Message#getIntProperty(org.hornetq.utils.SimpleString)
+       */
+      public Integer getIntProperty(SimpleString key)
+      {
+         // TODO Auto-generated method stub
+         return 0;
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.message.Message#getLongProperty(org.hornetq.utils.SimpleString)
+       */
+      public Long getLongProperty(SimpleString key)
+      {
+         // TODO Auto-generated method stub
+         return 0L;
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.message.Message#getObjectProperty(org.hornetq.utils.SimpleString)
+       */
+      public Object getObjectProperty(SimpleString key)
+      {
+         // TODO Auto-generated method stub
+         return null;
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.message.Message#getShortProperty(org.hornetq.utils.SimpleString)
+       */
+      public Short getShortProperty(SimpleString key)
+      {
+         // TODO Auto-generated method stub
+         return 0;
       }
 
       /* (non-Javadoc)
@@ -1058,7 +1162,7 @@ public class BindingsImplTest extends UnitTestCase
       public void route(ServerMessage message, RoutingContext context) throws Exception
       {
          // TODO Auto-generated method stub
-         
+
       }
 
    }

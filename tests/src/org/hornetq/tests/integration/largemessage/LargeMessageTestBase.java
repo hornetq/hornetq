@@ -50,7 +50,7 @@ import org.hornetq.utils.SimpleString;
  *
  *
  */
-public class LargeMessageTestBase extends ServiceTestBase
+public abstract class LargeMessageTestBase extends ServiceTestBase
 {
 
    // Constants -----------------------------------------------------

@@ -39,6 +39,7 @@ import org.hornetq.core.client.ClientSession;
 import org.hornetq.core.client.impl.ClientMessageImpl;
 import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.logging.Logger;
+import org.hornetq.core.message.PropertyConversionException;
 import org.hornetq.core.message.impl.MessageImpl;
 import org.hornetq.core.remoting.spi.HornetQBuffer;
 import org.hornetq.jms.HornetQDestination;
@@ -604,71 +605,37 @@ public class HornetQMessage implements javax.jms.Message
 
    public boolean getBooleanProperty(final String name) throws JMSException
    {
-      Object value = message.getProperty(new SimpleString(name));
-      if (value == null)
+      try
       {
-         return Boolean.valueOf(null).booleanValue();
+         return message.getBooleanProperty(new SimpleString(name));
       }
-
-      if (value instanceof Boolean)
+      catch (PropertyConversionException e)
       {
-         return ((Boolean)value).booleanValue();
-      }
-      else if (value instanceof SimpleString)
-      {
-         return Boolean.valueOf(((SimpleString)value).toString()).booleanValue();
-      }
-      else
-      {
-         throw new MessageFormatException("Invalid conversion");
+         throw new MessageFormatException(e.getMessage());
       }
    }
 
    public byte getByteProperty(final String name) throws JMSException
    {
-      Object value = message.getProperty(new SimpleString(name));
-      if (value == null)
+      try
       {
-         throw new NumberFormatException("Message property '" + name + "' not set.");
+         return message.getByteProperty(new SimpleString(name));
       }
-
-      if (value instanceof Byte)
+      catch (PropertyConversionException e)
       {
-         return ((Byte)value).byteValue();
-      }
-      else if (value instanceof SimpleString)
-      {
-         return Byte.parseByte(((SimpleString)value).toString());
-      }
-      else
-      {
-         throw new MessageFormatException("Invalid conversion");
+         throw new MessageFormatException(e.getMessage());
       }
    }
 
    public short getShortProperty(final String name) throws JMSException
    {
-      Object value = message.getProperty(new SimpleString(name));
-      if (value == null)
+      try
       {
-         throw new NumberFormatException("Message property '" + name + "' not set.");
+         return message.getShortProperty(new SimpleString(name));
       }
-
-      if (value instanceof Byte)
+      catch (PropertyConversionException e)
       {
-         return ((Byte)value).shortValue();
-      }
-      else if (value instanceof Short)
-      {
-         return ((Short)value).shortValue();
-      }
-      else if (value instanceof SimpleString)
-      {
-         return Short.parseShort(((SimpleString)value).toString());
-      }
-      else
-      {
-         throw new MessageFormatException("Invalid conversion");
+         throw new MessageFormatException(e.getMessage());
       }
    }
 
@@ -679,32 +646,13 @@ public class HornetQMessage implements javax.jms.Message
          return message.getDeliveryCount();
       }
 
-      Object value = message.getProperty(new SimpleString(name));
-
-      if (value == null)
+      try
       {
-         return Integer.valueOf(null);
+         return message.getIntProperty(new SimpleString(name));
       }
-
-      if (value instanceof Byte)
+      catch (PropertyConversionException e)
       {
-         return ((Byte)value).intValue();
-      }
-      else if (value instanceof Short)
-      {
-         return ((Short)value).intValue();
-      }
-      else if (value instanceof Integer)
-      {
-         return ((Integer)value).intValue();
-      }
-      else if (value instanceof SimpleString)
-      {
-         return Integer.parseInt(((SimpleString)value).toString());
-      }
-      else
-      {
-         throw new MessageFormatException("Invalid conversion");
+         throw new MessageFormatException(e.getMessage());
       }
    }
 
@@ -715,84 +663,37 @@ public class HornetQMessage implements javax.jms.Message
          return message.getDeliveryCount();
       }
 
-      Object value = message.getProperty(new SimpleString(name));
-
-      if (value == null)
+      try
       {
-         return Long.valueOf(null);
+         return message.getLongProperty(new SimpleString(name));
       }
-
-      if (value instanceof Byte)
+      catch (PropertyConversionException e)
       {
-         return ((Byte)value).longValue();
-      }
-      else if (value instanceof Short)
-      {
-         return ((Short)value).longValue();
-      }
-      else if (value instanceof Integer)
-      {
-         return ((Integer)value).longValue();
-      }
-      else if (value instanceof Long)
-      {
-         return ((Long)value).longValue();
-      }
-      else if (value instanceof SimpleString)
-      {
-         return Long.parseLong(((SimpleString)value).toString());
-      }
-      else
-      {
-         throw new MessageFormatException("Invalid conversion");
+         throw new MessageFormatException(e.getMessage());
       }
    }
 
    public float getFloatProperty(final String name) throws JMSException
    {
-      Object value = message.getProperty(new SimpleString(name));
-      if (value == null)
+      try
       {
-         return Float.valueOf(null).floatValue();
+         return message.getFloatProperty(new SimpleString(name));
       }
-
-      if (value instanceof Float)
+      catch (PropertyConversionException e)
       {
-         return ((Float)value).floatValue();
-      }
-      else if (value instanceof SimpleString)
-      {
-         return Float.parseFloat(((SimpleString)value).toString());
-      }
-      else
-      {
-         throw new MessageFormatException("Invalid conversion");
+         throw new MessageFormatException(e.getMessage());
       }
    }
 
    public double getDoubleProperty(final String name) throws JMSException
    {
-      Object value = message.getProperty(new SimpleString(name));
-      if (value == null)
+      try
       {
-         return Double.valueOf(null).doubleValue();
+         return message.getDoubleProperty(new SimpleString(name));
       }
-
-      if (value instanceof Float)
+      catch (PropertyConversionException e)
       {
-         return ((Float)value).doubleValue();
-      }
-      else if (value instanceof Double)
-      {
-         return ((Double)value).doubleValue();
-      }
-      else if (value instanceof SimpleString)
-      {
-         return Double.parseDouble(((SimpleString)value).toString());
-      }
-      else
-      {
-         throw new MessageFormatException("Invalid conversion");
+         throw new MessageFormatException(e.getMessage());
       }
    }
 
@@ -802,55 +703,21 @@ public class HornetQMessage implements javax.jms.Message
       {
          return String.valueOf(message.getDeliveryCount());
       }
-      Object value;
-      if (JMSXGROUPID.equals(name))
-      {
-         value = message.getProperty(MessageImpl.HDR_GROUP_ID);
-      }
-      else
-      {
-         value = message.getProperty(new SimpleString(name));
-      }
-      if (value == null)
-      {
-         return null;
-      }
 
-      if (value instanceof SimpleString)
+      try
       {
-         return ((SimpleString)value).toString();
+         if (JMSXGROUPID.equals(name))
+         {
+            return message.getStringProperty(MessageImpl.HDR_GROUP_ID);
+         }
+         else
+         {
+            return message.getStringProperty(new SimpleString(name));
+         }
       }
-      else if (value instanceof Boolean)
+      catch (PropertyConversionException e)
       {
-         return value.toString();
-      }
-      else if (value instanceof Byte)
-      {
-         return value.toString();
-      }
-      else if (value instanceof Short)
-      {
-         return value.toString();
-      }
-      else if (value instanceof Integer)
-      {
-         return value.toString();
-      }
-      else if (value instanceof Long)
-      {
-         return value.toString();
-      }
-      else if (value instanceof Float)
-      {
-         return value.toString();
-      }
-      else if (value instanceof Double)
-      {
-         return value.toString();
-      }
-      else
-      {
-         throw new MessageFormatException("Invalid conversion");
+         throw new MessageFormatException(e.getMessage());
       }
    }
 
@@ -892,51 +759,44 @@ public class HornetQMessage implements javax.jms.Message
 
    public void setBooleanProperty(final String name, final boolean value) throws JMSException
    {
-      Boolean b = Boolean.valueOf(value);
-      checkProperty(name, b);
-      message.putBooleanProperty(new SimpleString(name), b);
+      checkProperty(name, value);
+      message.putBooleanProperty(new SimpleString(name), value);
    }
 
    public void setByteProperty(final String name, final byte value) throws JMSException
    {
-      Byte b = new Byte(value);
-      checkProperty(name, b);
+      checkProperty(name, value);
       message.putByteProperty(new SimpleString(name), value);
    }
 
    public void setShortProperty(final String name, final short value) throws JMSException
    {
-      Short s = new Short(value);
-      checkProperty(name, s);
+      checkProperty(name, value);
       message.putShortProperty(new SimpleString(name), value);
    }
 
    public void setIntProperty(final String name, final int value) throws JMSException
    {
-      Integer i = new Integer(value);
-      checkProperty(name, i);
+      checkProperty(name, value);
       message.putIntProperty(new SimpleString(name), value);
    }
 
    public void setLongProperty(final String name, final long value) throws JMSException
    {
-      Long l = new Long(value);
-      checkProperty(name, l);
+      checkProperty(name, value);
       message.putLongProperty(new SimpleString(name), value);
    }
 
    public void setFloatProperty(final String name, final float value) throws JMSException
    {
-      Float f = new Float(value);
-      checkProperty(name, f);
-      message.putFloatProperty(new SimpleString(name), f);
+      checkProperty(name, value);
+      message.putFloatProperty(new SimpleString(name), value);
    }
 
    public void setDoubleProperty(final String name, final double value) throws JMSException
    {
-      Double d = new Double(value);
-      checkProperty(name, d);
-      message.putDoubleProperty(new SimpleString(name), d);
+      checkProperty(name, value);
+      message.putDoubleProperty(new SimpleString(name), value);
    }
 
    public void setStringProperty(final String name, final String value) throws JMSException
@@ -989,43 +849,13 @@ public class HornetQMessage implements javax.jms.Message
          return;
       }
 
-      SimpleString key = new SimpleString(name);
-
-      if (value instanceof Boolean)
+      try
       {
-         message.putBooleanProperty(key, (Boolean)value);
+         message.putObjectProperty(new SimpleString(name), value);
       }
-      else if (value instanceof Byte)
+      catch (PropertyConversionException e)
       {
-         message.putByteProperty(key, (Byte)value);
-      }
-      else if (value instanceof Short)
-      {
-         message.putShortProperty(key, (Short)value);
-      }
-      else if (value instanceof Integer)
-      {
-         message.putIntProperty(key, (Integer)value);
-      }
-      else if (value instanceof Long)
-      {
-         message.putLongProperty(key, (Long)value);
-      }
-      else if (value instanceof Float)
-      {
-         message.putFloatProperty(key, (Float)value);
-      }
-      else if (value instanceof Double)
-      {
-         message.putDoubleProperty(key, (Double)value);
-      }
-      else if (value instanceof String)
-      {
-         message.putStringProperty(key, new SimpleString((String)value));
-      }
-      else
-      {
-         throw new MessageFormatException("Invalid property type");
+         throw new MessageFormatException(e.getMessage());
       }
    }
 

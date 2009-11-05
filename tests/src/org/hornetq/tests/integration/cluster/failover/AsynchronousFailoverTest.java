@@ -260,7 +260,7 @@ public class AsynchronousFailoverTest extends FailoverTestBase
 
             // messages must remain ordered but there could be a "jump" if messages
             // are missing or duplicated
-            int count = (Integer)message.getProperty("counter");
+            int count = (Integer)message.getObjectProperty("counter");
             counts.add(count);
             if (count != lastCount + 1)
             {
@@ -379,7 +379,7 @@ public class AsynchronousFailoverTest extends FailoverTestBase
 
                // There may be some missing or duplicate messages - but the order should be correct
 
-               int count = (Integer)message.getProperty("counter");
+               int count = (Integer)message.getObjectProperty("counter");
 
                assertTrue("count:" + count + " last count:" + lastCount, count >= lastCount);
 

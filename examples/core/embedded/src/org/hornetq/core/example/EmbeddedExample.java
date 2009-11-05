@@ -94,7 +94,7 @@ public class EmbeddedExample
    
             // Step 8. Receive the message. 
             ClientMessage messageReceived = messageConsumer.receive(1000);
-            System.out.println("Received TextMessage:" + messageReceived.getProperty(propName));
+            System.out.println("Received TextMessage:" + messageReceived.getObjectProperty(propName));
          }
          finally
          {
