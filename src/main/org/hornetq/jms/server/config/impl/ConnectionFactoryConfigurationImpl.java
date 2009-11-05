@@ -34,71 +34,71 @@ public class ConnectionFactoryConfigurationImpl implements ConnectionFactoryConf
 
    // Attributes ----------------------------------------------------
 
-   public final String[] bindings;
+   private final String[] bindings;
 
-   public final String name;
+   private final String name;
 
-   public String discoveryAddress;
+   private String discoveryAddress;
 
-   public int discoveryPort;
+   private int discoveryPort;
 
-   public List<Pair<TransportConfiguration, TransportConfiguration>> connectorConfigs;
+   private List<Pair<TransportConfiguration, TransportConfiguration>> connectorConfigs;
 
-   public String clientID = null;
+   private String clientID = null;
 
-   public long discoveryRefreshTimeout = ClientSessionFactoryImpl.DEFAULT_DISCOVERY_REFRESH_TIMEOUT;
+   private long discoveryRefreshTimeout = ClientSessionFactoryImpl.DEFAULT_DISCOVERY_REFRESH_TIMEOUT;
 
-   public long clientFailureCheckPeriod = ClientSessionFactoryImpl.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD;
+   private long clientFailureCheckPeriod = ClientSessionFactoryImpl.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD;
 
-   public long connectionTTL = ClientSessionFactoryImpl.DEFAULT_CONNECTION_TTL;
+   private long connectionTTL = ClientSessionFactoryImpl.DEFAULT_CONNECTION_TTL;
 
-   public long callTimeout = ClientSessionFactoryImpl.DEFAULT_CALL_TIMEOUT;
+   private long callTimeout = ClientSessionFactoryImpl.DEFAULT_CALL_TIMEOUT;
 
-   public boolean cacheLargeMessagesClient = ClientSessionFactoryImpl.DEFAULT_CACHE_LARGE_MESSAGE_CLIENT;
+   private boolean cacheLargeMessagesClient = ClientSessionFactoryImpl.DEFAULT_CACHE_LARGE_MESSAGE_CLIENT;
 
-   public int minLargeMessageSize = ClientSessionFactoryImpl.DEFAULT_MIN_LARGE_MESSAGE_SIZE;
+   private int minLargeMessageSize = ClientSessionFactoryImpl.DEFAULT_MIN_LARGE_MESSAGE_SIZE;
 
-   public int consumerWindowSize = ClientSessionFactoryImpl.DEFAULT_CONSUMER_WINDOW_SIZE;
+   private int consumerWindowSize = ClientSessionFactoryImpl.DEFAULT_CONSUMER_WINDOW_SIZE;
 
-   public int consumerMaxRate = ClientSessionFactoryImpl.DEFAULT_CONSUMER_MAX_RATE;
+   private int consumerMaxRate = ClientSessionFactoryImpl.DEFAULT_CONSUMER_MAX_RATE;
 
-   public int confirmationWindowSize = ClientSessionFactoryImpl.DEFAULT_CONFIRMATION_WINDOW_SIZE;
+   private int confirmationWindowSize = ClientSessionFactoryImpl.DEFAULT_CONFIRMATION_WINDOW_SIZE;
 
-   public int producerMaxRate = ClientSessionFactoryImpl.DEFAULT_PRODUCER_MAX_RATE;
+   private int producerMaxRate = ClientSessionFactoryImpl.DEFAULT_PRODUCER_MAX_RATE;
 
-   public boolean blockOnAcknowledge = ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_ACKNOWLEDGE;
+   private boolean blockOnAcknowledge = ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_ACKNOWLEDGE;
 
-   public boolean blockOnPersistentSend = ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_PERSISTENT_SEND;
+   private boolean blockOnPersistentSend = ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_PERSISTENT_SEND;
 
-   public boolean blockOnNonPersistentSend = ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND;
+   private boolean blockOnNonPersistentSend = ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND;
 
-   public boolean autoGroup = ClientSessionFactoryImpl.DEFAULT_AUTO_GROUP;
+   private boolean autoGroup = ClientSessionFactoryImpl.DEFAULT_AUTO_GROUP;
 
-   public boolean preAcknowledge = ClientSessionFactoryImpl.DEFAULT_PRE_ACKNOWLEDGE;
+   private boolean preAcknowledge = ClientSessionFactoryImpl.DEFAULT_PRE_ACKNOWLEDGE;
 
-   public String loadBalancingPolicyClassName = ClientSessionFactoryImpl.DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME;
+   private String loadBalancingPolicyClassName = ClientSessionFactoryImpl.DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME;
 
-   public int transactionBatchSize = ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE;
+   private int transactionBatchSize = ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE;
 
-   public int dupsOKBatchSize = ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE;
+   private int dupsOKBatchSize = ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE;
 
-   public long initialWaitTimeout = ClientSessionFactoryImpl.DEFAULT_DISCOVERY_INITIAL_WAIT_TIMEOUT;
+   private long initialWaitTimeout = ClientSessionFactoryImpl.DEFAULT_DISCOVERY_INITIAL_WAIT_TIMEOUT;
 
-   public boolean useGlobalPools = ClientSessionFactoryImpl.DEFAULT_USE_GLOBAL_POOLS;
+   private boolean useGlobalPools = ClientSessionFactoryImpl.DEFAULT_USE_GLOBAL_POOLS;
 
-   public int scheduledThreadPoolMaxSize = ClientSessionFactoryImpl.DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE;
+   private int scheduledThreadPoolMaxSize = ClientSessionFactoryImpl.DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE;
 
-   public int threadPoolMaxSize = ClientSessionFactoryImpl.DEFAULT_THREAD_POOL_MAX_SIZE;
+   private int threadPoolMaxSize = ClientSessionFactoryImpl.DEFAULT_THREAD_POOL_MAX_SIZE;
    
-   public long retryInterval = ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL;
+   private long retryInterval = ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL;
 
-   public double retryIntervalMultiplier = ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL_MULTIPLIER;
+   private double retryIntervalMultiplier = ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL_MULTIPLIER;
 
-   public long maxRetryInterval = ClientSessionFactoryImpl.DEFAULT_MAX_RETRY_INTERVAL;
+   private long maxRetryInterval = ClientSessionFactoryImpl.DEFAULT_MAX_RETRY_INTERVAL;
 
-   public int reconnectAttempts = ClientSessionFactoryImpl.DEFAULT_RECONNECT_ATTEMPTS;
+   private int reconnectAttempts = ClientSessionFactoryImpl.DEFAULT_RECONNECT_ATTEMPTS;
 
-   public boolean failoverOnServerShutdown = ClientSessionFactoryImpl.DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN;
+   private boolean failoverOnServerShutdown = ClientSessionFactoryImpl.DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN;
 
    // Static --------------------------------------------------------
 
