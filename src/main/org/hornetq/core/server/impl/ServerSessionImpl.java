@@ -1478,7 +1478,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
       {
          try
          {
-            releaseOutStanding(message);
+            releaseOutStanding(message, message.getEncodeSize());
          }
          catch (Exception e)
          {
@@ -1499,20 +1499,23 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
          {
             throw new HornetQException(HornetQException.ILLEGAL_STATE, "large-message not initialized on server");
          }
-
+         
+         //Immediately release the credits for the continuations- these don't contrinute to the in-memory size
+         //of the message
+         
+         releaseOutStanding(currentLargeMessage, packet.getRequiredBufferSize());
+         
          currentLargeMessage.addBytes(packet.getBody());
 
          if (!packet.isContinues())
-         {
-            final LargeServerMessage message = currentLargeMessage;
+         {                        
+            currentLargeMessage.releaseResources();
 
+            send(currentLargeMessage);
+
+            releaseOutStanding(currentLargeMessage, currentLargeMessage.getEncodeSize());
+            
             currentLargeMessage = null;
-
-            message.releaseResources();
-
-            send(message);
-
-            releaseOutStanding(message);
          }
 
          if (packet.isRequiresResponse())
@@ -1910,17 +1913,15 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
     * returned. When a session closes any outstanding credits will be returned.
     * 
     */
-   private void releaseOutStanding(final ServerMessage message) throws Exception
+   private void releaseOutStanding(final ServerMessage message, final int credits) throws Exception
    {
       CreditManagerHolder holder = getCreditManagerHolder(message.getDestination());
 
-      int size = message.getEncodeSize();
+      holder.outstandingCredits -= credits;
 
-      holder.outstandingCredits -= size;
-
-      holder.store.returnProducerCredits(size);
+      holder.store.returnProducerCredits(credits);
    }
-
+   
    private void send(final ServerMessage msg) throws Exception
    {
       // check the user has write access to this address.

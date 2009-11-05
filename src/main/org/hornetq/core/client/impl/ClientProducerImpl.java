@@ -22,8 +22,8 @@ import java.nio.ByteBuffer;
 import org.hornetq.core.buffers.ChannelBuffers;
 import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.logging.Logger;
-import org.hornetq.core.message.Message;
 import org.hornetq.core.message.LargeMessageEncodingContext;
+import org.hornetq.core.message.Message;
 import org.hornetq.core.message.impl.MessageImpl;
 import org.hornetq.core.remoting.Channel;
 import org.hornetq.core.remoting.impl.wireformat.SessionSendContinuationMessage;
@@ -250,7 +250,7 @@ public class ClientProducerImpl implements ClientProducerInternal
 
       if (isLarge)
       {
-         largeMessageSend(sendBlocking, msg);
+         largeMessageSend(sendBlocking, msg, theCredits);
       }
       else if (sendBlocking)
       {
@@ -269,13 +269,7 @@ public class ClientProducerImpl implements ClientProducerInternal
          // Not the continuations, but this is ok since we are only interested in limiting the amount of
          // data in *memory* and continuations go straight to the disk
 
-         if (isLarge)
-         {
-            // TODO this is pretty hacky - we should define consistent meanings of encode size
-
-            theCredits.acquireCredits(msg.getHeadersAndPropertiesEncodeSize());
-         }
-         else
+         if (!isLarge)
          {
             theCredits.acquireCredits(msg.getEncodeSize());
          }
@@ -292,15 +286,14 @@ public class ClientProducerImpl implements ClientProducerInternal
          throw new HornetQException(HornetQException.OBJECT_CLOSED, "Producer is closed");
       }
    }
-   
-   
+
    // Methods to send Large Messages----------------------------------------------------------------
-   
+
    /**
     * @param msg
     * @throws HornetQException
     */
-   private void largeMessageSend(final boolean sendBlocking, final Message msg) throws HornetQException
+   private void largeMessageSend(final boolean sendBlocking, final Message msg, final ClientProducerCredits credits) throws HornetQException
    {
       int headerSize = msg.getHeadersAndPropertiesEncodeSize();
 
@@ -323,15 +316,23 @@ public class ClientProducerImpl implements ClientProducerInternal
 
       channel.send(initialChunk);
 
+      try
+      {
+         credits.acquireCredits(msg.getHeadersAndPropertiesEncodeSize());
+      }
+      catch (InterruptedException e)
+      {
+      }
+
       InputStream input = msg.getBodyInputStream();
 
       if (input != null)
       {
-         largeMessageSendStreamed(sendBlocking, input);
+         largeMessageSendStreamed(sendBlocking, input, credits);
       }
       else
       {
-         largeMessageSendBuffered(sendBlocking, msg);
+         largeMessageSendBuffered(sendBlocking, msg, credits);
       }
    }
 
@@ -340,7 +341,9 @@ public class ClientProducerImpl implements ClientProducerInternal
     * @param msg
     * @throws HornetQException
     */
-   private void largeMessageSendBuffered(final boolean sendBlocking, final Message msg) throws HornetQException
+   private void largeMessageSendBuffered(final boolean sendBlocking,
+                                         final Message msg,
+                                         final ClientProducerCredits credits) throws HornetQException
    {
       final long bodySize = msg.getLargeBodySize();
 
@@ -373,6 +376,14 @@ public class ClientProducerImpl implements ClientProducerInternal
          {
             channel.send(chunk);
          }
+
+         try
+         {
+            credits.acquireCredits(chunk.getRequiredBufferSize());
+         }
+         catch (InterruptedException e)
+         {
+         }
       }
    }
 
@@ -381,7 +392,9 @@ public class ClientProducerImpl implements ClientProducerInternal
     * @param input
     * @throws HornetQException
     */
-   private void largeMessageSendStreamed(final boolean sendBlocking, InputStream input) throws HornetQException
+   private void largeMessageSendStreamed(final boolean sendBlocking,
+                                         final InputStream input,
+                                         final ClientProducerCredits credits) throws HornetQException
    {
       boolean lastPacket = false;
 
@@ -441,6 +454,14 @@ public class ClientProducerImpl implements ClientProducerInternal
          {
             channel.send(chunk);
          }
+
+         try
+         {
+            credits.acquireCredits(chunk.getRequiredBufferSize());
+         }
+         catch (InterruptedException e)
+         {
+         }
       }
 
       try
@@ -454,8 +475,6 @@ public class ClientProducerImpl implements ClientProducerInternal
                                     e);
       }
    }
-
-
 
    // Inner Classes --------------------------------------------------------------------------------
    class DecodingContext implements LargeMessageEncodingContext
