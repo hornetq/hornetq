@@ -29,13 +29,13 @@ import org.hornetq.core.logging.Logger;
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */
-public class RealJournalImplAIOTest extends JournalImplTestUnit
+public class AIOJournalImplTest extends JournalImplTestUnit
 {
-   private static final Logger log = Logger.getLogger(RealJournalImplAIOTest.class);
+   private static final Logger log = Logger.getLogger(AIOJournalImplTest.class);
 
    public static TestSuite suite()
    {
-      return createAIOTestSuite(RealJournalImplAIOTest.class);
+      return createAIOTestSuite(AIOJournalImplTest.class);
    }
 
    @Override
