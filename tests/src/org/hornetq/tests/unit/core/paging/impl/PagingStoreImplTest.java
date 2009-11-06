@@ -167,12 +167,8 @@ public class PagingStoreImplTest extends UnitTestCase
 
    public void testPageWithNIO() throws Exception
    {
-      // This integration test could fail 1 in 100 due to race conditions.
-      for (int i = 0; i < 100; i++)
-      {
-         recreateDirectory(getTestDir());
-         testConcurrentPaging(new NIOSequentialFileFactory(getTestDir()), 1);
-      }
+      recreateDirectory(getTestDir());
+      testConcurrentPaging(new NIOSequentialFileFactory(getTestDir()), 1);
    }
 
    public void testStore() throws Exception
@@ -495,9 +491,9 @@ public class PagingStoreImplTest extends UnitTestCase
                   long id = messageIdGenerator.incrementAndGet();
 
                   // Each thread will Keep paging until all the messages are depaged.
-                  // This is possible because the depage thread is not actually reading the pages. 
+                  // This is possible because the depage thread is not actually reading the pages.
                   // Just using the internal API to remove it from the page file system
-                  ServerMessage msg = createMessage(storeImpl, destination, createRandomBuffer(id, 5));  
+                  ServerMessage msg = createMessage(storeImpl, destination, createRandomBuffer(id, 5));
                   if (storeImpl.page(msg, false))
                   {
                      buffers.put(id, msg);
@@ -538,7 +534,7 @@ public class PagingStoreImplTest extends UnitTestCase
             {
                // Wait every producer to produce at least one message
                latchStart.await();
-               
+
                while (aliveProducers.get() > 0)
                {
                   Page page = storeImpl.depage();
@@ -614,7 +610,8 @@ public class PagingStoreImplTest extends UnitTestCase
       {
          SequentialFile fileTmp = factory.createSequentialFile(file, 1);
          fileTmp.open();
-         assertTrue("The page file size (" + fileTmp.size() + ") shouldn't be > " + MAX_SIZE, fileTmp.size() <= MAX_SIZE);
+         assertTrue("The page file size (" + fileTmp.size() + ") shouldn't be > " + MAX_SIZE,
+                    fileTmp.size() <= MAX_SIZE);
          fileTmp.close();
       }
 
@@ -705,12 +702,14 @@ public class PagingStoreImplTest extends UnitTestCase
       return new FakePostOffice();
    }
 
-   private ServerMessage createMessage(final PagingStore store, final SimpleString destination, final HornetQBuffer buffer)
+   private ServerMessage createMessage(final PagingStore store,
+                                       final SimpleString destination,
+                                       final HornetQBuffer buffer)
    {
       ServerMessage msg = new ServerMessageImpl((byte)1, true, 0, System.currentTimeMillis(), (byte)0, buffer);
 
       msg.setDestination(destination);
-      
+
       msg.setPagingStore(store);
 
       return msg;
