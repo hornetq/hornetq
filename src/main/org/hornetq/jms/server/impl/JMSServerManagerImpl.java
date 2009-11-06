@@ -49,6 +49,14 @@ import org.hornetq.utils.Pair;
 /**
  * A Deployer used to create and add to JNDI queues, topics and connection
  * factories. Typically this would only be used in an app server env.
+ * 
+ * JMS Connection Factories & Destinations can be configured either
+ * using configuration files or using a JMSConfiguration object.
+ * 
+ * If configuration files are used, JMS resources are redeployed if the
+ * files content is changed.
+ * If a JMSConfiguration object is used, the JMS resources can not be
+ * redeployed.
  *
  * @author <a href="ataylor@redhat.com">Andy Taylor</a>
  * @author <a href="jmesnil@redhat.com">Jeff Mesnil</a>
@@ -124,18 +132,22 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
       {
          jmsManagementService.registerJMSServer(this);
 
-         jmsDeployer = new JMSServerDeployer(this, deploymentManager, server.getConfiguration());
-
+         // start the JMS deployer only if the configuration is using configuration files
          if (configFileName != null)
          {
+            jmsDeployer = new JMSServerDeployer(this, deploymentManager, server.getConfiguration());
+
             jmsDeployer.setConfigFileNames(new String[] { configFileName });
+
+            jmsDeployer.start();
+
+            deploymentManager.start();
          }
 
-         jmsDeployer.start();
-
-         deploymentManager.start();
-
-         deploy();
+         if (config != null)
+         {
+            deploy();
+         }         
       }
       catch (Exception e)
       {
@@ -157,8 +169,11 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
          context = new InitialContext();
       }
 
-      deploymentManager = new FileDeploymentManager(server.getConfiguration().getFileDeployerScanPeriod());
-
+      if (configFileName != null)
+      {
+         deploymentManager = new FileDeploymentManager(server.getConfiguration().getFileDeployerScanPeriod());
+      }
+      
       server.registerActivateCallback(this);
       
       server.start();
@@ -178,7 +193,10 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
          jmsDeployer.stop();
       }
 
-      deploymentManager.stop();
+      if (deploymentManager != null)
+      {
+         deploymentManager.stop();
+      }
 
       for (String destination : destinations.keySet())
       {
