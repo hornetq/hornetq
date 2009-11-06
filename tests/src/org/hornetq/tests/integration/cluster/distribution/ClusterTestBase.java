@@ -88,6 +88,14 @@ public class ClusterTestBase extends ServiceTestBase
       checkFreePort(PORTS);
 
       clearData();
+      
+      consumers = new ConsumerHolder[MAX_CONSUMERS];
+
+      servers = new HornetQServer[MAX_SERVERS];
+
+      sfs = new ClientSessionFactory[MAX_SERVERS];
+
+      
    }
 
    @Override
@@ -124,17 +132,17 @@ public class ClusterTestBase extends ServiceTestBase
       }
    }
 
-   private ConsumerHolder[] consumers = new ConsumerHolder[MAX_CONSUMERS];
-
    private static final SimpleString COUNT_PROP = new SimpleString("count_prop");
 
    protected static final SimpleString FILTER_PROP = new SimpleString("animal");
 
    private static final int MAX_SERVERS = 10;
 
-   protected HornetQServer[] servers = new HornetQServer[MAX_SERVERS];
+   private ConsumerHolder[] consumers;
 
-   protected ClientSessionFactory[] sfs = new ClientSessionFactory[MAX_SERVERS];
+   protected HornetQServer[] servers;
+
+   protected ClientSessionFactory[] sfs;
 
    protected void waitForMessages(int node, final String address, final int count) throws Exception
    {
