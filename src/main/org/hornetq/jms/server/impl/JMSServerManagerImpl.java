@@ -132,19 +132,21 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
       {
          jmsManagementService.registerJMSServer(this);
 
-         // start the JMS deployer only if the configuration is using configuration files
-         if (configFileName != null)
+         // start the JMS deployer only if the configuration is not done using the JMSConfiguration object 
+         if (config == null)
          {
             jmsDeployer = new JMSServerDeployer(this, deploymentManager, server.getConfiguration());
 
-            jmsDeployer.setConfigFileNames(new String[] { configFileName });
+            if (configFileName != null)
+            {
+               jmsDeployer.setConfigFileNames(new String[] { configFileName });
+            }
 
             jmsDeployer.start();
 
             deploymentManager.start();
-         }
-
-         if (config != null)
+         } 
+         else
          {
             deploy();
          }         
@@ -169,10 +171,7 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
          context = new InitialContext();
       }
 
-      if (configFileName != null)
-      {
-         deploymentManager = new FileDeploymentManager(server.getConfiguration().getFileDeployerScanPeriod());
-      }
+      deploymentManager = new FileDeploymentManager(server.getConfiguration().getFileDeployerScanPeriod());
       
       server.registerActivateCallback(this);
       
