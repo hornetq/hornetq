@@ -58,28 +58,22 @@ public class PagingFailoverTest extends FailoverTestBase
    // Constructors --------------------------------------------------
 
    // Public --------------------------------------------------------
-
+   
    public void testPage() throws Exception
    {
-      internalTestPagedTransacted(false, false);
+      internalTestPage(false);
    }
    
-
-   public void testPageTransactioned() throws Exception
+   public void testPageFailBeforeconsume() throws Exception
    {
-      internalTestPagedTransacted(true, false);
+      internalTestPage(true);
    }
    
-   public void testPageTransactionedFailBeforeconsume() throws Exception
-   {
-      internalTestPagedTransacted(true, true);
-   }
-   
-   public void internalTestPagedTransacted(final boolean transacted, final boolean failBeforeConsume) throws Exception
+   public void internalTestPage(final boolean failBeforeConsume) throws Exception
    {
       ClientSessionFactoryInternal factory = getSessionFactory();
       factory.setBlockOnPersistentSend(true);
-      ClientSession session = factory.createSession(!transacted, !transacted, 0);
+      ClientSession session = factory.createSession(true, true, 0);
 
       try
       {
@@ -109,7 +103,7 @@ public class PagingFailoverTest extends FailoverTestBase
 
          for (int i = 0; i < TOTAL_MESSAGES; i++)
          {
-            if (transacted && i % 10 == 0)
+            if (i % 10 == 0)
             {
                session.commit();
             }
@@ -126,7 +120,6 @@ public class PagingFailoverTest extends FailoverTestBase
             failSession(session, latch);
          }
 
-
          session.start();
 
          ClientConsumer cons = session.createConsumer(ADDRESS);
@@ -138,7 +131,7 @@ public class PagingFailoverTest extends FailoverTestBase
             ClientMessage msg = cons.receive(20000);
             assertNotNull(msg);
             msg.acknowledge();
-            if (transacted && i % 10 == 0)
+            if (i % 10 == 0)
             {
                session.commit();
             }
@@ -252,5 +245,4 @@ public class PagingFailoverTest extends FailoverTestBase
    // Private -------------------------------------------------------
 
    // Inner classes -------------------------------------------------
-
 }
