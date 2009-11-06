@@ -290,7 +290,7 @@ public abstract class LargeMessageTestBase extends ServiceTestBase
                      {
                         if (delayDelivery > 0)
                         {
-                           long originalTime = (Long)message.getProperty(new SimpleString("original-time"));
+                           long originalTime = (Long)message.getObjectProperty(new SimpleString("original-time"));
                            assertTrue(System.currentTimeMillis() - originalTime + "<" + delayDelivery,
                                       System.currentTimeMillis() - originalTime >= delayDelivery);
                         }
@@ -308,7 +308,7 @@ public abstract class LargeMessageTestBase extends ServiceTestBase
                            // the same
                            // scheduled delivery time
                            assertEquals(msgCounter,
-                                        ((Integer)message.getProperty(new SimpleString("counter-message"))).intValue());
+                                        ((Integer)message.getObjectProperty(new SimpleString("counter-message"))).intValue());
                         }
 
                         if (useStreamOnConsume)
@@ -403,7 +403,7 @@ public abstract class LargeMessageTestBase extends ServiceTestBase
 
                   if (delayDelivery > 0)
                   {
-                     long originalTime = (Long)message.getProperty(new SimpleString("original-time"));
+                     long originalTime = (Long)message.getObjectProperty(new SimpleString("original-time"));
                      assertTrue(System.currentTimeMillis() - originalTime + "<" + delayDelivery,
                                 System.currentTimeMillis() - originalTime >= delayDelivery);
                   }
@@ -419,7 +419,7 @@ public abstract class LargeMessageTestBase extends ServiceTestBase
                   {
                      // right now there is no guarantee of ordered delivered on multiple scheduledMessages with the same
                      // scheduled delivery time
-                     assertEquals(i, ((Integer)message.getProperty(new SimpleString("counter-message"))).intValue());
+                     assertEquals(i, ((Integer)message.getObjectProperty(new SimpleString("counter-message"))).intValue());
                   }
 
                   HornetQBuffer buffer = message.getBody();

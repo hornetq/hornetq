@@ -80,7 +80,7 @@ public class RequestorTest extends UnitTestCase
 
       ClientMessage reply = requestor.request(request, 500);
       assertNotNull("reply was not received", reply);
-      assertEquals(value, reply.getProperty(key));
+      assertEquals(value, reply.getObjectProperty(key));
 
       session.close();
    }
@@ -108,14 +108,14 @@ public class RequestorTest extends UnitTestCase
 
       ClientMessage reply = requestor.request(request, 500);
       assertNotNull("reply was not received", reply);
-      assertEquals(value, reply.getProperty(key));
+      assertEquals(value, reply.getObjectProperty(key));
 
       request = session.createClientMessage(false);
       request.putLongProperty(key, value + 1);
 
       reply = requestor.request(request, 500);
       assertNotNull("reply was not received", reply);
-      assertEquals(value + 1, reply.getProperty(key));
+      assertEquals(value + 1, reply.getObjectProperty(key));
 
       session.close();
    }
@@ -191,7 +191,7 @@ public class RequestorTest extends UnitTestCase
 
       ClientMessage reply = requestor.request(request, 500);
       assertNotNull("reply was not received", reply);
-      assertEquals(value, reply.getProperty(key));
+      assertEquals(value, reply.getObjectProperty(key));
 
       request = session.createClientMessage(false);
       request.putLongProperty(key, value + 1);
@@ -260,8 +260,8 @@ public class RequestorTest extends UnitTestCase
          try
          {
             ClientMessage reply = session.createClientMessage(false);
-            SimpleString replyTo = (SimpleString)request.getProperty(ClientMessageImpl.REPLYTO_HEADER_NAME);
-            long value = (Long)request.getProperty(key);
+            SimpleString replyTo = (SimpleString)request.getObjectProperty(ClientMessageImpl.REPLYTO_HEADER_NAME);
+            long value = (Long)request.getObjectProperty(key);
             reply.putLongProperty(key, value);
             ClientProducer replyProducer = session.createProducer(replyTo);
             replyProducer.send(reply);

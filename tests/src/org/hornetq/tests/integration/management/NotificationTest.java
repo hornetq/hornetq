@@ -77,9 +77,9 @@ public class NotificationTest extends UnitTestCase
       session.createQueue(address, queue, durable);
 
       ClientMessage[] notifications = consumeMessages(1, notifConsumer);
-      assertEquals(BINDING_ADDED.toString(), notifications[0].getProperty(HDR_NOTIFICATION_TYPE).toString());
-      assertEquals(queue.toString(), notifications[0].getProperty(HDR_ROUTING_NAME).toString());
-      assertEquals(address.toString(), notifications[0].getProperty(HDR_ADDRESS).toString());
+      assertEquals(BINDING_ADDED.toString(), notifications[0].getObjectProperty(HDR_NOTIFICATION_TYPE).toString());
+      assertEquals(queue.toString(), notifications[0].getObjectProperty(HDR_ROUTING_NAME).toString());
+      assertEquals(address.toString(), notifications[0].getObjectProperty(HDR_ADDRESS).toString());
 
       session.deleteQueue(queue);
    }
@@ -98,9 +98,9 @@ public class NotificationTest extends UnitTestCase
       session.createQueue(address, queue, durable);
 
       ClientMessage[] notifications = consumeMessages(1, notifConsumer);
-      assertEquals(BINDING_ADDED.toString(), notifications[0].getProperty(HDR_NOTIFICATION_TYPE).toString());
-      assertEquals(queue.toString(), notifications[0].getProperty(HDR_ROUTING_NAME).toString());
-      assertEquals(address.toString(), notifications[0].getProperty(HDR_ADDRESS).toString());
+      assertEquals(BINDING_ADDED.toString(), notifications[0].getObjectProperty(HDR_NOTIFICATION_TYPE).toString());
+      assertEquals(queue.toString(), notifications[0].getObjectProperty(HDR_ROUTING_NAME).toString());
+      assertEquals(address.toString(), notifications[0].getObjectProperty(HDR_ADDRESS).toString());
 
       session.deleteQueue(queue);
    }
@@ -136,9 +136,9 @@ public class NotificationTest extends UnitTestCase
       session.deleteQueue(queue);
 
       ClientMessage[] notifications = consumeMessages(1, notifConsumer);
-      assertEquals(BINDING_REMOVED.toString(), notifications[0].getProperty(HDR_NOTIFICATION_TYPE).toString());
-      assertEquals(queue.toString(), notifications[0].getProperty(HDR_ROUTING_NAME).toString());
-      assertEquals(address.toString(), notifications[0].getProperty(HDR_ADDRESS).toString());
+      assertEquals(BINDING_REMOVED.toString(), notifications[0].getObjectProperty(HDR_NOTIFICATION_TYPE).toString());
+      assertEquals(queue.toString(), notifications[0].getObjectProperty(HDR_ROUTING_NAME).toString());
+      assertEquals(address.toString(), notifications[0].getObjectProperty(HDR_ADDRESS).toString());
    }
    
    public void testCONSUMER_CREATED() throws Exception
@@ -154,10 +154,10 @@ public class NotificationTest extends UnitTestCase
       ClientConsumer consumer = session.createConsumer(queue);
       
       ClientMessage[] notifications = consumeMessages(1, notifConsumer);
-      assertEquals(CONSUMER_CREATED.toString(), notifications[0].getProperty(HDR_NOTIFICATION_TYPE).toString());
-      assertEquals(queue.toString(), notifications[0].getProperty(HDR_ROUTING_NAME).toString());
-      assertEquals(address.toString(), notifications[0].getProperty(HDR_ADDRESS).toString());
-      assertEquals(1, notifications[0].getProperty(HDR_CONSUMER_COUNT));
+      assertEquals(CONSUMER_CREATED.toString(), notifications[0].getObjectProperty(HDR_NOTIFICATION_TYPE).toString());
+      assertEquals(queue.toString(), notifications[0].getObjectProperty(HDR_ROUTING_NAME).toString());
+      assertEquals(address.toString(), notifications[0].getObjectProperty(HDR_ADDRESS).toString());
+      assertEquals(1, notifications[0].getObjectProperty(HDR_CONSUMER_COUNT));
 
       consumer.close();
       session.deleteQueue(queue);
@@ -177,10 +177,10 @@ public class NotificationTest extends UnitTestCase
       consumer.close();
       
       ClientMessage[] notifications = consumeMessages(1, notifConsumer);
-      assertEquals(CONSUMER_CLOSED.toString(), notifications[0].getProperty(HDR_NOTIFICATION_TYPE).toString());
-      assertEquals(queue.toString(), notifications[0].getProperty(HDR_ROUTING_NAME).toString());
-      assertEquals(address.toString(), notifications[0].getProperty(HDR_ADDRESS).toString());
-      assertEquals(0, notifications[0].getProperty(HDR_CONSUMER_COUNT));
+      assertEquals(CONSUMER_CLOSED.toString(), notifications[0].getObjectProperty(HDR_NOTIFICATION_TYPE).toString());
+      assertEquals(queue.toString(), notifications[0].getObjectProperty(HDR_ROUTING_NAME).toString());
+      assertEquals(address.toString(), notifications[0].getObjectProperty(HDR_ADDRESS).toString());
+      assertEquals(0, notifications[0].getObjectProperty(HDR_CONSUMER_COUNT));
 
       session.deleteQueue(queue);
    }
@@ -252,7 +252,7 @@ public class NotificationTest extends UnitTestCase
          {
             for (SimpleString key : m.getPropertyNames())
             {
-               System.out.println(key + "=" + m.getProperty(key));
+               System.out.println(key + "=" + m.getObjectProperty(key));
             }    
          }
          assertNotNull("expected to received " + expected + " messages, got only " + i, m);
@@ -265,7 +265,7 @@ public class NotificationTest extends UnitTestCase
          for (SimpleString key : m.getPropertyNames())
 
          {
-            System.out.println(key + "=" + m.getProperty(key));
+            System.out.println(key + "=" + m.getObjectProperty(key));
          }
       }    
       assertNull("received one more message than expected (" + expected + ")", m);

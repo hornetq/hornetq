@@ -208,11 +208,11 @@ public class ServerMessageImpl extends MessageImpl implements ServerMessage
 
    public void setOriginalHeaders(final ServerMessage other, final boolean expiry)
    {
-      if (other.getProperty(HDR_ORIG_MESSAGE_ID) != null)
+      if (other.containsProperty(HDR_ORIG_MESSAGE_ID))
       {
-         putStringProperty(HDR_ORIGINAL_DESTINATION, (SimpleString)other.getProperty(HDR_ORIGINAL_DESTINATION));
+         putStringProperty(HDR_ORIGINAL_DESTINATION, other.getSimpleStringProperty(HDR_ORIGINAL_DESTINATION));
 
-         putLongProperty(HDR_ORIG_MESSAGE_ID, (Long)other.getProperty(HDR_ORIG_MESSAGE_ID));
+         putLongProperty(HDR_ORIG_MESSAGE_ID, other.getLongProperty(HDR_ORIG_MESSAGE_ID));
       }
       else
       {

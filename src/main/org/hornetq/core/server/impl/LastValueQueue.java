@@ -70,7 +70,7 @@ public class LastValueQueue extends QueueImpl
    @Override
    public synchronized void add(final MessageReference ref, final boolean first)
    {
-      SimpleString prop = (SimpleString)ref.getMessage().getProperty(MessageImpl.HDR_LAST_VALUE_NAME);
+      SimpleString prop = ref.getMessage().getSimpleStringProperty(MessageImpl.HDR_LAST_VALUE_NAME);
 
       if (prop != null)
       {

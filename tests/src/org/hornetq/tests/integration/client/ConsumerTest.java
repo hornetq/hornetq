@@ -365,7 +365,7 @@ public class ConsumerTest extends ServiceTestBase
       {
          ClientMessage message = (ClientMessage)consumer.receive();
 
-         int count = (Integer)message.getObjectProperty("count");
+         int count = message.getIntProperty("count");
 
          boolean redelivered = message.getDeliveryCount() > 1;
 
@@ -425,7 +425,7 @@ public class ConsumerTest extends ServiceTestBase
       {
          ClientMessage message = (ClientMessage)consumer.receive();
 
-         int count = (Integer)message.getObjectProperty("count");
+         int count = message.getIntProperty("count");
 
          boolean redelivered = message.getDeliveryCount() > 1;
 

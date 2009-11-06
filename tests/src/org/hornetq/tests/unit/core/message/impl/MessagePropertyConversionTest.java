@@ -329,14 +329,7 @@ public class MessagePropertyConversionTest extends TestCase
       {
       }
 
-      try
-      {
-         msg.getBytesProperty(unknownKey);
-         fail();
-      }
-      catch (Exception e)
-      {
-      }
+      assertNull(msg.getBytesProperty(unknownKey));
    }
 
    // Package protected ---------------------------------------------

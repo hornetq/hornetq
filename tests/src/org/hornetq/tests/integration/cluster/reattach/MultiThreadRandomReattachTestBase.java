@@ -1377,8 +1377,8 @@ public abstract class MultiThreadRandomReattachTestBase extends MultiThreadReatt
 
             assertNotNull(msg);
 
-            int tn = (Integer)msg.getProperty(new SimpleString("threadnum"));
-            int cnt = (Integer)msg.getProperty(new SimpleString("count"));
+            int tn = (Integer)msg.getObjectProperty(new SimpleString("threadnum"));
+            int cnt = (Integer)msg.getObjectProperty(new SimpleString("count"));
 
             Integer c = consumerCounts.get(tn);
             if (c == null)
@@ -1456,8 +1456,8 @@ public abstract class MultiThreadRandomReattachTestBase extends MultiThreadReatt
             return;
          }
 
-         int threadNum = (Integer)message.getProperty(new SimpleString("threadnum"));
-         int cnt = (Integer)message.getProperty(new SimpleString("count"));
+         int threadNum = (Integer)message.getObjectProperty(new SimpleString("threadnum"));
+         int cnt = (Integer)message.getObjectProperty(new SimpleString("count"));
 
          Integer c = counts.get(threadNum);
          if (c == null)

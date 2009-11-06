@@ -142,7 +142,7 @@ public class PagingFailoverTest extends FailoverTestBase
             {
                session.commit();
             }
-            assertEquals((Integer)i, (Integer)msg.getProperty(new SimpleString("key")));
+            assertEquals((Integer)i, (Integer)msg.getObjectProperty(new SimpleString("key")));
          }
 
          session.commit();
@@ -166,7 +166,7 @@ public class PagingFailoverTest extends FailoverTestBase
             assertNotNull(msg);
 
             msg.acknowledge();
-            int result = (Integer)msg.getProperty(new SimpleString("key"));
+            int result = (Integer)msg.getObjectProperty(new SimpleString("key"));
             assertEquals(i, result);
          }
       }

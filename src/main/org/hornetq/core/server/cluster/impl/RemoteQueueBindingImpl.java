@@ -179,7 +179,7 @@ public class RemoteQueueBindingImpl implements RemoteQueueBinding
    
    public void route(final ServerMessage message, final RoutingContext context)
    {
-      byte[] ids = (byte[])message.getProperty(idsHeaderName);
+      byte[] ids = message.getBytesProperty(idsHeaderName);
       
       if (ids == null)
       {

@@ -338,7 +338,7 @@ public class HornetQMessage implements javax.jms.Message
    {
       if (msgID == null)
       {
-         SimpleString id = (SimpleString)message.getProperty(HORNETQ_MESSAGE_ID);
+         SimpleString id = message.getSimpleStringProperty(HORNETQ_MESSAGE_ID);
 
          msgID = id == null ? null : id.toString();
       }
@@ -374,7 +374,7 @@ public class HornetQMessage implements javax.jms.Message
 
    public byte[] getJMSCorrelationIDAsBytes() throws JMSException
    {
-      Object obj = message.getProperty(CORRELATIONID_HEADER_NAME);
+      Object obj = message.getObjectProperty(CORRELATIONID_HEADER_NAME);
 
       if (obj instanceof byte[])
       {
@@ -415,12 +415,7 @@ public class HornetQMessage implements javax.jms.Message
    {
       if (jmsCorrelationID == null)
       {
-         Object obj = message.getProperty(CORRELATIONID_HEADER_NAME);
-
-         if (obj != null)
-         {
-            jmsCorrelationID = ((SimpleString)obj).toString();
-         }
+         jmsCorrelationID = message.getStringProperty(CORRELATIONID_HEADER_NAME);
       }
 
       return jmsCorrelationID;
@@ -430,7 +425,7 @@ public class HornetQMessage implements javax.jms.Message
    {
       if (replyTo == null)
       {
-         SimpleString repl = (SimpleString)message.getProperty(REPLYTO_HEADER_NAME);
+         SimpleString repl = message.getSimpleStringProperty(REPLYTO_HEADER_NAME);
 
          if (repl != null)
          {
@@ -539,7 +534,7 @@ public class HornetQMessage implements javax.jms.Message
    {
       if (jmsType == null)
       {
-         SimpleString ss = (SimpleString)message.getProperty(TYPE_HEADER_NAME);
+         SimpleString ss = message.getSimpleStringProperty(TYPE_HEADER_NAME);
 
          if (ss != null)
          {
@@ -732,7 +727,7 @@ public class HornetQMessage implements javax.jms.Message
          return String.valueOf(message.getDeliveryCount());
       }
 
-      Object val = message.getProperty(new SimpleString(name));
+      Object val = message.getObjectProperty(name);
       if (val instanceof SimpleString)
       {
          val = ((SimpleString)val).toString();

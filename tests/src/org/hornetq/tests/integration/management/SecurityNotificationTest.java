@@ -86,8 +86,8 @@ public class SecurityNotificationTest extends UnitTestCase
       }
       
       ClientMessage[] notifications = consumeMessages(1, notifConsumer);
-      assertEquals(SECURITY_AUTHENTICATION_VIOLATION.toString(), notifications[0].getProperty(HDR_NOTIFICATION_TYPE).toString());
-      assertEquals(unknownUser, notifications[0].getProperty(ManagementHelper.HDR_USER).toString());
+      assertEquals(SECURITY_AUTHENTICATION_VIOLATION.toString(), notifications[0].getObjectProperty(HDR_NOTIFICATION_TYPE).toString());
+      assertEquals(unknownUser, notifications[0].getObjectProperty(ManagementHelper.HDR_USER).toString());
    }
 
    public void testSECURITY_PERMISSION_VIOLATION() throws Exception
@@ -118,10 +118,10 @@ public class SecurityNotificationTest extends UnitTestCase
       }
       
       ClientMessage[] notifications = consumeMessages(1, notifConsumer);
-      assertEquals(SECURITY_PERMISSION_VIOLATION.toString(), notifications[0].getProperty(HDR_NOTIFICATION_TYPE).toString());
-      assertEquals("guest", notifications[0].getProperty(ManagementHelper.HDR_USER).toString());
-      assertEquals(address.toString(), notifications[0].getProperty(ManagementHelper.HDR_ADDRESS).toString());
-      assertEquals(CheckType.CREATE_DURABLE_QUEUE.toString(), notifications[0].getProperty(ManagementHelper.HDR_CHECK_TYPE).toString());
+      assertEquals(SECURITY_PERMISSION_VIOLATION.toString(), notifications[0].getObjectProperty(HDR_NOTIFICATION_TYPE).toString());
+      assertEquals("guest", notifications[0].getObjectProperty(ManagementHelper.HDR_USER).toString());
+      assertEquals(address.toString(), notifications[0].getObjectProperty(ManagementHelper.HDR_ADDRESS).toString());
+      assertEquals(CheckType.CREATE_DURABLE_QUEUE.toString(), notifications[0].getObjectProperty(ManagementHelper.HDR_CHECK_TYPE).toString());
       
       guestSession.close();
    }
@@ -205,7 +205,7 @@ public class SecurityNotificationTest extends UnitTestCase
          {
             for (SimpleString key : m.getPropertyNames())
             {
-               System.out.println(key + "=" + m.getProperty(key));
+               System.out.println(key + "=" + m.getObjectProperty(key));
             }    
          }
          assertNotNull("expected to received " + expected + " messages, got only " + i, m);
@@ -218,7 +218,7 @@ public class SecurityNotificationTest extends UnitTestCase
          for (SimpleString key : m.getPropertyNames())
 
          {
-            System.out.println(key + "=" + m.getProperty(key));
+            System.out.println(key + "=" + m.getObjectProperty(key));
          }
       }    
       assertNull("received one more message than expected (" + expected + ")", m);

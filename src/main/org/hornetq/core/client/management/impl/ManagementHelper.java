@@ -357,7 +357,7 @@ public class ManagementHelper
       }
       if (message.containsProperty(HDR_OPERATION_SUCCEEDED))
       {
-         return (Boolean)message.getProperty(HDR_OPERATION_SUCCEEDED);
+         return message.getBooleanProperty(HDR_OPERATION_SUCCEEDED);
       }
       return false;
    }

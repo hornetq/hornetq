@@ -162,7 +162,7 @@ public class PagingTest extends ServiceTestBase
 
             assertNotNull(message2);
 
-            assertEquals(i, ((Integer)message2.getProperty(new SimpleString("id"))).intValue());
+            assertEquals(i, ((Integer)message2.getObjectProperty(new SimpleString("id"))).intValue());
 
             message2.acknowledge();
 
@@ -283,7 +283,7 @@ public class PagingTest extends ServiceTestBase
                consumer.close();
             }
 
-            Integer messageID = (Integer)message.getProperty(new SimpleString("id"));
+            Integer messageID = (Integer)message.getObjectProperty(new SimpleString("id"));
             assertNotNull(messageID);
             assertEquals(messageID.intValue(), i);
 
@@ -304,7 +304,7 @@ public class PagingTest extends ServiceTestBase
 
             assertNotNull(message);
 
-            Integer messageID = (Integer)message.getProperty(new SimpleString("id"));
+            Integer messageID = (Integer)message.getObjectProperty(new SimpleString("id"));
 
             assertNotNull(messageID);
             assertEquals("message received out of order", messageID.intValue(), i);
@@ -432,7 +432,7 @@ public class PagingTest extends ServiceTestBase
 
             assertNotNull(message2);
 
-            Long scheduled = (Long)message2.getProperty(MessageImpl.HDR_SCHEDULED_DELIVERY_TIME);
+            Long scheduled = (Long)message2.getObjectProperty(MessageImpl.HDR_SCHEDULED_DELIVERY_TIME);
             if (scheduled != null)
             {
                assertTrue("Scheduling didn't work", System.currentTimeMillis() >= scheduledTime);

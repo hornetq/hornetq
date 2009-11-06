@@ -569,7 +569,7 @@ public class ClusterTestBase extends ServiceTestBase
                assertTrue("Message received too soon", System.currentTimeMillis() >= firstReceiveTime);
             }
 
-            SimpleString id = (SimpleString)message.getProperty(MessageImpl.HDR_GROUP_ID);
+            SimpleString id = (SimpleString)message.getObjectProperty(MessageImpl.HDR_GROUP_ID);
             System.out.println("received " + id + " on consumer " + consumerIDs[i]);
             if (groupIdsReceived.get(id) == null)
             {
@@ -665,10 +665,10 @@ public class ClusterTestBase extends ServiceTestBase
                assertTrue("Message received too soon", System.currentTimeMillis() >= firstReceiveTime);
             }
 
-            if (j != (Integer)(message.getProperty(COUNT_PROP)))
+            if (j != (Integer)(message.getObjectProperty(COUNT_PROP)))
             {
                outOfOrder = true;
-               System.out.println("Message j=" + j + " was received out of order = " + message.getProperty(COUNT_PROP));
+               System.out.println("Message j=" + j + " was received out of order = " + message.getObjectProperty(COUNT_PROP));
             }
          }
       }
@@ -724,7 +724,7 @@ public class ClusterTestBase extends ServiceTestBase
             {
                log.info("check receive Consumer " + consumerIDs[i] +
                         " received message " +
-                        message.getProperty(COUNT_PROP));
+                        message.getObjectProperty(COUNT_PROP));
             }
             else
             {
@@ -753,7 +753,7 @@ public class ClusterTestBase extends ServiceTestBase
 
          assertNotNull("consumer " + consumerIDs[count] + " did not receive message " + i, message);
 
-         assertEquals("consumer " + consumerIDs[count] + " message " + i, i, message.getProperty(COUNT_PROP));
+         assertEquals("consumer " + consumerIDs[count] + " message " + i, i, message.getObjectProperty(COUNT_PROP));
 
          count++;
 
@@ -795,7 +795,7 @@ public class ClusterTestBase extends ServiceTestBase
 
             if (message != null)
             {
-               int count = (Integer)message.getProperty(COUNT_PROP);
+               int count = (Integer)message.getObjectProperty(COUNT_PROP);
 
                Integer prevCount = countMap.get(i);
 
@@ -857,7 +857,7 @@ public class ClusterTestBase extends ServiceTestBase
 
             if (message != null)
             {
-               int count = (Integer)message.getProperty(COUNT_PROP);
+               int count = (Integer)message.getObjectProperty(COUNT_PROP);
 
                // log.info("consumer " + consumerIDs[i] + " received message " + count);
 
@@ -945,7 +945,7 @@ public class ClusterTestBase extends ServiceTestBase
 
          if (message != null)
          {
-            int count = (Integer)message.getProperty(COUNT_PROP);
+            int count = (Integer)message.getObjectProperty(COUNT_PROP);
 
             ints.add(count);
          }

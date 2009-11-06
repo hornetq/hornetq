@@ -272,7 +272,7 @@ public class InterceptorTest extends ServiceTestBase
       {
          ClientMessage message = consumer.receive(1000);
          
-         assertEquals("orange", ((SimpleString)message.getObjectProperty(key)).toString());
+         assertEquals("orange", message.getStringProperty(key));
       }
       
       server.getRemotingService().removeInterceptor(interceptor);
@@ -290,7 +290,7 @@ public class InterceptorTest extends ServiceTestBase
       {
          ClientMessage message = consumer.receive(1000);
          
-         assertEquals("apple", ((SimpleString)message.getObjectProperty(key)).toString());
+         assertEquals("apple", message.getStringProperty(key));
       }
      
       session.close();
@@ -365,7 +365,7 @@ public class InterceptorTest extends ServiceTestBase
       {
          ClientMessage message = consumer.receive(1000);
          
-         assertEquals("orange", ((SimpleString)message.getObjectProperty(key)).toString());
+         assertEquals("orange", message.getStringProperty(key));
       }
       
       sf.removeInterceptor(interceptor);
@@ -383,7 +383,7 @@ public class InterceptorTest extends ServiceTestBase
       {
          ClientMessage message = consumer.receive(1000);
          
-         assertEquals("apple", ((SimpleString)message.getObjectProperty(key)).toString());
+         assertEquals("apple", message.getStringProperty(key));
       }
      
       session.close();
@@ -460,10 +460,10 @@ public class InterceptorTest extends ServiceTestBase
       {
          ClientMessage message = consumer.receive(1000);
          
-         assertEquals(1, ((Integer)message.getObjectProperty("a")).intValue());
-         assertEquals(2, ((Integer)message.getObjectProperty("b")).intValue());
-         assertEquals(3, ((Integer)message.getObjectProperty("c")).intValue());
-         assertEquals(4, ((Integer)message.getObjectProperty("d")).intValue());
+         assertEquals(1, message.getIntProperty("a").intValue());
+         assertEquals(2, message.getIntProperty("b").intValue());
+         assertEquals(3, message.getIntProperty("c").intValue());
+         assertEquals(4, message.getIntProperty("d").intValue());
       }
       
       server.getRemotingService().removeInterceptor(interceptor2);
@@ -479,10 +479,10 @@ public class InterceptorTest extends ServiceTestBase
       {
          ClientMessage message = consumer.receive(1000);
          
-         assertEquals(1, ((Integer)message.getObjectProperty("a")).intValue());
-         assertNull(message.getObjectProperty("b"));
-         assertEquals(3, ((Integer)message.getObjectProperty("c")).intValue());
-         assertEquals(4, ((Integer)message.getObjectProperty("d")).intValue());
+         assertEquals(1, message.getIntProperty("a").intValue());
+         assertFalse(message.containsProperty("b"));
+         assertEquals(3, message.getIntProperty("c").intValue());
+         assertEquals(4, message.getIntProperty("d").intValue());
         
       }
       
@@ -549,10 +549,10 @@ public class InterceptorTest extends ServiceTestBase
       {
          ClientMessage message = consumer.receive(1000);
          
-         assertEquals(1, ((Integer)message.getObjectProperty("a")).intValue());
-         assertEquals(2, ((Integer)message.getObjectProperty("b")).intValue());
-         assertEquals(3, ((Integer)message.getObjectProperty("c")).intValue());
-         assertEquals(4, ((Integer)message.getObjectProperty("d")).intValue());
+         assertEquals(1, message.getIntProperty("a").intValue());
+         assertEquals(2, message.getIntProperty("b").intValue());
+         assertEquals(3, message.getIntProperty("c").intValue());
+         assertEquals(4, message.getIntProperty("d").intValue());
       }
       
       sf.removeInterceptor(interceptor2);
@@ -568,10 +568,10 @@ public class InterceptorTest extends ServiceTestBase
       {
          ClientMessage message = consumer.receive(1000);
          
-         assertEquals(1, ((Integer)message.getObjectProperty("a")).intValue());
-         assertNull(message.getObjectProperty("b"));
-         assertEquals(3, ((Integer)message.getObjectProperty("c")).intValue());
-         assertEquals(4, ((Integer)message.getObjectProperty("d")).intValue());
+         assertEquals(1, message.getIntProperty("a").intValue());
+         assertFalse(message.containsProperty("b"));
+         assertEquals(3, message.getIntProperty("c").intValue());
+         assertEquals(4, message.getIntProperty("d").intValue());
         
       }
       

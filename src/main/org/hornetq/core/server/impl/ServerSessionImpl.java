@@ -1799,7 +1799,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
 
       ServerMessage reply = managementService.handleMessage(message);
 
-      SimpleString replyTo = (SimpleString)message.getProperty(ClientMessageImpl.REPLYTO_HEADER_NAME);
+      SimpleString replyTo = message.getSimpleStringProperty(ClientMessageImpl.REPLYTO_HEADER_NAME);
 
       if (replyTo != null)
       {

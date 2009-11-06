@@ -218,7 +218,7 @@ public class JournalCrashTest extends ServiceTestBase
 
             msg.acknowledge();
 
-            assertEquals(i, msg.getProperty(new SimpleString("key")));
+            assertEquals(i, msg.getObjectProperty(new SimpleString("key")));
          }
          session.close();
       }

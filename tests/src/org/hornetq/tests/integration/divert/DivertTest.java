@@ -111,7 +111,7 @@ public class DivertTest extends ServiceTestBase
 
          assertNotNull(message);
 
-         assertEquals((Integer)i, (Integer)message.getProperty(propKey));
+         assertEquals((Integer)i, (Integer)message.getObjectProperty(propKey));
 
          message.acknowledge();
       }
@@ -124,7 +124,7 @@ public class DivertTest extends ServiceTestBase
 
          assertNotNull(message);
 
-         assertEquals((Integer)i, (Integer)message.getProperty(propKey));
+         assertEquals((Integer)i, (Integer)message.getObjectProperty(propKey));
 
          message.acknowledge();
       }
@@ -217,7 +217,7 @@ public class DivertTest extends ServiceTestBase
 
          assertNotNull(message);
 
-         assertEquals((Integer)i, (Integer)message.getProperty(propKey));
+         assertEquals((Integer)i, (Integer)message.getObjectProperty(propKey));
 
          message.acknowledge();
       }
@@ -230,7 +230,7 @@ public class DivertTest extends ServiceTestBase
 
          assertNotNull(message);
 
-         assertEquals((Integer)i, (Integer)message.getProperty(propKey));
+         assertEquals((Integer)i, (Integer)message.getObjectProperty(propKey));
 
          message.acknowledge();
       }
@@ -243,7 +243,7 @@ public class DivertTest extends ServiceTestBase
 
          assertNotNull(message);
 
-         assertEquals((Integer)i, (Integer)message.getProperty(propKey));
+         assertEquals((Integer)i, (Integer)message.getObjectProperty(propKey));
 
          message.acknowledge();
       }
@@ -256,7 +256,7 @@ public class DivertTest extends ServiceTestBase
 
          assertNotNull(message);
 
-         assertEquals((Integer)i, (Integer)message.getProperty(propKey));
+         assertEquals((Integer)i, (Integer)message.getObjectProperty(propKey));
 
          message.acknowledge();
       }
@@ -331,7 +331,7 @@ public class DivertTest extends ServiceTestBase
 
          assertNotNull(message);
 
-         assertEquals((Integer)i, (Integer)message.getProperty(propKey));
+         assertEquals((Integer)i, (Integer)message.getObjectProperty(propKey));
 
          message.acknowledge();
       }
@@ -422,7 +422,7 @@ public class DivertTest extends ServiceTestBase
 
          assertNotNull(message);
 
-         assertEquals((Integer)i, (Integer)message.getProperty(propKey));
+         assertEquals((Integer)i, (Integer)message.getObjectProperty(propKey));
 
          message.acknowledge();
       }
@@ -541,7 +541,7 @@ public class DivertTest extends ServiceTestBase
 
          assertNotNull(message);
 
-         assertEquals((Integer)i, (Integer)message.getProperty(propKey));
+         assertEquals(i, message.getIntProperty(propKey).intValue());
 
          message.acknowledge();
       }
@@ -554,7 +554,7 @@ public class DivertTest extends ServiceTestBase
 
          assertNotNull(message);
 
-         assertEquals((Integer)i, (Integer)message.getProperty(propKey));
+         assertEquals(i, message.getIntProperty(propKey).intValue());
 
          message.acknowledge();
       }
@@ -567,7 +567,7 @@ public class DivertTest extends ServiceTestBase
 
          assertNotNull(message);
 
-         assertEquals((Integer)i, (Integer)message.getProperty(propKey));
+         assertEquals(i, message.getIntProperty(propKey).intValue());
 
          message.acknowledge();
       }
@@ -580,7 +580,7 @@ public class DivertTest extends ServiceTestBase
 
          assertNotNull(message);
 
-         assertEquals((Integer)i, (Integer)message.getProperty(propKey));
+         assertEquals(i, message.getIntProperty(propKey).intValue());
 
          message.acknowledge();
       }
@@ -693,7 +693,7 @@ public class DivertTest extends ServiceTestBase
 
          assertNotNull(message);
 
-         assertEquals((Integer)i, (Integer)message.getProperty(propKey));
+         assertEquals(i, message.getIntProperty(propKey).intValue());
 
          message.acknowledge();
       }
@@ -706,7 +706,7 @@ public class DivertTest extends ServiceTestBase
 
          assertNotNull(message);
 
-         assertEquals((Integer)i, (Integer)message.getProperty(propKey));
+         assertEquals(i, message.getIntProperty(propKey).intValue());
 
          message.acknowledge();
       }
@@ -719,7 +719,7 @@ public class DivertTest extends ServiceTestBase
 
          assertNotNull(message);
 
-         assertEquals((Integer)i, (Integer)message.getProperty(propKey));
+         assertEquals(i, message.getIntProperty(propKey).intValue());
 
          message.acknowledge();
       }
@@ -834,7 +834,7 @@ public class DivertTest extends ServiceTestBase
 
          assertNotNull(message);
 
-         assertEquals((Integer)i, (Integer)message.getProperty(propKey));
+         assertEquals(i, message.getIntProperty(propKey).intValue());
 
          message.acknowledge();
       }
@@ -847,7 +847,7 @@ public class DivertTest extends ServiceTestBase
 
          assertNotNull(message);
 
-         assertEquals((Integer)i, (Integer)message.getProperty(propKey));
+         assertEquals(i, message.getIntProperty(propKey).intValue());
 
          message.acknowledge();
       }
@@ -982,7 +982,7 @@ public class DivertTest extends ServiceTestBase
 
          assertNotNull(message);
 
-         assertEquals((Integer)i, (Integer)message.getProperty(propKey));
+         assertEquals((Integer)i, (Integer)message.getObjectProperty(propKey));
 
          message.acknowledge();
       }
@@ -995,7 +995,7 @@ public class DivertTest extends ServiceTestBase
 
          assertNotNull(message);
 
-         assertEquals((Integer)i, (Integer)message.getProperty(propKey));
+         assertEquals((Integer)i, (Integer)message.getObjectProperty(propKey));
 
          message.acknowledge();
       }
@@ -1008,7 +1008,7 @@ public class DivertTest extends ServiceTestBase
 
          assertNotNull(message);
 
-         assertEquals((Integer)i, (Integer)message.getProperty(propKey));
+         assertEquals((Integer)i, (Integer)message.getObjectProperty(propKey));
 
          message.acknowledge();
       }
@@ -1032,7 +1032,7 @@ public class DivertTest extends ServiceTestBase
 
          assertNotNull(message);
 
-         assertEquals((Integer)i, (Integer)message.getProperty(propKey));
+         assertEquals((Integer)i, (Integer)message.getObjectProperty(propKey));
 
          message.acknowledge();
       }
@@ -1151,7 +1151,7 @@ public class DivertTest extends ServiceTestBase
 
          assertNotNull(message);
 
-         assertEquals((Integer)i, (Integer)message.getProperty(propKey));
+         assertEquals((Integer)i, (Integer)message.getObjectProperty(propKey));
 
          message.acknowledge();
 
@@ -1166,7 +1166,7 @@ public class DivertTest extends ServiceTestBase
 
          assertNotNull(message);
 
-         assertEquals((Integer)i, (Integer)message.getProperty(propKey));
+         assertEquals((Integer)i, (Integer)message.getObjectProperty(propKey));
 
          message.acknowledge();
 
@@ -1181,7 +1181,7 @@ public class DivertTest extends ServiceTestBase
 
          assertNotNull(message);
 
-         assertEquals((Integer)i, (Integer)message.getProperty(propKey));
+         assertEquals((Integer)i, (Integer)message.getObjectProperty(propKey));
 
          message.acknowledge();
 
@@ -1198,7 +1198,7 @@ public class DivertTest extends ServiceTestBase
 
          assertNotNull(message);
 
-         assertEquals((Integer)i, (Integer)message.getProperty(propKey));
+         assertEquals((Integer)i, (Integer)message.getObjectProperty(propKey));
 
          message.acknowledge();
       }
@@ -1313,7 +1313,7 @@ public class DivertTest extends ServiceTestBase
 
          assertNotNull(message);
 
-         assertEquals((Integer)i, (Integer)message.getProperty(propKey));
+         assertEquals(i, message.getIntProperty(propKey).intValue());
 
          message.acknowledge();
       }
@@ -1328,7 +1328,7 @@ public class DivertTest extends ServiceTestBase
 
          assertNotNull(message);
 
-         assertEquals((Integer)i, (Integer)message.getProperty(propKey));
+         assertEquals(i, message.getIntProperty(propKey).intValue());
 
          message.acknowledge();
       }
@@ -1341,7 +1341,7 @@ public class DivertTest extends ServiceTestBase
 
          assertNotNull(message);
 
-         assertEquals((Integer)i, (Integer)message.getProperty(propKey));
+         assertEquals(i, message.getIntProperty(propKey).intValue());
 
          message.acknowledge();
       }

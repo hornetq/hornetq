@@ -556,7 +556,7 @@ public class QueueControlTest extends ManagementTestBase
       // consume the message from otherQueue
       ClientConsumer otherConsumer = session.createConsumer(otherQueue);
       ClientMessage m = otherConsumer.receive(500);
-      assertEquals(value, m.getProperty(key));
+      assertEquals(value, m.getObjectProperty(key));
 
       m.acknowledge();
 
@@ -644,13 +644,13 @@ public class QueueControlTest extends ManagementTestBase
       ClientConsumer consumer = session.createConsumer(queue);
       ClientMessage m = consumer.receive(500);
       assertNotNull(m);
-      assertEquals(unmatchingValue, m.getProperty(key));
+      assertEquals(unmatchingValue, m.getObjectProperty(key));
 
       // consume the matched message from otherQueue
       ClientConsumer otherConsumer = session.createConsumer(otherQueue);
       m = otherConsumer.receive(500);
       assertNotNull(m);
-      assertEquals(matchingValue, m.getProperty(key));
+      assertEquals(matchingValue, m.getObjectProperty(key));
 
       m.acknowledge();
 
@@ -773,7 +773,7 @@ public class QueueControlTest extends ManagementTestBase
       ClientConsumer consumer = session.createConsumer(queue);
       ClientMessage m = consumer.receive(500);
       assertNotNull(m);
-      assertEquals(unmatchingValue, m.getProperty(key));
+      assertEquals(unmatchingValue, m.getObjectProperty(key));
 
       m.acknowledge();
 
@@ -923,7 +923,7 @@ public class QueueControlTest extends ManagementTestBase
       ClientConsumer consumer = session.createConsumer(queue);
       ClientMessage m = consumer.receive(500);
       assertNotNull(m);
-      assertEquals(unmatchingValue, m.getProperty(key));
+      assertEquals(unmatchingValue, m.getObjectProperty(key));
 
       m.acknowledge();
 

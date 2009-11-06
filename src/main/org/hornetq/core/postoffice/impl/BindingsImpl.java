@@ -237,11 +237,11 @@ public class BindingsImpl implements Bindings
 
       if (!routed)
       {
-         if (message.getProperty(MessageImpl.HDR_FROM_CLUSTER) != null)
+         if (message.containsProperty(MessageImpl.HDR_FROM_CLUSTER))
          {
             routeFromCluster(message, context);
          }
-         else if (groupingHandler != null && message.getProperty(MessageImpl.HDR_GROUP_ID) != null)
+         else if (groupingHandler != null && message.containsProperty(MessageImpl.HDR_GROUP_ID))
          {
             routeUsingStrictOrdering(message, context, groupingHandler);
          }
@@ -374,7 +374,7 @@ public class BindingsImpl implements Bindings
                                          final RoutingContext context,
                                          final GroupingHandler groupingGroupingHandler) throws Exception
    {
-      SimpleString groupId = (SimpleString)message.getProperty(MessageImpl.HDR_GROUP_ID);
+      SimpleString groupId = message.getSimpleStringProperty(MessageImpl.HDR_GROUP_ID);
 
       for (Map.Entry<SimpleString, List<Binding>> entry : routingNameBindingMap.entrySet())
       {

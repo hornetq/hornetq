@@ -495,7 +495,7 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
          try
          {
             // Reset the bindings
-            if (message.getProperty(HDR_RESET_QUEUE_DATA) != null)
+            if (message.containsProperty(HDR_RESET_QUEUE_DATA))
             {
                clearBindings();
 
@@ -511,7 +511,7 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
 
             // TODO - optimised this by just passing int in header - but filter needs to be extended to support IN with
             // a list of integers
-            SimpleString type = (SimpleString)message.getProperty(ManagementHelper.HDR_NOTIFICATION_TYPE);
+            SimpleString type = message.getSimpleStringProperty(ManagementHelper.HDR_NOTIFICATION_TYPE);
 
             NotificationType ntype = NotificationType.valueOf(type.toString());
 
@@ -566,16 +566,16 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
       * */
       private synchronized void doProposalReceived(final ClientMessage message) throws Exception
       {
-         SimpleString type = (SimpleString) message.getProperty(ManagementHelper.HDR_PROPOSAL_GROUP_ID);
-
-         if (type == null)
+         if (!message.containsProperty(ManagementHelper.HDR_PROPOSAL_GROUP_ID))
          {
             throw new IllegalStateException("proposal type is null");
          }
+         
+         SimpleString type = message.getSimpleStringProperty(ManagementHelper.HDR_PROPOSAL_GROUP_ID);
 
-         SimpleString val = (SimpleString) message.getProperty(ManagementHelper.HDR_PROPOSAL_VALUE);
+         SimpleString val = message.getSimpleStringProperty(ManagementHelper.HDR_PROPOSAL_VALUE);
 
-         Integer hops = (Integer) message.getProperty(ManagementHelper.HDR_DISTANCE);
+         Integer hops = message.getIntProperty(ManagementHelper.HDR_DISTANCE);
 
          Response response = server.getGroupingHandler().receive(new Proposal(type, val), hops + 1);
 
@@ -591,14 +591,15 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
       * */
       private synchronized void doProposalResponseReceived(final ClientMessage message) throws Exception
       {
-         SimpleString type = (SimpleString) message.getProperty(ManagementHelper.HDR_PROPOSAL_GROUP_ID);
-         if (type == null)
+         if (!message.containsProperty(ManagementHelper.HDR_PROPOSAL_GROUP_ID))
          {
             throw new IllegalStateException("proposal type is null");
          }
-         SimpleString val = (SimpleString)  message.getProperty(ManagementHelper.HDR_PROPOSAL_VALUE);
-         SimpleString alt = (SimpleString) message.getProperty(ManagementHelper.HDR_PROPOSAL_ALT_VALUE);
-         Integer hops = (Integer) message.getProperty(ManagementHelper.HDR_DISTANCE);
+
+         SimpleString type = message.getSimpleStringProperty(ManagementHelper.HDR_PROPOSAL_GROUP_ID);
+         SimpleString val = message.getSimpleStringProperty(ManagementHelper.HDR_PROPOSAL_VALUE);
+         SimpleString alt = message.getSimpleStringProperty(ManagementHelper.HDR_PROPOSAL_ALT_VALUE);
+         Integer hops = message.getIntProperty(ManagementHelper.HDR_DISTANCE);
          Response response = new Response(type, val, alt);
          server.getGroupingHandler().proposed(response);
          server.getGroupingHandler().send(response, hops + 1);
@@ -614,42 +615,42 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
 
       private synchronized void doBindingAdded(final ClientMessage message) throws Exception
       {
-         Integer distance = (Integer)message.getProperty(ManagementHelper.HDR_DISTANCE);
-
-         if (distance == null)
+         if (!message.containsProperty(ManagementHelper.HDR_DISTANCE))
          {
             throw new IllegalStateException("distance is null");
          }
 
-         SimpleString queueAddress = (SimpleString)message.getProperty(ManagementHelper.HDR_ADDRESS);
-
-         if (queueAddress == null)
+         if (!message.containsProperty(ManagementHelper.HDR_ADDRESS))
          {
             throw new IllegalStateException("queueAddress is null");
          }
 
-         SimpleString clusterName = (SimpleString)message.getProperty(ManagementHelper.HDR_CLUSTER_NAME);
-
-         if (clusterName == null)
+         if (!message.containsProperty(ManagementHelper.HDR_CLUSTER_NAME))
          {
             throw new IllegalStateException("clusterName is null");
          }
 
-         SimpleString routingName = (SimpleString)message.getProperty(ManagementHelper.HDR_ROUTING_NAME);
-
-         if (routingName == null)
+         if (!message.containsProperty(ManagementHelper.HDR_ROUTING_NAME))
          {
             throw new IllegalStateException("routingName is null");
          }
-
-         SimpleString filterString = (SimpleString)message.getProperty(ManagementHelper.HDR_FILTERSTRING);
-
-         Long queueID = (Long)message.getProperty(ManagementHelper.HDR_BINDING_ID);
-
-         if (queueID == null)
+         
+         if (!message.containsProperty(ManagementHelper.HDR_BINDING_ID))
          {
             throw new IllegalStateException("queueID is null");
          }
+
+         Integer distance = message.getIntProperty(ManagementHelper.HDR_DISTANCE);
+
+         SimpleString queueAddress = message.getSimpleStringProperty(ManagementHelper.HDR_ADDRESS);
+
+         SimpleString clusterName = message.getSimpleStringProperty(ManagementHelper.HDR_CLUSTER_NAME);
+
+         SimpleString routingName = message.getSimpleStringProperty(ManagementHelper.HDR_ROUTING_NAME);
+
+         SimpleString filterString = message.getSimpleStringProperty(ManagementHelper.HDR_FILTERSTRING);
+
+         Long queueID = message.getLongProperty(ManagementHelper.HDR_BINDING_ID);
 
          RemoteQueueBinding binding = new RemoteQueueBindingImpl(server.getStorageManager().generateUniqueID(),
                                                                  queueAddress,
@@ -692,12 +693,12 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
 
       private void doBindingRemoved(final ClientMessage message) throws Exception
       {
-         SimpleString clusterName = (SimpleString)message.getProperty(ManagementHelper.HDR_CLUSTER_NAME);
-
-         if (clusterName == null)
+         if (!message.containsProperty(ManagementHelper.HDR_CLUSTER_NAME))
          {
             throw new IllegalStateException("clusterName is null");
          }
+         
+         SimpleString clusterName = message.getSimpleStringProperty(ManagementHelper.HDR_CLUSTER_NAME);
 
          removeBinding(clusterName);
       }
@@ -716,23 +717,23 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
 
       private synchronized void doConsumerCreated(final ClientMessage message) throws Exception
       {
-         Integer distance = (Integer)message.getProperty(ManagementHelper.HDR_DISTANCE);
-
-         if (distance == null)
+         if (!message.containsProperty(ManagementHelper.HDR_DISTANCE))
          {
             throw new IllegalStateException("distance is null");
          }
 
-         SimpleString clusterName = (SimpleString)message.getProperty(ManagementHelper.HDR_CLUSTER_NAME);
-
-         if (clusterName == null)
+         if (!message.containsProperty(ManagementHelper.HDR_CLUSTER_NAME))
          {
             throw new IllegalStateException("clusterName is null");
          }
 
+         Integer distance = message.getIntProperty(ManagementHelper.HDR_DISTANCE);
+
+         SimpleString clusterName = message.getSimpleStringProperty(ManagementHelper.HDR_CLUSTER_NAME);
+
          message.putIntProperty(ManagementHelper.HDR_DISTANCE, distance + 1);
 
-         SimpleString filterString = (SimpleString)message.getProperty(ManagementHelper.HDR_FILTERSTRING);
+         SimpleString filterString = message.getSimpleStringProperty(ManagementHelper.HDR_FILTERSTRING);
 
          RemoteQueueBinding binding = bindings.get(clusterName);
 
@@ -751,23 +752,23 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
 
       private synchronized void doConsumerClosed(final ClientMessage message) throws Exception
       {
-         Integer distance = (Integer)message.getProperty(ManagementHelper.HDR_DISTANCE);
-
-         if (distance == null)
+         if (!message.containsProperty(ManagementHelper.HDR_DISTANCE))
          {
             throw new IllegalStateException("distance is null");
          }
-
-         SimpleString clusterName = (SimpleString)message.getProperty(ManagementHelper.HDR_CLUSTER_NAME);
-
-         if (clusterName == null)
+         
+         if (!message.containsProperty(ManagementHelper.HDR_CLUSTER_NAME))
          {
             throw new IllegalStateException("clusterName is null");
          }
 
+         Integer distance = message.getIntProperty(ManagementHelper.HDR_DISTANCE);
+
+         SimpleString clusterName = message.getSimpleStringProperty(ManagementHelper.HDR_CLUSTER_NAME);
+
          message.putIntProperty(ManagementHelper.HDR_DISTANCE, distance + 1);
 
-         SimpleString filterString = (SimpleString)message.getProperty(ManagementHelper.HDR_FILTERSTRING);
+         SimpleString filterString = message.getSimpleStringProperty(ManagementHelper.HDR_FILTERSTRING);
 
          RemoteQueueBinding binding = bindings.get(clusterName);
 

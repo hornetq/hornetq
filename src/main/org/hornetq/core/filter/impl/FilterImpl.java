@@ -155,7 +155,7 @@ public class FilterImpl implements Filter
 
             if (val == null)
             {               
-               val = message.getProperty(id.getName());               
+               val = message.getObjectProperty(id.getName());               
             }
 
             id.setValue(val);

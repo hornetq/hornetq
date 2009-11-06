@@ -2045,7 +2045,7 @@ public class LargeMessageTest extends LargeMessageTestBase
             ClientMessage msg = consumer.receive(50000);
             assertNotNull(msg);
 
-            assertEquals(i, msg.getProperty(new SimpleString("key")));
+            assertEquals(i, msg.getObjectProperty(new SimpleString("key")));
 
             msg.acknowledge();
          }

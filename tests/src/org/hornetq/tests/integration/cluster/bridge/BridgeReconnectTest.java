@@ -161,7 +161,7 @@ public class BridgeReconnectTest extends BridgeTestBase
       {
          ClientMessage r1 = cons2.receive(1500);
          assertNotNull(r1);
-         assertEquals(i, r1.getProperty(propKey));
+         assertEquals(i, r1.getObjectProperty(propKey));
       }
 
       session0.close();
@@ -291,7 +291,7 @@ public class BridgeReconnectTest extends BridgeTestBase
       {
          ClientMessage r1 = cons2.receive(1500);
          assertNotNull(r1);
-         assertEquals(i, r1.getProperty(propKey));
+         assertEquals(i, r1.getObjectProperty(propKey));
       }
 
       session0.close();
@@ -408,7 +408,7 @@ public class BridgeReconnectTest extends BridgeTestBase
       {
          ClientMessage r1 = cons1.receive(1500);
          assertNotNull(r1);
-         assertEquals(i, r1.getProperty(propKey));
+         assertEquals(i, r1.getObjectProperty(propKey));
       }
 
       session0.close();
@@ -520,8 +520,8 @@ public class BridgeReconnectTest extends BridgeTestBase
       {
          ClientMessage r1 = cons1.receive(30000);
          assertNotNull(r1);
-         assertEquals(i, r1.getProperty(propKey));
-         log.info("got message " + r1.getProperty(propKey));
+         assertEquals(i, r1.getObjectProperty(propKey));
+         log.info("got message " + r1.getObjectProperty(propKey));
       }
       
       log.info("got messages");
@@ -632,7 +632,7 @@ public class BridgeReconnectTest extends BridgeTestBase
       {
          ClientMessage r1 = cons1.receive(1500);
          assertNotNull(r1);
-         assertEquals(i, r1.getProperty(propKey));
+         assertEquals(i, r1.getObjectProperty(propKey));
       }
 
       // Fail again - should reconnect
@@ -653,7 +653,7 @@ public class BridgeReconnectTest extends BridgeTestBase
       {
          ClientMessage r1 = cons1.receive(1500);
          assertNotNull(r1);
-         assertEquals(i, r1.getProperty(propKey));
+         assertEquals(i, r1.getObjectProperty(propKey));
       }
 
       session0.close();

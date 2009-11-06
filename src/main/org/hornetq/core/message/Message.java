@@ -139,33 +139,53 @@ public interface Message
 
    void putTypedProperties(TypedProperties properties);
 
-   Object getProperty(SimpleString key);
-
    Object removeProperty(SimpleString key);
 
    boolean containsProperty(SimpleString key);
 
-   Object getObjectProperty(String key);
-
    Boolean getBooleanProperty(SimpleString key) throws PropertyConversionException;
+
+   Boolean getBooleanProperty(String key) throws PropertyConversionException;
 
    Byte getByteProperty(SimpleString key) throws PropertyConversionException;
 
+   Byte getByteProperty(String key) throws PropertyConversionException;
+
    Double getDoubleProperty(SimpleString key) throws PropertyConversionException;
+
+   Double getDoubleProperty(String key) throws PropertyConversionException;
 
    Integer getIntProperty(SimpleString key) throws PropertyConversionException;
 
+   Integer getIntProperty(String key) throws PropertyConversionException;
+
    Long getLongProperty(SimpleString key) throws PropertyConversionException;
+
+   Long getLongProperty(String key) throws PropertyConversionException;
 
    Object getObjectProperty(SimpleString key);
 
+   Object getObjectProperty(String key);
+
    Short getShortProperty(SimpleString key) throws PropertyConversionException;
+
+   Short getShortProperty(String key) throws PropertyConversionException;
 
    Float getFloatProperty(SimpleString key) throws PropertyConversionException;
 
+   Float getFloatProperty(String key) throws PropertyConversionException;
+
    String getStringProperty(SimpleString key) throws PropertyConversionException;
 
+   String getStringProperty(String key) throws PropertyConversionException;
+
+   SimpleString getSimpleStringProperty(SimpleString key) throws PropertyConversionException;
+
+   SimpleString getSimpleStringProperty(String key) throws PropertyConversionException;
+
    byte[] getBytesProperty(SimpleString key) throws PropertyConversionException;
+
+   byte[] getBytesProperty(String key) throws PropertyConversionException;
 
    Object removeProperty(String key);
 

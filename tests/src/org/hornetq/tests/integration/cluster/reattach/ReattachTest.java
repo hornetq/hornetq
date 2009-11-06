@@ -121,7 +121,7 @@ public class ReattachTest extends UnitTestCase
 
             assertEquals("aardvarks", message.getBody().readString());
 
-            assertEquals(i, message.getProperty(new SimpleString("count")));
+            assertEquals(i, message.getObjectProperty(new SimpleString("count")));
 
             message.acknowledge();
          }
@@ -215,7 +215,7 @@ public class ReattachTest extends UnitTestCase
 
          assertEquals("aardvarks", message.getBody().readString());
 
-         assertEquals(i, message.getProperty(new SimpleString("count")));
+         assertEquals(i, message.getIntProperty("count").intValue());
 
          message.acknowledge();
       }
@@ -330,7 +330,7 @@ public class ReattachTest extends UnitTestCase
 
          assertEquals("aardvarks", message.getBody().readString());
 
-         assertEquals(i, message.getProperty(new SimpleString("count")));
+         assertEquals(i, message.getIntProperty("count").intValue());
 
          message.acknowledge();
       }
@@ -479,7 +479,7 @@ public class ReattachTest extends UnitTestCase
 
          assertEquals("aardvarks", message.getBody().readString());
 
-         assertEquals(i, message.getProperty(new SimpleString("count")));
+         assertEquals(i, message.getIntProperty("count").intValue());
 
          message.acknowledge();
       }
@@ -565,7 +565,7 @@ public class ReattachTest extends UnitTestCase
 
          assertEquals("aardvarks", message.getBody().readString());
 
-         assertEquals(i, message.getProperty(new SimpleString("count")));
+         assertEquals(i, message.getIntProperty("count").intValue());
 
          message.acknowledge();
       }
@@ -641,7 +641,7 @@ public class ReattachTest extends UnitTestCase
 
          assertEquals("aardvarks", message.getBody().readString());
 
-         assertEquals(i, message.getProperty(new SimpleString("count")));
+         assertEquals(i, message.getObjectProperty(new SimpleString("count")));
 
          message.acknowledge();
       }
@@ -720,7 +720,7 @@ public class ReattachTest extends UnitTestCase
 
          assertEquals("aardvarks", message.getBody().readString());
 
-         assertEquals(i, message.getProperty(new SimpleString("count")));
+         assertEquals(i, message.getIntProperty("count").intValue());
 
          message.acknowledge();
       }

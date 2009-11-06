@@ -305,7 +305,7 @@ public class RandomReattachTest extends UnitTestCase
                fail("Too many messages");
             }
 
-            assertEquals(count, message.getProperty(new SimpleString("count")));
+            assertEquals(count, message.getObjectProperty(new SimpleString("count")));
 
             count++;
 
@@ -424,7 +424,7 @@ public class RandomReattachTest extends UnitTestCase
                fail("Too many messages");
             }
 
-            assertEquals(count, message.getProperty(new SimpleString("count")));
+            assertEquals(count, message.getObjectProperty(new SimpleString("count")));
 
             count++;
 
@@ -548,7 +548,7 @@ public class RandomReattachTest extends UnitTestCase
                fail("Too many messages");
             }
 
-            assertEquals(count, message.getProperty(new SimpleString("count")));
+            assertEquals(count, message.getObjectProperty(new SimpleString("count")));
 
             count++;
 
@@ -702,7 +702,7 @@ public class RandomReattachTest extends UnitTestCase
                fail("Too many messages");
             }
 
-            assertEquals(count, message.getProperty(new SimpleString("count")));
+            assertEquals(count, message.getObjectProperty(new SimpleString("count")));
 
             count++;
 
@@ -835,7 +835,7 @@ public class RandomReattachTest extends UnitTestCase
 
             assertNotNull(msg);
 
-            assertEquals(i, msg.getProperty(new SimpleString("count")));
+            assertEquals(i, msg.getObjectProperty(new SimpleString("count")));
 
             msg.acknowledge();
          }
@@ -932,7 +932,7 @@ public class RandomReattachTest extends UnitTestCase
 
             assertNotNull(msg);
 
-            assertEquals(i, msg.getProperty(new SimpleString("count")));
+            assertEquals(i, msg.getObjectProperty(new SimpleString("count")));
 
             msg.acknowledge();
          }
@@ -1038,7 +1038,7 @@ public class RandomReattachTest extends UnitTestCase
 
             assertNotNull(msg);
 
-            assertEquals(i, msg.getProperty(new SimpleString("count")));
+            assertEquals(i, msg.getObjectProperty(new SimpleString("count")));
 
             msg.acknowledge();
          }
@@ -1064,7 +1064,7 @@ public class RandomReattachTest extends UnitTestCase
 
             assertNotNull(msg);
 
-            assertEquals(i, msg.getProperty(new SimpleString("count")));
+            assertEquals(i, msg.getObjectProperty(new SimpleString("count")));
 
             msg.acknowledge();
          }
@@ -1176,7 +1176,7 @@ public class RandomReattachTest extends UnitTestCase
 
             assertNotNull(msg);
 
-            assertEquals(i, msg.getProperty(new SimpleString("count")));
+            assertEquals(i, msg.getObjectProperty(new SimpleString("count")));
 
             msg.acknowledge();
          }
@@ -1205,7 +1205,7 @@ public class RandomReattachTest extends UnitTestCase
 
             assertNotNull(msg);
 
-            assertEquals(i, msg.getProperty(new SimpleString("count")));
+            assertEquals(i, msg.getObjectProperty(new SimpleString("count")));
 
             msg.acknowledge();
          }

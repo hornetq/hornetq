@@ -35,7 +35,7 @@ public class SimpleTransformer implements Transformer
    
    public ServerMessage transform(final ServerMessage message)
    {
-      SimpleString oldProp = (SimpleString)message.getProperty(new SimpleString("wibble"));
+      SimpleString oldProp = (SimpleString)message.getObjectProperty(new SimpleString("wibble"));
       
       if (!oldProp.equals(new SimpleString("bing")))
       {

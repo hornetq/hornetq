@@ -1147,7 +1147,7 @@ public class QueueImpl implements Queue
 
          initPagingStore(reference.getMessage().getDestination());
 
-         final SimpleString groupID = (SimpleString)reference.getMessage().getProperty(MessageImpl.HDR_GROUP_ID);
+         final SimpleString groupID = reference.getMessage().getSimpleStringProperty(MessageImpl.HDR_GROUP_ID);
 
          if (groupID != null)
          {
@@ -1283,7 +1283,7 @@ public class QueueImpl implements Queue
          Consumer consumer = distributionPolicy.getNextConsumer();
          consumerCount++;
 
-         final SimpleString groupId = (SimpleString)reference.getMessage().getProperty(MessageImpl.HDR_GROUP_ID);
+         final SimpleString groupId = reference.getMessage().getSimpleStringProperty(MessageImpl.HDR_GROUP_ID);
 
          if (groupId != null)
          {

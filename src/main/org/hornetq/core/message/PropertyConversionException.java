@@ -20,7 +20,7 @@ package org.hornetq.core.message;
  *
  *
  */
-public class PropertyConversionException extends Exception
+public class PropertyConversionException extends RuntimeException
 {
 
    private static final long serialVersionUID = -3010008708334904332L;

@@ -408,7 +408,7 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
 
             Set<SimpleString> propNames = new HashSet<SimpleString>(message.getPropertyNames());
 
-            byte[] queueIds = (byte[])message.getProperty(idsHeaderName);
+            byte[] queueIds = message.getBytesProperty(idsHeaderName);
 
             for (SimpleString propName : propNames)
             {

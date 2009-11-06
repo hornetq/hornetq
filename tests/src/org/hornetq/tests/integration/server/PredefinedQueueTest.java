@@ -181,12 +181,12 @@ public class PredefinedQueueTest extends ServiceTestBase
       {
          ClientMessage message = consumer1.receive(200);         
          assertNotNull(message);         
-         assertEquals((Integer)i, (Integer)message.getProperty(propKey));         
+         assertEquals((Integer)i, (Integer)message.getObjectProperty(propKey));         
          message.acknowledge();
          
          message = consumer2.receive(200);         
          assertNotNull(message);         
-         assertEquals((Integer)i, (Integer)message.getProperty(propKey));         
+         assertEquals((Integer)i, (Integer)message.getObjectProperty(propKey));         
          message.acknowledge();
       }
       
@@ -279,17 +279,17 @@ public class PredefinedQueueTest extends ServiceTestBase
       {
          ClientMessage message = consumer1.receive(200);         
          assertNotNull(message);         
-         assertEquals((Integer)i, (Integer)message.getProperty(propKey));         
+         assertEquals((Integer)i, (Integer)message.getObjectProperty(propKey));         
          message.acknowledge();
          
          message = consumer2.receive(200);         
          assertNotNull(message);         
-         assertEquals((Integer)i, (Integer)message.getProperty(propKey));         
+         assertEquals((Integer)i, (Integer)message.getObjectProperty(propKey));         
          message.acknowledge();
          
          message = consumer3.receive(200);         
          assertNotNull(message);         
-         assertEquals((Integer)i, (Integer)message.getProperty(propKey));         
+         assertEquals((Integer)i, (Integer)message.getObjectProperty(propKey));         
          message.acknowledge();
       }
       
@@ -378,7 +378,7 @@ public class PredefinedQueueTest extends ServiceTestBase
       {
          message = consumer2.receive(200);         
          assertNotNull(message);         
-         assertEquals((Integer)i, (Integer)message.getProperty(propKey));         
+         assertEquals((Integer)i, (Integer)message.getObjectProperty(propKey));         
          message.acknowledge();
       }
       
@@ -446,7 +446,7 @@ public class PredefinedQueueTest extends ServiceTestBase
       {
          ClientMessage message = consumer1.receive(200);         
          assertNotNull(message);         
-         assertEquals((Integer)i, (Integer)message.getProperty(propKey));         
+         assertEquals((Integer)i, (Integer)message.getObjectProperty(propKey));         
          message.acknowledge();
       }
       

@@ -201,7 +201,7 @@ public class ExpiryAddressTest extends UnitTestCase
          assertEquals("Message:" + i, text);
 
          // Check the headers
-         Long actualExpiryTime = (Long)tm.getProperty(HDR_ACTUAL_EXPIRY_TIME);
+         Long actualExpiryTime = (Long)tm.getObjectProperty(HDR_ACTUAL_EXPIRY_TIME);
          assertTrue(actualExpiryTime >= expiration);
       }
       

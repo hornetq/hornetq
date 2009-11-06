@@ -543,7 +543,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
 
       SimpleString address = message.getDestination();
 
-      Object duplicateID = message.getProperty(MessageImpl.HDR_DUPLICATE_DETECTION_ID);
+      Object duplicateID = message.getObjectProperty(MessageImpl.HDR_DUPLICATE_DETECTION_ID);
 
       DuplicateIDCache cache = null;
 
@@ -672,10 +672,9 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
       
       MessageReference reference = message.createReference(queue);
 
-      Long scheduledDeliveryTime = (Long)message.getProperty(MessageImpl.HDR_SCHEDULED_DELIVERY_TIME);
-
-      if (scheduledDeliveryTime != null)
+      if (message.containsProperty(MessageImpl.HDR_SCHEDULED_DELIVERY_TIME))
       {
+         Long scheduledDeliveryTime = message.getLongProperty(MessageImpl.HDR_SCHEDULED_DELIVERY_TIME);
          reference.setScheduledDeliveryTime(scheduledDeliveryTime);
       }
 
@@ -863,10 +862,9 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
 
          refs.add(reference);
 
-         Long scheduledDeliveryTime = (Long)message.getProperty(MessageImpl.HDR_SCHEDULED_DELIVERY_TIME);
-
-         if (scheduledDeliveryTime != null)
+         if (message.containsProperty(MessageImpl.HDR_SCHEDULED_DELIVERY_TIME))
          {
+            Long scheduledDeliveryTime = message.getLongProperty(MessageImpl.HDR_SCHEDULED_DELIVERY_TIME);
             reference.setScheduledDeliveryTime(scheduledDeliveryTime);
          }
 
@@ -897,7 +895,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
                storageManager.storeReference(queue.getID(), message.getMessageID());
             }
 
-            if (scheduledDeliveryTime != null)
+            if (message.containsProperty(MessageImpl.HDR_SCHEDULED_DELIVERY_TIME))
             {
                if (tx != null)
                {

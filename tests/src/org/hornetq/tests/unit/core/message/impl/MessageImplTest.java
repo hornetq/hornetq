@@ -227,24 +227,24 @@ public class MessageImplTest extends UnitTestCase
          assertTrue(msg.containsProperty(prop8));
          assertTrue(msg.containsProperty(prop9));
                  
-         assertEquals(val1, msg.getProperty(prop1));
-         assertEquals(val2, msg.getProperty(prop2));
-         assertEquals(val3, msg.getProperty(prop3));
-         assertEquals(val4, msg.getProperty(prop4));
-         assertEquals(val5, msg.getProperty(prop5));
-         assertEquals(val6, msg.getProperty(prop6));
-         assertEquals(val7, msg.getProperty(prop7));
-         assertEquals(val8, msg.getProperty(prop8));
-         assertEquals(val9, msg.getProperty(prop9));
+         assertEquals(val1, msg.getObjectProperty(prop1));
+         assertEquals(val2, msg.getObjectProperty(prop2));
+         assertEquals(val3, msg.getObjectProperty(prop3));
+         assertEquals(val4, msg.getObjectProperty(prop4));
+         assertEquals(val5, msg.getObjectProperty(prop5));
+         assertEquals(val6, msg.getObjectProperty(prop6));
+         assertEquals(val7, msg.getObjectProperty(prop7));
+         assertEquals(val8, msg.getObjectProperty(prop8));
+         assertEquals(val9, msg.getObjectProperty(prop9));
          
          SimpleString val10 = new SimpleString(randomString());
          //test overwrite
          msg.putStringProperty(prop9, val10);
-         assertEquals(val10, msg.getProperty(prop9));
+         assertEquals(val10, msg.getObjectProperty(prop9));
          
          int val11 = randomInt();
          msg.putIntProperty(prop9, val11);
-         assertEquals(val11, msg.getProperty(prop9));
+         assertEquals(val11, msg.getObjectProperty(prop9));
          
          msg.removeProperty(prop1);
          assertEquals(8, msg.getPropertyNames().size());        
@@ -312,9 +312,9 @@ public class MessageImplTest extends UnitTestCase
       
       for (SimpleString propname: props1)
       {
-         Object val1 = msg1.getProperty(propname);
+         Object val1 = msg1.getObjectProperty(propname);
          
-         Object val2 = msg2.getProperty(propname);
+         Object val2 = msg2.getObjectProperty(propname);
          
          assertEquals(val1, val2);
       }

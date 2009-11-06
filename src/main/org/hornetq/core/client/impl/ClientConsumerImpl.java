@@ -248,7 +248,7 @@ public class ClientConsumerImpl implements ClientConsumerInternal
                
                if (m.containsProperty(FORCED_DELIVERY_MESSAGE))
                {
-                  Long seq = (Long)m.getProperty(FORCED_DELIVERY_MESSAGE);
+                  long seq = m.getLongProperty(FORCED_DELIVERY_MESSAGE);
                   if (seq >= forceDeliveryCount.longValue())
                   {
                      // forced delivery messages are discarded, nothing has been delivered by the queue

@@ -92,7 +92,7 @@ public class ReplicatedDistrubtionTest extends ClusterTestBase
 
             System.out.println(i + " msg = " + msg);
 
-            int received = (Integer)msg.getProperty(new SimpleString("key"));
+            int received = (Integer)msg.getObjectProperty(new SimpleString("key"));
 
             if (i != received)
             {
@@ -130,7 +130,7 @@ public class ReplicatedDistrubtionTest extends ClusterTestBase
 
             System.out.println(i + " msg = " + msg);
 
-            int received = (Integer)msg.getProperty(new SimpleString("key"));
+            int received = (Integer)msg.getObjectProperty(new SimpleString("key"));
 
             if (i != received)
             {
@@ -199,7 +199,7 @@ public class ReplicatedDistrubtionTest extends ClusterTestBase
 
             System.out.println(i + " msg = " + msg);
 
-            int received = (Integer)msg.getProperty(new SimpleString("key"));
+            int received = (Integer)msg.getObjectProperty(new SimpleString("key"));
 
             if (i != received)
             {

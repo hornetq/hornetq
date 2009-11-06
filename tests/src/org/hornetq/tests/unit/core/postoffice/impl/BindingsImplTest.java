@@ -561,15 +561,6 @@ public class BindingsImplTest extends UnitTestCase
       }
 
       /* (non-Javadoc)
-       * @see org.hornetq.core.message.Message#getProperty(org.hornetq.utils.SimpleString)
-       */
-      public Object getProperty(final SimpleString key)
-      {
-
-         return null;
-      }
-
-      /* (non-Javadoc)
        * @see org.hornetq.core.message.Message#getPropertyNames()
        */
       public Set<SimpleString> getPropertyNames()
@@ -687,8 +678,24 @@ public class BindingsImplTest extends UnitTestCase
       }
       
       /* (non-Javadoc)
-       * @see org.hornetq.core.message.Message#putObjectProperty(org.hornetq.utils.SimpleString, java.lang.Object)
+       * @see org.hornetq.core.message.Message#getSimpleStringProperty(org.hornetq.utils.SimpleString)
        */
+      public SimpleString getSimpleStringProperty(SimpleString key) throws PropertyConversionException
+      {
+         // TODO Auto-generated method stub
+         return null;
+      }
+      
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.message.Message#getSimpleStringProperty(java.lang.String)
+       */
+      public SimpleString getSimpleStringProperty(String key) throws PropertyConversionException
+      {
+         // TODO Auto-generated method stub
+         return null;
+      }
+      
       public void putObjectProperty(SimpleString key, Object value)
       {
          // TODO Auto-generated method stub
@@ -979,6 +986,86 @@ public class BindingsImplTest extends UnitTestCase
       {
          // TODO Auto-generated method stub
          return 0;
+      }
+      /* (non-Javadoc)
+       * @see org.hornetq.core.message.Message#getBooleanProperty(java.lang.String)
+       */
+      public Boolean getBooleanProperty(String key) throws PropertyConversionException
+      {
+         // TODO Auto-generated method stub
+         return null;
+      }
+      
+      /* (non-Javadoc)
+       * @see org.hornetq.core.message.Message#getByteProperty(java.lang.String)
+       */
+      public Byte getByteProperty(String key) throws PropertyConversionException
+      {
+         // TODO Auto-generated method stub
+         return null;
+      }
+      
+      /* (non-Javadoc)
+       * @see org.hornetq.core.message.Message#getBytesProperty(java.lang.String)
+       */
+      public byte[] getBytesProperty(String key) throws PropertyConversionException
+      {
+         // TODO Auto-generated method stub
+         return null;
+      }
+      
+      /* (non-Javadoc)
+       * @see org.hornetq.core.message.Message#getDoubleProperty(java.lang.String)
+       */
+      public Double getDoubleProperty(String key) throws PropertyConversionException
+      {
+         // TODO Auto-generated method stub
+         return null;
+      }
+      
+      /* (non-Javadoc)
+       * @see org.hornetq.core.message.Message#getFloatProperty(java.lang.String)
+       */
+      public Float getFloatProperty(String key) throws PropertyConversionException
+      {
+         // TODO Auto-generated method stub
+         return null;
+      }
+      
+      /* (non-Javadoc)
+       * @see org.hornetq.core.message.Message#getIntProperty(java.lang.String)
+       */
+      public Integer getIntProperty(String key) throws PropertyConversionException
+      {
+         // TODO Auto-generated method stub
+         return null;
+      }
+      
+      /* (non-Javadoc)
+       * @see org.hornetq.core.message.Message#getLongProperty(java.lang.String)
+       */
+      public Long getLongProperty(String key) throws PropertyConversionException
+      {
+         // TODO Auto-generated method stub
+         return null;
+      }
+      
+      /* (non-Javadoc)
+       * @see org.hornetq.core.message.Message#getShortProperty(java.lang.String)
+       */
+      public Short getShortProperty(String key) throws PropertyConversionException
+      {
+         // TODO Auto-generated method stub
+         return null;
+      }
+      
+      /* (non-Javadoc)
+       * @see org.hornetq.core.message.Message#getStringProperty(java.lang.String)
+       */
+      public String getStringProperty(String key) throws PropertyConversionException
+      {
+         // TODO Auto-generated method stub
+         return null;
       }
 
       /* (non-Javadoc)

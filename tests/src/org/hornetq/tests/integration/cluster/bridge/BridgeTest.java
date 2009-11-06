@@ -169,7 +169,7 @@ public class BridgeTest extends ServiceTestBase
 
             assertNotNull(message);
 
-            assertEquals((Integer)i, (Integer)message.getProperty(propKey));
+            assertEquals((Integer)i, (Integer)message.getObjectProperty(propKey));
 
             if (largeMessage)
             {
@@ -367,7 +367,7 @@ public class BridgeTest extends ServiceTestBase
 
             assertNotNull(message);
 
-            assertEquals((Integer)i, (Integer)message.getProperty(propKey));
+            assertEquals((Integer)i, (Integer)message.getObjectProperty(propKey));
 
             message.acknowledge();
             
@@ -509,7 +509,7 @@ public class BridgeTest extends ServiceTestBase
 
          assertNotNull(message);
 
-         SimpleString val = (SimpleString)message.getProperty(propKey);
+         SimpleString val = (SimpleString)message.getObjectProperty(propKey);
 
          assertEquals(new SimpleString("bong"), val);
 
@@ -639,7 +639,7 @@ public class BridgeTest extends ServiceTestBase
 
             assertNotNull(message);
 
-            assertEquals((Integer)i, (Integer)message.getProperty(propKey));
+            assertEquals((Integer)i, (Integer)message.getObjectProperty(propKey));
 
             message.acknowledge();
          }

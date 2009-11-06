@@ -415,13 +415,13 @@ public class ManagementServiceImpl implements ManagementService
       ServerMessageImpl reply = new ServerMessageImpl(storageManager.generateUniqueID());
       reply.setBody(ChannelBuffers.dynamicBuffer(1024));
 
-      SimpleString resourceName = (SimpleString)message.getProperty(ManagementHelper.HDR_RESOURCE_NAME);
+      String resourceName = message.getStringProperty(ManagementHelper.HDR_RESOURCE_NAME);
       if (log.isDebugEnabled())
       {
          log.debug("handling management message for " + resourceName);
       }
 
-      SimpleString operation = (SimpleString)message.getProperty(ManagementHelper.HDR_OPERATION_NAME);
+      String operation = message.getStringProperty(ManagementHelper.HDR_OPERATION_NAME);
 
       if (operation != null)
       {
@@ -434,7 +434,7 @@ public class ManagementServiceImpl implements ManagementService
 
          try
          {
-            Object result = invokeOperation(resourceName.toString(), operation.toString(), params);
+            Object result = invokeOperation(resourceName, operation, params);
 
             ManagementHelper.storeResult(reply, result);
 
@@ -457,13 +457,13 @@ public class ManagementServiceImpl implements ManagementService
       }
       else
       {
-         SimpleString attribute = (SimpleString)message.getProperty(ManagementHelper.HDR_ATTRIBUTE);
+         String attribute = message.getStringProperty(ManagementHelper.HDR_ATTRIBUTE);
 
          if (attribute != null)
          {
             try
             {
-               Object result = getAttribute(resourceName.toString(), attribute.toString());
+               Object result = getAttribute(resourceName, attribute);
 
                ManagementHelper.storeResult(reply, result);
             }
