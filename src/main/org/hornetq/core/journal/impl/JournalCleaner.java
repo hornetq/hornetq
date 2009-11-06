@@ -213,15 +213,15 @@ public class JournalCleaner extends AbstractJournalUpdateTask
     * Commits and rollbacks are also counted as negatives. We need to fix those also.
     * @param dependencies
     */
-   public void fixDependencies(final JournalFile originalFile, final ArrayList<JournalFile> dependencies)  throws Exception
+   public void fixDependencies(final JournalFile originalFile, final ArrayList<JournalFile> dependencies) throws Exception
    {
       for (JournalFile dependency : dependencies)
       {
          fixDependency(originalFile, dependency);
       }
-      
+
    }
-   
+
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
@@ -256,15 +256,17 @@ public class JournalCleaner extends AbstractJournalUpdateTask
    {
       JournalReaderCallback txfix = new JournalReaderCallbackAbstract()
       {
-         public void onReadCommitRecord(long transactionID, int numberOfRecords) throws Exception
+         @Override
+         public void onReadCommitRecord(final long transactionID, final int numberOfRecords) throws Exception
          {
             if (transactionCounter.containsKey(transactionID))
             {
                dependency.incNegCount(originalFile);
             }
          }
-         
-         public void onReadRollbackRecord(long transactionID) throws Exception
+
+         @Override
+         public void onReadRollbackRecord(final long transactionID) throws Exception
          {
             if (transactionCounter.containsKey(transactionID))
             {
@@ -272,10 +274,9 @@ public class JournalCleaner extends AbstractJournalUpdateTask
             }
          }
       };
-      
+
       JournalImpl.readJournalFile(fileFactory, dependency, txfix);
    }
-
 
    // Inner classes -------------------------------------------------
 

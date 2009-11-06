@@ -60,7 +60,7 @@ import org.hornetq.utils.SimpleString;
 public class PagingStoreImpl implements TestSupportPageStore
 {
    // Constants -----------------------------------------------------
-   
+
    private static final Logger log = Logger.getLogger(PagingStoreImpl.class);
 
    // Attributes ----------------------------------------------------
@@ -210,7 +210,7 @@ public class PagingStoreImpl implements TestSupportPageStore
    public boolean isPaging()
    {
       currentPageLock.readLock().lock();
-      
+
       try
       {
          if (addressFullMessagePolicy != AddressFullMessagePolicy.PAGE)
@@ -271,7 +271,6 @@ public class PagingStoreImpl implements TestSupportPageStore
       checkReleaseProducerFlowControlCredits(-credits);
    }
 
-   
    public void addSize(final ServerMessage message, final boolean add) throws Exception
    {
       long size = message.getMemoryEstimate();
@@ -307,7 +306,7 @@ public class PagingStoreImpl implements TestSupportPageStore
          addSize(-size);
       }
    }
-   
+
    public boolean page(final ServerMessage message, final long transactionID, final boolean duplicateDetection) throws Exception
    {
       // The sync on transactions is done on commit only
@@ -320,7 +319,7 @@ public class PagingStoreImpl implements TestSupportPageStore
       // of crash
       return page(message, -1, syncNonTransactional && message.isDurable(), duplicateDetection);
    }
-   
+
    public void sync() throws Exception
    {
       currentPageLock.readLock().lock();
@@ -482,6 +481,7 @@ public class PagingStoreImpl implements TestSupportPageStore
       currentPageLock.readLock().lock();
       try
       {
+         // Already paging, nothing to be done
          if (currentPage != null)
          {
             return false;
@@ -515,7 +515,6 @@ public class PagingStoreImpl implements TestSupportPageStore
       }
    }
 
-   
    public Page getCurrentPage()
    {
       return currentPage;
@@ -597,17 +596,15 @@ public class PagingStoreImpl implements TestSupportPageStore
             {
                firstPageId = Integer.MAX_VALUE;
 
-               if (currentPage != null)
-               {
-                  returnPage = currentPage;
-                  returnPage.close();
-                  currentPage = null;
-               }
-               else
+               if (currentPage == null)
                {
                   // sanity check... it shouldn't happen!
                   throw new IllegalStateException("CurrentPage is null");
                }
+
+               returnPage = currentPage;
+               returnPage.close();
+               currentPage = null;
 
                // The current page is empty... which means we reached the end of the pages
                if (returnPage.getNumberOfMessages() == 0)
@@ -679,7 +676,6 @@ public class PagingStoreImpl implements TestSupportPageStore
 
    }
 
-   
    private synchronized void checkReleaseProducerFlowControlCredits(final long size)
    {
       if (addressFullMessagePolicy == AddressFullMessagePolicy.BLOCK && maxSize != -1)
@@ -702,7 +698,6 @@ public class PagingStoreImpl implements TestSupportPageStore
       }
    }
 
-   
    private void addSize(final long size) throws Exception
    {
       if (addressFullMessagePolicy != AddressFullMessagePolicy.PAGE)
@@ -734,7 +729,6 @@ public class PagingStoreImpl implements TestSupportPageStore
          }
          else
          {
-            // When in Global mode, we use the default page size as the mark to start depage
             if (maxSize > 0 && currentPage != null && addressSize <= maxSize - pageSize && !depaging.get())
             {
                if (startDepaging())
@@ -750,8 +744,11 @@ public class PagingStoreImpl implements TestSupportPageStore
          return;
       }
    }
-   
-   private boolean page(final ServerMessage message, final long transactionID, final boolean sync, final boolean duplicateDetection) throws Exception
+
+   private boolean page(final ServerMessage message,
+                        final long transactionID,
+                        final boolean sync,
+                        final boolean duplicateDetection) throws Exception
    {
       if (!running)
       {
@@ -813,7 +810,7 @@ public class PagingStoreImpl implements TestSupportPageStore
          {
             // We set the duplicate detection header to prevent the message being depaged more than once in case of
             // failure during depage
-            
+
             byte[] bytes = new byte[8];
 
             ByteBuffer buff = ByteBuffer.wrap(bytes);
@@ -823,7 +820,18 @@ public class PagingStoreImpl implements TestSupportPageStore
             message.putBytesProperty(MessageImpl.HDR_DUPLICATE_DETECTION_ID, bytes);
          }
 
-         int bytesToWrite = message.getEncodeSize() + PageImpl.SIZE_RECORD;
+         PagedMessage pagedMessage;
+
+         if (transactionID != -1)
+         {
+            pagedMessage = new PagedMessageImpl(message, transactionID);
+         }
+         else
+         {
+            pagedMessage = new PagedMessageImpl(message);
+         }
+
+         int bytesToWrite = pagedMessage.getEncodeSize() + PageImpl.SIZE_RECORD;
 
          if (currentPageSize.addAndGet(bytesToWrite) > pageSize && currentPage.getNumberOfMessages() > 0)
          {
@@ -846,32 +854,14 @@ public class PagingStoreImpl implements TestSupportPageStore
 
          try
          {
-            if (currentPage != null)
-            {
-               PagedMessage pagedMessage;
-               
-               if (transactionID != -1)
-               {
-                  pagedMessage = new PagedMessageImpl(message, transactionID);
-               }
-               else
-               {
-                  pagedMessage = new PagedMessageImpl(message);
-               }
-               
-               currentPage.write(pagedMessage);
+            currentPage.write(pagedMessage);
 
-               if (sync)
-               {
-                  currentPage.sync();
-               }
-               
-               return true;
-            }
-            else
+            if (sync)
             {
-               return false;
+               currentPage.sync();
             }
+
+            return true;
          }
          finally
          {
@@ -884,7 +874,7 @@ public class PagingStoreImpl implements TestSupportPageStore
       }
 
    }
-   
+
    /**
     * This method will remove files from the page system and and route them, doing it transactionally
     *     

@@ -33,7 +33,6 @@ import org.hornetq.core.journal.JournalLoadInformation;
 import org.hornetq.core.journal.SequentialFile;
 import org.hornetq.core.journal.SequentialFileFactory;
 import org.hornetq.core.journal.impl.NIOSequentialFileFactory;
-import org.hornetq.core.logging.Logger;
 import org.hornetq.core.paging.Page;
 import org.hornetq.core.paging.PageTransactionInfo;
 import org.hornetq.core.paging.PagedMessage;
@@ -77,8 +76,6 @@ public class PagingStoreImplTest extends UnitTestCase
 {
 
    // Constants -----------------------------------------------------
-   
-   private static final Logger log = Logger.getLogger(PagingStoreImplTest.class);
 
    private final static SimpleString destinationTestName = new SimpleString("test");
 
@@ -168,15 +165,15 @@ public class PagingStoreImplTest extends UnitTestCase
 
    }
 
-//   public void testPageWithNIO() throws Exception
-//   {
-//      // This integration test could fail 1 in 100 due to race conditions.
-//      for (int i = 0; i < 100; i++)
-//      {
-//         recreateDirectory(getTestDir());
-//         testConcurrentPaging(new NIOSequentialFileFactory(getTestDir()), 1);
-//      }
-//   }
+   public void testPageWithNIO() throws Exception
+   {
+      // This integration test could fail 1 in 100 due to race conditions.
+      for (int i = 0; i < 100; i++)
+      {
+         recreateDirectory(getTestDir());
+         testConcurrentPaging(new NIOSequentialFileFactory(getTestDir()), 1);
+      }
+   }
 
    public void testStore() throws Exception
    {
@@ -431,12 +428,12 @@ public class PagingStoreImplTest extends UnitTestCase
 
    }
 
-//   public void testConcurrentDepage() throws Exception
-//   {
-//      SequentialFileFactory factory = new FakeSequentialFileFactory(1, false);
-//
-//      testConcurrentPaging(factory, 10);
-//   }
+   public void testConcurrentDepage() throws Exception
+   {
+      SequentialFileFactory factory = new FakeSequentialFileFactory(1, false);
+
+      testConcurrentPaging(factory, 10);
+   }
 
    protected void testConcurrentPaging(final SequentialFileFactory factory, final int numberOfThreads) throws Exception,
                                                                                                       InterruptedException
@@ -474,28 +471,35 @@ public class PagingStoreImplTest extends UnitTestCase
 
       assertEquals(0, storeImpl.getNumberOfPages());
 
+      // Marked the store to be paged
       storeImpl.startPaging();
 
       assertEquals(1, storeImpl.getNumberOfPages());
 
       final SimpleString destination = new SimpleString("test");
 
-      class ProducerThread extends Thread
+      class WriterThread extends Thread
       {
+
          Exception e;
 
          @Override
          public void run()
          {
+
             try
             {
                boolean firstTime = true;
                while (true)
                {
                   long id = messageIdGenerator.incrementAndGet();
-                  ServerMessage msg = createMessage(storeImpl, destination, createRandomBuffer(id, 5));                  
-                  if (storeImpl.page(msg, true))
-                  {                     
+
+                  // Each thread will Keep paging until all the messages are depaged.
+                  // This is possible because the depage thread is not actually reading the pages. 
+                  // Just using the internal API to remove it from the page file system
+                  ServerMessage msg = createMessage(storeImpl, destination, createRandomBuffer(id, 5));  
+                  if (storeImpl.page(msg, false))
+                  {
                      buffers.put(id, msg);
                   }
                   else
@@ -505,6 +509,7 @@ public class PagingStoreImplTest extends UnitTestCase
 
                   if (firstTime)
                   {
+                     // We have at least one data paged. So, we can start depaging now
                      latchStart.countDown();
                      firstTime = false;
                   }
@@ -522,7 +527,7 @@ public class PagingStoreImplTest extends UnitTestCase
          }
       }
 
-      class ConsumerThread extends Thread
+      class ReaderThread extends Thread
       {
          Exception e;
 
@@ -533,12 +538,10 @@ public class PagingStoreImplTest extends UnitTestCase
             {
                // Wait every producer to produce at least one message
                latchStart.await();
+               
                while (aliveProducers.get() > 0)
                {
                   Page page = storeImpl.depage();
-                  
-                  //log.info("depaged " + page);
-                  
                   if (page != null)
                   {
                      readPages.add(page);
@@ -553,15 +556,15 @@ public class PagingStoreImplTest extends UnitTestCase
          }
       }
 
-      ProducerThread producerThread[] = new ProducerThread[numberOfThreads];
+      WriterThread producerThread[] = new WriterThread[numberOfThreads];
 
       for (int i = 0; i < numberOfThreads; i++)
       {
-         producerThread[i] = new ProducerThread();
+         producerThread[i] = new WriterThread();
          producerThread[i].start();
       }
 
-      ConsumerThread consumer = new ConsumerThread();
+      ReaderThread consumer = new ReaderThread();
       consumer.start();
 
       for (int i = 0; i < numberOfThreads; i++)
@@ -611,7 +614,7 @@ public class PagingStoreImplTest extends UnitTestCase
       {
          SequentialFile fileTmp = factory.createSequentialFile(file, 1);
          fileTmp.open();
-         assertTrue(fileTmp.size() + " <= " + MAX_SIZE, fileTmp.size() <= MAX_SIZE);
+         assertTrue("The page file size (" + fileTmp.size() + ") shouldn't be > " + MAX_SIZE, fileTmp.size() <= MAX_SIZE);
          fileTmp.close();
       }
 

@@ -52,7 +52,7 @@ public abstract class AbstractSequentialFactory implements SequentialFileFactory
    {
    }
    
-   public void activate(SequentialFile file)
+   public void activateBuffer(SequentialFile file)
    {
    }
    
@@ -60,7 +60,7 @@ public abstract class AbstractSequentialFactory implements SequentialFileFactory
    {
    }
    
-   public void deactivate(SequentialFile file)
+   public void deactivateBuffer()
    {
    }
    

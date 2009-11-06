@@ -30,14 +30,14 @@ import org.hornetq.core.logging.Logger;
 public class NIOSequentialFileFactory extends AbstractSequentialFactory implements SequentialFileFactory
 {
    private static final Logger log = Logger.getLogger(NIOSequentialFileFactory.class);
-   
+
    public NIOSequentialFileFactory(final String journalDir)
    {
       super(journalDir);
-      
+
       if (journalDir == null)
       {
-         new Exception ("journalDir is null").printStackTrace();
+         new Exception("journalDir is null").printStackTrace();
       }
    }
 
@@ -46,7 +46,7 @@ public class NIOSequentialFileFactory extends AbstractSequentialFactory implemen
    {
       return new NIOSequentialFile(journalDir, fileName);
    }
-   
+
    public boolean isSupportsCallbacks()
    {
       return false;

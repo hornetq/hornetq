@@ -39,9 +39,9 @@ public interface SequentialFileFactory
    /** The factory may need to do some initialization before the file is activated.
     *  this was added as a hook for AIO to initialize the Observer on TimedBuffer.
     *  It could be eventually done the same on NIO if we implement TimedBuffer on NIO */
-   void activate(SequentialFile file);
+   void activateBuffer(SequentialFile file);
    
-   void deactivate(SequentialFile file);
+   void deactivateBuffer();
 
    // To be used in tests only
    ByteBuffer wrapBuffer(byte[] bytes);

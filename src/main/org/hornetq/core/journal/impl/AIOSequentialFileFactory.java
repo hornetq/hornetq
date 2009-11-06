@@ -36,10 +36,10 @@ import org.hornetq.utils.HornetQThreadFactory;
  */
 public class AIOSequentialFileFactory extends AbstractSequentialFactory
 {
-   
+
    // Timeout used to wait executors to shutdown
    private static final int EXECUTOR_TIMEOUT = 60;
-   
+
    private static final Logger log = Logger.getLogger(AIOSequentialFileFactory.class);
 
    private static final boolean trace = log.isTraceEnabled();
@@ -77,21 +77,22 @@ public class AIOSequentialFileFactory extends AbstractSequentialFactory
    }
 
    public AIOSequentialFileFactory(final String journalDir,
-                                   int bufferSize,
-                                   long bufferTimeout,
-                                   boolean flushOnSync,
-                                   boolean logRates)
+                                   final int bufferSize,
+                                   final long bufferTimeout,
+                                   final boolean flushOnSync,
+                                   final boolean logRates)
    {
       super(journalDir);
       this.bufferSize = bufferSize;
       this.bufferTimeout = bufferTimeout;
-      this.timedBuffer = new TimedBuffer(bufferSize, bufferTimeout, flushOnSync, logRates);
+      timedBuffer = new TimedBuffer(bufferSize, bufferTimeout, flushOnSync, logRates);
    }
 
    /* (non-Javadoc)
     * @see org.hornetq.core.journal.SequentialFileFactory#activate(org.hornetq.core.journal.SequentialFile)
     */
-   public void activate(SequentialFile file)
+   @Override
+   public void activateBuffer(final SequentialFile file)
    {
       final AIOSequentialFile sequentialFile = (AIOSequentialFile)file;
       timedBuffer.disableAutoFlush();
@@ -105,12 +106,14 @@ public class AIOSequentialFileFactory extends AbstractSequentialFactory
       }
    }
 
+   @Override
    public void flush()
    {
       timedBuffer.flush();
    }
 
-   public void deactivate(SequentialFile file)
+   @Override
+   public void deactivateBuffer()
    {
       timedBuffer.flush();
       timedBuffer.setObserver(null);
@@ -179,33 +182,37 @@ public class AIOSequentialFileFactory extends AbstractSequentialFactory
    /* (non-Javadoc)
     * @see org.hornetq.core.journal.SequentialFileFactory#releaseBuffer(java.nio.ByteBuffer)
     */
-   public void releaseBuffer(ByteBuffer buffer)
+   @Override
+   public void releaseBuffer(final ByteBuffer buffer)
    {
       AsynchronousFileImpl.destroyBuffer(buffer);
    }
 
+   @Override
    public void start()
    {
       timedBuffer.start();
-      
+
       writeExecutor = Executors.newSingleThreadExecutor(new HornetQThreadFactory("HornetQ-AIO-writer-pool" + System.identityHashCode(this),
-                                                                                                         true));
+                                                                                 true));
 
       pollerExecutor = Executors.newCachedThreadPool(new HornetQThreadFactory("HornetQ-AIO-poller-pool" + System.identityHashCode(this),
-                                                                                                      true));
-
+                                                                              true));
 
    }
 
+   @Override
    public void stop()
    {
       buffersControl.stop();
+
       timedBuffer.stop();
-      
-      this.writeExecutor.shutdown();
+
+      writeExecutor.shutdown();
+
       try
       {
-         if (!this.writeExecutor.awaitTermination(EXECUTOR_TIMEOUT, TimeUnit.SECONDS))
+         if (!writeExecutor.awaitTermination(EXECUTOR_TIMEOUT, TimeUnit.SECONDS))
          {
             log.warn("Timed out on AIO writer shutdown", new Exception("Timed out on AIO writer shutdown"));
          }
@@ -213,12 +220,12 @@ public class AIOSequentialFileFactory extends AbstractSequentialFactory
       catch (InterruptedException e)
       {
       }
-      
-      this.pollerExecutor.shutdown();
+
+      pollerExecutor.shutdown();
 
       try
       {
-         if (!this.pollerExecutor.awaitTermination(EXECUTOR_TIMEOUT, TimeUnit.SECONDS))
+         if (!pollerExecutor.awaitTermination(EXECUTOR_TIMEOUT, TimeUnit.SECONDS))
          {
             log.warn("Timed out on AIO poller shutdown", new Exception("Timed out on AIO writer shutdown"));
          }
@@ -228,9 +235,10 @@ public class AIOSequentialFileFactory extends AbstractSequentialFactory
       }
    }
 
+   @Override
    protected void finalize()
    {
-      this.stop();
+      stop();
    }
 
    /** Class that will control buffer-reuse */
@@ -255,7 +263,9 @@ public class AIOSequentialFileFactory extends AbstractSequentialFactory
          if (bufferSize > 0 && System.currentTimeMillis() - bufferReuseLastTime > 10000)
          {
             if (trace)
+            {
                trace("Clearing reuse buffers queue with " + reuseBuffersQueue.size() + " elements");
+            }
 
             bufferReuseLastTime = System.currentTimeMillis();
 

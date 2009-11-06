@@ -677,7 +677,7 @@ public class FakeSequentialFileFactory implements SequentialFileFactory
    /* (non-Javadoc)
     * @see org.hornetq.core.journal.SequentialFileFactory#activate(org.hornetq.core.journal.SequentialFile)
     */
-   public void activate(SequentialFile file)
+   public void activateBuffer(SequentialFile file)
    {
    }
 
@@ -691,7 +691,7 @@ public class FakeSequentialFileFactory implements SequentialFileFactory
    /* (non-Javadoc)
     * @see org.hornetq.core.journal.SequentialFileFactory#deactivate(org.hornetq.core.journal.SequentialFile)
     */
-   public void deactivate(SequentialFile file)
+   public void deactivateBuffer()
    {
    }
 

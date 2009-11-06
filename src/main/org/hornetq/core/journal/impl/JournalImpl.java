@@ -2058,7 +2058,7 @@ public class JournalImpl implements TestableJournal
          openFile(currentFile, true);
       }
 
-      fileFactory.activate(currentFile.getFile());
+      fileFactory.activateBuffer(currentFile.getFile());
 
       pushOpenedFile();
 
@@ -2559,7 +2559,7 @@ public class JournalImpl implements TestableJournal
             log.warn("Couldn't stop journal executor after 60 seconds");
          }
 
-         fileFactory.flush();
+         fileFactory.deactivateBuffer();
 
          if (currentFile != null && currentFile.getFile().isOpen())
          {
@@ -3037,7 +3037,7 @@ public class JournalImpl implements TestableJournal
          trace("moveNextFile: " + currentFile.getFile().getFileName() + " sync: " + synchronous);
       }
 
-      fileFactory.activate(currentFile.getFile());
+      fileFactory.activateBuffer(currentFile.getFile());
    }
 
    /** 
@@ -3171,7 +3171,7 @@ public class JournalImpl implements TestableJournal
 
    private void closeFile(final JournalFile file, final boolean synchronous)
    {
-      fileFactory.deactivate(file.getFile());
+      fileFactory.deactivateBuffer();
       pendingCloseFiles.add(file);
 
       Runnable run = new Runnable()

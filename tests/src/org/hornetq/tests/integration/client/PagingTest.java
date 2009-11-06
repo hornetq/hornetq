@@ -83,7 +83,7 @@ public class PagingTest extends ServiceTestBase
       clearData();
 
       Configuration config = createDefaultConfig();
-
+ 
       HornetQServer server = createServer(true, config, PAGE_SIZE, PAGE_MAX, new HashMap<String, AddressSettings>());
 
       server.start();
