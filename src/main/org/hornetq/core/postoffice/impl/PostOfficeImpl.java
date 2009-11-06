@@ -959,7 +959,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
    {
       if (reaperPeriod > 0)
       {
-         reaperThread = new Thread(reaperRunnable, "HornetQ-expiry-reaper");
+         reaperThread = new Thread(reaperRunnable, "hornetq-expiry-reaper-thread");
 
          reaperThread.setPriority(reaperPriority);
 

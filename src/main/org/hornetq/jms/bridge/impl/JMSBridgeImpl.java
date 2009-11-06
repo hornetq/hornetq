@@ -318,7 +318,7 @@ public class JMSBridgeImpl implements HornetQComponent, JMSBridge
                      
             timeChecker = new BatchTimeChecker();
             
-            checkerThread = new Thread(timeChecker);
+            checkerThread = new Thread(timeChecker, "jmsbridge-checker-thread");
             
             batchExpiryTime = System.currentTimeMillis() + maxBatchTime;
             
@@ -1415,7 +1415,7 @@ public class JMSBridgeImpl implements HornetQComponent, JMSBridge
       //In the case of onMessage we can't close the connection from inside the onMessage method
       //since it will block waiting for onMessage to complete. In the case of start we want to return
       //from the call before the connections are reestablished so that the caller is not blocked unnecessarily.
-      Thread t = new Thread(failureHandler);
+      Thread t = new Thread(failureHandler, "jmsbridge-failurehandler-thread");
       
       t.start();         
    }
@@ -1504,6 +1504,11 @@ public class JMSBridgeImpl implements HornetQComponent, JMSBridge
     */
    private final class SourceReceiver extends Thread
    {
+      SourceReceiver()
+      {
+         super("jmsbridge-source-receiver-thread");
+      }
+      
       @Override
       public void run()
       {

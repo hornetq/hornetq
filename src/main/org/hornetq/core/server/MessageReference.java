@@ -40,8 +40,6 @@ public interface MessageReference
 
    void setScheduledDeliveryTime(long scheduledDeliveryTime);
 
-   int getMemoryEstimate();
-
    int getDeliveryCount();
 
    void setDeliveryCount(int deliveryCount);

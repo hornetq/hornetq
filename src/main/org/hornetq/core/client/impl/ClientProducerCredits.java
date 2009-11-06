@@ -22,9 +22,9 @@ package org.hornetq.core.client.impl;
  */
 public interface ClientProducerCredits
 {
-   void acquireCredits(final int credits) throws InterruptedException;
+   void acquireCredits(int credits) throws InterruptedException;
 
-   void receiveCredits(final int credits);
+   void receiveCredits(int credits, int offset);
    
    void reset();
    

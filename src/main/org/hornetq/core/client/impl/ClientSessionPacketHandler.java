@@ -84,7 +84,8 @@ public class ClientSessionPacketHandler implements ChannelHandler
             {
                SessionProducerCreditsMessage message = (SessionProducerCreditsMessage)packet;
                
-               clientSession.handleReceiveProducerCredits(message.getAddress(), message.getCredits());
+               clientSession.handleReceiveProducerCredits(message.getAddress(), message.getCredits(),
+                                                          message.getOffset());
                
                break;
             }

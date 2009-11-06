@@ -3506,6 +3506,8 @@ public class JournalImpl implements TestableJournal
 
       private PerfBlast(final int pages)
       {
+         super("hornetq-perfblast-thread");
+         
          this.pages = pages;
       }
 

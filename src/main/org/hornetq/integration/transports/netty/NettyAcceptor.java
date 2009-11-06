@@ -512,14 +512,7 @@ public class NettyAcceptor implements Acceptor
       {
          if (connections.remove(connectionID) != null)
          {
-            // // Execute on different thread to avoid deadlocks
-            // new Thread()
-            // {
-            // public void run()
-            // {
             listener.connectionDestroyed(connectionID);
-            // }
-            // }.start();
          }
       }
 

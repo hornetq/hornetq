@@ -132,15 +132,15 @@ public abstract class MessageImpl implements Message
    protected MessageImpl(final MessageImpl other)
    {
       this();
-      this.messageID = other.messageID;
-      this.destination = other.destination;
-      this.type = other.type;
-      this.durable = other.durable;
-      this.expiration = other.expiration;
-      this.timestamp = other.timestamp;
-      this.priority = other.priority;
-      this.properties = new TypedProperties(other.properties);
-      this.body = other.body;
+      messageID = other.messageID;
+      destination = other.destination;
+      type = other.type;
+      durable = other.durable;
+      expiration = other.expiration;
+      timestamp = other.timestamp;
+      priority = other.priority;
+      properties = new TypedProperties(other.properties);
+      body = other.body;
    }
 
    /*
@@ -149,15 +149,15 @@ public abstract class MessageImpl implements Message
    protected MessageImpl(final Message other)
    {
       this();
-      this.messageID = other.getMessageID();
-      this.destination = other.getDestination();
-      this.type = other.getType();
-      this.durable = other.isDurable();
-      this.expiration = other.getExpiration();
-      this.timestamp = other.getTimestamp();
-      this.priority = other.getPriority();
-      this.properties = new TypedProperties(other.getProperties());
-      this.body = other.getBody();
+      messageID = other.getMessageID();
+      destination = other.getDestination();
+      type = other.getType();
+      durable = other.isDurable();
+      expiration = other.getExpiration();
+      timestamp = other.getTimestamp();
+      priority = other.getPriority();
+      properties = new TypedProperties(other.getProperties());
+      body = other.getBody();
    }
 
    protected MessageImpl(final long messageID)
@@ -196,7 +196,7 @@ public abstract class MessageImpl implements Message
       return body.writerIndex();
    }
 
-   public void encodeHeadersAndProperties(HornetQBuffer buffer)
+   public void encodeHeadersAndProperties(final HornetQBuffer buffer)
    {
       buffer.writeLong(messageID);
       buffer.writeSimpleString(destination);
@@ -208,14 +208,14 @@ public abstract class MessageImpl implements Message
       properties.encode(buffer);
    }
 
-   public void encodeBody(HornetQBuffer buffer)
+   public void encodeBody(final HornetQBuffer buffer)
    {
       HornetQBuffer localBody = getBody();
       buffer.writeBytes(localBody.array(), 0, localBody.writerIndex());
    }
 
    // Used on Message chunk side
-   public void encodeBody(final HornetQBuffer bufferOut, LargeMessageEncodingContext context, int size)
+   public void encodeBody(final HornetQBuffer bufferOut, final LargeMessageEncodingContext context, final int size)
    {
       context.write(bufferOut, size);
    }
@@ -330,7 +330,7 @@ public abstract class MessageImpl implements Message
    /**
     * @param bodyInputStream the bodyInputStream to set
     */
-   public void setBodyInputStream(InputStream bodyInputStream)
+   public void setBodyInputStream(final InputStream bodyInputStream)
    {
       this.bodyInputStream = bodyInputStream;
    }
@@ -400,8 +400,8 @@ public abstract class MessageImpl implements Message
    {
       properties.putSimpleStringProperty(key, value);
    }
-   
-   public void putObjectProperty(SimpleString key, Object value) throws PropertyConversionException
+
+   public void putObjectProperty(final SimpleString key, final Object value) throws PropertyConversionException
    {
       if (value == null)
       {
@@ -447,7 +447,7 @@ public abstract class MessageImpl implements Message
       }
    }
 
-   public void putObjectProperty(String key, Object value) throws PropertyConversionException
+   public void putObjectProperty(final String key, final Object value) throws PropertyConversionException
    {
       putObjectProperty(new SimpleString(key), value);
    }
@@ -497,7 +497,7 @@ public abstract class MessageImpl implements Message
       properties.putSimpleStringProperty(new SimpleString(key), new SimpleString(value));
    }
 
-   public void putTypedProperties(TypedProperties otherProps)
+   public void putTypedProperties(final TypedProperties otherProps)
    {
       properties.putTypedProperties(otherProps);
    }
@@ -507,87 +507,87 @@ public abstract class MessageImpl implements Message
       return properties.getProperty(key);
    }
 
-   public Boolean getBooleanProperty(SimpleString key) throws PropertyConversionException
+   public Boolean getBooleanProperty(final SimpleString key) throws PropertyConversionException
    {
       return properties.getBooleanProperty(key);
    }
-   
-   public Boolean getBooleanProperty(String key) throws PropertyConversionException
+
+   public Boolean getBooleanProperty(final String key) throws PropertyConversionException
    {
       return properties.getBooleanProperty(new SimpleString(key));
    }
 
-   public Byte getByteProperty(SimpleString key) throws PropertyConversionException
+   public Byte getByteProperty(final SimpleString key) throws PropertyConversionException
    {
       return properties.getByteProperty(key);
    }
-   
-   public Byte getByteProperty(String key) throws PropertyConversionException
+
+   public Byte getByteProperty(final String key) throws PropertyConversionException
    {
       return properties.getByteProperty(new SimpleString(key));
    }
 
-   public byte[] getBytesProperty(SimpleString key) throws PropertyConversionException
+   public byte[] getBytesProperty(final SimpleString key) throws PropertyConversionException
    {
       return properties.getBytesProperty(key);
    }
-   
-   public byte[] getBytesProperty(String key) throws PropertyConversionException
+
+   public byte[] getBytesProperty(final String key) throws PropertyConversionException
    {
       return getBytesProperty(new SimpleString(key));
    }
 
-   public Double getDoubleProperty(SimpleString key) throws PropertyConversionException
+   public Double getDoubleProperty(final SimpleString key) throws PropertyConversionException
    {
       return properties.getDoubleProperty(key);
    }
 
-   public Double getDoubleProperty(String key) throws PropertyConversionException
+   public Double getDoubleProperty(final String key) throws PropertyConversionException
    {
       return properties.getDoubleProperty(new SimpleString(key));
    }
 
-   public Integer getIntProperty(SimpleString key) throws PropertyConversionException
+   public Integer getIntProperty(final SimpleString key) throws PropertyConversionException
    {
       return properties.getIntProperty(key);
    }
 
-   public Integer getIntProperty(String key) throws PropertyConversionException
+   public Integer getIntProperty(final String key) throws PropertyConversionException
    {
       return properties.getIntProperty(new SimpleString(key));
    }
 
-   public Long getLongProperty(SimpleString key) throws PropertyConversionException
+   public Long getLongProperty(final SimpleString key) throws PropertyConversionException
    {
       return properties.getLongProperty(key);
    }
-   
-   public Long getLongProperty(String key) throws PropertyConversionException
+
+   public Long getLongProperty(final String key) throws PropertyConversionException
    {
       return properties.getLongProperty(new SimpleString(key));
    }
 
-   public Short getShortProperty(SimpleString key) throws PropertyConversionException
+   public Short getShortProperty(final SimpleString key) throws PropertyConversionException
    {
       return properties.getShortProperty(key);
    }
-   
-   public Short getShortProperty(String key) throws PropertyConversionException
+
+   public Short getShortProperty(final String key) throws PropertyConversionException
    {
       return properties.getShortProperty(new SimpleString(key));
    }
 
-   public Float getFloatProperty(SimpleString key) throws PropertyConversionException
+   public Float getFloatProperty(final SimpleString key) throws PropertyConversionException
    {
       return properties.getFloatProperty(key);
    }
 
-   public Float getFloatProperty(String key) throws PropertyConversionException
+   public Float getFloatProperty(final String key) throws PropertyConversionException
    {
       return properties.getFloatProperty(new SimpleString(key));
    }
-   
-   public String getStringProperty(SimpleString key) throws PropertyConversionException
+
+   public String getStringProperty(final SimpleString key) throws PropertyConversionException
    {
       SimpleString str = getSimpleStringProperty(key);
 
@@ -600,18 +600,18 @@ public abstract class MessageImpl implements Message
          return str.toString();
       }
    }
-   
-   public String getStringProperty(String key) throws PropertyConversionException
+
+   public String getStringProperty(final String key) throws PropertyConversionException
    {
       return getStringProperty(new SimpleString(key));
    }
-   
-   public SimpleString getSimpleStringProperty(SimpleString key) throws PropertyConversionException
+
+   public SimpleString getSimpleStringProperty(final SimpleString key) throws PropertyConversionException
    {
       return properties.getSimpleStringProperty(key);
    }
-   
-   public SimpleString getSimpleStringProperty(String key) throws PropertyConversionException
+
+   public SimpleString getSimpleStringProperty(final String key) throws PropertyConversionException
    {
       return properties.getSimpleStringProperty(new SimpleString(key));
    }
@@ -620,7 +620,7 @@ public abstract class MessageImpl implements Message
    {
       return properties.getProperty(new SimpleString(key));
    }
-   
+
    public Object removeProperty(final SimpleString key)
    {
       return properties.removeProperty(key);
@@ -648,7 +648,7 @@ public abstract class MessageImpl implements Message
 
    public TypedProperties getProperties()
    {
-      return this.properties;
+      return properties;
    }
 
    // Body

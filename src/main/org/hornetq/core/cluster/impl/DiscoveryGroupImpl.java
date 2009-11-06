@@ -116,7 +116,7 @@ public class DiscoveryGroupImpl implements Runnable, DiscoveryGroup
 
       started = true;
 
-      thread = new Thread(this);
+      thread = new Thread(this, "hornetq-discovery-group-thread-" + name);
 
       thread.setDaemon(true);
 
@@ -126,7 +126,7 @@ public class DiscoveryGroupImpl implements Runnable, DiscoveryGroup
       {
          TypedProperties props = new TypedProperties();
          props.putSimpleStringProperty(new SimpleString("name"), new SimpleString(name));
-         Notification notification = new Notification(nodeID, NotificationType.DISCOVERY_GROUP_STARTED, props );
+         Notification notification = new Notification(nodeID, NotificationType.DISCOVERY_GROUP_STARTED, props);
          notificationService.sendNotification(notification );
       }
    }

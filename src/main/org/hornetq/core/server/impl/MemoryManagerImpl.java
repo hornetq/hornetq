@@ -74,7 +74,7 @@ public class MemoryManagerImpl implements MemoryManager
 
       started = true;
 
-      thread = new Thread(new MemoryRunnable());
+      thread = new Thread(new MemoryRunnable(), "hornetq-memory-manager-thread");
 
       thread.setDaemon(true);
 

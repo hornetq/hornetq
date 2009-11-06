@@ -29,8 +29,10 @@ public class Notification
    private final NotificationType type;
 
    private final TypedProperties properties;
+   
+   private final String uid;
 
-   public Notification(String uid, final NotificationType type, final TypedProperties properties)
+   public Notification(final String uid, final NotificationType type, final TypedProperties properties)
    {
       this.uid = uid;
       this.type = type;
@@ -46,14 +48,12 @@ public class Notification
    {
       return properties;
    }
-
-   private String uid;
-
+   
    public String getUID()
    {
       return uid;
    }
-   
+
    @Override
    public String toString()
    {

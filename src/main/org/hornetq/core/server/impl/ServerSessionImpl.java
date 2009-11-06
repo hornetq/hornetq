@@ -28,6 +28,7 @@ import javax.transaction.xa.XAException;
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
 
+import org.hornetq.core.buffers.ChannelBuffers;
 import org.hornetq.core.client.impl.ClientMessageImpl;
 import org.hornetq.core.client.management.impl.ManagementHelper;
 import org.hornetq.core.exception.HornetQException;
@@ -112,6 +113,30 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
    private static final Logger log = Logger.getLogger(ServerSessionImpl.class);
 
    // Static -------------------------------------------------------------------------------
+   
+   private static int offset;
+
+   static
+   {
+      try
+      {
+         ServerMessage msg = new ServerMessageImpl();
+         
+         msg.setBody(ChannelBuffers.dynamicBuffer(0));
+   
+         msg.setDestination(new SimpleString("foobar"));
+   
+         int es = msg.getEncodeSize();
+   
+         int me = msg.getMemoryEstimate();
+   
+         offset = MessageReferenceImpl.getMemoryEstimate() + me - es;
+      }
+      catch (Exception e)
+      {
+         log.error("Failed to initialise mult and offset", e);
+      }
+   }
 
    // Attributes ----------------------------------------------------------------------------
 
@@ -1895,7 +1920,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
 
       return holder;
    }
-   
+
    private CreditManagerHolder getCreditManagerHolder(final SimpleString address) throws Exception
    {
       CreditManagerHolder holder = creditManagerHolders.get(address);
@@ -1903,7 +1928,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
       if (holder == null)
       {
          PagingStore store = postOffice.getPagingManager().getPageStore(address);
-         
+
          holder = new CreditManagerHolder(store);
 
          creditManagerHolders.put(address, holder);
@@ -1913,14 +1938,14 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
    }
 
    private void sendProducerCredits(final CreditManagerHolder holder, final int credits, final SimpleString address)
-   {
+   {      
       holder.outstandingCredits += credits;
 
-      Packet packet = new SessionProducerCreditsMessage(credits, address);
+      Packet packet = new SessionProducerCreditsMessage(credits, address, offset);
 
       channel.send(packet);
    }
-
+   
    private void send(final ServerMessage msg) throws Exception
    {
       // Look up the paging store

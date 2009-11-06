@@ -40,6 +40,7 @@ import org.hornetq.core.postoffice.PostOffice;
 import org.hornetq.core.server.LargeServerMessage;
 import org.hornetq.core.server.MessageReference;
 import org.hornetq.core.server.ServerMessage;
+import org.hornetq.core.server.impl.MessageReferenceImpl;
 import org.hornetq.core.server.impl.ServerProducerCreditManager;
 import org.hornetq.core.server.impl.ServerProducerCreditManagerImpl;
 import org.hornetq.core.settings.impl.AddressFullMessagePolicy;
@@ -291,7 +292,7 @@ public class PagingStoreImpl implements TestSupportPageStore
 
    public void addSize(final MessageReference reference, final boolean add) throws Exception
    {
-      long size = reference.getMemoryEstimate();
+      long size = MessageReferenceImpl.getMemoryEstimate();
 
       if (add)
       {

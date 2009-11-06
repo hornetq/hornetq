@@ -26,7 +26,7 @@ public interface ClientProducerCreditManager
 {
    ClientProducerCredits getCredits(SimpleString destination);
    
-   void receiveCredits(SimpleString destination, int credits);
+   void receiveCredits(SimpleString destination, int credits, int offset);
    
    void reset();
    

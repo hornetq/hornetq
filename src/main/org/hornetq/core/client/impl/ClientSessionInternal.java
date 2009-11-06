@@ -71,5 +71,5 @@ public interface ClientSessionInternal extends ClientSession
    
    ClientProducerCredits getCredits(SimpleString address);
    
-   void handleReceiveProducerCredits(SimpleString address, int credits);
+   void handleReceiveProducerCredits(SimpleString address, int credits, int offset);
 }

@@ -45,6 +45,13 @@ public class MessageReferenceImpl implements MessageReference
 
    // Constructors --------------------------------------------------
 
+   public MessageReferenceImpl()
+   {
+      queue = null;
+      
+      message = null;
+   }
+   
    public MessageReferenceImpl(final MessageReferenceImpl other, final Queue queue)
    {
       deliveryCount = other.deliveryCount;
@@ -69,7 +76,7 @@ public class MessageReferenceImpl implements MessageReference
       return new MessageReferenceImpl(this, queue);
    }
 
-   public int getMemoryEstimate()
+   public static int getMemoryEstimate()
    {
       // from few tests I have done, deliveryCount and scheduledDelivery will use two longs (because of alignment)
       // and each of the references (messages and queue) will use the equivalent to two longs (because of long

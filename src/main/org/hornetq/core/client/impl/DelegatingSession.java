@@ -539,8 +539,8 @@ public class DelegatingSession implements ClientSessionInternal
       return session.getCredits(address);
    }
 
-   public void handleReceiveProducerCredits(SimpleString address, int credits)
+   public void handleReceiveProducerCredits(SimpleString address, int credits, int offset)
    {
-      session.handleReceiveProducerCredits(address, credits);
+      session.handleReceiveProducerCredits(address, credits, offset);
    }  
 }

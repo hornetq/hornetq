@@ -185,11 +185,6 @@ public class LastValueQueue extends QueueImpl
          return ref.getDeliveryCount();
       }
 
-      public int getMemoryEstimate()
-      {
-         return ref.getMemoryEstimate();
-      }
-
       public ServerMessage getMessage()
       {
          return ref.getMessage();

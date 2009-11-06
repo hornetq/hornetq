@@ -977,9 +977,9 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
       return producerCreditManager.getCredits(address);
    }
    
-   public void handleReceiveProducerCredits(final SimpleString address, final int credits)
+   public void handleReceiveProducerCredits(final SimpleString address, final int credits, final int offset)
    {
-      producerCreditManager.receiveCredits(address, credits);
+      producerCreditManager.receiveCredits(address, credits, offset);
    }
 
    // CommandConfirmationHandler implementation ------------------------------------

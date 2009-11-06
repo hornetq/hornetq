@@ -444,6 +444,8 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
 
       FailureCheckThread(final long pauseInterval)
       {
+         super("hornetq-failure-check-thread");
+         
          this.pauseInterval = pauseInterval;
       }
 

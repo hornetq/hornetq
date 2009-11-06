@@ -270,6 +270,11 @@ public class HornetQBootstrapServer extends BasicBootstrap
 
    protected class Shutdown extends Thread
    {
+      public Shutdown()
+      {
+         super("hornetq-shutdown-thread");
+      }
+      
       public void run()
       {
          HornetQBootstrapServer.this.shutDown();

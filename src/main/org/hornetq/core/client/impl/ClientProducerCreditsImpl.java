@@ -38,6 +38,8 @@ public class ClientProducerCreditsImpl implements ClientProducerCredits
    private final ClientSessionInternal session;
 
    private int arriving;
+   
+   private int offset;
 
    public ClientProducerCreditsImpl(final ClientSessionInternal session,
                                     final SimpleString destination,
@@ -58,16 +60,20 @@ public class ClientProducerCreditsImpl implements ClientProducerCredits
       checkCredits(windowSize);
    }
 
-   public void acquireCredits(final int credits) throws InterruptedException
+   public void acquireCredits(int credits) throws InterruptedException
    {
+     // credits += offset;
+      
       checkCredits(credits);
 
       semaphore.acquire(credits);
    }
 
-   public synchronized void receiveCredits(final int credits)
+   public synchronized void receiveCredits(final int credits, final int offset)
    {
       arriving -= credits;
+      
+      this.offset = offset;
 
       semaphore.release(credits);
    }
