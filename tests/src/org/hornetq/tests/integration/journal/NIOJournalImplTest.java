@@ -27,9 +27,9 @@ import org.hornetq.tests.unit.core.journal.impl.JournalImplTestUnit;
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */
-public class RealNIOJournalImplTest extends JournalImplTestUnit
+public class NIOJournalImplTest extends JournalImplTestUnit
 {
-   private static final Logger log = Logger.getLogger(RealNIOJournalImplTest.class);
+   private static final Logger log = Logger.getLogger(NIOJournalImplTest.class);
 
    @Override
    protected SequentialFileFactory getFileFactory() throws Exception

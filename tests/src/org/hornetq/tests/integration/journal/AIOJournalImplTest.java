@@ -37,14 +37,14 @@ import org.hornetq.tests.unit.core.journal.impl.JournalImplTestUnit;
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
  *
  */
-public class RealAIOJournalImplTest extends JournalImplTestUnit
+public class AIOJournalImplTest extends JournalImplTestUnit
 {
-   private static final Logger log = Logger.getLogger(RealAIOJournalImplTest.class);
+   private static final Logger log = Logger.getLogger(AIOJournalImplTest.class);
    
    public static TestSuite suite()
    {
       // Ignore tests if AIO is not installed
-      return createAIOTestSuite(RealAIOJournalImplTest.class);
+      return createAIOTestSuite(AIOJournalImplTest.class);
    }
 
    @Override
