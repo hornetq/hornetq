@@ -1437,8 +1437,6 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
 
       try
       {
-         setPagingStore(message);
-
          long id = storageManager.generateUniqueID();
 
          message.setMessageID(id);
@@ -1768,8 +1766,6 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
       {
          LargeServerMessage msg = createLargeMessageStorage(id, packet.getLargeMessageHeader());
 
-         setPagingStore(msg);
-
          return msg;
       }
       catch (Exception e)
@@ -1884,23 +1880,6 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
       holder.store.returnProducerCredits(credits);
    }
 
-   // TODO can we combine these two methods....
-   private CreditManagerHolder getCreditManagerHolder(final SimpleString address) throws Exception
-   {
-      CreditManagerHolder holder = creditManagerHolders.get(address);
-
-      if (holder == null)
-      {
-         PagingStore store = postOffice.getPagingManager().getPageStore(address);
-
-         holder = new CreditManagerHolder(store);
-
-         creditManagerHolders.put(address, holder);
-      }
-
-      return holder;
-   }
-
    private CreditManagerHolder getCreditManagerHolder(final ServerMessage message) throws Exception
    {
       SimpleString address = message.getDestination();
@@ -1916,12 +1895,21 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
 
       return holder;
    }
-
-   private void setPagingStore(final ServerMessage message) throws Exception
+   
+   private CreditManagerHolder getCreditManagerHolder(final SimpleString address) throws Exception
    {
-      PagingStore store = postOffice.getPagingManager().getPageStore(message.getDestination());
+      CreditManagerHolder holder = creditManagerHolders.get(address);
 
-      message.setPagingStore(store);
+      if (holder == null)
+      {
+         PagingStore store = postOffice.getPagingManager().getPageStore(address);
+         
+         holder = new CreditManagerHolder(store);
+
+         creditManagerHolders.put(address, holder);
+      }
+
+      return holder;
    }
 
    private void sendProducerCredits(final CreditManagerHolder holder, final int credits, final SimpleString address)

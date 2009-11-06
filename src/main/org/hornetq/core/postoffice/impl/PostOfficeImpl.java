@@ -538,7 +538,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
       {
          throw new IllegalStateException("Message cannot be routed more than once");
       }
-      
+
       RoutingContext context = new RoutingContextImpl(tx);
 
       SimpleString address = message.getDestination();
@@ -596,6 +596,8 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
 
          cache.addToCache(duplicateIDBytes, context.getTransaction());
       }
+      
+      setPagingStore(message);
 
       if (context.getTransaction() == null)
       {
@@ -665,7 +667,9 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
    }
 
    public MessageReference reroute(final ServerMessage message, final Queue queue, final Transaction tx) throws Exception
-   {     
+   {
+      setPagingStore(message);
+      
       MessageReference reference = message.createReference(queue);
 
       Long scheduledDeliveryTime = (Long)message.getProperty(MessageImpl.HDR_SCHEDULED_DELIVERY_TIME);
@@ -772,8 +776,6 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
          message.setBody(ChannelBuffers.EMPTY_BUFFER);
          message.setDestination(queueName);
          message.putBooleanProperty(HDR_RESET_QUEUE_DATA, true);
-         // queue.preroute(message, null);
-         // queue.route(message, null);
          routeDirect(message, queue, false);
 
          for (QueueInfo info : queueInfos.values())
@@ -828,6 +830,13 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
 
    // Private -----------------------------------------------------------------
 
+   private void setPagingStore(final ServerMessage message) throws Exception
+   {
+      PagingStore store = pagingManager.getPageStore(message.getDestination());
+
+      message.setPagingStore(store);      
+   }
+
    private void routeDirect(final ServerMessage message, final Queue queue, final boolean applyFilters) throws Exception
    {
       if (!applyFilters || queue.getFilter() == null || queue.getFilter().match(message))
@@ -860,11 +869,11 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
          {
             reference.setScheduledDeliveryTime(scheduledDeliveryTime);
          }
-         
+
          if (message.isDurable() && queue.isDurable())
          {
             int durableRefCount = message.incrementDurableRefCount();
-            
+
             if (durableRefCount == 1)
             {
                if (tx != null)
@@ -1180,7 +1189,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
 
                if (!pagingStoresToSync.isEmpty())
                {
-                  for (PagingStore store: pagingStoresToSync)
+                  for (PagingStore store : pagingStoresToSync)
                   {
                      store.sync();
                   }
@@ -1228,7 +1237,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
       public void beforeRollback(Transaction tx) throws Exception
       {
          // Reverse the ref counts, and paging sizes
-         
+
          for (MessageReference ref : refs)
          {
             ServerMessage message = ref.getMessage();
