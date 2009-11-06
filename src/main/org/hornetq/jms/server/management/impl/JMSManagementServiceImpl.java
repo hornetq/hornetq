@@ -27,8 +27,11 @@ import org.hornetq.jms.HornetQQueue;
 import org.hornetq.jms.HornetQTopic;
 import org.hornetq.jms.client.HornetQConnectionFactory;
 import org.hornetq.jms.server.JMSServerManager;
+import org.hornetq.jms.server.management.ConnectionFactoryControl;
 import org.hornetq.jms.server.management.JMSManagementService;
+import org.hornetq.jms.server.management.JMSQueueControl;
 import org.hornetq.jms.server.management.JMSServerControl;
+import org.hornetq.jms.server.management.TopicControl;
 
 /*
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
@@ -126,6 +129,22 @@ public class JMSManagementServiceImpl implements JMSManagementService
       ObjectName objectName = managementService.getObjectNameBuilder().getConnectionFactoryObjectName(name);
       managementService.unregisterFromJMX(objectName);
       managementService.unregisterFromRegistry(ResourceNames.JMS_CONNECTION_FACTORY + name);
+   }
+   
+   public void stop() throws Exception
+   {
+      for (Object resource : managementService.getResources(ConnectionFactoryControl.class))
+      {
+         unregisterConnectionFactory(((ConnectionFactoryControl)resource).getName());         
+      }
+      for (Object resource : managementService.getResources(JMSQueueControl.class))
+      {
+         unregisterQueue(((JMSQueueControl)resource).getName());         
+      }
+      for (Object resource : managementService.getResources(TopicControl.class))
+      {
+         unregisterTopic(((TopicControl)resource).getName());         
+      }
    }
 
    // Package protected ---------------------------------------------

@@ -45,4 +45,6 @@ public interface JMSManagementService
    void registerConnectionFactory(String name, HornetQConnectionFactory connectionFactory, List<String> bindings) throws Exception;
 
    void unregisterConnectionFactory(String name) throws Exception;
+
+   void stop() throws Exception;
 }

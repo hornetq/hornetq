@@ -201,6 +201,8 @@ public class JMSServerManagerImpl implements JMSServerManager, ActivateCallback
 
       jmsManagementService.unregisterJMSServer();
 
+      jmsManagementService.stop();
+      
       server.stop();
 
       started = false;
