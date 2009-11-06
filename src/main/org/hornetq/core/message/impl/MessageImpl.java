@@ -398,7 +398,7 @@ public abstract class MessageImpl implements Message
 
    public void putStringProperty(final SimpleString key, final SimpleString value)
    {
-      properties.putStringProperty(key, value);
+      properties.putSimpleStringProperty(key, value);
    }
    
    public void putObjectProperty(SimpleString key, Object value) throws PropertyConversionException
@@ -439,7 +439,7 @@ public abstract class MessageImpl implements Message
       }
       else if (value instanceof String)
       {
-         properties.putStringProperty(key, new SimpleString((String)value));
+         properties.putSimpleStringProperty(key, new SimpleString((String)value));
       }
       else
       {
@@ -494,7 +494,7 @@ public abstract class MessageImpl implements Message
 
    public void putStringProperty(final String key, final String value)
    {
-      properties.putStringProperty(new SimpleString(key), new SimpleString(value));
+      properties.putSimpleStringProperty(new SimpleString(key), new SimpleString(value));
    }
 
    public void putTypedProperties(TypedProperties otherProps)
@@ -509,76 +509,27 @@ public abstract class MessageImpl implements Message
 
    public Boolean getBooleanProperty(SimpleString key) throws PropertyConversionException
    {
-      Object value = properties.getProperty(key);
-      if (value == null)
-      {
-         return Boolean.valueOf(null);
-      }
-
-      if (value instanceof Boolean)
-      {
-         return (Boolean)value;
-      }
-      else if (value instanceof SimpleString)
-      {
-         return Boolean.valueOf(((SimpleString)value).toString()).booleanValue();
-      }
-      else
-      {
-         throw new PropertyConversionException("Invalid conversion");
-      }
+      return properties.getBooleanProperty(key);
    }
    
    public Boolean getBooleanProperty(String key) throws PropertyConversionException
    {
-      return getBooleanProperty(new SimpleString(key));
+      return properties.getBooleanProperty(new SimpleString(key));
    }
 
    public Byte getByteProperty(SimpleString key) throws PropertyConversionException
    {
-      Object value = properties.getProperty(key);
-
-      if (value == null)
-      {
-         return Byte.valueOf(null);
-      }
-
-      if (value instanceof Byte)
-      {
-         return (Byte)value;
-      }
-      else if (value instanceof SimpleString)
-      {
-         return Byte.parseByte(((SimpleString)value).toString());
-      }
-      else
-      {
-         throw new PropertyConversionException("Invalid conversion");
-      }
+      return properties.getByteProperty(key);
    }
    
    public Byte getByteProperty(String key) throws PropertyConversionException
    {
-      return getByteProperty(new SimpleString(key));
+      return properties.getByteProperty(new SimpleString(key));
    }
 
    public byte[] getBytesProperty(SimpleString key) throws PropertyConversionException
    {
-      Object value = properties.getProperty(key);
-
-      if (value == null)
-      {
-         return null;
-      }
-
-      if (value instanceof byte[])
-      {
-         return (byte[])value;
-      }
-      else
-      {
-         throw new PropertyConversionException("Invalid conversion");
-      }
+      return properties.getBytesProperty(key);
    }
    
    public byte[] getBytesProperty(String key) throws PropertyConversionException
@@ -588,162 +539,52 @@ public abstract class MessageImpl implements Message
 
    public Double getDoubleProperty(SimpleString key) throws PropertyConversionException
    {
-      Object value = properties.getProperty(key);
-      if (value == null)
-      {
-         return Double.valueOf(null);
-      }
-
-      if (value instanceof Float)
-      {
-         return ((Float)value).doubleValue();
-      }
-      else if (value instanceof Double)
-      {
-         return (Double)value;
-      }
-      else if (value instanceof SimpleString)
-      {
-         return Double.parseDouble(((SimpleString)value).toString());
-      }
-      else
-      {
-         throw new PropertyConversionException("Invalid conversion");
-      }
+      return properties.getDoubleProperty(key);
    }
 
    public Double getDoubleProperty(String key) throws PropertyConversionException
    {
-      return getDoubleProperty(new SimpleString(key));
+      return properties.getDoubleProperty(new SimpleString(key));
    }
 
    public Integer getIntProperty(SimpleString key) throws PropertyConversionException
    {
-      Object value = properties.getProperty(key);
-      if (value == null)
-      {
-         return Integer.valueOf(null);
-      }
-      else if (value instanceof Integer)
-      {
-         return (Integer)value;
-      }
-      else if (value instanceof Byte)
-      {
-         return ((Byte)value).intValue();
-      }
-      else if (value instanceof Short)
-      {
-         return ((Short)value).intValue();
-      }
-      else if (value instanceof SimpleString)
-      {
-         return Integer.parseInt(((SimpleString)value).toString());
-      }
-      else
-      {
-         throw new PropertyConversionException("Invalid conversion");
-      }
+      return properties.getIntProperty(key);
    }
 
    public Integer getIntProperty(String key) throws PropertyConversionException
    {
-      return getIntProperty(new SimpleString(key));
+      return properties.getIntProperty(new SimpleString(key));
    }
 
    public Long getLongProperty(SimpleString key) throws PropertyConversionException
    {
-      Object value = properties.getProperty(key);
-      if (value == null)
-      {
-         return Long.valueOf(null);
-      }
-      else if (value instanceof Long)
-      {
-         return (Long)value;
-      }
-      else if (value instanceof Byte)
-      {
-         return ((Byte)value).longValue();
-      }
-      else if (value instanceof Short)
-      {
-         return ((Short)value).longValue();
-      }
-      else if (value instanceof Integer)
-      {
-         return ((Integer)value).longValue();
-      }
-      else if (value instanceof SimpleString)
-      {
-         return Long.parseLong(((SimpleString)value).toString());
-      }
-      else
-      {
-         throw new PropertyConversionException("Invalid conversion");
-      }
+      return properties.getLongProperty(key);
    }
    
    public Long getLongProperty(String key) throws PropertyConversionException
    {
-      return getLongProperty(new SimpleString(key));
+      return properties.getLongProperty(new SimpleString(key));
    }
 
    public Short getShortProperty(SimpleString key) throws PropertyConversionException
    {
-      Object value = properties.getProperty(key);
-      if (value == null)
-      {
-         return Short.valueOf(null);
-      }
-      else if (value instanceof Byte)
-      {
-         return ((Byte)value).shortValue();
-      }
-      else if (value instanceof Short)
-      {
-         return (Short)value;
-      }
-      else if (value instanceof SimpleString)
-      {
-         return Short.parseShort(((SimpleString)value).toString());
-      }
-      else
-      {
-         throw new PropertyConversionException("Invalid Conversion.");
-      }
+      return properties.getShortProperty(key);
    }
    
    public Short getShortProperty(String key) throws PropertyConversionException
    {
-      return getShortProperty(new SimpleString(key));
+      return properties.getShortProperty(new SimpleString(key));
    }
 
    public Float getFloatProperty(SimpleString key) throws PropertyConversionException
    {
-      Object value = properties.getProperty(key);
-      if (value == null)
-      {
-         return Float.valueOf(null);
-      }
-
-      if (value instanceof Float)
-      {
-         return ((Float)value).floatValue();
-      }
-      else if (value instanceof SimpleString)
-      {
-         return Float.parseFloat(((SimpleString)value).toString());
-      }
-      else
-      {
-         throw new PropertyConversionException("Invalid conversion");
-      }
+      return properties.getFloatProperty(key);
    }
 
    public Float getFloatProperty(String key) throws PropertyConversionException
    {
-      return getFloatProperty(new SimpleString(key));
+      return properties.getFloatProperty(new SimpleString(key));
    }
    
    public String getStringProperty(SimpleString key) throws PropertyConversionException
@@ -767,54 +608,12 @@ public abstract class MessageImpl implements Message
    
    public SimpleString getSimpleStringProperty(SimpleString key) throws PropertyConversionException
    {
-      Object value = properties.getProperty(key);
-
-      if (value == null)
-      {
-         return null;
-      }
-
-      if (value instanceof SimpleString)
-      {
-         return (SimpleString)value;
-      }
-      else if (value instanceof Boolean)
-      {
-         return new SimpleString(value.toString());
-      }
-      else if (value instanceof Byte)
-      {
-         return new SimpleString(value.toString());
-      }
-      else if (value instanceof Short)
-      {
-         return new SimpleString(value.toString());
-      }
-      else if (value instanceof Integer)
-      {
-         return new SimpleString(value.toString());
-      }
-      else if (value instanceof Long)
-      {
-         return new SimpleString(value.toString());
-      }
-      else if (value instanceof Float)
-      {
-         return new SimpleString(value.toString());
-      }
-      else if (value instanceof Double)
-      {
-         return new SimpleString(value.toString());
-      }
-      else
-      {
-         throw new PropertyConversionException("Invalid conversion");
-      }
+      return properties.getSimpleStringProperty(key);
    }
    
    public SimpleString getSimpleStringProperty(String key) throws PropertyConversionException
    {
-      return getSimpleStringProperty(new SimpleString(key));
+      return properties.getSimpleStringProperty(new SimpleString(key));
    }
 
    public Object getObjectProperty(final String key)

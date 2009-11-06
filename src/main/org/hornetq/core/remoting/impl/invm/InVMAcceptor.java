@@ -84,7 +84,7 @@ public class InVMAcceptor implements Acceptor
       if (notificationService != null)
       {
          TypedProperties props = new TypedProperties();
-         props.putStringProperty(new SimpleString("factory"), new SimpleString(InVMAcceptorFactory.class.getName()));
+         props.putSimpleStringProperty(new SimpleString("factory"), new SimpleString(InVMAcceptorFactory.class.getName()));
          props.putIntProperty(new SimpleString("id"), id);
          Notification notification = new Notification(null, NotificationType.ACCEPTOR_STARTED, props);
          notificationService.sendNotification(notification);
@@ -117,7 +117,7 @@ public class InVMAcceptor implements Acceptor
       if (notificationService != null)
       {
          TypedProperties props = new TypedProperties();
-         props.putStringProperty(new SimpleString("factory"), new SimpleString(InVMAcceptorFactory.class.getName()));
+         props.putSimpleStringProperty(new SimpleString("factory"), new SimpleString(InVMAcceptorFactory.class.getName()));
          props.putIntProperty(new SimpleString("id"), id);
          Notification notification = new Notification(null, NotificationType.ACCEPTOR_STOPPED, props);
          try

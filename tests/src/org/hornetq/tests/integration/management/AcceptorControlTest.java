@@ -164,14 +164,14 @@ public class AcceptorControlTest extends ManagementTestBase
       assertEquals(1, notifListener.getNotifications().size());
       Notification notif = notifListener.getNotifications().get(0);
       assertEquals(NotificationType.ACCEPTOR_STOPPED, notif.getType());
-      assertEquals(InVMAcceptorFactory.class.getName(), (notif.getProperties().getProperty(new SimpleString("factory")).toString()));
+      assertEquals(InVMAcceptorFactory.class.getName(), (notif.getProperties().getSimpleStringProperty(new SimpleString("factory")).toString()));
       
       acceptorControl.start();
       
       assertEquals(2, notifListener.getNotifications().size());
       notif = notifListener.getNotifications().get(1);
       assertEquals(NotificationType.ACCEPTOR_STARTED, notif.getType());
-      assertEquals(InVMAcceptorFactory.class.getName(), (notif.getProperties().getProperty(new SimpleString("factory")).toString()));      
+      assertEquals(InVMAcceptorFactory.class.getName(), (notif.getProperties().getSimpleStringProperty(new SimpleString("factory")).toString()));      
    }
 
    // Package protected ---------------------------------------------

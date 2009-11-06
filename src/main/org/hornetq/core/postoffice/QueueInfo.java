@@ -48,8 +48,8 @@ public class QueueInfo implements Serializable
    
    private final int distance;
    
-   public QueueInfo(final SimpleString routingName, final SimpleString clusterName, final SimpleString address, final SimpleString filterString, final Long id,
-                    final Integer distance)
+   public QueueInfo(final SimpleString routingName, final SimpleString clusterName, final SimpleString address, final SimpleString filterString, final long id,
+                    final int distance)
    {
       if (routingName == null)
       {
@@ -63,10 +63,7 @@ public class QueueInfo implements Serializable
       {
          throw new IllegalArgumentException("Address is null");
       }
-      if (distance == null)
-      {
-         throw new IllegalArgumentException("Distance is null");
-      }
+
       this.routingName = routingName;
       this.clusterName = clusterName;
       this.address = address;      

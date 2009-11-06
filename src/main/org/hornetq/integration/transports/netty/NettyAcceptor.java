@@ -315,8 +315,8 @@ public class NettyAcceptor implements Acceptor
       if (notificationService != null)
       {
          TypedProperties props = new TypedProperties();
-         props.putStringProperty(new SimpleString("factory"), new SimpleString(NettyAcceptorFactory.class.getName()));
-         props.putStringProperty(new SimpleString("host"), new SimpleString(host));
+         props.putSimpleStringProperty(new SimpleString("factory"), new SimpleString(NettyAcceptorFactory.class.getName()));
+         props.putSimpleStringProperty(new SimpleString("host"), new SimpleString(host));
          props.putIntProperty(new SimpleString("port"), port);
          Notification notification = new Notification(null, NotificationType.ACCEPTOR_STARTED, props);
          notificationService.sendNotification(notification);
@@ -387,8 +387,8 @@ public class NettyAcceptor implements Acceptor
       if (notificationService != null)
       {
          TypedProperties props = new TypedProperties();
-         props.putStringProperty(new SimpleString("factory"), new SimpleString(NettyAcceptorFactory.class.getName()));
-         props.putStringProperty(new SimpleString("host"), new SimpleString(host));
+         props.putSimpleStringProperty(new SimpleString("factory"), new SimpleString(NettyAcceptorFactory.class.getName()));
+         props.putSimpleStringProperty(new SimpleString("host"), new SimpleString(host));
          props.putIntProperty(new SimpleString("port"), port);
          Notification notification = new Notification(null, NotificationType.ACCEPTOR_STOPPED, props);
          try

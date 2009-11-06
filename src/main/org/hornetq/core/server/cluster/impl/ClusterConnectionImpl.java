@@ -225,7 +225,7 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
       if (managementService != null)
       {
          TypedProperties props = new TypedProperties();
-         props.putStringProperty(new SimpleString("name"), name);
+         props.putSimpleStringProperty(new SimpleString("name"), name);
          Notification notification = new Notification(nodeUUID.toString(), NotificationType.CLUSTER_CONNECTION_STARTED, props);
          managementService.sendNotification(notification);
       }
@@ -257,7 +257,7 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
       if (managementService != null)
       {
          TypedProperties props = new TypedProperties();
-         props.putStringProperty(new SimpleString("name"), name);
+         props.putSimpleStringProperty(new SimpleString("name"), name);
          Notification notification = new Notification(nodeUUID.toString(), NotificationType.CLUSTER_CONNECTION_STOPPED, props);
          managementService.sendNotification(notification);
       }

@@ -25,6 +25,7 @@ import javax.jms.MessageFormatException;
 
 import org.hornetq.core.client.ClientMessage;
 import org.hornetq.core.client.ClientSession;
+import org.hornetq.core.message.PropertyConversionException;
 import org.hornetq.utils.SimpleString;
 import org.hornetq.utils.TypedProperties;
 
@@ -153,7 +154,7 @@ public class HornetQMapMessage extends HornetQMessage implements MapMessage
    public void setString(final String name, final String value) throws JMSException
    {
       checkName(name);
-      map.putStringProperty(new SimpleString(name), value == null ? null : new SimpleString(value));
+      map.putSimpleStringProperty(new SimpleString(name), value == null ? null : new SimpleString(value));
    }
 
    public void setBytes(final String name, final byte[] value) throws JMSException
@@ -195,7 +196,7 @@ public class HornetQMapMessage extends HornetQMessage implements MapMessage
       else if (value instanceof Double)
          map.putDoubleProperty(key, (Double)value);
       else if (value instanceof String)
-         map.putStringProperty(key, new SimpleString((String)value));
+         map.putSimpleStringProperty(key, new SimpleString((String)value));
       else if (value instanceof byte[])
          map.putBytesProperty(key, (byte[]) value);
       else
@@ -204,195 +205,130 @@ public class HornetQMapMessage extends HornetQMessage implements MapMessage
 
    public boolean getBoolean(final String name) throws JMSException
    {
-      Object value = map.getProperty(new SimpleString(name));
-
-      if (value == null)
-         return Boolean.valueOf(null).booleanValue();
-
-      if (value instanceof Boolean)
-         return ((Boolean) value).booleanValue();
-      else if (value instanceof SimpleString)
-         return Boolean.valueOf(((SimpleString) value).toString()).booleanValue();
-      else
-         throw new MessageFormatException("Invalid conversion");
+      try
+      {
+         return map.getBooleanProperty(new SimpleString(name));
+      }
+      catch (PropertyConversionException e)
+      {
+         throw new MessageFormatException(e.getMessage());
+      }
    }
 
    public byte getByte(final String name) throws JMSException
    {
-      Object value = map.getProperty(new SimpleString(name));
-
-      if (value == null)
-         return Byte.parseByte(null);
-
-      if (value instanceof Byte)
-         return ((Byte) value).byteValue();
-      else if (value instanceof SimpleString)
-         return Byte.parseByte(((SimpleString) value).toString());
-      else
-         throw new MessageFormatException("Invalid conversion");
+      try
+      {
+         return map.getByteProperty(new SimpleString(name));
+      }
+      catch (PropertyConversionException e)
+      {
+         throw new MessageFormatException(e.getMessage());
+      }
    }
 
    public short getShort(final String name) throws JMSException
    {
-      Object value = map.getProperty(new SimpleString(name));
-
-      if (value == null)
-         return Short.parseShort(null);
-
-      if (value instanceof Byte)
-         return ((Byte) value).shortValue();
-      else if (value instanceof Short)
-         return ((Short) value).shortValue();
-      else if (value instanceof SimpleString)
-         return Short.parseShort(((SimpleString) value).toString());
-      else
-         throw new MessageFormatException("Invalid conversion");
+      try
+      {
+         return map.getShortProperty(new SimpleString(name));
+      }
+      catch (PropertyConversionException e)
+      {
+         throw new MessageFormatException(e.getMessage());
+      }
    }
 
    public char getChar(final String name) throws JMSException
    {
-      Object value = map.getProperty(new SimpleString(name));
-
-      if (value == null)
-         throw new NullPointerException("Invalid conversion");
-
-      if (value instanceof Character)
-         return ((Character) value).charValue();
-      else
-         throw new MessageFormatException("Invalid conversion");
+      try
+      {
+         return map.getCharProperty(new SimpleString(name));
+      }
+      catch (PropertyConversionException e)
+      {
+         throw new MessageFormatException(e.getMessage());
+      }
    }
 
    public int getInt(final String name) throws JMSException
    {
-      Object value = map.getProperty(new SimpleString(name));
-
-      if (value == null)
-         return Integer.parseInt(null);
-
-      if (value instanceof Byte)
-         return ((Byte) value).intValue();
-      else if (value instanceof Short)
-         return ((Short) value).intValue();
-      else if (value instanceof Integer)
-         return ((Integer) value).intValue();
-      else if (value instanceof SimpleString)
-         return Integer.parseInt(((SimpleString) value).toString());
-      else
-         throw new MessageFormatException("Invalid conversion");
+      try
+      {
+         return map.getIntProperty(new SimpleString(name));
+      }
+      catch (PropertyConversionException e)
+      {
+         throw new MessageFormatException(e.getMessage());
+      }
    }
 
    public long getLong(final String name) throws JMSException
    {
-      Object value = map.getProperty(new SimpleString(name));
-
-      if (value == null)
-         return Long.parseLong(null);
-
-      if (value instanceof Byte)
-         return ((Byte) value).longValue();
-      else if (value instanceof Short)
-         return ((Short) value).longValue();
-      else if (value instanceof Integer)
-         return ((Integer) value).longValue();
-      else if (value instanceof Long)
-         return ((Long) value).longValue();
-      else if (value instanceof SimpleString)
-         return Long.parseLong(((SimpleString) value).toString());
-      else
-         throw new MessageFormatException("Invalid conversion");
+      try
+      {
+         return map.getLongProperty(new SimpleString(name));
+      }
+      catch (PropertyConversionException e)
+      {
+         throw new MessageFormatException(e.getMessage());
+      }
    }
 
    public float getFloat(final String name) throws JMSException
    {
-      Object value = map.getProperty(new SimpleString(name));
-
-      if (value == null)
-         return Float.parseFloat(null);
-
-      if (value instanceof Float)
-         return ((Float) value).floatValue();
-      else if (value instanceof SimpleString)
-         return Float.parseFloat(((SimpleString) value).toString());
-      else
-         throw new MessageFormatException("Invalid conversion");
+      try
+      {
+         return map.getFloatProperty(new SimpleString(name));
+      }
+      catch (PropertyConversionException e)
+      {
+         throw new MessageFormatException(e.getMessage());
+      }
    }
 
    public double getDouble(final String name) throws JMSException
    {
-      Object value = map.getProperty(new SimpleString(name));
-
-      if (value == null)
-         return Double.parseDouble(null);
-
-      if (value instanceof Float)
-         return ((Float) value).doubleValue();
-      else if (value instanceof Double)
-         return ((Double) value).doubleValue();
-      else if (value instanceof SimpleString)
-         return Double.parseDouble(((SimpleString) value).toString());
-      else
-         throw new MessageFormatException("Invalid conversion");
+      try
+      {
+         return map.getDoubleProperty(new SimpleString(name));
+      }
+      catch (PropertyConversionException e)
+      {
+         throw new MessageFormatException(e.getMessage());
+      }
    }
 
    public String getString(final String name) throws JMSException
    {
-      Object value = map.getProperty(new SimpleString(name));
-
-      if (value == null)
-         return null;
-
-      if (value instanceof SimpleString)
+      try
       {
-         return ((SimpleString) value).toString();
-      }      
-      else if (value instanceof Boolean)
-      {
-         return  value.toString();
+         SimpleString str =  map.getSimpleStringProperty(new SimpleString(name));
+         if (str == null)
+         {
+            return null;
+         }
+         else
+         {
+            return str.toString();
+         }
       }
-      else if (value instanceof Byte)
+      catch (PropertyConversionException e)
       {
-         return value.toString();
-      }
-      else if (value instanceof Short)
-      {
-         return value.toString();
-      }
-      else if (value instanceof Character)
-      {
-         return value.toString();
-      }
-      else if (value instanceof Integer)
-      {
-         return value.toString();
-      }
-      else if (value instanceof Long)
-      {
-         return value.toString();
-      }
-      else if (value instanceof Float)
-      {
-         return value.toString();
-      }
-      else if (value instanceof Double)
-      {
-         return value.toString();
-      }
-      else
-      {
-         throw new MessageFormatException("Invalid conversion");
+         throw new MessageFormatException(e.getMessage());
       }
    }
 
    public byte[] getBytes(final String name) throws JMSException
    {
-      Object value = map.getProperty(new SimpleString(name));
-
-      if (value == null)
-         return null;
-      if (value instanceof byte[])
-         return (byte[]) value;
-      else
-         throw new MessageFormatException("Invalid conversion");
+      try
+      {
+         return map.getBytesProperty(new SimpleString(name));
+      }
+      catch (PropertyConversionException e)
+      {
+         throw new MessageFormatException(e.getMessage());
+      }
    }
 
    public Object getObject(final String name) throws JMSException

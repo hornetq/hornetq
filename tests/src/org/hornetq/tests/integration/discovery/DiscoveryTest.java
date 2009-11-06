@@ -869,14 +869,14 @@ public class DiscoveryTest extends UnitTestCase
       assertEquals(1, notifListener.getNotifications().size());
       Notification notif = notifListener.getNotifications().get(0);
       assertEquals(NotificationType.DISCOVERY_GROUP_STARTED, notif.getType());
-      assertEquals(dg.getName(), (notif.getProperties().getProperty(new SimpleString("name")).toString()));
+      assertEquals(dg.getName(), (notif.getProperties().getSimpleStringProperty(new SimpleString("name")).toString()));
       
       dg.stop();
       
       assertEquals(2, notifListener.getNotifications().size());
       notif = notifListener.getNotifications().get(1);
       assertEquals(NotificationType.DISCOVERY_GROUP_STOPPED, notif.getType());
-      assertEquals(dg.getName(), (notif.getProperties().getProperty(new SimpleString("name")).toString()));
+      assertEquals(dg.getName(), (notif.getProperties().getSimpleStringProperty(new SimpleString("name")).toString()));
    }
    
    public void testBroadcastGroupNotifications() throws Exception
@@ -898,14 +898,14 @@ public class DiscoveryTest extends UnitTestCase
       assertEquals(1, notifListener.getNotifications().size());
       Notification notif = notifListener.getNotifications().get(0);
       assertEquals(NotificationType.BROADCAST_GROUP_STARTED, notif.getType());
-      assertEquals(bg.getName(), (notif.getProperties().getProperty(new SimpleString("name")).toString()));
+      assertEquals(bg.getName(), (notif.getProperties().getSimpleStringProperty(new SimpleString("name")).toString()));
       
       bg.stop();
       
       assertEquals(2, notifListener.getNotifications().size());
       notif = notifListener.getNotifications().get(1);
       assertEquals(NotificationType.BROADCAST_GROUP_STOPPED, notif.getType());
-      assertEquals(bg.getName(), (notif.getProperties().getProperty(new SimpleString("name")).toString()));
+      assertEquals(bg.getName(), (notif.getProperties().getSimpleStringProperty(new SimpleString("name")).toString()));
    }
 
    private TransportConfiguration generateTC()

@@ -235,7 +235,7 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
       if (notificationService != null)
       {
          TypedProperties props = new TypedProperties();
-         props.putStringProperty(new SimpleString("name"), name);
+         props.putSimpleStringProperty(new SimpleString("name"), name);
          Notification notification = new Notification(nodeUUID.toString(), NotificationType.BRIDGE_STARTED, props);
          notificationService.sendNotification(notification);
       }
@@ -281,7 +281,7 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
       if (notificationService != null)
       {
          TypedProperties props = new TypedProperties();
-         props.putStringProperty(new SimpleString("name"), name);
+         props.putSimpleStringProperty(new SimpleString("name"), name);
          Notification notification = new Notification(nodeUUID.toString(), NotificationType.BRIDGE_STOPPED, props);
          try
          {

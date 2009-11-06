@@ -222,12 +222,12 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
             {
                TypedProperties props = notification.getProperties();
 
-               Integer bindingType = (Integer)props.getProperty(ManagementHelper.HDR_BINDING_TYPE);
-
-               if (bindingType == null)
+               if (!props.containsProperty(ManagementHelper.HDR_BINDING_TYPE))
                {
                   throw new IllegalArgumentException("Binding type not specified");
                }
+
+               Integer bindingType = props.getIntProperty(ManagementHelper.HDR_BINDING_TYPE);
 
                if (bindingType == BindingType.DIVERT_INDEX)
                {
@@ -235,17 +235,27 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
                   return;
                }
 
-               SimpleString routingName = (SimpleString)props.getProperty(ManagementHelper.HDR_ROUTING_NAME);
+               SimpleString routingName = props.getSimpleStringProperty(ManagementHelper.HDR_ROUTING_NAME);
 
-               SimpleString clusterName = (SimpleString)props.getProperty(ManagementHelper.HDR_CLUSTER_NAME);
+               SimpleString clusterName = props.getSimpleStringProperty(ManagementHelper.HDR_CLUSTER_NAME);
 
-               SimpleString address = (SimpleString)props.getProperty(ManagementHelper.HDR_ADDRESS);
+               SimpleString address = props.getSimpleStringProperty(ManagementHelper.HDR_ADDRESS);
 
-               Long id = (Long)props.getProperty(ManagementHelper.HDR_BINDING_ID);
+               if (!props.containsProperty(ManagementHelper.HDR_BINDING_ID))
+               {
+                  throw new IllegalArgumentException("ID is null");
+               }
+               
+               long id = props.getLongProperty(ManagementHelper.HDR_BINDING_ID);
 
-               SimpleString filterString = (SimpleString)props.getProperty(ManagementHelper.HDR_FILTERSTRING);
+               SimpleString filterString = props.getSimpleStringProperty(ManagementHelper.HDR_FILTERSTRING);
 
-               Integer distance = (Integer)props.getProperty(ManagementHelper.HDR_DISTANCE);
+               if (!props.containsProperty(ManagementHelper.HDR_DISTANCE))
+               {
+                  throw new IllegalArgumentException("Distance is null");
+               }
+               
+               int distance = props.getIntProperty(ManagementHelper.HDR_DISTANCE);
 
                QueueInfo info = new QueueInfo(routingName, clusterName, address, filterString, id, distance);
 
@@ -257,12 +267,12 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
             {
                TypedProperties props = notification.getProperties();
 
-               SimpleString clusterName = (SimpleString)props.getProperty(ManagementHelper.HDR_CLUSTER_NAME);
-
-               if (clusterName == null)
+               if (!props.containsProperty(ManagementHelper.HDR_CLUSTER_NAME))
                {
                   throw new IllegalStateException("No cluster name");
                }
+               
+               SimpleString clusterName = props.getSimpleStringProperty(ManagementHelper.HDR_CLUSTER_NAME);
 
                QueueInfo info = queueInfos.remove(clusterName);
 
@@ -277,14 +287,14 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
             {
                TypedProperties props = notification.getProperties();
 
-               SimpleString clusterName = (SimpleString)props.getProperty(ManagementHelper.HDR_CLUSTER_NAME);
-
-               if (clusterName == null)
+               if (!props.containsProperty(ManagementHelper.HDR_CLUSTER_NAME))
                {
                   throw new IllegalStateException("No cluster name");
                }
+               
+               SimpleString clusterName = props.getSimpleStringProperty(ManagementHelper.HDR_CLUSTER_NAME);
 
-               SimpleString filterString = (SimpleString)props.getProperty(ManagementHelper.HDR_FILTERSTRING);
+               SimpleString filterString = props.getSimpleStringProperty(ManagementHelper.HDR_FILTERSTRING);
 
                QueueInfo info = queueInfos.get(clusterName);
 
@@ -309,16 +319,16 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
                   filterStrings.add(filterString);
                }
 
-               Integer distance = (Integer)props.getProperty(ManagementHelper.HDR_DISTANCE);
-
-               if (distance == null)
+               if (!props.containsProperty(ManagementHelper.HDR_DISTANCE))
                {
                   throw new IllegalStateException("No distance");
                }
 
+               int distance = props.getIntProperty(ManagementHelper.HDR_DISTANCE);
+
                if (distance > 0)
                {
-                  SimpleString queueName = (SimpleString)props.getProperty(ManagementHelper.HDR_ROUTING_NAME);
+                  SimpleString queueName = props.getSimpleStringProperty(ManagementHelper.HDR_ROUTING_NAME);
 
                   if (queueName == null)
                   {
@@ -350,14 +360,14 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
             {
                TypedProperties props = notification.getProperties();
 
-               SimpleString clusterName = (SimpleString)props.getProperty(ManagementHelper.HDR_CLUSTER_NAME);
+               SimpleString clusterName = props.getSimpleStringProperty(ManagementHelper.HDR_CLUSTER_NAME);
 
                if (clusterName == null)
                {
-                  throw new IllegalStateException("No distance");
+                  throw new IllegalStateException("No cluster name");
                }
 
-               SimpleString filterString = (SimpleString)props.getProperty(ManagementHelper.HDR_FILTERSTRING);
+               SimpleString filterString = props.getSimpleStringProperty(ManagementHelper.HDR_FILTERSTRING);
 
                QueueInfo info = queueInfos.get(clusterName);
 
@@ -377,16 +387,16 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
 
                if (info.getNumberOfConsumers() == 0)
                {
-                  Integer distance = (Integer)props.getProperty(ManagementHelper.HDR_DISTANCE);
-
-                  if (distance == null)
+                  if (!props.containsProperty(ManagementHelper.HDR_DISTANCE))
                   {
                      throw new IllegalStateException("No cluster name");
                   }
 
+                  int distance = props.getIntProperty(ManagementHelper.HDR_DISTANCE);
+
                   if (distance == 0)
                   {
-                     SimpleString queueName = (SimpleString)props.getProperty(ManagementHelper.HDR_ROUTING_NAME);
+                     SimpleString queueName = props.getSimpleStringProperty(ManagementHelper.HDR_ROUTING_NAME);
 
                      if (queueName == null)
                      {
@@ -439,11 +449,11 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
 
       props.putIntProperty(ManagementHelper.HDR_BINDING_TYPE, binding.getType().toInt());
 
-      props.putStringProperty(ManagementHelper.HDR_ADDRESS, binding.getAddress());
+      props.putSimpleStringProperty(ManagementHelper.HDR_ADDRESS, binding.getAddress());
 
-      props.putStringProperty(ManagementHelper.HDR_CLUSTER_NAME, binding.getClusterName());
+      props.putSimpleStringProperty(ManagementHelper.HDR_CLUSTER_NAME, binding.getClusterName());
 
-      props.putStringProperty(ManagementHelper.HDR_ROUTING_NAME, binding.getRoutingName());
+      props.putSimpleStringProperty(ManagementHelper.HDR_ROUTING_NAME, binding.getRoutingName());
 
       props.putLongProperty(ManagementHelper.HDR_BINDING_ID, binding.getID());
 
@@ -453,7 +463,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
 
       if (filter != null)
       {
-         props.putStringProperty(ManagementHelper.HDR_FILTERSTRING, filter.getFilterString());
+         props.putSimpleStringProperty(ManagementHelper.HDR_FILTERSTRING, filter.getFilterString());
       }
 
       String uid = UUIDGenerator.getInstance().generateStringUUID();
@@ -491,11 +501,11 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
 
       TypedProperties props = new TypedProperties();
 
-      props.putStringProperty(ManagementHelper.HDR_ADDRESS, binding.getAddress());
+      props.putSimpleStringProperty(ManagementHelper.HDR_ADDRESS, binding.getAddress());
 
-      props.putStringProperty(ManagementHelper.HDR_CLUSTER_NAME, binding.getClusterName());
+      props.putSimpleStringProperty(ManagementHelper.HDR_CLUSTER_NAME, binding.getClusterName());
 
-      props.putStringProperty(ManagementHelper.HDR_ROUTING_NAME, binding.getRoutingName());
+      props.putSimpleStringProperty(ManagementHelper.HDR_ROUTING_NAME, binding.getRoutingName());
 
       props.putIntProperty(ManagementHelper.HDR_DISTANCE, binding.getDistance());
 

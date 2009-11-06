@@ -81,7 +81,7 @@ public class TypedPropertiesTest extends UnitTestCase
 
    public void testCopyContructor() throws Exception
    {
-      props.putStringProperty(key, randomSimpleString());
+      props.putSimpleStringProperty(key, randomSimpleString());
 
       TypedProperties copy = new TypedProperties(props);
 
@@ -94,7 +94,7 @@ public class TypedPropertiesTest extends UnitTestCase
 
    public void testRemove() throws Exception
    {
-      props.putStringProperty(key, randomSimpleString());
+      props.putSimpleStringProperty(key, randomSimpleString());
 
       assertTrue(props.containsProperty(key));
       assertNotNull(props.getProperty(key));
@@ -107,7 +107,7 @@ public class TypedPropertiesTest extends UnitTestCase
 
    public void testClear() throws Exception
    {
-      props.putStringProperty(key, randomSimpleString());
+      props.putSimpleStringProperty(key, randomSimpleString());
 
       assertTrue(props.containsProperty(key));
       assertNotNull(props.getProperty(key));
@@ -143,36 +143,9 @@ public class TypedPropertiesTest extends UnitTestCase
    
    public void testNullProperty() throws Exception
    {
-      props.putStringProperty(key, null);
+      props.putSimpleStringProperty(key, null);
       assertTrue(props.containsProperty(key));
       assertNull(props.getProperty(key));
-   }
-
-   public void testBooleanProperty() throws Exception
-   {
-      props.putBooleanProperty(key, true);
-      boolean bool = (Boolean) props.getProperty(key);
-      assertEquals(true, bool);
-
-      props.putBooleanProperty(key, false);
-      bool = (Boolean) props.getProperty(key);
-      assertEquals(false, bool);
-   }
-
-   public void testByteProperty() throws Exception
-   {
-      byte b = randomByte();
-      props.putByteProperty(key, b);
-      byte bb = (Byte) props.getProperty(key);
-      assertEquals(b, bb);
-   }
-
-   public void testBytesProperty() throws Exception
-   {
-      byte[] b = randomBytes();
-      props.putBytesProperty(key, b);
-      byte[] bb = (byte[]) props.getProperty(key);
-      assertEqualsByteArrays(b, bb);
    }
 
    public void testBytesPropertyWithNull() throws Exception
@@ -184,63 +157,6 @@ public class TypedPropertiesTest extends UnitTestCase
       assertNull(bb);
    }
 
-   public void testFloatProperty() throws Exception
-   {
-      float f = randomFloat();
-      props.putFloatProperty(key, f);
-      float ff = (Float) props.getProperty(key);
-      assertEquals(f, ff);
-   }
-
-   public void testDoubleProperty() throws Exception
-   {
-      double d = randomDouble();
-      props.putDoubleProperty(key, d);
-      double dd = (Double) props.getProperty(key);
-      assertEquals(d, dd);
-   }
-
-   public void testShortProperty() throws Exception
-   {
-      short s = randomShort();
-      props.putShortProperty(key, s);
-      short ss = (Short) props.getProperty(key);
-      assertEquals(s, ss);
-   }
-
-   public void testIntProperty() throws Exception
-   {
-      int i = randomInt();
-      props.putIntProperty(key, i);
-      int ii = (Integer) props.getProperty(key);
-      assertEquals(i, ii);
-   }
-
-   public void testLongProperty() throws Exception
-   {
-      long l = randomLong();
-      props.putLongProperty(key, l);
-      long ll = (Long) props.getProperty(key);
-      assertEquals(l, ll);
-   }
-
-   public void testCharProperty() throws Exception
-   {
-      char c = randomChar();
-      props.putCharProperty(key, c);
-      char cc = (Character) props.getProperty(key);
-      assertEquals(c, cc);
-   }
-   
-   public void testSimpleString() throws Exception
-   {
-      props = new TypedProperties();
-      SimpleString value = randomSimpleString();
-      props.putStringProperty(key, value);
-      SimpleString vv = (SimpleString)props.getProperty(key);
-      assertEquals(value, vv);
-   }
-
    public void testTypedProperties() throws Exception
    {
       SimpleString longKey = randomSimpleString();
@@ -249,13 +165,13 @@ public class TypedPropertiesTest extends UnitTestCase
       SimpleString simpleStringValue = randomSimpleString();
       TypedProperties otherProps = new TypedProperties();
       otherProps.putLongProperty(longKey, longValue);
-      otherProps.putStringProperty(simpleStringKey, simpleStringValue);
+      otherProps.putSimpleStringProperty(simpleStringKey, simpleStringValue);
       
       props.putTypedProperties(otherProps);
       
-      long ll = (Long) props.getProperty(longKey);
+      long ll = props.getLongProperty(longKey);
       assertEquals(longValue, ll);
-      SimpleString ss = (SimpleString) props.getProperty(simpleStringKey);
+      SimpleString ss = props.getSimpleStringProperty(simpleStringKey);
       assertEquals(simpleStringValue, ss);
    }
    
@@ -289,10 +205,10 @@ public class TypedPropertiesTest extends UnitTestCase
       props.putFloatProperty(randomSimpleString(), randomFloat());
       props.putDoubleProperty(randomSimpleString(), randomDouble());
       props.putCharProperty(randomSimpleString(), randomChar());
-      props.putStringProperty(randomSimpleString(), randomSimpleString());
-      props.putStringProperty(randomSimpleString(), null);
+      props.putSimpleStringProperty(randomSimpleString(), randomSimpleString());
+      props.putSimpleStringProperty(randomSimpleString(), null);
       SimpleString keyToRemove = randomSimpleString();
-      props.putStringProperty(keyToRemove, randomSimpleString());
+      props.putSimpleStringProperty(keyToRemove, randomSimpleString());
 
       HornetQBuffer buffer = ChannelBuffers.dynamicBuffer(1024); 
       props.encode(buffer);

@@ -937,11 +937,10 @@ public class JournalStorageManager implements StorageManager
 
       messageEncoding.decode(buff);
 
-      Long originalMessageID = (Long)largeMessage.getProperties().getProperty(MessageImpl.HDR_ORIG_MESSAGE_ID);
-
-      // Using the linked file by the original file
-      if (originalMessageID != null)
+      if (largeMessage.getProperties().containsProperty(MessageImpl.HDR_ORIG_MESSAGE_ID))
       {
+         long originalMessageID = largeMessage.getProperties().getLongProperty(MessageImpl.HDR_ORIG_MESSAGE_ID);
+
          LargeServerMessage originalMessage = (LargeServerMessage)messages.get(originalMessageID);
 
          if (originalMessage == null)

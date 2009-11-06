@@ -125,7 +125,7 @@ public class DiscoveryGroupImpl implements Runnable, DiscoveryGroup
       if (notificationService != null)
       {
          TypedProperties props = new TypedProperties();
-         props.putStringProperty(new SimpleString("name"), new SimpleString(name));
+         props.putSimpleStringProperty(new SimpleString("name"), new SimpleString(name));
          Notification notification = new Notification(nodeID, NotificationType.DISCOVERY_GROUP_STARTED, props );
          notificationService.sendNotification(notification );
       }
@@ -160,7 +160,7 @@ public class DiscoveryGroupImpl implements Runnable, DiscoveryGroup
       if (notificationService != null)
       {
          TypedProperties props = new TypedProperties();
-         props.putStringProperty(new SimpleString("name"), new SimpleString(name));
+         props.putSimpleStringProperty(new SimpleString("name"), new SimpleString(name));
          Notification notification = new Notification(nodeID, NotificationType.DISCOVERY_GROUP_STOPPED, props );
          try
          {

@@ -107,11 +107,11 @@ public class LocalGroupingHandler implements GroupingHandler
    public void send(final Response response, final int distance) throws Exception
    {
       TypedProperties props = new TypedProperties();
-      props.putStringProperty(ManagementHelper.HDR_PROPOSAL_GROUP_ID, response.getGroupId());
-      props.putStringProperty(ManagementHelper.HDR_PROPOSAL_VALUE, response.getClusterName());
-      props.putStringProperty(ManagementHelper.HDR_PROPOSAL_ALT_VALUE, response.getAlternativeClusterName());
+      props.putSimpleStringProperty(ManagementHelper.HDR_PROPOSAL_GROUP_ID, response.getGroupId());
+      props.putSimpleStringProperty(ManagementHelper.HDR_PROPOSAL_VALUE, response.getClusterName());
+      props.putSimpleStringProperty(ManagementHelper.HDR_PROPOSAL_ALT_VALUE, response.getAlternativeClusterName());
       props.putIntProperty(ManagementHelper.HDR_BINDING_TYPE, BindingType.LOCAL_QUEUE_INDEX);
-      props.putStringProperty(ManagementHelper.HDR_ADDRESS, address);
+      props.putSimpleStringProperty(ManagementHelper.HDR_ADDRESS, address);
       props.putIntProperty(ManagementHelper.HDR_DISTANCE, distance);
       Notification notification = new Notification(null, NotificationType.PROPOSAL_RESPONSE, props);
       managementService.sendNotification(notification);
@@ -145,8 +145,8 @@ public class LocalGroupingHandler implements GroupingHandler
    {
       if (notification.getType() == NotificationType.BINDING_REMOVED)
       {
-         SimpleString clusterName = (SimpleString)notification.getProperties()
-                                                              .getProperty(ManagementHelper.HDR_CLUSTER_NAME);
+         SimpleString clusterName = notification.getProperties().getSimpleStringProperty(ManagementHelper.HDR_CLUSTER_NAME);
+
          List<GroupBinding> list = groupMap.remove(clusterName);
          if (list != null)
          {

@@ -640,14 +640,14 @@ public class ClusteredGroupingTest extends ClusterTestBase
             {
                if(NotificationType.BINDING_REMOVED == notification.getType())
                {
-                  if(notification.getProperties().getProperty(ManagementHelper.HDR_ADDRESS).toString().equals("queues.testaddress"))
+                  if(notification.getProperties().getSimpleStringProperty(ManagementHelper.HDR_ADDRESS).toString().equals("queues.testaddress"))
                   {
                      latch.countDown();
                   }
                }
                else  if(NotificationType.BINDING_ADDED == notification.getType())
                {
-                  if(notification.getProperties().getProperty(ManagementHelper.HDR_ADDRESS).toString().equals("queues.testaddress"))
+                  if(notification.getProperties().getSimpleStringProperty(ManagementHelper.HDR_ADDRESS).toString().equals("queues.testaddress"))
                   {
                      latch.countDown();
                   }
@@ -737,14 +737,14 @@ public class ClusteredGroupingTest extends ClusterTestBase
             {
                if(NotificationType.BINDING_REMOVED == notification.getType())
                {
-                  if(notification.getProperties().getProperty(ManagementHelper.HDR_ADDRESS).toString().equals("queues.testaddress"))
+                  if(notification.getProperties().getSimpleStringProperty(ManagementHelper.HDR_ADDRESS).toString().equals("queues.testaddress"))
                   {
                      latch.countDown();
                   }
                }
                else  if(NotificationType.BINDING_ADDED == notification.getType())
                {
-                  if(notification.getProperties().getProperty(ManagementHelper.HDR_ADDRESS).toString().equals("queues.testaddress"))
+                  if(notification.getProperties().getSimpleStringProperty(ManagementHelper.HDR_ADDRESS).toString().equals("queues.testaddress"))
                   {
                      latch.countDown();
                   }
@@ -831,14 +831,14 @@ public class ClusteredGroupingTest extends ClusterTestBase
             {
                if(NotificationType.BINDING_REMOVED == notification.getType())
                {
-                  if(notification.getProperties().getProperty(ManagementHelper.HDR_ADDRESS).toString().equals("queues.testaddress"))
+                  if(notification.getProperties().getSimpleStringProperty(ManagementHelper.HDR_ADDRESS).toString().equals("queues.testaddress"))
                   {
                      latch.countDown();
                   }
                }
                else  if(NotificationType.BINDING_ADDED == notification.getType())
                {
-                  if(notification.getProperties().getProperty(ManagementHelper.HDR_ADDRESS).toString().equals("queues.testaddress"))
+                  if(notification.getProperties().getSimpleStringProperty(ManagementHelper.HDR_ADDRESS).toString().equals("queues.testaddress"))
                   {
                      latch.countDown();
                   }

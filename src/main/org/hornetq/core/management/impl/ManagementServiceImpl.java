@@ -720,14 +720,14 @@ public class ManagementServiceImpl implements ManagementService
                   notifProps = new TypedProperties();
                }
 
-               notifProps.putStringProperty(ManagementHelper.HDR_NOTIFICATION_TYPE,
+               notifProps.putSimpleStringProperty(ManagementHelper.HDR_NOTIFICATION_TYPE,
                                             new SimpleString(notification.getType().toString()));
 
                notifProps.putLongProperty(ManagementHelper.HDR_NOTIFICATION_TIMESTAMP, System.currentTimeMillis());
 
                if (notification.getUID() != null)
                {
-                  notifProps.putStringProperty(new SimpleString("foobar"), new SimpleString(notification.getUID()));
+                  notifProps.putSimpleStringProperty(new SimpleString("foobar"), new SimpleString(notification.getUID()));
                }
 
                notificationMessage.putTypedProperties(notifProps);

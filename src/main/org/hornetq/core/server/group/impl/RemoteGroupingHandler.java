@@ -89,13 +89,13 @@ public class RemoteGroupingHandler implements GroupingHandler
 
          TypedProperties props = new TypedProperties();
 
-         props.putStringProperty(ManagementHelper.HDR_PROPOSAL_GROUP_ID, proposal.getGroupId());
+         props.putSimpleStringProperty(ManagementHelper.HDR_PROPOSAL_GROUP_ID, proposal.getGroupId());
 
-         props.putStringProperty(ManagementHelper.HDR_PROPOSAL_VALUE, proposal.getClusterName());
+         props.putSimpleStringProperty(ManagementHelper.HDR_PROPOSAL_VALUE, proposal.getClusterName());
 
          props.putIntProperty(ManagementHelper.HDR_BINDING_TYPE, BindingType.LOCAL_QUEUE_INDEX);
 
-         props.putStringProperty(ManagementHelper.HDR_ADDRESS, address);
+         props.putSimpleStringProperty(ManagementHelper.HDR_ADDRESS, address);
 
          props.putIntProperty(ManagementHelper.HDR_DISTANCE, 0);
 
@@ -148,10 +148,10 @@ public class RemoteGroupingHandler implements GroupingHandler
    public Response receive(final Proposal proposal, final int distance) throws Exception
    {
       TypedProperties props = new TypedProperties();
-      props.putStringProperty(ManagementHelper.HDR_PROPOSAL_GROUP_ID, proposal.getGroupId());
-      props.putStringProperty(ManagementHelper.HDR_PROPOSAL_VALUE, proposal.getClusterName());
+      props.putSimpleStringProperty(ManagementHelper.HDR_PROPOSAL_GROUP_ID, proposal.getGroupId());
+      props.putSimpleStringProperty(ManagementHelper.HDR_PROPOSAL_VALUE, proposal.getClusterName());
       props.putIntProperty(ManagementHelper.HDR_BINDING_TYPE, BindingType.LOCAL_QUEUE_INDEX);
-      props.putStringProperty(ManagementHelper.HDR_ADDRESS, address);
+      props.putSimpleStringProperty(ManagementHelper.HDR_ADDRESS, address);
       props.putIntProperty(ManagementHelper.HDR_DISTANCE, distance);
       Notification notification = new Notification(null, NotificationType.PROPOSAL, props);
       managementService.sendNotification(notification);
@@ -173,8 +173,7 @@ public class RemoteGroupingHandler implements GroupingHandler
       // removing the groupid if the binding has been removed
       if (notification.getType() == NotificationType.BINDING_REMOVED)
       {
-         SimpleString clusterName = (SimpleString)notification.getProperties()
-                                                              .getProperty(ManagementHelper.HDR_CLUSTER_NAME);
+         SimpleString clusterName = notification.getProperties().getSimpleStringProperty(ManagementHelper.HDR_CLUSTER_NAME);
          List<SimpleString> list = groupMap.remove(clusterName);
          if (list != null)
          {

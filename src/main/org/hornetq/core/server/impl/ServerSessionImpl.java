@@ -388,11 +388,11 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
          {
             TypedProperties props = new TypedProperties();
 
-            props.putStringProperty(ManagementHelper.HDR_ADDRESS, binding.getAddress());
+            props.putSimpleStringProperty(ManagementHelper.HDR_ADDRESS, binding.getAddress());
 
-            props.putStringProperty(ManagementHelper.HDR_CLUSTER_NAME, binding.getClusterName());
+            props.putSimpleStringProperty(ManagementHelper.HDR_CLUSTER_NAME, binding.getClusterName());
 
-            props.putStringProperty(ManagementHelper.HDR_ROUTING_NAME, binding.getRoutingName());
+            props.putSimpleStringProperty(ManagementHelper.HDR_ROUTING_NAME, binding.getRoutingName());
 
             props.putIntProperty(ManagementHelper.HDR_DISTANCE, binding.getDistance());
 
@@ -402,7 +402,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
 
             if (filterString != null)
             {
-               props.putStringProperty(ManagementHelper.HDR_FILTERSTRING, filterString);
+               props.putSimpleStringProperty(ManagementHelper.HDR_FILTERSTRING, filterString);
             }
 
             Notification notification = new Notification(null, CONSUMER_CREATED, props);
