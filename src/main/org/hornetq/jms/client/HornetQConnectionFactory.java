@@ -11,7 +11,6 @@
  * permissions and limitations under the License.
  */
 
-
 package org.hornetq.jms.client;
 
 import java.io.Serializable;
@@ -48,7 +47,7 @@ import org.hornetq.utils.Pair;
  * @version <tt>$Revision$</tt> $Id$
  */
 public class HornetQConnectionFactory implements ConnectionFactory, QueueConnectionFactory, TopicConnectionFactory,
-         XAConnectionFactory, XAQueueConnectionFactory, XATopicConnectionFactory, Serializable, Referenceable 
+         XAConnectionFactory, XAQueueConnectionFactory, XATopicConnectionFactory, Serializable, Referenceable
 {
    // Constants ------------------------------------------------------------------------------------
 
@@ -93,7 +92,7 @@ public class HornetQConnectionFactory implements ConnectionFactory, QueueConnect
    }
 
    public HornetQConnectionFactory(final TransportConfiguration connectorConfig,
-                                 final TransportConfiguration backupConnectorConfig)
+                                   final TransportConfiguration backupConnectorConfig)
    {
       sessionFactory = new ClientSessionFactoryImpl(connectorConfig, backupConnectorConfig);
    }
@@ -432,7 +431,7 @@ public class HornetQConnectionFactory implements ConnectionFactory, QueueConnect
    {
       sessionFactory.setRetryInterval(retryInterval);
    }
-   
+
    public synchronized long getMaxRetryInterval()
    {
       return sessionFactory.getMaxRetryInterval();
@@ -462,7 +461,7 @@ public class HornetQConnectionFactory implements ConnectionFactory, QueueConnect
    {
       sessionFactory.setReconnectAttempts(reconnectAttempts);
    }
-   
+
    public synchronized boolean isFailoverOnServerShutdown()
    {
       return sessionFactory.isFailoverOnServerShutdown();
@@ -518,24 +517,28 @@ public class HornetQConnectionFactory implements ConnectionFactory, QueueConnect
    // Protected ------------------------------------------------------------------------------------
 
    protected synchronized HornetQConnection createConnectionInternal(final String username,
-                                                                   final String password,
-                                                                   final boolean isXA,
-                                                                   final int type) throws JMSException
+                                                                     final String password,
+                                                                     final boolean isXA,
+                                                                     final int type) throws JMSException
    {
       readOnly = true;
+      
+      //Note that each JMS connection gets it's own copy of the connection factory
+      //This means there is one underlying remoting connection per jms connection (if not load balanced)
+      ClientSessionFactory factory = sessionFactory.copy();
 
       HornetQConnection connection = new HornetQConnection(username,
-                                                       password,
-                                                       type,
-                                                       clientID,
-                                                       dupsOKBatchSize,
-                                                       transactionBatchSize,
-                                                       sessionFactory);
+                                                           password,
+                                                           type,
+                                                           clientID,
+                                                           dupsOKBatchSize,
+                                                           transactionBatchSize,
+                                                           factory);
 
-      
-      try {
+      try
+      {
          connection.authorize();
-      } 
+      }
       catch (JMSException e)
       {
          try

@@ -281,6 +281,8 @@ public class HornetQConnection implements Connection, QueueConnection, TopicConn
                initialSession.close();
             }
          }
+         
+         sessionFactory.close();
 
          closed = true;
       }

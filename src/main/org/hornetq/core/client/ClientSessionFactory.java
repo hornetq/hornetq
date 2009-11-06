@@ -175,4 +175,6 @@ public interface ClientSessionFactory
    boolean removeInterceptor(Interceptor interceptor);
 
    void close();
+   
+   ClientSessionFactory copy();
 }

@@ -29,6 +29,7 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
 import org.hornetq.core.client.ClientSession;
+import org.hornetq.core.client.ClientSessionFactory;
 import org.hornetq.core.client.ConnectionLoadBalancingPolicy;
 import org.hornetq.core.cluster.DiscoveryEntry;
 import org.hornetq.core.cluster.DiscoveryGroup;
@@ -313,6 +314,67 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
    // Constructors
    // ---------------------------------------------------------------------------------
 
+   public ClientSessionFactoryImpl(final ClientSessionFactory other)
+   {
+      discoveryAddress = other.getDiscoveryAddress();
+      
+      discoveryPort = other.getDiscoveryPort();
+      
+      staticConnectors = other.getStaticConnectors();
+      
+      discoveryRefreshTimeout = other.getDiscoveryRefreshTimeout();
+
+      clientFailureCheckPeriod = other.getClientFailureCheckPeriod();
+
+      connectionTTL = other.getConnectionTTL();
+
+      callTimeout = other.getCallTimeout();
+
+      minLargeMessageSize = other.getMinLargeMessageSize();
+
+      consumerWindowSize = other.getConsumerWindowSize();
+
+      consumerMaxRate = other.getConsumerMaxRate();
+
+      confirmationWindowSize = other.getConfirmationWindowSize();
+      
+      producerWindowSize = other.getProducerWindowSize();
+
+      producerMaxRate = other.getProducerMaxRate();
+
+      blockOnAcknowledge = other.isBlockOnAcknowledge();
+
+      blockOnPersistentSend = other.isBlockOnPersistentSend();
+
+      blockOnNonPersistentSend = other.isBlockOnNonPersistentSend();
+
+      autoGroup = other.isAutoGroup();
+
+      preAcknowledge = other.isPreAcknowledge();
+
+      ackBatchSize = other.getAckBatchSize();
+
+      connectionLoadBalancingPolicyClassName = other.getConnectionLoadBalancingPolicyClassName();
+
+      discoveryInitialWaitTimeout = other.getDiscoveryInitialWaitTimeout();
+
+      useGlobalPools = other.isUseGlobalPools();
+
+      scheduledThreadPoolMaxSize = other.getScheduledThreadPoolMaxSize();
+
+      threadPoolMaxSize = other.getThreadPoolMaxSize();
+
+      retryInterval = other.getRetryInterval();
+
+      retryIntervalMultiplier = other.getRetryIntervalMultiplier();
+
+      maxRetryInterval = other.getMaxRetryInterval();
+
+      reconnectAttempts = other.getReconnectAttempts();
+
+      failoverOnServerShutdown = other.isFailoverOnServerShutdown();
+   }
+   
    public ClientSessionFactoryImpl()
    {
       discoveryRefreshTimeout = DEFAULT_DISCOVERY_REFRESH_TIMEOUT;
@@ -884,7 +946,12 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
 
       closed = true;
    }
-
+   
+   public ClientSessionFactory copy()
+   {
+      return new ClientSessionFactoryImpl(this);
+   }
+   
    // DiscoveryListener implementation --------------------------------------------------------
 
    public synchronized void connectorsChanged()
