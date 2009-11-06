@@ -430,6 +430,8 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
       reconnectAttempts = DEFAULT_RECONNECT_ATTEMPTS;
 
       failoverOnServerShutdown = DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN;
+      
+      cacheLargeMessagesClient = DEFAULT_CACHE_LARGE_MESSAGE_CLIENT;
    }
 
    public ClientSessionFactoryImpl(final String discoveryAddress, final int discoveryPort)

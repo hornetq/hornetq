@@ -210,6 +210,7 @@ public class JMSServerDeployerTest extends ServiceTestBase
          assertEquals(34, cf.getReconnectAttempts());
          assertEquals(5, cf.getRetryInterval());
          assertEquals(6.0, cf.getRetryIntervalMultiplier());
+         assertEquals(true, cf.isCacheLargeMessagesClient());
       }
 
       for (String binding : queueBindings)

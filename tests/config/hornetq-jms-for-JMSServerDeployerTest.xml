@@ -33,6 +33,7 @@
       <retry-interval>5</retry-interval>
       <retry-interval-multiplier>6.0</retry-interval-multiplier>
       <max-retry-interval>300</max-retry-interval>
+      <cache-large-message-client>true</cache-large-message-client>
    </connection-factory>
 
    <queue name="fullConfigurationQueue">
