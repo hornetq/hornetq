@@ -373,6 +373,8 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
       reconnectAttempts = other.getReconnectAttempts();
 
       failoverOnServerShutdown = other.isFailoverOnServerShutdown();
+      
+      cacheLargeMessagesClient = other.isCacheLargeMessagesClient();
    }
    
    public ClientSessionFactoryImpl()
