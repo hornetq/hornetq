@@ -117,21 +117,58 @@ public class HornetQConnectionFactoryTest extends UnitTestCase
       
       log.info("Got here");
 
+      testSettersThrowException(cf);
+   }
+
+   public void testDefaultConstructorAndSetConnectorPairs() throws Exception
+   {
+      HornetQConnectionFactory cf = new HornetQConnectionFactory();
       final List<Pair<TransportConfiguration, TransportConfiguration>> staticConnectors = new ArrayList<Pair<TransportConfiguration, TransportConfiguration>>();
       Pair<TransportConfiguration, TransportConfiguration> pair0 = new Pair<TransportConfiguration, TransportConfiguration>(this.liveTC,
                                                                                                                             this.backupTC);
       staticConnectors.add(pair0);
       cf.setStaticConnectors(staticConnectors);
+      
+      assertFactoryParams(cf,
+                          staticConnectors,
+                          null,
+                          0,
+                          ClientSessionFactoryImpl.DEFAULT_DISCOVERY_REFRESH_TIMEOUT,
+                          null,
+                          ClientSessionFactoryImpl.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
+                          ClientSessionFactoryImpl.DEFAULT_CONNECTION_TTL,
+                          ClientSessionFactoryImpl.DEFAULT_CALL_TIMEOUT,                          
+                          ClientSessionFactoryImpl.DEFAULT_MIN_LARGE_MESSAGE_SIZE,
+                          ClientSessionFactoryImpl.DEFAULT_CONSUMER_WINDOW_SIZE,
+                          ClientSessionFactoryImpl.DEFAULT_CONSUMER_MAX_RATE,
+                          ClientSessionFactoryImpl.DEFAULT_CONFIRMATION_WINDOW_SIZE,
+                          ClientSessionFactoryImpl.DEFAULT_PRODUCER_MAX_RATE,
+                          ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_ACKNOWLEDGE,
+                          ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_PERSISTENT_SEND,
+                          ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_NON_PERSISTENT_SEND,
+                          ClientSessionFactoryImpl.DEFAULT_AUTO_GROUP,
+                          ClientSessionFactoryImpl.DEFAULT_PRE_ACKNOWLEDGE,
+                          ClientSessionFactoryImpl.DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME,
+                          ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE,
+                          ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE,
+                          ClientSessionFactoryImpl.DEFAULT_DISCOVERY_INITIAL_WAIT_TIMEOUT,
+                          ClientSessionFactoryImpl.DEFAULT_USE_GLOBAL_POOLS,
+                          ClientSessionFactoryImpl.DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE,
+                          ClientSessionFactoryImpl.DEFAULT_THREAD_POOL_MAX_SIZE,
+                          ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL,
+                          ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL_MULTIPLIER,
+                          ClientSessionFactoryImpl.DEFAULT_RECONNECT_ATTEMPTS,
+                          ClientSessionFactoryImpl.DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN);
 
-      conn = cf.createConnection();
+      Connection conn = cf.createConnection();
 
       Session sess = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
       testSettersThrowException(cf);
-
+      
       conn.close();
    }
-
+   
    public void testDiscoveryConstructor() throws Exception
    {
       HornetQConnectionFactory cf = new HornetQConnectionFactory(groupAddress, groupPort);
@@ -319,12 +356,13 @@ public class HornetQConnectionFactoryTest extends UnitTestCase
 
    public void testGettersAndSetters()
    {
-      ClientSessionFactory cf = new ClientSessionFactoryImpl();
+      ClientSessionFactory csf = new ClientSessionFactoryImpl();
 
       List<Pair<TransportConfiguration, TransportConfiguration>> staticConnectors = new ArrayList<Pair<TransportConfiguration, TransportConfiguration>>();
       Pair<TransportConfiguration, TransportConfiguration> pair0 = new Pair<TransportConfiguration, TransportConfiguration>(this.liveTC,
                                                                                                                             this.backupTC);
       staticConnectors.add(pair0);
+      HornetQConnectionFactory cf = new HornetQConnectionFactory(csf);
 
       String discoveryAddress = randomString();
       int discoveryPort = RandomUtil.randomPositiveInt();
@@ -343,7 +381,6 @@ public class HornetQConnectionFactoryTest extends UnitTestCase
       boolean autoGroup = RandomUtil.randomBoolean();
       boolean preAcknowledge = RandomUtil.randomBoolean();
       String loadBalancingPolicyClassName = RandomUtil.randomString();
-      int ackBatchSize = RandomUtil.randomPositiveInt();
       long initialWaitTimeout = RandomUtil.randomPositiveLong();
       boolean useGlobalPools = RandomUtil.randomBoolean();
       int scheduledThreadPoolMaxSize = RandomUtil.randomPositiveInt();
@@ -371,7 +408,6 @@ public class HornetQConnectionFactoryTest extends UnitTestCase
       cf.setAutoGroup(autoGroup);
       cf.setPreAcknowledge(preAcknowledge);
       cf.setConnectionLoadBalancingPolicyClassName(loadBalancingPolicyClassName);
-      cf.setAckBatchSize(ackBatchSize);
       cf.setDiscoveryInitialWaitTimeout(initialWaitTimeout);
       cf.setUseGlobalPools(useGlobalPools);
       cf.setScheduledThreadPoolMaxSize(scheduledThreadPoolMaxSize);
@@ -399,7 +435,6 @@ public class HornetQConnectionFactoryTest extends UnitTestCase
       assertEquals(autoGroup, cf.isAutoGroup());
       assertEquals(preAcknowledge, cf.isPreAcknowledge());
       assertEquals(loadBalancingPolicyClassName, cf.getConnectionLoadBalancingPolicyClassName());
-      assertEquals(ackBatchSize, cf.getAckBatchSize());
       assertEquals(initialWaitTimeout, cf.getDiscoveryInitialWaitTimeout());
       assertEquals(useGlobalPools, cf.isUseGlobalPools());
       assertEquals(scheduledThreadPoolMaxSize, cf.getScheduledThreadPoolMaxSize());
@@ -409,6 +444,7 @@ public class HornetQConnectionFactoryTest extends UnitTestCase
       assertEquals(reconnectAttempts, cf.getReconnectAttempts());
       assertEquals(failoverOnServerShutdown, cf.isFailoverOnServerShutdown());
 
+      cf.close();
    }
 
    private void testSettersThrowException(HornetQConnectionFactory cf)

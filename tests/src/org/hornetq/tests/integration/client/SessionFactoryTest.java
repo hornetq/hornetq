@@ -105,6 +105,13 @@ public class SessionFactoryTest extends ServiceTestBase
       assertNotNull(csi);
    }
 
+   public void testCloseUnusedClientSessionFactoryWithoutGlobalPools() throws Exception
+   {
+      ClientSessionFactoryImpl csf = new ClientSessionFactoryImpl();
+      csf.setUseGlobalPools(false);
+      csf.close();
+   }
+   
    public void testDefaultConstructor() throws Exception
    {
       try

@@ -54,16 +54,6 @@ public class CloseConnectionOnGCTest extends JMSTestBase
       super.tearDown();
    }
    
-   public void testFoo() throws Exception
-   {
-      for (int i = 0; i < 100; i++)
-      {
-         log.info("Iteration " + i);
-         
-         testCloseOneConnectionOnGC();
-      }
-   }
-   
    public void testCloseOneConnectionOnGC() throws Exception
    {
       //Debug - don't remove this until intermittent failure with this test is fixed
@@ -95,7 +85,7 @@ public class CloseConnectionOnGCTest extends JMSTestBase
       WeakReference<Connection> wr2 = new WeakReference<Connection>(conn2);
       WeakReference<Connection> wr3 = new WeakReference<Connection>(conn3);
       
-      assertEquals(1, server.getRemotingService().getConnections().size());
+      assertEquals(3, server.getRemotingService().getConnections().size());
       
       conn1 = null;
       conn2 = null;

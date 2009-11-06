@@ -917,30 +917,36 @@ public class ClientSessionFactoryImpl implements ClientSessionFactoryInternal, D
 
       if (!useGlobalPools)
       {
-         threadPool.shutdown();
-
-         try
+         if (threadPool != null)
          {
-            if (!threadPool.awaitTermination(10000, TimeUnit.MILLISECONDS))
+            threadPool.shutdown();
+
+            try
             {
-               log.warn("Timed out waiting for pool to terminate");
+               if (!threadPool.awaitTermination(10000, TimeUnit.MILLISECONDS))
+               {
+                  log.warn("Timed out waiting for pool to terminate");
+               }
+            }
+            catch (InterruptedException ignore)
+            {
             }
          }
-         catch (InterruptedException ignore)
-         {
-         }
 
-         scheduledThreadPool.shutdown();
-
-         try
+         if (scheduledThreadPool != null)
          {
-            if (!scheduledThreadPool.awaitTermination(10000, TimeUnit.MILLISECONDS))
+            scheduledThreadPool.shutdown();
+
+            try
             {
-               log.warn("Timed out waiting for scheduled pool to terminate");
+               if (!scheduledThreadPool.awaitTermination(10000, TimeUnit.MILLISECONDS))
+               {
+                  log.warn("Timed out waiting for scheduled pool to terminate");
+               }
             }
-         }
-         catch (InterruptedException ignore)
-         {
+            catch (InterruptedException ignore)
+            {
+            }
          }
       }
 
