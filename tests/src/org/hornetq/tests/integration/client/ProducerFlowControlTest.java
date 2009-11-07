@@ -22,7 +22,6 @@ import org.hornetq.core.client.ClientSession;
 import org.hornetq.core.client.ClientSessionFactory;
 import org.hornetq.core.client.MessageHandler;
 import org.hornetq.core.client.impl.ClientMessageImpl;
-import org.hornetq.core.config.Configuration;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.paging.impl.TestSupportPageStore;
 import org.hornetq.core.server.HornetQServer;
@@ -181,9 +180,7 @@ public class ProducerFlowControlTest extends ServiceTestBase
    {
       final SimpleString address = new SimpleString("testaddress");
 
-      Configuration config = super.createDefaultConfig(isNetty());
-
-      HornetQServer server = createServer(realFiles, config);
+      HornetQServer server = createServer(realFiles, isNetty());
 
       AddressSettings addressSettings = new AddressSettings();
       addressSettings.setMaxSizeBytes(maxSize);
@@ -194,16 +191,7 @@ public class ProducerFlowControlTest extends ServiceTestBase
 
       server.start();
 
-      ClientSessionFactory sf;
-
-      if (isNetty())
-      {
-         sf = createNettyFactory();
-      }
-      else
-      {
-         sf = createInVMFactory();
-      }
+      ClientSessionFactory sf = createFactory(isNetty());
 
       sf.setProducerWindowSize(producerWindowSize);
       sf.setConsumerWindowSize(consumerWindowSize);
@@ -349,9 +337,7 @@ public class ProducerFlowControlTest extends ServiceTestBase
    {
       final SimpleString address = new SimpleString("testaddress");
 
-      Configuration config = super.createDefaultConfig(false);
-
-      HornetQServer server = createServer(false, config);
+      HornetQServer server = createServer(false, isNetty());
 
       AddressSettings addressSettings = new AddressSettings();
       addressSettings.setMaxSizeBytes(1024);
@@ -362,7 +348,7 @@ public class ProducerFlowControlTest extends ServiceTestBase
 
       server.start();
 
-      ClientSessionFactory sf = createInVMFactory();
+      ClientSessionFactory sf = createFactory(isNetty());
 
       sf.setProducerWindowSize(1024);
       sf.setConsumerWindowSize(1024);
@@ -454,9 +440,7 @@ public class ProducerFlowControlTest extends ServiceTestBase
    {
       final SimpleString address = new SimpleString("testaddress");
 
-      Configuration config = super.createDefaultConfig(false);
-
-      HornetQServer server = createServer(false, config);
+      HornetQServer server = createServer(false, isNetty());
 
       AddressSettings addressSettings = new AddressSettings();
       addressSettings.setMaxSizeBytes(1024);
@@ -467,7 +451,7 @@ public class ProducerFlowControlTest extends ServiceTestBase
 
       server.start();
 
-      ClientSessionFactory sf = createInVMFactory();
+      ClientSessionFactory sf = createFactory(isNetty());
 
       sf.setProducerWindowSize(1024);
       sf.setConsumerWindowSize(1024);
@@ -530,9 +514,7 @@ public class ProducerFlowControlTest extends ServiceTestBase
    {
       final SimpleString address = new SimpleString("testaddress");
 
-      Configuration config = super.createDefaultConfig(false);
-
-      HornetQServer server = createServer(false, config);
+      HornetQServer server = createServer(false, isNetty());
 
       AddressSettings addressSettings = new AddressSettings();
       addressSettings.setMaxSizeBytes(1024);
@@ -543,7 +525,7 @@ public class ProducerFlowControlTest extends ServiceTestBase
 
       server.start();
 
-      ClientSessionFactory sf = createInVMFactory();
+      ClientSessionFactory sf = createFactory(isNetty());
 
       sf.setProducerWindowSize(1024);
       sf.setConsumerWindowSize(1024);
@@ -624,9 +606,7 @@ public class ProducerFlowControlTest extends ServiceTestBase
    {
       final SimpleString address = new SimpleString("testaddress");
 
-      Configuration config = super.createDefaultConfig(false);
-
-      HornetQServer server = createServer(false, config);
+      HornetQServer server = createServer(false, isNetty());
 
       AddressSettings addressSettings = new AddressSettings();
       addressSettings.setMaxSizeBytes(1024);
@@ -637,7 +617,7 @@ public class ProducerFlowControlTest extends ServiceTestBase
 
       server.start();
 
-      ClientSessionFactory sf = createInVMFactory();
+      ClientSessionFactory sf = createFactory(isNetty());
 
       sf.setProducerWindowSize(1024);
       sf.setConsumerWindowSize(1024);
@@ -697,9 +677,7 @@ public class ProducerFlowControlTest extends ServiceTestBase
    {
       final SimpleString address = new SimpleString("testaddress");
 
-      Configuration config = super.createDefaultConfig(false);
-
-      HornetQServer server = createServer(false, config);
+      HornetQServer server = createServer(false, isNetty());
 
       AddressSettings addressSettings = new AddressSettings();
       addressSettings.setMaxSizeBytes(1024);
@@ -710,7 +688,7 @@ public class ProducerFlowControlTest extends ServiceTestBase
 
       server.start();
 
-      ClientSessionFactory sf = createInVMFactory();
+      ClientSessionFactory sf = createFactory(isNetty());
 
       sf.setProducerWindowSize(1024);
       sf.setConsumerWindowSize(1024);
