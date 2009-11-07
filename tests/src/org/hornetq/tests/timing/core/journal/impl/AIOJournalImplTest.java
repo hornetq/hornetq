@@ -17,7 +17,6 @@ import java.io.File;
 
 import junit.framework.TestSuite;
 
-import org.hornetq.core.asyncio.impl.AsynchronousFileImpl;
 import org.hornetq.core.journal.SequentialFileFactory;
 import org.hornetq.core.journal.impl.AIOSequentialFileFactory;
 import org.hornetq.core.logging.Logger;
@@ -44,6 +43,7 @@ public class AIOJournalImplTest extends JournalImplTestUnit
       super.setUp();
    }
 
+   @Override
    protected SequentialFileFactory getFileFactory() throws Exception
    {
       File file = new File(getTestDir());

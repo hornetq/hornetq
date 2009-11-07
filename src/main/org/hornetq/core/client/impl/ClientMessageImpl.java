@@ -15,10 +15,12 @@ package org.hornetq.core.client.impl;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.ByteBuffer;
 
 import org.hornetq.core.buffers.ChannelBuffers;
 import org.hornetq.core.client.LargeMessageBuffer;
 import org.hornetq.core.exception.HornetQException;
+import org.hornetq.core.message.BodyEncoder;
 import org.hornetq.core.message.impl.MessageImpl;
 import org.hornetq.core.remoting.spi.HornetQBuffer;
 import org.hornetq.utils.SimpleString;
@@ -228,5 +230,8 @@ public class ClientMessageImpl extends MessageImpl implements ClientMessageInter
              "]";
    }
 
-
+   /* (non-Javadoc)
+    * @see org.hornetq.core.message.Message#getBodyEncoder()
+    */
+   
 }

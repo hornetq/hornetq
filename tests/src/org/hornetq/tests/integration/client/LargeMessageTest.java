@@ -31,6 +31,8 @@ import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.message.Message;
+import org.hornetq.core.persistence.impl.journal.FileLargeServerMessage;
+import org.hornetq.core.persistence.impl.journal.JournalStorageManager;
 import org.hornetq.core.remoting.spi.HornetQBuffer;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.Queue;
@@ -2080,6 +2082,69 @@ public class LargeMessageTest extends LargeMessageTestBase
       }
    }
 
+   // The ClientConsumer should be able to also send ServerLargeMessages as that's done by the CoreBridge
+   public void testSendServerMessage() throws Exception
+   {
+      HornetQServer server = createServer(true);
+      
+      server.start();
+      
+      ClientSessionFactory sf = createFactory(false);
+      
+      ClientSession session = sf.createSession(false, false);
+      
+      try
+      {
+         FileLargeServerMessage fileMessage = new FileLargeServerMessage((JournalStorageManager)server.getStorageManager());
+         
+         fileMessage.setMessageID(1005);
+         
+         for (int i = 0 ; i < LARGE_MESSAGE_SIZE; i++)
+         {
+            fileMessage.addBytes(new byte[]{getSamplebyte(i)});
+         }
+         
+         fileMessage.releaseResources();
+         
+         session.createQueue(ADDRESS, ADDRESS, true);
+         
+         ClientProducer prod = session.createProducer(ADDRESS);
+         
+         prod.send(fileMessage);
+         
+         fileMessage.deleteFile();
+         
+         session.commit();
+                  
+         session.start();
+         
+         ClientConsumer cons = session.createConsumer(ADDRESS);
+         
+         ClientMessage msg = cons.receive(5000);
+         
+         assertNotNull(msg);
+         
+         assertEquals(msg.getBodySize(), LARGE_MESSAGE_SIZE);
+         
+         for (int i = 0 ; i < LARGE_MESSAGE_SIZE; i++)
+         {
+            assertEquals(getSamplebyte(i), msg.getBody().readByte());
+         }
+         
+         msg.acknowledge();
+         
+         session.commit();
+         
+      }
+      finally
+      {
+         sf.close();
+         server.stop();
+      }
+   }
+
+   
+   
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------

@@ -58,7 +58,7 @@ public class LargeMessageBufferImpl implements ChannelBuffer, LargeMessageBuffer
 
    private final LinkedBlockingQueue<SessionReceiveContinuationMessage> packets = new LinkedBlockingQueue<SessionReceiveContinuationMessage>();
 
-   private SessionReceiveContinuationMessage currentPacket = null;
+   private volatile SessionReceiveContinuationMessage currentPacket = null;
 
    private final long totalSize;
 

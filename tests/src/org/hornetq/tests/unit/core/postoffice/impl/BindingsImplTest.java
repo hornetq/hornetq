@@ -22,7 +22,7 @@ import javax.transaction.xa.Xid;
 
 import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.filter.Filter;
-import org.hornetq.core.message.LargeMessageEncodingContext;
+import org.hornetq.core.message.BodyEncoder;
 import org.hornetq.core.message.PropertyConversionException;
 import org.hornetq.core.paging.PagingStore;
 import org.hornetq.core.postoffice.Binding;
@@ -458,7 +458,7 @@ public class BindingsImplTest extends UnitTestCase
 
       }
 
-      public void encodeBody(HornetQBuffer bufferOut, LargeMessageEncodingContext context, int size)
+      public void encodeBody(HornetQBuffer bufferOut, BodyEncoder context, int size)
       {
          // To change body of implemented methods use File | Settings | File Templates.
       }
@@ -1114,6 +1114,15 @@ public class BindingsImplTest extends UnitTestCase
       {
          // TODO Auto-generated method stub
          return false;
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.message.Message#getBodyEncoder()
+       */
+      public BodyEncoder getBodyEncoder()
+      {
+         // TODO Auto-generated method stub
+         return null;
       }
 
    }

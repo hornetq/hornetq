@@ -17,12 +17,11 @@ import static org.hornetq.utils.SimpleString.toSimpleString;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.ByteBuffer;
 
 import org.hornetq.core.buffers.ChannelBuffers;
 import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.logging.Logger;
-import org.hornetq.core.message.LargeMessageEncodingContext;
+import org.hornetq.core.message.BodyEncoder;
 import org.hornetq.core.message.Message;
 import org.hornetq.core.message.impl.MessageImpl;
 import org.hornetq.core.remoting.Channel;
@@ -347,47 +346,59 @@ public class ClientProducerImpl implements ClientProducerInternal
    {
       final long bodySize = msg.getLargeBodySize();
 
-      LargeMessageEncodingContext context = new DecodingContext(msg);
+      BodyEncoder context = msg.getBodyEncoder();
 
-      for (int pos = 0; pos < bodySize;)
+      context.open();
+      try
       {
-         final boolean lastChunk;
 
-         final int chunkLength = Math.min((int)(bodySize - pos), minLargeMessageSize);
-
-         final HornetQBuffer bodyBuffer = ChannelBuffers.buffer(chunkLength);
-
-         msg.encodeBody(bodyBuffer, context, chunkLength);
-
-         pos += chunkLength;
-
-         lastChunk = pos >= bodySize;
-
-         final SessionSendContinuationMessage chunk = new SessionSendContinuationMessage(bodyBuffer.array(),
-                                                                                         !lastChunk,
-                                                                                         lastChunk && sendBlocking);
-
-         if (sendBlocking && lastChunk)
+         for (int pos = 0; pos < bodySize;)
          {
-            // When sending it blocking, only the last chunk will be blocking.
-            channel.sendBlocking(chunk);
-         }
-         else
-         {
-            channel.send(chunk);
-         }
+            final boolean lastChunk;
 
-         try
-         {
-            credits.acquireCredits(chunk.getRequiredBufferSize());
+            final int chunkLength = Math.min((int)(bodySize - pos), minLargeMessageSize);
+
+            final HornetQBuffer bodyBuffer = ChannelBuffers.buffer(chunkLength);
+
+            context.encode(bodyBuffer, chunkLength);
+
+            pos += chunkLength;
+
+            lastChunk = pos >= bodySize;
+
+            final SessionSendContinuationMessage chunk = new SessionSendContinuationMessage(bodyBuffer.array(),
+                                                                                            !lastChunk,
+                                                                                            lastChunk && sendBlocking);
+
+            if (sendBlocking && lastChunk)
+            {
+               // When sending it blocking, only the last chunk will be blocking.
+               channel.sendBlocking(chunk);
+            }
+            else
+            {
+               channel.send(chunk);
+            }
+
+            try
+            {
+               credits.acquireCredits(chunk.getRequiredBufferSize());
+            }
+            catch (InterruptedException e)
+            {
+            }
          }
-         catch (InterruptedException e)
-         {
-         }
+      }
+      finally
+      {
+         context.close();
       }
    }
 
    /**
+    * TODO: This method could be eliminated and 
+    *       combined with {@link ClientProducerImpl#largeMessageSendBuffered(boolean, Message, ClientProducerCredits)}. 
+    *       All that's needed for this is ClientMessage returning the proper BodyEncoder for streamed
     * @param sendBlocking
     * @param input
     * @throws HornetQException
@@ -477,35 +488,4 @@ public class ClientProducerImpl implements ClientProducerInternal
    }
 
    // Inner Classes --------------------------------------------------------------------------------
-   class DecodingContext implements LargeMessageEncodingContext
-   {
-      private final Message message;
-
-      private int lastPos = 0;
-
-      public DecodingContext(Message message)
-      {
-         this.message = message;
-      }
-
-      public void open() throws Exception
-      {
-      }
-
-      public void close() throws Exception
-      {
-      }
-
-      public int write(ByteBuffer bufferRead) throws Exception
-      {
-         return -1;
-      }
-
-      public int write(HornetQBuffer bufferOut, int size)
-      {
-         bufferOut.writeBytes(message.getBody(), lastPos, size);
-         lastPos += size;
-         return size;
-      }
-   }
 }

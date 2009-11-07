@@ -24,12 +24,13 @@ import java.util.concurrent.locks.ReentrantLock;
 import org.hornetq.core.buffers.ChannelBuffers;
 import org.hornetq.core.client.impl.ClientConsumerImpl;
 import org.hornetq.core.client.management.impl.ManagementHelper;
+import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.filter.Filter;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.management.ManagementService;
 import org.hornetq.core.management.Notification;
 import org.hornetq.core.management.NotificationType;
-import org.hornetq.core.message.LargeMessageEncodingContext;
+import org.hornetq.core.message.BodyEncoder;
 import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.core.postoffice.Binding;
 import org.hornetq.core.postoffice.QueueBinding;
@@ -632,7 +633,7 @@ public class ServerConsumerImpl implements ServerConsumer
       /** The current position on the message being processed */
       private long positionPendingLargeMessage;
 
-      private LargeMessageEncodingContext context;
+      private BodyEncoder context;
 
       public LargeMessageDeliverer(final LargeServerMessage message, final MessageReference ref) throws Exception
       {
@@ -672,7 +673,7 @@ public class ServerConsumerImpl implements ServerConsumer
                                                                                largeMessage.getLargeBodySize(),
                                                                                ref.getDeliveryCount());
 
-               context = largeMessage.createNewContext();
+               context = largeMessage.getBodyEncoder();
 
                context.open();
 
@@ -783,7 +784,7 @@ public class ServerConsumerImpl implements ServerConsumer
          }
       }
 
-      private SessionReceiveContinuationMessage createChunkSend(final LargeMessageEncodingContext context)
+      private SessionReceiveContinuationMessage createChunkSend(final BodyEncoder context) throws HornetQException
       {
          SessionReceiveContinuationMessage chunk;
 
@@ -793,8 +794,7 @@ public class ServerConsumerImpl implements ServerConsumer
 
          HornetQBuffer bodyBuffer = ChannelBuffers.buffer(localChunkLen);
 
-         // pendingLargeMessage.encodeBody(bodyBuffer, positionPendingLargeMessage, localChunkLen);
-         largeMessage.encodeBody(bodyBuffer, context, localChunkLen);
+         context.encode(bodyBuffer, localChunkLen);
 
          chunk = new SessionReceiveContinuationMessage(id,
                                                        bodyBuffer.array(),

@@ -29,23 +29,22 @@ import org.hornetq.core.logging.Logger;
  */
 public class NIOJournalImplTest extends JournalImplTestUnit
 {
-	private static final Logger log = Logger.getLogger(NIOJournalImplTest.class);
-	
-	protected String journalDir = System.getProperty("user.home") + "/journal-test";
-		
-	protected SequentialFileFactory getFileFactory() throws Exception
-	{
-		File file = new File(journalDir);
-		
-		log.debug("deleting directory " + journalDir);
-		
-		deleteDirectory(file);
-		
-		file.mkdir();		
-		
-		return new NIOSequentialFileFactory(journalDir);
-	}
-	
-	
-}
+   private static final Logger log = Logger.getLogger(NIOJournalImplTest.class);
 
+   protected String journalDir = System.getProperty("user.home") + "/journal-test";
+
+   @Override
+   protected SequentialFileFactory getFileFactory() throws Exception
+   {
+      File file = new File(journalDir);
+
+      log.debug("deleting directory " + journalDir);
+
+      deleteDirectory(file);
+
+      file.mkdir();
+
+      return new NIOSequentialFileFactory(journalDir);
+   }
+
+}

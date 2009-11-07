@@ -19,13 +19,15 @@ import static org.hornetq.utils.DataConstants.SIZE_INT;
 import static org.hornetq.utils.DataConstants.SIZE_LONG;
 
 import java.io.InputStream;
+import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
 import org.hornetq.core.buffers.ChannelBuffers;
+import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.logging.Logger;
-import org.hornetq.core.message.LargeMessageEncodingContext;
+import org.hornetq.core.message.BodyEncoder;
 import org.hornetq.core.message.Message;
 import org.hornetq.core.message.PropertyConversionException;
 import org.hornetq.core.remoting.spi.HornetQBuffer;
@@ -212,12 +214,6 @@ public abstract class MessageImpl implements Message
    {
       HornetQBuffer localBody = getBody();
       buffer.writeBytes(localBody.array(), 0, localBody.writerIndex());
-   }
-
-   // Used on Message chunk side
-   public void encodeBody(final HornetQBuffer bufferOut, final LargeMessageEncodingContext context, final int size)
-   {
-      context.write(bufferOut, size);
    }
 
    public void decode(final HornetQBuffer buffer)
@@ -663,6 +659,11 @@ public abstract class MessageImpl implements Message
    {
       this.body = body;
    }
+   
+   public BodyEncoder getBodyEncoder()
+   {
+      return new DecodingContext();
+   }
 
    // Public --------------------------------------------------------
 
@@ -673,4 +674,36 @@ public abstract class MessageImpl implements Message
    // Private -------------------------------------------------------
 
    // Inner classes -------------------------------------------------
+
+   
+   class DecodingContext implements BodyEncoder
+   {
+      private int lastPos = 0;
+
+      public DecodingContext()
+      {
+      }
+
+      public void open()
+      {
+      }
+
+      public void close()
+      {
+      }
+
+      public int encode(ByteBuffer bufferRead) throws HornetQException
+      {
+         HornetQBuffer buffer = ChannelBuffers.wrappedBuffer(bufferRead);
+         return encode(buffer, bufferRead.capacity());
+      }
+
+      public int encode(HornetQBuffer bufferOut, int size)
+      {
+         bufferOut.writeBytes(getBody(), lastPos, size);
+         lastPos += size;
+         return size;
+      }
+   }
+
 }

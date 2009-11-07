@@ -78,9 +78,9 @@ public interface Message
    boolean isLargeMessage();
 
    long getLargeBodySize();
-
-   // Used on Message chunk
-   void encodeBody(final HornetQBuffer bufferOut, LargeMessageEncodingContext context, int size);
+   
+   /** Used to encode Body over the wire when using large messages */
+   BodyEncoder getBodyEncoder();
 
    /** Set the InputStream used on a message that will be sent over a producer */
    void setBodyInputStream(InputStream stream);

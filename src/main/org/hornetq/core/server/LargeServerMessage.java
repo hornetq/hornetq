@@ -13,7 +13,7 @@
 
 package org.hornetq.core.server;
 
-import org.hornetq.core.message.LargeMessageEncodingContext;
+import org.hornetq.core.message.BodyEncoder;
 
 /**
  * A LargeMessage
@@ -43,6 +43,4 @@ public interface LargeServerMessage extends ServerMessage
    void incrementDelayDeletionCount();
    
    void decrementDelayDeletionCount() throws Exception;
-
-   LargeMessageEncodingContext createNewContext();
 }

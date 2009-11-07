@@ -25,9 +25,9 @@ import org.hornetq.tests.unit.core.journal.impl.fakes.FakeSequentialFileFactory;
  */
 public class FakeJournalImplTest extends JournalImplTestUnit
 {
-	protected SequentialFileFactory getFileFactory() throws Exception
-	{
-		return new FakeSequentialFileFactory();
-	}
+   @Override
+   protected SequentialFileFactory getFileFactory() throws Exception
+   {
+      return new FakeSequentialFileFactory();
+   }
 }
-

@@ -16,10 +16,7 @@ package org.hornetq.core.persistence.impl.nullpm;
 import org.hornetq.core.buffers.ChannelBuffers;
 import org.hornetq.core.remoting.spi.HornetQBuffer;
 import org.hornetq.core.server.LargeServerMessage;
-import org.hornetq.core.message.LargeMessageEncodingContext;
 import org.hornetq.core.server.impl.ServerMessageImpl;
-
-import java.nio.ByteBuffer;
 
 /**
  * A NullStorageLargeServerMessage
@@ -160,49 +157,6 @@ public class NullStorageLargeServerMessage extends ServerMessageImpl implements 
       return getHeadersAndPropertiesEncodeSize();
    }
 
-   public LargeMessageEncodingContext createNewContext()
-   {
-      return new DecodingContext();
-   }
-
-   @Override
-   public void encodeBody(HornetQBuffer bufferOut, LargeMessageEncodingContext context, int size)
-   {
-      DecodingContext decodingContext = (DecodingContext) context;
-      try
-      {
-         decodingContext.write(bufferOut, size);
-      }
-      catch (Exception e)
-      {
-         throw new RuntimeException(e);
-      }
-   }
-
-   class DecodingContext implements LargeMessageEncodingContext
-   {
-      private int lastPos = 0;
-
-      public void open() throws Exception
-      {
-      }
-
-      public void close() throws Exception
-      {
-      }
-
-      public int write(final ByteBuffer bufferRead) throws Exception
-      {
-         return -1;
-      }
-
-      public int write(final HornetQBuffer bufferRead, final int size)
-      {
-         bufferRead.writeBytes(getBody(), lastPos, size);
-         lastPos += size;
-         return size;
-      }
-   }
    // Package protected ---------------------------------------------
 
    // Protected -----------------------------------------------------
