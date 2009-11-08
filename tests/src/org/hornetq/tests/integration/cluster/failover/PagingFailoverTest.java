@@ -58,22 +58,28 @@ public class PagingFailoverTest extends FailoverTestBase
    // Constructors --------------------------------------------------
 
    // Public --------------------------------------------------------
-   
+
    public void testPage() throws Exception
    {
-      internalTestPage(false);
+      internalTestPage(false, false);
    }
-   
-   public void testPageFailBeforeconsume() throws Exception
+
+   public void testPageTransactioned() throws Exception
    {
-      internalTestPage(true);
+      internalTestPage(true, false);
    }
-   
-   public void internalTestPage(final boolean failBeforeConsume) throws Exception
+
+   public void testPageTransactionedFailBeforeconsume() throws Exception
+   {
+      internalTestPage(true, true);
+   }
+
+   public void internalTestPage(final boolean transacted, final boolean failBeforeConsume) throws Exception
    {
       ClientSessionFactoryInternal factory = getSessionFactory();
       factory.setBlockOnPersistentSend(true);
-      ClientSession session = factory.createSession(true, true, 0);
+      factory.setBlockOnAcknowledge(true);
+      ClientSession session = factory.createSession(!transacted, !transacted, 0);
 
       try
       {
@@ -88,11 +94,11 @@ public class PagingFailoverTest extends FailoverTestBase
             {
                latch.countDown();
             }
-            
+
             public void beforeReconnect(HornetQException exception)
-            {               
+            {
             }
-            
+
          }
 
          session.addFailureListener(new MyListener());
@@ -103,7 +109,7 @@ public class PagingFailoverTest extends FailoverTestBase
 
          for (int i = 0; i < TOTAL_MESSAGES; i++)
          {
-            if (i % 10 == 0)
+            if (transacted && i % 10 == 0)
             {
                session.commit();
             }
@@ -114,7 +120,7 @@ public class PagingFailoverTest extends FailoverTestBase
          }
 
          session.commit();
-         
+
          if (failBeforeConsume)
          {
             failSession(session, latch);
@@ -131,7 +137,7 @@ public class PagingFailoverTest extends FailoverTestBase
             ClientMessage msg = cons.receive(20000);
             assertNotNull(msg);
             msg.acknowledge();
-            if (i % 10 == 0)
+            if (transacted && i % 10 == 0)
             {
                session.commit();
             }
@@ -174,7 +180,6 @@ public class PagingFailoverTest extends FailoverTestBase
          }
       }
    }
-
 
    /**
     * @param session
@@ -245,4 +250,5 @@ public class PagingFailoverTest extends FailoverTestBase
    // Private -------------------------------------------------------
 
    // Inner classes -------------------------------------------------
+
 }
