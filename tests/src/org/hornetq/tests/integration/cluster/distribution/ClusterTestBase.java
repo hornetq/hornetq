@@ -1267,17 +1267,16 @@ public class ClusterTestBase extends ServiceTestBase
 
       Map<String, Object> params = generateParams(node, netty);
 
-      TransportConfiguration invmtc = new TransportConfiguration(INVM_ACCEPTOR_FACTORY, params);
-      configuration.getAcceptorConfigurations().add(invmtc);
-
       if (netty)
       {
          TransportConfiguration nettytc = new TransportConfiguration(NETTY_ACCEPTOR_FACTORY, params);
          configuration.getAcceptorConfigurations().add(nettytc);
       }
-
-      TransportConfiguration invmtc_c = new TransportConfiguration(INVM_CONNECTOR_FACTORY, params);
-      configuration.getConnectorConfigurations().put(invmtc_c.getName(), invmtc_c);
+      else
+      {
+         TransportConfiguration invmtc = new TransportConfiguration(INVM_ACCEPTOR_FACTORY, params);
+         configuration.getAcceptorConfigurations().add(invmtc);
+      }
 
       List<Pair<String, String>> connectorPairs = new ArrayList<Pair<String, String>>();
 
@@ -1291,6 +1290,9 @@ public class ClusterTestBase extends ServiceTestBase
       }
       else
       {
+         TransportConfiguration invmtc_c = new TransportConfiguration(INVM_CONNECTOR_FACTORY, params);
+         configuration.getConnectorConfigurations().put(invmtc_c.getName(), invmtc_c);
+
          connectorPairs.add(new Pair<String, String>(invmtc_c.getName(), invmBackuptc == null ? null
                                                                                              : invmBackuptc.getName()));
       }
