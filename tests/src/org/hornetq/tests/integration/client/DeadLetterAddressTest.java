@@ -64,7 +64,7 @@ public class DeadLetterAddressTest extends UnitTestCase
       assertEquals(m.getBody().readString(), "heyho!");
       // force a cancel
       clientSession.rollback();
-      m = clientConsumer.receive(500);
+      m = clientConsumer.receiveImmediate();
       assertNull(m);
       clientConsumer.close();
       clientConsumer = clientSession.createConsumer(dlq);
@@ -96,7 +96,7 @@ public class DeadLetterAddressTest extends UnitTestCase
       assertEquals(m.getBody().readString(), "heyho!");
       // force a cancel
       clientSession.rollback();
-      m = clientConsumer.receive(500);
+      m = clientConsumer.receiveImmediate();
       assertNull(m);
       clientConsumer.close();
       clientConsumer = clientSession.createConsumer(dlq);
@@ -130,7 +130,7 @@ public class DeadLetterAddressTest extends UnitTestCase
       assertEquals(m.getBody().readString(), "heyho!");
       // force a cancel
       clientSession.rollback();
-      m = clientConsumer.receive(500);
+      m = clientConsumer.receiveImmediate();
       assertNull(m);
       clientConsumer.close();
    }
@@ -180,7 +180,7 @@ public class DeadLetterAddressTest extends UnitTestCase
       }
 
       assertEquals(0, ((Queue)server.getPostOffice().getBinding(qName).getBindable()).getMessageCount());
-      ClientMessage m = clientConsumer.receive(1000);
+      ClientMessage m = clientConsumer.receiveImmediate();
       assertNull(m);
       // All the messages should now be in the DLQ
 
@@ -281,7 +281,7 @@ public class DeadLetterAddressTest extends UnitTestCase
          m.acknowledge();
          clientSession.rollback();
       }
-      ClientMessage m = clientConsumer.receive(500);
+      ClientMessage m = clientConsumer.receiveImmediate();
       assertNull(m);
       clientConsumer.close();
 
@@ -334,8 +334,8 @@ public class DeadLetterAddressTest extends UnitTestCase
          clientSession.rollback();
       }
 
-      assertNull(defaultDeadLetterConsumer.receive(500));
-      assertNull(specificDeadLetterConsumer.receive(500));
+      assertNull(defaultDeadLetterConsumer.receiveImmediate());
+      assertNull(specificDeadLetterConsumer.receiveImmediate());
 
       // one more redelivery attempt:
       ClientMessage m = clientConsumer.receive(500);
@@ -344,7 +344,7 @@ public class DeadLetterAddressTest extends UnitTestCase
       m.acknowledge();
       clientSession.rollback();
 
-      assertNull(defaultDeadLetterConsumer.receive(500));
+      assertNull(defaultDeadLetterConsumer.receiveImmediate());
       assertNotNull(specificDeadLetterConsumer.receive(500));
    }
 

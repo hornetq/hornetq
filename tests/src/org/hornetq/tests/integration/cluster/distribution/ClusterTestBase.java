@@ -171,7 +171,7 @@ public class ClusterTestBase extends ServiceTestBase
             return;
          }
 
-         Thread.sleep(100);
+         Thread.sleep(10);
       }
       while (System.currentTimeMillis() - start < WAIT_TIMEOUT);
 
@@ -191,7 +191,7 @@ public class ClusterTestBase extends ServiceTestBase
          {
             return;
          }
-         Thread.sleep(100);
+         Thread.sleep(10);
       }
       while (System.currentTimeMillis() - start < WAIT_TIMEOUT);
       String msg = "Timed out waiting for server starting = " + node;
@@ -259,7 +259,7 @@ public class ClusterTestBase extends ServiceTestBase
             return;
          }
 
-         Thread.sleep(100);
+         Thread.sleep(10);
       }
       while (System.currentTimeMillis() - start < WAIT_TIMEOUT);
 
@@ -983,7 +983,7 @@ public class ClusterTestBase extends ServiceTestBase
             throw new IllegalArgumentException("No consumer at " + consumerIDs[i]);
          }
 
-         assertNull("consumer " + i + " received message", holder.consumer.receive(200));
+         assertNull("consumer " + i + " received message", holder.consumer.receiveImmediate());
       }
    }
 

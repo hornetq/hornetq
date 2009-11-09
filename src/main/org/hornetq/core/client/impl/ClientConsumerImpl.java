@@ -213,10 +213,12 @@ public class ClientConsumerImpl implements ClientConsumerInternal
                      {
                         break;
                      }
+                     
                      // we only force delivery once per call to receive
                      if (!deliveryForced)
                      {
                         session.forceDelivery(id, forceDeliveryCount.incrementAndGet());
+                        
                         deliveryForced = true;
                      }
                   }

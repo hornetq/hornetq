@@ -102,7 +102,7 @@ public class PageCrashTest extends ServiceTestBase
 
          ClientConsumer consumer = session.createConsumer(ADDRESS);
 
-         assertNull(consumer.receive(200));
+         assertNull(consumer.receiveImmediate());
 
          session.close();
       }

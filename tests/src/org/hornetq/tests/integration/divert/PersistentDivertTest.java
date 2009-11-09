@@ -133,7 +133,7 @@ public class PersistentDivertTest extends ServiceTestBase
          message.acknowledge();
       }
       
-      assertNull(consumer1.receive(200));
+      assertNull(consumer1.receiveImmediate());
       
       for (int i = 0; i < numMessages; i++)
       {
@@ -146,7 +146,7 @@ public class PersistentDivertTest extends ServiceTestBase
          message.acknowledge();
       }
       
-      assertNull(consumer2.receive(200));
+      assertNull(consumer2.receiveImmediate());
       
       for (int i = 0; i < numMessages; i++)
       {
@@ -159,7 +159,7 @@ public class PersistentDivertTest extends ServiceTestBase
          message.acknowledge();
       }
       
-      assertNull(consumer3.receive(200));
+      assertNull(consumer3.receiveImmediate());
       
       for (int i = 0; i < numMessages; i++)
       {
@@ -172,7 +172,7 @@ public class PersistentDivertTest extends ServiceTestBase
          message.acknowledge();
       }
       
-      assertNull(consumer4.receive(200));
+      assertNull(consumer4.receiveImmediate());
                   
       session.close();
       
@@ -285,7 +285,7 @@ public class PersistentDivertTest extends ServiceTestBase
          message.acknowledge();
       }
       
-      assertNull(consumer1.receive(200));
+      assertNull(consumer1.receiveImmediate());
       
       for (int i = 0; i < numMessages; i++)
       {
@@ -298,7 +298,7 @@ public class PersistentDivertTest extends ServiceTestBase
          message.acknowledge();
       }
       
-      assertNull(consumer2.receive(200));
+      assertNull(consumer2.receiveImmediate());
       
       for (int i = 0; i < numMessages; i++)
       {
@@ -311,7 +311,7 @@ public class PersistentDivertTest extends ServiceTestBase
          message.acknowledge();
       }
       
-      assertNull(consumer3.receive(200));
+      assertNull(consumer3.receiveImmediate());
       
       for (int i = 0; i < numMessages; i++)
       {
@@ -324,7 +324,7 @@ public class PersistentDivertTest extends ServiceTestBase
          message.acknowledge();
       }
       
-      assertNull(consumer4.receive(200));
+      assertNull(consumer4.receiveImmediate());
                  
       session.close();
       
@@ -348,13 +348,13 @@ public class PersistentDivertTest extends ServiceTestBase
       
       consumer4 = session.createConsumer(queueName4);
             
-      assertNull(consumer1.receive(200));
+      assertNull(consumer1.receiveImmediate());
       
-      assertNull(consumer2.receive(200));
+      assertNull(consumer2.receiveImmediate());
       
-      assertNull(consumer3.receive(200));
+      assertNull(consumer3.receiveImmediate());
       
-      assertNull(consumer4.receive(200));
+      assertNull(consumer4.receiveImmediate());
       
       session.close();
       

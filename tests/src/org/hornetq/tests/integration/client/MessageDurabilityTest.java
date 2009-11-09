@@ -91,7 +91,7 @@ public class MessageDurabilityTest extends ServiceTestBase
 
       session.start();
       ClientConsumer consumer = session.createConsumer(queue);
-      assertNull(consumer.receive(500));
+      assertNull(consumer.receiveImmediate());
 
       consumer.close();
       session.deleteQueue(queue);

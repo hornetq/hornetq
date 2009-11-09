@@ -528,7 +528,7 @@ public class JMSBridgeTest extends BridgeTestBase
             assertEquals("message" + i, tm.getText());
          }
          
-         Message m = cons.receive(1000);
+         Message m = cons.receiveNoWait();
          
          assertNull(m);
                        

@@ -778,7 +778,7 @@ public class QueueControlTest extends ManagementTestBase
       m.acknowledge();
 
       // check there is no other message to consume:
-      m = consumer.receive(500);
+      m = consumer.receiveImmediate();
       assertNull(m);
 
       consumer.close();
@@ -928,7 +928,7 @@ public class QueueControlTest extends ManagementTestBase
       m.acknowledge();
 
       // check there is no other message to consume:
-      m = consumer.receive(500);
+      m = consumer.receiveImmediate();
       assertNull(m);
 
       consumer.close();

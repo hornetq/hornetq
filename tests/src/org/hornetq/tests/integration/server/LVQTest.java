@@ -138,7 +138,7 @@ public class LVQTest extends UnitTestCase
       assertNotNull(m);      
       assertEquals("m2", m.getBody().readString());
       m.acknowledge();      
-      m = consumer.receive(1000);
+      m = consumer.receiveImmediate();
       assertNull(m);
    }
 
@@ -191,7 +191,7 @@ public class LVQTest extends UnitTestCase
       assertNotNull(m);
       m.acknowledge();
       assertEquals(m.getBody().readString(), "m6");
-      m = consumer.receive(1000);
+      m = consumer.receiveImmediate();
       assertNull(m);
    }
 
@@ -242,7 +242,7 @@ public class LVQTest extends UnitTestCase
       m.acknowledge();
       assertEquals(m.getBody().readString(), "m4");
       clientSessionTxReceives.commit();
-      m = consumer.receive(1000);
+      m = consumer.receiveImmediate();
       assertNull(m);
    }
 
@@ -357,7 +357,7 @@ public class LVQTest extends UnitTestCase
       assertNotNull(m);
       m.acknowledge();
       assertEquals(m.getBody().readString(), "m6");
-      m = consumer.receive(250);
+      m = consumer.receiveImmediate();
       assertNull(m);
    }
 
@@ -396,7 +396,7 @@ public class LVQTest extends UnitTestCase
       assertNotNull(m);
       m.acknowledge();
       assertEquals(m.getBody().readString(), "m6");
-      m = consumer.receive(250);
+      m = consumer.receiveImmediate();
       assertNull(m);
    }
 

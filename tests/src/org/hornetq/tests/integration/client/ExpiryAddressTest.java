@@ -60,10 +60,10 @@ public class ExpiryAddressTest extends UnitTestCase
       
       clientSession.start();
       ClientConsumer clientConsumer = clientSession.createConsumer(qName);
-      ClientMessage m = clientConsumer.receive(500);
+      ClientMessage m = clientConsumer.receiveImmediate();
       assertNull(m);
       System.out.println("size3 = " + server.getPostOffice().getPagingManager().getTotalMemory());
-      m = clientConsumer.receive(500);
+      m = clientConsumer.receiveImmediate();
       assertNull(m);
       clientConsumer.close();
       clientConsumer = clientSession.createConsumer(eq);
@@ -100,7 +100,7 @@ public class ExpiryAddressTest extends UnitTestCase
       
       clientSession.start();
       ClientConsumer clientConsumer = clientSession.createConsumer(qName);
-      ClientMessage m = clientConsumer.receive(500);
+      ClientMessage m = clientConsumer.receiveImmediate();
       
       System.out.println("pageSize after message received = " + server.getPostOffice().getPagingManager().getTotalMemory());
       
@@ -155,7 +155,7 @@ public class ExpiryAddressTest extends UnitTestCase
       producer.send(clientMessage);
       clientSession.start();
       ClientConsumer clientConsumer = clientSession.createConsumer(qName);
-      ClientMessage m = clientConsumer.receive(500);
+      ClientMessage m = clientConsumer.receiveImmediate();
       assertNull(m);
       clientConsumer.close();
    }
@@ -185,7 +185,7 @@ public class ExpiryAddressTest extends UnitTestCase
 
       ClientConsumer clientConsumer = clientSession.createConsumer(qName);
       clientSession.start();
-      ClientMessage m = clientConsumer.receive(1000);
+      ClientMessage m = clientConsumer.receiveImmediate();
       assertNull(m);
       // All the messages should now be in the EQ
 
@@ -227,7 +227,7 @@ public class ExpiryAddressTest extends UnitTestCase
       
       clientSession.start();
       ClientConsumer clientConsumer = clientSession.createConsumer(qName);
-      ClientMessage m = clientConsumer.receive(500);
+      ClientMessage m = clientConsumer.receiveImmediate();
       assertNull(m);
       clientConsumer.close();
 
@@ -257,7 +257,7 @@ public class ExpiryAddressTest extends UnitTestCase
       
       clientSession.start();
       ClientConsumer clientConsumer = clientSession.createConsumer(qName);
-      ClientMessage m = clientConsumer.receive(500);
+      ClientMessage m = clientConsumer.receiveImmediate();
       assertNull(m);
       clientConsumer.close();
 
@@ -295,12 +295,12 @@ public class ExpiryAddressTest extends UnitTestCase
       
       clientSession.start();
       ClientConsumer clientConsumer = clientSession.createConsumer(queue);
-      ClientMessage m = clientConsumer.receive(500);
+      ClientMessage m = clientConsumer.receiveImmediate();
       assertNull(m);
       clientConsumer.close();
 
       clientConsumer = clientSession.createConsumer(defaultExpiryQueue);
-      m = clientConsumer.receive(500);
+      m = clientConsumer.receiveImmediate();
       assertNull(m);
       clientConsumer.close();
 

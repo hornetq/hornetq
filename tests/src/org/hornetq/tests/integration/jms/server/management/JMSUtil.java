@@ -149,7 +149,7 @@ public class JMSUtil
             m = consumer.receive(500);
             Assert.assertNotNull("expected to received " + expected + " messages, got only " + (i + 1), m);
          }
-         m = consumer.receive(500);
+         m = consumer.receiveNoWait();
          Assert.assertNull("received one more message than expected (" + expected + ")", m);
       }
       finally

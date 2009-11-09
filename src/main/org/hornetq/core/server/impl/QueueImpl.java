@@ -496,19 +496,7 @@ public class QueueImpl implements Queue
 
    public synchronized int getMessageCount()
    {
-      int count = messageReferences.size() + getScheduledCount() + getDeliveringCount();
-
-      // log.info(System.identityHashCode(this) + " message count is " +
-      // count +
-      // " ( mr:" +
-      // messageReferences.size() +
-      // " sc:" +
-      // getScheduledCount() +
-      // " dc:" +
-      // getDeliveringCount() +
-      // ")");
-
-      return count;
+      return messageReferences.size() + getScheduledCount() + getDeliveringCount();
    }
 
    public synchronized int getScheduledCount()
@@ -1432,7 +1420,6 @@ public class QueueImpl implements Queue
       }
 
       message.decrementRefCount(store, ref);
-
    }
 
    void postRollback(final LinkedList<MessageReference> refs) throws Exception

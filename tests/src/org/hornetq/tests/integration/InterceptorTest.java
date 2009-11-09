@@ -325,7 +325,7 @@ public class InterceptorTest extends ServiceTestBase
       
       session.start();
       
-      ClientMessage message = consumer.receive(250);
+      ClientMessage message = consumer.receiveImmediate();
 
       assertNull(message);
      
@@ -416,7 +416,7 @@ public class InterceptorTest extends ServiceTestBase
       
       session.start();
       
-      ClientMessage message = consumer.receive(250);
+      ClientMessage message = consumer.receive(100);
 
       assertNull(message);
      
@@ -500,7 +500,7 @@ public class InterceptorTest extends ServiceTestBase
          producer.send(message);
       }
 
-      ClientMessage message = consumer.receive(250);
+      ClientMessage message = consumer.receiveImmediate();
          
       assertNull(message);
       
@@ -589,7 +589,7 @@ public class InterceptorTest extends ServiceTestBase
          producer.send(message);
       }
 
-      ClientMessage message = consumer.receive(250);
+      ClientMessage message = consumer.receive(100);
          
       assertNull(message);
       

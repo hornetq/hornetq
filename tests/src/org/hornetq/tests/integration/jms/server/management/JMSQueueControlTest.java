@@ -232,7 +232,7 @@ public class JMSQueueControlTest extends ManagementTestBase
       connection.start();
 
       MessageConsumer consumer = JMSUtil.createConsumer(connection, queue);
-      assertNull(consumer.receive(500));
+      assertNull(consumer.receiveNoWait());
 
       connection.close();
    }
@@ -379,7 +379,7 @@ public class JMSQueueControlTest extends ManagementTestBase
       assertEquals(msg_2.getJMSMessageID(), message.getJMSMessageID());
       assertEquals(unmatchingValue, message.getLongProperty(key));
 
-      assertNull(consumer.receive(500));
+      assertNull(consumer.receiveNoWait());
 
       connection.close();
    }
@@ -720,7 +720,7 @@ public class JMSQueueControlTest extends ManagementTestBase
       Message message = consumer.receive(500);
       assertNotNull(message);
       assertEquals(unmatchingValue, message.getLongProperty(key));
-      assertNull(consumer.receive(500));
+      assertNull(consumer.receiveNoWait());
 
       JMSUtil.consumeMessages(1, otherQueue);
 

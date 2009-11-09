@@ -22,6 +22,7 @@ import javax.jms.Session;
 import javax.jms.TextMessage;
 
 import org.hornetq.core.config.TransportConfiguration;
+import org.hornetq.core.logging.Logger;
 import org.hornetq.core.server.Queue;
 import org.hornetq.jms.HornetQQueue;
 import org.hornetq.jms.client.HornetQConnectionFactory;
@@ -34,6 +35,8 @@ import org.hornetq.utils.SimpleString;
  */
 public class ConsumerTest extends JMSTestBase
 {
+   private static final Logger log = Logger.getLogger(ConsumerTest.class);
+   
    private static final String Q_NAME = "ConsumerTestQueue";
 
    private HornetQQueue jBossQueue;
@@ -112,6 +115,8 @@ public class ConsumerTest extends JMSTestBase
 
    public void testPreCommitAcksWithMessageExpiry() throws Exception
    {
+      log.info("starting test");
+           
       Connection conn = cf.createConnection();
       Session session = conn.createSession(false, HornetQSession.PRE_ACKNOWLEDGE);
       jBossQueue = new HornetQQueue(Q_NAME);
@@ -128,12 +133,12 @@ public class ConsumerTest extends JMSTestBase
       Thread.sleep(2);
 
       conn.start();
-      Message m = consumer.receive(500);
+      
+      Message m = consumer.receiveNoWait();
       assertNull(m);
       
       SimpleString queueName = new SimpleString(HornetQQueue.JMS_QUEUE_ADDRESS_PREFIX + Q_NAME);
-      assertEquals(0, ((Queue)server.getPostOffice().getBinding(queueName).getBindable()).getDeliveringCount());
-      assertEquals(0, ((Queue)server.getPostOffice().getBinding(queueName).getBindable()).getMessageCount());
+      assertEquals(0, ((Queue)server.getPostOffice().getBinding(queueName).getBindable()).getDeliveringCount());      
       conn.close();
    }
    
@@ -156,12 +161,11 @@ public class ConsumerTest extends JMSTestBase
       Thread.sleep(2);
 
       conn.start();
-      Message m = consumer.receive(500);
+      Message m = consumer.receiveNoWait();
       assertNull(m);
       
       SimpleString queueName = new SimpleString(HornetQQueue.JMS_QUEUE_ADDRESS_PREFIX + Q_NAME);
-      assertEquals(0, ((Queue)server.getPostOffice().getBinding(queueName).getBindable()).getDeliveringCount());
-      assertEquals(0, ((Queue)server.getPostOffice().getBinding(queueName).getBindable()).getMessageCount());
+      assertEquals(0, ((Queue)server.getPostOffice().getBinding(queueName).getBindable()).getDeliveringCount());      
       conn.close();
    }
 

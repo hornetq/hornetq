@@ -241,7 +241,7 @@ public class LargeJournalStressTest extends ServiceTestBase
 
       cons = sess.createConsumer(Q2);
 
-      assertNull(cons.receive(100));
+      assertNull(cons.receiveImmediate());
 
       sess.close();
 

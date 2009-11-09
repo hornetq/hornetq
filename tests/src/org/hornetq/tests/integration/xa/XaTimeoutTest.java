@@ -153,7 +153,7 @@ public class XaTimeoutTest extends UnitTestCase
          assertTrue(e.errorCode == XAException.XAER_NOTA);
       }
       clientSession.start();
-      ClientMessage m = clientConsumer.receive(500);
+      ClientMessage m = clientConsumer.receiveImmediate();
       assertNull(m);
    }
 
@@ -302,7 +302,7 @@ public class XaTimeoutTest extends UnitTestCase
       m.acknowledge();
       assertNotNull(m);
       assertEquals(m.getBody().readString(), "m4");
-      m = consumer.receive(500);
+      m = consumer.receiveImmediate();
       assertNull(m);
       clientSession2.close();
    }
@@ -377,7 +377,7 @@ public class XaTimeoutTest extends UnitTestCase
       m.acknowledge();
       assertNotNull(m);
       assertEquals(m.getBody().readString(), "m8");
-      m = consumer.receive(500);
+      m = consumer.receiveImmediate();
       assertNull(m);
       clientSession2.close();
    }
@@ -410,7 +410,7 @@ public class XaTimeoutTest extends UnitTestCase
          assertTrue(e.errorCode == XAException.XAER_NOTA);
       }
       clientSession.start();
-      ClientMessage m = clientConsumer.receive(500);
+      ClientMessage m = clientConsumer.receiveImmediate();
       assertNull(m);
    }
 
@@ -513,7 +513,7 @@ public class XaTimeoutTest extends UnitTestCase
          session.close();
       }
       clientSession.start();
-      ClientMessage m = clientConsumer.receive(500);
+      ClientMessage m = clientConsumer.receiveImmediate();
       assertNull(m);
    }
 

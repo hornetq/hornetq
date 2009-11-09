@@ -383,7 +383,7 @@ public class CompactingTest extends ServiceTestBase
 
          cons = sess.createConsumer(Q2);
 
-         assertNull(cons.receive(100));
+         assertNull(cons.receiveImmediate());
 
          cons.close();
 

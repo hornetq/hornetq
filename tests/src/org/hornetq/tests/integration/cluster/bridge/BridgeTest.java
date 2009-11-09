@@ -178,7 +178,7 @@ public class BridgeTest extends ServiceTestBase
             message.acknowledge();
          }
 
-         assertNull(consumer1.receive(200));
+         assertNull(consumer1.receiveImmediate());
 
          session0.close();
 
@@ -341,7 +341,7 @@ public class BridgeTest extends ServiceTestBase
             producer0.send(message);
          }
 
-         assertNull(consumer1.receive(200));
+         assertNull(consumer1.receiveImmediate());
 
          for (int i = 0; i < numMessages; i++)
          {
@@ -375,7 +375,7 @@ public class BridgeTest extends ServiceTestBase
             }
          }
 
-         assertNull(consumer1.receive(200));
+         assertNull(consumer1.receiveImmediate());
 
          session0.close();
 
@@ -520,7 +520,7 @@ public class BridgeTest extends ServiceTestBase
          
       }
 
-      assertNull(consumer1.receive(200));
+      assertNull(consumer1.receiveImmediate());
 
       session0.close();
 
@@ -642,7 +642,7 @@ public class BridgeTest extends ServiceTestBase
             message.acknowledge();
          }
 
-         assertNull(consumer1.receive(200));
+         assertNull(consumer1.receiveImmediate());
 
          session0.close();
 

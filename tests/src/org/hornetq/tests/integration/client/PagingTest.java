@@ -279,7 +279,7 @@ public class PagingTest extends ServiceTestBase
                   assertNotNull(msg);
                }
 
-               assertNull(consumer.receive(100));
+               assertNull(consumer.receiveImmediate());
                consumer.close();
             }
 
@@ -292,7 +292,7 @@ public class PagingTest extends ServiceTestBase
 
          ClientConsumer consumer = session.createConsumer(ADDRESS);
 
-         assertNull(consumer.receive(100));
+         assertNull(consumer.receiveImmediate());
 
          sessionTransacted.commit();
 
@@ -312,7 +312,7 @@ public class PagingTest extends ServiceTestBase
             message.acknowledge();
          }
 
-         assertNull(consumer.receive(100));
+         assertNull(consumer.receiveImmediate());
 
          consumer.close();
 
@@ -524,7 +524,7 @@ public class PagingTest extends ServiceTestBase
 
          session.start();
 
-         assertNull(consumer.receive(100));
+         assertNull(consumer.receiveImmediate());
 
          session.close();
 
@@ -690,7 +690,7 @@ public class PagingTest extends ServiceTestBase
             message2.acknowledge();
          }
 
-         assertNull(consumer.receive(100));
+         assertNull(consumer.receiveImmediate());
 
          assertEquals(0, server.getPostOffice().getPagingManager().getTotalMemory());
          assertEquals(0, server.getPostOffice().getPagingManager().getPageStore(ADDRESS).getAddressSize());
@@ -714,7 +714,7 @@ public class PagingTest extends ServiceTestBase
             message2.acknowledge();
          }
 
-         assertNull(consumer.receive(100));
+         assertNull(consumer.receiveImmediate());
 
          session.close();
 
@@ -749,7 +749,7 @@ public class PagingTest extends ServiceTestBase
 
          session.commit();
 
-         assertNull(consumer.receive(100));
+         assertNull(consumer.receiveImmediate());
 
          session.close();
 

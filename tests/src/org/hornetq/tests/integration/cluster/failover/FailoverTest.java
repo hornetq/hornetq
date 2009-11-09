@@ -318,7 +318,7 @@ public class FailoverTest extends FailoverTestBase
 
       session.start();
 
-      ClientMessage message = consumer.receive(500);
+      ClientMessage message = consumer.receiveImmediate();
 
       assertNull(message);
 
@@ -399,7 +399,7 @@ public class FailoverTest extends FailoverTestBase
          }
       }
 
-      assertNull(consumer.receive(1000));
+      assertNull(consumer.receiveImmediate());
 
       session.commit();
 
@@ -488,7 +488,7 @@ public class FailoverTest extends FailoverTestBase
          }
       }
 
-      assertNull(consumer.receive(1000));
+      assertNull(consumer.receiveImmediate());
 
       session.commit();
 
@@ -666,7 +666,7 @@ public class FailoverTest extends FailoverTestBase
 
       session2.commit();
 
-      assertNull(consumer.receive(1000));
+      assertNull(consumer.receiveImmediate());
 
       session1.close();
 
@@ -736,7 +736,7 @@ public class FailoverTest extends FailoverTestBase
 
       session.start();
 
-      ClientMessage message = consumer.receive(500);
+      ClientMessage message = consumer.receiveImmediate();
 
       assertNull(message);
 
@@ -808,7 +808,7 @@ public class FailoverTest extends FailoverTestBase
 
       session.start();
 
-      ClientMessage message = consumer.receive(500);
+      ClientMessage message = consumer.receiveImmediate();
 
       assertNull(message);
 
@@ -883,7 +883,7 @@ public class FailoverTest extends FailoverTestBase
 
       session.start();
 
-      ClientMessage message = consumer.receive(500);
+      ClientMessage message = consumer.receiveImmediate();
 
       assertNull(message);
 
@@ -1887,7 +1887,7 @@ public class FailoverTest extends FailoverTestBase
          message.acknowledge();
       }
 
-      ClientMessage message = consumer.receive(500);
+      ClientMessage message = consumer.receiveImmediate();
 
       assertNull(message);
 
@@ -2027,7 +2027,7 @@ public class FailoverTest extends FailoverTestBase
          message.acknowledge();
       }
 
-      ClientMessage message = consumer.receive(500);
+      ClientMessage message = consumer.receiveImmediate();
 
       assertNull(message);
 
@@ -2134,7 +2134,7 @@ public class FailoverTest extends FailoverTestBase
          message2.acknowledge();
       }
 
-      ClientMessage message3 = consumer.receive(250);
+      ClientMessage message3 = consumer.receiveImmediate();
 
       assertNull(message3);
 

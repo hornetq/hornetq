@@ -83,13 +83,13 @@ public class DuplicateDetectionTest extends ServiceTestBase
       message = createMessage(session, 2);
       message.putBytesProperty(MessageImpl.HDR_DUPLICATE_DETECTION_ID, dupID.getData());
       producer.send(message);
-      message2 = consumer.receive(250);
+      message2 = consumer.receiveImmediate();
       assertNull(message2);
 
       message = createMessage(session, 3);
       message.putBytesProperty(MessageImpl.HDR_DUPLICATE_DETECTION_ID, dupID.getData());
       producer.send(message);
-      message2 = consumer.receive(250);
+      message2 = consumer.receiveImmediate();
       assertNull(message2);
 
       // Now try with a different id
@@ -104,13 +104,13 @@ public class DuplicateDetectionTest extends ServiceTestBase
       message = createMessage(session, 5);
       message.putBytesProperty(MessageImpl.HDR_DUPLICATE_DETECTION_ID, dupID2.getData());
       producer.send(message);
-      message2 = consumer.receive(1000);
+      message2 = consumer.receiveImmediate();
       assertNull(message2);
 
       message = createMessage(session, 6);
       message.putBytesProperty(MessageImpl.HDR_DUPLICATE_DETECTION_ID, dupID.getData());
       producer.send(message);
-      message2 = consumer.receive(250);
+      message2 = consumer.receiveImmediate();
       assertNull(message2);
 
       session.close();
@@ -149,13 +149,13 @@ public class DuplicateDetectionTest extends ServiceTestBase
       message = createMessage(session, 2);
       message.putStringProperty(MessageImpl.HDR_DUPLICATE_DETECTION_ID, dupID);
       producer.send(message);
-      message2 = consumer.receive(250);
+      message2 = consumer.receiveImmediate();
       assertNull(message2);
 
       message = createMessage(session, 3);
       message.putStringProperty(MessageImpl.HDR_DUPLICATE_DETECTION_ID, dupID);
       producer.send(message);
-      message2 = consumer.receive(250);
+      message2 = consumer.receiveImmediate();
       assertNull(message2);
 
       // Now try with a different id
@@ -170,13 +170,13 @@ public class DuplicateDetectionTest extends ServiceTestBase
       message = createMessage(session, 5);
       message.putStringProperty(MessageImpl.HDR_DUPLICATE_DETECTION_ID, dupID2);
       producer.send(message);
-      message2 = consumer.receive(1000);
+      message2 = consumer.receiveImmediate();
       assertNull(message2);
 
       message = createMessage(session, 6);
       message.putStringProperty(MessageImpl.HDR_DUPLICATE_DETECTION_ID, dupID);
       producer.send(message);
-      message2 = consumer.receive(250);
+      message2 = consumer.receiveImmediate();
       assertNull(message2);
 
       session.close();
@@ -253,11 +253,11 @@ public class DuplicateDetectionTest extends ServiceTestBase
          producer3.send(message);
       }
 
-      ClientMessage message = consumer1.receive(100);
+      ClientMessage message = consumer1.receiveImmediate();
       assertNull(message);
-      message = consumer2.receive(100);
+      message = consumer2.receiveImmediate();
       assertNull(message);
-      message = consumer3.receive(100);
+      message = consumer3.receiveImmediate();
       assertNull(message);
 
       for (int i = 0; i < cacheSize; i++)
@@ -299,11 +299,11 @@ public class DuplicateDetectionTest extends ServiceTestBase
          producer3.send(message);
       }
 
-      message = consumer1.receive(100);
+      message = consumer1.receiveImmediate();
       assertNull(message);
-      message = consumer2.receive(100);
+      message = consumer2.receiveImmediate();
       assertNull(message);
-      message = consumer3.receive(100);
+      message = consumer3.receiveImmediate();
       assertNull(message);
 
       // Should be able to send the first lot again now - since the second lot pushed the
@@ -379,7 +379,7 @@ public class DuplicateDetectionTest extends ServiceTestBase
       message = consumer.receive(250);
       assertEquals(1, message.getObjectProperty(propKey));
 
-      message = consumer.receive(250);
+      message = consumer.receiveImmediate();
       assertNull(message);
 
       session.close();
@@ -421,7 +421,7 @@ public class DuplicateDetectionTest extends ServiceTestBase
       message = consumer.receive(250);
       assertEquals(1, message.getObjectProperty(propKey));
 
-      message = consumer.receive(250);
+      message = consumer.receiveImmediate();
       assertNull(message);
 
       session.close();
@@ -475,7 +475,7 @@ public class DuplicateDetectionTest extends ServiceTestBase
       message = consumer.receive(250);
       assertEquals(1, message.getObjectProperty(propKey));
 
-      message = consumer.receive(250);
+      message = consumer.receiveImmediate();
       assertNull(message);
 
       session.close();
@@ -536,7 +536,7 @@ public class DuplicateDetectionTest extends ServiceTestBase
       message = consumer.receive(250);
       assertEquals(0, message.getObjectProperty(propKey));
 
-      message = consumer.receive(250);
+      message = consumer.receiveImmediate();
       assertNull(message);
 
       session.close();
@@ -602,7 +602,7 @@ public class DuplicateDetectionTest extends ServiceTestBase
       message = consumer.receive(250);
       assertEquals(1, message.getObjectProperty(propKey));
 
-      message = consumer.receive(250);
+      message = consumer.receiveImmediate();
       assertNull(message);
       
       log.info("ending session");
@@ -679,7 +679,7 @@ public class DuplicateDetectionTest extends ServiceTestBase
       message = consumer.receive(250);
       assertEquals(1, message.getObjectProperty(propKey));
 
-      message = consumer.receive(250);
+      message = consumer.receiveImmediate();
       assertNull(message);
       
       log.info("ending session");
@@ -755,7 +755,7 @@ public class DuplicateDetectionTest extends ServiceTestBase
 
       message = consumer.receive(250);
 
-      message = consumer.receive(250);
+      message = consumer.receiveImmediate();
       assertNull(message);
       
       log.info("ending session");
@@ -833,7 +833,7 @@ public class DuplicateDetectionTest extends ServiceTestBase
 
       message = consumer.receive(250);
 
-      message = consumer.receive(250);
+      message = consumer.receiveImmediate();
       assertNull(message);
       
       log.info("ending session");
@@ -924,13 +924,13 @@ public class DuplicateDetectionTest extends ServiceTestBase
       message = createMessage(session, 1);
       message.putBytesProperty(MessageImpl.HDR_DUPLICATE_DETECTION_ID, dupID.getData());
       producer.send(message);
-      message2 = consumer.receive(200);
+      message2 = consumer.receiveImmediate();
       assertNull(message2);
       
       message = createMessage(session, 2);
       message.putBytesProperty(MessageImpl.HDR_DUPLICATE_DETECTION_ID, dupID2.getData());
       producer.send(message);
-      message2 = consumer.receive(200);
+      message2 = consumer.receiveImmediate();
       assertNull(message2);
 
       session.close();
@@ -1006,7 +1006,7 @@ public class DuplicateDetectionTest extends ServiceTestBase
          SimpleString dupID = new SimpleString("abcdefg" + i);
          message.putBytesProperty(MessageImpl.HDR_DUPLICATE_DETECTION_ID, dupID.getData());
          producer.send(message);
-         ClientMessage message2 = consumer.receive(100);
+         ClientMessage message2 = consumer.receiveImmediate();
          assertNull(message2);
       }
 
@@ -1094,7 +1094,7 @@ public class DuplicateDetectionTest extends ServiceTestBase
          }
          else
          {
-            ClientMessage message2 = consumer.receive(100);
+            ClientMessage message2 = consumer.receiveImmediate();
             assertNull(message2);
          }
       }
@@ -1194,7 +1194,7 @@ public class DuplicateDetectionTest extends ServiceTestBase
          }
          else
          {
-            ClientMessage message2 = consumer.receive(100);
+            ClientMessage message2 = consumer.receiveImmediate();
             assertNull(message2);
          }
       }
@@ -1448,14 +1448,14 @@ public class DuplicateDetectionTest extends ServiceTestBase
       message.putBytesProperty(MessageImpl.HDR_DUPLICATE_DETECTION_ID, dupID.getData());
       producer.send(message);
       session.commit();
-      message2 = consumer.receive(200);
+      message2 = consumer.receiveImmediate();
       assertNull(message2);
       
       message = createMessage(session, 2);
       message.putBytesProperty(MessageImpl.HDR_DUPLICATE_DETECTION_ID, dupID2.getData());
       producer.send(message);
       session.commit();
-      message2 = consumer.receive(200);
+      message2 = consumer.receiveImmediate();
       assertNull(message2);
 
       session.close();
@@ -1749,10 +1749,10 @@ public class DuplicateDetectionTest extends ServiceTestBase
 
       session.start(xid3, XAResource.TMNOFLAGS);
       
-      ClientMessage message2 = consumer.receive(200);
+      ClientMessage message2 = consumer.receiveImmediate();
       assertNull(message2);
       
-      message2 = consumer.receive(200);
+      message2 = consumer.receiveImmediate();
       assertNull(message2);
 
       session.close();
@@ -1847,10 +1847,10 @@ public class DuplicateDetectionTest extends ServiceTestBase
 
       session.start(xid3, XAResource.TMNOFLAGS);
       
-      ClientMessage message2 = consumer.receive(200);
+      ClientMessage message2 = consumer.receiveImmediate();
       assertNull(message2);
       
-      message2 = consumer.receive(200);
+      message2 = consumer.receiveImmediate();
       assertNull(message2);
 
       session.close();

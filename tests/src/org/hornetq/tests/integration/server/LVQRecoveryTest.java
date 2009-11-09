@@ -154,7 +154,7 @@ public class LVQRecoveryTest extends ServiceTestBase
       assertNotNull(m);
       m.acknowledge();
       assertEquals(m.getBody().readString(), "m6");
-      m = consumer.receive(1000);
+      m = consumer.receiveImmediate();
       assertNull(m);
    }
    protected void tearDown() throws Exception

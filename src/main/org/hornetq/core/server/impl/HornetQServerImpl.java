@@ -591,7 +591,7 @@ public class HornetQServerImpl implements HornetQServer
                                                      final boolean preAcknowledge,
                                                      final boolean xa,
                                                      final int sendWindowSize) throws Exception
-   {
+   {      
       if (!started)
       {
          throw new HornetQException(HornetQException.SESSION_CREATION_REJECTED, "Server not started");

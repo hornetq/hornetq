@@ -303,7 +303,7 @@ public class MessageGroupingTest extends UnitTestCase
       consumer.close();
       consumer2.close();
       consumer = this.clientSession.createConsumer(qName);
-      assertNull(consumer.receive(500));
+      assertNull(consumer.receiveImmediate());
       clientSession.close();
    }
 
@@ -372,7 +372,7 @@ public class MessageGroupingTest extends UnitTestCase
          i += 2;
       }
       consumer = this.clientSession.createConsumer(qName);
-      assertNull(consumer.receive(500));
+      assertNull(consumer.receiveImmediate());
       clientSession.close();
    }
 
@@ -429,7 +429,7 @@ public class MessageGroupingTest extends UnitTestCase
       consumer.close();
       consumer2.close();
       consumer = this.clientSession.createConsumer(qName);
-      assertNull(consumer.receive(500));
+      assertNull(consumer.receiveImmediate());
       clientSession.close();
    }
 
@@ -506,7 +506,7 @@ public class MessageGroupingTest extends UnitTestCase
          i += 2;
       }
       consumer = this.clientSession.createConsumer(qName);
-      assertNull(consumer.receive(500));
+      assertNull(consumer.receiveImmediate());
       clientSession.close();
    }
 

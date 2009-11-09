@@ -116,7 +116,7 @@ public class PreACKJMSTest extends JMSTestBase
 
          cons = sess.createConsumer(queue);
 
-         msg2 = (TextMessage)cons.receive(10);
+         msg2 = (TextMessage)cons.receiveNoWait();
 
          assertNull("ConnectionFactory is on PreACK mode, the message shouldn't be received", msg2);
       }

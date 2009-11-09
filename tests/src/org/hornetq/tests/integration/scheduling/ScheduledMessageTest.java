@@ -156,7 +156,7 @@ public class ScheduledMessageTest extends ServiceTestBase
       // Make sure no more messages
       consumer.close();
       consumer = session.createConsumer(atestq);
-      assertNull(consumer.receive(1000));
+      assertNull(consumer.receiveImmediate());
 
       session.close();
    }
@@ -204,7 +204,7 @@ public class ScheduledMessageTest extends ServiceTestBase
       consumer.close();
       consumer2.close();
       consumer = session.createConsumer(atestq);
-      assertNull(consumer.receive(1000));
+      assertNull(consumer.receiveImmediate());
 
       session.close();
    }
@@ -266,7 +266,7 @@ public class ScheduledMessageTest extends ServiceTestBase
       consumer.close();
       consumer2.close();
       consumer = session.createConsumer(atestq);
-      assertNull(consumer.receive(1000));
+      assertNull(consumer.receiveImmediate());
 
       session.close();
    }
@@ -316,7 +316,7 @@ public class ScheduledMessageTest extends ServiceTestBase
       // Make sure no more messages
       consumer.close();
       consumer = session.createConsumer(atestq);
-      assertNull(consumer.receive(1000));
+      assertNull(consumer.receiveImmediate());
 
       session.close();
    }
@@ -396,7 +396,7 @@ public class ScheduledMessageTest extends ServiceTestBase
       // Make sure no more messages
       consumer.close();
       consumer = session.createConsumer(atestq);
-      assertNull(consumer.receive(1000));
+      assertNull(consumer.receiveImmediate());
 
       session.close();
    }
@@ -477,7 +477,7 @@ public class ScheduledMessageTest extends ServiceTestBase
       // Make sure no more messages
       consumer.close();
       consumer = session.createConsumer(atestq);
-      assertNull(consumer.receive(1000));
+      assertNull(consumer.receiveImmediate());
 
       session.close();
    }
@@ -549,7 +549,7 @@ public class ScheduledMessageTest extends ServiceTestBase
       // Make sure no more messages
       consumer.close();
       consumer = session.createConsumer(atestq);
-      assertNull(consumer.receive(1000));
+      assertNull(consumer.receiveImmediate());
 
       session.close();
    }
@@ -602,7 +602,7 @@ public class ScheduledMessageTest extends ServiceTestBase
       consumer.close();
       // Make sure no more messages
       consumer = session.createConsumer(atestq);
-      assertNull(consumer.receive(1000));
+      assertNull(consumer.receiveImmediate());
       session.close();
    }
    

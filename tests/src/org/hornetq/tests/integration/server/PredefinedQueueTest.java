@@ -190,8 +190,8 @@ public class PredefinedQueueTest extends ServiceTestBase
          message.acknowledge();
       }
       
-      assertNull(consumer1.receive(200));
-      assertNull(consumer2.receive(200));
+      assertNull(consumer1.receiveImmediate());
+      assertNull(consumer2.receiveImmediate());
 
       session.close();
       
@@ -293,9 +293,9 @@ public class PredefinedQueueTest extends ServiceTestBase
          message.acknowledge();
       }
       
-      assertNull(consumer1.receive(200));
-      assertNull(consumer2.receive(200));
-      assertNull(consumer3.receive(200));
+      assertNull(consumer1.receiveImmediate());
+      assertNull(consumer2.receiveImmediate());
+      assertNull(consumer3.receiveImmediate());
       
       session.close();
       
@@ -370,7 +370,7 @@ public class PredefinedQueueTest extends ServiceTestBase
       
       ClientConsumer consumer2 = session.createConsumer(queueName2);
       
-      ClientMessage message = consumer1.receive(200);  
+      ClientMessage message = consumer1.receiveImmediate();  
       
       assertNull(message);
             
@@ -382,8 +382,8 @@ public class PredefinedQueueTest extends ServiceTestBase
          message.acknowledge();
       }
       
-      assertNull(consumer1.receive(200));
-      assertNull(consumer2.receive(200));
+      assertNull(consumer1.receiveImmediate());
+      assertNull(consumer2.receiveImmediate());
 
       session.close();
       
@@ -450,7 +450,7 @@ public class PredefinedQueueTest extends ServiceTestBase
          message.acknowledge();
       }
       
-      assertNull(consumer1.receive(200));
+      assertNull(consumer1.receiveImmediate());
       
       for (int i = 0; i < numMessages; i++)
       {
@@ -463,7 +463,7 @@ public class PredefinedQueueTest extends ServiceTestBase
          producer.send(message);
       }
       
-      assertNull(consumer1.receive(200));
+      assertNull(consumer1.receiveImmediate());
             
       session.close();
       

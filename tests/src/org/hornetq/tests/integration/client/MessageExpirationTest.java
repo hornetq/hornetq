@@ -72,7 +72,7 @@ public class MessageExpirationTest extends ServiceTestBase
       session.start();
 
       ClientConsumer consumer = session.createConsumer(queue);
-      ClientMessage message2 = consumer.receive(500);
+      ClientMessage message2 = consumer.receiveImmediate();
       assertNull(message2);
 
       consumer.close();
@@ -100,9 +100,8 @@ public class MessageExpirationTest extends ServiceTestBase
       
       assertEquals(0, ((Queue)server.getPostOffice().getBinding(queue).getBindable()).getDeliveringCount());
       assertEquals(0, ((Queue)server.getPostOffice().getBinding(queue).getBindable()).getMessageCount());
-
       
-      ClientMessage message2 = consumer.receive(500);
+      ClientMessage message2 = consumer.receiveImmediate();
       assertNull(message2);
 
       consumer.close();
@@ -126,7 +125,7 @@ public class MessageExpirationTest extends ServiceTestBase
       Thread.sleep(EXPIRATION * 2);
 
       ClientConsumer consumer = session.createConsumer(queue);
-      ClientMessage message2 = consumer.receive(500);
+      ClientMessage message2 = consumer.receiveImmediate();
       assertNull(message2);
                  
       assertEquals(0, ((Queue)server.getPostOffice().getBinding(queue).getBindable()).getDeliveringCount());
@@ -166,7 +165,7 @@ public class MessageExpirationTest extends ServiceTestBase
       session.start();
 
       ClientConsumer consumer = session.createConsumer(queue);
-      ClientMessage message2 = consumer.receive(500);
+      ClientMessage message2 = consumer.receiveImmediate();
       assertNull(message2);
 
       ClientConsumer expiryConsumer = session.createConsumer(expiryQueue);

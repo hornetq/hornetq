@@ -143,7 +143,7 @@ public class BridgeStartTest extends ServiceTestBase
          message.acknowledge();
       }
 
-      assertNull(consumer1.receive(200));
+      assertNull(consumer1.receiveImmediate());
 
       Bridge bridge = server0.getClusterManager().getBridges().get(bridgeName);
 
@@ -158,7 +158,7 @@ public class BridgeStartTest extends ServiceTestBase
          producer0.send(message);
       }
 
-      assertNull(consumer1.receive(500));
+      assertNull(consumer1.receiveImmediate());
 
       bridge.start();
 
@@ -173,7 +173,7 @@ public class BridgeStartTest extends ServiceTestBase
          message.acknowledge();
       }
 
-      assertNull(consumer1.receive(200));
+      assertNull(consumer1.receiveImmediate());
 
       session0.close();
 
@@ -294,7 +294,7 @@ public class BridgeStartTest extends ServiceTestBase
             message.acknowledge();
          }
 
-         assertNull(consumer1.receive(200));
+         assertNull(consumer1.receiveImmediate());
 
          for (int i = 0; i < numMessages; i++)
          {
@@ -316,7 +316,7 @@ public class BridgeStartTest extends ServiceTestBase
             message.acknowledge();
          }
 
-         assertNull(consumer1.receive(200));
+         assertNull(consumer1.receiveImmediate());
 
          session1.close();
 
@@ -364,7 +364,7 @@ public class BridgeStartTest extends ServiceTestBase
             message.acknowledge();
          }
 
-         assertNull(consumer1.receive(200));
+         assertNull(consumer1.receiveImmediate());
 
          session1.close();
 
@@ -474,7 +474,7 @@ public class BridgeStartTest extends ServiceTestBase
       session1.start();
 
       // Won't be received since the bridge was deactivated
-      assertNull(consumer1.receive(200));
+      assertNull(consumer1.receiveImmediate());
 
       // Now start the bridge manually
 
@@ -495,7 +495,7 @@ public class BridgeStartTest extends ServiceTestBase
          message.acknowledge();
       }
 
-      assertNull(consumer1.receive(200));
+      assertNull(consumer1.receiveImmediate());
 
       session1.close();
 
@@ -605,7 +605,7 @@ public class BridgeStartTest extends ServiceTestBase
          message.acknowledge();
       }
 
-      assertNull(consumer1.receive(200));
+      assertNull(consumer1.receiveImmediate());
 
       // Now stop the bridge manually
 
@@ -624,7 +624,7 @@ public class BridgeStartTest extends ServiceTestBase
          producer0.send(message);
       }
 
-      assertNull(consumer1.receive(200));
+      assertNull(consumer1.receiveImmediate());
 
       bridge.start();
 
@@ -644,7 +644,7 @@ public class BridgeStartTest extends ServiceTestBase
          message.acknowledge();
       }
 
-      assertNull(consumer1.receive(200));
+      assertNull(consumer1.receiveImmediate());
 
       bridge.stop();
 
@@ -657,7 +657,7 @@ public class BridgeStartTest extends ServiceTestBase
          producer0.send(message);
       }
 
-      assertNull(consumer1.receive(200));
+      assertNull(consumer1.receiveImmediate());
 
       bridge.start();
 
@@ -672,7 +672,7 @@ public class BridgeStartTest extends ServiceTestBase
          message.acknowledge();
       }
 
-      assertNull(consumer1.receive(200));
+      assertNull(consumer1.receiveImmediate());
 
       session1.close();
 

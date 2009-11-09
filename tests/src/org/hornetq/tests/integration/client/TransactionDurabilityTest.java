@@ -129,7 +129,7 @@ public class TransactionDurabilityTest extends ServiceTestBase
       
       consumer2 = session2.createConsumer(queue2);
       
-      m1 = consumer1.receive(100);
+      m1 = consumer1.receiveImmediate();
       
       assertNull(m1);
       
@@ -161,11 +161,11 @@ public class TransactionDurabilityTest extends ServiceTestBase
       
       consumer2 = session2.createConsumer(queue2);
       
-      m1 = consumer1.receive(100);
+      m1 = consumer1.receiveImmediate();
       
       assertNull(m1);
       
-      m2 = consumer2.receive(100);
+      m2 = consumer2.receiveImmediate();
       
       assertNull(m2);
       

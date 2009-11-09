@@ -212,7 +212,7 @@ public class SecurityNotificationTest extends UnitTestCase
          messages[i] = m;
          m.acknowledge();
       }
-      m = consumer.receive(500);
+      m = consumer.receiveImmediate();
       if (m != null)
       {
          for (SimpleString key : m.getPropertyNames())

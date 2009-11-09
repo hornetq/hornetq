@@ -397,7 +397,7 @@ public class LargeMessageTest extends LargeMessageTestBase
 
          ClientConsumer consumerExpired = session.createConsumer(ADDRESS);
          // to kick expiry quicker than waiting reaper thread
-         assertNull(consumerExpired.receive(1000));
+         assertNull(consumerExpired.receiveImmediate());
          consumerExpired.close();
 
          ClientConsumer consumerExpiry = session.createConsumer(ADDRESS_EXPIRY);
@@ -532,7 +532,7 @@ public class LargeMessageTest extends LargeMessageTestBase
 
          ClientConsumer consumerExpired = session.createConsumer(ADDRESS);
          // to kick expiry quicker than waiting reaper thread
-         assertNull(consumerExpired.receive(1000));
+         assertNull(consumerExpired.receiveImmediate());
          consumerExpired.close();
 
          ClientConsumer consumerExpiry = session.createConsumer(ADDRESS_EXPIRY);
@@ -666,7 +666,7 @@ public class LargeMessageTest extends LargeMessageTestBase
 
          // Creating a consumer just to make the expiry process go faster and not have to wait for the reaper
          ClientConsumer consumer2 = session.createConsumer(ADDRESS);
-         assertNull(consumer2.receive(1000));
+         assertNull(consumer2.receiveImmediate());
 
          ClientMessage msg1 = consumer.receive(50000);
 
@@ -1370,7 +1370,7 @@ public class LargeMessageTest extends LargeMessageTestBase
 
          ClientConsumer consumer = session.createConsumer(queue[1]);
          ClientMessage msg = consumer.receive(RECEIVE_WAIT_TIME);
-         assertNull(consumer.receive(1000));
+         assertNull(consumer.receiveImmediate());
          assertNotNull(msg);
 
          msg.acknowledge();

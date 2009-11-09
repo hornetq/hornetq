@@ -380,7 +380,7 @@ public class BasicXaRecoveryTest extends ServiceTestBase
 
       ClientConsumer pageConsumer = clientSession.createConsumer(pageQueue);
 
-      assertNull(pageConsumer.receive(100));
+      assertNull(pageConsumer.receiveImmediate());
       
       long globalSize = this.server.getPostOffice().getPagingManager().getTotalMemory();
       // Management message (from createQueue) will not be taken into account again as it is nonPersistent
@@ -560,8 +560,7 @@ public class BasicXaRecoveryTest extends ServiceTestBase
       assertEquals(xids.length, 0);
       clientSession.rollback(xid);
       clientSession.start();
-      ClientMessage m = clientConsumer.receive(100);
-      log.info("m is " + m);
+      ClientMessage m = clientConsumer.receiveImmediate();
       assertNull(m);
    }
 
@@ -746,7 +745,7 @@ public class BasicXaRecoveryTest extends ServiceTestBase
       clientSession.rollback(xid);
       clientSession.rollback(xid2);
       clientSession.start();
-      ClientMessage m = clientConsumer.receive(100);
+      ClientMessage m = clientConsumer.receiveImmediate();
       assertNull(m);
    }
 
@@ -810,7 +809,7 @@ public class BasicXaRecoveryTest extends ServiceTestBase
       m = clientConsumer.receive(1000);
       assertNotNull(m);
       assertEquals(m.getBody().readString(), "m4");
-      m = clientConsumer.receive(100);
+      m = clientConsumer.receiveImmediate();
       assertNull(m);
    }
 
@@ -941,7 +940,7 @@ public class BasicXaRecoveryTest extends ServiceTestBase
       assertEquals(xids.length, 0);
       clientSession.commit(xid, true);
       clientSession.start();
-      m = clientConsumer.receive(100);
+      m = clientConsumer.receiveImmediate();
       assertNull(m);
    }
 
@@ -1103,7 +1102,7 @@ public class BasicXaRecoveryTest extends ServiceTestBase
       assertEquals(xids.length, 0);
       clientSession.commit(xid, true);
       clientSession.start();
-      m = clientConsumer.receive(100);
+      m = clientConsumer.receiveImmediate();
       assertNull(m);
    }
 

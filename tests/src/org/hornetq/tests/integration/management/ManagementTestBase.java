@@ -55,7 +55,7 @@ public abstract class ManagementTestBase extends ServiceTestBase
             m.acknowledge();
          }
          session.commit();
-         m = consumer.receive(500);
+         m = consumer.receiveImmediate();
          assertNull("received one more message than expected (" + expected + ")", m);
       }
       finally

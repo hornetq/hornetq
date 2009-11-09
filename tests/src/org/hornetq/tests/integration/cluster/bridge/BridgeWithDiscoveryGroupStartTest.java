@@ -156,7 +156,7 @@ public class BridgeWithDiscoveryGroupStartTest extends ServiceTestBase
          message.acknowledge();
       }
 
-      assertNull(consumer1.receive(200));
+      assertNull(consumer1.receiveImmediate());
 
       Bridge bridge = server0.getClusterManager().getBridges().get(bridgeName);
 
@@ -171,7 +171,7 @@ public class BridgeWithDiscoveryGroupStartTest extends ServiceTestBase
          producer0.send(message);
       }
 
-      assertNull(consumer1.receive(500));
+      assertNull(consumer1.receiveImmediate());
 
       bridge.start();
 
@@ -186,7 +186,7 @@ public class BridgeWithDiscoveryGroupStartTest extends ServiceTestBase
          message.acknowledge();
       }
 
-      assertNull(consumer1.receive(200));
+      assertNull(consumer1.receiveImmediate());
 
       session0.close();
 

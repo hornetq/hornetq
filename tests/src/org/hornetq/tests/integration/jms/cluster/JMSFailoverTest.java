@@ -134,7 +134,7 @@ public class JMSFailoverTest extends UnitTestCase
          assertEquals("message" + i, tm.getText());
       }
 
-      TextMessage tm = (TextMessage)consumer.receive(1000);
+      TextMessage tm = (TextMessage)consumer.receiveNoWait();
 
       assertNull(tm);
 
@@ -219,7 +219,7 @@ public class JMSFailoverTest extends UnitTestCase
          assertEquals("message" + i, tm.getText());
       }
 
-      TextMessage tm = (TextMessage)consumerBackup.receive(1000);
+      TextMessage tm = (TextMessage)consumerBackup.receiveNoWait();
 
       assertNull(tm);
 

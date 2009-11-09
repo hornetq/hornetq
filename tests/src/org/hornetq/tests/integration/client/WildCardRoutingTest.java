@@ -60,7 +60,7 @@ public class WildCardRoutingTest extends UnitTestCase
       assertNotNull(m);
       assertEquals("m2", m.getBody().readString());
       m.acknowledge();
-      m = clientConsumer.receive(500);
+      m = clientConsumer.receiveImmediate();
       assertNull(m);
    }
 
@@ -85,7 +85,7 @@ public class WildCardRoutingTest extends UnitTestCase
       assertNotNull(m);
       assertEquals("m2", m.getBody().readString());
       m.acknowledge();
-      m = clientConsumer.receive(500);
+      m = clientConsumer.receiveImmediate();
       assertNull(m);
       clientConsumer.close();
       clientSession.deleteQueue(queueName);
@@ -118,7 +118,7 @@ public class WildCardRoutingTest extends UnitTestCase
       assertNotNull(m);
       assertEquals("m2", m.getBody().readString());
       m.acknowledge();
-      m = clientConsumer.receive(500);
+      m = clientConsumer.receiveImmediate();
       assertNull(m);
       clientConsumer.close();
       clientSession.deleteQueue(queueName);
@@ -159,7 +159,7 @@ public class WildCardRoutingTest extends UnitTestCase
       assertNotNull(m);
       assertEquals("m2", m.getBody().readString());
       m.acknowledge();
-      m = clientConsumer.receive(500);
+      m = clientConsumer.receiveImmediate();
       assertNull(m);
    }
 
@@ -188,7 +188,7 @@ public class WildCardRoutingTest extends UnitTestCase
       assertNotNull(m);
       assertEquals("m2", m.getBody().readString());
       m.acknowledge();
-      m = clientConsumer.receive(500);
+      m = clientConsumer.receiveImmediate();
       assertNull(m);
    }
 
@@ -306,7 +306,7 @@ public class WildCardRoutingTest extends UnitTestCase
       assertNotNull(m);
       assertEquals("m9", m.getBody().readString());
       m.acknowledge();
-      m = clientConsumer.receive(500);
+      m = clientConsumer.receiveImmediate();
       assertNull(m);
       //now remove all the queues
       clientSession.deleteQueue(queueName1);
@@ -403,7 +403,7 @@ public class WildCardRoutingTest extends UnitTestCase
       assertNotNull(m);
       assertEquals("m9", m.getBody().readString());
       m.acknowledge();
-      m = clientConsumer.receive(500);
+      m = clientConsumer.receiveImmediate();
       assertNull(m);
       //now remove all the queues
       clientSession.deleteQueue(queueName1);
@@ -445,7 +445,7 @@ public class WildCardRoutingTest extends UnitTestCase
       assertNotNull(m);
       assertEquals("m2", m.getBody().readString());
       m.acknowledge();
-      m = clientConsumer.receive(500);
+      m = clientConsumer.receiveImmediate();
       assertNull(m);
    }
 
@@ -474,7 +474,7 @@ public class WildCardRoutingTest extends UnitTestCase
       assertNotNull(m);
       assertEquals("m2", m.getBody().readString());
       m.acknowledge();
-      m = clientConsumer.receive(500);
+      m = clientConsumer.receiveImmediate();
       assertNull(m);
    }
 
@@ -504,7 +504,7 @@ public class WildCardRoutingTest extends UnitTestCase
       assertNotNull(m);
       assertEquals("m2", m.getBody().readString());
       m.acknowledge();
-      m = clientConsumer.receive(500);
+      m = clientConsumer.receiveImmediate();
       assertNull(m);
    }
 
@@ -533,7 +533,7 @@ public class WildCardRoutingTest extends UnitTestCase
       assertNotNull(m);
       assertEquals("m2", m.getBody().readString());
       m.acknowledge();
-      m = clientConsumer.receive(500);
+      m = clientConsumer.receiveImmediate();
       assertNull(m);
    }
 
@@ -558,7 +558,7 @@ public class WildCardRoutingTest extends UnitTestCase
       assertNotNull(m);
       assertEquals("m1", m.getBody().readString());
       m.acknowledge();
-      m = clientConsumer.receive(500);
+      m = clientConsumer.receiveImmediate();
       assertNull(m);
    }
 
@@ -610,7 +610,7 @@ public class WildCardRoutingTest extends UnitTestCase
       assertNotNull(m);
       assertEquals("m2", m.getBody().readString());
       m.acknowledge();
-      m = clientConsumer.receive(500);
+      m = clientConsumer.receiveImmediate();
       assertNull(m);
    }
 
@@ -635,7 +635,7 @@ public class WildCardRoutingTest extends UnitTestCase
       assertNotNull(m);
       assertEquals("m2", m.getBody().readString());
       m.acknowledge();
-      m = clientConsumer.receive(500);
+      m = clientConsumer.receiveImmediate();
       assertNull(m);
    }
 
@@ -660,7 +660,7 @@ public class WildCardRoutingTest extends UnitTestCase
       assertNotNull(m);
       assertEquals("m1", m.getBody().readString());
       m.acknowledge();
-      m = clientConsumer.receive(500);
+      m = clientConsumer.receiveImmediate();
       assertNull(m);
    }
 
@@ -685,7 +685,7 @@ public class WildCardRoutingTest extends UnitTestCase
       assertNotNull(m);
       assertEquals("m1", m.getBody().readString());
       m.acknowledge();
-      m = clientConsumer.receive(500);
+      m = clientConsumer.receiveImmediate();
       assertNull(m);
    }
 
@@ -710,7 +710,7 @@ public class WildCardRoutingTest extends UnitTestCase
       assertNotNull(m);
       assertEquals("m1", m.getBody().readString());
       m.acknowledge();
-      m = clientConsumer.receive(500);
+      m = clientConsumer.receiveImmediate();
       assertNull(m);
    }
 
@@ -742,7 +742,7 @@ public class WildCardRoutingTest extends UnitTestCase
       assertNotNull(m);
       assertEquals("m2", m.getBody().readString());
       m.acknowledge();
-      m = clientConsumer.receive(500);
+      m = clientConsumer.receiveImmediate();
       assertNull(m);
       clientConsumer.close();
       clientSession.deleteQueue(queueName);
