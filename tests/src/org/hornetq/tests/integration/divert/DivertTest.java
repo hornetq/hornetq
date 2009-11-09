@@ -44,6 +44,8 @@ public class DivertTest extends ServiceTestBase
 {
    private static final Logger log = Logger.getLogger(DivertTest.class);
 
+   private static final int TIMEOUT = 500;
+   
    public void testSingleNonExclusiveDivert() throws Exception
    {
       Configuration conf = createDefaultConfig();
@@ -107,7 +109,7 @@ public class DivertTest extends ServiceTestBase
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = consumer1.receive(200);
+         ClientMessage message = consumer1.receive(TIMEOUT);
 
          assertNotNull(message);
 
@@ -116,11 +118,11 @@ public class DivertTest extends ServiceTestBase
          message.acknowledge();
       }
 
-      assertNull(consumer1.receive(200));
+      assertNull(consumer1.receive(500));
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = consumer2.receive(200);
+         ClientMessage message = consumer2.receive(TIMEOUT);
 
          assertNotNull(message);
 
@@ -129,7 +131,7 @@ public class DivertTest extends ServiceTestBase
          message.acknowledge();
       }
 
-      assertNull(consumer2.receive(200));
+      assertNull(consumer2.receive(TIMEOUT));
 
       session.close();
 
@@ -213,7 +215,7 @@ public class DivertTest extends ServiceTestBase
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = consumer1.receive(200);
+         ClientMessage message = consumer1.receive(TIMEOUT);
 
          assertNotNull(message);
 
@@ -222,11 +224,11 @@ public class DivertTest extends ServiceTestBase
          message.acknowledge();
       }
 
-      assertNull(consumer1.receive(200));
+      assertNull(consumer1.receiveImmediate());
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = consumer2.receive(200);
+         ClientMessage message = consumer2.receive(TIMEOUT);
 
          assertNotNull(message);
 
@@ -235,11 +237,11 @@ public class DivertTest extends ServiceTestBase
          message.acknowledge();
       }
 
-      assertNull(consumer2.receive(200));
+      assertNull(consumer2.receiveImmediate());
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = consumer3.receive(200);
+         ClientMessage message = consumer3.receive(TIMEOUT);
 
          assertNotNull(message);
 
@@ -248,11 +250,11 @@ public class DivertTest extends ServiceTestBase
          message.acknowledge();
       }
 
-      assertNull(consumer3.receive(200));
+      assertNull(consumer3.receiveImmediate());
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = consumer4.receive(200);
+         ClientMessage message = consumer4.receive(TIMEOUT);
 
          assertNotNull(message);
 
@@ -261,7 +263,7 @@ public class DivertTest extends ServiceTestBase
          message.acknowledge();
       }
 
-      assertNull(consumer4.receive(200));
+      assertNull(consumer4.receiveImmediate());
 
       session.close();
 
@@ -327,7 +329,7 @@ public class DivertTest extends ServiceTestBase
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = consumer1.receive(200);
+         ClientMessage message = consumer1.receive(TIMEOUT);
 
          assertNotNull(message);
 
@@ -336,7 +338,7 @@ public class DivertTest extends ServiceTestBase
          message.acknowledge();
       }
 
-      assertNull(consumer1.receive(200));
+      assertNull(consumer1.receiveImmediate());
 
       session.close();
 
@@ -418,7 +420,7 @@ public class DivertTest extends ServiceTestBase
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = consumer1.receive(200);
+         ClientMessage message = consumer1.receive(TIMEOUT);
 
          assertNotNull(message);
 
@@ -427,13 +429,13 @@ public class DivertTest extends ServiceTestBase
          message.acknowledge();
       }
 
-      assertNull(consumer1.receive(200));
+      assertNull(consumer1.receiveImmediate());
 
-      assertNull(consumer2.receive(200));
+      assertNull(consumer2.receiveImmediate());
 
-      assertNull(consumer3.receive(200));
+      assertNull(consumer3.receiveImmediate());
 
-      assertNull(consumer4.receive(200));
+      assertNull(consumer4.receiveImmediate());
 
       session.close();
 
@@ -537,7 +539,7 @@ public class DivertTest extends ServiceTestBase
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = consumer1.receive(200);
+         ClientMessage message = consumer1.receive(TIMEOUT);
 
          assertNotNull(message);
 
@@ -546,11 +548,11 @@ public class DivertTest extends ServiceTestBase
          message.acknowledge();
       }
 
-      assertNull(consumer1.receive(200));
+      assertNull(consumer1.receiveImmediate());
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = consumer2.receive(200);
+         ClientMessage message = consumer2.receive(TIMEOUT);
 
          assertNotNull(message);
 
@@ -559,11 +561,11 @@ public class DivertTest extends ServiceTestBase
          message.acknowledge();
       }
 
-      assertNull(consumer2.receive(200));
+      assertNull(consumer2.receiveImmediate());
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = consumer3.receive(200);
+         ClientMessage message = consumer3.receive(TIMEOUT);
 
          assertNotNull(message);
 
@@ -572,11 +574,11 @@ public class DivertTest extends ServiceTestBase
          message.acknowledge();
       }
 
-      assertNull(consumer3.receive(200));
+      assertNull(consumer3.receiveImmediate());
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = consumer4.receive(200);
+         ClientMessage message = consumer4.receive(TIMEOUT);
 
          assertNotNull(message);
 
@@ -585,7 +587,7 @@ public class DivertTest extends ServiceTestBase
          message.acknowledge();
       }
 
-      assertNull(consumer4.receive(200));
+      assertNull(consumer4.receiveImmediate());
 
       session.close();
 
@@ -689,7 +691,7 @@ public class DivertTest extends ServiceTestBase
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = consumer1.receive(200);
+         ClientMessage message = consumer1.receive(TIMEOUT);
 
          assertNotNull(message);
 
@@ -698,11 +700,11 @@ public class DivertTest extends ServiceTestBase
          message.acknowledge();
       }
 
-      assertNull(consumer1.receive(200));
+      assertNull(consumer1.receiveImmediate());
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = consumer2.receive(200);
+         ClientMessage message = consumer2.receive(TIMEOUT);
 
          assertNotNull(message);
 
@@ -711,11 +713,11 @@ public class DivertTest extends ServiceTestBase
          message.acknowledge();
       }
 
-      assertNull(consumer2.receive(200));
+      assertNull(consumer2.receiveImmediate());
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = consumer3.receive(200);
+         ClientMessage message = consumer3.receive(TIMEOUT);
 
          assertNotNull(message);
 
@@ -724,7 +726,7 @@ public class DivertTest extends ServiceTestBase
          message.acknowledge();
       }
 
-      assertNull(consumer3.receive(200));
+      assertNull(consumer3.receiveImmediate());
 
       assertNull(consumer4.receive(200));
 
@@ -830,7 +832,7 @@ public class DivertTest extends ServiceTestBase
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = consumer1.receive(200);
+         ClientMessage message = consumer1.receive(TIMEOUT);
 
          assertNotNull(message);
 
@@ -839,11 +841,11 @@ public class DivertTest extends ServiceTestBase
          message.acknowledge();
       }
 
-      assertNull(consumer1.receive(200));
+      assertNull(consumer1.receiveImmediate());
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = consumer2.receive(200);
+         ClientMessage message = consumer2.receive(TIMEOUT);
 
          assertNotNull(message);
 
@@ -852,11 +854,11 @@ public class DivertTest extends ServiceTestBase
          message.acknowledge();
       }
 
-      assertNull(consumer2.receive(200));
+      assertNull(consumer2.receiveImmediate());
 
-      assertNull(consumer3.receive(200));
+      assertNull(consumer3.receiveImmediate());
 
-      assertNull(consumer4.receive(200));
+      assertNull(consumer4.receiveImmediate());
 
       session.close();
 
@@ -974,11 +976,11 @@ public class DivertTest extends ServiceTestBase
       // message.acknowledge();
       // }
 
-      assertNull(consumer1.receive(200));
+      assertNull(consumer1.receiveImmediate());
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = consumer2.receive(200);
+         ClientMessage message = consumer2.receive(TIMEOUT);
 
          assertNotNull(message);
 
@@ -987,11 +989,11 @@ public class DivertTest extends ServiceTestBase
          message.acknowledge();
       }
 
-      assertNull(consumer2.receive(200));
+      assertNull(consumer2.receiveImmediate());
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = consumer3.receive(200);
+         ClientMessage message = consumer3.receive(TIMEOUT);
 
          assertNotNull(message);
 
@@ -1000,11 +1002,11 @@ public class DivertTest extends ServiceTestBase
          message.acknowledge();
       }
 
-      assertNull(consumer3.receive(200));
+      assertNull(consumer3.receiveImmediate());
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = consumer4.receive(200);
+         ClientMessage message = consumer4.receive(TIMEOUT);
 
          assertNotNull(message);
 
@@ -1013,7 +1015,7 @@ public class DivertTest extends ServiceTestBase
          message.acknowledge();
       }
 
-      assertNull(consumer4.receive(200));
+      assertNull(consumer4.receiveImmediate());
 
       for (int i = 0; i < numMessages; i++)
       {
@@ -1028,7 +1030,7 @@ public class DivertTest extends ServiceTestBase
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = consumer1.receive(200);
+         ClientMessage message = consumer1.receive(TIMEOUT);
 
          assertNotNull(message);
 
@@ -1037,13 +1039,13 @@ public class DivertTest extends ServiceTestBase
          message.acknowledge();
       }
 
-      assertNull(consumer1.receive(200));
+      assertNull(consumer1.receiveImmediate());
 
-      assertNull(consumer2.receive(200));
+      assertNull(consumer2.receiveImmediate());
 
-      assertNull(consumer3.receive(200));
+      assertNull(consumer3.receiveImmediate());
 
-      assertNull(consumer4.receive(200));
+      assertNull(consumer4.receiveImmediate());
 
       session.close();
 
@@ -1147,7 +1149,7 @@ public class DivertTest extends ServiceTestBase
 
       for (int i = 0; i < numMessages;)
       {
-         ClientMessage message = consumer1.receive(200);
+         ClientMessage message = consumer1.receive(TIMEOUT);
 
          assertNotNull(message);
 
@@ -1162,7 +1164,7 @@ public class DivertTest extends ServiceTestBase
             break;
          }
 
-         message = consumer2.receive(200);
+         message = consumer2.receive(TIMEOUT);
 
          assertNotNull(message);
 
@@ -1177,7 +1179,7 @@ public class DivertTest extends ServiceTestBase
             break;
          }
 
-         message = consumer3.receive(200);
+         message = consumer3.receive(TIMEOUT);
 
          assertNotNull(message);
 
@@ -1188,13 +1190,13 @@ public class DivertTest extends ServiceTestBase
          i++;
       }
 
-      assertNull(consumer1.receive(200));
-      assertNull(consumer2.receive(200));
-      assertNull(consumer3.receive(200));
+      assertNull(consumer1.receiveImmediate());
+      assertNull(consumer2.receiveImmediate());
+      assertNull(consumer3.receiveImmediate());
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = consumer4.receive(200);
+         ClientMessage message = consumer4.receive(TIMEOUT);
 
          assertNotNull(message);
 
@@ -1203,7 +1205,7 @@ public class DivertTest extends ServiceTestBase
          message.acknowledge();
       }
 
-      assertNull(consumer4.receive(200));
+      assertNull(consumer4.receiveImmediate());
 
       session.close();
 
@@ -1309,7 +1311,7 @@ public class DivertTest extends ServiceTestBase
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = consumer1.receive(200);
+         ClientMessage message = consumer1.receive(TIMEOUT);
 
          assertNotNull(message);
 
@@ -1318,13 +1320,13 @@ public class DivertTest extends ServiceTestBase
          message.acknowledge();
       }
 
-      assertNull(consumer1.receive(200));
+      assertNull(consumer1.receiveImmediate());
 
-      assertNull(consumer2.receive(200));
+      assertNull(consumer2.receiveImmediate());
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = consumer3.receive(200);
+         ClientMessage message = consumer3.receive(TIMEOUT);
 
          assertNotNull(message);
 
@@ -1333,11 +1335,11 @@ public class DivertTest extends ServiceTestBase
          message.acknowledge();
       }
 
-      assertNull(consumer3.receive(200));
+      assertNull(consumer3.receiveImmediate());
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = consumer4.receive(200);
+         ClientMessage message = consumer4.receive(TIMEOUT);
 
          assertNotNull(message);
 
@@ -1346,7 +1348,7 @@ public class DivertTest extends ServiceTestBase
          message.acknowledge();
       }
 
-      assertNull(consumer4.receive(200));
+      assertNull(consumer4.receiveImmediate());
 
       session.close();
 
