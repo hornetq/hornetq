@@ -11,7 +11,7 @@
  * permissions and limitations under the License.
  */
 
-package org.hornetq.tests.integration.client;
+package org.hornetq.tests.stress.journal;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -38,7 +38,7 @@ import org.hornetq.tests.util.ServiceTestBase;
  *
  *
  */
-public class CompactingTest extends ServiceTestBase
+public class CompactingStressTest extends ServiceTestBase
 {
 
    // Constants -----------------------------------------------------
@@ -73,25 +73,17 @@ public class CompactingTest extends ServiceTestBase
    {
       if (AsynchronousFileImpl.isLoaded())
       {
-         for (int i = 0; i < 3; i++)
-         {
-            System.out.println("Test # " + i);
-            internalTestCleanup(JournalType.ASYNCIO);
-            tearDown();
-            setUp();
-         }
+         internalTestCleanup(JournalType.ASYNCIO);
+         tearDown();
+         setUp();
       }
    }
 
    public void testCleanupNIO() throws Throwable
    {
-      for (int i = 0; i < 3; i++)
-      {
-         System.out.println("Test # " + i);
-         internalTestCleanup(JournalType.NIO);
-         tearDown();
-         setUp();
-      }
+      internalTestCleanup(JournalType.NIO);
+      tearDown();
+      setUp();
    }
 
    private void internalTestCleanup(JournalType journalType) throws Throwable
