@@ -166,6 +166,8 @@ public class ConsumerCloseTest extends ServiceTestBase
       session.createQueue(address, queue, false);
 
    }
+   
+   
 
    private ClientSessionFactory sf;
 

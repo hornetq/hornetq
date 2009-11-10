@@ -251,7 +251,7 @@ public class QueueControlTest extends ManagementTestBase
 
    public void testGetScheduledCount() throws Exception
    {
-      long delay = 2000;
+      long delay = 500;
       SimpleString address = randomSimpleString();
       SimpleString queue = randomSimpleString();
 
@@ -268,7 +268,7 @@ public class QueueControlTest extends ManagementTestBase
       assertEquals(1, queueControl.getScheduledCount());
       consumeMessages(0, session, queue);
 
-      Thread.sleep(delay);
+      Thread.sleep(delay * 2);
 
       assertEquals(0, queueControl.getScheduledCount());
       consumeMessages(1, session, queue);

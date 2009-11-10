@@ -482,7 +482,7 @@ public class FailoverManagerImpl implements FailoverManager, ConnectionLifeCycle
    }
 
    private void failoverOrReconnect(final Object connectionID, final HornetQException me)
-   {
+   {     
       synchronized (failoverLock)
       {
          if (connection == null || connection.getID() != connectionID)
@@ -620,8 +620,26 @@ public class FailoverManagerImpl implements FailoverManager, ConnectionLifeCycle
          {
             connection.destroy();
 
-            connection = null;
-         }        
+            connection = null;                       
+         }      
+         
+         if (connection == null)
+         {
+            // If connection is null it means we didn't succeed in failing over or reconnecting
+            // so we close all the sessions, so they will throw exceptions when attempted to be used
+            
+            for (ClientSessionInternal session: new HashSet<ClientSessionInternal>(sessions))
+            {
+               try
+               {
+                  session.cleanUp();
+               }
+               catch (Exception e)
+               {
+                  log.error("Failed to cleanup session");
+               }
+            }
+         }
          
          callFailureListeners(me, true);
       }

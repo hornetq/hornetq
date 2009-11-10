@@ -411,12 +411,18 @@ public class ReattachTest extends UnitTestCase
 
       conn.fail(new HornetQException(HornetQException.NOT_CONNECTED));
 
-      session.start();
-
-      // Should be null since failed to reconnect
-      ClientMessage message = consumer.receive(500);
-
-      assertNull(message);
+      //Should throw exception since didn't reconnect
+      
+      try
+      {
+         session.start();
+         
+         fail("Should throw exception");
+      }
+      catch (HornetQException e)
+      {
+         assertEquals(HornetQException.OBJECT_CLOSED, e.getCode());
+      }
 
       session.close();
 

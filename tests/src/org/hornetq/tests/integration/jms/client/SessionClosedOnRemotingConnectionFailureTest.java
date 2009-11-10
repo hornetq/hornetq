@@ -11,7 +11,7 @@
  * permissions and limitations under the License.
  */
 
-package org.hornetq.tests.util;
+package org.hornetq.tests.integration.jms.client;
 
 import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE;
 import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_AUTO_GROUP;
@@ -20,6 +20,7 @@ import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_BLOC
 import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_PERSISTENT_SEND;
 import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CACHE_LARGE_MESSAGE_CLIENT;
 import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD;
+import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CONFIRMATION_WINDOW_SIZE;
 import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CONNECTION_LOAD_BALANCING_POLICY_CLASS_NAME;
 import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CONNECTION_TTL;
 import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CONSUMER_MAX_RATE;
@@ -28,7 +29,8 @@ import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_MAX_
 import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_MIN_LARGE_MESSAGE_SIZE;
 import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_PRE_ACKNOWLEDGE;
 import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_PRODUCER_MAX_RATE;
-import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CONFIRMATION_WINDOW_SIZE;
+import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL;
+import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL_MULTIPLIER;
 import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE;
 import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_THREAD_POOL_MAX_SIZE;
 import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_USE_GLOBAL_POOLS;
@@ -36,172 +38,62 @@ import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_USE_
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
+import javax.jms.JMSException;
+import javax.jms.MessageConsumer;
+import javax.jms.MessageProducer;
 import javax.jms.Queue;
-import javax.naming.NamingException;
+import javax.jms.Session;
 
-import org.hornetq.core.config.Configuration;
+import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
+import org.hornetq.core.client.impl.ClientSessionInternal;
 import org.hornetq.core.config.TransportConfiguration;
-import org.hornetq.core.server.HornetQ;
-import org.hornetq.core.server.HornetQServer;
-import org.hornetq.integration.transports.netty.NettyAcceptorFactory;
+import org.hornetq.core.exception.HornetQException;
+import org.hornetq.core.logging.Logger;
+import org.hornetq.core.remoting.RemotingConnection;
 import org.hornetq.integration.transports.netty.NettyConnectorFactory;
-import org.hornetq.jms.server.impl.JMSServerManagerImpl;
-import org.hornetq.tests.unit.util.InVMContext;
+import org.hornetq.jms.client.HornetQSession;
+import org.hornetq.tests.util.JMSTestBase;
 import org.hornetq.utils.Pair;
 
 /**
- * A JMSBaseTest
+ * 
+ * A SessionClosedOnRemotingConnectionFailureTest
  *
- * @author <mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
+ * @author Tim Fox
  *
  *
  */
-public class JMSTestBase extends ServiceTestBase
+public class SessionClosedOnRemotingConnectionFailureTest extends JMSTestBase
 {
+   // Constants -----------------------------------------------------
 
-   protected HornetQServer server;
-
-   protected JMSServerManagerImpl jmsServer;
-
-   protected ConnectionFactory cf;
-
-   protected InVMContext context;
-
-   // Static --------------------------------------------------------
+   private static final Logger log = Logger.getLogger(SessionClosedOnRemotingConnectionFailureTest.class);
 
    // Attributes ----------------------------------------------------
 
-   // Constructors --------------------------------------------------
+   // Static --------------------------------------------------------
 
-   // TestCase overrides -------------------------------------------
+   // Constructors --------------------------------------------------
 
    // Public --------------------------------------------------------
 
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
-
-   protected boolean useSecurity()
-   {
-      return false;
-   }
-
-   protected boolean useJMX()
-   {
-      return true;
-   }
-
-   protected boolean usePersistence()
-   {
-      return false;
-   }
-
-   /**
-    * @throws Exception
-    * @throws NamingException
-    */
-   protected Queue createQueue(String name) throws Exception, NamingException
-   {
-      jmsServer.createQueue(name, "/jms/" + name, null, true);
-
-      return (Queue)context.lookup("/jms/" + name);
-   }
-
-   @Override
-   protected void setUp() throws Exception
-   {
-      super.setUp();
-
-      Configuration conf = createDefaultConfig(false);
-      conf.setSecurityEnabled(false);
-      conf.setJMXManagementEnabled(true);
-
-      conf.getAcceptorConfigurations().add(new TransportConfiguration(NettyAcceptorFactory.class.getName()));
-
-      server = HornetQ.newHornetQServer(conf, usePersistence());
-
-      jmsServer = new JMSServerManagerImpl(server);
-      context = new InVMContext();
-      jmsServer.setContext(context);
-      jmsServer.start();
-      jmsServer.activated();
-
-      registerConnectionFactory();
-   }
-
-   protected void restartServer() throws Exception
-   {
-      jmsServer.start();
-      jmsServer.activated();
-      context = new InVMContext();
-      jmsServer.setContext(context);
-      registerConnectionFactory();
-   }
-
-   protected void killServer() throws Exception
-   {
-      jmsServer.stop();
-   }
-
-   @Override
-   protected void tearDown() throws Exception
-   {
-
-      jmsServer.stop();
-
-      server.stop();
-
-      context.close();
-
-      server = null;
-
-      jmsServer = null;
-
-      context = null;
-
-      super.tearDown();
-   }
-
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
-
-   private void registerConnectionFactory() throws Exception
+   public void testSessionClosedOnRemotingConnectionFailure() throws Exception
    {
       List<Pair<TransportConfiguration, TransportConfiguration>> connectorConfigs = new ArrayList<Pair<TransportConfiguration, TransportConfiguration>>();
       connectorConfigs.add(new Pair<TransportConfiguration, TransportConfiguration>(new TransportConfiguration(NettyConnectorFactory.class.getName()),
                                                                                     null));
 
       List<String> jndiBindings = new ArrayList<String>();
-      jndiBindings.add("/cf");
+      jndiBindings.add("/cffoo");
 
-      createCF(connectorConfigs, jndiBindings);
-
-      cf = (ConnectionFactory)context.lookup("/cf");
-
-   }
-
-   /**
-    * @param connectorConfigs
-    * @param jndiBindings
-    * @throws Exception
-    */
-   protected void createCF(List<Pair<TransportConfiguration, TransportConfiguration>> connectorConfigs,
-                           List<String> jndiBindings) throws Exception
-   {
-      int retryInterval = 1000;
-      double retryIntervalMultiplier = 1.0;
-      int reconnectAttempts = -1;
-      boolean failoverOnServerShutdown = true;
-      int callTimeout = 30000;
-
-      jmsServer.createConnectionFactory("ManualReconnectionToSingleServerTest",
+      jmsServer.createConnectionFactory("cffoo",
                                         connectorConfigs,
                                         null,
                                         DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
                                         DEFAULT_CONNECTION_TTL,
-                                        callTimeout,
+                                        ClientSessionFactoryImpl.DEFAULT_CALL_TIMEOUT,
                                         DEFAULT_CACHE_LARGE_MESSAGE_CLIENT,
                                         DEFAULT_MIN_LARGE_MESSAGE_SIZE,
                                         DEFAULT_CONSUMER_WINDOW_SIZE,
@@ -219,12 +111,85 @@ public class JMSTestBase extends ServiceTestBase
                                         DEFAULT_USE_GLOBAL_POOLS,
                                         DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE,
                                         DEFAULT_THREAD_POOL_MAX_SIZE,
-                                        retryInterval,
-                                        retryIntervalMultiplier,
+                                        DEFAULT_RETRY_INTERVAL,
+                                        DEFAULT_RETRY_INTERVAL_MULTIPLIER,
                                         DEFAULT_MAX_RETRY_INTERVAL,
-                                        reconnectAttempts,
-                                        failoverOnServerShutdown,
+                                        0,
+                                        false,
                                         jndiBindings);
+
+
+      cf = (ConnectionFactory)context.lookup("/cffoo");
+                  
+      Connection conn = cf.createConnection();
+
+      Queue queue = createQueue("testQueue");
+
+      try
+      {
+         Session session = conn.createSession(false, Session.AUTO_ACKNOWLEDGE);
+
+         MessageProducer prod = session.createProducer(queue);
+
+         MessageConsumer cons = session.createConsumer(queue);
+
+         conn.start();
+
+         prod.send(session.createMessage());
+
+         assertNotNull(cons.receive());
+
+         // Now fail the underlying connection
+
+         RemotingConnection connection = ((ClientSessionInternal)((HornetQSession)session).getCoreSession()).getConnection();
+
+         connection.fail(new HornetQException(HornetQException.NOT_CONNECTED));
+
+         // Now try and use the producer
+
+         try
+         {
+            prod.send(session.createMessage());
+
+            fail("Should throw exception");
+         }
+         catch (JMSException e)
+         {
+            // assertEquals(HornetQException.OBJECT_CLOSED, e.getCode());
+         }
+
+         try
+         {
+            cons.receive();
+
+            fail("Should throw exception");
+         }
+         catch (JMSException e)
+         {
+            // assertEquals(HornetQException.OBJECT_CLOSED, e.getCode());
+         }
+         
+         session.close();
+         
+         conn.close();
+      }
+      finally
+      {
+         try
+         {
+            conn.close();
+         }
+         catch (Throwable igonred)
+         {
+         }
+      }
    }
 
+   // Package protected ---------------------------------------------
+
+   // Protected -----------------------------------------------------
+
+   // Private -------------------------------------------------------
+
+   // Inner classes -------------------------------------------------
 }
