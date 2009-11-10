@@ -245,7 +245,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
                {
                   throw new IllegalArgumentException("ID is null");
                }
-               
+
                long id = props.getLongProperty(ManagementHelper.HDR_BINDING_ID);
 
                SimpleString filterString = props.getSimpleStringProperty(ManagementHelper.HDR_FILTERSTRING);
@@ -254,7 +254,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
                {
                   throw new IllegalArgumentException("Distance is null");
                }
-               
+
                int distance = props.getIntProperty(ManagementHelper.HDR_DISTANCE);
 
                QueueInfo info = new QueueInfo(routingName, clusterName, address, filterString, id, distance);
@@ -271,7 +271,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
                {
                   throw new IllegalStateException("No cluster name");
                }
-               
+
                SimpleString clusterName = props.getSimpleStringProperty(ManagementHelper.HDR_CLUSTER_NAME);
 
                QueueInfo info = queueInfos.remove(clusterName);
@@ -291,7 +291,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
                {
                   throw new IllegalStateException("No cluster name");
                }
-               
+
                SimpleString clusterName = props.getSimpleStringProperty(ManagementHelper.HDR_CLUSTER_NAME);
 
                SimpleString filterString = props.getSimpleStringProperty(ManagementHelper.HDR_FILTERSTRING);
@@ -606,7 +606,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
 
          cache.addToCache(duplicateIDBytes, context.getTransaction());
       }
-      
+
       setPagingStore(message);
 
       if (context.getTransaction() == null)
@@ -679,7 +679,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
    public MessageReference reroute(final ServerMessage message, final Queue queue, final Transaction tx) throws Exception
    {
       setPagingStore(message);
-      
+
       MessageReference reference = message.createReference(queue);
 
       if (message.containsProperty(MessageImpl.HDR_SCHEDULED_DELIVERY_TIME))
@@ -690,9 +690,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
 
       message.incrementDurableRefCount();
 
-      PagingStore store = pagingManager.getPageStore(message.getDestination());
-
-      message.incrementRefCount(store, reference);
+      message.incrementRefCount(reference);
 
       if (tx == null)
       {
@@ -843,7 +841,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
    {
       PagingStore store = pagingManager.getPageStore(message.getDestination());
 
-      message.setPagingStore(store);      
+      message.setPagingStore(store);
    }
 
    private void routeDirect(final ServerMessage message, final Queue queue, final boolean applyFilters) throws Exception
@@ -863,8 +861,6 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
       final List<MessageReference> refs = new ArrayList<MessageReference>();
 
       Transaction tx = context.getTransaction();
-
-      PagingStore store = pagingManager.getPageStore(message.getDestination());
 
       for (Queue queue : context.getQueues())
       {
@@ -918,7 +914,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
             }
          }
 
-         message.incrementRefCount(store, reference);
+         message.incrementRefCount(reference);
       }
 
       if (tx != null)
@@ -1255,9 +1251,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
                message.decrementDurableRefCount();
             }
 
-            PagingStore store = pagingManager.getPageStore(message.getDestination());
-
-            message.decrementRefCount(store, ref);
+            message.decrementRefCount(ref);
          }
       }
    }

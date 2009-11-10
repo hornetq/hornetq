@@ -23,7 +23,7 @@
       <antcall target="runExample">
          <param name="example.classname" value="org.hornetq.jms.example.LargeMessageExample"/>
          
-         <!-- We limit the client to running in only 50MB of RAM -->
+           <!-- We limit the client to running in only 50MB of RAM -->
      	   <param name="java-min-memory" value="50M"/>
      	   <param name="java-max-memory" value="50M"/>
       </antcall>
@@ -36,7 +36,7 @@
       </antcall>
    </target>
    
-   <target name="delete-large-messages">
+   <target name="delete-large-messages" depends="clean">
       <delete file="huge_message_to_send.dat"/>
       <delete file="huge_message_received.dat"/>
    </target>

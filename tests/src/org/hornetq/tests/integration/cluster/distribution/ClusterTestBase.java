@@ -1407,6 +1407,7 @@ public class ClusterTestBase extends ServiceTestBase
                                                                                       true,
                                                                                       forwardWhenNoConsumers,
                                                                                       maxHops,
+                                                                                      1024,
                                                                                       pairs);
       serverFrom.getConfiguration().getClusterConfigurations().add(clusterConf);
    }
@@ -1458,6 +1459,7 @@ public class ClusterTestBase extends ServiceTestBase
                                                                                       true,
                                                                                       forwardWhenNoConsumers,
                                                                                       maxHops,
+                                                                                      1024,
                                                                                       pairs);
 
       serverFrom.getConfiguration().getClusterConfigurations().add(clusterConf);
@@ -1526,6 +1528,7 @@ public class ClusterTestBase extends ServiceTestBase
                                                                                       true,
                                                                                       forwardWhenNoConsumers,
                                                                                       maxHops,
+                                                                                      1024,
                                                                                       pairs);
 
       serverFrom.getConfiguration().getClusterConfigurations().add(clusterConf);
@@ -1552,6 +1555,7 @@ public class ClusterTestBase extends ServiceTestBase
                                                                                       true,
                                                                                       forwardWhenNoConsumers,
                                                                                       maxHops,
+                                                                                      1024,
                                                                                       discoveryGroupName);
       List<ClusterConnectionConfiguration> clusterConfs = server.getConfiguration().getClusterConfigurations();
 

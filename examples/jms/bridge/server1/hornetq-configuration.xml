@@ -23,6 +23,15 @@
    
    <!-- Other config -->
 
+ <address-settings>
+ 
+     <address-setting match="jms.queue.sausage-factory">
+         <max-size-bytes>10000</max-size-bytes>
+         <page-size-bytes>1000</page-size-bytes> 
+         <address-full-policy>PAGE</address-full-policy>
+      </address-setting>
+   </address-settings>
+   
    <security-settings>
       <!--security for example queue-->
       <security-setting match="jms.queue.#">

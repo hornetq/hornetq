@@ -178,7 +178,10 @@ public abstract class HornetQExample
    {
       for (Process server : servers)
       {
-         stopServer(server);
+         if (server != null)
+         {
+            stopServer(server);
+         }
       }
    }
 

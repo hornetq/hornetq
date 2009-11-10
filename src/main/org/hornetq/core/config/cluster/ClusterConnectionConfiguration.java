@@ -47,12 +47,15 @@ public class ClusterConnectionConfiguration implements Serializable
 
    private final int maxHops;
 
+   private final int confirmationWindowSize;
+
    public ClusterConnectionConfiguration(final String name,
                                          final String address,
                                          final long retryInterval,
                                          final boolean duplicateDetection,
                                          final boolean forwardWhenNoConsumers,
                                          final int maxHops,
+                                         final int confirmationWindowSize,
                                          final List<Pair<String, String>> staticConnectorNamePairs)
    {
       this.name = name;
@@ -63,6 +66,7 @@ public class ClusterConnectionConfiguration implements Serializable
       this.forwardWhenNoConsumers = forwardWhenNoConsumers;
       this.discoveryGroupName = null;
       this.maxHops = maxHops;
+      this.confirmationWindowSize = confirmationWindowSize;
    }
 
    public ClusterConnectionConfiguration(final String name,
@@ -71,6 +75,7 @@ public class ClusterConnectionConfiguration implements Serializable
                                          final boolean duplicateDetection,
                                          final boolean forwardWhenNoConsumers,
                                          final int maxHops,
+                                         final int confirmationWindowSize,
                                          final String discoveryGroupName)
    {
       this.name = name;
@@ -81,6 +86,7 @@ public class ClusterConnectionConfiguration implements Serializable
       this.discoveryGroupName = discoveryGroupName;
       this.staticConnectorNamePairs = null;
       this.maxHops = maxHops;
+      this.confirmationWindowSize = confirmationWindowSize;
    }
 
    public String getName()
@@ -106,6 +112,11 @@ public class ClusterConnectionConfiguration implements Serializable
    public int getMaxHops()
    {
       return maxHops;
+   }
+
+   public int getConfirmationWindowSize()
+   {
+      return confirmationWindowSize;
    }
 
    public List<Pair<String, String>> getStaticConnectorNamePairs()

@@ -15,19 +15,17 @@ package org.hornetq.core.persistence.impl.journal;
 
 import static org.hornetq.utils.DataConstants.SIZE_INT;
 
-import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.journal.SequentialFile;
 import org.hornetq.core.logging.Logger;
-import org.hornetq.core.paging.PagingStore;
+import org.hornetq.core.message.BodyEncoder;
 import org.hornetq.core.remoting.spi.HornetQBuffer;
 import org.hornetq.core.server.LargeServerMessage;
 import org.hornetq.core.server.MessageReference;
 import org.hornetq.core.server.ServerMessage;
-import org.hornetq.core.message.BodyEncoder;
 import org.hornetq.core.server.impl.ServerMessageImpl;
 
 /**
@@ -222,9 +220,9 @@ public class FileLargeServerMessage extends ServerMessageImpl implements LargeSe
    }
 
    @Override
-   public synchronized int decrementRefCount(PagingStore pagingStore, MessageReference reference) throws Exception
+   public synchronized int decrementRefCount(MessageReference reference) throws Exception
    {
-      int currentRefCount = super.decrementRefCount(pagingStore, reference);
+      int currentRefCount = super.decrementRefCount(reference);
 
       // We use <= as this could be used by load.
       // because of a failure, no references were loaded, so we have 0... and we still need to delete the associated

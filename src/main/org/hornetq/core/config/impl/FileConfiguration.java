@@ -36,7 +36,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 
 import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
 import org.hornetq.core.config.TransportConfiguration;
@@ -74,25 +73,28 @@ public class FileConfiguration extends ConfigurationImpl
    private static final String DEFAULT_CONFIGURATION_URL = "hornetq-configuration.xml";
 
    private static final String CONFIGURATION_SCHEMA_URL = "schema/hornetq-configuration.xsd";
+   
+   //For a bridge confirmations must be activated or send acknowledgements won't return
+   
+   public static final int DEFAULT_CONFIRMATION_WINDOW_SIZE = 1024 * 1024;
 
    // Static --------------------------------------------------------------------------
-   
+
    // Attributes ----------------------------------------------------------------------
 
    private String configurationUrl = DEFAULT_CONFIGURATION_URL;
-   
 
    private boolean started;
-   
+
    // Public -------------------------------------------------------------------------
 
    public synchronized void start() throws Exception
-   {      
+   {
       if (started)
       {
          return;
       }
-       
+
       URL url = getClass().getClassLoader().getResource(configurationUrl);
       log.debug("Loading server configuration from " + url);
 
@@ -105,20 +107,22 @@ public class FileConfiguration extends ConfigurationImpl
       clustered = getBoolean(e, "clustered", clustered);
 
       backup = getBoolean(e, "backup", backup);
-      
+
       sharedStore = getBoolean(e, "shared-store", sharedStore);
-      
-      //Defaults to true when using FileConfiguration
+
+      // Defaults to true when using FileConfiguration
       fileDeploymentEnabled = getBoolean(e, "file-deployment-enabled", true);
-      
+
       persistenceEnabled = getBoolean(e, "persistence-enabled", persistenceEnabled);
 
-      persistDeliveryCountBeforeDelivery = getBoolean(e, "persist-delivery-count-before-delivery", persistDeliveryCountBeforeDelivery);
-      
+      persistDeliveryCountBeforeDelivery = getBoolean(e,
+                                                      "persist-delivery-count-before-delivery",
+                                                      persistDeliveryCountBeforeDelivery);
+
       // NOTE! All the defaults come from the super class
 
       scheduledThreadPoolMaxSize = getInteger(e, "scheduled-thread-pool-max-size", scheduledThreadPoolMaxSize, GT_ZERO);
-      
+
       threadPoolMaxSize = getInteger(e, "thread-pool-max-size", threadPoolMaxSize, MINUS_ONE_OR_GT_ZERO);
 
       securityEnabled = getBoolean(e, "security-enabled", securityEnabled);
@@ -130,34 +134,52 @@ public class FileConfiguration extends ConfigurationImpl
       securityInvalidationInterval = getLong(e, "security-invalidation-interval", securityInvalidationInterval, GT_ZERO);
 
       connectionTTLOverride = getLong(e, "connection-ttl-override", connectionTTLOverride, MINUS_ONE_OR_GT_ZERO);
-      
-      asyncConnectionExecutionEnabled = getBoolean(e, "async-connection-execution-enabled", asyncConnectionExecutionEnabled);
+
+      asyncConnectionExecutionEnabled = getBoolean(e,
+                                                   "async-connection-execution-enabled",
+                                                   asyncConnectionExecutionEnabled);
 
       transactionTimeout = getLong(e, "transaction-timeout", transactionTimeout, GT_ZERO);
 
-      transactionTimeoutScanPeriod = getLong(e, "transaction-timeout-scan-period", transactionTimeoutScanPeriod, GT_ZERO);
+      transactionTimeoutScanPeriod = getLong(e,
+                                             "transaction-timeout-scan-period",
+                                             transactionTimeoutScanPeriod,
+                                             GT_ZERO);
 
       messageExpiryScanPeriod = getLong(e, "message-expiry-scan-period", messageExpiryScanPeriod, GT_ZERO);
 
-      messageExpiryThreadPriority = getInteger(e, "message-expiry-thread-priority", messageExpiryThreadPriority, THREAD_PRIORITY_RANGE);
+      messageExpiryThreadPriority = getInteger(e,
+                                               "message-expiry-thread-priority",
+                                               messageExpiryThreadPriority,
+                                               THREAD_PRIORITY_RANGE);
 
       idCacheSize = getInteger(e, "id-cache-size", idCacheSize, GT_ZERO);
 
       persistIDCache = getBoolean(e, "persist-id-cache", persistIDCache);
 
-      managementAddress = new SimpleString(getString(e, "management-address", managementAddress.toString(), NOT_NULL_OR_EMPTY));
+      managementAddress = new SimpleString(getString(e,
+                                                     "management-address",
+                                                     managementAddress.toString(),
+                                                     NOT_NULL_OR_EMPTY));
 
       managementNotificationAddress = new SimpleString(getString(e,
                                                                  "management-notification-address",
-                                                                 managementNotificationAddress.toString(), NOT_NULL_OR_EMPTY));
+                                                                 managementNotificationAddress.toString(),
+                                                                 NOT_NULL_OR_EMPTY));
 
-      managementClusterPassword = getString(e, "management-cluster-password", managementClusterPassword, NOT_NULL_OR_EMPTY);
+      managementClusterPassword = getString(e,
+                                            "management-cluster-password",
+                                            managementClusterPassword,
+                                            NOT_NULL_OR_EMPTY);
 
       managementClusterUser = getString(e, "management-cluster-user", managementClusterUser, NOT_NULL_OR_EMPTY);
 
       managementRequestTimeout = getLong(e, "management-request-timeout", managementRequestTimeout, GT_ZERO);
-      
-      logDelegateFactoryClassName = getString(e, "log-delegate-factory-class-name", logDelegateFactoryClassName, NOT_NULL_OR_EMPTY);
+
+      logDelegateFactoryClassName = getString(e,
+                                              "log-delegate-factory-class-name",
+                                              logDelegateFactoryClassName,
+                                              NOT_NULL_OR_EMPTY);
 
       NodeList interceptorNodes = e.getElementsByTagName("remoting-interceptors");
 
@@ -259,7 +281,7 @@ public class FileConfiguration extends ConfigurationImpl
 
       for (int i = 0; i < gaNodes.getLength(); i++)
       {
-         Element gaNode = (Element) gaNodes.item(i);
+         Element gaNode = (Element)gaNodes.item(i);
 
          parseGroupingHandlerConfiguration(gaNode);
       }
@@ -312,23 +334,23 @@ public class FileConfiguration extends ConfigurationImpl
       journalSyncNonTransactional = getBoolean(e, "journal-sync-non-transactional", journalSyncNonTransactional);
 
       journalFileSize = getInteger(e, "journal-file-size", journalFileSize, GT_ZERO);
-      
+
       journalAIOFlushSync = getBoolean(e, "journal-aio-flush-on-sync", DEFAULT_JOURNAL_AIO_FLUSH_SYNC);
-      
+
       journalAIOBufferTimeout = getInteger(e, "journal-aio-buffer-timeout", DEFAULT_JOURNAL_AIO_BUFFER_TIMEOUT, GT_ZERO);
-      
+
       journalAIOBufferSize = getInteger(e, "journal-aio-buffer-size", DEFAULT_JOURNAL_AIO_BUFFER_SIZE, GT_ZERO);
 
       journalMinFiles = getInteger(e, "journal-min-files", journalMinFiles, GT_ZERO);
-      
+
       journalCompactMinFiles = getInteger(e, "journal-compact-min-files", journalCompactMinFiles, GE_ZERO);
 
       journalCompactPercentage = getInteger(e, "journal-compact-percentage", journalCompactPercentage, PERCENTAGE);
 
       journalMaxAIO = getInteger(e, "journal-max-aio", journalMaxAIO, GT_ZERO);
-      
+
       logJournalWriteRate = getBoolean(e, "log-journal-write-rate", DEFAULT_JOURNAL_LOG_WRITE_RATE);
-      
+
       journalPerfBlastPages = getInteger(e, "perf-blast-pages", DEFAULT_JOURNAL_PERF_BLAST_PAGES, MINUS_ONE_OR_GT_ZERO);
 
       runSyncSpeedTest = getBoolean(e, "run-sync-speed-test", runSyncSpeedTest);
@@ -339,23 +361,28 @@ public class FileConfiguration extends ConfigurationImpl
 
       messageCounterSamplePeriod = getLong(e, "message-counter-sample-period", messageCounterSamplePeriod, GT_ZERO);
 
-      messageCounterMaxDayHistory = getInteger(e, "message-counter-max-day-history", messageCounterMaxDayHistory, GT_ZERO);
-      
-      serverDumpInterval = getLong(e, "server-dump-interval", serverDumpInterval, MINUS_ONE_OR_GT_ZERO); // in milliseconds
+      messageCounterMaxDayHistory = getInteger(e,
+                                               "message-counter-max-day-history",
+                                               messageCounterMaxDayHistory,
+                                               GT_ZERO);
+
+      serverDumpInterval = getLong(e, "server-dump-interval", serverDumpInterval, MINUS_ONE_OR_GT_ZERO); // in
+                                                                                                         // milliseconds
 
       memoryWarningThreshold = getInteger(e, "memory-warning-threshold", memoryWarningThreshold, PERCENTAGE);
-      
-      memoryMeasureInterval = getLong(e, "memory-measure-interval", memoryMeasureInterval, MINUS_ONE_OR_GT_ZERO); // in milliseconds
-      
+
+      memoryMeasureInterval = getLong(e, "memory-measure-interval", memoryMeasureInterval, MINUS_ONE_OR_GT_ZERO); // in
+                                                                                                                  // milliseconds
+
       backupWindowSize = getInteger(e, "backup-window-size", DEFAULT_BACKUP_WINDOW_SIZE, MINUS_ONE_OR_GT_ZERO);
-      
+
       started = true;
    }
-   
+
    public synchronized void stop() throws Exception
    {
       super.stop();
-      
+
       started = false;
    }
 
@@ -386,7 +413,7 @@ public class FileConfiguration extends ConfigurationImpl
       for (int i = 0; i < paramsNodes.getLength(); i++)
       {
          Node paramNode = paramsNodes.item(i);
-         NamedNodeMap attributes =paramNode.getAttributes();
+         NamedNodeMap attributes = paramNode.getAttributes();
 
          Node nkey = attributes.getNamedItem("key");
 
@@ -405,7 +432,7 @@ public class FileConfiguration extends ConfigurationImpl
       String name = e.getAttribute("name");
 
       String localAddress = getString(e, "local-bind-address", null, NO_CHECK);
-      
+
       int localBindPort = getInteger(e, "local-bind-port", -1, MINUS_ONE_OR_GT_ZERO);
 
       String groupAddress = getString(e, "group-address", null, NOT_NULL_OR_EMPTY);
@@ -487,12 +514,16 @@ public class FileConfiguration extends ConfigurationImpl
 
       boolean duplicateDetection = getBoolean(e, "use-duplicate-detection", DEFAULT_CLUSTER_DUPLICATE_DETECTION);
 
-      boolean forwardWhenNoConsumers = getBoolean(e, "forward-when-no-consumers", DEFAULT_CLUSTER_FORWARD_WHEN_NO_CONSUMERS);
+      boolean forwardWhenNoConsumers = getBoolean(e,
+                                                  "forward-when-no-consumers",
+                                                  DEFAULT_CLUSTER_FORWARD_WHEN_NO_CONSUMERS);
 
       int maxHops = getInteger(e, "max-hops", DEFAULT_CLUSTER_MAX_HOPS, GE_ZERO);
 
-      long retryInterval = getLong(e, "retry-interval", (long)DEFAULT_CLUSTER_RETRY_INTERVAL, GT_ZERO);
+      long retryInterval = getLong(e, "retry-interval", DEFAULT_CLUSTER_RETRY_INTERVAL, GT_ZERO);
 
+      int confirmationWindowSize = getInteger(e, "confirmation-window-size", DEFAULT_CONFIRMATION_WINDOW_SIZE, GT_ZERO);
+      
       String discoveryGroupName = null;
 
       List<Pair<String, String>> connectorPairs = new ArrayList<Pair<String, String>>();
@@ -531,21 +562,23 @@ public class FileConfiguration extends ConfigurationImpl
       if (discoveryGroupName == null)
       {
          config = new ClusterConnectionConfiguration(name,
-                                                     address,                                                   
-                                                     retryInterval,                                                     
+                                                     address,
+                                                     retryInterval,
                                                      duplicateDetection,
                                                      forwardWhenNoConsumers,
                                                      maxHops,
+                                                     confirmationWindowSize,
                                                      connectorPairs);
       }
       else
       {
          config = new ClusterConnectionConfiguration(name,
                                                      address,
-                                                     retryInterval,                                                     
+                                                     retryInterval,
                                                      duplicateDetection,
                                                      forwardWhenNoConsumers,
                                                      maxHops,
+                                                     confirmationWindowSize,
                                                      discoveryGroupName);
       }
 
@@ -556,14 +589,14 @@ public class FileConfiguration extends ConfigurationImpl
    {
       String name = node.getAttribute("name");
       String type = getString(node, "type", null, NOT_NULL_OR_EMPTY);
-      String address = getString(node, "address",null, NOT_NULL_OR_EMPTY);
+      String address = getString(node, "address", null, NOT_NULL_OR_EMPTY);
       Integer timeout = getInteger(node, "timeout", GroupingHandlerConfiguration.DEFAULT_TIMEOUT, GT_ZERO);
       groupingHandlerConfiguration = new GroupingHandlerConfiguration(new SimpleString(name),
-                                  type.equals(GroupingHandlerConfiguration.TYPE.LOCAL.getType())? GroupingHandlerConfiguration.TYPE.LOCAL: GroupingHandlerConfiguration.TYPE.REMOTE,
-                                  new SimpleString(address),
-                                  timeout);
+                                                                      type.equals(GroupingHandlerConfiguration.TYPE.LOCAL.getType()) ? GroupingHandlerConfiguration.TYPE.LOCAL
+                                                                                                                                    : GroupingHandlerConfiguration.TYPE.REMOTE,
+                                                                      new SimpleString(address),
+                                                                      timeout);
    }
-
 
    private void parseBridgeConfiguration(final Element brNode)
    {
@@ -576,17 +609,28 @@ public class FileConfiguration extends ConfigurationImpl
       String transformerClassName = getString(brNode, "transformer-class-name", null, NO_CHECK);
 
       long retryInterval = getLong(brNode, "retry-interval", DEFAULT_RETRY_INTERVAL, GT_ZERO);
-
-      double retryIntervalMultiplier = getDouble(brNode, "retry-interval-multiplier", DEFAULT_RETRY_INTERVAL_MULTIPLIER, GT_ZERO);
       
-      int reconnectAttempts = getInteger(brNode, "reconnect-attempts", DEFAULT_BRIDGE_RECONNECT_ATTEMPTS, MINUS_ONE_OR_GE_ZERO);
+      //Default bridge conf
+      int confirmationWindowSize = getInteger(brNode, "confirmation-window-size", DEFAULT_CONFIRMATION_WINDOW_SIZE, GT_ZERO);
+      
+      double retryIntervalMultiplier = getDouble(brNode,
+                                                 "retry-interval-multiplier",
+                                                 DEFAULT_RETRY_INTERVAL_MULTIPLIER,
+                                                 GT_ZERO);
 
-      boolean failoverOnServerShutdown = getBoolean(brNode, "failover-on-server-shutdown", ClientSessionFactoryImpl.DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN);
+      int reconnectAttempts = getInteger(brNode,
+                                         "reconnect-attempts",
+                                         DEFAULT_BRIDGE_RECONNECT_ATTEMPTS,
+                                         MINUS_ONE_OR_GE_ZERO);
+
+      boolean failoverOnServerShutdown = getBoolean(brNode,
+                                                    "failover-on-server-shutdown",
+                                                    ClientSessionFactoryImpl.DEFAULT_FAILOVER_ON_SERVER_SHUTDOWN);
 
       boolean useDuplicateDetection = getBoolean(brNode, "use-duplicate-detection", DEFAULT_BRIDGE_DUPLICATE_DETECTION);
 
       String filterString = null;
-      
+
       Pair<String, String> connectorPair = null;
 
       String discoveryGroupName = null;
@@ -636,6 +680,7 @@ public class FileConfiguration extends ConfigurationImpl
                                           reconnectAttempts,
                                           failoverOnServerShutdown,
                                           useDuplicateDetection,
+                                          confirmationWindowSize,
                                           connectorPair);
       }
       else
@@ -650,6 +695,7 @@ public class FileConfiguration extends ConfigurationImpl
                                           reconnectAttempts,
                                           failoverOnServerShutdown,
                                           useDuplicateDetection,
+                                          confirmationWindowSize,
                                           discoveryGroupName);
       }
 

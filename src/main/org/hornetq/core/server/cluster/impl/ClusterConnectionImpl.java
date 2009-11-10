@@ -81,6 +81,8 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
    private final long retryInterval;
 
    private final boolean useDuplicateDetection;
+   
+   private final int confirmationWindowSize;
 
    private final boolean routeWhenNoConsumers;
 
@@ -108,6 +110,7 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
                                 final long retryInterval,
                                 final boolean useDuplicateDetection,
                                 final boolean routeWhenNoConsumers,
+                                final int confirmationWindowSize,
                                 final org.hornetq.utils.ExecutorFactory executorFactory,
                                 final HornetQServer server,
                                 final PostOffice postOffice,
@@ -127,6 +130,8 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
       this.useDuplicateDetection = useDuplicateDetection;
 
       this.routeWhenNoConsumers = routeWhenNoConsumers;
+      
+      this.confirmationWindowSize = confirmationWindowSize;
 
       this.executorFactory = executorFactory;
 
@@ -167,6 +172,7 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
                                 final long retryInterval,
                                 final boolean useDuplicateDetection,
                                 final boolean routeWhenNoConsumers,
+                                final int confirmationWindowSize,
                                 final ExecutorFactory executorFactory,
                                 final HornetQServer server,
                                 final PostOffice postOffice,
@@ -198,6 +204,8 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
       this.useDuplicateDetection = useDuplicateDetection;
 
       this.routeWhenNoConsumers = routeWhenNoConsumers;
+      
+      this.confirmationWindowSize = confirmationWindowSize;
 
       this.maxHops = maxHops;
 
@@ -221,12 +229,14 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
       }
 
       started = true;
-      
+
       if (managementService != null)
       {
          TypedProperties props = new TypedProperties();
          props.putSimpleStringProperty(new SimpleString("name"), name);
-         Notification notification = new Notification(nodeUUID.toString(), NotificationType.CLUSTER_CONNECTION_STARTED, props);
+         Notification notification = new Notification(nodeUUID.toString(),
+                                                      NotificationType.CLUSTER_CONNECTION_STARTED,
+                                                      props);
          managementService.sendNotification(notification);
       }
    }
@@ -258,10 +268,12 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
       {
          TypedProperties props = new TypedProperties();
          props.putSimpleStringProperty(new SimpleString("name"), name);
-         Notification notification = new Notification(nodeUUID.toString(), NotificationType.CLUSTER_CONNECTION_STOPPED, props);
+         Notification notification = new Notification(nodeUUID.toString(),
+                                                      NotificationType.CLUSTER_CONNECTION_STOPPED,
+                                                      props);
          managementService.sendNotification(notification);
       }
-      
+
       started = false;
    }
 
@@ -274,7 +286,7 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
    {
       return name;
    }
-   
+
    public String getNodeID()
    {
       return nodeUUID.toString();
@@ -283,7 +295,7 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
    public synchronized Map<String, String> getNodes()
    {
       Map<String, String> nodes = new HashMap<String, String>();
-      for (Entry<String, MessageFlowRecord> record : records.entrySet( ))
+      for (Entry<String, MessageFlowRecord> record : records.entrySet())
       {
          if (record.getValue().getBridge().getForwardingConnection() != null)
          {
@@ -292,7 +304,7 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
       }
       return nodes;
    }
-   
+
    public synchronized void activate()
    {
       if (!started)
@@ -428,6 +440,7 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
                                      -1,
                                      true,
                                      useDuplicateDetection,
+                                     confirmationWindowSize,
                                      managementService.getManagementAddress(),
                                      managementService.getManagementNotificationAddress(),
                                      managementService.getClusterUser(),
@@ -484,7 +497,7 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
       {
          this.bridge = bridge;
       }
-      
+
       public Bridge getBridge()
       {
          return bridge;
@@ -570,7 +583,7 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
          {
             throw new IllegalStateException("proposal type is null");
          }
-         
+
          SimpleString type = message.getSimpleStringProperty(ManagementHelper.HDR_PROPOSAL_GROUP_ID);
 
          SimpleString val = message.getSimpleStringProperty(ManagementHelper.HDR_PROPOSAL_VALUE);
@@ -579,7 +592,7 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
 
          Response response = server.getGroupingHandler().receive(new Proposal(type, val), hops + 1);
 
-         if(response != null)
+         if (response != null)
          {
             server.getGroupingHandler().send(response, 0);
          }
@@ -634,7 +647,7 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
          {
             throw new IllegalStateException("routingName is null");
          }
-         
+
          if (!message.containsProperty(ManagementHelper.HDR_BINDING_ID))
          {
             throw new IllegalStateException("queueID is null");
@@ -697,7 +710,7 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
          {
             throw new IllegalStateException("clusterName is null");
          }
-         
+
          SimpleString clusterName = message.getSimpleStringProperty(ManagementHelper.HDR_CLUSTER_NAME);
 
          removeBinding(clusterName);
@@ -756,7 +769,7 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
          {
             throw new IllegalStateException("distance is null");
          }
-         
+
          if (!message.containsProperty(ManagementHelper.HDR_CLUSTER_NAME))
          {
             throw new IllegalStateException("clusterName is null");
@@ -782,7 +795,7 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
          // Need to propagate the consumer close
          Notification notification = new Notification(null, CONSUMER_CLOSED, message.getProperties());
 
-         managementService.sendNotification(notification);         
+         managementService.sendNotification(notification);
       }
 
    }
@@ -830,7 +843,7 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
       theBindings.setRouteWhenNoConsumers(routeWhenNoConsumers);
    }
 
-   //for testing only
+   // for testing only
    public Map<String, MessageFlowRecord> getRecords()
    {
       return records;

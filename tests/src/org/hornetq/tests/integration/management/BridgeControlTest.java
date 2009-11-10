@@ -162,6 +162,7 @@ public class BridgeControlTest extends ManagementTestBase
                                              randomPositiveInt(),
                                              randomBoolean(),
                                              randomBoolean(),
+                                             randomPositiveInt(),
                                              connectorPair);
 
       Configuration conf_1 = new ConfigurationImpl();

@@ -204,6 +204,7 @@ public class ClusterConnectionControlTest extends ManagementTestBase
                                                                    randomBoolean(),
                                                                    randomBoolean(),
                                                                    randomPositiveInt(),
+                                                                   randomPositiveInt(),
                                                                    pairs);
       
       clusterConnectionConfig2 = new ClusterConnectionConfiguration(randomString(),
@@ -211,6 +212,7 @@ public class ClusterConnectionControlTest extends ManagementTestBase
                                                                     randomPositiveLong(),
                                                                     randomBoolean(),
                                                                     randomBoolean(),
+                                                                    randomPositiveInt(),
                                                                     randomPositiveInt(),
                                                                     randomString());
 

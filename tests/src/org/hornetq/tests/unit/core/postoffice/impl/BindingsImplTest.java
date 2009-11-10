@@ -1125,6 +1125,18 @@ public class BindingsImplTest extends UnitTestCase
          return null;
       }
 
+      public int decrementRefCount(MessageReference reference) throws Exception
+      {
+         // TODO Auto-generated method stub
+         return 0;
+      }
+
+      public int incrementRefCount(MessageReference reference) throws Exception
+      {
+         // TODO Auto-generated method stub
+         return 0;
+      }
+
    }
 
    class FakeFilter implements Filter

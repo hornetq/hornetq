@@ -154,7 +154,7 @@ public class ConfigurationImpl implements Configuration
 
    public static final int DEFAULT_CLUSTER_MAX_HOPS = 1;
 
-   public static final int DEFAULT_CLUSTER_RETRY_INTERVAL = 500;
+   public static final long DEFAULT_CLUSTER_RETRY_INTERVAL = 500;
 
    public static final boolean DEFAULT_DIVERT_EXCLUSIVE = false;
 
@@ -166,7 +166,7 @@ public class ConfigurationImpl implements Configuration
 
    public static final int DEFAULT_MEMORY_WARNING_THRESHOLD = 25;
 
-   public static final long DEFAULT_MEMORY_MEASURE_INTERVAL = 3000; // in milliseconds
+   public static final long DEFAULT_MEMORY_MEASURE_INTERVAL = -1; // in milliseconds
 
    public static final int DEFAULT_BACKUP_WINDOW_SIZE = 1024 * 1024;
 

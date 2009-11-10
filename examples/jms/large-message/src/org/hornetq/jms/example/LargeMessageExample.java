@@ -45,11 +45,13 @@ public class LargeMessageExample extends HornetQExample
       new LargeMessageExample().run(args);
    }
 
-   // The message we will send is size 256MB, even though we are only running in 50MB of RAM on both client and server.
-   // HornetQ will support much larger message sizes, but we use 512MB so the example runs in reasonable time.
-  // private final long FILE_SIZE = 256L * 1024 * 1024;
+   // The message we will send is size 10GiB, even though we are only running in 50MB of RAM on both client and server.
+   // This may take some considerable time to create, send and consume - if it takes too long or you don't have
+   // enough disk space just reduce the file size here
    
-   private final long FILE_SIZE = 2L * 1024 * 1024 * 1024; // 2 GiB message
+   // private final long FILE_SIZE = 256L * 1024 * 1024;
+   
+   private final long FILE_SIZE = 10L * 1024 * 1024 * 1024; // 10 GiB message
 
    public boolean runExample() throws Exception
    {

@@ -76,7 +76,6 @@ public class BridgeTest extends ServiceTestBase
 
       try
       {
-
          Map<String, Object> server0Params = new HashMap<String, Object>();
          server0 = createClusteredServerWithParams(0, useFiles, server0Params);
 
@@ -101,6 +100,10 @@ public class BridgeTest extends ServiceTestBase
 
          Pair<String, String> connectorPair = new Pair<String, String>(server1tc.getName(), null);
 
+         final int messageSize = 1024;
+
+         final int numMessages = 10;
+
          BridgeConfiguration bridgeConfiguration = new BridgeConfiguration("bridge1",
                                                                            queueName0,
                                                                            forwardAddress,
@@ -111,6 +114,9 @@ public class BridgeTest extends ServiceTestBase
                                                                            -1,
                                                                            true,
                                                                            false,
+                                                                           // Choose confirmation size to make sure acks
+                                                                           // are sent
+                                                                           numMessages * messageSize / 2,
                                                                            connectorPair);
 
          List<BridgeConfiguration> bridgeConfigs = new ArrayList<BridgeConfiguration>();
@@ -144,7 +150,7 @@ public class BridgeTest extends ServiceTestBase
 
          session1.start();
 
-         final int numMessages = 10;
+         final byte[] bytes = new byte[messageSize];
 
          final SimpleString propKey = new SimpleString("testkey");
 
@@ -158,6 +164,8 @@ public class BridgeTest extends ServiceTestBase
             }
 
             message.putIntProperty(propKey, i);
+
+            message.getBody().writeBytes(bytes);
 
             producer0.send(message);
          }
@@ -286,6 +294,7 @@ public class BridgeTest extends ServiceTestBase
                                                                            -1,
                                                                            true,
                                                                            false,
+                                                                           1024,
                                                                            connectorPair);
 
          List<BridgeConfiguration> bridgeConfigs = new ArrayList<BridgeConfiguration>();
@@ -332,7 +341,7 @@ public class BridgeTest extends ServiceTestBase
             message.putIntProperty(propKey, i);
 
             message.putStringProperty(selectorKey, new SimpleString("monkey"));
-            
+
             if (largeMessage)
             {
                message.setBodyInputStream(createFakeLargeStream(1024 * 1024));
@@ -368,7 +377,7 @@ public class BridgeTest extends ServiceTestBase
             assertEquals((Integer)i, (Integer)message.getObjectProperty(propKey));
 
             message.acknowledge();
-            
+
             if (largeMessage)
             {
                readMessages(message);
@@ -407,7 +416,7 @@ public class BridgeTest extends ServiceTestBase
       }
 
    }
-   
+
    public void testWithTransformer() throws Exception
    {
       internaltestWithTransformer(false);
@@ -453,6 +462,7 @@ public class BridgeTest extends ServiceTestBase
                                                                         -1,
                                                                         true,
                                                                         false,
+                                                                        1024,
                                                                         connectorPair);
 
       List<BridgeConfiguration> bridgeConfigs = new ArrayList<BridgeConfiguration>();
@@ -497,7 +507,7 @@ public class BridgeTest extends ServiceTestBase
          message.putStringProperty(propKey, new SimpleString("bing"));
 
          message.getBody().writeString("doo be doo be doo be doo");
-         
+
          producer0.send(message);
       }
 
@@ -516,8 +526,7 @@ public class BridgeTest extends ServiceTestBase
          assertEquals("dee be dee be dee be dee", sval);
 
          message.acknowledge();
-         
-         
+
       }
 
       assertNull(consumer1.receiveImmediate());
@@ -534,10 +543,8 @@ public class BridgeTest extends ServiceTestBase
 
       server1.stop();
    }
-   
 
-   // https://jira.jboss.org/jira/browse/HORNETQ-182
-   public void disabled_testBridgeWithPaging() throws Exception
+   public void testBridgeWithPaging() throws Exception
    {
       HornetQServer server0 = null;
       HornetQServer server1 = null;
@@ -583,6 +590,7 @@ public class BridgeTest extends ServiceTestBase
                                                                            -1,
                                                                            true,
                                                                            false,
+                                                                           1024,
                                                                            connectorPair);
 
          List<BridgeConfiguration> bridgeConfigs = new ArrayList<BridgeConfiguration>();
@@ -623,7 +631,7 @@ public class BridgeTest extends ServiceTestBase
          for (int i = 0; i < numMessages; i++)
          {
             ClientMessage message = session0.createClientMessage(false);
-            
+
             message.setBody(ChannelBuffers.wrappedBuffer(new byte[1024]));
 
             message.putIntProperty(propKey, i);
@@ -674,13 +682,12 @@ public class BridgeTest extends ServiceTestBase
 
    }
 
-   
    protected void setUp() throws Exception
    {
       super.setUp();
       clearData();
    }
-   
+
    protected void tearDown() throws Exception
    {
       clearData();

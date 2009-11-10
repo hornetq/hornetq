@@ -53,6 +53,8 @@ public class BridgeConfiguration implements Serializable
    private boolean failoverOnServerShutdown;
 
    private boolean useDuplicateDetection;
+   
+   private int confirmationWindowSize;
 
    public BridgeConfiguration(final String name,
                               final String queueName,
@@ -64,6 +66,7 @@ public class BridgeConfiguration implements Serializable
                               final int reconnectAttempts,
                               final boolean failoverOnServerShutdown,
                               final boolean useDuplicateDetection,
+                              final int confirmationWindowSize,
                               final Pair<String, String> connectorPair)
    {
       this.name = name;
@@ -76,6 +79,7 @@ public class BridgeConfiguration implements Serializable
       this.reconnectAttempts = reconnectAttempts;
       this.failoverOnServerShutdown = failoverOnServerShutdown;
       this.useDuplicateDetection = useDuplicateDetection;
+      this.confirmationWindowSize = confirmationWindowSize;
       this.connectorPair = connectorPair;
       this.discoveryGroupName = null;
    }
@@ -90,6 +94,7 @@ public class BridgeConfiguration implements Serializable
                               final int reconnectAttempts,
                               final boolean failoverOnServerShutdown,
                               final boolean useDuplicateDetection,
+                              final int confirmationWindowSize,
                               final String discoveryGroupName)
    {
       this.name = name;
@@ -102,6 +107,7 @@ public class BridgeConfiguration implements Serializable
       this.reconnectAttempts = reconnectAttempts;
       this.failoverOnServerShutdown = failoverOnServerShutdown;
       this.useDuplicateDetection = useDuplicateDetection;
+      this.confirmationWindowSize = confirmationWindowSize;
       this.connectorPair = null;
       this.discoveryGroupName = discoveryGroupName;
    }
@@ -164,6 +170,11 @@ public class BridgeConfiguration implements Serializable
    public boolean isUseDuplicateDetection()
    {
       return useDuplicateDetection;
+   }
+   
+   public int getConfirmationWindowSize()
+   {
+      return confirmationWindowSize;
    }
 
    /**
@@ -260,5 +271,13 @@ public class BridgeConfiguration implements Serializable
    public void setUseDuplicateDetection(boolean useDuplicateDetection)
    {
       this.useDuplicateDetection = useDuplicateDetection;
+   }
+   
+   /**
+    * @param confirmationWindowSize the confirmationWindowSize to set
+    */
+   public void setConfirmationWindowSize(int confirmationWindowSize)
+   {
+      this.confirmationWindowSize = confirmationWindowSize;
    }
 }

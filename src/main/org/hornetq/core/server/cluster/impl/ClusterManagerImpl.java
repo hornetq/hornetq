@@ -37,7 +37,6 @@ import org.hornetq.core.logging.Logger;
 import org.hornetq.core.management.ManagementService;
 import org.hornetq.core.postoffice.Binding;
 import org.hornetq.core.postoffice.PostOffice;
-import org.hornetq.core.remoting.Channel;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.Queue;
 import org.hornetq.core.server.cluster.Bridge;
@@ -71,7 +70,7 @@ public class ClusterManagerImpl implements ClusterManager
    private final Map<String, ClusterConnection> clusters = new HashMap<String, ClusterConnection>();
 
    private final org.hornetq.utils.ExecutorFactory executorFactory;
-   
+
    private final HornetQServer server;
 
    private final PostOffice postOffice;
@@ -83,9 +82,9 @@ public class ClusterManagerImpl implements ClusterManager
    private final Configuration configuration;
 
    private final UUID nodeUUID;
-   
+
    private volatile boolean started;
-   
+
    private boolean backup;
 
    public ClusterManagerImpl(final org.hornetq.utils.ExecutorFactory executorFactory,
@@ -94,16 +93,16 @@ public class ClusterManagerImpl implements ClusterManager
                              final ScheduledExecutorService scheduledExecutor,
                              final ManagementService managementService,
                              final Configuration configuration,
-                             final UUID nodeUUID,                            
+                             final UUID nodeUUID,
                              final boolean backup)
    {
       if (nodeUUID == null)
       {
          throw new IllegalArgumentException("Node uuid is null");
       }
-      
+
       this.executorFactory = executorFactory;
-      
+
       this.server = server;
 
       this.postOffice = postOffice;
@@ -115,7 +114,7 @@ public class ClusterManagerImpl implements ClusterManager
       this.configuration = configuration;
 
       this.nodeUUID = nodeUUID;
-      
+
       this.backup = backup;
    }
 
@@ -203,34 +202,34 @@ public class ClusterManagerImpl implements ClusterManager
    {
       return new HashSet<ClusterConnection>(clusters.values());
    }
-   
+
    public Set<BroadcastGroup> getBroadcastGroups()
    {
       return new HashSet<BroadcastGroup>(broadcastGroups.values());
    }
-   
+
    public ClusterConnection getClusterConnection(final SimpleString name)
    {
-      return clusters.get(name.toString()); 
+      return clusters.get(name.toString());
    }
-   
+
    public synchronized void activate()
-   {      
-      for (BroadcastGroup bg: broadcastGroups.values())
+   {
+      for (BroadcastGroup bg : broadcastGroups.values())
       {
          bg.activate();
       }
-      
-      for (Bridge bridge: bridges.values())
+
+      for (Bridge bridge : bridges.values())
       {
          bridge.activate();
       }
-      
-      for (ClusterConnection cc: clusters.values())
+
+      for (ClusterConnection cc : clusters.values())
       {
          cc.activate();
       }
-      
+
       backup = false;
    }
 
@@ -385,14 +384,16 @@ public class ClusterManagerImpl implements ClusterManager
 
       if (config.getDiscoveryGroupName() != null)
       {
-         DiscoveryGroupConfiguration discoveryGroupConfiguration = configuration.getDiscoveryGroupConfigurations().get(config.getDiscoveryGroupName());
+         DiscoveryGroupConfiguration discoveryGroupConfiguration = configuration.getDiscoveryGroupConfigurations()
+                                                                                .get(config.getDiscoveryGroupName());
          if (discoveryGroupConfiguration == null)
          {
-            log.warn("No discovery group configured with name '" + config.getDiscoveryGroupName() + "'. The bridge will not be deployed.");
+            log.warn("No discovery group configured with name '" + config.getDiscoveryGroupName() +
+                     "'. The bridge will not be deployed.");
 
             return;
          }
-         
+
          bridge = new BridgeImpl(nodeUUID,
                                  new SimpleString(config.getName()),
                                  queue,
@@ -409,11 +410,12 @@ public class ClusterManagerImpl implements ClusterManager
                                  config.getReconnectAttempts(),
                                  config.isFailoverOnServerShutdown(),
                                  config.isUseDuplicateDetection(),
+                                 config.getConfirmationWindowSize(),
                                  managementService.getManagementAddress(),
                                  managementService.getManagementNotificationAddress(),
                                  managementService.getClusterUser(),
                                  managementService.getClusterPassword(),
-                                 null,                        
+                                 null,
                                  !backup,
                                  server.getStorageManager());
       }
@@ -461,11 +463,12 @@ public class ClusterManagerImpl implements ClusterManager
                                  config.getReconnectAttempts(),
                                  config.isFailoverOnServerShutdown(),
                                  config.isUseDuplicateDetection(),
+                                 config.getConfirmationWindowSize(),
                                  managementService.getManagementAddress(),
                                  managementService.getManagementNotificationAddress(),
                                  managementService.getClusterUser(),
                                  managementService.getClusterPassword(),
-                                 null,                        
+                                 null,
                                  !backup,
                                  server.getStorageManager());
       }
@@ -534,17 +537,18 @@ public class ClusterManagerImpl implements ClusterManager
 
          clusterConnection = new ClusterConnectionImpl(new SimpleString(config.getName()),
                                                        new SimpleString(config.getAddress()),
-                                                       config.getRetryInterval(),                                                       
+                                                       config.getRetryInterval(),
                                                        config.isDuplicateDetection(),
                                                        config.isForwardWhenNoConsumers(),
+                                                       config.getConfirmationWindowSize(),
                                                        executorFactory,
-                                                       server,                                         
+                                                       server,
                                                        postOffice,
                                                        managementService,
-                                                       scheduledExecutor,                                            
+                                                       scheduledExecutor,
                                                        connectors,
                                                        config.getMaxHops(),
-                                                       nodeUUID,                                                       
+                                                       nodeUUID,
                                                        backup);
       }
       else
@@ -559,17 +563,18 @@ public class ClusterManagerImpl implements ClusterManager
 
          clusterConnection = new ClusterConnectionImpl(new SimpleString(config.getName()),
                                                        new SimpleString(config.getAddress()),
-                                                       config.getRetryInterval(),                                                      
+                                                       config.getRetryInterval(),
                                                        config.isDuplicateDetection(),
                                                        config.isForwardWhenNoConsumers(),
+                                                       config.getConfirmationWindowSize(),
                                                        executorFactory,
-                                                       server,                                             
+                                                       server,
                                                        postOffice,
                                                        managementService,
-                                                       scheduledExecutor,                                               
+                                                       scheduledExecutor,
                                                        dg,
                                                        config.getMaxHops(),
-                                                       nodeUUID,                                                      
+                                                       nodeUUID,
                                                        backup);
       }
 

@@ -86,6 +86,7 @@ public class BridgeStartTest extends ServiceTestBase
                                                                         0,
                                                                         true,
                                                                         true,
+                                                                        1024,
                                                                         connectorPair);
 
       List<BridgeConfiguration> bridgeConfigs = new ArrayList<BridgeConfiguration>();
@@ -229,6 +230,7 @@ public class BridgeStartTest extends ServiceTestBase
                                                                         -1,
                                                                         true,
                                                                         true,
+                                                                        1024,
                                                                         connectorPair);
 
       List<BridgeConfiguration> bridgeConfigs = new ArrayList<BridgeConfiguration>();
@@ -419,6 +421,7 @@ public class BridgeStartTest extends ServiceTestBase
                                                                         0,
                                                                         false,
                                                                         false,
+                                                                        1024,
                                                                         connectorPair);
 
       List<BridgeConfiguration> bridgeConfigs = new ArrayList<BridgeConfiguration>();
@@ -547,6 +550,7 @@ public class BridgeStartTest extends ServiceTestBase
                                                                         1,
                                                                         false,
                                                                         true,
+                                                                        1024,
                                                                         connectorPair);
 
       List<BridgeConfiguration> bridgeConfigs = new ArrayList<BridgeConfiguration>();

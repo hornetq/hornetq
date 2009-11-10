@@ -117,6 +117,8 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
 
    private final boolean failoverOnServerShutdown;
 
+   private final int confirmationWindowSize;
+
    private final SimpleString idsHeaderName;
 
    private MessageFlowRecord flowRecord;
@@ -132,6 +134,8 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
    private boolean activated;
 
    private NotificationService notificationService;
+
+   private ClientConsumer notifConsumer;
 
    // Static --------------------------------------------------------
 
@@ -160,6 +164,7 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
                      final int reconnectAttempts,
                      final boolean failoverOnServerShutdown,
                      final boolean useDuplicateDetection,
+                     final int confirmationWindowSize,
                      final SimpleString managementAddress,
                      final SimpleString managementNotificationAddress,
                      final String clusterUser,
@@ -183,6 +188,13 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
       this.transformer = transformer;
 
       this.useDuplicateDetection = useDuplicateDetection;
+
+      if (!(confirmationWindowSize > 0))
+      {
+         throw new IllegalStateException("confirmation-window-size must be > 0 for a bridge");
+      }
+
+      this.confirmationWindowSize = confirmationWindowSize;
 
       this.discoveryAddress = discoveryAddress;
 
@@ -253,9 +265,11 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
       }
 
       Queue queue = null;
+
       for (MessageReference ref2 : list)
       {
          queue = ref2.getQueue();
+
          queue.cancel(ref2);
       }
 
@@ -381,7 +395,7 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
       {
          return HandleStatus.NO_MATCH;
       }
-      
+
       synchronized (this)
       {
          if (!active)
@@ -521,15 +535,15 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
                {
                   active = false;
                }
-               
+
                cancelRefs();
             }
             else
             {
                setupNotificationConsumer();
-               
+
                active = true;
-               
+
                if (queue != null)
                {
                   queue.deliverAsync(executor);
@@ -543,8 +557,6 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
       }
    }
 
-   private ClientConsumer notifConsumer;
-
    // TODO - we should move this code to the ClusterConnectorImpl - and just execute it when the bridge
    // connection is opened and closed - we can use
    // a callback to tell us that
@@ -552,7 +564,6 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
    {
       if (flowRecord != null)
       {
-
          if (notifConsumer != null)
          {
             try
@@ -600,7 +611,7 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
                                                 "%')");
 
          session.createQueue(managementNotificationAddress, notifQueueName, filter, false);
-         
+
          notifConsumer = session.createConsumer(notifQueueName);
 
          notifConsumer.setMessageHandler(flowRecord);
@@ -644,6 +655,10 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
          csf.setRetryIntervalMultiplier(retryIntervalMultiplier);
          csf.setReconnectAttempts(reconnectAttempts);
          csf.setBlockOnPersistentSend(false);
+
+         // Must have confirmations enabled so we get send acks
+
+         csf.setConfirmationWindowSize(confirmationWindowSize);
 
          // Session is pre-acknowledge
          session = (ClientSessionInternal)csf.createSession(clusterUser, clusterPassword, false, true, true, true, 1);
@@ -732,41 +747,4 @@ public class BridgeImpl implements Bridge, SessionFailureListener, SendAcknowled
          }
       }
    }
-
-   // private class FailRunnable implements Runnable
-   // {
-   // public void run()
-   // {
-   // synchronized (BridgeImpl.this)
-   // {
-   // if (!started)
-   // {
-   // return;
-   // }
-   //
-   // active = false;
-   // }
-   //
-   // try
-   // {
-   // queue.removeConsumer(BridgeImpl.this);
-   //
-   // session.cleanUp();
-   //
-   // cancelRefs();
-   //
-   // csf.close();
-   // }
-   // catch (Exception e)
-   // {
-   // log.error("Failed to stop", e);
-   // }
-   //         
-   // if (!createObjects())
-   // {
-   // started = false;
-   // }
-   // }
-   // }
-
 }

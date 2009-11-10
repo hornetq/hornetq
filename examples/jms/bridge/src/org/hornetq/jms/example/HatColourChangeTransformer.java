@@ -33,7 +33,7 @@ public class HatColourChangeTransformer implements Transformer
       
       SimpleString oldProp = message.getSimpleStringProperty(propName);
       
-      System.out.println("Old hat colour is " + oldProp);
+      //System.out.println("Old hat colour is " + oldProp);
       
       //Change the colour
       message.putStringProperty(propName, new SimpleString("blue"));

@@ -493,6 +493,8 @@ public class XMLUtil
       }
       catch (SAXException e)
       {
+         log.error("Invalid configuration", e);
+         
          throw new IllegalStateException("Invalid configuration", e);
       }
    }

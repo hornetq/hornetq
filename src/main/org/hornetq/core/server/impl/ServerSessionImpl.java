@@ -387,7 +387,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
 
          if (binding == null || binding.getType() != BindingType.LOCAL_QUEUE)
          {
-            throw new HornetQException(HornetQException.QUEUE_DOES_NOT_EXIST, "Binding " + name + " does not exist");
+            throw new HornetQException(HornetQException.QUEUE_DOES_NOT_EXIST, "Queue " + name + " does not exist");
          }
 
          securityStore.check(binding.getAddress(), CheckType.CONSUME, this);

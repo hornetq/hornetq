@@ -31,18 +31,16 @@ public interface ServerMessage extends Message, EncodingSupport
 
    MessageReference createReference(Queue queue);
 
-   int incrementRefCount(PagingStore pagingStore, MessageReference reference)
-      throws Exception;
+   int incrementRefCount(MessageReference reference) throws Exception;
 
-   int decrementRefCount(PagingStore pagingStore, MessageReference reference)
-      throws Exception;
-   
+   int decrementRefCount(MessageReference reference) throws Exception;
+
    int incrementDurableRefCount();
 
    int decrementDurableRefCount();
 
    ServerMessage copy(long newID) throws Exception;
-   
+
    ServerMessage copy() throws Exception;
 
    int getMemoryEstimate();
@@ -50,16 +48,16 @@ public interface ServerMessage extends Message, EncodingSupport
    int getRefCount();
 
    ServerMessage makeCopyForExpiryOrDLA(long newID, boolean expiry) throws Exception;
-   
-   void setOriginalHeaders(ServerMessage other, boolean expiry);   
-   
+
+   void setOriginalHeaders(ServerMessage other, boolean expiry);
+
    void setPagingStore(PagingStore store);
-   
+
    PagingStore getPagingStore();
-   
+
    boolean page(boolean duplicateDetection) throws Exception;
-   
+
    boolean page(long transactionID, boolean duplicateDetection) throws Exception;
-   
+
    boolean storeIsPaging();
 }

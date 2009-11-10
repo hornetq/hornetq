@@ -61,7 +61,7 @@ public class BridgeControlUsingCoreTest extends ManagementTestBase
    private BridgeConfiguration bridgeConfig;
 
    private HornetQServer server_1;
-   
+
    private ClientSession session;
 
    // Constructors --------------------------------------------------
@@ -79,10 +79,14 @@ public class BridgeControlUsingCoreTest extends ManagementTestBase
       assertEquals(bridgeConfig.getForwardingAddress(), (String)proxy.retrieveAttributeValue("forwardingAddress"));
       assertEquals(bridgeConfig.getFilterString(), (String)proxy.retrieveAttributeValue("filterString"));
       assertEquals(bridgeConfig.getRetryInterval(), ((Long)proxy.retrieveAttributeValue("retryInterval")).longValue());
-      assertEquals(bridgeConfig.getRetryIntervalMultiplier(), (Double)proxy.retrieveAttributeValue("retryIntervalMultiplier"));
-      assertEquals(bridgeConfig.getReconnectAttempts(), ((Integer)proxy.retrieveAttributeValue("reconnectAttempts")).intValue());
-      assertEquals(bridgeConfig.isFailoverOnServerShutdown(), ((Boolean)proxy.retrieveAttributeValue("failoverOnServerShutdown")).booleanValue());
-      assertEquals(bridgeConfig.isUseDuplicateDetection(), ((Boolean)proxy.retrieveAttributeValue("useDuplicateDetection")).booleanValue());
+      assertEquals(bridgeConfig.getRetryIntervalMultiplier(),
+                   (Double)proxy.retrieveAttributeValue("retryIntervalMultiplier"));
+      assertEquals(bridgeConfig.getReconnectAttempts(),
+                   ((Integer)proxy.retrieveAttributeValue("reconnectAttempts")).intValue());
+      assertEquals(bridgeConfig.isFailoverOnServerShutdown(),
+                   ((Boolean)proxy.retrieveAttributeValue("failoverOnServerShutdown")).booleanValue());
+      assertEquals(bridgeConfig.isUseDuplicateDetection(),
+                   ((Boolean)proxy.retrieveAttributeValue("useDuplicateDetection")).booleanValue());
 
       Object[] data = (Object[])proxy.retrieveAttributeValue("connectorPair");
       assertEquals(bridgeConfig.getConnectorPair().a, data[0]);
@@ -99,10 +103,10 @@ public class BridgeControlUsingCoreTest extends ManagementTestBase
       // started by the server
       assertTrue((Boolean)proxy.retrieveAttributeValue("Started"));
 
-      proxy.invokeOperation("stop");      
+      proxy.invokeOperation("stop");
       assertFalse((Boolean)proxy.retrieveAttributeValue("Started"));
 
-      proxy.invokeOperation("start");      
+      proxy.invokeOperation("start");
       assertTrue((Boolean)proxy.retrieveAttributeValue("Started"));
    }
 
@@ -138,6 +142,7 @@ public class BridgeControlUsingCoreTest extends ManagementTestBase
                                              randomPositiveInt(),
                                              randomBoolean(),
                                              randomBoolean(),
+                                             randomPositiveInt(),
                                              connectorPair);
 
       Configuration conf_1 = new ConfigurationImpl();
@@ -175,20 +180,18 @@ public class BridgeControlUsingCoreTest extends ManagementTestBase
       server_1.stop();
 
       session = null;
-      
+
       server_0 = null;
-      
+
       server_1 = null;
-      
-      
+
       super.tearDown();
    }
-   
+
    protected CoreMessagingProxy createProxy(final String name) throws Exception
    {
-      CoreMessagingProxy proxy = new CoreMessagingProxy(session,
-                                                       ResourceNames.CORE_BRIDGE + name);
-      
+      CoreMessagingProxy proxy = new CoreMessagingProxy(session, ResourceNames.CORE_BRIDGE + name);
+
       return proxy;
    }
 

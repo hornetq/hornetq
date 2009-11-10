@@ -102,7 +102,7 @@ public class ServerMessageImpl extends MessageImpl implements ServerMessage
       return ref;
    }
 
-   public int incrementRefCount(final PagingStore pagingStore, final MessageReference reference) throws Exception
+   public int incrementRefCount(final MessageReference reference) throws Exception
    {
       int count = refCount.incrementAndGet();
 
@@ -119,7 +119,7 @@ public class ServerMessageImpl extends MessageImpl implements ServerMessage
       return count;
    }
 
-   public int decrementRefCount(final PagingStore pagingStore, final MessageReference reference) throws Exception
+   public int decrementRefCount(final MessageReference reference) throws Exception
    {
       int count = refCount.decrementAndGet();
 

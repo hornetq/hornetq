@@ -93,6 +93,7 @@ public class BridgeReconnectTest extends BridgeTestBase
       final long retryInterval = 50;
       final double retryIntervalMultiplier = 1d;
       final int reconnectAttempts = 1;
+      final int confirmationWindowSize = 1024;
 
       Pair<String, String> connectorPair = new Pair<String, String>(server1tc.getName(), server2tc.getName());
 
@@ -106,6 +107,7 @@ public class BridgeReconnectTest extends BridgeTestBase
                                                                         reconnectAttempts,
                                                                         true,
                                                                         false,
+                                                                        confirmationWindowSize,
                                                                         connectorPair);
 
       List<BridgeConfiguration> bridgeConfigs = new ArrayList<BridgeConfiguration>();
@@ -219,6 +221,7 @@ public class BridgeReconnectTest extends BridgeTestBase
       final long retryInterval = 50;
       final double retryIntervalMultiplier = 1d;
       final int reconnectAttempts = 3;
+      final int confirmationWindowSize = 1024;
 
       Pair<String, String> connectorPair = new Pair<String, String>(server1tc.getName(), server2tc.getName());
 
@@ -232,6 +235,7 @@ public class BridgeReconnectTest extends BridgeTestBase
                                                                         reconnectAttempts,
                                                                         true,
                                                                         false,
+                                                                        confirmationWindowSize,
                                                                         connectorPair);
 
       List<BridgeConfiguration> bridgeConfigs = new ArrayList<BridgeConfiguration>();
@@ -338,6 +342,7 @@ public class BridgeReconnectTest extends BridgeTestBase
       final long retryInterval = 50;
       final double retryIntervalMultiplier = 1d;
       final int reconnectAttempts = 3;
+      final int confirmationWindowSize = 1024;
 
       Pair<String, String> connectorPair = new Pair<String, String>(server1tc.getName(), null);
 
@@ -351,6 +356,7 @@ public class BridgeReconnectTest extends BridgeTestBase
                                                                         reconnectAttempts,
                                                                         true,
                                                                         false,
+                                                                        confirmationWindowSize,
                                                                         connectorPair);
 
       List<BridgeConfiguration> bridgeConfigs = new ArrayList<BridgeConfiguration>();
@@ -452,6 +458,7 @@ public class BridgeReconnectTest extends BridgeTestBase
       final long retryInterval = 50;
       final double retryIntervalMultiplier = 1d;
       final int reconnectAttempts = -1;
+      final int confirmationWindowSize = 1024;
 
       Pair<String, String> connectorPair = new Pair<String, String>(server1tc.getName(), null);
 
@@ -465,6 +472,7 @@ public class BridgeReconnectTest extends BridgeTestBase
                                                                         reconnectAttempts,
                                                                         true,
                                                                         false,
+                                                                        confirmationWindowSize,
                                                                         connectorPair);
 
       List<BridgeConfiguration> bridgeConfigs = new ArrayList<BridgeConfiguration>();
@@ -513,7 +521,7 @@ public class BridgeReconnectTest extends BridgeTestBase
 
          prod0.send(message);
       }
-      
+
       log.info("sent messages");
 
       for (int i = 0; i < numMessages; i++)
@@ -523,7 +531,7 @@ public class BridgeReconnectTest extends BridgeTestBase
          assertEquals(i, r1.getObjectProperty(propKey));
          log.info("got message " + r1.getObjectProperty(propKey));
       }
-      
+
       log.info("got messages");
 
       session0.close();
@@ -566,6 +574,7 @@ public class BridgeReconnectTest extends BridgeTestBase
       final long retryInterval = 50;
       final double retryIntervalMultiplier = 1d;
       final int reconnectAttempts = 3;
+      final int confirmationWindowSize = 1024;
 
       Pair<String, String> connectorPair = new Pair<String, String>(server1tc.getName(), null);
 
@@ -579,6 +588,7 @@ public class BridgeReconnectTest extends BridgeTestBase
                                                                         reconnectAttempts,
                                                                         true,
                                                                         false,
+                                                                        confirmationWindowSize,
                                                                         connectorPair);
 
       List<BridgeConfiguration> bridgeConfigs = new ArrayList<BridgeConfiguration>();

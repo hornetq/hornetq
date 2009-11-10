@@ -36,8 +36,6 @@ import org.hornetq.core.list.PriorityLinkedList;
 import org.hornetq.core.list.impl.PriorityLinkedListImpl;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.message.impl.MessageImpl;
-import org.hornetq.core.paging.PagingManager;
-import org.hornetq.core.paging.PagingStore;
 import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.core.postoffice.Bindings;
 import org.hornetq.core.postoffice.PostOffice;
@@ -51,7 +49,6 @@ import org.hornetq.core.server.ScheduledDeliveryHandler;
 import org.hornetq.core.server.ServerMessage;
 import org.hornetq.core.server.cluster.impl.Redistributor;
 import org.hornetq.core.settings.HierarchicalRepository;
-import org.hornetq.core.settings.impl.AddressFullMessagePolicy;
 import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.core.transaction.Transaction;
 import org.hornetq.core.transaction.TransactionOperation;
@@ -111,11 +108,7 @@ public class QueueImpl implements Queue
 
    private final Runnable deliverRunner = new DeliverRunner();
 
-   private final PagingManager pagingManager;
-
    private final Semaphore lock = new Semaphore(1);
-
-   private volatile PagingStore pagingStore;
 
    private final StorageManager storageManager;
 
@@ -171,15 +164,6 @@ public class QueueImpl implements Queue
       this.addressSettingsRepository = addressSettingsRepository;
 
       this.scheduledExecutor = scheduledExecutor;
-
-      if (postOffice == null)
-      {
-         pagingManager = null;
-      }
-      else
-      {
-         pagingManager = postOffice.getPagingManager();
-      }
 
       direct = true;
 
@@ -1091,12 +1075,14 @@ public class QueueImpl implements Queue
          if (reference == null)
          {
             nullReferences.add(consumer);
+
             if (nullReferences.size() + busyConsumers.size() == totalConsumers)
             {
-               startDepaging();
                // We delivered all the messages - go into direct delivery
                direct = true;
+
                promptDelivery = false;
+
                return;
             }
 
@@ -1132,8 +1118,6 @@ public class QueueImpl implements Queue
                continue;
             }
          }
-
-         initPagingStore(reference.getMessage().getDestination());
 
          final SimpleString groupID = reference.getMessage().getSimpleStringProperty(MessageImpl.HDR_GROUP_ID);
 
@@ -1407,19 +1391,7 @@ public class QueueImpl implements Queue
 
       queue.deliveringCount.decrementAndGet();
 
-      PagingStore store;
-      if (pagingManager != null)
-      {
-         // TODO: We could optimize this by storing the paging-store for the address on the Queue. We would need to know
-         // the Address for the Queue
-         store = pagingManager.getPageStore(ref.getMessage().getDestination());
-      }
-      else
-      {
-         store = null;
-      }
-
-      message.decrementRefCount(store, ref);
+      message.decrementRefCount(ref);
    }
 
    void postRollback(final LinkedList<MessageReference> refs) throws Exception
@@ -1434,42 +1406,6 @@ public class QueueImpl implements Queue
          }
 
          deliver();
-      }
-   }
-
-   private synchronized void initPagingStore(final SimpleString destination)
-   {
-      // PagingManager would be null only on testcases
-      if (pagingStore == null && pagingManager != null)
-      {
-         // TODO: It would be better if we could initialize the pagingStore during the construction
-         try
-         {
-            pagingStore = pagingManager.getPageStore(destination);
-         }
-         catch (Exception e)
-         {
-            // This shouldn't happen, and if it happens, this shouldn't abort the route
-         }
-      }
-   }
-
-   private synchronized void startDepaging()
-   {
-      if (pagingStore != null)
-      {
-         // If the queue is empty, we need to check if there are pending messages, and throw a warning
-         if (pagingStore.isPaging() && pagingStore.getAddressFullMessagePolicy() == AddressFullMessagePolicy.PAGE)
-         {
-            // This is just a *request* to depage. Depage will only happens if there is space on the Address
-            // and GlobalSize
-            pagingStore.startDepaging();
-
-            log.warn("The Queue " + name +
-                     " is empty, however there are pending messages on Paging for the address " +
-                     pagingStore.getStoreName() +
-                     " waiting message ACK before they could be routed");
-         }
       }
    }
 

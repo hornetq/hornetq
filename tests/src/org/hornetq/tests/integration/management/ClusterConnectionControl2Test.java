@@ -136,6 +136,7 @@ public class ClusterConnectionControl2Test extends ManagementTestBase
                                                                    false,
                                                                    false,
                                                                    1,
+                                                                   1024,
                                                                    discoveryName);
       List<Pair<String, String>> connectorInfos = new ArrayList<Pair<String, String>>();
       connectorInfos.add(new Pair<String, String>("netty", null));

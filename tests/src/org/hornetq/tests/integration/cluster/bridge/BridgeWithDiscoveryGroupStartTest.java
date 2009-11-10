@@ -99,6 +99,7 @@ public class BridgeWithDiscoveryGroupStartTest extends ServiceTestBase
                                                                         0,
                                                                         true,
                                                                         true,
+                                                                        1024,
                                                                         "dg1");
 
       List<BridgeConfiguration> bridgeConfigs = new ArrayList<BridgeConfiguration>();

@@ -12,6 +12,7 @@
  */
 package org.hornetq.jms.example;
 
+import javax.jms.BytesMessage;
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
 import javax.jms.Message;
@@ -98,42 +99,61 @@ public class BridgeExample extends HornetQExample
          // Step 12. We create a JMS MessageProducer object on server 0
          MessageProducer producer = session0.createProducer(sausageFactory);
 
-         // Step 13. We create and send a message representing an aardvark with a green hat to the sausage-factory
-         // on node 0
-         Message message = session0.createMessage();
+         final int numMessages = 100000;
+         
+         byte[] bytes = new byte[1000];
 
-         message.setStringProperty("name", "aardvark");
+         for (int i = 0; i < numMessages; i++)
+         {
 
-         message.setStringProperty("hat", "green");
+            // Step 13. We create and send a message representing an aardvark with a green hat to the sausage-factory
+            // on node 0
+            BytesMessage message = session0.createBytesMessage();
 
-         producer.send(message);
+            message.setStringProperty("name", "aardvark");
 
-         System.out.println("Sent " + message.getStringProperty("name") +
-                            " message with " +
-                            message.getStringProperty("hat") +
-                            " hat to sausage-factory on node 0");
+            message.setStringProperty("hat", "green");
+            
+            message.writeBytes(bytes);
+
+            producer.send(message);
+
+            if (i % 1000 == 0)
+            {
+               System.out.println("Sent " + i);
+            }
+         }
 
          // Step 14 - we successfully receive the aardvark message from the mincing-machine one node 1. The aardvark's
          // hat is now blue since it has been transformed!
 
-         Message receivedMessage = consumer.receive(5000);
+         for (int i = 0; i < numMessages; i++)
+         {
+            Message receivedMessage = consumer.receive(5000);
+            
+            if (receivedMessage == null)
+            {
+               throw new IllegalStateException("Did not receive message");
+            }
 
-         System.out.println("Received " + receivedMessage.getStringProperty("name") +
-                            " message with " +
-                            receivedMessage.getStringProperty("hat") +
-                            " hat from mincing-machine on node 1");
+            if (i % 1000 == 0)
+            {
+               System.out.println("Received " + i);
+            }
 
-         // Step 13. We create and send another message, this time representing a sasquatch with a mauve hat to the
-         // sausage-factory on node 0. This won't be bridged to the mincing-machine since we only want aardvarks, not sasquatches
-
-         message = session0.createMessage();
+            // Step 13. We create and send another message, this time representing a sasquatch with a mauve hat to the
+            // sausage-factory on node 0. This won't be bridged to the mincing-machine since we only want aardvarks, not
+            // sasquatches
+         }
+         
+         Message message = session0.createMessage();
 
          message.setStringProperty("name", "sasquatch");
 
-         message.setStringProperty("hat", "mauve");        
+         message.setStringProperty("hat", "mauve");
 
          producer.send(message);
-         
+
          System.out.println("Sent " + message.getStringProperty("name") +
                             " message with " +
                             message.getStringProperty("hat") +
@@ -141,7 +161,7 @@ public class BridgeExample extends HornetQExample
 
          // Step 14. We don't receive the message since it has not been bridged.
 
-         receivedMessage = (TextMessage)consumer.receive(1000);
+         Message receivedMessage = (TextMessage)consumer.receive(1000);
 
          if (receivedMessage == null)
          {
