@@ -25,7 +25,6 @@ import org.hornetq.core.postoffice.DuplicateIDCache;
 import org.hornetq.core.server.Queue;
 import org.hornetq.core.transaction.Transaction;
 import org.hornetq.core.transaction.TransactionOperation;
-import org.hornetq.core.transaction.TransactionPropertyIndexes;
 import org.hornetq.utils.Pair;
 import org.hornetq.utils.SimpleString;
 
@@ -147,7 +146,7 @@ public class DuplicateIDCacheImpl implements DuplicateIDCache
          {
             storageManager.storeDuplicateIDTransactional(tx.getID(), address, duplID, recordID);
 
-            tx.putProperty(TransactionPropertyIndexes.CONTAINS_PERSISTENT, true);
+            tx.setContainsPersistent();
          }
 
          // For a tx, it's important that the entry is not added to the cache until commit (or prepare)

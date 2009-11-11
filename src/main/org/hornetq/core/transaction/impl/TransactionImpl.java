@@ -24,7 +24,6 @@ import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.core.postoffice.PostOffice;
 import org.hornetq.core.transaction.Transaction;
 import org.hornetq.core.transaction.TransactionOperation;
-import org.hornetq.core.transaction.TransactionPropertyIndexes;
 
 /**
  * A TransactionImpl
@@ -57,8 +56,10 @@ public class TransactionImpl implements Transaction
 
    private final long createTime;
 
+   private volatile boolean containsPersistent;
+
    public TransactionImpl(final StorageManager storageManager)
-   {    
+   {
       this.storageManager = storageManager;
 
       xid = null;
@@ -69,7 +70,7 @@ public class TransactionImpl implements Transaction
    }
 
    public TransactionImpl(final Xid xid, final StorageManager storageManager, final PostOffice postOffice)
-   {      
+   {
       this.storageManager = storageManager;
 
       this.xid = xid;
@@ -80,7 +81,7 @@ public class TransactionImpl implements Transaction
    }
 
    public TransactionImpl(final long id, final Xid xid, final StorageManager storageManager)
-   {    
+   {
       this.storageManager = storageManager;
 
       this.xid = xid;
@@ -93,6 +94,11 @@ public class TransactionImpl implements Transaction
    // Transaction implementation
    // -----------------------------------------------------------
 
+   public void setContainsPersistent()
+   {
+      this.containsPersistent = true;
+   }
+   
    public long getID()
    {
       return id;
@@ -157,7 +163,7 @@ public class TransactionImpl implements Transaction
    }
 
    public void commit(boolean onePhase) throws Exception
-   {      
+   {
       synchronized (timeoutLock)
       {
          if (state == State.ROLLBACK_ONLY)
@@ -202,9 +208,9 @@ public class TransactionImpl implements Transaction
                operation.beforeCommit(this);
             }
          }
-         
+
          Runnable execAfterCommit = null;
-         
+
          if (operations != null)
          {
             execAfterCommit = new Runnable()
@@ -228,10 +234,12 @@ public class TransactionImpl implements Transaction
             };
          }
 
-         if ((getProperty(TransactionPropertyIndexes.CONTAINS_PERSISTENT) != null) || (xid != null && state == State.PREPARED))
+         if (containsPersistent || (xid != null && state == State.PREPARED))
          {
             storageManager.commit(id);
+
             state = State.COMMITTED;
+
             if (execAfterCommit != null)
             {
                if (storageManager.isReplicated())
@@ -273,7 +281,7 @@ public class TransactionImpl implements Transaction
          if (operations != null)
          {
             for (TransactionOperation operation : operations)
-            {              
+            {
                operation.beforeRollback(this);
             }
          }
@@ -375,7 +383,7 @@ public class TransactionImpl implements Transaction
 
    private void doRollback() throws Exception
    {
-      if ((getProperty(TransactionPropertyIndexes.CONTAINS_PERSISTENT) != null) || (xid != null && state == State.PREPARED))
+      if (containsPersistent || (xid != null && state == State.PREPARED))
       {
          storageManager.rollback(id);
       }

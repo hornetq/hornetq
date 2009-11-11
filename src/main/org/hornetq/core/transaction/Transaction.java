@@ -59,6 +59,8 @@ public interface Transaction
    
    Object getProperty(int index);
    
+   void setContainsPersistent();
+   
    static enum State
    {
       ACTIVE, PREPARED, COMMITTED, ROLLEDBACK, SUSPENDED, ROLLBACK_ONLY

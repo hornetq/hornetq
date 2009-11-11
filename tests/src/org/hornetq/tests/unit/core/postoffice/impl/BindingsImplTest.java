@@ -274,6 +274,12 @@ public class BindingsImplTest extends UnitTestCase
          return Collections.emptySet();
       }
 
+      public void setContainsPersistent()
+      {
+         // TODO Auto-generated method stub
+         
+      }
+
    }
 
    class FakeMessage implements ServerMessage

@@ -895,7 +895,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
             {
                storageManager.storeReferenceTransactional(tx.getID(), queue.getID(), message.getMessageID());
 
-               tx.putProperty(TransactionPropertyIndexes.CONTAINS_PERSISTENT, true);
+               tx.setContainsPersistent();
             }
             else
             {
@@ -1190,7 +1190,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
 
             if (pagingPersistent)
             {
-               tx.putProperty(TransactionPropertyIndexes.CONTAINS_PERSISTENT, true);
+               tx.setContainsPersistent();
 
                if (!pagingStoresToSync.isEmpty())
                {

@@ -522,7 +522,7 @@ public class QueueImpl implements Queue
       {
          storageManager.storeAcknowledgeTransactional(tx.getID(), id, message.getMessageID());
 
-         tx.putProperty(TransactionPropertyIndexes.CONTAINS_PERSISTENT, true);
+         tx.setContainsPersistent();
       }
 
       getRefsOperation(tx).addAck(ref);
@@ -534,7 +534,7 @@ public class QueueImpl implements Queue
 
       if (message.isDurable() && durable)
       {
-         tx.putProperty(TransactionPropertyIndexes.CONTAINS_PERSISTENT, true);
+         tx.setContainsPersistent();
       }
 
       getRefsOperation(tx).addAck(ref);
