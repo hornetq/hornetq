@@ -676,9 +676,8 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
                                                                  distance + 1);
 
          bindings.put(clusterName, binding);
-         log.info(clusterName + " binding " + binding + " to " + server.getNodeID() + " distance = " + distance + server.getConfiguration().isBackup());
-         Binding b = postOffice.getBinding(clusterName);
-         if (b != null)
+
+         if (postOffice.getBinding(clusterName) != null)
          {
             // Sanity check - this means the binding has already been added via another bridge, probably max
             // hops is too high
