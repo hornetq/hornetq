@@ -69,7 +69,7 @@ public class ReplicatedDistrubtionTest extends ClusterTestBase
       sessionThree.start();
 
       waitForBindings(3, "test.SomeAddress", 1, 1, true);
-
+      waitForBindings(1, "test.SomeAddress", 1, 1, false);
       try
       {
          ClientProducer producer = sessionOne.createProducer(ADDRESS);
@@ -94,11 +94,8 @@ public class ReplicatedDistrubtionTest extends ClusterTestBase
 
             int received = (Integer)msg.getObjectProperty(new SimpleString("key"));
 
-            if (i != received)
-            {
-               // Shouldn't this be a failure?
-               System.out.println(i + "!=" + received);
-            }
+            assertEquals(i, received);
+
             msg.acknowledge();
          }
 
@@ -109,6 +106,7 @@ public class ReplicatedDistrubtionTest extends ClusterTestBase
          // TODO: Remove this sleep: If a node fail,
          // Redistribution may loose messages between the nodes.
          Thread.sleep(500);
+
 
          fail(sessionThree);
 
@@ -132,11 +130,8 @@ public class ReplicatedDistrubtionTest extends ClusterTestBase
 
             int received = (Integer)msg.getObjectProperty(new SimpleString("key"));
 
-            if (i != received)
-            {
-               // Shouldn't this be a failure?
-               System.out.println(i + "!=" + received);
-            }
+            assertEquals(i, received);
+
             msg.acknowledge();
          }
 
