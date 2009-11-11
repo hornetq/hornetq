@@ -77,8 +77,11 @@ public class ReplicatedDistrubtionTest extends ClusterTestBase
          for (int i = 0; i < 100; i++)
          {
             ClientMessage msg = sessionOne.createClientMessage(true);
+            
             msg.setBody(ChannelBuffers.wrappedBuffer(new byte[1024]));
+            
             msg.putIntProperty(new SimpleString("key"), i);
+            
             producer.send(msg);
          }
 
@@ -92,7 +95,7 @@ public class ReplicatedDistrubtionTest extends ClusterTestBase
 
             System.out.println(i + " msg = " + msg);
 
-            int received = (Integer)msg.getObjectProperty(new SimpleString("key"));
+            int received = msg.getIntProperty("key");
 
             assertEquals(i, received);
 
@@ -106,7 +109,6 @@ public class ReplicatedDistrubtionTest extends ClusterTestBase
          // TODO: Remove this sleep: If a node fail,
          // Redistribution may loose messages between the nodes.
          Thread.sleep(500);
-
 
          fail(sessionThree);
 
@@ -153,7 +155,7 @@ public class ReplicatedDistrubtionTest extends ClusterTestBase
       }
    }
 
-   public void testSimpleRedistributionOverReplication() throws Exception
+   public void testSimpleRedistribution() throws Exception
    {
       setupSessionFactory(1, 0, true, true);
       setupSessionFactory(3, 2, true, true);
@@ -171,6 +173,7 @@ public class ReplicatedDistrubtionTest extends ClusterTestBase
       sessionThree.start();
 
       waitForBindings(3, "test.SomeAddress", 1, 1, true);
+      waitForBindings(1, "test.SomeAddress", 1, 1, false);
 
       try
       {
@@ -194,7 +197,7 @@ public class ReplicatedDistrubtionTest extends ClusterTestBase
 
             System.out.println(i + " msg = " + msg);
 
-            int received = (Integer)msg.getObjectProperty(new SimpleString("key"));
+            int received = msg.getIntProperty("key");
 
             if (i != received)
             {
@@ -267,8 +270,7 @@ public class ReplicatedDistrubtionTest extends ClusterTestBase
    {
       super.setUp();
 
-      setupServer(0, true, isShared(), true, true, -1);
-      setupServer(1, true, isShared(), true, false, 0);
+      setupServer(1, true, isShared(), true, false, -1);
       setupServer(2, true, isShared(), true, true, -1);
       setupServer(3, true, isShared(), true, true,  2);
 
@@ -277,12 +279,10 @@ public class ReplicatedDistrubtionTest extends ClusterTestBase
       AddressSettings as = new AddressSettings();
       as.setRedistributionDelay(0);
 
-      getServer(0).getAddressSettingsRepository().addMatch("test.*", as);
       getServer(1).getAddressSettingsRepository().addMatch("test.*", as);
       getServer(2).getAddressSettingsRepository().addMatch("test.*", as);
       getServer(2).getAddressSettingsRepository().addMatch("test.*", as);
 
-      servers[0].start();
       servers[2].start();
       servers[1].start();
       servers[3].start();
@@ -297,7 +297,6 @@ public class ReplicatedDistrubtionTest extends ClusterTestBase
    protected void tearDown() throws Exception
    {
       servers[2].stop();
-      servers[0].stop();
       servers[1].stop();
       servers[3].stop();
       super.tearDown();
