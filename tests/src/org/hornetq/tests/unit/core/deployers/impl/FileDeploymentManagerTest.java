@@ -32,12 +32,32 @@ import org.hornetq.utils.Pair;
 public class FileDeploymentManagerTest extends UnitTestCase
 {
    private static final Logger log = Logger.getLogger(FileDeploymentManagerTest.class);
-      
+     
    public void testStartStop1() throws Exception
    {
+      testStartStop1("fdm_test_file.xml");
+   }
+   
+   public void testStartStop2() throws Exception
+   {
+      testStartStop2("fdm_test_file.xml");
+   }
+   
+   public void testStartStop1WithWhitespace() throws Exception
+   {
+      testStartStop1("fdm test file.xml");
+      testStartStop1("fdm\ttest\tfile.xml");
+   }
+   
+   public void testStartStop2WithWhitespace() throws Exception
+   {
+      testStartStop2("fdm test file.xml");
+      testStartStop2("fdm\ttest\tfile.xml");
+   }
+   
+   private void testStartStop1(final String filename) throws Exception
+   {
       FileDeploymentManager fdm = new FileDeploymentManager(Long.MAX_VALUE);
-
-      String filename = "fdm_test_file.xml";
 
       log.debug("Filename is " + filename);
 
@@ -71,11 +91,9 @@ public class FileDeploymentManagerTest extends UnitTestCase
       }      
    }
    
-   public void testStartStop2() throws Exception
+   private void testStartStop2(final String filename) throws Exception
    {
       FileDeploymentManager fdm = new FileDeploymentManager(Long.MAX_VALUE);
-
-      String filename = "fdm_test_file.xml";
 
       log.debug("Filename is " + filename);
 

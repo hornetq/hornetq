@@ -15,6 +15,7 @@ package org.hornetq.core.deployers.impl;
 
 import java.io.File;
 import java.net.URL;
+import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -24,6 +25,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
+import java.io.UnsupportedEncodingException;
 
 import org.hornetq.core.deployers.Deployer;
 import org.hornetq.core.deployers.DeploymentManager;
@@ -111,7 +113,7 @@ public class FileDeploymentManager implements Runnable, DeploymentManager
 
          for (String filename : filenames)
          {
-            log.debug("the filename is " + filename);
+            log.debug("the filename is " + filename); 
 
             log.debug(System.getProperty("java.class.path"));
 
@@ -135,7 +137,7 @@ public class FileDeploymentManager implements Runnable, DeploymentManager
                
                Pair<URL, Deployer> pair = new Pair<URL, Deployer>(url, deployer);
 
-               deployed.put(pair, new DeployInfo(deployer, new File(url.getFile()).lastModified()));
+               deployed.put(pair, new DeployInfo(deployer, getFileFromURL(url).lastModified()));
             }
          }        
       }
@@ -161,6 +163,11 @@ public class FileDeploymentManager implements Runnable, DeploymentManager
       }
    }
 
+   private File getFileFromURL(URL url) throws UnsupportedEncodingException
+   {
+       return new File(URLDecoder.decode(url.getFile(), "UTF-8"));
+   }
+   
    /**
     * called by the ExecutorService every n seconds
     */
@@ -189,7 +196,7 @@ public class FileDeploymentManager implements Runnable, DeploymentManager
 
                   DeployInfo info = deployed.get(pair);
 
-                  long newLastModified = new File(url.getFile()).lastModified();
+                  long newLastModified = getFileFromURL(url).lastModified();
 
                   if (info == null)
                   {
@@ -197,7 +204,7 @@ public class FileDeploymentManager implements Runnable, DeploymentManager
                      {
                         deployer.deploy(url);
 
-                        deployed.put(pair, new DeployInfo(deployer, new File(url.getFile()).lastModified()));
+                        deployed.put(pair, new DeployInfo(deployer, getFileFromURL(url).lastModified()));
                      }
                      catch (Exception e)
                      {
@@ -210,7 +217,7 @@ public class FileDeploymentManager implements Runnable, DeploymentManager
                      {
                         deployer.redeploy(url);
 
-                        deployed.put(pair, new DeployInfo(deployer, new File(url.getFile()).lastModified()));
+                        deployed.put(pair, new DeployInfo(deployer, getFileFromURL(url).lastModified()));
                      }
                      catch (Exception e)
                      {
@@ -272,7 +279,7 @@ public class FileDeploymentManager implements Runnable, DeploymentManager
    {
       try
       {
-         File f = new File(resourceURL.getPath());
+         File f = getFileFromURL(resourceURL); // this was the orginal line, which doesnt work for File-URLs with white spaces: File f = new File(resourceURL.getPath());
          Enumeration<URL> resources = Thread.currentThread().getContextClassLoader().getResources(f.getName());
          while (resources.hasMoreElements())
          {
