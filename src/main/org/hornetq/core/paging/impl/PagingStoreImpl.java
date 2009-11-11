@@ -168,6 +168,13 @@ public class PagingStoreImpl implements TestSupportPageStore
       pageSize = addressSettings.getPageSizeBytes();
 
       this.addressFullMessagePolicy = addressSettings.getAddressFullMessagePolicy();
+      
+      if (addressFullMessagePolicy == AddressFullMessagePolicy.PAGE && maxSize != -1 && pageSize >= maxSize)
+      {
+         throw new IllegalStateException("pageSize for address " + address +
+                                         " >= maxSize. Normally pageSize should" +
+                                         " be significantly smaller than maxSize, ms: " + maxSize + " ps " + pageSize);
+      }
 
       this.executor = executor;
 

@@ -467,7 +467,8 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
       }
 
       String uid = UUIDGenerator.getInstance().generateStringUUID();
-
+     // log.info("sending binding" + binding +" added " + binding.getClusterName() + " binding.getDistance() = " + binding.getDistance() + " " + server.getConfiguration().isBackup());
+      //Thread.dumpStack();
       managementService.sendNotification(new Notification(uid, NotificationType.BINDING_ADDED, props));
    }
 

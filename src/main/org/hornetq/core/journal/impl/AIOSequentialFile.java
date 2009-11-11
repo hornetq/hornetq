@@ -452,9 +452,8 @@ public class AIOSequentialFile extends AbstractSequentialFile
       }
    }
 
-   class LocalBufferObserver implements TimedBufferObserver
+   private class LocalBufferObserver implements TimedBufferObserver
    {
-
       public void flushBuffer(ByteBuffer buffer, List<AIOCallback> callbacks)
       {
          buffer.flip();

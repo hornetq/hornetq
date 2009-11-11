@@ -645,7 +645,7 @@ public class PagingTest extends ServiceTestBase
 
       settings.put(ADDRESS.toString(), set);
 
-      HornetQServer server = createServer(true, config, 10 * 1024, 10 * 1024, settings);
+      HornetQServer server = createServer(true, config, 1024, 10 * 1024, settings);
 
       server.start();
 

@@ -25,6 +25,7 @@ import org.hornetq.core.remoting.RemotingConnection;
 import org.hornetq.core.server.cluster.MessageFlowRecord;
 import org.hornetq.core.server.cluster.impl.ClusterConnectionImpl;
 import org.hornetq.core.server.group.impl.GroupingHandlerConfiguration;
+import org.hornetq.core.logging.Logger;
 import org.hornetq.tests.integration.cluster.distribution.ClusterTestBase;
 import org.hornetq.utils.SimpleString;
 
@@ -34,8 +35,10 @@ import org.hornetq.utils.SimpleString;
  */
 public abstract class GroupingFailoverTestBase extends ClusterTestBase
 {
+   private static final Logger log = Logger.getLogger(GroupingFailoverTestBase.class);
    public void testGroupingLocalHandlerFails() throws Exception
    {
+      log.info("***********************************start******************************************");
       setupReplicatedServer(2, isFileStorage(), isNetty(), 0);
 
       setupMasterServer(0, isFileStorage(), isNetty());
@@ -43,16 +46,17 @@ public abstract class GroupingFailoverTestBase extends ClusterTestBase
       setupServer(1, isFileStorage(), isNetty());
 
       setupClusterConnection("cluster0", "queues", false, 1, isNetty(), 0, 1);
+      setupClusterConnection("cluster1", "queues", false, 1, isNetty(), 1, 0);
 
-      setupClusterConnectionWithBackups("cluster1", "queues", false, 1, isNetty(), 1, new int[]{0}, new int[]{2});
+      //setupClusterConnectionWithBackups("cluster1", "queues", false, 1, isNetty(), 1, new int[]{0}, new int[]{2});
 
-      setupClusterConnection("cluster2", "queues", false, 1, isNetty(), 2, 1);
+      //setupClusterConnection("cluster2", "queues", false, 1, isNetty(), 2, 1);
 
       setUpGroupHandler(GroupingHandlerConfiguration.TYPE.LOCAL, 0);
 
       setUpGroupHandler(GroupingHandlerConfiguration.TYPE.REMOTE, 1);
 
-      setUpGroupHandler(GroupingHandlerConfiguration.TYPE.LOCAL, 2);
+      //setUpGroupHandler(GroupingHandlerConfiguration.TYPE.LOCAL, 2);
 
 
       startServers(2, 0, 1);
@@ -67,6 +71,8 @@ public abstract class GroupingFailoverTestBase extends ClusterTestBase
 
          waitForBindings(0, "queues.testaddress", 1, 0, true);
          waitForBindings(1, "queues.testaddress", 1, 0, true);
+         waitForBindings(0, "queues.testaddress", 1, 0, false);
+         waitForBindings(1, "queues.testaddress", 1, 0, false);
          
          addConsumer(0, 0, "queue0", null);
          addConsumer(1, 1, "queue0", null);
@@ -74,7 +80,7 @@ public abstract class GroupingFailoverTestBase extends ClusterTestBase
          waitForBindings(0, "queues.testaddress", 1, 1, false);
          waitForBindings(1, "queues.testaddress", 1, 1, false);
 
-         sendWithProperty(0, "queues.testaddress", 10, false, MessageImpl.HDR_GROUP_ID, new SimpleString("id1"));
+         /*sendWithProperty(0, "queues.testaddress", 10, false, MessageImpl.HDR_GROUP_ID, new SimpleString("id1"));
 
          verifyReceiveAll(10, 0);
 
@@ -124,8 +130,8 @@ public abstract class GroupingFailoverTestBase extends ClusterTestBase
          sendWithProperty(1, "queues.testaddress", 10, false, MessageImpl.HDR_GROUP_ID, new SimpleString("id1"));
 
          verifyReceiveAll(10, 2);
+*/
 
-         System.out.println("*****************************************************************************");
       }
       finally
       {
@@ -133,8 +139,9 @@ public abstract class GroupingFailoverTestBase extends ClusterTestBase
 
          closeAllSessionFactories();
 
-         stopServers(0, 1, 2);
+         stopServers(2, 0, 1);
       }
+      log.info("***********************************end******************************************");
    }
 
    public void testGroupingLocalHandlerFailsMultipleGroups() throws Exception

@@ -30,7 +30,18 @@ public class GroupingFailoverReplicationTest extends GroupingFailoverTestBase
 {
    private static final Logger log = Logger.getLogger(GroupingFailoverReplicationTest.class);
 
-   
+   public void test() throws Exception
+   {
+      int count = 0;
+      while (true)
+      {
+         log.info("**** ITERATION " + count++);
+         testGroupingLocalHandlerFails();
+         tearDown();
+         setUp();
+      }
+   }
+
    protected void setupReplicatedServer(int node, boolean fileStorage, boolean netty, int backupNode)
    {
       if (servers[node] != null)

@@ -84,7 +84,9 @@ public class ClusterTestBase extends ServiceTestBase
    protected void setUp() throws Exception
    {
       super.setUp();
-
+      consumers = new ConsumerHolder[MAX_CONSUMERS];
+      servers = new HornetQServer[MAX_SERVERS];
+      sfs = new ClientSessionFactory[MAX_SERVERS];
       checkFreePort(PORTS);
 
       clearData();

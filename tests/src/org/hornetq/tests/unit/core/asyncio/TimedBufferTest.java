@@ -108,8 +108,7 @@ public class TimedBufferTest extends UnitTestCase
          timedBuffer.checkSize(10);
          timedBuffer.addBytes(bytes, false, dummyCallback);
       }
-      
-      
+            
       assertEquals(1, flushTimes.get());
       
       ByteBuffer flushedBuffer = buffers.get(0);

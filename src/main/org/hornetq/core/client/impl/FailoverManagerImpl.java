@@ -482,7 +482,9 @@ public class FailoverManagerImpl implements FailoverManager, ConnectionLifeCycle
    }
 
    private void failoverOrReconnect(final Object connectionID, final HornetQException me)
-   {     
+   {  
+      Set<ClientSessionInternal> sessionsToClose = null;
+      
       synchronized (failoverLock)
       {
          if (connection == null || connection.getID() != connectionID)
@@ -622,26 +624,32 @@ public class FailoverManagerImpl implements FailoverManager, ConnectionLifeCycle
 
             connection = null;                       
          }      
+                          
+         callFailureListeners(me, true);
          
          if (connection == null)
          {
-            // If connection is null it means we didn't succeed in failing over or reconnecting
-            // so we close all the sessions, so they will throw exceptions when attempted to be used
-            
-            for (ClientSessionInternal session: new HashSet<ClientSessionInternal>(sessions))
+            sessionsToClose = new HashSet<ClientSessionInternal>(sessions);
+         }
+      }
+      
+      //This needs to be outside the failover lock to prevent deadlock
+      if (sessionsToClose != null)
+      {
+         // If connection is null it means we didn't succeed in failing over or reconnecting
+         // so we close all the sessions, so they will throw exceptions when attempted to be used
+         
+         for (ClientSessionInternal session: sessionsToClose)
+         {
+            try
             {
-               try
-               {
-                  session.cleanUp();
-               }
-               catch (Exception e)
-               {
-                  log.error("Failed to cleanup session");
-               }
+               session.cleanUp();
+            }
+            catch (Exception e)
+            {
+               log.error("Failed to cleanup session");
             }
          }
-         
-         callFailureListeners(me, true);
       }
    }
 
@@ -1004,9 +1012,10 @@ public class FailoverManagerImpl implements FailoverManager, ConnectionLifeCycle
    {
       public void bufferReceived(final Object connectionID, final HornetQBuffer buffer)
       {
-         if (connection != null && connectionID == connection.getID())
+         RemotingConnection theConn = connection;
+         if (theConn != null && connectionID == theConn.getID())
          {
-            connection.bufferReceived(connectionID, buffer);
+            theConn.bufferReceived(connectionID, buffer);
          }
       }
    }
