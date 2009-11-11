@@ -225,12 +225,13 @@ public class JMSServerControlImpl extends StandardMBean implements JMSServerCont
                                        final String clientID,
                                        final long clientFailureCheckPeriod,
                                        final long connectionTTL,
-                                       final long callTimeout,                                  
+                                       final long callTimeout,
                                        final boolean cacheLargeMessageClient,
                                        final int minLargeMessageSize,
                                        final int consumerWindowSize,
                                        final int consumerMaxRate,
                                        final int confirmationWindowSize,
+                                       final int producerWindowSize,
                                        final int producerMaxRate,
                                        final boolean blockOnAcknowledge,
                                        final boolean blockOnPersistentSend,
@@ -242,7 +243,7 @@ public class JMSServerControlImpl extends StandardMBean implements JMSServerCont
                                        final int dupsOKBatchSize,
                                        final boolean useGlobalPools,
                                        final int scheduledThreadPoolMaxSize,
-                                       final int threadPoolMaxSize,                                      
+                                       final int threadPoolMaxSize,
                                        final long retryInterval,
                                        final double retryIntervalMultiplier,
                                        final long maxRetryInterval,
@@ -262,12 +263,13 @@ public class JMSServerControlImpl extends StandardMBean implements JMSServerCont
                                      clientID,
                                      clientFailureCheckPeriod,
                                      connectionTTL,
-                                     callTimeout,                                    
+                                     callTimeout,
                                      cacheLargeMessageClient,
                                      minLargeMessageSize,
                                      consumerWindowSize,
                                      consumerMaxRate,
                                      confirmationWindowSize,
+                                     producerWindowSize,
                                      producerMaxRate,
                                      blockOnAcknowledge,
                                      blockOnPersistentSend,
@@ -279,7 +281,7 @@ public class JMSServerControlImpl extends StandardMBean implements JMSServerCont
                                      dupsOKBatchSize,
                                      useGlobalPools,
                                      scheduledThreadPoolMaxSize,
-                                     threadPoolMaxSize,                                     
+                                     threadPoolMaxSize,
                                      retryInterval,
                                      retryIntervalMultiplier,
                                      maxRetryInterval,
@@ -298,12 +300,13 @@ public class JMSServerControlImpl extends StandardMBean implements JMSServerCont
                                        final String clientID,
                                        final long clientFailureCheckPeriod,
                                        final long connectionTTL,
-                                       final long callTimeout,                                   
+                                       final long callTimeout,
                                        final boolean cacheLargeMessageClient,
                                        final int minLargeMessageSize,
                                        final int consumerWindowSize,
                                        final int consumerMaxRate,
                                        final int confirmationWindowSize,
+                                       final int producerWindowSize,
                                        final int producerMaxRate,
                                        final boolean blockOnAcknowledge,
                                        final boolean blockOnPersistentSend,
@@ -315,7 +318,7 @@ public class JMSServerControlImpl extends StandardMBean implements JMSServerCont
                                        final int dupsOKBatchSize,
                                        final boolean useGlobalPools,
                                        final int scheduledThreadPoolMaxSize,
-                                       final int threadPoolMaxSize,                                       
+                                       final int threadPoolMaxSize,
                                        final long retryInterval,
                                        final double retryIntervalMultiplier,
                                        final long maxRetryInterval,
@@ -337,12 +340,13 @@ public class JMSServerControlImpl extends StandardMBean implements JMSServerCont
                               clientID,
                               clientFailureCheckPeriod,
                               connectionTTL,
-                              callTimeout,                        
+                              callTimeout,
                               cacheLargeMessageClient,
                               minLargeMessageSize,
                               consumerWindowSize,
                               consumerMaxRate,
                               confirmationWindowSize,
+                              producerWindowSize,
                               producerMaxRate,
                               blockOnAcknowledge,
                               blockOnPersistentSend,
@@ -354,7 +358,7 @@ public class JMSServerControlImpl extends StandardMBean implements JMSServerCont
                               dupsOKBatchSize,
                               useGlobalPools,
                               scheduledThreadPoolMaxSize,
-                              threadPoolMaxSize,                             
+                              threadPoolMaxSize,
                               retryInterval,
                               retryIntervalMultiplier,
                               maxRetryInterval,
@@ -394,12 +398,13 @@ public class JMSServerControlImpl extends StandardMBean implements JMSServerCont
                                        final long discoveryRefreshTimeout,
                                        final long clientFailureCheckPeriod,
                                        final long connectionTTL,
-                                       final long callTimeout,                                   
+                                       final long callTimeout,
                                        final boolean cacheLargeMessageClient,
                                        final int minLargeMessageSize,
                                        final int consumerWindowSize,
                                        final int consumerMaxRate,
                                        final int confirmationWindowSize,
+                                       final int producerWindowSize,
                                        final int producerMaxRate,
                                        final boolean blockOnAcknowledge,
                                        final boolean blockOnPersistentSend,
@@ -412,7 +417,7 @@ public class JMSServerControlImpl extends StandardMBean implements JMSServerCont
                                        final long initialWaitTimeout,
                                        final boolean useGlobalPools,
                                        final int scheduledThreadPoolMaxSize,
-                                       final int threadPoolMaxSize,                                      
+                                       final int threadPoolMaxSize,
                                        final long retryInterval,
                                        final double retryIntervalMultiplier,
                                        final long maxRetryInterval,
@@ -429,12 +434,13 @@ public class JMSServerControlImpl extends StandardMBean implements JMSServerCont
                                      discoveryRefreshTimeout,
                                      clientFailureCheckPeriod,
                                      connectionTTL,
-                                     callTimeout,                                 
+                                     callTimeout,
                                      cacheLargeMessageClient,
                                      minLargeMessageSize,
                                      consumerWindowSize,
                                      consumerMaxRate,
                                      confirmationWindowSize,
+                                     producerWindowSize,
                                      producerMaxRate,
                                      blockOnAcknowledge,
                                      blockOnPersistentSend,
@@ -447,7 +453,7 @@ public class JMSServerControlImpl extends StandardMBean implements JMSServerCont
                                      initialWaitTimeout,
                                      useGlobalPools,
                                      scheduledThreadPoolMaxSize,
-                                     threadPoolMaxSize,                                    
+                                     threadPoolMaxSize,
                                      retryInterval,
                                      retryIntervalMultiplier,
                                      maxRetryInterval,
@@ -465,12 +471,13 @@ public class JMSServerControlImpl extends StandardMBean implements JMSServerCont
                                        final long discoveryRefreshTimeout,
                                        final long clientFailureCheckPeriod,
                                        final long connectionTTL,
-                                       final long callTimeout,                                      
+                                       final long callTimeout,
                                        final boolean cacheLargeMessageClient,
                                        final int minLargeMessageSize,
                                        final int consumerWindowSize,
                                        final int consumerMaxRate,
                                        final int confirmationWindowSize,
+                                       final int producerWindowSize,
                                        final int producerMaxRate,
                                        final boolean blockOnAcknowledge,
                                        final boolean blockOnPersistentSend,
@@ -483,7 +490,7 @@ public class JMSServerControlImpl extends StandardMBean implements JMSServerCont
                                        final long initialWaitTimeout,
                                        final boolean useGlobalPools,
                                        final int scheduledThreadPoolMaxSize,
-                                       final int threadPoolMaxSize,                                       
+                                       final int threadPoolMaxSize,
                                        final long retryInterval,
                                        final double retryIntervalMultiplier,
                                        final long maxRetryInterval,
@@ -500,12 +507,13 @@ public class JMSServerControlImpl extends StandardMBean implements JMSServerCont
                               discoveryRefreshTimeout,
                               clientFailureCheckPeriod,
                               connectionTTL,
-                              callTimeout,                              
+                              callTimeout,
                               cacheLargeMessageClient,
                               minLargeMessageSize,
                               consumerWindowSize,
                               consumerMaxRate,
                               confirmationWindowSize,
+                              producerWindowSize,
                               producerMaxRate,
                               blockOnAcknowledge,
                               blockOnPersistentSend,
@@ -518,7 +526,7 @@ public class JMSServerControlImpl extends StandardMBean implements JMSServerCont
                               initialWaitTimeout,
                               useGlobalPools,
                               scheduledThreadPoolMaxSize,
-                              threadPoolMaxSize,                             
+                              threadPoolMaxSize,
                               retryInterval,
                               retryIntervalMultiplier,
                               maxRetryInterval,
@@ -685,7 +693,7 @@ public class JMSServerControlImpl extends StandardMBean implements JMSServerCont
       }
       return names;
    }
-   
+
    public String[] getTopicNames()
    {
       Object[] topicControls = server.getHornetQServer().getManagementService().getResources(TopicControl.class);
@@ -697,10 +705,12 @@ public class JMSServerControlImpl extends StandardMBean implements JMSServerCont
       }
       return names;
    }
-   
+
    public String[] getConnectionFactoryNames()
    {
-      Object[] cfControls = server.getHornetQServer().getManagementService().getResources(ConnectionFactoryControl.class);
+      Object[] cfControls = server.getHornetQServer()
+                                  .getManagementService()
+                                  .getResources(ConnectionFactoryControl.class);
       String[] names = new String[cfControls.length];
       for (int i = 0; i < cfControls.length; i++)
       {
@@ -709,7 +719,7 @@ public class JMSServerControlImpl extends StandardMBean implements JMSServerCont
       }
       return names;
    }
-   
+
    // NotificationEmitter implementation ----------------------------
 
    public void removeNotificationListener(final NotificationListener listener,

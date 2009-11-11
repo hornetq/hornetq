@@ -15,6 +15,7 @@
       <consumer-window-size>12345</consumer-window-size>
       <consumer-max-rate>6789</consumer-max-rate>
       <confirmation-window-size>123456</confirmation-window-size>
+      <producer-window-size>7712652</producer-window-size>
       <producer-max-rate>789</producer-max-rate>
       <min-large-message-size>12</min-large-message-size>
       <client-id>TestClientID</client-id>

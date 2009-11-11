@@ -195,6 +195,7 @@ public class JMSServerDeployerTest extends ServiceTestBase
          assertEquals(12345, cf.getConsumerWindowSize());
          assertEquals(6789, cf.getConsumerMaxRate());
          assertEquals(123456, cf.getConfirmationWindowSize());
+         assertEquals(7712652, cf.getProducerWindowSize());
          assertEquals(789, cf.getProducerMaxRate());
          assertEquals(12, cf.getMinLargeMessageSize());
          assertEquals("TestClientID", cf.getClientID());

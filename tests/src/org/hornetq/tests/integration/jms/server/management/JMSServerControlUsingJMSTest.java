@@ -51,11 +51,11 @@ public class JMSServerControlUsingJMSTest extends JMSServerControlTest
       String[] names = new String[res.length];
       for (int i = 0; i < res.length; i++)
       {
-         names[i] = res[i].toString();               
+         names[i] = res[i].toString();
       }
       return names;
    }
-   
+
    // Constructors --------------------------------------------------
 
    // JMSServerControlTest overrides --------------------------------
@@ -75,9 +75,9 @@ public class JMSServerControlUsingJMSTest extends JMSServerControlTest
    protected void tearDown() throws Exception
    {
       connection.close();
-      
+
       connection = null;
-      
+
       session = null;
 
       super.tearDown();
@@ -87,7 +87,7 @@ public class JMSServerControlUsingJMSTest extends JMSServerControlTest
    protected JMSServerControl createManagementControl() throws Exception
    {
       HornetQQueue managementQueue = new HornetQQueue(DEFAULT_MANAGEMENT_ADDRESS.toString(),
-                                                  DEFAULT_MANAGEMENT_ADDRESS.toString());
+                                                      DEFAULT_MANAGEMENT_ADDRESS.toString());
       final JMSMessagingProxy proxy = new JMSMessagingProxy(session, managementQueue, ResourceNames.JMS_SERVER);
 
       return new JMSServerControl()
@@ -99,12 +99,13 @@ public class JMSServerControlUsingJMSTest extends JMSServerControlTest
                                              long discoveryRefreshTimeout,
                                              long clientFailureCheckPeriod,
                                              long connectionTTL,
-                                             long callTimeout,                                            
+                                             long callTimeout,
                                              boolean cacheLargeMessageClient,
                                              int minLargeMessageSize,
                                              int consumerWindowSize,
                                              int consumerMaxRate,
                                              int confirmationWindowSize,
+                                             int producerWindowSize,
                                              int producerMaxRate,
                                              boolean blockOnAcknowledge,
                                              boolean blockOnPersistentSend,
@@ -117,7 +118,7 @@ public class JMSServerControlUsingJMSTest extends JMSServerControlTest
                                              long initialWaitTimeout,
                                              boolean useGlobalPools,
                                              int scheduledThreadPoolMaxSize,
-                                             int threadPoolMaxSize,                                         
+                                             int threadPoolMaxSize,
                                              long retryInterval,
                                              double retryIntervalMultiplier,
                                              long maxRetryInterval,
@@ -132,12 +133,13 @@ public class JMSServerControlUsingJMSTest extends JMSServerControlTest
                                   clientID,
                                   clientFailureCheckPeriod,
                                   connectionTTL,
-                                  callTimeout,                           
+                                  callTimeout,
                                   cacheLargeMessageClient,
                                   minLargeMessageSize,
                                   consumerWindowSize,
                                   consumerMaxRate,
                                   confirmationWindowSize,
+                                  producerWindowSize,
                                   producerMaxRate,
                                   blockOnAcknowledge,
                                   blockOnPersistentSend,
@@ -150,7 +152,7 @@ public class JMSServerControlUsingJMSTest extends JMSServerControlTest
                                   initialWaitTimeout,
                                   useGlobalPools,
                                   scheduledThreadPoolMaxSize,
-                                  threadPoolMaxSize,                            
+                                  threadPoolMaxSize,
                                   retryInterval,
                                   retryIntervalMultiplier,
                                   maxRetryInterval,
@@ -166,12 +168,13 @@ public class JMSServerControlUsingJMSTest extends JMSServerControlTest
                                              long discoveryRefreshTimeout,
                                              long clientFailureCheckPeriod,
                                              long connectionTTL,
-                                             long callTimeout,                                           
+                                             long callTimeout,
                                              boolean cacheLargeMessageClient,
                                              int minLargeMessageSize,
                                              int consumerWindowSize,
                                              int consumerMaxRate,
                                              int confirmationWindowSize,
+                                             int producerWindowSize,
                                              int producerMaxRate,
                                              boolean blockOnAcknowledge,
                                              boolean blockOnPersistentSend,
@@ -184,7 +187,7 @@ public class JMSServerControlUsingJMSTest extends JMSServerControlTest
                                              long initialWaitTimeout,
                                              boolean useGlobalPools,
                                              int scheduledThreadPoolMaxSize,
-                                             int threadPoolMaxSize,                               
+                                             int threadPoolMaxSize,
                                              long retryInterval,
                                              double retryIntervalMultiplier,
                                              long maxRetryInterval,
@@ -199,12 +202,13 @@ public class JMSServerControlUsingJMSTest extends JMSServerControlTest
                                   clientID,
                                   clientFailureCheckPeriod,
                                   connectionTTL,
-                                  callTimeout,                            
+                                  callTimeout,
                                   cacheLargeMessageClient,
                                   minLargeMessageSize,
                                   consumerWindowSize,
                                   consumerMaxRate,
                                   confirmationWindowSize,
+                                  producerWindowSize,
                                   producerMaxRate,
                                   blockOnAcknowledge,
                                   blockOnPersistentSend,
@@ -217,7 +221,7 @@ public class JMSServerControlUsingJMSTest extends JMSServerControlTest
                                   initialWaitTimeout,
                                   useGlobalPools,
                                   scheduledThreadPoolMaxSize,
-                                  threadPoolMaxSize,                              
+                                  threadPoolMaxSize,
                                   retryInterval,
                                   retryIntervalMultiplier,
                                   maxRetryInterval,
@@ -382,12 +386,13 @@ public class JMSServerControlUsingJMSTest extends JMSServerControlTest
                                              String clientID,
                                              long clientFailureCheckPeriod,
                                              long connectionTTL,
-                                             long callTimeout,                                            
+                                             long callTimeout,
                                              boolean cacheLargeMessageClient,
                                              int minLargeMessageSize,
                                              int consumerWindowSize,
                                              int consumerMaxRate,
                                              int confirmationWindowSize,
+                                             int producerWindowSize,
                                              int producerMaxRate,
                                              boolean blockOnAcknowledge,
                                              boolean blockOnPersistentSend,
@@ -399,7 +404,7 @@ public class JMSServerControlUsingJMSTest extends JMSServerControlTest
                                              int dupsOKBatchSize,
                                              boolean useGlobalPools,
                                              int scheduledThreadPoolMaxSize,
-                                             int threadPoolMaxSize,                                            
+                                             int threadPoolMaxSize,
                                              long retryInterval,
                                              double retryIntervalMultiplier,
                                              long maxRetryInterval,
@@ -416,12 +421,13 @@ public class JMSServerControlUsingJMSTest extends JMSServerControlTest
                                   clientID,
                                   clientFailureCheckPeriod,
                                   connectionTTL,
-                                  callTimeout,                                 
+                                  callTimeout,
                                   cacheLargeMessageClient,
                                   minLargeMessageSize,
                                   consumerWindowSize,
                                   consumerMaxRate,
                                   confirmationWindowSize,
+                                  producerWindowSize,
                                   producerMaxRate,
                                   blockOnAcknowledge,
                                   blockOnPersistentSend,
@@ -432,7 +438,7 @@ public class JMSServerControlUsingJMSTest extends JMSServerControlTest
                                   transactionBatchSize,
                                   dupsOKBatchSize,
                                   useGlobalPools,
-                                  scheduledThreadPoolMaxSize,                                  
+                                  scheduledThreadPoolMaxSize,
                                   threadPoolMaxSize,
                                   retryInterval,
                                   retryIntervalMultiplier,
@@ -451,12 +457,13 @@ public class JMSServerControlUsingJMSTest extends JMSServerControlTest
                                              String clientID,
                                              long clientFailureCheckPeriod,
                                              long connectionTTL,
-                                             long callTimeout,                                            
+                                             long callTimeout,
                                              boolean cacheLargeMessageClient,
                                              int minLargeMessageSize,
                                              int consumerWindowSize,
                                              int consumerMaxRate,
                                              int confirmationWindowSize,
+                                             int producerWindowSize,
                                              int producerMaxRate,
                                              boolean blockOnAcknowledge,
                                              boolean blockOnPersistentSend,
@@ -468,7 +475,7 @@ public class JMSServerControlUsingJMSTest extends JMSServerControlTest
                                              int dupsOKBatchSize,
                                              boolean useGlobalPools,
                                              int scheduledThreadPoolMaxSize,
-                                             int threadPoolMaxSize,                                           
+                                             int threadPoolMaxSize,
                                              long retryInterval,
                                              double retryIntervalMultiplier,
                                              long maxRetryInterval,
@@ -485,12 +492,13 @@ public class JMSServerControlUsingJMSTest extends JMSServerControlTest
                                   clientID,
                                   clientFailureCheckPeriod,
                                   connectionTTL,
-                                  callTimeout,                                  
+                                  callTimeout,
                                   cacheLargeMessageClient,
                                   minLargeMessageSize,
                                   consumerWindowSize,
                                   consumerMaxRate,
                                   confirmationWindowSize,
+                                  producerWindowSize,
                                   producerMaxRate,
                                   blockOnAcknowledge,
                                   blockOnPersistentSend,
@@ -502,7 +510,7 @@ public class JMSServerControlUsingJMSTest extends JMSServerControlTest
                                   dupsOKBatchSize,
                                   useGlobalPools,
                                   scheduledThreadPoolMaxSize,
-                                  threadPoolMaxSize,                                  
+                                  threadPoolMaxSize,
                                   retryInterval,
                                   retryIntervalMultiplier,
                                   maxRetryInterval,
@@ -585,7 +593,7 @@ public class JMSServerControlUsingJMSTest extends JMSServerControlTest
          {
             return (Boolean)proxy.retrieveAttributeValue("started");
          }
-         
+
          public String[] getQueueNames()
          {
             return toStringArray((Object[])proxy.retrieveAttributeValue("queueNames"));
@@ -620,7 +628,7 @@ public class JMSServerControlUsingJMSTest extends JMSServerControlTest
          {
             return (String[])proxy.invokeOperation("listSessions", connectionID);
          }
-         
+
       };
    }
    // Public --------------------------------------------------------

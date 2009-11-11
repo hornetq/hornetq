@@ -37,11 +37,11 @@ public interface JMSServerControl
    String getVersion();
 
    String[] getTopicNames();
-   
+
    String[] getQueueNames();
-   
+
    String[] getConnectionFactoryNames();
-   
+
    // Operations ----------------------------------------------------
 
    @Operation(desc = "Create a JMS Queue", impact = ACTION)
@@ -98,12 +98,13 @@ public interface JMSServerControl
                                 String clientID,
                                 long clientFailureCheckPeriod,
                                 long connectionTTL,
-                                long callTimeout,                                
+                                long callTimeout,
                                 boolean cacheLargeMessageClient,
                                 int minLargeMessageSize,
                                 int consumerWindowSize,
                                 int consumerMaxRate,
                                 int confirmationWindowSize,
+                                int producerWindowSize,
                                 int producerMaxRate,
                                 boolean blockOnAcknowledge,
                                 boolean blockOnPersistentSend,
@@ -115,7 +116,7 @@ public interface JMSServerControl
                                 int dupsOKBatchSize,
                                 boolean useGlobalPools,
                                 int scheduledThreadPoolMaxSize,
-                                int threadPoolMaxSize,                               
+                                int threadPoolMaxSize,
                                 long retryInterval,
                                 double retryIntervalMultiplier,
                                 long maxRetryInterval,
@@ -131,12 +132,13 @@ public interface JMSServerControl
                                 @Parameter(name = "clientID") String clientID,
                                 @Parameter(name = "clientFailureCheckPeriod") long clientFailureCheckPeriod,
                                 @Parameter(name = "connectionTTL") long connectionTTL,
-                                @Parameter(name = "callTimeout") long callTimeout,                               
+                                @Parameter(name = "callTimeout") long callTimeout,
                                 @Parameter(name = "cacheLargemessageClient") boolean cacheLargeMessageClient,
                                 @Parameter(name = "minLargeMessageSize") int minLargeMessageSize,
                                 @Parameter(name = "consumerWindowSize") int consumerWindowSize,
                                 @Parameter(name = "consumerMaxRate") int consumerMaxRate,
                                 @Parameter(name = "confirmationWindowSize") int confirmationWindowSize,
+                                @Parameter(name = "producerWindowSize") int producerWindowSize,
                                 @Parameter(name = "producerMaxRate") int producerMaxRate,
                                 @Parameter(name = "blockOnAcknowledge") boolean blockOnAcknowledge,
                                 @Parameter(name = "blockOnPersistentSend") boolean blockOnPersistentSend,
@@ -148,7 +150,7 @@ public interface JMSServerControl
                                 @Parameter(name = "dupsOKBatchSize") int dupsOKBatchSize,
                                 @Parameter(name = "useGlobalPools") boolean useGlobalPools,
                                 @Parameter(name = "scheduledThreadPoolMaxSize") int scheduledThreadPoolMaxSize,
-                                @Parameter(name = "threadPoolMaxSize") int threadPoolMaxSize,                              
+                                @Parameter(name = "threadPoolMaxSize") int threadPoolMaxSize,
                                 @Parameter(name = "retryInterval") long retryInterval,
                                 @Parameter(name = "retryIntervalMultiplier") double retryIntervalMultiplier,
                                 @Parameter(name = "maxRetryInterval") long maxRetryInterval,
@@ -176,12 +178,13 @@ public interface JMSServerControl
                                 long discoveryRefreshTimeout,
                                 long clientFailureCheckPeriod,
                                 long connectionTTL,
-                                long callTimeout,                              
+                                long callTimeout,
                                 boolean cacheLargeMessageClient,
                                 int minLargeMessageSize,
                                 int consumerWindowSize,
                                 int consumerMaxRate,
                                 int confirmationWindowSize,
+                                int producerWindowSize,
                                 int producerMaxRate,
                                 boolean blockOnAcknowledge,
                                 boolean blockOnPersistentSend,
@@ -194,7 +197,7 @@ public interface JMSServerControl
                                 long initialWaitTimeout,
                                 boolean useGlobalPools,
                                 int scheduledThreadPoolMaxSize,
-                                int threadPoolMaxSize,                                
+                                int threadPoolMaxSize,
                                 long retryInterval,
                                 double retryIntervalMultiplier,
                                 long maxRetryInterval,
@@ -210,12 +213,13 @@ public interface JMSServerControl
                                 @Parameter(name = "discoveryRefreshTimeout") long discoveryRefreshTimeout,
                                 @Parameter(name = "clientFailureCheckPeriod") long clientFailureCheckPeriod,
                                 @Parameter(name = "connectionTTL") long connectionTTL,
-                                @Parameter(name = "callTimeout") long callTimeout,                                
+                                @Parameter(name = "callTimeout") long callTimeout,
                                 @Parameter(name = "cacheLargemessageClient") boolean cacheLargeMessageClient,
                                 @Parameter(name = "minLargeMessageSize") int minLargeMessageSize,
                                 @Parameter(name = "consumerWindowSize") int consumerWindowSize,
                                 @Parameter(name = "consumerMaxRate") int consumerMaxRate,
                                 @Parameter(name = "confirmationWindowSize") int confirmationWindowSize,
+                                @Parameter(name = "producerWindowSize") int producerWindowSize,
                                 @Parameter(name = "producerMaxRate") int producerMaxRate,
                                 @Parameter(name = "blockOnAcknowledge") boolean blockOnAcknowledge,
                                 @Parameter(name = "blockOnPersistentSend") boolean blockOnPersistentSend,
@@ -228,7 +232,7 @@ public interface JMSServerControl
                                 @Parameter(name = "initialWaitTimeout") long initialWaitTimeout,
                                 @Parameter(name = "useGlobalPools") boolean useGlobalPools,
                                 @Parameter(name = "scheduledThreadPoolMaxSize") int scheduledThreadPoolMaxSize,
-                                @Parameter(name = "threadPoolMaxSize") int threadPoolMaxSize,                              
+                                @Parameter(name = "threadPoolMaxSize") int threadPoolMaxSize,
                                 @Parameter(name = "retryInterval") long retryInterval,
                                 @Parameter(name = "retryIntervalMultiplier") double retryIntervalMultiplier,
                                 @Parameter(name = "maxRetryInterval") long maxRetryInterval,

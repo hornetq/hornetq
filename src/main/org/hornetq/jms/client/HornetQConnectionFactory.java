@@ -362,6 +362,17 @@ public class HornetQConnectionFactory implements ConnectionFactory, QueueConnect
       sessionFactory.setProducerMaxRate(producerMaxRate);
    }
 
+   public synchronized int getProducerWindowSize()
+   {
+      return sessionFactory.getProducerWindowSize();
+   }
+
+   public synchronized void setProducerWindowSize(int producerWindowSize)
+   {
+      checkWrite();
+      sessionFactory.setProducerWindowSize(producerWindowSize);
+   }
+
    /**
     * @param cacheLargeMessagesClient
     */
@@ -550,9 +561,9 @@ public class HornetQConnectionFactory implements ConnectionFactory, QueueConnect
                                                                      final int type) throws JMSException
    {
       readOnly = true;
-      
-      //Note that each JMS connection gets it's own copy of the connection factory
-      //This means there is one underlying remoting connection per jms connection (if not load balanced)
+
+      // Note that each JMS connection gets it's own copy of the connection factory
+      // This means there is one underlying remoting connection per jms connection (if not load balanced)
       ClientSessionFactory factory = sessionFactory.copy();
 
       HornetQConnection connection = new HornetQConnection(username,

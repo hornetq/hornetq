@@ -22,6 +22,7 @@ import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CONS
 import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_MIN_LARGE_MESSAGE_SIZE;
 import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_PRODUCER_MAX_RATE;
 import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CONFIRMATION_WINDOW_SIZE;
+import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_PRODUCER_WINDOW_SIZE;
 import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE;
 import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_THREAD_POOL_MAX_SIZE;
 import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_USE_GLOBAL_POOLS;
@@ -38,6 +39,7 @@ import javax.jms.MessageConsumer;
 import javax.jms.MessageProducer;
 import javax.jms.Session;
 
+import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.TransportConfiguration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
@@ -155,6 +157,7 @@ public class FloodServerTest extends UnitTestCase
                                             DEFAULT_CONSUMER_WINDOW_SIZE,
                                             DEFAULT_CONSUMER_MAX_RATE,
                                             DEFAULT_CONFIRMATION_WINDOW_SIZE,
+                                            DEFAULT_PRODUCER_WINDOW_SIZE,
                                             DEFAULT_PRODUCER_MAX_RATE,
                                             false,
                                             false,

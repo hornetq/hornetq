@@ -130,7 +130,8 @@ public class JMSServerDeployer extends XmlDeployer
          String clientID = getString(e, "client-id", null, Validators.NO_CHECK);
          int dupsOKBatchSize = getInteger(e, "dups-ok-batch-size", ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE, GT_ZERO);
          int transactionBatchSize = getInteger(e, "transaction-batch-size", ClientSessionFactoryImpl.DEFAULT_ACK_BATCH_SIZE, GT_ZERO);
-         int consumerWindowSize = getInteger(e, "consumer-window-size", ClientSessionFactoryImpl.DEFAULT_CONSUMER_WINDOW_SIZE, GE_ZERO);
+         int consumerWindowSize = getInteger(e, "consumer-window-size", ClientSessionFactoryImpl.DEFAULT_CONSUMER_WINDOW_SIZE, MINUS_ONE_OR_GE_ZERO);
+         int producerWindowSize = getInteger(e, "producer-window-size", ClientSessionFactoryImpl.DEFAULT_PRODUCER_WINDOW_SIZE, MINUS_ONE_OR_GT_ZERO);
          int consumerMaxRate = getInteger(e, "consumer-max-rate", ClientSessionFactoryImpl.DEFAULT_CONSUMER_MAX_RATE, MINUS_ONE_OR_GT_ZERO);
          int confirmationWindowSize = getInteger(e, "confirmation-window-size", ClientSessionFactoryImpl.DEFAULT_CONFIRMATION_WINDOW_SIZE, MINUS_ONE_OR_GT_ZERO);
          int producerMaxRate = getInteger(e, "producer-max-rate", ClientSessionFactoryImpl.DEFAULT_PRODUCER_MAX_RATE, MINUS_ONE_OR_GT_ZERO);
@@ -241,6 +242,7 @@ public class JMSServerDeployer extends XmlDeployer
                                                      consumerWindowSize,
                                                      consumerMaxRate,
                                                      confirmationWindowSize,
+                                                     producerWindowSize,
                                                      producerMaxRate,
                                                      blockOnAcknowledge,
                                                      blockOnPersistentSend,
@@ -274,6 +276,7 @@ public class JMSServerDeployer extends XmlDeployer
                                                      consumerWindowSize,
                                                      consumerMaxRate,
                                                      confirmationWindowSize,
+                                                     producerWindowSize,
                                                      producerMaxRate,
                                                      blockOnAcknowledge,
                                                      blockOnPersistentSend,

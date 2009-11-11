@@ -64,6 +64,8 @@ public class ConnectionFactoryConfigurationImpl implements ConnectionFactoryConf
 
    private int confirmationWindowSize = ClientSessionFactoryImpl.DEFAULT_CONFIRMATION_WINDOW_SIZE;
 
+   private int producerWindowSize = ClientSessionFactoryImpl.DEFAULT_PRODUCER_WINDOW_SIZE;
+   
    private int producerMaxRate = ClientSessionFactoryImpl.DEFAULT_PRODUCER_MAX_RATE;
 
    private boolean blockOnAcknowledge = ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_ACKNOWLEDGE;
@@ -288,7 +290,17 @@ public class ConnectionFactoryConfigurationImpl implements ConnectionFactoryConf
    {
       this.producerMaxRate = producerMaxRate;
    }
+   
+   public int getProducerWindowSize()
+   {
+      return producerWindowSize;
+   }
 
+   public void setProducerWindowSize(int producerWindowSize)
+   {
+      this.producerWindowSize = producerWindowSize;
+   }
+   
    public boolean isBlockOnAcknowledge()
    {
       return blockOnAcknowledge;

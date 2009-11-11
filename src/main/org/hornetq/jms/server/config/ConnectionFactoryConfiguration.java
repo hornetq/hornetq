@@ -82,6 +82,10 @@ public interface ConnectionFactoryConfiguration
    int getConfirmationWindowSize();
 
    void setConfirmationWindowSize(int confirmationWindowSize);
+   
+   int getProducerWindowSize();
+
+   void setProducerWindowSize(int producerWindowSize);
 
    int getProducerMaxRate();
 

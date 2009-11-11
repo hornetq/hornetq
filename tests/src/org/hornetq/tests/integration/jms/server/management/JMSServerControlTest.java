@@ -13,6 +13,7 @@
 
 package org.hornetq.tests.integration.jms.server.management;
 
+import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_PRODUCER_WINDOW_SIZE;
 import static org.hornetq.tests.util.RandomUtil.randomString;
 
 import java.util.Map;
@@ -434,6 +435,7 @@ public class JMSServerControlTest extends ManagementTestBase
                                             ClientSessionFactoryImpl.DEFAULT_CONSUMER_WINDOW_SIZE,
                                             ClientSessionFactoryImpl.DEFAULT_CONSUMER_MAX_RATE,
                                             ClientSessionFactoryImpl.DEFAULT_CONFIRMATION_WINDOW_SIZE,
+                                            ClientSessionFactoryImpl.DEFAULT_PRODUCER_WINDOW_SIZE,
                                             ClientSessionFactoryImpl.DEFAULT_PRODUCER_MAX_RATE,
                                             ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_ACKNOWLEDGE,
                                             ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_PERSISTENT_SEND,
@@ -479,6 +481,7 @@ public class JMSServerControlTest extends ManagementTestBase
                                             ClientSessionFactoryImpl.DEFAULT_CONSUMER_WINDOW_SIZE,
                                             ClientSessionFactoryImpl.DEFAULT_CONSUMER_MAX_RATE,
                                             ClientSessionFactoryImpl.DEFAULT_CONFIRMATION_WINDOW_SIZE,
+                                            ClientSessionFactoryImpl.DEFAULT_PRODUCER_WINDOW_SIZE,
                                             ClientSessionFactoryImpl.DEFAULT_PRODUCER_MAX_RATE,
                                             ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_ACKNOWLEDGE,
                                             ClientSessionFactoryImpl.DEFAULT_BLOCK_ON_PERSISTENT_SEND,

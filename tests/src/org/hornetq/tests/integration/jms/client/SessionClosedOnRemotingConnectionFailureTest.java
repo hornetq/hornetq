@@ -29,6 +29,7 @@ import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_MAX_
 import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_MIN_LARGE_MESSAGE_SIZE;
 import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_PRE_ACKNOWLEDGE;
 import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_PRODUCER_MAX_RATE;
+import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_PRODUCER_WINDOW_SIZE;
 import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL;
 import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL_MULTIPLIER;
 import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_SCHEDULED_THREAD_POOL_MAX_SIZE;
@@ -99,6 +100,7 @@ public class SessionClosedOnRemotingConnectionFailureTest extends JMSTestBase
                                         DEFAULT_CONSUMER_WINDOW_SIZE,
                                         DEFAULT_CONSUMER_MAX_RATE,
                                         DEFAULT_CONFIRMATION_WINDOW_SIZE,
+                                        DEFAULT_PRODUCER_WINDOW_SIZE,
                                         DEFAULT_PRODUCER_MAX_RATE,
                                         DEFAULT_BLOCK_ON_ACKNOWLEDGE,
                                         DEFAULT_BLOCK_ON_PERSISTENT_SEND,

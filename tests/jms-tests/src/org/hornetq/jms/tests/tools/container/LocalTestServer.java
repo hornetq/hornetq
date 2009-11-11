@@ -27,6 +27,7 @@ import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_MIN_
 import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_PRE_ACKNOWLEDGE;
 import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_PRODUCER_MAX_RATE;
 import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_CONFIRMATION_WINDOW_SIZE;
+import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_PRODUCER_WINDOW_SIZE;
 import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_RECONNECT_ATTEMPTS;
 import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL;
 import static org.hornetq.core.client.impl.ClientSessionFactoryImpl.DEFAULT_RETRY_INTERVAL_MULTIPLIER;
@@ -47,6 +48,7 @@ import javax.management.MBeanServerInvocationHandler;
 import javax.management.ObjectName;
 import javax.naming.InitialContext;
 
+import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
 import org.hornetq.core.config.TransportConfiguration;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.management.ObjectNameBuilder;
@@ -322,7 +324,8 @@ public class LocalTestServer implements Server, Runnable
                                                     prefetchSize,
                                                     DEFAULT_CONSUMER_MAX_RATE,
                                                     DEFAULT_CONFIRMATION_WINDOW_SIZE,
-                                                    DEFAULT_PRODUCER_MAX_RATE,
+                                                    DEFAULT_PRODUCER_WINDOW_SIZE,
+                                                    DEFAULT_PRODUCER_MAX_RATE,                                                    
                                                     blockOnAcknowledge,
                                                     true,
                                                     true,
