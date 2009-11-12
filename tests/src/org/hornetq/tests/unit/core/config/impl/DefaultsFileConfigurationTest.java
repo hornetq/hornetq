@@ -107,9 +107,9 @@ public class DefaultsFileConfigurationTest extends ConfigurationImplTest
 
       assertEquals(ConfigurationImpl.DEFAULT_JOURNAL_MAX_AIO, conf.getJournalMaxAIO());
 
-      assertEquals(ConfigurationImpl.DEFAULT_JOURNAL_AIO_BUFFER_TIMEOUT, conf.getAIOBufferTimeout());
+      assertEquals(ConfigurationImpl.DEFAULT_JOURNAL_BUFFER_TIMEOUT, conf.getJournalBufferTimeout());
 
-      assertEquals(ConfigurationImpl.DEFAULT_JOURNAL_AIO_BUFFER_SIZE, conf.getAIOBufferSize());
+      assertEquals(ConfigurationImpl.DEFAULT_JOURNAL_BUFFER_SIZE, conf.getJournalBufferSize());
       
       assertEquals(ConfigurationImpl.DEFAULT_CREATE_BINDINGS_DIR, conf.isCreateBindingsDir());
 

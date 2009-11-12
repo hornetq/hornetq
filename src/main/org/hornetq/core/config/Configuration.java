@@ -228,17 +228,17 @@ public interface Configuration extends Serializable
 
    void setJournalMaxAIO(int maxAIO);
 
-   void setAIOBufferSize(int size);
+   void setJournalBufferSize(int size);
    
-   int getAIOBufferSize();
+   int getJournalBufferSize();
    
-   void setAIOBufferTimeout(int timeout);
+   void setJournalBufferTimeout(int timeout);
    
-   int getAIOBufferTimeout();
+   int getJournalBufferTimeout();
    
-   void setAIOFlushOnSync(boolean flush);
+   void setJournalFlushOnSync(boolean flush);
    
-   boolean isAIOFlushOnSync();
+   boolean isJournalFlushOnSync();
 
    boolean isCreateBindingsDir();
 

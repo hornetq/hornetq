@@ -102,11 +102,11 @@ public class ConfigurationImpl implements Configuration
 
    public static final int DEFAULT_JOURNAL_MAX_AIO = 500;
 
-   public static final boolean DEFAULT_JOURNAL_AIO_FLUSH_SYNC = false;
+   public static final boolean DEFAULT_JOURNAL_FLUSH_SYNC = false;
 
-   public static final int DEFAULT_JOURNAL_AIO_BUFFER_TIMEOUT = 20000;
+   public static final int DEFAULT_JOURNAL_BUFFER_TIMEOUT = 20000;
 
-   public static final int DEFAULT_JOURNAL_AIO_BUFFER_SIZE = 128 * 1024;
+   public static final int DEFAULT_JOURNAL_BUFFER_SIZE = 128 * 1024;
 
    public static final boolean DEFAULT_JOURNAL_LOG_WRITE_RATE = false;
 
@@ -268,11 +268,11 @@ public class ConfigurationImpl implements Configuration
 
    protected int journalMaxAIO = DEFAULT_JOURNAL_MAX_AIO;
 
-   protected boolean journalAIOFlushSync = DEFAULT_JOURNAL_AIO_FLUSH_SYNC;
+   protected boolean journalFlushSync = DEFAULT_JOURNAL_FLUSH_SYNC;
 
-   protected int journalAIOBufferTimeout = DEFAULT_JOURNAL_AIO_BUFFER_TIMEOUT;
+   protected int journalBufferTimeout = DEFAULT_JOURNAL_BUFFER_TIMEOUT;
 
-   protected int journalAIOBufferSize = DEFAULT_JOURNAL_AIO_BUFFER_SIZE;
+   protected int journalBufferSize = DEFAULT_JOURNAL_BUFFER_SIZE;
 
    protected boolean logJournalWriteRate = DEFAULT_JOURNAL_LOG_WRITE_RATE;
 
@@ -815,34 +815,34 @@ public class ConfigurationImpl implements Configuration
       jmxDomain = domain;
    }
 
-   public void setAIOBufferTimeout(int timeout)
+   public void setJournalBufferTimeout(int timeout)
    {
-      this.journalAIOBufferTimeout = timeout;
+      this.journalBufferTimeout = timeout;
    }
 
-   public int getAIOBufferTimeout()
+   public int getJournalBufferTimeout()
    {
-      return journalAIOBufferTimeout;
+      return journalBufferTimeout;
    }
 
-   public void setAIOFlushOnSync(boolean flush)
+   public void setJournalFlushOnSync(boolean flush)
    {
-      journalAIOFlushSync = flush;
+      journalFlushSync = flush;
    }
 
-   public boolean isAIOFlushOnSync()
+   public boolean isJournalFlushOnSync()
    {
-      return journalAIOFlushSync;
+      return journalFlushSync;
    }
 
-   public int getAIOBufferSize()
+   public int getJournalBufferSize()
    {
-      return journalAIOBufferSize;
+      return journalBufferSize;
    }
 
-   public void setAIOBufferSize(int size)
+   public void setJournalBufferSize(int size)
    {
-      this.journalAIOBufferSize = size;
+      this.journalBufferSize = size;
    }
 
    public String getLargeMessagesDirectory()
@@ -983,11 +983,11 @@ public class ConfigurationImpl implements Configuration
          return false;
       if (jmxManagementEnabled != other.jmxManagementEnabled)
          return false;
-      if (journalAIOBufferSize != other.journalAIOBufferSize)
+      if (journalBufferSize != other.journalBufferSize)
          return false;
-      if (journalAIOBufferTimeout != other.journalAIOBufferTimeout)
+      if (journalBufferTimeout != other.journalBufferTimeout)
          return false;
-      if (journalAIOFlushSync != other.journalAIOFlushSync)
+      if (journalFlushSync != other.journalFlushSync)
          return false;
       if (journalCompactMinFiles != other.journalCompactMinFiles)
          return false;

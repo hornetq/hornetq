@@ -115,25 +115,25 @@
                         </row>
                         <row>
                             <entry><link
-                                    linkend="configuring.message.journal.journal-aio-buffer-size"
-                                    >journal-aio-buffer-size</link></entry>
+                                    linkend="configuring.message.journal.journal-buffer-size"
+                                    >journal-buffer-size</link></entry>
                             <entry>Long</entry>
-                            <entry>The size of the internal buffer on AIO.</entry>
+                            <entry>The size of the internal buffer on the journal.</entry>
                             <entry>128 KiB</entry>
                         </row>
                         <row>
                             <entry><link
-                                    linkend="configuring.message.journal.journal-aio-buffer-timeout"
-                                    >journal-aio-buffer-timeout</link></entry>
+                                    linkend="configuring.message.journal.journal-buffer-timeout"
+                                    >journal-buffer-timeout</link></entry>
                             <entry>Long</entry>
                             <entry>The timeout (in nanoseconds) used to flush internal
-                                buffers.</entry>
+                                buffers on the journal.</entry>
                             <entry>20000</entry>
                         </row>
                         <row>
                             <entry><link
-                                    linkend="configuring.message.journal.journal-aio-flush-on-sync"
-                                    >journal-aio-flush-on-sync</link></entry>
+                                    linkend="configuring.message.journal.journal-flush-on-sync"
+                                    >journal-flush-on-sync</link></entry>
                             <entry>Boolean</entry>
                             <entry>If true, transactions will ignore timeouts and be persisted
                                 immediately</entry>

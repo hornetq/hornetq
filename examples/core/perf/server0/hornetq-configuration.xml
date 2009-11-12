@@ -21,7 +21,7 @@
    <journal-sync-transactional>false</journal-sync-transactional>
    <journal-type>ASYNCIO</journal-type>
    <journal-min-files>20</journal-min-files>
-   <journal-aio-buffer-timeout>20000</journal-aio-buffer-timeout>
+   <journal-buffer-timeout>20000</journal-buffer-timeout>
    <log-journal-write-rate>false</log-journal-write-rate>
    <run-sync-speed-test>false</run-sync-speed-test>
 

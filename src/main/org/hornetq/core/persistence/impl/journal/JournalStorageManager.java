@@ -229,17 +229,17 @@ public class JournalStorageManager implements StorageManager
             log.warn("AIO wasn't located on this platform, it will fall back to using pure Java NIO. " + "If your platform is Linux, install LibAIO to enable the AIO journal");
             journalFF = new NIOSequentialFileFactory(journalDir,
                                                      true,
-                                                     config.getAIOBufferSize(),
-                                                     config.getAIOBufferTimeout(),
-                                                     config.isAIOFlushOnSync(),
+                                                     config.getJournalBufferSize(),
+                                                     config.getJournalBufferTimeout(),
+                                                     config.isJournalFlushOnSync(),
                                                      config.isLogJournalWriteRate());
          }
          else
          {
             journalFF = new AIOSequentialFileFactory(journalDir,
-                                                     config.getAIOBufferSize(),
-                                                     config.getAIOBufferTimeout(),
-                                                     config.isAIOFlushOnSync(),
+                                                     config.getJournalBufferSize(),
+                                                     config.getJournalBufferTimeout(),
+                                                     config.isJournalFlushOnSync(),
                                                      config.isLogJournalWriteRate());
             log.info("AIO loaded successfully");
          }

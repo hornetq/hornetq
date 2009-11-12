@@ -335,11 +335,11 @@ public class FileConfiguration extends ConfigurationImpl
 
       journalFileSize = getInteger(e, "journal-file-size", journalFileSize, GT_ZERO);
 
-      journalAIOFlushSync = getBoolean(e, "journal-aio-flush-on-sync", DEFAULT_JOURNAL_AIO_FLUSH_SYNC);
+      journalFlushSync = getBoolean(e, "journal-flush-on-sync", DEFAULT_JOURNAL_FLUSH_SYNC);
 
-      journalAIOBufferTimeout = getInteger(e, "journal-aio-buffer-timeout", DEFAULT_JOURNAL_AIO_BUFFER_TIMEOUT, GT_ZERO);
+      journalBufferTimeout = getInteger(e, "journal-buffer-timeout", DEFAULT_JOURNAL_BUFFER_TIMEOUT, GT_ZERO);
 
-      journalAIOBufferSize = getInteger(e, "journal-aio-buffer-size", DEFAULT_JOURNAL_AIO_BUFFER_SIZE, GT_ZERO);
+      journalBufferSize = getInteger(e, "journal-buffer-size", DEFAULT_JOURNAL_BUFFER_SIZE, GT_ZERO);
 
       journalMinFiles = getInteger(e, "journal-min-files", journalMinFiles, GT_ZERO);
 

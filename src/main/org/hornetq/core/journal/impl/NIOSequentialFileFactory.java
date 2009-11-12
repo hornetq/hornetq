@@ -37,9 +37,9 @@ public class NIOSequentialFileFactory extends AbstractSequentialFactory implemen
    {
       this(journalDir,
            false,
-           ConfigurationImpl.DEFAULT_JOURNAL_AIO_BUFFER_SIZE,
-           ConfigurationImpl.DEFAULT_JOURNAL_AIO_BUFFER_TIMEOUT,
-           ConfigurationImpl.DEFAULT_JOURNAL_AIO_FLUSH_SYNC,
+           ConfigurationImpl.DEFAULT_JOURNAL_BUFFER_SIZE,
+           ConfigurationImpl.DEFAULT_JOURNAL_BUFFER_TIMEOUT,
+           ConfigurationImpl.DEFAULT_JOURNAL_FLUSH_SYNC,
            false);
    }
 
@@ -47,9 +47,9 @@ public class NIOSequentialFileFactory extends AbstractSequentialFactory implemen
    {
       this(journalDir,
            buffered,
-           ConfigurationImpl.DEFAULT_JOURNAL_AIO_BUFFER_SIZE,
-           ConfigurationImpl.DEFAULT_JOURNAL_AIO_BUFFER_TIMEOUT,
-           ConfigurationImpl.DEFAULT_JOURNAL_AIO_FLUSH_SYNC,
+           ConfigurationImpl.DEFAULT_JOURNAL_BUFFER_SIZE,
+           ConfigurationImpl.DEFAULT_JOURNAL_BUFFER_TIMEOUT,
+           ConfigurationImpl.DEFAULT_JOURNAL_FLUSH_SYNC,
            false);
    }
 

@@ -151,12 +151,12 @@ public class HornetQServerControlImpl extends StandardMBean implements HornetQSe
 
    public int getAIOBufferSize()
    {
-      return configuration.getAIOBufferSize();
+      return configuration.getJournalBufferSize();
    }
    
    public int getAIOBufferTimeout()
    {
-      return configuration.getAIOBufferTimeout();
+      return configuration.getJournalBufferTimeout();
    }
    
    public String getJournalDirectory()

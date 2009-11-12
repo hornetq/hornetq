@@ -82,8 +82,8 @@ public class ConfigurationImplTest extends UnitTestCase
       assertEquals(ConfigurationImpl.DEFAULT_PAGING_DIR, conf.getPagingDirectory());
       assertEquals(ConfigurationImpl.DEFAULT_LARGE_MESSAGES_DIR, conf.getLargeMessagesDirectory());
       assertEquals(ConfigurationImpl.DEFAULT_JOURNAL_COMPACT_PERCENTAGE, conf.getJournalCompactPercentage());
-      assertEquals(ConfigurationImpl.DEFAULT_JOURNAL_AIO_FLUSH_SYNC, conf.isAIOFlushOnSync());
-      assertEquals(ConfigurationImpl.DEFAULT_JOURNAL_AIO_BUFFER_TIMEOUT, conf.getAIOBufferTimeout());
+      assertEquals(ConfigurationImpl.DEFAULT_JOURNAL_FLUSH_SYNC, conf.isJournalFlushOnSync());
+      assertEquals(ConfigurationImpl.DEFAULT_JOURNAL_BUFFER_TIMEOUT, conf.getJournalBufferTimeout());
       assertEquals(ConfigurationImpl.DEFAULT_JOURNAL_LOG_WRITE_RATE, conf.isLogJournalWriteRate());
       assertEquals(ConfigurationImpl.DEFAULT_JOURNAL_PERF_BLAST_PAGES, conf.getJournalPerfBlastPages());
       assertEquals(ConfigurationImpl.DEFAULT_MESSAGE_COUNTER_ENABLED, conf.isMessageCounterEnabled());
@@ -244,16 +244,16 @@ public class ConfigurationImplTest extends UnitTestCase
          assertEquals(i, conf.getJournalCompactPercentage());
 
          i = randomInt();
-         conf.setAIOBufferSize(i);
-         assertEquals(i, conf.getAIOBufferSize());
+         conf.setJournalBufferSize(i);
+         assertEquals(i, conf.getJournalBufferSize());
 
          i = randomInt();
-         conf.setAIOBufferTimeout(i);
-         assertEquals(i, conf.getAIOBufferTimeout());
+         conf.setJournalBufferTimeout(i);
+         assertEquals(i, conf.getJournalBufferTimeout());
 
          b = randomBoolean();
-         conf.setAIOFlushOnSync(b);
-         assertEquals(b, conf.isAIOFlushOnSync());
+         conf.setJournalFlushOnSync(b);
+         assertEquals(b, conf.isJournalFlushOnSync());
 
          b = randomBoolean();
          conf.setLogJournalWriteRate(b);
@@ -461,16 +461,16 @@ public class ConfigurationImplTest extends UnitTestCase
       assertEquals(i, conf.getJournalCompactPercentage());
 
       i = randomInt();
-      conf.setAIOBufferSize(i);
-      assertEquals(i, conf.getAIOBufferSize());
+      conf.setJournalBufferSize(i);
+      assertEquals(i, conf.getJournalBufferSize());
 
       i = randomInt();
-      conf.setAIOBufferTimeout(i);
-      assertEquals(i, conf.getAIOBufferTimeout());
+      conf.setJournalBufferTimeout(i);
+      assertEquals(i, conf.getJournalBufferTimeout());
 
       b = randomBoolean();
-      conf.setAIOFlushOnSync(b);
-      assertEquals(b, conf.isAIOFlushOnSync());
+      conf.setJournalFlushOnSync(b);
+      assertEquals(b, conf.isJournalFlushOnSync());
 
       b = randomBoolean();
       conf.setLogJournalWriteRate(b);
