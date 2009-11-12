@@ -184,6 +184,7 @@ public class TemporaryQueueTest extends ServiceTestBase
                                                      .iterator()
                                                      .next();
       final CountDownLatch latch = new CountDownLatch(1);
+      final CountDownLatch latch2 = new CountDownLatch(1);
       remotingConnection.addCloseListener(new CloseListener()
       {
          public void connectionClosed()
@@ -191,13 +192,21 @@ public class TemporaryQueueTest extends ServiceTestBase
             latch.countDown();
          }
       });
-      
+
+      server.getRemotingService().getConnections().iterator().next().addCloseListener(new CloseListener()
+      {
+         public void connectionClosed()
+         {
+            latch2.countDown();
+         }
+      });
+
       ((ClientSessionInternal)session).getConnection().fail(new HornetQException(HornetQException.INTERNAL_ERROR, "simulate a client failure"));
 
 
       // let some time for the server to clean the connections
-      latch.await(2 * CONNECTION_TTL + 1, TimeUnit.MILLISECONDS);
-      Thread.sleep(5000);
+      latch.await(2 * CONNECTION_TTL + 1000, TimeUnit.MILLISECONDS);
+      latch2.await(4 * CONNECTION_TTL + 1000, TimeUnit.MILLISECONDS);
       assertEquals(0, server.getConnectionCount());
       
       session.close();
