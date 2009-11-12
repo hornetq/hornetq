@@ -906,6 +906,47 @@ public class QueueImplTest extends UnitTestCase
       assertRefListsIdenticalRefs(refs, consumer.getReferences());
    }
 
+   public void testBusyConsumerWithFilterFirstCallBusy() throws Exception
+   {
+      Queue queue = new QueueImpl(1, address1, queue1, null, false, true, scheduledExecutor, null, null, null);
+
+      FakeConsumer consumer = new FakeConsumer(FilterImpl.createFilter("color = 'green'"));
+
+      consumer.setStatusImmediate(HandleStatus.BUSY);
+
+      queue.addConsumer(consumer);
+
+      final int numMessages = 10;
+
+      List<MessageReference> refs = new ArrayList<MessageReference>();
+
+      for (int i = 0; i < numMessages; i++)
+      {
+         MessageReference ref = generateReference(queue, i);
+         ref.getMessage().putStringProperty("color", "green");
+         refs.add(ref);
+
+         queue.addLast(ref);
+      }
+
+      assertEquals(10, queue.getMessageCount());
+      assertEquals(0, queue.getScheduledCount());
+      assertEquals(0, queue.getDeliveringCount());
+
+      queue.deliverNow();
+
+      consumer.setStatusImmediate(null);
+
+      queue.deliverNow();
+
+      List<MessageReference> receeivedRefs = consumer.getReferences();
+      int currId = 0;
+      for (MessageReference receeivedRef : receeivedRefs)
+      {
+         assertEquals("messages received out of order", receeivedRef.getMessage().getMessageID() , currId++);
+      }
+   }
+
    public void testBusyConsumerWithFilterThenAddMoreMessages() throws Exception
    {
       Queue queue = new QueueImpl(1, address1, queue1, null, false, true, scheduledExecutor, null, null, null);
@@ -971,6 +1012,13 @@ public class QueueImplTest extends UnitTestCase
       assertEquals(30, queue.getMessageCount());
       assertEquals(0, queue.getScheduledCount());
       assertEquals(10, queue.getDeliveringCount());
+
+      List<MessageReference> receeivedRefs = consumer.getReferences();
+      int currId = 10;
+      for (MessageReference receeivedRef : receeivedRefs)
+      {
+         assertEquals("messages received out of order", receeivedRef.getMessage().getMessageID() , currId++);
+      }
    }
 
    public void testConsumerWithFilterThenAddMoreMessages() throws Exception
