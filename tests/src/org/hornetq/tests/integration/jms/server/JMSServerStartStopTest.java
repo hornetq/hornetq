@@ -56,7 +56,7 @@ public class JMSServerStartStopTest extends UnitTestCase
    // Constructors --------------------------------------------------
 
    // Public --------------------------------------------------------
-
+   
    public void testStopStart1() throws Exception
    {
       final int numMessages = 5;
@@ -91,6 +91,7 @@ public class JMSServerStartStopTest extends UnitTestCase
          jbcf.close();
          
          stop();
+         
       }
       
       start();
@@ -139,6 +140,7 @@ public class JMSServerStartStopTest extends UnitTestCase
    @Override
    protected void tearDown() throws Exception
    {
+      liveJMSServer.stop();
       liveJMSServer = null;
       super.tearDown();
    }
