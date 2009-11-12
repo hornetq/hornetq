@@ -2685,7 +2685,7 @@ public class JournalImpl implements TestableJournal
 
       bb.rewind();
 
-      sf.write(bb, true);
+      sf.writeDirect(bb, true);
 
       JournalFile jf = new JournalFileImpl(sf, newFileID);
 
@@ -2993,7 +2993,7 @@ public class JournalImpl implements TestableJournal
 
          bb.rewind();
 
-         sequentialFile.write(bb, true);
+         sequentialFile.writeDirect(bb, true);
       }
 
       JournalFile info = new JournalFileImpl(sequentialFile, fileID);

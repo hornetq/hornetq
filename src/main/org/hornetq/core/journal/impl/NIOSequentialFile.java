@@ -14,15 +14,15 @@
 package org.hornetq.core.journal.impl;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
-import java.util.concurrent.atomic.AtomicLong;
 
 import org.hornetq.core.journal.IOCallback;
 import org.hornetq.core.journal.SequentialFile;
+import org.hornetq.core.journal.SequentialFileFactory;
 import org.hornetq.core.logging.Logger;
-import org.hornetq.core.remoting.spi.HornetQBuffer;
 
 /**
  * 
@@ -36,22 +36,18 @@ public class NIOSequentialFile extends AbstractSequentialFile
 {
    private static final Logger log = Logger.getLogger(NIOSequentialFile.class);
 
-   private long fileSize = 0;
-
    private FileChannel channel;
 
    private RandomAccessFile rfile;
 
-   private final AtomicLong position = new AtomicLong(0);
-
-   public NIOSequentialFile(final String directory, final String fileName)
+   public NIOSequentialFile(final SequentialFileFactory factory, final String directory, final String fileName)
    {
-      super(directory, new File(directory + "/" + fileName));
+      super(directory, new File(directory + "/" + fileName), factory);
    }
 
-   public NIOSequentialFile(File file)
+   public NIOSequentialFile(final SequentialFileFactory factory, final File file)
    {
-      super(file.getParent(), new File(file.getPath()));
+      super(file.getParent(), new File(file.getPath()), factory);
    }
 
    public int getAlignment()
@@ -62,11 +58,6 @@ public class NIOSequentialFile extends AbstractSequentialFile
    public int calculateBlockStart(final int position) throws Exception
    {
       return position;
-   }
-
-   public boolean fits(final int size)
-   {
-      return this.position.get() + size <= fileSize;
    }
 
    public synchronized boolean isOpen()
@@ -136,7 +127,7 @@ public class NIOSequentialFile extends AbstractSequentialFile
 
       notifyAll();
    }
-   
+
    public int read(final ByteBuffer bytes) throws Exception
    {
       return read(bytes, null);
@@ -147,11 +138,14 @@ public class NIOSequentialFile extends AbstractSequentialFile
       try
       {
          int bytesRead = channel.read(bytes);
+         
          if (callback != null)
          {
             callback.done();
          }
+         
          bytes.flip();
+         
          return bytesRead;
       }
       catch (Exception e)
@@ -164,53 +158,6 @@ public class NIOSequentialFile extends AbstractSequentialFile
          throw e;
       }
 
-   }
-
-   public void write(final HornetQBuffer bytes, final boolean sync) throws Exception
-   {
-      write(ByteBuffer.wrap(bytes.array()), sync);
-   }
-
-   public void write(final HornetQBuffer bytes, final boolean sync, final IOCallback callback) throws Exception
-   {
-      write(ByteBuffer.wrap(bytes.array()), sync, callback);
-   }
-
-   public void write(final ByteBuffer bytes, final boolean sync) throws Exception
-   {
-      position.addAndGet(bytes.limit());
-
-      channel.write(bytes);
-
-      if (sync)
-      {
-         sync();
-      }
-   }
-
-   public void write(final ByteBuffer bytes, final boolean sync, final IOCallback callback) throws Exception
-   {
-      try
-      {
-         position.addAndGet(bytes.limit());
-
-         channel.write(bytes);
-
-         if (sync)
-         {
-            sync();
-         }
-
-         if (callback != null)
-         {
-            callback.done();
-         }
-      }
-      catch (Exception e)
-      {
-         callback.onError(-1, e.getMessage());
-         throw e;
-      }
    }
 
    public void sync() throws Exception
@@ -235,13 +182,8 @@ public class NIOSequentialFile extends AbstractSequentialFile
 
    public void position(final long pos) throws Exception
    {
+      super.position(pos);
       channel.position(pos);
-      position.set(pos);
-   }
-
-   public long position() throws Exception
-   {
-      return position.get();
    }
 
    @Override
@@ -250,29 +192,54 @@ public class NIOSequentialFile extends AbstractSequentialFile
       return "NIOSequentialFile " + getFile();
    }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.journal.SequentialFile#setBuffering(boolean)
-    */
-   public void setBuffering(boolean buffering)
-   {
-   }
-
-   /* (non-Javadoc)
-    * @see org.hornetq.core.journal.SequentialFile#lockBuffer()
-    */
-   public void disableAutoFlush()
-   {
-   }
-
-   /* (non-Javadoc)
-    * @see org.hornetq.core.journal.SequentialFile#unlockBuffer()
-    */
-   public void enableAutoFlush()
-   {
-   }
-
    public SequentialFile copy()
    {
-      return new NIOSequentialFile(getFile());
+      return new NIOSequentialFile(factory, getFile());
+   }
+
+   public void writeDirect(final ByteBuffer bytes, final boolean sync, final IOCallback callback)
+   {
+      if (callback == null)
+      {
+         throw new NullPointerException("callback parameter need to be set");
+      }
+      
+      try
+      {
+         internalWrite(bytes, sync, callback);
+      }
+      catch (Exception e)
+      {
+         callback.onError(-1, e.getMessage());
+      }
+   }
+
+   public void writeDirect(final ByteBuffer bytes, final boolean sync) throws Exception
+   {
+      internalWrite(bytes, sync, null);
+   }
+
+   /**
+    * @param bytes
+    * @param sync
+    * @param callback
+    * @throws IOException
+    * @throws Exception
+    */
+   private void internalWrite(final ByteBuffer bytes, final boolean sync, final IOCallback callback) throws Exception
+   {
+      position.addAndGet(bytes.limit());
+
+      channel.write(bytes);
+
+      if (sync)
+      {
+         sync();
+      }
+
+      if (callback != null)
+      {
+         callback.done();
+      }
    }
 }

@@ -224,19 +224,19 @@ public abstract class SequentialFileFactoryTestBase extends UnitTestCase
       ByteBuffer bb3 = factory.wrapBuffer(bytes3);
       
       long initialPos = sf.position();
-      sf.write(bb1, true);
+      sf.writeDirect(bb1, true);
       long bytesWritten = sf.position() - initialPos;
 
       assertEquals(calculateRecordSize(bytes1.length, sf.getAlignment()), bytesWritten);
 
       initialPos = sf.position();
-      sf.write(bb2, true);
+      sf.writeDirect(bb2, true);
       bytesWritten = sf.position() - initialPos;
 
       assertEquals(calculateRecordSize(bytes2.length, sf.getAlignment()), bytesWritten);
 
       initialPos = sf.position();
-      sf.write(bb3, true);
+      sf.writeDirect(bb3, true);
       bytesWritten = sf.position() - initialPos;
 
       assertEquals(calculateRecordSize(bytes3.length, sf.getAlignment()), bytesWritten);
@@ -296,20 +296,20 @@ public abstract class SequentialFileFactoryTestBase extends UnitTestCase
          ByteBuffer bb3 = factory.wrapBuffer(bytes3);
 
          long initialPos = sf.position();
-         sf.write(bb1, true);
+         sf.writeDirect(bb1, true);
          long bytesWritten = sf.position() - initialPos;
 
          assertEquals(bb1.limit(), bytesWritten);
 
          initialPos = sf.position();
-         sf.write(bb2, true);
+         sf.writeDirect(bb2, true);
          bytesWritten = sf.position() - initialPos;
 
          
          assertEquals(bb2.limit(), bytesWritten);
 
          initialPos = sf.position();
-         sf.write(bb3, true);
+         sf.writeDirect(bb3, true);
          bytesWritten = sf.position() - initialPos;
 
          assertEquals(bb3.limit(), bytesWritten);
@@ -373,7 +373,7 @@ public abstract class SequentialFileFactoryTestBase extends UnitTestCase
       ByteBuffer bb1 = factory.wrapBuffer(bytes1);
 
       long initialPos = sf.position();
-      sf.write(bb1, true);
+      sf.writeDirect(bb1, true);
       long bytesWritten = sf.position() - initialPos;
 
       assertEquals(bb1.limit(), bytesWritten);
@@ -385,7 +385,7 @@ public abstract class SequentialFileFactoryTestBase extends UnitTestCase
          
          bb1 = factory.wrapBuffer(bytes1);
          
-         sf.write(bb1, true);
+         sf.writeDirect(bb1, true);
 
          fail("Should throw exception");
       }
@@ -396,7 +396,7 @@ public abstract class SequentialFileFactoryTestBase extends UnitTestCase
 
       sf.open();
 
-      sf.write(bb1, true);
+      sf.writeDirect(bb1, true);
 
       sf.close();
    }

@@ -541,13 +541,6 @@ public class PagingStoreImpl implements TestSupportPageStore
 
       file.open();
 
-      long size = file.size();
-
-      if (fileFactory.isSupportsCallbacks() && size < pageSize)
-      {
-         file.fill((int)size, (int)(pageSize - size), (byte)0);
-      }
-
       file.position(0);
 
       file.close();

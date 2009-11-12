@@ -11,7 +11,7 @@
  * permissions and limitations under the License.
  */
 
-package org.hornetq.tests.integration.journal;
+package org.hornetq.tests.stress.journal;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -47,7 +47,7 @@ import org.hornetq.utils.SimpleString;
  *
  *
  */
-public class MultiThreadCompactorTest extends ServiceTestBase
+public class NIOMultiThreadCompactorStressTest extends ServiceTestBase
 {
 
    // Constants -----------------------------------------------------
@@ -80,7 +80,7 @@ public class MultiThreadCompactorTest extends ServiceTestBase
 
    public void testMultiThreadCompact() throws Throwable
    {
-      setupServer(JournalType.ASYNCIO);
+      setupServer(getJournalType());
       for (int i = 0; i < getNumberOfIterations(); i++)
       {
          System.out.println("######################################");
@@ -120,9 +120,17 @@ public class MultiThreadCompactorTest extends ServiceTestBase
          journal.stop();
          journal = null;
 
-         setupServer(JournalType.ASYNCIO);
+         setupServer(getJournalType());
 
       }
+   }
+
+   /**
+    * @return
+    */
+   protected JournalType getJournalType()
+   {
+      return JournalType.NIO;
    }
 
    /**
@@ -232,14 +240,14 @@ public class MultiThreadCompactorTest extends ServiceTestBase
 
       server.stop();
 
-      setupServer(JournalType.ASYNCIO);
+      setupServer(getJournalType());
 
       drainQueue(numberOfMessagesExpected, QUEUE);
       drainQueue(100, new SimpleString("LAZY-QUEUE"));
 
       server.stop();
 
-      setupServer(JournalType.ASYNCIO);
+      setupServer(getJournalType());
       drainQueue(0, QUEUE);
       drainQueue(0, new SimpleString("LAZY-QUEUE"));
 

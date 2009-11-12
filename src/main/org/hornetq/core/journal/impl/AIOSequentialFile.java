@@ -25,8 +25,6 @@ import org.hornetq.core.asyncio.AIOCallback;
 import org.hornetq.core.asyncio.AsynchronousFile;
 import org.hornetq.core.asyncio.BufferCallback;
 import org.hornetq.core.asyncio.impl.AsynchronousFileImpl;
-import org.hornetq.core.asyncio.impl.TimedBuffer;
-import org.hornetq.core.asyncio.impl.TimedBufferObserver;
 import org.hornetq.core.journal.IOCallback;
 import org.hornetq.core.journal.SequentialFileFactory;
 import org.hornetq.core.journal.SequentialFile;
@@ -50,19 +48,7 @@ public class AIOSequentialFile extends AbstractSequentialFile
 
    private AsynchronousFile aioFile;
 
-   private final SequentialFileFactory factory;
-
-   private long fileSize = 0;
-
-   private final AtomicLong position = new AtomicLong(0);
-
-   private TimedBuffer timedBuffer;
-
    private final BufferCallback bufferCallback;
-
-   /** Instead of having AIOSequentialFile implementing the Observer, I have done it on an inner class.
-    *  This is the class returned to the factory when the file is being activated. */
-   private final TimedBufferObserver timedBufferObserver = new LocalBufferObserver();
 
    /** A context switch on AIO would make it to synchronize the disk before
        switching to the new thread, what would cause
@@ -83,8 +69,7 @@ public class AIOSequentialFile extends AbstractSequentialFile
                             final Executor executor,
                             final Executor pollerExecutor)
    {
-      super(directory, new File(directory + "/" + fileName));
-      this.factory = factory;
+      super(directory, new File(directory + "/" + fileName), factory);
       this.maxIO = maxIO;
       this.bufferCallback = bufferCallback;
       this.executor = executor;
@@ -110,21 +95,6 @@ public class AIOSequentialFile extends AbstractSequentialFile
       int pos = (position / alignment + (position % alignment != 0 ? 1 : 0)) * alignment;
 
       return pos;
-   }
-
-   public boolean fits(int size)
-   {
-      return timedBuffer.checkSize(size);
-   }
-
-   public void disableAutoFlush()
-   {
-      timedBuffer.disableAutoFlush();
-   }
-
-   public void enableAutoFlush()
-   {
-      timedBuffer.enableAutoFlush();
    }
 
    public SequentialFile copy()
@@ -244,16 +214,6 @@ public class AIOSequentialFile extends AbstractSequentialFile
       aioFile.setBufferCallback(callback);
    }
 
-   public void position(final long pos) throws Exception
-   {
-      position.set(pos);
-   }
-
-   public long position() throws Exception
-   {
-      return position.get();
-   }
-
    public int read(final ByteBuffer bytes, final IOCallback callback) throws Exception
    {
       int bytesToRead = bytes.limit();
@@ -277,63 +237,7 @@ public class AIOSequentialFile extends AbstractSequentialFile
 
       return bytesRead;
    }
-
-   public void write(final HornetQBuffer bytes, final boolean sync, final IOCallback callback) throws Exception
-   {
-      if (timedBuffer != null)
-      {
-         timedBuffer.addBytes(bytes.array(), sync, callback);
-      }
-      else
-      {
-         ByteBuffer buffer = factory.newBuffer(bytes.capacity());
-         buffer.put(bytes.array());
-         doWrite(buffer, callback);
-      }
-   }
-
-   public void write(final HornetQBuffer bytes, final boolean sync) throws Exception
-   {
-      if (sync)
-      {
-         IOCallback completion = SimpleWaitIOCallback.getInstance();
-
-         write(bytes, true, completion);
-
-         completion.waitCompletion();
-      }
-      else
-      {
-         write(bytes, false, DummyCallback.getInstance());
-      }
-   }
-
-   public void write(final ByteBuffer bytes, final boolean sync, final IOCallback callback) throws Exception
-   {
-      if (timedBuffer != null)
-      {
-         // sanity check.. it shouldn't happen
-         log.warn("Illegal buffered usage. Can't use ByteBuffer write while buffer SequentialFile");
-      }
-
-      doWrite(bytes, callback);
-   }
-
-   public void write(final ByteBuffer bytes, final boolean sync) throws Exception
-   {
-      if (sync)
-      {
-         IOCallback completion = SimpleWaitIOCallback.getInstance();
-
-         write(bytes, true, completion);
-
-         completion.waitCompletion();
-      }
-      else
-      {
-         write(bytes, false, DummyCallback.getInstance());
-      }
-   }
+   
 
    public void sync() throws Exception
    {
@@ -361,22 +265,6 @@ public class AIOSequentialFile extends AbstractSequentialFile
    // Public methods
    // -----------------------------------------------------------------------------------------------------
 
-   public void setTimedBuffer(TimedBuffer buffer)
-   {
-      if (timedBuffer != null)
-      {
-         timedBuffer.setObserver(null);
-      }
-
-      this.timedBuffer = buffer;
-
-      if (buffer != null)
-      {
-         buffer.setObserver(this.timedBufferObserver);
-      }
-
-   }
-
    // Protected methods
    // -----------------------------------------------------------------------------------------------------
 
@@ -388,10 +276,29 @@ public class AIOSequentialFile extends AbstractSequentialFile
       return new AsynchronousFileImpl(executor, pollerExecutor);
    }
 
-   // Private methods
-   // -----------------------------------------------------------------------------------------------------
+   
+   public void writeDirect(final ByteBuffer bytes, final boolean sync) throws Exception
+   {
+      if (sync)
+      {
+         IOCallback completion = SimpleWaitIOCallback.getInstance();
+  
+         writeDirect(bytes, true, completion);
+  
+         completion.waitCompletion();
+      }
+      else
+      {
+         writeDirect(bytes, false, DummyCallback.getInstance());
+      }
+   }
 
-   private void doWrite(final ByteBuffer bytes, final IOCallback callback)
+   
+   /**
+    * 
+    * @param sync Not used on AIO
+    *  */
+   public void writeDirect(final ByteBuffer bytes, final boolean sync, IOCallback callback)
    {
       final int bytesToWrite = factory.calculateBlockSize(bytes.limit());
 
@@ -400,100 +307,15 @@ public class AIOSequentialFile extends AbstractSequentialFile
       aioFile.write(positionToWrite, bytesToWrite, bytes, callback);
    }
 
+
+   // Private methods
+   // -----------------------------------------------------------------------------------------------------
+
    private void checkOpened() throws Exception
    {
       if (aioFile == null || !opened)
       {
          throw new IllegalStateException("File not opened");
       }
-   }
-
-   private static class DelegateCallback implements IOCallback
-   {
-      final List<AIOCallback> delegates;
-
-      DelegateCallback(List<AIOCallback> delegates)
-      {
-         this.delegates = delegates;
-      }
-
-      public void done()
-      {
-         for (AIOCallback callback : delegates)
-         {
-            try
-            {
-               callback.done();
-            }
-            catch (Throwable e)
-            {
-               log.warn(e.getMessage(), e);
-            }
-         }
-      }
-
-      public void onError(int errorCode, String errorMessage)
-      {
-         for (AIOCallback callback : delegates)
-         {
-            try
-            {
-               callback.onError(errorCode, errorMessage);
-            }
-            catch (Throwable e)
-            {
-               log.warn(e.getMessage(), e);
-            }
-         }
-      }
-
-      public void waitCompletion() throws Exception
-      {
-      }
-   }
-
-   private class LocalBufferObserver implements TimedBufferObserver
-   {
-      public void flushBuffer(ByteBuffer buffer, List<AIOCallback> callbacks)
-      {
-         buffer.flip();
-
-         if (buffer.limit() == 0)
-         {
-            factory.releaseBuffer(buffer);
-         }
-         else
-         {
-            doWrite(buffer, new DelegateCallback(callbacks));
-         }
-      }
-
-      public ByteBuffer newBuffer(int size, int limit)
-      {
-         size = factory.calculateBlockSize(size);
-         limit = factory.calculateBlockSize(limit);
-
-         ByteBuffer buffer = factory.newBuffer(size);
-         buffer.limit(limit);
-         return buffer;
-      }
-
-      public int getRemainingBytes()
-      {
-         if (fileSize - position.get() > Integer.MAX_VALUE)
-         {
-            return Integer.MAX_VALUE;
-         }
-         else
-         {
-            return (int)(fileSize - position.get());
-         }
-      }
-
-      public String toString()
-      {
-         return "TimedBufferObserver on file (" + getFile().getName() + ")";
-      }
-
    }
 }

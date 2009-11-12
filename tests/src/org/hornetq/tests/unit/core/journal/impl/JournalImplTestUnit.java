@@ -2056,10 +2056,11 @@ public abstract class JournalImplTestUnit extends JournalImplTestBase
 
    public void testSimpleAdd() throws Exception
    {
-      setup(10, 10 * 1024, true);
+      setup(2, 10 * 1024, true);
       createJournal();
       startJournal();
       load();
+      this.sync = true;
       add(1);
       stopJournal();
       createJournal();

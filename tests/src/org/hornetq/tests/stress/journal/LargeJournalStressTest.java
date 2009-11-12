@@ -262,6 +262,7 @@ public class LargeJournalStressTest extends ServiceTestBase
    private void setupServer(JournalType journalType) throws Exception, HornetQException
    {
       Configuration config = createDefaultConfig();
+      config.setJournalSyncNonTransactional(false);
       config.setJournalFileSize(ConfigurationImpl.DEFAULT_JOURNAL_FILE_SIZE);
 
       config.setJournalType(journalType);
@@ -274,6 +275,10 @@ public class LargeJournalStressTest extends ServiceTestBase
       server.start();
 
       sf = createInVMFactory();
+      sf.setBlockOnAcknowledge(false);
+      sf.setBlockOnNonPersistentSend(false);
+      sf.setBlockOnPersistentSend(false);
+      
 
       ClientSession sess = sf.createSession();
 

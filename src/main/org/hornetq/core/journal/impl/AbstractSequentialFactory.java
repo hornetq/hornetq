@@ -38,33 +38,87 @@ public abstract class AbstractSequentialFactory implements SequentialFileFactory
 
    protected final String journalDir;
 
-   public AbstractSequentialFactory(final String journalDir)
+   protected final TimedBuffer timedBuffer;
+   
+   protected final int bufferSize;
+
+   protected final long bufferTimeout;
+
+
+   public AbstractSequentialFactory(final String journalDir,
+                                    final boolean buffered,
+                                    final int bufferSize,
+                                    final long bufferTimeout,
+                                    final boolean flushOnSync,
+                                    final boolean logRates)
    {
       this.journalDir = journalDir;
+      if (buffered)
+      {
+         timedBuffer = new TimedBuffer(bufferSize, bufferTimeout, flushOnSync, logRates);
+      }
+      else
+      {
+         timedBuffer = null;
+      }
+      this.bufferSize = bufferSize;
+      this.bufferTimeout = bufferTimeout;
    }
 
-   
    public void stop()
    {
+      if (timedBuffer != null)
+      {
+         timedBuffer.stop();
+      }
    }
-   
+
    public void start()
    {
+      if (timedBuffer != null)
+      {
+         timedBuffer.start();
+      }
    }
-   
-   public void activateBuffer(SequentialFile file)
+
+   /* (non-Javadoc)
+    * @see org.hornetq.core.journal.SequentialFileFactory#activate(org.hornetq.core.journal.SequentialFile)
+    */
+   public void activateBuffer(final SequentialFile file)
    {
-   }
-   
-   public void releaseBuffer(ByteBuffer buffer)
-   {
-   }
-   
-   public void deactivateBuffer()
-   {
+      if (timedBuffer != null)
+      {
+         timedBuffer.disableAutoFlush();
+         try
+         {
+            file.setTimedBuffer(timedBuffer);
+         }
+         finally
+         {
+            file.enableAutoFlush();
+         }
+      }
    }
    
    public void flush()
+   {
+      if (timedBuffer != null)
+      {
+         timedBuffer.flush();
+      }
+   }
+
+   public void deactivateBuffer()
+   {
+      if (timedBuffer != null)
+      {
+         timedBuffer.flush();
+         timedBuffer.setObserver(null);
+      }
+   }
+
+
+   public void releaseBuffer(ByteBuffer buffer)
    {
    }
 

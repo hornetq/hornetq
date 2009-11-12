@@ -23,6 +23,7 @@ import org.hornetq.core.asyncio.BufferCallback;
 import org.hornetq.core.journal.IOCallback;
 import org.hornetq.core.journal.SequentialFile;
 import org.hornetq.core.journal.SequentialFileFactory;
+import org.hornetq.core.journal.impl.TimedBuffer;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.remoting.spi.HornetQBuffer;
 
@@ -438,7 +439,7 @@ public class FakeSequentialFileFactory implements SequentialFileFactory
          return data.position();
       }
 
-      public synchronized void write(final ByteBuffer bytes, final boolean sync, final IOCallback callback) throws Exception
+      public synchronized void writeDirect(final ByteBuffer bytes, final boolean sync, final IOCallback callback)
       {
          if (!open)
          {
@@ -491,9 +492,9 @@ public class FakeSequentialFileFactory implements SequentialFileFactory
          }
       }
 
-      public void write(final ByteBuffer bytes, final boolean sync) throws Exception
+      public void writeDirect(final ByteBuffer bytes, final boolean sync) throws Exception
       {
-         write(bytes, sync, null);
+         writeDirect(bytes, sync, null);
       }
 
       private void checkAndResize(final int size)
@@ -606,7 +607,7 @@ public class FakeSequentialFileFactory implements SequentialFileFactory
        */
       public void write(HornetQBuffer bytes, boolean sync, IOCallback callback) throws Exception
       {
-         write(ByteBuffer.wrap(bytes.array()), sync, callback);
+         writeDirect(ByteBuffer.wrap(bytes.array()), sync, callback);
 
       }
 
@@ -615,7 +616,7 @@ public class FakeSequentialFileFactory implements SequentialFileFactory
        */
       public void write(HornetQBuffer bytes, boolean sync) throws Exception
       {
-         write(ByteBuffer.wrap(bytes.array()), sync);
+         writeDirect(ByteBuffer.wrap(bytes.array()), sync);
       }
 
       /* (non-Javadoc)
@@ -626,6 +627,15 @@ public class FakeSequentialFileFactory implements SequentialFileFactory
          FakeSequentialFile file = fileMap.get(fileName);
          
          return file != null && file.data != null && file.data.capacity() > 0;
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.journal.SequentialFile#setTimedBuffer(org.hornetq.core.journal.impl.TimedBuffer)
+       */
+      public void setTimedBuffer(TimedBuffer buffer)
+      {
+         // TODO Auto-generated method stub
+         
       }
 
    }

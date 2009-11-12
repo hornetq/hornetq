@@ -165,7 +165,7 @@ public abstract class AbstractJournalUpdateTask implements JournalReaderCallback
 
          writeBuffer.rewind();
 
-         controlFile.write(writeBuffer, true);
+         controlFile.writeDirect(writeBuffer, true);
 
          return controlFile;
       }
@@ -181,7 +181,7 @@ public abstract class AbstractJournalUpdateTask implements JournalReaderCallback
       if (writingChannel != null)
       {
          sequentialFile.position(0);
-         sequentialFile.write(writingChannel.toByteBuffer(), true);
+         sequentialFile.writeDirect(writingChannel.toByteBuffer(), true);
          sequentialFile.close();
          newDataFiles.add(currentFile);
       }

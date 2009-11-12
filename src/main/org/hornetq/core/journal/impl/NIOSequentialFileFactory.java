@@ -15,6 +15,7 @@ package org.hornetq.core.journal.impl;
 
 import java.nio.ByteBuffer;
 
+import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.journal.SequentialFile;
 import org.hornetq.core.journal.SequentialFileFactory;
 import org.hornetq.core.logging.Logger;
@@ -31,25 +32,46 @@ public class NIOSequentialFileFactory extends AbstractSequentialFactory implemen
 {
    private static final Logger log = Logger.getLogger(NIOSequentialFileFactory.class);
 
+
    public NIOSequentialFileFactory(final String journalDir)
    {
-      super(journalDir);
+      this(journalDir,
+           false,
+           ConfigurationImpl.DEFAULT_JOURNAL_AIO_BUFFER_SIZE,
+           ConfigurationImpl.DEFAULT_JOURNAL_AIO_BUFFER_TIMEOUT,
+           ConfigurationImpl.DEFAULT_JOURNAL_AIO_FLUSH_SYNC,
+           false);
+   }
 
-      if (journalDir == null)
-      {
-         new Exception("journalDir is null").printStackTrace();
-      }
+   public NIOSequentialFileFactory(final String journalDir, boolean buffered)
+   {
+      this(journalDir,
+           buffered,
+           ConfigurationImpl.DEFAULT_JOURNAL_AIO_BUFFER_SIZE,
+           ConfigurationImpl.DEFAULT_JOURNAL_AIO_BUFFER_TIMEOUT,
+           ConfigurationImpl.DEFAULT_JOURNAL_AIO_FLUSH_SYNC,
+           false);
+   }
+
+   public NIOSequentialFileFactory(final String journalDir,
+                                   final boolean buffered,
+                                   final int bufferSize,
+                                   final long bufferTimeout,
+                                   final boolean flushOnSync,
+                                   final boolean logRates)
+   {
+      super(journalDir, buffered, bufferSize, bufferTimeout, flushOnSync, logRates);
    }
 
    // maxIO is ignored on NIO
    public SequentialFile createSequentialFile(final String fileName, final int maxIO)
    {
-      return new NIOSequentialFile(journalDir, fileName);
+      return new NIOSequentialFile(this, journalDir, fileName);
    }
 
    public boolean isSupportsCallbacks()
    {
-      return false;
+      return timedBuffer != null;
    }
 
    public ByteBuffer newBuffer(final int size)

@@ -216,7 +216,7 @@ public class PagingStoreFactoryNIO implements PagingStoreFactory
 
    protected SequentialFileFactory newFileFactory(final String directoryName)
    {
-      return new NIOSequentialFileFactory(directory + File.separatorChar + directoryName);
+      return new NIOSequentialFileFactory(directory + File.separatorChar + directoryName, false);
    }
 
    // Private -------------------------------------------------------

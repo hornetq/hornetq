@@ -157,18 +157,12 @@ public class PageImpl implements Page
 
       buffer.rewind();
 
-      file.write(buffer, false);
+      file.writeDirect(buffer, false);
 
       numberOfMessages.incrementAndGet();
       size.addAndGet(buffer.limit());
       
       storageManager.pageWrite(message, pageId);
-      
-      if (message.getMessage(null).isLargeMessage())
-      {
-         // If we don't sync on large messages we could have the risk of unattended files on disk
-         sync();
-      }
    }
 
    public void sync() throws Exception

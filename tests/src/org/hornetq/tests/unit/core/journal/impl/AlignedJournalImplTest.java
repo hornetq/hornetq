@@ -107,7 +107,7 @@ public class AlignedJournalImplTest extends UnitTestCase
             buffer.put(i, (byte)1);
          }
 
-         file.write(buffer, true);
+         file.writeDirect(buffer, true);
 
          buffer = ByteBuffer.allocate(400);
          for (int i = 0; i < 400; i++)
@@ -115,7 +115,7 @@ public class AlignedJournalImplTest extends UnitTestCase
             buffer.put(i, (byte)2);
          }
 
-         file.write(buffer, true);
+         file.writeDirect(buffer, true);
 
          buffer = ByteBuffer.allocate(600);
 
@@ -598,7 +598,7 @@ public class AlignedJournalImplTest extends UnitTestCase
       // Changing the check bufferSize, so reload will ignore this record
       file.position(100);
 
-      file.write(buffer, true);
+      file.writeDirect(buffer, true);
 
       file.close();
 
@@ -663,7 +663,7 @@ public class AlignedJournalImplTest extends UnitTestCase
       // Changing the check bufferSize, so reload will ignore this record
       file.position(100);
 
-      file.write(buffer, true);
+      file.writeDirect(buffer, true);
 
       file.close();
 
@@ -759,7 +759,7 @@ public class AlignedJournalImplTest extends UnitTestCase
       // reload will think the record came from a different journal usage)
       file.position(100);
 
-      file.write(buffer, true);
+      file.writeDirect(buffer, true);
 
       file.close();
 
@@ -1038,7 +1038,7 @@ public class AlignedJournalImplTest extends UnitTestCase
       // reload will think the record came from a different journal usage)
       file.position(100);
 
-      file.write(buffer, true);
+      file.writeDirect(buffer, true);
 
       file.close();
 

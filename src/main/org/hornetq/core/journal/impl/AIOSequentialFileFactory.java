@@ -21,7 +21,6 @@ import java.util.concurrent.TimeUnit;
 
 import org.hornetq.core.asyncio.BufferCallback;
 import org.hornetq.core.asyncio.impl.AsynchronousFileImpl;
-import org.hornetq.core.asyncio.impl.TimedBuffer;
 import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.journal.SequentialFile;
 import org.hornetq.core.logging.Logger;
@@ -61,12 +60,6 @@ public class AIOSequentialFileFactory extends AbstractSequentialFactory
 
    private ExecutorService pollerExecutor;
 
-   private final int bufferSize;
-
-   private final long bufferTimeout;
-
-   private final TimedBuffer timedBuffer;
-
    public AIOSequentialFileFactory(final String journalDir)
    {
       this(journalDir,
@@ -82,41 +75,7 @@ public class AIOSequentialFileFactory extends AbstractSequentialFactory
                                    final boolean flushOnSync,
                                    final boolean logRates)
    {
-      super(journalDir);
-      this.bufferSize = bufferSize;
-      this.bufferTimeout = bufferTimeout;
-      timedBuffer = new TimedBuffer(bufferSize, bufferTimeout, flushOnSync, logRates);
-   }
-
-   /* (non-Javadoc)
-    * @see org.hornetq.core.journal.SequentialFileFactory#activate(org.hornetq.core.journal.SequentialFile)
-    */
-   @Override
-   public void activateBuffer(final SequentialFile file)
-   {
-      final AIOSequentialFile sequentialFile = (AIOSequentialFile)file;
-      timedBuffer.disableAutoFlush();
-      try
-      {
-         sequentialFile.setTimedBuffer(timedBuffer);
-      }
-      finally
-      {
-         timedBuffer.enableAutoFlush();
-      }
-   }
-
-   @Override
-   public void flush()
-   {
-      timedBuffer.flush();
-   }
-
-   @Override
-   public void deactivateBuffer()
-   {
-      timedBuffer.flush();
-      timedBuffer.setObserver(null);
+      super(journalDir, true, bufferSize, bufferTimeout, flushOnSync, logRates);
    }
 
    public SequentialFile createSequentialFile(final String fileName, final int maxIO)
@@ -191,7 +150,7 @@ public class AIOSequentialFileFactory extends AbstractSequentialFactory
    @Override
    public void start()
    {
-      timedBuffer.start();
+      super.start();
 
       writeExecutor = Executors.newSingleThreadExecutor(new HornetQThreadFactory("HornetQ-AIO-writer-pool" + System.identityHashCode(this),
                                                                                  true));
@@ -204,9 +163,9 @@ public class AIOSequentialFileFactory extends AbstractSequentialFactory
    @Override
    public void stop()
    {
+      super.stop();
+      
       buffersControl.stop();
-
-      timedBuffer.stop();
 
       writeExecutor.shutdown();
 

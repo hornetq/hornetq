@@ -12,12 +12,12 @@
  */
 
 
-package org.hornetq.core.asyncio.impl;
+package org.hornetq.core.journal.impl;
 
 import java.nio.ByteBuffer;
 import java.util.List;
 
-import org.hornetq.core.asyncio.AIOCallback;
+import org.hornetq.core.journal.IOCallback;
 
 /**
  * A TimedBufferObserver
@@ -39,7 +39,7 @@ public interface TimedBufferObserver
 
    // Public --------------------------------------------------------
    
-   public void flushBuffer(ByteBuffer buffer, List<AIOCallback> callbacks);
+   public void flushBuffer(ByteBuffer buffer, List<IOCallback> callbacks);
    
    
    /** Return the number of remaining bytes that still fit on the observer (file) */

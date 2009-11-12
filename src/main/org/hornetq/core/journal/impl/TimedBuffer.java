@@ -11,7 +11,7 @@
  * permissions and limitations under the License.
  */
 
-package org.hornetq.core.asyncio.impl;
+package org.hornetq.core.journal.impl;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -21,8 +21,8 @@ import java.util.TimerTask;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-import org.hornetq.core.asyncio.AIOCallback;
 import org.hornetq.core.buffers.ChannelBuffers;
+import org.hornetq.core.journal.IOCallback;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.remoting.spi.HornetQBuffer;
 import org.hornetq.utils.VariableLatch;
@@ -56,7 +56,7 @@ public class TimedBuffer
 
    private int bufferLimit = 0;
 
-   private List<AIOCallback> callbacks;
+   private List<IOCallback> callbacks;
 
    private final Lock lock = new ReentrantReadWriteLock().writeLock();
 
@@ -106,7 +106,7 @@ public class TimedBuffer
       buffer.clear();
       bufferLimit = 0;
 
-      callbacks = new ArrayList<AIOCallback>();
+      callbacks = new ArrayList<IOCallback>();
       this.flushOnSync = flushOnSync;
       latchTimer.up();
       this.timeout = timeout;
@@ -225,7 +225,7 @@ public class TimedBuffer
       }
    }
 
-   public synchronized void addBytes(final byte[] bytes, final boolean sync, final AIOCallback callback)
+   public synchronized void addBytes(final byte[] bytes, final boolean sync, final IOCallback callback)
    {
       if (buffer.writerIndex() == 0)
       {
@@ -283,7 +283,7 @@ public class TimedBuffer
 
          bufferObserver.flushBuffer(directBuffer, callbacks);
 
-         callbacks = new ArrayList<AIOCallback>();
+         callbacks = new ArrayList<IOCallback>();
 
          active = false;
          pendingSync = false;

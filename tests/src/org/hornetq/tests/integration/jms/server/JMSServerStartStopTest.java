@@ -59,7 +59,7 @@ public class JMSServerStartStopTest extends UnitTestCase
    
    public void testStopStart1() throws Exception
    {
-      final int numMessages = 5;
+      final int numMessages = 5 ;
       
       for (int j = 0; j < numMessages; j++)
       {

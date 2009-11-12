@@ -162,7 +162,7 @@ public class PageImplTest extends UnitTestCase
       
       buffer.rewind();
       
-      file.write(buffer, true);
+      file.writeDirect(buffer, true);
       
       impl.close();
 

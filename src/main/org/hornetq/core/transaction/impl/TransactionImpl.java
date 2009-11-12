@@ -226,7 +226,7 @@ public class TransactionImpl implements Transaction
                      catch (Exception e)
                      {
                         // https://jira.jboss.org/jira/browse/HORNETQ-188
-                        // After commit shouldn't thow an exception
+                        // After commit shouldn't throw an exception
                         log.warn(e.getMessage(), e);
                      }
                   }

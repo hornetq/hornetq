@@ -227,7 +227,12 @@ public class JournalStorageManager implements StorageManager
          if (!AIOSequentialFileFactory.isSupported())
          {
             log.warn("AIO wasn't located on this platform, it will fall back to using pure Java NIO. " + "If your platform is Linux, install LibAIO to enable the AIO journal");
-            journalFF = new NIOSequentialFileFactory(journalDir);
+            journalFF = new NIOSequentialFileFactory(journalDir,
+                                                     true,
+                                                     config.getAIOBufferSize(),
+                                                     config.getAIOBufferTimeout(),
+                                                     config.isAIOFlushOnSync(),
+                                                     config.isLogJournalWriteRate());
          }
          else
          {
@@ -278,7 +283,7 @@ public class JournalStorageManager implements StorageManager
 
       largeMessagesDirectory = config.getLargeMessagesDirectory();
 
-      largeMessagesFactory = new NIOSequentialFileFactory(largeMessagesDirectory);
+      largeMessagesFactory = new NIOSequentialFileFactory(largeMessagesDirectory, false);
 
       perfBlastPages = config.getJournalPerfBlastPages();
    }
@@ -405,7 +410,7 @@ public class JournalStorageManager implements StorageManager
    {
       file.position(file.size());
 
-      file.write(ByteBuffer.wrap(bytes), false);
+      file.writeDirect(ByteBuffer.wrap(bytes), false);
 
       if (isReplicated())
       {
@@ -679,10 +684,10 @@ public class JournalStorageManager implements StorageManager
    }
 
    public JournalLoadInformation loadMessageJournal(final PostOffice postOffice,
-                                  final PagingManager pagingManager,
-                                  final ResourceManager resourceManager,
-                                  final Map<Long, Queue> queues,
-                                  final Map<SimpleString, List<Pair<byte[], Long>>> duplicateIDMap) throws Exception
+                                                    final PagingManager pagingManager,
+                                                    final ResourceManager resourceManager,
+                                                    final Map<Long, Queue> queues,
+                                                    final Map<SimpleString, List<Pair<byte[], Long>>> duplicateIDMap) throws Exception
    {
       List<RecordInfo> records = new ArrayList<RecordInfo>();
 
@@ -690,8 +695,10 @@ public class JournalStorageManager implements StorageManager
 
       Map<Long, ServerMessage> messages = new HashMap<Long, ServerMessage>();
 
-      JournalLoadInformation info = messageJournal.load(records, preparedTransactions, new LargeMessageTXFailureCallback(messages));
-      
+      JournalLoadInformation info = messageJournal.load(records,
+                                                        preparedTransactions,
+                                                        new LargeMessageTXFailureCallback(messages));
+
       ArrayList<LargeServerMessage> largeMessages = new ArrayList<LargeServerMessage>();
 
       Map<Long, Map<Long, AddMessageRecord>> queueMap = new HashMap<Long, Map<Long, AddMessageRecord>>();
@@ -919,7 +926,7 @@ public class JournalStorageManager implements StorageManager
       {
          messageJournal.perfBlast(perfBlastPages);
       }
-      
+
       return info;
    }
 
@@ -981,7 +988,7 @@ public class JournalStorageManager implements StorageManager
 
          // Use same method as load message journal to prune out acks, so they don't get added.
          // Then have reacknowledge(tx) methods on queue, which needs to add the page size
-  
+
          // first get any sent messages for this tx and recreate
          for (RecordInfo record : preparedTransaction.records)
          {
@@ -990,11 +997,11 @@ public class JournalStorageManager implements StorageManager
             HornetQBuffer buff = ChannelBuffers.wrappedBuffer(data);
 
             byte recordType = record.getUserRecordType();
-            
+
             switch (recordType)
             {
                case ADD_LARGE_MESSAGE:
-               {                 
+               {
                   messages.put(record.id, parseLargeMessage(messages, buff));
 
                   break;
@@ -1011,7 +1018,7 @@ public class JournalStorageManager implements StorageManager
                }
                case ADD_REF:
                {
-                
+
                   long messageID = record.id;
 
                   RefEncoding encoding = new RefEncoding();
@@ -1190,7 +1197,8 @@ public class JournalStorageManager implements StorageManager
       bindingsJournal.appendDeleteRecord(queueBindingID, true);
    }
 
-   public JournalLoadInformation loadBindingJournal(final List<QueueBindingInfo> queueBindingInfos, final List<GroupingInfo> groupingInfos) throws Exception
+   public JournalLoadInformation loadBindingJournal(final List<QueueBindingInfo> queueBindingInfos,
+                                                    final List<GroupingInfo> groupingInfos) throws Exception
    {
       List<RecordInfo> records = new ArrayList<RecordInfo>();
 
@@ -1240,7 +1248,7 @@ public class JournalStorageManager implements StorageManager
             throw new IllegalStateException("Invalid record type " + rec);
          }
       }
-      
+
       return bindingsInfo;
    }
 
@@ -1304,7 +1312,7 @@ public class JournalStorageManager implements StorageManager
       JournalLoadInformation[] info = new JournalLoadInformation[2];
       info[0] = bindingsJournal.loadInternalOnly();
       info[1] = messageJournal.loadInternalOnly();
-      
+
       return info;
    }
 
