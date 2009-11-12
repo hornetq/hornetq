@@ -396,11 +396,11 @@ public class ValidateTransactionHealthTest extends UnitTestCase
       else
       if (factoryType.equals("nio2"))
       {
-         return new NIOSequentialFileFactory(directory, false);
+         return new NIOSequentialFileFactory(directory, true);
       }
       else
       {
-         return new NIOSequentialFileFactory(directory);
+         return new NIOSequentialFileFactory(directory, false);
       }
    }
 

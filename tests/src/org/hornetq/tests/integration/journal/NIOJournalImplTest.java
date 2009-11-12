@@ -42,7 +42,7 @@ public class NIOJournalImplTest extends JournalImplTestUnit
 
       file.mkdir();
 
-      return new NIOSequentialFileFactory(getTestDir());
+      return new NIOSequentialFileFactory(getTestDir(), true);
    }
 
    @Override

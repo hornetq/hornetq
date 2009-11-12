@@ -26,7 +26,7 @@ import org.hornetq.tests.unit.core.journal.impl.SequentialFileFactoryTestBase;
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  *
  */
-public class NIOSequentialFileFactoryTest extends SequentialFileFactoryTestBase
+public class NIONonBufferedSequentialFileFactoryTest extends SequentialFileFactoryTestBase
 {
 
    @Override
@@ -44,7 +44,7 @@ public class NIOSequentialFileFactoryTest extends SequentialFileFactoryTestBase
    @Override
    protected SequentialFileFactory createFactory()
    {
-      return new NIOSequentialFileFactory(getTestDir(), true);
+      return new NIOSequentialFileFactory(getTestDir(), false);
    }
 
 }
