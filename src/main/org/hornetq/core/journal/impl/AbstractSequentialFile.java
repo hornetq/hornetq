@@ -18,7 +18,6 @@ import java.nio.ByteBuffer;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 
-import org.hornetq.core.asyncio.AIOCallback;
 import org.hornetq.core.journal.IOCallback;
 import org.hornetq.core.journal.SequentialFile;
 import org.hornetq.core.journal.SequentialFileFactory;
@@ -240,7 +239,7 @@ public abstract class AbstractSequentialFile implements SequentialFile
 
       public void onError(int errorCode, String errorMessage)
       {
-         for (AIOCallback callback : delegates)
+         for (IOCallback callback : delegates)
          {
             try
             {
