@@ -277,7 +277,9 @@ public class QueueImpl implements Queue
       cancelRedistributor();
 
       distributionPolicy.addConsumer(consumer);
+
       consumers.add(consumer);
+
       if (consumer.getFilter() != null)
       {
          messageHandlers.put(consumer, new FilterMessageHandler(messageReferences.iterator()));
@@ -350,6 +352,8 @@ public class QueueImpl implements Queue
          redistributor.stop();
 
          redistributor = null;
+
+         distributionPolicy.removeConsumer(redistributor);
       }
 
       if (future != null)
@@ -1048,7 +1052,8 @@ public class QueueImpl implements Queue
          consumer = distributionPolicy.getNextConsumer();
 
          MessageHandler handler = messageHandlers.get(consumer);
-         if(handler == null)
+
+         if (handler == null)
          {
             handler = globalHandler;
          }
@@ -1100,6 +1105,7 @@ public class QueueImpl implements Queue
          if (groupID != null)
          {
             Consumer groupConsumer = groups.putIfAbsent(groupID, consumer);
+
             if (groupConsumer != null && groupConsumer != consumer)
             {
                continue;
@@ -1510,7 +1516,7 @@ public class QueueImpl implements Queue
       return paused;
    }
 
-   interface MessageHandler
+   private static interface MessageHandler
    {
       MessageReference peek(Consumer consumer);
 
@@ -1519,18 +1525,19 @@ public class QueueImpl implements Queue
       void reset();
    }
 
-   class FilterMessageHandler implements MessageHandler
+   private class FilterMessageHandler implements MessageHandler
    {
       private Iterator<MessageReference> iterator;
 
-      public FilterMessageHandler(Iterator<MessageReference> iterator)
+      public FilterMessageHandler(final Iterator<MessageReference> iterator)
       {
          this.iterator = iterator;
       }
 
-      public MessageReference peek(Consumer consumer)
+      public MessageReference peek(final Consumer consumer)
       {
          MessageReference reference;
+         
          if (iterator.hasNext())
          {
             reference = iterator.next();
@@ -1561,9 +1568,9 @@ public class QueueImpl implements Queue
       }
    }
 
-   class NullFilterMessageHandler implements MessageHandler
+   private class NullFilterMessageHandler implements MessageHandler
    {
-      public MessageReference peek(Consumer consumer)
+      public MessageReference peek(final Consumer consumer)
       {
          return messageReferences.peekFirst();
       }
@@ -1575,7 +1582,7 @@ public class QueueImpl implements Queue
 
       public void reset()
       {
-         //no-op
+         // no-op
       }
    }
 }

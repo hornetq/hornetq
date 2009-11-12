@@ -348,7 +348,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
                      long redistributionDelay = addressSettings.getRedistributionDelay();
 
                      if (redistributionDelay != -1)
-                     {
+                     {                        
                         queue.addRedistributor(redistributionDelay, redistributorExecutorFactory.getExecutor());
                      }
                   }
@@ -418,7 +418,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
                      long redistributionDelay = addressSettings.getRedistributionDelay();
 
                      if (redistributionDelay != -1)
-                     {
+                     {                       
                         queue.addRedistributor(redistributionDelay, redistributorExecutorFactory.getExecutor());
                      }
                   }
@@ -467,8 +467,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
       }
 
       String uid = UUIDGenerator.getInstance().generateStringUUID();
-     // log.info("sending binding" + binding +" added " + binding.getClusterName() + " binding.getDistance() = " + binding.getDistance() + " " + server.getConfiguration().isBackup());
-      //Thread.dumpStack();
+    
       managementService.sendNotification(new Notification(uid, NotificationType.BINDING_ADDED, props));
    }
 
