@@ -20,7 +20,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.hornetq.core.asyncio.BufferCallback;
-import org.hornetq.core.journal.IOCallback;
+import org.hornetq.core.journal.IOCompletion;
 import org.hornetq.core.journal.SequentialFile;
 import org.hornetq.core.journal.SequentialFileFactory;
 import org.hornetq.core.journal.impl.TimedBuffer;
@@ -241,11 +241,11 @@ public class FakeSequentialFileFactory implements SequentialFileFactory
 
       final ByteBuffer bytes;
 
-      final IOCallback callback;
+      final IOCompletion callback;
 
       volatile boolean sendError;
 
-      CallbackRunnable(final FakeSequentialFile file, final ByteBuffer bytes, final IOCallback callback)
+      CallbackRunnable(final FakeSequentialFile file, final ByteBuffer bytes, final IOCompletion callback)
       {
          this.file = file;
          this.bytes = bytes;
@@ -399,7 +399,7 @@ public class FakeSequentialFileFactory implements SequentialFileFactory
          return read(bytes, null);
       }
 
-      public int read(final ByteBuffer bytes, final IOCallback callback) throws Exception
+      public int read(final ByteBuffer bytes, final IOCompletion callback) throws Exception
       {
          if (!open)
          {
@@ -439,7 +439,7 @@ public class FakeSequentialFileFactory implements SequentialFileFactory
          return data.position();
       }
 
-      public synchronized void writeDirect(final ByteBuffer bytes, final boolean sync, final IOCallback callback)
+      public synchronized void writeDirect(final ByteBuffer bytes, final boolean sync, final IOCompletion callback)
       {
          if (!open)
          {
@@ -605,7 +605,7 @@ public class FakeSequentialFileFactory implements SequentialFileFactory
       /* (non-Javadoc)
        * @see org.hornetq.core.journal.SequentialFile#write(org.hornetq.core.remoting.spi.HornetQBuffer, boolean, org.hornetq.core.journal.IOCallback)
        */
-      public void write(HornetQBuffer bytes, boolean sync, IOCallback callback) throws Exception
+      public void write(HornetQBuffer bytes, boolean sync, IOCompletion callback) throws Exception
       {
          writeDirect(ByteBuffer.wrap(bytes.array()), sync, callback);
 

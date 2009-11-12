@@ -44,7 +44,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.hornetq.core.buffers.ChannelBuffer;
 import org.hornetq.core.buffers.ChannelBuffers;
 import org.hornetq.core.journal.EncodingSupport;
-import org.hornetq.core.journal.IOCallback;
+import org.hornetq.core.journal.IOCompletion;
 import org.hornetq.core.journal.JournalLoadInformation;
 import org.hornetq.core.journal.LoaderCallback;
 import org.hornetq.core.journal.PreparedTransactionInfo;
@@ -852,7 +852,7 @@ public class JournalImpl implements TestableJournal
          throw new IllegalStateException("Journal must be loaded first");
       }
 
-      IOCallback callback = null;
+      IOCompletion callback = null;
 
       compactingLock.readLock().lock();
 
@@ -901,7 +901,7 @@ public class JournalImpl implements TestableJournal
          throw new IllegalStateException("Journal must be loaded first");
       }
 
-      IOCallback callback = null;
+      IOCompletion callback = null;
 
       compactingLock.readLock().lock();
 
@@ -967,7 +967,7 @@ public class JournalImpl implements TestableJournal
 
       compactingLock.readLock().lock();
 
-      IOCallback callback = null;
+      IOCompletion callback = null;
 
       try
       {
@@ -2833,7 +2833,7 @@ public class JournalImpl implements TestableJournal
                                     final boolean completeTransaction,
                                     final boolean sync,
                                     final JournalTransaction tx,
-                                    IOCallback callback) throws Exception
+                                    IOCompletion callback) throws Exception
    {
       try
       {
@@ -3233,7 +3233,7 @@ public class JournalImpl implements TestableJournal
       return tx;
    }
 
-   private IOCallback getSyncCallback(final boolean sync)
+   private IOCompletion getSyncCallback(final boolean sync)
    {
       if (fileFactory.isSupportsCallbacks())
       {

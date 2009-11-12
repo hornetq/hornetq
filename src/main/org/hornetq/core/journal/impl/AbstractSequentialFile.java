@@ -18,7 +18,7 @@ import java.nio.ByteBuffer;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 
-import org.hornetq.core.journal.IOCallback;
+import org.hornetq.core.journal.IOCompletion;
 import org.hornetq.core.journal.SequentialFile;
 import org.hornetq.core.journal.SequentialFileFactory;
 import org.hornetq.core.logging.Logger;
@@ -166,7 +166,7 @@ public abstract class AbstractSequentialFile implements SequentialFile
 
    }
    
-   public void write(final HornetQBuffer bytes, final boolean sync, final IOCallback callback) throws Exception
+   public void write(final HornetQBuffer bytes, final boolean sync, final IOCompletion callback) throws Exception
    {
       if (timedBuffer != null)
       {
@@ -185,7 +185,7 @@ public abstract class AbstractSequentialFile implements SequentialFile
    {
       if (sync)
       {
-         IOCallback completion = SimpleWaitIOCallback.getInstance();
+         IOCompletion completion = SimpleWaitIOCallback.getInstance();
 
          write(bytes, true, completion);
 
@@ -213,18 +213,18 @@ public abstract class AbstractSequentialFile implements SequentialFile
 
    // Inner classes -------------------------------------------------
 
-   protected static class DelegateCallback implements IOCallback
+   protected static class DelegateCallback implements IOCompletion
    {
-      final List<IOCallback> delegates;
+      final List<IOCompletion> delegates;
 
-      DelegateCallback(List<IOCallback> delegates)
+      DelegateCallback(List<IOCompletion> delegates)
       {
          this.delegates = delegates;
       }
 
       public void done()
       {
-         for (IOCallback callback : delegates)
+         for (IOCompletion callback : delegates)
          {
             try
             {
@@ -239,7 +239,7 @@ public abstract class AbstractSequentialFile implements SequentialFile
 
       public void onError(int errorCode, String errorMessage)
       {
-         for (IOCallback callback : delegates)
+         for (IOCompletion callback : delegates)
          {
             try
             {
@@ -259,7 +259,7 @@ public abstract class AbstractSequentialFile implements SequentialFile
 
    protected class LocalBufferObserver implements TimedBufferObserver
    {
-      public void flushBuffer(ByteBuffer buffer, List<IOCallback> callbacks)
+      public void flushBuffer(ByteBuffer buffer, List<IOCompletion> callbacks)
       {
          buffer.flip();
 

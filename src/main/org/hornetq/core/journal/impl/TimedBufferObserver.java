@@ -17,7 +17,7 @@ package org.hornetq.core.journal.impl;
 import java.nio.ByteBuffer;
 import java.util.List;
 
-import org.hornetq.core.journal.IOCallback;
+import org.hornetq.core.journal.IOCompletion;
 
 /**
  * A TimedBufferObserver
@@ -39,7 +39,7 @@ public interface TimedBufferObserver
 
    // Public --------------------------------------------------------
    
-   public void flushBuffer(ByteBuffer buffer, List<IOCallback> callbacks);
+   public void flushBuffer(ByteBuffer buffer, List<IOCompletion> callbacks);
    
    
    /** Return the number of remaining bytes that still fit on the observer (file) */

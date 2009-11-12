@@ -56,17 +56,17 @@ public interface SequentialFile
 
    void delete() throws Exception;
 
-   void write(HornetQBuffer bytes, boolean sync, IOCallback callback) throws Exception;
+   void write(HornetQBuffer bytes, boolean sync, IOCompletion callback) throws Exception;
 
    void write(HornetQBuffer bytes, boolean sync) throws Exception;
 
    /** Write directly to the file without using any buffer */
-   void writeDirect(ByteBuffer bytes, boolean sync, IOCallback callback);
+   void writeDirect(ByteBuffer bytes, boolean sync, IOCompletion callback);
 
    /** Write directly to the file without using any buffer */
    void writeDirect(ByteBuffer bytes, boolean sync) throws Exception;
 
-   int read(ByteBuffer bytes, IOCallback callback) throws Exception;
+   int read(ByteBuffer bytes, IOCompletion callback) throws Exception;
 
    int read(ByteBuffer bytes) throws Exception;
 

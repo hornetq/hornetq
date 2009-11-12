@@ -23,7 +23,7 @@ import org.hornetq.core.asyncio.AIOCallback;
  * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
  *
  */
-public interface IOCallback extends AIOCallback
+public interface IOCompletion extends AIOCallback
 {
    void waitCompletion() throws Exception;
 }

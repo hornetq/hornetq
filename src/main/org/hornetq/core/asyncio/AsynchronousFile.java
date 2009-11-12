@@ -30,7 +30,7 @@ public interface AsynchronousFile
     * 
     * Note: If you are using a native Linux implementation, maxIO can't be higher than what's defined on /proc/sys/fs/aio-max-nr, or you would get an error 
     * @param fileName
-    * @param maxIO The number of max concurrent asynchrnous IO operations. It has to be balanced between the size of your writes and the capacity of your disk.
+    * @param maxIO The number of max concurrent asynchronous IO operations. It has to be balanced between the size of your writes and the capacity of your disk.
     * @throws HornetQException 
     */
    void open(String fileName, int maxIO) throws HornetQException;

@@ -14,7 +14,7 @@
 
 package org.hornetq.core.journal.impl;
 
-import org.hornetq.core.journal.IOCallback;
+import org.hornetq.core.journal.IOCompletion;
 import org.hornetq.core.logging.Logger;
 
 /**
@@ -24,13 +24,13 @@ import org.hornetq.core.logging.Logger;
  *
  *
  */
-public  class DummyCallback implements IOCallback
+public  class DummyCallback implements IOCompletion
 {
    private static DummyCallback instance = new DummyCallback();
    
    private static final Logger log = Logger.getLogger(SimpleWaitIOCallback.class);
    
-   public static IOCallback getInstance()
+   public static IOCompletion getInstance()
    {
       return instance;
    }

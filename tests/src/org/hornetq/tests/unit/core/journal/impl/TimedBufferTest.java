@@ -18,7 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.hornetq.core.journal.IOCallback;
+import org.hornetq.core.journal.IOCompletion;
 import org.hornetq.core.journal.impl.TimedBuffer;
 import org.hornetq.core.journal.impl.TimedBufferObserver;
 import org.hornetq.tests.util.UnitTestCase;
@@ -42,7 +42,7 @@ public class TimedBufferTest extends UnitTestCase
 
    // Public --------------------------------------------------------
 
-   IOCallback dummyCallback = new IOCallback()
+   IOCompletion dummyCallback = new IOCompletion()
    {
 
       public void done()
@@ -64,7 +64,7 @@ public class TimedBufferTest extends UnitTestCase
       final AtomicInteger flushTimes = new AtomicInteger(0);
       class TestObserver implements TimedBufferObserver
       {
-         public void flushBuffer(final ByteBuffer buffer, final List<IOCallback> callbacks)
+         public void flushBuffer(final ByteBuffer buffer, final List<IOCompletion> callbacks)
          {
             buffers.add(buffer);
             flushTimes.incrementAndGet();

@@ -14,7 +14,7 @@
 
 package org.hornetq.core.journal.impl;
 
-import org.hornetq.core.journal.IOCallback;
+import org.hornetq.core.journal.IOCompletion;
 import org.hornetq.utils.VariableLatch;
 
 /**
@@ -24,7 +24,7 @@ import org.hornetq.utils.VariableLatch;
  *
  *
  */
-public class TransactionCallback implements IOCallback
+public class TransactionCallback implements IOCompletion
 {
    private final VariableLatch countLatch = new VariableLatch();
 

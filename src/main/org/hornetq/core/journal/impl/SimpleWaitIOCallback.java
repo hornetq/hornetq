@@ -16,7 +16,7 @@ package org.hornetq.core.journal.impl;
 import java.util.concurrent.CountDownLatch;
 
 import org.hornetq.core.exception.HornetQException;
-import org.hornetq.core.journal.IOCallback;
+import org.hornetq.core.journal.IOCompletion;
 import org.hornetq.core.logging.Logger;
 
 /**
@@ -26,7 +26,7 @@ import org.hornetq.core.logging.Logger;
  *
  *
  */
-public class SimpleWaitIOCallback implements IOCallback
+public class SimpleWaitIOCallback implements IOCompletion
 {
 
    private static final Logger log = Logger.getLogger(SimpleWaitIOCallback.class);
@@ -37,7 +37,7 @@ public class SimpleWaitIOCallback implements IOCallback
 
    private volatile int errorCode = 0;
 
-   public static IOCallback getInstance()
+   public static IOCompletion getInstance()
    {
       return new SimpleWaitIOCallback();
    }
