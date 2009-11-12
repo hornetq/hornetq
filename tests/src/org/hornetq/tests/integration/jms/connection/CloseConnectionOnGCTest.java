@@ -13,12 +13,17 @@
 package org.hornetq.tests.integration.jms.connection;
 
 import java.lang.ref.WeakReference;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.Iterator;
 
 import javax.jms.Connection;
 import javax.jms.Session;
 
 import org.hornetq.core.config.TransportConfiguration;
 import org.hornetq.core.logging.Logger;
+import org.hornetq.core.remoting.CloseListener;
+import org.hornetq.core.remoting.RemotingConnection;
 import org.hornetq.jms.client.HornetQConnectionFactory;
 import org.hornetq.tests.util.JMSTestBase;
 
@@ -53,7 +58,8 @@ public class CloseConnectionOnGCTest extends JMSTestBase
       
       super.tearDown();
    }
-   
+
+
    public void testCloseOneConnectionOnGC() throws Exception
    {
       //Debug - don't remove this until intermittent failure with this test is fixed
@@ -67,11 +73,22 @@ public class CloseConnectionOnGCTest extends JMSTestBase
       WeakReference<Connection> wr = new WeakReference<Connection>(conn);
            
       assertEquals(1, server.getRemotingService().getConnections().size());
-      
+      final CountDownLatch latch = new CountDownLatch(1);
+      Iterator<RemotingConnection> connectionIterator = server.getRemotingService().getConnections().iterator();
+      connectionIterator.next().addCloseListener(new CloseListener()
+      {
+         public void connectionClosed()
+         {
+            latch.countDown();
+         }
+      });
+
       conn = null;
 
+
       checkWeakReferences(wr);
-                  
+
+      latch.await(5000, TimeUnit.MILLISECONDS);           
       assertEquals(0, server.getRemotingService().getConnections().size());
    }
    
@@ -86,13 +103,30 @@ public class CloseConnectionOnGCTest extends JMSTestBase
       WeakReference<Connection> wr3 = new WeakReference<Connection>(conn3);
       
       assertEquals(3, server.getRemotingService().getConnections().size());
-      
+
+      final CountDownLatch latch = new CountDownLatch(3);
+      Iterator<RemotingConnection> connectionIterator = server.getRemotingService().getConnections().iterator();
+      while (connectionIterator.hasNext())
+      {
+         RemotingConnection remotingConnection = connectionIterator.next();
+         remotingConnection.addCloseListener(new CloseListener()
+         {
+            public void connectionClosed()
+            {
+               latch.countDown();
+            }
+         });
+      }
+
       conn1 = null;
       conn2 = null;
       conn3 = null;
 
+
       checkWeakReferences(wr1, wr2, wr3);
-                     
+
+      latch.await(5000, TimeUnit.MILLISECONDS);
+
       assertEquals(0, server.getRemotingService().getConnections().size());
    }
    
@@ -113,14 +147,28 @@ public class CloseConnectionOnGCTest extends JMSTestBase
       Session sess5 = conn3.createSession(false, Session.AUTO_ACKNOWLEDGE);
       Session sess6 = conn3.createSession(false, Session.AUTO_ACKNOWLEDGE);
       Session sess7 = conn3.createSession(false, Session.AUTO_ACKNOWLEDGE);
-            
+      final CountDownLatch latch = new CountDownLatch(3);
+      Iterator<RemotingConnection> connectionIterator = server.getRemotingService().getConnections().iterator();
+      while (connectionIterator.hasNext())
+      {
+         RemotingConnection remotingConnection = connectionIterator.next();
+         remotingConnection.addCloseListener(new CloseListener()
+         {
+            public void connectionClosed()
+            {
+               latch.countDown();
+            }
+         });
+      }
       sess1 = sess2 = sess3 = sess4 = sess5 = sess6 = sess7 = null;
       
       conn1 = null;
       conn2 = null;
       conn3 = null;
-      
+
       checkWeakReferences(wr1, wr2, wr3);
+
+      latch.await(5000, TimeUnit.MILLISECONDS);
                      
       assertEquals(0, server.getRemotingService().getConnections().size());
    }
