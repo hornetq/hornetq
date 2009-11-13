@@ -55,9 +55,6 @@ public abstract class AbstractSequentialFile implements SequentialFile
     *  This is the class returned to the factory when the file is being activated. */
    protected final TimedBufferObserver timedBufferObserver = new LocalBufferObserver();
 
-
-
-
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
@@ -66,7 +63,7 @@ public abstract class AbstractSequentialFile implements SequentialFile
     * @param file
     * @param directory
     */
-   public AbstractSequentialFile(String directory, File file, SequentialFileFactory factory)
+   public AbstractSequentialFile(final String directory, final File file, final SequentialFileFactory factory)
    {
       super();
       this.file = file;
@@ -85,7 +82,6 @@ public abstract class AbstractSequentialFile implements SequentialFile
    {
       return file.getName();
    }
-
 
    public final void delete() throws Exception
    {
@@ -107,12 +103,10 @@ public abstract class AbstractSequentialFile implements SequentialFile
       return position.get();
    }
 
-
    public final void renameTo(final String newFileName) throws Exception
    {
       close();
       File newFile = new File(directory + "/" + newFileName);
-      
 
       if (!file.equals(newFile))
       {
@@ -120,13 +114,12 @@ public abstract class AbstractSequentialFile implements SequentialFile
          file = newFile;
       }
    }
-   
 
-   public final boolean fits(int size)
+   public final boolean fits(final int size)
    {
       if (timedBuffer == null)
       {
-         return this.position.get() + size <= fileSize;
+         return position.get() + size <= fileSize;
       }
       else
       {
@@ -150,22 +143,22 @@ public abstract class AbstractSequentialFile implements SequentialFile
       }
    }
 
-   public void setTimedBuffer(TimedBuffer buffer)
+   public void setTimedBuffer(final TimedBuffer buffer)
    {
       if (timedBuffer != null)
       {
          timedBuffer.setObserver(null);
       }
 
-      this.timedBuffer = buffer;
+      timedBuffer = buffer;
 
       if (buffer != null)
       {
-         buffer.setObserver(this.timedBufferObserver);
+         buffer.setObserver(timedBufferObserver);
       }
 
    }
-   
+
    public void write(final HornetQBuffer bytes, final boolean sync, final IOCompletion callback) throws Exception
    {
       if (timedBuffer != null)
@@ -196,8 +189,6 @@ public abstract class AbstractSequentialFile implements SequentialFile
          write(bytes, false, DummyCallback.getInstance());
       }
    }
-   
-   
 
    // Package protected ---------------------------------------------
 
@@ -208,7 +199,6 @@ public abstract class AbstractSequentialFile implements SequentialFile
       return file;
    }
 
-
    // Private -------------------------------------------------------
 
    // Inner classes -------------------------------------------------
@@ -217,7 +207,7 @@ public abstract class AbstractSequentialFile implements SequentialFile
    {
       final List<IOCompletion> delegates;
 
-      DelegateCallback(List<IOCompletion> delegates)
+      DelegateCallback(final List<IOCompletion> delegates)
       {
          this.delegates = delegates;
       }
@@ -237,7 +227,7 @@ public abstract class AbstractSequentialFile implements SequentialFile
          }
       }
 
-      public void onError(int errorCode, String errorMessage)
+      public void onError(final int errorCode, final String errorMessage)
       {
          for (IOCompletion callback : delegates)
          {
@@ -259,7 +249,7 @@ public abstract class AbstractSequentialFile implements SequentialFile
 
    protected class LocalBufferObserver implements TimedBufferObserver
    {
-      public void flushBuffer(ByteBuffer buffer, List<IOCompletion> callbacks)
+      public void flushBuffer(final ByteBuffer buffer, final boolean requestedSync, final List<IOCompletion> callbacks)
       {
          buffer.flip();
 
@@ -269,7 +259,7 @@ public abstract class AbstractSequentialFile implements SequentialFile
          }
          else
          {
-            writeDirect(buffer, true, new DelegateCallback(callbacks));
+            writeDirect(buffer, requestedSync, new DelegateCallback(callbacks));
          }
       }
 
@@ -295,6 +285,7 @@ public abstract class AbstractSequentialFile implements SequentialFile
          }
       }
 
+      @Override
       public String toString()
       {
          return "TimedBufferObserver on file (" + getFile().getName() + ")";

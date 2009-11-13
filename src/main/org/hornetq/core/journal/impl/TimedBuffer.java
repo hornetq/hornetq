@@ -241,17 +241,14 @@ public class TimedBuffer
 
       if (sync)
       {
+         if (!pendingSync)
+         {
+            pendingSync = true;
+         }
+
          if (flushOnSync)
          {
             flush();
-         }
-         else
-         {
-            // We should flush on the next timeout, no matter what other activity happens on the buffer
-            if (!pendingSync)
-            {
-               pendingSync = true;
-            }
          }
       }
 
@@ -281,7 +278,7 @@ public class TimedBuffer
 
          directBuffer.put(buffer.array(), 0, pos);
 
-         bufferObserver.flushBuffer(directBuffer, callbacks);
+         bufferObserver.flushBuffer(directBuffer, pendingSync, callbacks);
 
          callbacks = new ArrayList<IOCompletion>();
 

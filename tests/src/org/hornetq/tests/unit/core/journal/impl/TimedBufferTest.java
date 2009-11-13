@@ -64,7 +64,7 @@ public class TimedBufferTest extends UnitTestCase
       final AtomicInteger flushTimes = new AtomicInteger(0);
       class TestObserver implements TimedBufferObserver
       {
-         public void flushBuffer(final ByteBuffer buffer, final List<IOCompletion> callbacks)
+         public void flushBuffer(final ByteBuffer buffer, final boolean sync, final List<IOCompletion> callbacks)
          {
             buffers.add(buffer);
             flushTimes.incrementAndGet();

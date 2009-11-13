@@ -39,7 +39,7 @@ public interface TimedBufferObserver
 
    // Public --------------------------------------------------------
    
-   public void flushBuffer(ByteBuffer buffer, List<IOCompletion> callbacks);
+   public void flushBuffer(ByteBuffer buffer, boolean syncRequested, List<IOCompletion> callbacks);
    
    
    /** Return the number of remaining bytes that still fit on the observer (file) */
