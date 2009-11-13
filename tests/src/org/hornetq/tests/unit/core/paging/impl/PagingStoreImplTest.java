@@ -978,6 +978,10 @@ public class PagingStoreImplTest extends UnitTestCase
       {
          // To change body of implemented methods use File | Settings | File Templates.
       }
+      
+      public void sync()
+      {
+      }
 
       /* (non-Javadoc)
        * @see org.hornetq.core.persistence.StorageManager#loadMessageJournal(org.hornetq.core.paging.PagingManager, java.util.Map, org.hornetq.core.transaction.ResourceManager, java.util.Map)

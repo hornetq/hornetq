@@ -66,6 +66,11 @@ public class NullStorageManager implements StorageManager
    {
       this.id = id;
    }
+   
+   public void sync()
+   {
+      // NO OP
+   }
 
    public void addQueueBinding(final Binding queueBinding) throws Exception
    {

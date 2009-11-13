@@ -147,4 +147,6 @@ public interface StorageManager extends HornetQComponent
 
 
    void deleteGrouping(GroupBinding groupBinding) throws Exception;
+
+   void sync();
 }

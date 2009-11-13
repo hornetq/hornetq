@@ -34,6 +34,7 @@ import org.hornetq.core.remoting.impl.wireformat.ReplicationAddMessage;
 import org.hornetq.core.remoting.impl.wireformat.ReplicationAddTXMessage;
 import org.hornetq.core.remoting.impl.wireformat.ReplicationCommitMessage;
 import org.hornetq.core.remoting.impl.wireformat.ReplicationCompareDataMessage;
+import org.hornetq.core.remoting.impl.wireformat.ReplicationSyncContextMessage;
 import org.hornetq.core.remoting.impl.wireformat.ReplicationDeleteMessage;
 import org.hornetq.core.remoting.impl.wireformat.ReplicationDeleteTXMessage;
 import org.hornetq.core.remoting.impl.wireformat.ReplicationLargeMessageBeingMessage;
@@ -275,6 +276,14 @@ public class ReplicationManagerImpl implements ReplicationManager
       if (enabled)
       {
          sendReplicatePacket(new ReplicationLargemessageEndMessage(messageId));
+      }
+   }
+   
+   public void sync()
+   {
+      if (enabled)
+      {
+         sendReplicatePacket(new ReplicationSyncContextMessage());
       }
    }
 

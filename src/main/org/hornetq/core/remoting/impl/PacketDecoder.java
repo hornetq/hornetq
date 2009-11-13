@@ -29,6 +29,7 @@ import static org.hornetq.core.remoting.impl.wireformat.PacketImpl.REPLICATION_A
 import static org.hornetq.core.remoting.impl.wireformat.PacketImpl.REPLICATION_APPEND_TX;
 import static org.hornetq.core.remoting.impl.wireformat.PacketImpl.REPLICATION_COMMIT_ROLLBACK;
 import static org.hornetq.core.remoting.impl.wireformat.PacketImpl.REPLICATION_COMPARE_DATA;
+import static org.hornetq.core.remoting.impl.wireformat.PacketImpl.REPLICATION_SYNC;
 import static org.hornetq.core.remoting.impl.wireformat.PacketImpl.REPLICATION_DELETE;
 import static org.hornetq.core.remoting.impl.wireformat.PacketImpl.REPLICATION_DELETE_TX;
 import static org.hornetq.core.remoting.impl.wireformat.PacketImpl.REPLICATION_LARGE_MESSAGE_BEGIN;
@@ -93,6 +94,7 @@ import org.hornetq.core.remoting.impl.wireformat.ReplicationAddMessage;
 import org.hornetq.core.remoting.impl.wireformat.ReplicationAddTXMessage;
 import org.hornetq.core.remoting.impl.wireformat.ReplicationCommitMessage;
 import org.hornetq.core.remoting.impl.wireformat.ReplicationCompareDataMessage;
+import org.hornetq.core.remoting.impl.wireformat.ReplicationSyncContextMessage;
 import org.hornetq.core.remoting.impl.wireformat.ReplicationDeleteMessage;
 import org.hornetq.core.remoting.impl.wireformat.ReplicationDeleteTXMessage;
 import org.hornetq.core.remoting.impl.wireformat.ReplicationLargeMessageBeingMessage;
@@ -414,6 +416,11 @@ public class PacketDecoder
             packet = new ReplicationDeleteMessage();
             break;
          }
+         case REPLICATION_SYNC:
+         {
+            packet = new ReplicationSyncContextMessage();
+            break;
+         }
          case REPLICATION_DELETE_TX:
          {
             packet = new ReplicationDeleteTXMessage();
@@ -468,7 +475,7 @@ public class PacketDecoder
          {
             packet = new SessionForceConsumerDelivery();
             break;
-         }        
+         }
          default:
          {
             throw new IllegalArgumentException("Invalid type: " + packetType);

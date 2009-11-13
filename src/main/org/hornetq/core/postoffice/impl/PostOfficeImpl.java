@@ -780,6 +780,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
          // First send a reset message
 
          ServerMessage message = new ServerMessageImpl(storageManager.generateUniqueID());
+//         message.setDurable(true);
          message.setBody(ChannelBuffers.EMPTY_BUFFER);
          message.setDestination(queueName);
          message.putBooleanProperty(HDR_RESET_QUEUE_DATA, true);
@@ -913,6 +914,13 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
                }
             }
          }
+         else
+         {
+            if (storageManager.isReplicated())
+            {
+               storageManager.sync();
+            }
+         }
 
          message.incrementRefCount(reference);
       }
@@ -969,6 +977,7 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
       message.setBody(ChannelBuffers.EMPTY_BUFFER);
 
       message.setDestination(queueName);
+//      message.setDurable(true);
 
       String uid = UUIDGenerator.getInstance().generateStringUUID();
 
