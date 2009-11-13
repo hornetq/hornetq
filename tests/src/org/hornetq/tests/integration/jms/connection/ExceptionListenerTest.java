@@ -31,6 +31,9 @@ import org.hornetq.jms.server.impl.JMSServerManagerImpl;
 import org.hornetq.tests.integration.jms.server.management.NullInitialContext;
 import org.hornetq.tests.util.UnitTestCase;
 
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+
 /**
  * 
  * A ExceptionListenerTest
@@ -98,24 +101,34 @@ public class ExceptionListenerTest extends UnitTestCase
    private class MyExceptionListener implements ExceptionListener
    {
       volatile int numCalls;
-      
+
+      private CountDownLatch latch;
+
+      public MyExceptionListener(CountDownLatch latch)
+      {
+         this.latch = latch;
+      }
+
       public synchronized void onException(JMSException arg0)
       {
          numCalls++;
+         latch.countDown();
       }      
    }
 
    public void testListenerCalledForOneConnection() throws Exception
    {
       Connection conn = cf.createConnection();
-      
-      MyExceptionListener listener = new MyExceptionListener();
+      CountDownLatch latch = new CountDownLatch(1);
+      MyExceptionListener listener = new MyExceptionListener(latch);
       
       conn.setExceptionListener(listener);
       
       ClientSessionInternal coreSession = (ClientSessionInternal)((HornetQConnection)conn).getInitialSession();
       
       coreSession.getConnection().fail(new HornetQException(HornetQException.INTERNAL_ERROR, "blah"));
+
+      latch.await(5, TimeUnit.SECONDS);
       
       assertEquals(1, listener.numCalls);
       
@@ -125,8 +138,9 @@ public class ExceptionListenerTest extends UnitTestCase
    public void testListenerCalledForOneConnectionAndSessions() throws Exception
    {
       Connection conn = cf.createConnection();
-      
-      MyExceptionListener listener = new MyExceptionListener();
+
+      CountDownLatch latch = new CountDownLatch(1);
+      MyExceptionListener listener = new MyExceptionListener(latch);
       
       conn.setExceptionListener(listener);
       
@@ -151,7 +165,8 @@ public class ExceptionListenerTest extends UnitTestCase
       coreSession2.getConnection().fail(new HornetQException(HornetQException.INTERNAL_ERROR, "blah"));
       
       coreSession3.getConnection().fail(new HornetQException(HornetQException.INTERNAL_ERROR, "blah"));
-      
+
+      latch.await(5, TimeUnit.SECONDS);
       //Listener should only be called once even if all sessions connections die
       assertEquals(1, listener.numCalls);    
       
