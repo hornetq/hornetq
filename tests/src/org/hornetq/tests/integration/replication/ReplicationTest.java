@@ -504,6 +504,89 @@ public class ReplicationTest extends ServiceTestBase
       }
    }
 
+   public void testOrderOnNonPersistency() throws Exception
+   {
+
+      Configuration config = createDefaultConfig(false);
+
+      config.setBackup(true);
+
+      HornetQServer server = new HornetQServerImpl(config);
+
+      server.start();
+
+      FailoverManager failoverManager = createFailoverManager();
+
+      final ArrayList<Integer> executions = new ArrayList<Integer>();
+
+      try
+      {
+         ReplicationManagerImpl manager = new ReplicationManagerImpl(failoverManager,
+                                                                     ConfigurationImpl.DEFAULT_BACKUP_WINDOW_SIZE);
+         manager.start();
+
+         Journal replicatedJournal = new ReplicatedJournal((byte)1, new FakeJournal(), manager);
+
+         int numberOfAdds = 200;
+         
+         final CountDownLatch latch = new CountDownLatch(numberOfAdds);
+         
+         for (int i = 0; i < numberOfAdds; i++)
+         {
+            final int nAdd = i;
+            
+            if (i % 2 == 0)
+            {
+               replicatedJournal.appendPrepareRecord(i, new FakeData(), false);
+            }
+            else
+            {
+               manager.sync();
+            }
+
+
+            manager.afterReplicated(new Runnable()
+            {
+
+               public void run()
+               {
+                  executions.add(nAdd);
+                  latch.countDown();
+               }
+
+            });
+
+            manager.closeContext();
+         }
+         
+         assertTrue(latch.await(10, TimeUnit.SECONDS));
+
+         
+         for (int i = 0; i < numberOfAdds; i++)
+         {
+            assertEquals(i, executions.get(i).intValue());
+         }
+         
+         for (int i = 0; i < 100; i++)
+         {
+            // This is asynchronous. Have to wait completion
+            if (manager.getActiveTokens().size() == 0)
+            {
+               break;
+            }
+            Thread.sleep(1);
+         }
+
+
+         assertEquals(0, manager.getActiveTokens().size());
+         manager.stop();
+      }
+      finally
+      {
+         server.stop();
+      }
+   }
+
    class FakeData implements EncodingSupport
    {
 
