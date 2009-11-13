@@ -420,6 +420,7 @@ public class ReplicationManagerImpl implements ReplicationManager
    public void closeContext()
    {
       final ReplicationContext token = tlReplicationContext.get();
+      
       if (token != null)
       {
          // Disassociate thread local

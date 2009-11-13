@@ -281,7 +281,7 @@ public class PingTest extends ServiceTestBase
       
       csf.close();
    }
-
+   
    /*
    * Test the client triggering failure due to no ping from server received in time
    */
@@ -325,7 +325,7 @@ public class PingTest extends ServiceTestBase
       //Setting the handler to null will prevent server sending pings back to client
       serverConn.getChannel(0, -1).setHandler(null);
 
-      for (int i = 0; i < 1000; i++)
+      for (int i = 0; i < 2000; i++)
       {
          // a few tries to avoid a possible race caused by GCs or similar issues
          if (server.getRemotingService().getConnections().isEmpty() && clientListener.getException() != null)

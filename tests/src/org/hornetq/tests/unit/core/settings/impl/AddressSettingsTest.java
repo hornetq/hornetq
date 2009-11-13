@@ -9,7 +9,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
  * implied.  See the License for the specific language governing
  * permissions and limitations under the License.
- */ 
+ */
 
 package org.hornetq.tests.unit.core.settings.impl;
 
@@ -26,14 +26,13 @@ public class AddressSettingsTest extends UnitTestCase
    public void testDefaults()
    {
       AddressSettings addressSettings = new AddressSettings();
-      assertEquals(AddressSettings.DEFAULT_DISTRIBUTION_POLICY_CLASS, addressSettings.getDistributionPolicy().getClass());
-      assertEquals(null, addressSettings.getDistributionPolicyClass());
       assertEquals(null, addressSettings.getDeadLetterAddress());
       assertEquals(null, addressSettings.getExpiryAddress());
       assertEquals(AddressSettings.DEFAULT_MAX_DELIVERY_ATTEMPTS, addressSettings.getMaxDeliveryAttempts());
       assertEquals(addressSettings.getMaxSizeBytes(), AddressSettings.DEFAULT_MAX_SIZE_BYTES);
       assertEquals(AddressSettings.DEFAULT_PAGE_SIZE, addressSettings.getPageSizeBytes());
-      assertEquals(AddressSettings.DEFAULT_MESSAGE_COUNTER_HISTORY_DAY_LIMIT, addressSettings.getMessageCounterHistoryDayLimit());
+      assertEquals(AddressSettings.DEFAULT_MESSAGE_COUNTER_HISTORY_DAY_LIMIT,
+                   addressSettings.getMessageCounterHistoryDayLimit());
       assertEquals(AddressSettings.DEFAULT_REDELIVER_DELAY, addressSettings.getRedeliveryDelay());
 
    }
@@ -53,8 +52,6 @@ public class AddressSettingsTest extends UnitTestCase
       addressSettingsToMerge.setRedeliveryDelay((long)1003);
       addressSettingsToMerge.setPageSizeBytes(1004);
       addressSettings.merge(addressSettingsToMerge);
-      assertEquals(addressSettings.getDistributionPolicy().getClass(), AddressSettings.DEFAULT_DISTRIBUTION_POLICY_CLASS);
-      assertEquals(addressSettings.getDistributionPolicyClass(), null);
       assertEquals(addressSettings.getDeadLetterAddress(), DLQ);
       assertEquals(addressSettings.getExpiryAddress(), exp);
       assertEquals(addressSettings.getMaxDeliveryAttempts(), 1000);
@@ -86,8 +83,6 @@ public class AddressSettingsTest extends UnitTestCase
       addressSettingsToMerge2.setRedeliveryDelay((long)2003);
       addressSettings.merge(addressSettingsToMerge2);
 
-      assertEquals(addressSettings.getDistributionPolicy().getClass(), AddressSettings.DEFAULT_DISTRIBUTION_POLICY_CLASS);
-      assertEquals(addressSettings.getDistributionPolicyClass(), null);
       assertEquals(addressSettings.getDeadLetterAddress(), DLQ);
       assertEquals(addressSettings.getExpiryAddress(), exp);
       assertEquals(addressSettings.getMaxDeliveryAttempts(), 1000);
@@ -122,14 +117,12 @@ public class AddressSettingsTest extends UnitTestCase
       addressSettingsToMerge.setAddressFullMessagePolicy(AddressFullMessagePolicy.PAGE);
       addressSettings.merge(addressSettingsToMerge2);
 
-      assertEquals(addressSettings.getDistributionPolicy().getClass(), AddressSettings.DEFAULT_DISTRIBUTION_POLICY_CLASS);
-      assertEquals(addressSettings.getDistributionPolicyClass(), null);
       assertEquals(addressSettings.getDeadLetterAddress(), DLQ);
       assertEquals(addressSettings.getExpiryAddress(), exp);
       assertEquals(addressSettings.getMaxDeliveryAttempts(), 2000);
       assertEquals(addressSettings.getMaxSizeBytes(), 1001);
       assertEquals(addressSettings.getMessageCounterHistoryDayLimit(), 2002);
-      assertEquals(addressSettings.getRedeliveryDelay(),1003);
+      assertEquals(addressSettings.getRedeliveryDelay(), 1003);
       assertEquals(AddressFullMessagePolicy.DROP, addressSettings.getAddressFullMessagePolicy());
    }
 }

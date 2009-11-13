@@ -40,7 +40,6 @@ import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.core.postoffice.Bindings;
 import org.hornetq.core.postoffice.PostOffice;
 import org.hornetq.core.server.Consumer;
-import org.hornetq.core.server.Distributor;
 import org.hornetq.core.server.HandleStatus;
 import org.hornetq.core.server.MessageReference;
 import org.hornetq.core.server.Queue;
@@ -88,13 +87,11 @@ public class QueueImpl implements Queue
 
    private final PriorityLinkedList<MessageReference> messageReferences = new PriorityLinkedListImpl<MessageReference>(NUM_PRIORITIES);
 
-   private final MessageHandler globalHandler = new NullFilterMessageHandler();
+   private List<MessageHandler> handlers = new ArrayList<MessageHandler>();
 
    private final ConcurrentSet<MessageReference> expiringMessageReferences = new ConcurrentHashSet<MessageReference>();
 
    private final ScheduledDeliveryHandler scheduledDeliveryHandler;
-
-   private volatile Distributor distributionPolicy = new RoundRobinDistributor();
 
    private boolean direct;
 
@@ -128,13 +125,13 @@ public class QueueImpl implements Queue
 
    // We cache the consumers here since we don't want to include the redistributor
 
-   private final Set<Consumer> consumers = new HashSet<Consumer>();
-
-   private final Map<Consumer, MessageHandler> messageHandlers = new HashMap<Consumer, MessageHandler>();
+   private final Set<Consumer> consumerSet = new HashSet<Consumer>();
 
    private final ConcurrentMap<SimpleString, Consumer> groups = new ConcurrentHashMap<SimpleString, Consumer>();
 
    private volatile SimpleString expiryAddress;
+
+   private int pos;
 
    public QueueImpl(final long id,
                     final SimpleString address,
@@ -276,28 +273,32 @@ public class QueueImpl implements Queue
    {
       cancelRedistributor();
 
-      distributionPolicy.addConsumer(consumer);
-
-      consumers.add(consumer);
+      MessageHandler handler;
 
       if (consumer.getFilter() != null)
       {
-         messageHandlers.put(consumer, new FilterMessageHandler(messageReferences.iterator()));
+         handler = new FilterMessageHandler(consumer, messageReferences.iterator());
       }
+      else
+      {
+         handler = new NullFilterMessageHandler(consumer);
+      }
+
+      handlers.add(handler);
+
+      consumerSet.add(consumer);
    }
 
    public synchronized boolean removeConsumer(final Consumer consumer) throws Exception
    {
-      boolean removed = distributionPolicy.removeConsumer(consumer);
+      boolean removed = this.removeHandlerGivenConsumer(consumer);
 
-      if (distributionPolicy.getConsumerCount() == 0)
+      if (handlers.isEmpty())
       {
          promptDelivery = false;
       }
 
-      consumers.remove(consumer);
-
-      messageHandlers.remove(consumer);
+      consumerSet.remove(consumer);
 
       if (removed)
       {
@@ -330,7 +331,7 @@ public class QueueImpl implements Queue
 
       if (delay > 0)
       {
-         if (consumers.size() == 0)
+         if (consumerSet.isEmpty())
          {
             DelayedAddRedistributor dar = new DelayedAddRedistributor(executor);
 
@@ -353,7 +354,7 @@ public class QueueImpl implements Queue
 
          redistributor = null;
 
-         distributionPolicy.removeConsumer(redistributor);
+         removeHandlerGivenConsumer(redistributor);
       }
 
       if (future != null)
@@ -366,12 +367,40 @@ public class QueueImpl implements Queue
 
    public synchronized int getConsumerCount()
    {
-      return consumers.size();
+      return consumerSet.size();
    }
 
    public synchronized Set<Consumer> getConsumers()
    {
-      return consumers;
+      return consumerSet;
+   }
+
+   public synchronized boolean hasMatchingConsumer(final ServerMessage message)
+   {
+      for (MessageHandler handler : handlers)
+      {
+         Consumer consumer = handler.getConsumer();
+
+         if (consumer instanceof Redistributor)
+         {
+            continue;
+         }
+
+         Filter filter = consumer.getFilter();
+
+         if (filter == null)
+         {
+            return true;
+         }
+         else
+         {
+            if (filter.match(message))
+            {
+               return true;
+            }
+         }
+      }
+      return false;
    }
 
    public Iterator<MessageReference> iterator()
@@ -602,16 +631,6 @@ public class QueueImpl implements Queue
    public void referenceHandled()
    {
       deliveringCount.incrementAndGet();
-   }
-
-   public Distributor getDistributionPolicy()
-   {
-      return distributionPolicy;
-   }
-
-   public void setDistributionPolicy(final Distributor distributionPolicy)
-   {
-      this.distributionPolicy = distributionPolicy;
    }
 
    public int getMessagesAdded()
@@ -862,14 +881,37 @@ public class QueueImpl implements Queue
    // Private
    // ------------------------------------------------------------------------------
 
+   private boolean removeHandlerGivenConsumer(final Consumer consumer)
+   {
+      Iterator<MessageHandler> iter = handlers.iterator();
+
+      boolean removed = false;
+
+      while (iter.hasNext())
+      {
+         MessageHandler handler = iter.next();
+
+         if (handler.getConsumer() == consumer)
+         {
+            iter.remove();
+
+            removed = true;
+
+            break;
+         }
+      }
+
+      return removed;
+   }
+
    private void internalAddRedistributor(final Executor executor)
    {
       // create the redistributor only once if there are no local consumers
-      if (consumers.size() == 0 && redistributor == null)
+      if (consumerSet.isEmpty() && redistributor == null)
       {
          redistributor = new Redistributor(this, storageManager, postOffice, executor, REDISTRIBUTOR_BATCH_SIZE);
 
-         distributionPolicy.addConsumer(redistributor);
+         handlers.add(new NullFilterMessageHandler(redistributor));
 
          redistributor.start();
 
@@ -979,6 +1021,7 @@ public class QueueImpl implements Queue
    private void sendToDeadLetterAddress(final MessageReference ref) throws Exception
    {
       SimpleString deadLetterAddress = addressSettingsRepository.getMatch(address.toString()).getDeadLetterAddress();
+
       if (deadLetterAddress != null)
       {
          Bindings bindingList = postOffice.getBindingsForAddress(deadLetterAddress);
@@ -1021,122 +1064,222 @@ public class QueueImpl implements Queue
       tx.commit();
    }
 
+   private MessageHandler getHandlerRoundRobin()
+   {
+      MessageHandler handler = handlers.get(pos);
+
+      pos++;
+
+      if (pos == handlers.size())
+      {
+         pos = 0;
+      }
+
+      return handler;
+   }
+
+   private boolean checkExpired(final MessageReference reference)
+   {
+      if (reference.getMessage().isExpired())
+      {
+         reference.handled();
+
+         try
+         {
+            expire(reference);
+         }
+         catch (Exception e)
+         {
+            log.error("Failed to expire ref", e);
+         }
+
+         return true;
+      }
+      else
+      {
+         return false;
+      }
+   }
+
    /*
     * Attempt to deliver all the messages in the queue
     */
    private synchronized void deliver()
    {
-      if (paused)
+      if (paused || handlers.isEmpty())
       {
          return;
       }
 
       direct = false;
 
-      if (distributionPolicy.getConsumerCount() == 0)
-      {
-         return;
-      }
-
-      Consumer consumer;
-
-      MessageReference reference;
-
-      // TODO - this needs to be optimised!! Creating too much stuff on an inner loop
-      int totalConsumers = distributionPolicy.getConsumerCount();
-      Set<Consumer> busyConsumers = new HashSet<Consumer>();
-      Set<Consumer> nullReferences = new HashSet<Consumer>();
-
+      int startPos = pos;
+      int totalCount = handlers.size();
+      int nullCount = 0;
+      int busyCount = 0;
       while (true)
       {
-         consumer = distributionPolicy.getNextConsumer();
+         MessageHandler handler = getHandlerRoundRobin();
 
-         MessageHandler handler = messageHandlers.get(consumer);
+         Consumer consumer = handler.getConsumer();
 
-         if (handler == null)
-         {
-            handler = globalHandler;
-         }
-
-         reference = handler.peek(consumer);
+         MessageReference reference = handler.peek(consumer);
 
          if (reference == null)
          {
-            nullReferences.add(consumer);
-
-            if (nullReferences.size() + busyConsumers.size() == totalConsumers)
-            {
-               // We delivered all the messages - go into direct delivery
-               direct = true;
-
-               promptDelivery = false;
-
-               return;
-            }
-
-            continue;
+            nullCount++;
          }
          else
          {
-            nullReferences.remove(consumer);
-
-            if (reference.getMessage().isExpired())
+            if (checkExpired(reference))
             {
-               // We expire messages on the server too
                handler.remove();
+            }
+            else
+            {
+               final SimpleString groupID = reference.getMessage().getSimpleStringProperty(MessageImpl.HDR_GROUP_ID);
 
-               reference.handled();
+               boolean tryHandle = true;
 
-               try
+               if (groupID != null)
                {
-                  expire(reference);
-               }
-               catch (Exception e)
-               {
-                  log.error("Failed to expire ref", e);
+                  Consumer groupConsumer = groups.putIfAbsent(groupID, consumer);
+
+                  if (groupConsumer != null && groupConsumer != consumer)
+                  {
+                     tryHandle = false;
+
+                     busyCount++;
+                  }
                }
 
-               continue;
+               if (tryHandle)
+               {
+                  HandleStatus status = handle(reference, consumer);
+
+                  if (status == HandleStatus.HANDLED)
+                  {
+                     handler.remove();
+                  }
+                  else if (status == HandleStatus.BUSY)
+                  {
+                     busyCount++;
+
+                     handler.reset();
+
+                     // if (groupID != null )
+                     // {
+                     // // group id being set seems to make delivery stop
+                     // // FIXME !!! why??
+                     // break;
+                     // }
+                  }
+                  else if (status == HandleStatus.NO_MATCH)
+                  {
+                     // if consumer filter reject the message make sure it won't be assigned the message group
+                     if (groupID != null)
+                     {
+                        groups.remove(groupID);
+                     }
+                  }
+               }
             }
          }
 
-         final SimpleString groupID = reference.getMessage().getSimpleStringProperty(MessageImpl.HDR_GROUP_ID);
-
-         if (groupID != null)
+         if (pos == startPos)
          {
-            Consumer groupConsumer = groups.putIfAbsent(groupID, consumer);
+            // We've done all the consumers
 
-            if (groupConsumer != null && groupConsumer != consumer)
+            if (nullCount + busyCount == totalCount)
             {
-               continue;
-            }
-         }
+               if (nullCount == totalCount)
+               {
+                  // We delivered all the messages - go into direct delivery
+                  direct = true;
 
-         HandleStatus status = handle(reference, consumer);
+                  promptDelivery = false;
+               }
 
-         if (status == HandleStatus.HANDLED)
-         {
-            handler.remove();
-         }
-         else if (status == HandleStatus.BUSY)
-         {
-            busyConsumers.add(consumer);
-
-            handler.reset();
-
-            if (groupID != null || busyConsumers.size() == totalConsumers)
-            {
-               // when all consumers are busy, we stop
                break;
             }
+
+            nullCount = busyCount = 0;
          }
-         else if (status == HandleStatus.NO_MATCH)
+      }
+   }
+
+   private synchronized boolean directDeliver(final MessageReference reference)
+   {
+      if (paused || handlers.isEmpty())
+      {
+         return false;
+      }
+
+      int startPos = pos;
+      int busyCount = 0;
+      boolean setPromptDelivery = false;
+      while (true)
+      {
+         MessageHandler handler = getHandlerRoundRobin();
+
+         Consumer consumer = handler.getConsumer();
+
+         if (!checkExpired(reference))
          {
-            // if consumer filter reject the message make sure it won't be assigned the message group
+            SimpleString groupID = reference.getMessage().getSimpleStringProperty(MessageImpl.HDR_GROUP_ID);
+
+            boolean tryHandle = true;
+
             if (groupID != null)
             {
-               groups.remove(consumer);
+               Consumer groupConsumer = groups.putIfAbsent(groupID, consumer);
+
+               if (groupConsumer != null && groupConsumer != consumer)
+               {
+                  tryHandle = false;
+               }
             }
+
+            if (tryHandle)
+            {
+               HandleStatus status = handle(reference, consumer);
+
+               if (status == HandleStatus.HANDLED)
+               {
+                  return true;
+               }
+               else if (status == HandleStatus.BUSY)
+               {
+                  busyCount++;
+
+                  if (groupID != null)
+                  {
+                     // If the group has been assigned a consumer there is no point in trying others
+
+                     return false;
+                  }
+               }
+               else if (status == HandleStatus.NO_MATCH)
+               {
+                  // if consumer filter reject the message make sure it won't be assigned the message group
+                  if (groupID != null)
+                  {
+                     groups.remove(groupID);
+                  }
+
+                  setPromptDelivery = true;
+               }
+            }
+         }
+
+         if (pos == startPos)
+         {
+            if (setPromptDelivery)
+            {
+               promptDelivery = true;
+            }
+
+            return false;
          }
       }
    }
@@ -1159,23 +1302,12 @@ public class QueueImpl implements Queue
       {
          // Deliver directly
 
-         HandleStatus status = directDeliver(ref);
+         boolean delivered = directDeliver(ref);
 
-         if (status == HandleStatus.HANDLED)
-         {
-            // Ok
-         }
-         else if (status == HandleStatus.BUSY)
+         if (!delivered)
          {
             add = true;
-         }
-         else if (status == HandleStatus.NO_MATCH)
-         {
-            add = true;
-         }
 
-         if (add)
-         {
             direct = false;
          }
       }
@@ -1211,81 +1343,6 @@ public class QueueImpl implements Queue
             deliver();
          }
       }
-   }
-
-   private synchronized HandleStatus directDeliver(final MessageReference reference)
-   {
-      if (distributionPolicy.getConsumerCount() == 0)
-      {
-         return HandleStatus.BUSY;
-      }
-
-      HandleStatus status;
-
-      boolean filterRejected = false;
-
-      int consumerCount = 0;
-
-      while (true)
-      {
-         Consumer consumer = distributionPolicy.getNextConsumer();
-         consumerCount++;
-
-         final SimpleString groupId = reference.getMessage().getSimpleStringProperty(MessageImpl.HDR_GROUP_ID);
-
-         if (groupId != null)
-         {
-            Consumer groupConsumer = groups.putIfAbsent(groupId, consumer);
-            if (groupConsumer != null && groupConsumer != consumer)
-            {
-               continue;
-            }
-         }
-
-         status = handle(reference, consumer);
-
-         if (status == HandleStatus.HANDLED)
-         {
-            break;
-         }
-         else if (status == HandleStatus.NO_MATCH)
-         {
-            filterRejected = true;
-            if (groupId != null)
-            {
-               groups.remove(consumer);
-            }
-         }
-         else if (status == HandleStatus.BUSY)
-         {
-            if (groupId != null)
-            {
-               break;
-            }
-         }
-         // if we've tried all of them
-         if (consumerCount == distributionPolicy.getConsumerCount())
-         {
-            if (filterRejected)
-            {
-               status = HandleStatus.NO_MATCH;
-               break;
-            }
-            else
-            {
-               // Give up - all consumers busy
-               status = HandleStatus.BUSY;
-               break;
-            }
-         }
-      }
-
-      if (status == HandleStatus.NO_MATCH)
-      {
-         promptDelivery = true;
-      }
-
-      return status;
    }
 
    private synchronized HandleStatus handle(final MessageReference reference, final Consumer consumer)
@@ -1392,7 +1449,6 @@ public class QueueImpl implements Queue
    {
       public void run()
       {
-
          // Must be set to false *before* executing to avoid race
          waitingToDeliver.set(false);
 
@@ -1408,7 +1464,7 @@ public class QueueImpl implements Queue
       }
    }
 
-   final class RefsOperation implements TransactionOperation
+   private final class RefsOperation implements TransactionOperation
    {
       List<MessageReference> refsToAck = new ArrayList<MessageReference>();
 
@@ -1523,21 +1579,38 @@ public class QueueImpl implements Queue
       void remove();
 
       void reset();
+
+      Consumer getConsumer();
    }
 
    private class FilterMessageHandler implements MessageHandler
    {
+      private final Consumer consumer;
+
       private Iterator<MessageReference> iterator;
 
-      public FilterMessageHandler(final Iterator<MessageReference> iterator)
+      private MessageReference lastReference;
+
+      private boolean resetting;
+
+      public FilterMessageHandler(final Consumer consumer, final Iterator<MessageReference> iterator)
       {
+         this.consumer = consumer;
+
          this.iterator = iterator;
       }
 
       public MessageReference peek(final Consumer consumer)
       {
+         if (resetting)
+         {
+            resetting = false;
+
+            return lastReference;
+         }
+
          MessageReference reference;
-         
+
          if (iterator.hasNext())
          {
             reference = iterator.next();
@@ -1554,6 +1627,8 @@ public class QueueImpl implements Queue
                iterator = messageReferences.iterator();
             }
          }
+         lastReference = reference;
+
          return reference;
       }
 
@@ -1564,12 +1639,24 @@ public class QueueImpl implements Queue
 
       public void reset()
       {
-         iterator = messageReferences.iterator();
+         resetting = true;
+      }
+
+      public Consumer getConsumer()
+      {
+         return consumer;
       }
    }
 
    private class NullFilterMessageHandler implements MessageHandler
    {
+      private final Consumer consumer;
+
+      NullFilterMessageHandler(final Consumer consumer)
+      {
+         this.consumer = consumer;
+      }
+
       public MessageReference peek(final Consumer consumer)
       {
          return messageReferences.peekFirst();
@@ -1583,6 +1670,11 @@ public class QueueImpl implements Queue
       public void reset()
       {
          // no-op
+      }
+
+      public Consumer getConsumer()
+      {
+         return consumer;
       }
    }
 }

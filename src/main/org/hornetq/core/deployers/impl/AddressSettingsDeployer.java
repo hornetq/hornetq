@@ -30,7 +30,7 @@ import org.w3c.dom.NodeList;
 public class AddressSettingsDeployer extends XmlDeployer
 {
    private static final Logger log = Logger.getLogger(AddressSettingsDeployer.class);
-   
+
    private static final String DEAD_LETTER_ADDRESS_NODE_NAME = "dead-letter-address";
 
    private static final String EXPIRY_ADDRESS_NODE_NAME = "expiry-address";
@@ -45,14 +45,12 @@ public class AddressSettingsDeployer extends XmlDeployer
 
    private static final String PAGE_SIZE_BYTES_NODE_NAME = "page-size-bytes";
 
-   private static final String DISTRIBUTION_POLICY_CLASS_NODE_NAME = "distribution-policy-class";
-
    private static final String MESSAGE_COUNTER_HISTORY_DAY_LIMIT_NODE_NAME = "message-counter-history-day-limit";
 
    private static final String LVQ_NODE_NAME = "last-value-queue";
-   
+
    private static final String REDISTRIBUTION_DELAY_NODE_NAME = "redistribution-delay";
-   
+
    private static final String SEND_TO_DLA_ON_NO_ROUTE = "send-to-dla-on-no-route";
 
    private final HierarchicalRepository<AddressSettings> addressSettingsRepository;
@@ -85,7 +83,7 @@ public class AddressSettingsDeployer extends XmlDeployer
     * @throws Exception .
     */
    public void deploy(Node node) throws Exception
-   {      
+   {
       String match = node.getAttributes().getNamedItem(getKeyAttribute()).getNodeValue();
 
       NodeList children = node.getChildNodes();
@@ -118,10 +116,6 @@ public class AddressSettingsDeployer extends XmlDeployer
          {
             addressSettings.setPageSizeBytes(Integer.valueOf(child.getTextContent()));
          }
-         else if (DISTRIBUTION_POLICY_CLASS_NODE_NAME.equalsIgnoreCase(child.getNodeName()))
-         {
-            addressSettings.setDistributionPolicyClass(child.getTextContent());
-         }
          else if (MESSAGE_COUNTER_HISTORY_DAY_LIMIT_NODE_NAME.equalsIgnoreCase(child.getNodeName()))
          {
             addressSettings.setMessageCounterHistoryDayLimit(Integer.valueOf(child.getTextContent()));
@@ -142,7 +136,7 @@ public class AddressSettingsDeployer extends XmlDeployer
             else if (value.equals(AddressFullMessagePolicy.PAGE.toString()))
             {
                policy = AddressFullMessagePolicy.PAGE;
-            }            
+            }
             addressSettings.setAddressFullMessagePolicy(policy);
          }
          else if (LVQ_NODE_NAME.equalsIgnoreCase(child.getNodeName()))
@@ -154,11 +148,11 @@ public class AddressSettingsDeployer extends XmlDeployer
             addressSettings.setMaxDeliveryAttempts(Integer.valueOf(child.getTextContent().trim()));
          }
          else if (REDISTRIBUTION_DELAY_NODE_NAME.equalsIgnoreCase(child.getNodeName()))
-         {           
+         {
             addressSettings.setRedistributionDelay(Long.valueOf(child.getTextContent().trim()));
          }
          else if (SEND_TO_DLA_ON_NO_ROUTE.equalsIgnoreCase(child.getNodeName()))
-         {           
+         {
             addressSettings.setSendToDLAOnNoRoute(Boolean.valueOf(child.getTextContent().trim()));
          }
       }

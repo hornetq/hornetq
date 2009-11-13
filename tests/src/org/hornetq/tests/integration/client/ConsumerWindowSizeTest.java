@@ -12,7 +12,7 @@
  */
 package org.hornetq.tests.integration.client;
 
-import java.util.Set;
+import java.util.Collection;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
@@ -911,7 +911,7 @@ public class ConsumerWindowSizeTest extends ServiceTestBase
 
             for (Binding binding : bindings.getBindings())
             {
-               Set<Consumer> consumers = ((QueueBinding)binding).getQueue().getConsumers();
+               Collection<Consumer> consumers = ((QueueBinding)binding).getQueue().getConsumers();
 
                for (Consumer consumer : consumers)
                {

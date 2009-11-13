@@ -20,7 +20,6 @@ import java.util.concurrent.Executor;
 
 import org.hornetq.core.filter.Filter;
 import org.hornetq.core.server.Consumer;
-import org.hornetq.core.server.Distributor;
 import org.hornetq.core.server.MessageReference;
 import org.hornetq.core.server.Queue;
 import org.hornetq.core.server.RoutingContext;
@@ -31,7 +30,7 @@ import org.hornetq.utils.SimpleString;
 public class FakeQueue implements Queue
 {
    private SimpleString name;
-   
+
    public FakeQueue(SimpleString name)
    {
       this.name = name;
@@ -43,7 +42,7 @@ public class FakeQueue implements Queue
    public void acknowledge(MessageReference ref) throws Exception
    {
       // TODO Auto-generated method stub
-      
+
    }
 
    /* (non-Javadoc)
@@ -52,7 +51,7 @@ public class FakeQueue implements Queue
    public void acknowledge(Transaction tx, MessageReference ref) throws Exception
    {
       // TODO Auto-generated method stub
-      
+
    }
 
    /* (non-Javadoc)
@@ -61,7 +60,7 @@ public class FakeQueue implements Queue
    public void addConsumer(Consumer consumer) throws Exception
    {
       // TODO Auto-generated method stub
-      
+
    }
 
    /* (non-Javadoc)
@@ -70,7 +69,7 @@ public class FakeQueue implements Queue
    public void addFirst(MessageReference ref)
    {
       // TODO Auto-generated method stub
-      
+
    }
 
    /* (non-Javadoc)
@@ -79,7 +78,7 @@ public class FakeQueue implements Queue
    public void addLast(MessageReference ref)
    {
       // TODO Auto-generated method stub
-      
+
    }
 
    /* (non-Javadoc)
@@ -88,7 +87,7 @@ public class FakeQueue implements Queue
    public void addRedistributor(long delay, Executor executor)
    {
       // TODO Auto-generated method stub
-      
+
    }
 
    /* (non-Javadoc)
@@ -97,7 +96,7 @@ public class FakeQueue implements Queue
    public void cancel(MessageReference reference) throws Exception
    {
       // TODO Auto-generated method stub
-      
+
    }
 
    /* (non-Javadoc)
@@ -106,7 +105,7 @@ public class FakeQueue implements Queue
    public void cancel(Transaction tx, MessageReference ref) throws Exception
    {
       // TODO Auto-generated method stub
-      
+
    }
 
    /* (non-Javadoc)
@@ -115,7 +114,7 @@ public class FakeQueue implements Queue
    public void cancelRedistributor() throws Exception
    {
       // TODO Auto-generated method stub
-      
+
    }
 
    /* (non-Javadoc)
@@ -169,7 +168,7 @@ public class FakeQueue implements Queue
    public void deliverAsync(Executor executor)
    {
       // TODO Auto-generated method stub
-      
+
    }
 
    /* (non-Javadoc)
@@ -178,7 +177,7 @@ public class FakeQueue implements Queue
    public void deliverNow()
    {
       // TODO Auto-generated method stub
-      
+
    }
 
    /* (non-Javadoc)
@@ -187,7 +186,7 @@ public class FakeQueue implements Queue
    public void expire(MessageReference ref) throws Exception
    {
       // TODO Auto-generated method stub
-      
+
    }
 
    /* (non-Javadoc)
@@ -205,7 +204,7 @@ public class FakeQueue implements Queue
    public void expireReferences() throws Exception
    {
       // TODO Auto-generated method stub
-      
+
    }
 
    /* (non-Javadoc)
@@ -242,15 +241,6 @@ public class FakeQueue implements Queue
    {
       // TODO Auto-generated method stub
       return 0;
-   }
-
-   /* (non-Javadoc)
-    * @see org.hornetq.core.server.Queue#getDistributionPolicy()
-    */
-   public Distributor getDistributionPolicy()
-   {
-      // TODO Auto-generated method stub
-      return null;
    }
 
    /* (non-Javadoc)
@@ -375,7 +365,7 @@ public class FakeQueue implements Queue
    public void lockDelivery()
    {
       // TODO Auto-generated method stub
-      
+
    }
 
    /* (non-Javadoc)
@@ -402,7 +392,7 @@ public class FakeQueue implements Queue
    public void pause()
    {
       // TODO Auto-generated method stub
-      
+
    }
 
    /* (non-Javadoc)
@@ -411,7 +401,7 @@ public class FakeQueue implements Queue
    public void reacknowledge(Transaction tx, MessageReference ref) throws Exception
    {
       // TODO Auto-generated method stub
-      
+
    }
 
    /* (non-Javadoc)
@@ -420,7 +410,7 @@ public class FakeQueue implements Queue
    public void referenceHandled()
    {
       // TODO Auto-generated method stub
-      
+
    }
 
    /* (non-Javadoc)
@@ -456,7 +446,7 @@ public class FakeQueue implements Queue
    public void resume()
    {
       // TODO Auto-generated method stub
-      
+
    }
 
    /* (non-Javadoc)
@@ -469,32 +459,23 @@ public class FakeQueue implements Queue
    }
 
    /* (non-Javadoc)
-    * @see org.hornetq.core.server.Queue#setDistributionPolicy(org.hornetq.core.server.Distributor)
-    */
-   public void setDistributionPolicy(Distributor policy)
-   {
-      // TODO Auto-generated method stub
-      
-   }
-
-   /* (non-Javadoc)
     * @see org.hornetq.core.server.Queue#setExpiryAddress(org.hornetq.utils.SimpleString)
     */
    public void setExpiryAddress(SimpleString expiryAddress)
    {
       // TODO Auto-generated method stub
-      
+
    }
 
-      // TODO Auto-generated method stub
-      
+   // TODO Auto-generated method stub
+
    /* (non-Javadoc)
     * @see org.hornetq.core.server.Queue#unlockDelivery()
     */
    public void unlockDelivery()
    {
       // TODO Auto-generated method stub
-      
+
    }
 
    /* (non-Javadoc)
@@ -503,9 +484,13 @@ public class FakeQueue implements Queue
    public void route(ServerMessage message, RoutingContext context) throws Exception
    {
       // TODO Auto-generated method stub
-      
+
    }
-   
-   
+
+   public boolean hasMatchingConsumer(ServerMessage message)
+   {
+      // TODO Auto-generated method stub
+      return false;
+   }
 
 }

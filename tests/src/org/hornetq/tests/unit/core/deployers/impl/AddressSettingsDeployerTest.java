@@ -33,8 +33,7 @@ public class AddressSettingsDeployerTest extends UnitTestCase
            "      <dead-letter-address>DLQtest</dead-letter-address>\n" +
            "      <expiry-address>ExpiryQueueTest</expiry-address>\n" +
            "      <redelivery-delay>100</redelivery-delay>\n" +
-           "      <max-size-bytes>-100</max-size-bytes>\n" +
-           "      <distribution-policy-class>org.hornetq.core.impl.RoundRobinDistributionPolicy</distribution-policy-class>\n" +
+           "      <max-size-bytes>-100</max-size-bytes>\n" +         
            "      <message-counter-history-day-limit>1000</message-counter-history-day-limit>\n" +
            "   </address-settings>";
 
@@ -57,8 +56,7 @@ public class AddressSettingsDeployerTest extends UnitTestCase
       AddressSettings as = repository.getMatch("queues.aq");
       assertNotNull(as);
       assertEquals(100, as.getRedeliveryDelay());
-      assertEquals(-100, as.getMaxSizeBytes());
-      assertEquals("org.hornetq.core.impl.RoundRobinDistributionPolicy", as.getDistributionPolicyClass());
+      assertEquals(-100, as.getMaxSizeBytes());     
       assertEquals(1000, as.getMessageCounterHistoryDayLimit());
       assertEquals(new SimpleString("DLQtest"), as.getDeadLetterAddress());
       assertEquals(new SimpleString("ExpiryQueueTest"), as.getExpiryAddress());
@@ -72,8 +70,7 @@ public class AddressSettingsDeployerTest extends UnitTestCase
                  + "      <dead-letter-address>DLQtest</dead-letter-address>\n"
                  + "      <expiry-address>ExpiryQueueTest</expiry-address>\n"
                  + "      <redelivery-delay>100</redelivery-delay>\n"
-                 + "      <max-size-bytes>-100</max-size-bytes>\n"
-                 + "      <distribution-policy-class>org.hornetq.core.impl.RoundRobinDistributionPolicy</distribution-policy-class>"
+                 + "      <max-size-bytes>-100</max-size-bytes>\n"               
                  + "      <message-counter-history-day-limit>1000</message-counter-history-day-limit>"
                  + "   </address-setting>"
                  + "</address-settings>"
@@ -88,8 +85,7 @@ public class AddressSettingsDeployerTest extends UnitTestCase
       AddressSettings as = repository.getMatch("queues.aq");
       assertNotNull(as);
       assertEquals(100, as.getRedeliveryDelay());
-      assertEquals(-100, as.getMaxSizeBytes());
-      assertEquals("org.hornetq.core.impl.RoundRobinDistributionPolicy", as.getDistributionPolicyClass());
+      assertEquals(-100, as.getMaxSizeBytes());      
       assertEquals(1000, as.getMessageCounterHistoryDayLimit());
       assertEquals(new SimpleString("DLQtest"), as.getDeadLetterAddress());
       assertEquals(new SimpleString("ExpiryQueueTest"), as.getExpiryAddress());

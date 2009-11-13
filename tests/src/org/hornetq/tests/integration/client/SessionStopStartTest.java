@@ -149,7 +149,7 @@ public class SessionStopStartTest extends ServiceTestBase
 
       session.close();
    }
-
+   
    public void testStopStartConsumerAsyncSyncStoppedByHandler() throws Exception
    {
       ClientSessionFactory sf = createInVMFactory();
@@ -182,6 +182,8 @@ public class SessionStopStartTest extends ServiceTestBase
          boolean failed;
 
          boolean started = true;
+         
+         int count = 0;
 
          public void onMessage(final ClientMessage message)
          {
@@ -192,16 +194,17 @@ public class SessionStopStartTest extends ServiceTestBase
                {
                   failed = true;
                }
-
-               latch.countDown();
-
-               if (latch.getCount() == 0)
+               
+               count++;
+               
+               if (count == 10)
                {
-
                   message.acknowledge();
                   session.stop();
                   started = false;
                }
+
+               latch.countDown();            
             }
             catch (Exception e)
             {
@@ -214,8 +217,6 @@ public class SessionStopStartTest extends ServiceTestBase
       consumer.setMessageHandler(handler);
 
       latch.await();
-
-      Thread.sleep(100);
 
       assertFalse(handler.failed);
 

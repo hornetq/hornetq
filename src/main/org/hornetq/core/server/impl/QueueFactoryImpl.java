@@ -96,8 +96,6 @@ public class QueueFactoryImpl implements QueueFactory
                                addressSettingsRepository);
       }
 
-      queue.setDistributionPolicy(addressSettings.getDistributionPolicy());
-
       return queue;
    }
 }

@@ -29,6 +29,7 @@ import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
 import org.hornetq.core.config.TransportConfiguration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.exception.HornetQException;
+import org.hornetq.core.logging.Logger;
 import org.hornetq.core.message.impl.MessageImpl;
 import org.hornetq.core.server.HornetQ;
 import org.hornetq.core.server.HornetQServer;
@@ -41,6 +42,8 @@ import org.hornetq.utils.SimpleString;
  */
 public class MessageGroupingTest extends UnitTestCase
 {
+   private static final Logger log = Logger.getLogger(MessageGroupingTest.class);
+
    private HornetQServer server;
 
    private ClientSession clientSession;
@@ -85,13 +88,13 @@ public class MessageGroupingTest extends UnitTestCase
       for (int i = 0; i < numMessages; i++)
       {
          ClientMessage message = createTextMessage("m" + i, clientSession);
-         if( i % 2 == 0 || i == 0)
+         if (i % 2 == 0 || i == 0)
          {
             message.putStringProperty(MessageImpl.HDR_GROUP_ID, groupId);
          }
          else
          {
-             message.putStringProperty(MessageImpl.HDR_GROUP_ID, groupId2);
+            message.putStringProperty(MessageImpl.HDR_GROUP_ID, groupId2);
          }
          clientProducer.send(message);
       }
@@ -130,13 +133,13 @@ public class MessageGroupingTest extends UnitTestCase
       for (int i = 0; i < numMessages; i++)
       {
          ClientMessage message = createTextMessage("m" + i, clientSession);
-         if( i % 2 == 0 || i == 0)
+         if (i % 2 == 0 || i == 0)
          {
             message.putStringProperty(MessageImpl.HDR_GROUP_ID, groupId);
          }
          else
          {
-             message.putStringProperty(MessageImpl.HDR_GROUP_ID, groupId2);
+            message.putStringProperty(MessageImpl.HDR_GROUP_ID, groupId2);
          }
          clientProducer.send(message);
       }
@@ -178,18 +181,18 @@ public class MessageGroupingTest extends UnitTestCase
       for (int i = 0; i < numMessages; i++)
       {
          ClientMessage message = createTextMessage("m" + i, clientSession);
-         if( i % 2 == 0 || i == 0)
+         if (i % 2 == 0 || i == 0)
          {
             message.putStringProperty(MessageImpl.HDR_GROUP_ID, groupId);
          }
          else
          {
-             message.putStringProperty(MessageImpl.HDR_GROUP_ID, groupId2);
+            message.putStringProperty(MessageImpl.HDR_GROUP_ID, groupId2);
          }
          clientProducer.send(message);
       }
 
-      for(int i = 0; i < numMessages/2; i++)
+      for (int i = 0; i < numMessages / 2; i++)
       {
          ClientMessage cm = consumer.receive(500);
          assertNotNull(cm);
@@ -199,18 +202,25 @@ public class MessageGroupingTest extends UnitTestCase
          assertNotNull(cm);
          assertEquals(cm.getBody().readString(), "m" + i);
       }
-
+      
+      log.info("closing consumers");
+      
       consumer2.close();
+      
+      log.info("closed consumer 2");
+      
       consumer.close();
-      //check that within their groups the messages are still in the correct order
+      
+      log.info("closed consuemrs");
+      // check that within their groups the messages are still in the correct order
       consumer = clientSession.createConsumer(qName);
-      for(int i = 0; i < numMessages; i+=2)
+      for (int i = 0; i < numMessages; i += 2)
       {
          ClientMessage cm = consumer.receive(500);
          assertNotNull(cm);
          assertEquals(cm.getBody().readString(), "m" + i);
       }
-      for(int i = 1; i < numMessages; i+=2)
+      for (int i = 1; i < numMessages; i += 2)
       {
          ClientMessage cm = consumer.receive(500);
          assertNotNull(cm);
@@ -230,13 +240,13 @@ public class MessageGroupingTest extends UnitTestCase
       for (int i = 0; i < numMessages; i++)
       {
          ClientMessage message = createTextMessage("m" + i, clientSession);
-         if( i % 2 == 0 || i == 0)
+         if (i % 2 == 0 || i == 0)
          {
             message.putStringProperty(MessageImpl.HDR_GROUP_ID, groupId);
          }
          else
          {
-             message.putStringProperty(MessageImpl.HDR_GROUP_ID, groupId2);
+            message.putStringProperty(MessageImpl.HDR_GROUP_ID, groupId2);
          }
          clientProducer.send(message);
       }
@@ -269,13 +279,13 @@ public class MessageGroupingTest extends UnitTestCase
       for (int i = 0; i < numMessages; i++)
       {
          ClientMessage message = createTextMessage("m" + i, clientSession);
-         if( i % 2 == 0 || i == 0)
+         if (i % 2 == 0 || i == 0)
          {
             message.putStringProperty(MessageImpl.HDR_GROUP_ID, groupId);
          }
          else
          {
-             message.putStringProperty(MessageImpl.HDR_GROUP_ID, groupId2);
+            message.putStringProperty(MessageImpl.HDR_GROUP_ID, groupId2);
          }
          clientProducer.send(message);
       }
@@ -322,13 +332,13 @@ public class MessageGroupingTest extends UnitTestCase
       for (int i = 0; i < numMessages; i++)
       {
          ClientMessage message = createTextMessage("m" + i, clientSession);
-         if( i % 2 == 0 || i == 0)
+         if (i % 2 == 0 || i == 0)
          {
             message.putStringProperty(MessageImpl.HDR_GROUP_ID, groupId);
          }
          else
          {
-             message.putStringProperty(MessageImpl.HDR_GROUP_ID, groupId2);
+            message.putStringProperty(MessageImpl.HDR_GROUP_ID, groupId2);
          }
          clientProducer.send(message);
       }
@@ -393,13 +403,13 @@ public class MessageGroupingTest extends UnitTestCase
       for (int i = 0; i < numMessages; i++)
       {
          ClientMessage message = createTextMessage("m" + i, clientSession);
-         if( i % 2 == 0 || i == 0)
+         if (i % 2 == 0 || i == 0)
          {
             message.putStringProperty(MessageImpl.HDR_GROUP_ID, groupId);
          }
          else
          {
-             message.putStringProperty(MessageImpl.HDR_GROUP_ID, groupId2);
+            message.putStringProperty(MessageImpl.HDR_GROUP_ID, groupId2);
          }
          clientProducer.send(message);
       }
@@ -451,13 +461,13 @@ public class MessageGroupingTest extends UnitTestCase
       for (int i = 0; i < numMessages; i++)
       {
          ClientMessage message = createTextMessage("m" + i, clientSession);
-         if( i % 2 == 0 || i == 0)
+         if (i % 2 == 0 || i == 0)
          {
             message.putStringProperty(MessageImpl.HDR_GROUP_ID, groupId);
          }
          else
          {
-             message.putStringProperty(MessageImpl.HDR_GROUP_ID, groupId2);
+            message.putStringProperty(MessageImpl.HDR_GROUP_ID, groupId2);
          }
          clientProducer.send(message);
       }
@@ -536,14 +546,14 @@ public class MessageGroupingTest extends UnitTestCase
       }
       server = null;
       clientSession = null;
-      
+
       super.tearDown();
    }
 
    protected void setUp() throws Exception
    {
       super.setUp();
-      
+
       ConfigurationImpl configuration = new ConfigurationImpl();
       configuration.setSecurityEnabled(false);
       TransportConfiguration transportConfig = new TransportConfiguration(INVM_ACCEPTOR_FACTORY);
@@ -578,12 +588,12 @@ public class MessageGroupingTest extends UnitTestCase
          if (acknowledge)
          {
             try
-         {
-            message.acknowledge();
-         }
-         catch (HornetQException e)
             {
-               //ignore
+               message.acknowledge();
+            }
+            catch (HornetQException e)
+            {
+               // ignore
             }
          }
          latch.countDown();

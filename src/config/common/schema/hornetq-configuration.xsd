@@ -454,9 +454,7 @@
         <xsd:element maxOccurs="1" minOccurs="0" name="page-size-bytes" type="xsd:int">
         </xsd:element>
         <xsd:element maxOccurs="1" minOccurs="0" name="address-full-policy" type="addressFullMessagePolicyType">
-		</xsd:element>        
-        <xsd:element maxOccurs="1" minOccurs="0" name="distribution-policy-class" type="xsd:string">
-        </xsd:element>
+		</xsd:element>                
         <xsd:element maxOccurs="1" minOccurs="0" name="message-counter-history-day-limit" type="xsd:int">
         </xsd:element>
         <xsd:element maxOccurs="1" minOccurs="0" name="last-value-queue" type="xsd:boolean">

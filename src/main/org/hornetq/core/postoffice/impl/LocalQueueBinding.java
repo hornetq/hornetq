@@ -14,7 +14,7 @@
 
 package org.hornetq.core.postoffice.impl;
 
-import java.util.Set;
+import java.util.Collection;
 
 import org.hornetq.core.filter.Filter;
 import org.hornetq.core.logging.Logger;
@@ -118,31 +118,7 @@ public class LocalQueueBinding implements QueueBinding
    {
       //It's a high accept priority if the queue has at least one matching consumer
       
-      Set<Consumer> consumers = queue.getConsumers();
-      
-      for (Consumer consumer: consumers)
-      {
-         if (consumer instanceof Redistributor)
-         {
-            continue;
-         }
-         
-         Filter filter = consumer.getFilter();
-         
-         if (filter == null)
-         {
-            return true;
-         }
-         else
-         {
-            if (filter.match(message))
-            {
-               return true;
-            }
-         }
-      }
-      
-      return false;
+      return queue.hasMatchingConsumer(message);      
    }
    
    public void route(final ServerMessage message, final RoutingContext context) throws Exception

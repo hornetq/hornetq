@@ -13,9 +13,9 @@
 
 package org.hornetq.core.server;
 
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 import java.util.concurrent.Executor;
 
 import org.hornetq.core.filter.Filter;
@@ -49,8 +49,6 @@ public interface Queue extends Bindable
 
    int getConsumerCount();
 
-   Set<Consumer> getConsumers();
-
    void addLast(MessageReference ref);
 
    void addFirst(MessageReference ref);
@@ -79,9 +77,9 @@ public interface Queue extends Bindable
 
    List<MessageReference> getScheduledMessages();
 
-   Distributor getDistributionPolicy();
-
-   void setDistributionPolicy(Distributor policy);
+//   Distributor getDistributionPolicy();
+//
+//   void setDistributionPolicy(Distributor policy);
 
    int getMessagesAdded();
 
@@ -119,10 +117,14 @@ public interface Queue extends Bindable
    void addRedistributor(long delay, Executor executor);
 
    void cancelRedistributor() throws Exception;
+   
+   boolean hasMatchingConsumer(ServerMessage message);
 
    // Only used in testing
    void deliverNow();
-
+   
+   Collection<Consumer> getConsumers();
+   
    boolean checkDLQ(MessageReference ref) throws Exception;
    
    void lockDelivery();

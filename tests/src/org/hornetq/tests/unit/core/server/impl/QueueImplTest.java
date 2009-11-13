@@ -23,13 +23,11 @@ import java.util.concurrent.ScheduledExecutorService;
 import org.hornetq.core.filter.Filter;
 import org.hornetq.core.filter.impl.FilterImpl;
 import org.hornetq.core.server.Consumer;
-import org.hornetq.core.server.Distributor;
 import org.hornetq.core.server.HandleStatus;
 import org.hornetq.core.server.MessageReference;
 import org.hornetq.core.server.Queue;
 import org.hornetq.core.server.ServerMessage;
 import org.hornetq.core.server.impl.QueueImpl;
-import org.hornetq.core.server.impl.RoundRobinDistributor;
 import org.hornetq.tests.unit.core.server.impl.fakes.FakeConsumer;
 import org.hornetq.tests.unit.core.server.impl.fakes.FakeFilter;
 import org.hornetq.tests.unit.core.server.impl.fakes.FakePostOffice;
@@ -116,21 +114,6 @@ public class QueueImplTest extends UnitTestCase
       assertEquals(0, queue.getConsumerCount());
 
       assertFalse(queue.removeConsumer(cons3));
-   }
-
-   public void testGetSetDistributionPolicy()
-   {
-      Queue queue = new QueueImpl(1, address1, queue1, null, false, true, scheduledExecutor, null, null, null);
-
-      assertNotNull(queue.getDistributionPolicy());
-
-      assertTrue(queue.getDistributionPolicy() instanceof RoundRobinDistributor);
-
-      Distributor policy = new DummyDistributionPolicy();
-
-      queue.setDistributionPolicy(policy);
-
-      assertEquals(policy, queue.getDistributionPolicy());
    }
 
    public void testGetFilter()
@@ -608,8 +591,6 @@ public class QueueImplTest extends UnitTestCase
    {
       Queue queue = new QueueImpl(1, address1, queue1, null, false, true, scheduledExecutor, null, null, null);
 
-      assertTrue(queue.getDistributionPolicy() instanceof RoundRobinDistributor);
-
       final int numMessages = 10;
 
       List<MessageReference> refs = new ArrayList<MessageReference>();
@@ -652,8 +633,6 @@ public class QueueImplTest extends UnitTestCase
    public void testRoundRobinDirect() throws Exception
    {
       Queue queue = new QueueImpl(1, address1, queue1, null, false, true, scheduledExecutor, null, null, null);
-
-      assertTrue(queue.getDistributionPolicy() instanceof RoundRobinDistributor);
 
       final int numMessages = 10;
 
@@ -943,7 +922,7 @@ public class QueueImplTest extends UnitTestCase
       int currId = 0;
       for (MessageReference receeivedRef : receeivedRefs)
       {
-         assertEquals("messages received out of order", receeivedRef.getMessage().getMessageID() , currId++);
+         assertEquals("messages received out of order", receeivedRef.getMessage().getMessageID(), currId++);
       }
    }
 
@@ -1017,7 +996,7 @@ public class QueueImplTest extends UnitTestCase
       int currId = 10;
       for (MessageReference receeivedRef : receeivedRefs)
       {
-         assertEquals("messages received out of order", receeivedRef.getMessage().getMessageID() , currId++);
+         assertEquals("messages received out of order", receeivedRef.getMessage().getMessageID(), currId++);
       }
    }
 
@@ -1248,7 +1227,7 @@ public class QueueImplTest extends UnitTestCase
    public void testPauseAndResumeWithAsync() throws Exception
    {
       Queue queue = new QueueImpl(1, address1, queue1, null, false, true, scheduledExecutor, null, null, null);
-      
+
       // pauses the queue
       queue.pause();
 
@@ -1374,36 +1353,6 @@ public class QueueImplTest extends UnitTestCase
          }
          added = true;
          countDownLatch.countDown();
-      }
-   }
-
-   class DummyDistributionPolicy implements Distributor
-   {
-      Consumer consumer;
-
-      public List<Consumer> getConsumers()
-      {
-         return null;
-      }
-
-      public void addConsumer(Consumer consumer)
-      {
-         this.consumer = consumer;
-      }
-
-      public boolean removeConsumer(Consumer consumer)
-      {
-         return false;
-      }
-
-      public int getConsumerCount()
-      {
-         return 0;
-      }
-
-      public Consumer getNextConsumer()
-      {
-         return consumer;
       }
    }
 

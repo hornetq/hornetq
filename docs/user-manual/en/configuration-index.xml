@@ -775,14 +775,7 @@
                             <entry>boolean</entry>
                             <entry>whether to treat the queue as a last value queue</entry>
                             <entry>false</entry>
-                        </row>
-                        <row>
-                            <entry><link linkend="queue-attributes.address-settings"
-                                    >address-settings.distribution-policy-class</link></entry>
-                            <entry>String</entry>
-                            <entry>the class to use for distributing messages to a consumer</entry>
-                            <entry>RoundRobinDistributor</entry>
-                        </row>
+                        </row>                        
                         <row>
                             <entry><link linkend="paging"
                                 >address-settings.page-size-bytes</link></entry>

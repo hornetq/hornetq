@@ -1728,6 +1728,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
             }
 
          });
+         
          storageManager.completeReplication();
       }
       else
@@ -1750,6 +1751,7 @@ public class ServerSessionImpl implements ServerSession, FailureListener, CloseL
       if (confirmPacket != null)
       {
          channel.confirm(confirmPacket);
+         
          if (flush)
          {
             channel.flushConfirmations();

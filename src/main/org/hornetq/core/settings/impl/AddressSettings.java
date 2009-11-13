@@ -14,8 +14,6 @@
 package org.hornetq.core.settings.impl;
 
 import org.hornetq.core.logging.Logger;
-import org.hornetq.core.server.Distributor;
-import org.hornetq.core.server.impl.RoundRobinDistributor;
 import org.hornetq.core.settings.Mergeable;
 import org.hornetq.utils.SimpleString;
 
@@ -32,14 +30,12 @@ public class AddressSettings implements Mergeable<AddressSettings>
    /**
     * defaults used if null, this allows merging
     */
-   public static final Class<?> DEFAULT_DISTRIBUTION_POLICY_CLASS = new RoundRobinDistributor().getClass();
-
    public static final int DEFAULT_MAX_SIZE_BYTES = -1;
 
    public static final AddressFullMessagePolicy DEFAULT_ADDRESS_FULL_MESSAGE_POLICY = AddressFullMessagePolicy.PAGE;
 
    public static final int DEFAULT_PAGE_SIZE = 10 * 1024 * 1024;
-   
+
    public static final int DEFAULT_MAX_DELIVERY_ATTEMPTS = 10;
 
    public static final int DEFAULT_MESSAGE_COUNTER_HISTORY_DAY_LIMIT = 0;
@@ -59,8 +55,6 @@ public class AddressSettings implements Mergeable<AddressSettings>
    private Integer pageSizeBytes = null;
 
    private Boolean dropMessagesWhenFull = null;
-
-   private String distributionPolicyClass = null;
 
    private Integer maxDeliveryAttempts = null;
 
@@ -149,16 +143,6 @@ public class AddressSettings implements Mergeable<AddressSettings>
       this.redeliveryDelay = redeliveryDelay;
    }
 
-   public String getDistributionPolicyClass()
-   {
-      return distributionPolicyClass;
-   }
-
-   public void setDistributionPolicyClass(final String distributionPolicyClass)
-   {
-      this.distributionPolicyClass = distributionPolicyClass;
-   }
-
    public SimpleString getDeadLetterAddress()
    {
       return deadLetterAddress;
@@ -187,25 +171,6 @@ public class AddressSettings implements Mergeable<AddressSettings>
    public void setSendToDLAOnNoRoute(final boolean value)
    {
       sendToDLAOnNoRoute = value;
-   }
-
-   public Distributor getDistributionPolicy()
-   {
-      try
-      {
-         if (distributionPolicyClass != null)
-         {
-            return (Distributor)getClass().getClassLoader().loadClass(distributionPolicyClass).newInstance();
-         }
-         else
-         {
-            return (Distributor)DEFAULT_DISTRIBUTION_POLICY_CLASS.newInstance();
-         }
-      }
-      catch (Exception e)
-      {
-         throw new IllegalArgumentException("Error instantiating distribution policy '" + e + " '");
-      }
    }
 
    public long getRedistributionDelay()
@@ -247,10 +212,6 @@ public class AddressSettings implements Mergeable<AddressSettings>
       if (redeliveryDelay == null)
       {
          redeliveryDelay = merged.redeliveryDelay;
-      }
-      if (distributionPolicyClass == null)
-      {
-         distributionPolicyClass = merged.distributionPolicyClass;
       }
       if (deadLetterAddress == null)
       {

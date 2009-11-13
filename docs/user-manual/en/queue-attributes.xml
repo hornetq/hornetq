@@ -95,8 +95,7 @@
         &lt;max-delivery-attempts>3&lt;/max-delivery-attempts>
         &lt;redelivery-delay>5000&lt;/redelivery-delay>
         &lt;expiry-address>jms.queue.expiryQueue&lt;/expiry-address>
-        &lt;last-value-queue>true&lt;/last-value-queue>
-        &lt;distribution-policy-class>org.hornetq.core.server.impl.RoundRobinDistributor&lt;/distribution-policy-class>
+        &lt;last-value-queue>true&lt;/last-value-queue>        
         &lt;max-size-bytes>100000&lt;/max-size-bytes>
         &lt;page-size-bytes>20000&lt;/page-size-bytes>
         &lt;redistribution-delay>0&lt;/redistribution-delay>
@@ -123,9 +122,6 @@
             see <link linkend="message-expiry.configuring">here</link>.</para>
         <para><literal>last-value-queue</literal> defines whether a queue only uses last values or
             not. see <link linkend="last-value-queues">here</link>.</para>
-        <para><literal>distribution-policy-class</literal> defines the class to use for distribution
-            of messages by a queue to consumers. By default this is <literal
-                >org.hornetq.core.server.impl.RoundRobinDistributor</literal>.</para>
         <para><literal>max-size-bytes</literal> and <literal>page-size-bytes</literal> are used to
             set paging on an address. This is explained <link linkend="paging">here</link>.</para>
         <para><literal>redistribution-delay</literal> defines how long to wait when the last
