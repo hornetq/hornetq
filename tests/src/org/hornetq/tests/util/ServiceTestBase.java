@@ -71,12 +71,12 @@ public abstract class ServiceTestBase extends UnitTestCase
    {
       super();
    }
-   
+
    public ServiceTestBase(String name)
    {
       super(name);
    }
-   
+
    // Public --------------------------------------------------------
 
    // Package protected ---------------------------------------------
@@ -146,7 +146,6 @@ public abstract class ServiceTestBase extends UnitTestCase
       return createServer(realFiles, false);
    }
 
-
    protected HornetQServer createServer(final boolean realFiles, final boolean netty)
    {
       return createServer(realFiles, createDefaultConfig(netty), -1, -1, new HashMap<String, AddressSettings>());
@@ -189,28 +188,52 @@ public abstract class ServiceTestBase extends UnitTestCase
       return server;
    }
 
-   protected HornetQServer createClusteredServerWithParams(final int index,
+   protected HornetQServer createClusteredServerWithParams(final boolean isNetty,
+                                                           final int index,
                                                            final boolean realFiles,
                                                            final Map<String, Object> params)
    {
-      return createServer(realFiles,
-                          createClusteredDefaultConfig(index, params, INVM_ACCEPTOR_FACTORY),
-                          -1,
-                          -1,
-                          new HashMap<String, AddressSettings>());
+      if (isNetty)
+      {
+         return createServer(realFiles,
+                             createClusteredDefaultConfig(index, params, NETTY_ACCEPTOR_FACTORY),
+                             -1,
+                             -1,
+                             new HashMap<String, AddressSettings>());
+      }
+      else
+      {
+         return createServer(realFiles,
+                             createClusteredDefaultConfig(index, params, INVM_ACCEPTOR_FACTORY),
+                             -1,
+                             -1,
+                             new HashMap<String, AddressSettings>());
+      }
    }
-   
-   protected HornetQServer createClusteredServerWithParams(final int index,
+
+   protected HornetQServer createClusteredServerWithParams(final boolean isNetty,
+                                                           final int index,
                                                            final boolean realFiles,
                                                            final int pageSize,
                                                            final int maxAddressSize,
                                                            final Map<String, Object> params)
    {
-      return createServer(realFiles,
-                          createClusteredDefaultConfig(index, params, INVM_ACCEPTOR_FACTORY),
-                          pageSize,
-                          maxAddressSize,
-                          new HashMap<String, AddressSettings>());
+      if (isNetty)
+      {
+         return createServer(realFiles,
+                             createClusteredDefaultConfig(index, params, NETTY_ACCEPTOR_FACTORY),
+                             pageSize,
+                             maxAddressSize,
+                             new HashMap<String, AddressSettings>());
+      }
+      else
+      {
+         return createServer(realFiles,
+                             createClusteredDefaultConfig(index, params, INVM_ACCEPTOR_FACTORY),
+                             -1,
+                             -1,
+                             new HashMap<String, AddressSettings>());
+      }
    }
 
    protected Configuration createDefaultConfig()
@@ -279,7 +302,7 @@ public abstract class ServiceTestBase extends UnitTestCase
       configuration.setLargeMessagesDirectory(getLargeMessagesDir());
       configuration.setJournalCompactMinFiles(0);
       configuration.setJournalCompactPercentage(0);
-      
+
       configuration.setFileDeploymentEnabled(false);
 
       configuration.setJournalType(JournalType.ASYNCIO);
@@ -306,7 +329,7 @@ public abstract class ServiceTestBase extends UnitTestCase
          return createInVMFactory();
       }
    }
-   
+
    protected ClientSessionFactory createInVMFactory()
    {
       return createFactory(INVM_CONNECTOR_FACTORY);
@@ -355,7 +378,7 @@ public abstract class ServiceTestBase extends UnitTestCase
       message.getBody().writeBytes(b);
       return message;
    }
-   
+
    /**
     * Deleting a file on LargeDire is an asynchronous process. Wee need to keep looking for a while if the file hasn't been deleted yet
     */
@@ -387,7 +410,6 @@ public abstract class ServiceTestBase extends UnitTestCase
       validateNoFilesOnLargeDir(0);
    }
 
-   
    // Private -------------------------------------------------------
 
    // Inner classes -------------------------------------------------

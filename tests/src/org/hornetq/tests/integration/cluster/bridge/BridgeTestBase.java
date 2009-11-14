@@ -21,6 +21,8 @@ import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.remoting.impl.invm.TransportConstants;
 import org.hornetq.core.server.HornetQ;
 import org.hornetq.core.server.HornetQServer;
+import org.hornetq.integration.transports.netty.NettyAcceptorFactory;
+import org.hornetq.tests.util.ServiceTestBase;
 import org.hornetq.tests.util.UnitTestCase;
 
 /**
@@ -34,12 +36,15 @@ import org.hornetq.tests.util.UnitTestCase;
  */
 public abstract class BridgeTestBase extends UnitTestCase
 {
-   protected HornetQServer createHornetQServer(final int id, final Map<String, Object> params)
+   protected HornetQServer createHornetQServer(final int id, final boolean netty, final Map<String, Object> params)
    {
-      return createHornetQServer(id, params, false);
+      return createHornetQServer(id, params, netty, false);
    }
 
-   protected HornetQServer createHornetQServer(final int id, final Map<String, Object> params, final boolean backup)
+   protected HornetQServer createHornetQServer(final int id,
+                                               final Map<String, Object> params,
+                                               final boolean netty,
+                                               final boolean backup)
    {
       Configuration serviceConf = new ConfigurationImpl();
       serviceConf.setClustered(true);
@@ -51,10 +56,20 @@ public abstract class BridgeTestBase extends UnitTestCase
       serviceConf.setJournalDirectory(getJournalDir(id, false));
       serviceConf.setPagingDirectory(getPageDir(id, false));
       serviceConf.setLargeMessagesDirectory(getLargeMessagesDir(id, false));
-      
-      params.put(TransportConstants.SERVER_ID_PROP_NAME, id);
-      serviceConf.getAcceptorConfigurations()
-                 .add(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory", params));
+
+      if (netty)
+      {
+         params.put(org.hornetq.integration.transports.netty.TransportConstants.PORT_PROP_NAME, org.hornetq.integration.transports.netty.TransportConstants.DEFAULT_PORT + id);
+         serviceConf.getAcceptorConfigurations()
+                    .add(new TransportConfiguration(NettyAcceptorFactory.class.getName(), params));
+
+      }
+      else
+      {
+         params.put(org.hornetq.core.remoting.impl.invm.TransportConstants.SERVER_ID_PROP_NAME, id);
+         serviceConf.getAcceptorConfigurations()
+                    .add(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory", params));
+      }
       HornetQServer service = HornetQ.newHornetQServer(serviceConf, true);
       return service;
    }

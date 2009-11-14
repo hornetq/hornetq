@@ -32,6 +32,7 @@ import org.hornetq.core.config.cluster.BridgeConfiguration;
 import org.hornetq.core.config.cluster.QueueConfiguration;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.server.HornetQServer;
+import org.hornetq.integration.transports.netty.NettyConnectorFactory;
 import org.hornetq.tests.util.ServiceTestBase;
 import org.hornetq.utils.Pair;
 import org.hornetq.utils.SimpleString;
@@ -48,6 +49,24 @@ import org.hornetq.utils.SimpleString;
 public class BridgeTest extends ServiceTestBase
 {
    private static final Logger log = Logger.getLogger(BridgeTest.class);
+   
+   protected boolean isNetty()
+   {
+      return false;
+   }
+
+   private String getConnector()
+   {
+      if (isNetty())
+      {
+         return NettyConnectorFactory.class.getName();
+      }
+      else
+      {
+         return "org.hornetq.core.remoting.impl.invm.InVMConnectorFactory";
+      }
+   }
+
 
    public void testSimpleBridge() throws Exception
    {
@@ -77,11 +96,11 @@ public class BridgeTest extends ServiceTestBase
       try
       {
          Map<String, Object> server0Params = new HashMap<String, Object>();
-         server0 = createClusteredServerWithParams(0, useFiles, server0Params);
+         server0 = createClusteredServerWithParams(isNetty(), 0, useFiles, server0Params);
 
          Map<String, Object> server1Params = new HashMap<String, Object>();
-         server1Params.put(SERVER_ID_PROP_NAME, 1);
-         server1 = createClusteredServerWithParams(1, useFiles, server1Params);
+         addTargetParameters(server1Params);
+         server1 = createClusteredServerWithParams(isNetty(), 1, useFiles, server1Params);
 
          final String testAddress = "testAddress";
          final String queueName0 = "queue0";
@@ -89,10 +108,10 @@ public class BridgeTest extends ServiceTestBase
          final String queueName1 = "queue1";
 
          Map<String, TransportConfiguration> connectors = new HashMap<String, TransportConfiguration>();
-         TransportConfiguration server0tc = new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory",
+         TransportConfiguration server0tc = new TransportConfiguration(getConnector(),
                                                                        server0Params);
 
-         TransportConfiguration server1tc = new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory",
+         TransportConfiguration server1tc = new TransportConfiguration(getConnector(),
                                                                        server1Params);
          connectors.put(server1tc.getName(), server1tc);
 
@@ -219,6 +238,21 @@ public class BridgeTest extends ServiceTestBase
    }
 
    /**
+    * @param server1Params
+    */
+   private void addTargetParameters(Map<String, Object> server1Params)
+   {
+      if (isNetty())
+      {
+         server1Params.put("port", org.hornetq.integration.transports.netty.TransportConstants.DEFAULT_PORT + 1);
+      }
+      else
+      {
+         server1Params.put(SERVER_ID_PROP_NAME, 1);
+      }
+   }
+
+   /**
     * @param message
     */
    private void readMessages(ClientMessage message)
@@ -260,11 +294,11 @@ public class BridgeTest extends ServiceTestBase
       {
 
          Map<String, Object> server0Params = new HashMap<String, Object>();
-         server0 = createClusteredServerWithParams(0, useFiles, server0Params);
+         server0 = createClusteredServerWithParams(isNetty(), 0, useFiles, server0Params);
 
          Map<String, Object> server1Params = new HashMap<String, Object>();
-         server1Params.put(SERVER_ID_PROP_NAME, 1);
-         server1 = createClusteredServerWithParams(1, useFiles, server1Params);
+         addTargetParameters(server1Params);
+         server1 = createClusteredServerWithParams(isNetty(), 1, useFiles, server1Params);
 
          final String testAddress = "testAddress";
          final String queueName0 = "queue0";
@@ -272,9 +306,9 @@ public class BridgeTest extends ServiceTestBase
          final String queueName1 = "queue1";
 
          Map<String, TransportConfiguration> connectors = new HashMap<String, TransportConfiguration>();
-         TransportConfiguration server0tc = new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory",
+         TransportConfiguration server0tc = new TransportConfiguration(getConnector(),
                                                                        server0Params);
-         TransportConfiguration server1tc = new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory",
+         TransportConfiguration server1tc = new TransportConfiguration(getConnector(),
                                                                        server1Params);
          connectors.put(server1tc.getName(), server1tc);
 
@@ -430,11 +464,11 @@ public class BridgeTest extends ServiceTestBase
    public void internaltestWithTransformer(boolean useFiles) throws Exception
    {
       Map<String, Object> server0Params = new HashMap<String, Object>();
-      HornetQServer server0 = createClusteredServerWithParams(0, false, server0Params);
+      HornetQServer server0 = createClusteredServerWithParams(isNetty(), 0, false, server0Params);
 
       Map<String, Object> server1Params = new HashMap<String, Object>();
-      server1Params.put(SERVER_ID_PROP_NAME, 1);
-      HornetQServer server1 = createClusteredServerWithParams(1, false, server1Params);
+      addTargetParameters(server1Params);
+      HornetQServer server1 = createClusteredServerWithParams(isNetty(), 1, false, server1Params);
 
       final String testAddress = "testAddress";
       final String queueName0 = "queue0";
@@ -442,9 +476,9 @@ public class BridgeTest extends ServiceTestBase
       final String queueName1 = "queue1";
 
       Map<String, TransportConfiguration> connectors = new HashMap<String, TransportConfiguration>();
-      TransportConfiguration server0tc = new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory",
+      TransportConfiguration server0tc = new TransportConfiguration(getConnector(),
                                                                     server0Params);
-      TransportConfiguration server1tc = new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory",
+      TransportConfiguration server1tc = new TransportConfiguration(getConnector(),
                                                                     server1Params);
       connectors.put(server1tc.getName(), server1tc);
 
@@ -557,11 +591,11 @@ public class BridgeTest extends ServiceTestBase
       {
 
          Map<String, Object> server0Params = new HashMap<String, Object>();
-         server0 = createClusteredServerWithParams(0, true, PAGE_SIZE, PAGE_MAX, server0Params);
+         server0 = createClusteredServerWithParams(isNetty(), 0, true, PAGE_SIZE, PAGE_MAX, server0Params);
 
          Map<String, Object> server1Params = new HashMap<String, Object>();
-         server1Params.put(SERVER_ID_PROP_NAME, 1);
-         server1 = createClusteredServerWithParams(1, true, server1Params);
+         addTargetParameters(server1Params);
+         server1 = createClusteredServerWithParams(isNetty(), 1, true, server1Params);
 
          final String testAddress = "testAddress";
          final String queueName0 = "queue0";
@@ -569,10 +603,10 @@ public class BridgeTest extends ServiceTestBase
          final String queueName1 = "queue1";
 
          Map<String, TransportConfiguration> connectors = new HashMap<String, TransportConfiguration>();
-         TransportConfiguration server0tc = new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory",
+         TransportConfiguration server0tc = new TransportConfiguration(getConnector(),
                                                                        server0Params);
 
-         TransportConfiguration server1tc = new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory",
+         TransportConfiguration server1tc = new TransportConfiguration(getConnector(),
                                                                        server1Params);
          connectors.put(server1tc.getName(), server1tc);
 

@@ -34,6 +34,9 @@ import org.hornetq.core.config.cluster.QueueConfiguration;
 import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.cluster.Bridge;
+import org.hornetq.integration.transports.netty.NettyAcceptorFactory;
+import org.hornetq.integration.transports.netty.NettyConnectorFactory;
+import org.hornetq.integration.transports.netty.TransportConstants;
 import org.hornetq.tests.util.ServiceTestBase;
 import org.hornetq.utils.Pair;
 import org.hornetq.utils.SimpleString;
@@ -46,18 +49,31 @@ import org.hornetq.utils.SimpleString;
  */
 public class BridgeWithDiscoveryGroupStartTest extends ServiceTestBase
 {      
+   
+   protected boolean isNetty()
+   {
+      return false;
+   }
+   
    public void testStartStop() throws Exception
    {
       Map<String, Object> server0Params = new HashMap<String, Object>();
-      HornetQServer server0 = createClusteredServerWithParams(0, true, server0Params);
+      HornetQServer server0 = createClusteredServerWithParams(isNetty(), 0, true, server0Params);
 
       Map<String, Object> server1Params = new HashMap<String, Object>();
-      server1Params.put(SERVER_ID_PROP_NAME, 1);
-      HornetQServer server1 = createClusteredServerWithParams(1, true, server1Params);
+      if (isNetty())
+      {
+         server1Params.put("port", TransportConstants.DEFAULT_PORT + 1);
+      }
+      else
+      {
+         server1Params.put(SERVER_ID_PROP_NAME, 1);
+      }
+      HornetQServer server1 = createClusteredServerWithParams(isNetty(), 1, true, server1Params);
 
       Map<String, TransportConfiguration> connectors = new HashMap<String, TransportConfiguration>();
-      TransportConfiguration server0tc = new TransportConfiguration(InVMConnectorFactory.class.getName(), server0Params);
-      TransportConfiguration server1tc = new TransportConfiguration(InVMConnectorFactory.class.getName(), server1Params);
+      TransportConfiguration server0tc = new TransportConfiguration(getConnector(), server0Params);
+      TransportConfiguration server1tc = new TransportConfiguration(getConnector(), server1Params);
       connectors.put(server1tc.getName(), server1tc);
 
       server0.getConfiguration().setConnectorConfigurations(connectors);
@@ -200,5 +216,20 @@ public class BridgeWithDiscoveryGroupStartTest extends ServiceTestBase
       server0.stop();
 
       server1.stop();
+   }
+
+   /**
+    * @return
+    */
+   private String getConnector()
+   {
+      if (isNetty())
+      {
+         return NettyConnectorFactory.class.getName();
+      }
+      else
+      {
+         return InVMConnectorFactory.class.getName();
+      }
    }
 }

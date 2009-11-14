@@ -31,9 +31,11 @@ import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.remoting.RemotingConnection;
 import org.hornetq.core.remoting.impl.invm.InVMConnector;
+import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.core.server.cluster.Bridge;
 import org.hornetq.core.server.cluster.impl.BridgeImpl;
+import org.hornetq.integration.transports.netty.NettyConnectorFactory;
 import org.hornetq.utils.Pair;
 import org.hornetq.utils.SimpleString;
 
@@ -50,31 +52,45 @@ public class BridgeReconnectTest extends BridgeTestBase
 {
    private static final Logger log = Logger.getLogger(BridgeReconnectTest.class);
 
+   protected boolean isNetty()
+   {
+      return false;
+   }
+
+   /**
+    * @return
+    */
+   private String getConnector()
+   {
+      if (isNetty())
+      {
+         return NettyConnectorFactory.class.getName();
+      }
+      else
+      {
+         return InVMConnectorFactory.class.getName();
+      }
+   }
+
    // Fail bridge and reconnecting immediately
    public void testFailoverAndReconnectImmediately() throws Exception
    {
       Map<String, Object> server0Params = new HashMap<String, Object>();
-      HornetQServer server0 = createHornetQServer(0, server0Params);
+      HornetQServer server0 = createHornetQServer(0, isNetty(), server0Params);
 
       Map<String, Object> server1Params = new HashMap<String, Object>();
-      HornetQServer server1 = createHornetQServer(1, server1Params);
+      HornetQServer server1 = createHornetQServer(1, isNetty(), server1Params);
 
       Map<String, Object> server2Params = new HashMap<String, Object>();
-      HornetQServer service2 = createHornetQServer(2, server2Params, true);
+      HornetQServer service2 = createHornetQServer(2, server2Params, isNetty(), true);
 
-      TransportConfiguration server0tc = new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory",
-                                                                    server0Params,
-                                                                    "server0tc");
+      TransportConfiguration server0tc = new TransportConfiguration(getConnector(), server0Params, "server0tc");
 
       Map<String, TransportConfiguration> connectors = new HashMap<String, TransportConfiguration>();
 
-      TransportConfiguration server1tc = new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory",
-                                                                    server1Params,
-                                                                    "server1tc");
+      TransportConfiguration server1tc = new TransportConfiguration(getConnector(), server1Params, "server1tc");
 
-      TransportConfiguration server2tc = new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory",
-                                                                    server2Params,
-                                                                    "server2tc");
+      TransportConfiguration server2tc = new TransportConfiguration(getConnector(), server2Params, "server2tc");
 
       connectors.put(server1tc.getName(), server1tc);
 
@@ -182,27 +198,21 @@ public class BridgeReconnectTest extends BridgeTestBase
    public void testFailoverAndReconnectAfterAFewTries() throws Exception
    {
       Map<String, Object> server0Params = new HashMap<String, Object>();
-      HornetQServer server0 = createHornetQServer(0, server0Params);
+      HornetQServer server0 = createHornetQServer(0, isNetty(), server0Params);
 
       Map<String, Object> server1Params = new HashMap<String, Object>();
-      HornetQServer server1 = createHornetQServer(1, server1Params);
+      HornetQServer server1 = createHornetQServer(1, isNetty(), server1Params);
 
       Map<String, Object> server2Params = new HashMap<String, Object>();
-      HornetQServer service2 = createHornetQServer(2, server2Params, true);
+      HornetQServer service2 = createHornetQServer(2, server2Params, isNetty(), true);
 
-      TransportConfiguration server0tc = new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory",
-                                                                    server0Params,
-                                                                    "server0tc");
+      TransportConfiguration server0tc = new TransportConfiguration(getConnector(), server0Params, "server0tc");
 
       Map<String, TransportConfiguration> connectors = new HashMap<String, TransportConfiguration>();
 
-      TransportConfiguration server1tc = new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory",
-                                                                    server1Params,
-                                                                    "server1tc");
+      TransportConfiguration server1tc = new TransportConfiguration(getConnector(), server1Params, "server1tc");
 
-      TransportConfiguration server2tc = new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory",
-                                                                    server2Params,
-                                                                    "server2tc");
+      TransportConfiguration server2tc = new TransportConfiguration(getConnector(), server2Params, "server2tc");
 
       connectors.put(server1tc.getName(), server1tc);
 
@@ -314,20 +324,16 @@ public class BridgeReconnectTest extends BridgeTestBase
    public void testReconnectSameNode() throws Exception
    {
       Map<String, Object> server0Params = new HashMap<String, Object>();
-      HornetQServer server0 = createHornetQServer(0, server0Params);
+      HornetQServer server0 = createHornetQServer(0, isNetty(), server0Params);
 
       Map<String, Object> server1Params = new HashMap<String, Object>();
-      HornetQServer server1 = createHornetQServer(1, server1Params);
+      HornetQServer server1 = createHornetQServer(1, isNetty(), server1Params);
 
-      TransportConfiguration server0tc = new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory",
-                                                                    server0Params,
-                                                                    "server0tc");
+      TransportConfiguration server0tc = new TransportConfiguration(getConnector(), server0Params, "server0tc");
 
       Map<String, TransportConfiguration> connectors = new HashMap<String, TransportConfiguration>();
 
-      TransportConfiguration server1tc = new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory",
-                                                                    server1Params,
-                                                                    "server1tc");
+      TransportConfiguration server1tc = new TransportConfiguration(getConnector(), server1Params, "server1tc");
 
       connectors.put(server1tc.getName(), server1tc);
 
@@ -430,20 +436,16 @@ public class BridgeReconnectTest extends BridgeTestBase
    public void testShutdownServerCleanlyAndReconnectSameNode() throws Exception
    {
       Map<String, Object> server0Params = new HashMap<String, Object>();
-      HornetQServer server0 = createHornetQServer(0, server0Params);
+      HornetQServer server0 = createHornetQServer(0, isNetty(), server0Params);
 
       Map<String, Object> server1Params = new HashMap<String, Object>();
-      HornetQServer server1 = createHornetQServer(1, server1Params);
+      HornetQServer server1 = createHornetQServer(1, isNetty(), server1Params);
 
-      TransportConfiguration server0tc = new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory",
-                                                                    server0Params,
-                                                                    "server0tc");
+      TransportConfiguration server0tc = new TransportConfiguration(getConnector(), server0Params, "server0tc");
 
       Map<String, TransportConfiguration> connectors = new HashMap<String, TransportConfiguration>();
 
-      TransportConfiguration server1tc = new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory",
-                                                                    server1Params,
-                                                                    "server1tc");
+      TransportConfiguration server1tc = new TransportConfiguration(getConnector(), server1Params, "server1tc");
 
       connectors.put(server1tc.getName(), server1tc);
 
@@ -547,18 +549,18 @@ public class BridgeReconnectTest extends BridgeTestBase
    public void testFailoverThenFailAgainAndReconnect() throws Exception
    {
       Map<String, Object> server0Params = new HashMap<String, Object>();
-      HornetQServer server0 = createHornetQServer(0, server0Params);
+      HornetQServer server0 = createHornetQServer(0, isNetty(), server0Params);
 
       Map<String, Object> server1Params = new HashMap<String, Object>();
-      HornetQServer server1 = createHornetQServer(1, server1Params);
+      HornetQServer server1 = createHornetQServer(1, isNetty(), server1Params);
 
-      TransportConfiguration server0tc = new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory",
+      TransportConfiguration server0tc = new TransportConfiguration(getConnector(),
                                                                     server0Params,
                                                                     "server0tc");
 
       Map<String, TransportConfiguration> connectors = new HashMap<String, TransportConfiguration>();
 
-      TransportConfiguration server1tc = new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory",
+      TransportConfiguration server1tc = new TransportConfiguration(getConnector(),
                                                                     server1Params,
                                                                     "server1tc");
 
