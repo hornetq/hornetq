@@ -62,9 +62,9 @@ public class JMSServerControl2Test extends ManagementTestBase
    // Attributes ----------------------------------------------------
 
    private HornetQServer server;
-   
+
    JMSServerManagerImpl serverManager;
-   
+
    private InVMContext context;
 
    // Static --------------------------------------------------------
@@ -147,13 +147,13 @@ public class JMSServerControl2Test extends ManagementTestBase
    {
       return ManagementControlHelper.createJMSServerControl(mbeanServer);
    }
-   
+
    protected void tearDown() throws Exception
    {
       serverManager = null;
-      
+
       server = null;
-      
+
       super.tearDown();
    }
 
@@ -174,23 +174,18 @@ public class JMSServerControl2Test extends ManagementTestBase
 
          String[] connectionIDs = control.listConnectionIDs();
          assertEquals(1, connectionIDs.length);
-       
+
          ConnectionFactory cf2 = JMSUtil.createFactory(connectorFactory, CONNECTION_TTL, PING_PERIOD);
          Connection connection2 = cf2.createConnection();
          assertEquals(2, control.listConnectionIDs().length);
 
          connection.close();
-         Thread.sleep(2 * CONNECTION_TTL);
-
-         connectionIDs = control.listConnectionIDs();
-         assertEquals("got " + Arrays.asList(connectionIDs), 1, connectionIDs.length);
-
-         assertEquals(1, control.listConnectionIDs().length);
+         
+         waitForConnectionIDs(1, control);
 
          connection2.close();
-         Thread.sleep(2 * CONNECTION_TTL);
-
-         assertEquals(0, control.listConnectionIDs().length);
+         
+         waitForConnectionIDs(0, control);
       }
       finally
       {
@@ -198,11 +193,31 @@ public class JMSServerControl2Test extends ManagementTestBase
          {
             serverManager.stop();
          }
-         
+
          if (server != null)
          {
             server.stop();
          }
+      }
+   }
+
+   private void waitForConnectionIDs(final int num, final JMSServerControl control) throws Exception
+   {
+      final long timeout = 10000;
+      long start = System.currentTimeMillis();
+      while (true)
+      {
+         if (control.listConnectionIDs().length == num)
+         {
+            return;
+         }
+
+         if (System.currentTimeMillis() - start > timeout)
+         {
+            throw new IllegalStateException("Timed out waiting for number of connections");
+         }
+
+         Thread.sleep(10);
       }
    }
 
@@ -231,7 +246,7 @@ public class JMSServerControl2Test extends ManagementTestBase
 
          connection.close();
 
-         Thread.sleep(2 * CONNECTION_TTL);
+         waitForConnectionIDs(0, control);
 
          assertEquals(0, control.listConnectionIDs().length);
       }
@@ -241,8 +256,7 @@ public class JMSServerControl2Test extends ManagementTestBase
          {
             serverManager.stop();
          }
-         
-         
+
          if (server != null)
          {
             server.stop();
@@ -270,12 +284,12 @@ public class JMSServerControl2Test extends ManagementTestBase
          {
             System.out.println(remoteAddress);
          }
-         
+
          connection.close();
 
-         Thread.sleep(2 * CONNECTION_TTL);
+         waitForConnectionIDs(0, control);
 
-         remoteAddresses = control.listRemoteAddresses();         
+         remoteAddresses = control.listRemoteAddresses();
          assertEquals("got " + Arrays.asList(remoteAddresses), 0, remoteAddresses.length);
       }
       finally
@@ -284,8 +298,7 @@ public class JMSServerControl2Test extends ManagementTestBase
          {
             serverManager.stop();
          }
-         
-         
+
          if (server != null)
          {
             server.stop();
@@ -327,10 +340,10 @@ public class JMSServerControl2Test extends ManagementTestBase
          boolean gotException = exceptionLatch.await(2 * CONNECTION_TTL, TimeUnit.MILLISECONDS);
          assertTrue("did not received the expected JMSException", gotException);
 
-         remoteAddresses = control.listRemoteAddresses();         
+         remoteAddresses = control.listRemoteAddresses();
          assertEquals("got " + Arrays.asList(remoteAddresses), 0, remoteAddresses.length);
          assertEquals(0, server.getConnectionCount());
-         
+
          connection.close();
       }
       finally
@@ -339,7 +352,7 @@ public class JMSServerControl2Test extends ManagementTestBase
          {
             serverManager.stop();
          }
-         
+
          if (server != null)
          {
             server.stop();
@@ -383,7 +396,7 @@ public class JMSServerControl2Test extends ManagementTestBase
 
          assertEquals(1, control.listRemoteAddresses().length);
          assertEquals(1, server.getConnectionCount());
-         
+
          connection.close();
 
       }
@@ -393,7 +406,7 @@ public class JMSServerControl2Test extends ManagementTestBase
          {
             serverManager.stop();
          }
-         
+
          if (server != null)
          {
             server.stop();
