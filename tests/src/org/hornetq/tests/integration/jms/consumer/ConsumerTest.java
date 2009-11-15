@@ -137,8 +137,9 @@ public class ConsumerTest extends JMSTestBase
       Message m = consumer.receiveNoWait();
       assertNull(m);
       
-      SimpleString queueName = new SimpleString(HornetQQueue.JMS_QUEUE_ADDRESS_PREFIX + Q_NAME);
-      assertEquals(0, ((Queue)server.getPostOffice().getBinding(queueName).getBindable()).getDeliveringCount());      
+      //Asserting delivering count is zero is bogus since messages might still be being delivered and expired at this point
+      //which can cause delivering count to flip to 1
+      
       conn.close();
    }
    
@@ -164,8 +165,9 @@ public class ConsumerTest extends JMSTestBase
       Message m = consumer.receiveNoWait();
       assertNull(m);
       
-      SimpleString queueName = new SimpleString(HornetQQueue.JMS_QUEUE_ADDRESS_PREFIX + Q_NAME);
-      assertEquals(0, ((Queue)server.getPostOffice().getBinding(queueName).getBindable()).getDeliveringCount());      
+      //Asserting delivering count is zero is bogus since messages might still be being delivered and expired at this point
+      //which can cause delivering count to flip to 1 
+      
       conn.close();
    }
 
