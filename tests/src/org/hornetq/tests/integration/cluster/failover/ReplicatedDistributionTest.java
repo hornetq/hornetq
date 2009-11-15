@@ -36,7 +36,7 @@ import org.hornetq.utils.SimpleString;
  *
  *
  */
-public class ReplicatedDistrubtionTest extends ClusterTestBase
+public class ReplicatedDistributionTest extends ClusterTestBase
 {
 
    // Constants -----------------------------------------------------

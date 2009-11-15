@@ -20,7 +20,7 @@ package org.hornetq.tests.integration.cluster.failover;
  *
  *
  */
-public class SharedStoreDistributionTest extends ReplicatedDistrubtionTest
+public class SharedStoreDistributionTest extends ReplicatedDistributionTest
 {
 
    // Constants -----------------------------------------------------
