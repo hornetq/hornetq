@@ -554,8 +554,6 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
 
                   break;
                }
-               case SECURITY_AUTHENTICATION_VIOLATION:
-               case SECURITY_PERMISSION_VIOLATION:
                case PROPOSAL:
                   doProposalReceived(message);
                   break;
