@@ -57,7 +57,7 @@ public class ReplicationOrderTest extends FailoverTestBase
       for (int i = 0; i < 100; i++)
       {
          System.out.println("<<<<<< " + i + " >>>>>>>");
-         testMixedPersistentAndNonPersistentMessagesOrderWithReplicatedBackup();
+         testTxMixedPersistentAndNonPersistentMessagesOrderWithReplicatedBackup();
          tearDown();
          setUp();
       }
@@ -65,13 +65,31 @@ public class ReplicationOrderTest extends FailoverTestBase
 
    public void testMixedPersistentAndNonPersistentMessagesOrderWithReplicatedBackup() throws Exception
    {
+      doTestMixedPersistentAndNonPersistentMessagesOrderWithReplicatedBackup(false);
+   }
+
+   public void testTxMixedPersistentAndNonPersistentMessagesOrderWithReplicatedBackup() throws Exception
+   {
+      doTestMixedPersistentAndNonPersistentMessagesOrderWithReplicatedBackup(true);
+   }
+
+   private void doTestMixedPersistentAndNonPersistentMessagesOrderWithReplicatedBackup(boolean transactional) throws Exception
+   {
       String address = randomString();
       String queue = randomString();
 
       ClientSessionFactory csf = new ClientSessionFactoryImpl(getConnectorTransportConfiguration(true));
       csf.setBlockOnNonPersistentSend(false);
       csf.setBlockOnPersistentSend(false);
-      ClientSession session = csf.createSession(true, true);
+      ClientSession session = null;
+      if (transactional)
+      {
+         session = csf.createSession(false, false);
+      }
+      else
+      {
+         session = csf.createSession(true, true);
+      }
       session.createQueue(address, queue, true);
       ClientProducer producer = session.createProducer(address);
       for (int i = 0; i < NUM; i++)
@@ -80,6 +98,10 @@ public class ReplicationOrderTest extends FailoverTestBase
          ClientMessage msg = session.createClientMessage(durable);
          msg.putIntProperty("counter", i);
          producer.send(msg);
+      }
+      if (transactional)
+      {
+         session.commit();
       }
       session.close();
 
@@ -93,10 +115,10 @@ public class ReplicationOrderTest extends FailoverTestBase
          assertNotNull(message);
          assertEquals(i, message.getIntProperty("counter").intValue());
       }
-      
+
       consumer.close();
       session.deleteQueue(queue);
-      
+
       session.close();
    }
 
