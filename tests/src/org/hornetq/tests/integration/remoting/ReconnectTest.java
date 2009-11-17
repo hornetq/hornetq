@@ -44,33 +44,31 @@ public class ReconnectTest extends ServiceTestBase
    // Constructors --------------------------------------------------
 
    // Public --------------------------------------------------------
-   
-   
+
    // This is a hack to remove this test from the testsuite
    // Remove this method to enable this Test on the testsuite.
    // You can still run tests individually on eclipse, but not on the testsuite
    public static TestSuite suite()
    {
       TestSuite suite = new TestSuite();
-   
+
       // System.out -> JUnit report
       System.out.println("Test ReconnectTest being ignored for now!");
-      
+
       return suite;
    }
-   
-   
+
    public void testReconnectNetty() throws Exception
    {
       internalTestReconnect(true);
    }
-   
+
    public void testReconnectInVM() throws Exception
    {
       internalTestReconnect(false);
    }
 
-   public void internalTestReconnect(boolean isNetty) throws Exception
+   public void internalTestReconnect(final boolean isNetty) throws Exception
    {
 
       HornetQServer server = createServer(false, isNetty);
@@ -78,7 +76,7 @@ public class ReconnectTest extends ServiceTestBase
       server.start();
 
       ClientSessionInternal session = null;
-      
+
       try
       {
 
@@ -93,35 +91,35 @@ public class ReconnectTest extends ServiceTestBase
          session = (ClientSessionInternal)factory.createSession();
 
          final AtomicInteger count = new AtomicInteger(0);
-         
+
          final CountDownLatch latch = new CountDownLatch(1);
-         
+
          session.getConnection().addFailureListener(new FailureListener()
          {
 
-            public void connectionFailed(HornetQException me)
+            public void connectionFailed(final HornetQException me)
             {
                count.incrementAndGet();
                latch.countDown();
             }
-            
+
          });
-         
+
          server.stop();
-         
+
          // I couldn't find a way to install a latch here as I couldn't just use the FailureListener
          // as the FailureListener won't be informed until the reconnection process is done.
          Thread.sleep(2100);
-         
+
          server.start();
-         
+
          latch.await();
 
          // Some process to let the Failure listener loop occur
          Thread.sleep(500);
-         
+
          assertEquals(1, count.get());
- 
+
       }
       finally
       {
@@ -132,7 +130,7 @@ public class ReconnectTest extends ServiceTestBase
          catch (Throwable e)
          {
          }
-         
+
          server.stop();
       }
 
