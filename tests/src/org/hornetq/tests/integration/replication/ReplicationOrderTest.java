@@ -40,7 +40,7 @@ import org.hornetq.tests.integration.cluster.failover.FailoverTestBase;
 public class ReplicationOrderTest extends FailoverTestBase
 {
 
-   public static final int NUM = 100;
+   public static final int NUM = 300;
 
    // Constants -----------------------------------------------------
 
@@ -92,12 +92,24 @@ public class ReplicationOrderTest extends FailoverTestBase
       }
       session.createQueue(address, queue, true);
       ClientProducer producer = session.createProducer(address);
+      boolean durable = true;
       for (int i = 0; i < NUM; i++)
       {
-         boolean durable = (i % 2 == 0);
          ClientMessage msg = session.createClientMessage(durable);
          msg.putIntProperty("counter", i);
          producer.send(msg);
+         if (transactional)
+         {
+            if (i % 10 == 0)
+            {
+               session.commit();
+               durable = !durable;
+            }
+         }
+         else
+         {
+            durable = !durable;
+         }
       }
       if (transactional)
       {
