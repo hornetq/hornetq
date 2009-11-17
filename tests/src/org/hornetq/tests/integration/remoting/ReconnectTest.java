@@ -14,6 +14,7 @@
 package org.hornetq.tests.integration.remoting;
 
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import junit.framework.TestSuite;
@@ -71,6 +72,8 @@ public class ReconnectTest extends ServiceTestBase
    public void internalTestReconnect(final boolean isNetty) throws Exception
    {
 
+      final int pingPeriod = 1000;
+      
       HornetQServer server = createServer(false, isNetty);
 
       server.start();
@@ -82,7 +85,7 @@ public class ReconnectTest extends ServiceTestBase
 
          ClientSessionFactory factory = createFactory(isNetty);
 
-         factory.setClientFailureCheckPeriod(2000);
+         factory.setClientFailureCheckPeriod(pingPeriod); // Using a smaller timeout
          factory.setRetryInterval(500);
          factory.setRetryIntervalMultiplier(1d);
          factory.setReconnectAttempts(-1);
@@ -109,13 +112,13 @@ public class ReconnectTest extends ServiceTestBase
 
          // I couldn't find a way to install a latch here as I couldn't just use the FailureListener
          // as the FailureListener won't be informed until the reconnection process is done.
-         Thread.sleep(2100);
+         Thread.sleep((int)(pingPeriod * 2));
 
          server.start();
 
-         latch.await();
+         assertTrue(latch.await(5, TimeUnit.SECONDS));
 
-         // Some process to let the Failure listener loop occur
+         // Some time to let possible loops to occur
          Thread.sleep(500);
 
          assertEquals(1, count.get());
