@@ -673,7 +673,6 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
                                                                  bridge.getName(),
                                                                  distance + 1);
 
-         bindings.put(clusterName, binding);
 
          if (postOffice.getBinding(clusterName) != null)
          {
@@ -688,6 +687,8 @@ public class ClusterConnectionImpl implements ClusterConnection, DiscoveryListen
             return;
          }
 
+         bindings.put(clusterName, binding);
+         
          try
          {
             postOffice.addBinding(binding);
