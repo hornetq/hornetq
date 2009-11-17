@@ -18,11 +18,9 @@ import java.util.Map;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.TransportConfiguration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
-import org.hornetq.core.remoting.impl.invm.TransportConstants;
 import org.hornetq.core.server.HornetQ;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.integration.transports.netty.NettyAcceptorFactory;
-import org.hornetq.tests.util.ServiceTestBase;
 import org.hornetq.tests.util.UnitTestCase;
 
 /**
@@ -56,6 +54,8 @@ public abstract class BridgeTestBase extends UnitTestCase
       serviceConf.setJournalDirectory(getJournalDir(id, false));
       serviceConf.setPagingDirectory(getPageDir(id, false));
       serviceConf.setLargeMessagesDirectory(getLargeMessagesDir(id, false));
+      // these tests don't need any big storage so limiting the size of the journal files to speed up the test
+      serviceConf.setJournalFileSize(100 * 1024);
 
       if (netty)
       {
