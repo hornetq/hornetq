@@ -26,6 +26,7 @@ import java.util.Map;
 import javax.management.MBeanServer;
 import javax.management.MBeanServerFactory;
 
+import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
 import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.TransportConfiguration;
 import org.hornetq.core.config.cluster.BridgeConfiguration;
@@ -163,6 +164,7 @@ public class BridgeControlTest extends ManagementTestBase
                                              randomBoolean(),
                                              randomBoolean(),
                                              randomPositiveInt(),
+                                             ClientSessionFactoryImpl.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
                                              connectorPair);
 
       Configuration conf_1 = new ConfigurationImpl();

@@ -136,6 +136,7 @@ public class BridgeTest extends ServiceTestBase
                                                                            // Choose confirmation size to make sure acks
                                                                            // are sent
                                                                            numMessages * messageSize / 2,
+                                                                           ClientSessionFactoryImpl.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
                                                                            connectorPair);
 
          List<BridgeConfiguration> bridgeConfigs = new ArrayList<BridgeConfiguration>();
@@ -329,6 +330,7 @@ public class BridgeTest extends ServiceTestBase
                                                                            true,
                                                                            false,
                                                                            1024,
+                                                                           ClientSessionFactoryImpl.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
                                                                            connectorPair);
 
          List<BridgeConfiguration> bridgeConfigs = new ArrayList<BridgeConfiguration>();
@@ -497,6 +499,7 @@ public class BridgeTest extends ServiceTestBase
                                                                         true,
                                                                         false,
                                                                         1024,
+                                                                        ClientSessionFactoryImpl.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
                                                                         connectorPair);
 
       List<BridgeConfiguration> bridgeConfigs = new ArrayList<BridgeConfiguration>();
@@ -625,6 +628,7 @@ public class BridgeTest extends ServiceTestBase
                                                                            true,
                                                                            false,
                                                                            1024,
+                                                                           ClientSessionFactoryImpl.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
                                                                            connectorPair);
 
          List<BridgeConfiguration> bridgeConfigs = new ArrayList<BridgeConfiguration>();

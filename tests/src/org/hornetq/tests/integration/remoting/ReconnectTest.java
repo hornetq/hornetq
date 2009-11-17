@@ -17,12 +17,11 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import junit.framework.TestSuite;
-
 import org.hornetq.core.client.ClientSessionFactory;
+import org.hornetq.core.client.SessionFailureListener;
 import org.hornetq.core.client.impl.ClientSessionInternal;
 import org.hornetq.core.exception.HornetQException;
-import org.hornetq.core.remoting.FailureListener;
+import org.hornetq.core.logging.Logger;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.tests.util.ServiceTestBase;
 
@@ -38,6 +37,8 @@ public class ReconnectTest extends ServiceTestBase
 
    // Constants -----------------------------------------------------
 
+   private static final Logger log = Logger.getLogger(ReconnectTest.class);
+
    // Attributes ----------------------------------------------------
 
    // Static --------------------------------------------------------
@@ -45,19 +46,6 @@ public class ReconnectTest extends ServiceTestBase
    // Constructors --------------------------------------------------
 
    // Public --------------------------------------------------------
-
-   // This is a hack to remove this test from the testsuite
-   // Remove this method to enable this Test on the testsuite.
-   // You can still run tests individually on eclipse, but not on the testsuite
-   public static TestSuite suite()
-   {
-      TestSuite suite = new TestSuite();
-
-      // System.out -> JUnit report
-      System.out.println("Test ReconnectTest being ignored for now!");
-
-      return suite;
-   }
 
    public void testReconnectNetty() throws Exception
    {
@@ -71,9 +59,8 @@ public class ReconnectTest extends ServiceTestBase
 
    public void internalTestReconnect(final boolean isNetty) throws Exception
    {
-
       final int pingPeriod = 1000;
-      
+
       HornetQServer server = createServer(false, isNetty);
 
       server.start();
@@ -97,7 +84,7 @@ public class ReconnectTest extends ServiceTestBase
 
          final CountDownLatch latch = new CountDownLatch(1);
 
-         session.getConnection().addFailureListener(new FailureListener()
+         session.addFailureListener(new SessionFailureListener()
          {
 
             public void connectionFailed(final HornetQException me)
@@ -106,12 +93,14 @@ public class ReconnectTest extends ServiceTestBase
                latch.countDown();
             }
 
+            public void beforeReconnect(HornetQException exception)
+            {
+            }
+
          });
 
          server.stop();
 
-         // I couldn't find a way to install a latch here as I couldn't just use the FailureListener
-         // as the FailureListener won't be informed until the reconnection process is done.
          Thread.sleep((int)(pingPeriod * 2));
 
          server.start();

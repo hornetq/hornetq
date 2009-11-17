@@ -594,6 +594,8 @@ public class FailoverManagerImpl implements FailoverManager, ConnectionLifeCycle
             catch (Exception ignore)
             {
             }
+            
+            this.cancelPinger();
 
             connector = null;
 
@@ -624,7 +626,7 @@ public class FailoverManagerImpl implements FailoverManager, ConnectionLifeCycle
 
             connection = null;                       
          }      
-                          
+                    
          callFailureListeners(me, true);
          
          if (connection == null)
@@ -658,7 +660,7 @@ public class FailoverManagerImpl implements FailoverManager, ConnectionLifeCycle
       final List<SessionFailureListener> listenersClone = new ArrayList<SessionFailureListener>(listeners);
 
       for (final SessionFailureListener listener : listenersClone)
-      {
+      {       
          try
          {
             if (afterReconnect)
@@ -685,18 +687,18 @@ public class FailoverManagerImpl implements FailoverManager, ConnectionLifeCycle
     */
    private void reconnectSessions(final RemotingConnection oldConnection, final int reconnectAttempts)
    {        
-      RemotingConnection backupConnection = getConnectionWithRetry(reconnectAttempts);
+      RemotingConnection newConnection = getConnectionWithRetry(reconnectAttempts);
       
-      if (backupConnection == null)
+      if (newConnection == null)
       {
          log.warn("Failed to connect to server.");
 
          return;
       }
-      
+                 
       List<FailureListener> oldListeners = oldConnection.getFailureListeners();
       
-      List<FailureListener> newListeners = new ArrayList<FailureListener>(backupConnection.getFailureListeners());
+      List<FailureListener> newListeners = new ArrayList<FailureListener>(newConnection.getFailureListeners());
 
       for (FailureListener listener : oldListeners)
       {
@@ -708,11 +710,11 @@ public class FailoverManagerImpl implements FailoverManager, ConnectionLifeCycle
          }
       }
 
-      backupConnection.setFailureListeners(newListeners);
+      newConnection.setFailureListeners(newListeners);
 
       for (ClientSessionInternal session : sessions)
       {
-         session.handleFailover(backupConnection);
+         session.handleFailover(newConnection);
       }
    }
 
@@ -775,21 +777,26 @@ public class FailoverManagerImpl implements FailoverManager, ConnectionLifeCycle
          }
       }
    }
+   
+   private void cancelPinger()
+   {
+      if (pingerFuture != null)
+      {
+         pingRunnable.cancel();
+
+         pingerFuture.cancel(false);
+
+         pingRunnable = null;
+
+         pingerFuture = null;
+      }
+   }
 
    private void checkCloseConnection()
    {
       if (connection != null && sessions.size() == 0)
       {
-         if (pingerFuture != null)
-         {
-            pingRunnable.cancel();
-
-            pingerFuture.cancel(false);
-
-            pingRunnable = null;
-
-            pingerFuture = null;
-         }
+         cancelPinger();
 
          try
          {
@@ -817,7 +824,7 @@ public class FailoverManagerImpl implements FailoverManager, ConnectionLifeCycle
    }
 
    public RemotingConnection getConnection()
-   {
+   {     
       if (connection == null)
       {
          Connection tc = null;
@@ -922,7 +929,7 @@ public class FailoverManagerImpl implements FailoverManager, ConnectionLifeCycle
             }
          }
       }
-
+      
       return connection;
    }
 
@@ -1082,6 +1089,8 @@ public class FailoverManagerImpl implements FailoverManager, ConnectionLifeCycle
                final HornetQException me = new HornetQException(HornetQException.CONNECTION_TIMEDOUT,
                                                                 "Did not receive data from server for " + connection.getTransportConnection());
 
+               cancelled = true;
+               
                threadPool.execute(new Runnable()
                {
                   // Must be executed on different thread
@@ -1090,7 +1099,7 @@ public class FailoverManagerImpl implements FailoverManager, ConnectionLifeCycle
                      connection.fail(me);
                   }
                });
-
+                              
                return;
             }
             else

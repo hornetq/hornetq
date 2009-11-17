@@ -17,6 +17,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.hornetq.core.client.ClientConsumer;
 import org.hornetq.core.client.ClientMessage;
@@ -29,6 +31,7 @@ import org.hornetq.core.config.cluster.BridgeConfiguration;
 import org.hornetq.core.config.cluster.QueueConfiguration;
 import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.logging.Logger;
+import org.hornetq.core.remoting.FailureListener;
 import org.hornetq.core.remoting.RemotingConnection;
 import org.hornetq.core.remoting.impl.invm.InVMConnector;
 import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
@@ -124,6 +127,7 @@ public class BridgeReconnectTest extends BridgeTestBase
                                                                         true,
                                                                         false,
                                                                         confirmationWindowSize,
+                                                                        ClientSessionFactoryImpl.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
                                                                         connectorPair);
 
       List<BridgeConfiguration> bridgeConfigs = new ArrayList<BridgeConfiguration>();
@@ -246,6 +250,7 @@ public class BridgeReconnectTest extends BridgeTestBase
                                                                         true,
                                                                         false,
                                                                         confirmationWindowSize,
+                                                                        ClientSessionFactoryImpl.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
                                                                         connectorPair);
 
       List<BridgeConfiguration> bridgeConfigs = new ArrayList<BridgeConfiguration>();
@@ -363,6 +368,7 @@ public class BridgeReconnectTest extends BridgeTestBase
                                                                         true,
                                                                         false,
                                                                         confirmationWindowSize,
+                                                                        ClientSessionFactoryImpl.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
                                                                         connectorPair);
 
       List<BridgeConfiguration> bridgeConfigs = new ArrayList<BridgeConfiguration>();
@@ -432,8 +438,20 @@ public class BridgeReconnectTest extends BridgeTestBase
       assertEquals(0, server0.getRemotingService().getConnections().size());
       assertEquals(0, server1.getRemotingService().getConnections().size());
    }
-
+   
+   //We test that we can pause more than client failure check period (to prompt the pinger to failing)
+   //before reconnecting
+   public void testShutdownServerCleanlyAndReconnectSameNodeWithSleep() throws Exception
+   {
+      testShutdownServerCleanlyAndReconnectSameNode(true);
+   }
+   
    public void testShutdownServerCleanlyAndReconnectSameNode() throws Exception
+   {
+      testShutdownServerCleanlyAndReconnectSameNode(false);
+   }
+   
+   private void testShutdownServerCleanlyAndReconnectSameNode(final boolean sleep) throws Exception
    {
       Map<String, Object> server0Params = new HashMap<String, Object>();
       HornetQServer server0 = createHornetQServer(0, isNetty(), server0Params);
@@ -461,6 +479,7 @@ public class BridgeReconnectTest extends BridgeTestBase
       final double retryIntervalMultiplier = 1d;
       final int reconnectAttempts = -1;
       final int confirmationWindowSize = 1024;
+      final long clientFailureCheckPeriod = 1000;
 
       Pair<String, String> connectorPair = new Pair<String, String>(server1tc.getName(), null);
 
@@ -475,6 +494,7 @@ public class BridgeReconnectTest extends BridgeTestBase
                                                                         true,
                                                                         false,
                                                                         confirmationWindowSize,
+                                                                        clientFailureCheckPeriod,
                                                                         connectorPair);
 
       List<BridgeConfiguration> bridgeConfigs = new ArrayList<BridgeConfiguration>();
@@ -501,6 +521,12 @@ public class BridgeReconnectTest extends BridgeTestBase
 
       log.info("stopping server1");
       server1.stop();
+      
+      if (sleep)
+      {
+         Thread.sleep(2 * clientFailureCheckPeriod);
+      }
+      
       log.info("restarting server1");
       server1.start();
       log.info("server 1 restarted");
@@ -591,6 +617,7 @@ public class BridgeReconnectTest extends BridgeTestBase
                                                                         true,
                                                                         false,
                                                                         confirmationWindowSize,
+                                                                        ClientSessionFactoryImpl.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
                                                                         connectorPair);
 
       List<BridgeConfiguration> bridgeConfigs = new ArrayList<BridgeConfiguration>();

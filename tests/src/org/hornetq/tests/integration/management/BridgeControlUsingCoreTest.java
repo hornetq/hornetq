@@ -143,6 +143,7 @@ public class BridgeControlUsingCoreTest extends ManagementTestBase
                                              randomBoolean(),
                                              randomBoolean(),
                                              randomPositiveInt(),
+                                             ClientSessionFactoryImpl.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
                                              connectorPair);
 
       Configuration conf_1 = new ConfigurationImpl();

@@ -116,6 +116,7 @@ public class BridgeWithDiscoveryGroupStartTest extends ServiceTestBase
                                                                         true,
                                                                         true,
                                                                         1024,
+                                                                        ClientSessionFactoryImpl.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
                                                                         "dg1");
 
       List<BridgeConfiguration> bridgeConfigs = new ArrayList<BridgeConfiguration>();

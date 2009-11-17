@@ -55,7 +55,9 @@ public class BridgeConfiguration implements Serializable
    private boolean useDuplicateDetection;
    
    private int confirmationWindowSize;
-
+   
+   private long clientFailureCheckPeriod;
+    
    public BridgeConfiguration(final String name,
                               final String queueName,
                               final String forwardingAddress,
@@ -67,6 +69,7 @@ public class BridgeConfiguration implements Serializable
                               final boolean failoverOnServerShutdown,
                               final boolean useDuplicateDetection,
                               final int confirmationWindowSize,
+                              final long clientFailureCheckPeriod,
                               final Pair<String, String> connectorPair)
    {
       this.name = name;
@@ -80,6 +83,7 @@ public class BridgeConfiguration implements Serializable
       this.failoverOnServerShutdown = failoverOnServerShutdown;
       this.useDuplicateDetection = useDuplicateDetection;
       this.confirmationWindowSize = confirmationWindowSize;
+      this.clientFailureCheckPeriod = clientFailureCheckPeriod;
       this.connectorPair = connectorPair;
       this.discoveryGroupName = null;
    }
@@ -95,6 +99,7 @@ public class BridgeConfiguration implements Serializable
                               final boolean failoverOnServerShutdown,
                               final boolean useDuplicateDetection,
                               final int confirmationWindowSize,
+                              final long clientFailureCheckPeriod,
                               final String discoveryGroupName)
    {
       this.name = name;
@@ -108,6 +113,7 @@ public class BridgeConfiguration implements Serializable
       this.failoverOnServerShutdown = failoverOnServerShutdown;
       this.useDuplicateDetection = useDuplicateDetection;
       this.confirmationWindowSize = confirmationWindowSize;
+      this.clientFailureCheckPeriod = clientFailureCheckPeriod;
       this.connectorPair = null;
       this.discoveryGroupName = discoveryGroupName;
    }
@@ -175,6 +181,11 @@ public class BridgeConfiguration implements Serializable
    public int getConfirmationWindowSize()
    {
       return confirmationWindowSize;
+   }
+   
+   public long getClientFailureCheckPeriod()
+   {
+      return clientFailureCheckPeriod;
    }
 
    /**

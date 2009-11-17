@@ -681,6 +681,7 @@ public class FileConfiguration extends ConfigurationImpl
                                           failoverOnServerShutdown,
                                           useDuplicateDetection,
                                           confirmationWindowSize,
+                                          ClientSessionFactoryImpl.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
                                           connectorPair);
       }
       else
@@ -696,6 +697,7 @@ public class FileConfiguration extends ConfigurationImpl
                                           failoverOnServerShutdown,
                                           useDuplicateDetection,
                                           confirmationWindowSize,
+                                          ClientSessionFactoryImpl.DEFAULT_CLIENT_FAILURE_CHECK_PERIOD,
                                           discoveryGroupName);
       }
 

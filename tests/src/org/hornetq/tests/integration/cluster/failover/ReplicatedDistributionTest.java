@@ -38,10 +38,9 @@ import org.hornetq.utils.SimpleString;
  */
 public class ReplicatedDistributionTest extends ClusterTestBase
 {
-
    // Constants -----------------------------------------------------
 
-   static final SimpleString ADDRESS = new SimpleString("test.SomeAddress");
+   private static final SimpleString ADDRESS = new SimpleString("test.SomeAddress");
 
    // Attributes ----------------------------------------------------
 
