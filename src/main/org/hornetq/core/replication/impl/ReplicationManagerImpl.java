@@ -367,6 +367,11 @@ public class ReplicationManagerImpl implements ReplicationManager
     */
    public void stop() throws Exception
    {
+      if (!started)
+      {
+         return;
+      }
+      
       enabled = false;
       
       for (ReplicationContext ctx : activeContexts)
@@ -384,6 +389,8 @@ public class ReplicationManagerImpl implements ReplicationManager
 
       started = false;
 
+      failoverManager.causeExit();
+      
       if (connection != null)
       {
          connection.destroy();
