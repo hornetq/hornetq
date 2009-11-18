@@ -567,6 +567,30 @@ public class MessageGroupingTest extends UnitTestCase
       clientSession = sessionFactory.createSession(false, true, true);
       clientSession.createQueue(qName, qName, null, false);
    }
+   
+   // do not swallow exception in DeliverRunner.run() to show the IOOBE on the queue handlers
+   public void testSwallowedIndexOutOfBoundsException() throws Exception
+   {
+      ClientConsumer consumer = clientSession.createConsumer(qName, null, false);
+      ClientConsumer consumer2 = clientSession.createConsumer(qName, null, false);
+
+      ClientProducer producer = clientSession.createProducer(qName);
+      ClientMessage message = createTextMessage("m0" , clientSession);
+      message.putStringProperty(MessageImpl.HDR_GROUP_ID, new SimpleString("g1"));
+      producer.send(message);
+      
+      clientSession.start();
+      
+      ClientMessage msg = consumer.receive();
+      assertNotNull(msg);
+      msg.acknowledge();
+      assertNull(consumer.receive(500));
+      
+      consumer.close();
+      consumer2.close();
+      consumer = clientSession.createConsumer(qName, null, false);
+      assertNull(consumer.receive(500));
+   }
 
    private static class DummyMessageHandler implements MessageHandler
    {
