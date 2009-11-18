@@ -13,15 +13,13 @@
 
 package org.hornetq.tests.integration.largemessage;
 
-import org.hornetq.core.client.ClientConsumer;
-import org.hornetq.core.client.ClientMessage;
-import org.hornetq.core.client.ClientProducer;
-import org.hornetq.core.client.ClientSession;
-import org.hornetq.core.client.ClientSessionFactory;
-import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
-import org.hornetq.core.persistence.impl.journal.FileLargeServerMessage;
+import java.util.concurrent.Executors;
+
+import org.hornetq.core.config.Configuration;
 import org.hornetq.core.persistence.impl.journal.JournalStorageManager;
-import org.hornetq.core.server.HornetQServer;
+import org.hornetq.core.server.JournalType;
+import org.hornetq.core.server.LargeServerMessage;
+import org.hornetq.core.server.ServerMessage;
 import org.hornetq.tests.util.ServiceTestBase;
 
 /**
@@ -44,65 +42,34 @@ public class ServerLargeMessageTest extends ServiceTestBase
 
    // Public --------------------------------------------------------
    
-   // The ClientConsumer should be able to also send ServerLargeMessages as that's done by the CoreBridge
-   public void testSendServerMessage() throws Exception
+   public void testLargeMessageCopy() throws Exception
    {
-      HornetQServer server = createServer(true);
-      
-      server.start();
-      
-      ClientSessionFactory sf = createFactory(false);
-      
-      ClientSession session = sf.createSession(false, false);
-      
-      try
+      clearData();
+
+      Configuration configuration = createDefaultConfig();
+
+      configuration.start();
+
+      configuration.setJournalType(JournalType.ASYNCIO);
+
+      final JournalStorageManager journal = new JournalStorageManager(configuration, Executors.newCachedThreadPool());
+      journal.start();
+
+      LargeServerMessage msg = journal.createLargeMessage();
+      msg.setMessageID(1);
+
+      byte[] data = new byte[1024];
+
+      for (int i = 0; i < 110; i++)
       {
-         FileLargeServerMessage fileMessage = new FileLargeServerMessage((JournalStorageManager)server.getStorageManager());
-         
-         fileMessage.setMessageID(1005);
-         
-         for (int i = 0 ; i < 2 * ClientSessionFactoryImpl.DEFAULT_MIN_LARGE_MESSAGE_SIZE; i++)
-         {
-            fileMessage.addBytes(new byte[]{getSamplebyte(i)});
-         }
-         
-         fileMessage.releaseResources();
-         
-         session.createQueue("A", "A");
-         
-         ClientProducer prod = session.createProducer("A");
-         
-         prod.send(fileMessage);
-         
-         fileMessage.deleteFile();
-         
-         session.commit();
-                  
-         session.start();
-         
-         ClientConsumer cons = session.createConsumer("A");
-         
-         ClientMessage msg = cons.receive(5000);
-         
-         assertNotNull(msg);
-         
-         assertEquals(msg.getBodySize(), 2 * ClientSessionFactoryImpl.DEFAULT_MIN_LARGE_MESSAGE_SIZE);
-         
-         for (int i = 0 ; i < 2 * ClientSessionFactoryImpl.DEFAULT_MIN_LARGE_MESSAGE_SIZE; i++)
-         {
-            assertEquals(getSamplebyte(i), msg.getBody().readByte());
-         }
-         
-         msg.acknowledge();
-         
-         session.commit();
-         
+         msg.addBytes(data);
       }
-      finally
-      {
-         sf.close();
-         server.stop();
-      }
+
+      ServerMessage msg2 = msg.copy(2);
+
+      assertEquals(110 * 1024, msg.getBodySize());
+      assertEquals(110 * 1024, msg2.getBodySize());
+
    }
 
    // Package protected ---------------------------------------------
