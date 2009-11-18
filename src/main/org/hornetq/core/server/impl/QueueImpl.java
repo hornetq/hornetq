@@ -895,6 +895,10 @@ public class QueueImpl implements Queue
          {
             iter.remove();
 
+            if (pos >= handlers.size())
+            {
+               pos = 0;
+            }
             removed = true;
 
             break;
