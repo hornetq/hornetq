@@ -14,6 +14,8 @@
 package org.hornetq.tests.integration.remoting;
 
 import java.util.Set;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 import org.hornetq.core.client.ClientSession;
 import org.hornetq.core.client.ClientSessionFactory;
@@ -25,6 +27,7 @@ import org.hornetq.core.config.Configuration;
 import org.hornetq.core.config.TransportConfiguration;
 import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.logging.Logger;
+import org.hornetq.core.remoting.CloseListener;
 import org.hornetq.core.remoting.RemotingConnection;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.tests.util.ServiceTestBase;
@@ -298,7 +301,27 @@ public class PingTest extends ServiceTestBase
 
       assertEquals(1, ((ClientSessionFactoryInternal)csf).numConnections());
 
-      Listener clientListener = new Listener();
+      final CountDownLatch clientLatch = new CountDownLatch(1);
+      SessionFailureListener clientListener = new SessionFailureListener()
+      {
+         public void connectionFailed(HornetQException me)
+         {
+            clientLatch.countDown();
+         }
+
+         public void beforeReconnect(HornetQException exception)
+         {
+         }
+      };
+      
+      final CountDownLatch serverLatch = new CountDownLatch(1);
+      CloseListener serverListener = new CloseListener()
+      {         
+         public void connectionClosed()
+         {
+            serverLatch.countDown();
+         }
+      };
 
       session.addFailureListener(clientListener);
 
@@ -317,28 +340,29 @@ public class PingTest extends ServiceTestBase
             Thread.sleep(10);
          }
       }
-
-      Listener serverListener = new Listener();
-
-      serverConn.addFailureListener(serverListener);
+      
+      serverConn.addCloseListener(serverListener);
 
       //Setting the handler to null will prevent server sending pings back to client
       serverConn.getChannel(0, -1).setHandler(null);
 
-      for (int i = 0; i < 2000; i++)
+      assertTrue(clientLatch.await(4 * CLIENT_FAILURE_CHECK_PERIOD, TimeUnit.MILLISECONDS));
+      
+      //Server connection will be closed too, when client closes client side connection after failure is detected
+      assertTrue(serverLatch.await(8 * CLIENT_FAILURE_CHECK_PERIOD, TimeUnit.MILLISECONDS));
+
+      long start = System.currentTimeMillis();
+      while (true)
       {
-         // a few tries to avoid a possible race caused by GCs or similar issues
-         if (server.getRemotingService().getConnections().isEmpty() && clientListener.getException() != null)
+         if (!server.getRemotingService().getConnections().isEmpty() && System.currentTimeMillis() - start < 10000)
+         {
+            Thread.sleep(500);
+         }
+         else
          {
             break;
          }
-
-         Thread.sleep(10);
       }
-            
-      assertNotNull(clientListener.getException());
-      
-      //Server connection will be closed too, when client closes client side connection after failure is detected
       assertTrue(server.getRemotingService().getConnections().isEmpty());
 
       session.close();
