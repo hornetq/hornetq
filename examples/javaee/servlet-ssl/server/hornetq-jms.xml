@@ -3,7 +3,9 @@
                xsi:schemaLocation="urn:hornetq /schema/hornetq-jms.xsd">
 
    <connection-factory name="ServletConnectionFactory">
-      <connector-ref connector-name="netty-servlet"/>
+      <connectors>
+         <connector-ref connector-name="netty-servlet"/>
+      </connectors>
       <entries>
          <entry name="/ServletConnectionFactory"/>
       </entries>

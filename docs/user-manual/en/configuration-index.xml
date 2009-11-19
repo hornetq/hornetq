@@ -839,14 +839,21 @@
                         </row>
                         <row>
                             <entry><link linkend="clusters.static.servers"
-                                    >connection-factory.connector-ref.connector-name (attribute)</link></entry>
+                                    >connection-factory.connectors</link></entry>
+                            <entry>String</entry>
+                            <entry>A list of connectors used bu the connection factory</entry>
+                            <entry />
+                        </row>
+                        <row>
+                            <entry><link linkend="clusters.static.servers"
+                                    >connection-factory.connectors.connector-ref.connector-name (attribute)</link></entry>
                             <entry>String</entry>
                             <entry>Name of the connector to connect to the live server</entry>
                             <entry />
                         </row>
                         <row>
                             <entry><link linkend="clusters.static.servers"
-                                    >connection-factory.connector-ref.backup-connector-name (attribute)</link></entry>
+                                    >connection-factory.connectors.connector-ref.backup-connector-name (attribute)</link></entry>
                             <entry>String</entry>
                             <entry>Name of the connector to connect to the backup server</entry>
                             <entry />

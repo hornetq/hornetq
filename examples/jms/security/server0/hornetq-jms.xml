@@ -3,7 +3,9 @@
             xsi:schemaLocation="urn:hornetq /schema/hornetq-jms.xsd">
    <!--the connection factory used by the example-->
    <connection-factory name="ConnectionFactory">
-      <connector-ref connector-name="netty-connector"/>
+      <connectors>
+         <connector-ref connector-name="netty-connector"/>
+      </connectors>
       <block-on-persistent-send>true</block-on-persistent-send>
       <block-on-non-persistent-send>true</block-on-non-persistent-send>
       <entries>

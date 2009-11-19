@@ -63,7 +63,9 @@
     xsi:schemaLocation="urn:hornetq ../schemas/hornetq-jms.xsd "&gt;
     
     &lt;connection-factory name="ConnectionFactory"&gt;
-        &lt;connector-ref connector-name="netty"/&gt;
+        &lt;connectors>
+           &lt;connector-ref connector-name="netty"/&gt;
+        &lt;/connectors>
         &lt;entries&gt;
             &lt;entry name="ConnectionFactory"/&gt;           
         &lt;/entries&gt;

@@ -62,6 +62,8 @@ public class JMSServerDeployer extends XmlDeployer
 
    private static final String ENTRY_NODE_NAME = "entry";
 
+   private static final String CONNECTORS_NODE_NAME = "connectors";
+
    private static final String CONNECTION_FACTORY_NODE_NAME = "connection-factory";
 
    private static final String QUEUE_NODE_NAME = "queue";
@@ -177,38 +179,40 @@ public class JMSServerDeployer extends XmlDeployer
                   }
                }
             }
-            else if (CONNECTOR_REF_ELEMENT.equals(child.getNodeName()))
+            else if (CONNECTORS_NODE_NAME.equals(child.getNodeName()))
             {
-               String connectorName = child.getAttributes().getNamedItem("connector-name").getNodeValue();
-
-               TransportConfiguration connector = configuration.getConnectorConfigurations().get(connectorName);
-
-               if (connector == null)
+               NodeList entries = child.getChildNodes();
+               for (int i = 0; i < entries.getLength(); i++)
                {
-                  log.warn("There is no connector with name '" + connectorName + "' deployed.");
-
-                  return;
-               }
-
-               TransportConfiguration backupConnector = null;
-
-               Node backupNode = child.getAttributes().getNamedItem("backup-connector-name");
-
-               if (backupNode != null)
-               {
-                  String backupConnectorName = backupNode.getNodeValue();
-
-                  backupConnector = configuration.getConnectorConfigurations().get(backupConnectorName);
-
-                  if (backupConnector == null)
+                  Node entry = entries.item(i);
+                  if (CONNECTOR_REF_ELEMENT.equals(entry.getNodeName()))
                   {
-                     log.warn("There is no backup connector with name '" + connectorName + "' deployed.");
+                     String connectorName = entry.getAttributes().getNamedItem("connector-name").getNodeValue();
+                     TransportConfiguration connector = configuration.getConnectorConfigurations().get(connectorName);
 
-                     return;
+                     if (connector == null)
+                     {
+                        log.warn("There is no connector with name '" + connectorName + "' deployed.");
+                        return;
+                     }
+
+                     TransportConfiguration backupConnector = null;
+                     Node backupNode = entry.getAttributes().getNamedItem("backup-connector-name");
+                     if (backupNode != null)
+                     {
+                        String backupConnectorName = backupNode.getNodeValue();
+                        backupConnector = configuration.getConnectorConfigurations().get(backupConnectorName);
+
+                        if (backupConnector == null)
+                        {
+                           log.warn("There is no backup connector with name '" + connectorName + "' deployed.");
+                           return;
+                        }
+                     }
+
+                     connectorConfigs.add(new Pair<TransportConfiguration, TransportConfiguration>(connector, backupConnector));
                   }
                }
-
-               connectorConfigs.add(new Pair<TransportConfiguration, TransportConfiguration>(connector, backupConnector));
             }
             else if (DISCOVERY_GROUP_ELEMENT.equals(child.getNodeName()))
             {

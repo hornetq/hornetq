@@ -109,7 +109,9 @@
                configured in <literal>hornetq-jms.xml</literal>:</para>
             <programlisting>
 &lt;connection-factory name="ConnectionFactory"&gt;
-   &lt;connector-ref connector-name="netty-connector"/&gt;
+   &lt;connectors>
+      &lt;connector-ref connector-name="netty-connector"/&gt;
+   &lt;/connectors>
    &lt;entries&gt;
       &lt;entry name="ConnectionFactory"/&gt;       
    &lt;/entries&gt;
@@ -149,7 +151,9 @@
             <para>If JNDI is used to look up the connection factory, the max rate can be configured
                in <literal>hornetq-jms.xml</literal>:</para>
             <programlisting>&lt;connection-factory name="ConnectionFactory">
-      &lt;connector-ref connector-name="netty-connector"/>
+      &lt;connectors>
+         &lt;connector-ref connector-name="netty-connector"/>
+      &lt;/connectors>
       &lt;entries>
          &lt;entry name="ConnectionFactory"/>       
       &lt;/entries>
@@ -207,7 +211,9 @@
             <para>If JNDI is used to look up the connection factory, the max rate can be configured
                in <literal>hornetq-jms.xml</literal>:</para>
             <programlisting>&lt;connection-factory name="ConnectionFactory">
-      &lt;connector-ref connector-name="netty-connector"/>
+      &lt;connectors>
+         &lt;connector-ref connector-name="netty-connector"/>
+      &lt;/connectors>
       &lt;entries>
          &lt;entry name="ConnectionFactory"/>       
       &lt;/entries>

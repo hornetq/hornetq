@@ -86,7 +86,9 @@
         the xml configuration in <literal>hornetq-jms.xml</literal>, for example:</para>
     <programlisting>
 &lt;connection-factory name="ConnectionFactory"&gt;
-&lt;connector-ref connector-name="netty"/&gt;
+&lt;connectors>
+   &lt;connector-ref connector-name="netty"/&gt;
+&lt;/connectors>
 &lt;entries&gt;
    &lt;entry name="ConnectionFactory"/&gt;
    &lt;entry name="XAConnectionFactory"/&gt;

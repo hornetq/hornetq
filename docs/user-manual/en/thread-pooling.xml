@@ -113,7 +113,9 @@ myFactory.setThreadPoolMaxSize(-1);        </programlisting>
             instances, you can also set these parameters in the <literal>hornetq-jms.xml</literal>
             file where you describe your connection factory, for example:</para>
         <programlisting>&lt;connection-factory name="ConnectionFactory"&gt;
-    &lt;connector-ref connector-name="netty"/&gt;
+    &lt;connectors>
+       &lt;connector-ref connector-name="netty"/&gt;
+    &lt;/connectors>
     &lt;entries&gt;
         &lt;entry name="ConnectionFactory"/&gt;
         &lt;entry name="XAConnectionFactory"/&gt;

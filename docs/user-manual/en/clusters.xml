@@ -501,12 +501,14 @@ factory.setLoadBalancingPolicyClassName("com.acme.MyLoadBalancingPolicy");
                     specify the list of servers in the server side configuration file <literal
                         >hornetq-jms.xml</literal>. Let's take a look at an example:</para>
                 <programlisting>&lt;connection-factory name="ConnectionFactory">
-   &lt;connector-ref connector-name="my-connector1" 
-        backup-connector-name="my-backup-connector1"/>
-   &lt;connector-ref connector-name="my-connector2" 
-        backup-connector-name="my-backup-connector2"/>
-   &lt;connector-ref connector-name="my-connector3" 
-        backup-connector-name="my-backup-connector3"/>
+   &lt;connectors>
+      &lt;connector-ref connector-name="my-connector1" 
+           backup-connector-name="my-backup-connector1"/>
+      &lt;connector-ref connector-name="my-connector2" 
+           backup-connector-name="my-backup-connector2"/>
+      &lt;connector-ref connector-name="my-connector3" 
+           backup-connector-name="my-backup-connector3"/>
+   &lt;/connectors>
    &lt;entries>
       &lt;entry name="ConnectionFactory"/>
    &lt;/entries>

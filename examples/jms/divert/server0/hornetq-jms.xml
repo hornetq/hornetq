@@ -5,7 +5,9 @@
    <!-- the connection factory used by the example -->
    
    <connection-factory name="ConnectionFactory">
-      <connector-ref connector-name="netty-connector"/>
+      <connectors>
+         <connector-ref connector-name="netty-connector"/>
+      </connectors>
       <entries>
          <entry name="ConnectionFactory"/>
       </entries>

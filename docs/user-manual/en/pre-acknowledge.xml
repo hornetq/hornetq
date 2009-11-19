@@ -54,7 +54,9 @@
       <para>This can be configured in the <literal>hornetq-jms.xml</literal> file on the <literal
             >connection factory</literal> like this:</para>
       <programlisting>&lt;connection-factory name="ConnectionFactory">
-      &lt;connector-ref connector-name="netty-connector"/>
+      &lt;connectors>
+         &lt;connector-ref connector-name="netty-connector"/>
+      &lt;/connectors>
       &lt;entries>
          &lt;entry name="ConnectionFactory"/>
       &lt;/entries>

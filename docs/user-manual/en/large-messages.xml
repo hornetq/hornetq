@@ -78,7 +78,9 @@ factory.setMinLargeMessageSize(25 * 1024);</programlisting>
                 is specified in <literal>hornetq-jms.xml</literal></para>
             <programlisting>...
 &lt;connection-factory name="ConnectionFactory">
-&lt;connector-ref connector-name="netty"/>
+&lt;connectors>
+   &lt;connector-ref connector-name="netty"/>
+&lt;/connectors>
 &lt;entries>
    &lt;entry name="ConnectionFactory"/>
    &lt;entry name="XAConnectionFactory"/>

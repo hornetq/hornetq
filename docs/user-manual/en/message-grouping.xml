@@ -63,7 +63,9 @@
             >HornetQConnectonFactory</literal> which will pick a random unique id. This can also be
          set in the <literal>hornetq-jms.xml</literal> file like this:</para>
       <programlisting>&lt;connection-factory name="ConnectionFactory">
-      &lt;connector-ref connector-name="netty-connector"/>
+      &lt;connectors>
+         &lt;connector-ref connector-name="netty-connector"/>
+      &lt;/connectors>
       &lt;entries>
          &lt;entry name="ConnectionFactory"/>
       &lt;/entries>

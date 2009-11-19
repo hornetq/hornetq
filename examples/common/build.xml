@@ -201,6 +201,7 @@
             <exclude name="jms/applet/build.xml"/>
             <exclude name="jms/clustered-standalone/build.xml"/>
             <exclude name="jms/jms-bridge/build.xml"/>
+            <exclude name="jms/large-message/build.xml"/>
             <exclude name="jms/perf/build.xml"/>
          </fileset>
       </subant>
