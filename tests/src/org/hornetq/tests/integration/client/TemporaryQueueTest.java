@@ -30,9 +30,13 @@ import org.hornetq.core.config.TransportConfiguration;
 import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.remoting.CloseListener;
+import org.hornetq.core.remoting.Interceptor;
+import org.hornetq.core.remoting.Packet;
 import org.hornetq.core.remoting.RemotingConnection;
 import org.hornetq.core.remoting.impl.RemotingConnectionImpl;
 import org.hornetq.core.remoting.impl.invm.InVMConnectorFactory;
+import org.hornetq.core.remoting.impl.wireformat.PacketImpl;
+import org.hornetq.core.remoting.server.impl.RemotingServiceImpl;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.tests.util.ServiceTestBase;
 import org.hornetq.utils.SimpleString;
@@ -171,42 +175,52 @@ public class TemporaryQueueTest extends ServiceTestBase
 
    public void testDeleteTemporaryQueueWhenClientCrash() throws Exception
    {
+      session.close();
+            
       final SimpleString queue = randomSimpleString();
       SimpleString address = randomSimpleString();
 
-      session.createTemporaryQueue(address, queue);
+      // server must received at least one ping from the client to pass
+      // so that the server connection TTL is configured with the client value
+      final CountDownLatch pingOnServerLatch = new CountDownLatch(1);
+      server.getRemotingService().addInterceptor(new Interceptor()
+      {
+         
+         public boolean intercept(Packet packet, RemotingConnection connection) throws HornetQException
+         {
+            if (packet.getType() == PacketImpl.PING)
+            {
+               pingOnServerLatch.countDown();
+            }
+            return true;
+         }
+      });
 
+      sf = new ClientSessionFactoryImpl(new TransportConfiguration(INVM_CONNECTOR_FACTORY));
+      sf.setConnectionTTL(CONNECTION_TTL);
+      session = sf.createSession(false, true, true);
+      
+      session.createTemporaryQueue(address, queue);
+      assertTrue("server has not received any ping from the client", pingOnServerLatch.await(2 * RemotingServiceImpl.CONNECTION_TTL_CHECK_INTERVAL, TimeUnit.MILLISECONDS));
       assertEquals(1, server.getConnectionCount());
 
-      RemotingConnection remotingConnection = server
-                                                     .getRemotingService()
+      RemotingConnection remotingConnection = server.getRemotingService()
                                                      .getConnections()
                                                      .iterator()
                                                      .next();
-      final CountDownLatch latch = new CountDownLatch(1);
-      final CountDownLatch latch2 = new CountDownLatch(1);
+      final CountDownLatch serverCloseLatch = new CountDownLatch(1);
       remotingConnection.addCloseListener(new CloseListener()
       {
          public void connectionClosed()
          {
-            latch.countDown();
-         }
-      });
-
-      server.getRemotingService().getConnections().iterator().next().addCloseListener(new CloseListener()
-      {
-         public void connectionClosed()
-         {
-            latch2.countDown();
+            serverCloseLatch.countDown();
          }
       });
 
       ((ClientSessionInternal)session).getConnection().fail(new HornetQException(HornetQException.INTERNAL_ERROR, "simulate a client failure"));
 
-
       // let some time for the server to clean the connections
-      latch.await(2 * CONNECTION_TTL + 1000, TimeUnit.MILLISECONDS);
-      latch2.await(4 * CONNECTION_TTL + 1000, TimeUnit.MILLISECONDS);
+      assertTrue("server has not closed the connection", serverCloseLatch.await(2 * RemotingServiceImpl.CONNECTION_TTL_CHECK_INTERVAL + 2 * CONNECTION_TTL , TimeUnit.MILLISECONDS));
       assertEquals(0, server.getConnectionCount());
       
       session.close();
