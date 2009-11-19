@@ -65,7 +65,7 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
 
    private static final Logger log = Logger.getLogger(RemotingServiceImpl.class);
 
-   private static final long CONNECTION_TTL_CHECK_INTERVAL = 2000;
+   public static final long CONNECTION_TTL_CHECK_INTERVAL = 2000;
 
    // Attributes ----------------------------------------------------
 

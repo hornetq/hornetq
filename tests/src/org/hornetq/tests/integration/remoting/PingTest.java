@@ -28,7 +28,11 @@ import org.hornetq.core.config.TransportConfiguration;
 import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.remoting.CloseListener;
+import org.hornetq.core.remoting.Interceptor;
+import org.hornetq.core.remoting.Packet;
 import org.hornetq.core.remoting.RemotingConnection;
+import org.hornetq.core.remoting.impl.wireformat.PacketImpl;
+import org.hornetq.core.remoting.server.impl.RemotingServiceImpl;
 import org.hornetq.core.server.HornetQServer;
 import org.hornetq.tests.util.ServiceTestBase;
 
@@ -290,6 +294,22 @@ public class PingTest extends ServiceTestBase
    */
    public void testClientFailureNoServerPing() throws Exception
    {
+      // server must received at least one ping from the client to pass
+      // so that the server connection TTL is configured with the client value
+      final CountDownLatch pingOnServerLatch = new CountDownLatch(1);
+      server.getRemotingService().addInterceptor(new Interceptor()
+      {
+         
+         public boolean intercept(Packet packet, RemotingConnection connection) throws HornetQException
+         {
+            if (packet.getType() == PacketImpl.PING)
+            {
+               pingOnServerLatch.countDown();
+            }
+            return true;
+         }
+      });
+
       TransportConfiguration transportConfig = new TransportConfiguration("org.hornetq.integration.transports.netty.NettyConnectorFactory");
 
       ClientSessionFactory csf = new ClientSessionFactoryImpl(transportConfig);
@@ -341,15 +361,19 @@ public class PingTest extends ServiceTestBase
          }
       }
       
+      
       serverConn.addCloseListener(serverListener);
+      assertTrue("server has not received any ping from the client" , pingOnServerLatch.await(2000, TimeUnit.MILLISECONDS));
 
+      // we let the server receives at least 1 ping (so that it uses the client ConnectionTTL value)
+      
       //Setting the handler to null will prevent server sending pings back to client
       serverConn.getChannel(0, -1).setHandler(null);
 
       assertTrue(clientLatch.await(4 * CLIENT_FAILURE_CHECK_PERIOD, TimeUnit.MILLISECONDS));
       
       //Server connection will be closed too, when client closes client side connection after failure is detected
-      assertTrue(serverLatch.await(8 * CLIENT_FAILURE_CHECK_PERIOD, TimeUnit.MILLISECONDS));
+      assertTrue(serverLatch.await(2 * RemotingServiceImpl.CONNECTION_TTL_CHECK_INTERVAL, TimeUnit.MILLISECONDS));
 
       long start = System.currentTimeMillis();
       while (true)
