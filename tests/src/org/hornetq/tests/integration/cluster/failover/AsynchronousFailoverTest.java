@@ -241,8 +241,27 @@ public class AsynchronousFailoverTest extends FailoverTestBase
             }
             while (retry);
          }
+         
+         // create the consumer with retry if failover occurs during createConsumer call
+         ClientConsumer consumer = null;
+         boolean retry = false;
+         do
+         {
+            try
+            {
+               consumer = session.createConsumer(ADDRESS);
+               
+               retry = false;
+            }
+            catch (HornetQException e)
+            {
+               log.info("exception when creating consumer");
+               assertEquals(e.getCode(), HornetQException.UNBLOCKED);
 
-         ClientConsumer consumer = session.createConsumer(ADDRESS);
+               retry = true;
+            }
+         }
+         while (retry);
 
          session.start();
 
