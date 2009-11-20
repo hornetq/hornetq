@@ -50,6 +50,8 @@ import org.hornetq.utils.SimpleString;
 public class BridgeWithDiscoveryGroupStartTest extends ServiceTestBase
 {      
    
+   private static final int TIMEOUT = 2000;
+   
    protected boolean isNetty()
    {
       return false;
@@ -165,7 +167,7 @@ public class BridgeWithDiscoveryGroupStartTest extends ServiceTestBase
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = consumer1.receive(500);
+         ClientMessage message = consumer1.receive(TIMEOUT);
 
          assertNotNull(message);
 
@@ -195,7 +197,7 @@ public class BridgeWithDiscoveryGroupStartTest extends ServiceTestBase
 
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = consumer1.receive(1000);
+         ClientMessage message = consumer1.receive(TIMEOUT);
 
          assertNotNull(message);
 
