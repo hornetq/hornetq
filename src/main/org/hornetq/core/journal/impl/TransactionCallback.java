@@ -49,8 +49,11 @@ public class TransactionCallback implements IOAsyncTask
       countLatch.down();
       if (++done == up && delegateCompletion != null)
       {
-         delegateCompletion.done();
+         final IOAsyncTask delegateToCall = delegateCompletion;
+         // We need to set the delegateCompletion to null first or blocking commits could miss a callback
+         // What would affect mainly tests
          delegateCompletion = null;
+         delegateToCall.done();
       }
    }
 
