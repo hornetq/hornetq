@@ -858,7 +858,6 @@ public class JournalImpl implements TestableJournal
       
       appendAddRecord(id, recordType, record, sync, callback);
       
-      // We only wait on explicit callbacks
       if (callback != null)
       {
          callback.waitCompletion();
@@ -925,7 +924,6 @@ public class JournalImpl implements TestableJournal
       
       appendUpdateRecord(id, recordType, record, sync, callback);
       
-      // We only wait on explicit callbacks
       if (callback != null)
       {
          callback.waitCompletion();
@@ -1003,7 +1001,6 @@ public class JournalImpl implements TestableJournal
       
       appendDeleteRecord(id, sync, callback);
       
-      // We only wait on explicit callbacks
       if (callback != null)
       {
          callback.waitCompletion();
