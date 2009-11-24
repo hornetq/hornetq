@@ -371,7 +371,14 @@ public class ReplicationManagerImpl implements ReplicationManager
       while (!pendingTokens.isEmpty())
       {
          OperationContext ctx = pendingTokens.poll();
-         ctx.replicationDone();
+         try
+         {
+            ctx.replicationDone();
+         }
+         catch (Throwable e)
+         {
+            log.warn("Error completing callback on replication manager", e);
+         }
       }
 
       if (replicatingChannel != null)

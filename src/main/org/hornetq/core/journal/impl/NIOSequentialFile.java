@@ -134,6 +134,16 @@ public class NIOSequentialFile extends AbstractSequentialFile
    {
       super.close();
       
+      if (maxIOSemaphore != null)
+      {
+         while (!maxIOSemaphore.tryAcquire(maxIO, 60, TimeUnit.SECONDS))
+         {
+            log.warn("Couldn't get lock after 60 seconds on closing AsynchronousFileImpl::" + this.getFileName());
+         }
+      }
+      
+      maxIOSemaphore = null;
+
       if (channel != null)
       {
          channel.close();
@@ -147,16 +157,6 @@ public class NIOSequentialFile extends AbstractSequentialFile
       channel = null;
 
       rfile = null;
-
-      if (maxIOSemaphore != null)
-      {
-         while (!maxIOSemaphore.tryAcquire(maxIO, 60, TimeUnit.SECONDS))
-         {
-            log.warn("Couldn't get lock after 60 seconds on closing AsynchronousFileImpl::" + this.getFileName());
-         }
-      }
-      
-      maxIOSemaphore = null;
 
       notifyAll();
    }
