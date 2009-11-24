@@ -25,8 +25,14 @@ import org.hornetq.utils.ExecutorFactory;
 
 /**
  * 
- * This class will hold operations when there are IO operations...
- * and it will 
+ * Each instance of OperationContextImpl is associated with an executor (usually an ordered Executor).
+ * 
+ * Tasks are hold until the operations are complete and executed in the natural order as soon as the operations are returned 
+ * from replication and storage.
+ * 
+ * If there are no pending IO operations, the tasks are just executed at the callers thread without any context switch.
+ * 
+ * So, if you are doing operations that are not dependent on IO (e.g NonPersistentMessages) you wouldn't have any context switch.
  * 
  * @author <mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
  */
