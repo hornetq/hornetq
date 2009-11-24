@@ -169,7 +169,6 @@ public class FailoverTest extends FailoverTestBase
       assertEquals(0, sf.numConnections());
    }
 
-   
    /** It doesn't fail, but it restart both servers, live and backup, and the data should be received after the restart,
     *  and the servers should be able to connect without any problems. */
    public void testRestartServers() throws Exception
@@ -1651,6 +1650,73 @@ public class FailoverTest extends FailoverTestBase
       // Should get the same ones after failover since we didn't ack
 
       for (int i = numMessages; i < numMessages * 2; i++)
+      {
+         ClientMessage message = consumer.receive(1000);
+
+         assertNotNull(message);
+
+         assertMessageBody(i, message);
+
+         assertEquals(i, message.getIntProperty("counter").intValue());
+
+         message.acknowledge();
+      }
+
+      session.close();
+
+      assertEquals(0, sf.numSessions());
+
+      assertEquals(0, sf.numConnections());
+   }
+
+   public void testSimpleSendAfterFailover() throws Exception
+   {
+      ClientSessionFactoryInternal sf = getSessionFactory();
+
+      sf.setBlockOnNonPersistentSend(true);
+      sf.setBlockOnPersistentSend(true);
+      sf.setBlockOnAcknowledge(true);
+
+      ClientSession session = sf.createSession(true, true, 0);
+
+      session.createQueue(ADDRESS, ADDRESS, null, true);
+
+      final CountDownLatch latch = new CountDownLatch(1);
+
+      class MyListener extends BaseListener
+      {
+         public void connectionFailed(HornetQException me)
+         {
+            latch.countDown();
+         }
+      }
+
+      session.addFailureListener(new MyListener());
+
+      ClientProducer producer = session.createProducer(ADDRESS);
+
+      final int numMessages = 100;
+
+      ClientConsumer consumer = session.createConsumer(ADDRESS);
+
+      session.start();
+
+      fail(session, latch);
+
+      for (int i = 0; i < numMessages; i++)
+      {
+         ClientMessage message = session.createClientMessage(i % 2 == 0);
+
+         setBody(i, message);
+         
+         System.out.println("Durable = " + message.isDurable());
+
+         message.putIntProperty("counter", i);
+
+         producer.send(message);
+      }
+
+      for (int i = 0; i < numMessages; i++)
       {
          ClientMessage message = consumer.receive(1000);
 

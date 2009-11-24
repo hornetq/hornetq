@@ -11,19 +11,18 @@
  * permissions and limitations under the License.
  */
 
-package org.hornetq.core.remoting.impl.wireformat;
+package org.hornetq.core.journal.impl;
 
-import org.hornetq.core.remoting.spi.HornetQBuffer;
+import org.hornetq.core.journal.IOCompletion;
 
 /**
- * Message sent when a Replication Context is complete without any persistence replicated.
- * On that case we need to go over the cluster to make sure we get the data sent at the right order.
+ * Internal class used to manage explicit syncs on the Journal through callbacks.
  *
  * @author <mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
  *
  *
  */
-public class ReplicationSyncContextMessage extends PacketImpl
+public abstract class SyncIOCompletion implements IOCompletion
 {
 
    // Constants -----------------------------------------------------
@@ -34,40 +33,9 @@ public class ReplicationSyncContextMessage extends PacketImpl
 
    // Constructors --------------------------------------------------
 
-   public ReplicationSyncContextMessage()
-   {
-      super(REPLICATION_SYNC);
-   }
-
    // Public --------------------------------------------------------
-
-   @Override
-   public int getRequiredBufferSize()
-   {
-      return BASIC_PACKET_SIZE;
-
-   }
-
-   @Override
-   public void encodeBody(final HornetQBuffer buffer)
-   {
-   }
-
-   @Override
-   public void decodeBody(final HornetQBuffer buffer)
-   {
-   }
-
-
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
-
-   // Private -------------------------------------------------------
-
-   // Inner classes -------------------------------------------------
-
-   // Public --------------------------------------------------------
+   
+   public abstract void waitCompletion() throws Exception;
 
    // Package protected ---------------------------------------------
 

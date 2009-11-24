@@ -87,10 +87,7 @@ public class LocalGroupingHandler implements GroupingHandler
          }
          newList.add(groupBinding);
          storageManager.addGrouping(groupBinding);
-         if (storageManager.isReplicated())
-         {
-            storageManager.waitOnReplication(timeout);
-         }
+         storageManager.waitOnOperations(timeout);
          return new Response(groupBinding.getGroupId(), groupBinding.getClusterName());
       }
       else

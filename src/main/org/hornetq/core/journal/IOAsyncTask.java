@@ -13,14 +13,16 @@
 
 package org.hornetq.core.journal;
 
+import org.hornetq.core.asyncio.AIOCallback;
+
 /**
- * A IOCompletion
- *
- * @author <mailto:clebert.suconic@jboss.org">Clebert Suconic</a>
- *
+ * 
+ * This class is just a direct extension of AIOCallback.
+ * Just to avoid the direct dependency of org.hornetq.core.asynciio.AIOCallback from the journal.
+ * 
+ * @author <a href="mailto:clebert.suconic@jboss.com">Clebert Suconic</a>
  *
  */
-public interface IOCompletion extends IOAsyncTask
+public interface IOAsyncTask extends AIOCallback
 {
-   void lineUp();
 }

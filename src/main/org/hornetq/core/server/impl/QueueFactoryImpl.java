@@ -22,6 +22,7 @@ import org.hornetq.core.server.Queue;
 import org.hornetq.core.server.QueueFactory;
 import org.hornetq.core.settings.HierarchicalRepository;
 import org.hornetq.core.settings.impl.AddressSettings;
+import org.hornetq.utils.ExecutorFactory;
 import org.hornetq.utils.SimpleString;
 
 /**
@@ -42,11 +43,16 @@ public class QueueFactoryImpl implements QueueFactory
    private PostOffice postOffice;
 
    private final StorageManager storageManager;
+   
+   private final ExecutorFactory executorFactory;
 
-   public QueueFactoryImpl(final ScheduledExecutorService scheduledExecutor,
+   public QueueFactoryImpl(final ExecutorFactory executorFactory,
+                           final ScheduledExecutorService scheduledExecutor,
                            final HierarchicalRepository<AddressSettings> addressSettingsRepository,
                            final StorageManager storageManager)
    {
+      this.executorFactory = executorFactory;
+      
       this.addressSettingsRepository = addressSettingsRepository;
 
       this.scheduledExecutor = scheduledExecutor;

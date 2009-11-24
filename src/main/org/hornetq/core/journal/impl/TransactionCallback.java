@@ -14,7 +14,7 @@
 
 package org.hornetq.core.journal.impl;
 
-import org.hornetq.core.journal.IOCompletion;
+import org.hornetq.core.journal.IOAsyncTask;
 import org.hornetq.utils.VariableLatch;
 
 /**
@@ -24,22 +24,34 @@ import org.hornetq.utils.VariableLatch;
  *
  *
  */
-public class TransactionCallback implements IOCompletion
+public class TransactionCallback implements IOAsyncTask
 {
    private final VariableLatch countLatch = new VariableLatch();
 
    private volatile String errorMessage = null;
 
    private volatile int errorCode = 0;
+   
+   private volatile int up = 0;
+   
+   private volatile int done = 0;
+   
+   private volatile IOAsyncTask delegateCompletion;
 
    public void countUp()
    {
+      up++;
       countLatch.up();
    }
 
    public void done()
    {
       countLatch.down();
+      if (++done == up && delegateCompletion != null)
+      {
+         delegateCompletion.done();
+         delegateCompletion = null;
+      }
    }
 
    public void waitCompletion() throws InterruptedException
@@ -59,6 +71,27 @@ public class TransactionCallback implements IOCompletion
       this.errorCode = errorCode;
 
       countLatch.down();
+      
+      if (delegateCompletion != null)
+      {
+         delegateCompletion.onError(errorCode, errorMessage);
+      }
+   }
+
+   /**
+    * @return the delegateCompletion
+    */
+   public IOAsyncTask getDelegateCompletion()
+   {
+      return delegateCompletion;
+   }
+
+   /**
+    * @param delegateCompletion the delegateCompletion to set
+    */
+   public void setDelegateCompletion(IOAsyncTask delegateCompletion)
+   {
+      this.delegateCompletion = delegateCompletion;
    }
 
    /**

@@ -40,7 +40,19 @@ public class QueueTest extends UnitTestCase
 {
    private static final Logger log = Logger.getLogger(QueueTest.class);
    
-   private QueueFactory queueFactory = new FakeQueueFactory();
+   private FakeQueueFactory queueFactory = new FakeQueueFactory();
+   
+   protected void setUp() throws Exception
+   {
+      super.setUp();
+      queueFactory = new FakeQueueFactory();
+   }
+   
+   protected void tearDown() throws Exception
+   {
+      queueFactory.stop();
+      super.tearDown();
+   }
    
    /*
     * Concurrent set consumer not busy, busy then, call deliver while messages are being added and consumed

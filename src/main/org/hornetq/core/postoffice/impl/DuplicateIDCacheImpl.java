@@ -155,7 +155,7 @@ public class DuplicateIDCacheImpl implements DuplicateIDCache
       }
    }
 
-   private synchronized void addToCacheInMemory(final byte[] duplID, final long recordID) throws Exception
+   private synchronized void addToCacheInMemory(final byte[] duplID, final long recordID)
    {
       cache.add(new ByteArrayHolder(duplID));
 
@@ -173,7 +173,14 @@ public class DuplicateIDCacheImpl implements DuplicateIDCache
          // reclaimed
          id.a = new ByteArrayHolder(duplID);
 
-         storageManager.deleteDuplicateID(id.b);
+         try
+         {
+            storageManager.deleteDuplicateID(id.b);
+         }
+         catch (Exception e)
+         {
+            log.warn("Error on deleting duplicate cache", e);
+         }
 
          id.b = recordID;
       }
@@ -205,7 +212,7 @@ public class DuplicateIDCacheImpl implements DuplicateIDCache
          this.recordID = recordID;
       }
 
-      private void process() throws Exception
+      private void process()
       {
          if (!done)
          {
@@ -227,17 +234,17 @@ public class DuplicateIDCacheImpl implements DuplicateIDCache
       {
       }
 
-      public void afterCommit(final Transaction tx) throws Exception
+      public void afterCommit(final Transaction tx)
       {
          process();
       }
 
-      public void afterPrepare(final Transaction tx) throws Exception
+      public void afterPrepare(final Transaction tx)
       {
          process();
       }
 
-      public void afterRollback(final Transaction tx) throws Exception
+      public void afterRollback(final Transaction tx)
       {
       }
 

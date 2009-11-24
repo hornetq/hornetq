@@ -22,6 +22,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -61,6 +62,7 @@ import org.hornetq.core.paging.PagingManager;
 import org.hornetq.core.paging.impl.PagingManagerImpl;
 import org.hornetq.core.paging.impl.PagingStoreFactoryNIO;
 import org.hornetq.core.persistence.GroupingInfo;
+import org.hornetq.core.persistence.OperationContext;
 import org.hornetq.core.persistence.QueueBindingInfo;
 import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.core.persistence.impl.journal.JournalStorageManager;
@@ -414,6 +416,12 @@ public class HornetQServerImpl implements HornetQServer
          {
             log.debug("Waiting for " + task);
          }
+         
+         if (replicationManager != null)
+         {
+            replicationManager.stop();
+            replicationManager = null;
+         }
 
          threadPool.shutdown();
 
@@ -640,6 +648,10 @@ public class HornetQServerImpl implements HornetQServer
       }
 
       Channel channel = connection.getChannel(channelID, sendWindowSize);
+      
+      Executor sessionExecutor = executorFactory.getExecutor();
+      
+      storageManager.newContext(sessionExecutor);
 
       final ServerSessionImpl session = new ServerSessionImpl(name,
                                                               username,
@@ -655,7 +667,7 @@ public class HornetQServerImpl implements HornetQServer
                                                               postOffice,
                                                               resourceManager,
                                                               securityStore,
-                                                              executorFactory.getExecutor(),
+                                                              sessionExecutor,
                                                               channel,
                                                               managementService,
                                                               // queueFactory,
@@ -664,7 +676,8 @@ public class HornetQServerImpl implements HornetQServer
 
       sessions.put(name, session);
 
-      ServerSessionPacketHandler handler = new ServerSessionPacketHandler(session);
+      // The executor on the OperationContext here has to be the same as the session, or we would have ordering issues on messages
+      ServerSessionPacketHandler handler = new ServerSessionPacketHandler(session, storageManager.newContext(sessionExecutor), storageManager);
 
       session.setHandler(handler);
 
@@ -893,7 +906,7 @@ public class HornetQServerImpl implements HornetQServer
    {
       if (configuration.isPersistenceEnabled())
       {
-         return new JournalStorageManager(configuration, threadPool, replicationManager);
+         return new JournalStorageManager(configuration, this.executorFactory, replicationManager);
       }
       else
       {
@@ -922,6 +935,7 @@ public class HornetQServerImpl implements HornetQServer
             replicationFailoverManager = createBackupConnection(backupConnector, threadPool, scheduledPool);
 
             replicationManager = new ReplicationManagerImpl(replicationFailoverManager,
+                                                            executorFactory,
                                                             configuration.getBackupWindowSize());
             replicationManager.start();
          }
@@ -1031,7 +1045,7 @@ public class HornetQServerImpl implements HornetQServer
                                             configuration.getManagementClusterPassword(),
                                             managementService);
 
-      queueFactory = new QueueFactoryImpl(scheduledPool, addressSettingsRepository, storageManager);
+      queueFactory = new QueueFactoryImpl(executorFactory, scheduledPool, addressSettingsRepository, storageManager);
 
       pagingManager = createPagingManager();
 

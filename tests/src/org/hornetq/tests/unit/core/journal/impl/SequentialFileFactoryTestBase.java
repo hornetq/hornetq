@@ -19,9 +19,11 @@ import java.util.List;
 import java.util.UUID;
 
 import org.hornetq.core.asyncio.impl.AsynchronousFileImpl;
+import org.hornetq.core.buffers.ChannelBuffers;
 import org.hornetq.core.journal.SequentialFile;
 import org.hornetq.core.journal.SequentialFileFactory;
 import org.hornetq.core.logging.Logger;
+import org.hornetq.core.remoting.spi.HornetQBuffer;
 import org.hornetq.tests.util.UnitTestCase;
 
 /**
@@ -213,30 +215,30 @@ public abstract class SequentialFileFactoryTestBase extends UnitTestCase
 
       String s1 = "aardvark";
       byte[] bytes1 = s1.getBytes("UTF-8");
-      ByteBuffer bb1 = factory.wrapBuffer(bytes1);
+      HornetQBuffer bb1 = wrapBuffer(bytes1);
 
       String s2 = "hippopotamus";
       byte[] bytes2 = s2.getBytes("UTF-8");
-      ByteBuffer bb2 = factory.wrapBuffer(bytes2);
+      HornetQBuffer bb2 = wrapBuffer(bytes2);
 
       String s3 = "echidna";
       byte[] bytes3 = s3.getBytes("UTF-8");
-      ByteBuffer bb3 = factory.wrapBuffer(bytes3);
+      HornetQBuffer bb3 = wrapBuffer(bytes3);
       
       long initialPos = sf.position();
-      sf.writeDirect(bb1, true);
+      sf.write(bb1, true);
       long bytesWritten = sf.position() - initialPos;
 
       assertEquals(calculateRecordSize(bytes1.length, sf.getAlignment()), bytesWritten);
 
       initialPos = sf.position();
-      sf.writeDirect(bb2, true);
+      sf.write(bb2, true);
       bytesWritten = sf.position() - initialPos;
 
       assertEquals(calculateRecordSize(bytes2.length, sf.getAlignment()), bytesWritten);
 
       initialPos = sf.position();
-      sf.writeDirect(bb3, true);
+      sf.write(bb3, true);
       bytesWritten = sf.position() - initialPos;
 
       assertEquals(calculateRecordSize(bytes3.length, sf.getAlignment()), bytesWritten);
@@ -286,33 +288,30 @@ public abstract class SequentialFileFactoryTestBase extends UnitTestCase
 
          String s1 = "orange";
          byte[] bytes1 = s1.getBytes("UTF-8");
-         ByteBuffer bb1 = factory.wrapBuffer(bytes1);
 
          byte[] bytes2 = s1.getBytes("UTF-8");
-         ByteBuffer bb2 = factory.wrapBuffer(bytes2);
 
          String s3 = "lemon";
          byte[] bytes3 = s3.getBytes("UTF-8");
-         ByteBuffer bb3 = factory.wrapBuffer(bytes3);
-
+ 
          long initialPos = sf.position();
-         sf.writeDirect(bb1, true);
+         sf.write(wrapBuffer(bytes1), true);
          long bytesWritten = sf.position() - initialPos;
 
-         assertEquals(bb1.limit(), bytesWritten);
+         assertEquals(calculateRecordSize(bytes1.length,sf.getAlignment()), bytesWritten);
 
          initialPos = sf.position();
-         sf.writeDirect(bb2, true);
+         sf.write(wrapBuffer(bytes2), true);
          bytesWritten = sf.position() - initialPos;
 
          
-         assertEquals(bb2.limit(), bytesWritten);
+         assertEquals(calculateRecordSize(bytes2.length,sf.getAlignment()), bytesWritten);
 
          initialPos = sf.position();
-         sf.writeDirect(bb3, true);
+         sf.write(wrapBuffer(bytes3), true);
          bytesWritten = sf.position() - initialPos;
 
-         assertEquals(bb3.limit(), bytesWritten);
+         assertEquals(calculateRecordSize(bytes3.length,sf.getAlignment()), bytesWritten);
 
          byte[] rbytes1 = new byte[bytes1.length];
 
@@ -324,7 +323,7 @@ public abstract class SequentialFileFactoryTestBase extends UnitTestCase
          ByteBuffer rb2 = factory.newBuffer(rbytes2.length);
          ByteBuffer rb3 = factory.newBuffer(rbytes3.length);
 
-         sf.position(bb1.limit() + bb2.limit());
+         sf.position(calculateRecordSize(bytes1.length, sf.getAlignment()) + calculateRecordSize(bytes2.length, sf.getAlignment()));
 
          int bytesRead = sf.read(rb3);
          assertEquals(rb3.limit(), bytesRead);
@@ -370,38 +369,44 @@ public abstract class SequentialFileFactoryTestBase extends UnitTestCase
 
       String s1 = "cheesecake";
       byte[] bytes1 = s1.getBytes("UTF-8");
-      ByteBuffer bb1 = factory.wrapBuffer(bytes1);
 
       long initialPos = sf.position();
-      sf.writeDirect(bb1, true);
+      sf.write(wrapBuffer(bytes1), true);
       long bytesWritten = sf.position() - initialPos;
 
-      assertEquals(bb1.limit(), bytesWritten);
+      assertEquals(calculateRecordSize(bytes1.length, sf.getAlignment()), bytesWritten);
 
       sf.close();
 
       try
       {
          
-         bb1 = factory.wrapBuffer(bytes1);
-         
-         sf.writeDirect(bb1, true);
+         sf.write(wrapBuffer(bytes1), true);
 
          fail("Should throw exception");
       }
       catch (Exception e)
       {
-         // OK
       }
 
       sf.open();
 
-      sf.writeDirect(bb1, true);
+      sf.write(wrapBuffer(bytes1), true);
 
       sf.close();
    }
 
    // Private ---------------------------------
+   
+   private HornetQBuffer wrapBuffer(ByteBuffer buffer)
+   {
+      return ChannelBuffers.wrappedBuffer(buffer);
+   }
+
+   private HornetQBuffer wrapBuffer(byte[] bytes)
+   {
+      return ChannelBuffers.wrappedBuffer(bytes);
+   }
 
    protected void checkFill(final SequentialFile file, final int pos, final int size, final byte fillChar) throws Exception
    {

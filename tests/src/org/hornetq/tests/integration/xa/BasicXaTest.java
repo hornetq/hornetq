@@ -158,7 +158,7 @@ public class BasicXaTest extends ServiceTestBase
 
       clientSession = sessionFactory.createSession(true, false, false);
 
-      clientSession.commit(xid, true);
+      clientSession.commit(xid, false);
       clientSession.start();
       ClientConsumer clientConsumer = clientSession.createConsumer(atestq);
       ClientMessage m = clientConsumer.receive(1000);
@@ -216,7 +216,7 @@ public class BasicXaTest extends ServiceTestBase
 
       clientSession = sessionFactory.createSession(true, false, false);
 
-      clientSession.commit(xid, true);
+      clientSession.commit(xid, false);
       clientSession.start();
       clientConsumer = clientSession.createConsumer(atestq);
       m = clientConsumer.receiveImmediate();
@@ -729,7 +729,7 @@ public class BasicXaTest extends ServiceTestBase
             }
             else
             {
-               session.commit(xid, true);
+               session.commit(xid, false);
             }
          }
       }

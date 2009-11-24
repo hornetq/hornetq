@@ -11,7 +11,12 @@
  * permissions and limitations under the License.
  */
 
-package org.hornetq.core.replication;
+package org.hornetq.core.persistence;
+
+import java.util.concurrent.Executor;
+
+import org.hornetq.core.journal.IOAsyncTask;
+import org.hornetq.core.journal.IOCompletion;
 
 
 /**
@@ -22,20 +27,22 @@ package org.hornetq.core.replication;
  *
  *
  */
-public interface ReplicationContext
+public interface OperationContext extends IOCompletion
 {
-   /** To be called by the replication manager, when new replication is added to the queue */
-   void linedUp();
+   
+   /** The executor used on responses.
+    *  If this is not set, it will use the current thread. */
+   void setExecutor(Executor executor);
 
-   /** To be called by the replication manager, when data is confirmed on the channel */
-   void replicated();
+   /** Execute the task when all IO operations are complete,
+    *  Or execute it immediately if nothing is pending.  */
+   void executeOnCompletion(IOAsyncTask runnable);
    
-   void addReplicationAction(Runnable runnable);
+   void replicationLineUp();
    
+   void replicationDone();
+
    /** To be called when there are no more operations pending */
    void complete();
-   
-   /** Flush all pending callbacks on the Context */
-   void flush();
 
 }

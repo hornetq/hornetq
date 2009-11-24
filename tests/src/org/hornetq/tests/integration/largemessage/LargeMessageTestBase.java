@@ -237,7 +237,7 @@ public abstract class LargeMessageTestBase extends ServiceTestBase
 
             producer = session.createProducer(ADDRESS);
 
-            session.commit(xid, true);
+            session.commit(xid, false);
             xid = newXID();
             session.start(xid, XAResource.TMNOFLAGS);
          }

@@ -18,8 +18,12 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeUnit;
 
-import org.hornetq.core.journal.IOCompletion;
+import org.hornetq.core.exception.HornetQException;
+import org.hornetq.core.journal.IOAsyncTask;
 import org.hornetq.core.journal.SequentialFile;
 import org.hornetq.core.journal.SequentialFileFactory;
 import org.hornetq.core.logging.Logger;
@@ -40,14 +44,23 @@ public class NIOSequentialFile extends AbstractSequentialFile
 
    private RandomAccessFile rfile;
 
-   public NIOSequentialFile(final SequentialFileFactory factory, final String directory, final String fileName)
+   /** The write semaphore here is only used when writing asynchronously */
+   private Semaphore maxIOSemaphore;
+   
+   private final int defaultMaxIO;
+   
+   private int maxIO;
+
+   public NIOSequentialFile(final SequentialFileFactory factory, final String directory, final String fileName, final int maxIO, final Executor writerExecutor)
    {
-      super(directory, new File(directory + "/" + fileName), factory);
+      super(directory, new File(directory + "/" + fileName), factory, writerExecutor);
+      this.defaultMaxIO = maxIO;
    }
 
-   public NIOSequentialFile(final SequentialFileFactory factory, final File file)
+   public NIOSequentialFile(final SequentialFileFactory factory, final File file, final int maxIO, final Executor writerExecutor)
    {
-      super(file.getParent(), new File(file.getPath()), factory);
+      super(file.getParent(), new File(file.getPath()), factory, writerExecutor);
+      this.defaultMaxIO = maxIO;
    }
 
    public int getAlignment()
@@ -65,18 +78,26 @@ public class NIOSequentialFile extends AbstractSequentialFile
       return channel != null;
    }
 
+   /** this.maxIO represents the default maxIO.
+    *  Some operations while initializing files on the journal may require a different maxIO */
    public synchronized void open() throws Exception
+   {
+      open(this.defaultMaxIO);
+   }
+
+   public void open(final int maxIO) throws Exception
    {
       rfile = new RandomAccessFile(getFile(), "rw");
 
       channel = rfile.getChannel();
 
       fileSize = channel.size();
-   }
-
-   public void open(final int currentMaxIO) throws Exception
-   {
-      open();
+      
+      if (writerExecutor != null)
+      {
+         this.maxIOSemaphore = new Semaphore(maxIO);
+         this.maxIO = maxIO;
+      }
    }
 
    public void fill(final int position, final int size, final byte fillCharacter) throws Exception
@@ -111,6 +132,8 @@ public class NIOSequentialFile extends AbstractSequentialFile
 
    public synchronized void close() throws Exception
    {
+      super.close();
+      
       if (channel != null)
       {
          channel.close();
@@ -125,6 +148,16 @@ public class NIOSequentialFile extends AbstractSequentialFile
 
       rfile = null;
 
+      if (maxIOSemaphore != null)
+      {
+         while (!maxIOSemaphore.tryAcquire(maxIO, 60, TimeUnit.SECONDS))
+         {
+            log.warn("Couldn't get lock after 60 seconds on closing AsynchronousFileImpl::" + this.getFileName());
+         }
+      }
+      
+      maxIOSemaphore = null;
+
       notifyAll();
    }
 
@@ -133,7 +166,7 @@ public class NIOSequentialFile extends AbstractSequentialFile
       return read(bytes, null);
    }
 
-   public int read(final ByteBuffer bytes, final IOCompletion callback) throws Exception
+   public int read(final ByteBuffer bytes, final IOAsyncTask callback) throws Exception
    {
       try
       {
@@ -152,7 +185,7 @@ public class NIOSequentialFile extends AbstractSequentialFile
       {
          if (callback != null)
          {
-            callback.onError(-1, e.getLocalizedMessage());
+            callback.onError(HornetQException.IO_ERROR, e.getLocalizedMessage());
          }
 
          throw e;
@@ -194,10 +227,10 @@ public class NIOSequentialFile extends AbstractSequentialFile
 
    public SequentialFile copy()
    {
-      return new NIOSequentialFile(factory, getFile());
+      return new NIOSequentialFile(factory, getFile(), maxIO, writerExecutor);
    }
 
-   public void writeDirect(final ByteBuffer bytes, final boolean sync, final IOCompletion callback)
+   public void writeDirect(final ByteBuffer bytes, final boolean sync, final IOAsyncTask callback)
    {
       if (callback == null)
       {
@@ -219,6 +252,55 @@ public class NIOSequentialFile extends AbstractSequentialFile
       internalWrite(bytes, sync, null);
    }
 
+   private void internalWrite(final ByteBuffer bytes, final boolean sync, final IOAsyncTask callback) throws Exception
+   {
+      if (!isOpen())
+      {
+         if (callback != null)
+         {
+            callback.onError(HornetQException.IO_ERROR, "File not opened");
+         }
+         else
+         {
+            throw new HornetQException(HornetQException.IO_ERROR, "File not opened");
+         }
+         return;
+      }
+      
+      if (writerExecutor == null)
+      {
+         doInternalWrite(bytes, sync, callback);
+      }
+      else
+      {
+         // This is a flow control on writing, just like maxAIO on libaio
+         maxIOSemaphore.acquire();
+         
+         writerExecutor.execute(new Runnable()
+         {
+            public void run()
+            {
+               try
+               {
+                  try
+                  {
+                     doInternalWrite(bytes, sync, callback);
+                  }
+                  catch (Throwable e)
+                  {
+                     log.warn("Exception on submitting write", e);
+                     callback.onError(HornetQException.IO_ERROR, e.getMessage());
+                  }
+               }
+               finally
+               {
+                  maxIOSemaphore.release();
+               }
+            }
+         });
+      }
+   }
+
    /**
     * @param bytes
     * @param sync
@@ -226,8 +308,9 @@ public class NIOSequentialFile extends AbstractSequentialFile
     * @throws IOException
     * @throws Exception
     */
-   private void internalWrite(final ByteBuffer bytes, final boolean sync, final IOCompletion callback) throws Exception
+   private void doInternalWrite(final ByteBuffer bytes, final boolean sync, final IOAsyncTask callback) throws Exception
    {
+      
       position.addAndGet(bytes.limit());
 
       channel.write(bytes);

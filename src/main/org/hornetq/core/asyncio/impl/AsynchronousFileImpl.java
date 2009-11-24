@@ -14,11 +14,14 @@
 package org.hornetq.core.asyncio.impl;
 
 import java.nio.ByteBuffer;
+import java.util.PriorityQueue;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.hornetq.core.asyncio.AIOCallback;
@@ -46,7 +49,20 @@ public class AsynchronousFileImpl implements AsynchronousFile
 
    private static boolean loaded = false;
 
-   private static int EXPECTED_NATIVE_VERSION = 25;
+   private static int EXPECTED_NATIVE_VERSION = 27;
+
+   /** Used to determine the next writing sequence */
+   private AtomicLong nextWritingSequence = new AtomicLong(0);
+
+   /** Used to determine the next writing sequence.
+    *  This is accessed from a single thread (the Poller Thread) */
+   private long nextReadSequence = 0;
+
+   /** 
+    * AIO can't guarantee ordering over callbacks.
+    * We use thie PriorityQueue to hold values until they are in order
+    */
+   private PriorityQueue<CallbackHolder> pendingCallbacks = new PriorityQueue<CallbackHolder>();
 
    public static void addMax(final int io)
    {
@@ -124,6 +140,10 @@ public class AsynchronousFileImpl implements AsynchronousFile
 
    private String fileName;
 
+   /** Used while inside the callbackDone and callbackError
+    **/
+   private final Lock callbackLock = new ReentrantLock();
+
    private final VariableLatch pollerLatch = new VariableLatch();
 
    private volatile Runnable poller;
@@ -131,10 +151,10 @@ public class AsynchronousFileImpl implements AsynchronousFile
    private int maxIO;
 
    private final Lock writeLock = new ReentrantReadWriteLock().writeLock();
-   
+
    private final VariableLatch pendingWrites = new VariableLatch();
 
-   private Semaphore writeSemaphore;
+   private Semaphore maxIOSemaphore;
 
    private BufferCallback bufferCallback;
 
@@ -175,7 +195,7 @@ public class AsynchronousFileImpl implements AsynchronousFile
          }
 
          this.maxIO = maxIO;
-         writeSemaphore = new Semaphore(this.maxIO);
+         maxIOSemaphore = new Semaphore(this.maxIO);
 
          this.fileName = fileName;
 
@@ -189,10 +209,10 @@ public class AsynchronousFileImpl implements AsynchronousFile
             if (e.getCode() == HornetQException.NATIVE_ERROR_CANT_INITIALIZE_AIO)
             {
                ex = new HornetQException(e.getCode(),
-                                           "Can't initialize AIO. Currently AIO in use = " + totalMaxIO.get() +
-                                                    ", trying to allocate more " +
-                                                    maxIO,
-                                           e);
+                                         "Can't initialize AIO. Currently AIO in use = " + totalMaxIO.get() +
+                                                  ", trying to allocate more " +
+                                                  maxIO,
+                                         e);
             }
             else
             {
@@ -202,6 +222,8 @@ public class AsynchronousFileImpl implements AsynchronousFile
          }
          opened = true;
          addMax(this.maxIO);
+         nextWritingSequence.set(0);
+         nextReadSequence = 0;
       }
       finally
       {
@@ -222,13 +244,13 @@ public class AsynchronousFileImpl implements AsynchronousFile
          {
             log.warn("Couldn't get lock after 60 seconds on closing AsynchronousFileImpl::" + this.fileName);
          }
-         
-         while (!writeSemaphore.tryAcquire(maxIO, 60, TimeUnit.SECONDS))
+
+         while (!maxIOSemaphore.tryAcquire(maxIO, 60, TimeUnit.SECONDS))
          {
             log.warn("Couldn't get lock after 60 seconds on closing AsynchronousFileImpl::" + this.fileName);
          }
 
-         writeSemaphore = null;
+         maxIOSemaphore = null;
          if (poller != null)
          {
             stopPoller();
@@ -263,7 +285,7 @@ public class AsynchronousFileImpl implements AsynchronousFile
       {
          startPoller();
       }
-      
+
       pendingWrites.up();
 
       if (writeExecutor != null)
@@ -272,38 +294,46 @@ public class AsynchronousFileImpl implements AsynchronousFile
          {
             public void run()
             {
-               writeSemaphore.acquireUninterruptibly();
+               maxIOSemaphore.acquireUninterruptibly();
+
+               long sequence = nextWritingSequence.getAndIncrement();
 
                try
                {
-                  write(handler, position, size, directByteBuffer, aioCallback);
+                  write(handler, sequence, position, size, directByteBuffer, aioCallback);
                }
                catch (HornetQException e)
                {
-                  callbackError(aioCallback, directByteBuffer, e.getCode(), e.getMessage());
+                  callbackError(aioCallback, sequence, directByteBuffer, e.getCode(), e.getMessage());
                }
                catch (RuntimeException e)
                {
-                  callbackError(aioCallback, directByteBuffer, HornetQException.INTERNAL_ERROR, e.getMessage());
+                  callbackError(aioCallback,
+                                sequence,
+                                directByteBuffer,
+                                HornetQException.INTERNAL_ERROR,
+                                e.getMessage());
                }
             }
          });
       }
       else
       {
-         writeSemaphore.acquireUninterruptibly();
+         maxIOSemaphore.acquireUninterruptibly();
+
+         long sequence = nextWritingSequence.getAndIncrement();
 
          try
          {
-            write(handler, position, size, directByteBuffer, aioCallback);
+            write(handler, sequence, position, size, directByteBuffer, aioCallback);
          }
          catch (HornetQException e)
          {
-            callbackError(aioCallback, directByteBuffer, e.getCode(), e.getMessage());
+            callbackError(aioCallback, sequence, directByteBuffer, e.getCode(), e.getMessage());
          }
          catch (RuntimeException e)
          {
-            callbackError(aioCallback, directByteBuffer, HornetQException.INTERNAL_ERROR, e.getMessage());
+            callbackError(aioCallback, sequence, directByteBuffer, HornetQException.INTERNAL_ERROR, e.getMessage());
          }
       }
 
@@ -320,7 +350,7 @@ public class AsynchronousFileImpl implements AsynchronousFile
          startPoller();
       }
       pendingWrites.up();
-      writeSemaphore.acquireUninterruptibly();
+      maxIOSemaphore.acquireUninterruptibly();
       try
       {
          read(handler, position, size, directByteBuffer, aioPackage);
@@ -328,14 +358,14 @@ public class AsynchronousFileImpl implements AsynchronousFile
       catch (HornetQException e)
       {
          // Release only if an exception happened
-         writeSemaphore.release();
+         maxIOSemaphore.release();
          pendingWrites.down();
          throw e;
       }
       catch (RuntimeException e)
       {
          // Release only if an exception happened
-         writeSemaphore.release();
+         maxIOSemaphore.release();
          pendingWrites.down();
          throw e;
       }
@@ -397,9 +427,9 @@ public class AsynchronousFileImpl implements AsynchronousFile
       resetBuffer(buffer, buffer.limit());
       buffer.position(0);
    }
-   
+
    // Protected -------------------------------------------------------------------------
-   
+
    protected void finalize()
    {
       if (opened)
@@ -410,31 +440,107 @@ public class AsynchronousFileImpl implements AsynchronousFile
 
    // Private ---------------------------------------------------------------------------
 
-   /** The JNI layer will call this method, so we could use it to unlock readWriteLocks held in the java layer */
+   /** */
    @SuppressWarnings("unused")
-   // Called by the JNI layer.. just ignore the
-   // warning
-   private void callbackDone(final AIOCallback callback, final ByteBuffer buffer)
+   private void callbackDone(final AIOCallback callback, final long sequence, final ByteBuffer buffer)
    {
-      writeSemaphore.release();
+      maxIOSemaphore.release();
+
       pendingWrites.down();
-      callback.done();
-      
-      // The buffer is not sent on callback for read operations
-      if (bufferCallback != null && buffer != null)
+
+      callbackLock.lock();
+
+      try
       {
-         bufferCallback.bufferDone(buffer);
+
+         if (sequence == -1)
+         {
+            callback.done();
+         }
+         else
+         {
+            if (sequence == nextReadSequence)
+            {
+               nextReadSequence++;
+               callback.done();
+               flushCallbacks();
+            }
+            else
+            {
+               pendingCallbacks.add(new CallbackHolder(sequence, callback));
+            }
+         }
+
+         // The buffer is not sent on callback for read operations
+         if (bufferCallback != null && buffer != null)
+         {
+            bufferCallback.bufferDone(buffer);
+         }
+      }
+      finally
+      {
+         callbackLock.unlock();
+      }
+   }
+
+   private void flushCallbacks()
+   {
+      while (!pendingCallbacks.isEmpty() && pendingCallbacks.peek().sequence == nextReadSequence)
+      {
+         CallbackHolder holder = pendingCallbacks.poll();
+         if (holder.isError())
+         {
+            ErrorCallback error = (ErrorCallback) holder;
+            holder.callback.onError(error.errorCode, error.message);
+         }
+         else
+         {
+            holder.callback.done();
+         }
+         nextReadSequence++;
       }
    }
 
    // Called by the JNI layer.. just ignore the
    // warning
-   private void callbackError(final AIOCallback callback, final ByteBuffer buffer, final int errorCode, final String errorMessage)
+   private void callbackError(final AIOCallback callback,
+                                           final long sequence,
+                                           final ByteBuffer buffer,
+                                           final int errorCode,
+                                           final String errorMessage)
    {
       log.warn("CallbackError: " + errorMessage);
-      writeSemaphore.release();
+
+      maxIOSemaphore.release();
+
       pendingWrites.down();
-      callback.onError(errorCode, errorMessage);
+
+      callbackLock.lock();
+
+      try
+      {
+         if (sequence == -1)
+         {
+            callback.onError(errorCode, errorMessage);
+         }
+         else
+         {
+            if (sequence == nextReadSequence)
+            {
+               nextReadSequence++;
+               callback.onError(errorCode, errorMessage);
+               flushCallbacks();
+            }
+            else
+            {
+               pendingCallbacks.add(new ErrorCallback(sequence, callback, errorCode, errorMessage));
+            }
+         }
+      }
+      finally
+      {
+         callbackLock.unlock();
+      }
 
       // The buffer is not sent on callback for read operations
       if (bufferCallback != null && buffer != null)
@@ -504,10 +610,10 @@ public class AsynchronousFileImpl implements AsynchronousFile
    private static native void resetBuffer(ByteBuffer directByteBuffer, int size);
 
    public static native void destroyBuffer(ByteBuffer buffer);
-   
+
    /** Instead of passing the nanoSeconds through the stack call every time, we set it statically inside the native method */
    public static native void setNanoSleepInterval(int nanoseconds);
-   
+
    public static native void nanoSleep();
 
    private static native ByteBuffer newNativeBuffer(long size);
@@ -516,7 +622,12 @@ public class AsynchronousFileImpl implements AsynchronousFile
 
    private native long size0(long handle) throws HornetQException;
 
-   private native void write(long handle, long position, long size, ByteBuffer buffer, AIOCallback aioPackage) throws HornetQException;
+   private native void write(long handle,
+                             long sequence,
+                             long position,
+                             long size,
+                             ByteBuffer buffer,
+                             AIOCallback aioPackage) throws HornetQException;
 
    private native void read(long handle, long position, long size, ByteBuffer buffer, AIOCallback aioPackage) throws HornetQException;
 
@@ -529,10 +640,62 @@ public class AsynchronousFileImpl implements AsynchronousFile
    /** A native method that does nothing, and just validate if the ELF dependencies are loaded and on the correct platform as this binary format */
    private static native int getNativeVersion();
 
-   /** Poll asynchrounous events from internal queues */
+   /** Poll asynchronous events from internal queues */
    private static native void internalPollEvents(long handler);
 
    // Inner classes ---------------------------------------------------------------------
+
+   private static class CallbackHolder implements Comparable<CallbackHolder>
+   {
+      final long sequence;
+
+      final AIOCallback callback;
+
+      public boolean isError()
+      {
+         return false;
+      }
+
+      public CallbackHolder(final long sequence, final AIOCallback callback)
+      {
+         this.sequence = sequence;
+         this.callback = callback;
+      }
+
+      public int compareTo(CallbackHolder o)
+      {
+         // It shouldn't be equals in any case
+         if (sequence <= o.sequence)
+         {
+            return -1;
+         }
+         else
+         {
+            return 1;
+         }
+      }
+   }
+
+   private static class ErrorCallback extends CallbackHolder
+   {
+      final int errorCode;
+      
+      final String message;
+      
+      public boolean isError()
+      {
+         return true;
+      }
+
+      public ErrorCallback(final long sequence, final AIOCallback callback, int errorCode, String message)
+      {
+         super(sequence, callback);
+         
+         this.errorCode = errorCode;
+         
+         this.message = message;
+      }
+   }
 
    private class PollerRunnable implements Runnable
    {

@@ -158,15 +158,18 @@ public class PagingTest extends ServiceTestBase
 
          for (int i = 0; i < numberOfMessages; i++)
          {
+            System.out.println("Message " + i + " of " + numberOfMessages);
             ClientMessage message2 = consumer.receive(RECEIVE_TIMEOUT);
 
             assertNotNull(message2);
 
-            assertEquals(i, ((Integer)message2.getObjectProperty(new SimpleString("id"))).intValue());
+            assertEquals(i, message2.getIntProperty("id").intValue());
 
             message2.acknowledge();
 
             assertNotNull(message2);
+            
+            session.commit();
 
             try
             {
@@ -967,9 +970,6 @@ public class PagingTest extends ServiceTestBase
          }
 
          assertNull(consumerPaged.receiveImmediate());
-
-         assertFalse(server.getPostOffice().getPagingManager().getPageStore(PAGED_ADDRESS).isPaging());
-         assertFalse(server.getPostOffice().getPagingManager().getPageStore(NON_PAGED_ADDRESS).isPaging());
 
          session.close();
 

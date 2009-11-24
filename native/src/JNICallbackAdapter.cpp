@@ -18,13 +18,20 @@
 
 jobject nullObj = NULL;
 
-JNICallbackAdapter::JNICallbackAdapter(AIOController * _controller, jobject _callback, jobject _fileController, jobject _bufferReference, short _isRead) : CallbackAdapter()
+JNICallbackAdapter::JNICallbackAdapter(AIOController * _controller, jlong _sequence, jobject _callback, jobject _fileController, jobject _bufferReference, short _isRead) : CallbackAdapter()
 {
 	controller = _controller;
+
+	sequence = _sequence;
+
 	callback = _callback;
+
 	fileController = _fileController;
+
 	bufferReference = _bufferReference;
+
 	isRead = _isRead;
+
 }
 
 JNICallbackAdapter::~JNICallbackAdapter()
@@ -33,15 +40,19 @@ JNICallbackAdapter::~JNICallbackAdapter()
 
 void JNICallbackAdapter::done(THREAD_CONTEXT threadContext)
 {
-	JNI_ENV(threadContext)->CallVoidMethod(fileController, controller->done, callback,  isRead ? nullObj : bufferReference); 
+	JNI_ENV(threadContext)->CallVoidMethod(fileController, controller->done, callback,  sequence, isRead ? nullObj : bufferReference); 
+
 	release(threadContext);
 }
 
 void JNICallbackAdapter::onError(THREAD_CONTEXT threadContext, long errorCode, std::string error)
 {
 	controller->log(threadContext, 0, "Libaio event generated errors, callback object was informed about it");
+
 	jstring strError = JNI_ENV(threadContext)->NewStringUTF(error.data());
-	JNI_ENV(threadContext)->CallVoidMethod(fileController, controller->error, callback, isRead ? nullObj : bufferReference, (jint)errorCode, strError);
+
+	JNI_ENV(threadContext)->CallVoidMethod(fileController, controller->error, callback, sequence, isRead ? nullObj : bufferReference, (jint)errorCode, strError);
+
 	release(threadContext);
 }
 

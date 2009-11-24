@@ -28,6 +28,7 @@ import org.hornetq.core.buffers.ChannelBuffers;
 import org.hornetq.core.client.management.impl.ManagementHelper;
 import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.filter.Filter;
+import org.hornetq.core.journal.IOAsyncTask;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.management.ManagementService;
 import org.hornetq.core.management.Notification;
@@ -914,13 +915,6 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
                }
             }
          }
-         else
-         {
-            if (storageManager.isReplicated())
-            {
-               storageManager.sync();
-            }
-         }
 
          message.incrementRefCount(reference);
       }
@@ -931,20 +925,20 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
       }
       else
       {
-         if (storageManager.isReplicated())
+         // This will use the same thread if there are no pending operations
+         // avoiding a context switch on this case
+         storageManager.afterCompleteOperations(new IOAsyncTask()
          {
-            storageManager.afterReplicated(new Runnable()
+            public void onError(int errorCode, String errorMessage)
             {
-               public void run()
-               {
-                  addReferences(refs);
-               }
-            });
-         }
-         else
-         {
-            addReferences(refs);
-         }
+               log.warn("It wasn't possible to add references due to an IO error code " + errorCode + " message = " + errorMessage);
+            }
+            
+            public void done()
+            {
+               addReferences(refs);
+            }
+         });
       }
    }
 
@@ -1120,11 +1114,11 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
          }
       }
 
-      public void afterPrepare(final Transaction tx) throws Exception
+      public void afterPrepare(final Transaction tx)
       {
       }
 
-      public void afterRollback(final Transaction tx) throws Exception
+      public void afterRollback(final Transaction tx)
       {
          PageTransactionInfo pageTransaction = (PageTransactionInfo)tx.getProperty(TransactionPropertyIndexes.PAGE_TRANSACTION);
 
@@ -1231,11 +1225,11 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
          }
       }
 
-      public void afterPrepare(Transaction tx) throws Exception
+      public void afterPrepare(Transaction tx)
       {
       }
 
-      public void afterRollback(Transaction tx) throws Exception
+      public void afterRollback(Transaction tx)
       {
       }
 

@@ -45,6 +45,8 @@ import static org.hornetq.core.remoting.impl.wireformat.PacketImpl.SESS_XA_START
 import static org.hornetq.core.remoting.impl.wireformat.PacketImpl.SESS_XA_SUSPEND;
 
 import org.hornetq.core.logging.Logger;
+import org.hornetq.core.persistence.OperationContext;
+import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.core.remoting.ChannelHandler;
 import org.hornetq.core.remoting.Packet;
 import org.hornetq.core.remoting.impl.wireformat.CreateQueueMessage;
@@ -80,16 +82,26 @@ import org.hornetq.core.server.ServerSession;
  * @author <a href="mailto:jmesnil@redhat.com">Jeff Mesnil</a>
  * @author <a href="mailto:tim.fox@jboss.com">Tim Fox</a>
  * @author <a href="mailto:andy.taylor@jboss.org>Andy Taylor</a>
+ * @author <a href="mailto:clebert.suconic@jboss.org>Clebert Suconic</a>
  */
 public class ServerSessionPacketHandler implements ChannelHandler
 {
    private static final Logger log = Logger.getLogger(ServerSessionPacketHandler.class);
 
    private final ServerSession session;
+   
+   private final OperationContext sessionContext;
+   
+   // Storagemanager here is used to set the Context
+   private final StorageManager storageManager;
 
-   public ServerSessionPacketHandler(final ServerSession session)
+   public ServerSessionPacketHandler(final ServerSession session, OperationContext sessionContext, StorageManager storageManager)
    {
       this.session = session;
+      
+      this.storageManager = storageManager;
+      
+      this.sessionContext = sessionContext;
    }
 
    public long getID()
@@ -101,6 +113,8 @@ public class ServerSessionPacketHandler implements ChannelHandler
    {
       byte type = packet.getType();
 
+      storageManager.setContext(sessionContext);
+      
       try
       {
          switch (type)
@@ -288,6 +302,11 @@ public class ServerSessionPacketHandler implements ChannelHandler
       catch (Throwable t)
       {
          log.error("Caught unexpected exception", t);
+      }
+      finally
+      {
+         storageManager.completeOperations();
+         storageManager.clearContext();
       }
    }
 }

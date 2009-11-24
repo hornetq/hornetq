@@ -38,7 +38,7 @@ public interface SequentialFile
    boolean exists();
 
    /**
-    * For certain operations (like loading) we don't need open the file with full maxIO
+    * The maximum number of simultaneous writes accepted
     * @param maxIO
     * @throws Exception
     */
@@ -56,17 +56,17 @@ public interface SequentialFile
 
    void delete() throws Exception;
 
-   void write(HornetQBuffer bytes, boolean sync, IOCompletion callback) throws Exception;
+   void write(HornetQBuffer bytes, boolean sync, IOAsyncTask callback) throws Exception;
 
    void write(HornetQBuffer bytes, boolean sync) throws Exception;
 
    /** Write directly to the file without using any buffer */
-   void writeDirect(ByteBuffer bytes, boolean sync, IOCompletion callback);
+   void writeDirect(ByteBuffer bytes, boolean sync, IOAsyncTask callback);
 
    /** Write directly to the file without using any buffer */
    void writeDirect(ByteBuffer bytes, boolean sync) throws Exception;
 
-   int read(ByteBuffer bytes, IOCompletion callback) throws Exception;
+   int read(ByteBuffer bytes, IOAsyncTask callback) throws Exception;
 
    int read(ByteBuffer bytes) throws Exception;
 

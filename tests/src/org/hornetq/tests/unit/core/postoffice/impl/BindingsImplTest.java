@@ -1131,7 +1131,7 @@ public class BindingsImplTest extends UnitTestCase
          return null;
       }
 
-      public int decrementRefCount(MessageReference reference) throws Exception
+      public int decrementRefCount(MessageReference reference)
       {
          // TODO Auto-generated method stub
          return 0;

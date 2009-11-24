@@ -13,6 +13,7 @@
 
 package org.hornetq.tests.unit.core.server.impl.fakes;
 
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
@@ -32,8 +33,8 @@ import org.hornetq.utils.SimpleString;
  */
 public class FakeQueueFactory implements QueueFactory
 {
-	private final ScheduledExecutorService scheduledExecutor = Executors.newSingleThreadScheduledExecutor();
-	
+   private final ScheduledExecutorService scheduledExecutor = Executors.newSingleThreadScheduledExecutor();
+   
 	private PostOffice postOffice;
 
 	public Queue createQueue(long persistenceID, final SimpleString address, SimpleString name, Filter filter,
@@ -46,6 +47,11 @@ public class FakeQueueFactory implements QueueFactory
    {
       this.postOffice = postOffice;
       
+   }
+   
+   public void stop() throws Exception
+   {
+      scheduledExecutor.shutdown();
    }
 
 }

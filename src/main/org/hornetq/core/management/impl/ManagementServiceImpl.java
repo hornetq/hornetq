@@ -21,7 +21,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import javax.management.MBeanServer;
 import javax.management.NotificationBroadcasterSupport;
@@ -39,6 +41,7 @@ import org.hornetq.core.config.cluster.ClusterConnectionConfiguration;
 import org.hornetq.core.config.cluster.DiscoveryGroupConfiguration;
 import org.hornetq.core.config.cluster.DivertConfiguration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
+import org.hornetq.core.journal.IOAsyncTask;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.management.AcceptorControl;
 import org.hornetq.core.management.BridgeControl;
@@ -176,6 +179,11 @@ public class ManagementServiceImpl implements ManagementService
    public MessageCounterManager getMessageCounterManager()
    {
       return messageCounterManager;
+   }
+   
+   public void setStorageManager(StorageManager storageManager)
+   {
+      this.storageManager = storageManager;
    }
 
    public HornetQServerControlImpl registerServer(final PostOffice postOffice,
@@ -735,6 +743,12 @@ public class ManagementServiceImpl implements ManagementService
                postOffice.route(notificationMessage);
             }
          }
+      }
+      
+      if (storageManager != null)
+      {
+         storageManager.waitOnOperations(managementRequestTimeout);
+         storageManager.clearContext();
       }
    }
 

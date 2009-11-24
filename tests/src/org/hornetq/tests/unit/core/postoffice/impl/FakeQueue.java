@@ -493,4 +493,13 @@ public class FakeQueue implements Queue
       return false;
    }
 
+   /* (non-Javadoc)
+    * @see org.hornetq.core.server.Queue#checkDLQ(org.hornetq.core.server.MessageReference, java.util.concurrent.Executor)
+    */
+   public boolean checkDLQ(MessageReference ref, Executor ioExecutor) throws Exception
+   {
+      // TODO Auto-generated method stub
+      return false;
+   }
+
 }

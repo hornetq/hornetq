@@ -40,7 +40,7 @@ import org.hornetq.utils.HornetQThreadFactory;
  *   */
 public class MultiThreadAsynchronousFileTest extends AIOTestBase
 {
-   
+
    public static TestSuite suite()
    {
       return createAIOTestSuite(MultiThreadAsynchronousFileTest.class);
@@ -56,37 +56,33 @@ public class MultiThreadAsynchronousFileTest extends AIOTestBase
 
    static final int NUMBER_OF_LINES = 1000;
 
-   // Executor exec
-
    ExecutorService executor;
-   
-   ExecutorService pollerExecutor;
 
+   ExecutorService pollerExecutor;
 
    private static void debug(final String msg)
    {
       log.debug(msg);
    }
 
-   
-   
    protected void setUp() throws Exception
    {
       super.setUp();
-      pollerExecutor = Executors.newCachedThreadPool(new HornetQThreadFactory("HornetQ-AIO-poller-pool" + System.identityHashCode(this), false));
+      pollerExecutor = Executors.newCachedThreadPool(new HornetQThreadFactory("HornetQ-AIO-poller-pool" + System.identityHashCode(this),
+                                                                              false));
       executor = Executors.newSingleThreadExecutor();
    }
-   
+
    protected void tearDown() throws Exception
    {
       executor.shutdown();
       pollerExecutor.shutdown();
       super.tearDown();
    }
-   
+
    public void testMultipleASynchronousWrites() throws Throwable
    {
-         executeTest(false);
+      executeTest(false);
    }
 
    public void testMultipleSynchronousWrites() throws Throwable
@@ -132,15 +128,15 @@ public class MultiThreadAsynchronousFileTest extends AIOTestBase
          long endTime = System.currentTimeMillis();
 
          debug((sync ? "Sync result:" : "Async result:") + " Records/Second = " +
-                   NUMBER_OF_THREADS *
-                   NUMBER_OF_LINES *
-                   1000 /
-                   (endTime - startTime) +
-                   " total time = " +
-                   (endTime - startTime) +
-                   " total number of records = " +
-                   NUMBER_OF_THREADS *
-                   NUMBER_OF_LINES);
+               NUMBER_OF_THREADS *
+               NUMBER_OF_LINES *
+               1000 /
+               (endTime - startTime) +
+               " total time = " +
+               (endTime - startTime) +
+               " total number of records = " +
+               NUMBER_OF_THREADS *
+               NUMBER_OF_LINES);
       }
       finally
       {
@@ -180,9 +176,8 @@ public class MultiThreadAsynchronousFileTest extends AIOTestBase
       {
          super.run();
 
-
          ByteBuffer buffer = null;
-         
+
          synchronized (MultiThreadAsynchronousFileTest.class)
          {
             buffer = AsynchronousFileImpl.newBuffer(SIZE);
@@ -222,7 +217,7 @@ public class MultiThreadAsynchronousFileTest extends AIOTestBase
                {
                   latchFinishThread = new CountDownLatch(1);
                }
-               CountDownCallback callback = new CountDownCallback(latchFinishThread);
+               CountDownCallback callback = new CountDownCallback(latchFinishThread, null, null, 0);
                if (!sync)
                {
                   list.add(callback);
@@ -232,7 +227,7 @@ public class MultiThreadAsynchronousFileTest extends AIOTestBase
                {
                   latchFinishThread.await();
                   assertTrue(callback.doneCalled);
-                  assertFalse(callback.errorCalled);
+                  assertFalse(callback.errorCalled != 0);
                }
             }
             if (!sync)
@@ -243,13 +238,13 @@ public class MultiThreadAsynchronousFileTest extends AIOTestBase
             for (CountDownCallback callback : list)
             {
                assertTrue(callback.doneCalled);
-               assertFalse(callback.errorCalled);
+               assertFalse(callback.errorCalled != 0);
             }
 
             for (CountDownCallback callback : list)
             {
                assertTrue(callback.doneCalled);
-               assertFalse(callback.errorCalled);
+               assertFalse(callback.errorCalled != 0);
             }
 
          }

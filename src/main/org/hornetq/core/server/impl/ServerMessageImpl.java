@@ -119,7 +119,7 @@ public class ServerMessageImpl extends MessageImpl implements ServerMessage
       return count;
    }
 
-   public int decrementRefCount(final MessageReference reference) throws Exception
+   public int decrementRefCount(final MessageReference reference) 
    {
       int count = refCount.decrementAndGet();
 

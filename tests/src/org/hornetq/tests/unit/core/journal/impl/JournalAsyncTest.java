@@ -13,7 +13,6 @@
 
 package org.hornetq.tests.unit.core.journal.impl;
 
-import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -57,6 +56,16 @@ public class JournalAsyncTest extends UnitTestCase
 
    public void testAsynchronousCommit() throws Exception
    {
+      doAsynchronousTest(true);
+   }
+
+   public void testAsynchronousRollback() throws Exception
+   {
+      doAsynchronousTest(false);
+   }
+
+   public void doAsynchronousTest(final boolean isCommit) throws Exception
+   {
       final int JOURNAL_SIZE = 20000;
 
       setupJournal(JOURNAL_SIZE, 100, 5);
@@ -81,7 +90,14 @@ public class JournalAsyncTest extends UnitTestCase
 
                latch.countDown();
                factory.setHoldCallbacks(false, null);
-               journalImpl.appendCommitRecord(1l, true);
+               if (isCommit)
+               {
+                  journalImpl.appendCommitRecord(1l, true);
+               }
+               else
+               {
+                  journalImpl.appendRollbackRecord(1l, true);
+               }
             }
             catch (Exception e)
             {
@@ -97,6 +113,8 @@ public class JournalAsyncTest extends UnitTestCase
       assertTrue(latch.await(5, TimeUnit.SECONDS));
 
       Thread.yield();
+      
+      Thread.sleep(100);
 
       assertTrue(t.isAlive());
 
@@ -109,145 +127,7 @@ public class JournalAsyncTest extends UnitTestCase
          throw t.e;
       }
    }
-
-   public void testAsynchronousRollbackWithError() throws Exception
-   {
-      final int JOURNAL_SIZE = 20000;
-
-      setupJournal(JOURNAL_SIZE, 100, 5);
-
-      final CountDownLatch latch = new CountDownLatch(11);
-
-      factory.setHoldCallbacks(true, new FakeSequentialFileFactory.ListenerHoldCallback()
-      {
-
-         public void callbackAdded(final ByteBuffer bytes)
-         {
-            latch.countDown();
-         }
-      });
-
-      class LocalThread extends Thread
-      {
-         Exception e;
-
-         @Override
-         public void run()
-         {
-            try
-            {
-               for (int i = 0; i < 10; i++)
-               {
-                  journalImpl.appendAddRecordTransactional(1l, i, (byte)1, new SimpleEncoding(1, (byte)0));
-               }
-
-               journalImpl.appendRollbackRecord(1l, true);
-            }
-            catch (Exception e)
-            {
-               this.e = e;
-            }
-         }
-      };
-
-      LocalThread t = new LocalThread();
-      t.start();
-
-      latch.await();
-
-      Thread.yield();
-
-      assertTrue(t.isAlive());
-
-      factory.setCallbackAsError(0);
-
-      factory.flushCallback(0);
-
-      Thread.yield();
-
-      assertTrue(t.isAlive());
-
-      factory.flushAllCallbacks();
-
-      t.join();
-
-      assertNotNull(t.e);
-   }
-
-   public void testAsynchronousCommitWithError() throws Exception
-   {
-      final int JOURNAL_SIZE = 20000;
-
-      setupJournal(JOURNAL_SIZE, 100, 5);
-
-      final CountDownLatch latch = new CountDownLatch(11);
-
-      factory.setHoldCallbacks(true, new FakeSequentialFileFactory.ListenerHoldCallback()
-      {
-
-         public void callbackAdded(final ByteBuffer bytes)
-         {
-            latch.countDown();
-         }
-      });
-
-      class LocalThread extends Thread
-      {
-         Exception e;
-
-         @Override
-         public void run()
-         {
-            try
-            {
-               for (int i = 0; i < 10; i++)
-               {
-                  journalImpl.appendAddRecordTransactional(1l, i, (byte)1, new SimpleEncoding(1, (byte)0));
-               }
-
-               journalImpl.appendCommitRecord(1l, true);
-            }
-            catch (Exception e)
-            {
-               this.e = e;
-            }
-         }
-      };
-
-      LocalThread t = new LocalThread();
-      t.start();
-
-      latch.await();
-
-      Thread.yield();
-
-      assertTrue(t.isAlive());
-
-      factory.setCallbackAsError(0);
-
-      factory.flushCallback(0);
-
-      Thread.yield();
-
-      assertTrue(t.isAlive());
-
-      factory.flushAllCallbacks();
-
-      t.join();
-
-      assertNotNull(t.e);
-
-      try
-      {
-         journalImpl.appendRollbackRecord(1l, false);
-         fail("Supposed to throw an exception");
-      }
-      catch (Exception e)
-      {
-
-      }
-   }
-
+   
    // If a callback error already arrived, we should just throw the exception
    // right away
    public void testPreviousError() throws Exception

@@ -41,6 +41,8 @@ public class QueueImplTest extends UnitTestCase
    private static final Logger log = Logger.getLogger(QueueImplTest.class);
 
    private ScheduledExecutorService scheduledExecutor;
+   
+   //private ExecutorService executor;
 
    public void setUp() throws Exception
    {

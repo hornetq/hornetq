@@ -15,9 +15,11 @@ package org.hornetq.core.persistence;
 
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Executor;
 
 import javax.transaction.xa.Xid;
 
+import org.hornetq.core.journal.IOAsyncTask;
 import org.hornetq.core.journal.JournalLoadInformation;
 import org.hornetq.core.paging.PageTransactionInfo;
 import org.hornetq.core.paging.PagedMessage;
@@ -46,6 +48,16 @@ import org.hornetq.utils.UUID;
  */
 public interface StorageManager extends HornetQComponent
 {
+   
+   /** Get the context associated with the thread for later reuse */
+   OperationContext getContext();
+   
+   /** It just creates an OperationContext without associating it */
+   OperationContext newContext(Executor executor);
+   
+   /** Set the context back to the thread */
+   void setContext(OperationContext context);
+   
    // Message related operations
 
    void pageClosed(SimpleString storeName, int pageNumber);
@@ -56,13 +68,20 @@ public interface StorageManager extends HornetQComponent
 
    boolean isReplicated();
 
-   void afterReplicated(Runnable run);
+   void afterCompleteOperations(IOAsyncTask run);
    
-   /** Block until the replication is done. 
+   /** Block until the operations are done. 
     * @throws Exception */
-   void waitOnReplication(long timeout) throws Exception;
+   void waitOnOperations(long timeout) throws Exception;
 
-   void completeReplication();
+   /** Block until the operations are done. 
+    * @throws Exception */
+   void waitOnOperations() throws Exception;
+
+   /** To close the OperationsContext */
+   void completeOperations();
+   
+   void clearContext();
 
    UUID getPersistentID();
    
@@ -147,6 +166,4 @@ public interface StorageManager extends HornetQComponent
 
 
    void deleteGrouping(GroupBinding groupBinding) throws Exception;
-
-   void sync();
 }

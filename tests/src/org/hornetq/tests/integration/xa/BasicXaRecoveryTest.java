@@ -295,7 +295,7 @@ public class BasicXaRecoveryTest extends ServiceTestBase
       assertEqualsByteArrays(xids[0].getBranchQualifier(), xid.getBranchQualifier());
       assertEqualsByteArrays(xids[0].getGlobalTransactionId(), xid.getGlobalTransactionId());
 
-      clientSession.commit(xid, true);
+      clientSession.commit(xid, false);
 
       clientSession.close();
 
@@ -426,7 +426,7 @@ public class BasicXaRecoveryTest extends ServiceTestBase
       assertEquals(xids.length, 0);
       if (commit)
       {
-         clientSession.commit(xid, true);
+         clientSession.commit(xid, false);
       }
       else
       {
@@ -455,7 +455,7 @@ public class BasicXaRecoveryTest extends ServiceTestBase
 
          if (i == 2)
          {
-            clientSession.commit(xid, true);
+            clientSession.commit(xid, false);
          }
 
          recreateClients();
@@ -504,7 +504,7 @@ public class BasicXaRecoveryTest extends ServiceTestBase
       xids = clientSession.recover(XAResource.TMENDRSCAN);
       assertEquals(xids.length, 0);
 
-      clientSession.commit(xid, true);
+      clientSession.commit(xid, false);
       clientSession.start();
       ClientMessage m = clientConsumer.receive(1000);
       assertNotNull(m);
@@ -607,7 +607,7 @@ public class BasicXaRecoveryTest extends ServiceTestBase
       assertEqualsByteArrays(xids[0].getGlobalTransactionId(), xid.getGlobalTransactionId());
       xids = clientSession.recover(XAResource.TMENDRSCAN);
       assertEquals(xids.length, 0);
-      clientSession.commit(xid, true);
+      clientSession.commit(xid, false);
       clientSession.start();
       ClientMessage m = clientConsumer.receive(1000);
       assertNotNull(m);
@@ -668,8 +668,8 @@ public class BasicXaRecoveryTest extends ServiceTestBase
       assertEqualXids(xids, xid, xid2);
       xids = clientSession.recover(XAResource.TMENDRSCAN);
       assertEquals(xids.length, 0);
-      clientSession.commit(xid, true);
-      clientSession.commit(xid2, true);
+      clientSession.commit(xid, false);
+      clientSession.commit(xid2, false);
       clientSession.start();
       ClientMessage m = clientConsumer.receive(1000);
       assertNotNull(m);
@@ -795,7 +795,7 @@ public class BasicXaRecoveryTest extends ServiceTestBase
       xids = clientSession.recover(XAResource.TMENDRSCAN);
       assertEquals(xids.length, 0);
       clientSession.rollback(xid);
-      clientSession.commit(xid2, true);
+      clientSession.commit(xid2, false);
       clientSession.start();
       ClientMessage m = clientConsumer.receive(1000);
       assertNotNull(m);
@@ -858,7 +858,7 @@ public class BasicXaRecoveryTest extends ServiceTestBase
       assertEqualsByteArrays(xids[0].getGlobalTransactionId(), xid.getGlobalTransactionId());
       xids = clientSession.recover(XAResource.TMENDRSCAN);
       assertEquals(xids.length, 0);
-      clientSession.commit(xid, true);
+      clientSession.commit(xid, false);
       clientSession.start();
       ClientMessage m = clientConsumer.receive(1000);
       assertNotNull(m);
@@ -938,7 +938,7 @@ public class BasicXaRecoveryTest extends ServiceTestBase
       assertEqualsByteArrays(xids[0].getGlobalTransactionId(), xid.getGlobalTransactionId());
       xids = clientSession.recover(XAResource.TMENDRSCAN);
       assertEquals(xids.length, 0);
-      clientSession.commit(xid, true);
+      clientSession.commit(xid, false);
       clientSession.start();
       m = clientConsumer.receiveImmediate();
       assertNull(m);
@@ -1100,7 +1100,7 @@ public class BasicXaRecoveryTest extends ServiceTestBase
       assertEqualXids(xids, xid, xid2);
       xids = clientSession.recover(XAResource.TMENDRSCAN);
       assertEquals(xids.length, 0);
-      clientSession.commit(xid, true);
+      clientSession.commit(xid, false);
       clientSession.start();
       m = clientConsumer.receiveImmediate();
       assertNull(m);

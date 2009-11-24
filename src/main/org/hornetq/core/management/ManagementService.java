@@ -71,6 +71,8 @@ public interface ManagementService extends NotificationService, HornetQComponent
    ObjectNameBuilder getObjectNameBuilder();
    
    // Resource Registration
+   
+   void setStorageManager(StorageManager storageManager);
 
    HornetQServerControlImpl registerServer(PostOffice postOffice,
                                          StorageManager storageManager,

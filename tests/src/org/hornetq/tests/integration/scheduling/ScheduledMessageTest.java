@@ -12,8 +12,6 @@
  */
 package org.hornetq.tests.integration.scheduling;
 
-import java.util.Calendar;
-
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
 
@@ -583,7 +581,7 @@ public class ScheduledMessageTest extends ServiceTestBase
 
          session = sessionFactory.createSession(true, false, false);
       }
-      session.commit(xid, true);
+      session.commit(xid, false);
       ClientConsumer consumer = session.createConsumer(atestq);
 
       session.start();
@@ -598,7 +596,7 @@ public class ScheduledMessageTest extends ServiceTestBase
       message2.acknowledge();
       session.end(xid2, XAResource.TMSUCCESS);
       session.prepare(xid2);
-      session.commit(xid2, true);
+      session.commit(xid2, false);
       consumer.close();
       // Make sure no more messages
       consumer = session.createConsumer(atestq);
@@ -683,7 +681,7 @@ public class ScheduledMessageTest extends ServiceTestBase
       {
          session.end(xid, XAResource.TMSUCCESS);
          session.prepare(xid);
-         session.commit(xid, true);
+         session.commit(xid, false);
       } else
       {
          session.commit();
@@ -758,7 +756,7 @@ public class ScheduledMessageTest extends ServiceTestBase
       {
          session.end(xid, XAResource.TMSUCCESS);
          session.prepare(xid);
-         session.commit(xid, true);
+         session.commit(xid, false);
       }
       
       session.close();

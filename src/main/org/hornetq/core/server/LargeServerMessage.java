@@ -42,5 +42,5 @@ public interface LargeServerMessage extends ServerMessage
    
    void incrementDelayDeletionCount();
    
-   void decrementDelayDeletionCount() throws Exception;
+   void decrementDelayDeletionCount();
 }

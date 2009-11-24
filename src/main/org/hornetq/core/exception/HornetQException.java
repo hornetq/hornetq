@@ -38,6 +38,9 @@ public class HornetQException extends Exception
    
    public static final int UNBLOCKED = 005;
 
+   public static final int IO_ERROR = 006;
+
+
    public static final int QUEUE_DOES_NOT_EXIST = 100;
 
    public static final int QUEUE_EXISTS = 101;
@@ -84,8 +87,6 @@ public class HornetQException extends Exception
    public static final int NATIVE_ERROR_PREALLOCATE_FILE = 208;
 
    public static final int NATIVE_ERROR_ALLOCATE_MEMORY = 209;
-
-   public static final int NATIVE_ERROR_IO = 210;
 
    public static final int NATIVE_ERROR_AIO_FULL = 211;
    

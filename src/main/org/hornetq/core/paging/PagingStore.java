@@ -67,14 +67,14 @@ public interface PagingStore extends HornetQComponent
     * @param message
     * @throws Exception
     */
-   void addSize(ServerMessage message, boolean add) throws Exception;
+   void addSize(ServerMessage message, boolean add);
    
    /**
     * 
     * @param reference
     * @throws Exception
     */
-   void addSize(MessageReference reference, boolean add) throws Exception;
+   void addSize(MessageReference reference, boolean add);
    
    /**
     * 

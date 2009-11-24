@@ -52,17 +52,6 @@ public class ReplicationOrderTest extends FailoverTestBase
 
    // Public --------------------------------------------------------
 
-   public void _test() throws Exception
-   {
-      for (int i = 0; i < 100; i++)
-      {
-         System.out.println("<<<<<< " + i + " >>>>>>>");
-         testTxMixedPersistentAndNonPersistentMessagesOrderWithReplicatedBackup();
-         tearDown();
-         setUp();
-      }
-   }
-
    public void testMixedPersistentAndNonPersistentMessagesOrderWithReplicatedBackup() throws Exception
    {
       doTestMixedPersistentAndNonPersistentMessagesOrderWithReplicatedBackup(false);
@@ -92,7 +81,7 @@ public class ReplicationOrderTest extends FailoverTestBase
       }
       session.createQueue(address, queue, true);
       ClientProducer producer = session.createProducer(address);
-      boolean durable = true;
+      boolean durable = false;
       for (int i = 0; i < NUM; i++)
       {
          ClientMessage msg = session.createClientMessage(durable);

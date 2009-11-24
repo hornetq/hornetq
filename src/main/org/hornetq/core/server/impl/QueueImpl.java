@@ -114,7 +114,7 @@ public class QueueImpl implements Queue
    private final HierarchicalRepository<AddressSettings> addressSettingsRepository;
 
    private final ScheduledExecutorService scheduledExecutor;
-
+   
    private final SimpleString address;
 
    private Redistributor redistributor;
@@ -621,6 +621,8 @@ public class QueueImpl implements Queue
       {
          acknowledge(ref);
       }
+      
+      storageManager.completeOperations();
    }
 
    public void setExpiryAddress(final SimpleString expiryAddress)
@@ -643,39 +645,45 @@ public class QueueImpl implements Queue
       return deleteMatchingReferences(null);
    }
 
-   public synchronized int deleteMatchingReferences(final Filter filter) throws Exception
+   public int deleteMatchingReferences(final Filter filter) throws Exception
    {
       int count = 0;
-
-      Transaction tx = new TransactionImpl(storageManager);
-
-      Iterator<MessageReference> iter = messageReferences.iterator();
-
-      while (iter.hasNext())
+      
+      synchronized(this)
       {
-         MessageReference ref = iter.next();
-
-         if (filter == null || filter.match(ref.getMessage()))
+   
+         Transaction tx = new TransactionImpl(storageManager);
+   
+         Iterator<MessageReference> iter = messageReferences.iterator();
+   
+         while (iter.hasNext())
          {
-            deliveringCount.incrementAndGet();
-            acknowledge(tx, ref);
-            iter.remove();
-            count++;
+            MessageReference ref = iter.next();
+   
+            if (filter == null || filter.match(ref.getMessage()))
+            {
+               deliveringCount.incrementAndGet();
+               acknowledge(tx, ref);
+               iter.remove();
+               count++;
+            }
          }
-      }
-
-      List<MessageReference> cancelled = scheduledDeliveryHandler.cancel();
-      for (MessageReference messageReference : cancelled)
-      {
-         if (filter == null || filter.match(messageReference.getMessage()))
+   
+         List<MessageReference> cancelled = scheduledDeliveryHandler.cancel();
+         for (MessageReference messageReference : cancelled)
          {
-            deliveringCount.incrementAndGet();
-            acknowledge(tx, messageReference);
-            count++;
+            if (filter == null || filter.match(messageReference.getMessage()))
+            {
+               deliveringCount.incrementAndGet();
+               acknowledge(tx, messageReference);
+               count++;
+            }
          }
+   
+         tx.commit();
       }
-
-      tx.commit();
+      
+      storageManager.waitOnOperations(-1);
 
       return count;
    }
@@ -930,6 +938,7 @@ public class QueueImpl implements Queue
       if (message.isDurable() && durable)
       {
          storageManager.updateDeliveryCount(reference);
+         storageManager.waitOnOperations();
       }
 
       AddressSettings addressSettings = addressSettingsRepository.getMatch(address.toString());
@@ -939,6 +948,7 @@ public class QueueImpl implements Queue
       if (maxDeliveries > 0 && reference.getDeliveryCount() >= maxDeliveries)
       {
          sendToDeadLetterAddress(reference);
+         storageManager.waitOnOperations();
 
          return false;
       }
@@ -1381,7 +1391,7 @@ public class QueueImpl implements Queue
       return status;
    }
 
-   private void removeExpiringReference(final MessageReference ref) throws Exception
+   private void removeExpiringReference(final MessageReference ref)
    {
       if (ref.getMessage().getExpiration() > 0)
       {
@@ -1389,9 +1399,9 @@ public class QueueImpl implements Queue
       }
    }
 
-   private void postAcknowledge(final MessageReference ref) throws Exception
+   private void postAcknowledge(final MessageReference ref)
    {
-      ServerMessage message = ref.getMessage();
+      final ServerMessage message = ref.getMessage();
 
       QueueImpl queue = (QueueImpl)ref.getQueue();
 
@@ -1431,7 +1441,7 @@ public class QueueImpl implements Queue
       message.decrementRefCount(ref);
    }
 
-   void postRollback(final LinkedList<MessageReference> refs) throws Exception
+   void postRollback(final LinkedList<MessageReference> refs)
    {
       synchronized (this)
       {
@@ -1481,28 +1491,35 @@ public class QueueImpl implements Queue
       {
       }
 
-      public void afterPrepare(final Transaction tx) throws Exception
+      public void afterPrepare(final Transaction tx)
       {
       }
 
-      public void afterRollback(final Transaction tx) throws Exception
+      public void afterRollback(final Transaction tx)
       {
          Map<QueueImpl, LinkedList<MessageReference>> queueMap = new HashMap<QueueImpl, LinkedList<MessageReference>>();
 
          for (MessageReference ref : refsToAck)
          {
-            if (ref.getQueue().checkDLQ(ref))
+            try
             {
-               LinkedList<MessageReference> toCancel = queueMap.get(ref.getQueue());
-
-               if (toCancel == null)
+               if (ref.getQueue().checkDLQ(ref))
                {
-                  toCancel = new LinkedList<MessageReference>();
-
-                  queueMap.put((QueueImpl)ref.getQueue(), toCancel);
+                  LinkedList<MessageReference> toCancel = queueMap.get(ref.getQueue());
+   
+                  if (toCancel == null)
+                  {
+                     toCancel = new LinkedList<MessageReference>();
+   
+                     queueMap.put((QueueImpl)ref.getQueue(), toCancel);
+                  }
+   
+                  toCancel.addFirst(ref);
                }
-
-               toCancel.addFirst(ref);
+            }
+            catch (Exception e)
+            {
+               log.warn("Error on checkDLQ", e);
             }
          }
 
@@ -1519,7 +1536,7 @@ public class QueueImpl implements Queue
          }
       }
 
-      public void afterCommit(final Transaction tx) throws Exception
+      public void afterCommit(final Transaction tx)
       {
          for (MessageReference ref : refsToAck)
          {

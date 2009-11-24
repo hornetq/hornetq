@@ -16,6 +16,7 @@ package org.hornetq.core.server.cluster.impl;
 import java.util.concurrent.Executor;
 
 import org.hornetq.core.filter.Filter;
+import org.hornetq.core.journal.IOAsyncTask;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.core.postoffice.PostOffice;
@@ -144,21 +145,21 @@ public class Redistributor implements Consumer
 
       tx.commit();
 
-      if (storageManager.isReplicated())
+      storageManager.afterCompleteOperations(new IOAsyncTask()
       {
-         storageManager.afterReplicated(new Runnable()
+         
+         public void onError(int errorCode, String errorMessage)
          {
-            public void run()
-            {
-               execPrompter();
-            }
-         });
-         storageManager.completeReplication();
-      }
-      else
-      {
-         execPrompter();
-      }
+            log.warn("IO Error during redistribution, errorCode = " + errorCode + " message = " + errorMessage);
+         }
+         
+         public void done()
+         {
+            execPrompter();
+         }
+      });
+      
+      storageManager.completeOperations();
    }
    
    private void execPrompter()

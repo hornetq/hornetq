@@ -15,6 +15,7 @@ package org.hornetq.core.journal.impl;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -22,7 +23,7 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.hornetq.core.buffers.ChannelBuffers;
-import org.hornetq.core.journal.IOCompletion;
+import org.hornetq.core.journal.IOAsyncTask;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.remoting.spi.HornetQBuffer;
 import org.hornetq.utils.VariableLatch;
@@ -56,7 +57,7 @@ public class TimedBuffer
 
    private int bufferLimit = 0;
 
-   private List<IOCompletion> callbacks;
+   private List<IOAsyncTask> callbacks;
 
    private final Lock lock = new ReentrantReadWriteLock().writeLock();
 
@@ -106,7 +107,7 @@ public class TimedBuffer
       buffer.clear();
       bufferLimit = 0;
 
-      callbacks = new ArrayList<IOCompletion>();
+      callbacks = new ArrayList<IOAsyncTask>();
       this.flushOnSync = flushOnSync;
       latchTimer.up();
       this.timeout = timeout;
@@ -225,7 +226,7 @@ public class TimedBuffer
       }
    }
 
-   public synchronized void addBytes(final byte[] bytes, final boolean sync, final IOCompletion callback)
+   public synchronized void addBytes(final byte[] bytes, final boolean sync, final IOAsyncTask callback)
    {
       if (buffer.writerIndex() == 0)
       {
@@ -258,36 +259,55 @@ public class TimedBuffer
       }
    }
 
-   public synchronized void flush()
+   public void flush()
    {
-      if (buffer.writerIndex() > 0)
+      ByteBuffer bufferToFlush = null;
+      
+      boolean useSync = false;
+      
+      List<IOAsyncTask> callbacksToCall = null;
+      
+      synchronized (this)
       {
-         latchTimer.up();
-
-         int pos = buffer.writerIndex();
-
-         if (logRates)
+         if (buffer.writerIndex() > 0)
          {
-            bytesFlushed += pos;
+            latchTimer.up();
+   
+            int pos = buffer.writerIndex();
+   
+            if (logRates)
+            {
+               bytesFlushed += pos;
+            }
+   
+            bufferToFlush = bufferObserver.newBuffer(bufferSize, pos);
+   
+            // Putting a byteArray on a native buffer is much faster, since it will do in a single native call.
+            // Using bufferToFlush.put(buffer) would make several append calls for each byte
+   
+            bufferToFlush.put(buffer.array(), 0, pos);
+
+            callbacksToCall = callbacks;
+            
+            callbacks = new LinkedList<IOAsyncTask>();
+   
+            useSync = pendingSync;
+            
+            active = false;
+            pendingSync = false;
+   
+            buffer.clear();
+            bufferLimit = 0;
          }
-
-         ByteBuffer directBuffer = bufferObserver.newBuffer(bufferSize, pos);
-
-         // Putting a byteArray on a native buffer is much faster, since it will do in a single native call.
-         // Using directBuffer.put(buffer) would make several append calls for each byte
-
-         directBuffer.put(buffer.array(), 0, pos);
-
-         bufferObserver.flushBuffer(directBuffer, pendingSync, callbacks);
-
-         callbacks = new ArrayList<IOCompletion>();
-
-         active = false;
-         pendingSync = false;
-
-         buffer.clear();
-         bufferLimit = 0;
       }
+      
+      // Execute the flush outside of the lock
+      // This is important for NIO performance while we are using NIO Callbacks
+      if (bufferToFlush != null)
+      {
+         bufferObserver.flushBuffer(bufferToFlush, useSync, callbacksToCall);
+      }
+
    }
 
    // Package protected ---------------------------------------------

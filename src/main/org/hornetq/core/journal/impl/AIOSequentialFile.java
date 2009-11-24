@@ -15,21 +15,15 @@ package org.hornetq.core.journal.impl;
 
 import java.io.File;
 import java.nio.ByteBuffer;
-import java.util.List;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executor;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicLong;
 
-import org.hornetq.core.asyncio.AIOCallback;
 import org.hornetq.core.asyncio.AsynchronousFile;
 import org.hornetq.core.asyncio.BufferCallback;
 import org.hornetq.core.asyncio.impl.AsynchronousFileImpl;
-import org.hornetq.core.journal.IOCompletion;
-import org.hornetq.core.journal.SequentialFileFactory;
+import org.hornetq.core.journal.IOAsyncTask;
 import org.hornetq.core.journal.SequentialFile;
+import org.hornetq.core.journal.SequentialFileFactory;
 import org.hornetq.core.logging.Logger;
-import org.hornetq.core.remoting.spi.HornetQBuffer;
 
 /**
  * 
@@ -50,14 +44,9 @@ public class AIOSequentialFile extends AbstractSequentialFile
 
    private final BufferCallback bufferCallback;
 
-   /** A context switch on AIO would make it to synchronize the disk before
-       switching to the new thread, what would cause
-       serious performance problems. Because of that we make all the writes on
-       AIO using a single thread. */
-   private final Executor executor;
-
    /** The pool for Thread pollers */
    private final Executor pollerExecutor;
+   
 
    public AIOSequentialFile(final SequentialFileFactory factory,
                             final int bufferSize,
@@ -66,13 +55,12 @@ public class AIOSequentialFile extends AbstractSequentialFile
                             final String fileName,
                             final int maxIO,
                             final BufferCallback bufferCallback,
-                            final Executor executor,
+                            final Executor writerExecutor,
                             final Executor pollerExecutor)
    {
-      super(directory, new File(directory + "/" + fileName), factory);
+      super(directory, new File(directory + "/" + fileName), factory, writerExecutor);
       this.maxIO = maxIO;
       this.bufferCallback = bufferCallback;
-      this.executor = executor;
       this.pollerExecutor = pollerExecutor;
    }
 
@@ -99,7 +87,7 @@ public class AIOSequentialFile extends AbstractSequentialFile
 
    public SequentialFile copy()
    {
-      return new AIOSequentialFile(factory, -1, -1, getFile().getParent(), getFileName(), maxIO, bufferCallback, executor, pollerExecutor);
+      return new AIOSequentialFile(factory, -1, -1, getFile().getParent(), getFileName(), maxIO, bufferCallback, writerExecutor, pollerExecutor);
    }
 
    public synchronized void close() throws Exception
@@ -108,26 +96,12 @@ public class AIOSequentialFile extends AbstractSequentialFile
       {
          return;
       }
+      
+      super.close();
+      
       opened = false;
 
       timedBuffer = null;
-
-      final CountDownLatch donelatch = new CountDownLatch(1);
-
-      executor.execute(new Runnable()
-      {
-         public void run()
-         {
-            donelatch.countDown();
-         }
-      });
-
-      while (!donelatch.await(60, TimeUnit.SECONDS))
-      {
-         log.warn("Executor on file " + getFile().getName() + " couldn't complete its tasks in 60 seconds.",
-                  new Exception("Warning: Executor on file " + getFile().getName() +
-                                " couldn't complete its tasks in 60 seconds."));
-      }
 
       aioFile.close();
       aioFile = null;
@@ -199,13 +173,18 @@ public class AIOSequentialFile extends AbstractSequentialFile
       open(maxIO);
    }
 
-   public synchronized void open(final int currentMaxIO) throws Exception
+   public synchronized void open(final int maxIO) throws Exception
    {
       opened = true;
-      aioFile = newFile();
-      aioFile.open(getFile().getAbsolutePath(), currentMaxIO);
+      
+      aioFile = new AsynchronousFileImpl(writerExecutor, pollerExecutor);
+      
+      aioFile.open(getFile().getAbsolutePath(), maxIO);
+      
       position.set(0);
+      
       aioFile.setBufferCallback(bufferCallback);
+      
       this.fileSize = aioFile.size();
    }
 
@@ -214,7 +193,7 @@ public class AIOSequentialFile extends AbstractSequentialFile
       aioFile.setBufferCallback(callback);
    }
 
-   public int read(final ByteBuffer bytes, final IOCompletion callback) throws Exception
+   public int read(final ByteBuffer bytes, final IOAsyncTask callback) throws Exception
    {
       int bytesToRead = bytes.limit();
 
@@ -229,7 +208,7 @@ public class AIOSequentialFile extends AbstractSequentialFile
 
    public int read(final ByteBuffer bytes) throws Exception
    {
-      IOCompletion waitCompletion = SimpleWaitIOCallback.getInstance();
+      SimpleWaitIOCallback waitCompletion = new SimpleWaitIOCallback();
 
       int bytesRead = read(bytes, waitCompletion);
 
@@ -268,20 +247,12 @@ public class AIOSequentialFile extends AbstractSequentialFile
    // Protected methods
    // -----------------------------------------------------------------------------------------------------
 
-   /**
-    * An extension point for tests
-    */
-   protected AsynchronousFile newFile()
-   {
-      return new AsynchronousFileImpl(executor, pollerExecutor);
-   }
-
    
    public void writeDirect(final ByteBuffer bytes, final boolean sync) throws Exception
    {
       if (sync)
       {
-         IOCompletion completion = SimpleWaitIOCallback.getInstance();
+         SimpleWaitIOCallback completion = new SimpleWaitIOCallback();
   
          writeDirect(bytes, true, completion);
   
@@ -298,7 +269,7 @@ public class AIOSequentialFile extends AbstractSequentialFile
     * 
     * @param sync Not used on AIO
     *  */
-   public void writeDirect(final ByteBuffer bytes, final boolean sync, IOCompletion callback)
+   public void writeDirect(final ByteBuffer bytes, final boolean sync, IOAsyncTask callback)
    {
       final int bytesToWrite = factory.calculateBlockSize(bytes.limit());
 

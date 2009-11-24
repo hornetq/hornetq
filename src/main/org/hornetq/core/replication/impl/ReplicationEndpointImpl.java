@@ -17,7 +17,6 @@ import static org.hornetq.core.remoting.impl.wireformat.PacketImpl.REPLICATION_L
 import static org.hornetq.core.remoting.impl.wireformat.PacketImpl.REPLICATION_LARGE_MESSAGE_END;
 import static org.hornetq.core.remoting.impl.wireformat.PacketImpl.REPLICATION_LARGE_MESSAGE_WRITE;
 import static org.hornetq.core.remoting.impl.wireformat.PacketImpl.REPLICATION_COMPARE_DATA;
-import static org.hornetq.core.remoting.impl.wireformat.PacketImpl.REPLICATION_SYNC;
 
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -163,11 +162,6 @@ public class ReplicationEndpointImpl implements ReplicationEndpoint
             handleCompareDataMessage((ReplicationCompareDataMessage)packet);
             response = new NullResponseMessage();
          }
-         else if (packet.getType() == REPLICATION_SYNC)
-         {
-            // https://jira.jboss.org/jira/browse/HORNETQ-218
-            // Nothing to be done, we just needed a round trip to process events in order
-         }
          else
          {
             log.warn("Packet " + packet + " can't be processed by the ReplicationEndpoint");
@@ -196,8 +190,10 @@ public class ReplicationEndpointImpl implements ReplicationEndpoint
    {
       Configuration config = server.getConfiguration();
 
-      storage = new JournalStorageManager(config, server.getExecutorFactory().getExecutor());
+      storage = new JournalStorageManager(config, server.getExecutorFactory());
       storage.start();
+      
+      server.getManagementService().setStorageManager(storage);
 
       bindingsJournal = storage.getBindingsJournal();
       messagingJournal = storage.getMessageJournal();

@@ -43,7 +43,19 @@ public class QueueImplTest extends UnitTestCase
 {
    // The tests ----------------------------------------------------------------
 
-   private final ScheduledExecutorService scheduledExecutor = Executors.newSingleThreadScheduledExecutor();
+   private ScheduledExecutorService scheduledExecutor;
+   
+   protected void setUp() throws Exception
+   {
+      super.setUp();
+      scheduledExecutor =  Executors.newSingleThreadScheduledExecutor();
+   }
+   
+   protected void tearDown() throws Exception
+   {
+      scheduledExecutor.shutdown();
+      super.tearDown();
+   }
 
    private static final SimpleString queue1 = new SimpleString("queue1");
 

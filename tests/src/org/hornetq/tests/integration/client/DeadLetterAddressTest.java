@@ -179,6 +179,14 @@ public class DeadLetterAddressTest extends UnitTestCase
          clientSession.rollback();
       }
 
+      long timeout = System.currentTimeMillis() + 5000;
+      
+      // DLA transfer is asynchronous fired on the rollback
+      while (System.currentTimeMillis() < timeout && ((Queue)server.getPostOffice().getBinding(qName).getBindable()).getMessageCount() != 0)
+      {
+         Thread.sleep(1);
+      }
+      
       assertEquals(0, ((Queue)server.getPostOffice().getBinding(qName).getBindable()).getMessageCount());
       ClientMessage m = clientConsumer.receiveImmediate();
       assertNull(m);

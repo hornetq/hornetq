@@ -29,9 +29,9 @@ public interface TransactionOperation
    
    void beforeRollback(Transaction tx) throws Exception;
    
-   void afterPrepare(Transaction tx) throws Exception;
+   void afterPrepare(Transaction tx);
       
-   void afterCommit(Transaction tx) throws Exception;
+   void afterCommit(Transaction tx);
    
-   void afterRollback(Transaction tx) throws Exception;   
+   void afterRollback(Transaction tx);   
 }

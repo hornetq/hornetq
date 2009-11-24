@@ -354,7 +354,7 @@ public class XaTimeoutTest extends UnitTestCase
       CountDownLatch latch = new CountDownLatch(1);
       messagingService.getResourceManager().getTransaction(xid).addOperation(new RollbackCompleteOperation(latch));
       assertFalse(latch.await(2600, TimeUnit.MILLISECONDS));
-      clientSession.commit(xid, true);
+      clientSession.commit(xid, false);
 
       clientSession.setTransactionTimeout(0);
       clientConsumer.close();
@@ -434,7 +434,7 @@ public class XaTimeoutTest extends UnitTestCase
       messagingService.getResourceManager().getTransaction(xid).addOperation(new RollbackCompleteOperation(latch));
       assertFalse(latch.await(2600, TimeUnit.MILLISECONDS));
       clientSession.prepare(xid);
-      clientSession.commit(xid, true);
+      clientSession.commit(xid, false);
       ClientSession clientSession2 = sessionFactory.createSession(false, true, true);
       ClientConsumer consumer = clientSession2.createConsumer(atestq);
       clientSession2.start();
@@ -538,15 +538,15 @@ public class XaTimeoutTest extends UnitTestCase
       {
       }
 
-      public void afterPrepare(Transaction tx) throws Exception
+      public void afterPrepare(Transaction tx)
       {
       }
 
-      public void afterCommit(Transaction tx) throws Exception
+      public void afterCommit(Transaction tx)
       {
       }
 
-      public void afterRollback(Transaction tx) throws Exception
+      public void afterRollback(Transaction tx)
       {
          latch.countDown();
       }

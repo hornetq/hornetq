@@ -50,6 +50,8 @@ import org.hornetq.core.client.ClientSession;
 import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.journal.impl.AIOSequentialFileFactory;
 import org.hornetq.core.logging.Logger;
+import org.hornetq.core.persistence.impl.journal.JournalStorageManager;
+import org.hornetq.core.persistence.impl.journal.OperationContextImpl;
 import org.hornetq.core.postoffice.Binding;
 import org.hornetq.core.postoffice.Bindings;
 import org.hornetq.core.postoffice.PostOffice;
@@ -647,6 +649,8 @@ public class UnitTestCase extends TestCase
    @Override
    protected void tearDown() throws Exception
    {
+      OperationContextImpl.clearContext();
+
       deleteDirectory(new File(getTestDir()));
 
       assertEquals(0, InVMRegistry.instance.size());

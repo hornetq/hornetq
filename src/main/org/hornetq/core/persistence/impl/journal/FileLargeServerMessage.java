@@ -176,7 +176,7 @@ public class FileLargeServerMessage extends ServerMessageImpl implements LargeSe
       this.delayDeletionCount.incrementAndGet();
    }
 
-   public synchronized void decrementDelayDeletionCount() throws Exception
+   public synchronized void decrementDelayDeletionCount()
    {
       int count = this.delayDeletionCount.decrementAndGet();
 
@@ -191,7 +191,7 @@ public class FileLargeServerMessage extends ServerMessageImpl implements LargeSe
       return new DecodingContext();
    }
 
-   private void checkDelete() throws Exception
+   private void checkDelete()
    {
       if (getRefCount() <= 0)
       {
@@ -220,7 +220,7 @@ public class FileLargeServerMessage extends ServerMessageImpl implements LargeSe
    }
 
    @Override
-   public synchronized int decrementRefCount(MessageReference reference) throws Exception
+   public synchronized int decrementRefCount(MessageReference reference)
    {
       int currentRefCount = super.decrementRefCount(reference);
 

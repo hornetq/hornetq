@@ -24,10 +24,17 @@
 class JNICallbackAdapter : public CallbackAdapter
 {
 private:
+
 	AIOController * controller;
+	
 	jobject callback;
+	
 	jobject fileController;
+	
 	jobject bufferReference;
+	
+	jlong sequence;
+	
 	// Is this a read operation
 	short isRead;
 
@@ -43,7 +50,7 @@ private:
 	
 public:
 	// _ob must be a global Reference (use createGloblReferente before calling the constructor)
-	JNICallbackAdapter(AIOController * _controller, jobject _callback, jobject _fileController, jobject _bufferReference, short _isRead);
+	JNICallbackAdapter(AIOController * _controller, jlong sequence, jobject _callback, jobject _fileController, jobject _bufferReference, short _isRead);
 	virtual ~JNICallbackAdapter();
 
 	void done(THREAD_CONTEXT threadContext);

@@ -15,6 +15,8 @@ package org.hornetq.tests.unit.core.asyncio;
 
 import java.io.File;
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -84,20 +86,36 @@ public abstract class AIOTestBase extends UnitTestCase
    protected static class CountDownCallback implements AIOCallback
    {
       private final CountDownLatch latch;
+      
+      private final List<Integer> outputList;
+      
+      private final int order;
+      
+      private final AtomicInteger errors;
 
-      public CountDownCallback(final CountDownLatch latch)
+      public CountDownCallback(final CountDownLatch latch, final AtomicInteger errors, final List<Integer> outputList, final int order)
       {
          this.latch = latch;
+         
+         this.outputList = outputList;
+         
+         this.order = order;
+         
+         this.errors = errors;
       }
 
       volatile boolean doneCalled = false;
 
-      volatile boolean errorCalled = false;
+      volatile int errorCalled = 0;
 
       final AtomicInteger timesDoneCalled = new AtomicInteger(0);
 
       public void done()
       {
+         if (outputList != null)
+         {
+            outputList.add(order);
+         }
          doneCalled = true;
          timesDoneCalled.incrementAndGet();
          if (latch != null)
@@ -108,12 +126,30 @@ public abstract class AIOTestBase extends UnitTestCase
 
       public void onError(final int errorCode, final String errorMessage)
       {
-         errorCalled = true;
+         errorCalled++;
+         if (outputList != null)
+         {
+            outputList.add(order);
+         }
+         if (errors != null)
+         {
+            errors.incrementAndGet();
+         }
          if (latch != null)
          {
             // even thought an error happened, we need to inform the latch,
                // or the test won't finish
             latch.countDown();
+         }
+      }
+      
+      public static void checkResults(final int numberOfElements, final ArrayList<Integer> result)
+      {
+         assertEquals(numberOfElements, result.size());
+         int i = 0;
+         for (Integer resultI : result)
+         {
+            assertEquals(i++, resultI.intValue());
          }
       }
    }

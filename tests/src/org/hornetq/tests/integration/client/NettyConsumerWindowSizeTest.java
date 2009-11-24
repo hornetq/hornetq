@@ -13,6 +13,14 @@
 
 package org.hornetq.tests.integration.client;
 
+import java.util.HashMap;
+
+import org.hornetq.core.client.ClientSessionFactory;
+import org.hornetq.core.client.impl.ClientSessionFactoryImpl;
+import org.hornetq.core.config.Configuration;
+import org.hornetq.core.config.TransportConfiguration;
+import org.hornetq.integration.transports.netty.TransportConstants;
+
 /**
  * A NettyConsumerWindowSizeTest
  *
@@ -32,6 +40,38 @@ public class NettyConsumerWindowSizeTest extends ConsumerWindowSizeTest
       return true;
    }
    
+   protected ClientSessionFactory createNettyFactory()
+   {
+      HashMap<String, Object> parameters = new HashMap<String, Object>();
+      
+      parameters.put(TransportConstants.TCP_NODELAY_PROPNAME, true);
+      
+      TransportConfiguration config = new TransportConfiguration(NETTY_CONNECTOR_FACTORY, parameters);
+      
+      return new ClientSessionFactoryImpl(config);
+      
+      //return super.createNettyFactory();
+   }
+
+   protected Configuration createDefaultConfig(final boolean netty)
+   {
+      if (netty)
+      {
+         
+         HashMap<String, Object> parameters = new HashMap<String, Object>();
+         
+         parameters.put(TransportConstants.TCP_NODELAY_PROPNAME, true);
+
+         return createDefaultConfig(parameters, INVM_ACCEPTOR_FACTORY, NETTY_ACCEPTOR_FACTORY);
+      }
+      else
+      {
+         new Exception("This test wasn't supposed to use InVM").printStackTrace();
+         return super.createDefaultConfig(false);
+      }
+   }
+
+
 
    // Static --------------------------------------------------------
 

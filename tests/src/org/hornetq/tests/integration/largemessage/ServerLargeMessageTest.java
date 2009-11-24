@@ -13,6 +13,8 @@
 
 package org.hornetq.tests.integration.largemessage;
 
+import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import org.hornetq.core.config.Configuration;
@@ -21,6 +23,8 @@ import org.hornetq.core.server.JournalType;
 import org.hornetq.core.server.LargeServerMessage;
 import org.hornetq.core.server.ServerMessage;
 import org.hornetq.tests.util.ServiceTestBase;
+import org.hornetq.utils.ExecutorFactory;
+import org.hornetq.utils.OrderedExecutorFactory;
 
 /**
  * A ServerLargeMessageTest
@@ -36,11 +40,31 @@ public class ServerLargeMessageTest extends ServiceTestBase
 
    // Attributes ----------------------------------------------------
 
+   ExecutorService executor;
+   
+   ExecutorFactory execFactory;
+   
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
    // Public --------------------------------------------------------
+   
+   protected void setUp() throws Exception
+   {
+      super.setUp();
+      
+      executor = Executors.newCachedThreadPool();
+      
+      execFactory = new OrderedExecutorFactory(executor);
+   }
+   
+   protected void tearDown() throws Exception
+   {
+      executor.shutdown();
+      
+      super.tearDown();
+   }
    
    public void testLargeMessageCopy() throws Exception
    {
@@ -52,7 +76,7 @@ public class ServerLargeMessageTest extends ServiceTestBase
 
       configuration.setJournalType(JournalType.ASYNCIO);
 
-      final JournalStorageManager journal = new JournalStorageManager(configuration, Executors.newCachedThreadPool());
+      final JournalStorageManager journal = new JournalStorageManager(configuration, execFactory);
       journal.start();
 
       LargeServerMessage msg = journal.createLargeMessage();

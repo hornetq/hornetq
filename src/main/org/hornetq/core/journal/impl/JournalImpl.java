@@ -44,6 +44,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.hornetq.core.buffers.ChannelBuffer;
 import org.hornetq.core.buffers.ChannelBuffers;
 import org.hornetq.core.journal.EncodingSupport;
+import org.hornetq.core.journal.IOAsyncTask;
 import org.hornetq.core.journal.IOCompletion;
 import org.hornetq.core.journal.JournalLoadInformation;
 import org.hornetq.core.journal.LoaderCallback;
@@ -84,7 +85,7 @@ public class JournalImpl implements TestableJournal
 
    private static final Logger log = Logger.getLogger(JournalImpl.class);
 
-   private static final boolean trace = false;
+   private static final boolean trace = log.isTraceEnabled();
 
    /** This is to be set to true at DEBUG & development only */
    private static final boolean LOAD_TRACE = false;
@@ -95,6 +96,7 @@ public class JournalImpl implements TestableJournal
    private static final void trace(final String message)
    {
       log.trace(message);
+      //System.out.println("JournalImpl::" + message);
    }
 
    // The sizes of primitive types
@@ -845,15 +847,35 @@ public class JournalImpl implements TestableJournal
       appendAddRecord(id, recordType, new ByteArrayEncoding(record), sync);
    }
 
+   public void appendAddRecord(final long id, final byte recordType, final byte[] record, final boolean sync, final IOCompletion callback) throws Exception
+   {
+      appendAddRecord(id, recordType, new ByteArrayEncoding(record), sync, callback);
+   }
+   
    public void appendAddRecord(final long id, final byte recordType, final EncodingSupport record, final boolean sync) throws Exception
    {
+      SyncIOCompletion callback = getSyncCallback(sync);
+      
+      appendAddRecord(id, recordType, record, sync, callback);
+      
+      // We only wait on explicit callbacks
+      if (callback != null)
+      {
+         callback.waitCompletion();
+      }
+   }
+
+   public void appendAddRecord(final long id, final byte recordType, final EncodingSupport record, final boolean sync, final IOCompletion callback) throws Exception
+   {
+      if (LOAD_TRACE)
+      {
+         trace("appendAddRecord id = " + id + ", recordType = " + recordType);
+      }
       if (state != STATE_LOADED)
       {
          throw new IllegalStateException("Journal must be loaded first");
       }
-
-      IOCompletion callback = null;
-
+      
       compactingLock.readLock().lock();
 
       try
@@ -864,7 +886,10 @@ public class JournalImpl implements TestableJournal
 
          writeAddRecord(-1, id, recordType, record, size, bb); // fileID will be filled later
 
-         callback = getSyncCallback(sync);
+         if (callback != null)
+         {
+            callback.lineUp();
+         }
 
          lockAppend.lock();
          try
@@ -882,11 +907,6 @@ public class JournalImpl implements TestableJournal
       {
          compactingLock.readLock().unlock();
       }
-
-      if (callback != null)
-      {
-         callback.waitCompletion();
-      }
    }
 
    public void appendUpdateRecord(final long id, final byte recordType, final byte[] record, final boolean sync) throws Exception
@@ -894,15 +914,35 @@ public class JournalImpl implements TestableJournal
       appendUpdateRecord(id, recordType, new ByteArrayEncoding(record), sync);
    }
 
+   public void appendUpdateRecord(final long id, final byte recordType, final byte[] record, final boolean sync, final IOCompletion callback) throws Exception
+   {
+      appendUpdateRecord(id, recordType, new ByteArrayEncoding(record), sync, callback);
+   }
+
    public void appendUpdateRecord(final long id, final byte recordType, final EncodingSupport record, final boolean sync) throws Exception
    {
+      SyncIOCompletion callback = getSyncCallback(sync);
+      
+      appendUpdateRecord(id, recordType, record, sync, callback);
+      
+      // We only wait on explicit callbacks
+      if (callback != null)
+      {
+         callback.waitCompletion();
+      }
+   }
+   
+   public void appendUpdateRecord(final long id, final byte recordType, final EncodingSupport record, final boolean sync, final IOCompletion callback) throws Exception
+   {
+      if (LOAD_TRACE)
+      {
+         trace("appendUpdateRecord id = " + id + ", recordType = " + recordType);
+      }
       if (state != STATE_LOADED)
       {
          throw new IllegalStateException("Journal must be loaded first");
       }
-
-      IOCompletion callback = null;
-
+      
       compactingLock.readLock().lock();
 
       try
@@ -924,7 +964,10 @@ public class JournalImpl implements TestableJournal
 
          writeUpdateRecord(-1, id, recordType, record, size, bb);
 
-         callback = getSyncCallback(sync);
+         if (callback != null)
+         {
+            callback.lineUp();
+         }
 
          lockAppend.lock();
          try
@@ -951,23 +994,34 @@ public class JournalImpl implements TestableJournal
       {
          compactingLock.readLock().unlock();
       }
+   }
 
+
+   public void appendDeleteRecord(final long id, final boolean sync) throws Exception
+   {
+      SyncIOCompletion callback = getSyncCallback(sync);
+      
+      appendDeleteRecord(id, sync, callback);
+      
+      // We only wait on explicit callbacks
       if (callback != null)
       {
          callback.waitCompletion();
       }
    }
-
-   public void appendDeleteRecord(final long id, final boolean sync) throws Exception
+   
+   public void appendDeleteRecord(final long id, final boolean sync, final IOCompletion callback) throws Exception
    {
+      if (LOAD_TRACE)
+      {
+         trace("appendDeleteRecord id = " + id);
+      }
       if (state != STATE_LOADED)
       {
          throw new IllegalStateException("Journal must be loaded first");
       }
-
+      
       compactingLock.readLock().lock();
-
-      IOCompletion callback = null;
 
       try
       {
@@ -981,14 +1035,17 @@ public class JournalImpl implements TestableJournal
                throw new IllegalStateException("Cannot find add info " + id);
             }
          }
-
+         
          int size = SIZE_DELETE_RECORD;
 
          ChannelBuffer bb = newBuffer(size);
 
          writeDeleteRecord(-1, id, size, bb);
 
-         callback = getSyncCallback(sync);
+         if (callback != null)
+         {
+            callback.lineUp();
+         }
 
          lockAppend.lock();
          try
@@ -1016,11 +1073,6 @@ public class JournalImpl implements TestableJournal
       {
          compactingLock.readLock().unlock();
       }
-
-      if (callback != null)
-      {
-         callback.waitCompletion();
-      }
    }
 
    public void appendAddRecordTransactional(final long txID, final long id, final byte recordType, final byte[] record) throws Exception
@@ -1034,6 +1086,10 @@ public class JournalImpl implements TestableJournal
                                             final byte recordType,
                                             final EncodingSupport record) throws Exception
    {
+      if (LOAD_TRACE)
+      {
+         trace("appendAddRecordTransactional txID " + txID + ", id = " + id + ", recordType = " + recordType);
+      }
       if (state != STATE_LOADED)
       {
          throw new IllegalStateException("Journal must be loaded first");
@@ -1083,6 +1139,10 @@ public class JournalImpl implements TestableJournal
                                                final byte recordType,
                                                final EncodingSupport record) throws Exception
    {
+      if (LOAD_TRACE)
+      {
+         trace("appendUpdateRecordTransactional txID " + txID + ", id = " + id + ", recordType = " + recordType);
+      }
       if (state != STATE_LOADED)
       {
          throw new IllegalStateException("Journal must be loaded first");
@@ -1126,6 +1186,11 @@ public class JournalImpl implements TestableJournal
 
    public void appendDeleteRecordTransactional(final long txID, final long id, final EncodingSupport record) throws Exception
    {
+      if (LOAD_TRACE)
+      {
+         trace("appendDeleteRecordTransactional txID " + txID + ", id = " + id);
+      }
+
       if (state != STATE_LOADED)
       {
          throw new IllegalStateException("Journal must be loaded first");
@@ -1165,6 +1230,12 @@ public class JournalImpl implements TestableJournal
    {
       appendDeleteRecordTransactional(txID, id, NullEncoding.instance);
    }
+   
+   
+   public void appendPrepareRecord(long txID, byte[] transactionData, boolean sync, IOCompletion completion) throws Exception
+   {
+      appendPrepareRecord(txID, new ByteArrayEncoding(transactionData), sync, completion);
+   }
 
    /* (non-Javadoc)
     * @see org.hornetq.core.journal.Journal#appendPrepareRecord(long, byte[], boolean)
@@ -1172,6 +1243,18 @@ public class JournalImpl implements TestableJournal
    public void appendPrepareRecord(long txID, byte[] transactionData, boolean sync) throws Exception
    {
       appendPrepareRecord(txID, new ByteArrayEncoding(transactionData), sync);
+   }
+
+   public void appendPrepareRecord(final long txID, final EncodingSupport transactionData, final boolean sync) throws Exception
+   {
+      SyncIOCompletion syncCompletion = getSyncCallback(sync);
+      
+      appendPrepareRecord(txID, transactionData, sync, syncCompletion);
+      
+      if (syncCompletion != null)
+      {
+         syncCompletion.waitCompletion();
+      }
    }
 
    /** 
@@ -1187,8 +1270,13 @@ public class JournalImpl implements TestableJournal
     * @param transactionData - extra user data for the prepare
     * @throws Exception
     */
-   public void appendPrepareRecord(final long txID, final EncodingSupport transactionData, final boolean sync) throws Exception
+   public void appendPrepareRecord(final long txID, final EncodingSupport transactionData, final boolean sync, IOCompletion callback) throws Exception
    {
+      if (LOAD_TRACE)
+      {
+         trace("appendPrepareRecord txID " + txID);
+      }
+
       if (state != STATE_LOADED)
       {
          throw new IllegalStateException("Journal must be loaded first");
@@ -1198,11 +1286,6 @@ public class JournalImpl implements TestableJournal
 
       JournalTransaction tx = getTransactionInfo(txID);
 
-      if (sync)
-      {
-         tx.syncPreviousFiles(fileFactory.isSupportsCallbacks(), currentFile);
-      }
-
       try
       {
 
@@ -1211,10 +1294,15 @@ public class JournalImpl implements TestableJournal
 
          writeTransaction(-1, PREPARE_RECORD, txID, transactionData, size, -1, bb);
 
+         if (callback != null)
+         {
+            callback.lineUp();
+         }
+
          lockAppend.lock();
          try
          {
-            JournalFile usedFile = appendRecord(bb, true, sync, tx, null);
+            JournalFile usedFile = appendRecord(bb, true, sync, tx, callback);
 
             tx.prepare(usedFile);
          }
@@ -1228,10 +1316,22 @@ public class JournalImpl implements TestableJournal
       {
          compactingLock.readLock().unlock();
       }
-
-      // We should wait this outside of the lock, to increase throughput
-      tx.waitCompletion();
    }
+   
+   
+   
+   public void appendCommitRecord(final long txID, final boolean sync) throws Exception
+   {
+      SyncIOCompletion syncCompletion = getSyncCallback(sync);
+      
+      appendCommitRecord(txID, sync, syncCompletion);
+      
+      if (syncCompletion != null)
+      {
+         syncCompletion.waitCompletion();
+      }
+   }
+
 
    /**
     * <p>A transaction record (Commit or Prepare), will hold the number of elements the transaction has on each file.</p>
@@ -1250,7 +1350,9 @@ public class JournalImpl implements TestableJournal
     *
     * @see JournalImpl#writeTransaction(byte, long, org.hornetq.core.journal.impl.JournalImpl.JournalTransaction, EncodingSupport)
     */
-   public void appendCommitRecord(final long txID, final boolean sync) throws Exception
+   
+
+   public void appendCommitRecord(final long txID, final boolean sync, final IOCompletion callback) throws Exception
    {
       if (state != STATE_LOADED)
       {
@@ -1263,6 +1365,7 @@ public class JournalImpl implements TestableJournal
 
       try
       {
+
 
          if (tx == null)
          {
@@ -1279,10 +1382,15 @@ public class JournalImpl implements TestableJournal
                           -1 /* number of records on this transaction will be filled later inside append record */,
                           bb);
 
+         if (callback != null)
+         {
+            callback.lineUp();
+         }
+
          lockAppend.lock();
          try
          {
-            JournalFile usedFile = appendRecord(bb, true, sync, tx, null);
+            JournalFile usedFile = appendRecord(bb, true, sync, tx, callback);
 
             tx.commit(usedFile);
          }
@@ -1296,15 +1404,23 @@ public class JournalImpl implements TestableJournal
       {
          compactingLock.readLock().unlock();
       }
-
-      if (sync)
-      {
-         // We should wait this outside of the lock, to increase throuput
-         tx.waitCompletion();
-      }
    }
 
+   
    public void appendRollbackRecord(final long txID, final boolean sync) throws Exception
+   {
+      SyncIOCompletion syncCompletion = getSyncCallback(sync);
+      
+      appendRollbackRecord(txID, sync, syncCompletion);
+      
+      if (syncCompletion != null)
+      {
+         syncCompletion.waitCompletion();
+      }
+
+   }
+   
+   public void appendRollbackRecord(final long txID, final boolean sync, final IOCompletion callback) throws Exception
    {
       if (state != STATE_LOADED)
       {
@@ -1323,15 +1439,20 @@ public class JournalImpl implements TestableJournal
          {
             throw new IllegalStateException("Cannot find tx with id " + txID);
          }
-
+         
          ChannelBuffer bb = newBuffer(SIZE_ROLLBACK_RECORD);
 
          writeRollback(-1, txID, bb);
 
+         if (callback != null)
+         {
+            callback.lineUp();
+         }
+
          lockAppend.lock();
          try
          {
-            JournalFile usedFile = appendRecord(bb, false, sync, tx, null);
+            JournalFile usedFile = appendRecord(bb, false, sync, tx, callback);
 
             tx.rollback(usedFile);
          }
@@ -1345,14 +1466,6 @@ public class JournalImpl implements TestableJournal
       {
          compactingLock.readLock().unlock();
       }
-
-      // We should wait this outside of the lock, to increase throuput
-
-      if (sync)
-      {
-         tx.waitCompletion();
-      }
-
    }
 
    public int getAlignment() throws Exception
@@ -2833,7 +2946,7 @@ public class JournalImpl implements TestableJournal
                                     final boolean completeTransaction,
                                     final boolean sync,
                                     final JournalTransaction tx,
-                                    IOCompletion callback) throws Exception
+                                    final IOAsyncTask parameterCallback) throws Exception
    {
       try
       {
@@ -2841,6 +2954,8 @@ public class JournalImpl implements TestableJournal
          {
             throw new IllegalStateException("The journal is not loaded " + state);
          }
+         
+         final IOAsyncTask callback;
 
          int size = bb.capacity();
 
@@ -2874,25 +2989,29 @@ public class JournalImpl implements TestableJournal
 
          if (tx != null)
          {
-            if (callback != null)
-            {
-               // sanity check, it should not happen.
-               throw new IllegalArgumentException("Invalid callback parameter. Use of tx is mutually exclusive with the callback");
-            }
-
             // The callback of a transaction has to be taken inside the lock,
             // when we guarantee the currentFile will not be changed,
             // since we individualize the callback per file
             if (fileFactory.isSupportsCallbacks())
             {
-               callback = tx.getCallback(currentFile);
+               // Set the delegated callback as a parameter
+               TransactionCallback txcallback = tx.getCallback(currentFile);
+               if (parameterCallback != null)
+               {
+                  txcallback.setDelegateCompletion(parameterCallback);
+               }
+               callback = txcallback;
+            }
+            else
+            {
+               callback = null;
             }
 
             if (sync)
             {
-               // 99 % of the times this will be already synced, as previous files should be closed already.
-               // This is to have 100% guarantee the transaction will be persisted and no loss of information would
-               // happen
+               // In an edge case the transaction could still have pending data from previous files. 
+               // This shouldn't cause any blocking issues, as this is here to guarantee we cover all possibilities
+               // on guaranteeing the data is on the disk
                tx.syncPreviousFiles(fileFactory.isSupportsCallbacks(), currentFile);
             }
 
@@ -2902,6 +3021,10 @@ public class JournalImpl implements TestableJournal
                // Filling the number of pendingTransactions at the current file
                tx.fillNumberOfRecords(currentFile, bb);
             }
+         }
+         else
+         {
+            callback = parameterCallback;
          }
 
          // Adding fileID
@@ -3233,13 +3356,13 @@ public class JournalImpl implements TestableJournal
       return tx;
    }
 
-   private IOCompletion getSyncCallback(final boolean sync)
+   private SyncIOCompletion getSyncCallback(final boolean sync)
    {
       if (fileFactory.isSupportsCallbacks())
       {
          if (sync)
          {
-            return SimpleWaitIOCallback.getInstance();
+            return new SimpleWaitIOCallback();
          }
          else
          {

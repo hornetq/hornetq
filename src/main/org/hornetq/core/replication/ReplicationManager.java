@@ -19,6 +19,7 @@ import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.journal.EncodingSupport;
 import org.hornetq.core.journal.JournalLoadInformation;
 import org.hornetq.core.paging.PagedMessage;
+import org.hornetq.core.persistence.OperationContext;
 import org.hornetq.core.server.HornetQComponent;
 import org.hornetq.utils.SimpleString;
 
@@ -49,13 +50,8 @@ public interface ReplicationManager extends HornetQComponent
 
    void appendRollbackRecord(byte journalID, long txID) throws Exception;
    
-   /** Add an action to be executed after the pending replications */
-   void afterReplicated(Runnable runnable);
-   
-   void closeContext();
-   
    /** A list of tokens that are still waiting for replications to be completed */
-   Set<ReplicationContext> getActiveTokens();
+   Set<OperationContext> getActiveTokens();
 
    /**
     * @param storeName
@@ -87,7 +83,5 @@ public interface ReplicationManager extends HornetQComponent
     * @throws HornetQException 
     */
    void compareJournals(JournalLoadInformation[] journalInfo) throws HornetQException;
-
-   void sync();
-
+   
 }

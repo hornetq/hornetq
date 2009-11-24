@@ -138,7 +138,7 @@ public class NullStorageLargeServerMessage extends ServerMessageImpl implements 
    /* (non-Javadoc)
     * @see org.hornetq.core.server.LargeServerMessage#decrementDelayDeletionCount()
     */
-   public void decrementDelayDeletionCount() throws Exception
+   public void decrementDelayDeletionCount()
    {
 
    }

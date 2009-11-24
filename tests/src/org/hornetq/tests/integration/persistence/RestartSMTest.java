@@ -18,6 +18,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import org.hornetq.core.config.Configuration;
@@ -30,6 +32,8 @@ import org.hornetq.core.server.JournalType;
 import org.hornetq.core.server.Queue;
 import org.hornetq.tests.unit.core.server.impl.fakes.FakePostOffice;
 import org.hornetq.tests.util.ServiceTestBase;
+import org.hornetq.utils.ExecutorFactory;
+import org.hornetq.utils.OrderedExecutorFactory;
 
 /**
  * A DeleteMessagesRestartTest
@@ -48,11 +52,32 @@ public class RestartSMTest extends ServiceTestBase
 
    // Attributes ----------------------------------------------------
 
+   ExecutorService executor;
+   
+   ExecutorFactory execFactory;
+   
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
 
    // Public --------------------------------------------------------
+   
+   protected void setUp() throws Exception
+   {
+      super.setUp();
+      
+      executor = Executors.newCachedThreadPool();
+      
+      this.execFactory = new OrderedExecutorFactory(executor);
+   }
+   
+   protected void tearDown() throws Exception
+   {
+      executor.shutdown();
+      
+      super.tearDown();
+   }
+   
 
    public void testRestartStorageManager() throws Exception
    {
@@ -67,7 +92,8 @@ public class RestartSMTest extends ServiceTestBase
 
       PostOffice postOffice = new FakePostOffice();
 
-      final JournalStorageManager journal = new JournalStorageManager(configuration, Executors.newCachedThreadPool());
+      final JournalStorageManager journal = new JournalStorageManager(configuration, execFactory);
+      
       try
       {
 

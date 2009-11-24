@@ -26,6 +26,7 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.hornetq.core.buffers.ChannelBuffers;
 import org.hornetq.core.client.ClientSessionFactory;
@@ -37,6 +38,8 @@ import org.hornetq.core.config.TransportConfiguration;
 import org.hornetq.core.config.impl.ConfigurationImpl;
 import org.hornetq.core.exception.HornetQException;
 import org.hornetq.core.journal.EncodingSupport;
+import org.hornetq.core.journal.IOAsyncTask;
+import org.hornetq.core.journal.IOCompletion;
 import org.hornetq.core.journal.Journal;
 import org.hornetq.core.journal.JournalLoadInformation;
 import org.hornetq.core.journal.LoaderCallback;
@@ -49,7 +52,10 @@ import org.hornetq.core.paging.PagingStore;
 import org.hornetq.core.paging.impl.PagedMessageImpl;
 import org.hornetq.core.paging.impl.PagingManagerImpl;
 import org.hornetq.core.paging.impl.PagingStoreFactoryNIO;
+import org.hornetq.core.persistence.OperationContext;
 import org.hornetq.core.persistence.StorageManager;
+import org.hornetq.core.persistence.impl.journal.JournalStorageManager;
+import org.hornetq.core.persistence.impl.journal.OperationContextImpl;
 import org.hornetq.core.remoting.Interceptor;
 import org.hornetq.core.remoting.Packet;
 import org.hornetq.core.remoting.RemotingConnection;
@@ -66,6 +72,7 @@ import org.hornetq.core.settings.impl.AddressSettings;
 import org.hornetq.tests.util.ServiceTestBase;
 import org.hornetq.utils.ExecutorFactory;
 import org.hornetq.utils.HornetQThreadFactory;
+import org.hornetq.utils.OrderedExecutorFactory;
 import org.hornetq.utils.SimpleString;
 
 /**
@@ -85,6 +92,8 @@ public class ReplicationTest extends ServiceTestBase
    private ThreadFactory tFactory;
 
    private ExecutorService executor;
+   
+   private ExecutorFactory factory;
 
    private ScheduledExecutorService scheduledExecutor;
 
@@ -110,6 +119,7 @@ public class ReplicationTest extends ServiceTestBase
       try
       {
          ReplicationManagerImpl manager = new ReplicationManagerImpl(failoverManager,
+                                                                     this.factory,
                                                                      ConfigurationImpl.DEFAULT_BACKUP_WINDOW_SIZE);
          manager.start();
          manager.stop();
@@ -136,6 +146,7 @@ public class ReplicationTest extends ServiceTestBase
       try
       {
          ReplicationManagerImpl manager = new ReplicationManagerImpl(failoverManager,
+                                                                     this.factory,
                                                                      ConfigurationImpl.DEFAULT_BACKUP_WINDOW_SIZE);
          manager.start();
          try
@@ -178,6 +189,7 @@ public class ReplicationTest extends ServiceTestBase
       try
       {
          ReplicationManagerImpl manager = new ReplicationManagerImpl(failoverManager,
+                                                                     this.factory,
                                                                      ConfigurationImpl.DEFAULT_BACKUP_WINDOW_SIZE);
 
          manager.start();
@@ -185,6 +197,7 @@ public class ReplicationTest extends ServiceTestBase
          try
          {
             ReplicationManagerImpl manager2 = new ReplicationManagerImpl(failoverManager,
+                                                                         this.factory,
                                                                          ConfigurationImpl.DEFAULT_BACKUP_WINDOW_SIZE);
 
             manager2.start();
@@ -219,6 +232,7 @@ public class ReplicationTest extends ServiceTestBase
       try
       {
          ReplicationManagerImpl manager = new ReplicationManagerImpl(failoverManager,
+                                                                     this.factory,
                                                                      ConfigurationImpl.DEFAULT_BACKUP_WINDOW_SIZE);
 
          try
@@ -237,7 +251,7 @@ public class ReplicationTest extends ServiceTestBase
          server.stop();
       }
    }
-
+   
    public void testSendPackets() throws Exception
    {
 
@@ -253,7 +267,10 @@ public class ReplicationTest extends ServiceTestBase
 
       try
       {
+         StorageManager storage = getStorage();
+         
          ReplicationManagerImpl manager = new ReplicationManagerImpl(failoverManager,
+                                                                     this.factory,
                                                                      ConfigurationImpl.DEFAULT_BACKUP_WINDOW_SIZE);
          manager.start();
 
@@ -272,19 +289,7 @@ public class ReplicationTest extends ServiceTestBase
          replicatedJournal.appendPrepareRecord(3, new FakeData(), false);
          replicatedJournal.appendRollbackRecord(3, false);
 
-         assertEquals(1, manager.getActiveTokens().size());
-
-         blockOnReplication(manager);
-
-         for (int i = 0; i < 100; i++)
-         {
-            // This is asynchronous. Have to wait completion
-            if (manager.getActiveTokens().size() == 0)
-            {
-               break;
-            }
-            Thread.sleep(1);
-         }
+         blockOnReplication(storage, manager);
 
          assertEquals(0, manager.getActiveTokens().size());
 
@@ -302,7 +307,7 @@ public class ReplicationTest extends ServiceTestBase
          manager.pageWrite(pgmsg, 3);
          manager.pageWrite(pgmsg, 4);
 
-         blockOnReplication(manager);
+         blockOnReplication(storage, manager);
 
          PagingManager pagingManager = createPageManager(server.getStorageManager(),
                                                          server.getConfiguration(),
@@ -321,7 +326,7 @@ public class ReplicationTest extends ServiceTestBase
          manager.pageDeleted(dummy, 5);
          manager.pageDeleted(dummy, 6);
 
-         blockOnReplication(manager);
+         blockOnReplication(storage, manager);
 
          ServerMessageImpl serverMsg = new ServerMessageImpl();
          serverMsg.setMessageID(500);
@@ -336,7 +341,7 @@ public class ReplicationTest extends ServiceTestBase
 
          manager.largeMessageDelete(500);
 
-         blockOnReplication(manager);
+         blockOnReplication(storage, manager);
 
          store.start();
 
@@ -371,13 +376,14 @@ public class ReplicationTest extends ServiceTestBase
 
       try
       {
+         StorageManager storage = getStorage();
          ReplicationManagerImpl manager = new ReplicationManagerImpl(failoverManager,
+                                                                     this.factory,
                                                                      ConfigurationImpl.DEFAULT_BACKUP_WINDOW_SIZE);
          manager.start();
 
          Journal replicatedJournal = new ReplicatedJournal((byte)1, new FakeJournal(), manager);
 
-         Thread.sleep(100);
          TestInterceptor.value.set(false);
 
          for (int i = 0; i < 500; i++)
@@ -386,15 +392,18 @@ public class ReplicationTest extends ServiceTestBase
          }
 
          final CountDownLatch latch = new CountDownLatch(1);
-         manager.afterReplicated(new Runnable()
+         storage.afterCompleteOperations(new IOAsyncTask()
          {
-            public void run()
+
+            public void onError(int errorCode, String errorMessage)
+            {
+            }
+
+            public void done()
             {
                latch.countDown();
             }
          });
-
-         manager.closeContext();
 
          server.stop();
 
@@ -405,25 +414,123 @@ public class ReplicationTest extends ServiceTestBase
          server.stop();
       }
    }
+   
+   public void testExceptionSettingActionBefore() throws Exception
+   {
+      OperationContext ctx = OperationContextImpl.getContext(factory);
+      
+      ctx.lineUp();
+      
+      String msg = "I'm an exception";
+      
+      ctx.onError(5, msg);
+      
+      final AtomicInteger lastError = new AtomicInteger(0);
+      
+      final List<String> msgsResult = new ArrayList<String>();
+      
+      final CountDownLatch latch = new CountDownLatch(1);
+      
+      ctx.executeOnCompletion(new IOAsyncTask()
+      {
+         public void onError(int errorCode, String errorMessage)
+         {
+            lastError.set(errorCode);
+            msgsResult.add(errorMessage);
+            latch.countDown();
+         }
+         
+         public void done()
+         {
+         }
+      });
+      
+      assertTrue(latch.await(5, TimeUnit.SECONDS));
+      
+      assertEquals(5, lastError.get());
+      
+      assertEquals(1, msgsResult.size());
+      
+      assertEquals(msg, msgsResult.get(0));
+      
+      final CountDownLatch latch2 = new CountDownLatch(1);
+      
+      // Adding the Task after the exception should still throw an exception
+      ctx.executeOnCompletion(new IOAsyncTask()
+      {
+         public void onError(int errorCode, String errorMessage)
+         {
+            lastError.set(errorCode);
+            msgsResult.add(errorMessage);
+            latch2.countDown();
+         }
+         
+         public void done()
+         {
+         }
+      });
+      
+      assertTrue(latch2.await(5, TimeUnit.SECONDS));
+      
+      assertEquals(2, msgsResult.size());
+
+      assertEquals(msg, msgsResult.get(0));
+      
+      assertEquals(msg, msgsResult.get(1));
+      
+      // Clearing any exception from the Context, so we can use the context again
+      ctx.complete();
+      
+
+      final CountDownLatch latch3 = new CountDownLatch(1);
+      
+      ctx.executeOnCompletion(new IOAsyncTask()
+      {
+         public void onError(int errorCode, String errorMessage)
+         {
+         }
+         
+         public void done()
+         {
+            latch3.countDown();
+         }
+      });
+      
+      
+      assertTrue(latch2.await(5, TimeUnit.SECONDS));
+      
+      
+      
+      
+   }
+
+   /**
+    * @return
+    */
+   private JournalStorageManager getStorage()
+   {
+      return new JournalStorageManager(createDefaultConfig(), factory);
+   }
 
    /**
     * @param manager
     * @return
     */
-   private void blockOnReplication(ReplicationManagerImpl manager) throws Exception
+   private void blockOnReplication(StorageManager storage, ReplicationManagerImpl manager) throws Exception
    {
       final CountDownLatch latch = new CountDownLatch(1);
-      manager.afterReplicated(new Runnable()
+      storage.afterCompleteOperations(new IOAsyncTask()
       {
 
-         public void run()
+         public void onError(int errorCode, String errorMessage)
+         {
+         }
+
+         public void done()
          {
             latch.countDown();
          }
-
       });
-
-      manager.closeContext();
 
       assertTrue(latch.await(30, TimeUnit.SECONDS));
    }
@@ -435,6 +542,7 @@ public class ReplicationTest extends ServiceTestBase
       try
       {
          ReplicationManagerImpl manager = new ReplicationManagerImpl(failoverManager,
+                                                                     this.factory,
                                                                      ConfigurationImpl.DEFAULT_BACKUP_WINDOW_SIZE);
          manager.start();
          fail("Exception expected");
@@ -460,7 +568,9 @@ public class ReplicationTest extends ServiceTestBase
 
       try
       {
+         StorageManager storage = getStorage();
          ReplicationManagerImpl manager = new ReplicationManagerImpl(failoverManager,
+                                                                     this.factory,
                                                                      ConfigurationImpl.DEFAULT_BACKUP_WINDOW_SIZE);
          manager.start();
 
@@ -469,31 +579,20 @@ public class ReplicationTest extends ServiceTestBase
          replicatedJournal.appendPrepareRecord(1, new FakeData(), false);
 
          final CountDownLatch latch = new CountDownLatch(1);
-         manager.afterReplicated(new Runnable()
+         storage.afterCompleteOperations(new IOAsyncTask()
          {
 
-            public void run()
+            public void onError(int errorCode, String errorMessage)
+            {
+            }
+
+            public void done()
             {
                latch.countDown();
             }
-
          });
 
-         assertEquals(1, manager.getActiveTokens().size());
-
-         manager.closeContext();
-
          assertTrue(latch.await(1, TimeUnit.SECONDS));
-
-         for (int i = 0; i < 100; i++)
-         {
-            // This is asynchronous. Have to wait completion
-            if (manager.getActiveTokens().size() == 0)
-            {
-               break;
-            }
-            Thread.sleep(1);
-         }
 
          assertEquals(0, manager.getActiveTokens().size());
          manager.stop();
@@ -521,62 +620,51 @@ public class ReplicationTest extends ServiceTestBase
 
       try
       {
+         StorageManager storage = getStorage();
          ReplicationManagerImpl manager = new ReplicationManagerImpl(failoverManager,
+                                                                     this.factory,
                                                                      ConfigurationImpl.DEFAULT_BACKUP_WINDOW_SIZE);
          manager.start();
 
          Journal replicatedJournal = new ReplicatedJournal((byte)1, new FakeJournal(), manager);
 
          int numberOfAdds = 200;
-         
+
          final CountDownLatch latch = new CountDownLatch(numberOfAdds);
+
+         OperationContext ctx = storage.getContext();
          
          for (int i = 0; i < numberOfAdds; i++)
          {
             final int nAdd = i;
-            
+
             if (i % 2 == 0)
             {
                replicatedJournal.appendPrepareRecord(i, new FakeData(), false);
             }
-            else
-            {
-               manager.sync();
-            }
 
-
-            manager.afterReplicated(new Runnable()
+            ctx.executeOnCompletion(new IOAsyncTask()
             {
 
-               public void run()
+               public void onError(int errorCode, String errorMessage)
                {
+               }
+
+               public void done()
+               {
+                  System.out.println("Add " + nAdd);
                   executions.add(nAdd);
                   latch.countDown();
                }
-
             });
-
-            manager.closeContext();
          }
-         
+
          assertTrue(latch.await(10, TimeUnit.SECONDS));
 
-         
          for (int i = 0; i < numberOfAdds; i++)
          {
             assertEquals(i, executions.get(i).intValue());
          }
-         
-         for (int i = 0; i < 100; i++)
-         {
-            // This is asynchronous. Have to wait completion
-            if (manager.getActiveTokens().size() == 0)
-            {
-               break;
-            }
-            Thread.sleep(1);
-         }
-
 
          assertEquals(0, manager.getActiveTokens().size());
          manager.stop();
@@ -622,8 +710,25 @@ public class ReplicationTest extends ServiceTestBase
       executor = Executors.newCachedThreadPool(tFactory);
 
       scheduledExecutor = new ScheduledThreadPoolExecutor(10, tFactory);
+      
+      factory = new OrderedExecutorFactory(executor);
+   }
+
+   protected void tearDown() throws Exception
+   {
+
+      executor.shutdown();
+
+      scheduledExecutor.shutdown();
+
+      tFactory = null;
+
+      scheduledExecutor = null;
+
+      super.tearDown();
 
    }
+
 
    private FailoverManagerImpl createFailoverManager()
    {
@@ -651,22 +756,6 @@ public class ReplicationTest extends ServiceTestBase
                                      scheduledExecutor,
                                      interceptors);
    }
-
-   protected void tearDown() throws Exception
-   {
-
-      executor.shutdown();
-
-      scheduledExecutor.shutdown();
-
-      tFactory = null;
-
-      scheduledExecutor = null;
-
-      super.tearDown();
-
-   }
-
    protected PagingManager createPageManager(StorageManager storageManager,
                                              Configuration configuration,
                                              ExecutorFactory executorFactory,
@@ -904,6 +993,88 @@ public class ReplicationTest extends ServiceTestBase
       public int getNumberOfRecords()
       {
          return 0;
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.journal.Journal#appendAddRecord(long, byte, byte[], boolean, org.hornetq.core.journal.IOCompletion)
+       */
+      public void appendAddRecord(long id, byte recordType, byte[] record, boolean sync, IOCompletion completionCallback) throws Exception
+      {
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.journal.Journal#appendAddRecord(long, byte, org.hornetq.core.journal.EncodingSupport, boolean, org.hornetq.core.journal.IOCompletion)
+       */
+      public void appendAddRecord(long id,
+                                  byte recordType,
+                                  EncodingSupport record,
+                                  boolean sync,
+                                  IOCompletion completionCallback) throws Exception
+      {
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.journal.Journal#appendCommitRecord(long, boolean, org.hornetq.core.journal.IOCompletion)
+       */
+      public void appendCommitRecord(long txID, boolean sync, IOCompletion callback) throws Exception
+      {
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.journal.Journal#appendDeleteRecord(long, boolean, org.hornetq.core.journal.IOCompletion)
+       */
+      public void appendDeleteRecord(long id, boolean sync, IOCompletion completionCallback) throws Exception
+      {
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.journal.Journal#appendPrepareRecord(long, org.hornetq.core.journal.EncodingSupport, boolean, org.hornetq.core.journal.IOCompletion)
+       */
+      public void appendPrepareRecord(long txID, EncodingSupport transactionData, boolean sync, IOCompletion callback) throws Exception
+      {
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.journal.Journal#appendPrepareRecord(long, byte[], boolean, org.hornetq.core.journal.IOCompletion)
+       */
+      public void appendPrepareRecord(long txID, byte[] transactionData, boolean sync, IOCompletion callback) throws Exception
+      {
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.journal.Journal#appendRollbackRecord(long, boolean, org.hornetq.core.journal.IOCompletion)
+       */
+      public void appendRollbackRecord(long txID, boolean sync, IOCompletion callback) throws Exception
+      {
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.journal.Journal#appendUpdateRecord(long, byte, byte[], boolean, org.hornetq.core.journal.IOCompletion)
+       */
+      public void appendUpdateRecord(long id,
+                                     byte recordType,
+                                     byte[] record,
+                                     boolean sync,
+                                     IOCompletion completionCallback) throws Exception
+      {
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.journal.Journal#appendUpdateRecord(long, byte, org.hornetq.core.journal.EncodingSupport, boolean, org.hornetq.core.journal.IOCompletion)
+       */
+      public void appendUpdateRecord(long id,
+                                     byte recordType,
+                                     EncodingSupport record,
+                                     boolean sync,
+                                     IOCompletion completionCallback) throws Exception
+      {
+      }
+
+      /* (non-Javadoc)
+       * @see org.hornetq.core.journal.Journal#sync(org.hornetq.core.journal.IOCompletion)
+       */
+      public void sync(IOCompletion callback)
+      {
       }
 
    }

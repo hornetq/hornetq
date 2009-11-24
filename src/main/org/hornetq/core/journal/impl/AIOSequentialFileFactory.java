@@ -36,14 +36,13 @@ import org.hornetq.utils.HornetQThreadFactory;
 public class AIOSequentialFileFactory extends AbstractSequentialFactory
 {
 
-   // Timeout used to wait executors to shutdown
-   private static final int EXECUTOR_TIMEOUT = 60;
-
    private static final Logger log = Logger.getLogger(AIOSequentialFileFactory.class);
 
    private static final boolean trace = log.isTraceEnabled();
 
    private final ReuseBuffersController buffersControl = new ReuseBuffersController();
+
+   private ExecutorService pollerExecutor;
 
    // This method exists just to make debug easier.
    // I could replace log.trace by log.info temporarily while I was debugging
@@ -52,13 +51,6 @@ public class AIOSequentialFileFactory extends AbstractSequentialFactory
    {
       log.trace(message);
    }
-
-   /** A single AIO write executor for every AIO File.
-    *  This is used only for AIO & instant operations. We only need one executor-thread for the entire journal as we always have only one active file.
-    *  And even if we had multiple files at a given moment, this should still be ok, as we control max-io in a semaphore, guaranteeing AIO calls don't block on disk calls */
-   private ExecutorService writeExecutor;
-
-   private ExecutorService pollerExecutor;
 
    public AIOSequentialFileFactory(final String journalDir)
    {
@@ -152,9 +144,6 @@ public class AIOSequentialFileFactory extends AbstractSequentialFactory
    {
       super.start();
 
-      writeExecutor = Executors.newSingleThreadExecutor(new HornetQThreadFactory("HornetQ-AIO-writer-pool" + System.identityHashCode(this),
-                                                                                 true));
-
       pollerExecutor = Executors.newCachedThreadPool(new HornetQThreadFactory("HornetQ-AIO-poller-pool" + System.identityHashCode(this),
                                                                               true));
 
@@ -163,22 +152,7 @@ public class AIOSequentialFileFactory extends AbstractSequentialFactory
    @Override
    public void stop()
    {
-      super.stop();
-      
       buffersControl.stop();
-
-      writeExecutor.shutdown();
-
-      try
-      {
-         if (!writeExecutor.awaitTermination(EXECUTOR_TIMEOUT, TimeUnit.SECONDS))
-         {
-            log.warn("Timed out on AIO writer shutdown", new Exception("Timed out on AIO writer shutdown"));
-         }
-      }
-      catch (InterruptedException e)
-      {
-      }
 
       pollerExecutor.shutdown();
 
@@ -192,6 +166,8 @@ public class AIOSequentialFileFactory extends AbstractSequentialFactory
       catch (InterruptedException e)
       {
       }
+
+      super.stop();
    }
 
    @Override

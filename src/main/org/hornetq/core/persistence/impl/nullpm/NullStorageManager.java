@@ -15,16 +15,19 @@ package org.hornetq.core.persistence.impl.nullpm;
 
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicLong;
 
 import javax.transaction.xa.Xid;
 
 import org.hornetq.core.buffers.ChannelBuffers;
+import org.hornetq.core.journal.IOAsyncTask;
 import org.hornetq.core.journal.JournalLoadInformation;
 import org.hornetq.core.paging.PageTransactionInfo;
 import org.hornetq.core.paging.PagedMessage;
 import org.hornetq.core.paging.PagingManager;
 import org.hornetq.core.persistence.GroupingInfo;
+import org.hornetq.core.persistence.OperationContext;
 import org.hornetq.core.persistence.QueueBindingInfo;
 import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.core.postoffice.Binding;
@@ -282,14 +285,6 @@ public class NullStorageManager implements StorageManager
    }
 
    /* (non-Javadoc)
-    * @see org.hornetq.core.persistence.StorageManager#afterReplicated(java.lang.Runnable)
-    */
-   public void afterReplicated(Runnable run)
-   {
-      run.run();
-   }
-
-   /* (non-Javadoc)
     * @see org.hornetq.core.persistence.StorageManager#isReplicated()
     */
    public boolean isReplicated()
@@ -300,7 +295,7 @@ public class NullStorageManager implements StorageManager
    /* (non-Javadoc)
     * @see org.hornetq.core.persistence.StorageManager#completeReplication()
     */
-   public void completeReplication()
+   public void completeOperations()
    {
    }
 
@@ -336,7 +331,7 @@ public class NullStorageManager implements StorageManager
    /* (non-Javadoc)
     * @see org.hornetq.core.persistence.StorageManager#blockOnReplication(long)
     */
-   public void waitOnReplication(long timeout) throws Exception
+   public void waitOnOperations(long timeout) throws Exception
    {
    }
 
@@ -346,6 +341,51 @@ public class NullStorageManager implements StorageManager
    public void setReplicator(ReplicationManager replicator)
    {
       throw new IllegalStateException("Null Persistence should never be used as replicated");
+   }
+
+   /* (non-Javadoc)
+    * @see org.hornetq.core.persistence.StorageManager#afterCompleteOperations(org.hornetq.core.journal.IOCompletion)
+    */
+   public void afterCompleteOperations(IOAsyncTask run)
+   {
+      run.done();
+   }
+
+   /* (non-Javadoc)
+    * @see org.hornetq.core.persistence.StorageManager#waitOnOperations()
+    */
+   public void waitOnOperations() throws Exception
+   {
+   }
+
+   /* (non-Javadoc)
+    * @see org.hornetq.core.persistence.StorageManager#getContext()
+    */
+   public OperationContext getContext()
+   {
+      return null;
+   }
+
+   /* (non-Javadoc)
+    * @see org.hornetq.core.persistence.StorageManager#newContext()
+    */
+   public OperationContext newContext(Executor executor)
+   {
+      return null;
+   }
+
+   /* (non-Javadoc)
+    * @see org.hornetq.core.persistence.StorageManager#setContext(org.hornetq.core.persistence.OperationContext)
+    */
+   public void setContext(OperationContext context)
+   {
+   }
+
+   /* (non-Javadoc)
+    * @see org.hornetq.core.persistence.StorageManager#clearContext()
+    */
+   public void clearContext()
+   {
    }
 
 }

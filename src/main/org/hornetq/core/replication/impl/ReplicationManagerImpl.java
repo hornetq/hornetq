@@ -13,6 +13,7 @@
 
 package org.hornetq.core.replication.impl;
 
+import java.util.LinkedHashSet;
 import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -24,6 +25,9 @@ import org.hornetq.core.journal.EncodingSupport;
 import org.hornetq.core.journal.JournalLoadInformation;
 import org.hornetq.core.logging.Logger;
 import org.hornetq.core.paging.PagedMessage;
+import org.hornetq.core.persistence.OperationContext;
+import org.hornetq.core.persistence.StorageManager;
+import org.hornetq.core.persistence.impl.journal.OperationContextImpl;
 import org.hornetq.core.remoting.Channel;
 import org.hornetq.core.remoting.ChannelHandler;
 import org.hornetq.core.remoting.Packet;
@@ -34,7 +38,6 @@ import org.hornetq.core.remoting.impl.wireformat.ReplicationAddMessage;
 import org.hornetq.core.remoting.impl.wireformat.ReplicationAddTXMessage;
 import org.hornetq.core.remoting.impl.wireformat.ReplicationCommitMessage;
 import org.hornetq.core.remoting.impl.wireformat.ReplicationCompareDataMessage;
-import org.hornetq.core.remoting.impl.wireformat.ReplicationSyncContextMessage;
 import org.hornetq.core.remoting.impl.wireformat.ReplicationDeleteMessage;
 import org.hornetq.core.remoting.impl.wireformat.ReplicationDeleteTXMessage;
 import org.hornetq.core.remoting.impl.wireformat.ReplicationLargeMessageBeingMessage;
@@ -44,9 +47,8 @@ import org.hornetq.core.remoting.impl.wireformat.ReplicationPageEventMessage;
 import org.hornetq.core.remoting.impl.wireformat.ReplicationPageWriteMessage;
 import org.hornetq.core.remoting.impl.wireformat.ReplicationPrepareMessage;
 import org.hornetq.core.remoting.spi.HornetQBuffer;
-import org.hornetq.core.replication.ReplicationContext;
 import org.hornetq.core.replication.ReplicationManager;
-import org.hornetq.utils.ConcurrentHashSet;
+import org.hornetq.utils.ExecutorFactory;
 import org.hornetq.utils.SimpleString;
 
 /**
@@ -80,12 +82,10 @@ public class ReplicationManagerImpl implements ReplicationManager
 
    private final Object replicationLock = new Object();
 
-   private final ThreadLocal<ReplicationContext> tlReplicationContext = new ThreadLocal<ReplicationContext>();
+   private final Queue<OperationContext> pendingTokens = new ConcurrentLinkedQueue<OperationContext>();
+   
+   private final ExecutorFactory executorFactory;
 
-   private final Queue<ReplicationContext> pendingTokens = new ConcurrentLinkedQueue<ReplicationContext>();
-
-   private final ConcurrentHashSet<ReplicationContext> activeContexts = new ConcurrentHashSet<ReplicationContext>();
- 
    // Static --------------------------------------------------------
 
    // Constructors --------------------------------------------------
@@ -93,11 +93,12 @@ public class ReplicationManagerImpl implements ReplicationManager
    /**
     * @param replicationConnectionManager
     */
-   public ReplicationManagerImpl(final FailoverManager failoverManager, final int backupWindowSize)
+   public ReplicationManagerImpl(final FailoverManager failoverManager, final ExecutorFactory executorFactory, final int backupWindowSize)
    {
       super();
       this.failoverManager = failoverManager;
       this.backupWindowSize = backupWindowSize;
+      this.executorFactory = executorFactory;
    }
 
    // Public --------------------------------------------------------
@@ -278,14 +279,6 @@ public class ReplicationManagerImpl implements ReplicationManager
          sendReplicatePacket(new ReplicationLargemessageEndMessage(messageId));
       }
    }
-   
-   public void sync()
-   {
-      if (enabled)
-      {
-         sendReplicatePacket(new ReplicationSyncContextMessage());
-      }
-   }
 
    /* (non-Javadoc)
     * @see org.hornetq.core.replication.ReplicationManager#largeMessageWrite(long, byte[])
@@ -351,9 +344,9 @@ public class ReplicationManagerImpl implements ReplicationManager
                log.warn(e.getMessage(), e);
             }
          }
-         
+
          public void beforeReconnect(HornetQException me)
-         {            
+         {
          }
       });
 
@@ -374,14 +367,14 @@ public class ReplicationManagerImpl implements ReplicationManager
       
       enabled = false;
       
-      for (ReplicationContext ctx : activeContexts)
+      // The same context will be replicated on the pending tokens...
+      // as the multiple operations will be replicated on the same context
+      while (!pendingTokens.isEmpty())
       {
-         ctx.complete();
-         ctx.flush();
+         OperationContext ctx = pendingTokens.poll();
+         ctx.replicationDone();
       }
-      
-      activeContexts.clear();
-      
+
       if (replicatingChannel != null)
       {
          replicatingChannel.close();
@@ -401,63 +394,47 @@ public class ReplicationManagerImpl implements ReplicationManager
       started = false;
    }
 
-   public ReplicationContext getContext()
-   {
-      ReplicationContext token = tlReplicationContext.get();
-      if (token == null)
-      {
-         token = new ReplicationContextImpl();
-         activeContexts.add(token);
-         tlReplicationContext.set(token);
-      }
-      return token;
-   }
 
-   /* (non-Javadoc)
-    * @see org.hornetq.core.replication.ReplicationManager#addReplicationAction(java.lang.Runnable)
-    */
-   public void afterReplicated(final Runnable runnable)
-   {
-      getContext().addReplicationAction(runnable);
-   }
-
-   /* (non-Javadoc)
-    * @see org.hornetq.core.replication.ReplicationManager#completeToken()
-    */
-   public void closeContext()
-   {
-      final ReplicationContext token = tlReplicationContext.get();
-      
-      if (token != null)
-      {
-         // Disassociate thread local
-         tlReplicationContext.set(null);
-         // Remove from pending tokens as soon as this is complete
-         token.addReplicationAction(new Runnable()
-         {
-            public void run()
-            {
-               activeContexts.remove(token);
-            }
-         });
-         token.complete();
-      }
-   }
-
-   /* (non-Javadoc)
+   /* method for testcases only
     * @see org.hornetq.core.replication.ReplicationManager#getPendingTokens()
     */
-   public Set<ReplicationContext> getActiveTokens()
+   public Set<OperationContext> getActiveTokens()
    {
+      
+      LinkedHashSet<OperationContext> activeContexts = new LinkedHashSet<OperationContext>();
+      
+      // The same context will be replicated on the pending tokens...
+      // as the multiple operations will be replicated on the same context
+      
+      for (OperationContext ctx : pendingTokens)
+      {
+         activeContexts.add(ctx);
+      }
+      
       return activeContexts;
+
    }
 
+   /* (non-Javadoc)
+    * @see org.hornetq.core.replication.ReplicationManager#compareJournals(org.hornetq.core.journal.JournalLoadInformation[])
+    */
+   public void compareJournals(JournalLoadInformation[] journalInfo) throws HornetQException
+   {
+      replicatingChannel.sendBlocking(new ReplicationCompareDataMessage(journalInfo));
+   }
+
+   // Package protected ---------------------------------------------
+
+   // Protected -----------------------------------------------------
+
+   // Private -------------------------------------------------------
+   
    private void sendReplicatePacket(final Packet packet)
    {
       boolean runItNow = false;
 
-      ReplicationContext repliToken = getContext();
-      repliToken.linedUp();
+      OperationContext repliToken = OperationContextImpl.getContext(executorFactory);
+      repliToken.replicationLineUp();
 
       synchronized (replicationLock)
       {
@@ -479,37 +456,21 @@ public class ReplicationManagerImpl implements ReplicationManager
 
       if (runItNow)
       {
-         repliToken.replicated();
+         repliToken.replicationDone();
       }
    }
-   
-   /* (non-Javadoc)
-    * @see org.hornetq.core.replication.ReplicationManager#compareJournals(org.hornetq.core.journal.JournalLoadInformation[])
-    */
-   public void compareJournals(JournalLoadInformation[] journalInfo) throws HornetQException
-   {
-      replicatingChannel.sendBlocking(new ReplicationCompareDataMessage(journalInfo));
-   }
-
 
    private void replicated()
    {
-      ReplicationContext tokenPolled = pendingTokens.poll();
-      if (tokenPolled == null)
+      OperationContext ctx = pendingTokens.poll();
+
+      if (ctx == null)
       {
          throw new IllegalStateException("Missing replication token on the queue.");
       }
-      else
-      {
-         tokenPolled.replicated();
-      }
+
+      ctx.replicationDone();
    }
-
-   // Package protected ---------------------------------------------
-
-   // Protected -----------------------------------------------------
-
-   // Private -------------------------------------------------------
 
    // Inner classes -------------------------------------------------
 

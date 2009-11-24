@@ -1024,6 +1024,7 @@ public class ClientSessionImpl implements ClientSessionInternal, FailureListener
       }
       catch (HornetQException e)
       {
+         log.warn(e.getMessage(), e);
          // This should never occur
          throw new XAException(XAException.XAER_RMERR);
       }

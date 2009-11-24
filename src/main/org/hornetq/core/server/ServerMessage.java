@@ -33,7 +33,7 @@ public interface ServerMessage extends Message, EncodingSupport
 
    int incrementRefCount(MessageReference reference) throws Exception;
 
-   int decrementRefCount(MessageReference reference) throws Exception;
+   int decrementRefCount(MessageReference reference);
 
    int incrementDurableRefCount();
 

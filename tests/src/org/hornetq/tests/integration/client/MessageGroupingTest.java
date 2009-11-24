@@ -433,7 +433,7 @@ public class MessageGroupingTest extends UnitTestCase
       assertTrue(latch.await(10, TimeUnit.SECONDS));
       clientSession.end(xid, XAResource.TMSUCCESS);
       clientSession.prepare(xid);
-      clientSession.commit(xid, true);
+      clientSession.commit(xid, false);
       assertEquals(dummyMessageHandler.list.size(), 50);
       int i = 0;
       for (ClientMessage message : dummyMessageHandler.list)

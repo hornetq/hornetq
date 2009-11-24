@@ -76,7 +76,7 @@ public class LVQRecoveryTest extends ServiceTestBase
       clientSessionXa.close();
       restartServer();
       
-      clientSessionXa.commit(xid, true);
+      clientSessionXa.commit(xid, false);
       ClientConsumer consumer = clientSession.createConsumer(qName1);
       clientSession.start();
       ClientMessage m = consumer.receive(1000);
