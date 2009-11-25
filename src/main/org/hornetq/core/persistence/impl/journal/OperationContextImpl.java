@@ -204,7 +204,8 @@ public class OperationContextImpl implements OperationContext
             else
             {
                // The actions need to be done in order...
-               // so it must achieve both conditions before we can proceed to more tasks
+               // And they are added in order...
+               // As soon as we're done, we break the loop
                break;
             }
          }

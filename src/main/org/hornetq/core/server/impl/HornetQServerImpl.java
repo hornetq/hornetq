@@ -650,8 +650,6 @@ public class HornetQServerImpl implements HornetQServer
       Channel channel = connection.getChannel(channelID, sendWindowSize);
       
       Executor sessionExecutor = executorFactory.getExecutor();
-      
-      storageManager.newContext(sessionExecutor);
 
       final ServerSessionImpl session = new ServerSessionImpl(name,
                                                               username,

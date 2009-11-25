@@ -175,6 +175,16 @@ public class FilterImpl implements Filter
          return false;
       }
    }
+   
+
+   /* (non-Javadoc)
+    * @see java.lang.Object#toString()
+    */
+   @Override
+   public String toString()
+   {
+      return "FilterImpl [sfilterString=" + sfilterString + "]";
+   }
 
    // Private --------------------------------------------------------------------------
 

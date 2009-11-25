@@ -44,7 +44,7 @@ import org.hornetq.utils.SimpleString;
 public class PersistentDivertTest extends ServiceTestBase
 {
    private static final Logger log = Logger.getLogger(DivertTest.class);
-
+   
    public void testPersistentDivert() throws Exception
    {
       Configuration conf = createDefaultConfig();
@@ -79,7 +79,11 @@ public class PersistentDivertTest extends ServiceTestBase
       
       ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory"));
 
-      ClientSession session = sf.createSession(false, true, true);
+      sf.setBlockOnAcknowledge(true);
+      sf.setBlockOnNonPersistentSend(true);
+      sf.setBlockOnPersistentSend(true);
+
+      ClientSession session = sf.createSession(true, true, 0);
       
       final SimpleString queueName1 = new SimpleString("queue1");
       
@@ -173,7 +177,6 @@ public class PersistentDivertTest extends ServiceTestBase
       }
       
       assertNull(consumer4.receiveImmediate());
-                  
       session.close();
       
       sf.close();
@@ -214,10 +217,12 @@ public class PersistentDivertTest extends ServiceTestBase
       messagingService.start();
       
       ClientSessionFactory sf = new ClientSessionFactoryImpl(new TransportConfiguration("org.hornetq.core.remoting.impl.invm.InVMConnectorFactory"));
-      
+
+      sf.setBlockOnAcknowledge(true);
+      sf.setBlockOnNonPersistentSend(true);
       sf.setBlockOnPersistentSend(true);
 
-      ClientSession session = sf.createSession(false, true, true);
+      ClientSession session = sf.createSession(true, true, 0);
       
       final SimpleString queueName1 = new SimpleString("queue1");
       

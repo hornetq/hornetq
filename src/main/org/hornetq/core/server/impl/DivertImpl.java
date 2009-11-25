@@ -84,6 +84,9 @@ public class DivertImpl implements Divert
       // TODO we can optimise this so it doesn't copy if it's not routed anywhere else
 
       ServerMessage copy = message.copy();
+      
+      // Setting the messageID to 0. The postOffice should set a new one
+      copy.setMessageID(0);
 
       copy.setDestination(forwardAddress);
 
@@ -116,4 +119,26 @@ public class DivertImpl implements Divert
    {
       return filter;
    }
+
+   /* (non-Javadoc)
+    * @see java.lang.Object#toString()
+    */
+   @Override
+   public String toString()
+   {
+      return "DivertImpl [routingName=" + routingName +
+             ", uniqueName=" +
+             uniqueName +
+             ", forwardAddress=" +
+             forwardAddress +
+             ", exclusive=" +
+             exclusive +
+             ", filter=" +
+             filter +
+             ", transformer=" +
+             transformer +
+             "]";
+   }
+   
+   
 }

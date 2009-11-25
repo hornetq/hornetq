@@ -140,5 +140,16 @@ public class LocalQueueBinding implements QueueBinding
    {
       return BindingType.LOCAL_QUEUE;
    }
+   
+   /* (non-Javadoc)
+    * @see java.lang.Object#toString()
+    */
+   @Override
+   public String toString()
+   {
+      return "LocalQueueBinding [address=" + address + ", name=" + name + ", filter=" + filter + "]";
+   }
+
+   
 
 }

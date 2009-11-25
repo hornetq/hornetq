@@ -550,6 +550,11 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
          throw new IllegalStateException("Message cannot be routed more than once");
       }
 
+      if (message.getMessageID() == 0l)
+      {
+         generateID(message);
+      }
+ 
       RoutingContext context = new RoutingContextImpl(tx);
 
       SimpleString address = message.getDestination();
@@ -838,6 +843,15 @@ public class PostOfficeImpl implements PostOffice, NotificationListener, Binding
    }
 
    // Private -----------------------------------------------------------------
+
+   private void generateID(final ServerMessage message)
+   {
+      // Setting the ID for the routed message
+      long id = storageManager.generateUniqueID();
+
+      message.setMessageID(id);
+   }
+
 
    private void setPagingStore(final ServerMessage message) throws Exception
    {
