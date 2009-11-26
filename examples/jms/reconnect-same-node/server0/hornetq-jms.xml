@@ -31,7 +31,9 @@
    
    <!-- This is used by the example to send the management operations, it's not central to the example -->
    <connection-factory name="ConnectionFactory2">
-      <connector-ref connector-name="netty-connector2"/>
+      <connectors>
+         <connector-ref connector-name="netty-connector2"/>
+      </connectors>
       <entries>
          <entry name="ConnectionFactory2"/>                     
       </entries>
