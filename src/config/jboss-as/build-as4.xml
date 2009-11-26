@@ -36,12 +36,10 @@ Copyright 2009 Red Hat, Inc.
        <!-- new profile is named all-with-hornetq -->
        <param name="hornetq.profile.target" value="all-with-hornetq"/>
     </antcall>
-   <mkdir dir="${dest.bin.dir}/META-INF/lib/linux2/x86"/>
-   <mkdir dir="${dest.bin.dir}/META-INF/lib/linux2/x64"/>
-   <mkdir dir="${dest.bin.dir}/META-INF/lib/linux2/i64"/>
-   <copy todir="${dest.bin.dir}/META-INF/lib/linux2/x86" file="${src.bin.dir}/libHornetQAIO32.so"/>
-   <copy todir="${dest.bin.dir}/META-INF/lib/linux2/x64" file="${src.bin.dir}/libHornetQAIO64.so"/>
-   <copy todir="${dest.bin.dir}/META-INF/lib/linux2/i64" file="${src.bin.dir}/libHornetQAIO_ia64.so"/>
+   <mkdir dir="${dest.bin.dir}/native"/>
+   <copy todir="${dest.bin.dir}/native" file="${src.bin.dir}/libHornetQAIO32.so"/>
+   <copy todir="${dest.bin.dir}/native" file="${src.bin.dir}/libHornetQAIO64.so"/>
+   <copy todir="${dest.bin.dir}/native" file="${src.bin.dir}/libHornetQAIO_ia64.so"/>
    </target>
 
    <target name="create-profile">
