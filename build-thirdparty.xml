@@ -93,7 +93,7 @@
    <target name="maven-install" description="Run the install goal against the maven build"
           depends="maven-init">
 
-     <property name="maven.opts" value="--debug"/>
+     <property name="maven.opts" value=""/>
      <property name="maven.install.opts" value="-Dintegrated-build ${maven.opts}"/>
 
      <maven basedir="${basedir}"
