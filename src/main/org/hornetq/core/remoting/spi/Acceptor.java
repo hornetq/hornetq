@@ -27,7 +27,5 @@ public interface Acceptor extends HornetQComponent
 {
    void pause();
    
-   void resume();
-   
    void setNotificationService(NotificationService notificationService);
 }

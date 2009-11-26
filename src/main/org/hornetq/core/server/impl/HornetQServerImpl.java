@@ -349,9 +349,13 @@ public class HornetQServerImpl implements HornetQServer
          {
             session.getChannel().flushConfirmations();
          }
+      }
 
-         remotingService.stop();
-
+      // we stop the remoting service outside a lock
+      remotingService.stop();
+      
+      synchronized (this)
+      {
          // Stop the deployers
          if (configuration.isFileDeploymentEnabled())
          {

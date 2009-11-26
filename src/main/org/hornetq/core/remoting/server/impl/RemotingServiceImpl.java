@@ -15,7 +15,6 @@ package org.hornetq.core.remoting.server.impl;
 
 import static org.hornetq.core.remoting.impl.wireformat.PacketImpl.DISCONNECT;
 
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -38,8 +37,6 @@ import org.hornetq.core.remoting.Packet;
 import org.hornetq.core.remoting.RemotingConnection;
 import org.hornetq.core.remoting.impl.AbstractBufferHandler;
 import org.hornetq.core.remoting.impl.RemotingConnectionImpl;
-import org.hornetq.core.remoting.impl.invm.InVMAcceptorFactory;
-import org.hornetq.core.remoting.impl.invm.TransportConstants;
 import org.hornetq.core.remoting.impl.wireformat.PacketImpl;
 import org.hornetq.core.remoting.impl.wireformat.Ping;
 import org.hornetq.core.remoting.server.RemotingService;
@@ -212,8 +209,8 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
          }
       }
    }
-
-   public synchronized void stop() throws Exception
+   
+   public void stop() throws Exception
    {
       if (!started)
       {
@@ -228,26 +225,31 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
          acceptor.pause();
       }
 
-      for (ConnectionEntry entry : connections.values())
+      synchronized (server)
       {
-         entry.connection.getChannel(0, -1).sendAndFlush(new PacketImpl(DISCONNECT));
+         for (ConnectionEntry entry : connections.values())
+         {
+            entry.connection.getChannel(0, -1).sendAndFlush(new PacketImpl(DISCONNECT));
+         }
+
+         for (Acceptor acceptor : acceptors)
+         {
+            acceptor.stop();
+         }
+
+         acceptors.clear();
+
+         connections.clear();
+
+         if (managementService != null)
+         {
+            managementService.unregisterAcceptors();
+         }
+
+         started = false;
+
       }
 
-      for (Acceptor acceptor : acceptors)
-      {
-         acceptor.stop();
-      }
-
-      acceptors.clear();
-
-      connections.clear();
-
-      if (managementService != null)
-      {
-         managementService.unregisterAcceptors();
-      }
-
-      started = false;
    }
 
    public boolean isStarted()
@@ -297,9 +299,7 @@ public class RemotingServiceImpl implements RemotingService, ConnectionLifeCycle
 
       RemotingConnection rc = new RemotingConnectionImpl(connection,
                                                          interceptors,
-                                                         server.getConfiguration().isAsyncConnectionExecutionEnabled() ? server.getExecutorFactory()
-                                                                                                                               .getExecutor()
-                                                                                                                      : null);
+                                                         config.isAsyncConnectionExecutionEnabled() ? server.getExecutorFactory().getExecutor() : null);
 
       Channel channel1 = rc.getChannel(1, -1);
       

@@ -358,6 +358,8 @@ public class NettyAcceptor implements Acceptor
          httpKeepAliveRunnable.close();
       }
 
+      // serverChannelGroup has been unbound in pause()
+      serverChannelGroup.close().awaitUninterruptibly();
       ChannelGroupFuture future = channelGroup.close().awaitUninterruptibly();
 
       if (!future.isCompleteSuccess())
@@ -412,7 +414,7 @@ public class NettyAcceptor implements Acceptor
 
    private boolean paused;
 
-   public synchronized void pause()
+   public void pause()
    {
       if (paused)
       {
@@ -425,32 +427,25 @@ public class NettyAcceptor implements Acceptor
       }
 
       // We *pause* the acceptor so no new connections are made
-
-      serverChannelGroup.close().awaitUninterruptibly();
-
-      try
+      ChannelGroupFuture future = serverChannelGroup.unbind().awaitUninterruptibly();
+      if (!future.isCompleteSuccess())
       {
-         Thread.sleep(500);
-      }
-      catch (Exception e)
-      {
+         log.warn("server channel group did not completely unbind");
+         Iterator<Channel> iterator = future.getGroup().iterator();
+         while (iterator.hasNext())
+         {
+            Channel channel = (Channel)iterator.next();
+            if (channel.isBound())
+            {
+               log.warn(channel + " is still bound to " + channel.getRemoteAddress());
+            }
+         }
       }
 
       paused = true;
    }
 
-   public synchronized void resume()
-   {
-      if (!paused)
-      {
-         return;
-      }
-
-      startServerChannels();
-
-      paused = false;
-   }
-
+   
    public void setNotificationService(final NotificationService notificationService)
    {
       this.notificationService = notificationService;

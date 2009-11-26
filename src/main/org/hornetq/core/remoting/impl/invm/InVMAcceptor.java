@@ -156,18 +156,6 @@ public class InVMAcceptor implements Acceptor
       paused = true;
    }
    
-   public synchronized void resume()
-   {
-      if (!paused || !started)
-      {
-         return;
-      }
-      
-      InVMRegistry.instance.registerAcceptor(id, this);
-      
-      paused = false;
-   }
-   
    public void setNotificationService(NotificationService notificationService)
    {
       this.notificationService = notificationService;

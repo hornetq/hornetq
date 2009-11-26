@@ -78,19 +78,9 @@ public class AcceptorControlImpl extends StandardMBean implements AcceptorContro
       acceptor.start();
    }
    
-   public void pause()
-   {
-      acceptor.pause();
-   }
-   
    public void stop() throws Exception
    {
       acceptor.stop();
-   }
-   
-   public void resume() throws Exception
-   {
-      acceptor.resume();
    }
 
    // Public --------------------------------------------------------

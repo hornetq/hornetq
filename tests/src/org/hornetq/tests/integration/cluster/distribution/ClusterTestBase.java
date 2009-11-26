@@ -63,7 +63,7 @@ import org.hornetq.utils.SimpleString;
  *
  *
  */
-public class ClusterTestBase extends ServiceTestBase
+public abstract class ClusterTestBase extends ServiceTestBase
 {
    private static final Logger log = Logger.getLogger(ClusterTestBase.class);
 
@@ -799,7 +799,7 @@ public class ClusterTestBase extends ServiceTestBase
          ClientMessage message;
          do
          {
-            message = holder.consumer.receive(200);
+            message = holder.consumer.receive(1000);
 
             if (message != null)
             {
@@ -809,7 +809,7 @@ public class ClusterTestBase extends ServiceTestBase
 
                if (prevCount != null)
                {
-                  assertTrue(count == prevCount + consumerIDs.length);
+                  assertEquals(prevCount + consumerIDs.length, count);
                }
 
                assertFalse(counts.contains(count));
@@ -835,7 +835,7 @@ public class ClusterTestBase extends ServiceTestBase
 
       for (int i = 0; i < numMessages; i++)
       {
-         assertTrue(counts.contains(i));
+         assertTrue("did not receive message " + i, counts.contains(i));
       }
    }
 
@@ -1607,5 +1607,4 @@ public class ClusterTestBase extends ServiceTestBase
          }
       }
    }
-
 }
