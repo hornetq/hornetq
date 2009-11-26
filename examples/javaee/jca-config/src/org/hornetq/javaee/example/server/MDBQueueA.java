@@ -12,6 +12,8 @@
  */
 package org.hornetq.javaee.example.server;
 
+import org.jboss.ejb3.annotation.ResourceAdapter;
+
 import javax.ejb.ActivationConfigProperty;
 import javax.ejb.MessageDriven;
 import javax.jms.Message;
@@ -31,6 +33,7 @@ import javax.jms.TextMessage;
                         @ActivationConfigProperty(propertyName = "destination", propertyValue = "queue/A"),
                         @ActivationConfigProperty(propertyName = "acknowledgeMode", propertyValue = "Auto-acknowledge")
                      })
+@ResourceAdapter("hornetq-ra.rar")
 public class MDBQueueA implements MessageListener
 {
    public void onMessage(Message message)
