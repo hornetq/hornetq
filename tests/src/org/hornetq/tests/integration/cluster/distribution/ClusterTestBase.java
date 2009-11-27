@@ -809,7 +809,9 @@ public abstract class ClusterTestBase extends ServiceTestBase
 
                if (prevCount != null)
                {
-                  assertEquals(prevCount + consumerIDs.length, count);
+                  assertEquals("consumer " + i + " received unround-robined message (previous was " + prevCount + ")",
+                               prevCount + consumerIDs.length,
+                               count);
                }
 
                assertFalse(counts.contains(count));
