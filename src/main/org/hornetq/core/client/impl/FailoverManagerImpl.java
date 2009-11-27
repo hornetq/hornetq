@@ -19,6 +19,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
@@ -72,6 +73,69 @@ public class FailoverManagerImpl implements FailoverManager, ConnectionLifeCycle
    private static final long serialVersionUID = 2512460695662741413L;
 
    private static final Logger log = Logger.getLogger(FailoverManagerImpl.class);
+
+   // debug
+
+   private static Map<TransportConfiguration, Set<RemotingConnection>> debugConns;
+
+   private static boolean debug = false;
+
+   public static void enableDebug()
+   {
+      debug = true;
+
+      debugConns = new ConcurrentHashMap<TransportConfiguration, Set<RemotingConnection>>();
+   }
+   
+   public static void disableDebug()
+   {
+      debug = false;
+
+      debugConns.clear();
+      debugConns = null;
+   }
+   
+   private void checkAddDebug(final RemotingConnection conn)
+   {
+      Set<RemotingConnection> conns;
+
+      synchronized (debugConns)
+      {
+         conns = debugConns.get(connectorConfig);
+
+         if (conns == null)
+         {
+            conns = new HashSet<RemotingConnection>();
+
+            debugConns.put(connectorConfig, conns);
+         }
+
+         conns.add(conn);
+      }
+   }
+
+   public static void failAllConnectionsForConnector(final TransportConfiguration config)
+   {
+      Set<RemotingConnection> conns;
+
+      synchronized (debugConns)
+      {
+         conns = debugConns.get(config);
+
+         if (conns != null)
+         {
+            conns = new HashSet<RemotingConnection>(debugConns.get(config));
+         }
+      }
+
+      if (conns != null)
+      {
+         for (RemotingConnection conn : conns)
+         {
+            conn.fail(new HornetQException(HornetQException.INTERNAL_ERROR, "blah"));
+         }
+      }
+   }
 
    // Attributes
    // -----------------------------------------------------------------------------------
@@ -773,6 +837,12 @@ public class FailoverManagerImpl implements FailoverManager, ConnectionLifeCycle
          }
          else
          {
+
+            if (debug)
+            {
+               checkAddDebug(theConnection);
+            }
+
             return theConnection;
          }
       }
