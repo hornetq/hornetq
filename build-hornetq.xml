@@ -1221,7 +1221,7 @@
             <fileset dir="${test.classes.dir}">
                <!-- <exclude name="**/integration/http/*" /> -->
             	<!-- cluster tests with backup are brittled and are temporarily excluded -->
-               <exclude name="**/cluster/distribution/*WithBackupTest" />
+               <exclude name="**/cluster/distribution/*WithBackupTest.class" />
                <include name="${tests.param}"/>
             </fileset>
          </batchtest>
