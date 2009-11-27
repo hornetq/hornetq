@@ -74,4 +74,10 @@ public class Pair<A, B> implements Serializable
              (pother.b == null ? b == null : pother.b.equals(b));                 
       
    }
+   
+   @Override
+   public String toString()
+   {
+      return "Pair[a=" + a + ", b=" + b + "]";
+   }
 }
