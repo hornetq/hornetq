@@ -1414,7 +1414,8 @@ public class HornetQServerImpl implements HornetQServer
                                         config.isExclusive(),
                                         filter,
                                         transformer,
-                                        postOffice);
+                                        postOffice,
+                                        storageManager);
          // pagingManager,
          // storageManager);
 

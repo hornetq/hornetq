@@ -17,6 +17,7 @@ import static org.hornetq.core.message.impl.MessageImpl.HDR_ORIGINAL_DESTINATION
 
 import org.hornetq.core.filter.Filter;
 import org.hornetq.core.logging.Logger;
+import org.hornetq.core.persistence.StorageManager;
 import org.hornetq.core.postoffice.PostOffice;
 import org.hornetq.core.server.Divert;
 import org.hornetq.core.server.RoutingContext;
@@ -50,6 +51,8 @@ public class DivertImpl implements Divert
    private final Filter filter;
 
    private final Transformer transformer;
+   
+   private final StorageManager storageManager;
 
    public DivertImpl(final SimpleString forwardAddress,
                      final SimpleString uniqueName,
@@ -57,7 +60,8 @@ public class DivertImpl implements Divert
                      final boolean exclusive,
                      final Filter filter,
                      final Transformer transformer,
-                     final PostOffice postOffice)
+                     final PostOffice postOffice,
+                     final StorageManager storageManager)
    {
       this.forwardAddress = forwardAddress;
 
@@ -72,6 +76,8 @@ public class DivertImpl implements Divert
       this.transformer = transformer;
 
       this.postOffice = postOffice;
+      
+      this.storageManager = storageManager;
    }
 
    public void route(final ServerMessage message, final RoutingContext context) throws Exception
@@ -81,16 +87,15 @@ public class DivertImpl implements Divert
       // We must make a copy of the message, otherwise things like returning credits to the page won't work
       // properly on ack, since the original destination will be overwritten
 
-      // TODO we can optimise this so it doesn't copy if it's not routed anywhere else   
+      // TODO we can optimise this so it doesn't copy if it's not routed anywhere else
       
-      ServerMessage copy = message.copy();
+      long id = storageManager.generateUniqueID();
+      ServerMessage copy = message.copy(id);
       
-      // Setting the messageID to 0. The postOffice should set a new one
-      copy.setMessageID(0);
-
+      // This will set the original MessageId, and the original destination
+      copy.setOriginalHeaders(message, false);
+      
       copy.setDestination(forwardAddress);
-
-      copy.putStringProperty(HDR_ORIGINAL_DESTINATION, originalDestination);
 
       if (transformer != null)
       {

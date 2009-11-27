@@ -112,7 +112,6 @@ public class PagingSendTest extends ServiceTestBase
 
          for (int i = 0; i < 200; i++)
          {
-            System.out.println("Sent " + i);
             producer.send(message);
          }
 

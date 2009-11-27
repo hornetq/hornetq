@@ -45,7 +45,19 @@ public class PersistentDivertTest extends ServiceTestBase
 {
    private static final Logger log = Logger.getLogger(DivertTest.class);
    
+   final int minLargeMessageSize = ClientSessionFactoryImpl.DEFAULT_MIN_LARGE_MESSAGE_SIZE * 2;
+   
    public void testPersistentDivert() throws Exception
+   {
+      doTestPersistentDivert(false);
+   }
+   
+   public void testPersistentDiverLargeMessage() throws Exception
+   {
+      doTestPersistentDivert(true);
+   }
+   
+   public void doTestPersistentDivert(boolean largeMessage) throws Exception
    {
       Configuration conf = createDefaultConfig();
       
@@ -121,6 +133,11 @@ public class PersistentDivertTest extends ServiceTestBase
       {
          ClientMessage message = session.createClientMessage(true);
          
+         if (largeMessage)
+         {
+            message.setBodyInputStream(createFakeLargeStream(minLargeMessageSize));
+         }
+         
          message.putIntProperty(propKey, i);
          
          producer.send(message);
@@ -128,11 +145,16 @@ public class PersistentDivertTest extends ServiceTestBase
       
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = consumer1.receive(200);
+         ClientMessage message = consumer1.receive(5000);
          
          assertNotNull(message);
          
          assertEquals((Integer)i, (Integer)message.getObjectProperty(propKey));
+         
+         if (largeMessage)
+         {
+            checkLargeMessage(message);
+         }
          
          message.acknowledge();
       }
@@ -141,12 +163,17 @@ public class PersistentDivertTest extends ServiceTestBase
       
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = consumer2.receive(200);
+         ClientMessage message = consumer2.receive(5000);
          
          assertNotNull(message);
          
          assertEquals((Integer)i, (Integer)message.getObjectProperty(propKey));
          
+         if (largeMessage)
+         {
+            checkLargeMessage(message);
+         }
+
          message.acknowledge();
       }
       
@@ -154,12 +181,17 @@ public class PersistentDivertTest extends ServiceTestBase
       
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = consumer3.receive(200);
+         ClientMessage message = consumer3.receive(5000);
          
          assertNotNull(message);
          
          assertEquals((Integer)i, (Integer)message.getObjectProperty(propKey));
          
+         if (largeMessage)
+         {
+            checkLargeMessage(message);
+         }
+
          message.acknowledge();
       }
       
@@ -167,12 +199,17 @@ public class PersistentDivertTest extends ServiceTestBase
       
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = consumer4.receive(200);
+         ClientMessage message = consumer4.receive(5000);
          
          assertNotNull(message);
          
          assertEquals((Integer)i, (Integer)message.getObjectProperty(propKey));
          
+         if (largeMessage)
+         {
+            checkLargeMessage(message);
+         }
+
          message.acknowledge();
       }
       
@@ -183,8 +220,29 @@ public class PersistentDivertTest extends ServiceTestBase
       
       messagingService.stop();
    }
+
+   /**
+    * @param message
+    */
+   private void checkLargeMessage(ClientMessage message)
+   {
+      for (int j = 0 ; j < minLargeMessageSize; j++)
+      {
+         assertEquals(getSamplebyte(j), message.getBodyBuffer().readByte());
+      }
+   }
    
    public void testPersistentDivertRestartBeforeConsume() throws Exception
+   {
+      doTestPersistentDivertRestartBeforeConsume(false);
+   }
+   
+   public void testPersistentDivertRestartBeforeConsumeLargeMessage() throws Exception
+   {
+      doTestPersistentDivertRestartBeforeConsume(true);
+   }
+   
+   public void doTestPersistentDivertRestartBeforeConsume(boolean largeMessage) throws Exception
    {
       Configuration conf = createDefaultConfig();
       
@@ -251,6 +309,12 @@ public class PersistentDivertTest extends ServiceTestBase
          ClientMessage message = session.createClientMessage(true);
          
          message.putIntProperty(propKey, i);
+
+         if (largeMessage)
+         {
+            message.setBodyInputStream(createFakeLargeStream(minLargeMessageSize));
+         }
+
          
          producer.send(message);
       }
@@ -281,10 +345,15 @@ public class PersistentDivertTest extends ServiceTestBase
       
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = consumer1.receive(200);
+         ClientMessage message = consumer1.receive(5000);
          
          assertNotNull(message);
          
+         if (largeMessage)
+         {
+            checkLargeMessage(message);
+         }
+
          assertEquals((Integer)i, (Integer)message.getObjectProperty(propKey));
          
          message.acknowledge();
@@ -294,10 +363,15 @@ public class PersistentDivertTest extends ServiceTestBase
       
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = consumer2.receive(200);
+         ClientMessage message = consumer2.receive(5000);
          
          assertNotNull(message);
          
+         if (largeMessage)
+         {
+            checkLargeMessage(message);
+         }
+
          assertEquals((Integer)i, (Integer)message.getObjectProperty(propKey));
          
          message.acknowledge();
@@ -307,10 +381,15 @@ public class PersistentDivertTest extends ServiceTestBase
       
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = consumer3.receive(200);
+         ClientMessage message = consumer3.receive(5000);
          
          assertNotNull(message);
          
+         if (largeMessage)
+         {
+            checkLargeMessage(message);
+         }
+
          assertEquals((Integer)i, (Integer)message.getObjectProperty(propKey));
          
          message.acknowledge();
@@ -320,10 +399,15 @@ public class PersistentDivertTest extends ServiceTestBase
       
       for (int i = 0; i < numMessages; i++)
       {
-         ClientMessage message = consumer4.receive(200);
+         ClientMessage message = consumer4.receive(5000);
          
          assertNotNull(message);
          
+         if (largeMessage)
+         {
+            checkLargeMessage(message);
+         }
+
          assertEquals((Integer)i, (Integer)message.getObjectProperty(propKey));
          
          message.acknowledge();

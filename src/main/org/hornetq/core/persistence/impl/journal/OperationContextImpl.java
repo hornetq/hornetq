@@ -81,7 +81,7 @@ public class OperationContextImpl implements OperationContext
 
    private String errorMessage = null;
 
-   private Executor executor;
+   private final Executor executor;
 
    private final AtomicInteger executorsPending = new AtomicInteger(0);
 
@@ -100,12 +100,6 @@ public class OperationContextImpl implements OperationContext
    public void replicationLineUp()
    {
       replicationLineUp++;
-   }
-
-   /** this method needs to be called before the executor became operational */
-   public void setExecutor(Executor executor)
-   {
-      this.executor = executor;
    }
 
    public synchronized void replicationDone()
@@ -137,25 +131,18 @@ public class OperationContextImpl implements OperationContext
          // On this case, we can just execute the context directly
          if (replicationLineUp == replicated && storeLineUp == stored)
          {
-            if (executor != null)
+            // We want to avoid the executor if everything is complete...
+            // However, we can't execute the context if there are executions pending
+            // We need to use the executor on this case
+            if (executorsPending.get() == 0)
             {
-               // We want to avoid the executor if everything is complete...
-               // However, we can't execute the context if there are executions pending
-               // We need to use the executor on this case
-               if (executorsPending.get() == 0)
-               {
-                  // No need to use an executor here or a context switch
-                  // there are no actions pending.. hence we can just execute the task directly on the same thread
-                  executeNow = true;
-               }
-               else
-               {
-                  execute(completion);
-               }
+               // No need to use an executor here or a context switch
+               // there are no actions pending.. hence we can just execute the task directly on the same thread
+               executeNow = true;
             }
             else
             {
-               executeNow = true;
+               execute(completion);
             }
          }
          else
