@@ -1222,6 +1222,8 @@
                <!-- <exclude name="**/integration/http/*" /> -->
             	<!-- cluster tests with backup are brittled and are temporarily excluded -->
                <exclude name="**/cluster/distribution/*WithBackupTest.class" />
+               <!-- exlcuded because of https://jira.jboss.org/jira/browse/HORNETQ-65 -->
+               <exclude name="**/cluster/failover/*StaticClusterWithBackupFailoverTest.class" />
                <include name="${tests.param}"/>
             </fileset>
          </batchtest>

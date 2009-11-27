@@ -611,6 +611,11 @@ ClientSession session2 = factory.createClientSession(...);</programlisting>
                     <literal>backup-connector-name</literal> is optional, and if specified it also
                 references a connector defined in <literal>hornetq-configuration.xml</literal>. For more
                 information on connectors please see <xref linkend="configuring-transports" />.</para>
+            <note>
+               <para>Due to a limitation in HornetQ 2.0.0, failover is not supported for clusters
+                  defined using a static set of nodes. To support failover over cluster nodes, they 
+                  must be configured to use a discovery group.</para>
+            </note>
         </section>
     </section>
     <section id="clusters.message-redistribution">
